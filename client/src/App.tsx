@@ -100,6 +100,7 @@ function Router() {
       <Route path="/api" component={ApiDocumentation} />
       <Route path="/lumen-bio/dashboard">{() => renderWithLayout(LumenBioDashboard)}</Route>
       <Route path="/reports/lumen-bio">{() => renderWithLayout(LumenBioReport)}</Route>
+      <Route path="/client-intelligence" component={ClientIntelligence} /> {/* Added Route */}
 
       {/* Fallback to 404 */}
       <Route>{() => renderWithLayout(NotFound)}</Route>
