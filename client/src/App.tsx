@@ -22,6 +22,7 @@ import PricingPage from "./pages/PricingPage";
 import ApiDocumentation from "./pages/ApiDocumentation";
 import LumenBioDashboard from "@/pages/LumenBioDashboard";
 import LumenBioReport from "@/pages/LumenBioReport";
+import ClientIntelligence from "@/pages/ClientIntelligence";
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);

@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowRight, FileText, Beaker, Brain, Flask } from "lucide-react";
+import { ArrowRight, FileText, Beaker, Brain, FlaskConical } from "lucide-react";
 
 const LumenBioPipelineInsights = ({ className }: { className?: string }) => {
   return (
@@ -60,7 +60,7 @@ const LumenBioPipelineInsights = ({ className }: { className?: string }) => {
                     <p className="text-sm text-gray-500">Solid Tumors</p>
                     <h4 className="text-xl font-bold mt-1">42</h4>
                   </div>
-                  <Flask className="h-8 w-8 text-purple-500 opacity-80" />
+                  <FlaskConical className="h-8 w-8 text-purple-500 opacity-80" />
                 </div>
                 <div className="mt-3">
                   <p className="text-xs text-gray-500 mb-1">Active clinical trials</p>
