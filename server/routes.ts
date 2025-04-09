@@ -583,7 +583,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.setHeader('Content-Type', 'text/csv');
         res.setHeader('Content-Disposition', `attachment; filename="report_${id}.csv"`);
         
-        // Simple CSV export - in a real app, this would be more comprehensive
+        // More comprehensive CSV export
         let csv = 'Category,Value\n';
         csv += `Title,${report.title}\n`;
         csv += `Sponsor,${report.sponsor}\n`;
@@ -591,18 +591,106 @@ export async function registerRoutes(app: Express): Promise<Server> {
         csv += `Phase,${report.phase}\n`;
         csv += `Status,${report.status}\n`;
         csv += `Date,${report.date}\n`;
+        csv += `File Name,${report.fileName || 'N/A'}\n`;
+        csv += `File Size,${report.fileSize || 'N/A'}\n\n`;
         
         if (details) {
-          csv += `Study Design,${details.studyDesign}\n`;
-          csv += `Primary Objective,${details.primaryObjective}\n`;
-          // Add more fields as needed
+          csv += `Report Details,Value\n`;
+          csv += `Study Design,${details.studyDesign || 'N/A'}\n`;
+          csv += `Primary Objective,${details.primaryObjective || 'N/A'}\n`;
+          csv += `Secondary Objectives,${details.secondaryObjectives || 'N/A'}\n`;
+          csv += `Study Population,${details.population || 'N/A'}\n`;
+          
+          // Add endpoints section
+          csv += `\nEndpoints,Details\n`;
+          if (details.endpoints?.primary) {
+            csv += `Primary,${details.endpoints.primary}\n`;
+          }
+          
+          if (details.endpoints?.secondary && details.endpoints.secondary.length > 0) {
+            details.endpoints.secondary.forEach((endpoint, index) => {
+              csv += `Secondary ${index + 1},${endpoint}\n`;
+            });
+          }
+          
+          // Add results section
+          csv += `\nResults,Details\n`;
+          csv += `Primary Results,${details.results?.primaryResults || 'N/A'}\n`;
+          csv += `Secondary Results,${details.results?.secondaryResults || 'N/A'}\n`;
+          
+          // Add safety section
+          csv += `\nSafety,Details\n`;
+          csv += `Common Adverse Events,${details.safety?.commonAEs || 'N/A'}\n`;
+          csv += `Serious Events,${details.safety?.severeEvents || 'N/A'}\n`;
+          csv += `Discontinuations,${details.safety?.discontinuations || 'N/A'}\n`;
         }
         
         res.send(csv);
       } else {
-        // Default to JSON
-        res.json({ report, details });
+        // Default to JSON with more structured data
+        const exportData = {
+          reportInfo: {
+            id: report.id,
+            title: report.title,
+            sponsor: report.sponsor,
+            indication: report.indication,
+            phase: report.phase,
+            status: report.status,
+            date: report.date,
+            fileName: report.fileName,
+            fileSize: report.fileSize,
+            filePath: report.filePath,
+            nctrialId: report.nctrialId,
+            studyId: report.studyId,
+            uploadDate: report.uploadDate,
+            drugName: report.drugName,
+            region: report.region
+          },
+          reportDetails: details ? {
+            studyDesign: details.studyDesign,
+            primaryObjective: details.primaryObjective,
+            secondaryObjectives: details.secondaryObjectives,
+            population: details.population,
+            endpoints: details.endpoints,
+            results: details.results,
+            safety: details.safety,
+            limitations: details.limitations,
+            conclusions: details.conclusions
+          } : null
+        };
+        
+        res.json(exportData);
       }
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+  
+  // Add new endpoint to download the original PDF file
+  app.get('/api/reports/:id/download', async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ success: false, message: 'Invalid report ID' });
+      }
+      
+      const report = await storage.getCsrReport(id);
+      
+      if (!report) {
+        return res.status(404).json({ success: false, message: 'Report not found' });
+      }
+      
+      // Check if file exists
+      if (!report.filePath || !fs.existsSync(report.filePath)) {
+        return res.status(404).json({ success: false, message: 'Original file not found' });
+      }
+      
+      // Send the file
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${report.fileName || `report_${id}.pdf`}"`);
+      
+      const fileStream = fs.createReadStream(report.filePath);
+      fileStream.pipe(res);
     } catch (err) {
       errorHandler(err as Error, res);
     }
