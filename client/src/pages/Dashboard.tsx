@@ -24,9 +24,9 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CsrReport } from "@/lib/types";
-import StatsCard from "@/components/dashboard/StatsCard"; // Added import
-import QuickAction from "@/components/dashboard/QuickAction"; // Added import
-import LumenBioPipelineInsights from "@/components/dashboard/LumenBioPipelineInsights"; // Added import
+import StatsCard from "@/components/dashboard/StatsCard"; 
+import QuickAction from "@/components/dashboard/QuickAction"; 
+import LumenBioPipelineInsights from "@/components/dashboard/LumenBioPipelineInsights"; 
 
 
 const Dashboard = () => {
@@ -48,7 +48,6 @@ const Dashboard = () => {
         title: "Batch import started",
         description: "The batch import process has been started successfully. Check back soon to see the imported trials.",
       });
-      // Refresh the reports list
       queryClient.invalidateQueries({ queryKey: ['/api/reports'] });
       queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
     },
@@ -69,84 +68,114 @@ const Dashboard = () => {
     >
       <div className="space-y-6">
         {/* Welcome Section */}
-        <div className="p-6 rounded-lg border bg-gradient-to-r from-primary/10 to-blue-500/10">
+        <div className="p-8 rounded-xl border-0 bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-slate-800">Welcome to TrialSage</h1>
-              <p className="text-slate-600 mt-1">
-                AI-powered clinical study report intelligence platform
+              <h1 className="text-2xl md:text-3xl font-bold text-white">Welcome to TrialSage</h1>
+              <p className="text-blue-100 mt-2 max-w-lg">
+                AI-powered clinical study report intelligence platform that transforms your research workflow
               </p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-3 mt-4 md:mt-0">
               <Link href="/upload">
-                <Button className="flex items-center gap-2">
+                <Button className="flex items-center gap-2 bg-white text-blue-700 hover:bg-blue-50 hover:text-blue-800">
                   <Upload className="h-4 w-4" />
                   Upload CSR
                 </Button>
               </Link>
               <Link href="/reports">
-                <Button variant="outline" className="flex items-center gap-2">
+                <Button variant="outline" className="flex items-center gap-2 border-white text-white hover:bg-white/20">
                   <Search className="h-4 w-4" />
                   Browse Reports
                 </Button>
               </Link>
             </div>
           </div>
+          <div className="flex gap-3 mt-6">
+            <Badge className="bg-blue-500/60 hover:bg-blue-500/70 text-white font-normal py-1">Smart Analysis</Badge>
+            <Badge className="bg-blue-500/60 hover:bg-blue-500/70 text-white font-normal py-1">Improved Efficiency</Badge>
+            <Badge className="bg-blue-500/60 hover:bg-blue-500/70 text-white font-normal py-1">Data Extraction</Badge>
+            <Badge className="bg-blue-500/60 hover:bg-blue-500/70 text-white font-normal py-1">AI-Powered</Badge>
+          </div>
         </div>
 
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-slate-500">Total Reports</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isLoadingStats ? (
-                <Skeleton className="h-8 w-20" />
-              ) : (
-                <div className="text-2xl font-bold">{stats?.totalReports || 0}</div>
-              )}
-            </CardContent>
-          </Card>
+          <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex items-start">
+              <div className="p-2 rounded-lg bg-blue-100 mr-3">
+                <FileText className="h-5 w-5 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-slate-500">Total Reports</p>
+                {isLoadingStats ? (
+                  <Skeleton className="h-8 w-20 mt-1" />
+                ) : (
+                  <div className="text-2xl font-bold mt-1">{stats?.totalReports || 0}</div>
+                )}
+              </div>
+            </div>
+            <div className="mt-2">
+              <Progress value={75} className="h-1" />
+            </div>
+          </div>
 
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-slate-500">Processed Reports</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isLoadingStats ? (
-                <Skeleton className="h-8 w-20" />
-              ) : (
-                <div className="text-2xl font-bold">{stats?.processedReports || 0}</div>
-              )}
-            </CardContent>
-          </Card>
+          <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex items-start">
+              <div className="p-2 rounded-lg bg-emerald-100 mr-3">
+                <BarChart className="h-5 w-5 text-emerald-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-slate-500">Processed Reports</p>
+                {isLoadingStats ? (
+                  <Skeleton className="h-8 w-20 mt-1" />
+                ) : (
+                  <div className="text-2xl font-bold mt-1">{stats?.processedReports || 0}</div>
+                )}
+              </div>
+            </div>
+            <div className="mt-2">
+              <Progress value={60} className="h-1" />
+            </div>
+          </div>
 
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-slate-500">Data Points Extracted</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isLoadingStats ? (
-                <Skeleton className="h-8 w-20" />
-              ) : (
-                <div className="text-2xl font-bold">{stats?.dataPointsExtracted?.toLocaleString() || 0}</div>
-              )}
-            </CardContent>
-          </Card>
+          <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex items-start">
+              <div className="p-2 rounded-lg bg-indigo-100 mr-3">
+                <Database className="h-5 w-5 text-indigo-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-slate-500">Data Points Extracted</p>
+                {isLoadingStats ? (
+                  <Skeleton className="h-8 w-20 mt-1" />
+                ) : (
+                  <div className="text-2xl font-bold mt-1">{stats?.dataPointsExtracted?.toLocaleString() || 0}</div>
+                )}
+              </div>
+            </div>
+            <div className="mt-2">
+              <Progress value={85} className="h-1" />
+            </div>
+          </div>
 
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-slate-500">Time Saved</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isLoadingStats ? (
-                <Skeleton className="h-8 w-20" />
-              ) : (
-                <div className="text-2xl font-bold">{stats?.processingTimeSaved || 0} hrs</div>
-              )}
-            </CardContent>
-          </Card>
+          <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex items-start">
+              <div className="p-2 rounded-lg bg-amber-100 mr-3">
+                <Sparkles className="h-5 w-5 text-amber-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-slate-500">Time Saved</p>
+                {isLoadingStats ? (
+                  <Skeleton className="h-8 w-20 mt-1" />
+                ) : (
+                  <div className="text-2xl font-bold mt-1">{stats?.processingTimeSaved || 0} hrs</div>
+                )}
+              </div>
+            </div>
+            <div className="mt-2">
+              <Progress value={90} className="h-1" />
+            </div>
+          </div>
         </div>
 
         {/* Main Content */}
