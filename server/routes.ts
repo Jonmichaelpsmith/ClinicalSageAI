@@ -910,6 +910,421 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Sage+ Memory-Based AI Assistant Endpoints
+  
+  // Initialize the pgvector extension
+  app.post('/api/sage-plus/init', async (req: Request, res: Response) => {
+    try {
+      await SagePlusService.initVectorExtension();
+      res.json({ success: true, message: 'Vector extension initialized successfully' });
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+  
+  // Upload document to Sage+ memory
+  app.post('/api/sage-plus/upload-document', upload.single('document'), async (req: Request, res: Response) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ success: false, message: 'No document file provided' });
+      }
+      
+      const metadata = {
+        title: req.body.title || req.file.originalname,
+        author: req.body.author,
+        topic: req.body.topic,
+        description: req.body.description
+      };
+      
+      const result = await SagePlusService.uploadDocument(
+        req.file.buffer,
+        req.file.originalname,
+        metadata
+      );
+      
+      res.status(201).json({ 
+        success: true, 
+        message: 'Document uploaded and processing started', 
+        documentId: result.id,
+        status: result.status
+      });
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+  
+  // Generate memory-based response
+  app.post('/api/sage-plus/query', async (req: Request, res: Response) => {
+    try {
+      const { message, conversationHistory } = req.body;
+      
+      if (!message) {
+        return res.status(400).json({ success: false, message: 'Query message is required' });
+      }
+      
+      const response = await SagePlusService.generateMemoryResponse(
+        message,
+        conversationHistory || []
+      );
+      
+      res.json({
+        success: true,
+        message: response
+      });
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+  
+  // Find relevant documents for a query
+  app.post('/api/sage-plus/search-documents', async (req: Request, res: Response) => {
+    try {
+      const { query, limit } = req.body;
+      
+      if (!query) {
+        return res.status(400).json({ success: false, message: 'Search query is required' });
+      }
+      
+      const documents = await SagePlusService.findRelevantDocuments(
+        query,
+        limit || 5
+      );
+      
+      res.json({
+        success: true,
+        documents
+      });
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+  
+  // Protocol Builder & Validator Endpoints
+  
+  // Get regulatory agency guidelines
+  app.get('/api/protocol-builder/guidelines', async (req: Request, res: Response) => {
+    try {
+      const agency = req.query.agency as string || 'all';
+      const indication = req.query.indication as string;
+      
+      // Get regulatory guidelines for the specific agency and indication
+      // This will be implemented as part of the Protocol Builder service
+      const guidelines = {
+        FDA: [
+          { id: 'FDA-1', title: 'Primary Endpoint Selection', content: 'FDA recommends clinically meaningful endpoints that directly measure how a patient feels, functions, or survives.' },
+          { id: 'FDA-2', title: 'Control Group Selection', content: 'Placebo-controlled trials are preferred when ethically appropriate. Active-controlled trials should use established effective treatments.' },
+          { id: 'FDA-3', title: 'Statistical Considerations', content: 'Sample size should be justified based on expected effect size, variability, and desired power (typically 80-90%).' }
+        ],
+        EMA: [
+          { id: 'EMA-1', title: 'Quality of Life Measures', content: 'EMA places emphasis on quality of life endpoints as complementary to clinical efficacy measures.' },
+          { id: 'EMA-2', title: 'Pediatric Considerations', content: 'Pediatric investigation plans (PIPs) must be submitted early in development for new medicines.' },
+          { id: 'EMA-3', title: 'Subgroup Analyses', content: 'Pre-specified subgroup analyses should be included for relevant demographics and disease characteristics.' }
+        ]
+      };
+      
+      res.json({
+        success: true,
+        guidelines: agency === 'all' ? guidelines : { [agency]: guidelines[agency] }
+      });
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+  
+  // Protocol validation
+  app.post('/api/protocol-builder/validate', async (req: Request, res: Response) => {
+    try {
+      const { protocol } = req.body;
+      
+      if (!protocol) {
+        return res.status(400).json({ success: false, message: 'Protocol data is required' });
+      }
+      
+      // Validate protocol against regulatory requirements
+      // This would check for missing elements, regulatory issues, etc.
+      const validationResults = {
+        isValid: false,
+        missingElements: [],
+        regulatoryFlags: [],
+        recommendations: []
+      };
+      
+      // Check for required protocol elements
+      if (!protocol.blinding || protocol.blinding === 'none') {
+        validationResults.missingElements.push({
+          element: 'blinding',
+          severity: 'high',
+          message: 'Non-blinded trials may introduce bias. Consider double-blinding if appropriate for your indication.'
+        });
+      }
+      
+      if (!protocol.controlArm) {
+        validationResults.missingElements.push({
+          element: 'controlArm',
+          severity: 'critical',
+          message: 'Missing control arm. Most pivotal trials require either placebo or active control.'
+        });
+      }
+      
+      if (!protocol.safetyMonitoring || Object.keys(protocol.safetyMonitoring).length === 0) {
+        validationResults.missingElements.push({
+          element: 'safetyMonitoring',
+          severity: 'critical',
+          message: 'Adverse event monitoring plan is missing or inadequate.'
+        });
+      }
+      
+      // Check for regulatory red flags
+      if (protocol.endpoints && protocol.endpoints.primary) {
+        const nonStandardEndpoints = protocol.endpoints.primary.filter(endpoint => 
+          !endpoint.isStandard && !endpoint.hasRegulatorAcceptance);
+          
+        if (nonStandardEndpoints.length > 0) {
+          validationResults.regulatoryFlags.push({
+            issue: 'nonStandardEndpoints',
+            severity: 'high',
+            message: 'Non-standard primary endpoints detected that lack regulatory precedent.',
+            affectedElements: nonStandardEndpoints
+          });
+        }
+      }
+      
+      if (protocol.sampleSize && protocol.power && protocol.power < 0.8) {
+        validationResults.regulatoryFlags.push({
+          issue: 'underpoweredDesign',
+          severity: 'high',
+          message: 'Trial appears underpowered. FDA/EMA typically expect minimum 80% power.'
+        });
+      }
+      
+      // Check if protocol meets criteria for being valid
+      validationResults.isValid = 
+        validationResults.missingElements.filter(item => item.severity === 'critical').length === 0 &&
+        validationResults.regulatoryFlags.filter(item => item.severity === 'critical').length === 0;
+      
+      // Generate recommendations based on similar approved protocols
+      validationResults.recommendations = [
+        {
+          area: 'endpoints',
+          message: 'Consider adding 6-minute walk test as a secondary endpoint based on 3 recently approved drugs in this indication.',
+          precedents: ['NCT01234567', 'NCT23456789']
+        },
+        {
+          area: 'inclusion',
+          message: 'Recent approvals have used broader inclusion criteria for age range (18-75 instead of 18-65).',
+          precedents: ['NCT34567890']
+        },
+        {
+          area: 'statistical',
+          message: 'Consider MMRM analysis for primary endpoint to handle missing data, as used in recent FDA approvals.',
+          precedents: ['NCT45678901', 'NCT56789012']
+        }
+      ];
+      
+      res.json({
+        success: true,
+        validationResults
+      });
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+  
+  // Get protocol templates based on indication and phase
+  app.get('/api/protocol-builder/templates', async (req: Request, res: Response) => {
+    try {
+      const indication = req.query.indication as string;
+      const phase = req.query.phase as string;
+      
+      if (!indication || !phase) {
+        return res.status(400).json({ success: false, message: 'Both indication and phase are required' });
+      }
+      
+      // Get protocol templates for the specific indication and phase
+      // These would be derived from historical data in the database
+      const templates = [
+        {
+          id: 1,
+          name: `Standard ${phase} Protocol for ${indication}`,
+          description: `Based on recently approved ${indication} trials`,
+          elements: {
+            blinding: 'double',
+            arms: [
+              { name: 'Treatment', description: 'Investigational product', type: 'experimental' },
+              { name: 'Control', description: 'Placebo', type: 'placebo' }
+            ],
+            randomization: '1:1',
+            primaryEndpoints: [
+              { name: 'Change from baseline in disease severity score', timepoint: 'Week 12' }
+            ],
+            secondaryEndpoints: [
+              { name: 'Proportion of subjects achieving clinical response', timepoint: 'Week 12' },
+              { name: 'Change from baseline in quality of life score', timepoint: 'Week 24' }
+            ],
+            sampleSize: 120,
+            duration: '24 weeks',
+            visits: [
+              { name: 'Screening', timing: 'Day -28 to -1' },
+              { name: 'Baseline', timing: 'Day 0' },
+              { name: 'Week 4', timing: 'Day 28 ± 3' },
+              { name: 'Week 12', timing: 'Day 84 ± 7' },
+              { name: 'Week 24', timing: 'Day 168 ± 7' }
+            ],
+            safetyAssessments: [
+              'Adverse events', 'Laboratory tests', 'Vital signs', 'Physical examinations'
+            ]
+          },
+          regulatoryAcceptance: {
+            FDA: true,
+            EMA: true
+          },
+          recentExamples: [
+            { id: 'NCT12345678', sponsor: 'Pharma Company A', approved: true, year: 2023 },
+            { id: 'NCT23456789', sponsor: 'Pharma Company B', approved: true, year: 2022 }
+          ]
+        },
+        {
+          id: 2,
+          name: `Alternative ${phase} Protocol for ${indication}`,
+          description: `Innovative approach for ${indication} with novel endpoints`,
+          elements: {
+            blinding: 'double',
+            arms: [
+              { name: 'High Dose', description: 'Investigational product - high dose', type: 'experimental' },
+              { name: 'Low Dose', description: 'Investigational product - low dose', type: 'experimental' },
+              { name: 'Control', description: 'Placebo', type: 'placebo' }
+            ],
+            randomization: '1:1:1',
+            primaryEndpoints: [
+              { name: 'Time to first disease event', timepoint: 'Up to Week 52' }
+            ],
+            secondaryEndpoints: [
+              { name: 'Proportion of subjects achieving disease remission', timepoint: 'Week 24' },
+              { name: 'Sustained improvement in biomarker levels', timepoint: 'Weeks 12-52' }
+            ],
+            sampleSize: 210,
+            duration: '52 weeks',
+            visits: [
+              { name: 'Screening', timing: 'Day -28 to -1' },
+              { name: 'Baseline', timing: 'Day 0' },
+              { name: 'Week 4', timing: 'Day 28 ± 3' },
+              { name: 'Week 12', timing: 'Day 84 ± 7' },
+              { name: 'Week 24', timing: 'Day 168 ± 7' },
+              { name: 'Week 36', timing: 'Day 252 ± 7' },
+              { name: 'Week 52', timing: 'Day 364 ± 7' }
+            ],
+            safetyAssessments: [
+              'Adverse events', 'Laboratory tests', 'Vital signs', 'Physical examinations',
+              'ECG', 'Specialized safety biomarkers'
+            ]
+          },
+          regulatoryAcceptance: {
+            FDA: true,
+            EMA: false
+          },
+          recentExamples: [
+            { id: 'NCT34567890', sponsor: 'Pharma Company C', approved: true, year: 2023 }
+          ]
+        }
+      ];
+      
+      res.json({
+        success: true,
+        templates
+      });
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+  
+  // Research Companion Chat API Endpoints
+  
+  // Get all conversations
+  app.get('/api/chat/conversations', async (req: Request, res: Response) => {
+    try {
+      const userId = req.query.userId ? parseInt(req.query.userId as string) : undefined;
+      const conversations = await huggingFaceService.getConversations(userId);
+      res.json({ success: true, conversations });
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+  
+  // Create a new conversation
+  app.post('/api/chat/conversations', async (req: Request, res: Response) => {
+    try {
+      const { userId, reportId, title } = req.body;
+      
+      // Check if Hugging Face API key is available
+      if (!huggingFaceService.isApiKeyAvailable()) {
+        return res.status(500).json({
+          success: false,
+          message: 'Research Companion service is not available (API key not configured)'
+        });
+      }
+      
+      const conversation = await huggingFaceService.createConversation(
+        userId ? parseInt(userId) : undefined,
+        reportId ? parseInt(reportId) : undefined,
+        title || "New Conversation"
+      );
+      
+      res.status(201).json({ success: true, conversation });
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+  
+  // Get messages from a conversation
+  app.get('/api/chat/conversations/:id/messages', async (req: Request, res: Response) => {
+    try {
+      const conversationId = parseInt(req.params.id);
+      if (isNaN(conversationId)) {
+        return res.status(400).json({ success: false, message: 'Invalid conversation ID' });
+      }
+      
+      const messages = await huggingFaceService.getConversationMessages(conversationId);
+      res.json({ success: true, messages });
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+  
+  // Send a message to the Research Companion and get a response
+  app.post('/api/chat/conversations/:id/messages', async (req: Request, res: Response) => {
+    try {
+      const conversationId = parseInt(req.params.id);
+      if (isNaN(conversationId)) {
+        return res.status(400).json({ success: false, message: 'Invalid conversation ID' });
+      }
+      
+      const { message } = req.body;
+      if (!message) {
+        return res.status(400).json({ success: false, message: 'Message content is required' });
+      }
+      
+      // Check if Hugging Face API key is available
+      if (!huggingFaceService.isApiKeyAvailable()) {
+        return res.status(500).json({
+          success: false,
+          message: 'Research Companion service is not available (API key not configured)'
+        });
+      }
+      
+      const response = await huggingFaceService.generateConversationResponse(
+        conversationId,
+        message
+      );
+      
+      res.json({ 
+        success: true, 
+        message: response
+      });
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
