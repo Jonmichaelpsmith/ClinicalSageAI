@@ -1,12 +1,14 @@
+
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { FileText, Database, Clock, Upload, FileType, BarChart3 } from "lucide-react";
+import { FileText, Database, Clock, Upload, FileType, BarChart3, Flask, Microscope, Pill } from "lucide-react";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { QuickAction } from "@/components/dashboard/QuickAction";
 import { ReportCard } from "@/components/reports/ReportCard";
 import { ReportDetailModal } from "@/components/reports/ReportDetailModal";
 import { type CsrReport, type Stats } from "@/lib/types";
+import { motion } from "framer-motion";
 
 export default function Dashboard() {
   const [, navigate] = useLocation();
@@ -25,7 +27,20 @@ export default function Dashboard() {
   const recentReports = reports?.slice(0, 5) || [];
   
   return (
-    <div className="space-y-6">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="space-y-6"
+    >
+      {/* Welcome Banner */}
+      <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg shadow p-6 border border-slate-200">
+        <h2 className="text-2xl font-bold text-slate-800 mb-2">Welcome to TrialSage</h2>
+        <p className="text-slate-600 max-w-2xl">
+          Your AI-powered platform for clinical study report intelligence. Accelerate drug discovery insights from your biotech's clinical trial data.
+        </p>
+      </div>
+      
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {isLoadingStats ? (
@@ -44,22 +59,22 @@ export default function Dashboard() {
               iconColor="text-blue-600" 
             />
             <StatsCard 
-              title="Processed CSRs" 
+              title="Trial Phases Analyzed" 
               value={stats?.processedReports || 0} 
-              icon={<FileType />} 
+              icon={<Flask />} 
               iconBgColor="bg-green-100" 
               iconColor="text-green-600" 
-              trend={{ value: "+2 this week", up: true }}
+              trend={{ value: "+2 this month", up: true }}
             />
             <StatsCard 
-              title="Data Points Extracted" 
+              title="Biomarker Insights" 
               value={stats?.dataPointsExtracted || 0} 
-              icon={<Database />} 
+              icon={<Microscope />} 
               iconBgColor="bg-indigo-100" 
               iconColor="text-indigo-600" 
             />
             <StatsCard 
-              title="Processing Time Saved" 
+              title="Analysis Time Saved" 
               value={`${stats?.processingTimeSaved || 0} hrs`} 
               icon={<Clock />} 
               iconBgColor="bg-purple-100" 
@@ -70,9 +85,14 @@ export default function Dashboard() {
       </div>
       
       {/* Recent Reports */}
-      <div className="bg-white rounded-lg shadow border border-slate-200">
+      <motion.div 
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.2, duration: 0.5 }}
+        className="bg-white rounded-lg shadow border border-slate-200"
+      >
         <div className="px-6 py-5 border-b border-slate-200">
-          <h3 className="text-lg font-medium text-slate-800">Recent CSR Reports</h3>
+          <h3 className="text-lg font-medium text-slate-800">Recent Clinical Study Reports</h3>
         </div>
         <div className="overflow-x-auto">
           {isLoadingReports ? (
@@ -82,7 +102,7 @@ export default function Dashboard() {
             </div>
           ) : reports?.length === 0 ? (
             <div className="p-6 text-center">
-              <p className="text-slate-600">No CSR reports available.</p>
+              <p className="text-slate-600">No clinical study reports available.</p>
               <button 
                 onClick={() => navigate('/upload')}
                 className="mt-2 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
@@ -94,7 +114,7 @@ export default function Dashboard() {
             <table className="min-w-full divide-y divide-slate-200">
               <thead className="bg-slate-50">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Title</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Trial Title</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Sponsor</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Indication</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Phase</th>
@@ -122,33 +142,33 @@ export default function Dashboard() {
             onClick={() => navigate('/reports')}
             className="text-sm font-medium text-primary hover:text-primary-dark"
           >
-            View all reports →
+            View all clinical trial reports →
           </button>
         </div>
-      </div>
+      </motion.div>
       
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <QuickAction 
           title="Upload New CSR" 
-          description="Upload a new CSR report for AI-powered processing and analysis." 
+          description="Upload a new clinical study report for AI-powered processing and analysis." 
           icon={<Upload />}
           buttonText="Upload CSR" 
           onClick={() => navigate('/upload')}
         />
         <QuickAction 
-          title="Generate Protocol" 
-          description="Use AI to generate a protocol based on similar historical CSRs." 
+          title="Generate Trial Protocol" 
+          description="Use AI to generate protocols based on similar trials in your therapeutic area." 
           icon={<FileText />}
           buttonText="Generate Protocol" 
           onClick={() => {}}
           buttonClassName="bg-accent hover:bg-accent-dark focus:ring-accent"
         />
         <QuickAction 
-          title="Compare CSRs" 
-          description="Compare multiple CSRs to identify patterns and differences." 
+          title="Analyze Efficacy Trends" 
+          description="Compare biomarkers and endpoints across multiple trials in your therapeutic area." 
           icon={<BarChart3 />}
-          buttonText="Compare CSRs" 
+          buttonText="Compare Trials" 
           onClick={() => {}}
           buttonClassName="bg-secondary hover:bg-secondary-dark focus:ring-secondary"
         />
@@ -161,6 +181,6 @@ export default function Dashboard() {
           onClose={() => setSelectedReport(null)}
         />
       )}
-    </div>
+    </motion.div>
   );
 }
