@@ -1,0 +1,64 @@
+# Replit-Friendly Research Companion Chatbot using Hugging Face Inference API
+
+import os
+import requests
+
+# Make sure to set this securely in your Replit environment variables
+HUGGINGFACE_API_KEY = os.getenv("HF_API_KEY")
+MODEL_URL = "https://api-inference.huggingface.co/models/mistralai/Mixtral-8x7B-Instruct-v0.1"
+
+HEADERS = {
+    "Authorization": f"Bearer {HUGGINGFACE_API_KEY}"
+}
+
+# Contextual memory (can be extended or stored in a database for persistence)
+conversation_history = []
+
+# Persona and system prompt
+persona_prompt = """
+You are a helpful and friendly research assistant named Sage. You help scientists and biotech founders navigate clinical trial data, understand regulatory precedent, and brainstorm trial designs.
+You are knowledgeable, supportive, and clear. Be brief but insightful.
+"""
+
+# Function to query the Hugging Face-hosted LLM
+def query_model(prompt):
+    response = requests.post(
+        MODEL_URL,
+        headers=HEADERS,
+        json={
+            "inputs": prompt,
+            "parameters": {
+                "max_new_tokens": 400,
+                "temperature": 0.5
+            }
+        }
+    )
+    try:
+        output = response.json()
+        return output[0]['generated_text']
+    except Exception as e:
+        return f"[Error]: {e}"
+
+# Run a loop for a text-based chat interface
+if __name__ == "__main__":
+    print("👋 Welcome to TrialSage – Your AI Research Companion!")
+    print("Ask me anything about clinical trials, endpoints, protocols, or regulations. Type 'exit' to quit.\n")
+
+    while True:
+        user_input = input("You: ")
+        if user_input.lower() in ["exit", "quit"]:
+            print("Goodbye! ✨")
+            break
+
+        # Add to conversation memory
+        conversation_history.append(f"User: {user_input}")
+
+        # Combine persona, history, and latest input
+        context = persona_prompt + "\n" + "\n".join(conversation_history[-4:]) + "\nSage:"
+
+        # Query the model
+        ai_response = query_model(context)
+
+        # Display and store response
+        print(f"Sage: {ai_response}\n")
+        conversation_history.append(f"Sage: {ai_response}")

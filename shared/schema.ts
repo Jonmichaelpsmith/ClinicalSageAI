@@ -2,8 +2,12 @@ import { pgTable, pgEnum, text, serial, integer, jsonb, timestamp, boolean, date
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
+import { vector } from "pgvector/drizzle-orm";
 
 // TABLES
+
+// Chat message role enum
+export const messageRoleEnum = pgEnum("message_role", ["user", "assistant", "system"]);
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
@@ -86,7 +90,8 @@ export const csrSegments = pgTable(
     segmentType: text("segment_type").notNull(), // e.g., "methods", "results", "discussion"
     content: text("content").notNull(),
     pageNumbers: text("page_numbers"),
-    // embedding vector will be added later with pgvector extension
+    // Vector embedding for semantic search
+    embedding: vector("embedding", { dimensions: 512 }),
     extractedEntities: jsonb("extracted_entities"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   }
@@ -106,10 +111,41 @@ export const medicalTerms = pgTable(
   }
 );
 
+// AI Research Assistant Chat Conversations
+export const chatConversations = pgTable(
+  "chat_conversations",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id").references(() => users.id),
+    title: text("title").notNull().default("New Conversation"),
+    context: text("context"), // Any specific context for the conversation (e.g., report ID, indication)
+    reportId: integer("report_id").references(() => csrReports.id),
+    created: timestamp("created").defaultNow(),
+    updated: timestamp("updated").defaultNow(),
+    active: boolean("active").default(true),
+  }
+);
+
+// Individual messages in chat conversations
+export const chatMessages = pgTable(
+  "chat_messages",
+  {
+    id: serial("id").primaryKey(),
+    conversationId: integer("conversation_id").notNull().references(() => chatConversations.id, {
+      onDelete: "cascade",
+    }),
+    role: messageRoleEnum("role").notNull(),
+    content: text("content").notNull(),
+    timestamp: timestamp("timestamp").defaultNow(),
+    metadata: jsonb("metadata"), // Any additional data like referenced documents, tokens used, etc.
+  }
+);
+
 // Define relations for better TypeScript inference
 export const csrReportsRelations = relations(csrReports, ({ many }) => ({
   details: many(csrDetails),
   segments: many(csrSegments),
+  conversations: many(chatConversations),
 }));
 
 export const csrDetailsRelations = relations(csrDetails, ({ one }) => ({
@@ -123,6 +159,25 @@ export const csrSegmentsRelations = relations(csrSegments, ({ one }) => ({
   report: one(csrReports, {
     fields: [csrSegments.reportId],
     references: [csrReports.id],
+  }),
+}));
+
+export const chatConversationsRelations = relations(chatConversations, ({ one, many }) => ({
+  user: one(users, {
+    fields: [chatConversations.userId],
+    references: [users.id],
+  }),
+  report: one(csrReports, {
+    fields: [chatConversations.reportId],
+    references: [csrReports.id],
+  }),
+  messages: many(chatMessages),
+}));
+
+export const chatMessagesRelations = relations(chatMessages, ({ one }) => ({
+  conversation: one(chatConversations, {
+    fields: [chatMessages.conversationId],
+    references: [chatConversations.id],
   }),
 }));
 
@@ -184,6 +239,21 @@ export const insertCsrSegmentSchema = createInsertSchema(csrSegments).pick({
   extractedEntities: true,
 });
 
+export const insertChatConversationSchema = createInsertSchema(chatConversations).pick({
+  userId: true,
+  title: true,
+  context: true,
+  reportId: true,
+  active: true,
+});
+
+export const insertChatMessageSchema = createInsertSchema(chatMessages).pick({
+  conversationId: true,
+  role: true,
+  content: true,
+  metadata: true,
+});
+
 // TYPES
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -197,3 +267,9 @@ export type CsrDetails = typeof csrDetails.$inferSelect;
 
 export type InsertCsrSegment = z.infer<typeof insertCsrSegmentSchema>;
 export type CsrSegment = typeof csrSegments.$inferSelect;
+
+export type InsertChatConversation = z.infer<typeof insertChatConversationSchema>;
+export type ChatConversation = typeof chatConversations.$inferSelect;
+
+export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
+export type ChatMessage = typeof chatMessages.$inferSelect;
