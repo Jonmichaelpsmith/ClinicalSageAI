@@ -32,6 +32,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/hooks/use-toast";
 import { CsrReport } from "@/lib/types";
 
 // Trial comparison card component
@@ -689,10 +690,11 @@ export default function Analytics() {
       </div>
       
       <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList className="grid grid-cols-5 w-full">
+        <TabsList className="grid grid-cols-6 w-full">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="predictive">Predictive Analysis</TabsTrigger>
           <TabsTrigger value="compare">Trial Comparison</TabsTrigger>
+          <TabsTrigger value="virtual">Virtual Trial</TabsTrigger>
           <TabsTrigger value="design">Study Design</TabsTrigger>
           <TabsTrigger value="modeling">Statistical Modeling</TabsTrigger>
         </TabsList>
@@ -750,6 +752,21 @@ export default function Analytics() {
             <CardContent>
               <div className="h-64 w-full bg-slate-50 rounded-md flex items-center justify-center">
                 <span className="text-slate-400">Comparative efficacy visualization coming soon</span>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="virtual" className="space-y-4">
+          <VirtualTrialSimulationCard />
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg">Historical Data Analysis</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-64 w-full bg-slate-50 rounded-md flex items-center justify-center">
+                <span className="text-slate-400">Historical data visualization coming soon</span>
               </div>
             </CardContent>
           </Card>
