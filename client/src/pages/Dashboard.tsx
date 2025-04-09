@@ -252,6 +252,21 @@ const Dashboard = () => {
                         <ArrowRight className="h-3 w-3 mr-2" /> Explore
                       </Button>
                     </div>
+                    
+                    <div className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer">
+                      <div className="flex items-start gap-2 mb-2">
+                        <FileText className="h-5 w-5 text-blue-600 mt-0.5" />
+                        <div>
+                          <h3 className="font-medium">CSR Extraction Guide</h3>
+                          <p className="text-sm text-slate-500">Learn how to effectively extract and analyze data from Clinical Study Reports</p>
+                        </div>
+                      </div>
+                      <Link href="/csr-extraction-guide">
+                        <Button size="sm" variant="ghost" className="w-full justify-start pl-2 mt-2">
+                          <ArrowRight className="h-3 w-3 mr-2" /> View Guide
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
                 </div>
               </CardContent>
