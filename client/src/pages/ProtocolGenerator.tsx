@@ -55,48 +55,44 @@ export default function ProtocolGenerator() {
   
   const indications = reports ? Array.from(new Set(reports.map((r: CsrReport) => r.indication))) : [];
   
-  const handleGenerateProtocol = () => {
+  const handleGenerateProtocol = async () => {
     setIsGenerating(true);
     
-    // Simulate API call with timeout
-    setTimeout(() => {
-      setGeneratedProtocol({
-        title: `Phase ${phase} Study of Investigational Treatment in ${indication}`,
-        sections: [
-          {
-            name: "Study Design",
-            content: `This is a multicenter, randomized, double-blind, placebo-controlled Phase ${phase} study to evaluate the efficacy and safety of the investigational treatment in patients with ${indication}.`,
-            similarTrials: ["NCT02453789", "NCT03257267"],
-            confidenceScore: 92
-          },
-          {
-            name: "Objectives",
-            content: "Primary Objective: To evaluate the efficacy of the investigational treatment compared to placebo in patients with " + indication + ".\n\nSecondary Objectives:\n- To evaluate the safety and tolerability\n- To assess pharmacokinetics\n- To evaluate quality of life measures",
-            similarTrials: ["NCT02856984", "NCT03126786"],
-            confidenceScore: 88
-          },
-          {
-            name: "Endpoints",
-            content: `Primary Endpoint: ${primaryEndpoint || "Change from baseline in disease activity score at Week 24"}\n\nSecondary Endpoints:\n- Safety parameters including adverse events and laboratory abnormalities\n- Time to clinical response\n- Patient-reported outcomes`,
-            similarTrials: ["NCT02453789", "NCT03564054"],
-            confidenceScore: 90
-          },
-          {
-            name: "Eligibility Criteria",
-            content: `Inclusion Criteria:\n- Adults 18-75 years of age\n- Confirmed diagnosis of ${indication}\n- Disease duration of at least 6 months\n- Inadequate response to standard therapy\n\nExclusion Criteria:\n- History of malignancy within 5 years\n- Severe infections requiring hospitalization\n- Pregnancy or breastfeeding\n- Participation in another clinical trial within 30 days`,
-            similarTrials: ["NCT03257267", "NCT02856984"],
-            confidenceScore: 85
-          },
-          {
-            name: "Statistical Considerations",
-            content: `Sample Size: ${populationSize || "300"} patients, providing 90% power to detect a treatment difference of 20% using a two-sided alpha of 0.05.\n\nAnalysis Plan:\n- The primary efficacy analysis will be performed on the Intent-to-Treat (ITT) population\n- Missing data will be handled using multiple imputation\n- Sensitivity analyses will include BOCF and LOCF approaches`,
-            similarTrials: ["NCT03126786", "NCT03564054"],
-            confidenceScore: 87
-          }
-        ]
+    try {
+      // Convert populationSize to number if provided
+      const populationSizeParam = populationSize ? parseInt(populationSize) : undefined;
+
+      const response = await fetch('/api/protocol-generator', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          indication,
+          phase,
+          primaryEndpoint,
+          populationSize: populationSizeParam,
+          additionalContext
+        }),
       });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate protocol');
+      }
+
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.message || 'Failed to generate protocol');
+      }
+      
+      setGeneratedProtocol(data.protocol);
+    } catch (error) {
+      console.error('Error generating protocol:', error);
+      // Show a toast or some error message
+    } finally {
       setIsGenerating(false);
-    }, 3500);
+    }
   };
   
   const downloadProtocol = () => {
