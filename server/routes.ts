@@ -4,6 +4,12 @@ import { storage } from "./storage";
 import multer from "multer";
 import { validatePdfFile, savePdfFile, getPdfMetadata, processPdfFile } from "./pdf-processor";
 import { analyzeCsrContent, generateCsrSummary } from "./openai-service";
+import { 
+  generateAnalyticsSummary, 
+  generatePredictiveAnalysis, 
+  compareTrialsAnalysis, 
+  analyzeCompetitorsForSponsor 
+} from "./analytics-service";
 import path from "path";
 import fs from "fs";
 import { insertCsrReportSchema } from "@shared/schema";
@@ -181,6 +187,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
         dataPointsExtracted: processedReports * 150, // Just a placeholder calculation
         processingTimeSaved: processedReports * 10 // Assuming 10 hours saved per report
       });
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+  
+  // Advanced Analytics API Endpoints
+  
+  // Get comprehensive analytics summary
+  app.get('/api/analytics/summary', async (req: Request, res: Response) => {
+    try {
+      const summary = await generateAnalyticsSummary();
+      res.json(summary);
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+  
+  // Get predictive analysis
+  app.get('/api/analytics/predictive', async (req: Request, res: Response) => {
+    try {
+      const indication = req.query.indication as string;
+      const analysis = await generatePredictiveAnalysis(indication);
+      res.json(analysis);
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+  
+  // Compare two trials
+  app.get('/api/analytics/compare', async (req: Request, res: Response) => {
+    try {
+      const trial1Id = parseInt(req.query.trial1 as string);
+      const trial2Id = parseInt(req.query.trial2 as string);
+      
+      if (isNaN(trial1Id) || isNaN(trial2Id)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid trial IDs provided'
+        });
+      }
+      
+      const comparison = await compareTrialsAnalysis(trial1Id, trial2Id);
+      
+      if (!comparison) {
+        return res.status(404).json({
+          success: false,
+          message: 'Unable to compare the specified trials'
+        });
+      }
+      
+      res.json(comparison);
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+  
+  // Analyze competitors for a specific sponsor
+  app.get('/api/analytics/competitors/:sponsor', async (req: Request, res: Response) => {
+    try {
+      const sponsor = req.params.sponsor;
+      if (!sponsor) {
+        return res.status(400).json({
+          success: false,
+          message: 'Sponsor name is required'
+        });
+      }
+      
+      const competitors = await analyzeCompetitorsForSponsor(sponsor);
+      res.json(competitors);
     } catch (err) {
       errorHandler(err as Error, res);
     }
