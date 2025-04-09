@@ -2,10 +2,10 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { 
-  BarChart3, PieChart, LineChart, Microscope, Pill, Activity, 
+  BarChart3, PieChart as PieChartIcon, LineChart, Microscope, Pill, Activity, 
   Beaker, Dna, TrendingUp, Search, BrainCircuit, ArrowUpDown, 
-  Lightbulb, Users, Flag, FileSymlink, 
-  CheckCircle, AlertCircle, BarChart2
+  Lightbulb, Users, Flag, FileSymlink, ChevronUp, ChevronDown,
+  CheckCircle, AlertCircle, BarChart2, FlaskConical
 } from "lucide-react";
 import { motion } from "framer-motion";
 import {
@@ -32,6 +32,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { 
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger
+} from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import { CsrReport } from "@/lib/types";
 
@@ -391,6 +397,20 @@ function AnalyticsSummaryCard({ isLoading = false }) {
   );
 }
 
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  Legend,
+  ResponsiveContainer,
+  PieChart as RechartsPieChart,
+  Pie,
+  Cell
+} from 'recharts';
+
 // Virtual trial simulation card component
 function VirtualTrialSimulationCard() {
   const [isLoading, setIsLoading] = useState(false);
@@ -400,7 +420,14 @@ function VirtualTrialSimulationCard() {
   const [duration, setDuration] = useState("");
   const [dropoutRate, setDropoutRate] = useState("");
   const [simulation, setSimulation] = useState<any>(null);
-
+  
+  // Additional population characteristics
+  const [ageRange, setAgeRange] = useState<[number, number]>([18, 65]);
+  const [gender, setGender] = useState<string>("both");
+  const [priorTreatment, setPriorTreatment] = useState<string>("");
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  
+  const { toast } = useToast();
   const { data: reports } = useQuery({
     queryKey: ['/api/reports'],
   });
@@ -408,6 +435,15 @@ function VirtualTrialSimulationCard() {
   const indications = reports ? Array.from(new Set(reports.map((r: CsrReport) => r.indication))) : [];
   
   const handleSimulate = async () => {
+    if (!indication) {
+      toast({
+        title: "Missing Information",
+        description: "Please select an indication/therapeutic area.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setIsLoading(true);
     try {
       const response = await fetch('/api/analytics/virtual-trial', {
@@ -421,6 +457,11 @@ function VirtualTrialSimulationCard() {
           sampleSize: sampleSize || undefined,
           duration: duration || undefined,
           dropoutRate: dropoutRate || undefined,
+          populationCharacteristics: {
+            ageRange: ageRange,
+            gender: gender,
+            priorTreatment: priorTreatment || undefined,
+          }
         }),
       });
       
@@ -429,12 +470,89 @@ function VirtualTrialSimulationCard() {
       }
       
       const data = await response.json();
-      setSimulation(data.simulation);
+      if (data.success) {
+        setSimulation(data.simulation);
+        toast({
+          title: "Simulation Complete",
+          description: "Virtual trial simulation results are ready to view.",
+        });
+      } else {
+        toast({
+          title: "Simulation Error",
+          description: data.message || "Failed to run simulation. Please try again.",
+          variant: "destructive"
+        });
+      }
     } catch (error) {
       console.error('Error simulating virtual trial:', error);
+      toast({
+        title: "Simulation Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive"
+      });
     } finally {
       setIsLoading(false);
     }
+  };
+  
+  // Prepare chart data from simulation results
+  const prepareBarChartData = () => {
+    if (!simulation) return [];
+    
+    return [
+      {
+        name: 'Effect Size',
+        value: simulation.predictedOutcome.effectSize,
+        lowerCI: simulation.confidenceInterval[0],
+        upperCI: simulation.confidenceInterval[1],
+        fill: '#10b981' // green
+      },
+      {
+        name: 'Success Prob.',
+        value: simulation.successProbability,
+        fill: '#3b82f6' // blue
+      },
+      {
+        name: 'Power',
+        value: simulation.predictedOutcome.powerEstimate,
+        fill: '#8b5cf6' // purple
+      }
+    ];
+  };
+  
+  const preparePieChartData = () => {
+    if (!simulation) return [];
+    
+    return [
+      {
+        name: 'Success Probability',
+        value: simulation.successProbability,
+        fill: '#3b82f6' // blue
+      },
+      {
+        name: 'Failure Probability',
+        value: 1 - simulation.successProbability,
+        fill: '#f43f5e' // rose
+      }
+    ];
+  };
+  
+  const prepareRiskFactorsData = () => {
+    if (!simulation) return [];
+    
+    return simulation.riskFactors.map((factor: any) => ({
+      name: factor.factor,
+      risk: factor.risk === 'High' ? 0.9 : factor.risk === 'Medium' ? 0.5 : 0.2,
+      riskLabel: factor.risk,
+      impact: factor.impact,
+      fill: factor.risk === 'High' ? '#ef4444' : factor.risk === 'Medium' ? '#f59e0b' : '#94a3b8'
+    }));
+  };
+  
+  const RISK_COLORS = {
+    High: '#ef4444',
+    Medium: '#f59e0b',
+    Low: '#94a3b8'
   };
   
   return (
@@ -451,9 +569,23 @@ function VirtualTrialSimulationCard() {
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Therapeutic Area
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Therapeutic Area
+              </label>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="text-blue-500 cursor-help text-sm">
+                      <Search className="h-3.5 w-3.5" />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p>The medical condition or disease being targeted in the clinical trial. Choose from historical indications in the database.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
             <Select value={indication} onValueChange={setIndication}>
               <SelectTrigger>
                 <SelectValue placeholder="Select indication" />
@@ -468,9 +600,23 @@ function VirtualTrialSimulationCard() {
             </Select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Primary Endpoint
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Primary Endpoint
+              </label>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="text-blue-500 cursor-help text-sm">
+                      <Search className="h-3.5 w-3.5" />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p>The main outcome measure that determines trial success. Examples: "Change in HbA1c from baseline", "ADAS-Cog score at Week 24", "Progression-free survival".</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
             <Input 
               placeholder="e.g., Change in ADAS-Cog at Week 24" 
               value={endpoint}
@@ -481,9 +627,23 @@ function VirtualTrialSimulationCard() {
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Sample Size
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Sample Size
+              </label>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="text-blue-500 cursor-help text-sm">
+                      <Search className="h-3.5 w-3.5" />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p>Total number of participants across all trial arms. Larger sample sizes increase statistical power but also increase costs and recruitment challenges.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
             <Input 
               type="number"
               placeholder="e.g., 300" 
@@ -492,9 +652,23 @@ function VirtualTrialSimulationCard() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Duration (months)
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Duration (months)
+              </label>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="text-blue-500 cursor-help text-sm">
+                      <Search className="h-3.5 w-3.5" />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p>Total treatment duration in months. This affects the ability to detect treatment effects that develop over time, but also increases costs and dropout rates.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
             <Input 
               type="number"
               placeholder="e.g., 18" 
@@ -503,27 +677,160 @@ function VirtualTrialSimulationCard() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Dropout Rate
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Dropout Rate
+              </label>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="text-blue-500 cursor-help text-sm">
+                      <Search className="h-3.5 w-3.5" />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p>Expected percentage (0-100%) of participants who will not complete the trial. Higher dropout rates reduce statistical power and may introduce bias.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
             <Input 
               type="number"
-              placeholder="e.g., 0.15 (15%)" 
+              placeholder="e.g., 15" 
               value={dropoutRate}
               onChange={(e) => setDropoutRate(e.target.value)}
-              step="0.01"
+              step="1"
               min="0"
-              max="0.5"
+              max="100"
             />
           </div>
         </div>
+        
+        <div className="mb-4">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setShowAdvanced(!showAdvanced)}
+            className="w-full"
+          >
+            {showAdvanced ? 'Hide' : 'Show'} Advanced Parameters
+            {showAdvanced ? <ChevronUp className="ml-2 h-4 w-4" /> : <ChevronDown className="ml-2 h-4 w-4" />}
+          </Button>
+        </div>
+        
+        {showAdvanced && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 p-3 bg-slate-50 rounded-md">
+            <div>
+              <div className="flex items-center justify-between">
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Age Range
+                </label>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="text-blue-500 cursor-help text-sm">
+                        <Search className="h-3.5 w-3.5" />
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      <p>Min and max age of trial participants. Age restrictions can affect recruitment rate and generalizability of results.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Input 
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={ageRange[0]}
+                  onChange={(e) => setAgeRange([parseInt(e.target.value), ageRange[1]])}
+                  className="w-1/2"
+                />
+                <span>to</span>
+                <Input 
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={ageRange[1]}
+                  onChange={(e) => setAgeRange([ageRange[0], parseInt(e.target.value)])}
+                  className="w-1/2"
+                />
+              </div>
+            </div>
+            <div>
+              <div className="flex items-center justify-between">
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Gender Distribution
+                </label>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="text-blue-500 cursor-help text-sm">
+                        <Search className="h-3.5 w-3.5" />
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      <p>Gender enrollment requirements. Some conditions exhibit different characteristics based on gender.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+              <Select value={gender} onValueChange={setGender}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select gender distribution" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="both">All genders</SelectItem>
+                  <SelectItem value="male">Male only</SelectItem>
+                  <SelectItem value="female">Female only</SelectItem>
+                  <SelectItem value="equal">Equal distribution</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <div className="flex items-center justify-between">
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Prior Treatment
+                </label>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="text-blue-500 cursor-help text-sm">
+                        <Search className="h-3.5 w-3.5" />
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      <p>Previous treatments required or excluded. This affects the patient population and potential treatment effect size.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+              <Input 
+                placeholder="e.g., Failed 1L therapy" 
+                value={priorTreatment}
+                onChange={(e) => setPriorTreatment(e.target.value)}
+              />
+            </div>
+          </div>
+        )}
         
         <Button 
           onClick={handleSimulate} 
           className="w-full mb-4"
           disabled={!indication || isLoading}
         >
-          {isLoading ? 'Simulating Trial...' : 'Run Virtual Trial Simulation'}
+          {isLoading ? (
+            <>
+              <span className="animate-spin mr-2">⏳</span>
+              Simulating Trial...
+            </>
+          ) : (
+            <>
+              <FlaskConical className="mr-2 h-4 w-4" />
+              Run Virtual Trial Simulation
+            </>
+          )}
         </Button>
         
         {isLoading ? (
@@ -531,61 +838,191 @@ function VirtualTrialSimulationCard() {
             <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary"></div>
           </div>
         ) : simulation ? (
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div className="p-4 bg-blue-50 rounded-md">
               <h4 className="font-medium mb-2">Simulation Summary</h4>
               <p className="text-sm text-slate-700">{simulation.description}</p>
             </div>
             
+            {/* Results Visualization */}
+            <div className="bg-white p-4 rounded-md shadow-sm border">
+              <h4 className="font-medium mb-4 text-center">Key Outcome Metrics</h4>
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={prepareBarChartData()} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis domain={[0, 1]} tickFormatter={(value) => `${(value * 100).toFixed(0)}%`} />
+                  <RechartsTooltip 
+                    formatter={(value: any) => [`${(value * 100).toFixed(1)}%`, 'Value']}
+                    labelFormatter={(label) => `${label}`}
+                  />
+                  <Bar dataKey="value" name="Value">
+                    {prepareBarChartData().map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-3 bg-green-50 rounded-md text-center">
-                <div className="text-sm text-green-600 mb-1">Effect Size</div>
+              <div className="p-3 bg-green-50 rounded-md">
+                <div className="text-sm text-green-600 mb-1 font-medium">Effect Size</div>
                 <div className="text-xl font-bold text-green-700">{simulation.predictedOutcome.effectSize}</div>
-                <div className="text-xs text-green-600">
-                  CI: {simulation.confidenceInterval[0]} - {simulation.confidenceInterval[1]}
+                <div className="text-xs text-green-600 mt-1">
+                  95% CI: {simulation.confidenceInterval[0]} - {simulation.confidenceInterval[1]}
+                </div>
+                <div className="text-xs text-slate-500 mt-2">
+                  Shows the magnitude of the treatment effect. Higher is generally better, but must be interpreted in context of the specific endpoint.
                 </div>
               </div>
-              <div className="p-3 bg-blue-50 rounded-md text-center">
-                <div className="text-sm text-blue-600 mb-1">Success Probability</div>
-                <div className="text-xl font-bold text-blue-700">{simulation.successProbability * 100}%</div>
-                <div className="text-xs text-blue-600">
-                  Power: {simulation.predictedOutcome.powerEstimate * 100}%
+              <div className="p-3 bg-blue-50 rounded-md">
+                <div className="text-sm text-blue-600 mb-1 font-medium">Success Probability</div>
+                <div className="flex items-center justify-between">
+                  <div className="text-xl font-bold text-blue-700">{Math.round(simulation.successProbability * 100)}%</div>
+                  <div className="h-10 w-10">
+                    <RechartsPieChart width={40} height={40}>
+                      <Pie
+                        data={preparePieChartData()}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={12}
+                        outerRadius={20}
+                        dataKey="value"
+                        startAngle={90}
+                        endAngle={-270}
+                      >
+                        {preparePieChartData().map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.fill} />
+                        ))}
+                      </Pie>
+                    </RechartsPieChart>
+                  </div>
+                </div>
+                <div className="text-xs text-blue-600 mt-1">
+                  Statistical Power: {Math.round(simulation.predictedOutcome.powerEstimate * 100)}%
+                </div>
+                <div className="text-xs text-slate-500 mt-2">
+                  The estimated probability that this trial will achieve statistical significance.
                 </div>
               </div>
-              <div className="p-3 bg-purple-50 rounded-md text-center">
-                <div className="text-sm text-purple-600 mb-1">P-Value</div>
-                <div className="text-xl font-bold text-purple-700">{simulation.predictedOutcome.pValue}</div>
+              <div className="p-3 bg-purple-50 rounded-md">
+                <div className="text-sm text-purple-600 mb-1 font-medium">Statistical Significance</div>
+                <div className="text-xl font-bold text-purple-700">p = {simulation.predictedOutcome.pValue}</div>
+                <div className="text-xs text-purple-600 mt-1">
+                  {simulation.predictedOutcome.pValue < 0.05 ? 'Likely significant' : 'May not reach significance'}
+                </div>
+                <div className="text-xs text-slate-500 mt-2">
+                  Predicted p-value based on effect size and sample size. Values below 0.05 generally indicate statistical significance.
+                </div>
               </div>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-3 bg-amber-50 rounded-md text-center">
-                <div className="text-sm text-amber-600 mb-1">Time to Completion</div>
+              <div className="p-3 bg-amber-50 rounded-md">
+                <div className="text-sm text-amber-600 mb-1 font-medium">Time to Completion</div>
                 <div className="text-xl font-bold text-amber-700">{simulation.timeToCompletion} months</div>
+                <div className="grid grid-cols-5 gap-1 mt-3">
+                  {[...Array(Math.round(simulation.timeToCompletion))].slice(0, 10).map((_, i) => (
+                    <div 
+                      key={i} 
+                      className="h-1.5 bg-amber-400 rounded-full"
+                      style={{ opacity: 0.3 + (i * 0.7 / Math.min(10, Math.round(simulation.timeToCompletion))) }}
+                    ></div>
+                  ))}
+                </div>
+                <div className="text-xs text-slate-500 mt-2">
+                  Estimated time from trial start to database lock, including enrollment period.
+                </div>
               </div>
-              <div className="p-3 bg-rose-50 rounded-md text-center">
-                <div className="text-sm text-rose-600 mb-1">Estimated Cost</div>
+              <div className="p-3 bg-rose-50 rounded-md">
+                <div className="text-sm text-rose-600 mb-1 font-medium">Estimated Cost</div>
                 <div className="text-xl font-bold text-rose-700">${(simulation.costEstimate / 1000000).toFixed(1)}M</div>
+                <div className="flex items-center mt-1.5">
+                  <div className="text-xs text-rose-600">
+                    ~${Math.round(simulation.costEstimate / (parseInt(sampleSize) || simulation.predictedOutcome.sampleSize)).toLocaleString()} per patient
+                  </div>
+                </div>
+                <div className="text-xs text-slate-500 mt-2">
+                  Total estimated cost including startup, per-patient, and closeout costs.
+                </div>
               </div>
             </div>
             
             <div className="p-4 bg-slate-50 rounded-md">
-              <h4 className="font-medium mb-2">Key Risk Factors</h4>
+              <h4 className="font-medium mb-4 text-center">Risk Factor Analysis</h4>
+              
+              <ResponsiveContainer width="100%" height={230}>
+                <BarChart
+                  layout="vertical"
+                  data={prepareRiskFactorsData()}
+                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                >
+                  <XAxis type="number" domain={[0, 1]} tickFormatter={(value) => `${(value * 100).toFixed(0)}%`} />
+                  <YAxis type="category" dataKey="name" width={150} />
+                  <RechartsTooltip 
+                    formatter={(value: any, name: any, props: any) => {
+                      return [props.payload.riskLabel + ' Risk', props.payload.name];
+                    }}
+                    labelFormatter={() => ''}
+                  />
+                  <Bar dataKey="risk" name="Risk Level">
+                    {prepareRiskFactorsData().map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+              
+              <div className="space-y-2 mt-4">
+                {simulation.riskFactors.map((factor: any, idx: number) => (
+                  <div key={idx} className="text-sm">
+                    <div className="flex items-start">
+                      <Badge 
+                        variant={
+                          factor.risk === 'High' ? 'destructive' : 
+                          factor.risk === 'Medium' ? 'secondary' : 
+                          'outline'
+                        } 
+                        className="mt-0.5 mr-2"
+                      >
+                        {factor.risk}
+                      </Badge>
+                      <div>
+                        <span className="font-medium">{factor.factor}:</span> {factor.impact}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            {/* Mitigation Strategies - New Section */}
+            <div className="p-4 bg-indigo-50 rounded-md">
+              <h4 className="font-medium mb-2">Potential Mitigation Strategies</h4>
               <div className="space-y-2">
-                {simulation.riskFactors.map((factor, idx) => (
-                  <div key={idx} className="text-sm flex items-start">
-                    <Badge 
-                      variant={
-                        factor.risk === 'High' ? 'destructive' : 
-                        factor.risk === 'Medium' ? 'secondary' : 
-                        'outline'
-                      } 
-                      className="mt-0.5 mr-2"
-                    >
-                      {factor.risk}
-                    </Badge>
-                    <div>
-                      <span className="font-medium">{factor.factor}:</span> {factor.impact}
+                {simulation.riskFactors.filter((f: any) => f.risk === 'High' || f.risk === 'Medium').map((factor: any, idx: number) => (
+                  <div key={idx} className="text-sm">
+                    <div className="font-medium text-indigo-700">{factor.factor}:</div>
+                    <div className="ml-4 text-slate-700">
+                      {factor.factor.includes('Sample Size') && 
+                        "Consider increasing sample size or using adaptive design with interim analyses to optimize enrollment."
+                      }
+                      {factor.factor.includes('Effect Size') && 
+                        "Consider enrichment strategies to select patients more likely to respond to treatment."
+                      }
+                      {factor.factor.includes('Dropout') && 
+                        "Implement patient retention strategies, reduce visit burden, provide transportation assistance."
+                      }
+                      {factor.factor.includes('Endpoint') && 
+                        "Consider composite endpoints or validated surrogate markers with less variability."
+                      }
+                      {!factor.factor.includes('Sample Size') && 
+                       !factor.factor.includes('Effect Size') && 
+                       !factor.factor.includes('Dropout') && 
+                       !factor.factor.includes('Endpoint') && 
+                        "Review historical trials to identify strategies for addressing this risk factor."
+                      }
                     </div>
                   </div>
                 ))}
