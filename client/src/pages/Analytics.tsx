@@ -495,6 +495,107 @@ function VirtualTrialSimulationCard() {
     }
   };
   
+  // Function to download simulation results
+  const downloadSimulationResults = (format: 'csv' | 'json' | 'pdf') => {
+    if (!simulation) {
+      toast({
+        title: "No Simulation Data",
+        description: "Please run a simulation first before downloading results.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    try {
+      let content: string;
+      let fileName: string;
+      let mimeType: string;
+      
+      if (format === 'csv') {
+        // Create CSV content from simulation data
+        content = 'Parameter,Value\n';
+        content += `Indication,${indication}\n`;
+        content += `Primary Endpoint,${endpoint || 'Not specified'}\n`;
+        content += `Sample Size,${sampleSize || simulation.simulationParameters?.sampleSize || 'N/A'}\n`;
+        content += `Duration (months),${duration || simulation.timeToCompletion || 'N/A'}\n`;
+        content += `Dropout Rate,${dropoutRate || (simulation.simulationParameters?.dropoutRate * 100).toFixed(1) + '%' || 'N/A'}\n\n`;
+        
+        content += 'Results,Value\n';
+        content += `Effect Size,${simulation.predictedOutcome.effectSize}\n`;
+        content += `95% CI Lower,${simulation.confidenceInterval[0]}\n`;
+        content += `95% CI Upper,${simulation.confidenceInterval[1]}\n`;
+        content += `P-Value,${simulation.predictedOutcome.pValue}\n`;
+        content += `Power,${simulation.predictedOutcome.powerEstimate}\n`;
+        content += `Success Probability,${simulation.successProbability}\n`;
+        content += `Estimated Cost,$${(simulation.costEstimate / 1000000).toFixed(1)}M\n\n`;
+        
+        content += 'Risk Factor,Level,Impact\n';
+        simulation.riskFactors.forEach(factor => {
+          content += `${factor.factor},${factor.risk},${factor.impact}\n`;
+        });
+        
+        fileName = `virtual_trial_simulation_${new Date().toISOString().split('T')[0]}.csv`;
+        mimeType = 'text/csv';
+      } else if (format === 'json') {
+        // Create JSON content with simulation parameters and results
+        const exportData = {
+          parameters: {
+            indication,
+            endpoint,
+            sampleSize: sampleSize || simulation.simulationParameters?.sampleSize || 'N/A',
+            duration: duration || simulation.timeToCompletion || 'N/A',
+            dropoutRate: dropoutRate || simulation.simulationParameters?.dropoutRate || 'N/A',
+            population: {
+              ageRange,
+              gender,
+              priorTreatment: priorTreatment || 'N/A'
+            }
+          },
+          results: simulation
+        };
+        
+        content = JSON.stringify(exportData, null, 2);
+        fileName = `virtual_trial_simulation_${new Date().toISOString().split('T')[0]}.json`;
+        mimeType = 'application/json';
+      } else {
+        // PDF generation (in real implementation, this would use a PDF library)
+        toast({
+          title: "PDF Generation",
+          description: "PDF download is not fully implemented in this version. Please use CSV or JSON format.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Create a blob and download link
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      
+      // Clean up
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 100);
+      
+      toast({
+        title: "Download Complete",
+        description: `Simulation results have been downloaded as ${format.toUpperCase()} format.`,
+      });
+    } catch (error) {
+      console.error('Error downloading simulation results:', error);
+      toast({
+        title: "Download Failed",
+        description: "There was an error downloading the simulation results. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+  
   // Prepare chart data from simulation results
   const prepareBarChartData = () => {
     if (!simulation) return [];
@@ -840,8 +941,41 @@ function VirtualTrialSimulationCard() {
         ) : simulation ? (
           <div className="space-y-6">
             <div className="p-4 bg-blue-50 rounded-md">
-              <h4 className="font-medium mb-2">Simulation Summary</h4>
-              <p className="text-sm text-slate-700">{simulation.description}</p>
+              <div className="flex justify-between items-start">
+                <div>
+                  <h4 className="font-medium mb-2">Simulation Summary</h4>
+                  <p className="text-sm text-slate-700">{simulation.description}</p>
+                </div>
+                <div className="flex space-x-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => downloadSimulationResults('csv')}
+                    className="flex items-center"
+                  >
+                    <FileSymlink className="mr-1 h-4 w-4" />
+                    CSV
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => downloadSimulationResults('json')}
+                    className="flex items-center"
+                  >
+                    <FileSymlink className="mr-1 h-4 w-4" />
+                    JSON
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => downloadSimulationResults('pdf')}
+                    className="flex items-center"
+                  >
+                    <FileSymlink className="mr-1 h-4 w-4" />
+                    PDF
+                  </Button>
+                </div>
+              </div>
             </div>
             
             {/* Results Visualization */}
@@ -1135,6 +1269,82 @@ function StudyDesignAgentCard() {
 }
 
 export default function Analytics() {
+  // Function to download analytics data
+  const downloadAnalyticsData = async (format: 'csv' | 'json' | 'pdf') => {
+    try {
+      const { toast } = useToast();
+      
+      // Fetch analytics summary if not already loaded
+      const summary = await fetch('/api/analytics/summary').then(res => res.json());
+      
+      let content: string;
+      let fileName: string;
+      let mimeType: string;
+      
+      if (format === 'csv') {
+        // Create CSV content from analytics data
+        content = 'Category,Value\n';
+        content += `Total Reports,${summary.totalReports}\n`;
+        content += `Average Endpoints,${summary.averageEndpoints}\n`;
+        content += `Success Rate,${Math.round(summary.processingStats.successRate)}%\n`;
+        
+        // Add report distribution by indication
+        Object.entries(summary.reportsByIndication).forEach(([indication, count]) => {
+          content += `Indication: ${indication},${count}\n`;
+        });
+        
+        // Add report distribution by phase
+        Object.entries(summary.reportsByPhase).forEach(([phase, count]) => {
+          content += `Phase: ${phase},${count}\n`;
+        });
+        
+        fileName = `trialsage_analytics_${new Date().toISOString().split('T')[0]}.csv`;
+        mimeType = 'text/csv';
+      } else if (format === 'json') {
+        // Create JSON content
+        content = JSON.stringify(summary, null, 2);
+        fileName = `trialsage_analytics_${new Date().toISOString().split('T')[0]}.json`;
+        mimeType = 'application/json';
+      } else {
+        // PDF generation (in real implementation, this would use a PDF library)
+        toast({
+          title: "PDF Generation",
+          description: "PDF download is not fully implemented in this version. Please use CSV or JSON format.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Create a blob and download link
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      
+      // Clean up
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 100);
+      
+      toast({
+        title: "Download Complete",
+        description: `Analytics data has been downloaded as ${format.toUpperCase()} format.`,
+      });
+    } catch (error) {
+      console.error('Error downloading analytics data:', error);
+      const { toast } = useToast();
+      toast({
+        title: "Download Failed",
+        description: "There was an error downloading the analytics data. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0 }}
@@ -1150,8 +1360,39 @@ export default function Analytics() {
               Leverage powerful statistical models, predictive analytics, and AI-powered insights to optimize trial design and accelerate drug development.
             </p>
           </div>
-          <div className="flex-shrink-0">
-            <BarChart3 className="h-16 w-16 text-primary/70" />
+          <div className="flex flex-col gap-2">
+            <div className="flex-shrink-0">
+              <BarChart3 className="h-16 w-16 text-primary/70" />
+            </div>
+            <div className="flex space-x-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => downloadAnalyticsData('csv')}
+                className="flex items-center"
+              >
+                <FileSymlink className="mr-1 h-4 w-4" />
+                CSV
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => downloadAnalyticsData('json')}
+                className="flex items-center"
+              >
+                <FileSymlink className="mr-1 h-4 w-4" />
+                JSON
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => downloadAnalyticsData('pdf')}
+                className="flex items-center"
+              >
+                <FileSymlink className="mr-1 h-4 w-4" />
+                PDF
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -1271,6 +1512,7 @@ export default function Analytics() {
           <TabsTrigger value="virtual" className="rounded-md">Virtual Trial</TabsTrigger>
           <TabsTrigger value="design" className="rounded-md">Study Design</TabsTrigger>
           <TabsTrigger value="modeling" className="rounded-md">Statistical Modeling</TabsTrigger>
+          <TabsTrigger value="competitors" className="rounded-md">Competitor Analysis</TabsTrigger>
         </TabsList>
         
         <TabsContent value="overview" className="space-y-4">
@@ -1598,6 +1840,203 @@ export default function Analytics() {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+        
+        <TabsContent value="competitors" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center">
+                <Users className="h-5 w-5 text-indigo-600 mr-2" />
+                Competitive Intelligence Dashboard
+              </CardTitle>
+              <CardDescription>
+                Analyze competitor trials, identify market trends, and benchmark your clinical development program
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Select Sponsor for Analysis
+                </label>
+                <div className="flex space-x-2">
+                  <Select defaultValue="pfizer">
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select sponsor" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pfizer">Pfizer</SelectItem>
+                      <SelectItem value="novartis">Novartis</SelectItem>
+                      <SelectItem value="roche">Roche</SelectItem>
+                      <SelectItem value="merck">Merck</SelectItem>
+                      <SelectItem value="astrazeneca">AstraZeneca</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button>Analyze Competitors</Button>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div className="bg-white p-4 rounded-md border border-slate-200">
+                  <h4 className="text-md font-medium mb-3">Therapeutic Area Focus</h4>
+                  <div className="h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={[
+                            { name: 'Oncology', value: 35, fill: '#ec4899' },
+                            { name: 'Neurology', value: 20, fill: '#6366f1' },
+                            { name: 'Cardiology', value: 15, fill: '#ef4444' },
+                            { name: 'Immunology', value: 12, fill: '#8b5cf6' },
+                            { name: 'Infectious', value: 10, fill: '#10b981' },
+                            { name: 'Other', value: 8, fill: '#94a3b8' }
+                          ]}
+                          dataKey="value"
+                          nameKey="name"
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={80}
+                          label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                          labelLine={false}
+                        />
+                        <Legend verticalAlign="bottom" height={36} />
+                        <Tooltip formatter={(value) => `${value} trials`} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+                
+                <div className="bg-white p-4 rounded-md border border-slate-200">
+                  <h4 className="text-md font-medium mb-3">Trial Phase Distribution</h4>
+                  <div className="h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart 
+                        data={[
+                          { phase: 'Phase 1', count: 28, fill: '#94a3b8' },
+                          { phase: 'Phase 2', count: 35, fill: '#6366f1' },
+                          { phase: 'Phase 3', count: 22, fill: '#8b5cf6' },
+                          { phase: 'Phase 4', count: 15, fill: '#10b981' }
+                        ]}
+                        margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="phase" />
+                        <YAxis />
+                        <Tooltip formatter={(value) => [`${value} trials`, 'Count']} />
+                        <Bar dataKey="count" name="Number of Trials">
+                          {[
+                            { phase: 'Phase 1', fill: '#94a3b8' },
+                            { phase: 'Phase 2', fill: '#6366f1' },
+                            { phase: 'Phase 3', fill: '#8b5cf6' },
+                            { phase: 'Phase 4', fill: '#10b981' }
+                          ].map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.fill} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-white p-4 rounded-md border border-slate-200 mb-6">
+                <h4 className="text-md font-medium mb-3">Top Competitors by Clinical Trial Activity</h4>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart
+                    layout="vertical"
+                    data={[
+                      { name: 'Pfizer', trials: 85, fillColor: '#6366f1' },
+                      { name: 'Novartis', trials: 73, fillColor: '#8b5cf6' },
+                      { name: 'Roche', trials: 65, fillColor: '#ec4899' },
+                      { name: 'Merck', trials: 58, fillColor: '#10b981' },
+                      { name: 'AstraZeneca', trials: 52, fillColor: '#ef4444' },
+                      { name: 'Johnson & Johnson', trials: 45, fillColor: '#f59e0b' },
+                      { name: 'Sanofi', trials: 40, fillColor: '#06b6d4' }
+                    ]}
+                    margin={{ top: 20, right: 30, left: 100, bottom: 20 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis type="number" label={{ value: 'Number of Trials', position: 'bottom', offset: 0 }} />
+                    <YAxis type="category" dataKey="name" />
+                    <Tooltip formatter={(value) => [`${value} trials`, 'Trial Count']} />
+                    <Bar dataKey="trials" name="Active Trials">
+                      {[
+                        { name: 'Pfizer', fillColor: '#6366f1' },
+                        { name: 'Novartis', fillColor: '#8b5cf6' },
+                        { name: 'Roche', fillColor: '#ec4899' },
+                        { name: 'Merck', fillColor: '#10b981' },
+                        { name: 'AstraZeneca', fillColor: '#ef4444' },
+                        { name: 'Johnson & Johnson', fillColor: '#f59e0b' },
+                        { name: 'Sanofi', fillColor: '#06b6d4' }
+                      ].map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fillColor} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-white p-4 rounded-md border border-slate-200">
+                  <h4 className="text-md font-medium mb-3">Success Rate Comparison</h4>
+                  <ResponsiveContainer width="100%" height={200}>
+                    <BarChart
+                      data={[
+                        { name: 'Pfizer', success: 0.45, industry: 0.38 },
+                        { name: 'Novartis', success: 0.48, industry: 0.38 },
+                        { name: 'Roche', success: 0.42, industry: 0.38 },
+                        { name: 'Merck', success: 0.50, industry: 0.38 },
+                        { name: 'AstraZeneca', success: 0.41, industry: 0.38 }
+                      ]}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" angle={-45} textAnchor="end" height={60} />
+                      <YAxis tickFormatter={(value) => `${(value * 100).toFixed(0)}%`} domain={[0, 0.6]} />
+                      <Tooltip formatter={(value) => `${(value * 100).toFixed(1)}%`} />
+                      <Bar dataKey="success" name="Company Success Rate" fill="#6366f1" />
+                      <Bar dataKey="industry" name="Industry Average" fill="#94a3b8" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+                
+                <div className="bg-white p-4 rounded-md border border-slate-200">
+                  <h4 className="text-md font-medium mb-3">Recent Competitive Activity</h4>
+                  <div className="space-y-2 max-h-[200px] overflow-y-auto pr-2">
+                    {[
+                      { company: 'Pfizer', date: '2024-03-15', title: 'Phase 3 trial for EGFR-positive NSCLC', indication: 'Oncology' },
+                      { company: 'Novartis', date: '2024-03-10', title: 'New Phase 2 trial in relapsed multiple myeloma', indication: 'Oncology' },
+                      { company: 'Merck', date: '2024-03-05', title: 'Interim analysis results for Phase 3 trial in AD', indication: 'Neurology' },
+                      { company: 'Roche', date: '2024-02-28', title: 'New biomarker-driven Phase 2 in breast cancer', indication: 'Oncology' },
+                      { company: 'AstraZeneca', date: '2024-02-20', title: 'Fast-track designation for respiratory drug', indication: 'Respiratory' },
+                      { company: 'Johnson & Johnson', date: '2024-02-15', title: 'Completed enrollment for Phase 3 vaccine trial', indication: 'Infectious' },
+                      { company: 'Sanofi', date: '2024-02-10', title: 'Initiated Phase 1 for novel MOA in psoriasis', indication: 'Immunology' }
+                    ].map((item, idx) => (
+                      <div key={idx} className="p-2 bg-slate-50 rounded-md">
+                        <div className="flex justify-between items-start">
+                          <div className="font-medium text-sm">{item.company}</div>
+                          <div className="text-xs text-slate-500">{item.date}</div>
+                        </div>
+                        <div className="text-sm mt-1">{item.title}</div>
+                        <Badge variant="outline" className="mt-1">{item.indication}</Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-6 flex justify-between">
+                <Button 
+                  variant="outline" 
+                  className="flex items-center" 
+                  onClick={() => downloadAnalyticsData('csv')}
+                >
+                  <FileSymlink className="mr-2 h-4 w-4" />
+                  Export Competitor Analysis
+                </Button>
+                <Button>Generate Detailed Report</Button>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
         
         <TabsContent value="modeling" className="space-y-4">
