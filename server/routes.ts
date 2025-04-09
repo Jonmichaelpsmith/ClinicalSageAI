@@ -14,6 +14,7 @@ import { translationService, supportedLanguages } from "./translation-service";
 import { generateProtocol, type ProtocolGenerationParams } from "./protocol-service";
 import { perplexityService } from "./perplexity-service";
 import { huggingFaceService } from "./huggingface-service";
+import { SagePlusService } from "./sage-plus-service";
 import { 
   fetchClinicalTrialData, 
   importTrialsFromCsv, 
