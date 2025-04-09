@@ -16,7 +16,7 @@ export default function Home() {
     <PageContainer>
       <HeaderSection>
         <Navbar />
-        <div className="container px-4 md:px-6 flex flex-col items-center text-center space-y-4 py-12 md:py-16 lg:py-20">
+        <div className="container px-4 md:px-6 flex flex-col items-center text-center space-y-3 py-8 md:py-10 lg:py-12">
           <div className="space-y-2">
             <Badge variant="outline" className="text-primary border-primary px-3 py-1">
               SaaS for Early-Stage Biotechs
@@ -29,26 +29,28 @@ export default function Home() {
               Design better trials, faster, at a fraction of the cost.
             </p>
           </div>
-          <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex flex-col md:flex-row gap-4 mt-2">
             <Link href="/dashboard">
-              <Button size="lg" className="h-12">
-                Explore Platform <ChevronRight className="ml-2 h-4 w-4" />
+              <Button size="lg" className="h-11">
+                View Demo Dashboard <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
-            <Button size="lg" variant="outline" className="h-12">
-              View Pricing
-            </Button>
+            <Link href="/reports">
+              <Button size="lg" variant="outline" className="h-11">
+                CSR Reports
+              </Button>
+            </Link>
           </div>
         </div>
       </HeaderSection>
       <ContentSection className="bg-slate-50 dark:bg-slate-900">
-        <div className="container px-4 md:px-6 py-12 md:py-16 lg:py-20">
-          <div className="flex flex-col items-center justify-center space-y-4 text-center">
+        <div className="container px-4 md:px-6 py-8 md:py-10 lg:py-12">
+          <div className="flex flex-col items-center justify-center space-y-3 text-center">
             <div className="space-y-2">
               <div className="inline-block rounded-lg bg-primary px-3 py-1 text-sm text-primary-foreground dark:bg-primary/10 dark:text-primary-foreground/80">
                 Key Features
               </div>
-              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
+              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-4xl">
                 AI-Powered CSR Intelligence
               </h2>
               <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
@@ -56,7 +58,7 @@ export default function Home() {
               </p>
             </div>
           </div>
-          <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 py-12 md:grid-cols-2 lg:grid-cols-3">
+          <div className="mx-auto grid max-w-5xl grid-cols-1 gap-5 py-6 md:grid-cols-2 lg:grid-cols-3">
             <div className="flex flex-col items-center space-y-4 rounded-lg border p-6 shadow-sm">
               <div className="rounded-full border p-3">
                 <FileText className="h-6 w-6" />
@@ -115,8 +117,8 @@ export default function Home() {
         </div>
       </ContentSection>
       <ContentSection>
-        <div className="container px-4 md:px-6 py-12 md:py-16 lg:py-20">
-          <div className="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">
+        <div className="container px-4 md:px-6 py-8 md:py-10 lg:py-12">
+          <div className="grid gap-4 lg:grid-cols-[1fr_400px] lg:gap-8 xl:grid-cols-[1fr_600px]">
             <div className="flex flex-col justify-center space-y-4">
               <div className="space-y-2">
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
@@ -193,10 +195,10 @@ export default function Home() {
         </div>
       </ContentSection>
       <ContentSection className="bg-slate-50 dark:bg-slate-900">
-        <div className="container px-4 md:px-6 py-12 md:py-16 lg:py-20">
-          <div className="flex flex-col items-center justify-center space-y-4 text-center">
+        <div className="container px-4 md:px-6 py-8 md:py-10 lg:py-12">
+          <div className="flex flex-col items-center justify-center space-y-3 text-center">
             <div className="space-y-2">
-              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
+              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-4xl">
                 Who Uses TrialSage
               </h2>
               <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
@@ -204,7 +206,7 @@ export default function Home() {
               </p>
             </div>
           </div>
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-8">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-5">
             <div className="flex flex-col items-center rounded-xl bg-white p-6 shadow-sm dark:bg-gray-950">
               <Rocket className="h-10 w-10 text-blue-600 mb-2" />
               <h3 className="text-xl font-bold">Biotech Founders</h3>
@@ -237,10 +239,10 @@ export default function Home() {
         </div>
       </ContentSection>
       <ContentSection>
-        <div className="container px-4 md:px-6 py-12 md:py-16 lg:py-20">
-          <div className="flex flex-col items-center justify-center space-y-4 text-center">
+        <div className="container px-4 md:px-6 py-8 md:py-10 lg:py-12">
+          <div className="flex flex-col items-center justify-center space-y-3 text-center">
             <div className="space-y-2">
-              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
+              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-4xl">
                 Pricing Plans
               </h2>
               <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
@@ -248,7 +250,7 @@ export default function Home() {
               </p>
             </div>
           </div>
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-3 lg:gap-12 mt-8">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3 lg:gap-8 mt-6">
             <div className="flex flex-col rounded-xl border p-6 shadow-sm">
               <div className="space-y-2">
                 <h3 className="text-2xl font-bold">Free</h3>
