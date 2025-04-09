@@ -78,7 +78,7 @@ const Dashboard = () => {
               )}
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-slate-500">Processed Reports</CardTitle>
@@ -91,7 +91,7 @@ const Dashboard = () => {
               )}
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-slate-500">Data Points Extracted</CardTitle>
@@ -104,7 +104,7 @@ const Dashboard = () => {
               )}
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-slate-500">Time Saved</CardTitle>
@@ -218,9 +218,11 @@ const Dashboard = () => {
                           <p className="text-sm text-slate-500">Generate optimized protocol drafts based on historical trials</p>
                         </div>
                       </div>
-                      <Button size="sm" variant="ghost" className="w-full justify-start pl-2 mt-2">
-                        <ArrowRight className="h-3 w-3 mr-2" /> Explore
-                      </Button>
+                      <Link href="/protocol-generator">
+                        <Button size="sm" variant="ghost" className="w-full justify-start pl-2 mt-2">
+                          <ArrowRight className="h-3 w-3 mr-2" /> Explore
+                        </Button>
+                      </Link>
                     </div>
                     <div className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer">
                       <div className="flex items-start gap-2 mb-2">
@@ -272,7 +274,7 @@ const Dashboard = () => {
                       </Link>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-start gap-3">
                     <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center text-green-600 font-medium text-sm shrink-0">
                       2
@@ -289,7 +291,7 @@ const Dashboard = () => {
                       </Link>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-start gap-3">
                     <div className="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-medium text-sm shrink-0">
                       3
@@ -309,7 +311,7 @@ const Dashboard = () => {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center text-lg">
