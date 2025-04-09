@@ -11,6 +11,7 @@ import {
   analyzeCompetitorsForSponsor 
 } from "./analytics-service";
 import { translationService, supportedLanguages } from "./translation-service";
+import { generateProtocol, type ProtocolGenerationParams } from "./protocol-service";
 import path from "path";
 import fs from "fs";
 import { insertCsrReportSchema } from "@shared/schema";
@@ -507,6 +508,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         translatedGuidance,
         targetLanguage,
         targetLanguageName: supportedLanguages.find(l => l.code === targetLanguage)?.name
+      });
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+  
+  // Generate clinical trial protocol
+  app.post('/api/protocol-generator', async (req: Request, res: Response) => {
+    try {
+      const protocolParamsSchema = z.object({
+        indication: z.string().min(1, "Indication is required"),
+        phase: z.string().min(1, "Study phase is required"),
+        primaryEndpoint: z.string().optional(),
+        populationSize: z.number().optional(),
+        additionalContext: z.string().optional(),
+      });
+      
+      const params = protocolParamsSchema.parse(req.body);
+      
+      // Generate protocol using our service
+      const protocol = await generateProtocol(params);
+      
+      res.json({
+        success: true,
+        protocol
       });
     } catch (err) {
       errorHandler(err as Error, res);
