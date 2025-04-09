@@ -2,6 +2,11 @@ import * as math from 'mathjs';
 import * as mlStat from 'ml-stat';
 import { CsrReport, CsrDetails } from '@shared/schema';
 
+// Advanced machine learning models would normally be imported here
+// For example: import * as xgboost from 'xgboost';
+// import * as lightgbm from 'lightgbm';
+// import * as sklearn from 'scikit-learn';
+
 // Add quantileT function to mathjs (for TypeScript)
 declare module 'mathjs' {
   interface MathJsStatic {
@@ -282,6 +287,223 @@ export function analyzeEfficacyTrends(details: CsrDetails[]): {
  * @param endpoint The endpoint to model
  * @returns Predictive model results
  */
+/**
+ * Virtual Trial Simulation - simulates clinical trial outcomes based on historical data
+ * @param historicalDetails Array of CSR details from historical studies
+ * @param endpoint The endpoint to model
+ * @param customParams Optional custom parameters to adjust the simulation
+ * @returns Virtual trial simulation results
+ */
+export function simulateVirtualTrial(
+  historicalDetails: CsrDetails[],
+  endpoint: string = 'Primary Endpoint',
+  customParams?: {
+    sampleSize?: number;
+    duration?: number;
+    dropoutRate?: number;
+    populationCharacteristics?: Record<string, any>;
+  }
+): {
+  predictedOutcome: {
+    effectSize: number;
+    pValue: number;
+    powerEstimate: number;
+  };
+  confidenceInterval: [number, number];
+  successProbability: number;
+  timeToCompletion: number;
+  costEstimate: number;
+  riskFactors: Array<{ factor: string; risk: 'High' | 'Medium' | 'Low'; impact: string }>;
+  description: string;
+} {
+  try {
+    if (historicalDetails.length < 3) {
+      return {
+        predictedOutcome: { effectSize: 0, pValue: 1.0, powerEstimate: 0 },
+        confidenceInterval: [0, 0],
+        successProbability: 0,
+        timeToCompletion: 0,
+        costEstimate: 0,
+        riskFactors: [],
+        description: 'Insufficient historical data for virtual trial simulation.'
+      };
+    }
+    
+    // Extract parameters from historical trials
+    const effectSizes: number[] = [];
+    const sampleSizes: number[] = [];
+    const durations: number[] = [];
+    
+    for (const detail of historicalDetails) {
+      // Extract values from primary results
+      const values = extractNumericalData(detail.results?.primaryResults || '');
+      if (values.length > 0) {
+        effectSizes.push(values[0]);
+        
+        // Estimate sample size from treatment arms
+        let totalParticipants = 0;
+        if (detail.treatmentArms && Array.isArray(detail.treatmentArms)) {
+          for (const arm of detail.treatmentArms) {
+            totalParticipants += arm.participants || 0;
+          }
+        }
+        sampleSizes.push(totalParticipants || 100); // Default if not available
+        
+        // Extract study duration if available
+        if (detail.studyDuration) {
+          const durationMatch = /(\d+)\s*(?:months|weeks|days)/i.exec(detail.studyDuration);
+          if (durationMatch) {
+            let durationValue = parseInt(durationMatch[1]);
+            if (/weeks/i.test(detail.studyDuration)) durationValue = durationValue / 4; // Convert to months
+            if (/days/i.test(detail.studyDuration)) durationValue = durationValue / 30; // Convert to months
+            durations.push(durationValue);
+          } else {
+            durations.push(12); // Default to 12 months
+          }
+        } else {
+          durations.push(12); // Default to 12 months
+        }
+      }
+    }
+    
+    if (effectSizes.length < 3) {
+      return {
+        predictedOutcome: { effectSize: 0, pValue: 1.0, powerEstimate: 0 },
+        confidenceInterval: [0, 0],
+        successProbability: 0,
+        timeToCompletion: 0,
+        costEstimate: 0,
+        riskFactors: [],
+        description: 'Unable to extract sufficient data points from historical studies.'
+      };
+    }
+    
+    // Set default or custom parameters
+    const sampleSize = customParams?.sampleSize || math.mean(sampleSizes);
+    const duration = customParams?.duration || math.mean(durations);
+    const dropoutRate = customParams?.dropoutRate || 0.15; // Default 15% dropout
+    
+    // Calculate predicted effect size with bootstrapping
+    // (In a real implementation, this would use Monte Carlo simulation)
+    const simulatedTrials = 1000;
+    const simulatedEffects: number[] = [];
+    const simulatedPValues: number[] = [];
+    
+    for (let i = 0; i < simulatedTrials; i++) {
+      // Sample with replacement from historical effect sizes
+      const samples: number[] = [];
+      for (let j = 0; j < 10; j++) {
+        const randomIndex = Math.floor(Math.random() * effectSizes.length);
+        samples.push(effectSizes[randomIndex]);
+      }
+      
+      // Add some random noise to simulate variability
+      const baseEffect = math.mean(samples);
+      const noise = (Math.random() - 0.5) * 0.2 * baseEffect; // +/- 10% variability
+      const simulatedEffect = baseEffect + noise;
+      
+      simulatedEffects.push(simulatedEffect);
+      
+      // Simulate p-value based on effect size and sample size
+      // This is a simplified approximation - in reality would use more complex stats
+      const standardError = 0.5 * simulatedEffect / Math.sqrt(sampleSize * (1 - dropoutRate));
+      const zScore = simulatedEffect / standardError;
+      const pValue = 2 * (1 - math.erf(math.abs(zScore) / math.sqrt(2)));
+      
+      simulatedPValues.push(pValue);
+    }
+    
+    // Calculate predicted outcome
+    const predictedEffectSize = math.mean(simulatedEffects);
+    const predictedPValue = math.mean(simulatedPValues);
+    
+    // Calculate power estimate (% of simulated trials with p < 0.05)
+    const significantTrials = simulatedPValues.filter(p => p < 0.05).length;
+    const powerEstimate = significantTrials / simulatedTrials;
+    
+    // Calculate confidence interval for effect size
+    const effectSizeStdError = math.std(simulatedEffects) / Math.sqrt(simulatedTrials);
+    const confidenceInterval: [number, number] = [
+      predictedEffectSize - 1.96 * effectSizeStdError,
+      predictedEffectSize + 1.96 * effectSizeStdError
+    ];
+    
+    // Estimate success probability
+    // Weight by effect size, p-value, and sample size adequacy
+    const successProbability = powerEstimate * 0.7 + (1 - predictedPValue) * 0.2 + Math.min(1, sampleSize / 200) * 0.1;
+    
+    // Estimate time to completion (in months)
+    // Factor in recruitment rate, sample size, and duration
+    const recruitmentRate = math.median(sampleSizes) / math.median(durations);
+    const estimatedRecruitmentTime = sampleSize / recruitmentRate;
+    const timeToCompletion = Math.max(estimatedRecruitmentTime, duration);
+    
+    // Estimate cost (simplified)
+    // Assume $15,000 per patient for Phase 2, $25,000 for Phase 3
+    const perPatientCost = endpoint.includes('Phase 3') ? 25000 : 15000;
+    const costEstimate = sampleSize * perPatientCost;
+    
+    // Identify risk factors
+    const riskFactors = [
+      {
+        factor: 'Effect Size Variability',
+        risk: math.std(effectSizes) / math.mean(effectSizes) > 0.3 ? 'High' : 'Low',
+        impact: 'Inconsistent trial results'
+      },
+      {
+        factor: 'Sample Size Adequacy',
+        risk: sampleSize < 100 ? 'High' : sampleSize < 200 ? 'Medium' : 'Low',
+        impact: 'Insufficient statistical power'
+      },
+      {
+        factor: 'Dropout Rate',
+        risk: dropoutRate > 0.2 ? 'High' : dropoutRate > 0.1 ? 'Medium' : 'Low',
+        impact: 'Data completeness issues'
+      },
+      {
+        factor: 'Endpoint Selection',
+        risk: predictedPValue > 0.1 ? 'High' : predictedPValue > 0.05 ? 'Medium' : 'Low',
+        impact: 'May not reach statistical significance'
+      }
+    ];
+    
+    // Generate description
+    const description = `Virtual trial simulation based on ${historicalDetails.length} historical studies predicts ` +
+      `an effect size of ${math.round(predictedEffectSize, 2)} (95% CI: ${math.round(confidenceInterval[0], 2)} to ${math.round(confidenceInterval[1], 2)}) ` +
+      `with p-value of ${math.round(predictedPValue, 3)} and statistical power of ${math.round(powerEstimate * 100)}%. ` +
+      `Estimated probability of trial success is ${math.round(successProbability * 100)}% with projected duration of ${math.round(timeToCompletion, 1)} months ` +
+      `and approximate cost of $${Math.round(costEstimate / 1000000, 1)}M.`;
+    
+    return {
+      predictedOutcome: {
+        effectSize: math.round(predictedEffectSize, 2),
+        pValue: math.round(predictedPValue, 3),
+        powerEstimate: math.round(powerEstimate, 2)
+      },
+      confidenceInterval: [
+        math.round(confidenceInterval[0], 2),
+        math.round(confidenceInterval[1], 2)
+      ],
+      successProbability: math.round(successProbability, 2),
+      timeToCompletion: math.round(timeToCompletion, 1),
+      costEstimate: math.round(costEstimate),
+      riskFactors,
+      description
+    };
+  } catch (error) {
+    console.error('Error simulating virtual trial:', error);
+    return {
+      predictedOutcome: { effectSize: 0, pValue: 1.0, powerEstimate: 0 },
+      confidenceInterval: [0, 0],
+      successProbability: 0,
+      timeToCompletion: 0,
+      costEstimate: 0,
+      riskFactors: [],
+      description: 'Error occurred while simulating the virtual trial.'
+    };
+  }
+}
+
 export function generatePredictiveModel(
   historicalDetails: CsrDetails[],
   endpoint: string = 'Primary Endpoint'
