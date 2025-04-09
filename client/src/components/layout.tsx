@@ -1,38 +1,50 @@
-
 import React from "react";
 import { cn } from "@/lib/utils";
 
+/**
+ * Layout component props interface
+ */
 interface LayoutProps {
   children: React.ReactNode;
   className?: string;
 }
 
+/**
+ * Page container wrapping the entire page
+ */
 export function PageContainer({ children, className }: LayoutProps) {
   return (
-    <div className={cn("min-h-screen bg-background flex flex-col", className)}>
-      <main className="flex-1">{children}</main>
+    <div className={cn("flex min-h-screen flex-col", className)}>
+      {children}
     </div>
   );
 }
 
+/**
+ * Header section for the hero/banner area
+ */
 export function HeaderSection({ children, className }: LayoutProps) {
   return (
-    <header className={cn("border-b sticky top-0 z-10 bg-background/95 backdrop-blur-sm", className)}>
-      <div className="container mx-auto py-4 px-4 flex items-center justify-between">
-        {children}
-      </div>
+    <header className={cn("w-full bg-white dark:bg-gray-950", className)}>
+      {children}
     </header>
   );
 }
 
+/**
+ * Content section for page body content
+ */
 export function ContentSection({ children, className }: LayoutProps) {
   return (
-    <section className={cn("container mx-auto px-4 py-6", className)}>
+    <section className={cn("w-full", className)}>
       {children}
     </section>
   );
 }
 
+/**
+ * Grid layout for cards
+ */
 export function CardGrid({ children, className }: LayoutProps) {
   return (
     <div className={cn("grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6", className)}>
@@ -41,12 +53,13 @@ export function CardGrid({ children, className }: LayoutProps) {
   );
 }
 
+/**
+ * Footer component
+ */
 export function Footer({ children, className }: LayoutProps) {
   return (
-    <footer className={cn("border-t py-6 bg-muted/20", className)}>
-      <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-        {children}
-      </div>
+    <footer className={cn("w-full bg-white dark:bg-gray-950", className)}>
+      {children}
     </footer>
   );
 }

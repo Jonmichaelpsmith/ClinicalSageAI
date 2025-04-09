@@ -1,50 +1,133 @@
-
 import React from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
+import { 
+  Menu, X, ChevronDown, Database, 
+  LayoutDashboard, FileText, BarChart2, 
+  BookOpen
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function Navbar() {
+  const [menuOpen, setMenuOpen] = React.useState(false);
+  const [location] = useLocation();
+
   return (
-    <nav className="w-full flex items-center justify-between">
-      <div className="flex items-center">
-        <Link href="/">
-          <a className="font-bold text-xl hover:opacity-80 transition-opacity">
-            ModernUI
-          </a>
-        </Link>
-      </div>
-      
-      <div className="hidden md:flex items-center space-x-6">
-        <NavItem href="/">Dashboard</NavItem>
-        <NavItem href="/features">Features</NavItem>
-        <NavItem href="/docs">Documentation</NavItem>
-        <NavItem href="/about">About</NavItem>
-      </div>
-      
-      <div className="flex items-center space-x-4">
-        <button className="rounded-full w-10 h-10 bg-primary/10 text-primary flex items-center justify-center hover:bg-primary/20 transition-colors">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
-            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
-            <path d="M4 22h16"></path>
-            <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
-            <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
-            <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
-          </svg>
-        </button>
-        <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground">
-          <span className="text-sm font-medium">JD</span>
+    <nav className="container px-4 md:px-6 py-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <Link href="/">
+            <div className="flex items-center space-x-2 cursor-pointer">
+              <Database className="h-6 w-6 text-primary" />
+              <span className="font-bold text-xl">TrialSage</span>
+            </div>
+          </Link>
+          <div className="hidden md:flex space-x-4">
+            <NavItem href="/dashboard">
+              <LayoutDashboard className="h-4 w-4 mr-1" />
+              Dashboard
+            </NavItem>
+            <NavItem href="/reports">
+              <FileText className="h-4 w-4 mr-1" />
+              Reports
+            </NavItem>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-9 flex items-center gap-1 -my-2">
+                  <span>Tools</span>
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuItem asChild>
+                  <Link href="/use-cases" className="w-full cursor-pointer">
+                    <div className="flex items-center">
+                      <BookOpen className="h-4 w-4 mr-2" /> 
+                      Use Case Library
+                    </div>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/analytics" className="w-full cursor-pointer">
+                    <div className="flex items-center">
+                      <BarChart2 className="h-4 w-4 mr-2" /> 
+                      Analytics
+                    </div>
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+        <div className="hidden md:flex items-center space-x-4">
+          <Link href="/upload">
+            <Button variant="ghost" size="sm">Upload CSR</Button>
+          </Link>
+          <Button size="sm">Sign In</Button>
+        </div>
+        <div className="md:hidden">
+          <Button variant="ghost" size="icon" onClick={() => setMenuOpen(!menuOpen)}>
+            {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </Button>
         </div>
       </div>
+      {menuOpen && (
+        <div className="pt-4 pb-3 border-t mt-4 md:hidden">
+          <div className="space-y-3 flex flex-col">
+            <Link href="/dashboard">
+              <Button variant="ghost" className="w-full justify-start">
+                <LayoutDashboard className="h-4 w-4 mr-2" />
+                Dashboard
+              </Button>
+            </Link>
+            <Link href="/reports">
+              <Button variant="ghost" className="w-full justify-start">
+                <FileText className="h-4 w-4 mr-2" />
+                Reports
+              </Button>
+            </Link>
+            <Link href="/use-cases">
+              <Button variant="ghost" className="w-full justify-start">
+                <BookOpen className="h-4 w-4 mr-2" />
+                Use Case Library
+              </Button>
+            </Link>
+            <Link href="/analytics">
+              <Button variant="ghost" className="w-full justify-start">
+                <BarChart2 className="h-4 w-4 mr-2" />
+                Analytics
+              </Button>
+            </Link>
+            <div className="pt-2 flex flex-col gap-2">
+              <Link href="/upload">
+                <Button variant="outline" size="sm" className="w-full">Upload CSR</Button>
+              </Link>
+              <Button size="sm" className="w-full">Sign In</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </nav>
   );
 }
 
 function NavItem({ href, children }: { href: string; children: React.ReactNode }) {
+  const [location] = useLocation();
+  const isActive = location === href;
+
   return (
     <Link href={href}>
-      <a className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+      <Button
+        variant={isActive ? "secondary" : "ghost"}
+        className="h-9 flex items-center -my-2"
+      >
         {children}
-      </a>
+      </Button>
     </Link>
   );
 }
