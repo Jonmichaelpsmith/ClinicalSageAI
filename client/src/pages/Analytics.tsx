@@ -390,6 +390,219 @@ function AnalyticsSummaryCard({ isLoading = false }) {
   );
 }
 
+// Virtual trial simulation card component
+function VirtualTrialSimulationCard() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [indication, setIndication] = useState("");
+  const [endpoint, setEndpoint] = useState("");
+  const [sampleSize, setSampleSize] = useState("");
+  const [duration, setDuration] = useState("");
+  const [dropoutRate, setDropoutRate] = useState("");
+  const [simulation, setSimulation] = useState<any>(null);
+
+  const { data: reports } = useQuery({
+    queryKey: ['/api/reports'],
+  });
+  
+  const indications = reports ? Array.from(new Set(reports.map((r: CsrReport) => r.indication))) : [];
+  
+  const handleSimulate = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/analytics/virtual-trial', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          indication,
+          endpoint,
+          sampleSize: sampleSize || undefined,
+          duration: duration || undefined,
+          dropoutRate: dropoutRate || undefined,
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to simulate virtual trial');
+      }
+      
+      const data = await response.json();
+      setSimulation(data.simulation);
+    } catch (error) {
+      console.error('Error simulating virtual trial:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  return (
+    <Card className="shadow-md">
+      <CardHeader>
+        <CardTitle className="flex items-center text-lg">
+          <Microscope className="h-5 w-5 text-indigo-600 mr-2" />
+          Virtual Trial Simulation
+        </CardTitle>
+        <CardDescription>
+          Predict outcomes, costs, and risks before running an actual clinical trial
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Therapeutic Area
+            </label>
+            <Select value={indication} onValueChange={setIndication}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select indication" />
+              </SelectTrigger>
+              <SelectContent>
+                {indications.map((ind: string) => (
+                  <SelectItem key={ind} value={ind}>
+                    {ind}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Primary Endpoint
+            </label>
+            <Input 
+              placeholder="e.g., Change in ADAS-Cog at Week 24" 
+              value={endpoint}
+              onChange={(e) => setEndpoint(e.target.value)}
+            />
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Sample Size
+            </label>
+            <Input 
+              type="number"
+              placeholder="e.g., 300" 
+              value={sampleSize}
+              onChange={(e) => setSampleSize(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Duration (months)
+            </label>
+            <Input 
+              type="number"
+              placeholder="e.g., 18" 
+              value={duration}
+              onChange={(e) => setDuration(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Dropout Rate
+            </label>
+            <Input 
+              type="number"
+              placeholder="e.g., 0.15 (15%)" 
+              value={dropoutRate}
+              onChange={(e) => setDropoutRate(e.target.value)}
+              step="0.01"
+              min="0"
+              max="0.5"
+            />
+          </div>
+        </div>
+        
+        <Button 
+          onClick={handleSimulate} 
+          className="w-full mb-4"
+          disabled={!indication || isLoading}
+        >
+          {isLoading ? 'Simulating Trial...' : 'Run Virtual Trial Simulation'}
+        </Button>
+        
+        {isLoading ? (
+          <div className="flex justify-center py-8">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary"></div>
+          </div>
+        ) : simulation ? (
+          <div className="space-y-4">
+            <div className="p-4 bg-blue-50 rounded-md">
+              <h4 className="font-medium mb-2">Simulation Summary</h4>
+              <p className="text-sm text-slate-700">{simulation.description}</p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="p-3 bg-green-50 rounded-md text-center">
+                <div className="text-sm text-green-600 mb-1">Effect Size</div>
+                <div className="text-xl font-bold text-green-700">{simulation.predictedOutcome.effectSize}</div>
+                <div className="text-xs text-green-600">
+                  CI: {simulation.confidenceInterval[0]} - {simulation.confidenceInterval[1]}
+                </div>
+              </div>
+              <div className="p-3 bg-blue-50 rounded-md text-center">
+                <div className="text-sm text-blue-600 mb-1">Success Probability</div>
+                <div className="text-xl font-bold text-blue-700">{simulation.successProbability * 100}%</div>
+                <div className="text-xs text-blue-600">
+                  Power: {simulation.predictedOutcome.powerEstimate * 100}%
+                </div>
+              </div>
+              <div className="p-3 bg-purple-50 rounded-md text-center">
+                <div className="text-sm text-purple-600 mb-1">P-Value</div>
+                <div className="text-xl font-bold text-purple-700">{simulation.predictedOutcome.pValue}</div>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="p-3 bg-amber-50 rounded-md text-center">
+                <div className="text-sm text-amber-600 mb-1">Time to Completion</div>
+                <div className="text-xl font-bold text-amber-700">{simulation.timeToCompletion} months</div>
+              </div>
+              <div className="p-3 bg-rose-50 rounded-md text-center">
+                <div className="text-sm text-rose-600 mb-1">Estimated Cost</div>
+                <div className="text-xl font-bold text-rose-700">${(simulation.costEstimate / 1000000).toFixed(1)}M</div>
+              </div>
+            </div>
+            
+            <div className="p-4 bg-slate-50 rounded-md">
+              <h4 className="font-medium mb-2">Key Risk Factors</h4>
+              <div className="space-y-2">
+                {simulation.riskFactors.map((factor, idx) => (
+                  <div key={idx} className="text-sm flex items-start">
+                    <Badge 
+                      variant={
+                        factor.risk === 'High' ? 'destructive' : 
+                        factor.risk === 'Medium' ? 'secondary' : 
+                        'outline'
+                      } 
+                      className="mt-0.5 mr-2"
+                    >
+                      {factor.risk}
+                    </Badge>
+                    <div>
+                      <span className="font-medium">{factor.factor}:</span> {factor.impact}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="text-center py-6">
+            <p className="text-slate-500">
+              Select an indication and configure parameters to simulate a virtual clinical trial
+            </p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 // Study Design Agent component
 function StudyDesignAgentCard() {
   const [prompt, setPrompt] = useState("");

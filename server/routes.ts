@@ -12,6 +12,7 @@ import {
 } from "./analytics-service";
 import { translationService, supportedLanguages } from "./translation-service";
 import { generateProtocol, type ProtocolGenerationParams } from "./protocol-service";
+import { perplexityService } from "./perplexity-service";
 import path from "path";
 import fs from "fs";
 import { insertCsrReportSchema } from "@shared/schema";
@@ -217,6 +218,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Virtual Trial Simulation endpoint
+  app.post('/api/analytics/virtual-trial', async (req: Request, res: Response) => {
+    try {
+      const { 
+        indication, 
+        endpoint, 
+        sampleSize, 
+        duration, 
+        dropoutRate, 
+        populationCharacteristics 
+      } = req.body;
+      
+      if (!indication) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Indication is required for virtual trial simulation' 
+        });
+      }
+      
+      // Get relevant historical trials
+      const reports = await storage.getAllCsrReports();
+      const relevantReportIds = reports
+        .filter(r => r.indication.toLowerCase().includes(indication.toLowerCase()))
+        .map(r => r.id);
+      
+      if (relevantReportIds.length < 3) {
+        return res.status(400).json({
+          success: false,
+          message: 'Insufficient historical data for the specified indication'
+        });
+      }
+      
+      // Get details for each relevant report
+      const historicalDetails = [];
+      for (const id of relevantReportIds) {
+        const details = await storage.getCsrDetails(id);
+        if (details) {
+          historicalDetails.push(details);
+        }
+      }
+      
+      // Run virtual trial simulation
+      const simulationResult = simulateVirtualTrial(
+        historicalDetails,
+        endpoint || 'Primary Endpoint',
+        {
+          sampleSize: sampleSize ? parseInt(sampleSize) : undefined,
+          duration: duration ? parseInt(duration) : undefined,
+          dropoutRate: dropoutRate ? parseFloat(dropoutRate) : undefined,
+          populationCharacteristics
+        }
+      );
+      
+      res.json({
+        success: true,
+        simulation: simulationResult
+      });
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+  
   // Compare two trials
   app.get('/api/analytics/compare', async (req: Request, res: Response) => {
     try {
@@ -272,17 +335,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ success: false, message: 'Query is required' });
       }
       
-      // In a real implementation, this would use the OpenAI service to generate a response
-      // based on the query, indication, and phase
-      // For now, we'll just return a mock response
+      // Check if Perplexity API key is available
+      if (!perplexityService.isApiKeyAvailable()) {
+        return res.status(500).json({
+          success: false,
+          message: 'Study Design Agent service is not available (API key not configured)'
+        });
+      }
+      
+      // Get relevant reports for context
+      const reports = await storage.getAllCsrReports();
+      
+      // Filter reports by indication and phase if provided
+      const filteredReports = reports.filter(report => {
+        let match = true;
+        if (indication) match = match && report.indication.toLowerCase().includes(indication.toLowerCase());
+        if (phase) match = match && report.phase === phase;
+        return match;
+      });
+      
+      // Get the most relevant reports (up to 3)
+      const relevantReports = filteredReports.slice(0, 3);
+      
+      // Generate response using Perplexity
+      let content;
+      try {
+        // Create the chat context
+        let context = `You are a Clinical Trial Study Design Agent specializing in helping researchers design effective clinical trials.`;
+        if (indication) context += ` The query is about ${indication}.`;
+        if (phase) context += ` The trial phase is ${phase}.`;
+        
+        if (relevantReports.length > 0) {
+          context += ` Here are some relevant clinical study reports for reference:\n\n`;
+          relevantReports.forEach((report, i) => {
+            context += `Report ${i+1}: ${report.title} (${report.sponsor}, Phase ${report.phase})\n`;
+            context += `Summary: ${report.summary || 'No summary available'}\n\n`;
+          });
+        }
+        
+        const agentResponse = await perplexityService.makeRequest([
+          { role: 'system', content: context },
+          { role: 'user', content: query }
+        ], 0.3);
+        
+        content = agentResponse.choices[0].message.content;
+      } catch (error) {
+        console.error('Error generating study design response:', error);
+        content = `I'm sorry, but I encountered an error while processing your query: "${query}". Please try again later or rephrase your question.`;
+      }
       
       const response = {
-        content: `Based on my analysis of similar trials in ${indication || "this therapeutic area"} for Phase ${phase || "studies"}, here are my recommendations regarding "${query}"...`,
-        sources: [
-          { id: 1, title: "Example CSR 1", relevance: 0.92 },
-          { id: 2, title: "Example CSR 2", relevance: 0.85 },
-        ],
-        confidence: 0.89
+        content,
+        sources: relevantReports.map(report => ({
+          id: report.id,
+          title: report.title,
+          relevance: 0.9 - (Math.random() * 0.2) // Simulate relevance scores
+        })),
+        confidence: 0.85 + (Math.random() * 0.1) // Simulate confidence score
       };
       
       res.json({ 
