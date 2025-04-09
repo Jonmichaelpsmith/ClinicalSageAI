@@ -2,35 +2,34 @@
  * Hugging Face AI Service for the Research Companion
  * 
  * This service provides a friendly AI research assistant powered by
- * Hugging Face's Inference API using models like Mixtral-8x7B-Instruct.
+ * Hugging Face's Inference API using models like flan-t5-small.
  */
-
 import axios from 'axios';
-import { InsertChatMessage, InsertChatConversation, ChatMessage, ChatConversation, chatConversations, chatMessages } from '@shared/schema';
 import { db } from './db';
-import { eq, asc, desc } from 'drizzle-orm';
+import { 
+  chatConversations, 
+  chatMessages,
+  type ChatConversation,
+  type ChatMessage,
+  type InsertChatConversation,
+  type InsertChatMessage
+} from '@shared/schema';
+import { eq, desc, and } from 'drizzle-orm';
 
-const HF_API_KEY = process.env.HF_API_KEY;
-const HF_MODEL_URL = 'https://api-inference.huggingface.co/models/mistralai/Mixtral-8x7B-Instruct-v0.1';
-
-// Research companion persona
-const RESEARCH_COMPANION_PERSONA = `
-You are a helpful and friendly research assistant named TrialSage. 
-You help scientists and biotech founders navigate clinical trial data, understand regulatory precedent, and brainstorm trial designs.
-
-You are an expert in clinical trial design, protocol development, and regulatory science. Your job is to guide researchers 
-through understanding trial protocols, regulatory strategy, and data analysis.
-      
-Act like a knowledgeable peer. Be clear, curious, and supportive. Focus on providing practical insights
-related to clinical studies, trial design, and pharmaceutical research.
-
-Be brief but insightful. Provide specific, actionable advice when possible.
-`;
+// Change to flan-t5-small which we verified working
+const HF_MODEL_URL = 'https://api-inference.huggingface.co/models/google/flan-t5-small';
 
 /**
  * Query the Hugging Face Inference API directly
  */
-export async function queryHuggingFace(prompt: string, max_new_tokens: number = 300, temperature: number = 0.5): Promise<string> {
+export async function queryHuggingFace(prompt: string, max_new_tokens: number = 250, temperature: number = 0.7): Promise<string> {
+  const HF_API_KEY = process.env.HF_API_KEY;
+  
+  if (!HF_API_KEY) {
+    console.error('Hugging Face API key is missing');
+    throw new Error('HF_API_KEY environment variable is not set');
+  }
+
   const headers = {
     Authorization: `Bearer ${HF_API_KEY}`,
     'Content-Type': 'application/json',
@@ -45,11 +44,17 @@ export async function queryHuggingFace(prompt: string, max_new_tokens: number = 
   };
 
   try {
+    console.log('Sending request to Hugging Face API...');
+    
     const response = await axios.post(HF_MODEL_URL, payload, { headers });
-    return response.data[0]?.generated_text || '[No response]';
-  } catch (error) {
-    console.error('Hugging Face API error:', error);
-    throw new Error(`Failed to query AI model: ${(error as Error).message}`);
+    return response.data || '[No response]';
+  } catch (error: any) {
+    console.error('Hugging Face API error:', error.message);
+    if (error.response) {
+      console.error('Error response data:', error.response.data);
+      console.error('Error response status:', error.response.status);
+    }
+    throw new Error(`Hugging Face API error: ${error.message}`);
   }
 }
 
@@ -62,7 +67,7 @@ export class HuggingFaceService {
    * @returns True if API key is available, false otherwise
    */
   isApiKeyAvailable(): boolean {
-    return HF_API_KEY !== null && HF_API_KEY !== undefined && HF_API_KEY !== '';
+    return !!process.env.HF_API_KEY;
   }
 
   /**
@@ -73,30 +78,23 @@ export class HuggingFaceService {
    * @returns The created conversation
    */
   async createConversation(
-    userId?: number, 
-    reportId?: number, 
-    title: string = "New Conversation"
+    userId?: number,
+    reportId?: number,
+    title?: string
   ): Promise<ChatConversation> {
     const conversation: InsertChatConversation = {
-      title,
-      active: true
+      title: title || 'New Conversation',
+      userId: userId || null,
+      reportId: reportId || null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      active: true,
     };
-    
-    if (userId) conversation.userId = userId;
-    if (reportId) conversation.reportId = reportId;
-    
-    // Insert system message with persona
-    const [createdConversation] = await db.insert(chatConversations).values(conversation).returning();
-    
-    await this.addMessageToConversation(
-      createdConversation.id,
-      "system",
-      RESEARCH_COMPANION_PERSONA
-    );
-    
-    return createdConversation;
+
+    const [result] = await db.insert(chatConversations).values(conversation).returning();
+    return result;
   }
-  
+
   /**
    * Add a message to a conversation
    * @param conversationId The ID of the conversation
@@ -107,27 +105,28 @@ export class HuggingFaceService {
    */
   async addMessageToConversation(
     conversationId: number,
-    role: "user" | "assistant" | "system",
+    role: 'user' | 'assistant' | 'system',
     content: string,
-    metadata: Record<string, any> = {}
+    metadata?: Record<string, any>
   ): Promise<ChatMessage> {
     const message: InsertChatMessage = {
       conversationId,
       role,
       content,
-      metadata
+      metadata: metadata || {},
+      createdAt: new Date(),
     };
+
+    const [result] = await db.insert(chatMessages).values(message).returning();
     
-    const [createdMessage] = await db.insert(chatMessages).values(message).returning();
-    
-    // Update conversation "updated" timestamp
+    // Update conversation's updatedAt
     await db.update(chatConversations)
-      .set({ updated: new Date() })
+      .set({ updatedAt: new Date() })
       .where(eq(chatConversations.id, conversationId));
-      
-    return createdMessage;
+    
+    return result;
   }
-  
+
   /**
    * Get messages from a conversation
    * @param conversationId The ID of the conversation
@@ -138,28 +137,32 @@ export class HuggingFaceService {
     conversationId: number,
     limit: number = 50
   ): Promise<ChatMessage[]> {
-    return await db.select()
+    const messages = await db.select()
       .from(chatMessages)
       .where(eq(chatMessages.conversationId, conversationId))
-      .orderBy(asc(chatMessages.timestamp))
+      .orderBy(chatMessages.createdAt)
       .limit(limit);
+    
+    return messages;
   }
-  
+
   /**
    * Get all active conversations
    * @param userId Optional user ID to filter conversations
    * @returns Array of conversations
    */
   async getConversations(userId?: number): Promise<ChatConversation[]> {
-    let query = db.select()
+    const query = db.select()
       .from(chatConversations)
+      .orderBy(desc(chatConversations.updatedAt))
       .where(eq(chatConversations.active, true));
-      
+
     if (userId) {
-      query = query.where(eq(chatConversations.userId, userId));
+      // Filtering by user ID if provided
+      query.where(eq(chatConversations.userId, userId));
     }
-    
-    return await query.orderBy(desc(chatConversations.updated));
+
+    return await query;
   }
 
   /**
@@ -172,53 +175,49 @@ export class HuggingFaceService {
     conversationId: number,
     userMessage: string
   ): Promise<ChatMessage> {
-    // Add user message to conversation
-    await this.addMessageToConversation(conversationId, "user", userMessage);
-    
-    // Get conversation history
+    // First, get context from previous messages
     const messages = await this.getConversationMessages(conversationId);
     
-    // Prepare prompt with conversation history
-    let prompt = "";
+    // Build a context prompt with the recent conversation history
+    let context = 'You are SagePlus, an AI research assistant specialized in clinical trials and medical research. You help researchers analyze Clinical Study Reports (CSRs) and make informed decisions about trial design. You are friendly, helpful, and provide detailed but concise responses.\n\n';
     
-    // Add system prompt from first message if it exists
-    const systemMessage = messages.find(m => m.role === "system");
-    if (systemMessage) {
-      prompt += systemMessage.content + "\n\n";
-    } else {
-      prompt += RESEARCH_COMPANION_PERSONA + "\n\n";
+    // Add relevant conversation history (last 5 messages)
+    const recentMessages = messages.slice(-5);
+    for (const msg of recentMessages) {
+      context += `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}\n`;
     }
     
-    // Add conversation history (skip system messages)
-    const conversationHistory = messages
-      .filter(m => m.role !== "system")
-      .slice(-10); // Only include the last 10 messages for context
+    // Add the current user query
+    context += `\nUser: ${userMessage}\n\nAssistant: `;
     
-    for (const message of conversationHistory) {
-      if (message.role === "user") {
-        prompt += `User: ${message.content}\n\n`;
-      } else if (message.role === "assistant") {
-        prompt += `TrialSage: ${message.content}\n\n`;
-      }
+    try {
+      // Get response from Hugging Face
+      const aiResponse = await queryHuggingFace(context);
+      
+      // Save the response as a new message
+      const responseMessage = await this.addMessageToConversation(
+        conversationId,
+        'assistant',
+        aiResponse,
+        { source: 'huggingface' }
+      );
+      
+      return responseMessage;
+    } catch (error: any) {
+      console.error('Error generating response:', error);
+      
+      // Save error message as assistant response
+      const errorMessage = await this.addMessageToConversation(
+        conversationId,
+        'assistant',
+        `I'm sorry, I encountered an error while processing your request. ${error.message}`,
+        { error: error.message }
+      );
+      
+      return errorMessage;
     }
-    
-    // Add final request for assistant response
-    prompt += "TrialSage:";
-    
-    // Generate response
-    const responseContent = await queryHuggingFace(prompt, 500, 0.7);
-    
-    // Add response to conversation
-    const assistantMessage = await this.addMessageToConversation(
-      conversationId, 
-      "assistant", 
-      responseContent,
-      { model: "huggingface-mixtral" }
-    );
-    
-    return assistantMessage;
   }
-  
+
   /**
    * Generate protocol suggestions based on specific indications and phases
    * @param indication The medical indication/condition
@@ -229,24 +228,30 @@ export class HuggingFaceService {
   async generateProtocolSuggestions(
     indication: string,
     phase: string,
-    additionalContext: string = ''
+    additionalContext?: string
   ): Promise<string> {
-    const prompt = `As a clinical trial protocol expert, provide detailed suggestions for a ${phase} clinical trial targeting ${indication}.
-    
-    Focus on the following key elements:
-    1. Primary and secondary endpoints that are appropriate for ${indication} studies
-    2. Suitable inclusion/exclusion criteria
-    3. Recommended sample size and statistical power considerations
-    4. Safety monitoring recommendations
-    5. Study design considerations (randomization, blinding, control groups)
+    const prompt = `
+    As a clinical trial protocol expert, generate suggestions for a ${phase} clinical trial protocol for ${indication}.
     
     ${additionalContext ? 'Additional context: ' + additionalContext : ''}
     
-    Format your response as actionable suggestions a researcher could implement.`;
+    Please provide specific recommendations for:
+    1. Primary and secondary endpoints 
+    2. Inclusion/exclusion criteria
+    3. Sample size considerations
+    4. Study design (randomization, blinding, etc.)
+    5. Statistical analysis approaches
+    `;
     
-    return await queryHuggingFace(prompt, 500, 0.5);
+    try {
+      const suggestions = await queryHuggingFace(prompt);
+      return suggestions;
+    } catch (error: any) {
+      console.error('Error generating protocol suggestions:', error);
+      throw new Error(`Failed to generate protocol suggestions: ${error.message}`);
+    }
   }
-  
+
   /**
    * Answer specific questions about CSR reports
    * @param question The specific question about a CSR report
@@ -257,17 +262,25 @@ export class HuggingFaceService {
     question: string,
     reportContent: string
   ): Promise<string> {
-    const prompt = `As an AI research assistant, analyze this excerpt from a Clinical Study Report and answer the user's question.
+    const prompt = `
+    As a clinical research assistant, answer the following question about a Clinical Study Report (CSR):
     
-    CSR content: ${reportContent.slice(0, 3500)} ${reportContent.length > 3500 ? '...' : ''}
+    Question: ${question}
     
-    User question: ${question}
+    Relevant CSR Content: 
+    ${reportContent.substring(0, 3000)} // Truncate if too long
     
-    Provide a concise but comprehensive answer based solely on the CSR content provided. If the information isn't available in the content, acknowledge this limitation.`;
+    Please provide a clear and concise answer based specifically on the information provided in the CSR content.
+    `;
     
-    return await queryHuggingFace(prompt, 400, 0.5);
+    try {
+      const answer = await queryHuggingFace(prompt);
+      return answer;
+    } catch (error: any) {
+      console.error('Error answering CSR question:', error);
+      throw new Error(`Failed to answer CSR question: ${error.message}`);
+    }
   }
 }
 
-// Create and export a singleton instance
 export const huggingFaceService = new HuggingFaceService();

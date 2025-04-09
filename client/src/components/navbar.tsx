@@ -1,12 +1,16 @@
-import React from "react";
-import { Link, useLocation } from "wouter";
-import { 
-  Menu, X, ChevronDown, Database, 
-  LayoutDashboard, FileText, BarChart2, 
-  BookOpen
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { Link } from "wouter";
+import { FileSearch, BarChart2, FileText, Menu, X, Layers, DollarSign, Lightbulb, Code } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,143 +19,129 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export default function Navbar() {
-  const [menuOpen, setMenuOpen] = React.useState(false);
-  const [location] = useLocation();
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav className="container px-4 md:px-6 py-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-6">
-          <Link href="/">
-            <div className="flex items-center space-x-2 cursor-pointer">
-              <Database className="h-7 w-7 text-primary" />
-              <span className="font-bold text-xl bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">TrialSage</span>
-            </div>
-          </Link>
-          <div className="hidden md:flex space-x-2">
-            <NavItem href="/dashboard">
-              <LayoutDashboard className="h-4 w-4 mr-2" />
-              Dashboard
-            </NavItem>
-            <NavItem href="/reports">
-              <FileText className="h-4 w-4 mr-2" />
-              Reports
-            </NavItem>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-9 flex items-center gap-1 -my-2">
-                  <span>AI Tools</span>
-                  <ChevronDown className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-56">
-                <DropdownMenuItem asChild>
-                  <Link href="/use-cases" className="w-full cursor-pointer">
-                    <div className="flex items-center">
-                      <BookOpen className="h-4 w-4 mr-2" /> 
-                      Use Case Library
-                    </div>
-                  </Link>
+    <div className="flex h-16 items-center justify-between px-4 md:px-6">
+      <Link href="/" className="flex items-center">
+        <FileSearch className="h-6 w-6 text-primary" />
+        <span className="ml-2 text-xl font-semibold">TrialSage</span>
+      </Link>
+      <div className="flex items-center gap-4">
+        <div className="hidden md:flex gap-6">
+          <DropdownMenu>
+            <DropdownMenuTrigger className="flex items-center gap-1 cursor-pointer">
+              Product
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <Link href="/features">
+                <DropdownMenuItem className="cursor-pointer">
+                  <Layers className="mr-2 h-4 w-4" />
+                  <span>Features</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/analytics" className="w-full cursor-pointer">
-                    <div className="flex items-center">
-                      <BarChart2 className="h-4 w-4 mr-2" /> 
-                      Analytics
-                    </div>
-                  </Link>
+              </Link>
+              <Link href="/pricing">
+                <DropdownMenuItem className="cursor-pointer">
+                  <DollarSign className="mr-2 h-4 w-4" />
+                  <span>Pricing</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/translation" className="w-full cursor-pointer">
-                    <div className="flex items-center">
-                      <BookOpen className="h-4 w-4 mr-2" /> 
-                      Translation
-                    </div>
-                  </Link>
+              </Link>
+              <Link href="/use-cases">
+                <DropdownMenuItem className="cursor-pointer">
+                  <Lightbulb className="mr-2 h-4 w-4" />
+                  <span>Use Cases</span>
                 </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+              </Link>
+              <Link href="/api">
+                <DropdownMenuItem className="cursor-pointer">
+                  <Code className="mr-2 h-4 w-4" />
+                  <span>API</span>
+                </DropdownMenuItem>
+              </Link>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Link href="/reports">Reports</Link>
+          <Link href="/analytics">Analytics</Link>
+          <Link href="/protocol-generator">Protocol Generator</Link>
         </div>
-        <div className="hidden md:flex items-center space-x-2">
-          <Link href="/upload">
-            <Button variant="outline" size="sm" className="h-9 shadow-sm">
-              <FileText className="h-4 w-4 mr-2" />
-              Upload CSR
+        <div className="hidden md:flex gap-2">
+          <Link href="/dashboard">
+            <Button variant="outline">Dashboard</Button>
+          </Link>
+          <Button>Sign Up</Button>
+        </div>
+        <Sheet open={isOpen} onOpenChange={setIsOpen}>
+          <SheetTrigger asChild className="md:hidden">
+            <Button variant="ghost" size="icon">
+              <Menu className="h-5 w-5" />
             </Button>
-          </Link>
-          <Button size="sm" className="h-9 shadow-sm">Sign In</Button>
-        </div>
-        <div className="md:hidden">
-          <Button variant="ghost" size="icon" onClick={() => setMenuOpen(!menuOpen)}>
-            {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </Button>
-        </div>
-      </div>
-      {menuOpen && (
-        <div className="pt-4 pb-3 border-t mt-4 md:hidden">
-          <div className="space-y-2 flex flex-col">
-            <Link href="/dashboard">
-              <Button variant="ghost" className="w-full justify-start">
-                <LayoutDashboard className="h-4 w-4 mr-2" />
-                Dashboard
-              </Button>
-            </Link>
-            <Link href="/reports">
-              <Button variant="ghost" className="w-full justify-start">
-                <FileText className="h-4 w-4 mr-2" />
-                Reports
-              </Button>
-            </Link>
-            <Link href="/use-cases">
-              <Button variant="ghost" className="w-full justify-start">
-                <BookOpen className="h-4 w-4 mr-2" />
-                Use Case Library
-              </Button>
-            </Link>
-            <Link href="/analytics">
-              <Button variant="ghost" className="w-full justify-start">
-                <BarChart2 className="h-4 w-4 mr-2" />
-                Analytics
-              </Button>
-            </Link>
-            <Link href="/translation">
-              <Button variant="ghost" className="w-full justify-start">
-                <BookOpen className="h-4 w-4 mr-2" />
-                Translation
-              </Button>
-            </Link>
-            <div className="pt-2 flex flex-col gap-2">
-              <Link href="/upload">
-                <Button variant="outline" size="sm" className="w-full">
-                  <FileText className="h-4 w-4 mr-2" />
-                  Upload CSR
+          </SheetTrigger>
+          <SheetContent side="right">
+            <SheetHeader>
+              <SheetTitle>TrialSage</SheetTitle>
+              <SheetDescription>
+                AI-Powered CSR Intelligence Platform
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex flex-col gap-4 py-4">
+              <div className="font-medium px-1 py-2">Product</div>
+              <Link href="/features" onClick={() => setIsOpen(false)}>
+                <div className="flex items-center gap-2 py-2 pl-3">
+                  <Layers className="h-5 w-5" />
+                  <span>Features</span>
+                </div>
+              </Link>
+              <Link href="/pricing" onClick={() => setIsOpen(false)}>
+                <div className="flex items-center gap-2 py-2 pl-3">
+                  <DollarSign className="h-5 w-5" />
+                  <span>Pricing</span>
+                </div>
+              </Link>
+              <Link href="/use-cases" onClick={() => setIsOpen(false)}>
+                <div className="flex items-center gap-2 py-2 pl-3">
+                  <Lightbulb className="h-5 w-5" />
+                  <span>Use Cases</span>
+                </div>
+              </Link>
+              <Link href="/api" onClick={() => setIsOpen(false)}>
+                <div className="flex items-center gap-2 py-2 pl-3">
+                  <Code className="h-5 w-5" />
+                  <span>API</span>
+                </div>
+              </Link>
+
+              <Separator />
+
+              <div className="font-medium px-1 py-2">Platform</div>
+              <Link href="/reports" onClick={() => setIsOpen(false)}>
+                <div className="flex items-center gap-2 py-2 pl-3">
+                  <FileText className="h-5 w-5" />
+                  <span>Reports</span>
+                </div>
+              </Link>
+              <Link href="/analytics" onClick={() => setIsOpen(false)}>
+                <div className="flex items-center gap-2 py-2 pl-3">
+                  <BarChart2 className="h-5 w-5" />
+                  <span>Analytics</span>
+                </div>
+              </Link>
+              <Link href="/protocol-generator" onClick={() => setIsOpen(false)}>
+                <div className="flex items-center gap-2 py-2 pl-3">
+                  <FileText className="h-5 w-5" />
+                  <span>Protocol Generator</span>
+                </div>
+              </Link>
+              <Separator />
+              <Link href="/dashboard" onClick={() => setIsOpen(false)}>
+                <Button variant="outline" className="w-full">
+                  Dashboard
                 </Button>
               </Link>
-              <Button size="sm" className="w-full">Sign In</Button>
+              <Button className="w-full">Sign Up</Button>
             </div>
-          </div>
-        </div>
-      )}
-    </nav>
-  );
-}
-
-function NavItem({ href, children }: { href: string; children: React.ReactNode }) {
-  const [location] = useLocation();
-  const isActive = location === href;
-
-  return (
-    <Link href={href}>
-      <Button
-        variant={isActive ? "secondary" : "ghost"}
-        className={cn(
-          "h-9 flex items-center -my-2 font-medium px-4",
-          isActive ? "bg-primary/10 text-primary" : "hover:bg-slate-100"
-        )}
-      >
-        {children}
-      </Button>
-    </Link>
+          </SheetContent>
+        </Sheet>
+      </div>
+    </div>
   );
 }

@@ -35,9 +35,9 @@ export default function Home() {
                 View Demo Dashboard <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
-            <Link href="/reports">
+            <Link href="/features">
               <Button size="lg" variant="outline" className="h-11">
-                CSR Reports
+                Explore Features
               </Button>
             </Link>
           </div>
@@ -277,9 +277,11 @@ export default function Home() {
                 </li>
               </ul>
               <div className="mt-6">
-                <Button className="w-full" variant="outline">
-                  Get Started
-                </Button>
+                <Link href="/pricing">
+                  <Button className="w-full" variant="outline">
+                    Get Started
+                  </Button>
+                </Link>
               </div>
             </div>
             <div className="flex flex-col rounded-xl border bg-primary p-6 shadow-sm text-white">
@@ -316,9 +318,11 @@ export default function Home() {
                 </li>
               </ul>
               <div className="mt-6">
-                <Button className="w-full bg-white text-primary hover:bg-white/90">
-                  Subscribe Now
-                </Button>
+                <Link href="/pricing">
+                  <Button className="w-full bg-white text-primary hover:bg-white/90">
+                    Subscribe Now
+                  </Button>
+                </Link>
               </div>
             </div>
             <div className="flex flex-col rounded-xl border p-6 shadow-sm">
@@ -355,9 +359,11 @@ export default function Home() {
                 </li>
               </ul>
               <div className="mt-6">
-                <Button className="w-full" variant="outline">
-                  Contact Sales
-                </Button>
+                <Link href="/pricing">
+                  <Button className="w-full" variant="outline">
+                    Contact Sales
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>
