@@ -93,31 +93,28 @@ async function runImport() {
         // Insert new report
         const { rows: [newReport] } = await pool.query(
           `INSERT INTO csr_reports 
-           (title, official_title, sponsor, indication, phase, file_name, file_size, date, completion_date, nctrial_id, drug_name, source, import_date, status) 
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) 
+           (title, sponsor, indication, phase, file_name, file_size, date, nctrial_id, drug_name, status, summary) 
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) 
            RETURNING id`,
           [
             study.title,
-            study.officialTitle,
             study.sponsor,
             study.indication,
             study.phase,
             study.fileName,
             study.fileSize,
             study.date,
-            study.completionDate,
             study.nctrialId,
             study.drugName,
-            study.source,
-            new Date(),
-            "Imported"
+            "Imported",
+            study.officialTitle || "" // Use officialTitle as summary
           ]
         );
         
         // Insert details
         await pool.query(
           `INSERT INTO csr_details 
-           (report_id, study_design, primary_objective, study_description, inclusion_criteria, exclusion_criteria, endpoint_text, statistical_methods, safety_monitoring, results, last_updated) 
+           (report_id, study_design, primary_objective, study_description, inclusion_criteria, exclusion_criteria, endpoints, statistical_methods, safety, results, last_updated) 
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
           [
             newReport.id,
@@ -126,10 +123,10 @@ async function runImport() {
             study.description || study.detailedDescription,
             study.eligibilityCriteria,
             "",
-            "",
-            "",
-            "",
-            JSON.stringify({}),
+            JSON.stringify({}), // endpoints
+            JSON.stringify({}), // statistical_methods
+            JSON.stringify({}), // safety
+            JSON.stringify({}), // results
             new Date()
           ]
         );
