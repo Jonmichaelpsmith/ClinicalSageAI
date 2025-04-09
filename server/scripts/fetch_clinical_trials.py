@@ -21,13 +21,7 @@ import urllib.parse
 
 # Define constants
 BASE_URL = "https://clinicaltrials.gov/api/v2/studies"
-FIELDS = [
-    "NCTId", "BriefTitle", "OfficialTitle", "StudyType", "Phase", "Condition",
-    "StartDate", "PrimaryCompletionDate", "CompletionDate", "StudyStatus", 
-    "SponsorCollaborators", "ResultsFirstSubmitDate", "ResultsFirstPostDate",
-    "LocationFacility", "StudyPopulation", "EligibilityCriteria", "EnrollmentCount",
-    "ArmGroup", "OutcomeMeasure"
-]
+# We won't specify fields to get all available data
 
 # Create directories if they don't exist
 UPLOAD_DIR = os.path.join(os.getcwd(), "uploads")
@@ -38,31 +32,36 @@ for directory in [UPLOAD_DIR, PDF_DIR, DATA_DIR]:
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-def fetch_trials(offset=0, limit=100, has_results=True):
-    """Fetch a batch of studies from the ClinicalTrials.gov API"""
+def fetch_trials(offset=0, pageSize=100, has_results=True):
+    """Fetch a batch of studies from the ClinicalTrials.gov API v2"""
+    # Experiment with simpler query parameters for API v2
     params = {
-        "fields": ",".join(FIELDS),
-        "limit": limit,
-        "offset": offset,
-        "query.filter": "OverallStatus:Completed" if has_results else None,
-        "query.term": "AREA[ResultsFirstPostDate] RANGE[01/01/2018, MAX]",
-        "countTotal": "true"
+        "pageSize": pageSize,  # API v2 uses pageSize instead of limit
+        "countTotal": "true",
+        "query.cond": "cancer",  # Common condition that should have many trials
     }
+    
+    # Add pageToken only if offset is not 0
+    if offset > 0:
+        params["pageToken"] = str(offset)
     
     # Remove None values from params
     params = {k: v for k, v in params.items() if v is not None}
     
+    print(f"API request to {BASE_URL} with params: {params}")
     response = requests.get(BASE_URL, params=params)
+    
+    if response.status_code != 200:
+        print(f"API Error: {response.status_code} - {response.text}")
+    
     response.raise_for_status()
     return response.json()
 
 def transform_trial_data(study):
     """Transform raw API data into the format needed for our database"""
-    # Extract the sponsor name from the sponsor collaborators
-    sponsor = "Unknown"
-    if study.get("sponsorCollaborators") and study["sponsorCollaborators"].get("leadSponsor"):
-        sponsor = study["sponsorCollaborators"]["leadSponsor"].get("name", "Unknown")
-
+    # Extract the sponsor name
+    sponsor = study.get("leadSponsorName", "Unknown")
+    
     # Extract phase information
     phase = study.get("phase", "N/A")
     if isinstance(phase, list) and len(phase) > 0:
@@ -75,50 +74,36 @@ def transform_trial_data(study):
     
     # Extract enrollment count
     sample_size = None
-    if study.get("enrollmentCount") and study["enrollmentCount"].get("value"):
-        sample_size = study["enrollmentCount"]["value"]
+    if study.get("enrollmentCount"):
+        sample_size = study.get("enrollmentCount")
     
-    # Extract treatment arms
+    # We don't have arms and measures in the simplified field list
     treatment_arms = []
-    if study.get("armGroup"):
-        for arm in study["armGroup"]:
-            treatment_arms.append({
-                "name": arm.get("armGroupLabel", ""),
-                "type": arm.get("armGroupType", ""),
-                "description": arm.get("description", "")
-            })
-    
-    # Extract endpoints (outcome measures)
     endpoints = []
-    if study.get("outcomeMeasure"):
-        for outcome in study["outcomeMeasure"]:
-            endpoints.append({
-                "name": outcome.get("measure", ""),
-                "type": outcome.get("type", ""),
-                "description": outcome.get("description", ""),
-                "timeFrame": outcome.get("timeFrame", "")
-            })
     
     # Extract eligibility criteria
     eligibility = study.get("eligibilityCriteria", "")
     
     # Format start date and completion date
     start_date = None
-    if study.get("startDate"):
-        start_date = study["startDate"].get("date", None)
-    
     completion_date = None
+    
+    if study.get("startDate"):
+        start_date = study["startDate"]
+    
     if study.get("completionDate"):
-        completion_date = study["completionDate"].get("date", None)
+        completion_date = study["completionDate"]
     
     # Create a normalized record for our database
+    nct_id = study.get("nctId", "")
+        
     return {
-        "nctrial_id": study.get("nctId", ""),
+        "nctrial_id": nct_id,
         "title": study.get("briefTitle", study.get("officialTitle", "Untitled Study")),
         "sponsor": sponsor,
         "indication": indication,
         "phase": phase,
-        "status": study.get("studyStatus", "Unknown"),
+        "status": study.get("overallStatus", "Unknown"),
         "date": completion_date,
         "sample_size": sample_size,
         "study_design": determine_study_design(study),
@@ -259,8 +244,10 @@ def download_all_trials(max_records=500, batch_size=100, download_pdfs=True):
     processed_trials = []
     
     # Estimate total records
-    initial_data = fetch_trials(offset=0, limit=1)
-    total_count = initial_data.get("totalCount", 0)
+    # Using pageSize instead of limit for API v2
+    initial_data = fetch_trials(offset=0, pageSize=1)
+    # v2 API has different structure
+    total_count = initial_data.get("studyCount", 0)
     print(f"Total available trials: {total_count}")
     
     # Cap at max_records
@@ -268,12 +255,14 @@ def download_all_trials(max_records=500, batch_size=100, download_pdfs=True):
     
     # Create progress bar
     with tqdm(total=records_to_fetch, desc="Fetching trials") as pbar:
-        for offset in range(0, records_to_fetch, batch_size):
-            limit = min(batch_size, records_to_fetch - offset)
-            print(f"Fetching records {offset} to {offset + limit}")
-            data = fetch_trials(offset=offset, limit=limit)
+        for page_token in range(0, records_to_fetch, batch_size):
+            page_size = min(batch_size, records_to_fetch - page_token)
+            print(f"Fetching records {page_token} to {page_token + page_size}")
+            data = fetch_trials(offset=page_token, pageSize=page_size)
             
-            if not data.get("studies"):
+            # Check if we have studies in the API response
+            if not data.get("studies") or len(data["studies"]) == 0:
+                print("No studies found in response or reached the end")
                 break
                 
             for study in data["studies"]:
@@ -283,7 +272,10 @@ def download_all_trials(max_records=500, batch_size=100, download_pdfs=True):
                 
                 # If requested, try to download and process PDFs
                 if download_pdfs:
-                    nct_id = study.get("nctId")
+                    nct_id = study.get("nctId", "")
+                    # In API v2, this is actually NCTId (capital I)
+                    if not nct_id:
+                        nct_id = study.get("NCTId", "")
                     if nct_id:
                         pdf_path = try_download_pdf(nct_id)
                         if pdf_path:
