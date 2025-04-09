@@ -21,7 +21,7 @@ export class TranslationService {
   
   constructor() {
     // Check if we're in a production environment with access to models
-    this.isModelAvailable = !!process.env.HUGGINGFACE_API_KEY;
+    this.isModelAvailable = !!process.env.HF_API_KEY;
   }
 
   /**
@@ -42,7 +42,7 @@ export class TranslationService {
         // Use HuggingFace Inference model if API key is available
         const model = new HuggingFaceInference({
           model: "Helsinki-NLP/opus-mt-" + sourceLanguage + "-" + targetLanguage,
-          apiKey: process.env.HUGGINGFACE_API_KEY,
+          apiKey: process.env.HF_API_KEY,
         });
         
         return await model.invoke(text);
@@ -180,7 +180,7 @@ export class TranslationService {
         // Use HuggingFace Inference model if API key is available
         const model = new HuggingFaceInference({
           model: "Helsinki-NLP/opus-mt-en-" + targetLanguage,
-          apiKey: process.env.HUGGINGFACE_API_KEY,
+          apiKey: process.env.HF_API_KEY,
         });
         
         const prompt = `

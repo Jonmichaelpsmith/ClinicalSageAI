@@ -10,15 +10,8 @@ import { InsertChatMessage, InsertChatConversation, ChatMessage, ChatConversatio
 import { db } from './db';
 import { eq, asc, desc } from 'drizzle-orm';
 
-// Model configuration
-const MODELS = {
-  mixtral: "mistralai/Mixtral-8x7B-Instruct-v0.1",
-  phi2: "microsoft/Phi-2",
-  falcon: "tiiuae/falcon-7b-instruct"
-};
-
-// Default model to use
-const DEFAULT_MODEL = MODELS.mixtral;
+const HF_API_KEY = process.env.HF_API_KEY;
+const HF_MODEL_URL = 'https://api-inference.huggingface.co/models/mistralai/Mixtral-8x7B-Instruct-v0.1';
 
 // Research companion persona
 const RESEARCH_COMPANION_PERSONA = `
@@ -35,87 +28,43 @@ Be brief but insightful. Provide specific, actionable advice when possible.
 `;
 
 /**
+ * Query the Hugging Face Inference API directly
+ */
+export async function queryHuggingFace(prompt: string, max_new_tokens: number = 300, temperature: number = 0.5): Promise<string> {
+  const headers = {
+    Authorization: `Bearer ${HF_API_KEY}`,
+    'Content-Type': 'application/json',
+  };
+
+  const payload = {
+    inputs: prompt,
+    parameters: {
+      max_new_tokens,
+      temperature,
+    },
+  };
+
+  try {
+    const response = await axios.post(HF_MODEL_URL, payload, { headers });
+    return response.data[0]?.generated_text || '[No response]';
+  } catch (error) {
+    console.error('Hugging Face API error:', error);
+    throw new Error(`Failed to query AI model: ${(error as Error).message}`);
+  }
+}
+
+/**
  * Hugging Face AI Service
  */
 export class HuggingFaceService {
-  private apiKey: string | null;
-  private defaultModel: string;
-
-  constructor() {
-    this.apiKey = process.env.HF_API_KEY || null;
-    this.defaultModel = DEFAULT_MODEL;
-  }
-
   /**
    * Check if the API key is available
    * @returns True if API key is available, false otherwise
    */
   isApiKeyAvailable(): boolean {
-    return this.apiKey !== null && this.apiKey !== undefined && this.apiKey !== '';
+    return HF_API_KEY !== null && HF_API_KEY !== undefined && HF_API_KEY !== '';
   }
 
-  /**
-   * Set the default model to use
-   * @param modelKey The key of the model to use
-   */
-  setDefaultModel(modelKey: keyof typeof MODELS): void {
-    this.defaultModel = MODELS[modelKey];
-  }
-
-  /**
-   * Query the Hugging Face Inference API
-   * @param prompt The prompt to send to the model
-   * @param modelName Optional model name to override the default
-   * @param params Optional parameters for the API
-   * @returns The generated text response
-   */
-  async queryModel(
-    prompt: string,
-    modelName: string = this.defaultModel,
-    params: { max_new_tokens?: number; temperature?: number } = {}
-  ): Promise<string> {
-    if (!this.isApiKeyAvailable()) {
-      throw new Error('Hugging Face API key not configured.');
-    }
-
-    try {
-      const apiUrl = `https://api-inference.huggingface.co/models/${modelName}`;
-      const response = await axios.post(
-        apiUrl,
-        {
-          inputs: prompt,
-          parameters: {
-            max_new_tokens: params.max_new_tokens || 400,
-            temperature: params.temperature || 0.7,
-            return_full_text: false
-          }
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${this.apiKey}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-
-      // Extract generated text from response
-      if (Array.isArray(response.data) && response.data.length > 0) {
-        return response.data[0].generated_text;
-      } else if (response.data && response.data.generated_text) {
-        return response.data.generated_text;
-      } else {
-        console.error('Unexpected response format from Hugging Face API:', response.data);
-        return 'I apologize, but I received an unexpected response format. Please try again.';
-      }
-    } catch (error: any) {
-      console.error('Error querying Hugging Face model:', error);
-      if (axios.isAxiosError(error) && error.response) {
-        console.error('API response error:', error.response.data);
-      }
-      throw new Error(`Failed to query AI model: ${error.message}`);
-    }
-  }
-  
   /**
    * Create a new conversation
    * @param userId Optional user ID associated with the conversation
@@ -217,7 +166,6 @@ export class HuggingFaceService {
    * Generate a new message in a conversation from the Research Companion persona
    * @param conversationId The ID of the conversation
    * @param userMessage The user's message to respond to
-   * @param contextMessages Optional previous messages for context
    * @returns The generated response message
    */
   async generateConversationResponse(
@@ -258,17 +206,14 @@ export class HuggingFaceService {
     prompt += "TrialSage:";
     
     // Generate response
-    const responseContent = await this.queryModel(prompt, this.defaultModel, {
-      temperature: 0.7,
-      max_new_tokens: 500
-    });
+    const responseContent = await queryHuggingFace(prompt, 500, 0.7);
     
     // Add response to conversation
     const assistantMessage = await this.addMessageToConversation(
       conversationId, 
       "assistant", 
       responseContent,
-      { model: this.defaultModel }
+      { model: "huggingface-mixtral" }
     );
     
     return assistantMessage;
@@ -299,7 +244,7 @@ export class HuggingFaceService {
     
     Format your response as actionable suggestions a researcher could implement.`;
     
-    return await this.queryModel(prompt);
+    return await queryHuggingFace(prompt, 500, 0.5);
   }
   
   /**
@@ -320,7 +265,7 @@ export class HuggingFaceService {
     
     Provide a concise but comprehensive answer based solely on the CSR content provided. If the information isn't available in the content, acknowledge this limitation.`;
     
-    return await this.queryModel(prompt);
+    return await queryHuggingFace(prompt, 400, 0.5);
   }
 }
 

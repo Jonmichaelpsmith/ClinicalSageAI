@@ -44,11 +44,9 @@ Format the output as a structured protocol with the following sections:
 Make the protocol scientifically sound and aligned with regulatory expectations.
 `;
 
-      const response = await HuggingFaceService.queryModel(prompt, 'mistralai/Mistral-7B-Instruct-v0.2', {
-        max_tokens: 2000,
-        temperature: 0.3,
-        top_p: 0.95
-      });
+      // Use queryHuggingFace to directly query the model
+      const { queryHuggingFace } = await import('./huggingface-service');
+      const response = await queryHuggingFace(prompt, 2000, 0.3);
       
       // Parse sections from the response
       const protocolSections: Record<string, string> = {};
@@ -700,11 +698,9 @@ Please provide specific, actionable advice based on historical precedent and reg
 Include examples from similar trials if relevant.
 `;
       
-      return await HuggingFaceService.queryModel(prompt, 'mistralai/Mistral-7B-Instruct-v0.2', {
-        max_tokens: 1500,
-        temperature: 0.4,
-        top_p: 0.95
-      });
+      // Use queryHuggingFace to directly query the model
+      const { queryHuggingFace } = await import('./huggingface-service');
+      return await queryHuggingFace(prompt, 1500, 0.4);
     } catch (error) {
       console.error('Error getting study design advice:', error);
       return 'Unable to provide study design advice at this time. Please try again later.';

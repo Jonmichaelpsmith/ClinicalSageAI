@@ -1,19 +1,14 @@
-import { HuggingFaceInference } from "@langchain/community/llms/hf";
-import { AIMessage, HumanMessage, SystemMessage } from "@langchain/core/messages";
+// Deprecated: Replaced with Hugging Face integration in huggingface-service.ts
 import { InsertCsrDetails } from "@shared/schema";
-
-// Whether to use Hugging Face models or mock data
-const useHuggingFace = !!process.env.HUGGINGFACE_API_KEY;
+import { queryHuggingFace } from './huggingface-service';
+import * as PDFParse from 'pdf-parse';
 
 // Extract text from PDF buffer
 export async function extractTextFromPdf(pdfBuffer: Buffer): Promise<string> {
   try {
-    // Use PDFLoader from LangChain to extract text
-    // For demonstration purposes, we'll just return a mock extraction
-    // In a real implementation, we would write the buffer to a temporary file and use PDFLoader
-    
-    // Mock extraction for now since we can't process the actual PDF
-    return "Extracted text from PDF would be processed here";
+    // Use pdf-parse to extract text from the PDF
+    const result = await PDFParse(pdfBuffer);
+    return result.text;
   } catch (error) {
     console.error("Error extracting text from PDF:", error);
     throw new Error("Failed to extract text from PDF");
@@ -70,62 +65,50 @@ function generateMockCsrAnalysis(): Partial<InsertCsrDetails> {
 // Analyze CSR content and generate structured data
 export async function analyzeCsrContent(pdfText: string): Promise<Partial<InsertCsrDetails>> {
   try {
-    if (useHuggingFace) {
-      // Initialize Hugging Face model
-      const model = new HuggingFaceInference({
-        model: "mistralai/Mixtral-8x7B-Instruct-v0.1",
-        apiKey: process.env.HUGGINGFACE_API_KEY,
-        maxTokens: 1024,
-      });
-
-      // System prompt
-      const prompt = `
-        You are an AI assistant specialized in analyzing clinical study reports (CSRs).
-        Extract key information from the provided CSR text and structure it according to the following categories:
-        - Study Design
-        - Primary Objective
-        - Study Description
-        - Inclusion Criteria
-        - Exclusion Criteria
-        - Treatment Arms (as array with arm, intervention, dosing regimen, participants)
-        - Study Duration
-        - Endpoints (with primary and secondary array)
-        - Results (with primaryResults, secondaryResults, biomarkerResults)
-        - Safety (with overallSafety, major concerns, common adverse events)
-        
-        Format the response as a JSON object with these fields.
-        
-        CSR Text:
-        ${pdfText}
-      `;
-
-      const response = await model.invoke(prompt);
+    // System prompt for Hugging Face
+    const prompt = `
+      You are an AI assistant specialized in analyzing clinical study reports (CSRs).
+      Extract key information from the provided CSR text and structure it according to the following categories:
+      - Study Design
+      - Primary Objective
+      - Study Description
+      - Inclusion Criteria
+      - Exclusion Criteria
+      - Treatment Arms (as array with arm, intervention, dosing regimen, participants)
+      - Study Duration
+      - Endpoints (with primary and secondary array)
+      - Results (with primaryResults, secondaryResults, biomarkerResults)
+      - Safety (with overallSafety, major concerns, common adverse events)
       
-      try {
-        // Try to parse JSON from the response
-        const jsonStr = response.match(/\{[\s\S]*\}/)?.[0] || "";
-        const analysis = JSON.parse(jsonStr);
-        
-        return {
-          studyDesign: analysis.studyDesign,
-          primaryObjective: analysis.primaryObjective,
-          studyDescription: analysis.studyDescription,
-          inclusionCriteria: analysis.inclusionCriteria,
-          exclusionCriteria: analysis.exclusionCriteria,
-          treatmentArms: analysis.treatmentArms,
-          studyDuration: analysis.studyDuration,
-          endpoints: analysis.endpoints,
-          results: analysis.results,
-          safety: analysis.safety,
-          processed: true
-        };
-      } catch (parseError) {
-        console.error("Error parsing HF response:", parseError);
-        // Fall back to mock data if parsing fails
-        return generateMockCsrAnalysis();
-      }
-    } else {
-      // For development purposes, return mock data
+      Format the response as a JSON object with these fields.
+      
+      CSR Text:
+      ${pdfText}
+    `;
+
+    try {
+      const response = await queryHuggingFace(prompt, 1024, 0.5);
+      
+      // Try to parse JSON from the response
+      const jsonStr = response.match(/\{[\s\S]*\}/)?.[0] || "";
+      const analysis = JSON.parse(jsonStr);
+      
+      return {
+        studyDesign: analysis.studyDesign,
+        primaryObjective: analysis.primaryObjective,
+        studyDescription: analysis.studyDescription,
+        inclusionCriteria: analysis.inclusionCriteria,
+        exclusionCriteria: analysis.exclusionCriteria,
+        treatmentArms: analysis.treatmentArms,
+        studyDuration: analysis.studyDuration,
+        endpoints: analysis.endpoints,
+        results: analysis.results,
+        safety: analysis.safety,
+        processed: true
+      };
+    } catch (parseError) {
+      console.error("Error parsing HF response:", parseError);
+      // Fall back to mock data if parsing fails
       return generateMockCsrAnalysis();
     }
   } catch (error) {
@@ -138,26 +121,15 @@ export async function analyzeCsrContent(pdfText: string): Promise<Partial<Insert
 // Generate a simple summary of the CSR
 export async function generateCsrSummary(pdfText: string): Promise<string> {
   try {
-    if (useHuggingFace) {
-      // Initialize Hugging Face model
-      const model = new HuggingFaceInference({
-        model: "mistralai/Mixtral-8x7B-Instruct-v0.1",
-        apiKey: process.env.HUGGINGFACE_API_KEY,
-      });
+    const prompt = `
+      Generate a brief, concise summary (max 150 words) of the following clinical study report text, 
+      focusing on the study objective, design, and key findings.
+      
+      CSR Text:
+      ${pdfText}
+    `;
 
-      const prompt = `
-        Generate a brief, concise summary (max 150 words) of the following clinical study report text, 
-        focusing on the study objective, design, and key findings.
-        
-        CSR Text:
-        ${pdfText}
-      `;
-
-      return await model.invoke(prompt);
-    } else {
-      // Mock summary for development
-      return "This phase 3, randomized, double-blind study evaluated the investigational drug versus placebo in 450 patients with advanced solid tumors. The primary endpoint of progression-free survival was significantly improved in the experimental arm (8.2 vs 3.1 months, HR 0.52, p<0.001). Overall survival was also extended (21.4 vs 15.2 months, HR 0.70, p=0.018). The objective response rate was 42% vs 5% (p<0.001). Treatment was generally well-tolerated with manageable side effects, primarily fatigue, nausea, and diarrhea. Biomarker analyses revealed patients with high expression of Biomarker X demonstrated enhanced benefit.";
-    }
+    return await queryHuggingFace(prompt, 500, 0.6);
   } catch (error) {
     console.error("Error generating CSR summary:", error);
     // Return mock summary if generation fails

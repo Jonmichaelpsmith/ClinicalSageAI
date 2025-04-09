@@ -5,6 +5,7 @@ import csvParser from 'csv-parser';
 import { db } from './db';
 import { csrReports, csrDetails, InsertCsrReport, InsertCsrDetails } from '@shared/schema';
 import { pool } from './db';
+import { sql } from 'drizzle-orm';
 import { extractTextFromPdf } from './openai-service';
 import { validatePdfFile, getPdfMetadata, savePdfFile } from './pdf-processor';
 import { analyzeCsrContent, generateCsrSummary } from './openai-service';

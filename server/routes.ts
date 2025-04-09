@@ -12,7 +12,7 @@ import {
 } from "./analytics-service";
 import { translationService, supportedLanguages } from "./translation-service";
 import { ProtocolService } from "./protocol-service";
-import { huggingFaceService } from "./huggingface-service";
+import { huggingFaceService, queryHuggingFace } from "./huggingface-service";
 import { SagePlusService } from "./sage-plus-service";
 import { 
   fetchClinicalTrialData, 
@@ -517,7 +517,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get the most relevant reports (up to 3)
       const relevantReports = filteredReports.slice(0, 3);
       
-      // Generate response using Perplexity
+      // Generate response using Hugging Face
       let content;
       try {
         // Create the chat context
@@ -535,10 +535,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Generate a response using Hugging Face model
         const prompt = `${context}\n\nQuestion: ${query}\n\nAnswer:`;
-        const agentResponse = await huggingFaceService.queryModel(prompt, 'mistralai/Mistral-7B-Instruct-v0.2', {
-          max_tokens: 1000,
-          temperature: 0.3
-        });
+        const agentResponse = await queryHuggingFace(prompt, 1000, 0.3);
         
         content = agentResponse; // huggingFaceService.queryModel returns the text content directly
       } catch (error) {
@@ -636,8 +633,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const { text, sourceLanguage, targetLanguage } = textTranslationSchema.parse(req.body);
       
-      // Check if OpenAI API key is available
-      if (!process.env.OPENAI_API_KEY) {
+      // Check if Hugging Face API key is available
+      if (!process.env.HF_API_KEY) {
         return res.status(500).json({
           success: false,
           message: 'Translation service is not available (API key not configured)'
@@ -708,8 +705,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Check if OpenAI API key is available
-      if (!process.env.OPENAI_API_KEY) {
+      // Check if Hugging Face API key is available
+      if (!process.env.HF_API_KEY) {
         return res.status(500).json({
           success: false,
           message: 'Translation service is not available (API key not configured)'
@@ -760,8 +757,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Check if OpenAI API key is available
-      if (!process.env.OPENAI_API_KEY) {
+      // Check if Hugging Face API key is available
+      if (!process.env.HF_API_KEY) {
         return res.status(500).json({
           success: false,
           message: 'Translation service is not available (API key not configured)'
@@ -798,8 +795,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const params = protocolParamsSchema.parse(req.body);
       
-      // Generate protocol using our service
-      const protocol = await generateProtocol(params);
+      // Import ProtocolService
+      const { ProtocolService } = await import('./protocol-service');
+      
+      // Generate protocol using our service with the proper parameters format
+      const protocol = await ProtocolService.generateProtocol(
+        params.indication,
+        params.phase,
+        params.populationSize ? `${params.populationSize} participants` : 'appropriate population',
+        {
+          primary: params.primaryEndpoint ? [params.primaryEndpoint] : [],
+          secondary: []
+        }
+      );
       
       res.json({
         success: true,
@@ -1025,7 +1033,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json({
         success: true,
-        guidelines: agency === 'all' ? guidelines : { [agency]: guidelines[agency] }
+        guidelines: agency === 'all' ? guidelines : { 
+          [agency]: agency === 'FDA' || agency === 'EMA' ? guidelines[agency as keyof typeof guidelines] : [] 
+        }
       });
     } catch (err) {
       errorHandler(err as Error, res);
@@ -1041,9 +1051,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ success: false, message: 'Protocol data is required' });
       }
       
+      // Define interfaces for validation results
+      interface ValidationIssue {
+        element: string;
+        severity: 'critical' | 'high' | 'medium' | 'low' | 'warning';
+        message: string;
+      }
+      
+      interface RegulatoryFlag {
+        issue: string;
+        severity: 'critical' | 'high' | 'medium' | 'low';
+        message: string;
+        affectedElements?: any[];
+      }
+      
+      interface Recommendation {
+        area: string;
+        message: string;
+        precedents: string[];
+      }
+      
+      interface ValidationResults {
+        isValid: boolean;
+        missingElements: ValidationIssue[];
+        regulatoryFlags: RegulatoryFlag[];
+        recommendations: Recommendation[];
+      }
+      
       // Validate protocol against regulatory requirements
       // This would check for missing elements, regulatory issues, etc.
-      const validationResults = {
+      const validationResults: ValidationResults = {
         isValid: false,
         missingElements: [],
         regulatoryFlags: [],

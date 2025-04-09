@@ -1242,7 +1242,7 @@ export default function Analytics() {
             Success Rate <span className="ml-1 opacity-75">×</span>
           </Badge>
           <Badge className="px-3 py-1 bg-blue-100 text-blue-800 hover:bg-blue-200 cursor-pointer">
-            Sample Size > 100 <span className="ml-1 opacity-75">×</span>
+            Sample Size &gt; 100 <span className="ml-1 opacity-75">×</span>
           </Badge>
           <Badge className="px-3 py-1 bg-blue-100 text-blue-800 hover:bg-blue-200 cursor-pointer">
             Primary Endpoint Met <span className="ml-1 opacity-75">×</span>
