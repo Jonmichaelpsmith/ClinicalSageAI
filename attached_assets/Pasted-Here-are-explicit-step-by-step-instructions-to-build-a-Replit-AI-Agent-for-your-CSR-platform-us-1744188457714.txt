@@ -1,0 +1,150 @@
+Here are **explicit step-by-step instructions to build a Replit AI Agent** for your CSR platform, using Replit's Ghostwriter AI + your own logic for document parsing, AI summarization, and interface.
+
+---
+
+## 🔧 **Replit AI Agent Instructions: CSR Summarizer & Structurer**
+
+### 🧠 Goal:
+Create a Replit AI Agent that:
+1. Accepts a CSR PDF (uploaded or URL)
+2. Parses the document
+3. Extracts structured insights (endpoints, population, results, safety)
+4. Returns a formatted summary or saves data
+
+---
+
+## ✅ **Step-by-Step Instructions**
+
+### **1. Set Up Your Replit Project**
+- **Create a new Repl:** Choose **Python (Flask or FastAPI)** or **React + Flask backend** if you want a UI.
+- Install packages:
+  ```bash
+  pip install openai pdfplumber fastapi uvicorn python-multipart
+  ```
+
+---
+
+### **2. Add Your AI Agent Prompt Logic**
+Create a `summarize_csr.py` file:
+
+```python
+import openai
+
+openai.api_key = "YOUR_OPENAI_API_KEY"
+
+def summarize_csr(text):
+    prompt = f"""
+You are an expert clinical trial analyst. Extract the following structured data from the Clinical Study Report text below:
+
+- Study Title
+- Phase
+- Indication / Disease Area
+- Population Size
+- Primary and Secondary Endpoints
+- Study Arms (dose levels, control, etc.)
+- Key Results (efficacy and safety)
+- Notable Adverse Events
+- Sponsor
+- Regulatory Region (EMA, FDA, etc.)
+
+Only respond with a structured JSON output.
+
+CSR TEXT:
+{text[:10000]}
+"""
+
+    response = openai.ChatCompletion.create(
+        model="gpt-4-turbo",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.3,
+    )
+
+    return response['choices'][0]['message']['content']
+```
+
+---
+
+### **3. Add PDF Upload + Parsing**
+In `main.py`:
+
+```python
+from fastapi import FastAPI, File, UploadFile
+import pdfplumber
+from summarize_csr import summarize_csr
+
+app = FastAPI()
+
+@app.post("/upload/")
+async def upload_pdf(file: UploadFile = File(...)):
+    contents = await file.read()
+    with open("temp.pdf", "wb") as f:
+        f.write(contents)
+
+    text = ""
+    with pdfplumber.open("temp.pdf") as pdf:
+        for page in pdf.pages:
+            text += page.extract_text() or ""
+
+    summary = summarize_csr(text)
+    return {"summary": summary}
+```
+
+Run with:
+```bash
+uvicorn main:app --reload
+```
+
+---
+
+### **4. Test Your Agent (Replit UI or Postman)**
+- Upload a CSR PDF using a frontend form or Postman.
+- View the structured output (in JSON).
+
+---
+
+### **5. Optional: Build a Frontend**
+In `index.html` or React frontend:
+- Add file upload field
+- Send to `/upload/` endpoint
+- Display returned summary in a structured UI
+
+---
+
+### **6. Store Results (Optional)**
+Add SQLite or Supabase to persist CSR summaries:
+```python
+import sqlite3
+
+def store_summary(data):
+    conn = sqlite3.connect("csrs.db")
+    c = conn.cursor()
+    c.execute("""CREATE TABLE IF NOT EXISTS csrs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        sponsor TEXT,
+        indication TEXT,
+        endpoints TEXT,
+        results TEXT
+    )""")
+    c.execute("INSERT INTO csrs (sponsor, indication, endpoints, results) VALUES (?, ?, ?, ?)",
+              (data['Sponsor'], data['Indication / Disease Area'], data['Primary and Secondary Endpoints'], data['Key Results']))
+    conn.commit()
+    conn.close()
+```
+
+---
+
+## 🧠 **Bonus Agent Behaviors**
+- Ask: “Generate a protocol design based on these endpoints”
+- Ask: “Compare this study to 3 others in Alzheimer’s”
+- Ask: “What was the most common SAE in these 10 CSRs?”
+
+---
+
+## 📍 Hosting & Sharing
+- Replit auto-hosts the app (you get a public URL)
+- Connect a domain via Replit if needed
+- Add auth via Firebase if you want user accounts
+
+---
+
+Want me to generate the Replit files (or upload a starter template) for you?
