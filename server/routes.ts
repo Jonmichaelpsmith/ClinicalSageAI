@@ -10,10 +10,11 @@ import {
   compareTrialsAnalysis, 
   analyzeCompetitorsForSponsor 
 } from "./analytics-service";
+import { translationService, supportedLanguages } from "./translation-service";
 import path from "path";
 import fs from "fs";
 import { insertCsrReportSchema } from "@shared/schema";
-import { ZodError } from "zod";
+import { ZodError, z } from "zod";
 import { fromZodError } from "zod-validation-error";
 
 // Set up multer for file uploads
@@ -333,6 +334,180 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Default to JSON
         res.json({ report, details });
       }
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+
+  // Translation API Endpoints
+  
+  // Get supported languages
+  app.get('/api/translation/languages', (req: Request, res: Response) => {
+    try {
+      res.json({ 
+        success: true, 
+        languages: supportedLanguages 
+      });
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+
+  // Translate text
+  app.post('/api/translation/text', async (req: Request, res: Response) => {
+    try {
+      const textTranslationSchema = z.object({
+        text: z.string().min(1, "Text is required"),
+        sourceLanguage: z.string().min(2, "Source language code is required"),
+        targetLanguage: z.string().min(2, "Target language code is required")
+      });
+      
+      const { text, sourceLanguage, targetLanguage } = textTranslationSchema.parse(req.body);
+      
+      // Check if OpenAI API key is available
+      if (!process.env.OPENAI_API_KEY) {
+        return res.status(500).json({
+          success: false,
+          message: 'Translation service is not available (API key not configured)'
+        });
+      }
+      
+      const translatedText = await translationService.translateText(
+        text, 
+        sourceLanguage, 
+        targetLanguage
+      );
+      
+      res.json({
+        success: true,
+        originalText: text,
+        translatedText,
+        sourceLanguage,
+        targetLanguage
+      });
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+
+  // Translate CSR report details
+  app.get('/api/reports/:id/translate', async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Invalid report ID' 
+        });
+      }
+      
+      const targetLanguage = req.query.targetLanguage as string;
+      if (!targetLanguage) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Target language is required' 
+        });
+      }
+      
+      // Check if language is supported
+      const isSupported = supportedLanguages.some(lang => lang.code === targetLanguage);
+      if (!isSupported) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Unsupported target language' 
+        });
+      }
+      
+      // Get report and details
+      const report = await storage.getCsrReport(id);
+      const details = await storage.getCsrDetails(id);
+      
+      if (!report) {
+        return res.status(404).json({ 
+          success: false, 
+          message: 'Report not found' 
+        });
+      }
+      
+      if (!details) {
+        return res.status(404).json({ 
+          success: false, 
+          message: 'Report details not found' 
+        });
+      }
+      
+      // Check if OpenAI API key is available
+      if (!process.env.OPENAI_API_KEY) {
+        return res.status(500).json({
+          success: false,
+          message: 'Translation service is not available (API key not configured)'
+        });
+      }
+      
+      // Default source language is English
+      const sourceLanguage = "en";
+      
+      // Translate report details
+      const translatedDetails = await translationService.translateCsrDetails(
+        details, 
+        sourceLanguage, 
+        targetLanguage
+      );
+      
+      res.json({
+        success: true,
+        report,
+        details: translatedDetails,
+        translationInfo: {
+          sourceLanguage,
+          targetLanguage,
+          targetLanguageName: supportedLanguages.find(l => l.code === targetLanguage)?.name
+        }
+      });
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+
+  // Translate regulatory guidance
+  app.post('/api/translation/regulatory', async (req: Request, res: Response) => {
+    try {
+      const regulatoryTranslationSchema = z.object({
+        guidance: z.string().min(1, "Regulatory guidance text is required"),
+        targetLanguage: z.string().min(2, "Target language code is required")
+      });
+      
+      const { guidance, targetLanguage } = regulatoryTranslationSchema.parse(req.body);
+      
+      // Check if language is supported
+      const isSupported = supportedLanguages.some(lang => lang.code === targetLanguage);
+      if (!isSupported) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Unsupported target language' 
+        });
+      }
+      
+      // Check if OpenAI API key is available
+      if (!process.env.OPENAI_API_KEY) {
+        return res.status(500).json({
+          success: false,
+          message: 'Translation service is not available (API key not configured)'
+        });
+      }
+      
+      const translatedGuidance = await translationService.translateRegulatoryGuidance(
+        guidance, 
+        targetLanguage
+      );
+      
+      res.json({
+        success: true,
+        originalGuidance: guidance,
+        translatedGuidance,
+        targetLanguage,
+        targetLanguageName: supportedLanguages.find(l => l.code === targetLanguage)?.name
+      });
     } catch (err) {
       errorHandler(err as Error, res);
     }

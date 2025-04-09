@@ -12,6 +12,7 @@ import Analytics from "@/pages/Analytics";
 import UseCaseLibrary from "@/pages/UseCaseLibrary";
 import ProtocolGenerator from "./pages/ProtocolGenerator";
 import StudyDesignAgent from "./pages/StudyDesignAgent";
+import Translation from "./pages/Translation";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { TopNavbar } from "@/components/layout/TopNavbar";
 
@@ -69,6 +70,7 @@ function Router() {
       <Route path="/use-cases">{() => renderWithLayout(UseCaseLibrary)}</Route>
       <Route path="/protocol-generator">{() => renderWithLayout(ProtocolGenerator)}</Route>
       <Route path="/study-design-agent">{() => renderWithLayout(StudyDesignAgent)}</Route>
+      <Route path="/translation">{() => renderWithLayout(Translation)}</Route>
 
       {/* Fallback to 404 */}
       <Route>{() => renderWithLayout(NotFound)}</Route>

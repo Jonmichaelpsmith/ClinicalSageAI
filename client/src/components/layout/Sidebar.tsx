@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import { 
   LayoutDashboard, FileText, Upload, BarChart2, 
   Settings, HelpCircle, Lightbulb, BookOpen, 
-  XCircle, Menu, ClipboardList
+  XCircle, Menu, ClipboardList, Globe
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -110,6 +110,9 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                 <NavItem href="/study-design-agent" icon={<Lightbulb />}>
                   Study Design Agent
                 </NavItem>
+                <NavItem href="/translation" icon={<Globe />}>
+                  Translation Service
+                </NavItem>
                 </div>
             </div>
 
@@ -162,6 +165,9 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                 </NavItem>
                 <NavItem href="/study-design-agent" icon={<Lightbulb />}>
                   Study Design Agent
+                </NavItem>
+                <NavItem href="/translation" icon={<Globe />}>
+                  Translation Service
                 </NavItem>
               </div>
             </div>
