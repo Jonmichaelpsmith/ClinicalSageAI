@@ -682,15 +682,15 @@ plt.title('Fixed Effects with 95% Confidence Intervals')`}</pre>
                   Integrate this model with other TrialSage components
                 </p>
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between border p-3 rounded-md hover:bg-slate-50 cursor-pointer">
+                  <div className="flex items-center justify-between border p-3 rounded-md hover:bg-slate-50 cursor-pointer transition-colors">
                     <span className="text-sm font-medium">Protocol Generator</span>
                     <ChevronRight className="h-4 w-4 text-slate-400" />
                   </div>
-                  <div className="flex items-center justify-between border p-3 rounded-md hover:bg-slate-50 cursor-pointer">
+                  <div className="flex items-center justify-between border p-3 rounded-md hover:bg-slate-50 cursor-pointer transition-colors">
                     <span className="text-sm font-medium">Study Design Agent</span>
                     <ChevronRight className="h-4 w-4 text-slate-400" />
                   </div>
-                  <div className="flex items-center justify-between border p-3 rounded-md hover:bg-slate-50 cursor-pointer">
+                  <div className="flex items-center justify-between border p-3 rounded-md hover:bg-slate-50 cursor-pointer transition-colors">
                     <span className="text-sm font-medium">Virtual Trial Simulator</span>
                     <ChevronRight className="h-4 w-4 text-slate-400" />
                   </div>
@@ -711,28 +711,154 @@ plt.title('Fixed Effects with 95% Confidence Intervals')`}</pre>
                 </p>
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-xs text-slate-600 mb-1">
-                      Effect Size
+                    <label className="block text-xs text-slate-600 mb-1 flex justify-between">
+                      <span>Effect Size</span>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="text-blue-500 cursor-help">?</span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="w-60">The expected difference between treatment groups. Smaller effect sizes require larger sample sizes.</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </label>
-                    <Input type="number" placeholder="0.5" className="text-sm" />
+                    <Input type="number" placeholder="0.5" className="text-sm" min="0.05" max="2.0" step="0.05" />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-600 mb-1 flex justify-between">
+                      <span>Power (1-β)</span>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="text-blue-500 cursor-help">?</span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="w-60">Probability of detecting an effect when it exists. Standard is 0.8 (80%) or 0.9 (90%).</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </label>
+                    <Input type="number" placeholder="0.8" className="text-sm" min="0.7" max="0.99" step="0.01" />
+                    <div className="mt-1 flex">
+                      <span className="flex-1 text-center text-xs text-slate-500 px-2 py-1 hover:bg-slate-100 cursor-pointer rounded-l">70%</span>
+                      <span className="flex-1 text-center text-xs bg-purple-100 text-purple-700 px-2 py-1 font-medium">80%</span>
+                      <span className="flex-1 text-center text-xs text-slate-500 px-2 py-1 hover:bg-slate-100 cursor-pointer">90%</span>
+                      <span className="flex-1 text-center text-xs text-slate-500 px-2 py-1 hover:bg-slate-100 cursor-pointer rounded-r">95%</span>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-600 mb-1 flex justify-between">
+                      <span>Significance Level (α)</span>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="text-blue-500 cursor-help">?</span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="w-60">Threshold for statistical significance. Standard is 0.05 (5%).</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </label>
+                    <Select defaultValue="0.05">
+                      <SelectTrigger className="text-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="0.01">0.01 (1%)</SelectItem>
+                        <SelectItem value="0.05">0.05 (5%)</SelectItem>
+                        <SelectItem value="0.10">0.10 (10%)</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div>
                     <label className="block text-xs text-slate-600 mb-1">
-                      Power (1-β)
+                      Allocation Ratio (T:C)
                     </label>
-                    <Input type="number" placeholder="0.8" className="text-sm" />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-slate-600 mb-1">
-                      Significance Level (α)
-                    </label>
-                    <Input type="number" placeholder="0.05" className="text-sm" />
+                    <Select defaultValue="1">
+                      <SelectTrigger className="text-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">1:1</SelectItem>
+                        <SelectItem value="2">2:1</SelectItem>
+                        <SelectItem value="3">3:1</SelectItem>
+                        <SelectItem value="0.5">1:2</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <Button size="sm" className="w-full">Calculate Sample Size</Button>
                 </div>
               </CardContent>
+              <CardFooter className="pt-0 text-xs text-slate-500 italic">
+                Based on two-sample t-test calculation
+              </CardFooter>
             </Card>
           </div>
+
+          <Card className="mt-4">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center text-lg">
+                <BarChart3 className="h-5 w-5 text-purple-600 mr-2" />
+                Visualization Options
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="border rounded-lg p-3 hover:border-purple-300 hover:bg-purple-50 cursor-pointer transition-colors">
+                  <div className="flex justify-center mb-2">
+                    <BarChart2 className="h-8 w-8 text-purple-600" />
+                  </div>
+                  <h4 className="text-sm font-medium text-center">Bar Charts</h4>
+                  <p className="text-xs text-slate-500 text-center mt-1">Compare values across categories</p>
+                </div>
+                
+                <div className="border rounded-lg p-3 hover:border-purple-300 hover:bg-purple-50 cursor-pointer transition-colors">
+                  <div className="flex justify-center mb-2">
+                    <LineChart className="h-8 w-8 text-purple-600" />
+                  </div>
+                  <h4 className="text-sm font-medium text-center">Line Charts</h4>
+                  <p className="text-xs text-slate-500 text-center mt-1">Show trends over time</p>
+                </div>
+                
+                <div className="border rounded-lg p-3 hover:border-purple-300 hover:bg-purple-50 cursor-pointer transition-colors">
+                  <div className="flex justify-center mb-2">
+                    <PieChartIcon className="h-8 w-8 text-purple-600" />
+                  </div>
+                  <h4 className="text-sm font-medium text-center">Pie Charts</h4>
+                  <p className="text-xs text-slate-500 text-center mt-1">Display proportion of categories</p>
+                </div>
+                
+                <div className="border rounded-lg p-3 hover:border-purple-300 hover:bg-purple-50 cursor-pointer transition-colors">
+                  <div className="flex justify-center mb-2">
+                    <Activity className="h-8 w-8 text-purple-600" />
+                  </div>
+                  <h4 className="text-sm font-medium text-center">Scatter Plots</h4>
+                  <p className="text-xs text-slate-500 text-center mt-1">Visualize correlations</p>
+                </div>
+              </div>
+              
+              <div className="mt-4 p-3 bg-slate-50 rounded-md">
+                <h4 className="text-sm font-medium mb-2">Export Options</h4>
+                <div className="flex flex-wrap gap-2">
+                  <Button variant="outline" size="sm" className="text-xs">
+                    <Download className="h-3 w-3 mr-1" /> PNG
+                  </Button>
+                  <Button variant="outline" size="sm" className="text-xs">
+                    <Download className="h-3 w-3 mr-1" /> SVG
+                  </Button>
+                  <Button variant="outline" size="sm" className="text-xs">
+                    <Download className="h-3 w-3 mr-1" /> PDF
+                  </Button>
+                  <Button variant="outline" size="sm" className="text-xs">
+                    <Download className="h-3 w-3 mr-1" /> CSV Data
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </motion.div>

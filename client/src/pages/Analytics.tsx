@@ -866,28 +866,38 @@ function VirtualTrialSimulationCard() {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-3 bg-green-50 rounded-md">
-                <div className="text-sm text-green-600 mb-1 font-medium">Effect Size</div>
+              <div className="p-3 bg-green-50 rounded-md hover:shadow-md transition-shadow">
+                <div className="text-sm text-green-600 mb-1 font-medium flex items-center">
+                  <TrendingUp className="h-4 w-4 mr-1" /> Effect Size
+                </div>
                 <div className="text-xl font-bold text-green-700">{simulation.predictedOutcome.effectSize}</div>
                 <div className="text-xs text-green-600 mt-1">
                   95% CI: {simulation.confidenceInterval[0]} - {simulation.confidenceInterval[1]}
+                </div>
+                <div className="w-full h-2 bg-green-200 mt-2 rounded-full">
+                  <div 
+                    className="h-2 bg-green-600 rounded-full"
+                    style={{ width: `${Math.min(100, simulation.predictedOutcome.effectSize * 100)}%` }}
+                  ></div>
                 </div>
                 <div className="text-xs text-slate-500 mt-2">
                   Shows the magnitude of the treatment effect. Higher is generally better, but must be interpreted in context of the specific endpoint.
                 </div>
               </div>
-              <div className="p-3 bg-blue-50 rounded-md">
-                <div className="text-sm text-blue-600 mb-1 font-medium">Success Probability</div>
+              <div className="p-3 bg-blue-50 rounded-md hover:shadow-md transition-shadow">
+                <div className="text-sm text-blue-600 mb-1 font-medium flex items-center">
+                  <PieChartIcon className="h-4 w-4 mr-1" /> Success Probability
+                </div>
                 <div className="flex items-center justify-between">
                   <div className="text-xl font-bold text-blue-700">{Math.round(simulation.successProbability * 100)}%</div>
-                  <div className="h-10 w-10">
-                    <RechartsPieChart width={40} height={40}>
+                  <div className="h-12 w-12">
+                    <RechartsPieChart width={48} height={48}>
                       <Pie
                         data={preparePieChartData()}
                         cx="50%"
                         cy="50%"
-                        innerRadius={12}
-                        outerRadius={20}
+                        innerRadius={14}
+                        outerRadius={24}
                         dataKey="value"
                         startAngle={90}
                         endAngle={-270}
@@ -902,15 +912,28 @@ function VirtualTrialSimulationCard() {
                 <div className="text-xs text-blue-600 mt-1">
                   Statistical Power: {Math.round(simulation.predictedOutcome.powerEstimate * 100)}%
                 </div>
-                <div className="text-xs text-slate-500 mt-2">
-                  The estimated probability that this trial will achieve statistical significance.
+                <div className="text-xs text-slate-500 mt-2 flex items-center">
+                  <Badge variant={simulation.successProbability > 0.7 ? "success" : simulation.successProbability > 0.5 ? "secondary" : "outline"} className="mr-1">
+                    {simulation.successProbability > 0.7 ? "High" : simulation.successProbability > 0.5 ? "Moderate" : "Low"}
+                  </Badge>
+                  <span>chance of achieving statistical significance</span>
                 </div>
               </div>
-              <div className="p-3 bg-purple-50 rounded-md">
-                <div className="text-sm text-purple-600 mb-1 font-medium">Statistical Significance</div>
+              <div className="p-3 bg-purple-50 rounded-md hover:shadow-md transition-shadow">
+                <div className="text-sm text-purple-600 mb-1 font-medium flex items-center">
+                  <Activity className="h-4 w-4 mr-1" /> Statistical Significance
+                </div>
                 <div className="text-xl font-bold text-purple-700">p = {simulation.predictedOutcome.pValue}</div>
-                <div className="text-xs text-purple-600 mt-1">
-                  {simulation.predictedOutcome.pValue < 0.05 ? 'Likely significant' : 'May not reach significance'}
+                <div className="text-xs flex items-center mt-1">
+                  <Badge variant={simulation.predictedOutcome.pValue < 0.01 ? "success" : simulation.predictedOutcome.pValue < 0.05 ? "secondary" : "destructive"}>
+                    {simulation.predictedOutcome.pValue < 0.01 ? 'Highly Significant' : simulation.predictedOutcome.pValue < 0.05 ? 'Significant' : 'Not Significant'}
+                  </Badge>
+                </div>
+                <div className="mt-2 w-full h-2 bg-purple-200 rounded-full">
+                  <div 
+                    className="h-2 bg-purple-600 rounded-full"
+                    style={{ width: `${Math.min(100, 100 - (simulation.predictedOutcome.pValue * 100))}%` }}
+                  ></div>
                 </div>
                 <div className="text-xs text-slate-500 mt-2">
                   Predicted p-value based on effect size and sample size. Values below 0.05 generally indicate statistical significance.
@@ -1133,6 +1156,113 @@ export default function Analytics() {
         </div>
       </div>
       
+      <div className="bg-white p-4 mb-6 rounded-xl shadow-sm border border-slate-200">
+        <h3 className="text-lg font-medium mb-3 flex items-center">
+          <Search className="h-5 w-5 mr-2 text-slate-500" />
+          Advanced Data Filters
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Therapeutic Area
+            </label>
+            <Select defaultValue="">
+              <SelectTrigger className="text-sm">
+                <SelectValue placeholder="All areas" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All areas</SelectItem>
+                <SelectItem value="oncology">Oncology</SelectItem>
+                <SelectItem value="neurology">Neurology</SelectItem>
+                <SelectItem value="cardiology">Cardiology</SelectItem>
+                <SelectItem value="immunology">Immunology</SelectItem>
+                <SelectItem value="infectious">Infectious Diseases</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Trial Phase
+            </label>
+            <Select defaultValue="">
+              <SelectTrigger className="text-sm">
+                <SelectValue placeholder="All phases" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All phases</SelectItem>
+                <SelectItem value="1">Phase 1</SelectItem>
+                <SelectItem value="2">Phase 2</SelectItem>
+                <SelectItem value="3">Phase 3</SelectItem>
+                <SelectItem value="4">Phase 4</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Sponsor
+            </label>
+            <Select defaultValue="">
+              <SelectTrigger className="text-sm">
+                <SelectValue placeholder="All sponsors" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All sponsors</SelectItem>
+                <SelectItem value="pfizer">Pfizer</SelectItem>
+                <SelectItem value="novartis">Novartis</SelectItem>
+                <SelectItem value="roche">Roche</SelectItem>
+                <SelectItem value="merck">Merck</SelectItem>
+                <SelectItem value="astrazeneca">AstraZeneca</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Date Range
+            </label>
+            <Select defaultValue="all">
+              <SelectTrigger className="text-sm">
+                <SelectValue placeholder="All time" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All time</SelectItem>
+                <SelectItem value="1year">Last 1 year</SelectItem>
+                <SelectItem value="3years">Last 3 years</SelectItem>
+                <SelectItem value="5years">Last 5 years</SelectItem>
+                <SelectItem value="10years">Last 10 years</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        
+        <div className="flex flex-wrap gap-2 mb-4">
+          <Badge className="px-3 py-1 bg-blue-100 text-blue-800 hover:bg-blue-200 cursor-pointer">
+            Success Rate <span className="ml-1 opacity-75">×</span>
+          </Badge>
+          <Badge className="px-3 py-1 bg-blue-100 text-blue-800 hover:bg-blue-200 cursor-pointer">
+            Sample Size > 100 <span className="ml-1 opacity-75">×</span>
+          </Badge>
+          <Badge className="px-3 py-1 bg-blue-100 text-blue-800 hover:bg-blue-200 cursor-pointer">
+            Primary Endpoint Met <span className="ml-1 opacity-75">×</span>
+          </Badge>
+          <Button variant="ghost" size="sm" className="h-6 text-xs">
+            + Add More Filters
+          </Button>
+        </div>
+        
+        <div className="flex justify-between items-center">
+          <div className="text-sm text-slate-500">
+            <strong>215</strong> trials match your criteria
+          </div>
+          <div className="space-x-2">
+            <Button variant="outline" size="sm">Reset</Button>
+            <Button size="sm">Apply Filters</Button>
+          </div>
+        </div>
+      </div>
+
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList className="grid grid-cols-3 md:grid-cols-6 w-full bg-slate-100 p-1 rounded-lg">
           <TabsTrigger value="overview" className="rounded-md">Overview</TabsTrigger>
@@ -1149,26 +1279,236 @@ export default function Analytics() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card className="shadow-sm">
               <CardHeader className="pb-2">
-                <CardTitle className="text-lg">Endpoint Distribution</CardTitle>
+                <CardTitle className="text-lg flex items-center">
+                  <BarChart3 className="h-5 w-5 text-indigo-600 mr-2" />
+                  Endpoint Distribution
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="h-64 w-full bg-slate-50 rounded-md flex items-center justify-center">
-                  <span className="text-slate-400">Endpoint visualization coming soon</span>
+                <div className="h-64 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={[
+                        { name: 'Change in ADAS-Cog', count: 42, category: 'Cognitive' },
+                        { name: 'RECIST Criteria', count: 36, category: 'Oncology' },
+                        { name: 'HbA1c Reduction', count: 28, category: 'Metabolic' },
+                        { name: 'Blood Pressure', count: 24, category: 'Cardiovascular' },
+                        { name: 'HAM-D Score', count: 18, category: 'Psychiatric' },
+                        { name: 'FEV1', count: 15, category: 'Respiratory' },
+                        { name: 'ACR20', count: 13, category: 'Immunology' }
+                      ]}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis 
+                        dataKey="name" 
+                        interval={0}
+                        angle={-45}
+                        textAnchor="end"
+                        height={70}
+                        tick={{ fontSize: 10 }}
+                      />
+                      <YAxis />
+                      <RechartsTooltip
+                        formatter={(value, name, props) => {
+                          return [`${value} trials`, props.payload.category];
+                        }}
+                        labelFormatter={(value) => `Endpoint: ${value}`}
+                      />
+                      <Legend />
+                      <Bar dataKey="count" name="Number of Trials" fill="#8884d8">
+                        {[
+                          { category: 'Cognitive', fill: '#6366f1' },
+                          { category: 'Oncology', fill: '#ec4899' },
+                          { category: 'Metabolic', fill: '#10b981' },
+                          { category: 'Cardiovascular', fill: '#ef4444' },
+                          { category: 'Psychiatric', fill: '#eab308' },
+                          { category: 'Respiratory', fill: '#0ea5e9' },
+                          { category: 'Immunology', fill: '#8b5cf6' }
+                        ].map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.fill} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
                 </div>
               </CardContent>
             </Card>
             
             <Card className="shadow-sm">
               <CardHeader className="pb-2">
-                <CardTitle className="text-lg">Trial Success by Phase</CardTitle>
+                <CardTitle className="text-lg flex items-center">
+                  <PieChartIcon className="h-5 w-5 text-indigo-600 mr-2" />
+                  Trial Success by Phase
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="h-64 w-full bg-slate-50 rounded-md flex items-center justify-center">
-                  <span className="text-slate-400">Success rate visualization coming soon</span>
+                <div className="h-64 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={[
+                        { name: 'Phase 1', success: 0.85, failure: 0.15 },
+                        { name: 'Phase 2', success: 0.55, failure: 0.45 },
+                        { name: 'Phase 3', success: 0.35, failure: 0.65 },
+                        { name: 'Phase 4', success: 0.90, failure: 0.10 }
+                      ]}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                      layout="vertical"
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis type="number" domain={[0, 1]} tickFormatter={(value) => `${value * 100}%`} />
+                      <YAxis type="category" dataKey="name" width={80} />
+                      <RechartsTooltip 
+                        formatter={(value, name) => [`${(value * 100).toFixed(1)}%`, name === 'success' ? 'Success Rate' : 'Failure Rate']}
+                      />
+                      <Legend />
+                      <Bar dataKey="success" name="Success" stackId="a" fill="#4ade80" />
+                      <Bar dataKey="failure" name="Failure" stackId="a" fill="#f87171" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="pt-2 text-center">
+                  <div className="text-xs text-slate-500">
+                    <span className="inline-block w-3 h-3 bg-green-400 rounded-full mr-1"></span>
+                    Success: Primary endpoint met with statistical significance (p&lt;0.05)
+                  </div>
+                  <div className="text-xs text-slate-500 mt-1">
+                    <span className="inline-block w-3 h-3 bg-red-400 rounded-full mr-1"></span>
+                    Failure: Primary endpoint not met or study terminated
+                  </div>
                 </div>
               </CardContent>
             </Card>
           </div>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center">
+                <TrendingUp className="h-5 w-5 text-indigo-600 mr-2" />
+                Biomarker Performance Analysis
+              </CardTitle>
+              <CardDescription>
+                Compare how different biomarkers correlate with clinical outcomes across therapeutic areas
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex space-x-4 mb-4">
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Therapeutic Area
+                  </label>
+                  <Select defaultValue="all">
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select area" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Areas</SelectItem>
+                      <SelectItem value="oncology">Oncology</SelectItem>
+                      <SelectItem value="neurology">Neurology</SelectItem>
+                      <SelectItem value="cardiology">Cardiology</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    View By
+                  </label>
+                  <Select defaultValue="prediction">
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select view" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="prediction">Predictive Value</SelectItem>
+                      <SelectItem value="adoption">Adoption Rate</SelectItem>
+                      <SelectItem value="reliability">Reliability</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Chart Type
+                  </label>
+                  <Select defaultValue="bar">
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select chart" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="bar">Bar Chart</SelectItem>
+                      <SelectItem value="radar">Radar Chart</SelectItem>
+                      <SelectItem value="scatter">Scatter Plot</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <div className="h-80 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={[
+                      { name: 'PD-L1 Expression', value: 0.78, trials: 42, category: 'Oncology' },
+                      { name: 'EGFR Mutation', value: 0.82, trials: 36, category: 'Oncology' },
+                      { name: 'Amyloid PET', value: 0.65, trials: 28, category: 'Neurology' },
+                      { name: 'Tau/Aβ Ratio', value: 0.71, trials: 24, category: 'Neurology' },
+                      { name: 'NT-proBNP', value: 0.76, trials: 18, category: 'Cardiology' },
+                      { name: 'CRP', value: 0.59, trials: 15, category: 'Cardiology' },
+                      { name: 'IL-6', value: 0.68, trials: 14, category: 'Immunology' }
+                    ]}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis 
+                      dataKey="name" 
+                      interval={0}
+                      angle={-45}
+                      textAnchor="end"
+                      height={80}
+                      tick={{ fontSize: 12 }}
+                    />
+                    <YAxis domain={[0, 1]} tickFormatter={(value) => `${(value * 100).toFixed(0)}%`} />
+                    <RechartsTooltip
+                      formatter={(value, name, props) => [
+                        `${(value * 100).toFixed(1)}%`,
+                        'Predictive Value'
+                      ]}
+                      labelFormatter={(value) => `Biomarker: ${value}`}
+                      content={({ active, payload, label }) => {
+                        if (active && payload && payload.length) {
+                          return (
+                            <div className="bg-white p-3 border rounded shadow-sm">
+                              <p className="font-medium">{label}</p>
+                              <p className="text-sm">
+                                Predictive Value: <span className="text-indigo-600 font-medium">{(payload[0].value * 100).toFixed(1)}%</span>
+                              </p>
+                              <p className="text-sm">
+                                Used in <span className="font-medium">{payload[0].payload.trials}</span> trials
+                              </p>
+                              <p className="text-xs text-slate-500 mt-1">
+                                Category: {payload[0].payload.category}
+                              </p>
+                            </div>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                    <Bar dataKey="value" name="Predictive Value">
+                      {[
+                        { category: 'Oncology', fill: '#ec4899' },
+                        { category: 'Oncology', fill: '#ec4899' },
+                        { category: 'Neurology', fill: '#6366f1' },
+                        { category: 'Neurology', fill: '#6366f1' },
+                        { category: 'Cardiology', fill: '#ef4444' },
+                        { category: 'Cardiology', fill: '#ef4444' },
+                        { category: 'Immunology', fill: '#8b5cf6' }
+                      ].map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
         
         <TabsContent value="predictive" className="space-y-4">
