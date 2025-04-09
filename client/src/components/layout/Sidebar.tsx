@@ -1,9 +1,21 @@
 import React from "react";
 import { Link, useLocation } from "wouter";
-import { 
-  LayoutDashboard, FileText, Upload, BarChart2, 
-  Settings, HelpCircle, Lightbulb, BookOpen, 
-  XCircle, Menu, ClipboardList, Globe, Database, FileSymlink
+import {
+  LayoutDashboard,
+  FileText,
+  Upload,
+  BarChart2,
+  Settings,
+  HelpCircle,
+  Lightbulb,
+  BookOpen,
+  XCircle,
+  Menu,
+  ClipboardList,
+  Globe,
+  Database,
+  FileSymlink,
+  Microscope,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -118,7 +130,7 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                 <NavItem href="/translation" icon={<Globe />}>
                   Translation Service
                 </NavItem>
-                </div>
+              </div>
             </div>
 
             <div className="pt-5 mt-5 border-t border-slate-200">
@@ -128,6 +140,16 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
               <div className="space-y-1">
                 <NavItem href="/settings" icon={<Settings />}>
                   Account Settings
+                </NavItem>
+              </div>
+            </div>
+            <div className="pt-5 mt-5 border-t border-slate-200">
+              <h3 className="px-3 mb-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                Lumen Bio
+              </h3>
+              <div className="space-y-1">
+                <NavItem href="/lumen-bio/dashboard" icon={<Microscope />}>
+                  Lumen Bio Dashboard
                 </NavItem>
               </div>
             </div>
@@ -189,6 +211,16 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
               <div className="space-y-1">
                 <NavItem href="/settings" icon={<Settings />}>
                   Account Settings
+                </NavItem>
+              </div>
+            </div>
+            <div className="pt-5 mt-5 border-t border-slate-200">
+              <h3 className="px-3 mb-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                Lumen Bio
+              </h3>
+              <div className="space-y-1">
+                <NavItem href="/lumen-bio/dashboard" icon={<Microscope />}>
+                  Lumen Bio Dashboard
                 </NavItem>
               </div>
             </div>
