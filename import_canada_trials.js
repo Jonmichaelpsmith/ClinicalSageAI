@@ -7,9 +7,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 /**
- * Mass Import Script for TrialSage
+ * Health Canada Trials Import Script for TrialSage
  * 
- * This script handles importing additional trials from the additional_trials.json file
+ * This script handles importing Health Canada clinical trials from the canada_trials.json file
  * and processing them into the database.
  */
 
@@ -18,15 +18,15 @@ const pool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
 });
 
-async function runMassImport() {
-  console.log('Starting import of additional trials from additional_trials.json...');
+async function runCanadaTrialsImport() {
+  console.log('Starting import of Health Canada trials from canada_trials.json...');
   
   try {
-    // Read the additional trials JSON file
-    const trialsPath = path.join(__dirname, 'additional_trials.json');
+    // Read the Health Canada trials JSON file
+    const trialsPath = path.join(__dirname, 'canada_trials.json');
     
     if (!fs.existsSync(trialsPath)) {
-      console.error('Error: additional_trials.json file not found');
+      console.error('Error: canada_trials.json file not found');
       return;
     }
     
@@ -34,7 +34,7 @@ async function runMassImport() {
     const trialsData = JSON.parse(fileData);
     
     if (!trialsData.studies || !Array.isArray(trialsData.studies)) {
-      console.error('Error: Invalid format in additional_trials.json');
+      console.error('Error: Invalid format in canada_trials.json');
       return;
     }
     
@@ -53,7 +53,7 @@ async function runMassImport() {
       // Process each study
       for (const study of trialsData.studies) {
         try {
-          // Check if a report with this NCT ID already exists
+          // Check if a report with this ID already exists
           const checkQuery = 'SELECT id FROM csr_reports WHERE nctrial_id = $1';
           const checkResult = await client.query(checkQuery, [study.nctrialId]);
           
@@ -82,7 +82,7 @@ async function runMassImport() {
             study.date || null,
             study.completionDate || null,
             study.drugName || 'Unknown',
-            'ClinicalTrials.gov API v2',  // region
+            'Health Canada',  // region
             study.nctrialId || '',
             'Imported',  // status
             null         // deleted_at
@@ -127,7 +127,7 @@ async function runMassImport() {
       
       console.log(`
 === Import Summary ===
-Total studies processed: ${trialsData.studies.length}
+Total Health Canada studies processed: ${trialsData.studies.length}
 Successfully imported: ${importedCount}
 Skipped (already exists or error): ${skippedCount}
       `);
@@ -149,4 +149,4 @@ Skipped (already exists or error): ${skippedCount}
   }
 }
 
-runMassImport().catch(console.error);
+runCanadaTrialsImport().catch(console.error);

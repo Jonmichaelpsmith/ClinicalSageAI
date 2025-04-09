@@ -477,16 +477,4 @@ const Dashboard = () => {
 
 export default Dashboard;
 
-// Placeholder component - Replace with actual implementation
-const LumenBioPipelineInsights = ({ className }: { className?: string }) => {
-  return (
-    <Card className={className}>
-      <CardHeader>
-        <CardTitle>Lumen Bio Pipeline Insights</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <p>This section will display Lumen Bio specific clinical trial data.  (Placeholder)</p>
-      </CardContent>
-    </Card>
-  );
-};
+// Using the imported LumenBioPipelineInsights component from @/components/dashboard/LumenBioPipelineInsights
