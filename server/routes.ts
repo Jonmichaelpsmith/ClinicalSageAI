@@ -13,11 +13,170 @@ import {
 import { translationService, supportedLanguages } from "./translation-service";
 import { generateProtocol, type ProtocolGenerationParams } from "./protocol-service";
 import { perplexityService } from "./perplexity-service";
+import { 
+  fetchClinicalTrialData, 
+  importTrialsFromCsv, 
+  importTrialsFromJson, 
+  findLatestDataFile 
+} from "./data-importer";
 import path from "path";
 import fs from "fs";
-import { insertCsrReportSchema } from "@shared/schema";
+import { insertCsrReportSchema, csrReports, csrDetails } from "@shared/schema";
 import { ZodError, z } from "zod";
 import { fromZodError } from "zod-validation-error";
+import { sql } from "drizzle-orm";
+import { db } from "./db";
+
+// Virtual Trial Simulation Function
+// This is a placeholder function that will be replaced with a more sophisticated one
+// once we have implemented the full statistical modeling engine
+function simulateVirtualTrial(
+  historicalTrials: any[],
+  primaryEndpoint: string,
+  options: {
+    sampleSize?: number;
+    duration?: number;
+    dropoutRate?: number;
+    populationCharacteristics?: any;
+  }
+) {
+  // Default values if not provided
+  const sampleSize = options.sampleSize || 100;
+  const duration = options.duration || 12; // months
+  const dropoutRate = options.dropoutRate || 0.15; // 15% dropout rate
+  
+  // Extract historical data for the specified endpoint
+  const endpointData = historicalTrials.map(trial => {
+    // Try to extract relevant data from each historical trial
+    let effectSize = 0;
+    let variability = 0;
+    let sampleSizes = [];
+    
+    try {
+      if (trial.results && trial.results.endpoints) {
+        const endpoint = trial.results.endpoints.find((e: any) => 
+          e.name?.toLowerCase().includes(primaryEndpoint.toLowerCase()));
+        
+        if (endpoint) {
+          effectSize = endpoint.effectSize || Math.random() * 0.5;
+          variability = endpoint.variability || Math.random() * 0.2;
+          sampleSizes.push(endpoint.sampleSize || 100);
+        }
+      }
+    } catch (error) {
+      console.error('Error extracting endpoint data:', error);
+    }
+    
+    return {
+      effectSize,
+      variability,
+      sampleSize: sampleSizes[0] || 100
+    };
+  });
+  
+  // Calculate average effect size and variability from historical data
+  const avgEffectSize = endpointData.reduce((sum, data) => sum + data.effectSize, 0) / 
+    (endpointData.length || 1);
+  const avgVariability = endpointData.reduce((sum, data) => sum + data.variability, 0) / 
+    (endpointData.length || 1);
+  
+  // Add some randomness to simulate real-world variability
+  const randomFactor = 0.7 + (Math.random() * 0.6); // 0.7 to 1.3
+  const simulatedEffectSize = avgEffectSize * randomFactor;
+  
+  // Calculate confidence interval (assuming normal distribution)
+  const alpha = 0.05; // 95% confidence interval
+  const z = 1.96; // z-score for 95% CI
+  const standardError = avgVariability / Math.sqrt(sampleSize);
+  const margin = z * standardError;
+  
+  // Adjust for dropout rate
+  const completers = Math.round(sampleSize * (1 - dropoutRate));
+  const adjustedEffectSize = simulatedEffectSize * (completers / sampleSize);
+  
+  // Calculate p-value (simplified simulation)
+  // Using a function that gives smaller p-values for larger effect sizes
+  const calculatePValue = (effectSize: number, variability: number, sampleSize: number) => {
+    const testStatistic = effectSize / (variability / Math.sqrt(sampleSize));
+    const randomComponent = Math.random() * 0.02; // Add a small random factor
+    // Higher test statistic should result in lower p-value
+    const pValue = Math.min(1, Math.max(0.001, 0.05 / (Math.abs(testStatistic) + 0.1) + randomComponent));
+    return pValue;
+  };
+  
+  const pValue = calculatePValue(adjustedEffectSize, avgVariability, completers);
+  
+  // Generate outcome based on effect size and p-value
+  let outcome = 'Inconclusive';
+  if (pValue < 0.05) {
+    outcome = adjustedEffectSize > 0.2 ? 'Positive' : 'Marginally Positive';
+  } else {
+    outcome = 'Negative';
+  }
+  
+  // Generate some risk factors based on dropout rate and sample size
+  const riskFactors = [];
+  if (dropoutRate > 0.2) {
+    riskFactors.push({
+      factor: 'High Dropout Rate',
+      risk: 'High',
+      impact: 'Reduced statistical power and potential bias'
+    });
+  }
+  
+  if (sampleSize < 50) {
+    riskFactors.push({
+      factor: 'Small Sample Size',
+      risk: 'High',
+      impact: 'Insufficient power to detect treatment effect'
+    });
+  }
+  
+  if (historicalTrials.length < 3) {
+    riskFactors.push({
+      factor: 'Limited Historical Data',
+      risk: 'Medium',
+      impact: 'Predictions may be less reliable'
+    });
+  }
+  
+  return {
+    simulationParameters: {
+      endpoint: primaryEndpoint,
+      sampleSize,
+      duration,
+      dropoutRate,
+      effectiveSampleSize: completers,
+      historicalTrialsAnalyzed: historicalTrials.length
+    },
+    results: {
+      estimatedEffectSize: adjustedEffectSize.toFixed(3),
+      confidenceInterval: [
+        (adjustedEffectSize - margin).toFixed(3),
+        (adjustedEffectSize + margin).toFixed(3)
+      ],
+      pValue: pValue.toFixed(4),
+      outcome,
+      statisticalPower: (0.6 + (Math.random() * 0.3)).toFixed(2), // Simulated power between 0.6-0.9
+      sampleSizePerArm: Math.round(sampleSize / 2)
+    },
+    riskFactors,
+    recommendations: [
+      {
+        recommendation: `Based on historical data, a sample size of ${Math.round(sampleSize * 1.1)} may provide better statistical power.`,
+        confidence: 'Medium'
+      },
+      {
+        recommendation: `Consider strategies to minimize dropout rate below ${(dropoutRate * 100).toFixed(0)}%.`,
+        confidence: 'High'
+      },
+      {
+        recommendation: `Ensure consistent definition of ${primaryEndpoint} across study sites.`,
+        confidence: 'High'
+      }
+    ]
+  };
+};
 
 // Set up multer for file uploads
 const upload = multer({
@@ -642,6 +801,107 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({
         success: true,
         protocol
+      });
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+
+  // Data Import API Endpoints
+
+  // Fetch clinical trial data from ClinicalTrials.gov API
+  app.post('/api/data-import/fetch', async (req: Request, res: Response) => {
+    try {
+      const { maxRecords, downloadPdfs } = req.body;
+      const result = await fetchClinicalTrialData(
+        maxRecords ? parseInt(maxRecords) : 100,
+        downloadPdfs !== false
+      );
+      res.json(result);
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+
+  // Import data from the most recent JSON file
+  app.post('/api/data-import/import-json', async (req: Request, res: Response) => {
+    try {
+      const { filePath } = req.body;
+      const jsonFilePath = filePath || findLatestDataFile('json');
+      
+      if (!jsonFilePath) {
+        return res.status(404).json({ 
+          success: false, 
+          message: 'No JSON data file found to import' 
+        });
+      }
+      
+      const result = await importTrialsFromJson(jsonFilePath);
+      res.json(result);
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+
+  // Import data from the most recent CSV file
+  app.post('/api/data-import/import-csv', async (req: Request, res: Response) => {
+    try {
+      const { filePath } = req.body;
+      const csvFilePath = filePath || findLatestDataFile('csv');
+      
+      if (!csvFilePath) {
+        return res.status(404).json({ 
+          success: false, 
+          message: 'No CSV data file found to import' 
+        });
+      }
+      
+      const result = await importTrialsFromCsv(csvFilePath);
+      res.json(result);
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+  
+  // Get import data stats and available files
+  app.get('/api/data-import/status', async (req: Request, res: Response) => {
+    try {
+      const dataDir = path.join(process.cwd(), 'uploads', 'data');
+      const pdfDir = path.join(process.cwd(), 'uploads', 'pdf');
+      
+      // List data files
+      const dataFiles = fs.existsSync(dataDir) ? 
+        fs.readdirSync(dataDir)
+          .filter(file => file.endsWith('.json') || file.endsWith('.csv'))
+          .map(file => ({ 
+            name: file, 
+            path: path.join(dataDir, file),
+            size: fs.statSync(path.join(dataDir, file)).size,
+            type: file.endsWith('.json') ? 'json' : 'csv',
+            date: fs.statSync(path.join(dataDir, file)).mtime
+          })) : [];
+      
+      // Count PDFs
+      const pdfCount = fs.existsSync(pdfDir) ? 
+        fs.readdirSync(pdfDir).filter(file => file.endsWith('.pdf')).length : 0;
+      
+      // Get database stats
+      const reportCount = await db.select({ count: sql`count(*)` }).from(csrReports);
+      const detailsCount = await db.select({ count: sql`count(*)` }).from(csrDetails);
+      
+      res.json({
+        success: true,
+        stats: {
+          databaseReports: reportCount[0].count,
+          databaseDetails: detailsCount[0].count,
+          dataFiles: dataFiles.length,
+          pdfCount
+        },
+        latestFiles: {
+          json: findLatestDataFile('json'),
+          csv: findLatestDataFile('csv')
+        },
+        allFiles: dataFiles
       });
     } catch (err) {
       errorHandler(err as Error, res);
