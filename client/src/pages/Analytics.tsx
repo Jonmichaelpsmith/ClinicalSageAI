@@ -520,6 +520,12 @@ function VirtualTrialSimulationCard() {
         content += `Duration (months),${duration || simulation.timeToCompletion || 'N/A'}\n`;
         content += `Dropout Rate,${dropoutRate || (simulation.simulationParameters?.dropoutRate * 100).toFixed(1) + '%' || 'N/A'}\n\n`;
         
+        // Add population characteristics
+        content += 'Population Characteristics,Value\n';
+        content += `Age Range,${ageRange[0]}-${ageRange[1]}\n`;
+        content += `Gender Distribution,${gender}\n`;
+        content += `Prior Treatment,${priorTreatment || 'Not specified'}\n\n`;
+        
         content += 'Results,Value\n';
         content += `Effect Size,${simulation.predictedOutcome.effectSize}\n`;
         content += `95% CI Lower,${simulation.confidenceInterval[0]}\n`;
@@ -530,11 +536,29 @@ function VirtualTrialSimulationCard() {
         content += `Estimated Cost,$${(simulation.costEstimate / 1000000).toFixed(1)}M\n\n`;
         
         content += 'Risk Factor,Level,Impact\n';
-        simulation.riskFactors.forEach(factor => {
+        simulation.riskFactors.forEach((factor: any) => {
           content += `${factor.factor},${factor.risk},${factor.impact}\n`;
         });
         
-        fileName = `virtual_trial_simulation_${new Date().toISOString().split('T')[0]}.csv`;
+        // Add mitigation strategies section
+        content += '\nMitigation Strategies,Description\n';
+        simulation.riskFactors.filter((f: any) => f.risk === 'High' || f.risk === 'Medium').forEach((factor: any) => {
+          let strategy = '';
+          if (factor.factor.includes('Sample Size')) {
+            strategy = 'Consider increasing sample size or using adaptive design with interim analyses to optimize enrollment.';
+          } else if (factor.factor.includes('Effect Size')) {
+            strategy = 'Consider enrichment strategies to select patients more likely to respond to treatment.';
+          } else if (factor.factor.includes('Dropout')) {
+            strategy = 'Implement patient retention strategies, reduce visit burden, provide transportation assistance.';
+          } else if (factor.factor.includes('Endpoint')) {
+            strategy = 'Consider composite endpoints or validated surrogate markers with less variability.';
+          } else {
+            strategy = 'Review historical trials to identify strategies for addressing this risk factor.';
+          }
+          content += `${factor.factor},"${strategy}"\n`;
+        });
+        
+        fileName = `virtual_trial_simulation_${indication.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.csv`;
         mimeType = 'text/csv';
       } else if (format === 'json') {
         // Create JSON content with simulation parameters and results
@@ -551,11 +575,41 @@ function VirtualTrialSimulationCard() {
               priorTreatment: priorTreatment || 'N/A'
             }
           },
-          results: simulation
+          results: {
+            simulationParameters: simulation.simulationParameters,
+            predictedOutcome: simulation.predictedOutcome,
+            confidenceInterval: simulation.confidenceInterval,
+            successProbability: simulation.successProbability,
+            timeToCompletion: simulation.timeToCompletion,
+            costEstimate: simulation.costEstimate,
+            riskFactors: simulation.riskFactors,
+            recommendations: simulation.recommendations,
+            generatedDate: new Date().toISOString()
+          },
+          mitigationStrategies: simulation.riskFactors.filter((f: any) => f.risk === 'High' || f.risk === 'Medium').map((factor: any) => {
+            let strategy = '';
+            if (factor.factor.includes('Sample Size')) {
+              strategy = 'Consider increasing sample size or using adaptive design with interim analyses to optimize enrollment.';
+            } else if (factor.factor.includes('Effect Size')) {
+              strategy = 'Consider enrichment strategies to select patients more likely to respond to treatment.';
+            } else if (factor.factor.includes('Dropout')) {
+              strategy = 'Implement patient retention strategies, reduce visit burden, provide transportation assistance.';
+            } else if (factor.factor.includes('Endpoint')) {
+              strategy = 'Consider composite endpoints or validated surrogate markers with less variability.';
+            } else {
+              strategy = 'Review historical trials to identify strategies for addressing this risk factor.';
+            }
+            return {
+              factor: factor.factor,
+              riskLevel: factor.risk,
+              impact: factor.impact,
+              mitigationStrategy: strategy
+            };
+          })
         };
         
         content = JSON.stringify(exportData, null, 2);
-        fileName = `virtual_trial_simulation_${new Date().toISOString().split('T')[0]}.json`;
+        fileName = `virtual_trial_simulation_${indication.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.json`;
         mimeType = 'application/json';
       } else {
         // PDF generation (in real implementation, this would use a PDF library)
@@ -1270,41 +1324,67 @@ function StudyDesignAgentCard() {
 
 export default function Analytics() {
   // Function to download analytics data
-  const downloadAnalyticsData = async (format: 'csv' | 'json' | 'pdf') => {
+  const downloadAnalyticsData = async (format: 'csv' | 'json' | 'pdf', type: 'summary' | 'predictive' | 'competitors' = 'summary', extraParams?: Record<string, string>) => {
     try {
       const { toast } = useToast();
       
-      // Fetch analytics summary if not already loaded
-      const summary = await fetch('/api/analytics/summary').then(res => res.json());
+      // Build query parameters
+      let queryParams = `format=${format}&type=${type}`;
+      if (extraParams) {
+        Object.entries(extraParams).forEach(([key, value]) => {
+          if (value) {
+            queryParams += `&${key}=${encodeURIComponent(value)}`;
+          }
+        });
+      }
       
-      let content: string;
-      let fileName: string;
-      let mimeType: string;
+      // Call the API endpoint
+      const response = await fetch(`/api/analytics/export?${queryParams}`);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to export analytics data as ${format}`);
+      }
+      
+      let fileName = `trialsage_analytics_${type}_${new Date().toISOString().split('T')[0]}`;
+      
+      if (extraParams?.indication) {
+        fileName += `_${extraParams.indication.replace(/\s+/g, '_')}`;
+      }
+      
+      if (extraParams?.sponsor) {
+        fileName += `_${extraParams.sponsor.replace(/\s+/g, '_')}`;
+      }
       
       if (format === 'csv') {
-        // Create CSV content from analytics data
-        content = 'Category,Value\n';
-        content += `Total Reports,${summary.totalReports}\n`;
-        content += `Average Endpoints,${summary.averageEndpoints}\n`;
-        content += `Success Rate,${Math.round(summary.processingStats.successRate)}%\n`;
+        const text = await response.text();
+        const blob = new Blob([text], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${fileName}.csv`;
+        document.body.appendChild(a);
+        a.click();
         
-        // Add report distribution by indication
-        Object.entries(summary.reportsByIndication).forEach(([indication, count]) => {
-          content += `Indication: ${indication},${count}\n`;
-        });
-        
-        // Add report distribution by phase
-        Object.entries(summary.reportsByPhase).forEach(([phase, count]) => {
-          content += `Phase: ${phase},${count}\n`;
-        });
-        
-        fileName = `trialsage_analytics_${new Date().toISOString().split('T')[0]}.csv`;
-        mimeType = 'text/csv';
+        // Clean up
+        setTimeout(() => {
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }, 100);
       } else if (format === 'json') {
-        // Create JSON content
-        content = JSON.stringify(summary, null, 2);
-        fileName = `trialsage_analytics_${new Date().toISOString().split('T')[0]}.json`;
-        mimeType = 'application/json';
+        const data = await response.json();
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${fileName}.json`;
+        document.body.appendChild(a);
+        a.click();
+        
+        // Clean up
+        setTimeout(() => {
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }, 100);
       } else {
         // PDF generation (in real implementation, this would use a PDF library)
         toast({
@@ -1314,21 +1394,6 @@ export default function Analytics() {
         });
         return;
       }
-      
-      // Create a blob and download link
-      const blob = new Blob([content], { type: mimeType });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      
-      // Clean up
-      setTimeout(() => {
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      }, 100);
       
       toast({
         title: "Download Complete",
@@ -1365,33 +1430,35 @@ export default function Analytics() {
               <BarChart3 className="h-16 w-16 text-primary/70" />
             </div>
             <div className="flex space-x-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => downloadAnalyticsData('csv')}
-                className="flex items-center"
-              >
-                <FileSymlink className="mr-1 h-4 w-4" />
-                CSV
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => downloadAnalyticsData('json')}
-                className="flex items-center"
-              >
-                <FileSymlink className="mr-1 h-4 w-4" />
-                JSON
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => downloadAnalyticsData('pdf')}
-                className="flex items-center"
-              >
-                <FileSymlink className="mr-1 h-4 w-4" />
-                PDF
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="flex items-center"
+                  >
+                    <FileSymlink className="mr-1 h-4 w-4" />
+                    Export Data
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56">
+                  <DropdownMenuItem onClick={() => downloadAnalyticsData('csv')}>
+                    Summary Report (CSV)
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => downloadAnalyticsData('json')}>
+                    Summary Report (JSON)
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => downloadAnalyticsData('csv', 'predictive', { indication: indication || '' })}>
+                    Predictive Analytics (CSV)
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => downloadAnalyticsData('json', 'predictive', { indication: indication || '' })}>
+                    Predictive Analytics (JSON)
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => downloadAnalyticsData('csv', 'competitors', { sponsor: 'Pfizer' })}>
+                    Competitor Analysis (CSV)
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>

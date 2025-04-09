@@ -667,6 +667,122 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Download analytics data
+  app.get('/api/analytics/export', async (req: Request, res: Response) => {
+    try {
+      const format = req.query.format as string || 'json';
+      const type = req.query.type as string || 'summary';
+      
+      // Get appropriate data based on type
+      let data;
+      let fileName;
+      
+      switch (type) {
+        case 'summary':
+          data = await generateAnalyticsSummary();
+          fileName = `analytics_summary_${new Date().toISOString().split('T')[0]}`;
+          break;
+        case 'predictive':
+          const indication = req.query.indication as string;
+          data = await generatePredictiveAnalysis(indication);
+          fileName = `predictive_analytics_${indication ? indication.replace(/\s+/g, '_') : 'all'}_${new Date().toISOString().split('T')[0]}`;
+          break;
+        case 'competitors':
+          const sponsor = req.query.sponsor as string;
+          if (!sponsor) {
+            return res.status(400).json({ success: false, message: 'Sponsor parameter is required' });
+          }
+          data = await analyzeCompetitorsForSponsor(sponsor);
+          fileName = `competitor_analysis_${sponsor.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}`;
+          break;
+        default:
+          return res.status(400).json({ success: false, message: 'Invalid analytics type' });
+      }
+      
+      if (format === 'csv') {
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', `attachment; filename="${fileName}.csv"`);
+        
+        let csv = '';
+        
+        // Handle different data structures for each type
+        if (type === 'summary') {
+          csv = 'Category,Value\n';
+          csv += `Total Reports,${data.totalReports}\n`;
+          csv += `Average Endpoints,${data.averageEndpoints}\n`;
+          csv += `Processing Success Rate,${data.processingStats.successRate.toFixed(1)}%\n\n`;
+          
+          csv += 'Indication,Report Count\n';
+          Object.entries(data.reportsByIndication).forEach(([indication, count]) => {
+            csv += `${indication},${count}\n`;
+          });
+          
+          csv += '\nPhase,Report Count\n';
+          Object.entries(data.reportsByPhase).forEach(([phase, count]) => {
+            csv += `${phase},${count}\n`;
+          });
+          
+          csv += '\nCommon Endpoints\n';
+          data.mostCommonEndpoints.forEach(endpoint => {
+            csv += `${endpoint}\n`;
+          });
+        } else if (type === 'predictive') {
+          csv = 'Predicted Endpoint,Effect Size,Confidence Interval,Reliability\n';
+          data.predictedEndpoints.forEach((endpoint: any) => {
+            csv += `${endpoint.endpointName},${endpoint.predictedEffectSize},${endpoint.confidenceInterval[0]}-${endpoint.confidenceInterval[1]},${endpoint.reliability}\n`;
+          });
+          
+          csv += '\nTrial Design Recommendations\n';
+          csv += 'Factor,Recommendation,Impact Level\n';
+          data.trialDesignRecommendations.forEach((rec: any) => {
+            csv += `${rec.factor},"${rec.recommendation}",${rec.impactLevel}\n`;
+          });
+          
+          csv += '\nMarket Trends\n';
+          csv += 'Indication,Trend,Trial Count\n';
+          data.marketTrends.forEach((trend: any) => {
+            csv += `${trend.indication},${trend.trend},${trend.numberOfTrials}\n`;
+          });
+          
+          csv += '\nCompetitive Insights\n';
+          csv += 'Sponsor,Trend,Significance\n';
+          data.competitiveInsights.forEach((insight: any) => {
+            csv += `${insight.sponsor},${insight.trend},${insight.significance}\n`;
+          });
+        } else if (type === 'competitors') {
+          csv = 'Competitor,Trial Count,Success Rate,Safety Profile\n';
+          data.forEach((competitor: any) => {
+            csv += `${competitor.sponsor},${competitor.trialCount},${competitor.successRate}%,${competitor.safetyProfile}\n`;
+          });
+          
+          csv += '\nCompetitor Phase Distribution\n';
+          csv += 'Competitor,Phase 1,Phase 2,Phase 3,Phase 4\n';
+          data.forEach((competitor: any) => {
+            csv += `${competitor.sponsor},${competitor.phaseDistribution['1'] || 0},${competitor.phaseDistribution['2'] || 0},${competitor.phaseDistribution['3'] || 0},${competitor.phaseDistribution['4'] || 0}\n`;
+          });
+          
+          csv += '\nRecent Competitive Activity\n';
+          csv += 'Competitor,Date,Activity,Phase\n';
+          data.forEach((competitor: any) => {
+            competitor.recentActivity.forEach((activity: any) => {
+              csv += `${competitor.sponsor},${activity.date},"${activity.title}",${activity.phase}\n`;
+            });
+          });
+        }
+        
+        res.send(csv);
+      } else {
+        // Default to JSON
+        res.json({
+          generatedAt: new Date().toISOString(),
+          data
+        });
+      }
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+  
   // Add new endpoint to download the original PDF file
   app.get('/api/reports/:id/download', async (req: Request, res: Response) => {
     try {
