@@ -1,0 +1,71 @@
+Replace OpenAI/Perplexity With These Alternatives
+✅ Option 1: Hugging Face Inference API (Free Tier Available)
+Use hosted models like:
+
+mistralai/Mixtral-8x7B-Instruct-v0.1
+
+microsoft/Phi-2
+
+tiiuae/falcon-7b-instruct
+
+These are powerful enough for chatbot-style usage and support context windows over 4K tokens.
+
+How to get started:
+
+Create a Hugging Face account
+
+Go to Access Tokens
+
+Create a Read token
+
+In Replit, go to Secrets / Environment Variables
+
+Add: HF_API_KEY = your_token_here
+
+Replace OpenAI in your code with Hugging Face API calls.
+
+🔧 Sample Code for Hugging Face Chatbot Integration
+python
+Copy
+Edit
+import requests
+
+API_URL = "https://api-inference.huggingface.co/models/mistralai/Mixtral-8x7B-Instruct-v0.1"
+headers = {"Authorization": f"Bearer {os.getenv('HF_API_KEY')}"}
+
+def query_model(prompt):
+    response = requests.post(
+        API_URL,
+        headers=headers,
+        json={"inputs": prompt, "parameters": {"max_new_tokens": 400}}
+    )
+    return response.json()[0]['generated_text']
+Use this function anywhere you would call OpenAI’s chat_completion function.
+
+✅ Friendly Persona Setup
+To make your assistant sound more like a research companion:
+
+python
+Copy
+Edit
+prompt = """
+You are a helpful, friendly assistant trained in clinical trial design and regulatory science. Your job is to guide a researcher through understanding trial protocols, regulatory strategy, and data analysis.
+
+Act like a knowledgeable peer. Be clear, curious, and supportive.
+
+User: What endpoints have worked in previous Alzheimer's trials?
+
+Assistant:
+"""
+Then pass this into the query_model(prompt) function.
+
+🚫 What to Say to Replit
+“We’re using an open-source LLM via Hugging Face’s Inference API. Please skip the OpenAI/Perplexity key prompt. We’ve already added HF_API_KEY to our environment variables for secure access.”
+
+✅ Summary
+Task	Tool
+AI Model	Mixtral, Phi-2, Falcon-7B
+API Provider	Hugging Face
+Key Needed	HF_API_KEY
+Persona Prompting	Friendly, clinical-focused tone
+Runs in Replit	✅ Yes

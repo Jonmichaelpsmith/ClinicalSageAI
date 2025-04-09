@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import { 
   LayoutDashboard, FileText, Upload, BarChart2, 
   Settings, HelpCircle, Lightbulb, BookOpen, 
-  XCircle, Menu, ClipboardList, Globe, Database
+  XCircle, Menu, ClipboardList, Globe, Database, FileSymlink
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -97,6 +97,9 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
             <NavItem href="/analytics" icon={<BarChart2 />}>
               Analytics
             </NavItem>
+            <NavItem href="/statistical-modeling" icon={<FileSymlink />}>
+              Statistical Modeling
+            </NavItem>
             <NavItem href="/use-cases" icon={<BookOpen />}>
               Use Case Library
             </NavItem>
@@ -154,6 +157,9 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
             </NavItem>
             <NavItem href="/analytics" icon={<BarChart2 />}>
               Analytics
+            </NavItem>
+            <NavItem href="/statistical-modeling" icon={<FileSymlink />}>
+              Statistical Modeling
             </NavItem>
             <NavItem href="/use-cases" icon={<BookOpen />}>
               Use Case Library

@@ -9,6 +9,7 @@ import Dashboard from "@/pages/Dashboard";
 import Reports from "@/pages/Reports";
 import Upload from "@/pages/Upload";
 import Analytics from "@/pages/Analytics";
+import StatisticalModeling from "@/pages/StatisticalModeling";
 import UseCaseLibrary from "@/pages/UseCaseLibrary";
 import ProtocolGenerator from "./pages/ProtocolGenerator";
 import StudyDesignAgent from "./pages/StudyDesignAgent";
@@ -83,6 +84,7 @@ function Router() {
       <Route path="/reports">{() => renderWithLayout(Reports)}</Route>
       <Route path="/upload">{() => renderWithLayout(Upload)}</Route>
       <Route path="/analytics">{() => renderWithLayout(Analytics)}</Route>
+      <Route path="/statistical-modeling">{() => renderWithLayout(StatisticalModeling)}</Route>
       <Route path="/use-cases">{() => renderWithLayout(UseCaseLibrary)}</Route>
       <Route path="/protocol-generator">{() => renderWithLayout(ProtocolGenerator)}</Route>
       <Route path="/study-design-agent">{() => renderWithLayout(StudyDesignAgent)}</Route>
