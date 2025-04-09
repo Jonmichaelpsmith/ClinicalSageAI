@@ -1,6 +1,17 @@
 import React from "react";
-import { useLocation } from "wouter";
-import { Menu, Search, Bell, HelpCircle } from "lucide-react";
+import { Menu, Bell, User, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 
 interface TopNavbarProps {
   toggleSidebar: () => void;
@@ -9,67 +20,95 @@ interface TopNavbarProps {
 }
 
 export function TopNavbar({ toggleSidebar, searchQuery, setSearchQuery }: TopNavbarProps) {
-  const [location] = useLocation();
-  
-  const getPageTitle = () => {
-    switch (location) {
-      case '/':
-        return 'Dashboard';
-      case '/reports':
-        return 'CSR Reports';
-      case '/upload':
-        return 'Upload CSR';
-      case '/analytics':
-        return 'Analytics';
-      default:
-        return 'TrialSage';
-    }
-  };
-  
   return (
-    <header className="bg-white shadow-sm border-b border-slate-200">
+    <header className="sticky top-0 z-10 bg-white border-b border-slate-200">
       <div className="px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex items-center">
-            {/* Mobile menu button */}
-            <button 
-              onClick={toggleSidebar} 
-              className="p-2 rounded-md text-slate-500 lg:hidden"
+        <div className="flex items-center justify-between h-16">
+          <div className="flex items-center flex-shrink-0">
+            <button
+              type="button"
+              className="text-slate-500 focus:outline-none lg:hidden"
+              onClick={toggleSidebar}
             >
               <Menu className="h-6 w-6" />
             </button>
-            
-            {/* Section title based on active tab */}
-            <h2 className="text-xl font-semibold text-slate-800 ml-4 lg:ml-0">
-              {getPageTitle()}
-            </h2>
           </div>
-          
-          <div className="flex items-center">
-            {/* Search */}
-            <div className="relative flex-1 max-w-xs">
+
+          <div className="flex-1 mx-4 lg:mx-6 xl:mx-8">
+            <div className="max-w-lg w-full lg:max-w-xs relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Search className="h-5 w-5 text-slate-400" />
               </div>
-              <input 
-                type="text" 
+              <Input
+                type="search"
+                className="pl-10"
+                placeholder="Search reports, biomarkers, endpoints..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search CSRs..." 
-                className="block w-full pl-10 pr-3 py-2 border border-slate-200 rounded-md text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
               />
             </div>
-            
-            {/* Notification Bell */}
-            <button className="ml-4 p-2 text-slate-500 rounded-full hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary relative">
-              <Bell className="h-6 w-6" />
-              <span className="absolute top-1 right-1 block h-2 w-2 rounded-full bg-red-500"></span>
-            </button>
-            
-            {/* Help Button */}
-            <button className="ml-2 p-2 text-slate-500 rounded-full hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary">
-              <HelpCircle className="h-6 w-6" />
-            </button>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="relative">
+                  <Bell className="h-5 w-5" />
+                  <Badge 
+                    className="absolute top-1 right-1 h-2 w-2 p-0" 
+                    variant="destructive" 
+                  />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <div className="max-h-80 overflow-y-auto">
+                  <DropdownMenuItem className="py-3">
+                    <div>
+                      <p className="font-medium text-sm">CSR Processing Complete</p>
+                      <p className="text-xs text-slate-500 mt-1">
+                        Your uploaded CSR "Tofersen Phase 3" has been processed successfully.
+                      </p>
+                    </div>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="py-3">
+                    <div>
+                      <p className="font-medium text-sm">New Analytics Available</p>
+                      <p className="text-xs text-slate-500 mt-1">
+                        Predictive analysis for your ALS trials is now available.
+                      </p>
+                    </div>
+                  </DropdownMenuItem>
+                </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="justify-center">
+                  <span className="text-xs">View all notifications</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="flex items-center gap-2">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src="" />
+                    <AvatarFallback className="bg-primary text-white">JD</AvatarFallback>
+                  </Avatar>
+                  <span className="hidden md:block text-sm font-medium">John Doe</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>Profile</DropdownMenuItem>
+                <DropdownMenuItem>Account Settings</DropdownMenuItem>
+                <DropdownMenuItem>API Keys</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>Log out</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>

@@ -3,8 +3,8 @@ import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { 
   BarChart3, PieChart, LineChart, Microscope, Pill, Activity, 
-  Flask, Dna, TrendingUp, Search, BrainCircuit, ArrowUpDown, 
-  Lightbulb, Users, Flag, Beaker, FileSymlink, 
+  Beaker, Dna, TrendingUp, Search, BrainCircuit, ArrowUpDown, 
+  Lightbulb, Users, Flag, FileSymlink, 
   CheckCircle, AlertCircle, BarChart2
 } from "lucide-react";
 import { motion } from "framer-motion";
