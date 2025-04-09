@@ -1,4 +1,10 @@
-// Deprecated: Replaced with Hugging Face integration in huggingface-service.ts
+/**
+ * PDF and CSR Analysis Service
+ * 
+ * Note: Despite the filename (kept for backward compatibility), 
+ * this service uses the Hugging Face API for all AI functionality.
+ * No OpenAI services are used.
+ */
 import { InsertCsrDetails } from "@shared/schema";
 import { queryHuggingFace } from './huggingface-service';
 import * as PDFParse from 'pdf-parse';
