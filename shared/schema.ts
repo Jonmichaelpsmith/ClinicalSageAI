@@ -2,7 +2,6 @@ import { pgTable, pgEnum, text, serial, integer, jsonb, timestamp, boolean, date
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
-import { vector } from "pgvector/drizzle-orm";
 
 // TABLES
 
@@ -90,8 +89,8 @@ export const csrSegments = pgTable(
     segmentType: text("segment_type").notNull(), // e.g., "methods", "results", "discussion"
     content: text("content").notNull(),
     pageNumbers: text("page_numbers"),
-    // Vector embedding for semantic search
-    embedding: vector("embedding", { dimensions: 512 }),
+    // Embedding data stored as JSON
+    embedding: jsonb("embedding"),
     extractedEntities: jsonb("extracted_entities"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   }
@@ -236,6 +235,7 @@ export const insertCsrSegmentSchema = createInsertSchema(csrSegments).pick({
   segmentType: true,
   content: true,
   pageNumbers: true,
+  embedding: true,
   extractedEntities: true,
 });
 
