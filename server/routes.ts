@@ -1607,16 +1607,144 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log('Starting batch import process...');
       
-      // Run the direct import script
-      const { execSync } = require('child_process');
+      // Import our database schema
+      import { csrReports, csrDetails } from '@shared/schema';
+      import { eq } from 'drizzle-orm';
+      import { createReadStream, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, writeFileSync } from 'fs';
+      import { join } from 'path';
+      import { spawn } from 'child_process';
       
-      // Execute the script directly
-      execSync('node server/scripts/direct_import.js', { stdio: 'inherit' });
-      
-      res.json({
-        success: true,
-        message: 'Batch import process completed successfully'
-      });
+      // Process the XML files in the attached_assets directory
+      try {
+        const assetsDir = 'attached_assets';
+        
+        // Get all XML files that match NCT*.xml
+        const xmlFiles = readdirSync(assetsDir).filter(file => 
+          file.startsWith('NCT') && file.endsWith('.xml')
+        );
+        
+        console.log(`Found ${xmlFiles.length} NCT XML files in ${assetsDir}`);
+        
+        if (xmlFiles.length === 0) {
+          return res.json({ 
+            success: false, 
+            message: 'No NCT XML files found in attached_assets directory' 
+          });
+        }
+        
+        // Create a promises array to process files with Python
+        const pythonScript = spawn('python3', ['server/scripts/import_nct_xml.py', assetsDir]);
+        
+        let pythonOutput = '';
+        let pythonError = '';
+        
+        pythonScript.stdout.on('data', (data) => {
+          pythonOutput += data.toString();
+          console.log(`Python stdout: ${data}`);
+        });
+        
+        pythonScript.stderr.on('data', (data) => {
+          pythonError += data.toString();
+          console.error(`Python stderr: ${data}`);
+        });
+        
+        // Process the Python script results
+        await new Promise<void>((resolve, reject) => {
+          pythonScript.on('close', (code) => {
+            if (code !== 0) {
+              console.error(`Python script exited with code ${code}`);
+              reject(new Error(`Python script exited with code ${code}: ${pythonError}`));
+            } else {
+              console.log('Python script completed successfully');
+              resolve();
+            }
+          });
+        });
+        
+        // Process the generated JSON file
+        if (!existsSync('processed_trials.json')) {
+          return res.json({ 
+            success: false, 
+            message: 'Failed to generate processed_trials.json' 
+          });
+        }
+        
+        const processedData = JSON.parse(readFileSync('processed_trials.json', 'utf-8'));
+        
+        let importedCount = 0;
+        
+        // Import each study into the database
+        for (const study of processedData.studies) {
+          try {
+            // Check if this study already exists in the database
+            const existingReports = await db
+              .select()
+              .from(csrReports)
+              .where(eq(csrReports.nctrialId, study.nctrialId));
+            
+            if (existingReports.length > 0) {
+              console.log(`Study ${study.nctrialId} already exists in database, skipping...`);
+              continue;
+            }
+            
+            // Insert new report
+            const [newReport] = await db
+              .insert(csrReports)
+              .values({
+                title: study.title,
+                officialTitle: study.officialTitle,
+                sponsor: study.sponsor,
+                indication: study.indication,
+                phase: study.phase,
+                fileName: study.fileName,
+                fileSize: study.fileSize,
+                date: study.date,
+                completionDate: study.completionDate,
+                nctrialId: study.nctrialId,
+                drugName: study.drugName,
+                source: study.source,
+                importDate: new Date(),
+                status: "Imported"
+              })
+              .returning();
+            
+            // Insert details
+            await db
+              .insert(csrDetails)
+              .values({
+                reportId: newReport.id,
+                studyDesign: study.studyType,
+                primaryObjective: "To evaluate the efficacy and safety of the investigational product",
+                studyDescription: study.description || study.detailedDescription,
+                inclusionCriteria: study.eligibilityCriteria,
+                exclusionCriteria: "",
+                endpointText: "",
+                statisticalMethods: "",
+                safetyMonitoring: "",
+                results: {},
+                lastUpdated: new Date()
+              });
+            
+            importedCount++;
+          } catch (error) {
+            console.error(`Error importing study ${study.nctrialId}:`, error);
+          }
+        }
+        
+        console.log(`Successfully imported ${importedCount} new studies to the database.`);
+        
+        return res.json({
+          success: true,
+          message: `Successfully processed and imported ${importedCount} new studies`,
+          count: importedCount
+        });
+      } catch (error) {
+        console.error('Error in batch import process:', error);
+        return res.status(500).json({
+          success: false,
+          message: `Error in batch import process: ${error.message}`
+        });
+      }
     } catch (err) {
       console.error('Error in batch import:', err);
       errorHandler(err as Error, res);
