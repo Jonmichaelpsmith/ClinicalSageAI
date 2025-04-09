@@ -38,3 +38,16 @@ async function runBatchImport() {
 }
 
 module.exports = { runBatchImport };
+
+// If this script is run directly from the command line
+if (require.main === module) {
+  runBatchImport()
+    .then(result => {
+      console.log('Batch import result:', result);
+      process.exit(0);
+    })
+    .catch(error => {
+      console.error('Error in batch import:', error);
+      process.exit(1);
+    });
+}
