@@ -8,7 +8,7 @@
 import { db } from './db';
 import { csrReports, csrDetails } from '../shared/schema';
 import { eq, like, and, isNull, desc, inArray } from 'drizzle-orm';
-import { queryHuggingFace } from './huggingface-service';
+import { queryHuggingFace, HFModel } from './huggingface-service';
 
 // Define protocol section types
 export type ProtocolSection = {
@@ -298,6 +298,7 @@ async function enhanceSectionWithAI(
     // Use Hugging Face to generate enhanced content
     const enhancedContent = await queryHuggingFace(
       context, 
+      HFModel.MISTRAL_7B,
       800, // Length of response
       0.7  // Temperature for creativity
     );
@@ -338,7 +339,7 @@ async function validateProtocolSections(
       `;
       
       try {
-        const validationResponse = await queryHuggingFace(validationPrompt, 700, 0.5);
+        const validationResponse = await queryHuggingFace(validationPrompt, HFModel.STARLING, 768, 0.5);
         
         // Parse validation response (assuming it returns valid JSON)
         try {
@@ -404,7 +405,7 @@ async function validateProtocolSections(
           Provide a brief competitive analysis (2-3 sentences) on how this compares to other similar trials.
         `;
         
-        const benchmarkResponse = await queryHuggingFace(benchmarkPrompt, 200, 0.7);
+        const benchmarkResponse = await queryHuggingFace(benchmarkPrompt, HFModel.FLAN_T5_XL, 256, 0.7);
         validatedSections[i].competitiveBenchmark = benchmarkResponse;
       } catch (benchError) {
         console.error(`Error generating benchmark for ${section.sectionName}:`, benchError);
@@ -491,7 +492,7 @@ export async function getStatisticalApproaches(
       Example: {"Logistic Regression": 8, "Chi-square Test": 6}
     `;
     
-    const response = await queryHuggingFace(prompt, 500, 0.3);
+    const response = await queryHuggingFace(prompt, HFModel.SQL_CODER, 512, 0.3);
     
     // Parse the response to extract approaches and frequencies
     try {

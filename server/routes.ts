@@ -12,8 +12,9 @@ import {
 } from "./analytics-service";
 import { translationService, supportedLanguages } from "./translation-service";
 import { generateProtocolTemplate, getStatisticalApproaches } from "./protocol-service";
-import { huggingFaceService, queryHuggingFace } from "./huggingface-service";
+import { huggingFaceService, queryHuggingFace, HFModel } from "./huggingface-service";
 import { SagePlusService } from "./sage-plus-service";
+import { csrTrainingService } from "./csr-training-service";
 import { 
   fetchClinicalTrialData, 
   importTrialsFromCsv, 
@@ -536,7 +537,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Generate a response using Hugging Face model
         const prompt = `${context}\n\nQuestion: ${query}\n\nAnswer:`;
-        const agentResponse = await queryHuggingFace(prompt, 1000, 0.3);
+        const agentResponse = await queryHuggingFace(prompt, HFModel.MISTRAL_7B, 1000, 0.3);
         
         content = agentResponse; // huggingFaceService.queryModel returns the text content directly
       } catch (error) {
@@ -1839,6 +1840,96 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (err) {
       console.error('Error in batch import:', err);
+      errorHandler(err as Error, res);
+    }
+  });
+
+  // CSR Training Model Endpoints
+  
+  // Process a batch of CSR reports for training
+  app.post('/api/csr-training/process-batch', async (req: Request, res: Response) => {
+    try {
+      const { batchSize, startId } = req.body;
+      
+      const results = await csrTrainingService.processBatchForTraining(
+        batchSize ? parseInt(batchSize) : undefined,
+        startId ? parseInt(startId) : undefined
+      );
+      
+      res.json({
+        success: true,
+        message: `Processed ${results.processedCount} reports, ${results.successCount} successful`,
+        results
+      });
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+  
+  // Train a model on extracted CSR data
+  app.post('/api/csr-training/train-model', async (req: Request, res: Response) => {
+    try {
+      const { modelType } = req.body;
+      
+      if (!modelType || !['endpoint-prediction', 'adverse-event-prediction', 'efficacy-prediction'].includes(modelType)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Valid modelType is required (endpoint-prediction, adverse-event-prediction, or efficacy-prediction)'
+        });
+      }
+      
+      const result = await csrTrainingService.trainModel(modelType);
+      
+      if (!result.success) {
+        return res.status(500).json({
+          success: false,
+          message: result.error || 'Failed to train model'
+        });
+      }
+      
+      res.json({
+        success: true,
+        message: `Successfully trained ${modelType} model`,
+        modelId: result.modelId
+      });
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+  
+  // Make a prediction using a trained model
+  app.post('/api/csr-training/predict', async (req: Request, res: Response) => {
+    try {
+      const { modelType, input } = req.body;
+      
+      if (!modelType || !['endpoint-prediction', 'adverse-event-prediction', 'efficacy-prediction'].includes(modelType)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Valid modelType is required (endpoint-prediction, adverse-event-prediction, or efficacy-prediction)'
+        });
+      }
+      
+      if (!input || typeof input !== 'object') {
+        return res.status(400).json({
+          success: false,
+          message: 'Input data is required'
+        });
+      }
+      
+      const result = await csrTrainingService.makePrediction(modelType, input);
+      
+      if (!result.success) {
+        return res.status(500).json({
+          success: false,
+          message: result.error || 'Failed to make prediction'
+        });
+      }
+      
+      res.json({
+        success: true,
+        predictions: result.predictions
+      });
+    } catch (err) {
       errorHandler(err as Error, res);
     }
   });
