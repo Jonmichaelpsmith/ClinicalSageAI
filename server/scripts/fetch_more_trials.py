@@ -1,44 +1,14 @@
 #!/usr/bin/env python3
-
 """
 Enhanced Clinical Trials Fetcher
-This script fetches a large number of trials from ClinicalTrials.gov API v2
+This script fetches a batch of trials from ClinicalTrials.gov API v2
 and processes them into a format ready for database import.
 """
-
-import os
 import requests
 import json
+import random
 import time
 from datetime import datetime
-
-def fetch_trials_batch(page_token=None, count=100):
-    """Fetch a batch of trials from ClinicalTrials.gov API"""
-    base_url = "https://clinicaltrials.gov/api/v2/studies"
-    
-    params = {
-        "format": "json",
-        "countTotal": "true",
-        "pageSize": count
-    }
-    
-    if page_token:
-        params["nextPageToken"] = page_token
-    
-    print(f"Fetching batch of {count} trials...")
-    response = requests.get(base_url, params=params)
-    
-    if response.status_code != 200:
-        print(f"Error: {response.status_code}")
-        print(response.text)
-        return None, 0
-    
-    data = response.json()
-    total_count = data.get('totalCount', 0)
-    studies = data.get('studies', [])
-    
-    print(f"Fetched {len(studies)} trials. Total available: {total_count}")
-    return studies, total_count
 
 def process_trial(study):
     """Process a single trial into our format"""
@@ -82,44 +52,98 @@ def process_trial(study):
 
 def main():
     """Main function to fetch and process clinical trials"""
-    total_trials_needed = 500
     trials_per_batch = 100
     all_studies = []
     
-    # First batch without page token
-    next_page_token = None
+    # For each fetch, use a random starting point to try to get different results
+    random_offset = random.randint(0, 1000)
     
-    while len(all_studies) < total_trials_needed:
-        # Fetch batch of studies
-        data = requests.get(
-            "https://clinicaltrials.gov/api/v2/studies",
-            params={
-                "format": "json",
-                "pageSize": trials_per_batch,
-                **({"nextPageToken": next_page_token} if next_page_token else {})
-            }
-        ).json()
+    try:
+        # Fetch a batch of studies
+        print(f"Fetching {trials_per_batch} trials from random offset {random_offset}...")
         
+        # Try different approaches to get diverse studies
+        params = {
+            "format": "json",
+            "pageSize": trials_per_batch
+        }
+        
+        # Try to get a diverse set of studies by adding different filters each time
+        approach = random.randint(1, 10)
+        if approach == 1:
+            print("Using completed studies filter...")
+            params["query.term"] = "COMPLETED"
+        elif approach == 2:
+            print("Using phase filter...")
+            phases = ["Phase 1", "Phase 2", "Phase 3", "Phase 4"]
+            params["query.term"] = random.choice(phases)
+        elif approach == 3:
+            print("Using condition-based query...")
+            conditions = ["cancer", "diabetes", "covid", "alzheimer", "asthma", "depression", 
+                         "hypertension", "arthritis", "obesity", "parkinsons", "multiple sclerosis",
+                         "copd", "stroke", "heart disease", "schizophrenia"]
+            params["query.term"] = random.choice(conditions)
+        elif approach == 4:
+            print("Using specific sponsor filter...")
+            sponsors = ["Pfizer", "Merck", "Novartis", "GSK", "AstraZeneca", "Roche", "Sanofi", 
+                       "Johnson", "Bayer", "Boehringer", "Takeda", "Lilly", "Bristol", "Gilead", 
+                       "Biogen", "Vertex", "Regeneron", "Moderna", "NIH", "FDA"]
+            params["query.term"] = random.choice(sponsors)
+        elif approach == 5:
+            print("Using treatment-based query...")
+            treatments = ["vaccine", "antibody", "surgery", "therapy", "drug", "gene therapy",
+                         "immunotherapy", "stem cell", "device", "procedure", "radiation", 
+                         "diagnostic", "screening", "prevention", "rehabilitation"]
+            params["query.term"] = random.choice(treatments)
+        elif approach == 6:
+            print("Using year-based query...")
+            years = [str(year) for year in range(2010, 2025)]
+            params["query.term"] = random.choice(years)
+        elif approach == 7:
+            print("Using study type filter...")
+            study_types = ["Interventional", "Observational", "Expanded Access"]
+            params["query.term"] = random.choice(study_types)
+        elif approach == 8:
+            print("Using gender filter...")
+            genders = ["male", "female"]
+            params["query.term"] = random.choice(genders)
+        elif approach == 9:
+            print("Using country filter...")
+            countries = ["United States", "China", "Germany", "UK", "Japan", "Canada", 
+                        "France", "Australia", "Brazil", "India", "Italy", "Spain"]
+            params["query.term"] = random.choice(countries)
+        elif approach == 10:
+            print("Using recruitment status filter...")
+            statuses = ["Recruiting", "Completed", "Terminated", "Suspended", 
+                       "Active", "Withdrawn", "Not yet recruiting"]
+            params["query.term"] = random.choice(statuses)
+            
+        response = requests.get(
+            "https://clinicaltrials.gov/api/v2/studies",
+            params=params
+        )
+        
+        print(f"Response status: {response.status_code}")
+        
+        if response.status_code != 200:
+            print(f"Error response: {response.text}")
+            return
+        
+        data = response.json()
         studies = data.get("studies", [])
-        next_page_token = data.get("nextPageToken")
         
         if not studies:
-            print("No more studies available")
-            break
-            
+            print("No studies available")
+            return
+        
         # Process each study
         processed_studies = [process_trial(study) for study in studies]
         all_studies.extend(processed_studies)
         
-        print(f"Processed {len(processed_studies)} studies. Total processed so far: {len(all_studies)}")
+        print(f"Processed {len(processed_studies)} studies")
         
-        # Check if we have a next page token
-        if not next_page_token:
-            print("No more pages available")
-            break
-            
-        # Sleep to avoid hitting rate limits
-        time.sleep(1)
+    except Exception as e:
+        print(f"Error fetching or processing data: {e}")
     
     # Save to JSON file
     output = {
