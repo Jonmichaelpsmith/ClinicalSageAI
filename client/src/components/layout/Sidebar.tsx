@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import { 
   LayoutDashboard, FileText, Upload, BarChart2, 
   Settings, HelpCircle, Lightbulb, BookOpen, 
-  XCircle, Menu
+  XCircle, Menu, ClipboardList, Globe
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -22,7 +22,7 @@ interface NavItemProps {
 function NavItem({ href, icon, children, end = false }: NavItemProps) {
   const [location] = useLocation();
   const isActive = end ? location === href : location.startsWith(href);
-  
+
   return (
     <Link href={href}>
       <a
@@ -107,10 +107,13 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                 <NavItem href="/protocol-generator" icon={<Lightbulb />}>
                   Protocol Generator
                 </NavItem>
-                <NavItem href="/design-validator" icon={<HelpCircle />}>
-                  Design Validator
+                <NavItem href="/study-design-agent" icon={<Lightbulb />}>
+                  Study Design Agent
                 </NavItem>
-              </div>
+                <NavItem href="/translation" icon={<Globe />}>
+                  Translation Service
+                </NavItem>
+                </div>
             </div>
 
             <div className="pt-4 mt-4 border-t border-slate-200">
@@ -157,11 +160,14 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                 AI Tools
               </h3>
               <div className="mt-2 space-y-1">
-                <NavItem href="/protocol-generator" icon={<Lightbulb />}>
+                <NavItem href="/protocol-generator" icon={<ClipboardList />}>
                   Protocol Generator
                 </NavItem>
-                <NavItem href="/design-validator" icon={<HelpCircle />}>
-                  Design Validator
+                <NavItem href="/study-design-agent" icon={<Lightbulb />}>
+                  Study Design Agent
+                </NavItem>
+                <NavItem href="/translation" icon={<Globe />}>
+                  Translation Service
                 </NavItem>
               </div>
             </div>
