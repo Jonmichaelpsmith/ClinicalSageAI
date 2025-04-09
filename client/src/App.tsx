@@ -17,6 +17,9 @@ import Translation from "./pages/Translation";
 import CsrExtractionGuide from "./pages/CsrExtractionGuide";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { TopNavbar } from "@/components/layout/TopNavbar";
+import ProductFeatures from "./pages/ProductFeatures";
+import PricingPage from "./pages/PricingPage";
+import ApiDocumentation from "./pages/ApiDocumentation";
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -38,7 +41,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
         <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
           {children}
         </main>
-        
+
         <footer className="py-6 px-4 sm:px-6 lg:px-8 border-t border-gray-200 dark:border-gray-800 mt-auto">
           <div className="max-w-7xl mx-auto w-full">
             <div className="flex flex-col md:flex-row justify-between items-center">
@@ -90,6 +93,9 @@ function Router() {
       <Route path="/study-design-agent">{() => renderWithLayout(StudyDesignAgent)}</Route>
       <Route path="/translation">{() => renderWithLayout(Translation)}</Route>
       <Route path="/csr-extraction-guide">{() => renderWithLayout(CsrExtractionGuide)}</Route>
+      <Route path="/features" component={ProductFeatures} />
+      <Route path="/pricing" component={PricingPage} />
+      <Route path="/api" component={ApiDocumentation} />
 
       {/* Fallback to 404 */}
       <Route>{() => renderWithLayout(NotFound)}</Route>
