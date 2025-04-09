@@ -1607,19 +1607,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log('Starting batch import process...');
       
-      // Import our database schema
-      import { csrReports, csrDetails } from '@shared/schema';
-      import { eq } from 'drizzle-orm';
-      import { createReadStream, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, writeFileSync } from 'fs';
-      import { join } from 'path';
-      import { spawn } from 'child_process';
+      // Import dependencies at the top level
+      const fs = await import('fs');
+      const path = await import('path');
+      const childProcess = await import('child_process');
+      const { csrReports, csrDetails } = await import('@shared/schema');
+      const { eq } = await import('drizzle-orm');
       
       // Process the XML files in the attached_assets directory
       try {
         const assetsDir = 'attached_assets';
         
         // Get all XML files that match NCT*.xml
-        const xmlFiles = readdirSync(assetsDir).filter(file => 
+        const xmlFiles = fs.readdirSync(assetsDir).filter((file: string) => 
           file.startsWith('NCT') && file.endsWith('.xml')
         );
         
@@ -1633,24 +1633,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         
         // Create a promises array to process files with Python
-        const pythonScript = spawn('python3', ['server/scripts/import_nct_xml.py', assetsDir]);
+        const pythonScript = childProcess.spawn('python3', ['server/scripts/import_nct_xml.py', assetsDir]);
         
         let pythonOutput = '';
         let pythonError = '';
         
-        pythonScript.stdout.on('data', (data) => {
+        pythonScript.stdout.on('data', (data: Buffer) => {
           pythonOutput += data.toString();
           console.log(`Python stdout: ${data}`);
         });
         
-        pythonScript.stderr.on('data', (data) => {
+        pythonScript.stderr.on('data', (data: Buffer) => {
           pythonError += data.toString();
           console.error(`Python stderr: ${data}`);
         });
         
         // Process the Python script results
         await new Promise<void>((resolve, reject) => {
-          pythonScript.on('close', (code) => {
+          pythonScript.on('close', (code: number) => {
             if (code !== 0) {
               console.error(`Python script exited with code ${code}`);
               reject(new Error(`Python script exited with code ${code}: ${pythonError}`));
@@ -1662,14 +1662,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
         
         // Process the generated JSON file
-        if (!existsSync('processed_trials.json')) {
+        if (!fs.existsSync('processed_trials.json')) {
           return res.json({ 
             success: false, 
             message: 'Failed to generate processed_trials.json' 
           });
         }
         
-        const processedData = JSON.parse(readFileSync('processed_trials.json', 'utf-8'));
+        const processedData = JSON.parse(fs.readFileSync('processed_trials.json', 'utf-8'));
         
         let importedCount = 0;
         
