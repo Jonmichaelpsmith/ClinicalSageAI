@@ -1,6 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { scheduleDataUpdates, findLatestDataFile, importTrialsFromJson } from "./data-importer";
 
 const app = express();
 app.use(express.json());
@@ -66,5 +67,30 @@ app.use((req, res, next) => {
     reusePort: true,
   }, () => {
     log(`serving on port ${port}`);
+    
+    // Start the clinical trial data updater
+    const dataUpdateTimer = scheduleDataUpdates(12); // Update every 12 hours
+    
+    // Check if we have any data already
+    const latestJsonFile = findLatestDataFile('json');
+    if (latestJsonFile) {
+      log(`Found existing data file: ${latestJsonFile}, importing...`);
+      importTrialsFromJson(latestJsonFile)
+        .then(result => {
+          log(`Data import result: ${result.message}`);
+        })
+        .catch(error => {
+          log(`Error importing data: ${error.message}`);
+        });
+    }
+    
+    // Handle server shutdown
+    process.on('SIGTERM', () => {
+      log('SIGTERM signal received: closing data updater');
+      clearInterval(dataUpdateTimer);
+      server.close(() => {
+        log('HTTP server closed');
+      });
+    });
   });
 })();
