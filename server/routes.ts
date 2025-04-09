@@ -11,7 +11,7 @@ import {
   analyzeCompetitorsForSponsor 
 } from "./analytics-service";
 import { translationService, supportedLanguages } from "./translation-service";
-import { ProtocolService } from "./protocol-service";
+import { generateProtocolTemplate, getStatisticalApproaches } from "./protocol-service";
 import { huggingFaceService, queryHuggingFace } from "./huggingface-service";
 import { SagePlusService } from "./sage-plus-service";
 import { 
@@ -1000,11 +1000,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const params = protocolParamsSchema.parse(req.body);
       
-      // Import ProtocolService
-      const { ProtocolService } = await import('./protocol-service');
+      // Import protocol template generator
+      const { generateProtocolTemplate } = await import('./protocol-service');
       
       // Generate protocol using our service with the proper parameters format
-      const protocol = await ProtocolService.generateProtocol(
+      const protocol = await generateProtocolTemplate(
         params.indication,
         params.phase,
         params.populationSize ? `${params.populationSize} participants` : 'appropriate population',
@@ -1598,6 +1598,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: response
       });
     } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+
+  // Run batch import for NCT XML files
+  app.post('/api/import/batch', async (_req: Request, res: Response) => {
+    try {
+      console.log('Starting batch import process...');
+      
+      // Import from the batch import module
+      const { runBatchImport } = require('./scripts/batch_import');
+      
+      // Run the batch import process
+      await runBatchImport();
+      
+      res.json({
+        success: true,
+        message: 'Batch import process started successfully'
+      });
+    } catch (err) {
+      console.error('Error in batch import:', err);
       errorHandler(err as Error, res);
     }
   });

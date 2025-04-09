@@ -1,12 +1,14 @@
 import React from "react";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import { 
   BarChart, PieChart, FileText, Upload, Search, 
   ArrowRight, BookOpen, Brain, Lightbulb, Users, 
   Sparkles, Server, Rocket, Beaker, Microscope,
-  MessageSquare
+  MessageSquare, FileType, Database
 } from "lucide-react";
 import {
   Card,
@@ -24,12 +26,35 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CsrReport } from "@/lib/types";
 
 const Dashboard = () => {
+  const { toast } = useToast();
   const { data: reports, isLoading: isLoadingReports } = useQuery({
     queryKey: ['/api/reports'],
   });
 
   const { data: stats, isLoading: isLoadingStats } = useQuery({
     queryKey: ['/api/stats'],
+  });
+  
+  const importBatchMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest('POST', '/api/import/batch');
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Batch import started",
+        description: "The batch import process has been started successfully. Check back soon to see the imported trials.",
+      });
+      // Refresh the reports list
+      queryClient.invalidateQueries({ queryKey: ['/api/reports'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to start batch import: ${error.message}`,
+        variant: "destructive",
+      });
+    },
   });
 
   return (
@@ -242,7 +267,7 @@ const Dashboard = () => {
                     </div>
                     <div className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer">
                       <div className="flex items-start gap-2 mb-2">
-                        <FileSymlink className="h-5 w-5 text-purple-600 mt-0.5" />
+                        <FileType className="h-5 w-5 text-purple-600 mt-0.5" />
                         <div>
                           <h3 className="font-medium">Statistical Modeling</h3>
                           <p className="text-sm text-slate-500">Build predictive models with advanced statistical tools</p>
@@ -349,38 +374,60 @@ const Dashboard = () => {
                   <Server className="h-5 w-5 text-blue-600 mr-2" />
                   Data Sources
                 </CardTitle>
+                <CardDescription>
+                  Import and manage clinical trial data sources
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Beaker className="h-5 w-5 text-emerald-600" />
-                      <span className="text-sm">Health Canada Portal</span>
-                    </div>
-                    <Badge variant="outline">Active</Badge>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Database className="h-5 w-5 text-indigo-600" />
+                    <span className="font-medium">NCT XML Trials</span>
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="ml-auto"
+                      onClick={() => importBatchMutation.mutate()}
+                      disabled={importBatchMutation.isPending}
+                    >
+                      {importBatchMutation.isPending ? 'Importing...' : 'Import Batch'}
+                    </Button>
                   </div>
-                  <Progress value={83} className="h-2" />
-                  <p className="text-xs text-slate-500">83% of available CSRs indexed</p>
+                  <p className="text-xs text-slate-500">
+                    Click "Import Batch" to process all NCT XML files from the attached_assets directory into the database.
+                  </p>
+                  
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Beaker className="h-5 w-5 text-emerald-600" />
+                        <span className="text-sm">Health Canada Portal</span>
+                      </div>
+                      <Badge variant="outline">Active</Badge>
+                    </div>
+                    <Progress value={83} className="h-2" />
+                    <p className="text-xs text-slate-500">83% of available CSRs indexed</p>
 
-                  <div className="flex items-center justify-between mt-4">
-                    <div className="flex items-center gap-2">
-                      <Microscope className="h-5 w-5 text-indigo-600" />
-                      <span className="text-sm">EMA Clinical Portal</span>
+                    <div className="flex items-center justify-between mt-4">
+                      <div className="flex items-center gap-2">
+                        <Microscope className="h-5 w-5 text-indigo-600" />
+                        <span className="text-sm">EMA Clinical Portal</span>
+                      </div>
+                      <Badge variant="outline">Pending</Badge>
                     </div>
-                    <Badge variant="outline">Pending</Badge>
-                  </div>
-                  <Progress value={28} className="h-2" />
-                  <p className="text-xs text-slate-500">28% of available CSRs indexed</p>
+                    <Progress value={28} className="h-2" />
+                    <p className="text-xs text-slate-500">28% of available CSRs indexed</p>
 
-                  <div className="flex items-center justify-between mt-4">
-                    <div className="flex items-center gap-2">
-                      <Users className="h-5 w-5 text-amber-600" />
-                      <span className="text-sm">Your Uploaded CSRs</span>
+                    <div className="flex items-center justify-between mt-4">
+                      <div className="flex items-center gap-2">
+                        <Users className="h-5 w-5 text-amber-600" />
+                        <span className="text-sm">Your Uploaded CSRs</span>
+                      </div>
+                      <Badge variant="outline">Custom</Badge>
                     </div>
-                    <Badge variant="outline">Custom</Badge>
+                    <Progress value={100} className="h-2" />
+                    <p className="text-xs text-slate-500">All uploaded CSRs processed</p>
                   </div>
-                  <Progress value={100} className="h-2" />
-                  <p className="text-xs text-slate-500">All uploaded CSRs processed</p>
                 </div>
               </CardContent>
             </Card>

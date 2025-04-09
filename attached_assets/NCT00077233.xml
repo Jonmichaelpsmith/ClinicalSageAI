@@ -1,0 +1,1240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<clinical_study>
+  <required_header>
+    <download_date>ClinicalTrials.gov processed this data on April 09, 2025</download_date>
+    <link_text>Link to the current ClinicalTrials.gov record.</link_text>
+    <url>https://clinicaltrials.gov/ct2/show/NCT00077233</url>
+  </required_header>
+  <id_info>
+    <org_study_id>CALGB 80203</org_study_id>
+    <secondary_id>U10CA031946</secondary_id>
+    <secondary_id>CDR0000350016</secondary_id>
+    <nct_id>NCT00077233</nct_id>
+  </id_info>
+  <brief_title>FOLFIRI or FOLFOX With or Without Cetuximab in Patients With Metastatic Adenocarcinoma of the Colon or Rectum</brief_title>
+  <official_title>A Phase II Trial Of Irinotecan /5-FU/ Leucovorin Or Oxaliplatin /5-FU / Leucovorin With And Without Cetuximab (C225) For Patients With Untreated Metastatic Adenocarcinoma Of The Colon or Rectum</official_title>
+  <sponsors>
+    <lead_sponsor>
+      <agency>Alliance for Clinical Trials in Oncology</agency>
+      <agency_class>Other</agency_class>
+    </lead_sponsor>
+    <collaborator>
+      <agency>National Cancer Institute (NCI)</agency>
+      <agency_class>NIH</agency_class>
+    </collaborator>
+    <collaborator>
+      <agency>Bristol-Myers Squibb</agency>
+      <agency_class>Industry</agency_class>
+    </collaborator>
+    <collaborator>
+      <agency>Eli Lilly and Company</agency>
+      <agency_class>Industry</agency_class>
+    </collaborator>
+  </sponsors>
+  <source>Alliance for Clinical Trials in Oncology</source>
+  <oversight_info>
+    <has_dmc>No</has_dmc>
+  </oversight_info>
+  <brief_summary>
+    <textblock>This is a randomized phase II study trial that has served as a screening trial to test&#xd;
+the increased efficacy of chemotherapy + cetuximab versus chemotherapy alone among&#xd;
+patients with untreated, advanced or metastatic colon cancer regardless of tumor status&#xd;
+with respect to EGFR.</textblock>
+  </brief_summary>
+  <detailed_description>
+    <textblock>CALGB 80203 was activated on December 15, 2003. In February 2004, based on the results of&#xd;
+the randomized trial of IFL +/- cetuximab showing a significant improvement in overall&#xd;
+survival with cetuximab, cetuximab was approved by the FDA for use as front-line therapy&#xd;
+for patients with metastatic colon cancer. In response to this action, the Data Safety&#xd;
+and Monitoring Board recommended closure of CALGB 80203. CALGB 80203 was subsequently&#xd;
+closed to accrual in January 2005 with 238 of the originally targeted 2200 patients&#xd;
+enrolled. A final decision was to "replace" CALGB 80203 with a three-treatment arm&#xd;
+randomized trial of chemotherapy (FOLFOX or FOLFIRI) with and without cetuximab and/or&#xd;
+bevacizumab. The protocol was amended to allow analysis of the data from CALGB 80203 as a&#xd;
+randomized phase II trial and reporting of the results.&#xd;
+&#xd;
+Patients were stratified according to prior adjuvant chemotherapy (yes vs no) and prior&#xd;
+pelvic radiation (yes vs no). Patients must have completed any major surgery or&#xd;
+radiotherapy (eg, chest or bone palliative RT or pelvic RT) ≥ 4 weeks from registration&#xd;
+and completed any minor surgery ≥ 2 weeks from registration. Patients must have fully&#xd;
+recovered from the procedure and/or radiotherapy. Patients must have initiated treatment&#xd;
+within 7 days of registration. Patients were randomized to 1 of 4 treatment arms, please&#xd;
+see a description of the treatment regimens in the "Arms" section. In addition, patients&#xd;
+received concomitant and supportive therapy as appropriate per the protocol.&#xd;
+&#xd;
+OBJECTIVES:&#xd;
+&#xd;
+Primary&#xd;
+&#xd;
+  1. To determine if the addition of C225 to FOLFIRI or FOLFOX chemotherapy prolongs&#xd;
+     survival of patients with untreated, advanced or metastatic colorectal cancer.&#xd;
+&#xd;
+Secondary&#xd;
+&#xd;
+  1. To determine if the FOLFIRI and FOLFOX regimens are equivalent in terms of survival&#xd;
+     as front-line therapy for advanced colorectal patients.&#xd;
+&#xd;
+  2. To determine the level of EGFR expression in patients with metastatic colorectal&#xd;
+     cancer.&#xd;
+&#xd;
+Patients were followed up to 3 years post-treatment.</textblock>
+  </detailed_description>
+  <overall_status>Terminated</overall_status>
+  <why_stopped>Poor accrual</why_stopped>
+  <start_date>December 2003</start_date>
+  <completion_date type="Actual">June 2010</completion_date>
+  <primary_completion_date type="Actual">December 2006</primary_completion_date>
+  <phase>Phase 3</phase>
+  <study_type>Interventional</study_type>
+  <has_expanded_access>No</has_expanded_access>
+  <study_design_info>
+    <allocation>Randomized</allocation>
+    <intervention_model>Parallel Assignment</intervention_model>
+    <primary_purpose>Treatment</primary_purpose>
+    <masking>None (Open Label)</masking>
+  </study_design_info>
+  <primary_outcome>
+    <measure>Overall survival</measure>
+    <time_frame>Up to 3 years of follow up</time_frame>
+  </primary_outcome>
+  <secondary_outcome>
+    <measure>Progression-free survival</measure>
+    <time_frame>Up to 18 months of follow up</time_frame>
+  </secondary_outcome>
+  <secondary_outcome>
+    <measure>Complete response</measure>
+    <time_frame>Up to 18 months of follow up</time_frame>
+  </secondary_outcome>
+  <secondary_outcome>
+    <measure>Partial response</measure>
+    <time_frame>Up to 18 months of follow up</time_frame>
+  </secondary_outcome>
+  <secondary_outcome>
+    <measure>Proportion of patients experiencing ≥ Grade 3 diarrhea</measure>
+    <time_frame>Up to 30 days post-treatment</time_frame>
+  </secondary_outcome>
+  <secondary_outcome>
+    <measure>Proportion of patients experiencing ≥ Grade 3 ANC</measure>
+    <time_frame>Up to 30 days post-treatment</time_frame>
+  </secondary_outcome>
+  <secondary_outcome>
+    <measure>Percent of total dose administered</measure>
+    <time_frame>Up to 30 days post-treatment</time_frame>
+  </secondary_outcome>
+  <secondary_outcome>
+    <measure>Proportion of patients experiencing ≥ Grade 4 toxicity on each cetuximab treatment arm</measure>
+    <time_frame>Up to 30 days post-treatment</time_frame>
+  </secondary_outcome>
+  <number_of_arms>4</number_of_arms>
+  <enrollment type="Actual">238</enrollment>
+  <condition>Colorectal Cancer</condition>
+  <arm_group>
+    <arm_group_label>Arm A: FOLFIRI</arm_group_label>
+    <arm_group_type>Active Comparator</arm_group_type>
+    <description>Patients receive irinotecan 180 mg/m^2 over 90 minutes on day 1, then leucovorin 400&#xd;
+mg/m^2 over 2 hours followed by 5FU 400 mg/m^2 IV bolus injection then 5FU 2400 mg/m^2&#xd;
+continuous IV infusion over 46-48 hours repeated every 2 weeks. One cycle of therapy is 8&#xd;
+weeks.</description>
+  </arm_group>
+  <arm_group>
+    <arm_group_label>Arm B: FOLFIRI + C225</arm_group_label>
+    <arm_group_type>Experimental</arm_group_type>
+    <description>Patients receive irinotecan 180 mg/m^2 over 90 minutes, then leucovorin 400 mg/m^2 IV&#xd;
+over 2 hours followed by 5FU 400 mg/m^2 IV bolus injection then 5FU 2400 mg/m^2&#xd;
+continuous IV infusion over 46-48 hours repeated every 2 weeks. Patients also receive&#xd;
+cetuximab 400 mg/m^2 IV over 120 minutes day 1, then 250 mg/m^2 IV over 60 minutes&#xd;
+weekly. All patients must be premedicated with diphenhydramine hydrochloride 50 mg (or a&#xd;
+similar agent) IV prior to the first dose of cetuximab in an effort to prevent a&#xd;
+hypersensitivity reaction. Premedication is recommended prior to subsequent doses, but at&#xd;
+the Investigator's discretion the dose of diphenhydramine (or a similar agent) may be&#xd;
+reduced.</description>
+  </arm_group>
+  <arm_group>
+    <arm_group_label>Arm C: FOLFOX</arm_group_label>
+    <arm_group_type>Active Comparator</arm_group_type>
+    <description>Patients receive oxaliplatin 85 mg/m^2 IV infused over 120 minutes, then leucovorin 400&#xd;
+mg/m^2 IV over 2 hours followed by 5 FU 400 mg/m^2 IV bolus injection then 5 FU 2400&#xd;
+mg/m^2 continuous IV infusion over 46-48 hours every 2 weeks.</description>
+  </arm_group>
+  <arm_group>
+    <arm_group_label>Arm D: FOLFOX + C225</arm_group_label>
+    <arm_group_type>Experimental</arm_group_type>
+    <description>Patients receive oxaliplatin 85 mg/m^2 IV infused over 120 minutes, then leucovorin 400&#xd;
+mg/m^2 over 2 hours followed by 5 FU 400 mg/m^2 IV bolus injection then 5 FU 2400 mg/m^2&#xd;
+continuous IV infusion over 46-48 hours every 2 weeks. Patients also receive cetuximab&#xd;
+400 mg/m^2 IV over 120 minutes day 1, then 250 mg/m^2 IV over 60 minutes weekly. All&#xd;
+patients must be premedicated with diphenhydramine hydrochloride 50 mg (or a similar&#xd;
+agent) IV prior to the first dose of cetuximab in an effort to prevent a hypersensitivity&#xd;
+reaction. Premedication is recommended prior to subsequent doses, but at the&#xd;
+Investigator's discretion the dose of diphenhydramine (or a similar agent) may be&#xd;
+reduced.</description>
+  </arm_group>
+  <intervention>
+    <intervention_type>Drug</intervention_type>
+    <intervention_name>cetuximab</intervention_name>
+    <description>IV</description>
+    <arm_group_label>Arm B: FOLFIRI + C225</arm_group_label>
+    <arm_group_label>Arm D: FOLFOX + C225</arm_group_label>
+    <other_name>C225</other_name>
+  </intervention>
+  <intervention>
+    <intervention_type>Drug</intervention_type>
+    <intervention_name>5-FU</intervention_name>
+    <description>IV</description>
+    <arm_group_label>Arm A: FOLFIRI</arm_group_label>
+    <arm_group_label>Arm B: FOLFIRI + C225</arm_group_label>
+    <arm_group_label>Arm C: FOLFOX</arm_group_label>
+    <arm_group_label>Arm D: FOLFOX + C225</arm_group_label>
+    <other_name>5-fluorouracil</other_name>
+  </intervention>
+  <intervention>
+    <intervention_type>Drug</intervention_type>
+    <intervention_name>irinotecan</intervention_name>
+    <description>IV</description>
+    <arm_group_label>Arm A: FOLFIRI</arm_group_label>
+    <arm_group_label>Arm B: FOLFIRI + C225</arm_group_label>
+    <other_name>CPT-11</other_name>
+  </intervention>
+  <intervention>
+    <intervention_type>Drug</intervention_type>
+    <intervention_name>leucovorin</intervention_name>
+    <description>IV</description>
+    <arm_group_label>Arm A: FOLFIRI</arm_group_label>
+    <arm_group_label>Arm B: FOLFIRI + C225</arm_group_label>
+    <arm_group_label>Arm C: FOLFOX</arm_group_label>
+    <arm_group_label>Arm D: FOLFOX + C225</arm_group_label>
+    <other_name>calcium folinate</other_name>
+  </intervention>
+  <intervention>
+    <intervention_type>Drug</intervention_type>
+    <intervention_name>oxaliplatin</intervention_name>
+    <description>IV</description>
+    <arm_group_label>Arm C: FOLFOX</arm_group_label>
+    <arm_group_label>Arm D: FOLFOX + C225</arm_group_label>
+    <other_name>Eloxatin</other_name>
+  </intervention>
+  <eligibility>
+    <criteria>
+      <textblock>  1. Locally Advanced or Metastatic Colorectal Cancer&#xd;
+&#xd;
+       -  Eligible patients must have histologically or cytologically documented locally&#xd;
+          advanced or metastatic colorectal cancer. The site of the primary lesion must&#xd;
+          be or have been confirmed endoscopically, surgically or radiologically to have&#xd;
+          been in the large bowel.&#xd;
+&#xd;
+       -  Patients with a history of colorectal cancer treatment by surgical resection&#xd;
+          who develop radiological or clinical evidence of metastatic cancer do not&#xd;
+          require separate histological or cytological confirmation of metastatic disease&#xd;
+          unless:&#xd;
+&#xd;
+            -  Either an interval of greater than five years has elapsed between the&#xd;
+               primary surgery and the development of metastatic disease OR&#xd;
+&#xd;
+            -  The primary cancer was stage I.&#xd;
+&#xd;
+       -  Clinicians should consider biopsy of lesions to establish the diagnosis of&#xd;
+          metastatic colorectal cancer in each case if there is substantial clinical&#xd;
+          ambiguity regarding the nature or source of apparent metastases.&#xd;
+&#xd;
+  2. No prior treatment for advanced or metastatic colorectal cancer&#xd;
+&#xd;
+       -  Patients may have received prior adjuvant chemotherapy (no more than 6 months&#xd;
+          or 4 cycles) or radiation with radiosensitizing chemotherapy. The last course&#xd;
+          of chemotherapy must have concluded > 12 months prior to registration. Patients&#xd;
+          may not have previously received irinotecan ≤ or oxaliplatin therapy in either&#xd;
+          the adjuvant or metastatic setting. No concurrent use of additional&#xd;
+          investigational agents is allowed while participating in this study.&#xd;
+&#xd;
+  3. Patients may not have had prior radiotherapy to greater than 25% of bone marrow.&#xd;
+&#xd;
+     Standard adjuvant rectal cancer chemoradiation will not exclude the patient from&#xd;
+     protocol entry. Radiation must have concluded ≥ 4 weeks from registration.&#xd;
+&#xd;
+  4. Patients should have completed any major surgery ≥ 4 weeks from registration.&#xd;
+     Patients must have completed any minor surgery ≥ 2 weeks from registration. Patients&#xd;
+     must have fully recovered from the procedure. Insertion of a vascular access device&#xd;
+     is not considered major or minor surgery.&#xd;
+&#xd;
+  5. No previous or concurrent malignancy is allowed except for adequately treated basal&#xd;
+     cell or squamous cell skin cancer, in situ cervical cancer, or other cancer for&#xd;
+     which the patient has been disease-free for five years.&#xd;
+&#xd;
+  6. Age ≥ 18 years&#xd;
+&#xd;
+  7. CTC (ECOG) performance status of 0-1.&#xd;
+&#xd;
+  8. No evidence of Gilbert's syndrome - Patients with Gilbert's Syndrome may have a&#xd;
+     greater risk of irinotecan toxicity due to the abnormal glucuronidation of SN-38.&#xd;
+     Evidence of Gilbert's Syndrome would include a prior finding of an isolated&#xd;
+     elevation of indirect bilirubin.&#xd;
+&#xd;
+  9. Patients must have at least one paraffin block available or appropriate number of&#xd;
+     unstained slides for analysis of EGFR status.&#xd;
+&#xd;
+ 10. No symptomatic sensory peripheral neuropathy of ≥ grade II at baseline.&#xd;
+&#xd;
+ 11. Non-pregnant and non-lactating&#xd;
+&#xd;
+       -  Women of child bearing potential (WOCBP) must have a negative serum or urine&#xd;
+          pregnancy test (minimum sensitivity 25 IU/L or equivalent units of HCG within&#xd;
+          72 hours prior to initiation of treatment. This is because DNA alkylating&#xd;
+          agents are known to be teratogenic, and the effects of irinotecan, OXAL, 5-FU&#xd;
+          and C225 on a developing fetus at the recommended therapeutic doses are&#xd;
+          unknown.&#xd;
+&#xd;
+       -  Women of child bearing potential includes:&#xd;
+&#xd;
+            -  any female who has experienced menarche and who has not undergone surgical&#xd;
+               sterilization (hysterectomy, bilateral tubal ligation or bilateral&#xd;
+               oophorectomy) or&#xd;
+&#xd;
+            -  is not postmenopausal [defined as amenorrhea ≥ 12 consecutive months] or&#xd;
+&#xd;
+            -  women on hormone replacement therapy [HRT] with documented serum follicle&#xd;
+               stimulating hormone (FSH) level &gt; 35 mIU/mL&#xd;
+&#xd;
+            -  women who are using oral, implanted or injectable contraceptive hormones&#xd;
+               or mechanical products such as an intrauterine device or barrier methods&#xd;
+               (diaphragm, condoms, spermicides) to prevent pregnancy or practicing&#xd;
+               abstinence or where partner is sterile (eg, vasectomy), should be&#xd;
+               considered to be of child bearing potential.&#xd;
+&#xd;
+       -  Should a woman become pregnant or suspect she is pregnant while participating&#xd;
+          on on this study, she should inform her physician immediately. Because the risk&#xd;
+          of toxicity of these agents in nursing infants is also unknown, breastfeeding&#xd;
+          should be discontinued.&#xd;
+&#xd;
+ 12. No known central nervous system metastases or carcinomatous meningitis.&#xd;
+&#xd;
+ 13. No interstitial pneumonia or extensive and symptomatic interstitial fibrosis of the&#xd;
+     lung.&#xd;
+&#xd;
+ 14. No pleural effusion or ascites that causes ≥ grade 2 dyspnea.&#xd;
+&#xd;
+ 15. No predisposing colonic or small bowel disorders in which the symptoms are&#xd;
+     uncontrolled as indicated by baseline pattern of > 3 watery or soft stools daily in&#xd;
+     patients without a colostomy or ileostomy. Patients with a colostomy or ileostomy&#xd;
+     may be entered at investigator discretion.&#xd;
+&#xd;
+ 16. No prior exposure or known sensitivity to chimerized or murine antibodies, C225 (or&#xd;
+     other EGFR inhibitors) or any tyrosine kinase inhibitors&#xd;
+&#xd;
+ 17. No significant history of cardiac disease, such as unstable angina, CHF, MI, stroke&#xd;
+     or a LVEF below the institutional range of normal on a baseline multiple gated&#xd;
+     acquisition (MUGA) or echocardiogram.&#xd;
+&#xd;
+ 18. Patients must not have an uncontrolled seizure disorder, or active neurological&#xd;
+     disease.&#xd;
+&#xd;
+ 19. Patients may not have received itraconazole or ketoconazole less than 4 weeks prior&#xd;
+     to registration.&#xd;
+&#xd;
+ 20. Required Initial Laboratory Values:&#xd;
+&#xd;
+       -  Granulocytes ≥ 1500/ µl&#xd;
+&#xd;
+       -  Hemoglobin ≥ 9.0 gram/dL (patient may be transfused to meet this criterion)&#xd;
+&#xd;
+       -  Platelet count ≥ 100,000/ µl&#xd;
+&#xd;
+       -  Creatinine ≤ 1.5 x Upper limits of normal (ULN)&#xd;
+&#xd;
+       -  Bilirubin ≤ 1.5 mg/dL&#xd;
+&#xd;
+       -  AST ≤ 5.0 x ULN&#xd;
+&#xd;
+       -  Albumin ≥ 2.5 gram/dL</textblock>
+    </criteria>
+    <gender>All</gender>
+    <minimum_age>18 Years</minimum_age>
+    <maximum_age>N/A</maximum_age>
+    <healthy_volunteers>No</healthy_volunteers>
+  </eligibility>
+  <overall_official>
+    <last_name>Alan Venook, MD</last_name>
+    <role>Study Chair</role>
+    <affiliation>University of California, San Francisco</affiliation>
+  </overall_official>
+  <location>
+    <facility>
+      <name>Northeast Alabama Regional Medical Center</name>
+      <address>
+        <city>Anniston</city>
+        <state>Alabama</state>
+        <zip>36207</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Rebecca and John Moores UCSD Cancer Center</name>
+      <address>
+        <city>La Jolla</city>
+        <state>California</state>
+        <zip>92093-0658</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Cedars-Sinai Comprehensive Cancer Center at Cedars-Sinai Medical Center</name>
+      <address>
+        <city>Los Angeles</city>
+        <state>California</state>
+        <zip>90048</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Naval Medical Center - San Diego</name>
+      <address>
+        <city>San Diego</city>
+        <state>California</state>
+        <zip>92134-3202</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Veterans Affairs Medical Center - San Diego</name>
+      <address>
+        <city>San Diego</city>
+        <state>California</state>
+        <zip>92161</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>UCSF Comprehensive Cancer Center</name>
+      <address>
+        <city>San Francisco</city>
+        <state>California</state>
+        <zip>94115</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Veterans Affairs Medical Center - San Francisco</name>
+      <address>
+        <city>San Francisco</city>
+        <state>California</state>
+        <zip>94121</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>CCOP - Christiana Care Health Services</name>
+      <address>
+        <city>Newark</city>
+        <state>Delaware</state>
+        <zip>19713</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Lombardi Cancer Center at Georgetown University Medical Center</name>
+      <address>
+        <city>Washington</city>
+        <state>District of Columbia</state>
+        <zip>20007</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Walter Reed Army Medical Center</name>
+      <address>
+        <city>Washington</city>
+        <state>District of Columbia</state>
+        <zip>20307-5001</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Veterans Affairs Medical Center - Washington, DC</name>
+      <address>
+        <city>Washington</city>
+        <state>District of Columbia</state>
+        <zip>20422</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Broward General Medical Center</name>
+      <address>
+        <city>Fort Lauderdale</city>
+        <state>Florida</state>
+        <zip>33316</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Memorial Regional Cancer Center at Memorial Regional Hospital</name>
+      <address>
+        <city>Hollywood</city>
+        <state>Florida</state>
+        <zip>33021</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>CCOP - Mount Sinai Medical Center</name>
+      <address>
+        <city>Miami Beach</city>
+        <state>Florida</state>
+        <zip>33140</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Florida Hospital Cancer Institute</name>
+      <address>
+        <city>Orlando</city>
+        <state>Florida</state>
+        <zip>32804</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Palm Beach Cancer Institute</name>
+      <address>
+        <city>West Palm Beach</city>
+        <state>Florida</state>
+        <zip>33401</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>MBCCOP - University of Illinois at Chicago</name>
+      <address>
+        <city>Chicago</city>
+        <state>Illinois</state>
+        <zip>60612</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Veterans Affairs Medical Center - Chicago (Westside Hospital)</name>
+      <address>
+        <city>Chicago</city>
+        <state>Illinois</state>
+        <zip>60612</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>University of Chicago Cancer Research Center</name>
+      <address>
+        <city>Chicago</city>
+        <state>Illinois</state>
+        <zip>60637-1470</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Louis A. Weiss Memorial Hospital</name>
+      <address>
+        <city>Chicago</city>
+        <state>Illinois</state>
+        <zip>60640</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>CCOP - Evanston</name>
+      <address>
+        <city>Evanston</city>
+        <state>Illinois</state>
+        <zip>60201</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>CCOP - Illinois Oncology Research Association</name>
+      <address>
+        <city>Peoria</city>
+        <state>Illinois</state>
+        <zip>61615-7828</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>West Suburban Center for Cancer Care</name>
+      <address>
+        <city>River Forest</city>
+        <state>Illinois</state>
+        <zip>60305</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Fort Wayne Medical Oncology and Hematology, Incorporated</name>
+      <address>
+        <city>Fort Wayne</city>
+        <state>Indiana</state>
+        <zip>46885-5099</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>CCOP - Northern Indiana CR Consortium</name>
+      <address>
+        <city>South Bend</city>
+        <state>Indiana</state>
+        <zip>46601</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Holden Comprehensive Cancer Center at University of Iowa</name>
+      <address>
+        <city>Iowa City</city>
+        <state>Iowa</state>
+        <zip>52242-1009</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Baptist Hospital East - Louisville</name>
+      <address>
+        <city>Louisville</city>
+        <state>Kentucky</state>
+        <zip>40207</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Greenebaum Cancer Center at University of Maryland Medical Center</name>
+      <address>
+        <city>Baltimore</city>
+        <state>Maryland</state>
+        <zip>21201</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Dana-Farber/Harvard Cancer Center at Dana Farber Cancer Institute</name>
+      <address>
+        <city>Boston</city>
+        <state>Massachusetts</state>
+        <zip>02115</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Beth Israel Deaconess Medical Center</name>
+      <address>
+        <city>Boston</city>
+        <state>Massachusetts</state>
+        <zip>02215</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>UMASS Memorial Cancer Center - University Campus</name>
+      <address>
+        <city>Worcester</city>
+        <state>Massachusetts</state>
+        <zip>01655</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Lakeland Cancer Care Center at Lakeland Hospital - St. Joseph</name>
+      <address>
+        <city>Saint Joseph</city>
+        <state>Michigan</state>
+        <zip>49085</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Veterans Affairs Medical Center - Minneapolis</name>
+      <address>
+        <city>Minneapolis</city>
+        <state>Minnesota</state>
+        <zip>55417</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>University of Minnesota Cancer Center</name>
+      <address>
+        <city>Minneapolis</city>
+        <state>Minnesota</state>
+        <zip>55455</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Veterans Affairs Medical Center - Columbia (Truman Memorial)</name>
+      <address>
+        <city>Columbia</city>
+        <state>Missouri</state>
+        <zip>65201</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Ellis Fischel Cancer Center at University of Missouri - Columbia</name>
+      <address>
+        <city>Columbia</city>
+        <state>Missouri</state>
+        <zip>65203</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>CCOP - Kansas City</name>
+      <address>
+        <city>Kansas City</city>
+        <state>Missouri</state>
+        <zip>64131</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Siteman Cancer Center at Barnes-Jewish Hospital</name>
+      <address>
+        <city>Saint Louis</city>
+        <state>Missouri</state>
+        <zip>63110</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Missouri Baptist Cancer Center</name>
+      <address>
+        <city>Saint Louis</city>
+        <state>Missouri</state>
+        <zip>63131</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>UNMC Eppley Cancer Center at the University of Nebraska Medical Center</name>
+      <address>
+        <city>Omaha</city>
+        <state>Nebraska</state>
+        <zip>68198-7680</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>CCOP - Southern Nevada Cancer Research Foundation</name>
+      <address>
+        <city>Las Vegas</city>
+        <state>Nevada</state>
+        <zip>89106</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Veterans Affairs Medical Center - Las Vegas</name>
+      <address>
+        <city>Las Vegas</city>
+        <state>Nevada</state>
+        <zip>89106</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>New Hampshire Oncology-Hematology, PA - Hooksett</name>
+      <address>
+        <city>Hooksett</city>
+        <state>New Hampshire</state>
+        <zip>03106</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Norris Cotton Cancer Center at Dartmouth-Hitchcock Medical Center</name>
+      <address>
+        <city>Lebanon</city>
+        <state>New Hampshire</state>
+        <zip>03756-0002</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Cooper University Hospital</name>
+      <address>
+        <city>Camden</city>
+        <state>New Jersey</state>
+        <zip>08103</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Veterans Affairs Medical Center - Buffalo</name>
+      <address>
+        <city>Buffalo</city>
+        <state>New York</state>
+        <zip>14215</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>CCOP - Syracuse Hematology-Oncology Associates of Central New York, P.C.</name>
+      <address>
+        <city>East Syracuse</city>
+        <state>New York</state>
+        <zip>13057</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Queens Cancer Center of Queens Hospital</name>
+      <address>
+        <city>Jamaica</city>
+        <state>New York</state>
+        <zip>11432</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>CCOP - North Shore University Hospital</name>
+      <address>
+        <city>Manhasset</city>
+        <state>New York</state>
+        <zip>11030</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>North Shore University Hospital</name>
+      <address>
+        <city>Manhasset</city>
+        <state>New York</state>
+        <zip>11030</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Memorial Sloan-Kettering Cancer Center</name>
+      <address>
+        <city>New York</city>
+        <state>New York</state>
+        <zip>10021</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>New York Weill Cornell Cancer Center at Cornell University</name>
+      <address>
+        <city>New York</city>
+        <state>New York</state>
+        <zip>10021</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Mount Sinai Medical Center</name>
+      <address>
+        <city>New York</city>
+        <state>New York</state>
+        <zip>10029</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>SUNY Upstate Medical University Hospital</name>
+      <address>
+        <city>Syracuse</city>
+        <state>New York</state>
+        <zip>13210</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Veterans Affairs Medical Center - Syracuse</name>
+      <address>
+        <city>Syracuse</city>
+        <state>New York</state>
+        <zip>13210</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Veterans Affairs Medical Center - Asheville</name>
+      <address>
+        <city>Asheville</city>
+        <state>North Carolina</state>
+        <zip>28805</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Lineberger Comprehensive Cancer Center at University of North Carolina - Chapel Hill</name>
+      <address>
+        <city>Chapel Hill</city>
+        <state>North Carolina</state>
+        <zip>27599-7295</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>NorthEast Oncology Associates - Concord</name>
+      <address>
+        <city>Concord</city>
+        <state>North Carolina</state>
+        <zip>28025</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Veterans Affairs Medical Center - Durham</name>
+      <address>
+        <city>Durham</city>
+        <state>North Carolina</state>
+        <zip>27705</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Duke Comprehensive Cancer Center</name>
+      <address>
+        <city>Durham</city>
+        <state>North Carolina</state>
+        <zip>27710</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Cape Fear Valley Health System</name>
+      <address>
+        <city>Fayetteville</city>
+        <state>North Carolina</state>
+        <zip>28302-2000</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>CCOP - Southeast Cancer Control Consortium</name>
+      <address>
+        <city>Goldsboro</city>
+        <state>North Carolina</state>
+        <zip>27534-9479</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>FirstHealth Moore Regional Hospital</name>
+      <address>
+        <city>Pinehurst</city>
+        <state>North Carolina</state>
+        <zip>28374</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Zimmer Cancer Center at New Hanover Regional Medical Center</name>
+      <address>
+        <city>Wilmington</city>
+        <state>North Carolina</state>
+        <zip>28402-9025</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Comprehensive Cancer Center at Wake Forest University</name>
+      <address>
+        <city>Winston-Salem</city>
+        <state>North Carolina</state>
+        <zip>27157-1082</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Arthur G. James Cancer Hospital at Ohio State University</name>
+      <address>
+        <city>Columbus</city>
+        <state>Ohio</state>
+        <zip>43210-1240</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Oklahoma University Medical Center</name>
+      <address>
+        <city>Oklahoma City</city>
+        <state>Oklahoma</state>
+        <zip>73104</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Western Pennsylvania Hospital</name>
+      <address>
+        <city>Pittsburgh</city>
+        <state>Pennsylvania</state>
+        <zip>15224</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Lifespan: The Miriam Hospital</name>
+      <address>
+        <city>Providence</city>
+        <state>Rhode Island</state>
+        <zip>02906</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Veterans Affairs Medical Center - Dallas</name>
+      <address>
+        <city>Dallas</city>
+        <state>Texas</state>
+        <zip>75219</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Simmons Cancer Center at University of Texas Southwestern Medical Center - Dallas</name>
+      <address>
+        <city>Dallas</city>
+        <state>Texas</state>
+        <zip>75390-8852</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Vermont Cancer Center at University of Vermont</name>
+      <address>
+        <city>Burlington</city>
+        <state>Vermont</state>
+        <zip>05401-3498</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Martha Jefferson Hospital</name>
+      <address>
+        <city>Charlottesville</city>
+        <state>Virginia</state>
+        <zip>22902</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Virginia Oncology Associates - Norfolk</name>
+      <address>
+        <city>Norfolk</city>
+        <state>Virginia</state>
+        <zip>23502</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>MBCCOP - Massey Cancer Center</name>
+      <address>
+        <city>Richmond</city>
+        <state>Virginia</state>
+        <zip>23298-0037</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Oncology and Hematology Associates of Southwest Virginia, Incorporated - Roanoke</name>
+      <address>
+        <city>Roanoke</city>
+        <state>Virginia</state>
+        <zip>24014</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>St. Mary's Medical Center</name>
+      <address>
+        <city>Huntington</city>
+        <state>West Virginia</state>
+        <zip>25701</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location_countries>
+    <country>United States</country>
+  </location_countries>
+  <results_reference>
+    <citation>Meyerhardt JA, Jackson McCleary N, Niedzwiecki D, et al.: Impact of age and comorbidities on treatment effect, tolerance, and toxicity in metastatic colorectal cancer (mCRC) patients treated on CALGB 80203. [Abstract] J Clin Oncol 27 ( Suppl 15): A-4038, 2009.</citation>
+  </results_reference>
+  <results_reference>
+    <citation>Venook A, Niedzwiecki D, Hollis D, et al.: Phase III study of irinotecan/5FU/LV (FOLFIRI) or oxaliplatin/5FU/LV (FOLFOX) ± cetuximab for patients (pts) with untreated metastatic adenocarcinoma of the colon or rectum (MCRC): CALGB 80203 preliminary results. [Abstract] J Clin Oncol 24 (Suppl 18): A-3509, 2006.</citation>
+  </results_reference>
+  <verification_date>May 2018</verification_date>
+  <study_first_submitted>February 10, 2004</study_first_submitted>
+  <study_first_submitted_qc>February 10, 2004</study_first_submitted_qc>
+  <study_first_posted type="Estimate">February 11, 2004</study_first_posted>
+  <last_update_submitted>May 11, 2018</last_update_submitted>
+  <last_update_submitted_qc>May 11, 2018</last_update_submitted_qc>
+  <last_update_posted type="Actual">May 16, 2018</last_update_posted>
+  <responsible_party>
+    <responsible_party_type>Sponsor</responsible_party_type>
+  </responsible_party>
+  <keyword>adenocarcinoma of the colon</keyword>
+  <keyword>adenocarcinoma of the rectum</keyword>
+  <keyword>recurrent colon cancer</keyword>
+  <keyword>recurrent rectal cancer</keyword>
+  <keyword>stage IV colon cancer</keyword>
+  <keyword>stage IV rectal cancer</keyword>
+  <condition_browse>
+    <mesh_term>Adenocarcinoma</mesh_term>
+  </condition_browse>
+  <intervention_browse>
+    <mesh_term>Leucovorin</mesh_term>
+    <mesh_term>Oxaliplatin</mesh_term>
+    <mesh_term>Fluorouracil</mesh_term>
+    <mesh_term>Irinotecan</mesh_term>
+    <mesh_term>Cetuximab</mesh_term>
+  </intervention_browse>
+</clinical_study>
