@@ -224,6 +224,21 @@ const Dashboard = () => {
                         </Button>
                       </Link>
                     </div>
+                    
+                    <div className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer">
+                      <div className="flex items-start gap-2 mb-2">
+                        <MessageSquare className="h-5 w-5 text-green-600 mt-0.5" />
+                        <div>
+                          <h3 className="font-medium">Study Design Agent</h3>
+                          <p className="text-sm text-slate-500">Get expert advice on trial design from our AI assistant</p>
+                        </div>
+                      </div>
+                      <Link href="/study-design-agent">
+                        <Button size="sm" variant="ghost" className="w-full justify-start pl-2 mt-2">
+                          <ArrowRight className="h-3 w-3 mr-2" /> Explore
+                        </Button>
+                      </Link>
+                    </div>
                     <div className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer">
                       <div className="flex items-start gap-2 mb-2">
                         <Lightbulb className="h-5 w-5 text-amber-500 mt-0.5" />

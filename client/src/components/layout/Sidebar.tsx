@@ -107,10 +107,10 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                 <NavItem href="/protocol-generator" icon={<Lightbulb />}>
                   Protocol Generator
                 </NavItem>
-                <NavItem href="/design-validator" icon={<HelpCircle />}>
-                  Design Validator
+                <NavItem href="/study-design-agent" icon={<Lightbulb />}>
+                  Study Design Agent
                 </NavItem>
-              </div>
+                </div>
             </div>
 
             <div className="pt-4 mt-4 border-t border-slate-200">
@@ -160,8 +160,8 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                 <NavItem href="/protocol-generator" icon={<ClipboardList />}>
                   Protocol Generator
                 </NavItem>
-                <NavItem href="/design-validator" icon={<HelpCircle />}>
-                  Design Validator
+                <NavItem href="/study-design-agent" icon={<Lightbulb />}>
+                  Study Design Agent
                 </NavItem>
               </div>
             </div>

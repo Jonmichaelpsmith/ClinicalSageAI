@@ -261,6 +261,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Study Design Agent API endpoint
+  app.post('/api/study-design-agent/chat', async (req: Request, res: Response) => {
+    try {
+      const { query, indication, phase } = req.body;
+      
+      if (!query) {
+        return res.status(400).json({ success: false, message: 'Query is required' });
+      }
+      
+      // In a real implementation, this would use the OpenAI service to generate a response
+      // based on the query, indication, and phase
+      // For now, we'll just return a mock response
+      
+      const response = {
+        content: `Based on my analysis of similar trials in ${indication || "this therapeutic area"} for Phase ${phase || "studies"}, here are my recommendations regarding "${query}"...`,
+        sources: [
+          { id: 1, title: "Example CSR 1", relevance: 0.92 },
+          { id: 2, title: "Example CSR 2", relevance: 0.85 },
+        ],
+        confidence: 0.89
+      };
+      
+      res.json({ 
+        success: true,
+        response
+      });
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+  
   // Export functionality
   app.get('/api/reports/:id/export', async (req: Request, res: Response) => {
     try {
