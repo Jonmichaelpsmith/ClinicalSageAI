@@ -127,7 +127,7 @@ const useCases: UseCase[] = [
     difficulty: "advanced",
     components: ["Dose-Response Modeler", "PK/PD Simulator", "Therapeutic Index Analyzer"],
     tags: ["dosing", "PK/PD", "safety margin"],
-    icon: <Flask className="h-8 w-8 text-emerald-500" />,
+    icon: <Beaker className="h-8 w-8 text-emerald-500" />,
   },
   {
     id: 10,
@@ -384,7 +384,7 @@ function UseCaseLibrary() {
                 <Card className="col-span-1 md:col-span-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
                   <CardHeader>
                     <div className="flex items-center gap-3">
-                      <RocketLaunch className="h-8 w-8 text-blue-600" />
+                      <Rocket className="h-8 w-8 text-blue-600" />
                       <div>
                         <CardTitle>Featured Use Case: AI-Powered Protocol Generation</CardTitle>
                         <CardDescription>Generate optimized protocol drafts based on historical trials</CardDescription>
