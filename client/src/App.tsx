@@ -23,19 +23,34 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
-      <div className="lg:pl-64">
+      <div className="lg:pl-64 min-h-screen flex flex-col">
         <TopNavbar 
           toggleSidebar={toggleSidebar} 
           searchQuery={searchQuery} 
           setSearchQuery={setSearchQuery} 
         />
 
-        <main className="py-6 px-4 sm:px-6 lg:px-8">
+        <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
           {children}
         </main>
+        
+        <footer className="py-6 px-4 sm:px-6 lg:px-8 border-t border-gray-200 dark:border-gray-800 mt-auto">
+          <div className="max-w-7xl mx-auto w-full">
+            <div className="flex flex-col md:flex-row justify-between items-center">
+              <div className="text-sm text-slate-500 dark:text-slate-400">
+                © {new Date().getFullYear()} TrialSage. All rights reserved.
+              </div>
+              <div className="mt-4 md:mt-0 flex space-x-6">
+                <a href="#" className="text-sm text-slate-500 hover:text-primary dark:text-slate-400">Terms</a>
+                <a href="#" className="text-sm text-slate-500 hover:text-primary dark:text-slate-400">Privacy</a>
+                <a href="#" className="text-sm text-slate-500 hover:text-primary dark:text-slate-400">Support</a>
+              </div>
+            </div>
+          </div>
+        </footer>
       </div>
     </div>
   );
