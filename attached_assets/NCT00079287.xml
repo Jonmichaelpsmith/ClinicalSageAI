@@ -1,0 +1,528 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<clinical_study>
+  <required_header>
+    <download_date>ClinicalTrials.gov processed this data on April 09, 2025</download_date>
+    <link_text>Link to the current ClinicalTrials.gov record.</link_text>
+    <url>https://clinicaltrials.gov/ct2/show/NCT00079287</url>
+  </required_header>
+  <id_info>
+    <org_study_id>CDR0000355138</org_study_id>
+    <secondary_id>JMTO-LC00-03</secondary_id>
+    <nct_id>NCT00079287</nct_id>
+  </id_info>
+  <brief_title>Vinorelbine, Gemcitabine, and Docetaxel Compared With Paclitaxel and Carboplatin in Treating Patients With Advanced Non-Small Cell Lung Cancer</brief_title>
+  <official_title>Phase III Randomized Comparison Study of Vinorelbine, Gemcitabine, and Docetaxel Versus Paclitaxel and Carboplatin in Patients With Advanced Non-Small Cell Lung Cancer</official_title>
+  <sponsors>
+    <lead_sponsor>
+      <agency>Japan Multinational Trial Organization</agency>
+      <agency_class>Other</agency_class>
+    </lead_sponsor>
+  </sponsors>
+  <source>National Cancer Institute (NCI)</source>
+  <brief_summary>
+    <textblock>RATIONALE: Drugs used in chemotherapy, such as vinorelbine, gemcitabine, docetaxel,&#xd;
+paclitaxel, and carboplatin, work in different ways to stop tumor cells from dividing so&#xd;
+they stop growing or die. Combining more than one drug may kill more tumor cells. It is&#xd;
+not yet known which combination chemotherapy regimen is more effective in treating&#xd;
+non-small cell lung cancer.&#xd;
+&#xd;
+PURPOSE: This randomized phase III trial is studying how well giving vinorelbine together&#xd;
+with gemcitabine and docetaxel works compared to giving paclitaxel together with&#xd;
+carboplatin in treating patients with stage IIIB, stage IV, or recurrent non-small cell&#xd;
+lung cancer.</textblock>
+  </brief_summary>
+  <detailed_description>
+    <textblock>OBJECTIVES:&#xd;
+&#xd;
+Primary&#xd;
+&#xd;
+  -  Compare the therapeutic effect of vinorelbine, gemcitabine, and docetaxel vs&#xd;
+     paclitaxel and carboplatin in patients with advanced non-small cell lung cancer.&#xd;
+&#xd;
+  -  Compare the overall survival of patients treated with these regimens.&#xd;
+&#xd;
+Secondary&#xd;
+&#xd;
+  -  Compare the response rate in patients treated with these regimens.&#xd;
+&#xd;
+  -  Compare the toxicity of these regimens in these patients.&#xd;
+&#xd;
+OUTLINE: This is a randomized, multicenter study. Patients are randomized to 1 of 2&#xd;
+treatment arms.&#xd;
+&#xd;
+  -  Arm I: Patients receive vinorelbine IV and gemcitabine IV on days 1 and 8. Treatment&#xd;
+     repeats every 21 days for 3 courses. Patients then receive docetaxel IV on day 1.&#xd;
+     Treatment repeats every 21 days for 3 courses.&#xd;
+&#xd;
+  -  Arm II: Patients receive carboplatin IV and paclitaxel IV on day 1. Treatment&#xd;
+     repeats every 21 days for 6 courses.&#xd;
+&#xd;
+Patients are followed for 1 year.&#xd;
+&#xd;
+PROJECTED ACCRUAL: A total of 400 patients (200 per treatment arm) will be accrued for&#xd;
+this study within 2 years.</textblock>
+  </detailed_description>
+  <overall_status>Completed</overall_status>
+  <start_date>March 2001</start_date>
+  <completion_date type="Actual">November 2008</completion_date>
+  <phase>Phase 3</phase>
+  <study_type>Interventional</study_type>
+  <has_expanded_access>No</has_expanded_access>
+  <study_design_info>
+    <allocation>Randomized</allocation>
+    <primary_purpose>Treatment</primary_purpose>
+  </study_design_info>
+  <condition>Lung Cancer</condition>
+  <intervention>
+    <intervention_type>Drug</intervention_type>
+    <intervention_name>carboplatin</intervention_name>
+  </intervention>
+  <intervention>
+    <intervention_type>Drug</intervention_type>
+    <intervention_name>docetaxel</intervention_name>
+  </intervention>
+  <intervention>
+    <intervention_type>Drug</intervention_type>
+    <intervention_name>gemcitabine hydrochloride</intervention_name>
+  </intervention>
+  <intervention>
+    <intervention_type>Drug</intervention_type>
+    <intervention_name>paclitaxel</intervention_name>
+  </intervention>
+  <intervention>
+    <intervention_type>Drug</intervention_type>
+    <intervention_name>vinorelbine tartrate</intervention_name>
+  </intervention>
+  <eligibility>
+    <criteria>
+      <textblock>DISEASE CHARACTERISTICS:&#xd;
+&#xd;
+  -  Histologically or cytologically confirmed primary non-small cell lung cancer (NSCLC)&#xd;
+     meeting criteria for 1 of the following:&#xd;
+&#xd;
+       -  Newly diagnosed selected stage IIIB (T4 lesion due to malignant pleural&#xd;
+          effusion) disease&#xd;
+&#xd;
+       -  Newly diagnosed stage IV disease&#xd;
+&#xd;
+       -  Recurrent disease after prior surgery and/or radiotherapy&#xd;
+&#xd;
+  -  The following cellular subtypes are allowed:&#xd;
+&#xd;
+       -  Adenocarcinoma&#xd;
+&#xd;
+       -  Large cell carcinoma&#xd;
+&#xd;
+       -  Squamous cell carcinoma&#xd;
+&#xd;
+       -  Unspecified carcinoma&#xd;
+&#xd;
+  -  Measurable or nonmeasurable disease by CT scan, MRI, x-ray, physical examination, or&#xd;
+     bone scintigraphy&#xd;
+&#xd;
+       -  Pleural effusions, ascites, and laboratory parameters are not allowed as the&#xd;
+          only evidence of disease&#xd;
+&#xd;
+       -  Disease must be present outside area of prior surgical resection&#xd;
+&#xd;
+       -  Disease must be present outside area of prior radiotherapy OR new lesion&#xd;
+          documented&#xd;
+&#xd;
+  -  No known brain metastases by CT scan or MRI within the past 6 weeks&#xd;
+&#xd;
+  -  No pleural or pericardial effusions requiring treatment&#xd;
+&#xd;
+PATIENT CHARACTERISTICS:&#xd;
+&#xd;
+Age&#xd;
+&#xd;
+  -  18 and over&#xd;
+&#xd;
+Performance status&#xd;
+&#xd;
+  -  Zubrod 0-1&#xd;
+&#xd;
+Life expectancy&#xd;
+&#xd;
+  -  Not specified&#xd;
+&#xd;
+Hematopoietic&#xd;
+&#xd;
+  -  Absolute granulocyte count ≥ 1,500/mm^3&#xd;
+&#xd;
+  -  Platelet count ≥ 100,000/mm^3&#xd;
+&#xd;
+  -  Hemoglobin ≥ 9 g/dL&#xd;
+&#xd;
+Hepatic&#xd;
+&#xd;
+  -  Bilirubin ≤ 2 times upper limit of normal (ULN)&#xd;
+&#xd;
+  -  SGOT or SGPT ≤ 2 times ULN&#xd;
+&#xd;
+  -  Alkaline phosphatase ≤ 2 times ULN&#xd;
+&#xd;
+Renal&#xd;
+&#xd;
+  -  Creatinine ≤ ULN&#xd;
+&#xd;
+  -  Creatinine clearance ≥ 50 mL/min&#xd;
+&#xd;
+Cardiovascular&#xd;
+&#xd;
+  -  No uncontrolled hypertension&#xd;
+&#xd;
+  -  No unstable angina&#xd;
+&#xd;
+  -  No congestive heart failure&#xd;
+&#xd;
+  -  No myocardial infarction within the past year&#xd;
+&#xd;
+  -  No ventricular arrhythmia requiring medical intervention&#xd;
+&#xd;
+Other&#xd;
+&#xd;
+  -  Not pregnant or nursing&#xd;
+&#xd;
+  -  Fertile patients must use effective contraception&#xd;
+&#xd;
+  -  No prior allergic drug reaction attributed to Cremophor or polysorbate 80&#xd;
+&#xd;
+  -  No disorder associated with lung cancer with life-threatening consequences&#xd;
+&#xd;
+  -  No motor or sensory neuropathy ≥ grade 2&#xd;
+&#xd;
+  -  No other malignancy within the past 5 years except adequately treated basal cell or&#xd;
+     squamous cell skin cancer, carcinoma in situ of the cervix, or adequately treated&#xd;
+     stage I or II cancer currently in complete remission&#xd;
+&#xd;
+  -  No uncontrolled diabetes&#xd;
+&#xd;
+PRIOR CONCURRENT THERAPY:&#xd;
+&#xd;
+Biologic therapy&#xd;
+&#xd;
+  -  No prior biologic therapy for NSCLC&#xd;
+&#xd;
+Chemotherapy&#xd;
+&#xd;
+  -  No prior systemic chemotherapy for NSCLC&#xd;
+&#xd;
+Endocrine therapy&#xd;
+&#xd;
+  -  No prior or concurrent steroid-type hormonal therapy (e.g., ethinyl estradiol)&#xd;
+&#xd;
+Radiotherapy&#xd;
+&#xd;
+  -  See Disease Characteristics&#xd;
+&#xd;
+  -  At least 3 weeks since prior radiotherapy and recovered&#xd;
+&#xd;
+Surgery&#xd;
+&#xd;
+  -  See Disease Characteristics&#xd;
+&#xd;
+  -  At least 2 weeks since prior thoracic or other major surgery and recovered&#xd;
+&#xd;
+Other&#xd;
+&#xd;
+  -  No prior or concurrent azole antifungal therapy (e.g., ketoconazole, miconazole, or&#xd;
+     itraconazole)&#xd;
+&#xd;
+  -  No prior or concurrent macrolides (e.g., erythromycin or clarithromycin)&#xd;
+&#xd;
+  -  No prior or concurrent cyclosporine, terfenadine, benzodiazepines (e.g., diazepam,&#xd;
+     triazolam, or midazolam), or retinoids&#xd;
+&#xd;
+  -  No prior or concurrent calcium antagonists (e.g., diltiazem, nifedipine, or&#xd;
+     verapamil)</textblock>
+    </criteria>
+    <gender>All</gender>
+    <minimum_age>18 Years</minimum_age>
+    <maximum_age>N/A</maximum_age>
+    <healthy_volunteers>No</healthy_volunteers>
+  </eligibility>
+  <overall_official>
+    <last_name>Masaaki Kawahara, MD</last_name>
+    <role>Study Chair</role>
+    <affiliation>National Hospital Organization Osaka National Hospital</affiliation>
+  </overall_official>
+  <location>
+    <facility>
+      <name>Nagoya University Hospital</name>
+      <address>
+        <city>Aichi</city>
+        <zip>466-8560</zip>
+        <country>Japan</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Asahikawa Medical College</name>
+      <address>
+        <city>Asahikawa</city>
+        <zip>078 8510</zip>
+        <country>Japan</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>National Cancer Center Hospital East</name>
+      <address>
+        <city>Chiba-ken</city>
+        <zip>277-8577</zip>
+        <country>Japan</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>National Hospital Organization - Ehime National Hospital</name>
+      <address>
+        <city>Ehime</city>
+        <zip>791-0281</zip>
+        <country>Japan</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Aso Iizuka Hospital</name>
+      <address>
+        <city>Fukuoka</city>
+        <zip>820-0018</zip>
+        <country>Japan</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>National Hospital Organization - Medical Center of Kure</name>
+      <address>
+        <city>Hiroshima</city>
+        <zip>737-0023</zip>
+        <country>Japan</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>National Hospital Organization - Dohoku National Hospital</name>
+      <address>
+        <city>Hokkaido</city>
+        <zip>070-0901</zip>
+        <country>Japan</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Fujisawa City Hospital</name>
+      <address>
+        <city>Kanagawa</city>
+        <zip>251-8550</zip>
+        <country>Japan</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>National Hospital Organization - Kochi Hospital</name>
+      <address>
+        <city>Kochi-shi</city>
+        <zip>780-8065</zip>
+        <country>Japan</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Kyoto-Katsura Hospital</name>
+      <address>
+        <city>Kyoto</city>
+        <zip>615-8256</zip>
+        <country>Japan</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Ogaki Municipal Hospital</name>
+      <address>
+        <city>Ogaki-shi</city>
+        <zip>503-8502</zip>
+        <country>Japan</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>National Hospital Organization - Okayama Medical Center</name>
+      <address>
+        <city>Okayama</city>
+        <zip>701-1192</zip>
+        <country>Japan</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>National Hospital Organization - Okinawa Hospital</name>
+      <address>
+        <city>Okinawa</city>
+        <zip>901-2214</zip>
+        <country>Japan</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Osaka General Medical Center</name>
+      <address>
+        <city>Osaka-shi</city>
+        <zip>558-0056</zip>
+        <country>Japan</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Osaka Saiseikai Nakatsu Hospital</name>
+      <address>
+        <city>Osaka</city>
+        <zip>530-0012</zip>
+        <country>Japan</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Takatsuki Red Cross Hospital</name>
+      <address>
+        <city>Osaka</city>
+        <zip>569-1096</zip>
+        <country>Japan</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>National Hospital Organization - Osaka National Hospital</name>
+      <address>
+        <city>Osaka</city>
+        <zip>591-8555</zip>
+        <country>Japan</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Saitama Cancer Center</name>
+      <address>
+        <city>Saitama</city>
+        <zip>362-0803</zip>
+        <country>Japan</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Takamatsu Red Cross Hospital</name>
+      <address>
+        <city>Takamatsu</city>
+        <zip>760-8571</zip>
+        <country>Japan</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Tokyo Medical and Dental University</name>
+      <address>
+        <city>Tokyo</city>
+        <zip>113-8519</zip>
+        <country>Japan</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Tokyo Medical University</name>
+      <address>
+        <city>Tokyo</city>
+        <zip>160</zip>
+        <country>Japan</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Tottori University Hospital</name>
+      <address>
+        <city>Tottori</city>
+        <zip>683-8504</zip>
+        <country>Japan</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Toyama Medical and Pharmaceutical University Hospital</name>
+      <address>
+        <city>Toyama</city>
+        <zip>930-0194</zip>
+        <country>Japan</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>Koseiren Takaoka Hospital</name>
+      <address>
+        <city>Toyama</city>
+        <zip>933-8555</zip>
+        <country>Japan</country>
+      </address>
+    </facility>
+  </location>
+  <location_countries>
+    <country>Japan</country>
+  </location_countries>
+  <results_reference>
+    <citation>Teramukai S, Kitano T, Kishida Y, Kawahara M, Kubota K, Komuta K, Minato K, Mio T, Fujita Y, Yonei T, Nakano K, Tsuboi M, Shibata K, Furuse K, Fukushima M. Pretreatment neutrophil count as an independent prognostic factor in advanced non-small-cell lung cancer: an analysis of Japan Multinational Trial Organisation LC00-03. Eur J Cancer. 2009 Jul;45(11):1950-8. doi: 10.1016/j.ejca.2009.01.023. Epub 2009 Feb 21.</citation>
+    <PMID>19231158</PMID>
+  </results_reference>
+  <results_reference>
+    <citation>Kubota K, Kawahara M, Ogawara M, Nishiwaki Y, Komuta K, Minato K, Fujita Y, Teramukai S, Fukushima M, Furuse K; Japan Multi-National Trial Organisation. Vinorelbine plus gemcitabine followed by docetaxel versus carboplatin plus paclitaxel in patients with advanced non-small-cell lung cancer: a randomised, open-label, phase III study. Lancet Oncol. 2008 Dec;9(12):1135-42. doi: 10.1016/S1470-2045(08)70261-4. Epub 2008 Nov 13.</citation>
+    <PMID>19013107</PMID>
+  </results_reference>
+  <results_reference>
+    <citation>Teramukai S, Nishimura T, Nakagawa M, et al.: Predictors and impacts of second-line chemotherapy on survival after progression in patients with advanced non-small cell lung cancer (NSCLC). [Abstract] J Clin Oncol 25 (Suppl 18): A-7675, 2007.</citation>
+  </results_reference>
+  <verification_date>April 2005</verification_date>
+  <study_first_submitted>March 8, 2004</study_first_submitted>
+  <study_first_submitted_qc>March 9, 2004</study_first_submitted_qc>
+  <study_first_posted type="Estimate">March 10, 2004</study_first_posted>
+  <last_update_submitted>September 16, 2013</last_update_submitted>
+  <last_update_submitted_qc>September 16, 2013</last_update_submitted_qc>
+  <last_update_posted type="Estimate">September 17, 2013</last_update_posted>
+  <keyword>adenocarcinoma of the lung</keyword>
+  <keyword>large cell lung cancer</keyword>
+  <keyword>recurrent non-small cell lung cancer</keyword>
+  <keyword>squamous cell lung cancer</keyword>
+  <keyword>stage IIIB non-small cell lung cancer</keyword>
+  <keyword>stage IV non-small cell lung cancer</keyword>
+  <condition_browse>
+    <mesh_term>Lung Neoplasms</mesh_term>
+    <mesh_term>Carcinoma, Non-Small-Cell Lung</mesh_term>
+  </condition_browse>
+  <intervention_browse>
+    <mesh_term>Paclitaxel</mesh_term>
+    <mesh_term>Vinorelbine</mesh_term>
+    <mesh_term>Docetaxel</mesh_term>
+    <mesh_term>Carboplatin</mesh_term>
+    <mesh_term>Gemcitabine</mesh_term>
+  </intervention_browse>
+</clinical_study>

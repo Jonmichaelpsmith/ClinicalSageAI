@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<clinical_study>
+  <required_header>
+    <download_date>ClinicalTrials.gov processed this data on April 09, 2025</download_date>
+    <link_text>Link to the current ClinicalTrials.gov record.</link_text>
+    <url>https://clinicaltrials.gov/ct2/show/NCT00075647</url>
+  </required_header>
+  <id_info>
+    <org_study_id>NCI-2012-02567</org_study_id>
+    <secondary_id>MDA-2003-0530</secondary_id>
+    <secondary_id>N01CM17003</secondary_id>
+    <secondary_id>CDR0000347405</secondary_id>
+    <nct_id>NCT00075647</nct_id>
+  </id_info>
+  <brief_title>CCI-779 in Treating Patients With Locally Advanced or Metastatic Pancreatic Cancer</brief_title>
+  <official_title>Phase II Trial of CCI-779 in Locally Advanced or Metastatic Pancreatic Cancer</official_title>
+  <sponsors>
+    <lead_sponsor>
+      <agency>National Cancer Institute (NCI)</agency>
+      <agency_class>NIH</agency_class>
+    </lead_sponsor>
+  </sponsors>
+  <source>National Cancer Institute (NCI)</source>
+  <brief_summary>
+    <textblock>Drugs used in chemotherapy, such as CCI-779, work in different ways to stop tumor cells&#xd;
+from dividing so they stop growing or die. This phase II trial is studying how well&#xd;
+CCI-779 works in treating patients with locally advanced or metastatic pancreatic cancer</textblock>
+  </brief_summary>
+  <detailed_description>
+    <textblock>PRIMARY OBJECTIVES:&#xd;
+&#xd;
+I. Determine the overall survival at 6 months in patients with locally advanced or&#xd;
+metastatic pancreatic cancer treated with CCI-779.&#xd;
+&#xd;
+SECONDARY OBJECTIVES:&#xd;
+&#xd;
+I. Determine time to progression, progression-free survival, overall survival, and tumor&#xd;
+response rate in patients with measurable disease treated with this drug.&#xd;
+&#xd;
+II. Correlate biomarkers of response with clinical response in patients treated with this&#xd;
+drug.&#xd;
+&#xd;
+III. Determine the safety and toxicity of this drug in these patients.&#xd;
+&#xd;
+OUTLINE: This is an open-label study.&#xd;
+&#xd;
+Patients receive CCI-779 IV over 30 minutes once weekly. Courses repeat every 4 weeks in&#xd;
+the absence of disease progression or unacceptable toxicity.&#xd;
+&#xd;
+Patients are followed every 3 months.&#xd;
+&#xd;
+PROJECTED ACCRUAL: A total of 40 patients will be accrued for this study within 13&#xd;
+months.</textblock>
+  </detailed_description>
+  <overall_status>Completed</overall_status>
+  <start_date>December 2003</start_date>
+  <primary_completion_date type="Actual">March 2005</primary_completion_date>
+  <phase>Phase 2</phase>
+  <study_type>Interventional</study_type>
+  <has_expanded_access>No</has_expanded_access>
+  <study_design_info>
+    <allocation>N/A</allocation>
+    <intervention_model>Single Group Assignment</intervention_model>
+    <primary_purpose>Treatment</primary_purpose>
+    <masking>None (Open Label)</masking>
+  </study_design_info>
+  <primary_outcome>
+    <measure>Overall survival (OS)</measure>
+    <time_frame>6 months</time_frame>
+    <description>The method of Thall and Simon will be employed.</description>
+  </primary_outcome>
+  <secondary_outcome>
+    <measure>Overall response rate defined as the number of patients who achieved CR or PR divided by the number of patients treated</measure>
+    <time_frame>Up to 2 years</time_frame>
+    <description>95% confidence interval will be presented</description>
+  </secondary_outcome>
+  <secondary_outcome>
+    <measure>Duration of response</measure>
+    <time_frame>From the time of objective response to the time of progressive disease, assessed up to 2 years</time_frame>
+  </secondary_outcome>
+  <secondary_outcome>
+    <measure>Time to progression (TTP)</measure>
+    <time_frame>From the time of the study entry to the time of relapse or progression, assessed up to 2 years</time_frame>
+  </secondary_outcome>
+  <secondary_outcome>
+    <measure>Systemic and local adverse events assessed using the established National Cancer Institute (NCI) Common Terminology Criteria for Adverse Events (CTCAE)</measure>
+    <time_frame>Up to 2 years</time_frame>
+    <description>Descriptive statistics (mean, standard deviation, median, and range) will be displayed&#xd;
+for relevant laboratory parameters.</description>
+  </secondary_outcome>
+  <secondary_outcome>
+    <measure>Levels of PTEN, AKT, and PI3K</measure>
+    <time_frame>Up to 2 years</time_frame>
+    <description>Expression levels will be correlated with patient survival duration using Cox&#xd;
+proportional hazard regression analysis</description>
+  </secondary_outcome>
+  <secondary_outcome>
+    <measure>Expression and phosphorylation status of p70s6k</measure>
+    <time_frame>Up to 7 days</time_frame>
+    <description>Descriptive statistics will be applied to report the mean, duration of the effects on&#xd;
+p70s6k phosphorylation.</description>
+  </secondary_outcome>
+  <number_of_arms>1</number_of_arms>
+  <enrollment type="Actual">40</enrollment>
+  <condition>Adenocarcinoma of the Pancreas</condition>
+  <condition>Recurrent Pancreatic Cancer</condition>
+  <condition>Stage II Pancreatic Cancer</condition>
+  <condition>Stage III Pancreatic Cancer</condition>
+  <condition>Stage IV Pancreatic Cancer</condition>
+  <arm_group>
+    <arm_group_label>Treatment (temsirolimus)</arm_group_label>
+    <arm_group_type>Experimental</arm_group_type>
+    <description>Patients receive CCI-779 IV over 30 minutes once weekly. Courses repeat every 4 weeks in&#xd;
+the absence of disease progression or unacceptable toxicity.</description>
+  </arm_group>
+  <intervention>
+    <intervention_type>Drug</intervention_type>
+    <intervention_name>temsirolimus</intervention_name>
+    <description>Given IV</description>
+    <arm_group_label>Treatment (temsirolimus)</arm_group_label>
+    <other_name>CCI-779</other_name>
+    <other_name>cell cycle inhibitor 779</other_name>
+    <other_name>Torisel</other_name>
+  </intervention>
+  <intervention>
+    <intervention_type>Other</intervention_type>
+    <intervention_name>laboratory biomarker analysis</intervention_name>
+    <description>Correlative studies</description>
+    <arm_group_label>Treatment (temsirolimus)</arm_group_label>
+  </intervention>
+  <eligibility>
+    <criteria>
+      <textblock>Inclusion Criteria:&#xd;
+&#xd;
+  -  Histologically or cytologically confirmed adenocarcinoma of the pancreas&#xd;
+&#xd;
+       -  Locally advanced or metastatic disease&#xd;
+&#xd;
+  -  Radiographic evidence of disease&#xd;
+&#xd;
+  -  No known brain metastases&#xd;
+&#xd;
+  -  Performance status - ECOG 0-2&#xd;
+&#xd;
+  -  More than 3 months&#xd;
+&#xd;
+  -  WBC ≥ 3,000/mm^3&#xd;
+&#xd;
+  -  Absolute neutrophil count ≥ 1,500/mm^3&#xd;
+&#xd;
+  -  Platelet count ≥ 100,000/mm^3&#xd;
+&#xd;
+  -  Bilirubin ≤ 1.5 times upper limit of normal (ULN)&#xd;
+&#xd;
+  -  AST and ALT ≤ 2.5 times ULN (5 times ULN if liver metastases are present)&#xd;
+&#xd;
+  -  Creatinine ≤ 1.5 mg/dL&#xd;
+&#xd;
+  -  Creatinine clearance ≥ 50 mL/min&#xd;
+&#xd;
+  -  No symptomatic congestive heart failure&#xd;
+&#xd;
+  -  No unstable angina pectoris&#xd;
+&#xd;
+  -  No cardiac arrhythmia&#xd;
+&#xd;
+  -  Not pregnant or nursing&#xd;
+&#xd;
+  -  Negative pregnancy test&#xd;
+&#xd;
+  -  Fertile patients must use effective contraception&#xd;
+&#xd;
+  -  Fasting serum cholesterol ≤ 350 mg/dL&#xd;
+&#xd;
+  -  Fasting triglycerides ≤ 400 mg/dL&#xd;
+&#xd;
+  -  No ongoing or active infection&#xd;
+&#xd;
+  -  No psychiatric illness or social situation that would preclude study compliance&#xd;
+&#xd;
+  -  No other concurrent uncontrolled illness&#xd;
+&#xd;
+  -  No concurrent prophylactic hematopoietic colony-stimulating factors&#xd;
+&#xd;
+  -  No prior chemotherapy for metastatic pancreatic cancer&#xd;
+&#xd;
+  -  More than 2 months since prior adjuvant or neoadjuvant chemoradiotherapy for&#xd;
+     resected pancreatic cancer&#xd;
+&#xd;
+       -  Must have radiographic evidence of recurrent disease&#xd;
+&#xd;
+  -  More than 2 months since prior chemoradiotherapy for locally advanced pancreatic&#xd;
+     cancer&#xd;
+&#xd;
+       -  Must have radiographic evidence of disease progression&#xd;
+&#xd;
+  -  See Chemotherapy&#xd;
+&#xd;
+  -  See Chemotherapy&#xd;
+&#xd;
+  -  No other concurrent investigational or commercial agents or therapies for the&#xd;
+     malignancy&#xd;
+&#xd;
+  -  No other concurrent anticancer therapy&#xd;
+&#xd;
+  -  No concurrent combination antiretroviral therapy for HIV-positive patients</textblock>
+    </criteria>
+    <gender>All</gender>
+    <minimum_age>18 Years</minimum_age>
+    <maximum_age>N/A</maximum_age>
+    <healthy_volunteers>No</healthy_volunteers>
+  </eligibility>
+  <overall_official>
+    <last_name>Henry Xiong</last_name>
+    <role>Principal Investigator</role>
+    <affiliation>M.D. Anderson Cancer Center</affiliation>
+  </overall_official>
+  <location>
+    <facility>
+      <name>M D Anderson Cancer Center</name>
+      <address>
+        <city>Houston</city>
+        <state>Texas</state>
+        <zip>77030</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location_countries>
+    <country>United States</country>
+  </location_countries>
+  <verification_date>January 2013</verification_date>
+  <study_first_submitted>January 9, 2004</study_first_submitted>
+  <study_first_submitted_qc>January 11, 2004</study_first_submitted_qc>
+  <study_first_posted type="Estimate">January 12, 2004</study_first_posted>
+  <last_update_submitted>January 16, 2013</last_update_submitted>
+  <last_update_submitted_qc>January 16, 2013</last_update_submitted_qc>
+  <last_update_posted type="Estimate">January 17, 2013</last_update_posted>
+  <responsible_party>
+    <responsible_party_type>Sponsor</responsible_party_type>
+  </responsible_party>
+  <condition_browse>
+    <mesh_term>Pancreatic Neoplasms</mesh_term>
+  </condition_browse>
+  <intervention_browse>
+    <mesh_term>Sirolimus</mesh_term>
+    <mesh_term>Temsirolimus</mesh_term>
+    <mesh_term>MTOR Inhibitors</mesh_term>
+  </intervention_browse>
+</clinical_study>

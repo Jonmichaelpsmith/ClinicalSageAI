@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<clinical_study>
+  <required_header>
+    <download_date>ClinicalTrials.gov processed this data on April 09, 2025</download_date>
+    <link_text>Link to the current ClinicalTrials.gov record.</link_text>
+    <url>https://clinicaltrials.gov/ct2/show/NCT00071084</url>
+  </required_header>
+  <id_info>
+    <org_study_id>Hx-CD4-008</org_study_id>
+    <nct_id>NCT00071084</nct_id>
+  </id_info>
+  <brief_title>Clinical Trial of HuMax-CD4, a New Drug to Treat Advanced Stage T-Cell Lymphoma in the Skin.</brief_title>
+  <official_title>An Open-Label Therapeutic Exploratory Clinical Trial of HuMax-CD4, a Fully Human Monoclonal Anti-CD4 Antibody, in Patients With Advanced Stage (IIA-IVB) Cutaneous T-cell Lymphoma</official_title>
+  <sponsors>
+    <lead_sponsor>
+      <agency>Genmab</agency>
+      <agency_class>Industry</agency_class>
+    </lead_sponsor>
+  </sponsors>
+  <source>Genmab</source>
+  <oversight_info>
+    <has_dmc>Yes</has_dmc>
+    <is_fda_regulated_drug>Yes</is_fda_regulated_drug>
+    <is_fda_regulated_device>No</is_fda_regulated_device>
+  </oversight_info>
+  <brief_summary>
+    <textblock>The purpose of this trial is to determine the effect of HuMax-CD4, as a treatment for&#xd;
+advanced stage (late stage) cutaneous T-cell lymphoma (CTCL). Almost all participants who&#xd;
+are affected by late stage CTCL have many cancerous cells which bear a receptor called&#xd;
+CD4. HuMax-CD4 is an investigational drug directed against this receptor. There is no&#xd;
+placebo in this trial; all participants will be treated with HuMax-CD4. The response&#xd;
+rates, duration of responses, relief of symptoms, and safety profile of HuMax-CD4 will be&#xd;
+evaluated during this trial.</textblock>
+  </brief_summary>
+  <overall_status>Completed</overall_status>
+  <start_date type="Actual">May 27, 2003</start_date>
+  <completion_date type="Actual">June 29, 2004</completion_date>
+  <primary_completion_date type="Actual">June 29, 2004</primary_completion_date>
+  <phase>Phase 2</phase>
+  <study_type>Interventional</study_type>
+  <has_expanded_access>No</has_expanded_access>
+  <study_design_info>
+    <allocation>Non-Randomized</allocation>
+    <intervention_model>Single Group Assignment</intervention_model>
+    <primary_purpose>Treatment</primary_purpose>
+    <masking>None (Open Label)</masking>
+  </study_design_info>
+  <primary_outcome>
+    <measure>Percentage of Participants Who Achieved Complete and Partial Responses Assessed by Composite Assessment of Index Lesion Disease Severity (CA) Scale</measure>
+    <time_frame>Up to 20 weeks</time_frame>
+  </primary_outcome>
+  <secondary_outcome>
+    <measure>Number of Participants with Adverse Events (AEs) and Graded as per Severity</measure>
+    <time_frame>From Baseline (Day 0) up to end of study (Week 20)</time_frame>
+  </secondary_outcome>
+  <secondary_outcome>
+    <measure>Percentage of Participants With Physician's Global Assessment of Clinical Condition (PGA) Response</measure>
+    <time_frame>Up to 20 weeks</time_frame>
+  </secondary_outcome>
+  <secondary_outcome>
+    <measure>Percentage of Participants with Change from Baseline in Participant's Assessment of Pruritus Scale</measure>
+    <time_frame>Baseline, up to Week 20</time_frame>
+    <description>The participants were assessed pruritus on a 5-point scale from 0-4: 0. No complaint of&#xd;
+itching on lesion; 1. Mild: Occasional transient itching on lesion; 2. Moderate: Frequent&#xd;
+itching, every 1-3 hours; reflex scratching; 3. Severe: Compelling itching; interrupts&#xd;
+daily activities; must be scratched; 4. Very severe: Unrelieved itching: prevents routine&#xd;
+activities; awakens patient from sleep.</description>
+  </secondary_outcome>
+  <secondary_outcome>
+    <measure>Time to Response</measure>
+    <time_frame>From first dose to achieving a response (up to approximately 12 weeks)</time_frame>
+  </secondary_outcome>
+  <secondary_outcome>
+    <measure>Response Duration</measure>
+    <time_frame>From achieving first response to last response/until relapse (up to approximately 22 weeks)</time_frame>
+  </secondary_outcome>
+  <secondary_outcome>
+    <measure>Time to Disease Progression</measure>
+    <time_frame>From first dose until disease progressed (Up to 16 weeks)</time_frame>
+  </secondary_outcome>
+  <secondary_outcome>
+    <measure>Percentage of Participants with Change From Baseline in Total Body Surface Area (BSA)</measure>
+    <time_frame>Baseline up to Week 21</time_frame>
+  </secondary_outcome>
+  <secondary_outcome>
+    <measure>Change from Baseline in Physician's Erythroderma Severity Assessment</measure>
+    <time_frame>Baseline, Week 20</time_frame>
+  </secondary_outcome>
+  <secondary_outcome>
+    <measure>Number of Participants With Positive Human Anti Human Antibodies (HAHA) Titres</measure>
+    <time_frame>Up to Week 20</time_frame>
+  </secondary_outcome>
+  <number_of_arms>2</number_of_arms>
+  <enrollment type="Actual">22</enrollment>
+  <condition>Cutaneous T-Cell Lymphoma</condition>
+  <arm_group>
+    <arm_group_label>HuMax-CD4 280 milligrams (mg)</arm_group_label>
+    <arm_group_type>Experimental</arm_group_type>
+  </arm_group>
+  <arm_group>
+    <arm_group_label>HuMax-CD4 980 mg</arm_group_label>
+    <arm_group_type>Experimental</arm_group_type>
+  </arm_group>
+  <intervention>
+    <intervention_type>Drug</intervention_type>
+    <intervention_name>HuMax-CD4</intervention_name>
+    <description>HuMax-CD4 280 mg was administered as a subcutaneous (SC) infusion once daily (OD) up to&#xd;
+16 weeks.</description>
+    <arm_group_label>HuMax-CD4 280 milligrams (mg)</arm_group_label>
+    <other_name>Zanolimumab</other_name>
+  </intervention>
+  <intervention>
+    <intervention_type>Drug</intervention_type>
+    <intervention_name>HuMax-CD4</intervention_name>
+    <description>HuMax-CD4 980 mg was administered as a SC infusion OD up to 16 weeks.</description>
+    <arm_group_label>HuMax-CD4 980 mg</arm_group_label>
+    <other_name>Zanolimumab</other_name>
+  </intervention>
+  <eligibility>
+    <criteria>
+      <textblock>Inclusion criteria&#xd;
+&#xd;
+  -  Medical diagnosis of CTCL, and positivity for the CD4 receptor.&#xd;
+&#xd;
+  -  Late stage CTCL.&#xd;
+&#xd;
+  -  Have received at least one prior anti-cancer therapy with inadequate effect.&#xd;
+&#xd;
+  -  World Health Organization (WHO) performance status 0,1 or 2&#xd;
+&#xd;
+Exclusion Criteria&#xd;
+&#xd;
+  -  Certain rare types of CTCL.&#xd;
+&#xd;
+  -  Previous treatment with other anti-CD4 medications.&#xd;
+&#xd;
+  -  More than two previous treatments with systemic chemotherapy.&#xd;
+&#xd;
+  -  Certain anti-psoriasis or anti-cancer therapies within the last 4 weeks before&#xd;
+     entering this trial.&#xd;
+&#xd;
+  -  Some types of steroid treatments less than two weeks before entering the trial.&#xd;
+&#xd;
+  -  Prolonged exposure to sunlight or UV light during the trial.&#xd;
+&#xd;
+  -  Other cancer diseases, except certain skin cancers or cervix cancer.&#xd;
+&#xd;
+  -  Chronic infectious disease requiring medication.&#xd;
+&#xd;
+  -  Certain serious medical conditions, including kidney or liver disease, some&#xd;
+     psychiatric illnesses, and stomach, lung, heart, hormonal, nerve or blood diseases.&#xd;
+&#xd;
+  -  Pregnant or breast-feeding women.&#xd;
+&#xd;
+  -  Women of childbearing age who are unable or unwilling to use an IUD or hormonal&#xd;
+     birth control during the whole trial.&#xd;
+&#xd;
+  -  If you are participating in another trial with a different new drug 4 weeks before&#xd;
+     you enter this trial.&#xd;
+&#xd;
+Note: Other protocol defined Inclusion and Exclusion criteria may apply.</textblock>
+    </criteria>
+    <gender>All</gender>
+    <minimum_age>18 Years</minimum_age>
+    <maximum_age>N/A</maximum_age>
+    <healthy_volunteers>No</healthy_volunteers>
+  </eligibility>
+  <location>
+    <facility>
+      <name>Stanford University Med Ctr., Dept of Dermatology</name>
+      <address>
+        <city>Stanford</city>
+        <state>California</state>
+        <zip>94305-5152</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <name>University of Texas, M.D. Anderson Cancer Center</name>
+      <address>
+        <city>Houston</city>
+        <state>Texas</state>
+        <zip>77030-4009</zip>
+        <country>United States</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <address>
+        <city>Münster</city>
+        <country>Germany</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <address>
+        <city>Stockholm</city>
+        <country>Sweden</country>
+      </address>
+    </facility>
+  </location>
+  <location>
+    <facility>
+      <address>
+        <city>London</city>
+        <country>United Kingdom</country>
+      </address>
+    </facility>
+  </location>
+  <location_countries>
+    <country>Germany</country>
+    <country>Sweden</country>
+    <country>United Kingdom</country>
+    <country>United States</country>
+  </location_countries>
+  <verification_date>April 2023</verification_date>
+  <study_first_submitted>October 10, 2003</study_first_submitted>
+  <study_first_submitted_qc>October 14, 2003</study_first_submitted_qc>
+  <study_first_posted type="Estimate">October 15, 2003</study_first_posted>
+  <last_update_submitted>April 26, 2023</last_update_submitted>
+  <last_update_submitted_qc>April 26, 2023</last_update_submitted_qc>
+  <last_update_posted type="Actual">April 28, 2023</last_update_posted>
+  <responsible_party>
+    <responsible_party_type>Sponsor</responsible_party_type>
+  </responsible_party>
+  <keyword>Skin cancer</keyword>
+  <keyword>Lymphoma</keyword>
+  <keyword>Mycosis fungoides</keyword>
+  <keyword>Sezary syndrome</keyword>
+  <condition_browse>
+    <mesh_term>Lymphoma</mesh_term>
+    <mesh_term>Lymphoma, T-Cell</mesh_term>
+    <mesh_term>Lymphoma, T-Cell, Peripheral</mesh_term>
+    <mesh_term>Lymphoma, T-Cell, Cutaneous</mesh_term>
+  </condition_browse>
+  <intervention_browse>
+    <mesh_term>Zanolimumab</mesh_term>
+    <mesh_term>Antibodies, Monoclonal</mesh_term>
+  </intervention_browse>
+</clinical_study>

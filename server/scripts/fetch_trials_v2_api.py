@@ -131,33 +131,107 @@ def fetch_clinical_trials(
         "output_file": output_file
     }
 
+def fetch_multiple_trials(queries, records_per_query, phase=None, output_dir="./data"):
+    """
+    Fetch clinical trial data for multiple queries
+    
+    Args:
+        queries: List of medical conditions to search for
+        records_per_query: Number of records to fetch per query
+        phase: Filter by specific trial phase
+        output_dir: Directory to save the output
+        
+    Returns:
+        List of result dictionaries
+    """
+    results = []
+    total_fetched = 0
+    output_files = []
+    
+    for query in queries:
+        print(f"\n{'='*50}")
+        print(f"Fetching data for query: {query}")
+        print(f"{'='*50}\n")
+        
+        result = fetch_clinical_trials(
+            query=query,
+            max_records=records_per_query,
+            phase=phase,
+            output_dir=output_dir
+        )
+        
+        results.append(result)
+        total_fetched += result["total_fetched"]
+        output_files.append(result["output_file"])
+    
+    return {
+        "success": any(r["success"] for r in results),
+        "total_fetched": total_fetched,
+        "output_files": output_files
+    }
+
 def main():
     """Command line interface for the script"""
     parser = argparse.ArgumentParser(description='Fetch clinical trial data from ClinicalTrials.gov')
-    parser.add_argument('--query', type=str, default="cancer", help='Medical condition to search for')
-    parser.add_argument('--max-records', type=int, default=100, help='Maximum number of records to fetch')
+    parser.add_argument('--query', type=str, default="cancer", help='Medical condition to search for (for single query mode)')
+    parser.add_argument('--queries', type=str, help='Comma-separated list of medical conditions to search for (for multi-query mode)')
+    parser.add_argument('--max-records', type=int, default=100, help='Maximum number of records to fetch (per query in multi-query mode)')
     parser.add_argument('--phase', type=str, help='Filter by trial phase (e.g. "Phase 1")')
     parser.add_argument('--output-dir', type=str, default="./data", help='Directory to save output files')
+    parser.add_argument('--multi-query', action='store_true', help='Use multiple queries to fetch diverse data')
     
     args = parser.parse_args()
     
     # Create output directory
     os.makedirs(args.output_dir, exist_ok=True)
     
-    # Fetch the data
-    result = fetch_clinical_trials(
-        query=args.query,
-        max_records=args.max_records,
-        phase=args.phase,
-        output_dir=args.output_dir
-    )
+    # Default queries for multi-query mode
+    default_queries = [
+        "cancer", "diabetes", "cardiovascular", 
+        "alzheimer", "covid", "asthma", 
+        "arthritis", "hypertension", "depression",
+        "obesity"
+    ]
     
-    if result["success"]:
-        print(f"Successfully fetched {result['total_fetched']} records in {result['elapsed_seconds']:.2f} seconds")
-        print(f"Data saved to {result['output_file']}")
+    if args.multi_query or args.queries:
+        # Use provided queries or default to a predefined list
+        queries = args.queries.split(",") if args.queries else default_queries
+        
+        # Calculate records per query to match total requested
+        records_per_query = max(10, min(100, args.max_records // len(queries)))
+        
+        print(f"Fetching approximately {records_per_query} records for each of {len(queries)} queries")
+        
+        # Fetch data for multiple queries
+        result = fetch_multiple_trials(
+            queries=queries,
+            records_per_query=records_per_query,
+            phase=args.phase,
+            output_dir=args.output_dir
+        )
+        
+        if result["success"]:
+            print(f"\nSUMMARY: Successfully fetched a total of {result['total_fetched']} records")
+            for i, file_path in enumerate(result["output_files"]):
+                print(f"  - File {i+1}: {file_path}")
+        else:
+            print("Failed to fetch clinical trial data")
+            exit(1)
     else:
-        print("Failed to fetch clinical trial data")
-        exit(1)
+        # Single query mode (original behavior)
+        result = fetch_clinical_trials(
+            query=args.query,
+            max_records=args.max_records,
+            phase=args.phase,
+            output_dir=args.output_dir
+        )
+        
+        if result["success"]:
+            print(f"Successfully fetched {result['total_fetched']} records in {result['elapsed_seconds']:.2f} seconds")
+            print(f"Data saved to {result['output_file']}")
+        else:
+            print("Failed to fetch clinical trial data")
+            exit(1)
 
 if __name__ == "__main__":
     main()

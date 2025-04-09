@@ -1,709 +1,578 @@
 /**
- * Protocol Generation and Validation Service
+ * Protocol Service for TrialSage
  * 
- * This service provides functionality to generate clinical trial protocols,
- * validate protocol elements against regulatory guidance, and suggest
- * improvements based on historical trial data.
+ * This service analyzes clinical trial data and generates protocol templates,
+ * design validations, and competitive benchmarks.
  */
 
 import { db } from './db';
-import { csrReports, csrDetails } from '@shared/schema';
-import { HuggingFaceService } from './huggingface-service';
-import * as math from 'mathjs';
+import { csrReports, csrDetails } from '../shared/schema';
+import { eq, like, and, isNull, desc, inArray } from 'drizzle-orm';
+import { queryHuggingFace } from './huggingface-service';
+
+// Define protocol section types
+export type ProtocolSection = {
+  sectionName: string;
+  content: string;
+  recommendations?: string[];
+  validationIssues?: ValidationIssue[];
+  competitiveBenchmark?: string;
+  examples?: Array<{
+    trial: string;
+    text: string;
+  }>;
+};
+
+export type ValidationIssue = {
+  severity: 'critical' | 'high' | 'medium' | 'warning' | 'low';
+  message: string;
+  recommendation?: string;
+};
+
+export type ProtocolTemplate = {
+  title: string;
+  indication: string;
+  phase: string;
+  createdAt: Date;
+  sections: ProtocolSection[];
+  validationSummary: {
+    criticalIssues: number;
+    highIssues: number;
+    mediumIssues: number;
+    warningIssues: number;
+    lowIssues: number;
+  };
+  similarTrials: Array<{
+    id: number;
+    title: string;
+    sponsor: string;
+    phase: string;
+    similarity: number;
+  }>;
+};
 
 /**
- * Protocol Generation and Validation Service
+ * Generate a protocol template based on indication and phase
  */
-export class ProtocolService {
-  /**
-   * Generate a clinical trial protocol based on the specified parameters
-   */
-  static async generateProtocol(
-    indication: string,
-    phase: string,
-    population: string,
-    endpoints: { primary: string[], secondary: string[] }
-  ): Promise<Record<string, string>> {
-    try {
-      // Generate protocol using our HuggingFace AI service
-      const prompt = `
-Generate a comprehensive clinical trial protocol for a ${phase} trial studying ${indication} in ${population}.
-Primary endpoints: ${endpoints.primary.join(', ')}
-Secondary endpoints: ${endpoints.secondary.join(', ')}
+export async function generateProtocolTemplate(
+  indication: string,
+  phase: string,
+  includeExamples: boolean = true
+): Promise<ProtocolTemplate> {
+  // Get similar trials based on indication and phase
+  const similarTrials = await db
+    .select()
+    .from(csrReports)
+    .where(
+      and(
+        like(csrReports.indication, `%${indication}%`),
+        like(csrReports.phase, `%${phase}%`),
+        isNull(csrReports.deletedAt)
+      )
+    )
+    .limit(10);
 
-Format the output as a structured protocol with the following sections:
-1. Background and Rationale
-2. Objectives
-3. Study Design
-4. Study Population (inclusion/exclusion criteria)
-5. Treatment Plan
-6. Efficacy Assessments
-7. Safety Assessments
-8. Statistical Considerations
+  // Get trial details for similar trials
+  const trialIds = similarTrials.map(trial => trial.id);
+  
+  const trialDetails = trialIds.length > 0 
+    ? await db
+        .select()
+        .from(csrDetails)
+        .where(inArray(csrDetails.reportId, trialIds))
+    : [];
 
-Make the protocol scientifically sound and aligned with regulatory expectations.
-`;
+  // Create mapping between trials and their details
+  const trialDetailMap = new Map();
+  for (const detail of trialDetails) {
+    trialDetailMap.set(detail.reportId, detail);
+  }
 
-      // Use queryHuggingFace to directly query the model
-      const { queryHuggingFace } = await import('./huggingface-service');
-      const response = await queryHuggingFace(prompt, 2000, 0.3);
-      
-      // Parse sections from the response
-      const protocolSections: Record<string, string> = {};
-      const sectionRegex = /##?\s*([\w\s&]+)\s*\n([\s\S]*?)(?=##?\s*[\w\s&]+\s*\n|$)/g;
-      let match;
+  // Generate protocol sections based on historical data
+  const protocolSections = await generateProtocolSections(
+    similarTrials, 
+    trialDetailMap,
+    indication,
+    phase,
+    includeExamples
+  );
 
-      while ((match = sectionRegex.exec(response)) !== null) {
-        const title = match[1].trim();
-        const content = match[2].trim();
-        protocolSections[title] = content;
+  // Validate the generated protocol
+  const validatedSections = await validateProtocolSections(protocolSections, indication, phase);
+
+  // Generate validation summary
+  const validationSummary = {
+    criticalIssues: 0,
+    highIssues: 0,
+    mediumIssues: 0,
+    warningIssues: 0,
+    lowIssues: 0
+  };
+
+  // Count validation issues
+  for (const section of validatedSections) {
+    if (section.validationIssues) {
+      for (const issue of section.validationIssues) {
+        validationSummary[`${issue.severity}Issues`]++;
       }
+    }
+  }
 
-      // If parsing failed, fall back to returning the full text with some basic structure
-      if (Object.keys(protocolSections).length === 0) {
-        const fallbackSections = [
-          'Background and Rationale',
-          'Objectives',
-          'Study Design',
-          'Study Population',
-          'Treatment Plan',
-          'Efficacy Assessments',
-          'Safety Assessments',
-          'Statistical Considerations'
-        ];
+  return {
+    title: `${indication} Phase ${phase} Clinical Trial Protocol`,
+    indication,
+    phase,
+    createdAt: new Date(),
+    sections: validatedSections,
+    validationSummary,
+    similarTrials: similarTrials.map((trial, index) => ({
+      id: trial.id,
+      title: trial.title,
+      sponsor: trial.sponsor,
+      phase: trial.phase,
+      similarity: (100 - (index * 8)) // Mock similarity score
+    }))
+  };
+}
+
+/**
+ * Generate protocol sections based on indication and phase
+ */
+async function generateProtocolSections(
+  similarTrials: any[],
+  trialDetailMap: Map<number, any>,
+  indication: string,
+  phase: string,
+  includeExamples: boolean = true
+): Promise<ProtocolSection[]> {
+  // Default protocol sections
+  const sections: ProtocolSection[] = [
+    {
+      sectionName: "Study Design",
+      content: "This is a multi-center, randomized, double-blind, placebo-controlled study."
+    },
+    {
+      sectionName: "Study Objectives",
+      content: "The primary objective is to evaluate the efficacy and safety of the investigational product."
+    },
+    {
+      sectionName: "Inclusion Criteria",
+      content: "1. Adult patients aged 18 years or older\n2. Confirmed diagnosis of the target condition\n3. Ability to provide informed consent"
+    },
+    {
+      sectionName: "Exclusion Criteria",
+      content: "1. History of hypersensitivity to the study drug\n2. Participation in another clinical trial within 30 days\n3. Presence of significant comorbidities"
+    },
+    {
+      sectionName: "Endpoints",
+      content: "Primary Endpoint: Change from baseline in disease activity score at Week 12."
+    },
+    {
+      sectionName: "Statistical Analysis",
+      content: "The primary analysis will be conducted on the Intent-to-Treat (ITT) population using a mixed-model for repeated measures (MMRM)."
+    },
+    {
+      sectionName: "Safety Monitoring",
+      content: "Adverse events will be monitored throughout the study and for 30 days after the last dose."
+    }
+  ];
+
+  // If we have similar trials, enhance the protocol with real data
+  if (similarTrials.length > 0) {
+    try {
+      // For each protocol section, enhance with information from similar trials
+      for (let i = 0; i < sections.length; i++) {
+        const section = sections[i];
         
-        // Split response roughly into sections
-        const lines = response.split('\n');
-        let currentSection = '';
-        let currentContent = '';
+        // Generate content based on the trial data using Hugging Face
+        const enhancedContent = await enhanceSectionWithAI(
+          section.sectionName,
+          indication,
+          phase,
+          similarTrials,
+          trialDetailMap
+        );
         
-        for (const line of lines) {
-          if (fallbackSections.some(section => line.toLowerCase().includes(section.toLowerCase()))) {
-            if (currentSection) {
-              protocolSections[currentSection] = currentContent.trim();
+        if (enhancedContent) {
+          sections[i].content = enhancedContent;
+        }
+        
+        // Add example content from similar trials if requested
+        if (includeExamples) {
+          const examples = [];
+          for (const trial of similarTrials.slice(0, 3)) {
+            const trialDetail = trialDetailMap.get(trial.id);
+            if (trialDetail) {
+              let exampleText = "";
+              
+              switch (section.sectionName) {
+                case "Study Design":
+                  exampleText = trialDetail.studyDesign || "";
+                  break;
+                case "Study Objectives":
+                  exampleText = trialDetail.primaryObjective || "";
+                  break;
+                case "Inclusion Criteria":
+                  exampleText = trialDetail.inclusionCriteria || "";
+                  break;
+                case "Exclusion Criteria":
+                  exampleText = trialDetail.exclusionCriteria || "";
+                  break;
+                case "Endpoints":
+                  exampleText = trialDetail.endpointText || "";
+                  break;
+                case "Statistical Analysis":
+                  exampleText = trialDetail.statisticalMethods || "";
+                  break;
+                case "Safety Monitoring":
+                  exampleText = trialDetail.safetyMonitoring || "";
+                  break;
+              }
+              
+              if (exampleText) {
+                examples.push({
+                  trial: trial.title,
+                  text: exampleText.substring(0, 300) + (exampleText.length > 300 ? "..." : "")
+                });
+              }
             }
-            currentSection = line.trim();
-            currentContent = '';
-          } else if (currentSection) {
-            currentContent += line + '\n';
           }
-        }
-        
-        if (currentSection && currentContent) {
-          protocolSections[currentSection] = currentContent.trim();
-        }
-      }
-
-      return protocolSections;
-    } catch (error) {
-      console.error('Error generating protocol:', error);
-      // Return basic structure if generation fails
-      return {
-        'Background and Rationale': 'Error generating protocol content. Please try again later.',
-        'Objectives': 'Error generating protocol content. Please try again later.',
-        'Study Design': 'Error generating protocol content. Please try again later.',
-        'Study Population': 'Error generating protocol content. Please try again later.',
-        'Treatment Plan': 'Error generating protocol content. Please try again later.',
-        'Efficacy Assessments': 'Error generating protocol content. Please try again later.',
-        'Safety Assessments': 'Error generating protocol content. Please try again later.',
-        'Statistical Considerations': 'Error generating protocol content. Please try again later.'
-      };
-    }
-  }
-
-  /**
-   * Get regulatory guidance for a specific protocol element
-   */
-  static async getRegulatoryGuidance(
-    region: 'FDA' | 'EMA',
-    element: string
-  ): Promise<{id: string, title: string, content: string}[]> {
-    // Predefined regulatory guidance
-    const regulatoryGuidance = {
-      FDA: [
-        {
-          id: 'fda-endpoint-1',
-          title: 'Primary Endpoint Selection',
-          content: 'According to FDA guidance, primary endpoints should be clinically meaningful, objectively measured, and reflective of the disease state being treated. The endpoint should directly measure how a patient feels, functions, or survives. Surrogate endpoints may be acceptable if they are reasonably likely to predict clinical benefit.'
-        },
-        {
-          id: 'fda-population-1',
-          title: 'Study Population Considerations',
-          content: 'FDA recommends that the study population should be representative of the intended treatment population. Inclusion and exclusion criteria should be clearly defined and justified. Demographic factors such as age, sex, race, and ethnicity should be considered to ensure the study results are applicable to the entire population for whom the drug is intended.'
-        },
-        {
-          id: 'fda-design-1',
-          title: 'Study Design Elements',
-          content: 'Randomized, double-blind, controlled trials are generally preferred by FDA when feasible. Placebo control is recommended when ethical and no effective treatments exist. Active-controlled non-inferiority designs require careful justification, including evidence of assay sensitivity.'
-        },
-        {
-          id: 'fda-stat-1',
-          title: 'Statistical Analysis Considerations',
-          content: 'FDA guidance emphasizes the importance of pre-specified statistical analysis plans. The primary analysis should be based on the Intent-to-Treat (ITT) population. Multiple testing adjustments should be implemented when evaluating multiple endpoints or conducting interim analyses to control Type I error.'
-        }
-      ],
-      EMA: [
-        {
-          id: 'ema-endpoint-1',
-          title: 'Primary Endpoint Selection',
-          content: 'EMA guidance states that primary endpoints should be clinically relevant, sensitive to treatment effects, and validated when possible. Patient-reported outcomes are encouraged when appropriate and should be validated for the specific context of use. The endpoint should be aligned with the claimed treatment benefit.'
-        },
-        {
-          id: 'ema-population-1',
-          title: 'Study Population Considerations',
-          content: 'EMA recommends that the study population should be well-defined and representative of the target population in European clinical practice. Special populations (elderly, pediatric, hepatic/renal impairment) should be considered when relevant. Stratification factors should be limited and clearly justified.'
-        },
-        {
-          id: 'ema-design-1',
-          title: 'Study Design Elements',
-          content: 'EMA prefers randomized controlled trials with appropriate blinding. Adaptive designs may be acceptable but require detailed justification and discussion with authorities. Non-inferiority designs require careful selection of the non-inferiority margin based on historical data and clinical judgment.'
-        },
-        {
-          id: 'ema-stat-1',
-          title: 'Statistical Analysis Considerations',
-          content: 'EMA guidance emphasizes robust methods for handling missing data. Sensitivity analyses should be conducted to evaluate the impact of different assumptions. Subgroup analyses should be pre-specified and interpreted with caution. Time-to-event analyses should address competing risks when relevant.'
-        }
-      ]
-    };
-
-    if (element === 'all') {
-      return regulatoryGuidance[region];
-    } else {
-      return regulatoryGuidance[region].filter(item => item.title.toLowerCase().includes(element.toLowerCase()));
-    }
-  }
-
-  /**
-   * Validate a protocol against regulatory standards
-   */
-  static async validateProtocol(
-    protocolSections: Record<string, string>
-  ): Promise<any[]> {
-    const validationIssues = [];
-
-    // Check for missing sections
-    const requiredSections = [
-      'Background and Rationale',
-      'Objectives',
-      'Study Design',
-      'Study Population',
-      'Treatment Plan',
-      'Efficacy Assessments',
-      'Safety Assessments',
-      'Statistical Considerations'
-    ];
-
-    for (const section of requiredSections) {
-      if (!protocolSections[section] || protocolSections[section].trim() === '') {
-        validationIssues.push({
-          element: section,
-          severity: 'critical',
-          message: `Required section '${section}' is missing or empty.`
-        });
-      }
-    }
-
-    // Check for short sections (potentially incomplete)
-    for (const section in protocolSections) {
-      if (protocolSections[section] && protocolSections[section].length < 100) {
-        validationIssues.push({
-          element: section,
-          severity: 'warning',
-          message: `Section '${section}' is unusually short and may be incomplete.`
-        });
-      }
-    }
-
-    // Check for specific content in sections
-    if (protocolSections['Study Population'] && !protocolSections['Study Population'].includes('inclusion')) {
-      validationIssues.push({
-        element: 'Study Population',
-        severity: 'high',
-        message: 'No inclusion criteria found in Study Population section.'
-      });
-    }
-
-    if (protocolSections['Study Population'] && !protocolSections['Study Population'].includes('exclusion')) {
-      validationIssues.push({
-        element: 'Study Population',
-        severity: 'high',
-        message: 'No exclusion criteria found in Study Population section.'
-      });
-    }
-
-    // Check for endpoint specifications
-    if (protocolSections['Objectives'] && !protocolSections['Objectives'].includes('primary')) {
-      validationIssues.push({
-        element: 'Objectives',
-        severity: 'high',
-        message: 'Primary objective not clearly specified.'
-      });
-    }
-
-    // Check for statistical analysis plan
-    if (protocolSections['Statistical Considerations']) {
-      const stats = protocolSections['Statistical Considerations'].toLowerCase();
-      if (!stats.includes('sample size') && !stats.includes('power')) {
-        validationIssues.push({
-          element: 'Statistical Considerations',
-          severity: 'high',
-          message: 'Sample size calculation or power analysis not found.'
-        });
-      }
-      
-      if (!stats.includes('analysis population') && !stats.includes('itt') && !stats.includes('per protocol')) {
-        validationIssues.push({
-          element: 'Statistical Considerations',
-          severity: 'medium',
-          message: 'Analysis population not clearly defined.'
-        });
-      }
-    }
-
-    // Sort issues by severity
-    return validationIssues.sort((a, b) => {
-      const severityOrder = { 'critical': 0, 'high': 1, 'medium': 2, 'warning': 3, 'low': 4 };
-      return severityOrder[a.severity] - severityOrder[b.severity];
-    });
-  }
-
-  /**
-   * Get historical protocol benchmarks based on similar trials
-   */
-  static async getProtocolBenchmarks(indication: string, phase: string): Promise<any> {
-    try {
-      // Get similar trials from the database
-      const similarTrials = await db.select().from(csrReports)
-        .where(trial => {
-          const conditionsMatch = sql`${trial.indication} ILIKE ${`%${indication}%`}`;
-          const phaseMatch = sql`${trial.phase} = ${phase}`;
-          return sql`${conditionsMatch} AND ${phaseMatch}`;
-        });
-      
-      // Get trial details
-      const trialIds = similarTrials.map(trial => trial.id);
-      const trialDetails = await db.select().from(csrDetails)
-        .where(details => sql`${details.reportId} IN (${trialIds.join(',')})`);
-      
-      // Analysis based on historical data
-      return {
-        designRecommendations: this.analyzeDesignPatterns(similarTrials, trialDetails),
-        endpointRecommendations: this.analyzeEndpointPatterns(trialDetails),
-        inclusionCriteriaRecommendations: this.analyzeInclusionCriteria(trialDetails),
-        sampleSizeRecommendations: this.analyzeSampleSizeTrends(trialDetails),
-        safetyConsiderations: this.analyzeSafetyPatterns(trialDetails),
-        statisticalApproaches: this.analyzeStatisticalApproaches(trialDetails),
-      };
-    } catch (error) {
-      console.error('Error getting protocol benchmarks:', error);
-      return {
-        designRecommendations: [],
-        endpointRecommendations: [],
-        inclusionCriteriaRecommendations: [],
-        sampleSizeRecommendations: {},
-        safetyConsiderations: [],
-        statisticalApproaches: []
-      };
-    }
-  }
-
-  /**
-   * Analyze common design patterns from historical trials
-   */
-  private static analyzeDesignPatterns(historicalTrials, trialDetails): any[] {
-    const designPatterns = {};
-    
-    // Count occurrence of different design types
-    for (const trial of historicalTrials) {
-      // Extract design type from study description or details
-      const designType = this.extractDesignType(trial);
-      if (designType) {
-        designPatterns[designType] = (designPatterns[designType] || 0) + 1;
-      }
-    }
-    
-    // Sort by frequency
-    const sortedDesigns = Object.entries(designPatterns)
-      .sort(([, countA], [, countB]) => (countB as number) - (countA as number))
-      .slice(0, 5);
-    
-    // Format as recommendations
-    return sortedDesigns.map(([design, count]) => ({
-      design,
-      frequency: `${count}/${historicalTrials.length}`,
-      recommendation: `Consider a ${design} design, which was used in ${count} similar trials.`
-    }));
-  }
-  
-  /**
-   * Extract design type from trial data
-   */
-  private static extractDesignType(trial): string | null {
-    const designMap = {
-      'randomized': 'Randomized',
-      'double-blind': 'Double-Blind',
-      'placebo': 'Placebo-Controlled',
-      'parallel': 'Parallel-Group',
-      'crossover': 'Crossover',
-      'non-inferiority': 'Non-Inferiority',
-      'superiority': 'Superiority',
-      'adaptive': 'Adaptive',
-      'open-label': 'Open-Label'
-    };
-    
-    // Search for design keywords in study description
-    const studyDescription = trial.studyDesign || trial.summary || '';
-    for (const [keyword, designType] of Object.entries(designMap)) {
-      if (studyDescription.toLowerCase().includes(keyword)) {
-        return designType;
-      }
-    }
-    
-    return null;
-  }
-  
-  /**
-   * Analyze common endpoint patterns from historical trials
-   */
-  private static analyzeEndpointPatterns(trialDetails): any[] {
-    const endpointPatterns = {};
-    const endpointDescriptions = {};
-    
-    // Extract endpoints from trial details
-    for (const detail of trialDetails) {
-      const endpoints = this.extractEndpoints(detail);
-      for (const endpoint of endpoints) {
-        endpointPatterns[endpoint] = (endpointPatterns[endpoint] || 0) + 1;
-        
-        // Extract descriptions to provide context
-        if (detail.endpoints && detail.endpoints[endpoint]) {
-          endpointDescriptions[endpoint] = detail.endpoints[endpoint];
-        }
-      }
-    }
-    
-    // Sort by frequency
-    const sortedEndpoints = Object.entries(endpointPatterns)
-      .sort(([, countA], [, countB]) => (countB as number) - (countA as number))
-      .slice(0, 5);
-    
-    // Format as recommendations
-    return sortedEndpoints.map(([endpoint, count]) => ({
-      endpoint,
-      frequency: `${count}/${trialDetails.length}`,
-      description: endpointDescriptions[endpoint] || 'No description available',
-      recommendation: `Consider using ${endpoint} as an endpoint, found in ${count} similar trials.`
-    }));
-  }
-  
-  /**
-   * Extract endpoints from trial details
-   */
-  private static extractEndpoints(detail): string[] {
-    const endpoints = [];
-    
-    // Extract from structured endpoints field
-    if (detail.endpoints) {
-      if (typeof detail.endpoints === 'object') {
-        if (detail.endpoints.primary) {
-          endpoints.push(...detail.endpoints.primary);
-        }
-        if (detail.endpoints.secondary) {
-          endpoints.push(...detail.endpoints.secondary);
-        }
-      } else if (typeof detail.endpoints === 'string') {
-        // Try to parse endpoints from text
-        const commonEndpoints = [
-          'Overall Survival', 'Progression-Free Survival', 'Disease-Free Survival',
-          'Objective Response Rate', 'Complete Response', 'Partial Response',
-          'Quality of Life', 'Safety', 'Tolerability', 'Pharmacokinetics'
-        ];
-        
-        for (const endpoint of commonEndpoints) {
-          if (detail.endpoints.includes(endpoint)) {
-            endpoints.push(endpoint);
-          }
-        }
-      }
-    }
-    
-    return endpoints;
-  }
-  
-  /**
-   * Analyze inclusion criteria patterns from historical trials
-   */
-  private static analyzeInclusionCriteria(trialDetails): any[] {
-    const criteriaPatterns = {};
-    
-    // Extract common inclusion criteria from trial details
-    for (const detail of trialDetails) {
-      const criteria = this.extractInclusionCriteria(detail);
-      for (const criterion of criteria) {
-        criteriaPatterns[criterion] = (criteriaPatterns[criterion] || 0) + 1;
-      }
-    }
-    
-    // Sort by frequency
-    const sortedCriteria = Object.entries(criteriaPatterns)
-      .sort(([, countA], [, countB]) => (countB as number) - (countA as number))
-      .slice(0, 8);
-    
-    // Format as recommendations
-    return sortedCriteria.map(([criterion, count]) => ({
-      criterion,
-      frequency: `${count}/${trialDetails.length}`,
-      recommendation: `Include "${criterion}" in your eligibility criteria, found in ${count} similar trials.`
-    }));
-  }
-  
-  /**
-   * Extract inclusion criteria from trial details
-   */
-  private static extractInclusionCriteria(detail): string[] {
-    const criteria = [];
-    
-    // Extract from structured inclusionCriteria field
-    if (detail.inclusionCriteria) {
-      if (Array.isArray(detail.inclusionCriteria)) {
-        return detail.inclusionCriteria;
-      } else if (typeof detail.inclusionCriteria === 'string') {
-        // Try to parse criteria from text by looking for common patterns
-        const lines = detail.inclusionCriteria.split(/[\n;.]+/);
-        for (const line of lines) {
-          const trimmed = line.trim();
-          if (trimmed.length > 10) {
-            criteria.push(trimmed);
-          }
-        }
-      }
-    }
-    
-    return criteria;
-  }
-  
-  /**
-   * Analyze sample size trends from historical trials
-   */
-  private static analyzeSampleSizeTrends(trialDetails): any {
-    // Extract sample sizes from trial details
-    const sampleSizes = [];
-    for (const detail of trialDetails) {
-      if (detail.sampleSize && !isNaN(Number(detail.sampleSize))) {
-        sampleSizes.push(Number(detail.sampleSize));
-      }
-    }
-    
-    // Calculate statistics
-    if (sampleSizes.length > 0) {
-      const mean = math.mean(sampleSizes);
-      const median = math.median(sampleSizes);
-      const std = math.std(sampleSizes);
-      const min = math.min(sampleSizes);
-      const max = math.max(sampleSizes);
-      const q1 = this.calculateQuantile(sampleSizes, 0.25);
-      const q3 = this.calculateQuantile(sampleSizes, 0.75);
-      
-      return {
-        mean: Math.round(mean),
-        median: Math.round(median),
-        standardDeviation: Math.round(std),
-        min,
-        max,
-        q1: Math.round(q1),
-        q3: Math.round(q3),
-        recommendation: `Based on ${sampleSizes.length} similar trials, we recommend a sample size of approximately ${Math.round(median)} participants (range: ${min}-${max}).`
-      };
-    }
-    
-    return {
-      recommendation: "Insufficient data to provide sample size recommendations."
-    };
-  }
-  
-  /**
-   * Calculate quantile from array of values
-   */
-  private static calculateQuantile(arr, q) {
-    const sorted = [...arr].sort((a, b) => a - b);
-    const pos = (sorted.length - 1) * q;
-    const base = Math.floor(pos);
-    const rest = pos - base;
-    
-    if (sorted[base + 1] !== undefined) {
-      return sorted[base] + rest * (sorted[base + 1] - sorted[base]);
-    } else {
-      return sorted[base];
-    }
-  }
-  
-  /**
-   * Analyze safety patterns from historical trials
-   */
-  private static analyzeSafetyPatterns(trialDetails): any[] {
-    const commonAEs = {};
-    const safetyRecs = [];
-    
-    // Extract safety data from trial details
-    for (const detail of trialDetails) {
-      const safetyData = this.extractSafetyData(detail);
-      for (const [ae, freq] of Object.entries(safetyData)) {
-        if (!commonAEs[ae]) {
-          commonAEs[ae] = [];
-        }
-        commonAEs[ae].push(freq);
-      }
-    }
-    
-    // Calculate average frequencies and create recommendations
-    for (const [ae, freqs] of Object.entries(commonAEs)) {
-      if (freqs.length >= 2) { // Only include AEs reported in multiple trials
-        const avgFreq = math.mean(freqs as number[]);
-        safetyRecs.push({
-          adverseEvent: ae,
-          averageFrequency: `${avgFreq.toFixed(1)}%`,
-          frequencyRange: `${math.min(freqs as number[])}%-${math.max(freqs as number[])}%`,
-          recommendation: `Monitor for ${ae}, reported in ${freqs.length} trials with average frequency of ${avgFreq.toFixed(1)}%.`
-        });
-      }
-    }
-    
-    // Sort by frequency
-    return safetyRecs
-      .sort((a, b) => parseFloat(b.averageFrequency) - parseFloat(a.averageFrequency))
-      .slice(0, 10);
-  }
-  
-  /**
-   * Extract safety data from trial details
-   */
-  private static extractSafetyData(detail): Record<string, number> {
-    const safetyData = {};
-    
-    // Extract from structured safety field
-    if (detail.safety || detail.adverseEvents) {
-      const safetyInfo = detail.safety || detail.adverseEvents;
-      
-      if (typeof safetyInfo === 'object') {
-        return safetyInfo;
-      } else if (typeof safetyInfo === 'string') {
-        // Try to parse safety data from text
-        const commonAEs = [
-          'Nausea', 'Vomiting', 'Diarrhea', 'Fatigue', 'Headache',
-          'Neutropenia', 'Anemia', 'Rash', 'Fever', 'Pain'
-        ];
-        
-        // Look for percentage patterns
-        const percentagePattern = /(\w+(?:\s+\w+)*)\s+(?:was|were|occurred|reported)?\s*(?:in|at)?\s*(?:a\s+frequency\s+of)?\s*(\d+(?:\.\d+)?)\s*%/gi;
-        let match;
-        while ((match = percentagePattern.exec(safetyInfo)) !== null) {
-          safetyData[match[1]] = parseFloat(match[2]);
-        }
-        
-        // Look for common AEs
-        for (const ae of commonAEs) {
-          if (safetyInfo.includes(ae) && !safetyData[ae]) {
-            safetyData[ae] = 0; // Frequency unknown
-          }
-        }
-      }
-    }
-    
-    return safetyData;
-  }
-  
-  /**
-   * Analyze statistical approaches from historical trials
-   */
-  private static analyzeStatisticalApproaches(trialDetails): any[] {
-    const approaches = [];
-    
-    // Common statistical approaches to look for
-    const statisticalMethods = [
-      'Logistic Regression',
-      'Cox Proportional Hazards',
-      'Kaplan-Meier',
-      'Log-rank Test',
-      'ANOVA',
-      'Chi-square Test',
-      'Fisher\'s Exact Test',
-      'T-test',
-      'Wilcoxon Rank-Sum Test',
-      'Mixed Effects Model'
-    ];
-    
-    for (const detail of trialDetails) {
-      if (detail.statisticalMethods && typeof detail.statisticalMethods === 'string') {
-        for (const method of statisticalMethods) {
-          if (detail.statisticalMethods.includes(method) && 
-              !approaches.some(a => a.approach === method)) {
-            approaches.push({
-              approach: method,
-              description: this.getStatMethodDescription(method),
-              precedents: ['Found in similar trials in your selected indication']
-            });
-          }
-        }
-      }
-    }
-    
-    // Add common approaches if not enough were found
-    if (approaches.length < 3) {
-      for (const method of statisticalMethods) {
-        if (!approaches.some(a => a.approach === method)) {
-          approaches.push({
-            approach: method,
-            description: this.getStatMethodDescription(method),
-            precedents: ['Commonly used in clinical trials']
-          });
           
-          if (approaches.length >= 5) break;
+          if (examples.length > 0) {
+            sections[i].examples = examples;
+          }
         }
+      }
+    } catch (error) {
+      console.error("Error enhancing protocol sections:", error);
+    }
+  }
+
+  return sections;
+}
+
+/**
+ * Enhance a protocol section with AI-generated content
+ */
+async function enhanceSectionWithAI(
+  sectionName: string,
+  indication: string,
+  phase: string,
+  similarTrials: any[],
+  trialDetailMap: Map<number, any>
+): Promise<string> {
+  try {
+    // Create a context for the AI model from similar trials
+    let context = `Generate a ${sectionName} section for a Phase ${phase} clinical trial protocol for ${indication}. `;
+    
+    // Add context from similar trials if available
+    if (similarTrials.length > 0) {
+      context += `Base it on these similar trials: ${similarTrials.map(t => t.title).join(", ")}. `;
+      
+      // Add specific context based on section type
+      switch (sectionName) {
+        case "Study Design":
+          context += "Include details about study type, randomization, blinding, and duration.";
+          break;
+        case "Study Objectives":
+          context += "Include primary and secondary objectives that are specific, measurable, and clinically relevant.";
+          break;
+        case "Inclusion Criteria":
+          context += "List 5-7 key inclusion criteria including age range, confirmation of disease, and any required lab values or scores.";
+          break;
+        case "Exclusion Criteria":
+          context += "List 5-7 key exclusion criteria including contraindications, comorbidities, and previous treatments.";
+          break;
+        case "Endpoints":
+          context += "Specify primary and secondary endpoints with clear measurement timepoints.";
+          break;
+        case "Statistical Analysis":
+          context += "Describe analysis population, statistical methods, and sample size justification.";
+          break;
+        case "Safety Monitoring":
+          context += "Include adverse event monitoring, data safety monitoring board, and stopping rules.";
+          break;
       }
     }
     
-    return approaches;
-  }
-  
-  /**
-   * Get description of statistical method
-   */
-  private static getStatMethodDescription(method: string): string {
-    const descriptions = {
-      'Logistic Regression': 'Used for binary outcomes (e.g., response vs. no response).',
-      'Cox Proportional Hazards': 'Used for time-to-event analyses, accounting for censoring.',
-      'Kaplan-Meier': 'Non-parametric survival analysis method for estimating survival functions.',
-      'Log-rank Test': 'Used to compare survival distributions between groups.',
-      'ANOVA': 'Analysis of variance used to compare means across multiple groups.',
-      'Chi-square Test': 'Used for categorical data to determine if there is a significant association between variables.',
-      'Fisher\'s Exact Test': 'Used for categorical data with small sample sizes.',
-      'T-test': 'Used to compare means between two groups.',
-      'Wilcoxon Rank-Sum Test': 'Non-parametric alternative to t-test when normality cannot be assumed.',
-      'Mixed Effects Model': 'Accounts for both fixed and random effects, useful for repeated measures.'
-    };
+    // Use Hugging Face to generate enhanced content
+    const enhancedContent = await queryHuggingFace(
+      context, 
+      800, // Length of response
+      0.7  // Temperature for creativity
+    );
     
-    return descriptions[method] || 'Statistical method commonly used in clinical trials.';
+    return enhancedContent;
+  } catch (error) {
+    console.error(`Error enhancing ${sectionName} with AI:`, error);
+    return "";
+  }
+}
+
+/**
+ * Validate protocol sections against regulatory standards and best practices
+ */
+async function validateProtocolSections(
+  sections: ProtocolSection[],
+  indication: string,
+  phase: string
+): Promise<ProtocolSection[]> {
+  try {
+    const validatedSections = [...sections];
+    
+    // Validate each section
+    for (let i = 0; i < validatedSections.length; i++) {
+      const section = validatedSections[i];
+      const validationIssues: ValidationIssue[] = [];
+      
+      // Use AI to identify potential issues
+      const validationPrompt = `
+        Review this ${section.sectionName} for a Phase ${phase} ${indication} clinical trial protocol:
+        "${section.content}"
+        
+        Identify any potential regulatory issues, scientific problems, or improvements.
+        Format your response as a JSON array of issues, where each issue has:
+        - severity: one of "critical", "high", "medium", "warning", or "low"
+        - message: a clear explanation of the issue
+        - recommendation: how to fix the issue
+      `;
+      
+      try {
+        const validationResponse = await queryHuggingFace(validationPrompt, 700, 0.5);
+        
+        // Parse validation response (assuming it returns valid JSON)
+        try {
+          // Extract JSON from the response (it might be wrapped in text)
+          const jsonMatch = validationResponse.match(/\[.*\]/s);
+          if (jsonMatch) {
+            const issues = JSON.parse(jsonMatch[0]);
+            
+            // Add validated issues
+            for (const issue of issues) {
+              if (issue.severity && issue.message) {
+                validationIssues.push({
+                  severity: issue.severity,
+                  message: issue.message,
+                  recommendation: issue.recommendation
+                });
+              }
+            }
+          } else {
+            // If not valid JSON, try to extract structured info from text
+            const lines = validationResponse.split('\n');
+            for (const line of lines) {
+              if (line.includes('critical') || line.includes('high') || 
+                  line.includes('medium') || line.includes('warning') || 
+                  line.includes('low')) {
+                
+                // Simple parsing of severity and message from text
+                const severityMatch = line.match(/(critical|high|medium|warning|low)/i);
+                const severity = severityMatch ? severityMatch[0].toLowerCase() : 'medium';
+                const message = line.replace(/^[^:]*:\s*/, '').trim();
+                
+                if (message) {
+                  validationIssues.push({
+                    severity: severity as 'critical' | 'high' | 'medium' | 'warning' | 'low',
+                    message: message
+                  });
+                }
+              }
+            }
+          }
+        } catch (jsonError) {
+          console.error("Error parsing validation response:", jsonError);
+        }
+      } catch (aiError) {
+        console.error(`Error validating ${section.sectionName}:`, aiError);
+      }
+      
+      // Add recommendations where missing
+      for (const issue of validationIssues) {
+        if (!issue.recommendation) {
+          issue.recommendation = `Consider revising the ${section.sectionName.toLowerCase()} to address this issue.`;
+        }
+      }
+      
+      validatedSections[i].validationIssues = validationIssues;
+      
+      // Generate competitive benchmark
+      try {
+        const benchmarkPrompt = `
+          How does this ${section.sectionName} for a Phase ${phase} ${indication} trial compare to industry standards?
+          "${section.content}"
+          
+          Provide a brief competitive analysis (2-3 sentences) on how this compares to other similar trials.
+        `;
+        
+        const benchmarkResponse = await queryHuggingFace(benchmarkPrompt, 200, 0.7);
+        validatedSections[i].competitiveBenchmark = benchmarkResponse;
+      } catch (benchError) {
+        console.error(`Error generating benchmark for ${section.sectionName}:`, benchError);
+      }
+    }
+    
+    return validatedSections;
+  } catch (error) {
+    console.error("Error validating protocol sections:", error);
+    return sections;
+  }
+}
+
+/**
+ * Get statistical approaches for a particular indication and phase
+ */
+export async function getStatisticalApproaches(
+  indication: string,
+  phase: string
+): Promise<Array<{name: string, description: string, frequency: number}>> {
+  // Define common statistical approaches with descriptions
+  const statisticalApproaches = {
+    'Logistic Regression': 'Used for binary outcomes, modeling probability of an event.',
+    'Cox Proportional Hazards': 'Survival analysis model for time-to-event data.',
+    'Kaplan-Meier': 'Non-parametric survival analysis for estimating survival curves.',
+    'Log-rank Test': 'Comparing survival curves between groups.',
+    'ANOVA': 'Analysis of variance for comparing means across multiple groups.',
+    'Chi-square Test': 'Analyzing categorical data and proportions.',
+    'Fisher\'s Exact Test': 'Alternative to chi-square for small sample sizes.',
+    'T-test': 'Comparing means between two groups.',
+    'Wilcoxon Rank-Sum Test': 'Non-parametric alternative to t-test.',
+    'Mixed Effects Model': 'For modeling repeated measures with random and fixed effects.'
+  };
+  
+  // Get similar trials for the indication and phase
+  const similarTrials = await db
+    .select()
+    .from(csrReports)
+    .where(
+      and(
+        like(csrReports.indication, `%${indication}%`),
+        like(csrReports.phase, `%${phase}%`),
+        isNull(csrReports.deletedAt)
+      )
+    )
+    .limit(20);
+    
+  // Get trial details for similar trials
+  const trialIds = similarTrials.map(trial => trial.id);
+  
+  const trialDetails = trialIds.length > 0 
+    ? await db
+        .select()
+        .from(csrDetails)
+        .where(inArray(csrDetails.reportId, trialIds))
+    : [];
+    
+  // Use AI to analyze statistical approaches from the detail texts
+  let approaches = [];
+  
+  try {
+    // Compile text from trial details
+    const detailTexts = trialDetails
+      .map(detail => {
+        return [
+          detail.statisticalMethods || '',
+          detail.results ? JSON.stringify(detail.results) : '',
+          detail.studyDesign || ''
+        ].join(' ');
+      })
+      .join('\n\n')
+      .substring(0, 10000); // Limit context size
+      
+    // Query Hugging Face to extract statistical approaches
+    const prompt = `
+      Analyze the following clinical trial details for ${indication} Phase ${phase} studies and
+      identify which statistical approaches were used. For each approach that was used, assign a frequency
+      (number between 1-10, with 10 being most common).
+      
+      Trial details:
+      ${detailTexts}
+      
+      Return your answer as a JSON object mapping approach names to frequencies.
+      Example: {"Logistic Regression": 8, "Chi-square Test": 6}
+    `;
+    
+    const response = await queryHuggingFace(prompt, 500, 0.3);
+    
+    // Parse the response to extract approaches and frequencies
+    try {
+      // Find JSON in the response
+      const jsonMatch = response.match(/\{[^{]*\}/s);
+      let frequencies = {};
+      
+      if (jsonMatch) {
+        frequencies = JSON.parse(jsonMatch[0]);
+      } else {
+        // Fallback to basic parsing if JSON not found
+        const lines = response.split('\n');
+        for (const line of lines) {
+          const match = line.match(/["']?([\w\s'-]+)["']?\s*[:=]\s*(\d+)/);
+          if (match && match[1] && match[2]) {
+            const approach = match[1].trim();
+            const frequency = parseInt(match[2]);
+            frequencies[approach] = frequency;
+          }
+        }
+      }
+      
+      // Convert to expected output format
+      for (const [approach, frequency] of Object.entries(frequencies)) {
+        approaches.push({
+          name: approach,
+          description: statisticalApproaches[approach] || 'Statistical approach for analyzing trial data.',
+          frequency: frequency as number
+        });
+      }
+      
+      // If no approaches were found, provide common ones for the phase
+      if (approaches.length === 0) {
+        // Different defaults based on phase
+        if (phase.includes('1')) {
+          approaches = [
+            { name: 'Descriptive Statistics', description: 'Summarizing data using mean, median, range etc.', frequency: 10 },
+            { name: 'Dose Escalation Models', description: 'Models for determining maximum tolerated dose.', frequency: 8 },
+            { name: 'Kaplan-Meier', description: statisticalApproaches['Kaplan-Meier'], frequency: 6 }
+          ];
+        } else if (phase.includes('2')) {
+          approaches = [
+            { name: 'Logistic Regression', description: statisticalApproaches['Logistic Regression'], frequency: 8 },
+            { name: 'ANOVA', description: statisticalApproaches['ANOVA'], frequency: 7 },
+            { name: 'Chi-square Test', description: statisticalApproaches['Chi-square Test'], frequency: 7 }
+          ];
+        } else if (phase.includes('3')) {
+          approaches = [
+            { name: 'Cox Proportional Hazards', description: statisticalApproaches['Cox Proportional Hazards'], frequency: 9 },
+            { name: 'Mixed Effects Model', description: statisticalApproaches['Mixed Effects Model'], frequency: 8 },
+            { name: 'Logistic Regression', description: statisticalApproaches['Logistic Regression'], frequency: 7 }
+          ];
+        } else {
+          approaches = [
+            { name: 'Chi-square Test', description: statisticalApproaches['Chi-square Test'], frequency: 7 },
+            { name: 'T-test', description: statisticalApproaches['T-test'], frequency: 7 },
+            { name: 'Logistic Regression', description: statisticalApproaches['Logistic Regression'], frequency: 6 }
+          ];
+        }
+      }
+    } catch (parseError) {
+      console.error("Error parsing statistical approaches:", parseError);
+      
+      // Fallback approaches
+      approaches = [
+        { name: 'Chi-square Test', description: statisticalApproaches['Chi-square Test'], frequency: 7 },
+        { name: 'T-test', description: statisticalApproaches['T-test'], frequency: 7 },
+        { name: 'ANOVA', description: statisticalApproaches['ANOVA'], frequency: 6 }
+      ];
+    }
+  } catch (error) {
+    console.error("Error getting statistical approaches:", error);
+    
+    // Default approaches on error
+    approaches = [
+      { name: 'Logistic Regression', description: statisticalApproaches['Logistic Regression'], frequency: 7 },
+      { name: 'Chi-square Test', description: statisticalApproaches['Chi-square Test'], frequency: 6 },
+      { name: 'Kaplan-Meier', description: statisticalApproaches['Kaplan-Meier'], frequency: 5 }
+    ];
   }
   
-  /**
-   * Get study design advice from AI
-   */
-  static async getStudyDesignAdvice(indication: string, phase: string, question: string): Promise<string> {
-    try {
-      const prompt = `
-I'm designing a ${phase} clinical trial for ${indication} and need advice on the following aspect: 
-${question}
-
-Please provide specific, actionable advice based on historical precedent and regulatory expectations.
-Include examples from similar trials if relevant.
-`;
-      
-      // Use queryHuggingFace to directly query the model
-      const { queryHuggingFace } = await import('./huggingface-service');
-      return await queryHuggingFace(prompt, 1500, 0.4);
-    } catch (error) {
-      console.error('Error getting study design advice:', error);
-      return 'Unable to provide study design advice at this time. Please try again later.';
-    }
-  }
+  // Sort by frequency
+  return approaches.sort((a, b) => b.frequency - a.frequency);
 }
