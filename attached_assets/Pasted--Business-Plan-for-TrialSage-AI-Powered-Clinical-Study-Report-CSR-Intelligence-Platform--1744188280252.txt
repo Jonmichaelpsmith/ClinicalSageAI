@@ -1,0 +1,120 @@
+**Business Plan for TrialSage: AI-Powered Clinical Study Report (CSR) Intelligence Platform**
+
+---
+
+**Executive Summary**
+TrialSage is an AI-powered SaaS platform that extracts, organizes, and commercializes structured insights from publicly available Clinical Study Reports (CSRs). Targeted at early-stage biotech startups, CROs, and investors, the platform provides a fast, searchable, and filterable interface to analyze historical clinical trials. By streamlining access to study designs, endpoints, and regulatory outcomes, TrialSage helps de-risk new trials, accelerate protocol development, and improve regulatory alignment.
+
+---
+
+**Problem**
+Early-stage biotechs waste significant resources designing trials from scratch or relying on generic consulting. Critical trial intelligence is buried in lengthy CSR PDFs, which are:
+- Hard to find
+- Difficult to search or parse
+- Inaccessible without proposal processes (e.g., CSDR, YODA)
+- Not structured or filterable
+
+---
+
+**Solution**
+TrialSage turns publicly available CSRs into structured, searchable intelligence. It offers:
+- A clean user interface to explore, search, and filter CSR data
+- Structured extraction of endpoints, populations, outcomes, safety profiles
+- AI-powered protocol generator based on historical trials
+- Competitive benchmarking tools for design differentiation
+
+---
+
+**Market Intelligence**
+- ~6,000–10,000 biotech startups globally
+- 40,000+ clinical trials per year worldwide
+- $60B–80B annual biotech investment globally
+- $10M–$20M average cost of Phase 2 trial
+- $100K–$500K average spend on protocol design consultants
+
+**Total Addressable Market (TAM):**
+Conservative B2B SaaS market of $500M+ annually for structured trial intelligence and protocol design tools.
+
+---
+
+**Target Customers**
+1. **Biotech Founders (Seed to Series B)** – need fast, low-cost trial design support
+2. **Clinical Operations Leaders / Protocol Designers** – require historical trial data
+3. **Regulatory Consultants / CROs** – benchmark designs and prepare submissions
+4. **VCs / Biotech Investors** – diligence tool for trial feasibility
+
+---
+
+**Competitive Landscape**
+| Company | Focus | Weakness |
+|---------|-------|----------|
+| Citeline / Trialtrove | Structured trial data | Expensive, no CSRs |
+| Vivli, YODA, CSDR | CSR access | Proposal-based, slow |
+| Clarivate / Cortellis | Competitive intel | No CSR access, enterprise focus |
+| EMA / Health Canada | Raw CSR PDFs | No structure or tools |
+
+**Differentiation:** TrialSage is the only platform offering structured CSR data + AI-powered tools + startup-friendly UX/pricing.
+
+---
+
+**Business Model**
+- **Freemium Access:** 5 reports/month
+- **Pro Subscription:** $149–$299/month (unlimited search, AI features)
+- **Enterprise Tier:** API access, custom features, onboarding
+- **Add-On:** Custom reports, VC due diligence bundles
+
+---
+
+**Go-to-Market Strategy**
+- Direct outreach to biotech founders (LinkedIn, email)
+- Content marketing: blogs on “How X trial was designed”, SEO for trial design
+- Partnerships with CROs, incubators, biotech accelerators (e.g. IndieBio)
+- Launch on Product Hunt, Reddit (r/biotech), Twitter/X
+
+---
+
+**Product Development Plan**
+
+**Phase 1: Data Acquisition**
+- Scrape/download CSRs from:
+  - Health Canada Clinical Portal (fastest source)
+  - EMA Clinical Data Portal (once access approved)
+- Organize by product, indication, sponsor
+
+**Phase 2: MVP App (Built Solo on Replit)**
+- **Backend:** Python + FastAPI
+- **Frontend:** React or Tailwind HTML/CSS
+- **PDF Parsing:** PyMuPDF, pdfplumber
+- **AI Extraction:** OpenAI GPT-4 Turbo API
+- **Database:** SQLite (early), Supabase (scalable)
+- **Core Features:**
+  - Upload/view CSRs
+  - AI summary + structured fields (endpoints, arms, N, AEs)
+  - Search/filter interface
+  - Export to CSV/PDF
+
+**Phase 3: Smart Tools**
+- AI Protocol Generator
+- Design Validator (compare your draft to precedent)
+- Competitive Signal Tracker
+
+**Phase 4: Monetization + Scaling**
+- Add Stripe payments + tiered plans
+- Launch marketing site (Carrd or Vercel)
+- Build team or license API to partners
+
+---
+
+**Next Steps**
+- Build Health Canada scraper (Python)
+- Parse and store 50–100 CSR PDFs
+- Launch MVP on Replit (search + summary)
+- Draft early outreach to 20 biotech founders and CRO leads
+- Prepare pitch deck and investor list for angel funding
+
+---
+
+**Prepared By:**
+Solo Founder
+TrialSage – April 2025
+
