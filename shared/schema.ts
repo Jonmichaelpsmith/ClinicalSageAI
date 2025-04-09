@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, jsonb, timestamp, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, jsonb, timestamp, boolean, foreignKey, relations } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -31,6 +31,13 @@ export const csrReports = pgTable("csr_reports", {
   fileSize: integer("file_size").notNull(),
 });
 
+export const csrReportsRelations = relations(csrReports, ({ one }) => ({
+  details: one(csrDetails, {
+    fields: [csrReports.id],
+    references: [csrDetails.reportId],
+  }),
+}));
+
 export const insertCsrReportSchema = createInsertSchema(csrReports).pick({
   title: true,
   sponsor: true,
@@ -58,7 +65,22 @@ export const csrDetails = pgTable("csr_details", {
   results: jsonb("results"),
   safety: jsonb("safety"),
   processed: boolean("processed").default(false),
+}, (table) => {
+  return {
+    reportIdFk: foreignKey({
+      columns: [table.reportId],
+      foreignColumns: [csrReports.id],
+      onDelete: "cascade",
+    }),
+  };
 });
+
+export const csrDetailsRelations = relations(csrDetails, ({ one }) => ({
+  report: one(csrReports, {
+    fields: [csrDetails.reportId],
+    references: [csrReports.id],
+  }),
+}));
 
 export const insertCsrDetailsSchema = createInsertSchema(csrDetails).pick({
   reportId: true,
