@@ -5,7 +5,8 @@ import { useQuery } from "@tanstack/react-query";
 import { 
   BarChart, PieChart, FileText, Upload, Search, 
   ArrowRight, BookOpen, Brain, Lightbulb, Users, 
-  Sparkles, Server, Rocket, Beaker, Microscope
+  Sparkles, Server, Rocket, Beaker, Microscope,
+  MessageSquare
 } from "lucide-react";
 import {
   Card,
@@ -159,7 +160,7 @@ const Dashboard = () => {
                         </div>
                         <div className="flex items-center gap-2">
                           <Badge variant={
-                            report.status === "Processed" ? "success" :
+                            report.status === "Processed" ? "default" :
                             report.status === "Processing" ? "outline" :
                             "destructive"
                           }>
