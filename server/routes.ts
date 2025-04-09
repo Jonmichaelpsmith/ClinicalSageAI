@@ -18,7 +18,8 @@ import {
   fetchClinicalTrialData, 
   importTrialsFromCsv, 
   importTrialsFromJson, 
-  findLatestDataFile 
+  findLatestDataFile,
+  importTrialsFromApiV2
 } from "./data-importer";
 import path from "path";
 import fs from "fs";
@@ -918,6 +919,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
       res.json(result);
     } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+
+  // Fetch and import data using ClinicalTrials.gov API V2 - optimized for production use
+  app.post('/api/data-import/fetch-v2', async (req: Request, res: Response) => {
+    try {
+      const { maxRecords } = req.body;
+      const recordsToFetch = maxRecords ? parseInt(maxRecords) : 25;
+      
+      console.log(`Fetching ${recordsToFetch} records using ClinicalTrials.gov API v2...`);
+      
+      const fetchResult = await fetchClinicalTrialData(recordsToFetch, false);
+      
+      if (fetchResult.success && fetchResult.data) {
+        console.log(`Successfully fetched ${fetchResult.data.studies?.length || 0} studies, importing...`);
+        
+        const importResult = await importTrialsFromApiV2(fetchResult.data);
+        
+        res.json({
+          fetch: fetchResult,
+          import: importResult,
+          success: true,
+          message: `Fetched and imported data from ClinicalTrials.gov API v2 - ${importResult.message}`
+        });
+      } else {
+        res.json({
+          fetch: fetchResult,
+          success: false,
+          message: `Failed to fetch data: ${fetchResult.message}`
+        });
+      }
+    } catch (err) {
+      console.error('Error in fetch-v2 endpoint:', err);
       errorHandler(err as Error, res);
     }
   });
