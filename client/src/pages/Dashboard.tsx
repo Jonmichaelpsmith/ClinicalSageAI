@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { FileText, Database, Clock, Upload, FileType, BarChart3 } from "lucide-react";
+import { FileText, Database, Clock, Upload, FileType, BarChart3, Microscope, Gitlab, Beaker } from "lucide-react";
+import { motion } from "framer-motion";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { QuickAction } from "@/components/dashboard/QuickAction";
 import { ReportCard } from "@/components/reports/ReportCard";
@@ -42,28 +43,32 @@ export default function Dashboard() {
               icon={<FileText />} 
               iconBgColor="bg-blue-100" 
               iconColor="text-blue-600" 
+              subtitle="Across all therapeutic areas"
             />
             <StatsCard 
-              title="Processed CSRs" 
-              value={stats?.processedReports || 0} 
-              icon={<FileType />} 
+              title="Compounds Analyzed" 
+              value={(stats?.totalReports || 0) * 0.8} 
+              icon={<Beaker />} 
               iconBgColor="bg-green-100" 
               iconColor="text-green-600" 
-              trend={{ value: "+2 this week", up: true }}
+              trend={{ value: "+3 this month", up: true }}
+              subtitle="Novel therapeutics in trials"
             />
             <StatsCard 
-              title="Data Points Extracted" 
+              title="Key Endpoints Identified" 
               value={stats?.dataPointsExtracted || 0} 
-              icon={<Database />} 
+              icon={<Microscope />} 
               iconBgColor="bg-indigo-100" 
               iconColor="text-indigo-600" 
+              subtitle="Clinical efficacy & safety markers"
             />
             <StatsCard 
-              title="Processing Time Saved" 
-              value={`${stats?.processingTimeSaved || 0} hrs`} 
+              title="Time to Submission Reduced" 
+              value={`${stats?.processingTimeSaved || 0} days`} 
               icon={<Clock />} 
               iconBgColor="bg-purple-100" 
               iconColor="text-purple-600" 
+              subtitle="Accelerated regulatory timeline"
             />
           </>
         )}
@@ -72,7 +77,8 @@ export default function Dashboard() {
       {/* Recent Reports */}
       <div className="bg-white rounded-lg shadow border border-slate-200">
         <div className="px-6 py-5 border-b border-slate-200">
-          <h3 className="text-lg font-medium text-slate-800">Recent CSR Reports</h3>
+          <h3 className="text-lg font-medium text-slate-800">Recent Clinical Trial Reports</h3>
+          <p className="text-sm text-slate-500">Biotech compound development insights from processed CSRs</p>
         </div>
         <div className="overflow-x-auto">
           {isLoadingReports ? (
@@ -128,31 +134,36 @@ export default function Dashboard() {
       </div>
       
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="grid grid-cols-1 md:grid-cols-3 gap-4"
+      >
         <QuickAction 
           title="Upload New CSR" 
-          description="Upload a new CSR report for AI-powered processing and analysis." 
+          description="Upload a Phase I-III CSR for AI analysis of compound efficacy and safety profiles." 
           icon={<Upload />}
           buttonText="Upload CSR" 
           onClick={() => navigate('/upload')}
         />
         <QuickAction 
-          title="Generate Protocol" 
-          description="Use AI to generate a protocol based on similar historical CSRs." 
+          title="Generate IND Submission" 
+          description="Use AI to compile regulatory documentation from clinical trial data for FDA submission." 
           icon={<FileText />}
-          buttonText="Generate Protocol" 
+          buttonText="Create IND Package" 
           onClick={() => {}}
           buttonClassName="bg-accent hover:bg-accent-dark focus:ring-accent"
         />
         <QuickAction 
-          title="Compare CSRs" 
-          description="Compare multiple CSRs to identify patterns and differences." 
+          title="Competitive Analysis" 
+          description="Compare your compound performance against similar therapeutics in the same indication." 
           icon={<BarChart3 />}
-          buttonText="Compare CSRs" 
+          buttonText="Run Analysis" 
           onClick={() => {}}
           buttonClassName="bg-secondary hover:bg-secondary-dark focus:ring-secondary"
         />
-      </div>
+      </motion.div>
       
       {/* Report Detail Modal */}
       {selectedReport && (

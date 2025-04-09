@@ -124,8 +124,8 @@ export default function Upload() {
     <div className="space-y-6">
       <div className="bg-white rounded-lg shadow border border-slate-200">
         <div className="px-6 py-5 border-b border-slate-200">
-          <h3 className="text-lg font-medium text-slate-800">Upload CSR Document</h3>
-          <p className="mt-1 text-sm text-slate-600">Upload your Clinical Study Report PDF file for AI-powered processing.</p>
+          <h3 className="text-lg font-medium text-slate-800">Upload Clinical Trial Data</h3>
+          <p className="mt-1 text-sm text-slate-600">Upload your biotech compound's Clinical Study Report for AI-powered extraction of efficacy, safety, and PK/PD data.</p>
         </div>
         <div className="p-6">
           <div className="space-y-8">
