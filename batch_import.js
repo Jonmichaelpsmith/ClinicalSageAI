@@ -11,7 +11,11 @@ import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
-import { Pool } from '@neondatabase/serverless';
+import { Pool, neonConfig } from '@neondatabase/serverless';
+import ws from 'ws';
+
+// Configure neon with WebSocket
+neonConfig.webSocketConstructor = ws;
 
 // Get the current directory
 const __filename = fileURLToPath(import.meta.url);
