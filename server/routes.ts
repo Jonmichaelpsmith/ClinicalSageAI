@@ -1607,15 +1607,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log('Starting batch import process...');
       
-      // Import from the batch import module
-      const { runBatchImport } = require('./scripts/batch_import');
+      // Run the direct import script
+      const { execSync } = require('child_process');
       
-      // Run the batch import process
-      await runBatchImport();
+      // Execute the script directly
+      execSync('node server/scripts/direct_import.js', { stdio: 'inherit' });
       
       res.json({
         success: true,
-        message: 'Batch import process started successfully'
+        message: 'Batch import process completed successfully'
       });
     } catch (err) {
       console.error('Error in batch import:', err);
