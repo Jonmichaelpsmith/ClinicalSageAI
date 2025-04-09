@@ -24,6 +24,10 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CsrReport } from "@/lib/types";
+import StatsCard from "@/components/dashboard/StatsCard"; // Added import
+import QuickAction from "@/components/dashboard/QuickAction"; // Added import
+import LumenBioPipelineInsights from "@/components/dashboard/LumenBioPipelineInsights"; // Added import
+
 
 const Dashboard = () => {
   const { toast } = useToast();
@@ -34,7 +38,7 @@ const Dashboard = () => {
   const { data: stats, isLoading: isLoadingStats } = useQuery({
     queryKey: ['/api/stats'],
   });
-  
+
   const importBatchMutation = useMutation({
     mutationFn: async () => {
       return apiRequest('POST', '/api/import/batch');
@@ -250,7 +254,7 @@ const Dashboard = () => {
                         </Button>
                       </Link>
                     </div>
-                    
+
                     <div className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer">
                       <div className="flex items-start gap-2 mb-2">
                         <MessageSquare className="h-5 w-5 text-green-600 mt-0.5" />
@@ -279,7 +283,7 @@ const Dashboard = () => {
                         </Button>
                       </Link>
                     </div>
-                    
+
                     <div className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer">
                       <div className="flex items-start gap-2 mb-2">
                         <Lightbulb className="h-5 w-5 text-amber-500 mt-0.5" />
@@ -396,7 +400,7 @@ const Dashboard = () => {
                   <p className="text-xs text-slate-500">
                     Click "Import Batch" to process all NCT XML files from the attached_assets directory into the database.
                   </p>
-                  
+
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -433,9 +437,27 @@ const Dashboard = () => {
             </Card>
           </div>
         </div>
+        {/* Lumen Bio Insights Component */}
+        <div className="mt-4">
+          <LumenBioPipelineInsights className="w-full" />
+        </div>
       </div>
     </motion.div>
   );
 };
 
 export default Dashboard;
+
+// Placeholder component - Replace with actual implementation
+const LumenBioPipelineInsights = ({ className }: { className?: string }) => {
+  return (
+    <Card className={className}>
+      <CardHeader>
+        <CardTitle>Lumen Bio Pipeline Insights</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p>This section will display Lumen Bio specific clinical trial data.  (Placeholder)</p>
+      </CardContent>
+    </Card>
+  );
+};

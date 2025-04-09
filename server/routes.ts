@@ -1602,6 +1602,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Client Intelligence API Endpoints
+  
+  // Get all registered clients
+  app.get('/api/clients', async (_req: Request, res: Response) => {
+    try {
+      const clientIntelligenceService = await import('./client-intelligence-service');
+      const clients = clientIntelligenceService.getAllClients();
+      res.json({ success: true, clients });
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+  
+  // Get a specific client
+  app.get('/api/clients/:clientId', async (req: Request, res: Response) => {
+    try {
+      const { clientId } = req.params;
+      const clientIntelligenceService = await import('./client-intelligence-service');
+      const client = clientIntelligenceService.getClientById(clientId);
+      
+      if (!client) {
+        return res.status(404).json({ success: false, message: 'Client not found' });
+      }
+      
+      res.json({ success: true, client });
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+  
+  // Fetch client-specific clinical trial data
+  app.post('/api/clients/:clientId/fetch-data', async (req: Request, res: Response) => {
+    try {
+      const { clientId } = req.params;
+      const clientIntelligenceService = await import('./client-intelligence-service');
+      
+      const client = clientIntelligenceService.getClientById(clientId);
+      if (!client) {
+        return res.status(404).json({ success: false, message: 'Client not found' });
+      }
+      
+      // Start the data fetching process
+      const result = await clientIntelligenceService.fetchClientSpecificData(clientId);
+      res.json({ success: true, message: 'Data fetching completed', result });
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+  
+  // Generate client report
+  app.post('/api/clients/:clientId/generate-report', async (req: Request, res: Response) => {
+    try {
+      const { clientId } = req.params;
+      const clientIntelligenceService = await import('./client-intelligence-service');
+      
+      const client = clientIntelligenceService.getClientById(clientId);
+      if (!client) {
+        return res.status(404).json({ success: false, message: 'Client not found' });
+      }
+      
+      // Generate the report
+      const result = await clientIntelligenceService.generateClientReport(clientId);
+      res.json({ success: true, message: 'Report generated successfully', result });
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+  
+  // Get latest client report
+  app.get('/api/clients/:clientId/latest-report', async (req: Request, res: Response) => {
+    try {
+      const { clientId } = req.params;
+      const clientIntelligenceService = await import('./client-intelligence-service');
+      
+      const client = clientIntelligenceService.getClientById(clientId);
+      if (!client) {
+        return res.status(404).json({ success: false, message: 'Client not found' });
+      }
+      
+      // Get the latest report
+      const report = clientIntelligenceService.getLatestClientReport(clientId);
+      
+      if (!report) {
+        return res.status(404).json({ success: false, message: 'No reports found for this client' });
+      }
+      
+      res.json({ success: true, report: report.reportData });
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+  
   // Run batch import for NCT XML files
   app.post('/api/import/batch', async (_req: Request, res: Response) => {
     try {
