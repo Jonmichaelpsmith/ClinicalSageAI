@@ -14,7 +14,7 @@ interface LayoutProps {
  */
 export function PageContainer({ children, className }: LayoutProps) {
   return (
-    <div className={cn("flex min-h-screen flex-col", className)}>
+    <div className={cn("flex min-h-screen flex-col bg-slate-50 dark:bg-slate-950", className)}>
       {children}
     </div>
   );
@@ -25,7 +25,7 @@ export function PageContainer({ children, className }: LayoutProps) {
  */
 export function HeaderSection({ children, className }: LayoutProps) {
   return (
-    <header className={cn("w-full bg-white dark:bg-gray-950", className)}>
+    <header className={cn("w-full bg-white shadow-sm dark:bg-gray-900", className)}>
       {children}
     </header>
   );
@@ -36,7 +36,7 @@ export function HeaderSection({ children, className }: LayoutProps) {
  */
 export function ContentSection({ children, className }: LayoutProps) {
   return (
-    <section className={cn("w-full", className)}>
+    <section className={cn("w-full py-8", className)}>
       {children}
     </section>
   );
@@ -47,7 +47,7 @@ export function ContentSection({ children, className }: LayoutProps) {
  */
 export function CardGrid({ children, className }: LayoutProps) {
   return (
-    <div className={cn("grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6", className)}>
+    <div className={cn("grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8", className)}>
       {children}
     </div>
   );
@@ -58,7 +58,7 @@ export function CardGrid({ children, className }: LayoutProps) {
  */
 export function Footer({ children, className }: LayoutProps) {
   return (
-    <footer className={cn("w-full bg-white dark:bg-gray-950", className)}>
+    <footer className={cn("w-full bg-white shadow-sm dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800", className)}>
       {children}
     </footer>
   );
