@@ -2,6 +2,7 @@ import { pgTable, pgEnum, text, serial, integer, jsonb, timestamp, boolean, date
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
+import { vector } from "pgvector"; // Corrected import statement
 
 // TABLES
 
