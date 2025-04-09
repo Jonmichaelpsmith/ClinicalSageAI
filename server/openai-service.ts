@@ -6,7 +6,7 @@
  * No OpenAI services are used.
  */
 import { InsertCsrDetails } from "@shared/schema";
-import { queryHuggingFace } from './huggingface-service';
+import { queryHuggingFace, HFModel } from './huggingface-service';
 import * as PDFParse from 'pdf-parse';
 
 // Extract text from PDF buffer
@@ -93,7 +93,7 @@ export async function analyzeCsrContent(pdfText: string): Promise<Partial<Insert
     `;
 
     try {
-      const response = await queryHuggingFace(prompt, 1024, 0.5);
+      const response = await queryHuggingFace(prompt, HFModel.STARLING, 1024, 0.5);
       
       // Try to parse JSON from the response
       const jsonStr = response.match(/\{[\s\S]*\}/)?.[0] || "";
@@ -135,7 +135,7 @@ export async function generateCsrSummary(pdfText: string): Promise<string> {
       ${pdfText}
     `;
 
-    return await queryHuggingFace(prompt, 500, 0.6);
+    return await queryHuggingFace(prompt, HFModel.FLAN_T5_XL, 512, 0.6);
   } catch (error) {
     console.error("Error generating CSR summary:", error);
     // Return mock summary if generation fails
