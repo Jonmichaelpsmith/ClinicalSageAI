@@ -11,8 +11,7 @@ import {
   analyzeCompetitorsForSponsor 
 } from "./analytics-service";
 import { translationService, supportedLanguages } from "./translation-service";
-import { generateProtocol, type ProtocolGenerationParams } from "./protocol-service";
-import { perplexityService } from "./perplexity-service";
+import { ProtocolService } from "./protocol-service";
 import { huggingFaceService } from "./huggingface-service";
 import { SagePlusService } from "./sage-plus-service";
 import { 
@@ -496,8 +495,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ success: false, message: 'Query is required' });
       }
       
-      // Check if Perplexity API key is available
-      if (!perplexityService.isApiKeyAvailable()) {
+      // Check if HuggingFace API key is available
+      if (!huggingFaceService.isApiKeyAvailable()) {
         return res.status(500).json({
           success: false,
           message: 'Study Design Agent service is not available (API key not configured)'
@@ -534,12 +533,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         }
         
-        const agentResponse = await perplexityService.makeRequest([
-          { role: 'system', content: context },
-          { role: 'user', content: query }
-        ], 0.3);
+        // Generate a response using Hugging Face model
+        const prompt = `${context}\n\nQuestion: ${query}\n\nAnswer:`;
+        const agentResponse = await huggingFaceService.queryModel(prompt, 'mistralai/Mistral-7B-Instruct-v0.2', {
+          max_tokens: 1000,
+          temperature: 0.3
+        });
         
-        content = agentResponse.choices[0].message.content;
+        content = agentResponse; // huggingFaceService.queryModel returns the text content directly
       } catch (error) {
         console.error('Error generating study design response:', error);
         content = `I'm sorry, but I encountered an error while processing your query: "${query}". Please try again later or rephrase your question.`;

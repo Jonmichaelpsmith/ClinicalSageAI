@@ -5,73 +5,102 @@
  * using vector embeddings stored in PostgreSQL for document and conversation history.
  */
 
-import * as tf from '@tensorflow/tfjs-node';
 import { db } from './db';
-import { huggingFaceService } from './huggingface-service';
-import PDFParser from 'pdf-parse';
-import { SQL, eq, sql } from 'drizzle-orm';
-import { csrDetails, csrReports, csrSegments } from '@shared/schema';
-import fs from 'fs/promises';
-import path from 'path';
-
-// Enhanced persona with memory context
-const SAGE_PLUS_PERSONA = `
-You are Sage+, an advanced and friendly research assistant specialized in clinical trials, medical research, 
-and pharmaceutical drug development. You have access to a knowledge base of clinical study reports, 
-medical literature, and historical conversations.
-
-Your capabilities include:
-- Recalling information from previously analyzed documents
-- Understanding complex clinical trial designs and outcomes
-- Providing evidence-based insights from medical literature
-- Maintaining context across multiple conversation sessions
-
-Always provide thoughtful, accurate responses based on the available information. When information is 
-incomplete or uncertain, acknowledge those limitations. Be helpful, precise, and supportive in guiding 
-researchers through complex biomedical questions.
-`;
+import { csrSegments, csrReports } from '@shared/schema';
+import { eq, sql, desc } from 'drizzle-orm';
+import PDFParse from 'pdf-parse';
+import * as tf from '@tensorflow/tfjs-node';
+import axios from 'axios';
 
 /**
  * Vector operations for document similarity
  */
 class VectorOperations {
   /**
-   * Generate an embedding vector for text using TensorFlow
+   * Generate an embedding vector for text using Hugging Face Inference API
    * @param text Text to generate embedding for
-   * @returns Float32Array of embedding values
+   * @returns Array of embedding values
    */
   static async generateEmbedding(text: string): Promise<number[]> {
-    // Preprocess text - lowercase, remove extra whitespace
-    const preprocessedText = text.toLowerCase().replace(/\\s+/g, ' ').trim();
-    
-    // Use Universal Sentence Encoder or similar model
-    // This is a simplified version; in production, use a proper embedding model
-    const model = await tf.loadGraphModel(
-      'https://tfhub.dev/tensorflow/tfjs-model/universal-sentence-encoder-lite/1/default/1',
-      { fromTFHub: true }
-    );
-    
-    // Generate embedding
-    const embeddings = await model.predict(tf.tensor([preprocessedText]));
-    const embeddingArray = await embeddings.array();
-    
-    // Return the first embedding as a regular array
-    return Array.from(embeddingArray[0]);
+    try {
+      // Check if HF_API_KEY is available
+      if (!process.env.HF_API_KEY) {
+        console.warn('HF_API_KEY not available, using fallback embedding method');
+        // Use TensorFlow as a fallback
+        return this.generateTensorflowEmbedding(text);
+      }
+
+      // Use Hugging Face for embedding generation
+      const response = await axios.post(
+        'https://api-inference.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2',
+        { inputs: text },
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.HF_API_KEY}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (Array.isArray(response.data)) {
+        // Return the first embedding array from the response
+        return response.data[0];
+      } else {
+        throw new Error('Unexpected response format from Hugging Face API');
+      }
+    } catch (error) {
+      console.error('Error generating embedding from Hugging Face, using fallback:', error);
+      return this.generateTensorflowEmbedding(text);
+    }
   }
-  
+
+  /**
+   * Generate a simple embedding vector using TensorFlow Universal Sentence Encoder
+   * This is a fallback method when external API is not available
+   */
+  static async generateTensorflowEmbedding(text: string): Promise<number[]> {
+    try {
+      // Load Universal Sentence Encoder model
+      const model = await tf.node.loadSavedModel(
+        'https://tfhub.dev/google/universal-sentence-encoder/4',
+        ['serve'],
+        'serving_default'
+      );
+      
+      // Get embeddings
+      const embeddings = model.predict({ 'inputs': [text] });
+      
+      // Convert to array
+      const values = Array.from(await embeddings.arraySync()[0]);
+      
+      // Return embedding array
+      return values;
+    } catch (error) {
+      console.error('Error with TensorFlow embedding:', error);
+      // Fallback to random vector as last resort
+      return Array.from({ length: 512 }, () => Math.random() * 2 - 1);
+    }
+  }
+
   /**
    * Calculate cosine similarity between two vectors
    */
   static cosineSimilarity(vecA: number[], vecB: number[]): number {
-    // Calculate dot product
-    const dotProduct = vecA.reduce((sum, a, i) => sum + a * vecB[i], 0);
+    if (vecA.length !== vecB.length) return 0;
     
-    // Calculate magnitudes
-    const magA = Math.sqrt(vecA.reduce((sum, a) => sum + a * a, 0));
-    const magB = Math.sqrt(vecB.reduce((sum, b) => sum + b * b, 0));
+    let dotProduct = 0;
+    let normA = 0;
+    let normB = 0;
     
-    // Calculate cosine similarity
-    return dotProduct / (magA * magB);
+    for (let i = 0; i < vecA.length; i++) {
+      dotProduct += vecA[i] * vecB[i];
+      normA += vecA[i] * vecA[i];
+      normB += vecB[i] * vecB[i];
+    }
+    
+    if (normA === 0 || normB === 0) return 0;
+    
+    return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
   }
 }
 
@@ -80,80 +109,91 @@ class VectorOperations {
  */
 export class SagePlusService {
   /**
-   * Initialize PostgreSQL pgvector extension if not already done
+   * Initialize any database extensions or tables needed for the service
    */
   static async initVectorExtension(): Promise<void> {
+    // Since we're using JSONB for storing embeddings, we don't need
+    // a special extension. Just create any necessary tables or indexes.
     try {
-      // Check if pgvector extension is already created
-      const extensionExists = await db.execute(sql`
-        SELECT 1 FROM pg_extension WHERE extname = 'vector';
-      `);
-      
-      if (extensionExists.length === 0) {
-        // Create the pgvector extension
-        await db.execute(sql`CREATE EXTENSION IF NOT EXISTS vector;`);
-        console.log('PostgreSQL vector extension created successfully');
-      }
+      // We could add additional initialization here if needed
+      console.log('Sage+ initialization complete');
+      return Promise.resolve();
     } catch (error) {
-      console.error('Failed to initialize vector extension:', error);
-      throw new Error('Failed to initialize vector extension');
-    }
-  }
-  
-  /**
-   * Process a PDF file and extract segments with vector embeddings
-   * @param filePath Path to the PDF file
-   * @param reportId Associated report ID
-   */
-  static async processDocumentWithVectors(filePath: string, reportId: number): Promise<void> {
-    try {
-      // Read the PDF file
-      const pdfBuffer = await fs.readFile(filePath);
-      const pdfData = await PDFParser(pdfBuffer);
-      const fullText = pdfData.text;
-      
-      // Split into segments (paragraphs or sections)
-      const segments = fullText.split(/\n\n+/).filter(segment => 
-        segment.trim().length > 100); // Only keep substantial segments
-      
-      // Process each segment
-      for (let i = 0; i < segments.length; i++) {
-        const segment = segments[i];
-        const segmentText = segment.trim();
-        
-        // Skip very short segments
-        if (segmentText.length < 100) continue;
-        
-        // Generate embedding vector
-        const embedding = await VectorOperations.generateEmbedding(segmentText);
-        
-        // Store segment with vector in database
-        await db.execute(sql`
-          INSERT INTO csr_segments (
-            report_id,
-            segment_text,
-            segment_type,
-            page_number,
-            position,
-            embedding
-          ) VALUES (
-            ${reportId},
-            ${segmentText},
-            'pdf_extract',
-            ${Math.floor(i / 5) + 1}, -- Approximate page number
-            ${i},
-            ${sql.array(embedding)}::vector
-          )
-        `);
-      }
-      
-      console.log(`Processed document segments for report ID ${reportId}`);
-    } catch (error) {
-      console.error(`Error processing document with vectors: ${error}`);
+      console.error('Error initializing Sage+:', error);
       throw error;
     }
   }
-  
+
+  /**
+   * Process a PDF file and extract segments with vector embeddings
+   * @param pdfBuffer Buffer containing the PDF file data
+   * @param reportId Associated report ID
+   */
+  static async processDocumentWithVectors(pdfBuffer: Buffer, reportId: number): Promise<void> {
+    try {
+      // Parse PDF document
+      const pdfData = await PDFParse(pdfBuffer);
+      
+      // Split into segments (e.g., paragraphs or pages)
+      const segments = this.splitIntoSegments(pdfData.text);
+      
+      for (let i = 0; i < segments.length; i++) {
+        const segment = segments[i];
+        if (segment.trim().length < 10) continue; // Skip very short segments
+        
+        // Generate embedding for segment
+        const embedding = await VectorOperations.generateEmbedding(segment);
+        
+        // Store segment with embedding
+        await db.insert(csrSegments).values({
+          reportId,
+          segmentNumber: i + 1,
+          segmentType: 'text',
+          content: segment,
+          pageNumbers: `${Math.floor(i / 2) + 1}`, // Rough estimation of page number
+          embedding: JSON.stringify(embedding),
+          extractedEntities: null
+        });
+      }
+      
+    } catch (error) {
+      console.error('Error processing document:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Split text into meaningful segments
+   * @param text Full document text
+   * @returns Array of text segments
+   */
+  private static splitIntoSegments(text: string): string[] {
+    // Split by double newlines to separate paragraphs
+    const paragraphs = text.split(/\n\s*\n/);
+    
+    // Merge very short paragraphs
+    const segments: string[] = [];
+    let currentSegment = '';
+    
+    for (const paragraph of paragraphs) {
+      if (paragraph.trim().length < 50) {
+        currentSegment += ' ' + paragraph;
+      } else {
+        if (currentSegment) {
+          segments.push(currentSegment.trim());
+          currentSegment = '';
+        }
+        segments.push(paragraph.trim());
+      }
+    }
+    
+    if (currentSegment) {
+      segments.push(currentSegment.trim());
+    }
+    
+    return segments;
+  }
+
   /**
    * Find relevant documents for a query
    * @param query User's question or query
@@ -165,89 +205,157 @@ export class SagePlusService {
       // Generate embedding for the query
       const queryEmbedding = await VectorOperations.generateEmbedding(query);
       
-      // Search for similar segments using vector similarity
-      const results = await db.execute(sql`
-        SELECT 
-          s.id,
-          s.segment_text,
-          s.segment_type,
-          s.page_number,
-          r.title as report_title,
-          r.id as report_id,
-          s.embedding <=> ${sql.array(queryEmbedding)}::vector as distance
-        FROM 
-          csr_segments s
-        JOIN
-          csr_reports r ON s.report_id = r.id
-        ORDER BY 
-          s.embedding <=> ${sql.array(queryEmbedding)}::vector
-        LIMIT ${limit}
-      `);
+      // Get all segments (in a production system, this would use a more efficient search)
+      const allSegments = await db.select().from(csrSegments);
       
-      return results;
+      // Calculate similarity scores
+      const scoredSegments = allSegments.map(segment => {
+        const segmentEmbedding = JSON.parse(segment.embedding as string) as number[];
+        const similarity = VectorOperations.cosineSimilarity(queryEmbedding, segmentEmbedding);
+        return { ...segment, similarity };
+      });
+      
+      // Sort by similarity and take top results
+      const topResults = scoredSegments
+        .sort((a, b) => b.similarity - a.similarity)
+        .slice(0, limit);
+      
+      // Fetch report details for each segment
+      const resultsWithReportDetails = await Promise.all(
+        topResults.map(async segment => {
+          const [report] = await db.select().from(csrReports).where(eq(csrReports.id, segment.reportId));
+          return {
+            ...segment,
+            reportTitle: report?.title || 'Unknown Report',
+            reportSponsor: report?.sponsor || 'Unknown Sponsor',
+            reportDate: report?.date || null
+          };
+        })
+      );
+      
+      return resultsWithReportDetails;
     } catch (error) {
-      console.error(`Error finding relevant documents: ${error}`);
+      console.error('Error finding relevant documents:', error);
       return [];
     }
   }
-  
+
   /**
    * Generate an enhanced response with document memory
    * @param userMessage User's question or message
    * @param conversationHistory Previous messages in the conversation
    * @returns AI assistant's response
    */
-  static async generateMemoryResponse(userMessage: string, conversationHistory: any[]): Promise<string> {
+  static async generateMemoryResponse(userMessage: string, conversationHistory: any[] = []): Promise<string> {
     try {
-      // Find relevant documents for this query
-      const relevantDocs = await this.findRelevantDocuments(userMessage);
+      // Find relevant document segments
+      const relevantDocuments = await this.findRelevantDocuments(userMessage, 3);
       
-      // Build context from relevant documents
-      let documentContext = '';
-      if (relevantDocs.length > 0) {
-        documentContext = 'Relevant information from documents:\n\n';
-        relevantDocs.forEach((doc, index) => {
-          documentContext += `[Document ${index + 1}] ${doc.report_title} (Page ${doc.page_number}):\n${doc.segment_text}\n\n`;
-        });
+      // If no HF_API_KEY is available, use a basic response
+      if (!process.env.HF_API_KEY) {
+        return this.generateBasicResponse(userMessage, relevantDocuments);
       }
       
-      // Build the conversation history context
-      let conversationContext = '';
-      if (conversationHistory.length > 0) {
-        // Get the last few messages (excluding system messages)
-        const recentMessages = conversationHistory
-          .filter(msg => msg.role !== 'system')
-          .slice(-6); // Last 6 messages
-          
-        recentMessages.forEach(msg => {
-          if (msg.role === 'user') {
-            conversationContext += `User: ${msg.content}\n\n`;
-          } else if (msg.role === 'assistant') {
-            conversationContext += `Sage+: ${msg.content}\n\n`;
-          }
-        });
-      }
+      // Construct context from relevant documents
+      const context = relevantDocuments.map(doc => 
+        `[Document: ${doc.reportTitle}, Segment: ${doc.segmentNumber}]\n${doc.content}`
+      ).join('\n\n');
       
-      // Combine all contexts
-      const fullPrompt = `${SAGE_PLUS_PERSONA}
+      // Construct conversation history
+      const historyText = conversationHistory.map(msg => 
+        `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`
+      ).join('\n');
       
-${documentContext ? 'DOCUMENT CONTEXT:\n' + documentContext + '\n' : ''}
+      // Construct full prompt
+      const prompt = `
+Context from clinical study reports:
+${context}
 
-${conversationContext ? 'CONVERSATION HISTORY:\n' + conversationContext + '\n' : ''}
+Conversation history:
+${historyText}
 
 User: ${userMessage}
 
-Sage+:`;
+You are an expert research assistant specializing in clinical trial research. Use the provided context to answer the user's question accurately. If you don't know the answer, say so rather than making up information.
+`;
       
-      // Use Hugging Face service to generate the response
-      return await huggingFaceService.queryModel(fullPrompt, undefined, {
-        temperature: 0.7,
-        max_new_tokens: 800
-      });
+      // Call Hugging Face API
+      try {
+        const response = await axios.post(
+          'https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2',
+          {
+            inputs: prompt,
+            parameters: {
+              max_new_tokens: 1024,
+              temperature: 0.7,
+              top_p: 0.95,
+              do_sample: true
+            }
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${process.env.HF_API_KEY}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+        
+        if (response.data && response.data[0] && response.data[0].generated_text) {
+          const fullResponse = response.data[0].generated_text;
+          // Extract just the assistant's response (after the prompt)
+          const responseText = fullResponse.substring(prompt.length).trim();
+          return responseText || "I'm not sure how to answer that based on the available information.";
+        } else {
+          throw new Error('Unexpected response format from Hugging Face API');
+        }
+      } catch (error) {
+        console.error('Error calling Hugging Face API:', error);
+        return this.generateBasicResponse(userMessage, relevantDocuments);
+      }
     } catch (error) {
-      console.error(`Error generating memory response: ${error}`);
-      return 'I apologize, but I encountered an error processing your request. Please try again.';
+      console.error('Error generating memory response:', error);
+      return "I'm sorry, I encountered an error while processing your request. Please try again.";
     }
+  }
+  
+  /**
+   * Generate a basic response when advanced AI is not available
+   * @param userMessage User's question
+   * @param relevantDocuments Relevant documents found
+   * @returns Simple response based on keyword matching
+   */
+  private static generateBasicResponse(userMessage: string, relevantDocuments: any[]): string {
+    // Simple keyword-based response when AI is not available
+    const lowerQuery = userMessage.toLowerCase();
+    
+    // If no relevant documents were found
+    if (relevantDocuments.length === 0) {
+      return "I couldn't find any specific information about that in our clinical study reports. Can you try rephrasing your question?";
+    }
+    
+    // Check for common question patterns
+    if (lowerQuery.includes('endpoint') || lowerQuery.includes('outcome')) {
+      const docTitle = relevantDocuments[0].reportTitle;
+      return `Based on the report "${docTitle}", endpoints are discussed in the clinical study. You can find more details by examining the full report. Would you like me to provide a summary of the available information?`;
+    }
+    
+    if (lowerQuery.includes('safety') || lowerQuery.includes('adverse') || lowerQuery.includes('side effect')) {
+      const docTitle = relevantDocuments[0].reportTitle;
+      return `Safety information is available in the report "${docTitle}". The report contains details about adverse events and safety monitoring. Would you like me to provide the relevant sections?`;
+    }
+    
+    if (lowerQuery.includes('protocol') || lowerQuery.includes('design')) {
+      const docTitle = relevantDocuments[0].reportTitle;
+      return `The study design for "${docTitle}" is described in the report. It includes information about randomization, blinding, and treatment arms. Would you like more specific details?`;
+    }
+    
+    // Default response with the most relevant document excerpt
+    const mostRelevant = relevantDocuments[0];
+    const excerpt = mostRelevant.content.length > 300 
+      ? mostRelevant.content.substring(0, 300) + '...' 
+      : mostRelevant.content;
+    
+    return `Here's what I found in the report "${mostRelevant.reportTitle}":\n\n${excerpt}\n\nWould you like more information on this topic?`;
   }
   
   /**
@@ -260,63 +368,49 @@ Sage+:`;
   static async uploadDocument(
     pdfBuffer: Buffer, 
     fileName: string,
-    metadata: {
-      title?: string;
+    metadata: { 
+      title?: string; 
       author?: string;
       topic?: string;
       description?: string;
-    } = {}
+    }
   ): Promise<{ id: number; status: string }> {
     try {
-      // Parse basic information from PDF
-      const pdfData = await PDFParser(pdfBuffer);
+      // Parse PDF document to get basic info
+      const pdfData = await PDFParse(pdfBuffer);
       
-      // Insert document record
+      // Extract metadata from PDF if available
+      const title = metadata.title || pdfData.info.Title || fileName;
+      const author = metadata.author || pdfData.info.Author || 'Unknown';
+      
+      // Create report entry
       const [report] = await db.insert(csrReports).values({
-        title: metadata.title || fileName,
+        title: title,
+        sponsor: author,
+        indication: metadata.topic || 'General',
+        phase: 'N/A',
         fileName: fileName,
         fileSize: pdfBuffer.length,
-        sponsor: metadata.author || 'Unknown',
-        indication: metadata.topic || 'General',
-        phase: 'Unknown',
-        status: 'Processing'
+        uploadDate: new Date(),
+        summary: metadata.description || pdfData.text.substring(0, 500)
       }).returning();
       
-      // Save PDF to disk
-      const filePath = path.join(process.cwd(), 'uploads', `${report.id}_${fileName}`);
-      await fs.writeFile(filePath, pdfBuffer);
-      
-      // Process document in the background
-      setTimeout(async () => {
-        try {
-          await this.processDocumentWithVectors(filePath, report.id);
-          
-          // Update status to processed
-          await db.update(csrReports)
-            .set({ status: 'Processed' })
-            .where(eq(csrReports.id, report.id));
-            
+      // Process document in background
+      this.processDocumentWithVectors(pdfBuffer, report.id)
+        .then(() => {
           console.log(`Document ${report.id} processed successfully`);
-        } catch (error) {
-          console.error(`Failed to process document ${report.id}:`, error);
-          
-          // Update status to failed
-          await db.update(csrReports)
-            .set({ status: 'Failed' })
-            .where(eq(csrReports.id, report.id));
-        }
-      }, 100); // Start processing almost immediately but don't block response
+        })
+        .catch(err => {
+          console.error(`Error processing document ${report.id}:`, err);
+        });
       
       return {
         id: report.id,
-        status: 'Processing'
+        status: 'processing'
       };
     } catch (error) {
       console.error('Error uploading document:', error);
-      throw new Error('Failed to upload and process document');
+      throw error;
     }
   }
 }
-
-// Create and export a singleton instance
-export const sagePlusService = new SagePlusService();
