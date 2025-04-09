@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
@@ -52,7 +51,7 @@ export default function ClientIntelligence() {
   const { data: clientData, isLoading: isLoadingClient } = useQuery({
     queryKey: ['/api/clients', selectedClient],
     queryFn: async () => {
-      if (!selectedClient) return null;
+      if (!selectedClient) return { client: null };
       const response = await apiRequest('GET', `/api/clients/${selectedClient}`);
       return response.json();
     },
@@ -63,7 +62,7 @@ export default function ClientIntelligence() {
   const { data: reportData, isLoading: isLoadingReport } = useQuery({
     queryKey: ['/api/clients', selectedClient, 'latest-report'],
     queryFn: async () => {
-      if (!selectedClient) return null;
+      if (!selectedClient) return { success: false, report: null };
       const response = await apiRequest('GET', `/api/clients/${selectedClient}/latest-report`);
       if (!response.ok && response.status !== 404) {
         throw new Error('Failed to fetch report');
@@ -88,7 +87,7 @@ export default function ClientIntelligence() {
       // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['/api/clients', selectedClient] });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast({
         title: 'Data Collection Failed',
         description: `Error: ${error.message}`,
@@ -112,7 +111,7 @@ export default function ClientIntelligence() {
       // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['/api/clients', selectedClient, 'latest-report'] });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast({
         title: 'Report Generation Failed',
         description: `Error: ${error.message}`,
@@ -174,7 +173,7 @@ export default function ClientIntelligence() {
               <CardDescription>Select a client to view details</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
-              {clients.map((c) => (
+              {clients.map((c: any) => (
                 <Button
                   key={c.id}
                   variant={selectedClient === c.id ? "default" : "outline"}
@@ -268,8 +267,8 @@ export default function ClientIntelligence() {
                       <h4 className="text-sm font-medium mb-2">Data Collection Status</h4>
                       <div className="flex items-center">
                         <Badge variant={
-                          client.dataCollectionStatus === 'complete' ? 'success' :
-                          client.dataCollectionStatus === 'in_progress' ? 'warning' : 'outline'
+                          client.dataCollectionStatus === 'complete' ? 'default' :
+                          client.dataCollectionStatus === 'in_progress' ? 'secondary' : 'outline'
                         }>
                           {client.dataCollectionStatus === 'complete' ? 'Complete' :
                            client.dataCollectionStatus === 'in_progress' ? 'In Progress' : 'Pending'}
@@ -296,7 +295,7 @@ export default function ClientIntelligence() {
                     <div>
                       <h4 className="text-sm font-medium mb-2">Therapeutic Areas</h4>
                       <div className="flex flex-wrap gap-2">
-                        {client.therapeuticAreas.map((area) => (
+                        {client.therapeuticAreas.map((area: string) => (
                           <Badge key={area} variant="secondary">{area}</Badge>
                         ))}
                       </div>
@@ -324,15 +323,14 @@ export default function ClientIntelligence() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {client.pipeline.map((asset) => (
+                        {client.pipeline.map((asset: any) => (
                           <TableRow key={asset.name}>
                             <TableCell className="font-medium">{asset.name}</TableCell>
                             <TableCell>
                               <Badge variant={
                                 asset.phase.includes('Preclinical') ? 'outline' :
                                 asset.phase.includes('Phase 1') ? 'secondary' :
-                                asset.phase.includes('Phase 2') ? 'default' :
-                                'success'
+                                'default'
                               }>
                                 {asset.phase}
                               </Badge>
@@ -373,7 +371,7 @@ export default function ClientIntelligence() {
                       <div>
                         <h4 className="text-sm font-medium mb-2">Tracked Competitors</h4>
                         <div className="flex flex-wrap gap-2">
-                          {client.competitors.map((competitor) => (
+                          {client.competitors.map((competitor: string) => (
                             <Badge key={competitor} variant="outline" className="flex items-center">
                               <Users className="h-3 w-3 mr-1" />
                               {competitor}
@@ -395,7 +393,7 @@ export default function ClientIntelligence() {
                                 </TableRow>
                               </TableHeader>
                               <TableBody>
-                                {report.competitiveLandscape.competitorsByTrialCount.map((comp) => (
+                                {report.competitiveLandscape.competitorsByTrialCount.map((comp: any) => (
                                   <TableRow key={comp.competitor}>
                                     <TableCell className="font-medium">{comp.competitor}</TableCell>
                                     <TableCell>{comp.trialCount}</TableCell>
@@ -424,81 +422,66 @@ export default function ClientIntelligence() {
                       <div className="flex justify-between">
                         <CardTitle>Intelligence Report</CardTitle>
                         <span className="text-xs text-muted-foreground">
-                          Generated: {new Date(report.generatedAt).toLocaleString()}
+                          Generated: {new Date(report.generatedDate).toLocaleDateString()}
                         </span>
                       </div>
-                      <CardDescription>
-                        Comprehensive analysis for {client.name}
-                      </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="p-4 bg-muted rounded-md">
-                          <h4 className="text-sm font-medium mb-1">Relevant Trials</h4>
-                          <div className="text-2xl font-bold">{report.relevantTrials}</div>
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="border rounded-lg p-4 text-center">
+                          <div className="text-sm text-muted-foreground">Relevant Trials</div>
+                          <div className="text-2xl font-bold mt-1">{report.relevantTrials}</div>
                         </div>
-                        <div className="p-4 bg-muted rounded-md">
-                          <h4 className="text-sm font-medium mb-1">Assets</h4>
-                          <div className="text-2xl font-bold">{report.pipelineAssets.length}</div>
+                        <div className="border rounded-lg p-4 text-center">
+                          <div className="text-sm text-muted-foreground">Competitor Trials</div>
+                          <div className="text-2xl font-bold mt-1">{report.competitorTrials}</div>
                         </div>
-                        <div className="p-4 bg-muted rounded-md">
-                          <h4 className="text-sm font-medium mb-1">Competitors</h4>
-                          <div className="text-2xl font-bold">{report.competitiveLandscape.totalCompetitors}</div>
+                        <div className="border rounded-lg p-4 text-center">
+                          <div className="text-sm text-muted-foreground">Mechanism Trials</div>
+                          <div className="text-2xl font-bold mt-1">{report.mechanismTrials}</div>
+                        </div>
+                        <div className="border rounded-lg p-4 text-center">
+                          <div className="text-sm text-muted-foreground">Indication Trials</div>
+                          <div className="text-2xl font-bold mt-1">{report.indicationTrials}</div>
                         </div>
                       </div>
                       
-                      <div>
-                        <h4 className="text-sm font-medium mb-2">Trials by Indication</h4>
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>Indication</TableHead>
-                              <TableHead>Trial Count</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {report.trialsByIndication.map((item) => (
-                              <TableRow key={item.indication}>
-                                <TableCell className="font-medium">{item.indication}</TableCell>
-                                <TableCell>{item.count}</TableCell>
-                              </TableRow>
+                      {report.keyInsights && (
+                        <div>
+                          <h4 className="text-sm font-medium mb-2">Key Insights</h4>
+                          <div className="space-y-2">
+                            {report.keyInsights.map((insight: string, idx: number) => (
+                              <div key={idx} className="p-3 border rounded-lg text-sm">
+                                {insight}
+                              </div>
                             ))}
-                          </TableBody>
-                        </Table>
-                      </div>
+                          </div>
+                        </div>
+                      )}
                       
-                      <div>
-                        <h4 className="text-sm font-medium mb-2">Pipeline Asset Analysis</h4>
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>Asset</TableHead>
-                              <TableHead>Indication</TableHead>
-                              <TableHead>Phase</TableHead>
-                              <TableHead>Relevant Trials</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {report.pipelineAssets.map((asset) => (
-                              <TableRow key={asset.name}>
-                                <TableCell className="font-medium">{asset.name}</TableCell>
-                                <TableCell>{asset.indication}</TableCell>
-                                <TableCell>
-                                  <Badge variant={
-                                    asset.phase.includes('Preclinical') ? 'outline' :
-                                    asset.phase.includes('Phase 1') ? 'secondary' :
-                                    asset.phase.includes('Phase 2') ? 'default' :
-                                    'success'
-                                  }>
-                                    {asset.phase}
-                                  </Badge>
-                                </TableCell>
-                                <TableCell>{asset.relevantTrialCount}</TableCell>
+                      {report.competitorUpdates && (
+                        <div>
+                          <h4 className="text-sm font-medium mb-2">Recent Competitor Updates</h4>
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Competitor</TableHead>
+                                <TableHead>Update</TableHead>
+                                <TableHead>Date</TableHead>
                               </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </div>
+                            </TableHeader>
+                            <TableBody>
+                              {report.competitorUpdates.map((update: any, idx: number) => (
+                                <TableRow key={idx}>
+                                  <TableCell className="font-medium">{update.competitor}</TableCell>
+                                  <TableCell>{update.update}</TableCell>
+                                  <TableCell>{new Date(update.date).toLocaleDateString()}</TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      )}
                     </CardContent>
                     <CardFooter>
                       <Button variant="outline" className="ml-auto">
