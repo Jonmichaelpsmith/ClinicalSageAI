@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Copy, Check, ChevronRight, Code, Database, FileJson, Braces, Key, Server, Plugin } from "lucide-react";
+import { Copy, Check, ChevronRight, Code, Database, FileJson, Braces, Key, Server, Puzzle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -384,7 +384,7 @@ generateTrialDesign();`
               </li>
               <li>
                 <Button variant="ghost" className="w-full justify-start text-slate-800">
-                  <Plugin className="h-4 w-4 mr-2" /> Integrations
+                  <Puzzle className="h-4 w-4 mr-2" /> Integrations
                 </Button>
               </li>
               <li>

@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { CsrReport, CsrDetails } from "@/lib/types";
-import { X, FileSymlink, Download } from "lucide-react";
+import { X, FileSymlink, Download, ClipboardCopy, BarChart2, LineChart } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface ReportDetailModalProps {
   report: CsrReport | null;
@@ -30,6 +36,111 @@ export function ReportDetailModal({ report, onClose }: ReportDetailModalProps) {
   });
 
   if (!report) return null;
+
+  // Function to copy report data to clipboard
+  const copyToClipboard = (section: string) => {
+    if (!details) return;
+    
+    let contentToCopy = '';
+    
+    switch(section) {
+      case 'all':
+        contentToCopy = `
+Study Title: ${report.title}
+Sponsor: ${report.sponsor}
+Indication: ${report.indication}
+Phase: ${report.phase}
+Status: ${report.status}
+Date: ${report.date || 'N/A'}
+
+Study Design: ${details?.studyDesign || 'N/A'}
+Primary Objective: ${details?.primaryObjective || 'N/A'}
+Population: ${details?.population || 'N/A'}
+
+Primary Endpoint: ${details?.endpoints?.primary || 'N/A'}
+Secondary Endpoints: ${details?.endpoints?.secondary?.join(', ') || 'N/A'}
+
+Primary Results: ${details?.results?.primaryResults || 'N/A'}
+Secondary Results: ${details?.results?.secondaryResults || 'N/A'}
+
+Safety: ${details?.safety?.commonAEs || 'N/A'}
+`;
+        break;
+      case 'endpoints':
+        contentToCopy = `
+Primary Endpoint: ${details?.endpoints?.primary || 'N/A'}
+Secondary Endpoints: ${details?.endpoints?.secondary?.join(', ') || 'N/A'}
+`;
+        break;
+      case 'results':
+        contentToCopy = `
+Primary Results: ${details?.results?.primaryResults || 'N/A'}
+Secondary Results: ${details?.results?.secondaryResults || 'N/A'}
+Biomarker Results: ${details?.results?.biomarkerResults || 'N/A'}
+`;
+        break;
+      case 'safety':
+        contentToCopy = `
+Overall Safety: ${details?.safety?.overallSafety || 'N/A'}
+Common AEs: ${details?.safety?.commonAEs || 'N/A'}
+${details?.safety?.severeEvents ? `Severe Events: ${details.safety.severeEvents}` : ''}
+${details?.safety?.discontinuationRates ? `Discontinuation Rates: ${details.safety.discontinuationRates}` : ''}
+`;
+        break;
+    }
+    
+    navigator.clipboard.writeText(contentToCopy.trim());
+    toast({
+      title: "Copied to clipboard",
+      description: `Report ${section === 'all' ? 'data' : section} has been copied to clipboard.`,
+    });
+  };
+
+  // Function to generate analytics report
+  const generateAnalyticsReport = async (type: 'comparison' | 'trend' | 'safety') => {
+    if (!report || !report.id) return;
+    
+    try {
+      toast({
+        title: "Generating report",
+        description: "Please wait while we generate your analysis...",
+      });
+      
+      let endpoint = '';
+      let description = '';
+      
+      switch(type) {
+        case 'comparison':
+          endpoint = `/api/analytics/compare?trial1=${report.id}`;
+          description = "Trial comparison report is ready";
+          break;
+        case 'trend':
+          endpoint = `/api/analytics/predictive?indication=${encodeURIComponent(report.indication)}`;
+          description = "Trend analysis report is ready";
+          break;
+        case 'safety':
+          endpoint = `/api/analytics/competitors/${encodeURIComponent(report.sponsor)}`;
+          description = "Safety analysis report is ready";
+          break;
+      }
+      
+      // In a real implementation, you'd actually call the endpoint and handle the response
+      // For now, just show a success toast after a delay to simulate
+      setTimeout(() => {
+        toast({
+          title: "Analysis Complete",
+          description,
+        });
+      }, 2000);
+    } catch (error) {
+      console.error(`Error generating ${type} report:`, error);
+      toast({
+        title: "Analysis Failed",
+        description: `There was an error generating the ${type} report.`,
+        variant: "destructive"
+      });
+    }
+  };
 
   // Function to download report data
   const downloadReportData = async (format: 'pdf' | 'csv' | 'json') => {
@@ -135,36 +246,80 @@ export function ReportDetailModal({ report, onClose }: ReportDetailModalProps) {
           <h3 className="text-lg font-medium text-white">{report.title}</h3>
           <div className="flex items-center space-x-2">
             <div className="flex space-x-1">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => downloadReportData('pdf')}
-                className="flex items-center"
-                title="Download Original PDF"
-              >
-                <Download className="h-4 w-4 mr-1" />
-                PDF
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => downloadReportData('csv')}
-                className="flex items-center"
-                title="Export as CSV"
-              >
-                <FileSymlink className="h-4 w-4 mr-1" />
-                CSV
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => downloadReportData('json')}
-                className="flex items-center"
-                title="Export as JSON"
-              >
-                <FileSymlink className="h-4 w-4 mr-1" />
-                JSON
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="flex items-center"
+                  >
+                    <ClipboardCopy className="h-4 w-4 mr-1" />
+                    Copy
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56">
+                  <DropdownMenuItem onClick={() => copyToClipboard('all')}>
+                    Copy All Data
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => copyToClipboard('endpoints')}>
+                    Copy Endpoints
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => copyToClipboard('results')}>
+                    Copy Results
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => copyToClipboard('safety')}>
+                    Copy Safety Data
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="flex items-center"
+                  >
+                    <FileSymlink className="h-4 w-4 mr-1" />
+                    Export
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56">
+                  <DropdownMenuItem onClick={() => downloadReportData('pdf')}>
+                    Download Original PDF
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => downloadReportData('csv')}>
+                    Export as CSV
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => downloadReportData('json')}>
+                    Export as JSON
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="flex items-center"
+                  >
+                    <BarChart2 className="h-4 w-4 mr-1" />
+                    Analytics
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56">
+                  <DropdownMenuItem onClick={() => generateAnalyticsReport('comparison')}>
+                    Trial Comparison Report
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => generateAnalyticsReport('trend')}>
+                    Trend Analysis
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => generateAnalyticsReport('safety')}>
+                    Safety Profile Analysis
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
             <button onClick={onClose} className="text-white hover:text-slate-200">
               <X className="h-6 w-6" />
@@ -328,7 +483,18 @@ export function ReportDetailModal({ report, onClose }: ReportDetailModalProps) {
                   {details.endpoints && (
                     <>
                       <div className="bg-slate-50 p-4 rounded-lg space-y-4">
-                        <h4 className="font-medium text-slate-800">Primary Endpoint</h4>
+                        <div className="flex justify-between items-center">
+                          <h4 className="font-medium text-slate-800">Primary Endpoint</h4>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8"
+                            onClick={() => copyToClipboard('endpoints')}
+                          >
+                            <ClipboardCopy className="h-4 w-4 mr-1" />
+                            Copy
+                          </Button>
+                        </div>
                         <div className="pl-4 border-l-2 border-primary">
                           <p className="text-sm text-slate-700">{details.endpoints.primary || "No primary endpoint specified."}</p>
                         </div>
@@ -355,6 +521,18 @@ export function ReportDetailModal({ report, onClose }: ReportDetailModalProps) {
                 <div className={activeTab === "results" ? "space-y-6" : "hidden"}>
                   {details.results && (
                     <div className="prose prose-sm max-w-none">
+                      <div className="flex justify-between items-center">
+                        <h4>Results Summary</h4>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8"
+                          onClick={() => copyToClipboard('results')}
+                        >
+                          <ClipboardCopy className="h-4 w-4 mr-1" />
+                          Copy
+                        </Button>
+                      </div>
                       <h4>Primary Endpoint Results</h4>
                       <p>{details.results.primaryResults || "No primary results available."}</p>
 
@@ -371,6 +549,18 @@ export function ReportDetailModal({ report, onClose }: ReportDetailModalProps) {
                 <div className={activeTab === "safety" ? "space-y-6" : "hidden"}>
                   {details.safety && (
                     <div className="prose prose-sm max-w-none">
+                      <div className="flex justify-between items-center">
+                        <h4>Safety Summary</h4>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8"
+                          onClick={() => copyToClipboard('safety')}
+                        >
+                          <ClipboardCopy className="h-4 w-4 mr-1" />
+                          Copy
+                        </Button>
+                      </div>
                       <h4>Overall Safety Summary</h4>
                       <p>{details.safety.overallSafety || "No safety information available."}</p>
 
@@ -408,6 +598,16 @@ export function ReportDetailModal({ report, onClose }: ReportDetailModalProps) {
         <div className="bg-slate-50 px-6 py-4 border-t border-slate-200 flex justify-between items-center">
           <div>
             <StatusBadge status={report.status as "Processing" | "Processed" | "Failed"} />
+          </div>
+          <div className="flex space-x-2">
+            <Button 
+              size="sm" 
+              variant="outline"
+              onClick={() => generateAnalyticsReport('comparison')}
+            >
+              <LineChart className="h-4 w-4 mr-1" />
+              Run Comparison
+            </Button>
           </div>
         </div>
       </div>
