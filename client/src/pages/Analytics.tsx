@@ -1119,21 +1119,28 @@ export default function Analytics() {
       transition={{ duration: 0.5 }}
       className="space-y-6"
     >
-      <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg shadow p-6 border border-slate-200">
-        <h2 className="text-2xl font-bold text-slate-800 mb-2">Advanced Analytics & Predictive Modeling</h2>
-        <p className="text-slate-600 max-w-2xl">
-          Leverage powerful statistical models, predictive analytics, and AI-powered insights to optimize trial design and accelerate drug development.
-        </p>
+      <div className="bg-gradient-to-r from-primary/20 to-blue-600/10 rounded-xl shadow-md p-8 border border-slate-200">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h2 className="text-2xl md:text-3xl font-bold text-slate-800 mb-2">Advanced Analytics & Modeling</h2>
+            <p className="text-slate-600 max-w-2xl">
+              Leverage powerful statistical models, predictive analytics, and AI-powered insights to optimize trial design and accelerate drug development.
+            </p>
+          </div>
+          <div className="flex-shrink-0">
+            <BarChart3 className="h-16 w-16 text-primary/70" />
+          </div>
+        </div>
       </div>
       
-      <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList className="grid grid-cols-6 w-full">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="predictive">Predictive Analysis</TabsTrigger>
-          <TabsTrigger value="compare">Trial Comparison</TabsTrigger>
-          <TabsTrigger value="virtual">Virtual Trial</TabsTrigger>
-          <TabsTrigger value="design">Study Design</TabsTrigger>
-          <TabsTrigger value="modeling">Statistical Modeling</TabsTrigger>
+      <Tabs defaultValue="overview" className="space-y-6">
+        <TabsList className="grid grid-cols-3 md:grid-cols-6 w-full bg-slate-100 p-1 rounded-lg">
+          <TabsTrigger value="overview" className="rounded-md">Overview</TabsTrigger>
+          <TabsTrigger value="predictive" className="rounded-md">Predictive Analysis</TabsTrigger>
+          <TabsTrigger value="compare" className="rounded-md">Trial Comparison</TabsTrigger>
+          <TabsTrigger value="virtual" className="rounded-md">Virtual Trial</TabsTrigger>
+          <TabsTrigger value="design" className="rounded-md">Study Design</TabsTrigger>
+          <TabsTrigger value="modeling" className="rounded-md">Statistical Modeling</TabsTrigger>
         </TabsList>
         
         <TabsContent value="overview" className="space-y-4">
