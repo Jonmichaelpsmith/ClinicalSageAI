@@ -2,6 +2,14 @@ import * as math from 'mathjs';
 import * as mlStat from 'ml-stat';
 import { CsrReport, CsrDetails } from '@shared/schema';
 
+// Add quantileT function to mathjs (for TypeScript)
+declare module 'mathjs' {
+  interface MathJsStatic {
+    quantileT(p: number, dof: number): number;
+    round(value: number, precision: number): number;
+  }
+}
+
 export interface StatisticalResult {
   pValue: number;
   confidenceInterval: [number, number];
