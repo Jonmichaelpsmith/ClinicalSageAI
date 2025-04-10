@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
+import { motion } from 'framer-motion';
 import { 
   Microscope, 
   BarChart, 
@@ -22,6 +23,7 @@ import {
 // Import our new Strategic Intelligence components
 import StrategicRecommendations from '@/components/competitive/StrategicRecommendations';
 import CompetitiveIntelligenceForm from '@/components/competitive/CompetitiveIntelligenceForm';
+import { Textarea } from '@/components/ui/textarea';
 
 import { 
   Card, 
@@ -57,7 +59,6 @@ import {
 } from "@/components/ui/alert";
 import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
-import { motion } from 'framer-motion';
 
 // Mock competitive intelligence data
 const competitors = [
@@ -1171,7 +1172,7 @@ export default function CompetitiveIntelligence() {
                     placeholder="Enter your protocol summary here..." 
                     className="min-h-[200px]"
                     value={protocolSummary}
-                    onChange={(e) => setProtocolSummary(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setProtocolSummary(e.target.value)}
                   />
                   <div className="flex flex-wrap gap-2 items-center text-sm text-muted-foreground">
                     <span>Sample size:</span>
