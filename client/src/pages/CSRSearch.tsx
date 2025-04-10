@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { Link } from 'wouter';
 import axios from 'axios';
 import CSRCompareViewer from '@/components/csr/CSRCompareViewer';
+import html2pdf from 'html2pdf.js';
 
 // These should be dynamically loaded from the backend in a production app
 const indications = ['Any', 'Oncology', 'Cardiology', 'Neurology', 'Immunology', 'Infectious Disease'];
@@ -86,9 +87,9 @@ export default function CSRSearch() {
   return (
     <div className="space-y-8">
       <div className="flex flex-col space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">CSR Search Engine</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-blue-800">🧬 TrialSage Study Intelligence Search</h1>
         <p className="text-muted-foreground">
-          Search across clinical study reports using natural language or filters
+          Search and compare CSR-backed designs. Export directly into your protocol dossier.
         </p>
       </div>
 
@@ -187,60 +188,60 @@ export default function CSRSearch() {
         </div>
       </div>
 
+      {selectedCSRs.length > 0 && (
+        <div className="sticky top-0 z-10 bg-background border border-muted rounded-md p-3 mb-4 flex justify-between items-center shadow-sm">
+          <p className="text-sm font-medium">🧬 {selectedCSRs.length} trial(s) selected for comparison</p>
+          <div className="flex gap-2">
+            <Dialog open={compareDialogOpen} onOpenChange={setCompareDialogOpen}>
+              <DialogTrigger asChild>
+                <Button 
+                  size="sm" 
+                  disabled={selectedCSRs.length < 2} 
+                  onClick={() => setCompareDialogOpen(true)}
+                >
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    className="h-4 w-4 mr-2" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  >
+                    <path d="M10 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h4"></path>
+                    <path d="M18 21h-4"></path>
+                    <path d="M14 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                    <path d="M18 9 22 12 18 15"></path>
+                    <path d="M6 15 2 12 6 9"></path>
+                    <path d="M2 12H22"></path>
+                  </svg>
+                  Compare CSRs
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-5xl">
+                <CSRCompareViewer 
+                  selectedIds={selectedCSRs} 
+                  onClose={() => setCompareDialogOpen(false)} 
+                />
+              </DialogContent>
+            </Dialog>
+            
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setSelectedCSRs([])}
+            >
+              <X className="h-4 w-4 mr-2" />
+              Clear All
+            </Button>
+          </div>
+        </div>
+      )}
+      
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-bold tracking-tight">Results</h2>
-          
-          {selectedCSRs.length > 0 && (
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-muted-foreground">
-                {selectedCSRs.length} selected
-              </span>
-              <Dialog open={compareDialogOpen} onOpenChange={setCompareDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button 
-                    size="sm" 
-                    disabled={selectedCSRs.length < 2} 
-                    onClick={() => setCompareDialogOpen(true)}
-                  >
-                    <svg 
-                      xmlns="http://www.w3.org/2000/svg" 
-                      className="h-4 w-4 mr-2" 
-                      viewBox="0 0 24 24" 
-                      fill="none" 
-                      stroke="currentColor" 
-                      strokeWidth="2" 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round"
-                    >
-                      <path d="M10 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h4"></path>
-                      <path d="M18 21h-4"></path>
-                      <path d="M14 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
-                      <path d="M18 9 22 12 18 15"></path>
-                      <path d="M6 15 2 12 6 9"></path>
-                      <path d="M2 12H22"></path>
-                    </svg>
-                    Compare CSRs
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-5xl">
-                  <CSRCompareViewer 
-                    selectedIds={selectedCSRs} 
-                    onClose={() => setCompareDialogOpen(false)} 
-                  />
-                </DialogContent>
-              </Dialog>
-              
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => setSelectedCSRs([])}
-              >
-                <X className="h-4 w-4 mr-2" />
-                Clear
-              </Button>
-            </div>
-          )}
         </div>
         
         {results.length === 0 ? (
