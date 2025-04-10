@@ -215,16 +215,16 @@ export class StudyDesignAgentService {
     try {
       // Query database for potential academic sources
       let dbQuery = db.select()
-        .from(reports)
+        .from(csrReports)
         .innerJoin(
-          reportDetails,
-          sql`${reports.id} = ${reportDetails.reportId}`
+          csrDetails,
+          sql`${csrReports.id} = ${csrDetails.reportId}`
         )
         .limit(10);
       
       // Add indication filter if provided
       if (indication) {
-        dbQuery = dbQuery.where(sql`${reports.indication} = ${indication}`);
+        dbQuery = dbQuery.where(sql`${csrReports.indication} = ${indication}`);
       }
       
       // Execute query
@@ -233,15 +233,16 @@ export class StudyDesignAgentService {
       // Process and rank the sources
       const academicSources = potentialSources.map(source => {
         // Extract key information for citation
+        const report = source.csr_reports;
         return {
-          id: source.reports.id,
-          title: source.reports.title,
-          sponsor: source.reports.sponsor,
-          date: source.reports.date,
-          indication: source.reports.indication,
-          phase: source.reports.phase,
+          id: report.id,
+          title: report.title,
+          sponsor: report.sponsor,
+          date: report.date,
+          indication: report.indication,
+          phase: report.phase,
           relevanceScore: 0.85, // Default score, would be calculated based on similarity
-          citationKey: `[${source.reports.id}]`,
+          citationKey: `[${report.id}]`,
           source: "CSR Database"
         };
       });

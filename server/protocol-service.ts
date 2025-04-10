@@ -9,6 +9,7 @@ import { db } from './db';
 import { csrReports, csrDetails } from '../shared/schema';
 import { eq, like, and, isNull, desc, inArray } from 'drizzle-orm';
 import { queryHuggingFace, HFModel } from './huggingface-service';
+import { protocolKnowledgeService } from './protocol-knowledge-service';
 
 // Define protocol section types
 export type ProtocolSection = {
@@ -298,9 +299,57 @@ async function enhanceSectionWithAI(
       context += `Additional context: ${additionalContext}. `;
     }
     
+    // Get academic evidence and recommendations
+    const objectives = [...(endpoints.primary || []), ...(endpoints.secondary || [])];
+    const academicData = await protocolKnowledgeService.getRecommendations({
+      indication,
+      phase,
+      objectives,
+      endpoints: [...(endpoints.primary || []), ...(endpoints.secondary || [])]
+    });
+    
+    // Add evidence-based recommendations to the context
+    if (academicData.recommendations.length > 0) {
+      // Find recommendations relevant to the current section
+      const sectionRecommendations = academicData.recommendations.filter(rec => {
+        switch (sectionName) {
+          case "Study Design":
+            return rec.type === 'studyDesign';
+          case "Inclusion Criteria":
+            return rec.type === 'inclusionCriteria';
+          case "Exclusion Criteria":
+            return rec.type === 'exclusionCriteria';
+          case "Endpoints":
+            return rec.type === 'endpoints';
+          case "Statistical Analysis":
+            return rec.type === 'sampleSize';
+          default:
+            return false;
+        }
+      });
+      
+      if (sectionRecommendations.length > 0) {
+        context += "\n\nEVIDENCE-BASED RECOMMENDATIONS:\n";
+        sectionRecommendations.forEach(rec => {
+          context += `- ${rec.description}\n`;
+          if (rec.citations) {
+            context += `  [Citations: ${rec.citations}]\n`;
+          }
+        });
+      }
+    }
+    
+    // Add academic citations to the context
+    if (academicData.citations.length > 0) {
+      context += "\n\nRELEVANT ACADEMIC SOURCES:\n";
+      academicData.citations.slice(0, 5).forEach(citation => {
+        context += `${citation.citationKey} ${citation.title} (${citation.sponsor}, ${citation.date || 'N/A'}) - Phase ${citation.phase}, Indication: ${citation.indication}\n`;
+      });
+    }
+    
     // Add context from similar trials if available
     if (similarTrials.length > 0) {
-      context += `Base it on these similar trials: ${similarTrials.map(t => t.title).join(", ")}. `;
+      context += `\nBase it on these similar trials: ${similarTrials.map(t => t.title).join(", ")}. `;
       
       // Add specific context based on section type
       switch (sectionName) {
@@ -333,12 +382,15 @@ async function enhanceSectionWithAI(
       }
     }
     
+    // Add instruction to cite academic sources
+    context += "\n\nIMPORTANT: When referencing evidence, include citation keys like [CSR-12345] from the academic sources provided to you.";
+    
     // Use Hugging Face to generate enhanced content
     const enhancedContent = await queryHuggingFace(
       context, 
-      HFModel.MISTRAL_7B,
-      800, // Length of response
-      0.7  // Temperature for creativity
+      HFModel.TEXT, // Use TEXT model which maps to Mixtral
+      0.4,          // Temperature - lowered for more factual output
+      1000          // Increased max tokens to allow for citations
     );
     
     return enhancedContent;
@@ -360,25 +412,42 @@ async function validateProtocolSections(
   try {
     const validatedSections = [...sections];
     
+    // Get academic evidence and recommendations for validation
+    const academicData = await protocolKnowledgeService.getRecommendations({
+      indication,
+      phase,
+      endpoints: []
+    });
+    
     // Validate each section
     for (let i = 0; i < validatedSections.length; i++) {
       const section = validatedSections[i];
       const validationIssues: ValidationIssue[] = [];
       
-      // Use AI to identify potential issues
+      // Find academic evidence relevant to this section
+      const relevantCitations = academicData.citations
+        .slice(0, 3)
+        .map(citation => `${citation.citationKey} ${citation.title} (${citation.sponsor}, ${citation.phase})`)
+        .join('\n');
+      
+      // Use AI to identify potential issues with academic evidence
       const validationPrompt = `
         Review this ${section.sectionName} for a Phase ${phase} ${indication} clinical trial protocol targeting ${population}:
         "${section.content}"
+        
+        Consider these relevant academic citations from similar trials:
+        ${relevantCitations}
         
         Identify any potential regulatory issues, scientific problems, or improvements, especially those related to the target population.
         Format your response as a JSON array of issues, where each issue has:
         - severity: one of "critical", "high", "medium", "warning", or "low"
         - message: a clear explanation of the issue
         - recommendation: how to fix the issue
+        - citation: (optional) a reference to a specific citation if relevant
       `;
       
       try {
-        const validationResponse = await queryHuggingFace(validationPrompt, HFModel.STARLING, 768, 0.5);
+        const validationResponse = await queryHuggingFace(validationPrompt, HFModel.TEXT, 0.4, 1000);
         
         // Parse validation response (assuming it returns valid JSON)
         try {
@@ -393,7 +462,7 @@ async function validateProtocolSections(
                 validationIssues.push({
                   severity: issue.severity,
                   message: issue.message,
-                  recommendation: issue.recommendation
+                  recommendation: issue.recommendation || `Consider revising the ${section.sectionName.toLowerCase()} to address this issue.`
                 });
               }
             }
@@ -435,17 +504,43 @@ async function validateProtocolSections(
       
       validatedSections[i].validationIssues = validationIssues;
       
-      // Generate competitive benchmark
+      // Generate competitive benchmark with academic evidence
       try {
+        // Find the most relevant recommendations for this section
+        const sectionType = section.sectionName.toLowerCase();
+        const relevantRecommendations = academicData.recommendations
+          .filter(rec => {
+            if (sectionType.includes('design') && rec.type === 'studyDesign') return true;
+            if (sectionType.includes('inclusion') && rec.type === 'inclusionCriteria') return true;
+            if (sectionType.includes('exclusion') && rec.type === 'exclusionCriteria') return true;
+            if (sectionType.includes('endpoint') && rec.type === 'endpoints') return true;
+            if (sectionType.includes('statistic') && rec.type === 'sampleSize') return true;
+            return false;
+          })
+          .map(rec => rec.description)
+          .join('\n');
+          
         const benchmarkPrompt = `
-          How does this ${section.sectionName} for a Phase ${phase} ${indication} trial targeting ${population} compare to industry standards?
+          Analyze this ${section.sectionName} for a Phase ${phase} ${indication} trial targeting ${population}:
           "${section.content}"
           
-          Provide a brief competitive analysis (2-3 sentences) on how this compares to other similar trials for this target population.
+          Consider these evidence-based recommendations from similar trials:
+          ${relevantRecommendations || "No specific recommendations available for this section type."}
+          
+          Provide a detailed competitive analysis (3-4 sentences) on how this section compares to evidence-based best practices and industry standards. 
+          Include specific references to current trial design approaches in your analysis.
         `;
         
-        const benchmarkResponse = await queryHuggingFace(benchmarkPrompt, HFModel.FLAN_T5_XL, 256, 0.7);
-        validatedSections[i].competitiveBenchmark = benchmarkResponse;
+        const benchmarkResponse = await queryHuggingFace(benchmarkPrompt, HFModel.TEXT, 0.4, 500);
+        
+        // Add academic citations to benchmark when available
+        let enhancedBenchmark = benchmarkResponse;
+        if (academicData.citations.length > 0) {
+          const citationInfo = academicData.citations[0].formatted;
+          enhancedBenchmark += `\n\nReference: ${citationInfo}`;
+        }
+        
+        validatedSections[i].competitiveBenchmark = enhancedBenchmark;
       } catch (benchError) {
         console.error(`Error generating benchmark for ${section.sectionName}:`, benchError);
       }
