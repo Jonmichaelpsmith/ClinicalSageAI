@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1778",
+  "title": "A Randomized Double-Blind, Placebo-Controlled Multi-Center Study of DRM-581 (IL-17 inhibitor) in Patients With Systemic Lupus Erythematosus",
+  "officialTitle": "A Randomized Double-Blind, Placebo-Controlled Multi-Center Study of DRM-581 (IL-17 inhibitor) in Patients With Systemic Lupus Erythematosus",
+  "sponsor": "University of Alberta",
+  "indication": "Systemic Lupus Erythematosus",
+  "phase": "Phase 4",
+  "fileName": "HC-1778.json",
+  "fileSize": 495035,
+  "date": "2023-08-06",
+  "completionDate": "2026-12-08",
+  "drugName": "DRM-581 (IL-17 inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Not yet recruiting",
+  "description": "This is a randomized double-blind, placebo-controlled multi-center study designed to evaluate the efficacy and safety of DRM-581 (IL-17 inhibitor) in patients with Systemic Lupus Erythematosus. The study will enroll approximately 83 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 19-58 years\n- Confirmed diagnosis of Systemic Lupus Erythematosus\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n- Active disease defined by standard criteria\n- Inadequate response to conventional therapy\n- Positive serology (if applicable)\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment\n- Active infection including tuberculosis\n- History of recurrent serious infections\n- Concurrent autoimmune disease other than study indication"
+}

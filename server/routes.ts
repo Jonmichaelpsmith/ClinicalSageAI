@@ -2205,6 +2205,95 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Academic Knowledge Base API Endpoints
+  
+  // Upload academic resource
+  app.post('/api/academic-knowledge/upload', academicUpload.single('file'), async (req: Request, res: Response) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          message: 'No file uploaded'
+        });
+      }
+      
+      const metadata = {
+        title: req.body.title || path.basename(req.file.originalname, path.extname(req.file.originalname)),
+        authors: req.body.authors ? JSON.parse(req.body.authors) : [],
+        publicationDate: req.body.publicationDate || new Date().toISOString().split('T')[0],
+        source: req.body.source || 'manual_upload',
+        resourceType: req.body.resourceType || 'text',
+        summary: req.body.summary || '',
+        topics: req.body.topics ? JSON.parse(req.body.topics) : [],
+        keywords: req.body.keywords ? JSON.parse(req.body.keywords) : []
+      };
+      
+      const resourceId = await processAcademicResource(req.file.path, metadata);
+      
+      res.json({
+        success: true,
+        resourceId,
+        message: 'Academic resource uploaded and processed successfully'
+      });
+    } catch (error) {
+      console.error('Error uploading academic resource:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error uploading academic resource: ' + (error as Error).message
+      });
+    }
+  });
+
+  // Search academic resources
+  app.post('/api/academic-knowledge/search', async (req: Request, res: Response) => {
+    try {
+      const { query, limit = 10 } = req.body;
+      
+      if (!query) {
+        return res.status(400).json({
+          success: false,
+          message: 'Query is required'
+        });
+      }
+      
+      const results = await academicKnowledgeTracker.searchResources(query, limit);
+      
+      // Record access for each returned resource
+      await Promise.all(results.map(result => 
+        academicKnowledgeTracker.recordAccess(result.id)
+      ));
+      
+      res.json({
+        success: true,
+        results
+      });
+    } catch (error) {
+      console.error('Error searching academic resources:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error searching academic resources: ' + (error as Error).message
+      });
+    }
+  });
+
+  // Get academic knowledge base statistics
+  app.get('/api/academic-knowledge/stats', async (_req: Request, res: Response) => {
+    try {
+      const stats = await academicKnowledgeTracker.getStats();
+      
+      res.json({
+        success: true,
+        stats
+      });
+    } catch (error) {
+      console.error('Error getting academic knowledge stats:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error retrieving academic knowledge statistics'
+      });
+    }
+  });
+  
   // Research Companion API Endpoint
   app.post('/api/research-companion/query', async (req: Request, res: Response) => {
     try {

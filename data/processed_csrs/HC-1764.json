@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1764",
+  "title": "A Randomized Double-Blind, Active-Controlled Multi-Center Study of OST-957 (cathepsin K inhibitor) in Patients With HIV Infection",
+  "officialTitle": "A Randomized Double-Blind, Active-Controlled Multi-Center Study of OST-957 (cathepsin K inhibitor) in Patients With HIV Infection",
+  "sponsor": "University Health Network",
+  "indication": "HIV Infection",
+  "phase": "Phase 1",
+  "fileName": "HC-1764.json",
+  "fileSize": 240960,
+  "date": "2024-09-21",
+  "completionDate": "2025-05-12",
+  "drugName": "OST-957 (cathepsin K inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Not yet recruiting",
+  "description": "This is a randomized double-blind, active-controlled multi-center study designed to evaluate the efficacy and safety of OST-957 (cathepsin K inhibitor) in patients with HIV Infection. The study will enroll approximately 344 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 19-67 years\n- Confirmed diagnosis of HIV Infection\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

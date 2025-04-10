@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1774",
+  "title": "A Randomized Double-Blind, Active-Controlled  Study of DEP-410 (SSRI/SNRI) in Patients With Prostate Cancer",
+  "officialTitle": "A Randomized Double-Blind, Active-Controlled  Study of DEP-410 (SSRI/SNRI) in Patients With Prostate Cancer",
+  "sponsor": "Sunnybrook Research Institute",
+  "indication": "Prostate Cancer",
+  "phase": "Phase 2/Phase 3",
+  "fileName": "HC-1774.json",
+  "fileSize": 248618,
+  "date": "2024-12-08",
+  "completionDate": "2027-08-10",
+  "drugName": "DEP-410 (SSRI/SNRI)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Active, not recruiting",
+  "description": "This is a randomized double-blind, active-controlled  study designed to evaluate the efficacy and safety of DEP-410 (SSRI/SNRI) in patients with Prostate Cancer. The study will enroll approximately 185 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 25-72 years\n- Confirmed diagnosis of Prostate Cancer\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n- Measurable disease per RECIST v1.1\n- Prior treatment with standard therapy\n- Life expectancy ≥3 months\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment\n- Brain metastases unless treated and stable\n- Prior treatment with similar mechanism of action\n- Other active malignancy requiring treatment"
+}
