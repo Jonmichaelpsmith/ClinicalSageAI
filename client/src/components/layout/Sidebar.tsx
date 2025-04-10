@@ -124,8 +124,8 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                 AI Tools
               </h3>
               <div className="space-y-1">
-                <NavItem href="/protocol-generator" icon={<ClipboardList />}>
-                  Protocol Generator
+                <NavItem href="/protocol-designer" icon={<ClipboardList />}>
+                  Protocol Designer
                 </NavItem>
                 <NavItem href="/study-design-agent" icon={<Lightbulb />}>
                   Study Design Agent
@@ -205,8 +205,8 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                 AI Tools
               </h3>
               <div className="space-y-1">
-                <NavItem href="/protocol-generator" icon={<ClipboardList />}>
-                  Protocol Generator
+                <NavItem href="/protocol-designer" icon={<ClipboardList />}>
+                  Protocol Designer
                 </NavItem>
                 <NavItem href="/study-design-agent" icon={<Lightbulb />}>
                   Study Design Agent

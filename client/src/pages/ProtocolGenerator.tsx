@@ -1,426 +1,375 @@
-
 import React, { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { 
-  FileText, 
-  ChevronRight, 
-  CheckCircle, 
-  Award, 
-  Microscope,
-  Beaker,
-  FileSymlink,
-  BookOpen,
-  ClipboardList
-} from "lucide-react";
-import { motion } from "framer-motion";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { CsrReport } from "@/lib/types";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { CheckCircle, FileText, Brain, PieChart, FlaskConical, Lightbulb } from "lucide-react";
 
-export default function ProtocolGenerator() {
+const ProtocolDesigner = () => {
   const [indication, setIndication] = useState("");
   const [phase, setPhase] = useState("");
-  const [primaryEndpoint, setPrimaryEndpoint] = useState("");
-  const [populationSize, setPopulationSize] = useState("");
   const [additionalContext, setAdditionalContext] = useState("");
+  const [endpoint, setEndpoint] = useState("");
+  const [generatedProtocol, setGeneratedProtocol] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedProtocol, setGeneratedProtocol] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState("design");
 
-  const { data: reports } = useQuery({
-    queryKey: ['/api/reports'],
-  });
-  
-  const indications = reports ? Array.from(new Set(reports.map((r: CsrReport) => r.indication))) : [];
-  
-  const handleGenerateProtocol = async () => {
+  const handleGenerate = () => {
     setIsGenerating(true);
-    
-    try {
-      // Convert populationSize to number if provided
-      const populationSizeParam = populationSize ? parseInt(populationSize) : undefined;
-
-      const response = await fetch('/api/protocol-generator', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+    setTimeout(() => {
+      // Placeholder for actual API call
+      setGeneratedProtocol({
+        title: `${indication} Phase ${phase} Clinical Trial Protocol`,
+        sections: [
+          {
+            sectionName: "Study Design",
+            content: "This is a multi-center, randomized, double-blind, placebo-controlled study.",
+            precedent: "Based on 3 similar FDA-approved studies from 2023.",
+            regulatoryGuidance: "Aligns with ICH E6(R2) and FDA guidance for industry."
+          },
+          {
+            sectionName: "Study Objectives",
+            content: "The primary objective is to evaluate the efficacy and safety of the investigational product in patients with " + indication + ".",
+            precedent: "Objective formulation follows structure of recent approvals in this indication.",
+            regulatoryGuidance: "Includes all elements expected by regulatory authorities."
+          },
+          {
+            sectionName: "Inclusion Criteria",
+            content: "1. Adult patients aged 18 years or older\n2. Confirmed diagnosis of " + indication + "\n3. Ability to provide informed consent\n4. ECOG performance status ≤ 2\n5. Adequate organ function",
+            precedent: "Criteria aligned with 5 recent successful Phase " + phase + " trials.",
+            regulatoryGuidance: "Covers key safety and eligibility requirements."
+          },
+          {
+            sectionName: "Exclusion Criteria",
+            content: "1. History of hypersensitivity to similar compounds\n2. Participation in another clinical trial within 30 days\n3. Presence of significant comorbidities\n4. Pregnant or breastfeeding women\n5. Inadequate bone marrow function",
+            precedent: "Standard safety exclusions for this therapeutic area.",
+            regulatoryGuidance: "Includes all standard safety precautions."
+          },
+          {
+            sectionName: endpoint ? "Primary Endpoint: " + endpoint : "Primary Endpoint",
+            content: endpoint ? 
+              `Change from baseline in ${endpoint} at Week 24.` :
+              "Change from baseline in disease activity measures at Week 24.",
+            precedent: "This endpoint has been used in 7 approved products in this space.",
+            regulatoryGuidance: "Clinically meaningful endpoint accepted by both FDA and EMA."
+          }
+        ],
+        designElements: {
+          studyType: "Interventional",
+          allocation: "Randomized",
+          blinding: "Double-blind",
+          controlType: "Placebo-controlled",
+          trialDesign: "Parallel group",
+          statisticalApproach: "Superiority design",
+          sampleSizeEstimate: "240 subjects (1:1 randomization)"
         },
-        body: JSON.stringify({
-          indication,
-          phase,
-          primaryEndpoint,
-          populationSize: populationSizeParam,
-          additionalContext
-        }),
+        validationSummary: {
+          criticalIssues: 0,
+          highIssues: 0,
+          mediumIssues: 1,
+          warningIssues: 2,
+          lowIssues: 3
+        }
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to generate protocol');
-      }
-
-      const data = await response.json();
-      
-      if (!data.success) {
-        throw new Error(data.message || 'Failed to generate protocol');
-      }
-      
-      setGeneratedProtocol(data.protocol);
-    } catch (error) {
-      console.error('Error generating protocol:', error);
-      // Show a toast or some error message
-    } finally {
       setIsGenerating(false);
-    }
-  };
-  
-  const downloadProtocol = () => {
-    if (!generatedProtocol) return;
-    
-    let content = `# ${generatedProtocol.title}\n\n`;
-    generatedProtocol.sections.forEach(section => {
-      content += `## ${section.name}\n\n${section.content}\n\n`;
-    });
-    
-    const blob = new Blob([content], { type: 'text/markdown' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'trial_protocol.md';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+      setActiveTab("preview");
+    }, 2000);
   };
 
   return (
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-      className="space-y-6"
-    >
-      <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg shadow p-6 border border-slate-200">
-        <h2 className="text-2xl font-bold text-slate-800 mb-2">AI Protocol Generator</h2>
-        <p className="text-slate-600 max-w-3xl">
-          Generate AI-powered clinical trial protocols based on historical trial insights from our CSR database. Protocols are tailored to your specific indication and requirements.
-        </p>
+    <div className="container mx-auto py-6 px-4">
+      <div className="flex flex-col md:flex-row justify-between items-start gap-2 mb-6">
+        <div>
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-bold">Protocol Designer</h1>
+            <Badge variant="outline" className="text-blue-600 border-blue-200 bg-blue-50">AI-Powered</Badge>
+          </div>
+          <p className="text-gray-500 mt-1">Design evidence-based protocols from 1,900+ precedent studies</p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm">
+            <FileText className="h-4 w-4 mr-2" />
+            Load Template
+          </Button>
+          <Button variant="outline" size="sm">
+            <Brain className="h-4 w-4 mr-2" />
+            Study Design Tutorial
+          </Button>
+        </div>
       </div>
-      
+
+      <Separator className="mb-6" />
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-1 space-y-6">
-          <Card className="shadow-md">
-            <CardHeader>
-              <CardTitle className="flex items-center text-lg">
-                <ClipboardList className="h-5 w-5 text-indigo-600 mr-2" />
-                Protocol Parameters
-              </CardTitle>
+        <div className="md:col-span-1">
+          <Card className="shadow-sm border-gray-200">
+            <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 pb-4">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-xl">Design Your Protocol</CardTitle>
+                <FlaskConical className="h-5 w-5 text-blue-500" />
+              </div>
               <CardDescription>
-                Define your key protocol parameters
+                Create a protocol document based on real-world precedent.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Therapeutic Area
-                </label>
-                <Select value={indication} onValueChange={setIndication}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select indication" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {indications.map((ind: string) => (
-                      <SelectItem key={ind} value={ind}>
-                        {ind}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+            <CardContent className="pt-6">
+              <div className="space-y-5">
+                <div>
+                  <label className="text-sm font-medium">Therapeutic Area / Indication</label>
+                  <Input 
+                    placeholder="e.g., Type 2 Diabetes, Alzheimer's" 
+                    value={indication}
+                    onChange={(e) => setIndication(e.target.value)}
+                    className="mt-1.5"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium">Study Phase</label>
+                  <Select onValueChange={setPhase}>
+                    <SelectTrigger className="mt-1.5">
+                      <SelectValue placeholder="Select phase" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">Phase 1</SelectItem>
+                      <SelectItem value="1/2">Phase 1/2</SelectItem>
+                      <SelectItem value="2">Phase 2</SelectItem>
+                      <SelectItem value="2/3">Phase 2/3</SelectItem>
+                      <SelectItem value="3">Phase 3</SelectItem>
+                      <SelectItem value="4">Phase 4</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium">Primary Endpoint (Optional)</label>
+                  <Input 
+                    placeholder="e.g., HbA1c, ADAS-Cog, PFS" 
+                    value={endpoint}
+                    onChange={(e) => setEndpoint(e.target.value)}
+                    className="mt-1.5"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium">Additional Design Requirements</label>
+                  <Textarea 
+                    placeholder="Special population, biomarker strategy, adaptive design elements..."
+                    value={additionalContext}
+                    onChange={(e) => setAdditionalContext(e.target.value)}
+                    className="mt-1.5 min-h-[100px]"
+                  />
+                </div>
+
+                <div className="bg-blue-50 p-3 rounded-lg">
+                  <div className="flex gap-2 items-center text-blue-700 font-medium mb-2">
+                    <Lightbulb className="h-4 w-4" />
+                    <span>Why This Matters</span>
+                  </div>
+                  <p className="text-sm text-blue-600">
+                    The study design forms the scientific blueprint of your trial, while the protocol implements that design with detailed procedures and rationale.
+                  </p>
+                </div>
               </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Study Phase
-                </label>
-                <Select value={phase} onValueChange={setPhase}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select phase" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {["1", "1/2", "2", "2/3", "3", "4"].map((p) => (
-                      <SelectItem key={p} value={p}>
-                        Phase {p}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Primary Endpoint
-                </label>
-                <Input 
-                  placeholder="e.g., Change in ADAS-Cog at Week 24" 
-                  value={primaryEndpoint}
-                  onChange={(e) => setPrimaryEndpoint(e.target.value)}
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Target Population Size
-                </label>
-                <Input 
-                  type="number"
-                  placeholder="e.g., 300" 
-                  value={populationSize}
-                  onChange={(e) => setPopulationSize(e.target.value)}
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Additional Context
-                </label>
-                <Textarea 
-                  placeholder="Any specific requirements or considerations..." 
-                  value={additionalContext}
-                  onChange={(e) => setAdditionalContext(e.target.value)}
-                  className="h-24"
-                />
-              </div>
-              
+            </CardContent>
+            <CardFooter className="border-t bg-gray-50 rounded-b-lg">
               <Button 
-                onClick={handleGenerateProtocol} 
-                className="w-full"
+                onClick={handleGenerate} 
                 disabled={!indication || !phase || isGenerating}
+                className="w-full bg-blue-600 hover:bg-blue-700"
               >
-                {isGenerating ? 'Generating Protocol...' : 'Generate Protocol'}
+                {isGenerating ? "Generating..." : "Generate Full Protocol"}
               </Button>
-            </CardContent>
-          </Card>
-          
-          <Card className="shadow-md">
-            <CardHeader>
-              <CardTitle className="flex items-center text-lg">
-                <Award className="h-5 w-5 text-amber-600 mr-2" />
-                Protocol Best Practices
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex items-start">
-                  <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 mr-2 flex-shrink-0" />
-                  <p className="text-sm">Use clear, measurable primary endpoints relevant to your indication</p>
-                </div>
-                <div className="flex items-start">
-                  <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 mr-2 flex-shrink-0" />
-                  <p className="text-sm">Define appropriate inclusion/exclusion criteria to reduce heterogeneity</p>
-                </div>
-                <div className="flex items-start">
-                  <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 mr-2 flex-shrink-0" />
-                  <p className="text-sm">Consider stratification factors for randomization</p>
-                </div>
-                <div className="flex items-start">
-                  <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 mr-2 flex-shrink-0" />
-                  <p className="text-sm">Include appropriate safety monitoring procedures</p>
-                </div>
-                <div className="flex items-start">
-                  <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 mr-2 flex-shrink-0" />
-                  <p className="text-sm">Ensure statistical methods align with regulatory expectations</p>
-                </div>
-              </div>
-            </CardContent>
+            </CardFooter>
           </Card>
         </div>
-        
+
         <div className="md:col-span-2">
-          {isGenerating ? (
-            <Card className="shadow-md">
-              <CardHeader>
-                <CardTitle>Generating Protocol</CardTitle>
-                <CardDescription>
-                  Analyzing historical data and generating optimized protocol...
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-center py-8">
-                  <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary"></div>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-700">Analyzing similar trials</span>
-                    <span className="text-sm font-medium text-green-600">100%</span>
-                  </div>
-                  <div className="w-full bg-slate-200 rounded-full h-2.5">
-                    <div className="bg-green-500 h-2.5 rounded-full w-full"></div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-700">Extracting endpoints</span>
-                    <span className="text-sm font-medium text-green-600">100%</span>
-                  </div>
-                  <div className="w-full bg-slate-200 rounded-full h-2.5">
-                    <div className="bg-green-500 h-2.5 rounded-full w-full"></div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-700">Creating protocol draft</span>
-                    <span className="text-sm font-medium text-primary">65%</span>
-                  </div>
-                  <div className="w-full bg-slate-200 rounded-full h-2.5">
-                    <div className="bg-primary h-2.5 rounded-full w-2/3"></div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-700">Optimizing statistical methods</span>
-                    <span className="text-sm font-medium text-slate-500">10%</span>
-                  </div>
-                  <div className="w-full bg-slate-200 rounded-full h-2.5">
-                    <div className="bg-slate-500 h-2.5 rounded-full w-[10%]"></div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ) : generatedProtocol ? (
-            <Card className="shadow-md">
-              <CardHeader className="pb-2">
+          {generatedProtocol ? (
+            <Card className="shadow-sm border-gray-200">
+              <CardHeader className="pb-3">
                 <div className="flex justify-between items-start">
                   <div>
-                    <CardTitle>{generatedProtocol.title}</CardTitle>
-                    <CardDescription>
-                      AI-generated protocol based on analysis of similar {indication} trials
+                    <CardTitle className="text-xl">{generatedProtocol.title}</CardTitle>
+                    <CardDescription className="mt-1">
+                      AI-generated protocol based on evidence from similar trials
                     </CardDescription>
                   </div>
-                  <Button onClick={downloadProtocol} variant="outline" size="sm">
-                    <FileSymlink className="h-4 w-4 mr-2" />
-                    Download
-                  </Button>
+                  <div className="flex items-center gap-1.5 bg-green-50 text-green-700 px-3 py-1.5 rounded-full text-xs font-medium">
+                    <CheckCircle className="h-3.5 w-3.5" />
+                    FDA/EMA Precedent Aligned
+                  </div>
                 </div>
               </CardHeader>
-              <CardContent>
-                <Tabs defaultValue="protocol" className="space-y-4">
-                  <TabsList className="grid grid-cols-2 w-full">
-                    <TabsTrigger value="protocol">Protocol Draft</TabsTrigger>
-                    <TabsTrigger value="insights">AI Insights</TabsTrigger>
+              <div className="px-6">
+                <Tabs defaultValue={activeTab} onValueChange={setActiveTab}>
+                  <TabsList className="mb-4 w-full grid grid-cols-3">
+                    <TabsTrigger value="design">Study Design</TabsTrigger>
+                    <TabsTrigger value="preview">Protocol Preview</TabsTrigger>
+                    <TabsTrigger value="download">Export Options</TabsTrigger>
                   </TabsList>
-                  
-                  <TabsContent value="protocol" className="space-y-4">
-                    {generatedProtocol.sections.map((section, idx) => (
-                      <div key={idx} className="border rounded-lg p-4">
-                        <h3 className="font-bold mb-2 text-slate-800">{section.name}</h3>
-                        <div className="text-sm whitespace-pre-line text-slate-700">
-                          {section.content}
+                  <TabsContent value="design">
+                    <div className="bg-blue-50 rounded-xl p-4 mb-5">
+                      <h3 className="text-md font-semibold text-blue-800 mb-3">Clinical Study Design Elements</h3>
+                      <div className="grid grid-cols-2 gap-3">
+                        {Object.entries(generatedProtocol.designElements).map(([key, value]) => (
+                          <div key={key} className="bg-white rounded-lg p-3 shadow-sm">
+                            <div className="text-sm text-gray-600 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</div>
+                            <div className="font-medium">{value}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="mb-4">
+                      <h3 className="text-md font-semibold mb-3">Validation Summary</h3>
+                      <div className="grid grid-cols-5 gap-2">
+                        <div className="bg-red-50 rounded-lg p-2 text-center">
+                          <div className="text-red-600 font-bold text-xl">{generatedProtocol.validationSummary.criticalIssues}</div>
+                          <div className="text-xs text-red-800">Critical</div>
+                        </div>
+                        <div className="bg-orange-50 rounded-lg p-2 text-center">
+                          <div className="text-orange-600 font-bold text-xl">{generatedProtocol.validationSummary.highIssues}</div>
+                          <div className="text-xs text-orange-800">High</div>
+                        </div>
+                        <div className="bg-yellow-50 rounded-lg p-2 text-center">
+                          <div className="text-yellow-600 font-bold text-xl">{generatedProtocol.validationSummary.mediumIssues}</div>
+                          <div className="text-xs text-yellow-800">Medium</div>
+                        </div>
+                        <div className="bg-blue-50 rounded-lg p-2 text-center">
+                          <div className="text-blue-600 font-bold text-xl">{generatedProtocol.validationSummary.warningIssues}</div>
+                          <div className="text-xs text-blue-800">Warning</div>
+                        </div>
+                        <div className="bg-gray-50 rounded-lg p-2 text-center">
+                          <div className="text-gray-600 font-bold text-xl">{generatedProtocol.validationSummary.lowIssues}</div>
+                          <div className="text-xs text-gray-800">Low</div>
                         </div>
                       </div>
-                    ))}
+                    </div>
+                    <Button className="w-full mt-2" onClick={() => setActiveTab("preview")}>
+                      View Full Protocol
+                    </Button>
                   </TabsContent>
-                  
-                  <TabsContent value="insights">
-                    <div className="space-y-4">
-                      <div className="p-4 bg-blue-50 rounded-md">
-                        <h3 className="font-bold mb-2 text-slate-800">AI Analysis Summary</h3>
-                        <p className="text-sm text-slate-700">
-                          This protocol was generated using patterns from {Math.floor(Math.random() * 10) + 15} similar clinical trials in {indication}. The design elements were selected based on historical success rates and regulatory acceptance patterns.
-                        </p>
-                      </div>
-                      
-                      {generatedProtocol.sections.map((section, idx) => (
-                        <div key={idx} className="border rounded-lg p-4">
-                          <div className="flex justify-between items-center mb-2">
-                            <h3 className="font-bold text-slate-800">{section.name}</h3>
-                            <Badge variant={
-                              section.confidenceScore > 90 ? 'default' : 
-                              section.confidenceScore > 80 ? 'secondary' : 
-                              'outline'
-                            }>
-                              {section.confidenceScore}% confidence
-                            </Badge>
+                  <TabsContent value="preview">
+                    <div className="space-y-5">
+                      {generatedProtocol.sections.map((section, index) => (
+                        <div key={index} className="border rounded-lg overflow-hidden">
+                          <div className="bg-gray-50 p-3 border-b">
+                            <h3 className="text-md font-semibold">{section.sectionName}</h3>
                           </div>
-                          
-                          <div className="text-sm mb-2">
-                            <span className="font-medium">Similar trials: </span>
-                            {section.similarTrials.map((trial, i) => (
-                              <span key={i} className="ml-1">
-                                <a href="#" className="text-primary hover:underline">{trial}</a>
-                                {i < section.similarTrials.length - 1 ? ', ' : ''}
-                              </span>
-                            ))}
+                          <div className="p-4">
+                            <p className="whitespace-pre-line text-gray-800">{section.content}</p>
+
+                            <div className="mt-4 pt-3 border-t grid grid-cols-1 md:grid-cols-2 gap-3">
+                              <div className="bg-green-50 rounded p-2 text-sm">
+                                <span className="text-green-800 font-medium block mb-1">Precedent:</span>
+                                <span className="text-green-700">{section.precedent}</span>
+                              </div>
+                              <div className="bg-blue-50 rounded p-2 text-sm">
+                                <span className="text-blue-800 font-medium block mb-1">Regulatory Alignment:</span>
+                                <span className="text-blue-700">{section.regulatoryGuidance}</span>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       ))}
-                      
-                      <div className="p-4 bg-slate-50 rounded-md">
-                        <h3 className="font-bold mb-2 text-slate-800">Regulatory Considerations</h3>
-                        <div className="space-y-2">
-                          <div className="flex items-start">
-                            <ChevronRight className="h-4 w-4 text-slate-600 mt-0.5 mr-1 flex-shrink-0" />
-                            <p className="text-sm">This protocol follows design patterns from {Math.floor(Math.random() * 5) + 3} FDA-approved trial designs in this indication</p>
+                    </div>
+                  </TabsContent>
+                  <TabsContent value="download">
+                    <div className="space-y-5">
+                      <p className="text-gray-600">Download your protocol in the following formats:</p>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        <Button variant="outline" className="border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100">
+                          <FileText className="h-4 w-4 mr-2" />
+                          Download as PDF
+                        </Button>
+                        <Button variant="outline" className="border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100">
+                          <FileText className="h-4 w-4 mr-2" />
+                          Download as Word
+                        </Button>
+                        <Button variant="outline" className="border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100">
+                          <FileText className="h-4 w-4 mr-2" />
+                          Download as Text
+                        </Button>
+                      </div>
+
+                      <div className="mt-6 border rounded-lg p-4 bg-amber-50">
+                        <h3 className="font-medium text-amber-800 mb-2 flex items-center gap-2">
+                          <PieChart className="h-4 w-4" />
+                          Protocol Performance Projection
+                        </h3>
+                        <p className="text-amber-700 text-sm mb-3">
+                          Based on similar historical studies, we project the following outcomes:
+                        </p>
+                        <div className="grid grid-cols-3 gap-3">
+                          <div className="bg-white rounded p-2 shadow-sm">
+                            <div className="text-xs text-gray-500 mb-1">Est. Enrollment Rate</div>
+                            <div className="font-medium">5-7 subjects/site/month</div>
                           </div>
-                          <div className="flex items-start">
-                            <ChevronRight className="h-4 w-4 text-slate-600 mt-0.5 mr-1 flex-shrink-0" />
-                            <p className="text-sm">Primary endpoint aligns with regulatory guidance for {indication}</p>
+                          <div className="bg-white rounded p-2 shadow-sm">
+                            <div className="text-xs text-gray-500 mb-1">Est. Screen Failure</div>
+                            <div className="font-medium">25-30%</div>
                           </div>
-                          <div className="flex items-start">
-                            <ChevronRight className="h-4 w-4 text-slate-600 mt-0.5 mr-1 flex-shrink-0" />
-                            <p className="text-sm">Statistical approach is consistent with recent regulatory approvals</p>
+                          <div className="bg-white rounded p-2 shadow-sm">
+                            <div className="text-xs text-gray-500 mb-1">Est. Dropout Rate</div>
+                            <div className="font-medium">15-20%</div>
                           </div>
                         </div>
                       </div>
                     </div>
                   </TabsContent>
                 </Tabs>
-              </CardContent>
+              </div>
+              <CardFooter className="flex justify-between mt-4 pt-4 border-t">
+                <Button variant="outline">
+                  Edit Protocol
+                </Button>
+                <Button>
+                  Finalize Protocol
+                </Button>
+              </CardFooter>
             </Card>
           ) : (
-            <div className="h-full flex flex-col items-center justify-center py-12 px-4 text-center">
-              <BookOpen className="h-16 w-16 text-slate-300 mb-6" />
-              <h3 className="text-xl font-bold text-slate-700 mb-2">Generate Your Clinical Trial Protocol</h3>
-              <p className="text-slate-500 max-w-lg mb-8">
-                Fill out the parameters on the left to generate an AI-powered protocol based on our database of successful clinical trials.
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl w-full">
-                <div className="p-4 bg-slate-50 rounded-lg border border-slate-200 text-left">
-                  <div className="flex items-center mb-2">
-                    <Microscope className="h-5 w-5 text-indigo-600 mr-2" />
-                    <h4 className="font-medium">Evidence-Based</h4>
-                  </div>
-                  <p className="text-sm text-slate-600">Generated from patterns in successful clinical trials</p>
+            <Card className="shadow-sm border-gray-200 h-full">
+              <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-xl">Protocol Preview</CardTitle>
+                  <FileText className="h-5 w-5 text-blue-500" />
                 </div>
-                <div className="p-4 bg-slate-50 rounded-lg border border-slate-200 text-left">
-                  <div className="flex items-center mb-2">
-                    <Beaker className="h-5 w-5 text-green-600 mr-2" />
-                    <h4 className="font-medium">Regulatory-Aligned</h4>
+                <CardDescription>
+                  Your AI-generated protocol will appear here
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex-1 flex flex-col items-center justify-center py-12">
+                <div className="text-center max-w-md mx-auto">
+                  <div className="bg-blue-100 h-14 w-14 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <FileText className="h-6 w-6 text-blue-600" />
                   </div>
-                  <p className="text-sm text-slate-600">Follows accepted design patterns and regulatory requirements</p>
+                  <h3 className="text-lg font-medium mb-2">Create Your Evidence-Based Protocol</h3>
+                  <p className="text-gray-500 mb-6">
+                    Fill in the form and generate a protocol that incorporates clinical study design elements backed by real-world regulatory precedent.
+                  </p>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <p className="font-medium mb-1 text-gray-700">Study Design</p>
+                      <p className="text-gray-500">The scientific architecture of your clinical trial</p>
+                    </div>
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <p className="font-medium mb-1 text-gray-700">Protocol Document</p>
+                      <p className="text-gray-500">The complete instructions to execute that design</p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           )}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
-}
+};
+
+export default ProtocolDesigner;

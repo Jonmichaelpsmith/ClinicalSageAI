@@ -72,6 +72,77 @@ const Dashboard = () => {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-white">Welcome to TrialSage</h1>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+          <Card className="shadow-sm border-blue-100">
+            <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50">
+              <CardTitle className="text-lg">Study Design Tools</CardTitle>
+              <CardDescription>
+                Optimize the scientific architecture of your trials
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="bg-blue-100 p-2 rounded-lg">
+                    <PieChart className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium">Statistical Modeling</h4>
+                    <p className="text-sm text-gray-500">Optimize endpoint selection & sample size</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="bg-blue-100 p-2 rounded-lg">
+                    <FileSearch className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium">Design Comparator</h4>
+                    <p className="text-sm text-gray-500">Compare your design to precedent studies</p>
+                  </div>
+                </div>
+                <Button variant="outline" className="w-full" onClick={() => navigate("/statistical-modeling")}>
+                  Access Design Tools
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="shadow-sm border-emerald-100">
+            <CardHeader className="bg-gradient-to-r from-emerald-50 to-teal-50">
+              <CardTitle className="text-lg">Protocol Development</CardTitle>
+              <CardDescription>
+                Generate comprehensive protocol documents
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="bg-emerald-100 p-2 rounded-lg">
+                    <FileText className="h-5 w-5 text-emerald-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium">Protocol Designer</h4>
+                    <p className="text-sm text-gray-500">Create complete protocol documents</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="bg-emerald-100 p-2 rounded-lg">
+                    <CheckSquare className="h-5 w-5 text-emerald-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium">Regulatory Validator</h4>
+                    <p className="text-sm text-gray-500">Ensure alignment with agency expectations</p>
+                  </div>
+                </div>
+                <Button variant="outline" className="w-full" onClick={() => navigate("/protocol-designer")}>
+                  Create Protocol
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
               <p className="text-blue-100 mt-2 max-w-lg">
                 AI-powered clinical study report intelligence platform that transforms your research workflow
               </p>
