@@ -2301,6 +2301,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Run Health Canada trials batch import
+  app.post('/api/import/canada-batch', async (_req: Request, res: Response) => {
+    try {
+      console.log('Starting Health Canada batch import process...');
+      
+      // Import dependencies at the top level
+      const childProcess = await import('child_process');
+      
+      // Execute the import_batch_of_50.js script
+      const batchProcess = childProcess.spawn('node', ['import_batch_of_50.js']);
+      
+      let processOutput = '';
+      let processError = '';
+      
+      batchProcess.stdout.on('data', (data: Buffer) => {
+        processOutput += data.toString();
+        console.log(`Batch import stdout: ${data}`);
+      });
+      
+      batchProcess.stderr.on('data', (data: Buffer) => {
+        processError += data.toString();
+        console.error(`Batch import stderr: ${data}`);
+      });
+      
+      batchProcess.on('close', async (code: number) => {
+        console.log(`Batch import process exited with code ${code}`);
+        
+        if (code === 0) {
+          // Successfully imported
+          res.json({ 
+            success: true, 
+            message: 'Health Canada batch import successfully started',
+            output: processOutput
+          });
+        } else {
+          // Error during import
+          res.status(500).json({ 
+            success: false, 
+            message: 'Error during Health Canada batch import',
+            error: processError
+          });
+        }
+      });
+      
+      // Add error handler
+      batchProcess.on('error', (error: Error) => {
+        console.error('Error spawning batch import process:', error);
+        res.status(500).json({ 
+          success: false, 
+          message: `Error starting Health Canada batch import: ${error.message}`
+        });
+      });
+      
+    } catch (err) {
+      console.error('Error in Health Canada batch import:', err);
+      errorHandler(err as Error, res);
+    }
+  });
+
   // Run batch import for NCT XML files
   app.post('/api/import/batch', async (_req: Request, res: Response) => {
     try {
