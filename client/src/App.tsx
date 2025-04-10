@@ -30,6 +30,7 @@ import CSRSearch from "@/pages/CSRSearch";
 import CSRDetail from "@/pages/CSRDetail";
 import ProtocolOptimizer from "@/pages/ProtocolOptimizer";
 import AgentLogDashboard from "@/pages/AgentLogDashboard";
+import SimpleEndpointRecommender from "@/pages/SimpleEndpointRecommender";
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -116,6 +117,7 @@ function Router() {
       <Route path="/reports/:csrId">{() => renderWithLayout(CSRDetail)}</Route>
       <Route path="/protocol-optimizer">{() => renderWithLayout(ProtocolOptimizer)}</Route>
       <Route path="/agent-logs">{() => renderWithLayout(AgentLogDashboard)}</Route>
+      <Route path="/endpoint-recommender">{() => renderWithLayout(SimpleEndpointRecommender)}</Route>
 
       {/* Fallback to 404 */}
       <Route>{() => renderWithLayout(NotFound)}</Route>

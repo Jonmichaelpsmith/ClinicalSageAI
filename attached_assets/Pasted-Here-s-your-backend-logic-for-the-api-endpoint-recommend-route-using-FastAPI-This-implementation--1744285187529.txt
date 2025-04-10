@@ -1,0 +1,82 @@
+Here’s your backend logic for the /api/endpoint/recommend route using FastAPI.
+
+This implementation uses your existing structured CSR data to return smart, precedent-based endpoint recommendations.
+
+📁 endpoint_recommender.py
+python
+Copy
+Edit
+from fastapi import APIRouter, Request
+from typing import List
+import os, json
+from collections import defaultdict
+
+router = APIRouter()
+
+CSR_DIR = "data/processed_csrs"
+
+@router.post("/api/endpoint/recommend")
+async def recommend_endpoints(payload: dict):
+    indication = payload.get("indication", "").lower()
+    phase = payload.get("phase", "").lower()
+    keywords = payload.get("keywords", "").lower()
+
+    endpoint_counts = defaultdict(int)
+    endpoint_matches = {}
+
+    for fname in os.listdir(CSR_DIR):
+        if fname.endswith(".json"):
+            with open(os.path.join(CSR_DIR, fname)) as f:
+                csr = json.load(f)
+
+            csr_phase = csr.get("phase", "").lower()
+            csr_indication = csr.get("indication", "").lower()
+            endpoints = csr.get("primary_endpoints", []) + csr.get("secondary_endpoints", [])
+            outcome = csr.get("outcome_summary", "")
+
+            # Match by indication and phase
+            if indication in csr_indication and phase in csr_phase:
+                for ep in endpoints:
+                    if keywords and keywords not in ep.lower():
+                        continue
+
+                    endpoint_counts[ep] += 1
+                    if ep not in endpoint_matches:
+                        endpoint_matches[ep] = []
+                    endpoint_matches[ep].append(outcome)
+
+    results = []
+    for ep, count in sorted(endpoint_counts.items(), key=lambda x: x[1], reverse=True):
+        outcomes = endpoint_matches.get(ep, [])
+        summary = f"Historically used in {count} similar trials. "
+        if outcomes:
+            summary += f"Examples: {', '.join(outcomes[:2])}..."
+        results.append({
+            "endpoint": ep,
+            "matchCount": count,
+            "summary": summary
+        })
+
+    return results
+✅ Add This to Your FastAPI App
+In main.py or your central app file:
+
+python
+Copy
+Edit
+from endpoint_recommender import router as endpoint_router
+app.include_router(endpoint_router)
+Now you're fully wired to recommend the most proven endpoints for any trial based on real CSR data.
+
+Would you like to add:
+
+A frequency heatmap by phase & indication?
+
+Or the ability to send selected endpoints to your protocol optimizer?
+
+
+
+
+
+
+
