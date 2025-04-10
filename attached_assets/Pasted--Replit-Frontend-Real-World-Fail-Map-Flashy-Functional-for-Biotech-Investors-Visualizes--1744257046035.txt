@@ -1,0 +1,60 @@
+// Replit Frontend – Real-World Fail Map (Flashy + Functional for Biotech/Investors)
+// Visualizes failed trials by endpoint, dose, and statistical design breakdown
+
+import { useEffect, useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { HeatMap } from '@/components/custom/HeatMap';
+import { BarChart } from '@/components/custom/BarChart';
+import { Loader } from '@/components/ui/loader';
+
+export default function FailMap() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/failmap')
+      .then((res) => res.json())
+      .then((json) => {
+        setData(json);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) return <Loader message="Loading failed trial intelligence..." />;
+
+  return (
+    <div className="p-6 space-y-6">
+      <h1 className="text-2xl font-bold">🚨 Real-World Fail Map</h1>
+      <p className="text-gray-600 max-w-xl">
+        Explore patterns behind 500+ failed clinical trials. Discover how endpoint choices, dose design, or statistical underpowering contributed to failure — and avoid repeating history.
+      </p>
+
+      <Card>
+        <CardContent>
+          <h3 className="font-semibold mb-2">🔥 Endpoint Failure Heatmap</h3>
+          <HeatMap data={data.endpoints} xLabel="Indications" yLabel="Endpoints" />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent>
+          <h3 className="font-semibold mb-2">📉 Dose Misalignment by Indication</h3>
+          <BarChart data={data.doseIssues} xField="indication" yField="percent_misaligned" label="% Misaligned Dose" />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent>
+          <h3 className="font-semibold mb-2">📊 Underpowered Studies by Phase</h3>
+          <BarChart data={data.statPower} xField="phase" yField="underpowered_count" label="# Underpowered" />
+        </CardContent>
+      </Card>
+
+      <div className="pt-4">
+        <Button variant="outline">Download Report PDF</Button>
+        <Button className="ml-2" variant="default">Request Custom Benchmark</Button>
+      </div>
+    </div>
+  );
+}
