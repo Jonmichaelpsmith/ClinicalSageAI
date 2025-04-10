@@ -2434,6 +2434,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
       errorHandler(err as Error, res);
     }
   });
+  
+  // Get agent logs with advanced filtering
+  app.get('/api/logs/agent', async (req: Request, res: Response) => {
+    try {
+      const logFile = path.join(process.cwd(), 'data/agent_logs.jsonl');
+      
+      // Extract query parameters for filtering
+      const keyword = req.query.keyword as string | undefined;
+      const csrId = req.query.csr_id as string | undefined;
+      const dateFrom = req.query.date_from as string | undefined;
+      const dateTo = req.query.date_to as string | undefined;
+      
+      // If log file doesn't exist yet, return empty array
+      if (!fs.existsSync(logFile)) {
+        return res.json([]);
+      }
+      
+      // Read and parse logs from JSONL file
+      const logs: any[] = [];
+      const fileContents = fs.readFileSync(logFile, 'utf8');
+      
+      fileContents.split('\n').forEach(line => {
+        if (line.trim()) {
+          try {
+            const entry = JSON.parse(line);
+            
+            // Apply filters
+            let includeEntry = true;
+            
+            // Keyword filtering
+            if (keyword && includeEntry) {
+              const combined = `${entry.message || ''} ${entry.response || ''}`.toLowerCase();
+              if (!combined.includes(keyword.toLowerCase())) {
+                includeEntry = false;
+              }
+            }
+            
+            // CSR ID filtering
+            if (csrId && includeEntry) {
+              const csrIds = entry.csrIds || [];
+              if (!csrIds.includes(csrId)) {
+                includeEntry = false;
+              }
+            }
+            
+            // Date range filtering
+            if (dateFrom && includeEntry) {
+              const entryDate = new Date(entry.timestamp);
+              const fromDate = new Date(`${dateFrom}T00:00:00`);
+              if (entryDate < fromDate) {
+                includeEntry = false;
+              }
+            }
+            
+            if (dateTo && includeEntry) {
+              const entryDate = new Date(entry.timestamp);
+              const toDate = new Date(`${dateTo}T23:59:59`);
+              if (entryDate > toDate) {
+                includeEntry = false;
+              }
+            }
+            
+            if (includeEntry) {
+              logs.push(entry);
+            }
+          } catch (err) {
+            console.warn('Error parsing log line:', err);
+          }
+        }
+      });
+      
+      // Return logs in reverse chronological order (newest first)
+      res.json(logs.reverse());
+    } catch (error: any) {
+      console.error('Error fetching agent logs:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: `Error fetching agent logs: ${error.message}` 
+      });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;

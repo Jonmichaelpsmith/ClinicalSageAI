@@ -1,0 +1,62 @@
+// React Component: AgentLogDashboard.jsx (with filters)
+
+import { useEffect, useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+
+export default function AgentLogDashboard() {
+  const [logs, setLogs] = useState([]);
+  const [keyword, setKeyword] = useState('');
+  const [csrId, setCsrId] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+
+  const fetchLogs = async () => {
+    const params = new URLSearchParams();
+    if (keyword) params.append('keyword', keyword);
+    if (csrId) params.append('csr_id', csrId);
+    if (dateFrom) params.append('date_from', dateFrom);
+    if (dateTo) params.append('date_to', dateTo);
+
+    const res = await fetch(`/api/logs/agent?${params.toString()}`);
+    const data = await res.json();
+    setLogs(data);
+  };
+
+  useEffect(() => {
+    fetchLogs();
+  }, []);
+
+  return (
+    <div className="p-6 max-w-6xl mx-auto space-y-4">
+      <h2 className="text-2xl font-bold text-blue-800">📊 Study Design Agent Logs</h2>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pb-4">
+        <Input value={keyword} onChange={(e) => setKeyword(e.target.value)} placeholder="🔍 Keyword" />
+        <Input value={csrId} onChange={(e) => setCsrId(e.target.value)} placeholder="🔎 CSR ID" />
+        <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} placeholder="From" />
+        <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} placeholder="To" />
+      </div>
+
+      <Button onClick={fetchLogs} className="mb-4 bg-blue-600 text-white hover:bg-blue-700">Apply Filters</Button>
+
+      <div className="space-y-4">
+        {logs.map((entry, i) => (
+          <Card key={i} className="border border-gray-200">
+            <CardContent className="space-y-2">
+              <p className="text-sm text-gray-600">🕒 {new Date(entry.timestamp).toLocaleString()}</p>
+              <p className="text-sm text-blue-700 font-medium">🧑‍💬 Question:</p>
+              <p className="text-sm bg-blue-50 p-2 rounded border text-gray-800 whitespace-pre-wrap">{entry.message}</p>
+              {entry.csr_ids?.length > 0 && (
+                <p className="text-sm text-gray-600 italic">CSR Context: {entry.csr_ids.join(', ')}</p>
+              )}
+              <p className="text-sm text-green-700 font-medium">🤖 Response:</p>
+              <p className="text-sm bg-green-50 p-2 rounded border whitespace-pre-wrap">{entry.response}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
