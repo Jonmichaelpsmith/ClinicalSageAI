@@ -5,9 +5,18 @@
  * Health Canada trial count reaches 4000.
  */
 
-const { run50TrialBatch } = require('./import_50_trial_batch');
-const { Pool } = require('pg');
-require('dotenv').config();
+import { run50TrialBatch } from './import_50_trial_batch.js';
+import { Pool } from 'pg';
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+// Initialize dotenv
+dotenv.config();
+
+// Get directory name for ES module
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Health Canada region identifier
 const HC_REGION = 'Health Canada';
@@ -87,12 +96,13 @@ async function runUntilTarget() {
   }
 }
 
-// Execute if run directly
-if (require.main === module) {
+// Execute if this is the main module
+if (import.meta.url === `file://${process.argv[1]}`) {
   runUntilTarget().catch(err => {
     console.error('Unhandled error in batch import process:', err);
     process.exit(1);
   });
 }
 
-module.exports = { runUntilTarget };
+// Export the function
+export { runUntilTarget };
