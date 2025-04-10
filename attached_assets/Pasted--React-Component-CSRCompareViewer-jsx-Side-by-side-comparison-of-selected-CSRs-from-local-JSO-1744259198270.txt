@@ -1,0 +1,57 @@
+// React Component: CSRCompareViewer.jsx
+// Side-by-side comparison of selected CSRs from local JSON data
+
+import { useEffect, useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+
+export default function CSRCompareViewer({ selectedIds = [] }) {
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    const fetchCSRs = async () => {
+      const loaded = await Promise.all(
+        selectedIds.map(async (id) => {
+          const res = await fetch(`/data/processed_csrs/${id}.json`);
+          const json = await res.json();
+          return { id, ...json };
+        })
+      );
+      setData(loaded);
+    };
+    if (selectedIds.length) fetchCSRs();
+  }, [selectedIds]);
+
+  const renderField = (label, key) => (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
+      <strong className="col-span-1">{label}</strong>
+      {data.map((d) => (
+        <div key={d.id + key} className="bg-gray-100 p-2 rounded">
+          {Array.isArray(d[key]) ? d[key].join(', ') : d[key] || '—'}
+        </div>
+      ))}
+    </div>
+  );
+
+  if (!data.length) return <p className="text-gray-500">Select trials to compare.</p>;
+
+  return (
+    <div className="space-y-4">
+      <Card>
+        <CardContent className="space-y-2">
+          <h3 className="text-lg font-bold">📊 Compare Clinical Study Reports</h3>
+          {renderField('CSR ID', 'csr_id')}
+          {renderField('Title', 'title')}
+          {renderField('Indication', 'indication')}
+          {renderField('Phase', 'phase')}
+          {renderField('Arms', 'arms')}
+          {renderField('Primary Endpoints', 'primary_endpoints')}
+          {renderField('Secondary Endpoints', 'secondary_endpoints')}
+          {renderField('Sample Size', 'sample_size')}
+          {renderField('Outcome Summary', 'outcome_summary')}
+          {renderField('Adverse Events', 'adverse_events')}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
