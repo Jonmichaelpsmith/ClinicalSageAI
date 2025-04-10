@@ -1,20 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import HeatMap from 'react-heatmap-grid';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { HeatMapGrid } from 'react-grid-heatmap';
 import { Loader2 } from 'lucide-react';
 
 interface EndpointData {
-  phase: string;
   indication: string;
-  endpoint: string;
+  phase: string;
+  type: string; // 'Primary' or 'Secondary'
   count: number;
-}
-
-interface HeatmapData {
-  phases: string[];
-  indications: string[];
-  data: number[][];
-  endpointNames: string[][];
+  per100: number;
 }
 
 interface EndpointFrequencyHeatmapProps {
@@ -24,18 +19,18 @@ interface EndpointFrequencyHeatmapProps {
 
 export default function EndpointFrequencyHeatmap({ indication, phase }: EndpointFrequencyHeatmapProps) {
   const [loading, setLoading] = useState(true);
-  const [heatmapData, setHeatmapData] = useState<HeatmapData>({
-    phases: [],
-    indications: [],
-    data: [],
-    endpointNames: []
-  });
+  const [heatmapData, setHeatmapData] = useState<number[][]>([]);
+  const [phases, setPhases] = useState<string[]>([]);
+  const [indications, setIndications] = useState<string[]>([]);
+  const [viewType, setViewType] = useState('per100'); // 'per100' or 'raw'
+  const [endpointType, setEndpointType] = useState('All'); // 'Primary', 'Secondary', 'All'
+  const [rawData, setRawData] = useState<EndpointData[]>([]);
 
   useEffect(() => {
-    const fetchHeatmapData = async () => {
+    const fetchHeatmap = async () => {
       setLoading(true);
       try {
-        // In a real implementation, this would include query params for indication and phase
+        // Build URL with query parameters if provided
         const url = new URL('/api/endpoint/frequency-heatmap', window.location.origin);
         if (indication) url.searchParams.append('indication', indication);
         if (phase) url.searchParams.append('phase', phase);
@@ -43,125 +38,64 @@ export default function EndpointFrequencyHeatmap({ indication, phase }: Endpoint
         const response = await fetch(url.toString());
         const data: EndpointData[] = await response.json();
         
-        // Process the data for the heatmap
-        const uniquePhases = [...new Set(data.map(row => row.phase))].sort();
-        const uniqueIndications = [...new Set(data.map(row => row.indication))].sort();
+        // Store raw data for filtering later
+        setRawData(data);
         
-        // Build frequency matrix
-        const matrix: number[][] = [];
-        const endpointMatrix: string[][] = [];
-        
-        uniqueIndications.forEach((ind, i) => {
-          matrix[i] = [];
-          endpointMatrix[i] = [];
-          
-          uniquePhases.forEach((ph, j) => {
-            // Find all entries for this phase and indication
-            const entries = data.filter(d => d.phase === ph && d.indication === ind);
-            const totalCount = entries.reduce((sum, entry) => sum + entry.count, 0);
-            matrix[i][j] = totalCount;
-            
-            // Get the most common endpoint name for this combination
-            if (entries.length > 0) {
-              const mostCommonEndpoint = entries.reduce((prev, current) => 
-                prev.count > current.count ? prev : current
-              );
-              endpointMatrix[i][j] = mostCommonEndpoint.endpoint;
-            } else {
-              endpointMatrix[i][j] = 'N/A';
-            }
-          });
-        });
-        
-        setHeatmapData({
-          phases: uniquePhases,
-          indications: uniqueIndications,
-          data: matrix,
-          endpointNames: endpointMatrix
-        });
-        
+        // Process the data based on current filters
+        processData(data);
       } catch (error) {
         console.error("Error fetching heatmap data:", error);
-        // Fallback to sample data if API fails
-        const sampleData = generateSampleHeatmapData();
-        setHeatmapData(sampleData);
-      } finally {
         setLoading(false);
       }
     };
     
-    fetchHeatmapData();
+    fetchHeatmap();
   }, [indication, phase]);
 
-  // Function to generate sample heatmap data as fallback
-  const generateSampleHeatmapData = (): HeatmapData => {
-    // Default phases and indications
-    const phases = ['Phase 1', 'Phase 2', 'Phase 3', 'Phase 4'];
-    const indications = [
-      'Oncology', 
-      'Cardiovascular', 
-      'Neurology', 
-      'Immunology', 
-      'Infectious Disease',
-      'Metabolic Disorders'
-    ];
+  // Process data when filter settings change
+  useEffect(() => {
+    if (rawData.length > 0) {
+      processData(rawData);
+    }
+  }, [viewType, endpointType, rawData]);
 
-    // Common endpoints by indication
-    const endpointsByIndication: Record<string, string[]> = {
-      'Oncology': ['Overall Survival', 'Progression-Free Survival', 'Objective Response Rate'],
-      'Cardiovascular': ['MACE', 'Blood Pressure Change', 'Exercise Capacity'],
-      'Neurology': ['EDSS Score', 'Relapse Rate', 'Cognitive Function'],
-      'Immunology': ['ACR20/50/70', 'DAS28', 'Joint Pain Score'],
-      'Infectious Disease': ['Viral Load', 'Pathogen Clearance', 'Symptom Resolution'],
-      'Metabolic Disorders': ['HbA1c Change', 'Fasting Glucose', 'Body Weight']
-    };
+  const processData = (data: EndpointData[]) => {
+    // Filter by endpoint type if specified
+    const filtered = data.filter(row => 
+      endpointType === 'All' || row.type === endpointType
+    );
 
-    // Generate frequency data and endpoint names
-    const data: number[][] = [];
-    const endpointNames: string[][] = [];
-
-    indications.forEach((ind, i) => {
-      data[i] = [];
-      endpointNames[i] = [];
-      
-      phases.forEach((ph, j) => {
-        // Create sample distribution with higher counts in Phase 2 & 3
-        let count = 10; // base count
+    // Extract unique phases and indications
+    const uniquePhases = [...new Set(filtered.map(row => row.phase))].sort();
+    const uniqueIndications = [...new Set(filtered.map(row => row.indication))].sort();
+    
+    // Build matrix based on the selected view type
+    const matrix = uniqueIndications.map(indication =>
+      uniquePhases.map(phase => {
+        const rows = filtered.filter(d => d.phase === phase && d.indication === indication);
+        if (rows.length === 0) return 0;
         
-        // Phase-based adjustments
-        if (ph === 'Phase 1') count += 5;
-        else if (ph === 'Phase 2') count += 25;
-        else if (ph === 'Phase 3') count += 30;
-        else if (ph === 'Phase 4') count += 15;
-        
-        // Indication-based adjustments
-        if (ind === 'Oncology' || ind === 'Cardiovascular') count += 10;
-        
-        // Filters based on user selection
-        if (indication && ind === indication) count += 15;
-        if (phase && ph === phase) count += 15;
-        
-        data[i][j] = count;
-        
-        // Assign endpoint name
-        const possibleEndpoints = endpointsByIndication[ind] || ['Generic Endpoint'];
-        const endpointIndex = Math.floor((i + j) % possibleEndpoints.length);
-        endpointNames[i][j] = possibleEndpoints[endpointIndex];
-      });
-    });
-
-    return {
-      phases,
-      indications,
-      data,
-      endpointNames
-    };
+        // Sum up values based on view type
+        if (viewType === 'per100') {
+          // Average the per100 values for all matching rows
+          return rows.reduce((sum, row) => sum + row.per100, 0) / rows.length;
+        } else {
+          // Sum the raw counts
+          return rows.reduce((sum, row) => sum + row.count, 0);
+        }
+      })
+    );
+    
+    setPhases(uniquePhases);
+    setIndications(uniqueIndications);
+    setHeatmapData(matrix);
+    setLoading(false);
   };
 
-  // Find the maximum value to normalize the heatmap
-  const maxValue = heatmapData.data.length > 0 
-    ? Math.max(...heatmapData.data.flatMap(row => row))
-    : 100;
+  // Find the maximum value to normalize the heatmap colors
+  const maxValue = heatmapData.length > 0 
+    ? Math.max(...heatmapData.flatMap(row => row))
+    : viewType === 'per100' ? 100 : 50;
 
   if (loading) {
     return (
@@ -176,51 +110,96 @@ export default function EndpointFrequencyHeatmap({ indication, phase }: Endpoint
       <CardHeader>
         <CardTitle className="text-lg">Endpoint Frequency Heatmap</CardTitle>
         <CardDescription>
-          Visualizing endpoint usage frequency across phases and indications
+          Visualizing endpoint usage across phases and indications
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="w-full h-[400px]">
-          <HeatMapGrid
-            data={heatmapData.data}
-            xLabels={heatmapData.phases}
-            yLabels={heatmapData.indications}
-            cellStyle={(x, y, value) => {
-              // Normalize the value relative to the maximum
-              const ratio = maxValue > 0 ? value / maxValue : 0;
-              return {
-                background: `rgba(66, 145, 245, ${ratio})`,
-                fontSize: '12px',
-                color: ratio > 0.5 ? '#fff' : '#000'
-              };
-            }}
-            cellRender={(x, y, value) => (
-              <div 
-                className="w-full h-full flex items-center justify-center p-2" 
-                title={`${heatmapData.endpointNames[y][x]}: ${value} trials`}
-              >
-                {value}
-              </div>
-            )}
-            xLabelsStyle={() => ({
-              fontSize: '12px',
-              fontWeight: 'bold',
-              textTransform: 'uppercase',
-              color: '#666'
-            })}
-            yLabelsStyle={() => ({
-              fontSize: '12px',
-              fontWeight: 'bold',
-              textTransform: 'uppercase',
-              color: '#666',
-              paddingRight: '10px'
-            })}
-            square
-          />
+        <div className="flex items-center gap-4 mb-4">
+          <Button 
+            onClick={() => setViewType(viewType === 'per100' ? 'raw' : 'per100')}
+            variant="outline"
+            className={viewType === 'per100' ? "bg-blue-100" : ""}
+          >
+            {viewType === 'per100' ? '✓ Per 100 Trials' : 'Raw Count'}
+          </Button>
+          <Button 
+            onClick={() => setEndpointType('All')}
+            variant="outline"
+            className={endpointType === 'All' ? "bg-blue-100" : ""}
+          >
+            All Endpoints
+          </Button>
+          <Button 
+            onClick={() => setEndpointType('Primary')}
+            variant="outline"
+            className={endpointType === 'Primary' ? "bg-blue-100" : ""}
+          >
+            Primary Only
+          </Button>
+          <Button 
+            onClick={() => setEndpointType('Secondary')}
+            variant="outline"
+            className={endpointType === 'Secondary' ? "bg-blue-100" : ""}
+          >
+            Secondary Only
+          </Button>
         </div>
+
+        {heatmapData.length > 0 ? (
+          <div className="w-full overflow-x-auto">
+            <HeatMap
+              xLabels={phases}
+              yLabels={indications}
+              data={heatmapData}
+              squares
+              cellStyle={(background, value) => {
+                // Normalize color intensity based on view type
+                const normalizedValue = viewType === 'per100' 
+                  ? Math.min(value / 100, 1) 
+                  : Math.min(value / maxValue, 1);
+                
+                return {
+                  background: `rgba(66, 90, 245, ${normalizedValue})`,
+                  fontSize: '12px',
+                  color: normalizedValue > 0.5 ? '#fff' : '#000',
+                  padding: '8px',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                };
+              }}
+              cellRender={value => (
+                <div>
+                  {viewType === 'per100' 
+                    ? value.toFixed(1) 
+                    : value.toFixed(0)}
+                </div>
+              )}
+              xLabelsStyle={() => ({
+                fontSize: '12px',
+                fontWeight: 'bold',
+                textTransform: 'uppercase',
+                color: '#666'
+              })}
+              yLabelsStyle={() => ({
+                fontSize: '12px',
+                fontWeight: 'bold',
+                textTransform: 'uppercase',
+                color: '#666',
+                paddingRight: '10px'
+              })}
+            />
+          </div>
+        ) : (
+          <div className="h-[300px] flex items-center justify-center text-gray-500 italic">
+            No data available for the selected filters
+          </div>
+        )}
+        
         <div className="mt-4 text-sm text-gray-500">
-          <p>Hover over cells to see the most common endpoint and trial count for that phase and indication.</p>
-          <p>Darker blue indicates higher frequency of endpoint usage in clinical trials.</p>
+          <p className="font-semibold">Understanding the visualization:</p>
+          <p>• {viewType === 'per100' ? 'Values show endpoint frequency per 100 trials' : 'Values show raw count of endpoints'}</p>
+          <p>• Currently showing: {endpointType === 'All' ? 'All endpoint types' : `${endpointType} endpoints only`}</p>
+          <p>• Darker blue indicates higher frequency</p>
         </div>
       </CardContent>
     </Card>
