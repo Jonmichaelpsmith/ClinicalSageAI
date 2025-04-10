@@ -33,6 +33,7 @@ import AgentLogDashboard from "@/pages/AgentLogDashboard";
 import SimpleEndpointRecommender from "@/pages/SimpleEndpointRecommender";
 import EndpointDesigner from "@/pages/EndpointDesigner.jsx";
 import AcademicKnowledgeDemo from "@/pages/AcademicKnowledgeDemo";
+import CompetitiveIntelligence from "@/pages/CompetitiveIntelligence";
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
