@@ -1408,6 +1408,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Strategic analysis and recommendation engine API
+  app.post('/api/strategy/analyze', async (req: Request, res: Response) => {
+    try {
+      const { protocolSummary, indication, phase, sponsor } = req.body;
+      
+      if (!protocolSummary) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Protocol summary is required' 
+        });
+      }
+      
+      // Import the strategy analyzer service
+      const { generateStrategyAnalysis } = await import('./strategy-analyzer-service');
+      
+      // Generate strategic recommendations
+      const analysisResult = await generateStrategyAnalysis({
+        protocolSummary,
+        indication,
+        phase,
+        sponsor
+      });
+      
+      res.json({
+        success: true,
+        analysisResult
+      });
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+  
+  // Get competitor analysis data
+  app.get('/api/analytics/competitors', async (req: Request, res: Response) => {
+    try {
+      const { sponsor } = req.query;
+      
+      if (!sponsor) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Sponsor parameter is required' 
+        });
+      }
+      
+      const competitorData = await analyzeCompetitorsForSponsor(sponsor as string);
+      
+      res.json({
+        success: true,
+        competitorData
+      });
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+
   // Get failed trial analytics data for the Real-World Fail Map
   app.get('/api/analytics/failed-trials', async (req: Request, res: Response) => {
     try {

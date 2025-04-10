@@ -1,0 +1,60 @@
+import { useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+
+export default function CompetitiveIntelligence({ protocol }: { protocol: string }) {
+  const [indication, setIndication] = useState('');
+  const [phase, setPhase] = useState('');
+  const [comparator, setComparator] = useState('');
+  const [report, setReport] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const runAnalysis = async () => {
+    setLoading(true);
+    const res = await fetch('/api/intelligence/deep-compare', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        protocol_summary: protocol,
+        indication,
+        phase,
+        comparator_drug: comparator,
+        context_csrs: [],        // plug in top 3 CSR summaries
+        context_ctgov: [],       // plug in CTGov summaries
+        pubmed_signals: []       // plug in biomarker trends
+      })
+    });
+    const data = await res.json();
+    setReport(data.report);
+    setLoading(false);
+  };
+
+  return (
+    <div className="space-y-6 p-4">
+      <h2 className="text-xl font-bold text-blue-900">🔍 Competitive Intelligence Report</h2>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <Input placeholder="Indication (e.g. Obesity)" value={indication} onChange={(e) => setIndication(e.target.value)} />
+        <Input placeholder="Phase (e.g. Phase 2)" value={phase} onChange={(e) => setPhase(e.target.value)} />
+        <Input placeholder="Comparator drug (optional)" value={comparator} onChange={(e) => setComparator(e.target.value)} />
+      </div>
+
+      <Textarea readOnly className="min-h-[100px]" value={protocol} />
+
+      <Button onClick={runAnalysis} disabled={loading} className="bg-blue-700 text-white">
+        {loading ? 'Analyzing...' : 'Generate Competitive Strategy'}
+      </Button>
+
+      {report && (
+        <Card className="border-green-800">
+          <CardContent className="space-y-3 mt-4">
+            <p className="text-sm font-semibold text-green-700">✅ Strategic Report:</p>
+            <p className="whitespace-pre-wrap text-sm">{report}</p>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
