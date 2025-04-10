@@ -23,6 +23,7 @@ import ApiDocumentation from "./pages/ApiDocumentation";
 import LumenBioDashboard from "@/pages/LumenBioDashboard";
 import LumenBioReport from "@/pages/LumenBioReport";
 import ClientIntelligence from "@/pages/ClientIntelligence";
+import DossierUploader from "@/pages/DossierUploader";
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -101,7 +102,8 @@ function Router() {
       <Route path="/api" component={ApiDocumentation} />
       <Route path="/lumen-bio/dashboard">{() => renderWithLayout(LumenBioDashboard)}</Route>
       <Route path="/reports/lumen-bio">{() => renderWithLayout(LumenBioReport)}</Route>
-      <Route path="/client-intelligence" component={ClientIntelligence} /> {/* Added Route */}
+      <Route path="/client-intelligence" component={ClientIntelligence} />
+      <Route path="/dossier-request">{() => renderWithLayout(DossierUploader)}</Route>
 
       {/* Fallback to 404 */}
       <Route>{() => renderWithLayout(NotFound)}</Route>

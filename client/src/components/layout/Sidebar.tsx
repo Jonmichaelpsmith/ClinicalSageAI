@@ -16,7 +16,9 @@ import {
   Database,
   FileSymlink,
   Microscope,
-  Building2
+  Building2,
+  FileCheck,
+  Briefcase
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
