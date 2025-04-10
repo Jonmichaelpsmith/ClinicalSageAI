@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1689",
+  "title": "A  Double-Blind, Active-Controlled Multi-Center Study of DRM-581 (IL-17 inhibitor) in Patients With Crohn's Disease",
+  "officialTitle": "A  Double-Blind, Active-Controlled Multi-Center Study of DRM-581 (IL-17 inhibitor) in Patients With Crohn's Disease",
+  "sponsor": "Vancouver Coastal Health Research Institute",
+  "indication": "Crohn's Disease",
+  "phase": "Phase 1",
+  "fileName": "HC-1689.json",
+  "fileSize": 160356,
+  "date": "2024-04-15",
+  "completionDate": "2027-12-08",
+  "drugName": "DRM-581 (IL-17 inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Terminated",
+  "description": "This is a  double-blind, active-controlled multi-center study designed to evaluate the efficacy and safety of DRM-581 (IL-17 inhibitor) in patients with Crohn's Disease. The study will enroll approximately 148 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 21-63 years\n- Confirmed diagnosis of Crohn's Disease\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}
