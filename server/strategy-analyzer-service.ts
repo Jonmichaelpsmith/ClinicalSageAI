@@ -1,7 +1,7 @@
 import { db } from './db';
 import { eq, like, desc } from 'drizzle-orm';
-import { csrReports, csrReportDetails } from '@shared/schema';
-import { getHuggingFaceService } from './huggingface-service';
+import { csrReports, csrDetails } from '@shared/schema';
+import { huggingFaceService } from './huggingface-service';
 
 interface StrategyAnalysisParams {
   protocolSummary: string;
@@ -25,7 +25,7 @@ interface TrialContextItem {
 export async function generateStrategyAnalysis(params: StrategyAnalysisParams) {
   try {
     // 1. Get HuggingFace service for AI generation
-    const hfService = getHuggingFaceService();
+    const hfService = huggingFaceService;
     
     // 2. Gather context from similar CSRs
     const csrContext = await getRelevantCSRContext(params);
@@ -35,7 +35,7 @@ export async function generateStrategyAnalysis(params: StrategyAnalysisParams) {
     
     // 4. Generate the strategic analysis
     const prompt = createStrategyPrompt(params.protocolSummary, csrContext, ctgovContext);
-    const analysisResult = await hfService.generateText(prompt);
+    const analysisResult = await hfService.queryHuggingFace(prompt);
     
     // 5. Structure the response
     return structureStrategyResponse(analysisResult, csrContext, ctgovContext);
@@ -75,8 +75,8 @@ async function getRelevantCSRContext(params: StrategyAnalysisParams): Promise<Tr
   const reportDetails = await Promise.all(
     reports.map(async (report) => {
       const [details] = await db.select()
-        .from(csrReportDetails)
-        .where(eq(csrReportDetails.reportId, report.id));
+        .from(csrDetails)
+        .where(eq(csrDetails.reportId, report.id));
       
       return {
         id: report.id,
