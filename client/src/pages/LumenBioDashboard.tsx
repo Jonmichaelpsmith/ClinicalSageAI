@@ -76,6 +76,22 @@ export default function LumenBioDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left column (wider) */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Obesity Study Protocol (WT02) */}
+            <Card className="mb-6">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center">
+                  <Weight className="h-5 w-5 text-indigo-600 mr-2" />
+                  Obesity Program - Protocol WT02
+                </CardTitle>
+                <CardDescription>
+                  Active protocol for LMN-0801 dose-ranging POC study in obesity
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ObesityStudyProtocol />
+              </CardContent>
+            </Card>
+            
             {/* Pipeline Report */}
             <Card>
               <CardHeader className="pb-2">
