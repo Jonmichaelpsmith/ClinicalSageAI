@@ -135,7 +135,7 @@ const Dashboard = () => {
                     <p className="text-sm text-gray-500">Ensure alignment with agency expectations</p>
                   </div>
                 </div>
-                <Button variant="outline" className="w-full" onClick={() => navigate("/protocol-designer")}>
+                <Button variant="outline" className="w-full" onClick={() => navigate("/protocol-generator")}>
                   Create Protocol
                 </Button>
               </div>
