@@ -2,6 +2,23 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import {
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell
+} from 'recharts';
 
 interface AgentLog {
   timestamp: string;
@@ -11,6 +28,12 @@ interface AgentLog {
   hasContext: boolean;
 }
 
+type TagsByLogIndex = Record<number, string[]>;
+type TimeSeriesData = Array<{ date: string; count: number; tag: string }>;
+
+// Helper to group logs by time period
+type TimeGrouping = 'day' | 'week' | 'month';
+
 export default function AgentLogDashboard() {
   const [logs, setLogs] = useState<AgentLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -19,6 +42,86 @@ export default function AgentLogDashboard() {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [endpointStats, setEndpointStats] = useState<Record<string, number>>({});
+  const [tagsByLog, setTagsByLog] = useState<TagsByLogIndex>({});
+  const [topTags, setTopTags] = useState<[string, number][]>([]);
+  const [timeSeriesData, setTimeSeriesData] = useState<TimeSeriesData>([]);
+  const [timeGrouping, setTimeGrouping] = useState<TimeGrouping>('week');
+  const [chartColors] = useState<string[]>([
+    '#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088fe',
+    '#00C49F', '#FFBB28', '#FF8042', '#9c27b0', '#f44336'
+  ]);
+
+  // Create a formatter for dates based on the selected grouping
+  const formatDate = (dateStr: string, grouping: TimeGrouping): string => {
+    const date = new Date(dateStr);
+    
+    if (grouping === 'day') {
+      return date.toISOString().substring(0, 10);
+    } else if (grouping === 'week') {
+      // Get the first day of the week (Sunday)
+      const firstDay = new Date(date);
+      const day = date.getDay();
+      firstDay.setDate(date.getDate() - day);
+      return firstDay.toISOString().substring(0, 10);
+    } else { // month
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    }
+  };
+
+  // Generate time series data for trending topics
+  const generateTimeSeriesData = (
+    logs: AgentLog[], 
+    tagsByLogIndex: TagsByLogIndex, 
+    topTags: [string, number][], 
+    grouping: TimeGrouping
+  ): TimeSeriesData => {
+    const timeSeriesMap = new Map<string, Map<string, number>>();
+    
+    // Initialize all dates for all top tags
+    topTags.forEach(([tag]) => {
+      logs.forEach((log, index) => {
+        const logTags = tagsByLogIndex[index] || [];
+        if (logTags.includes(tag)) {
+          const dateGroup = formatDate(log.timestamp, grouping);
+          
+          if (!timeSeriesMap.has(dateGroup)) {
+            timeSeriesMap.set(dateGroup, new Map<string, number>());
+          }
+          
+          const tagCounts = timeSeriesMap.get(dateGroup)!;
+          tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1);
+        }
+      });
+    });
+    
+    // Convert to array format for Recharts
+    const result: TimeSeriesData = [];
+    
+    // Sort dates chronologically
+    const sortedDates = Array.from(timeSeriesMap.keys()).sort();
+    
+    sortedDates.forEach(date => {
+      const tagCounts = timeSeriesMap.get(date)!;
+      
+      topTags.forEach(([tag]) => {
+        result.push({
+          date,
+          tag,
+          count: tagCounts.get(tag) || 0
+        });
+      });
+    });
+    
+    return result;
+  };
+  
+  // Format data for bar chart
+  const prepareBarChartData = (topTags: [string, number][]) => {
+    return topTags.map(([tag, count]) => ({
+      tag,
+      count
+    }));
+  };
 
   const fetchLogs = async () => {
     setIsLoading(true);
@@ -33,29 +136,85 @@ export default function AgentLogDashboard() {
       const data = await res.json();
       setLogs(data);
       
-      // Count endpoint mentions (simple frequency count based on response text)
+      // Setup for analysis
       const termMap: Record<string, number> = {};
+      const tagMap: TagsByLogIndex = {};
+      const tagCount: Record<string, number> = {};
+      
+      // Common endpoints, phases, and indications to detect
       const commonEndpoints = ['orr', 'pfs', 'os', 'hba1c', 'response rate', 'safety', 'ae', 
                               'efficacy', 'duration', 'progression', 'survival', 'dfs', 'recist'];
       
-      data.forEach((entry: AgentLog) => {
-        const response = entry.response.toLowerCase();
+      const phaseTerms = ['phase 1', 'phase 2', 'phase 3', 'phase i', 'phase ii', 'phase iii'];
+      
+      const indicationTerms = [
+        'oncology', 'cardiology', 'neurology', 'diabetes', 'immunology', 
+        'rheumatology', 'respiratory', 'gastroenterology', 'infectious disease',
+        'cancer', 'cardiac', 'neurological', 'metabolic', 'autoimmune'
+      ];
+      
+      data.forEach((entry: AgentLog, idx: number) => {
+        const combinedText = `${entry.message}\n${entry.response}`.toLowerCase();
+        const tags: string[] = [];
+        
+        // Detect endpoints
         commonEndpoints.forEach(term => {
-          if (response.includes(term)) {
+          if (combinedText.includes(term)) {
             termMap[term] = (termMap[term] || 0) + 1;
+            tags.push(term.toUpperCase());
           }
         });
+        
+        // Detect phases
+        phaseTerms.forEach(term => {
+          if (combinedText.includes(term)) {
+            const phaseTag = term.toUpperCase();
+            tags.push(phaseTag);
+          }
+        });
+        
+        // Detect indications
+        indicationTerms.forEach(term => {
+          if (combinedText.includes(term)) {
+            const indicationTag = term.toUpperCase();
+            tags.push(indicationTag);
+          }
+        });
+        
+        // Save tags for this log entry
+        if (tags.length > 0) {
+          // Deduplicate tags
+          const uniqueTags = [...new Set(tags)];
+          tagMap[idx] = uniqueTags;
+          
+          // Count tag frequency across all logs
+          uniqueTags.forEach(tag => {
+            tagCount[tag] = (tagCount[tag] || 0) + 1;
+          });
+        }
       });
       
-      // Sort by frequency (descending)
+      // Sort endpoint stats by frequency (descending)
       const sortedStats: Record<string, number> = {};
       Object.entries(termMap)
         .sort((a, b) => b[1] - a[1])
         .forEach(([key, value]) => {
           sortedStats[key] = value;
         });
+      
+      // Get top 5 trending tags
+      const sortedTags = Object.entries(tagCount)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
         
       setEndpointStats(sortedStats);
+      setTagsByLog(tagMap);
+      setTopTags(sortedTags);
+      
+      // Generate time series data for trending tag visualization
+      const timeData = generateTimeSeriesData(data, tagMap, sortedTags, timeGrouping);
+      setTimeSeriesData(timeData);
+      
     } catch (error) {
       console.error('Error fetching agent logs:', error);
     } finally {
@@ -63,13 +222,22 @@ export default function AgentLogDashboard() {
     }
   };
 
+  // Update time series when timeGrouping changes
+  useEffect(() => {
+    if (logs.length > 0 && Object.keys(tagsByLog).length > 0 && topTags.length > 0) {
+      const timeData = generateTimeSeriesData(logs, tagsByLog, topTags, timeGrouping);
+      setTimeSeriesData(timeData);
+    }
+  }, [timeGrouping]);
+
   const exportToCSV = () => {
-    const headers = ['timestamp', 'message', 'csr_ids', 'response'];
-    const rows = logs.map(log => [
+    const headers = ['timestamp', 'message', 'csr_ids', 'response', 'tags'];
+    const rows = logs.map((log, idx) => [
       new Date(log.timestamp).toISOString(),
       log.message.replace(/\n/g, ' ').replace(/"/g, '""'),
       log.csrIds?.join(', ') || '',
-      log.response.replace(/\n/g, ' ').replace(/"/g, '""')
+      log.response.replace(/\n/g, ' ').replace(/"/g, '""'),
+      tagsByLog[idx]?.join(', ') || ''
     ]);
 
     const csv = [headers.join(','), ...rows.map(row => row.map(val => `"${val}"`).join(','))].join('\n');
@@ -85,6 +253,38 @@ export default function AgentLogDashboard() {
   useEffect(() => {
     fetchLogs();
   }, []);
+
+  // Helper function to get badge color based on tag type
+  const getBadgeVariant = (tag: string) => {
+    if (tag.includes('PHASE')) return 'secondary';
+    if (['ONCOLOGY', 'CARDIOLOGY', 'NEUROLOGY', 'DIABETES', 'IMMUNOLOGY', 
+         'RHEUMATOLOGY', 'RESPIRATORY', 'GASTROENTEROLOGY', 'INFECTIOUS DISEASE',
+         'CANCER', 'CARDIAC', 'NEUROLOGICAL', 'METABOLIC', 'AUTOIMMUNE'].includes(tag)) {
+      return 'destructive';
+    }
+    return 'default';
+  };
+
+  // Prepare data for bar chart
+  const barChartData = prepareBarChartData(topTags);
+
+  // Restructure time series data for line chart by tag
+  const getLineChartData = () => {
+    const dateMap = new Map<string, Record<string, number>>();
+    
+    timeSeriesData.forEach(item => {
+      if (!dateMap.has(item.date)) {
+        dateMap.set(item.date, { date: item.date });
+      }
+      
+      const dateEntry = dateMap.get(item.date)!;
+      dateEntry[item.tag] = item.count;
+    });
+    
+    return Array.from(dateMap.values());
+  };
+
+  const lineChartData = getLineChartData();
 
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-4">
@@ -145,22 +345,224 @@ export default function AgentLogDashboard() {
         </div>
       )}
       
-      {/* Endpoint Stats */}
-      {Object.keys(endpointStats).length > 0 && (
-        <Card className="border border-gray-200 mb-4">
-          <CardContent className="pt-6">
-            <h4 className="text-md font-semibold text-green-800 mb-2">📈 Endpoint Mentions</h4>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
-              {Object.entries(endpointStats).map(([term, count], i) => (
-                <div key={i} className="text-sm text-gray-700 bg-green-50 p-2 rounded border">
-                  🔹 <span className="font-medium">{term.toUpperCase()}</span>: {count} mentions
+      {/* Analytics Tabs */}
+      {!isLoading && logs.length > 0 && (
+        <Tabs defaultValue="trends" className="w-full">
+          <TabsList className="mb-4">
+            <TabsTrigger value="trends">Trending Topics</TabsTrigger>
+            <TabsTrigger value="timeline">Time Analysis</TabsTrigger>
+            <TabsTrigger value="endpoints">Endpoint Mentions</TabsTrigger>
+          </TabsList>
+          
+          {/* Trending Topics Tab */}
+          <TabsContent value="trends" className="space-y-4">
+            {topTags.length > 0 && (
+              <Card className="border border-gray-200">
+                <CardContent className="pt-6">
+                  <h4 className="text-md font-semibold text-purple-800 mb-4">🔥 Top Trending Topics</h4>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Bar Chart */}
+                    <div className="min-h-[300px]">
+                      <ResponsiveContainer width="100%" height={300}>
+                        <BarChart
+                          data={barChartData}
+                          margin={{
+                            top: 5,
+                            right: 30,
+                            left: 20,
+                            bottom: 60,
+                          }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis 
+                            dataKey="tag" 
+                            angle={-45} 
+                            textAnchor="end"
+                            tick={{ fontSize: 12 }}
+                            height={70}
+                          />
+                          <YAxis />
+                          <Tooltip />
+                          <Legend />
+                          <Bar dataKey="count" name="Mentions" fill="#8884d8" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                    
+                    {/* Pie Chart */}
+                    <div className="min-h-[300px]">
+                      <ResponsiveContainer width="100%" height={300}>
+                        <PieChart>
+                          <Pie
+                            data={barChartData}
+                            dataKey="count"
+                            nameKey="tag"
+                            cx="50%"
+                            cy="50%"
+                            outerRadius={100}
+                            label={({tag, count, percent}) => 
+                              `${tag}: ${count} (${(percent * 100).toFixed(0)}%)`
+                            }
+                          >
+                            {barChartData.map((entry, index) => (
+                              <Cell 
+                                key={`cell-${index}`} 
+                                fill={chartColors[index % chartColors.length]} 
+                              />
+                            ))}
+                          </Pie>
+                          <Tooltip />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                  
+                  {/* Topic List */}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 mt-4">
+                    {topTags.map(([tag, count], i) => (
+                      <div key={i} className="text-sm text-gray-700 bg-purple-50 p-2 rounded border">
+                        <span className="font-medium">{tag}</span>: {count} mentions
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+          
+          {/* Time Analysis Tab */}
+          <TabsContent value="timeline" className="space-y-4">
+            <Card className="border border-gray-200">
+              <CardContent className="pt-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h4 className="text-md font-semibold text-blue-800">📅 Topic Trends Over Time</h4>
+                  
+                  <div className="flex gap-2">
+                    <Button 
+                      variant={timeGrouping === 'day' ? 'default' : 'outline'} 
+                      onClick={() => setTimeGrouping('day')}
+                      className="text-xs h-8"
+                    >
+                      Daily
+                    </Button>
+                    <Button 
+                      variant={timeGrouping === 'week' ? 'default' : 'outline'} 
+                      onClick={() => setTimeGrouping('week')}
+                      className="text-xs h-8"
+                    >
+                      Weekly
+                    </Button>
+                    <Button 
+                      variant={timeGrouping === 'month' ? 'default' : 'outline'} 
+                      onClick={() => setTimeGrouping('month')}
+                      className="text-xs h-8"
+                    >
+                      Monthly
+                    </Button>
+                  </div>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                
+                {/* Line chart for time trends */}
+                <div className="min-h-[400px]">
+                  <ResponsiveContainer width="100%" height={400}>
+                    <LineChart
+                      data={lineChartData}
+                      margin={{
+                        top: 5,
+                        right: 30,
+                        left: 20,
+                        bottom: 60,
+                      }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis 
+                        dataKey="date" 
+                        angle={-45} 
+                        textAnchor="end"
+                        tick={{ fontSize: 12 }}
+                        height={70}
+                      />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      {topTags.map(([tag], index) => (
+                        <Line
+                          key={tag}
+                          type="monotone"
+                          dataKey={tag}
+                          name={tag}
+                          stroke={chartColors[index % chartColors.length]}
+                          activeDot={{ r: 8 }}
+                        />
+                      ))}
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+                
+                <p className="text-xs text-gray-500 mt-2">
+                  This chart shows how frequently each topic appears in agent conversations over time, 
+                  grouped by {timeGrouping}. Use this to identify trends and shifts in user interests.
+                </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          {/* Endpoints Tab */}
+          <TabsContent value="endpoints" className="space-y-4">
+            <Card className="border border-gray-200">
+              <CardContent className="pt-6">
+                <h4 className="text-md font-semibold text-green-800 mb-4">📈 Endpoint Mentions</h4>
+                
+                {/* Horizontal bar chart for endpoints */}
+                <div className="min-h-[400px]">
+                  <ResponsiveContainer width="100%" height={400}>
+                    <BarChart
+                      data={Object.entries(endpointStats).map(([term, count]) => ({
+                        term: term.toUpperCase(),
+                        count
+                      }))}
+                      layout="vertical"
+                      margin={{
+                        top: 5,
+                        right: 30,
+                        left: 100,
+                        bottom: 5,
+                      }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis type="number" />
+                      <YAxis 
+                        dataKey="term" 
+                        type="category" 
+                        width={80}
+                        tick={{ fontSize: 12 }}
+                      />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="count" name="Mentions" fill="#82ca9d" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+                
+                {/* Endpoint list */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 mt-4">
+                  {Object.entries(endpointStats).map(([term, count], i) => (
+                    <div key={i} className="text-sm text-gray-700 bg-green-50 p-2 rounded border">
+                      🔹 <span className="font-medium">{term.toUpperCase()}</span>: {count} mentions
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       )}
 
+      {/* Log Entries */}
+      <h3 className="text-lg font-semibold text-gray-800 mt-6 mb-2">
+        Log Entries {logs.length > 0 ? `(${logs.length})` : ''}
+      </h3>
       <div className="space-y-4">
         {logs.map((entry, i) => (
           <Card key={i} className="border border-gray-200">
@@ -173,6 +575,17 @@ export default function AgentLogDashboard() {
               )}
               <p className="text-sm text-green-700 font-medium">🤖 Response:</p>
               <p className="text-sm bg-green-50 p-2 rounded border whitespace-pre-wrap">{entry.response}</p>
+              
+              {/* Tags */}
+              {tagsByLog[i] && (
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {tagsByLog[i].map((tag, idx) => (
+                    <Badge key={idx} variant={getBadgeVariant(tag)} className="text-xs">
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         ))}
