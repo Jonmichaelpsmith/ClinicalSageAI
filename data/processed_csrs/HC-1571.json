@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1571",
+  "title": "A Randomized Double-Blind, Active-Controlled Multi-Center Study of COL-735 (EGFR inhibitor) in Patients With Crohn's Disease",
+  "officialTitle": "A Randomized Double-Blind, Active-Controlled Multi-Center Study of COL-735 (EGFR inhibitor) in Patients With Crohn's Disease",
+  "sponsor": "McMaster University",
+  "indication": "Crohn's Disease",
+  "phase": "Phase 2",
+  "fileName": "HC-1571.json",
+  "fileSize": 414603,
+  "date": "2023-09-11",
+  "completionDate": "2026-06-28",
+  "drugName": "COL-735 (EGFR inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Terminated",
+  "description": "This is a randomized double-blind, active-controlled multi-center study designed to evaluate the efficacy and safety of COL-735 (EGFR inhibitor) in patients with Crohn's Disease. The study will enroll approximately 467 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 21-71 years\n- Confirmed diagnosis of Crohn's Disease\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}
