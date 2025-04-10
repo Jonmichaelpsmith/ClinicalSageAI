@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1342",
+  "title": "A  Double-Blind, Placebo-Controlled  Study of OPS-108 (bisphosphonate) in Patients With Osteoarthritis",
+  "officialTitle": "A  Double-Blind, Placebo-Controlled  Study of OPS-108 (bisphosphonate) in Patients With Osteoarthritis",
+  "sponsor": "Centre for Addiction and Mental Health",
+  "indication": "Osteoarthritis",
+  "phase": "Phase 3",
+  "fileName": "HC-1342.json",
+  "fileSize": 494066,
+  "date": "2025-03-08",
+  "completionDate": "2026-05-10",
+  "drugName": "OPS-108 (bisphosphonate)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Terminated",
+  "description": "This is a  double-blind, placebo-controlled  study designed to evaluate the efficacy and safety of OPS-108 (bisphosphonate) in patients with Osteoarthritis. The study will enroll approximately 100 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 21-68 years\n- Confirmed diagnosis of Osteoarthritis\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

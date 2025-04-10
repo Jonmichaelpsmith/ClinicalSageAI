@@ -40,7 +40,7 @@ export default function EndpointRecommender({
 
     setLoading(true);
     try {
-      const response = await apiRequest('POST', '/api/recommend-endpoints', {
+      const response = await apiRequest('POST', '/api/endpoint/recommend', {
         indication,
         phase: phase || 'Phase 2',
         count: 5

@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1377",
+  "title": "A Randomized Double-Blind, Placebo-Controlled Multi-Center Study of PSO-602 (phosphodiesterase-4 inhibitor) in Patients With Irritable Bowel Syndrome",
+  "officialTitle": "A Randomized Double-Blind, Placebo-Controlled Multi-Center Study of PSO-602 (phosphodiesterase-4 inhibitor) in Patients With Irritable Bowel Syndrome",
+  "sponsor": "Alberta Health Services",
+  "indication": "Irritable Bowel Syndrome",
+  "phase": "Phase 1/Phase 2",
+  "fileName": "HC-1377.json",
+  "fileSize": 302857,
+  "date": "2024-06-28",
+  "completionDate": "2028-08-16",
+  "drugName": "PSO-602 (phosphodiesterase-4 inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Not yet recruiting",
+  "description": "This is a randomized double-blind, placebo-controlled multi-center study designed to evaluate the efficacy and safety of PSO-602 (phosphodiesterase-4 inhibitor) in patients with Irritable Bowel Syndrome. The study will enroll approximately 548 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 23-69 years\n- Confirmed diagnosis of Irritable Bowel Syndrome\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

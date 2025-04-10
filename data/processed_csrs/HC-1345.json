@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1345",
+  "title": "A Randomized Open-Label, Active-Controlled  Study of HEM-779 (factor VIII gene therapy) in Patients With Irritable Bowel Syndrome",
+  "officialTitle": "A Randomized Open-Label, Active-Controlled  Study of HEM-779 (factor VIII gene therapy) in Patients With Irritable Bowel Syndrome",
+  "sponsor": "Health Canada Research Institute",
+  "indication": "Irritable Bowel Syndrome",
+  "phase": "Phase 2/Phase 3",
+  "fileName": "HC-1345.json",
+  "fileSize": 342435,
+  "date": "2024-09-28",
+  "completionDate": "2029-02-24",
+  "drugName": "HEM-779 (factor VIII gene therapy)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Not yet recruiting",
+  "description": "This is a randomized open-label, active-controlled  study designed to evaluate the efficacy and safety of HEM-779 (factor VIII gene therapy) in patients with Irritable Bowel Syndrome. The study will enroll approximately 174 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 22-80 years\n- Confirmed diagnosis of Irritable Bowel Syndrome\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}
