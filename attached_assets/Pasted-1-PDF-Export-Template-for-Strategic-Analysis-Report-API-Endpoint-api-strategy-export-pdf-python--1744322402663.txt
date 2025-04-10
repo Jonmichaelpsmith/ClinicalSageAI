@@ -1,0 +1,94 @@
+1. PDF Export Template for Strategic Analysis Report
+API Endpoint: /api/strategy/export-pdf
+
+python
+Copy
+Edit
+from fastapi import APIRouter, Body
+from fpdf import FPDF
+import time
+
+router = APIRouter()
+
+@router.post("/api/strategy/export-pdf")
+def export_strategy_pdf(report: str = Body(...), title: str = Body(...)):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", "B", 14)
+    pdf.cell(0, 10, title, ln=True)
+    pdf.ln(5)
+    pdf.set_font("Arial", size=11)
+    pdf.multi_cell(0, 8, report)
+
+    filename = f"/mnt/data/Strategic_Report_{int(time.time())}.pdf"
+    pdf.output(filename)
+    return {"download_url": filename}
+✅ 2. Frontend Button to Trigger PDF Download
+In CompetitiveIntelligence.tsx:
+
+tsx
+Copy
+Edit
+<Button
+  onClick={async () => {
+    const res = await fetch('/api/strategy/export-pdf', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        report,
+        title: 'TrialSage Strategic Intelligence Report'
+      })
+    });
+    const data = await res.json();
+    window.open(data.download_url, '_blank');
+  }}
+>
+  📄 Download Strategic Report as PDF
+</Button>
+✅ 3. Save to Dossier Integration
+API Endpoint: /api/dossier/save-strategy
+python
+Copy
+Edit
+@router.post("/api/dossier/save-strategy")
+def save_strategy_to_dossier(protocol_id: str = Body(...), strategy_text: str = Body(...)):
+    path = f"data/dossiers/{protocol_id}_strategy.json"
+    with open(path, "w") as f:
+        f.write(strategy_text)
+    return {"message": "Saved to dossier", "file": path}
+UI Button:
+tsx
+Copy
+Edit
+<Button
+  onClick={async () => {
+    await fetch('/api/dossier/save-strategy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        protocol_id: 'obesity-v1',
+        strategy_text: report
+      })
+    });
+    alert('Strategic analysis saved to dossier!');
+  }}
+>
+  💾 Save to Dossier
+</Button>
+✅ You now have:
+
+Instant PDF downloads of every competitive insight
+
+Seamless protocol-to-dossier linkage for traceability
+
+Board- and regulatory-ready output in one click
+
+Would you like a bundled “Strategic Board Summary” generator to combine protocol + stats + competitive analysis into a printable 1-pager?
+
+
+
+
+
+
+
+

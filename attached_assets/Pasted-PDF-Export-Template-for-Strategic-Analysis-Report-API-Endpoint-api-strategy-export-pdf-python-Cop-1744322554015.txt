@@ -1,0 +1,363 @@
+PDF Export Template for Strategic Analysis Report
+API Endpoint: /api/strategy/export-pdf
+
+python
+Copy
+Edit
+from fastapi import APIRouter, Body
+from fpdf import FPDF
+import time
+
+router = APIRouter()
+
+@router.post("/api/strategy/export-pdf")
+def export_strategy_pdf(report: str = Body(...), title: str = Body(...)):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", "B", 14)
+    pdf.cell(0, 10, title, ln=True)
+    pdf.ln(5)
+    pdf.set_font("Arial", size=11)
+    pdf.multi_cell(0, 8, report)
+
+    filename = f"/mnt/data/Strategic_Report_{int(time.time())}.pdf"
+    pdf.output(filename)
+    return {"download_url": filename}
+✅ 2. Frontend Button to Trigger PDF Download
+In CompetitiveIntelligence.tsx:
+
+tsx
+Copy
+Edit
+<Button
+  onClick={async () => {
+    const res = await fetch('/api/strategy/export-pdf', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        report,
+        title: 'TrialSage Strategic Intelligence Report'
+      })
+    });
+    const data = await res.json();
+    window.open(data.download_url, '_blank');
+  }}
+>
+  📄 Download Strategic Report as PDF
+</Button>
+✅ 3. Save to Dossier Integration
+API Endpoint: /api/dossier/save-strategy
+python
+Copy
+Edit
+@router.post("/api/dossier/save-strategy")
+def save_strategy_to_dossier(protocol_id: str = Body(...), strategy_text: str = Body(...)):
+    path = f"data/dossiers/{protocol_id}_strategy.json"
+    with open(path, "w") as f:
+        f.write(strategy_text)
+    return {"message": "Saved to dossier", "file": path}
+UI Button:
+tsx
+Copy
+Edit
+<Button
+  onClick={async () => {
+    await fetch('/api/dossier/save-strategy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        protocol_id: 'obesity-v1',
+        strategy_text: report
+      })
+    });
+    alert('Strategic analysis saved to dossier!');
+  }}
+>
+  💾 Save to Dossier
+</Button>
+✅ You now have:
+
+Instant PDF downloads of every competitive insight
+
+Seamless protocol-to-dossier linkage for traceability
+
+Board- and regulatory-ready output in one click
+
+Would you like a bundled “Strategic Board Summary” generator to combine protocol + stats + competitive analysis into a printable 1-pager?
+
+
+
+
+
+
+
+You said:
+yes
+
+
+ChatGPT said:
+
+Analysis errored
+python
+Always show details
+
+Copy
+from fpdf import FPDF
+import time
+
+# Sample strategic summary content placeholder
+protocol_summary = "A Phase 2 randomized, placebo-controlled trial evaluating BMI reduction in obese adults over 24 weeks."
+strategy_summary = "Your trial differs from 82% of historical Phase 2 obesity trials by using 'weight loss % at 12 weeks' as the primary endpoint. We recommend switching to 'BMI reduction ≥5%' at 24 weeks for better regulatory precedent."
+recommendations = [
+    "✅ Use BMI reduction as the primary endpoint.",
+    "✅ Extend treatment duration to 24 weeks.",
+    "✅ Justify endpoint selection using EMA obesity guidance.",
+    "✅ Include dropout mitigation language based on historical CSR patterns."
+]
+
+# Create PDF
+class PDF(FPDF):
+    def header(self):
+        self.set_font("Arial", "B", 14)
+        self.cell(0, 10, "TrialSage Strategic Summary", ln=True, align="C")
+        self.ln(5)
+
+    def section_title(self, title):
+        self.set_font("Arial", "B", 12)
+        self.set_text_color(33, 37, 41)
+        self.cell(0, 10, title, ln=True)
+        self.ln(2)
+
+    def section_body(self, body):
+        self.set_font("Arial", "", 11)
+        self.multi_cell(0, 8, body)
+        self.ln()
+
+pdf = PDF()
+pdf.add_page()
+
+pdf.section_title("🧪 Protocol Summary")
+pdf.section_body(protocol_summary)
+
+pdf.section_title("🔍 Strategic Analysis")
+pdf.section_body(strategy_summary)
+
+pdf.section_title("✅ AI-Powered Recommendations")
+for rec in recommendations:
+    pdf.section_body(rec)
+
+pdf_path = f"/mnt/data/TrialSage_Strategic_1Pager_{int(time.time())}.pdf"
+pdf.output(pdf_path)
+
+pdf_path
+
+Analysis errored
+python
+Always show details
+
+Copy
+from fpdf import FPDF
+import time
+
+# Sample strategic summary content placeholder
+protocol_summary = "A Phase 2 randomized, placebo-controlled trial evaluating BMI reduction in obese adults over 24 weeks."
+strategy_summary = "Your trial differs from 82% of historical Phase 2 obesity trials by using 'weight loss % at 12 weeks' as the primary endpoint. We recommend switching to 'BMI reduction ≥5%' at 24 weeks for better regulatory precedent."
+recommendations = [
+    "✅ Use BMI reduction as the primary endpoint.",
+    "✅ Extend treatment duration to 24 weeks.",
+    "✅ Justify endpoint selection using EMA obesity guidance.",
+    "✅ Include dropout mitigation language based on historical CSR patterns."
+]
+
+# Create PDF
+class PDF(FPDF):
+    def header(self):
+        self.set_font("Arial", "B", 14)
+        self.cell(0, 10, "TrialSage Strategic Summary", ln=True, align="C")
+        self.ln(5)
+
+    def section_title(self, title):
+        self.set_font("Arial", "B", 12)
+        self.set_text_color(33, 37, 41)
+        self.cell(0, 10, title, ln=True)
+        self.ln(2)
+
+    def section_body(self, body):
+        self.set_font("Arial", "", 11)
+        self.multi_cell(0, 8, body)
+        self.ln()
+
+pdf = PDF()
+pdf.add_page()
+
+pdf.section_title("🧪 Protocol Summary")
+pdf.section_body(protocol_summary)
+
+pdf.section_title("🔍 Strategic Analysis")
+pdf.section_body(strategy_summary)
+
+pdf.section_title("✅ AI-Powered Recommendations")
+for rec in recommendations:
+    pdf.section_body(rec)
+
+pdf_path = f"/mnt/data/TrialSage_Strategic_1Pager_{int(time.time())}.pdf"
+pdf.output(pdf_path)
+
+pdf_path
+---------------------------------------------------------------------------
+UnicodeEncodeError                        Traceback (most recent call last)
+Cell In[1], line 46
+     43     pdf.section_body(rec)
+     45 pdf_path = f"/mnt/data/TrialSage_Strategic_1Pager_{int(time.time())}.pdf"
+---> 46 pdf.output(pdf_path)
+     48 pdf_path
+
+File ~/.local/lib/python3.11/site-packages/fpdf/fpdf.py:1065, in FPDF.output(self, name, dest)
+   1063 #Finish document if necessary
+   1064 if(self.state<3):
+-> 1065     self.close()
+   1066 dest=dest.upper()
+   1067 if(dest==''):
+
+File ~/.local/lib/python3.11/site-packages/fpdf/fpdf.py:246, in FPDF.close(self)
+    244 self._endpage()
+    245 #close document
+--> 246 self._enddoc()
+
+File ~/.local/lib/python3.11/site-packages/fpdf/fpdf.py:1636, in FPDF._enddoc(self)
+   1634 def _enddoc(self):
+   1635     self._putheader()
+-> 1636     self._putpages()
+   1637     self._putresources()
+   1638     #Info
+
+File ~/.local/lib/python3.11/site-packages/fpdf/fpdf.py:1170, in FPDF._putpages(self)
+   1167 #Page content
+   1168 if self.compress:
+   1169     # manage binary data as latin1 until PEP461 or similar is implemented
+-> 1170     p = self.pages[n].encode("latin1") if PY3K else self.pages[n] 
+   1171     p = zlib.compress(p)
+   1172 else:
+
+UnicodeEncodeError: 'latin-1' codec can't encode character '\U0001f9ea' in position 148: ordinal not in range(256)
+
+Analysis errored
+python
+Always show details
+
+Copy
+# Retry: remove emojis and non-latin characters for PDF compatibility
+protocol_summary_clean = "A Phase 2 randomized, placebo-controlled trial evaluating BMI reduction in obese adults over 24 weeks."
+strategy_summary_clean = "Your trial differs from 82% of historical Phase 2 obesity trials by using 'weight loss % at 12 weeks' as the primary endpoint. We recommend switching to 'BMI reduction ≥5%' at 24 weeks for better regulatory precedent."
+recommendations_clean = [
+    "Use BMI reduction as the primary endpoint.",
+    "Extend treatment duration to 24 weeks.",
+    "Justify endpoint selection using EMA obesity guidance.",
+    "Include dropout mitigation language based on historical CSR patterns."
+]
+
+# Create PDF
+pdf = FPDF()
+pdf.add_page()
+pdf.set_font("Arial", "B", 14)
+pdf.cell(0, 10, "TrialSage Strategic Summary", ln=True, align="C")
+pdf.ln(5)
+
+pdf.set_font("Arial", "B", 12)
+pdf.cell(0, 10, "Protocol Summary", ln=True)
+pdf.set_font("Arial", "", 11)
+pdf.multi_cell(0, 8, protocol_summary_clean)
+pdf.ln()
+
+pdf.set_font("Arial", "B", 12)
+pdf.cell(0, 10, "Strategic Analysis", ln=True)
+pdf.set_font("Arial", "", 11)
+pdf.multi_cell(0, 8, strategy_summary_clean)
+pdf.ln()
+
+pdf.set_font("Arial", "B", 12)
+pdf.cell(0, 10, "AI-Powered Recommendations", ln=True)
+pdf.set_font("Arial", "", 11)
+for rec in recommendations_clean:
+    pdf.multi_cell(0, 8, f"- {rec}")
+
+pdf_path = f"/mnt/data/TrialSage_Strategic_1Pager.pdf"
+pdf.output(pdf_path)
+
+pdf_path
+---------------------------------------------------------------------------
+UnicodeEncodeError                        Traceback (most recent call last)
+Cell In[2], line 37
+     34     pdf.multi_cell(0, 8, f"- {rec}")
+     36 pdf_path = f"/mnt/data/TrialSage_Strategic_1Pager.pdf"
+---> 37 pdf.output(pdf_path)
+     39 pdf_path
+
+File ~/.local/lib/python3.11/site-packages/fpdf/fpdf.py:1065, in FPDF.output(self, name, dest)
+   1063 #Finish document if necessary
+   1064 if(self.state<3):
+-> 1065     self.close()
+   1066 dest=dest.upper()
+   1067 if(dest==''):
+
+File ~/.local/lib/python3.11/site-packages/fpdf/fpdf.py:246, in FPDF.close(self)
+    244 self._endpage()
+    245 #close document
+--> 246 self._enddoc()
+
+File ~/.local/lib/python3.11/site-packages/fpdf/fpdf.py:1636, in FPDF._enddoc(self)
+   1634 def _enddoc(self):
+   1635     self._putheader()
+-> 1636     self._putpages()
+   1637     self._putresources()
+   1638     #Info
+
+File ~/.local/lib/python3.11/site-packages/fpdf/fpdf.py:1170, in FPDF._putpages(self)
+   1167 #Page content
+   1168 if self.compress:
+   1169     # manage binary data as latin1 until PEP461 or similar is implemented
+-> 1170     p = self.pages[n].encode("latin1") if PY3K else self.pages[n] 
+   1171     p = zlib.compress(p)
+   1172 else:
+
+UnicodeEncodeError: 'latin-1' codec can't encode character '\u2265' in position 615: ordinal not in range(256)
+
+Analyzed
+python
+Always show details
+
+Copy
+# Replace ≥ with >= to avoid Unicode errors
+strategy_summary_clean = strategy_summary_clean.replace("≥", ">=")
+
+# Recreate and export PDF
+pdf = FPDF()
+pdf.add_page()
+pdf.set_font("Arial", "B", 14)
+pdf.cell(0, 10, "TrialSage Strategic Summary", ln=True, align="C")
+pdf.ln(5)
+
+pdf.set_font("Arial", "B", 12)
+pdf.cell(0, 10, "Protocol Summary", ln=True)
+pdf.set_font("Arial", "", 11)
+pdf.multi_cell(0, 8, protocol_summary_clean)
+pdf.ln()
+
+pdf.set_font("Arial", "B", 12)
+pdf.cell(0, 10, "Strategic Analysis", ln=True)
+pdf.set_font("Arial", "", 11)
+pdf.multi_cell(0, 8, strategy_summary_clean)
+pdf.ln()
+
+pdf.set_font("Arial", "B", 12)
+pdf.cell(0, 10, "AI-Powered Recommendations", ln=True)
+pdf.set_font("Arial", "", 11)
+for rec in recommendations_clean:
+    pdf.multi_cell(0, 8, f"- {rec}")
+
+pdf_path = f"/mnt/data/TrialSage_Strategic_1Pager.pdf"
+pdf.output(pdf_path)
+
+pdf_path
+Result
+'/mnt/data/TrialSage_Strategic_1Pager.pdf'

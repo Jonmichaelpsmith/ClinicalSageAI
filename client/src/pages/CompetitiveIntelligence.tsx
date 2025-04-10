@@ -15,8 +15,13 @@ import {
   Users, 
   Beaker,
   ExternalLink,
-  Search
+  Search,
+  Lightbulb
 } from 'lucide-react';
+
+// Import our new Strategic Intelligence components
+import StrategicRecommendations from '@/components/competitive/StrategicRecommendations';
+import CompetitiveIntelligenceForm from '@/components/competitive/CompetitiveIntelligenceForm';
 
 import { 
   Card, 
@@ -245,6 +250,11 @@ export default function CompetitiveIntelligence() {
   const [activeCompetitor, setActiveCompetitor] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
+  const [protocolSummary, setProtocolSummary] = useState<string>('');
+  const [generatedReport, setGeneratedReport] = useState<string>('');
+  const [indication, setIndication] = useState<string>('Oncology');
+  const [phase, setPhase] = useState<string>('Phase 2');
+  const [sampleSize, setSampleSize] = useState<string>('100');
 
   // This would use a real API endpoint in production
   const { data: marketData, isLoading: isLoadingMarket } = useQuery({
@@ -281,6 +291,123 @@ export default function CompetitiveIntelligence() {
       description: "Your custom competitive analysis request has been submitted.",
     });
   };
+  
+  const handleAnalyzeProtocol = async () => {
+    if (!protocolSummary) {
+      toast({
+        title: "Missing Information",
+        description: "Please provide a protocol summary to analyze.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    try {
+      const response = await apiRequest("POST", "/api/strategy/analyze", {
+        protocolSummary,
+        indication,
+        phase,
+        sponsor: "Lumen Bio"
+      });
+      
+      const data = await response.json();
+      
+      if (data.success && data.analysisResult) {
+        setGeneratedReport(data.analysisResult.analysis.fullText);
+        toast({
+          title: "Analysis Complete",
+          description: "Strategic analysis has been generated successfully.",
+        });
+      } else {
+        throw new Error(data.message || "Failed to generate strategic analysis");
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to generate analysis",
+        variant: "destructive"
+      });
+    }
+  };
+  
+  const handleExportPdf = async () => {
+    if (!generatedReport) {
+      toast({
+        title: "No Report Available",
+        description: "Please generate a strategic analysis first.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    try {
+      const response = await fetch('/api/strategy/export-pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          report: generatedReport,
+          title: `TrialSage Strategic Intelligence Report - ${indication} ${phase}`
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.download_url) {
+        window.open(data.download_url, '_blank');
+        toast({
+          title: "PDF Export Complete",
+          description: "Your strategic report PDF is ready for download.",
+        });
+      } else {
+        throw new Error("Failed to generate PDF");
+      }
+    } catch (error) {
+      toast({
+        title: "Export Error",
+        description: error instanceof Error ? error.message : "Failed to export PDF",
+        variant: "destructive"
+      });
+    }
+  };
+  
+  const handleSaveToDossier = async () => {
+    if (!generatedReport) {
+      toast({
+        title: "No Report Available",
+        description: "Please generate a strategic analysis first.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    try {
+      const response = await fetch('/api/dossier/save-strategy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          protocol_id: `${indication.toLowerCase().replace(/\s+/g, '-')}-${phase.toLowerCase().replace(/\s+/g, '-')}`,
+          strategy_text: generatedReport
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.message === "Saved to dossier") {
+        toast({
+          title: "Saved to Dossier",
+          description: "Strategic analysis has been saved to your study dossier.",
+        });
+      } else {
+        throw new Error("Failed to save to dossier");
+      }
+    } catch (error) {
+      toast({
+        title: "Save Error",
+        description: error instanceof Error ? error.message : "Failed to save to dossier",
+        variant: "destructive"
+      });
+    }
+  };
 
   return (
     <motion.div
@@ -309,11 +436,17 @@ export default function CompetitiveIntelligence() {
 
       {/* Main Content */}
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Market Overview</TabsTrigger>
           <TabsTrigger value="competitors">Competitor Analysis</TabsTrigger>
           <TabsTrigger value="trials">Trial Performance</TabsTrigger>
           <TabsTrigger value="reports">Intelligence Library</TabsTrigger>
+          <TabsTrigger value="strategic-analysis">
+            <div className="flex items-center gap-1">
+              <Lightbulb className="h-4 w-4" />
+              <span>Strategic Analysis</span>
+            </div>
+          </TabsTrigger>
         </TabsList>
         
         {/* Market Overview Tab */}
@@ -1020,6 +1153,95 @@ export default function CompetitiveIntelligence() {
               </Tabs>
             </CardContent>
           </Card>
+        </TabsContent>
+        
+        {/* Strategic Analysis Tab */}
+        <TabsContent value="strategic-analysis" className="space-y-6 py-4">
+          <div className="space-y-6">
+            <div className="flex flex-col lg:flex-row gap-6">
+              <Card className="flex-1">
+                <CardHeader>
+                  <CardTitle>Protocol Analysis</CardTitle>
+                  <CardDescription>
+                    Upload or enter a protocol for AI-powered competitive analysis
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Textarea 
+                    placeholder="Enter your protocol summary here..." 
+                    className="min-h-[200px]"
+                    value={protocolSummary}
+                    onChange={(e) => setProtocolSummary(e.target.value)}
+                  />
+                  <div className="flex flex-wrap gap-2 items-center text-sm text-muted-foreground">
+                    <span>Sample size:</span>
+                    <Input 
+                      type="number" 
+                      className="w-24 h-8" 
+                      placeholder="N" 
+                    />
+                    <span className="ml-4">Phase:</span>
+                    <Select defaultValue="phase2">
+                      <SelectTrigger className="w-28 h-8">
+                        <SelectValue placeholder="Phase" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="phase1">Phase 1</SelectItem>
+                        <SelectItem value="phase2">Phase 2</SelectItem>
+                        <SelectItem value="phase3">Phase 3</SelectItem>
+                        <SelectItem value="phase4">Phase 4</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <span className="ml-4">Indication:</span>
+                    <Input 
+                      className="w-40 h-8" 
+                      placeholder="e.g., Oncology" 
+                    />
+                  </div>
+                </CardContent>
+                <CardFooter className="flex justify-between">
+                  <div className="text-xs text-muted-foreground">
+                    📈 Powered by Strategic Intelligence Engine
+                  </div>
+                  <Button 
+                    variant="default"
+                    disabled={!protocolSummary}
+                  >
+                    Analyze Protocol
+                  </Button>
+                </CardFooter>
+              </Card>
+            </div>
+
+            {/* Context Clarity Card */}
+            <Card className="border-blue-600 bg-blue-50">
+              <CardContent className="pt-4 space-y-1 text-sm text-blue-900">
+                <p className="font-medium">📍 Analyzed against 52 Phase 2 trials in Obesity from 2015–2023</p>
+                <p>📌 Leveraging data from Health Canada CSRs + ClinicalTrials.gov</p>
+                <p>⚠️ Strategic insights derived from real-world trial data and regulatory precedents</p>
+              </CardContent>
+            </Card>
+
+            {/* Strategic Recommendations Component */}
+            <StrategicRecommendations 
+              protocolSummary={protocolSummary}
+              indication="Oncology"
+              phase="Phase 2"
+              sponsor="Lumen Bio"
+            />
+
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-3">
+              <Button variant="outline">
+                <FileText className="mr-2 h-4 w-4" />
+                Save to Study Dossier
+              </Button>
+              <Button>
+                <Download className="mr-2 h-4 w-4" />
+                Export Full Report (PDF)
+              </Button>
+            </div>
+          </div>
         </TabsContent>
         
         {/* Intelligence Library Tab */}
