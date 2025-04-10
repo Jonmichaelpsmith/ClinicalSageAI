@@ -18,6 +18,7 @@ import { csrTrainingService } from "./csr-training-service";
 import { processResearchQuery } from "./research-companion-service";
 import { optimizeProtocol } from "./protocol-optimizer-service";
 import { studyDesignAgentService } from "./agent-service";
+import { getEndpointRecommendations, type EndpointSearchParams } from "./services/endpoint-recommender-service";
 import { 
   fetchClinicalTrialData, 
   importTrialsFromCsv, 
@@ -710,6 +711,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Advanced Analytics API Endpoints
   
   // Get comprehensive analytics summary
+  // Endpoint Recommender API
+  app.post('/api/endpoint/recommend', async (req: Request, res: Response) => {
+    try {
+      const { indication, phase, keywords = '', therapeuticArea } = req.body;
+      
+      if (!indication || !phase) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Indication and phase are required' 
+        });
+      }
+      
+      // Get endpoint recommendations based on the provided parameters
+      const recommendations = await getEndpointRecommendations({
+        indication,
+        phase,
+        therapeuticArea
+      });
+      
+      // Convert to format expected by frontend
+      const formattedRecommendations = recommendations.endpoints.map(endpoint => ({
+        endpoint: endpoint.name,
+        summary: endpoint.description,
+        matchCount: endpoint.frequency,
+        successRate: endpoint.successRate || null,
+        reference: endpoint.reference || null
+      }));
+      
+      res.json(formattedRecommendations);
+    } catch (error) {
+      console.error('Error generating endpoint recommendations:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Error generating endpoint recommendations' 
+      });
+    }
+  });
+
   app.get('/api/analytics/summary', async (req: Request, res: Response) => {
     try {
       const summary = await generateAnalyticsSummary();
