@@ -11,11 +11,31 @@ import { users, chatConversations, chatMessages } from '../shared/schema';
 import { sql } from 'drizzle-orm';
 import fs from 'fs';
 import path from 'path';
-import { Json } from '@prisma/client/runtime/library';
 
 // Hugging Face API configuration
 const HF_API_URL = 'https://api-inference.huggingface.co/models';
 const HF_API_KEY = process.env.HF_API_KEY;
+
+// Export the service as a single object
+export const huggingFaceService = {
+  queryHuggingFace,
+  generateEmbeddings,
+  processImage,
+  createChatConversation,
+  addChatMessage,
+  getChatMessages,
+  getChatConversations,
+  processChatMessage,
+  deleteChatConversation,
+  trainCustomModel
+};
+
+// Model type enumeration
+export enum HFModel {
+  TEXT = 'mistralai/Mixtral-8x7B-Instruct-v0.1',
+  EMBEDDINGS = 'BAAI/bge-large-en-v1.5',
+  MULTIMODAL = 'llava-hf/llava-1.5-13b-hf'
+}
 
 // Default models
 const DEFAULT_TEXT_MODEL = 'mistralai/Mixtral-8x7B-Instruct-v0.1';

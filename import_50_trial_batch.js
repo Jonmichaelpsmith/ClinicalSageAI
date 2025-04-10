@@ -5,10 +5,19 @@
  * with proper progress tracking to continue where it left off.
  */
 
-const fs = require('fs');
-const path = require('path');
-const { Pool } = require('pg');
-require('dotenv').config();
+import fs from 'fs';
+import path from 'path';
+import { Pool } from 'pg';
+import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
+import { dirname } from 'path';
+
+// Initialize dotenv
+dotenv.config();
+
+// Get directory name for ES module
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Health Canada region identifier
 const HC_REGION = 'Health Canada';
@@ -385,8 +394,8 @@ async function run50TrialBatch() {
   }
 }
 
-// Execute if run directly
-if (require.main === module) {
+// Execute if this is the main module
+if (import.meta.url === `file://${process.argv[1]}`) {
   run50TrialBatch().then((result) => {
     if (result.success) {
       console.log(`Batch import completed successfully. Imported ${result.importedCount} trials.`);
@@ -400,4 +409,5 @@ if (require.main === module) {
   });
 }
 
-module.exports = { run50TrialBatch };
+// Export the batch function
+export { run50TrialBatch };
