@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, CompareIcon, X } from 'lucide-react';
+import { Loader2, GitCompareIcon, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -24,6 +24,8 @@ export default function CSRSearch() {
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchType, setSearchType] = useState<'regular' | 'fast'>('fast');
+  const [selectedCSRs, setSelectedCSRs] = useState<string[]>([]);
+  const [compareDialogOpen, setCompareDialogOpen] = useState(false);
   const { toast } = useToast();
 
   const handleSearch = async () => {
@@ -186,7 +188,60 @@ export default function CSRSearch() {
       </div>
 
       <div className="space-y-6">
-        <h2 className="text-2xl font-bold tracking-tight">Results</h2>
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-bold tracking-tight">Results</h2>
+          
+          {selectedCSRs.length > 0 && (
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-muted-foreground">
+                {selectedCSRs.length} selected
+              </span>
+              <Dialog open={compareDialogOpen} onOpenChange={setCompareDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button 
+                    size="sm" 
+                    disabled={selectedCSRs.length < 2} 
+                    onClick={() => setCompareDialogOpen(true)}
+                  >
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      className="h-4 w-4 mr-2" 
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="2" 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round"
+                    >
+                      <path d="M10 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h4"></path>
+                      <path d="M18 21h-4"></path>
+                      <path d="M14 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                      <path d="M18 9 22 12 18 15"></path>
+                      <path d="M6 15 2 12 6 9"></path>
+                      <path d="M2 12H22"></path>
+                    </svg>
+                    Compare CSRs
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-5xl">
+                  <CSRCompareViewer 
+                    selectedIds={selectedCSRs} 
+                    onClose={() => setCompareDialogOpen(false)} 
+                  />
+                </DialogContent>
+              </Dialog>
+              
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setSelectedCSRs([])}
+              >
+                <X className="h-4 w-4 mr-2" />
+                Clear
+              </Button>
+            </div>
+          )}
+        </div>
         
         {results.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
@@ -194,52 +249,104 @@ export default function CSRSearch() {
           </div>
         ) : (
           <div className="grid gap-4">
-            {results.map((result) => (
-              <Card key={result.csr_id}>
-                <CardContent className="p-6">
-                  <div className="flex flex-col space-y-3">
-                    <div className="flex justify-between items-start">
-                      <h3 className="text-xl font-semibold">{result.title}</h3>
-                      {result.similarity && (
-                        <Badge variant="outline" className="ml-2">
-                          Similarity: {(result.similarity * 100).toFixed(0)}%
-                        </Badge>
-                      )}
-                    </div>
+            {results.map((result) => {
+              const csrId = result.csr_id || result.id;
+              const isSelected = selectedCSRs.includes(csrId);
+              
+              return (
+                <Card key={csrId} className={isSelected ? "border-primary" : ""}>
+                  <CardContent className="p-6">
+                    <div className="flex flex-col space-y-3">
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-center gap-2">
+                          <Checkbox
+                            id={`select-${csrId}`}
+                            checked={isSelected}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                if (selectedCSRs.length < 3) {
+                                  setSelectedCSRs([...selectedCSRs, csrId]);
+                                } else {
+                                  toast({
+                                    title: "Maximum selection reached",
+                                    description: "You can compare up to 3 CSRs at a time",
+                                    variant: "destructive"
+                                  });
+                                }
+                              } else {
+                                setSelectedCSRs(selectedCSRs.filter(id => id !== csrId));
+                              }
+                            }}
+                          />
+                          <h3 className="text-xl font-semibold">{result.title}</h3>
+                        </div>
+                        {result.similarity && (
+                          <Badge variant="outline" className="ml-2">
+                            Similarity: {(result.similarity * 100).toFixed(0)}%
+                          </Badge>
+                        )}
+                      </div>
 
-                    <div className="flex flex-wrap gap-2">
-                      <Badge variant="secondary">{result.phase}</Badge>
-                      <Badge variant="secondary">{result.indication}</Badge>
-                      {result.sample_size && (
-                        <Badge variant="secondary">N={result.sample_size}</Badge>
-                      )}
-                      {result.outcome && (
-                        <Badge variant={result.outcome.toLowerCase().includes('positive') ? 'default' : 'destructive'}>
-                          {result.outcome}
-                        </Badge>
-                      )}
-                    </div>
+                      <div className="flex flex-wrap gap-2">
+                        <Badge variant="secondary">{result.phase}</Badge>
+                        <Badge variant="secondary">{result.indication}</Badge>
+                        {result.sample_size && (
+                          <Badge variant="secondary">N={result.sample_size}</Badge>
+                        )}
+                        {result.outcome && (
+                          <Badge variant={result.outcome.toLowerCase().includes('positive') ? 'default' : 'destructive'}>
+                            {result.outcome}
+                          </Badge>
+                        )}
+                      </div>
 
-                    <div className="text-sm text-muted-foreground">
-                      <p>
-                        <span className="font-medium">Sponsor:</span> {result.sponsor || 'Unknown'}
-                      </p>
-                      {result.date && (
+                      <div className="text-sm text-muted-foreground">
                         <p>
-                          <span className="font-medium">Date:</span> {new Date(result.date).toLocaleDateString()}
+                          <span className="font-medium">Sponsor:</span> {result.sponsor || 'Unknown'}
                         </p>
-                      )}
-                    </div>
+                        {result.date && (
+                          <p>
+                            <span className="font-medium">Date:</span> {new Date(result.date).toLocaleDateString()}
+                          </p>
+                        )}
+                      </div>
 
-                    <div className="pt-2">
-                      <Button variant="outline" size="sm" onClick={() => window.open(`/reports/${result.csr_id}`, '_blank')}>
-                        View Details
-                      </Button>
+                      <div className="pt-2 flex gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          asChild
+                        >
+                          <Link href={`/reports/${csrId}`}>
+                            View Full CSR
+                          </Link>
+                        </Button>
+                        
+                        <Button
+                          variant={isSelected ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => {
+                            if (isSelected) {
+                              setSelectedCSRs(selectedCSRs.filter(id => id !== csrId));
+                            } else if (selectedCSRs.length < 3) {
+                              setSelectedCSRs([...selectedCSRs, csrId]);
+                            } else {
+                              toast({
+                                title: "Maximum selection reached",
+                                description: "You can compare up to 3 CSRs at a time",
+                                variant: "destructive"
+                              });
+                            }
+                          }}
+                        >
+                          {isSelected ? "✓ Selected" : "Compare"}
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         )}
       </div>
