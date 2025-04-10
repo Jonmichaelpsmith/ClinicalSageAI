@@ -1,8 +1,8 @@
 import path from 'path';
 import fs from 'fs';
-import { db } from '@shared/db';
-import { csr_reports } from '@shared/schema';
-import { huggingfaceService } from './huggingface-service';
+import { db } from './db';
+import { csrReports } from '../shared/schema';
+import { huggingFaceService } from './huggingface-service';
 import { eq, and, like, or } from 'drizzle-orm';
 import { protocolKnowledgeService } from './protocol-knowledge-service';
 
@@ -258,7 +258,6 @@ export class AcademicKnowledgeService {
       url: 'https://www.fda.gov/regulatory-information/search-fda-guidance-documents/enhancing-clinical-trial-diversity',
       type: 'guideline'
     }
-}
   ];
 
   /**
@@ -303,7 +302,7 @@ export class AcademicKnowledgeService {
       const csrEvidence = await protocolKnowledgeService.getRecommendations({
         indication: query,
         phase: 'all',
-        objectives: '',
+        objectives: [''],
         endpoints: []
       });
       

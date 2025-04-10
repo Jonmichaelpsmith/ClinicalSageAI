@@ -15,7 +15,7 @@ import { generateProtocolTemplate, getStatisticalApproaches } from "./protocol-s
 import { huggingFaceService, queryHuggingFace, HFModel } from "./huggingface-service";
 import { SagePlusService } from "./sage-plus-service";
 import { csrTrainingService } from "./csr-training-service";
-import { processResearchQuery } from "./research-companion-service";
+import { researchCompanionService } from "./research-companion-service";
 import { optimizeProtocol } from "./protocol-optimizer-service";
 import { studyDesignAgentService } from "./agent-service";
 import { getEndpointRecommenderService } from "./services/endpoint-recommender-service";
@@ -2230,15 +2230,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...(context || {})
       };
       
-      const results = await processResearchQuery(query, userContext);
+      // Create a new conversation with the query
+      const conversation = await researchCompanionService.createConversation(query);
+      
+      // Add the message and get a response
+      const results = await researchCompanionService.addMessageToConversation(
+        conversation.id,
+        query,
+        userContext
+      );
       
       res.json({
         success: true,
         query,
-        queryType: results.queryType,
-        results: results.results,
-        analysis: results.analysis,
-        suggestedQueries: results.suggestedQueries
+        conversation: results 
       });
     } catch (err) {
       errorHandler(err as Error, res);
