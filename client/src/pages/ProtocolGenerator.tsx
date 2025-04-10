@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,16 +7,147 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { CheckCircle, FileText, Brain, PieChart, FlaskConical, Lightbulb } from "lucide-react";
+import { 
+  CheckCircle, 
+  FileText, 
+  Brain, 
+  PieChart, 
+  FlaskConical, 
+  Lightbulb, 
+  Upload, 
+  AlertCircle, 
+  X 
+} from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Progress } from "@/components/ui/progress";
 
 const ProtocolDesigner = () => {
+  const { toast } = useToast();
   const [indication, setIndication] = useState("");
   const [phase, setPhase] = useState("");
   const [additionalContext, setAdditionalContext] = useState("");
   const [endpoint, setEndpoint] = useState("");
-  const [generatedProtocol, setGeneratedProtocol] = useState(null);
+  const [generatedProtocol, setGeneratedProtocol] = useState<any>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeTab, setActiveTab] = useState("design");
+  
+  // Protocol upload states
+  const [showUploadDialog, setShowUploadDialog] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [uploadedProtocolContent, setUploadedProtocolContent] = useState("");
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisResults, setAnalysisResults] = useState<any>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Handler for opening upload dialog
+  const handleUploadClick = () => {
+    setShowUploadDialog(true);
+  };
+
+  // Handler for file selection
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      setUploadedFile(files[0]);
+    }
+  };
+
+  // Handler for reading file content
+  const readFileContent = () => {
+    if (!uploadedFile) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = e.target?.result as string;
+      setUploadedProtocolContent(content);
+    };
+    reader.readAsText(uploadedFile);
+  };
+
+  // Handler for analyzing uploaded protocol
+  const handleAnalyzeProtocol = async () => {
+    if (!uploadedProtocolContent) {
+      toast({
+        title: "No content to analyze",
+        description: "Please upload a protocol document first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsAnalyzing(true);
+
+    // Simulate API call for protocol analysis
+    try {
+      // Here we'd normally send the protocol content to an API endpoint
+      // For now, we'll simulate with a timeout
+      setTimeout(() => {
+        // Simulated analysis results
+        const results = {
+          extractedInfo: {
+            indication: "Type 2 Diabetes",
+            phase: "2",
+            primaryEndpoint: "HbA1c reduction",
+            population: "Adult patients (18-75 years)",
+            sampleSize: "240 participants"
+          },
+          evaluation: {
+            strengths: [
+              "Well-defined primary endpoint with clear measurement timeline",
+              "Appropriate randomization strategy",
+              "Sample size justified based on statistical power calculation"
+            ],
+            improvements: [
+              "Consider adding secondary cardiovascular endpoints common in recent diabetes trials",
+              "Duration of follow-up period could be extended based on recent regulatory guidance",
+              "Statistical analysis plan may benefit from more robust handling of missing data"
+            ],
+            regulatoryAlignment: 85, // percentage score
+            precedentMatching: 78,   // percentage score
+            similarTrials: [
+              { id: "NCT04123366", title: "EMPA-KIDNEY Trial", sponsor: "Boehringer Ingelheim", date: "2022-03" },
+              { id: "NCT03036124", title: "DAPA-HF Trial", sponsor: "AstraZeneca", date: "2021-11" },
+              { id: "NCT01730534", title: "CANATA-M Extension", sponsor: "Janssen", date: "2020-09" }
+            ]
+          }
+        };
+
+        setAnalysisResults(results);
+        setIsAnalyzing(false);
+      }, 3000);
+    } catch (error) {
+      toast({
+        title: "Analysis failed",
+        description: "There was an error analyzing your protocol. Please try again.",
+        variant: "destructive",
+      });
+      setIsAnalyzing(false);
+    }
+  };
+
+  // Handler for using analysis results to create a new protocol
+  const handleUseAnalysisResults = () => {
+    if (!analysisResults) return;
+    
+    // Extract values from analysis results
+    const { indication, phase, primaryEndpoint } = analysisResults.extractedInfo;
+    
+    // Set form values
+    setIndication(indication);
+    setPhase(phase);
+    setEndpoint(primaryEndpoint);
+    
+    // Close the dialog
+    setShowUploadDialog(false);
+    
+    // Show toast notification
+    toast({
+      title: "Protocol data imported",
+      description: "The protocol information has been successfully imported for enhancement.",
+    });
+  };
 
   const handleGenerate = () => {
     setIsGenerating(true);
@@ -91,9 +222,9 @@ const ProtocolDesigner = () => {
           <p className="text-gray-500 mt-1">Design evidence-based protocols from 1,900+ precedent studies</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <FileText className="h-4 w-4 mr-2" />
-            Load Template
+          <Button variant="outline" size="sm" onClick={handleUploadClick}>
+            <Upload className="h-4 w-4 mr-2" />
+            Upload Protocol
           </Button>
           <Button variant="outline" size="sm">
             <Brain className="h-4 w-4 mr-2" />
@@ -219,7 +350,7 @@ const ProtocolDesigner = () => {
                         {Object.entries(generatedProtocol.designElements).map(([key, value]) => (
                           <div key={key} className="bg-white rounded-lg p-3 shadow-sm">
                             <div className="text-sm text-gray-600 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</div>
-                            <div className="font-medium">{value}</div>
+                            <div className="font-medium">{value as React.ReactNode}</div>
                           </div>
                         ))}
                       </div>
@@ -255,7 +386,7 @@ const ProtocolDesigner = () => {
                   </TabsContent>
                   <TabsContent value="preview">
                     <div className="space-y-5">
-                      {generatedProtocol.sections.map((section, index) => (
+                      {generatedProtocol.sections.map((section: any, index: number) => (
                         <div key={index} className="border rounded-lg overflow-hidden">
                           <div className="bg-gray-50 p-3 border-b">
                             <h3 className="text-md font-semibold">{section.sectionName}</h3>
@@ -368,6 +499,201 @@ const ProtocolDesigner = () => {
           )}
         </div>
       </div>
+
+      {/* Protocol Upload Dialog */}
+      <Dialog open={showUploadDialog} onOpenChange={setShowUploadDialog}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Upload className="h-5 w-5 text-blue-600" />
+              Upload Existing Protocol
+            </DialogTitle>
+            <DialogDescription>
+              Upload your existing protocol to analyze and improve using our AI-powered recommendations.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-6">
+            {!uploadedFile ? (
+              <div 
+                className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center cursor-pointer hover:bg-gray-50 transition-colors"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <input 
+                  type="file" 
+                  ref={fileInputRef}
+                  className="hidden" 
+                  accept=".txt,.doc,.docx,.pdf" 
+                  onChange={handleFileChange}
+                />
+                <div className="mx-auto w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center mb-4">
+                  <Upload className="h-6 w-6 text-blue-600" />
+                </div>
+                <h3 className="text-lg font-medium mb-2">Drag & drop your protocol file or click to browse</h3>
+                <p className="text-gray-500 mb-2">
+                  Supported formats: .txt, .doc, .docx, .pdf
+                </p>
+                <Button variant="outline" className="mt-2">Select File</Button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between bg-blue-50 p-3 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                      <FileText className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium">{uploadedFile.name}</p>
+                      <p className="text-sm text-gray-500">{Math.round(uploadedFile.size / 1024)} KB</p>
+                    </div>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-gray-400 hover:text-red-600"
+                    onClick={() => {
+                      setUploadedFile(null);
+                      setUploadedProtocolContent("");
+                      setAnalysisResults(null);
+                      if (fileInputRef.current) fileInputRef.current.value = '';
+                    }}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+                
+                {!uploadedProtocolContent ? (
+                  <div className="text-center">
+                    <Button onClick={readFileContent}>Extract Protocol Content</Button>
+                  </div>
+                ) : !analysisResults ? (
+                  <div className="space-y-4">
+                    <Textarea 
+                      className="min-h-[200px]" 
+                      value={uploadedProtocolContent} 
+                      onChange={(e) => setUploadedProtocolContent(e.target.value)}
+                      placeholder="Protocol content will appear here..."
+                    />
+                    <div className="flex justify-center">
+                      <Button 
+                        onClick={handleAnalyzeProtocol} 
+                        disabled={isAnalyzing}
+                        className="gap-2"
+                      >
+                        {isAnalyzing && <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />}
+                        {isAnalyzing ? "Analyzing..." : "Analyze Protocol"}
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <h3 className="text-md font-medium mb-3">Extracted Protocol Information</h3>
+                        <div className="space-y-2">
+                          {Object.entries(analysisResults.extractedInfo).map(([key, value]) => (
+                            <div key={key} className="bg-gray-50 p-3 rounded-lg">
+                              <div className="text-xs text-gray-500 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</div>
+                              <div className="font-medium">{value as string}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <h3 className="text-md font-medium mb-3">Protocol Evaluation</h3>
+                        <div className="space-y-3">
+                          <div className="bg-green-50 p-3 rounded-lg">
+                            <div className="text-green-800 font-medium mb-2">Strengths</div>
+                            <ul className="list-disc pl-5 space-y-1">
+                              {analysisResults.evaluation.strengths.map((strength: string, index: number) => (
+                                <li key={index} className="text-sm text-green-700">{strength}</li>
+                              ))}
+                            </ul>
+                          </div>
+                          
+                          <div className="bg-amber-50 p-3 rounded-lg">
+                            <div className="text-amber-800 font-medium mb-2">Improvement Areas</div>
+                            <ul className="list-disc pl-5 space-y-1">
+                              {analysisResults.evaluation.improvements.map((improvement: string, index: number) => (
+                                <li key={index} className="text-sm text-amber-700">{improvement}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h3 className="text-md font-medium mb-3">Alignment Scoring</h3>
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div className="bg-blue-50 p-3 rounded-lg">
+                          <div className="text-blue-800 font-medium mb-1">Regulatory Alignment</div>
+                          <div className="mt-1">
+                            <Progress value={analysisResults.evaluation.regulatoryAlignment} className="h-2" />
+                            <div className="flex justify-between text-xs mt-1">
+                              <span className="text-gray-500">Score</span>
+                              <span className="font-medium text-blue-800">{analysisResults.evaluation.regulatoryAlignment}%</span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="bg-indigo-50 p-3 rounded-lg">
+                          <div className="text-indigo-800 font-medium mb-1">Precedent Matching</div>
+                          <div className="mt-1">
+                            <Progress value={analysisResults.evaluation.precedentMatching} className="h-2" />
+                            <div className="flex justify-between text-xs mt-1">
+                              <span className="text-gray-500">Score</span>
+                              <span className="font-medium text-indigo-800">{analysisResults.evaluation.precedentMatching}%</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h3 className="text-md font-medium mb-3">Similar Precedent Trials</h3>
+                      <div className="bg-gray-50 rounded-lg overflow-hidden">
+                        <table className="min-w-full text-sm">
+                          <thead>
+                            <tr className="bg-gray-100">
+                              <th className="py-2 px-3 text-left font-medium text-gray-700">Trial ID</th>
+                              <th className="py-2 px-3 text-left font-medium text-gray-700">Title</th>
+                              <th className="py-2 px-3 text-left font-medium text-gray-700">Sponsor</th>
+                              <th className="py-2 px-3 text-left font-medium text-gray-700">Date</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {analysisResults.evaluation.similarTrials.map((trial: any, index: number) => (
+                              <tr key={index} className="border-t border-gray-200">
+                                <td className="py-2 px-3 font-medium text-blue-600">{trial.id}</td>
+                                <td className="py-2 px-3">{trial.title}</td>
+                                <td className="py-2 px-3">{trial.sponsor}</td>
+                                <td className="py-2 px-3 text-gray-500">{trial.date}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            {analysisResults && (
+              <Button onClick={handleUseAnalysisResults}>
+                Use Analysis Results
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
