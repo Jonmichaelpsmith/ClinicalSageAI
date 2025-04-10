@@ -280,7 +280,7 @@ export class AcademicKnowledgeService {
 
     try {
       // Create embedding for query
-      const queryEmbedding = await huggingfaceService.generateEmbeddings(query);
+      const queryEmbedding = await huggingFaceService.generateEmbeddings(query);
       
       // Filter sources by type if needed
       let filteredSources = [...this.academicSources];
@@ -599,7 +599,7 @@ export class AcademicKnowledgeService {
     Provide a well-structured recommendation with clear sections. Include specific citations using [Author, Year] format.
     Ensure the recommendation is evidence-based, comprehensive, and practical for implementation.`;
     
-    const recommendation = await huggingfaceService.queryHuggingFace(
+    const recommendation = await huggingFaceService.queryHuggingFace(
       systemPrompt,
       'mistralai/Mixtral-8x7B-Instruct-v0.1',
       0.7,
