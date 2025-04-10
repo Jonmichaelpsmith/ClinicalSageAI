@@ -1,0 +1,170 @@
+// React Component: AgentLogDashboard.jsx (with chart integration + heatmap-ready placeholder)
+
+import { useEffect, useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import dayjs from 'dayjs';
+import TrendingTagsChart from './TrendingTagsChart';
+// Future: import TagCorrelationHeatmap from './TagCorrelationHeatmap';
+
+export default function AgentLogDashboard() {
+  const [logs, setLogs] = useState([]);
+  const [keyword, setKeyword] = useState('');
+  const [csrId, setCsrId] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [endpointStats, setEndpointStats] = useState({});
+  const [tagsByLog, setTagsByLog] = useState({});
+  const [topTags, setTopTags] = useState([]);
+  const [trendingByMonth, setTrendingByMonth] = useState({});
+  const [tagPairs, setTagPairs] = useState({});
+
+  const fetchLogs = async () => {
+    const params = new URLSearchParams();
+    if (keyword) params.append('keyword', keyword);
+    if (csrId) params.append('csr_id', csrId);
+    if (dateFrom) params.append('date_from', dateFrom);
+    if (dateTo) params.append('date_to', dateTo);
+
+    const res = await fetch(`/api/logs/agent?${params.toString()}`);
+    const data = await res.json();
+    setLogs(data);
+
+    const termMap = {};
+    const tagMap = {};
+    const tagCount = {};
+    const monthTrend = {};
+    const pairMatrix = {};
+
+    data.forEach((entry, idx) => {
+      const response = `${entry.message}\n${entry.response}`.toLowerCase();
+      const tags = [];
+      const month = dayjs(entry.timestamp).format('YYYY-MM');
+
+      ['orr', 'pfs', 'os', 'hba1c', 'response rate', 'safety', 'ae'].forEach(term => {
+        if (response.includes(term)) {
+          termMap[term] = (termMap[term] || 0) + 1;
+          tags.push(term.toUpperCase());
+        }
+      });
+
+      if (response.includes('phase 1')) tags.push('PHASE 1');
+      if (response.includes('phase 2')) tags.push('PHASE 2');
+      if (response.includes('phase 3')) tags.push('PHASE 3');
+      if (response.includes('oncology')) tags.push('ONCOLOGY');
+      if (response.includes('cardiology')) tags.push('CARDIOLOGY');
+
+      if (tags.length > 0) {
+        tagMap[idx] = tags;
+        tags.forEach(tag => {
+          tagCount[tag] = (tagCount[tag] || 0) + 1;
+
+          if (!monthTrend[month]) monthTrend[month] = {};
+          monthTrend[month][tag] = (monthTrend[month][tag] || 0) + 1;
+        });
+
+        // Generate tag pair combinations
+        for (let i = 0; i < tags.length; i++) {
+          for (let j = i + 1; j < tags.length; j++) {
+            const pair = [tags[i], tags[j]].sort().join('::');
+            pairMatrix[pair] = (pairMatrix[pair] || 0) + 1;
+          }
+        }
+      }
+    });
+
+    setEndpointStats(termMap);
+    setTagsByLog(tagMap);
+    setTopTags(Object.entries(tagCount).sort((a, b) => b[1] - a[1]).slice(0, 5));
+    setTrendingByMonth(monthTrend);
+    setTagPairs(pairMatrix); // Future use in heatmap
+  };
+
+  const exportToCSV = () => {
+    const headers = ['timestamp', 'message', 'csr_ids', 'response'];
+    const rows = logs.map(log => [
+      new Date(log.timestamp).toISOString(),
+      log.message.replace(/\n/g, ' '),
+      log.csr_ids?.join(', '),
+      log.response.replace(/\n/g, ' ')
+    ]);
+
+    const csv = [headers.join(','), ...rows.map(row => row.map(val => `"${val}"`).join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'agent_logs.csv';
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  useEffect(() => {
+    fetchLogs();
+  }, []);
+
+  return (
+    <div className="p-6 max-w-6xl mx-auto space-y-4">
+      <h2 className="text-2xl font-bold text-blue-800">📊 Study Design Agent Logs</h2>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pb-4">
+        <Input value={keyword} onChange={(e) => setKeyword(e.target.value)} placeholder="🔍 Keyword" />
+        <Input value={csrId} onChange={(e) => setCsrId(e.target.value)} placeholder="🔎 CSR ID" />
+        <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} placeholder="From" />
+        <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} placeholder="To" />
+      </div>
+
+      <div className="flex justify-between items-center pb-4">
+        <Button onClick={fetchLogs} className="bg-blue-600 text-white hover:bg-blue-700">Apply Filters</Button>
+        <Button onClick={exportToCSV} className="bg-gray-700 text-white hover:bg-gray-800">📥 Export CSV</Button>
+      </div>
+
+      {topTags.length > 0 && (
+        <div className="bg-white border rounded p-4">
+          <h4 className="text-md font-semibold text-purple-800 mb-2">🔥 Trending Topics</h4>
+          <ul className="text-sm text-gray-800 space-y-1">
+            {topTags.map(([tag, count], i) => (
+              <li key={i}>#️⃣ {tag}: {count} mentions</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <TrendingTagsChart trendingByMonth={trendingByMonth} />
+
+      {/* Future Heatmap: <TagCorrelationHeatmap tagPairs={tagPairs} /> */}
+
+      {Object.keys(endpointStats).length > 0 && (
+        <div className="bg-white border rounded p-4">
+          <h4 className="text-md font-semibold text-green-800 mb-2">📈 Endpoint Mentions</h4>
+          <ul className="text-sm text-gray-700 space-y-1">
+            {Object.entries(endpointStats).map(([term, count], i) => (
+              <li key={i}>🔹 {term.toUpperCase()}: {count} mentions</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <div className="space-y-4">
+        {logs.map((entry, i) => (
+          <Card key={i} className="border border-gray-200">
+            <CardContent className="space-y-2">
+              <p className="text-sm text-gray-600">🕒 {new Date(entry.timestamp).toLocaleString()}</p>
+              <p className="text-sm text-blue-700 font-medium">🧑‍💬 Question:</p>
+              <p className="text-sm bg-blue-50 p-2 rounded border text-gray-800 whitespace-pre-wrap">{entry.message}</p>
+              {entry.csr_ids?.length > 0 && (
+                <p className="text-sm text-gray-600 italic">CSR Context: {entry.csr_ids.join(', ')}</p>
+              )}
+              <p className="text-sm text-green-700 font-medium">🤖 Response:</p>
+              <p className="text-sm bg-green-50 p-2 rounded border whitespace-pre-wrap">{entry.response}</p>
+              {tagsByLog[i] && (
+                <div className="text-xs text-gray-500 italic">Tags: {tagsByLog[i].join(', ')}</div>
+              )}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
