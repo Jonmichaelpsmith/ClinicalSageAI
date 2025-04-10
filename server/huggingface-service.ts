@@ -16,6 +16,15 @@ import path from 'path';
 const HF_API_URL = 'https://api-inference.huggingface.co/models';
 const HF_API_KEY = process.env.HF_API_KEY;
 
+/**
+ * Check if the Hugging Face API key is available
+ * 
+ * @returns True if the API key is configured, false otherwise
+ */
+export function isApiKeyAvailable(): boolean {
+  return !!HF_API_KEY && HF_API_KEY.length > 0;
+}
+
 // Export the service as a single object
 export const huggingFaceService = {
   queryHuggingFace,
@@ -27,7 +36,8 @@ export const huggingFaceService = {
   getChatConversations,
   processChatMessage,
   deleteChatConversation,
-  trainCustomModel
+  trainCustomModel,
+  isApiKeyAvailable
 };
 
 // Model type enumeration
