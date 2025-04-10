@@ -2601,6 +2601,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Test Hugging Face API connection
+  app.get('/api/test-huggingface', async (req: Request, res: Response) => {
+    try {
+      // Check if API key is available
+      if (!huggingFaceService.isApiKeyAvailable()) {
+        return res.status(500).json({
+          success: false,
+          message: 'Hugging Face API key is not configured'
+        });
+      }
+      
+      // Test the API with a simple query
+      const testPrompt = "Hello, can you provide a brief explanation of clinical trial phases?";
+      const response = await huggingFaceService.queryHuggingFace(
+        testPrompt,
+        HFModel.TEXT,
+        0.7,
+        200
+      );
+      
+      res.json({
+        success: true,
+        apiKeyConfigured: true,
+        response
+      });
+    } catch (error: any) {
+      console.error("Hugging Face API test error:", error);
+      
+      res.status(500).json({
+        success: false,
+        apiKeyConfigured: huggingFaceService.isApiKeyAvailable(),
+        error: error.message,
+        details: error.response ? {
+          status: error.response.status,
+          data: error.response.data
+        } : undefined
+      });
+    }
+  });
+
   // Send a message to the Research Companion and get a response
   app.post('/api/chat/conversations/:id/messages', async (req: Request, res: Response) => {
     try {
