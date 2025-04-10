@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1702",
+  "title": "A Randomized Double-Blind, Active-Controlled Multi-Center Study of CDN-468 (integrin inhibitor) in Patients With Asthma",
+  "officialTitle": "A Randomized Double-Blind, Active-Controlled Multi-Center Study of CDN-468 (integrin inhibitor) in Patients With Asthma",
+  "sponsor": "Montreal Heart Institute",
+  "indication": "Asthma",
+  "phase": "Phase 1",
+  "fileName": "HC-1702.json",
+  "fileSize": 511301,
+  "date": "2025-01-02",
+  "completionDate": "2028-04-08",
+  "drugName": "CDN-468 (integrin inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Terminated",
+  "description": "This is a randomized double-blind, active-controlled multi-center study designed to evaluate the efficacy and safety of CDN-468 (integrin inhibitor) in patients with Asthma. The study will enroll approximately 111 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 20-56 years\n- Confirmed diagnosis of Asthma\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}
