@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { FileSearch, BarChart2, FileText, Menu, X, Layers, DollarSign, Lightbulb, Code } from "lucide-react";
+import { FileSearch, BarChart2, FileText, Menu, X, Layers, DollarSign, Lightbulb, Code, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
 import {
   Sheet,
   SheetContent,
@@ -20,6 +21,7 @@ import {
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [useCaseLibraryEnabled, setUseCaseLibraryEnabled] = useState(true);
 
   return (
     <div className="flex h-16 items-center justify-between px-4 md:px-6">
@@ -28,6 +30,17 @@ export default function Navbar() {
         <span className="ml-2 text-xl font-semibold">TrialSage</span>
       </Link>
       <div className="flex items-center gap-4">
+        {/* Use Case Library Toggle */}
+        <div className="hidden md:flex items-center gap-2 bg-blue-50 px-3 py-1 rounded-full">
+          <BookOpen className="h-4 w-4 text-blue-600" />
+          <span className="text-sm text-blue-700 font-medium">Use Case Library</span>
+          <Switch 
+            checked={useCaseLibraryEnabled} 
+            onCheckedChange={setUseCaseLibraryEnabled}
+            className="data-[state=checked]:bg-blue-600"
+          />
+        </div>
+        
         <div className="hidden md:flex gap-6">
           <DropdownMenu>
             <DropdownMenuTrigger className="flex items-center gap-1 cursor-pointer">
@@ -132,6 +145,22 @@ export default function Navbar() {
                 </div>
               </Link>
               <Separator />
+              
+              {/* Mobile Use Case Library Toggle */}
+              <div className="flex items-center justify-between py-2 px-1">
+                <div className="flex items-center gap-2">
+                  <BookOpen className="h-5 w-5 text-blue-600" />
+                  <span className="font-medium">Use Case Library</span>
+                </div>
+                <Switch 
+                  checked={useCaseLibraryEnabled} 
+                  onCheckedChange={setUseCaseLibraryEnabled}
+                  className="data-[state=checked]:bg-blue-600"
+                />
+              </div>
+              
+              <Separator className="my-2" />
+              
               <Link href="/dashboard" onClick={() => setIsOpen(false)}>
                 <Button variant="outline" className="w-full">
                   Dashboard
