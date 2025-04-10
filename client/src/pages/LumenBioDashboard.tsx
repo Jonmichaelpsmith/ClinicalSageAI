@@ -11,7 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 import { 
   FileText, Microscope, BarChart, PieChart, 
   BookOpen, Download, Share, AlertCircle, Beaker, Target,
-  Weight
+  Weight, ChevronRight
 } from "lucide-react";
 
 export default function LumenBioDashboard() {
