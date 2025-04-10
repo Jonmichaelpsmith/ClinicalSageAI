@@ -251,6 +251,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     fs.mkdirSync(exportsDir, { recursive: true });
   }
   
+  // Handle PDF file downloads
+  app.get('/download/:filename', (req: Request, res: Response) => {
+    try {
+      const { filename } = req.params;
+      const filePath = path.join(process.cwd(), 'data/exports', filename);
+      
+      // Check if file exists
+      if (!fs.existsSync(filePath)) {
+        return res.status(404).json({ 
+          success: false, 
+          message: 'File not found' 
+        });
+      }
+      
+      // Set appropriate content type for PDF
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      
+      // Stream the file to the response
+      const fileStream = fs.createReadStream(filePath);
+      fileStream.pipe(res);
+    } catch (error) {
+      console.error('Error serving file:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Error serving file' 
+      });
+    }
+  });
+  
   // Dossier-related API endpoints
   app.post('/api/dossier/:dossier_id/update-notes', async (req: Request, res: Response) => {
     try {
