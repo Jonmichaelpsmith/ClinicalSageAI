@@ -19,6 +19,8 @@ import {
   Pie,
   Cell
 } from 'recharts';
+import dayjs from 'dayjs';
+import TrendingTagsChart from '@/components/TrendingTagsChart';
 
 interface AgentLog {
   timestamp: string;
