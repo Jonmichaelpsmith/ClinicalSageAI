@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1634",
+  "title": "A Randomized Double-Blind, Active-Controlled Multi-Center Study of PAN-967 (PARP inhibitor) in Patients With Osteoporosis",
+  "officialTitle": "A Randomized Double-Blind, Active-Controlled Multi-Center Study of PAN-967 (PARP inhibitor) in Patients With Osteoporosis",
+  "sponsor": "Vancouver Coastal Health Research Institute",
+  "indication": "Osteoporosis",
+  "phase": "Phase 2/Phase 3",
+  "fileName": "HC-1634.json",
+  "fileSize": 210684,
+  "date": "2023-12-02",
+  "completionDate": "2028-12-10",
+  "drugName": "PAN-967 (PARP inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Completed",
+  "description": "This is a randomized double-blind, active-controlled multi-center study designed to evaluate the efficacy and safety of PAN-967 (PARP inhibitor) in patients with Osteoporosis. The study will enroll approximately 507 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 27-82 years\n- Confirmed diagnosis of Osteoporosis\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

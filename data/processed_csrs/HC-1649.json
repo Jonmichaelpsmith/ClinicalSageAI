@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1649",
+  "title": "A  Double-Blind, Placebo-Controlled Multi-Center Study of COL-735 (EGFR inhibitor) in Patients With Osteoporosis",
+  "officialTitle": "A  Double-Blind, Placebo-Controlled Multi-Center Study of COL-735 (EGFR inhibitor) in Patients With Osteoporosis",
+  "sponsor": "Vancouver Coastal Health Research Institute",
+  "indication": "Osteoporosis",
+  "phase": "Phase 1",
+  "fileName": "HC-1649.json",
+  "fileSize": 418529,
+  "date": "2023-08-24",
+  "completionDate": "2025-10-27",
+  "drugName": "COL-735 (EGFR inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Completed",
+  "description": "This is a  double-blind, placebo-controlled multi-center study designed to evaluate the efficacy and safety of COL-735 (EGFR inhibitor) in patients with Osteoporosis. The study will enroll approximately 459 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 18-70 years\n- Confirmed diagnosis of Osteoporosis\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

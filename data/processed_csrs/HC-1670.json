@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1670",
+  "title": "A Randomized Double-Blind, Placebo-Controlled Multi-Center Study of PSO-602 (phosphodiesterase-4 inhibitor) in Patients With Chronic Obstructive Pulmonary Disease",
+  "officialTitle": "A Randomized Double-Blind, Placebo-Controlled Multi-Center Study of PSO-602 (phosphodiesterase-4 inhibitor) in Patients With Chronic Obstructive Pulmonary Disease",
+  "sponsor": "University of Calgary",
+  "indication": "Chronic Obstructive Pulmonary Disease",
+  "phase": "Phase 4",
+  "fileName": "HC-1670.json",
+  "fileSize": 483472,
+  "date": "2024-04-15",
+  "completionDate": "2027-06-16",
+  "drugName": "PSO-602 (phosphodiesterase-4 inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Recruiting",
+  "description": "This is a randomized double-blind, placebo-controlled multi-center study designed to evaluate the efficacy and safety of PSO-602 (phosphodiesterase-4 inhibitor) in patients with Chronic Obstructive Pulmonary Disease. The study will enroll approximately 187 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 24-57 years\n- Confirmed diagnosis of Chronic Obstructive Pulmonary Disease\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

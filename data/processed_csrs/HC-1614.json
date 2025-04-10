@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1614",
+  "title": "A Randomized Double-Blind, Placebo-Controlled Multi-Center Study of AST-611 (anti-IL-5 antibody) in Patients With Asthma",
+  "officialTitle": "A Randomized Double-Blind, Placebo-Controlled Multi-Center Study of AST-611 (anti-IL-5 antibody) in Patients With Asthma",
+  "sponsor": "University Health Network",
+  "indication": "Asthma",
+  "phase": "Phase 2/Phase 3",
+  "fileName": "HC-1614.json",
+  "fileSize": 481995,
+  "date": "2024-07-23",
+  "completionDate": "2026-10-13",
+  "drugName": "AST-611 (anti-IL-5 antibody)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Active, not recruiting",
+  "description": "This is a randomized double-blind, placebo-controlled multi-center study designed to evaluate the efficacy and safety of AST-611 (anti-IL-5 antibody) in patients with Asthma. The study will enroll approximately 213 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 26-80 years\n- Confirmed diagnosis of Asthma\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

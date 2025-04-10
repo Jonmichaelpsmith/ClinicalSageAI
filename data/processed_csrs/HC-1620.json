@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1620",
+  "title": "A Randomized Open-Label, Active-Controlled  Study of ULC-345 (TNF inhibitor) in Patients With Parkinson's Disease",
+  "officialTitle": "A Randomized Open-Label, Active-Controlled  Study of ULC-345 (TNF inhibitor) in Patients With Parkinson's Disease",
+  "sponsor": "Health Canada Research Institute",
+  "indication": "Parkinson's Disease",
+  "phase": "Phase 2/Phase 3",
+  "fileName": "HC-1620.json",
+  "fileSize": 335777,
+  "date": "2024-04-19",
+  "completionDate": "2026-07-30",
+  "drugName": "ULC-345 (TNF inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Terminated",
+  "description": "This is a randomized open-label, active-controlled  study designed to evaluate the efficacy and safety of ULC-345 (TNF inhibitor) in patients with Parkinson's Disease. The study will enroll approximately 172 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 20-78 years\n- Confirmed diagnosis of Parkinson's Disease\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

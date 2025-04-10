@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1586",
+  "title": "A  Double-Blind, Placebo-Controlled Multi-Center Study of HIV-335 (integrase inhibitor) in Patients With Heart Failure",
+  "officialTitle": "A  Double-Blind, Placebo-Controlled Multi-Center Study of HIV-335 (integrase inhibitor) in Patients With Heart Failure",
+  "sponsor": "SickKids Research Institute",
+  "indication": "Heart Failure",
+  "phase": "Phase 2",
+  "fileName": "HC-1586.json",
+  "fileSize": 317275,
+  "date": "2024-01-20",
+  "completionDate": "2028-12-08",
+  "drugName": "HIV-335 (integrase inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Not yet recruiting",
+  "description": "This is a  double-blind, placebo-controlled multi-center study designed to evaluate the efficacy and safety of HIV-335 (integrase inhibitor) in patients with Heart Failure. The study will enroll approximately 182 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 20-75 years\n- Confirmed diagnosis of Heart Failure\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

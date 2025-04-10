@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1679",
+  "title": "A Randomized Double-Blind, Placebo-Controlled  Study of HFR-841 (SGLT2 inhibitor) in Patients With Cystic Fibrosis",
+  "officialTitle": "A Randomized Double-Blind, Placebo-Controlled  Study of HFR-841 (SGLT2 inhibitor) in Patients With Cystic Fibrosis",
+  "sponsor": "University Health Network",
+  "indication": "Cystic Fibrosis",
+  "phase": "Phase 2/Phase 3",
+  "fileName": "HC-1679.json",
+  "fileSize": 487266,
+  "date": "2024-07-02",
+  "completionDate": "2025-09-14",
+  "drugName": "HFR-841 (SGLT2 inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Terminated",
+  "description": "This is a randomized double-blind, placebo-controlled  study designed to evaluate the efficacy and safety of HFR-841 (SGLT2 inhibitor) in patients with Cystic Fibrosis. The study will enroll approximately 148 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 19-67 years\n- Confirmed diagnosis of Cystic Fibrosis\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}
