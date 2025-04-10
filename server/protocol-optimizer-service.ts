@@ -11,7 +11,7 @@ import path from 'path';
 import { queryHuggingFace, HFModel } from './huggingface-service';
 import { db } from './db';
 import { csrReports, csrDetails } from '../shared/schema';
-import { eq, inArray } from 'drizzle-orm';
+import { eq, inArray, ilike, and, isNull, sql } from 'drizzle-orm';
 
 // The directory where processed CSR JSON files are stored
 const PROCESSED_CSR_DIR = path.join(process.cwd(), 'data', 'processed_csrs');
@@ -160,19 +160,31 @@ Format your response with clear headings and concise points. Focus on evidence-b
  */
 async function findSimilarTrialReports(indication?: string, phase?: string): Promise<any[]> {
   try {
-    let query = db.select()
+    let conditions = [];
+    
+    // Add condition for non-deleted reports
+    conditions.push(isNull(csrReports.deletedAt));
+    
+    // Add indication condition if provided
+    if (indication) {
+      conditions.push(ilike(csrReports.indication, `%${indication}%`));
+    }
+    
+    // Add phase condition if provided
+    if (phase) {
+      conditions.push(eq(csrReports.phase, phase));
+    }
+    
+    // Combine all conditions with AND
+    const whereCondition = and(...conditions);
+    
+    // Execute the query
+    const results = await db.select()
       .from(csrReports)
+      .where(whereCondition)
       .limit(5);
     
-    if (indication) {
-      query = query.where(sql => sql`${csrReports.indication} ILIKE ${`%${indication}%`}`);
-    }
-    
-    if (phase) {
-      query = query.where(sql => sql`${csrReports.phase} = ${phase}`);
-    }
-    
-    return await query;
+    return results;
   } catch (error) {
     console.error('Error finding similar trial reports:', error);
     return [];

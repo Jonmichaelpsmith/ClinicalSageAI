@@ -28,6 +28,7 @@ import PremiumDossierLanding from "@/pages/PremiumDossierLanding";
 import FailMap from "@/pages/FailMap";
 import CSRSearch from "@/pages/CSRSearch";
 import CSRDetail from "@/pages/CSRDetail";
+import ProtocolOptimizer from "@/pages/ProtocolOptimizer";
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -112,6 +113,7 @@ function Router() {
       <Route path="/fail-map">{() => renderWithLayout(FailMap)}</Route>
       <Route path="/csr-search">{() => renderWithLayout(CSRSearch)}</Route>
       <Route path="/reports/:csrId">{() => renderWithLayout(CSRDetail)}</Route>
+      <Route path="/protocol-optimizer">{() => renderWithLayout(ProtocolOptimizer)}</Route>
 
       {/* Fallback to 404 */}
       <Route>{() => renderWithLayout(NotFound)}</Route>
