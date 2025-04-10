@@ -93,19 +93,19 @@ export class EndpointRecommenderService {
       // Get report IDs
       const reportIds = matchingReports.map(report => report.id);
       
-      // Extract unique primary endpoints from matching reports
+      // Extract unique endpoints from matching reports
       const detailsResults = await db
         .select({
-          primaryEndpoint: csrDetails.primaryEndpoint,
+          endpoint: sql<string>`jsonb_array_elements_text(${csrDetails.endpoints}->>'primary')`,
         })
         .from(csrDetails)
         .where(sql`${csrDetails.reportId} IN (${reportIds.join(',')})`)
-        .orderBy(desc(sql`COUNT(*)`))
-        .groupBy(csrDetails.primaryEndpoint);
+        .groupBy(sql`jsonb_array_elements_text(${csrDetails.endpoints}->>'primary')`)
+        .orderBy(desc(sql`COUNT(*)`));
       
       // Extract endpoints and filter out null/empty values
       const endpoints = detailsResults
-        .map(result => result.primaryEndpoint)
+        .map(result => result.endpoint)
         .filter(Boolean) as string[];
       
       return endpoints;
@@ -275,29 +275,27 @@ Provide a JSON response with:
         return [];
       }
       
-      // Build OR conditions for keyword matching
-      const keywordConditions = keywords.map(keyword => 
-        like(csrDetails.primaryEndpoint, `%${keyword}%`)
-      );
-      
-      // Query for similar endpoints
+      // Query for similar endpoints using JSON search
       const results = await db
         .select({
-          endpoint: csrDetails.primaryEndpoint,
+          endpoint: sql<string>`jsonb_array_elements_text(${csrDetails.endpoints}->>'primary')`,
         })
         .from(csrDetails)
         .innerJoin(csrReports, eq(csrDetails.reportId, csrReports.id))
-        .where(
-          and(
-            like(csrReports.indication, `%${indication}%`),
-            or(...keywordConditions)
-          )
-        )
-        .limit(limit);
+        .where(like(csrReports.indication, `%${indication}%`))
+        .limit(limit * 3); // Get more, then filter for relevance
       
-      return results
+      // Filter results for relevance (contains at least one keyword)
+      const filteredEndpoints = results
         .map(result => result.endpoint)
-        .filter(Boolean) as string[];
+        .filter(Boolean)
+        .filter(endpointText => {
+          const endpointLower = endpointText.toLowerCase();
+          return keywords.some(keyword => endpointLower.includes(keyword));
+        })
+        .slice(0, limit);
+      
+      return filteredEndpoints;
     } catch (error) {
       console.error('Error finding similar endpoints:', error);
       return [];
