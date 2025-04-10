@@ -1,0 +1,67 @@
+import { useEffect, useState } from 'react';
+import HeatMap from 'react-heatmap-grid';
+import { Button } from '@/components/ui/button';
+
+export default function EndpointFrequencyHeatmap() {
+  const [heatmapData, setHeatmapData] = useState([]);
+  const [phases, setPhases] = useState([]);
+  const [indications, setIndications] = useState([]);
+  const [viewType, setViewType] = useState('per100'); // 'per100' or 'raw'
+  const [endpointType, setEndpointType] = useState('All'); // 'Primary', 'Secondary', 'All'
+
+  useEffect(() => {
+    const fetchHeatmap = async () => {
+      const res = await fetch('/api/endpoint/frequency-heatmap');
+      const data = await res.json();
+
+      const filtered = data.filter(row => endpointType === 'All' || row.type === endpointType);
+
+      const uniquePhases = [...new Set(filtered.map(row => row.phase))];
+      const uniqueIndications = [...new Set(filtered.map(row => row.indication))];
+
+      const matrix = uniqueIndications.map(indication =>
+        uniquePhases.map(phase => {
+          const row = filtered.find(d => d.phase === phase && d.indication === indication);
+          if (!row) return 0;
+          return viewType === 'per100' ? row.per100 : row.count;
+        })
+      );
+
+      setPhases(uniquePhases);
+      setIndications(uniqueIndications);
+      setHeatmapData(matrix);
+    };
+
+    fetchHeatmap();
+  }, [viewType, endpointType]);
+
+  return (
+    <div className="bg-white border rounded p-4 my-6">
+      <h3 className="text-lg font-bold text-purple-800 mb-4">📊 Endpoint Frequency Heatmap</h3>
+
+      <div className="flex items-center gap-4 mb-4">
+        <Button onClick={() => setViewType(viewType === 'per100' ? 'raw' : 'per100')}>
+          Toggle View: {viewType === 'per100' ? 'Per 100 Trials' : 'Raw Count'}
+        </Button>
+        <Button onClick={() => setEndpointType('All')}>All Endpoints</Button>
+        <Button onClick={() => setEndpointType('Primary')}>Primary Only</Button>
+        <Button onClick={() => setEndpointType('Secondary')}>Secondary Only</Button>
+      </div>
+
+      {heatmapData.length > 0 && (
+        <HeatMap
+          xLabels={phases}
+          yLabels={indications}
+          data={heatmapData}
+          squares
+          cellStyle={(background, value) => ({
+            background: `rgba(128, 0, 128, ${Math.min(value / 100, 1)})`,
+            fontSize: '11px',
+            color: '#fff'
+          })}
+          cellRender={value => <div>{value}</div>}
+        />
+      )}
+    </div>
+  );
+}
