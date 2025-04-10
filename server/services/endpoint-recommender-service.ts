@@ -1,182 +1,316 @@
-import fs from 'fs';
-import path from 'path';
+import { eq, and, sql, desc, like, or } from 'drizzle-orm';
+import { db } from '../db';
+import { csrReports, csrDetails } from '@shared/schema';
+import { huggingFaceService } from '../huggingface-service';
 
-// Types
-export interface Endpoint {
-  name: string;
-  description: string;
-  frequency: number;
-  successRate?: number;
-  phaseDistribution?: Record<string, number>;
-  reference?: string;
-}
+/**
+ * EndpointRecommenderService
+ * 
+ * Service for recommending clinical trial endpoints based on 
+ * indication, phase, and other trial characteristics.
+ * Uses database analysis and Hugging Face models for recommendations.
+ */
+export class EndpointRecommenderService {
+  private hfService: typeof huggingFaceService;
 
-export interface SimilarTrial {
-  id: string;
-  title: string;
-  phase: string;
-  endpoints: string[];
-  indication?: string;
-  year?: number;
-}
-
-export interface EndpointRecommendation {
-  endpoints: Endpoint[];
-  rationale: string;
-  similarTrials: SimilarTrial[];
-  query: {
-    indication: string;
-    phase: string;
-    therapeuticArea?: string;
-  };
-  totalTrialsAnalyzed: number;
-}
-
-export interface EndpointSearchParams {
-  indication: string;
-  phase: string;
-  therapeuticArea?: string;
-}
-
-// Endpoint descriptions
-const endpointDescriptions: Record<string, string> = {
-  'Overall Survival (OS)': 'Time from randomization until death from any cause. The gold standard efficacy measure in oncology.',
-  'Progression-Free Survival (PFS)': 'Time from randomization until objective tumor progression or death from any cause.',
-  'Disease-Free Survival (DFS)': 'Time from randomization until recurrence of tumor or death from any cause.',
-  'Objective Response Rate (ORR)': 'Proportion of patients with tumor size reduction of a predefined amount and for a minimum time period.',
-  'Duration of Response (DOR)': 'Time from documentation of tumor response to disease progression or death.',
-  'HbA1c Change from Baseline': 'Change in glycated hemoglobin levels, measuring long-term blood glucose control.',
-  'Fasting Plasma Glucose': 'Measurement of blood glucose after an overnight fast, indicating baseline glucose control.',
-  'Body Weight Change': 'Change in body weight from baseline, important for therapies that may impact weight.',
-  'Hypoglycemic Events': 'Frequency of low blood glucose events, a key safety endpoint in diabetes trials.',
-  'MACE': 'Major Adverse Cardiovascular Events, a composite endpoint for cardiovascular outcomes.',
-  'Blood Pressure Change': 'Change in systolic and/or diastolic blood pressure from baseline.',
-  'Joint Pain Score': 'Patient-reported measure of joint pain severity, often using validated scales.',
-  'ACR20/50/70': 'American College of Rheumatology response criteria measuring % improvement in rheumatoid arthritis symptoms.',
-  'EDSS Score Change': 'Change in Expanded Disability Status Scale, measuring disability progression in multiple sclerosis.',
-  'Relapse Rate': 'Number of confirmed relapses per patient-year.',
-  'HAM-D Score': 'Hamilton Depression Rating Scale score, measuring depression severity.',
-  'FEV1 Change': 'Change in Forced Expiratory Volume in 1 second, measuring lung function.'
-};
-
-// Map indications to likely endpoints
-const indicationToEndpoints: Record<string, string[]> = {
-  'Non-Small Cell Lung Cancer': [
-    'Overall Survival (OS)',
-    'Progression-Free Survival (PFS)',
-    'Objective Response Rate (ORR)',
-    'Duration of Response (DOR)',
-    'Disease-Free Survival (DFS)'
-  ],
-  'Type 2 Diabetes': [
-    'HbA1c Change from Baseline',
-    'Fasting Plasma Glucose',
-    'Body Weight Change',
-    'Hypoglycemic Events'
-  ],
-  'Heart Failure': [
-    'MACE',
-    'Hospitalization Rate',
-    'Blood Pressure Change',
-    'Exercise Capacity'
-  ],
-  'Rheumatoid Arthritis': [
-    'ACR20/50/70',
-    'Joint Pain Score',
-    'Disease Activity Score',
-    'Physical Function'
-  ],
-  'Multiple Sclerosis': [
-    'EDSS Score Change',
-    'Relapse Rate',
-    'New MRI Lesions',
-    'Brain Volume Loss'
-  ],
-  'Major Depressive Disorder': [
-    'HAM-D Score',
-    'Response Rate',
-    'Remission Rate',
-    'Relapse Rate'
-  ]
-};
-
-// Generate recommendations based on indication and phase
-export async function getEndpointRecommendations(
-  params: EndpointSearchParams
-): Promise<EndpointRecommendation> {
-  const { indication, phase, therapeuticArea } = params;
-  
-  // In a real implementation, this would query a database of clinical trials
-  // For demo purposes, we'll create synthetic recommendations
-  
-  // Get relevant endpoints for the indication
-  const relevantEndpoints = indicationToEndpoints[indication] || [];
-  
-  // Generate endpoints with frequency, success rate, and phase distribution
-  const endpoints = relevantEndpoints.map((name, index) => {
-    // Simulate different frequencies and success rates based on position
-    const frequency = 90 - (index * 10);
-    const successRate = 80 - (index * 5);
-    
-    // Phase distribution favors the selected phase
-    const phaseDistribution: Record<string, number> = {
-      'Phase 1': 15,
-      'Phase 2': 25,
-      'Phase 3': 40,
-      'Phase 4': 20
-    };
-    
-    // Adjust distribution to favor the selected phase
-    const phaseIndex = ['Phase 1', 'Phase 2', 'Phase 3', 'Phase 4'].indexOf(phase);
-    if (phaseIndex >= 0) {
-      // Increase the selected phase by 20% and reduce others proportionally
-      const boost = 20;
-      const reduction = boost / 3;
-      
-      phaseDistribution[phase] += boost;
-      Object.keys(phaseDistribution).forEach(p => {
-        if (p !== phase) {
-          phaseDistribution[p] = Math.max(5, phaseDistribution[p] - reduction);
-        }
-      });
-    }
-    
-    return {
-      name,
-      description: endpointDescriptions[name] || 'No description available',
-      frequency,
-      successRate,
-      phaseDistribution,
-      reference: `NCT${Math.floor(10000000 + Math.random() * 90000000)}`
-    };
-  });
-  
-  // Generate similar trials with endpoints
-  const similarTrials: SimilarTrial[] = [];
-  for (let i = 0; i < 3; i++) {
-    const trialEndpoints = relevantEndpoints.slice(0, Math.floor(Math.random() * 3) + 2);
-    similarTrials.push({
-      id: `NCT${Math.floor(10000000 + Math.random() * 90000000)}`,
-      title: `${therapeuticArea || ''} Study for ${indication} - ${Math.random().toString(36).substring(7)}`,
-      phase,
-      endpoints: trialEndpoints,
-      year: 2020 + Math.floor(Math.random() * 5)
-    });
+  constructor(hfService: typeof huggingFaceService) {
+    this.hfService = hfService;
   }
-  
-  // Generate rationale based on indication and phase
-  const totalTrials = Math.floor(Math.random() * 50) + 50;
-  const rationale = `Based on analysis of ${totalTrials} similar trials for ${indication}, ${endpoints[0]?.name} is the most commonly used primary endpoint (${endpoints[0]?.frequency}%) with high regulatory success rates. For ${phase} studies, ${endpoints[1]?.name} is also frequently used. The most successful trials typically include a combination of ${endpoints[0]?.name} and ${endpoints[1]?.name} endpoints to comprehensively assess efficacy.`;
-  
-  return {
-    endpoints,
-    rationale,
-    similarTrials,
-    query: {
-      indication,
-      phase,
-      therapeuticArea
-    },
-    totalTrialsAnalyzed: totalTrials
-  };
+
+  /**
+   * Get endpoint recommendations based on indication and phase
+   */
+  async getEndpointRecommendations(
+    indication: string,
+    phase: string = '',
+    count: number = 5
+  ): Promise<string[]> {
+    try {
+      // First try to find common endpoints directly from the database
+      const dbRecommendations = await this.getCommonEndpointsFromDatabase(indication, phase);
+      
+      if (dbRecommendations.length >= count) {
+        return dbRecommendations.slice(0, count);
+      }
+      
+      // If not enough recommendations from DB, use Hugging Face to generate more
+      const aiRecommendations = await this.getAIGeneratedEndpoints(
+        indication, 
+        phase,
+        count - dbRecommendations.length
+      );
+      
+      // Combine DB and AI recommendations, avoiding duplicates
+      const allRecommendations = [
+        ...dbRecommendations,
+        ...aiRecommendations.filter(rec => !dbRecommendations.includes(rec))
+      ];
+      
+      return allRecommendations.slice(0, count);
+    } catch (error) {
+      console.error('Error getting endpoint recommendations:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get common endpoints directly from the database
+   */
+  private async getCommonEndpointsFromDatabase(
+    indication: string,
+    phase: string = ''
+  ): Promise<string[]> {
+    try {
+      // Create query conditions
+      const conditions = [];
+      
+      // Add indication filter (with fuzzy matching)
+      conditions.push(like(csrReports.indication, `%${indication}%`));
+      
+      // Add phase filter if provided
+      if (phase && phase !== 'any') {
+        conditions.push(like(csrReports.phase, `%${phase}%`));
+      }
+      
+      // Build full query condition
+      const whereCondition = conditions.length > 0 
+        ? and(...conditions) 
+        : undefined;
+      
+      // Query for reports matching criteria
+      const matchingReports = await db
+        .select({
+          id: csrReports.id,
+        })
+        .from(csrReports)
+        .where(whereCondition)
+        .limit(100);
+      
+      if (matchingReports.length === 0) {
+        return [];
+      }
+      
+      // Get report IDs
+      const reportIds = matchingReports.map(report => report.id);
+      
+      // Extract unique primary endpoints from matching reports
+      const detailsResults = await db
+        .select({
+          primaryEndpoint: csrDetails.primaryEndpoint,
+        })
+        .from(csrDetails)
+        .where(sql`${csrDetails.reportId} IN (${reportIds.join(',')})`)
+        .orderBy(desc(sql`COUNT(*)`))
+        .groupBy(csrDetails.primaryEndpoint);
+      
+      // Extract endpoints and filter out null/empty values
+      const endpoints = detailsResults
+        .map(result => result.primaryEndpoint)
+        .filter(Boolean) as string[];
+      
+      return endpoints;
+    } catch (error) {
+      console.error('Error getting endpoints from database:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Generate endpoint recommendations using Hugging Face
+   */
+  private async getAIGeneratedEndpoints(
+    indication: string,
+    phase: string = '',
+    count: number = 5
+  ): Promise<string[]> {
+    try {
+      const prompt = `
+Generate ${count} evidence-based primary endpoints appropriate for a ${phase || 'clinical'} trial 
+targeting ${indication}. Format the response as a JSON array of strings containing only the endpoints.
+
+For example:
+["Reduction in tumor size measured by CT scan at 6 months", "Progression-free survival at 12 months"]
+
+Guidelines:
+- Each endpoint should be specific and measurable
+- Include timeframes where applicable 
+- Focus on clinically relevant outcomes
+- Follow standard endpoint structures for ${indication}
+- Provide clear metrics (e.g., percentage reduction, absolute change)
+`;
+
+      // Query Hugging Face API
+      const response = await this.hfService.queryHuggingFace(prompt);
+      
+      // Parse response to extract JSON array
+      try {
+        // Find JSON array in the response
+        const jsonMatch = response.match(/\[.*\]/s);
+        if (jsonMatch) {
+          const jsonStr = jsonMatch[0];
+          const endpoints = JSON.parse(jsonStr);
+          
+          if (Array.isArray(endpoints)) {
+            return endpoints
+              .slice(0, count)
+              .map(endpoint => endpoint.trim())
+              .filter(Boolean);
+          }
+        }
+        
+        // Fallback: Parse line by line if JSON parsing fails
+        return response
+          .split('\n')
+          .map(line => line.replace(/^["'\d\s-]+/, '').trim())
+          .filter(Boolean)
+          .slice(0, count);
+      } catch (parseError) {
+        console.error('Error parsing AI response:', parseError);
+        
+        // Last resort fallback: Split by quotes or line breaks
+        return response
+          .split(/["'\n]/)
+          .map(line => line.trim())
+          .filter(line => line.length > 10 && !line.includes('{') && !line.includes('}'))
+          .slice(0, count);
+      }
+    } catch (error) {
+      console.error('Error generating AI endpoints:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Evaluate an endpoint's quality and applicability
+   */
+  async evaluateEndpoint(
+    endpoint: string,
+    indication: string,
+    phase: string = ''
+  ): Promise<{ 
+    score: number; 
+    feedback: string;
+    similarEndpoints: string[];
+  }> {
+    try {
+      const prompt = `
+Evaluate this clinical trial endpoint for a ${phase || 'clinical'} trial in ${indication}:
+"${endpoint}"
+
+Consider:
+1. Specificity and measurability
+2. Clinical relevance
+3. Appropriateness for ${phase || 'clinical'} trials
+4. Standard practices for ${indication}
+5. Statistical considerations
+
+Provide a JSON response with:
+- score: A number from 0-100 representing quality
+- feedback: Constructive feedback explaining the score
+- suggestedImprovement: How to improve this endpoint (if score < 90)
+`;
+
+      // Query Hugging Face API
+      const response = await this.hfService.queryHuggingFace(prompt);
+      
+      // Parse response
+      try {
+        // Try to extract JSON
+        const jsonMatch = response.match(/{.*}/s);
+        if (jsonMatch) {
+          const jsonStr = jsonMatch[0];
+          const evaluation = JSON.parse(jsonStr);
+          
+          // Get similar endpoints from the database
+          const similarEndpoints = await this.getSimilarEndpoints(endpoint, indication, 3);
+          
+          return {
+            score: evaluation.score || 75,
+            feedback: evaluation.feedback || 'No specific feedback available',
+            similarEndpoints,
+          };
+        }
+        
+        // Fallback if JSON parsing fails
+        return {
+          score: 70,
+          feedback: 'Unable to parse structured feedback. Please review the endpoint for clarity and measurability.',
+          similarEndpoints: await this.getSimilarEndpoints(endpoint, indication, 3),
+        };
+      } catch (parseError) {
+        console.error('Error parsing endpoint evaluation:', parseError);
+        return {
+          score: 65,
+          feedback: 'Endpoint evaluation failed. Please ensure the endpoint is clear, specific, and measurable.',
+          similarEndpoints: [],
+        };
+      }
+    } catch (error) {
+      console.error('Error evaluating endpoint:', error);
+      return {
+        score: 60,
+        feedback: 'An error occurred during evaluation. Please try again.',
+        similarEndpoints: [],
+      };
+    }
+  }
+
+  /**
+   * Find similar endpoints from the database
+   */
+  private async getSimilarEndpoints(
+    endpoint: string,
+    indication: string,
+    limit: number = 3
+  ): Promise<string[]> {
+    try {
+      // Get keywords from endpoint
+      const keywords = endpoint
+        .toLowerCase()
+        .replace(/[^\w\s]/g, '')
+        .split(/\s+/)
+        .filter(word => word.length > 3);
+      
+      if (keywords.length === 0) {
+        return [];
+      }
+      
+      // Build OR conditions for keyword matching
+      const keywordConditions = keywords.map(keyword => 
+        like(csrDetails.primaryEndpoint, `%${keyword}%`)
+      );
+      
+      // Query for similar endpoints
+      const results = await db
+        .select({
+          endpoint: csrDetails.primaryEndpoint,
+        })
+        .from(csrDetails)
+        .innerJoin(csrReports, eq(csrDetails.reportId, csrReports.id))
+        .where(
+          and(
+            like(csrReports.indication, `%${indication}%`),
+            or(...keywordConditions)
+          )
+        )
+        .limit(limit);
+      
+      return results
+        .map(result => result.endpoint)
+        .filter(Boolean) as string[];
+    } catch (error) {
+      console.error('Error finding similar endpoints:', error);
+      return [];
+    }
+  }
+}
+
+// Singleton instance to be used by routes
+let endpointRecommenderService: EndpointRecommenderService | null = null;
+
+export function getEndpointRecommenderService(): EndpointRecommenderService {
+  if (!endpointRecommenderService) {
+    endpointRecommenderService = new EndpointRecommenderService(huggingFaceService);
+  }
+  return endpointRecommenderService;
 }
