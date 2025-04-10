@@ -312,7 +312,7 @@ const ObesityStudyProtocol = () => {
                   </li>
                   <li className="flex gap-2">
                     <AlertTriangle className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
-                    <span>Uncontrolled hypertension (BP >160/100 mmHg)</span>
+                    <span>Uncontrolled hypertension (BP {`>`}160/100 mmHg)</span>
                   </li>
                   <li className="flex gap-2">
                     <AlertTriangle className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
@@ -320,7 +320,7 @@ const ObesityStudyProtocol = () => {
                   </li>
                   <li className="flex gap-2">
                     <AlertTriangle className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
-                    <span>Type 1 diabetes or uncontrolled Type 2 diabetes (HbA1c >9.0%)</span>
+                    <span>Type 1 diabetes or uncontrolled Type 2 diabetes (HbA1c {`>`}9.0%)</span>
                   </li>
                   <li className="flex gap-2">
                     <AlertTriangle className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
