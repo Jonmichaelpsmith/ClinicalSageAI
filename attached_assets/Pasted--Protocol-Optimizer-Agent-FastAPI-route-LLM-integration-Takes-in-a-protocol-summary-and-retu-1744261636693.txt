@@ -1,0 +1,62 @@
+# Protocol Optimizer Agent (FastAPI route + LLM integration)
+# Takes in a protocol summary and returns CSR-based optimization suggestions
+
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+import requests
+import os
+import json
+
+router = APIRouter()
+
+HF_API_KEY = os.getenv("HF_API_KEY")
+HF_MODEL_URL = "https://api-inference.huggingface.co/models/mistralai/Mixtral-8x7B-Instruct-v0.1"
+HEADERS = {"Authorization": f"Bearer {HF_API_KEY}"}
+
+class ProtocolRequest(BaseModel):
+    summary: str
+    top_csr_ids: list[str]  # Optional context from search/dossier
+
+@router.post("/api/optimizer/protocol")
+def optimize_protocol(req: ProtocolRequest):
+    if not HF_API_KEY:
+        raise HTTPException(status_code=500, detail="Missing Hugging Face API key")
+
+    context_blocks = []
+    for csr_id in req.top_csr_ids:
+        try:
+            with open(f"data/processed_csrs/{csr_id}.json", "r") as f:
+                csr = json.load(f)
+                context_blocks.append(
+                    f"CSR {csr_id}: {csr.get('indication', '')}, Phase: {csr.get('phase', '')}, Outcome: {csr.get('outcome_summary', '')}, Endpoints: {', '.join(csr.get('primary_endpoints', []))}"
+                )
+        except Exception:
+            continue
+
+    prompt = f"""
+You are a senior clinical trial strategist. Based on the following protocol summary and historical precedent, suggest improvements:
+
+Protocol Summary:
+{req.summary}
+
+Relevant Trial Context:
+{chr(10).join(context_blocks)}
+
+Return a structured response with:
+- Key suggestions
+- Risk factors
+- Matched CSR insights
+- Suggested endpoints or arms if applicable
+"""
+
+    response = requests.post(
+        HF_MODEL_URL,
+        headers=HEADERS,
+        json={"inputs": prompt, "parameters": {"max_new_tokens": 600, "temperature": 0.4}}
+    )
+
+    try:
+        output = response.json()
+        return {"recommendation": output[0]["generated_text"]}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"LLM error: {e}")
