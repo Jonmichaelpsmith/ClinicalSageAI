@@ -172,6 +172,9 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                 <NavItem href="/client-intelligence" icon={<Building2 />}>
                   Client Intelligence
                 </NavItem>
+                <NavItem href="/competitive-intelligence" icon={<Target />}>
+                  Strategic Intelligence
+                </NavItem>
               </div>
             </div>
           </nav>
@@ -258,6 +261,9 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
               <div className="space-y-1">
                 <NavItem href="/client-intelligence" icon={<Building2 />}>
                   Client Intelligence
+                </NavItem>
+                <NavItem href="/competitive-intelligence" icon={<Target />}>
+                  Strategic Intelligence
                 </NavItem>
               </div>
             </div>
