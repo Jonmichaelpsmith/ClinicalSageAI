@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { CsrReport, CsrDetails } from "@/lib/types";
-import { X, FileSymlink, Download, ClipboardCopy, BarChart2, LineChart } from "lucide-react";
+import { X, FileSymlink, Download, ClipboardCopy, BarChart2, LineChart, LayoutDashboard } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { apiRequest } from "@/lib/queryClient";
@@ -600,6 +600,14 @@ ${details?.safety?.discontinuationRates ? `Discontinuation Rates: ${details.safe
             <StatusBadge status={report.status as "Processing" | "Processed" | "Failed"} />
           </div>
           <div className="flex space-x-2">
+            <Button 
+              size="sm" 
+              variant="outline"
+              onClick={() => window.location.href = '/dashboard'}
+            >
+              <LayoutDashboard className="h-4 w-4 mr-1" />
+              View in Dashboard
+            </Button>
             <Button 
               size="sm" 
               variant="outline"
