@@ -3,13 +3,15 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Link } from "wouter";
 import { LumenBioReport } from "@/components/reports/LumenBioReport";
+import ObesityStudyProtocol from "@/components/lumen-bio/ObesityStudyProtocol";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery } from "@tanstack/react-query";
 import { 
   FileText, Microscope, BarChart, PieChart, 
-  BookOpen, Download, Share, AlertCircle, Beaker, Target 
+  BookOpen, Download, Share, AlertCircle, Beaker, Target,
+  Weight
 } from "lucide-react";
 
 export default function LumenBioDashboard() {
