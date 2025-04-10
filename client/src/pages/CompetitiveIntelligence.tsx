@@ -342,25 +342,27 @@ export default function CompetitiveIntelligence() {
     }
     
     try {
-      const response = await fetch('/api/strategy/export-pdf', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          report: generatedReport,
-          title: `TrialSage Strategic Intelligence Report - ${indication} ${phase}`
-        })
+      const response = await apiRequest("POST", "/api/strategy/export-pdf", {
+        protocolSummary,
+        indication,
+        phase,
+        sponsor: "Lumen Bio",
+        report: generatedReport,
+        title: `Strategic Analysis: ${indication} ${phase} Protocol`
       });
       
       const data = await response.json();
       
-      if (data.download_url) {
+      if (data.success && data.download_url) {
+        // Open download in new tab
         window.open(data.download_url, '_blank');
+        
         toast({
           title: "PDF Export Complete",
           description: "Your strategic report PDF is ready for download.",
         });
       } else {
-        throw new Error("Failed to generate PDF");
+        throw new Error(data.message || "Failed to generate PDF");
       }
     } catch (error) {
       toast({
@@ -382,24 +384,20 @@ export default function CompetitiveIntelligence() {
     }
     
     try {
-      const response = await fetch('/api/dossier/save-strategy', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          protocol_id: `${indication.toLowerCase().replace(/\s+/g, '-')}-${phase.toLowerCase().replace(/\s+/g, '-')}`,
-          strategy_text: generatedReport
-        })
+      const response = await apiRequest("POST", "/api/dossier/save-strategy", {
+        protocol_id: `${indication.toLowerCase().replace(/\s+/g, '-')}-${phase.toLowerCase().replace(/\s+/g, '-')}`,
+        strategy_text: generatedReport
       });
       
       const data = await response.json();
       
-      if (data.message === "Saved to dossier") {
+      if (data.success) {
         toast({
           title: "Saved to Dossier",
           description: "Strategic analysis has been saved to your study dossier.",
         });
       } else {
-        throw new Error("Failed to save to dossier");
+        throw new Error(data.message || "Failed to save to dossier");
       }
     } catch (error) {
       toast({
