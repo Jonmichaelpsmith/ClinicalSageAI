@@ -104,7 +104,7 @@ export async function generateProtocolTemplate(
   );
 
   // Validate the generated protocol
-  const validatedSections = await validateProtocolSections(protocolSections, indication, phase);
+  const validatedSections = await validateProtocolSections(protocolSections, indication, phase, population);
 
   // Generate validation summary
   const validationSummary = {
@@ -278,7 +278,25 @@ async function enhanceSectionWithAI(
 ): Promise<string> {
   try {
     // Create a context for the AI model from similar trials
-    let context = `Generate a ${sectionName} section for a Phase ${phase} clinical trial protocol for ${indication}. `;
+    let context = `Generate a ${sectionName} section for a Phase ${phase} clinical trial protocol for ${indication} with a target population of ${population}. `;
+    
+    // Add endpoints to context if provided
+    if (endpoints.primary.length > 0 || endpoints.secondary.length > 0) {
+      context += "The protocol includes the following endpoints: ";
+      
+      if (endpoints.primary.length > 0) {
+        context += `Primary endpoints: ${endpoints.primary.join(', ')}. `;
+      }
+      
+      if (endpoints.secondary.length > 0) {
+        context += `Secondary endpoints: ${endpoints.secondary.join(', ')}. `;
+      }
+    }
+    
+    // Add additional context if provided
+    if (additionalContext) {
+      context += `Additional context: ${additionalContext}. `;
+    }
     
     // Add context from similar trials if available
     if (similarTrials.length > 0) {
@@ -287,25 +305,30 @@ async function enhanceSectionWithAI(
       // Add specific context based on section type
       switch (sectionName) {
         case "Study Design":
-          context += "Include details about study type, randomization, blinding, and duration.";
+          context += "Include details about study type, randomization, blinding, duration, and consider the specific population characteristics.";
           break;
         case "Study Objectives":
-          context += "Include primary and secondary objectives that are specific, measurable, and clinically relevant.";
+          context += "Include primary and secondary objectives that are specific, measurable, and clinically relevant for the target population.";
           break;
         case "Inclusion Criteria":
-          context += "List 5-7 key inclusion criteria including age range, confirmation of disease, and any required lab values or scores.";
+          context += `List 5-7 key inclusion criteria specifically for ${population}, including age range, confirmation of disease, and any required lab values or scores.`;
           break;
         case "Exclusion Criteria":
-          context += "List 5-7 key exclusion criteria including contraindications, comorbidities, and previous treatments.";
+          context += `List 5-7 key exclusion criteria tailored for ${population}, including contraindications, comorbidities, and previous treatments.`;
           break;
         case "Endpoints":
-          context += "Specify primary and secondary endpoints with clear measurement timepoints.";
+          // Use provided endpoints if available
+          if (endpoints.primary.length > 0 || endpoints.secondary.length > 0) {
+            context += "Use the endpoints specified earlier and add detailed measurement timepoints and methods.";
+          } else {
+            context += "Specify primary and secondary endpoints with clear measurement timepoints that are appropriate for the target population.";
+          }
           break;
         case "Statistical Analysis":
-          context += "Describe analysis population, statistical methods, and sample size justification.";
+          context += "Describe analysis population, statistical methods, and sample size justification, accounting for the specified endpoints and population characteristics.";
           break;
         case "Safety Monitoring":
-          context += "Include adverse event monitoring, data safety monitoring board, and stopping rules.";
+          context += "Include adverse event monitoring, data safety monitoring board, and stopping rules appropriate for the study population and indication.";
           break;
       }
     }
@@ -331,7 +354,8 @@ async function enhanceSectionWithAI(
 async function validateProtocolSections(
   sections: ProtocolSection[],
   indication: string,
-  phase: string
+  phase: string,
+  population: string = 'appropriate population'
 ): Promise<ProtocolSection[]> {
   try {
     const validatedSections = [...sections];
@@ -343,10 +367,10 @@ async function validateProtocolSections(
       
       // Use AI to identify potential issues
       const validationPrompt = `
-        Review this ${section.sectionName} for a Phase ${phase} ${indication} clinical trial protocol:
+        Review this ${section.sectionName} for a Phase ${phase} ${indication} clinical trial protocol targeting ${population}:
         "${section.content}"
         
-        Identify any potential regulatory issues, scientific problems, or improvements.
+        Identify any potential regulatory issues, scientific problems, or improvements, especially those related to the target population.
         Format your response as a JSON array of issues, where each issue has:
         - severity: one of "critical", "high", "medium", "warning", or "low"
         - message: a clear explanation of the issue
@@ -414,10 +438,10 @@ async function validateProtocolSections(
       // Generate competitive benchmark
       try {
         const benchmarkPrompt = `
-          How does this ${section.sectionName} for a Phase ${phase} ${indication} trial compare to industry standards?
+          How does this ${section.sectionName} for a Phase ${phase} ${indication} trial targeting ${population} compare to industry standards?
           "${section.content}"
           
-          Provide a brief competitive analysis (2-3 sentences) on how this compares to other similar trials.
+          Provide a brief competitive analysis (2-3 sentences) on how this compares to other similar trials for this target population.
         `;
         
         const benchmarkResponse = await queryHuggingFace(benchmarkPrompt, HFModel.FLAN_T5_XL, 256, 0.7);
