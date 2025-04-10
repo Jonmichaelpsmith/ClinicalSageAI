@@ -60,8 +60,36 @@ export default function DossierViewer() {
     });
   };
 
-  const updateNote = (id: string, value: string) => {
-    setNotes((prev) => ({ ...prev, [id]: value }));
+  const updateNote = async (id: string, value: string) => {
+    const updatedNotes = { ...notes, [id]: value };
+    setNotes(updatedNotes);
+    
+    try {
+      setSaving(true);
+      const response = await fetch(`/api/dossier/${dossier_id}/update-notes`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ notes: updatedNotes }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to save notes: ${response.status}`);
+      }
+      
+      // Successful response
+      console.log('Notes saved successfully');
+    } catch (error) {
+      console.error('Error saving notes:', error);
+      toast({
+        title: "Failed to save notes",
+        description: "Changes may not persist when you leave this page.",
+        variant: "destructive"
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (loading) {
@@ -121,13 +149,20 @@ export default function DossierViewer() {
             }</p>
             <div className="pt-2 mt-1 border-t">
               <label className="block text-sm font-medium text-blue-700 mb-1">📝 Notes / Annotations:</label>
-              <Textarea
-                className="w-full text-sm min-h-[100px]"
-                placeholder="Add notes about this study (regulatory considerations, decision factors, etc.)"
-                value={notes[csr.csr_id] || ''}
-                onChange={(e) => updateNote(csr.csr_id, e.target.value)}
-                rows={3}
-              />
+              <div className="relative">
+                <Textarea
+                  className="w-full text-sm min-h-[100px]"
+                  placeholder="Add notes about this study (regulatory considerations, decision factors, etc.)"
+                  value={notes[csr.csr_id] || ''}
+                  onChange={(e) => updateNote(csr.csr_id, e.target.value)}
+                  rows={3}
+                />
+                {saving && (
+                  <div className="absolute top-2 right-2 text-blue-600 flex items-center gap-1 text-xs bg-white/80 px-2 py-1 rounded-md">
+                    <Loader2 className="h-3 w-3 animate-spin" /> Saving...
+                  </div>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
