@@ -57,6 +57,9 @@ export type ProtocolTemplate = {
 export async function generateProtocolTemplate(
   indication: string,
   phase: string,
+  population: string = 'appropriate population',
+  endpoints: { primary: string[], secondary: string[] } = { primary: [], secondary: [] },
+  additionalContext: string = '',
   includeExamples: boolean = true
 ): Promise<ProtocolTemplate> {
   // Get similar trials based on indication and phase
@@ -94,6 +97,9 @@ export async function generateProtocolTemplate(
     trialDetailMap,
     indication,
     phase,
+    population,
+    endpoints,
+    additionalContext,
     includeExamples
   );
 
@@ -143,6 +149,9 @@ async function generateProtocolSections(
   trialDetailMap: Map<number, any>,
   indication: string,
   phase: string,
+  population: string = 'appropriate population',
+  endpoints: { primary: string[], secondary: string[] } = { primary: [], secondary: [] },
+  additionalContext: string = '',
   includeExamples: boolean = true
 ): Promise<ProtocolSection[]> {
   // Default protocol sections
@@ -190,7 +199,10 @@ async function generateProtocolSections(
           indication,
           phase,
           similarTrials,
-          trialDetailMap
+          trialDetailMap,
+          population,
+          endpoints,
+          additionalContext
         );
         
         if (enhancedContent) {
@@ -259,7 +271,10 @@ async function enhanceSectionWithAI(
   indication: string,
   phase: string,
   similarTrials: any[],
-  trialDetailMap: Map<number, any>
+  trialDetailMap: Map<number, any>,
+  population: string = 'appropriate population',
+  endpoints: { primary: string[], secondary: string[] } = { primary: [], secondary: [] },
+  additionalContext: string = ''
 ): Promise<string> {
   try {
     // Create a context for the AI model from similar trials
