@@ -8,7 +8,8 @@ import {
   BarChart, PieChart, FileText, Upload, Search, 
   ArrowRight, BookOpen, Brain, Lightbulb, Users, 
   Sparkles, Server, Rocket, Beaker, Microscope,
-  MessageSquare, FileType, Database
+  MessageSquare, FileType, Database, FileSearch,
+  CheckSquare
 } from "lucide-react";
 import {
   Card,
@@ -101,9 +102,11 @@ const Dashboard = () => {
                     <p className="text-sm text-gray-500">Compare your design to precedent studies</p>
                   </div>
                 </div>
-                <Button variant="outline" className="w-full" onClick={() => navigate("/statistical-modeling")}>
-                  Access Design Tools
-                </Button>
+                <Link href="/statistical-modeling">
+                  <Button variant="outline" className="w-full">
+                    Access Design Tools
+                  </Button>
+                </Link>
               </div>
             </CardContent>
           </Card>
@@ -135,9 +138,11 @@ const Dashboard = () => {
                     <p className="text-sm text-gray-500">Ensure alignment with agency expectations</p>
                   </div>
                 </div>
-                <Button variant="outline" className="w-full" onClick={() => navigate("/protocol-generator")}>
-                  Create Protocol
-                </Button>
+                <Link href="/protocol-generator">
+                  <Button variant="outline" className="w-full">
+                    Create Protocol
+                  </Button>
+                </Link>
               </div>
             </CardContent>
           </Card>

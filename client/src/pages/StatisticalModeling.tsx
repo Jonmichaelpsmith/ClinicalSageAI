@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { 
   BarChart3, LineChart, PieChartIcon, TrendingUp, Check, Activity,
-  ChevronDown, ChevronUp, Code, Download, BarChart2, BrainCircuit,
+  ChevronDown, ChevronUp, ChevronRight, Code, Download, BarChart2, BrainCircuit,
   GitMerge, CornerUpRight, Calculator, LayoutGrid
 } from "lucide-react";
 import {
