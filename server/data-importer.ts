@@ -240,8 +240,8 @@ export async function importTrialsFromCsv(csvFilePath: string): Promise<{ succes
                   
                   if (existingDetails.length === 0) {
                     // Format treatment arms and endpoints if they exist in the CSV
-                    const treatmentArms = row.treatment_arms ? 
-                      (typeof row.treatment_arms === 'string' ? JSON.parse(row.treatment_arms) : row.treatment_arms) : 
+                    const treatmentArms = row.treatmentArms || row.treatment_arms ? 
+                      (typeof (row.treatmentArms || row.treatment_arms) === 'string' ? JSON.parse(row.treatmentArms || row.treatment_arms) : (row.treatmentArms || row.treatment_arms)) : 
                       [];
                       
                     const endpoints = row.endpoints ? 
@@ -249,7 +249,7 @@ export async function importTrialsFromCsv(csvFilePath: string): Promise<{ succes
                       [];
                     
                     // Extract PDF content
-                    const pdfBuffer = fs.readFileSync(row.file_path);
+                    const pdfBuffer = fs.readFileSync(row.filePath || row.file_path);
                     const pdfText = await extractTextFromPdf(pdfBuffer);
                     
                     // Generate summary and analyze content
@@ -259,24 +259,24 @@ export async function importTrialsFromCsv(csvFilePath: string): Promise<{ succes
                     // Prepare details data
                     const detailsData: Partial<InsertCsrDetails> = {
                       reportId,
-                      studyDesign: row.study_design || analysisResults.studyDesign || null,
-                      primaryObjective: row.primary_objective || analysisResults.primaryObjective || null,
+                      studyDesign: row.studyDesign || row.study_design || analysisResults.studyDesign || null,
+                      primaryObjective: row.primaryObjective || row.primary_objective || analysisResults.primaryObjective || null,
                       studyDescription: summary || null,
-                      inclusionCriteria: row.inclusion_criteria ? 
-                        (typeof row.inclusion_criteria === 'string' ? row.inclusion_criteria : JSON.stringify(row.inclusion_criteria)) : 
+                      inclusionCriteria: row.inclusionCriteria || row.inclusion_criteria ? 
+                        (typeof (row.inclusionCriteria || row.inclusion_criteria) === 'string' ? (row.inclusionCriteria || row.inclusion_criteria) : JSON.stringify(row.inclusionCriteria || row.inclusion_criteria)) : 
                         analysisResults.inclusionCriteria || null,
-                      exclusionCriteria: row.exclusion_criteria ?
-                        (typeof row.exclusion_criteria === 'string' ? row.exclusion_criteria : JSON.stringify(row.exclusion_criteria)) :
+                      exclusionCriteria: row.exclusionCriteria || row.exclusion_criteria ?
+                        (typeof (row.exclusionCriteria || row.exclusion_criteria) === 'string' ? (row.exclusionCriteria || row.exclusion_criteria) : JSON.stringify(row.exclusionCriteria || row.exclusion_criteria)) :
                         analysisResults.exclusionCriteria || null,
                       treatmentArms: treatmentArms.length > 0 ? treatmentArms : analysisResults.treatmentArms || [],
-                      studyDuration: row.study_duration || analysisResults.studyDuration || null,
+                      studyDuration: row.studyDuration || row.study_duration || analysisResults.studyDuration || null,
                       endpoints: endpoints.length > 0 ? endpoints : analysisResults.endpoints || [],
                       results: analysisResults.results || {},
                       safety: analysisResults.safety || {},
                       processed: true,
                       processingStatus: 'completed',
-                      sampleSize: row.sample_size ? parseInt(row.sample_size) : analysisResults.sampleSize || null,
-                      ageRange: row.age_range || analysisResults.ageRange || null,
+                      sampleSize: row.sampleSize ? parseInt(row.sampleSize) : (row.sample_size ? parseInt(row.sample_size) : analysisResults.sampleSize || null),
+                      ageRange: row.ageRange || row.age_range || analysisResults.ageRange || null,
                       gender: analysisResults.gender || {},
                       statisticalMethods: analysisResults.statisticalMethods || [],
                       adverseEvents: analysisResults.adverseEvents || [],
@@ -386,7 +386,7 @@ export async function importTrialsFromJson(jsonFilePath: string): Promise<{ succ
         }
         
         // Add the related details if we have them
-        if (item.treatment_arms || item.endpoints || item.inclusion_criteria || item.exclusion_criteria) {
+        if (item.treatmentArms || item.treatment_arms || item.endpoints || item.inclusionCriteria || item.inclusion_criteria || item.exclusionCriteria || item.exclusion_criteria) {
           try {
             // Check if details already exist
             const existingDetails = await db.select().from(csrDetails).where(sql => sql`${csrDetails.reportId} = ${reportId}`).limit(1);
@@ -395,24 +395,24 @@ export async function importTrialsFromJson(jsonFilePath: string): Promise<{ succ
               // Prepare details data
               const detailsData: Partial<InsertCsrDetails> = {
                 reportId,
-                studyDesign: item.study_design || null,
-                primaryObjective: item.primary_objective || null,
+                studyDesign: item.studyDesign || item.study_design || null,
+                primaryObjective: item.primaryObjective || item.primary_objective || null,
                 studyDescription: null,
-                inclusionCriteria: item.inclusion_criteria ? 
-                  (typeof item.inclusion_criteria === 'string' ? item.inclusion_criteria : JSON.stringify(item.inclusion_criteria)) : 
+                inclusionCriteria: item.inclusionCriteria || item.inclusion_criteria ? 
+                  (typeof (item.inclusionCriteria || item.inclusion_criteria) === 'string' ? (item.inclusionCriteria || item.inclusion_criteria) : JSON.stringify(item.inclusionCriteria || item.inclusion_criteria)) : 
                   null,
-                exclusionCriteria: item.exclusion_criteria ?
-                  (typeof item.exclusion_criteria === 'string' ? item.exclusion_criteria : JSON.stringify(item.exclusion_criteria)) :
+                exclusionCriteria: item.exclusionCriteria || item.exclusion_criteria ?
+                  (typeof (item.exclusionCriteria || item.exclusion_criteria) === 'string' ? (item.exclusionCriteria || item.exclusion_criteria) : JSON.stringify(item.exclusionCriteria || item.exclusion_criteria)) :
                   null,
-                treatmentArms: item.treatment_arms || [],
-                studyDuration: item.study_duration || null,
+                treatmentArms: item.treatmentArms || item.treatment_arms || [],
+                studyDuration: item.studyDuration || item.study_duration || null,
                 endpoints: item.endpoints || [],
                 results: {},
                 safety: {},
                 processed: false,
                 processingStatus: 'pending',
-                sampleSize: item.sample_size ? parseInt(item.sample_size) : null,
-                ageRange: item.age_range || null,
+                sampleSize: item.sampleSize ? parseInt(item.sampleSize) : (item.sample_size ? parseInt(item.sample_size) : null),
+                ageRange: item.ageRange || item.age_range || null,
                 gender: {},
                 statisticalMethods: [],
                 adverseEvents: [],
