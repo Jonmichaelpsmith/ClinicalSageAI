@@ -8,7 +8,7 @@
 
 import { db } from './db';
 import { eq, and, like, ilike, desc, asc, or, inArray, exists, sql, count } from 'drizzle-orm';
-import { csr_reports, csr_details } from '@shared/schema';
+import { csrReports, csrDetails } from '@shared/schema';
 import { HFModel, queryHuggingFace } from './huggingface-service';
 
 interface QueryResult {
@@ -210,40 +210,40 @@ async function findRelevantTrials(query: string): Promise<any[]> {
     
     // Step 2: Build and execute the database query
     let dbQuery = db.select({
-      id: csr_reports.id,
-      title: csr_reports.title,
-      sponsor: csr_reports.sponsor,
-      indication: csr_reports.indication,
-      phase: csr_reports.phase,
-      status: csr_reports.status,
-      date: csr_reports.date,
-      drugName: csr_reports.drug_name,
-      nctrialId: csr_reports.nctrial_id,
-      region: csr_reports.region
+      id: csrReports.id,
+      title: csrReports.title,
+      sponsor: csrReports.sponsor,
+      indication: csrReports.indication,
+      phase: csrReports.phase,
+      status: csrReports.status,
+      date: csrReports.date,
+      drugName: csrReports.drug_name,
+      nctrialId: csrReports.nctrial_id,
+      region: csrReports.region
     })
-    .from(csr_reports)
-    .where(eq(csr_reports.deleted_at, null))
+    .from(csrReports)
+    .where(eq(csrReports.deletedAt, null))
     .limit(20);
     
     // Add filters based on extracted parameters
     if (params.indication) {
-      dbQuery = dbQuery.where(ilike(csr_reports.indication, `%${params.indication}%`));
+      dbQuery = dbQuery.where(ilike(csrReports.indication, `%${params.indication}%`));
     }
     
     if (params.phase) {
-      dbQuery = dbQuery.where(ilike(csr_reports.phase, `%${params.phase}%`));
+      dbQuery = dbQuery.where(ilike(csrReports.phase, `%${params.phase}%`));
     }
     
     if (params.sponsor) {
-      dbQuery = dbQuery.where(ilike(csr_reports.sponsor, `%${params.sponsor}%`));
+      dbQuery = dbQuery.where(ilike(csrReports.sponsor, `%${params.sponsor}%`));
     }
     
     if (params.drug) {
-      dbQuery = dbQuery.where(ilike(csr_reports.drug_name, `%${params.drug}%`));
+      dbQuery = dbQuery.where(ilike(csrReports.drug_name, `%${params.drug}%`));
     }
     
     if (params.status) {
-      dbQuery = dbQuery.where(ilike(csr_reports.status, `%${params.status}%`));
+      dbQuery = dbQuery.where(ilike(csrReports.status, `%${params.status}%`));
     }
     
     if (params.yearStart && params.yearEnd) {
@@ -251,16 +251,16 @@ async function findRelevantTrials(query: string): Promise<any[]> {
       const endDate = `${params.yearEnd}-12-31`;
       dbQuery = dbQuery.where(
         and(
-          sql`${csr_reports.date} >= ${startDate}`,
-          sql`${csr_reports.date} <= ${endDate}`
+          sql`${csrReports.date} >= ${startDate}`,
+          sql`${csrReports.date} <= ${endDate}`
         )
       );
     } else if (params.yearStart) {
       const startDate = `${params.yearStart}-01-01`;
-      dbQuery = dbQuery.where(sql`${csr_reports.date} >= ${startDate}`);
+      dbQuery = dbQuery.where(sql`${csrReports.date} >= ${startDate}`);
     } else if (params.yearEnd) {
       const endDate = `${params.yearEnd}-12-31`;
-      dbQuery = dbQuery.where(sql`${csr_reports.date} <= ${endDate}`);
+      dbQuery = dbQuery.where(sql`${csrReports.date} <= ${endDate}`);
     }
     
     // Execute the query

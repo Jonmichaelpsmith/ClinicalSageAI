@@ -1249,6 +1249,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Research Companion API Endpoint
+  app.post('/api/research-companion/query', async (req: Request, res: Response) => {
+    try {
+      const { query, context } = req.body;
+      
+      if (!query) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Query is required" 
+        });
+      }
+      
+      // Check if Hugging Face API key is available
+      if (!huggingFaceService.isApiKeyAvailable()) {
+        return res.status(500).json({
+          success: false,
+          message: 'Research Companion service is not available (API key not configured)'
+        });
+      }
+      
+      // Process the research query
+      const userContext = {
+        userId: req.user?.id,
+        // Add any additional context from the request
+        ...(context || {})
+      };
+      
+      const results = await processResearchQuery(query, userContext);
+      
+      res.json({
+        success: true,
+        query,
+        queryType: results.queryType,
+        results: results.results,
+        analysis: results.analysis,
+        suggestedQueries: results.suggestedQueries
+      });
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+  
   // Protocol Builder & Validator Endpoints
   
   // Get regulatory agency guidelines
