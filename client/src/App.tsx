@@ -25,6 +25,7 @@ import LumenBioReport from "@/pages/LumenBioReport";
 import ClientIntelligence from "@/pages/ClientIntelligence";
 import DossierUploader from "@/pages/DossierUploader";
 import PremiumDossierLanding from "@/pages/PremiumDossierLanding";
+import FailMap from "@/pages/FailMap";
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -106,6 +107,7 @@ function Router() {
       <Route path="/client-intelligence" component={ClientIntelligence} />
       <Route path="/dossier-request">{() => renderWithLayout(DossierUploader)}</Route>
       <Route path="/premium-dossier">{() => renderWithLayout(PremiumDossierLanding)}</Route>
+      <Route path="/fail-map">{() => renderWithLayout(FailMap)}</Route>
 
       {/* Fallback to 404 */}
       <Route>{() => renderWithLayout(NotFound)}</Route>
