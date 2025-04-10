@@ -587,3 +587,418 @@ X-RateLimit-Reset: 1617974400`}
     </motion.div>
   );
 }
+import React from "react";
+import { Server, Key, Database, Code, Braces, Copy, ExternalLink, FileJson, Check } from "lucide-react";
+
+import { PageContainer, HeaderSection, ContentSection } from "@/components/layout";
+import Navbar from "@/components/navbar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
+
+export default function ApiDocumentation() {
+  const { toast } = useToast();
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast({
+      title: "Copied to clipboard",
+      description: "Code snippet has been copied to your clipboard",
+    });
+  };
+
+  return (
+    <PageContainer>
+      <HeaderSection>
+        <Navbar />
+        <div className="container px-4 md:px-6 flex flex-col items-center text-center space-y-4 py-8 md:py-12">
+          <div className="space-y-2">
+            <Badge variant="outline" className="text-primary border-primary px-3 py-1">
+              Developer Resources
+            </Badge>
+            <h1 className="text-3xl md:text-5xl font-bold tracking-tighter">
+              TrialSage API Documentation
+            </h1>
+            <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+              Integrate TrialSage data and insights directly into your applications
+            </p>
+          </div>
+        </div>
+      </HeaderSection>
+      
+      <ContentSection>
+        <div className="container px-4 md:px-6 py-8 md:py-12">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <div className="lg:col-span-1 space-y-4">
+              <div className="sticky top-20">
+                <h3 className="text-lg font-semibold mb-4">API Resources</h3>
+                <ul className="space-y-2">
+                  <li>
+                    <Button variant="ghost" className="w-full justify-start text-slate-800 dark:text-slate-200">
+                      <Server className="h-4 w-4 mr-2" /> Getting Started
+                    </Button>
+                  </li>
+                  <li>
+                    <Button variant="ghost" className="w-full justify-start text-slate-800 dark:text-slate-200">
+                      <Key className="h-4 w-4 mr-2" /> Authentication
+                    </Button>
+                  </li>
+                  <li>
+                    <Button variant="ghost" className="w-full justify-start text-slate-800 dark:text-slate-200">
+                      <Database className="h-4 w-4 mr-2" /> Reports
+                    </Button>
+                  </li>
+                  <li>
+                    <Button variant="ghost" className="w-full justify-start text-slate-800 dark:text-slate-200">
+                      <Code className="h-4 w-4 mr-2" /> Analytics
+                    </Button>
+                  </li>
+                  <li>
+                    <Button variant="ghost" className="w-full justify-start text-slate-800 dark:text-slate-200">
+                      <Braces className="h-4 w-4 mr-2" /> Protocols
+                    </Button>
+                  </li>
+                </ul>
+                
+                <h3 className="text-lg font-semibold mt-8 mb-4">SDKs & Libraries</h3>
+                <ul className="space-y-2">
+                  <li>
+                    <Button variant="ghost" className="w-full justify-start text-slate-800 dark:text-slate-200">
+                      JavaScript
+                    </Button>
+                  </li>
+                  <li>
+                    <Button variant="ghost" className="w-full justify-start text-slate-800 dark:text-slate-200">
+                      Python
+                    </Button>
+                  </li>
+                  <li>
+                    <Button variant="ghost" className="w-full justify-start text-slate-800 dark:text-slate-200">
+                      R
+                    </Button>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            
+            <div className="lg:col-span-3 space-y-8">
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold">Getting Started</h2>
+                <p>
+                  The TrialSage API provides programmatic access to clinical study report data, analytics, and insights. 
+                  This guide will help you get started with integrating TrialSage into your applications.
+                </p>
+                
+                <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4">
+                  <h3 className="text-lg font-semibold mb-2">Base URL</h3>
+                  <div className="bg-slate-100 dark:bg-slate-800 p-3 rounded-md font-mono text-sm flex justify-between items-center">
+                    <code>https://api.trialsage.com/v1</code>
+                    <Button variant="ghost" size="sm" onClick={() => copyToClipboard("https://api.trialsage.com/v1")}>
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold">Authentication</h2>
+                <p>
+                  All API requests must be authenticated using an API key. You can generate an API key in your 
+                  TrialSage dashboard under Account Settings > API Keys.
+                </p>
+                
+                <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4">
+                  <h3 className="text-lg font-semibold mb-2">API Key Authentication</h3>
+                  <p className="mb-3">
+                    Include your API key in the Authorization header of all requests:
+                  </p>
+                  <div className="bg-slate-100 dark:bg-slate-800 p-3 rounded-md font-mono text-sm flex justify-between items-center">
+                    <code>Authorization: Bearer YOUR_API_KEY</code>
+                    <Button variant="ghost" size="sm" onClick={() => copyToClipboard("Authorization: Bearer YOUR_API_KEY")}>
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                
+                <div className="bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 p-4 rounded-lg">
+                  <h4 className="font-semibold">Security Note</h4>
+                  <p className="text-sm mt-1">
+                    Keep your API key secure and never expose it in client-side code. Use server-side code to make API requests.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold">Example Requests</h2>
+                
+                <Tabs defaultValue="javascript" className="w-full">
+                  <TabsList className="w-full sm:w-auto">
+                    <TabsTrigger value="javascript">JavaScript</TabsTrigger>
+                    <TabsTrigger value="python">Python</TabsTrigger>
+                    <TabsTrigger value="curl">cURL</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="javascript" className="mt-4">
+                    <div className="bg-slate-100 dark:bg-slate-800 p-4 rounded-md font-mono text-sm">
+                      <pre>{`const fetchReports = async () => {
+  const response = await fetch('https://api.trialsage.com/v1/reports?indication=oncology&phase=2', {
+    headers: {
+      'Authorization': 'Bearer YOUR_API_KEY',
+      'Content-Type': 'application/json'
+    }
+  });
+  
+  const data = await response.json();
+  return data;
+};`}</pre>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="mt-2" 
+                      onClick={() => copyToClipboard(`const fetchReports = async () => {
+  const response = await fetch('https://api.trialsage.com/v1/reports?indication=oncology&phase=2', {
+    headers: {
+      'Authorization': 'Bearer YOUR_API_KEY',
+      'Content-Type': 'application/json'
+    }
+  });
+  
+  const data = await response.json();
+  return data;
+};`)}
+                    >
+                      <Copy className="h-4 w-4 mr-2" /> Copy
+                    </Button>
+                  </TabsContent>
+                  <TabsContent value="python" className="mt-4">
+                    <div className="bg-slate-100 dark:bg-slate-800 p-4 rounded-md font-mono text-sm">
+                      <pre>{`import requests
+
+def fetch_reports():
+    headers = {
+        'Authorization': 'Bearer YOUR_API_KEY',
+        'Content-Type': 'application/json'
+    }
+    
+    response = requests.get(
+        'https://api.trialsage.com/v1/reports',
+        params={'indication': 'oncology', 'phase': '2'},
+        headers=headers
+    )
+    
+    return response.json()`}</pre>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="mt-2"
+                      onClick={() => copyToClipboard(`import requests
+
+def fetch_reports():
+    headers = {
+        'Authorization': 'Bearer YOUR_API_KEY',
+        'Content-Type': 'application/json'
+    }
+    
+    response = requests.get(
+        'https://api.trialsage.com/v1/reports',
+        params={'indication': 'oncology', 'phase': '2'},
+        headers=headers
+    )
+    
+    return response.json()`)}
+                    >
+                      <Copy className="h-4 w-4 mr-2" /> Copy
+                    </Button>
+                  </TabsContent>
+                  <TabsContent value="curl" className="mt-4">
+                    <div className="bg-slate-100 dark:bg-slate-800 p-4 rounded-md font-mono text-sm">
+                      <pre>{`curl -X GET \\
+  'https://api.trialsage.com/v1/reports?indication=oncology&phase=2' \\
+  -H 'Authorization: Bearer YOUR_API_KEY' \\
+  -H 'Content-Type: application/json'`}</pre>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="mt-2"
+                      onClick={() => copyToClipboard(`curl -X GET \\
+  'https://api.trialsage.com/v1/reports?indication=oncology&phase=2' \\
+  -H 'Authorization: Bearer YOUR_API_KEY' \\
+  -H 'Content-Type: application/json'`)}
+                    >
+                      <Copy className="h-4 w-4 mr-2" /> Copy
+                    </Button>
+                  </TabsContent>
+                </Tabs>
+              </div>
+              
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold">API Endpoints</h2>
+                
+                <Card className="border-2 border-transparent hover:border-primary/30 transition-all">
+                  <CardHeader>
+                    <CardTitle>Reports</CardTitle>
+                    <CardDescription>Access clinical study reports</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <h4 className="font-semibold mb-1 flex items-center text-primary">
+                        <FileJson className="h-4 w-4 mr-2" /> GET /reports
+                      </h4>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        List available clinical study reports with filtering options
+                      </p>
+                      <div className="bg-slate-100 dark:bg-slate-800 p-3 rounded-md text-xs">
+                        <code>GET /reports?indication=diabetes&phase=3&limit=10</code>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-semibold mb-1 flex items-center text-primary">
+                        <FileJson className="h-4 w-4 mr-2" /> GET /reports/{"{id}"}
+                      </h4>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        Get detailed information about a specific report
+                      </p>
+                      <div className="bg-slate-100 dark:bg-slate-800 p-3 rounded-md text-xs">
+                        <code>GET /reports/12345</code>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-semibold mb-1 flex items-center text-primary">
+                        <FileJson className="h-4 w-4 mr-2" /> GET /reports/search
+                      </h4>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        Search for reports by keyword across all fields
+                      </p>
+                      <div className="bg-slate-100 dark:bg-slate-800 p-3 rounded-md text-xs">
+                        <code>GET /reports/search?q=biomarker%20response</code>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card className="border-2 border-transparent hover:border-primary/30 transition-all">
+                  <CardHeader>
+                    <CardTitle>Analytics</CardTitle>
+                    <CardDescription>Generate insights and statistics</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <h4 className="font-semibold mb-1 flex items-center text-primary">
+                        <FileJson className="h-4 w-4 mr-2" /> GET /analytics/endpoints
+                      </h4>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        Get endpoint usage statistics by indication
+                      </p>
+                      <div className="bg-slate-100 dark:bg-slate-800 p-3 rounded-md text-xs">
+                        <code>GET /analytics/endpoints?indication=oncology</code>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-semibold mb-1 flex items-center text-primary">
+                        <FileJson className="h-4 w-4 mr-2" /> GET /analytics/statistics
+                      </h4>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        Get statistical parameters for similar trials
+                      </p>
+                      <div className="bg-slate-100 dark:bg-slate-800 p-3 rounded-md text-xs">
+                        <code>GET /analytics/statistics?indication=alzheimer&phase=2</code>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card className="border-2 border-transparent hover:border-primary/30 transition-all">
+                  <CardHeader>
+                    <CardTitle>Protocols</CardTitle>
+                    <CardDescription>Protocol generation and optimization</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <h4 className="font-semibold mb-1 flex items-center text-primary">
+                        <FileJson className="h-4 w-4 mr-2" /> POST /protocols/generate
+                      </h4>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        Generate a protocol template based on study parameters
+                      </p>
+                      <div className="bg-slate-100 dark:bg-slate-800 p-3 rounded-md text-xs">
+                        <code>POST /protocols/generate
+{
+  "indication": "type 2 diabetes",
+  "phase": "2",
+  "population": "adults",
+  "primaryEndpoint": "HbA1c reduction"
+}</code>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-semibold mb-1 flex items-center text-primary">
+                        <FileJson className="h-4 w-4 mr-2" /> POST /protocols/optimize
+                      </h4>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        Optimize an existing protocol with recommendations
+                      </p>
+                      <div className="bg-slate-100 dark:bg-slate-800 p-3 rounded-md text-xs">
+                        <code>POST /protocols/optimize
+{
+  "protocolSummary": "Phase 2 study of Drug X in adult patients with type 2 diabetes...",
+  "optimizationTargets": ["statistical_power", "inclusion_criteria", "endpoints"]
+}</code>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+              
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold">Rate Limits</h2>
+                <p>
+                  The TrialSage API has the following rate limits:
+                </p>
+                
+                <ul className="list-disc pl-5 space-y-2">
+                  <li>Free tier: 100 requests per day</li>
+                  <li>Pro tier: 10,000 requests per day</li>
+                  <li>Enterprise tier: Custom limits based on your needs</li>
+                </ul>
+                
+                <p className="text-sm text-muted-foreground">
+                  Rate limit information is included in the response headers:
+                </p>
+                <div className="bg-slate-100 dark:bg-slate-800 p-3 rounded-md font-mono text-xs">
+                  <code>X-RateLimit-Limit: 10000
+X-RateLimit-Remaining: 9990
+X-RateLimit-Reset: 1619712000</code>
+                </div>
+              </div>
+              
+              <div className="mt-8">
+                <Card className="bg-primary/5 border-primary/20">
+                  <CardHeader>
+                    <CardTitle>Need help with integration?</CardTitle>
+                    <CardDescription>Our developer team is available to assist with your implementation</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm">
+                      Schedule a call with our API specialists to get personalized help with your integration
+                    </p>
+                  </CardContent>
+                  <CardFooter>
+                    <Button>Contact Developer Support</Button>
+                  </CardFooter>
+                </Card>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ContentSection>
+    </PageContainer>
+  );
+}

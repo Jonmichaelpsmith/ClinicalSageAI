@@ -304,10 +304,10 @@ export default function Home() {
             <div className="space-y-2">
               <h4 className="text-base font-medium">Product</h4>
               <ul className="space-y-1 text-sm text-gray-500 dark:text-gray-400">
-                <li>Features</li>
-                <li>Pricing</li>
-                <li>Use Cases</li>
-                <li>API</li>
+                <li><Link href="/product-features">Features</Link></li>
+                <li><Link href="/pricing-page">Pricing</Link></li>
+                <li><Link href="/use-case-library">Use Cases</Link></li>
+                <li><Link href="/api-documentation">API</Link></li>
               </ul>
             </div>
             <div className="space-y-2">

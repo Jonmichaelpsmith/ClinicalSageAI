@@ -496,3 +496,338 @@ function UseCaseLibrary() {
 }
 
 export default UseCaseLibrary;
+import React from "react";
+import { 
+  Microscope, Calendar, ArrowRight, Beaker, FileSearch, 
+  PieChart, Lock, Users, SlidersHorizontal, GraduationCap 
+} from "lucide-react";
+
+import { PageContainer, HeaderSection, ContentSection } from "@/components/layout";
+import Navbar from "@/components/navbar";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Link } from "wouter";
+
+export default function UseCaseLibrary() {
+  return (
+    <PageContainer>
+      <HeaderSection>
+        <Navbar />
+        <div className="container px-4 md:px-6 flex flex-col items-center text-center space-y-4 py-8 md:py-12">
+          <div className="space-y-2">
+            <Badge variant="outline" className="text-primary border-primary px-3 py-1">
+              Use Case Library
+            </Badge>
+            <h1 className="text-3xl md:text-5xl font-bold tracking-tighter">
+              How Teams Use TrialSage
+            </h1>
+            <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+              Real-world applications for biotech companies at every stage
+            </p>
+          </div>
+        </div>
+      </HeaderSection>
+      
+      <ContentSection>
+        <div className="container px-4 md:px-6 py-8 md:py-12">
+          <Tabs defaultValue="biotech" className="space-y-8">
+            <TabsList className="w-full max-w-xl mx-auto grid grid-cols-1 sm:grid-cols-4 h-auto">
+              <TabsTrigger value="biotech" className="py-3">Biotech Founders</TabsTrigger>
+              <TabsTrigger value="clinical" className="py-3">Clinical Operations</TabsTrigger>
+              <TabsTrigger value="regulatory" className="py-3">Regulatory Teams</TabsTrigger>
+              <TabsTrigger value="investors" className="py-3">VCs & Investors</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="biotech" className="space-y-8">
+              <div className="space-y-2 text-center max-w-3xl mx-auto">
+                <h2 className="text-3xl font-bold">For Biotech Founders & CEOs</h2>
+                <p className="text-lg text-muted-foreground">
+                  Plan clinical development more effectively with data-backed decisions, 
+                  avoid costly design errors, and minimize reliance on expensive consultants.
+                </p>
+              </div>
+              
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <Card className="border rounded-xl shadow-sm transition-all hover:shadow-md">
+                  <CardHeader>
+                    <Calendar className="h-8 w-8 text-primary mb-2" />
+                    <CardTitle>Phase 1 Planning</CardTitle>
+                    <CardDescription>First-in-human study design</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm">
+                      Analyze dosing strategies, safety monitoring parameters, and inclusion/exclusion criteria from 
+                      similar compounds to design a Phase 1 study with the highest chance of success.
+                    </p>
+                  </CardContent>
+                  <CardFooter>
+                    <Button variant="ghost" size="sm" className="gap-1 text-primary">
+                      See Example <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </CardFooter>
+                </Card>
+                
+                <Card className="border rounded-xl shadow-sm transition-all hover:shadow-md">
+                  <CardHeader>
+                    <FileSearch className="h-8 w-8 text-primary mb-2" />
+                    <CardTitle>Due Diligence Support</CardTitle>
+                    <CardDescription>Fundraising preparation</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm">
+                      Generate comprehensive trial landscape reports to validate your development plan
+                      and strengthen investor presentations with data-backed rationale for program strategy.
+                    </p>
+                  </CardContent>
+                  <CardFooter>
+                    <Button variant="ghost" size="sm" className="gap-1 text-primary">
+                      See Example <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </CardFooter>
+                </Card>
+                
+                <Card className="border rounded-xl shadow-sm transition-all hover:shadow-md">
+                  <CardHeader>
+                    <Beaker className="h-8 w-8 text-primary mb-2" />
+                    <CardTitle>Pipeline Strategy</CardTitle>
+                    <CardDescription>Multi-asset planning</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm">
+                      Determine optimal clinical development paths for multiple assets by
+                      comparing precedent development timelines and identifying strategic efficiencies.
+                    </p>
+                  </CardContent>
+                  <CardFooter>
+                    <Button variant="ghost" size="sm" className="gap-1 text-primary">
+                      See Example <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="clinical" className="space-y-8">
+              <div className="space-y-2 text-center max-w-3xl mx-auto">
+                <h2 className="text-3xl font-bold">For Clinical Operations</h2>
+                <p className="text-lg text-muted-foreground">
+                  Streamline protocol development with evidence-based templates, optimize study design,
+                  and align with regulatory precedent to accelerate approval pathways.
+                </p>
+              </div>
+              
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <Card className="border rounded-xl shadow-sm transition-all hover:shadow-md">
+                  <CardHeader>
+                    <SlidersHorizontal className="h-8 w-8 text-primary mb-2" />
+                    <CardTitle>Endpoint Selection</CardTitle>
+                    <CardDescription>Evidence-based approach</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm">
+                      Analyze endpoint performance across similar trials to select primary and secondary
+                      endpoints most likely to demonstrate clinical benefit and gain regulatory approval.
+                    </p>
+                  </CardContent>
+                  <CardFooter>
+                    <Button variant="ghost" size="sm" className="gap-1 text-primary">
+                      See Example <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </CardFooter>
+                </Card>
+                
+                <Card className="border rounded-xl shadow-sm transition-all hover:shadow-md">
+                  <CardHeader>
+                    <Users className="h-8 w-8 text-primary mb-2" />
+                    <CardTitle>Patient Population Definition</CardTitle>
+                    <CardDescription>Inclusion/exclusion criteria</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm">
+                      Refine your trial population based on analysis of similar studies,
+                      identifying optimal balance between recruitment feasibility and clinical effect size.
+                    </p>
+                  </CardContent>
+                  <CardFooter>
+                    <Button variant="ghost" size="sm" className="gap-1 text-primary">
+                      See Example <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </CardFooter>
+                </Card>
+                
+                <Card className="border rounded-xl shadow-sm transition-all hover:shadow-md">
+                  <CardHeader>
+                    <PieChart className="h-8 w-8 text-primary mb-2" />
+                    <CardTitle>Statistical Planning</CardTitle>
+                    <CardDescription>Power calculations & analysis plans</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm">
+                      Design statistical approaches with confidence by benchmarking sample sizes,
+                      effect sizes, and statistical methods against successful precedent trials.
+                    </p>
+                  </CardContent>
+                  <CardFooter>
+                    <Button variant="ghost" size="sm" className="gap-1 text-primary">
+                      See Example <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="regulatory" className="space-y-8">
+              <div className="space-y-2 text-center max-w-3xl mx-auto">
+                <h2 className="text-3xl font-bold">For Regulatory Affairs</h2>
+                <p className="text-lg text-muted-foreground">
+                  Strengthen regulatory submissions with precedent-based rationales, prepare for agency
+                  interactions, and align trial designs with successful approval pathways.
+                </p>
+              </div>
+              
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <Card className="border rounded-xl shadow-sm transition-all hover:shadow-md">
+                  <CardHeader>
+                    <GraduationCap className="h-8 w-8 text-primary mb-2" />
+                    <CardTitle>Regulatory Precedent</CardTitle>
+                    <CardDescription>Approval pathway planning</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm">
+                      Build regulatory submissions with evidence-based rationales, citing precedent
+                      trials and regulatory decisions to support your development strategy.
+                    </p>
+                  </CardContent>
+                  <CardFooter>
+                    <Button variant="ghost" size="sm" className="gap-1 text-primary">
+                      See Example <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </CardFooter>
+                </Card>
+                
+                <Card className="border rounded-xl shadow-sm transition-all hover:shadow-md">
+                  <CardHeader>
+                    <Lock className="h-8 w-8 text-primary mb-2" />
+                    <CardTitle>IND/CTA Preparation</CardTitle>
+                    <CardDescription>Application support</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm">
+                      Strengthen regulatory applications with well-documented rationales for protocol
+                      design elements, citing relevant precedent from successful submissions.
+                    </p>
+                  </CardContent>
+                  <CardFooter>
+                    <Button variant="ghost" size="sm" className="gap-1 text-primary">
+                      See Example <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </CardFooter>
+                </Card>
+                
+                <Card className="border rounded-xl shadow-sm transition-all hover:shadow-md">
+                  <CardHeader>
+                    <Microscope className="h-8 w-8 text-primary mb-2" />
+                    <CardTitle>Agency Meeting Preparation</CardTitle>
+                    <CardDescription>Pre-submission interactions</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm">
+                      Prepare for regulatory agency meetings with comprehensive data packages
+                      that anticipate questions and provide evidence-based justifications.
+                    </p>
+                  </CardContent>
+                  <CardFooter>
+                    <Button variant="ghost" size="sm" className="gap-1 text-primary">
+                      See Example <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="investors" className="space-y-8">
+              <div className="space-y-2 text-center max-w-3xl mx-auto">
+                <h2 className="text-3xl font-bold">For VCs & Investors</h2>
+                <p className="text-lg text-muted-foreground">
+                  Enhance due diligence with independent analysis of clinical development plans,
+                  evaluate trial feasibility, and assess competitive positioning.
+                </p>
+              </div>
+              
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <Card className="border rounded-xl shadow-sm transition-all hover:shadow-md">
+                  <CardHeader>
+                    <FileSearch className="h-8 w-8 text-primary mb-2" />
+                    <CardTitle>Due Diligence</CardTitle>
+                    <CardDescription>Investment evaluation</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm">
+                      Assess the quality and feasibility of clinical development plans with
+                      objective third-party data on comparable trials and development timelines.
+                    </p>
+                  </CardContent>
+                  <CardFooter>
+                    <Button variant="ghost" size="sm" className="gap-1 text-primary">
+                      See Example <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </CardFooter>
+                </Card>
+                
+                <Card className="border rounded-xl shadow-sm transition-all hover:shadow-md">
+                  <CardHeader>
+                    <PieChart className="h-8 w-8 text-primary mb-2" />
+                    <CardTitle>Competitive Analysis</CardTitle>
+                    <CardDescription>Market positioning</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm">
+                      Compare clinical development strategies across competing assets to identify
+                      competitive advantages, risks, and potential differentiators.
+                    </p>
+                  </CardContent>
+                  <CardFooter>
+                    <Button variant="ghost" size="sm" className="gap-1 text-primary">
+                      See Example <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </CardFooter>
+                </Card>
+                
+                <Card className="border rounded-xl shadow-sm transition-all hover:shadow-md">
+                  <CardHeader>
+                    <Calendar className="h-8 w-8 text-primary mb-2" />
+                    <CardTitle>Timeline Assessment</CardTitle>
+                    <CardDescription>Development path validation</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm">
+                      Validate projected development timelines against historical precedent to
+                      ensure realistic planning and capital allocation.
+                    </p>
+                  </CardContent>
+                  <CardFooter>
+                    <Button variant="ghost" size="sm" className="gap-1 text-primary">
+                      See Example <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </div>
+            </TabsContent>
+          </Tabs>
+          
+          <div className="mt-16 text-center space-y-6">
+            <h2 className="text-3xl font-bold">Have a specific use case in mind?</h2>
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <Button size="lg" className="h-11">Contact Our Team</Button>
+              <Link href="/dashboard">
+                <Button size="lg" variant="outline" className="h-11">Try Demo</Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </ContentSection>
+    </PageContainer>
+  );
+}
