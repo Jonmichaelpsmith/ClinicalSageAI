@@ -20,7 +20,9 @@ import {
   FileCheck,
   Briefcase,
   AlertTriangle,
-  Target
+  Target,
+  Beaker,
+  GraduationCap
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -136,6 +138,9 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                 <NavItem href="/translation" icon={<Globe />}>
                   Translation Service
                 </NavItem>
+                <NavItem href="/academic-knowledge-demo" icon={<GraduationCap />}>
+                  Academic Knowledge
+                </NavItem>
               </div>
             </div>
 
@@ -219,6 +224,9 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                 </NavItem>
                 <NavItem href="/translation" icon={<Globe />}>
                   Translation Service
+                </NavItem>
+                <NavItem href="/academic-knowledge-demo" icon={<GraduationCap />}>
+                  Academic Knowledge
                 </NavItem>
               </div>
             </div>
