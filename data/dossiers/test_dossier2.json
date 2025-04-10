@@ -9,8 +9,31 @@
     "CSR005",
     "CSR006"
   ],
-  "notes": {},
-  "note_history": {},
+  "notes": {
+    "CSR005": "This should update existing CSR005 note",
+    "CSR006": "This should add new note for CSR006"
+  },
+  "note_history": {
+    "CSR005": [
+      {
+        "user": "researcher2",
+        "comment": "This should be accepted as CSR005 is not locked",
+        "timestamp": "2025-04-10T05:05:22.437Z"
+      },
+      {
+        "user": "reviewer1",
+        "comment": "This should update existing CSR005 note",
+        "timestamp": "2025-04-10T05:05:32.020Z"
+      }
+    ],
+    "CSR006": [
+      {
+        "user": "reviewer1",
+        "comment": "This should add new note for CSR006",
+        "timestamp": "2025-04-10T05:05:32.020Z"
+      }
+    ]
+  },
   "signatures": {
     "CSR004": {
       "signer": "JD",

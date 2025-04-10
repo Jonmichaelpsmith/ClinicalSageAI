@@ -16,6 +16,7 @@ import { huggingFaceService, queryHuggingFace, HFModel } from "./huggingface-ser
 import { SagePlusService } from "./sage-plus-service";
 import { csrTrainingService } from "./csr-training-service";
 import { processResearchQuery } from "./research-companion-service";
+import { optimizeProtocol } from "./protocol-optimizer-service";
 import { 
   fetchClinicalTrialData, 
   importTrialsFromCsv, 
@@ -1254,6 +1255,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Generate clinical trial protocol
+  // Protocol Optimizer endpoint
+  app.post('/api/protocol-optimizer', async (req: Request, res: Response) => {
+    try {
+      // Validate input
+      const requestSchema = z.object({
+        summary: z.string().min(10, "Protocol summary is too short"),
+        topCsrIds: z.array(z.string()).optional(),
+        indication: z.string().optional(),
+        phase: z.string().optional()
+      });
+
+      const validatedData = requestSchema.parse(req.body);
+      
+      // Use the protocol optimizer service to generate recommendations
+      const optimizationResult = await optimizeProtocol({
+        summary: validatedData.summary,
+        topCsrIds: validatedData.topCsrIds,
+        indication: validatedData.indication,
+        phase: validatedData.phase
+      });
+      
+      res.json({
+        success: true,
+        ...optimizationResult
+      });
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+
   app.post('/api/protocol-generator', async (req: Request, res: Response) => {
     try {
       const protocolParamsSchema = z.object({
