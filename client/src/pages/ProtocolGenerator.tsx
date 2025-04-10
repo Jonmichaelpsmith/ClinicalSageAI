@@ -36,7 +36,6 @@ const ProtocolDesigner = () => {
   // Protocol upload states
   const [showUploadDialog, setShowUploadDialog] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [uploadedProtocolContent, setUploadedProtocolContent] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResults, setAnalysisResults] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -68,10 +67,20 @@ const ProtocolDesigner = () => {
 
   // Handler for analyzing uploaded protocol
   const handleAnalyzeProtocol = async () => {
-    if (!uploadedProtocolContent) {
+    if (!uploadedFile) {
       toast({
-        title: "No content to analyze",
-        description: "Please upload a protocol document first.",
+        title: "No file uploaded",
+        description: "Please select a PDF protocol file first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Make sure the file is a PDF
+    if (uploadedFile.type !== 'application/pdf') {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload a PDF document.",
         variant: "destructive",
       });
       return;
@@ -79,48 +88,39 @@ const ProtocolDesigner = () => {
 
     setIsAnalyzing(true);
 
-    // Simulate API call for protocol analysis
     try {
-      // Here we'd normally send the protocol content to an API endpoint
-      // For now, we'll simulate with a timeout
-      setTimeout(() => {
-        // Simulated analysis results
-        const results = {
-          extractedInfo: {
-            indication: "Type 2 Diabetes",
-            phase: "2",
-            primaryEndpoint: "HbA1c reduction",
-            population: "Adult patients (18-75 years)",
-            sampleSize: "240 participants"
-          },
-          evaluation: {
-            strengths: [
-              "Well-defined primary endpoint with clear measurement timeline",
-              "Appropriate randomization strategy",
-              "Sample size justified based on statistical power calculation"
-            ],
-            improvements: [
-              "Consider adding secondary cardiovascular endpoints common in recent diabetes trials",
-              "Duration of follow-up period could be extended based on recent regulatory guidance",
-              "Statistical analysis plan may benefit from more robust handling of missing data"
-            ],
-            regulatoryAlignment: 85, // percentage score
-            precedentMatching: 78,   // percentage score
-            similarTrials: [
-              { id: "NCT04123366", title: "EMPA-KIDNEY Trial", sponsor: "Boehringer Ingelheim", date: "2022-03" },
-              { id: "NCT03036124", title: "DAPA-HF Trial", sponsor: "AstraZeneca", date: "2021-11" },
-              { id: "NCT01730534", title: "CANATA-M Extension", sponsor: "Janssen", date: "2020-09" }
-            ]
-          }
-        };
+      // Create a FormData object to send the file
+      const formData = new FormData();
+      formData.append('file', uploadedFile);
 
-        setAnalysisResults(results);
-        setIsAnalyzing(false);
-      }, 3000);
+      // Send the file to our new protocol analysis endpoint
+      const response = await fetch('/api/protocol/analyze-pdf', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.message || 'Unknown error occurred');
+      }
+
+      setAnalysisResults(data);
+      setIsAnalyzing(false);
+      
+      toast({
+        title: "Protocol analyzed successfully",
+        description: `Analysis complete for ${uploadedFile.name}`,
+      });
     } catch (error) {
+      console.error('Protocol analysis error:', error);
       toast({
         title: "Analysis failed",
-        description: "There was an error analyzing your protocol. Please try again.",
+        description: error instanceof Error ? error.message : "There was an error analyzing your protocol. Please try again.",
         variant: "destructive",
       });
       setIsAnalyzing(false);
