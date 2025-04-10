@@ -26,6 +26,7 @@ import ClientIntelligence from "@/pages/ClientIntelligence";
 import DossierUploader from "@/pages/DossierUploader";
 import PremiumDossierLanding from "@/pages/PremiumDossierLanding";
 import FailMap from "@/pages/FailMap";
+import CSRSearch from "@/pages/CSRSearch";
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -108,6 +109,7 @@ function Router() {
       <Route path="/dossier-request">{() => renderWithLayout(DossierUploader)}</Route>
       <Route path="/premium-dossier">{() => renderWithLayout(PremiumDossierLanding)}</Route>
       <Route path="/fail-map">{() => renderWithLayout(FailMap)}</Route>
+      <Route path="/csr-search">{() => renderWithLayout(CSRSearch)}</Route>
 
       {/* Fallback to 404 */}
       <Route>{() => renderWithLayout(NotFound)}</Route>
