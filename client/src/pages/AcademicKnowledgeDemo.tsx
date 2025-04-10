@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { FileUp, Search, Database, BookOpen, Clock, Tag, AlertTriangle } from 'lucide-react';
+import { FileUp, Search, Database, BookOpen, Clock, Tag, AlertTriangle, Beaker } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 
@@ -167,7 +167,7 @@ export default function AcademicKnowledgeDemo() {
       toast({
         title: 'Empty search',
         description: 'Please enter a search query.',
-        variant: 'warning',
+        variant: 'destructive',
       });
       return;
     }
@@ -373,7 +373,7 @@ export default function AcademicKnowledgeDemo() {
                             <Clock className="w-3 h-3" />
                             {resource.publicationDate}
                             {resource.similarity && (
-                              <Badge variant={resource.similarity > 0.8 ? 'default' : (resource.similarity > 0.6 ? 'destructive' : 'outline')}>
+                              <Badge variant={resource.similarity > 0.8 ? 'default' : (resource.similarity > 0.6 ? 'destructive' : 'secondary')}>
                                 {Math.round(resource.similarity * 100)}% match
                               </Badge>
                             )}
