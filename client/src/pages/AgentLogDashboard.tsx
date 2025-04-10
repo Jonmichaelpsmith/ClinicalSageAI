@@ -21,6 +21,7 @@ import {
 } from 'recharts';
 import dayjs from 'dayjs';
 import TrendingTagsChart from '@/components/TrendingTagsChart';
+import TagCorrelationHeatmap from '@/components/TagCorrelationHeatmap';
 
 interface AgentLog {
   timestamp: string;
@@ -354,6 +355,7 @@ export default function AgentLogDashboard() {
             <TabsTrigger value="trends">Trending Topics</TabsTrigger>
             <TabsTrigger value="timeline">Time Analysis</TabsTrigger>
             <TabsTrigger value="endpoints">Endpoint Mentions</TabsTrigger>
+            <TabsTrigger value="correlations">Tag Correlations</TabsTrigger>
           </TabsList>
           
           {/* Trending Topics Tab */}
