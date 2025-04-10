@@ -1207,6 +1207,7 @@ export default function CompetitiveIntelligence() {
                   <Button 
                     variant="default"
                     disabled={!protocolSummary}
+                    onClick={handleAnalyzeProtocol}
                   >
                     Analyze Protocol
                   </Button>

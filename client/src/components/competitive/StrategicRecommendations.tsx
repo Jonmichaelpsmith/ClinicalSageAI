@@ -109,12 +109,43 @@ const StrategicRecommendations: React.FC<StrategicRecommendationsProps> = ({
     }));
   };
 
-  const exportToPdf = () => {
-    // Future implementation: Export to PDF
-    toast({
-      title: "Export Feature",
-      description: "PDF export will be available in the next update.",
-    });
+  const exportToPdf = async () => {
+    if (!strategicResponse) return;
+    
+    try {
+      setIsLoading(true);
+      
+      const response = await apiRequest("POST", "/api/strategy/export-pdf", {
+        protocolSummary,
+        indication,
+        phase,
+        sponsor,
+        report: strategicResponse.analysis.fullText,
+        title: `${sponsor || 'Protocol'} Strategic Analysis: ${indication} ${phase}`
+      });
+      
+      const data = await response.json();
+      
+      if (data.success && data.download_url) {
+        // Open download in new tab
+        window.open(data.download_url, '_blank');
+        
+        toast({
+          title: "Export Successful",
+          description: "Your strategic report PDF has been generated.",
+        });
+      } else {
+        throw new Error(data.message || "Failed to export PDF");
+      }
+    } catch (error) {
+      toast({
+        title: "Export Failed",
+        description: error instanceof Error ? error.message : "Failed to export report to PDF",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
