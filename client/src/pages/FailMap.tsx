@@ -24,6 +24,20 @@ export default function FailMap() {
   // Fetch failed trials data
   const { data: failedTrialsData, isLoading, error } = useQuery({
     queryKey: ['/api/analytics/failed-trials', indication, phase],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (indication !== 'all') params.append('indication', indication);
+      if (phase !== 'all') params.append('phase', phase);
+      
+      const url = `/api/analytics/failed-trials${params.toString() ? `?${params.toString()}` : ''}`;
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch failed trials data');
+      }
+      
+      return response.json();
+    },
     enabled: true,
   });
   
