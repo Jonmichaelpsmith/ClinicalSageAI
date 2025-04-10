@@ -32,6 +32,7 @@ import ProtocolOptimizer from "@/pages/ProtocolOptimizer";
 import AgentLogDashboard from "@/pages/AgentLogDashboard";
 import SimpleEndpointRecommender from "@/pages/SimpleEndpointRecommender";
 import EndpointDesigner from "@/pages/EndpointDesigner.jsx";
+import AcademicKnowledgeDemo from "@/pages/AcademicKnowledgeDemo";
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -127,6 +128,7 @@ function Router() {
       <Route path="/agent-logs">{() => renderWithLayout(AgentLogDashboard)}</Route>
       <Route path="/endpoint-recommender">{() => renderWithLayout(SimpleEndpointRecommender)}</Route>
       <Route path="/endpoint-designer">{() => renderWithLayout(EndpointDesigner)}</Route>
+      <Route path="/academic-knowledge-demo">{() => renderWithLayout(AcademicKnowledgeDemo)}</Route>
 
       {/* Fallback to 404 */}
       <Route>{() => renderWithLayout(NotFound)}</Route>
