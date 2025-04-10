@@ -1,0 +1,107 @@
+# 🧠 Replit Instruction Set: Transforming the 5,000 CSR Library into the World's Most Powerful Clinical Study Design Agent
+
+## 🎯 Objective:
+Use your 5,000 structured Clinical Study Reports (CSRs) to power an intelligent, context-aware, multimodal Clinical Study Design Agent ("SagePlus") that:
+
+- Reads and understands full CSR content
+- Compares proposed designs against real precedent
+- Offers auto-optimized design suggestions
+- Flags regulatory, statistical, or operational risks
+- Evolves through every phase (early R&D → regulatory → commercial)
+
+---
+
+## 🧱 1. Data Foundation: Structure and Index the CSR Library
+
+### 🔧 Backend Tasks (Replit)
+- Parse all CSR PDFs (using `pdfplumber` or `PyMuPDF`)
+- Use LLM-powered extraction (Mixtral via Hugging Face) to extract:
+  - Title, Indication, Sponsor, Phase
+  - Primary/Secondary Endpoints
+  - Sample Size, Arms, Blinding, Duration
+  - Outcome (Success/Failure)
+  - Adverse Events
+
+### 💾 Store in Vector + Relational DB
+- Use **Weaviate** or **ChromaDB** to store full CSR embeddings
+- Use **Supabase** or SQLite to store structured fields for querying
+
+---
+
+## 🤖 2. Intelligence Core: The Study Design Agent Engine
+
+### 🧠 Key Capabilities
+- Ingests draft protocols or natural language inputs
+- Compares to best-matching precedent trials from CSR vector store
+- Extracts what worked, what failed, and why
+- Predicts statistical power/risk for endpoints and design
+
+### 📚 Prompt Template for Hugging Face:
+```text
+You are a senior trial design strategist with access to 5,000 historical CSRs. A user is designing a [Phase 2/Indication] study with these parameters:
+
+{draft_protocol_or_summary}
+
+Using historical trial precedent, return:
+1. Closest-matching trials (NCT ID, sponsor, outcome)
+2. Suggested improvements to design
+3. Regulatory risks based on endpoint or power
+4. Historical AE warnings
+5. Summary table of precedent trials
+```
+
+### 🔄 Components
+- `matchTrials()` – RAG over vector DB to retrieve top similar trials
+- `generateDesignAdvice()` – call LLM with retrieved context
+- `generateSummaryTable()` – structured output of key comparisons
+
+---
+
+## 💡 3. Flashy, Real-Time UI with Tailwind + React
+
+### UI Sections
+- ✏️ Protocol Upload + Natural Language Input
+- 📊 Real-Time Design Dashboard
+  - Your Protocol → Optimized Version → Precedent Breakdown
+- 🧬 Smart Filter Controls
+  - Indication / Phase / Endpoint type / Sponsor history
+- 📖 Interactive CSR Table
+  - Summary, link to full CSR, outcome overlay
+
+### 🚀 Add Eye-Candy Features
+- Animated similarity heatmap across all trials
+- Timeline carousel of precedent trials
+- Real-time “Regulatory Risk Meter” (based on flagged fields)
+
+---
+
+## 🔐 4. Personalization & Learning
+- Allow users to “bookmark” trials, flag good endpoints
+- Train a local profile model (per user or company)
+- “Design based on how YOU succeed” → Proprietary AI growth
+
+---
+
+## 🔄 5. Integrate with the Ecosystem
+| Integration | Value |
+|-------------|-------|
+| CTMS (e.g. Medidata, Oracle) | Auto-sync protocol summaries |
+| Slack, Teams | Push AI insights after design upload |
+| Veeva eTMF | Export AI reports in regulator-ready format |
+
+---
+
+## 💰 Future Revenue Hooks
+- API Access for CROs and consultants
+- Team Collaboration Tools (real-time co-design)
+- Regulatory Risk Monitoring Dashboard (SaaS upsell)
+
+---
+
+## ✅ Summary
+You are not just offering protocol suggestions.
+You are building the **first real clinical intelligence engine**—one that thinks in precedent, learns from every trial, and guides every new one.
+
+This will make TrialSage the **operating system for smarter trials**.
+
+Let me know when you're ready to scaffold the full Replit app or API endpoints.
