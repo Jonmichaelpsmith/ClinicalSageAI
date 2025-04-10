@@ -3,10 +3,14 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2 } from 'lucide-react';
+import { Loader2, CompareIcon, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { Link } from 'wouter';
 import axios from 'axios';
+import CSRCompareViewer from '@/components/csr/CSRCompareViewer';
 
 // These should be dynamically loaded from the backend in a production app
 const indications = ['Any', 'Oncology', 'Cardiology', 'Neurology', 'Immunology', 'Infectious Disease'];
