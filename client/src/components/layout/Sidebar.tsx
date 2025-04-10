@@ -18,7 +18,8 @@ import {
   Microscope,
   Building2,
   FileCheck,
-  Briefcase
+  Briefcase,
+  AlertTriangle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -118,6 +119,9 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
             <NavItem href="/use-cases" icon={<BookOpen />}>
               Use Case Library
             </NavItem>
+            <NavItem href="/fail-map" icon={<AlertTriangle />}>
+              Real-World Fail Map
+            </NavItem>
 
             <div className="pt-5 mt-5 border-t border-slate-200">
               <h3 className="px-3 mb-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
@@ -198,6 +202,9 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
             </NavItem>
             <NavItem href="/use-cases" icon={<BookOpen />}>
               Use Case Library
+            </NavItem>
+            <NavItem href="/fail-map" icon={<AlertTriangle />}>
+              Real-World Fail Map
             </NavItem>
 
             <div className="pt-5 mt-5 border-t border-slate-200">
