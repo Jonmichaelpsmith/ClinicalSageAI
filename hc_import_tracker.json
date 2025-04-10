@@ -1,7 +1,7 @@
 {
-  "nextId": 1690,
-  "batchesCompleted": 26,
-  "trialsImported": 1014,
+  "nextId": 1740,
+  "batchesCompleted": 27,
+  "trialsImported": 1025,
   "importedIds": [
     "HC-1240",
     "HC-1241",
@@ -218,6 +218,17 @@
     "HC-1686",
     "HC-1687",
     "HC-1688",
-    "HC-1689"
+    "HC-1689",
+    "HC-1729",
+    "HC-1730",
+    "HC-1731",
+    "HC-1732",
+    "HC-1733",
+    "HC-1734",
+    "HC-1735",
+    "HC-1736",
+    "HC-1737",
+    "HC-1738",
+    "HC-1739"
   ]
 }

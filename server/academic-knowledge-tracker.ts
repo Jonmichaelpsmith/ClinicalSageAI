@@ -252,10 +252,18 @@ export class AcademicKnowledgeTracker {
    * @param resourceId Resource ID
    */
   async recordAccess(resourceId: number): Promise<void> {
+    // First get the current access count
+    const [resource] = await db.select({
+      accessCount: academicResources.accessCount
+    })
+    .from(academicResources)
+    .where(eq(academicResources.id, resourceId));
+    
+    // Then update with the incremented value
     await db.update(academicResources)
       .set({ 
         lastAccessed: new Date(),
-        accessCount: { increment: 1 }
+        accessCount: (resource?.accessCount || 0) + 1
       })
       .where(eq(academicResources.id, resourceId));
   }

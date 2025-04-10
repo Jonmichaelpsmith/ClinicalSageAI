@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1756",
+  "title": "A Randomized Double-Blind, Active-Controlled  Study of SCK-880 (Hb polymerization inhibitor) in Patients With Major Depressive Disorder",
+  "officialTitle": "A Randomized Double-Blind, Active-Controlled  Study of SCK-880 (Hb polymerization inhibitor) in Patients With Major Depressive Disorder",
+  "sponsor": "SickKids Research Institute",
+  "indication": "Major Depressive Disorder",
+  "phase": "Phase 1",
+  "fileName": "HC-1756.json",
+  "fileSize": 252675,
+  "date": "2024-07-19",
+  "completionDate": "2028-08-05",
+  "drugName": "SCK-880 (Hb polymerization inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Recruiting",
+  "description": "This is a randomized double-blind, active-controlled  study designed to evaluate the efficacy and safety of SCK-880 (Hb polymerization inhibitor) in patients with Major Depressive Disorder. The study will enroll approximately 444 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 21-64 years\n- Confirmed diagnosis of Major Depressive Disorder\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

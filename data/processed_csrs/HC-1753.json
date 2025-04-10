@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1753",
+  "title": "A  Double-Blind, Placebo-Controlled  Study of LUP-223 (calcineurin inhibitor) in Patients With Atopic Dermatitis",
+  "officialTitle": "A  Double-Blind, Placebo-Controlled  Study of LUP-223 (calcineurin inhibitor) in Patients With Atopic Dermatitis",
+  "sponsor": "University of Toronto Medical Center",
+  "indication": "Atopic Dermatitis",
+  "phase": "Phase 1",
+  "fileName": "HC-1753.json",
+  "fileSize": 372473,
+  "date": "2024-11-28",
+  "completionDate": "2026-06-15",
+  "drugName": "LUP-223 (calcineurin inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Active, not recruiting",
+  "description": "This is a  double-blind, placebo-controlled  study designed to evaluate the efficacy and safety of LUP-223 (calcineurin inhibitor) in patients with Atopic Dermatitis. The study will enroll approximately 303 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 20-64 years\n- Confirmed diagnosis of Atopic Dermatitis\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}
