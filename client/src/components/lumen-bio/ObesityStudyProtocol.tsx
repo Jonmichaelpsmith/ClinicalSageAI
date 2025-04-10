@@ -41,6 +41,7 @@ import {
   TableRow 
 } from "@/components/ui/table";
 import ProtocolComparisonTab from "./ProtocolComparisonTab";
+import ProtocolVersionCompare from "./ProtocolVersionCompare";
 
 const ObesityStudyProtocol = () => {
   return (
@@ -596,6 +597,15 @@ const ObesityStudyProtocol = () => {
                   </CardContent>
                 </Card>
               </div>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="recommendations" className="p-6">
+            <ProtocolComparisonTab protocolText="Obesity POC Study (WT02) - LMN-0801: A Dose-Ranging Study Evaluating the Safety and Efficacy of LMN-0801 for Weight Loss in adults with BMI ≥30 kg/m² or ≥27 kg/m² with weight-related comorbidity. This is a 12-week randomized, double-blind, placebo-controlled study with 90 participants (72 active, 18 placebo)." />
+            
+            <div className="mt-8 border-t pt-6">
+              <h3 className="text-lg font-medium mb-4">Version History</h3>
+              <ProtocolVersionCompare protocolId="obesity_wt02_v1" />
             </div>
           </TabsContent>
         </Tabs>
