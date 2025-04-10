@@ -1,0 +1,81 @@
+// React Page: DossierViewer.jsx (with Print, JSON Export, Annotations, and Shareable Link)
+
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+
+export default function DossierViewer() {
+  const { dossier_id } = useParams();
+  const [dossier, setDossier] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [notes, setNotes] = useState({});
+
+  useEffect(() => {
+    const fetchDossier = async () => {
+      const res = await fetch(`/data/dossiers/${dossier_id}.json`);
+      const data = await res.json();
+      setDossier(data);
+      setLoading(false);
+    };
+    if (dossier_id) fetchDossier();
+  }, [dossier_id]);
+
+  const downloadJSON = () => {
+    const enriched = { ...dossier, notes };
+    const blob = new Blob([JSON.stringify(enriched, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `dossier_${dossier_id}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const updateNote = (id, value) => {
+    setNotes((prev) => ({ ...prev, [id]: value }));
+  };
+
+  if (loading) return <p className="text-center">Loading dossier...</p>;
+  if (!dossier) return <p className="text-center text-red-500">Dossier not found.</p>;
+
+  const shareableURL = `${window.location.origin}/dossier/${dossier_id}`;
+
+  return (
+    <div className="p-6 max-w-5xl mx-auto space-y-6">
+      <h2 className="text-2xl font-bold text-blue-800">📁 TrialSage Dossier: {dossier_id.slice(0, 8)}...</h2>
+      <p className="text-sm text-gray-600 pb-2">{dossier.csrs.length} CSRs included | Created at {new Date(dossier.created_at).toLocaleString()}</p>
+      <div className="text-sm text-blue-700 pb-4">🔗 Shareable Link: <a href={shareableURL} target="_blank" className="underline text-blue-600">{shareableURL}</a></div>
+
+      {dossier.csrs.map((csr, idx) => (
+        <Card key={csr.csr_id || idx} className="border border-gray-200">
+          <CardContent className="space-y-2">
+            <h3 className="text-lg font-semibold">{csr.title} ({csr.phase})</h3>
+            <p className="text-sm text-gray-600">Indication: {csr.indication}</p>
+            <p className="text-sm">Primary Endpoints: {csr.primary_endpoints?.join(', ')}</p>
+            <p className="text-sm">Arms: {csr.arms?.join(', ')}</p>
+            <p className="text-sm">Sample Size: {csr.sample_size}</p>
+            <p className="text-sm">Outcome: {csr.outcome_summary}</p>
+            <p className="text-sm text-gray-500 italic">AE Summary: {JSON.stringify(csr.adverse_events || [])}</p>
+            <div>
+              <label className="block text-sm font-medium text-blue-700">📝 Notes / Annotations:</label>
+              <Textarea
+                className="w-full text-sm"
+                placeholder="Add notes for this CSR..."
+                value={notes[csr.csr_id] || ''}
+                onChange={(e) => updateNote(csr.csr_id, e.target.value)}
+                rows={3}
+              />
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+
+      <div className="text-center pt-6 space-x-4">
+        <Button onClick={() => window.print()} className="bg-blue-600 text-white hover:bg-blue-700">🖨️ Print Dossier</Button>
+        <Button onClick={downloadJSON} className="bg-gray-700 text-white hover:bg-gray-800">📥 Download JSON (with Notes)</Button>
+      </div>
+    </div>
+  );
+}
