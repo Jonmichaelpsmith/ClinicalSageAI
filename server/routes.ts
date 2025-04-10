@@ -910,10 +910,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Study Design Agent API endpoint
   app.post('/api/study-design-agent/chat', async (req: Request, res: Response) => {
     try {
-      const { query, indication, phase } = req.body;
+      const { query, indication, phase, sessionStart } = req.body;
       
       if (!query) {
         return res.status(400).json({ success: false, message: 'Query is required' });
+      }
+      
+      // Free trial logic - check if trial has expired (5 minutes = 300,000 ms)
+      // If the user is not authenticated, allow a 5-minute trial
+      // In a real implementation, this would check user.isPaid
+      if (sessionStart) {
+        const now = Date.now();
+        const trialDuration = now - sessionStart;
+        
+        // If more than 5 minutes have passed since session start
+        if (trialDuration > 300000) { // 5 minutes in milliseconds
+          return res.json({
+            success: true,
+            trialExpired: true,
+            message: 'Your 5-minute free trial has expired. Please subscribe to continue using the Study Design Agent.'
+          });
+        }
+        
+        // Calculate remaining time to send back to client
+        const remainingSeconds = Math.max(0, Math.floor((300000 - trialDuration) / 1000));
+        
+        // If free trial is still active but getting close to expiration, add a warning
+        let warningMsg = '';
+        if (remainingSeconds < 60) {
+          warningMsg = `⚠️ Your free trial will expire in ${remainingSeconds} seconds. Subscribe to continue using the Study Design Agent.`;
+        }
+        
+        // Add remaining time to response
+        res.locals.remainingTrialTime = remainingSeconds;
+        res.locals.warningMessage = warningMsg;
       }
       
       // Check if HuggingFace API key is available
@@ -964,6 +994,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         content = `I'm sorry, but I encountered an error while processing your query: "${query}". Please try again later or rephrase your question.`;
       }
       
+      // If there's a warning message from the free trial, prepend it to the content
+      if (res.locals.warningMessage) {
+        content = `${res.locals.warningMessage}\n\n${content}`;
+      }
+      
       const response = {
         content,
         sources: relevantReports.map(report => ({
@@ -971,7 +1006,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           title: report.title,
           relevance: 0.9 - (Math.random() * 0.2) // Simulate relevance scores
         })),
-        confidence: 0.85 + (Math.random() * 0.1) // Simulate confidence score
+        confidence: 0.85 + (Math.random() * 0.1), // Simulate confidence score
+        remainingTrialTime: res.locals.remainingTrialTime
       };
       
       res.json({ 
