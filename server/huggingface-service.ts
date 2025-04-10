@@ -125,6 +125,8 @@ export async function generateEmbeddings(
   }
 
   try {
+    console.log(`Generating embeddings using model: ${modelId} for text: ${text.substring(0, 50)}...`);
+    
     const response = await axios.post(
       `${HF_API_URL}/${encodeURIComponent(modelId)}`,
       { inputs: text },
@@ -136,14 +138,26 @@ export async function generateEmbeddings(
       }
     );
 
-    // BGE models return embeddings in a specific format
+    console.log(`Embeddings API response type: ${typeof response.data}, is array: ${Array.isArray(response.data)}`);
+    
+    // For BAAI/bge models which return an array of arrays
     if (response.data && Array.isArray(response.data)) {
-      return response.data[0];
+      console.log(`Array response length: ${response.data.length}`);
+      return response.data; // Return full array
     }
     
-    return response.data?.embedding || response.data;
+    // Handle other embedding model formats
+    if (response.data?.embedding) {
+      return response.data.embedding;
+    }
+    
+    return response.data;
   } catch (error: any) {
     console.error('Error generating embeddings:', error.message);
+    if (error.response) {
+      console.error('Response status:', error.response.status);
+      console.error('Response data:', error.response.data);
+    }
     throw new Error(`Failed to generate embeddings: ${error.message}`);
   }
 }
