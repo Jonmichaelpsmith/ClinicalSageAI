@@ -2624,6 +2624,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({
         success: true,
         apiKeyConfigured: true,
+        model: HFModel.TEXT,
         response
       });
     } catch (error: any) {
@@ -2632,6 +2633,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({
         success: false,
         apiKeyConfigured: huggingFaceService.isApiKeyAvailable(),
+        error: error.message,
+        details: error.response ? {
+          status: error.response.status,
+          data: error.response.data
+        } : undefined
+      });
+    }
+  });
+  
+  // Test Hugging Face Embeddings API
+  app.get('/api/test-huggingface-embeddings', async (req: Request, res: Response) => {
+    try {
+      // Check if API key is available
+      if (!huggingFaceService.isApiKeyAvailable()) {
+        return res.status(500).json({
+          success: false,
+          message: 'Hugging Face API key is not configured'
+        });
+      }
+      
+      // Test the embeddings API with a simple query
+      const testText = "This is a test of the embeddings API for clinical trials research.";
+      const embeddings = await huggingFaceService.generateEmbeddings(
+        testText,
+        HFModel.EMBEDDINGS
+      );
+      
+      res.json({
+        success: true,
+        apiKeyConfigured: true,
+        model: HFModel.EMBEDDINGS,
+        embeddingsGenerated: !!embeddings,
+        embeddingLength: Array.isArray(embeddings) ? embeddings.length : 'Not an array',
+        firstFewValues: Array.isArray(embeddings) ? embeddings.slice(0, 5) : 'Not an array'
+      });
+    } catch (error: any) {
+      console.error("Hugging Face Embeddings API test error:", error);
+      
+      res.status(500).json({
+        success: false,
+        apiKeyConfigured: huggingFaceService.isApiKeyAvailable(),
+        model: HFModel.EMBEDDINGS,
         error: error.message,
         details: error.response ? {
           status: error.response.status,
