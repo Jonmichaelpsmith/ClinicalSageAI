@@ -49,6 +49,7 @@ export default function AgentLogDashboard() {
   const [topTags, setTopTags] = useState<[string, number][]>([]);
   const [timeSeriesData, setTimeSeriesData] = useState<TimeSeriesData>([]);
   const [timeGrouping, setTimeGrouping] = useState<TimeGrouping>('week');
+  const [tagPairs, setTagPairs] = useState<Record<string, number>>({});
   const [chartColors] = useState<string[]>([
     '#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088fe',
     '#00C49F', '#FFBB28', '#FF8042', '#9c27b0', '#f44336'
@@ -126,6 +127,27 @@ export default function AgentLogDashboard() {
     }));
   };
 
+  // Calculate tag co-occurrences for the correlation heatmap
+  const calculateTagPairs = (tagsByLogIndex: TagsByLogIndex): Record<string, number> => {
+    const pairMap: Record<string, number> = {};
+    
+    // Loop through each log entry
+    Object.values(tagsByLogIndex).forEach(tags => {
+      if (tags.length < 2) return; // Need at least 2 tags to form a pair
+      
+      // Generate all unique pairs (combinations of 2 tags)
+      for (let i = 0; i < tags.length; i++) {
+        for (let j = i + 1; j < tags.length; j++) {
+          // Create a consistent key by sorting tags alphabetically
+          const key = [tags[i], tags[j]].sort().join('::');
+          pairMap[key] = (pairMap[key] || 0) + 1;
+        }
+      }
+    });
+    
+    return pairMap;
+  };
+  
   const fetchLogs = async () => {
     setIsLoading(true);
     try {
@@ -187,7 +209,7 @@ export default function AgentLogDashboard() {
         // Save tags for this log entry
         if (tags.length > 0) {
           // Deduplicate tags
-          const uniqueTags = [...new Set(tags)];
+          const uniqueTags = Array.from(new Set(tags));
           tagMap[idx] = uniqueTags;
           
           // Count tag frequency across all logs
@@ -210,9 +232,13 @@ export default function AgentLogDashboard() {
         .sort((a, b) => b[1] - a[1])
         .slice(0, 5);
         
+      // Calculate tag pair co-occurrences for the heatmap
+      const tagPairsData = calculateTagPairs(tagMap);
+      
       setEndpointStats(sortedStats);
       setTagsByLog(tagMap);
       setTopTags(sortedTags);
+      setTagPairs(tagPairsData);
       
       // Generate time series data for trending tag visualization
       const timeData = generateTimeSeriesData(data, tagMap, sortedTags, timeGrouping);
@@ -556,6 +582,46 @@ export default function AgentLogDashboard() {
                       🔹 <span className="font-medium">{term.toUpperCase()}</span>: {count} mentions
                     </div>
                   ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          {/* Tag Correlations Tab */}
+          <TabsContent value="correlations" className="space-y-4">
+            <Card className="border border-gray-200">
+              <CardContent className="pt-6">
+                <h4 className="text-md font-semibold text-rose-700 mb-4">🔥 Tag Correlation Heatmap</h4>
+                <p className="text-sm text-gray-600 mb-4">
+                  This heatmap shows which tags frequently appear together in the same conversation. 
+                  Darker colors indicate stronger relationships between tags.
+                </p>
+                
+                {Object.keys(tagPairs).length > 0 ? (
+                  <div className="overflow-auto" style={{ maxHeight: '500px' }}>
+                    <TagCorrelationHeatmap tagPairs={tagPairs} />
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    Not enough data to generate correlations. Try filtering for more conversations.
+                  </div>
+                )}
+                
+                <div className="mt-4">
+                  <h5 className="text-sm font-medium mb-2">Top Tag Pairs:</h5>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                    {Object.entries(tagPairs)
+                      .sort(([, a], [, b]) => b - a)
+                      .slice(0, 6)
+                      .map(([pair, count], i) => {
+                        const [tag1, tag2] = pair.split('::');
+                        return (
+                          <div key={i} className="text-sm text-gray-700 bg-rose-50 p-2 rounded border">
+                            <span className="font-medium">{tag1}</span> + <span className="font-medium">{tag2}</span>: {count} co-occurrences
+                          </div>
+                        );
+                      })}
+                  </div>
                 </div>
               </CardContent>
             </Card>
