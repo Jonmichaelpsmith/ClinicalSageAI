@@ -1,0 +1,32 @@
+{
+  "id": "test_dossier2",
+  "title": "Second Test Regulatory Dossier",
+  "created_at": "2025-04-10T05:05:00.000Z",
+  "created_by": "test_user",
+  "description": "This is a test dossier for evaluating the notes and signature functionality with mixed locked/unlocked CSRs",
+  "selected_csrs": [
+    "CSR004",
+    "CSR005",
+    "CSR006"
+  ],
+  "notes": {},
+  "note_history": {},
+  "signatures": {
+    "CSR004": {
+      "signer": "JD",
+      "role": "PI",
+      "timestamp": "2025-04-10T05:05:30.000Z"
+    }
+  },
+  "signature_audit": [
+    {
+      "csr_id": "CSR004",
+      "signer": "JD",
+      "role": "PI",
+      "timestamp": "2025-04-10T05:05:30.000Z"
+    }
+  ],
+  "locked_csrs": [
+    "CSR004"
+  ]
+}
