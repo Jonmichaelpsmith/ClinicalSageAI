@@ -19,7 +19,8 @@ import {
   Building2,
   FileCheck,
   Briefcase,
-  AlertTriangle
+  AlertTriangle,
+  Target
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
