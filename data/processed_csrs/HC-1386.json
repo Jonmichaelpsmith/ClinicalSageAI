@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1386",
+  "title": "A  Double-Blind, Placebo-Controlled  Study of COL-735 (EGFR inhibitor) in Patients With Duchenne Muscular Dystrophy",
+  "officialTitle": "A  Double-Blind, Placebo-Controlled  Study of COL-735 (EGFR inhibitor) in Patients With Duchenne Muscular Dystrophy",
+  "sponsor": "University of Alberta",
+  "indication": "Duchenne Muscular Dystrophy",
+  "phase": "Phase 2/Phase 3",
+  "fileName": "HC-1386.json",
+  "fileSize": 342604,
+  "date": "2023-08-05",
+  "completionDate": "2025-06-24",
+  "drugName": "COL-735 (EGFR inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Completed",
+  "description": "This is a  double-blind, placebo-controlled  study designed to evaluate the efficacy and safety of COL-735 (EGFR inhibitor) in patients with Duchenne Muscular Dystrophy. The study will enroll approximately 107 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 18-81 years\n- Confirmed diagnosis of Duchenne Muscular Dystrophy\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}
