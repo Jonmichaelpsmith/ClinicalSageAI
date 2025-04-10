@@ -2217,9 +2217,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Check if Hugging Face API key is available
       if (!huggingFaceService.isApiKeyAvailable()) {
-        return res.status(500).json({
-          success: false,
-          message: 'Research Companion service is not available (API key not configured)'
+        // Instead of failing with a 500 error, return a graceful fallback response
+        const fallbackResponse = {
+          id: `msg-${Date.now()}-fallback`,
+          role: "assistant",
+          content: `I'm sorry, but I'm unable to provide an AI-generated response at this time. ` +
+                    `The Research Companion service requires an API key configuration. ` +
+                    `Please contact the system administrator to configure the Hugging Face API key.`,
+          timestamp: new Date().toISOString(),
+          conversationId: `conv-${Date.now()}-fallback`
+        };
+        
+        return res.json({
+          success: true,
+          fallback: true,
+          message: 'Using fallback response due to missing API key',
+          query,
+          conversation: fallbackResponse
         });
       }
       
@@ -2245,7 +2259,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         conversation: results 
       });
     } catch (err) {
-      errorHandler(err as Error, res);
+      console.error('Error handling research companion query:', err);
+      
+      // Create a fallback response that doesn't need AI or database queries
+      const fallbackResponse = {
+        id: `msg-${Date.now()}-fallback`,
+        role: "assistant",
+        content: `I'm sorry, I encountered an issue while processing your query about "${query}". ` +
+                 "Our knowledge services are currently experiencing some technical difficulties. " +
+                 "While I'm unable to access the full clinical trial database at the moment, " +
+                 "I can still help with general clinical trial questions. " +
+                 "Please try again later or contact support if the issue persists.",
+        timestamp: new Date().toISOString(),
+        conversationId: `conv-${Date.now()}-fallback`
+      };
+      
+      // Still return a success response with the fallback content to allow the UI to function
+      res.status(200).json({
+        success: true,
+        error: true,
+        errorMessage: `${err}`,
+        query,
+        conversation: fallbackResponse
+      });
     }
   });
   
