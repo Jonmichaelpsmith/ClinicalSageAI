@@ -2236,8 +2236,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Add the message and get a response
       const results = await researchCompanionService.addMessageToConversation(
         conversation.id,
-        query,
-        userContext
+        query
       );
       
       res.json({
@@ -2522,8 +2521,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all conversations
   app.get('/api/chat/conversations', async (req: Request, res: Response) => {
     try {
-      const userId = req.query.userId ? parseInt(req.query.userId as string) : undefined;
-      const conversations = await huggingFaceService.getConversations(userId);
+      const conversations = await researchCompanionService.getConversations();
       res.json({ success: true, conversations });
     } catch (err) {
       errorHandler(err as Error, res);
@@ -2533,7 +2531,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create a new conversation
   app.post('/api/chat/conversations', async (req: Request, res: Response) => {
     try {
-      const { userId, reportId, title } = req.body;
+      const { title, initialMessage } = req.body;
       
       // Check if Hugging Face API key is available
       if (!huggingFaceService.isApiKeyAvailable()) {
@@ -2543,11 +2541,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      const conversation = await huggingFaceService.createConversation(
-        userId ? parseInt(userId) : undefined,
-        reportId ? parseInt(reportId) : undefined,
-        title || "New Conversation"
-      );
+      const conversation = await researchCompanionService.createConversation(initialMessage || title || "New Conversation");
       
       res.status(201).json({ success: true, conversation });
     } catch (err) {
@@ -2558,13 +2552,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get messages from a conversation
   app.get('/api/chat/conversations/:id/messages', async (req: Request, res: Response) => {
     try {
-      const conversationId = parseInt(req.params.id);
-      if (isNaN(conversationId)) {
-        return res.status(400).json({ success: false, message: 'Invalid conversation ID' });
+      const conversationId = req.params.id;
+      
+      const conversation = await researchCompanionService.getConversation(conversationId);
+      if (!conversation) {
+        return res.status(404).json({ success: false, message: 'Conversation not found' });
       }
       
-      const messages = await huggingFaceService.getConversationMessages(conversationId);
-      res.json({ success: true, messages });
+      res.json({ success: true, messages: conversation.messages });
     } catch (err) {
       errorHandler(err as Error, res);
     }
@@ -2573,10 +2568,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Send a message to the Research Companion and get a response
   app.post('/api/chat/conversations/:id/messages', async (req: Request, res: Response) => {
     try {
-      const conversationId = parseInt(req.params.id);
-      if (isNaN(conversationId)) {
-        return res.status(400).json({ success: false, message: 'Invalid conversation ID' });
-      }
+      const conversationId = req.params.id;
       
       const { message } = req.body;
       if (!message) {
@@ -2591,10 +2583,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      const response = await huggingFaceService.generateConversationResponse(
+      const response = await researchCompanionService.addMessageToConversation(
         conversationId,
         message
       );
+      
+      if (!response) {
+        return res.status(404).json({ success: false, message: 'Conversation not found' });
+      }
       
       res.json({ 
         success: true, 

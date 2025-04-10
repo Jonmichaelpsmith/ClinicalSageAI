@@ -116,27 +116,7 @@ class ResearchCompanionService {
     
     const messages: ConversationMessage[] = [];
     
-    if (initialPrompt) {
-      const userMessage: ConversationMessage = {
-        id: `msg-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-        role: "user",
-        content: initialPrompt,
-        timestamp: new Date().toISOString(),
-      };
-      
-      messages.push(userMessage);
-      
-      // Generate initial response
-      const responseMessage = await this.generateResponse(id, userMessage);
-      messages.push(responseMessage);
-      
-      // Update memory with initial topics
-      memory.recentQueries.push({
-        query: initialPrompt,
-        timestamp: new Date().toISOString(),
-      });
-    }
-    
+    // Create and store the conversation before generating any responses
     const conversation: ResearchConversation = {
       id,
       title,
@@ -147,6 +127,41 @@ class ResearchCompanionService {
     };
     
     conversations[id] = conversation;
+    
+    // Now that the conversation is stored, we can add the initial message and response
+    if (initialPrompt) {
+      const userMessage: ConversationMessage = {
+        id: `msg-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        role: "user",
+        content: initialPrompt,
+        timestamp: new Date().toISOString(),
+      };
+      
+      messages.push(userMessage);
+      
+      // Update memory with initial topics
+      memory.recentQueries.push({
+        query: initialPrompt,
+        timestamp: new Date().toISOString(),
+      });
+      
+      try {
+        // Generate initial response after the conversation is stored
+        const responseMessage = await this.generateResponse(id, userMessage);
+        messages.push(responseMessage);
+      } catch (error) {
+        console.error("Error generating initial response:", error);
+        
+        // Add a fallback response
+        messages.push({
+          id: `msg-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+          role: "assistant",
+          content: "I'm ready to help you with clinical trial research. What would you like to know?",
+          timestamp: new Date().toISOString(),
+        });
+      }
+    }
+    
     return conversation;
   }
   
