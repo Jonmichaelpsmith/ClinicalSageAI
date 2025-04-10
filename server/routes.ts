@@ -784,6 +784,137 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Endpoint Frequency Heatmap API
+  app.get('/api/endpoint/frequency-heatmap', async (req: Request, res: Response) => {
+    try {
+      const { indication, phase } = req.query;
+      
+      // Query database for endpoint frequency data
+      let whereConditions = [];
+      
+      if (indication) {
+        whereConditions.push(like(csrReports.indication, `%${indication}%`));
+      }
+      
+      if (phase) {
+        whereConditions.push(like(csrReports.phase, `%${phase}%`));
+      }
+      
+      const whereClause = whereConditions.length > 0 ? and(...whereConditions) : undefined;
+      
+      // Get matching reports
+      const reports = await db
+        .select({
+          id: csrReports.id,
+          indication: csrReports.indication,
+          phase: csrReports.phase
+        })
+        .from(csrReports)
+        .where(whereClause)
+        .limit(500);
+      
+      // Get endpoint data for these reports
+      const reportIds = reports.map(r => r.id);
+      const endpointData = await db
+        .select({
+          reportId: csrDetails.reportId,
+          endpoints: csrDetails.endpoints
+        })
+        .from(csrDetails)
+        .where(sql`${csrDetails.reportId} IN (${reportIds.join(',')})`)
+        .limit(500);
+      
+      // Process into heatmap format
+      const heatmapData = [];
+      const reportMap = new Map();
+      
+      // Create a lookup map for report data
+      reports.forEach(report => {
+        reportMap.set(report.id, {
+          indication: report.indication,
+          phase: report.phase
+        });
+      });
+      
+      // Create indication-phase-endpoint frequency data
+      endpointData.forEach(data => {
+        const report = reportMap.get(data.reportId);
+        if (!report) return;
+        
+        try {
+          const endpoints = data.endpoints || {};
+          const primary = endpoints.primary || [];
+          const secondary = endpoints.secondary || [];
+          
+          // Add primary endpoints
+          primary.forEach((endpoint: string) => {
+            heatmapData.push({
+              indication: report.indication,
+              phase: report.phase,
+              type: 'Primary',
+              count: 1,
+              per100: 100 // Will be normalized later
+            });
+          });
+          
+          // Add secondary endpoints
+          secondary.forEach((endpoint: string) => {
+            heatmapData.push({
+              indication: report.indication,
+              phase: report.phase,
+              type: 'Secondary',
+              count: 1,
+              per100: 100 // Will be normalized later
+            });
+          });
+        } catch (e) {
+          console.error('Error processing endpoint data:', e);
+        }
+      });
+      
+      // Normalize the per100 values
+      // Group by indication, phase, and type
+      const groupedData = new Map();
+      const countsMap = new Map();
+      
+      // Count total trials per indication-phase
+      reports.forEach(report => {
+        const key = `${report.indication}|${report.phase}`;
+        countsMap.set(key, (countsMap.get(key) || 0) + 1);
+      });
+      
+      // Normalize per100 values
+      heatmapData.forEach(item => {
+        const key = `${item.indication}|${item.phase}|${item.type}`;
+        const totalKey = `${item.indication}|${item.phase}`;
+        const totalTrials = countsMap.get(totalKey) || 1;
+        
+        if (!groupedData.has(key)) {
+          groupedData.set(key, {
+            ...item,
+            count: 1,
+            per100: 100 / totalTrials
+          });
+        } else {
+          const existing = groupedData.get(key);
+          existing.count += 1;
+          existing.per100 = (existing.count * 100) / totalTrials;
+        }
+      });
+      
+      // Convert map to array
+      const result = Array.from(groupedData.values());
+      
+      res.json(result);
+    } catch (error) {
+      console.error('Error generating endpoint frequency heatmap:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to generate endpoint frequency heatmap' 
+      });
+    }
+  });
+  
   // Evaluate an endpoint for a specific indication and phase
   app.post('/api/endpoint/evaluate', async (req: Request, res: Response) => {
     try {
