@@ -18,8 +18,8 @@ import CsrExtractionGuide from "@/pages/CsrExtractionGuide";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { TopNavbar } from "@/components/layout/TopNavbar";
 import ProductFeatures from "./pages/ProductFeatures";
-import PricingPage from "./pages/PricingPage";
-import ApiDocumentation from "./pages/ApiDocumentation";
+import PricingPage from "@/pages/PricingPage";
+import ApiDocumentation from "@/pages/ApiDocumentation";
 import LumenBioDashboard from "@/pages/LumenBioDashboard";
 import LumenBioReport from "@/pages/LumenBioReport";
 import ClientIntelligence from "@/pages/ClientIntelligence";
@@ -64,6 +64,9 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                 <a href="#" className="text-sm text-slate-500 hover:text-primary dark:text-slate-400">Terms</a>
                 <a href="#" className="text-sm text-slate-500 hover:text-primary dark:text-slate-400">Privacy</a>
                 <a href="#" className="text-sm text-slate-500 hover:text-primary dark:text-slate-400">Support</a>
+                <a href="/product-features" className="text-sm text-slate-500 hover:text-primary dark:text-slate-400">Product Features</a>
+                <a href="/use-case-library" className="text-sm text-slate-500 hover:text-primary dark:text-slate-400">Use Cases</a>
+                <a href="/api-documentation" className="text-sm text-slate-500 hover:text-primary dark:text-slate-400">API</a>
               </div>
             </div>
           </div>
@@ -108,6 +111,9 @@ function Router() {
       <Route path="/features" component={ProductFeatures} />
       <Route path="/pricing" component={PricingPage} />
       <Route path="/api" component={ApiDocumentation} />
+      <Route path="/product-features" component={ProductFeatures} />
+      <Route path="/use-case-library" component={UseCaseLibrary} />
+      <Route path="/api-documentation" component={ApiDocumentation} />
       <Route path="/lumen-bio/dashboard">{() => renderWithLayout(LumenBioDashboard)}</Route>
       <Route path="/reports/lumen-bio">{() => renderWithLayout(LumenBioReport)}</Route>
       <Route path="/client-intelligence" component={ClientIntelligence} />
