@@ -1,0 +1,62 @@
+// Replit React App: Premium Trial Design Dossier Upload Portal
+// For biotech founders to request investor/regulator-ready study design reports
+
+import { useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+
+export default function DossierUploader() {
+  const [summary, setSummary] = useState('');
+  const [file, setFile] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!summary && !file) return alert('Please provide an asset summary or upload a draft protocol.');
+    setLoading(true);
+
+    const formData = new FormData();
+    formData.append('summary', summary);
+    if (file) formData.append('file', file);
+
+    await fetch('/api/dossier/submit', {
+      method: 'POST',
+      body: formData,
+    });
+
+    setLoading(false);
+    setSubmitted(true);
+  };
+
+  return (
+    <div className="p-6 max-w-3xl mx-auto space-y-6">
+      <h1 className="text-2xl font-bold">📘 Request Your Clinical Trial Design Dossier</h1>
+      <p className="text-gray-600">Investor-ready, regulator-aligned trial design recommendations based on 1,900+ CSRs. Delivered in 72 hours.</p>
+
+      <Card>
+        <CardContent className="space-y-4">
+          <label className="block font-medium">1. Paste your asset summary or study concept</label>
+          <Textarea
+            placeholder="e.g., A Phase 2 trial for XYZ, a novel inhibitor in non-small cell lung cancer..."
+            value={summary}
+            onChange={(e) => setSummary(e.target.value)}
+            rows={6}
+          />
+
+          <label className="block font-medium">2. Or upload your draft protocol PDF</label>
+          <Input type="file" accept=".pdf,.docx" onChange={(e) => setFile(e.target.files[0])} />
+
+          <Button onClick={handleSubmit} disabled={loading}>
+            {loading ? 'Submitting...' : 'Request Dossier ($2,500)'}
+          </Button>
+
+          {submitted && (
+            <p className="text-green-600 font-medium pt-2">✅ Request received! We'll email your custom dossier within 72 hours.</p>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
