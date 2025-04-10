@@ -1,0 +1,123 @@
+What We’re Building Now
+🎯 csr_vectorizer.py
+Embeds the vector_summary field of each CSR
+
+Stores the resulting vectors with metadata (ID, title, etc.) into a vector store
+
+Prepares for future similarity search and Retrieval-Augmented Generation (RAG)
+
+✅ Step 1: Embed & Store Vectors
+python
+Copy
+Edit
+# csr_vectorizer.py
+
+import os
+import json
+import chromadb
+from sentence_transformers import SentenceTransformer
+from chromadb.config import Settings
+
+DB_DIR = "data/vector_store"
+CSR_DIR = "data/processed_csrs"
+COLLECTION_NAME = "csr_vectors"
+
+chroma_client = chromadb.Client(Settings(chroma_db_impl="duckdb+parquet", persist_directory=DB_DIR))
+collection = chroma_client.get_or_create_collection(name=COLLECTION_NAME)
+embedder = SentenceTransformer("all-MiniLM-L6-v2")
+
+def vectorize_and_store():
+    for fname in os.listdir(CSR_DIR):
+        if not fname.endswith(".json"):
+            continue
+
+        with open(os.path.join(CSR_DIR, fname), "r") as f:
+            csr = json.load(f)
+
+        csr_id = csr["csr_id"]
+        summary_text = csr.get("vector_summary", "")
+        if not summary_text:
+            continue
+
+        embedding = embedder.encode(summary_text).tolist()
+
+        collection.add(
+            ids=[csr_id],
+            documents=[summary_text],
+            embeddings=[embedding],
+            metadatas=[{
+                "indication": csr.get("indication", ""),
+                "phase": csr.get("phase", ""),
+                "title": csr.get("title", "")
+            }]
+        )
+        print(f"✅ Embedded and stored: {csr_id}")
+
+    chroma_client.persist()
+    print("📦 Vector store updated.")
+
+if __name__ == "__main__":
+    vectorize_and_store()
+✅ Step 2: Create the Orchestration Runner
+python
+Copy
+Edit
+# sage_plus_pipeline.py
+
+from csr_extractor import extract_all_csrs
+from csr_vectorizer import vectorize_and_store
+
+def run_full_pipeline():
+    print("🚀 Starting SagePlus CSR pipeline...")
+    extract_all_csrs()
+    vectorize_and_store()
+    print("✅ Pipeline complete.")
+
+if __name__ == "__main__":
+    run_full_pipeline()
+Ensure csr_extractor.py has a function like:
+
+python
+Copy
+Edit
+def extract_all_csrs():
+    # Iterate over raw PDFs in ./csrs/
+    # Extract, normalize, save to /data/processed_csrs/
+    ...
+📁 Suggested Folder Recap
+bash
+Copy
+Edit
+/csrs/                         # Raw PDF files
+/data/processed_csrs/         # Validated JSON per CSR
+/data/vector_store/           # ChromaDB persistent store
+csr_schema.py
+csr_extractor.py
+csr_vectorizer.py
+csr_search.py
+csr_api.py
+sage_plus_pipeline.py
+✅ You Now Have:
+Structured CSR data ✅
+
+Vectors for semantic search ✅
+
+API to query them ✅
+
+Pipeline to rerun anytime ✅
+
+Would you like to now:
+
+Scaffold a dashboard UI to test live search?
+
+Build a simple similarity browser for CSR comparisons?
+
+You’re just a few clicks away from letting people search 5,000 CSRs like a clinical trial oracle.
+
+
+
+
+
+
+
+
