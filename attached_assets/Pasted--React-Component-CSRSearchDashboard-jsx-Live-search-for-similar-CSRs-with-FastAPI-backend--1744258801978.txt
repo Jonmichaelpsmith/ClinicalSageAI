@@ -1,0 +1,71 @@
+// React Component: CSRSearchDashboard.jsx
+// Live search for similar CSRs with FastAPI backend
+
+import { useState } from 'react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Select, SelectItem } from '@/components/ui/select';
+
+const indications = ['Any', 'Oncology', 'Cardiology', 'Neurology'];
+const phases = ['Any', 'Phase 1', 'Phase 2', 'Phase 3'];
+
+export default function CSRSearchDashboard() {
+  const [query, setQuery] = useState('');
+  const [phase, setPhase] = useState('Any');
+  const [indication, setIndication] = useState('Any');
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const runSearch = async () => {
+    setLoading(true);
+    const payload = {
+      query,
+      filters: {
+        phase: phase === 'Any' ? '' : phase,
+        indication: indication === 'Any' ? '' : indication,
+      },
+    };
+
+    const response = await fetch('/api/search/csr', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+    setResults(data.results || []);
+    setLoading(false);
+  };
+
+  return (
+    <div className="p-6 max-w-4xl mx-auto space-y-6">
+      <h2 className="text-xl font-bold">🔍 Find Similar Clinical Study Reports (CSRs)</h2>
+      <div className="flex space-x-2">
+        <Input placeholder="e.g. Phase 2 study for glioblastoma with ORR endpoint" value={query} onChange={(e) => setQuery(e.target.value)} />
+        <Select value={phase} onChange={(e) => setPhase(e.target.value)}>
+          {phases.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+        </Select>
+        <Select value={indication} onChange={(e) => setIndication(e.target.value)}>
+          {indications.map((i) => <SelectItem key={i} value={i}>{i}</SelectItem>)}
+        </Select>
+        <Button onClick={runSearch} disabled={loading}>
+          {loading ? 'Searching...' : 'Search'}
+        </Button>
+      </div>
+
+      <div className="space-y-4">
+        {results.map((r) => (
+          <Card key={r.csr_id}>
+            <CardContent className="space-y-1">
+              <h3 className="text-lg font-semibold">{r.title} ({r.phase})</h3>
+              <p className="text-sm text-gray-600">Indication: {r.indication}</p>
+              <p className="text-sm">Similarity Score: {r.score}</p>
+              <p className="text-sm italic">Match: {r.vector_summary?.slice(0, 200)}...</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
