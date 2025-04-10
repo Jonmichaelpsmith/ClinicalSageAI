@@ -626,7 +626,7 @@ export async function getStatisticalApproaches(
       Example: {"Logistic Regression": 8, "Chi-square Test": 6}
     `;
     
-    const response = await queryHuggingFace(prompt, HFModel.SQL_CODER, 512, 0.3);
+    const response = await queryHuggingFace(prompt, HFModel.TEXT, 0.3, 512);
     
     // Parse the response to extract approaches and frequencies
     try {
