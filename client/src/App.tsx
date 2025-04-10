@@ -15,7 +15,7 @@ import ProtocolGenerator from "./pages/ProtocolGenerator";
 import StudyDesignAgent from "./pages/StudyDesignAgent";
 import Translation from "./pages/Translation";
 import CsrExtractionGuide from "./pages/CsrExtractionGuide";
-import { Sidebar } from "@/components/layout/Sidebar";
+import { Sidebar } from "@/components/layout/SidebarUpdated";
 import { TopNavbar } from "@/components/layout/TopNavbar";
 import ProductFeatures from "./pages/ProductFeatures";
 import PricingPage from "./pages/PricingPage";
@@ -24,6 +24,7 @@ import LumenBioDashboard from "@/pages/LumenBioDashboard";
 import LumenBioReport from "@/pages/LumenBioReport";
 import ClientIntelligence from "@/pages/ClientIntelligence";
 import DossierUploader from "@/pages/DossierUploader";
+import PremiumDossierLanding from "@/pages/PremiumDossierLanding";
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -104,6 +105,7 @@ function Router() {
       <Route path="/reports/lumen-bio">{() => renderWithLayout(LumenBioReport)}</Route>
       <Route path="/client-intelligence" component={ClientIntelligence} />
       <Route path="/dossier-request">{() => renderWithLayout(DossierUploader)}</Route>
+      <Route path="/premium-dossier">{() => renderWithLayout(PremiumDossierLanding)}</Route>
 
       {/* Fallback to 404 */}
       <Route>{() => renderWithLayout(NotFound)}</Route>
