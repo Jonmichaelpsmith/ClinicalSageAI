@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1269",
+  "title": "A Randomized Open-Label, Active-Controlled  Study of HEM-779 (factor VIII gene therapy) in Patients With Sickle Cell Disease",
+  "officialTitle": "A Randomized Open-Label, Active-Controlled  Study of HEM-779 (factor VIII gene therapy) in Patients With Sickle Cell Disease",
+  "sponsor": "Ottawa Hospital Research Institute",
+  "indication": "Sickle Cell Disease",
+  "phase": "Phase 1/Phase 2",
+  "fileName": "HC-1269.json",
+  "fileSize": 443554,
+  "date": "2024-05-27",
+  "completionDate": "2026-01-06",
+  "drugName": "HEM-779 (factor VIII gene therapy)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Active, not recruiting",
+  "description": "This is a randomized open-label, active-controlled  study designed to evaluate the efficacy and safety of HEM-779 (factor VIII gene therapy) in patients with Sickle Cell Disease. The study will enroll approximately 395 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 20-69 years\n- Confirmed diagnosis of Sickle Cell Disease\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

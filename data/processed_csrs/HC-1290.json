@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1290",
+  "title": "A Randomized Double-Blind, Placebo-Controlled  Study of ULC-345 (TNF inhibitor) in Patients With Ulcerative Colitis",
+  "officialTitle": "A Randomized Double-Blind, Placebo-Controlled  Study of ULC-345 (TNF inhibitor) in Patients With Ulcerative Colitis",
+  "sponsor": "University of British Columbia",
+  "indication": "Ulcerative Colitis",
+  "phase": "Phase 1",
+  "fileName": "HC-1290.json",
+  "fileSize": 437161,
+  "date": "2024-08-09",
+  "completionDate": "2027-03-15",
+  "drugName": "ULC-345 (TNF inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Recruiting",
+  "description": "This is a randomized double-blind, placebo-controlled  study designed to evaluate the efficacy and safety of ULC-345 (TNF inhibitor) in patients with Ulcerative Colitis. The study will enroll approximately 177 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 24-76 years\n- Confirmed diagnosis of Ulcerative Colitis\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

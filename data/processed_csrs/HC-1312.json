@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1312",
+  "title": "A Randomized Double-Blind, Placebo-Controlled  Study of SCK-880 (Hb polymerization inhibitor) in Patients With Duchenne Muscular Dystrophy",
+  "officialTitle": "A Randomized Double-Blind, Placebo-Controlled  Study of SCK-880 (Hb polymerization inhibitor) in Patients With Duchenne Muscular Dystrophy",
+  "sponsor": "Centre for Addiction and Mental Health",
+  "indication": "Duchenne Muscular Dystrophy",
+  "phase": "Phase 2",
+  "fileName": "HC-1312.json",
+  "fileSize": 292747,
+  "date": "2024-04-12",
+  "completionDate": "2026-07-26",
+  "drugName": "SCK-880 (Hb polymerization inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Terminated",
+  "description": "This is a randomized double-blind, placebo-controlled  study designed to evaluate the efficacy and safety of SCK-880 (Hb polymerization inhibitor) in patients with Duchenne Muscular Dystrophy. The study will enroll approximately 71 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 23-73 years\n- Confirmed diagnosis of Duchenne Muscular Dystrophy\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1247",
+  "title": "A  Double-Blind, Active-Controlled  Study of MSC-135 (oligonucleotide) in Patients With Hemophilia A",
+  "officialTitle": "A  Double-Blind, Active-Controlled  Study of MSC-135 (oligonucleotide) in Patients With Hemophilia A",
+  "sponsor": "McGill University Health Center",
+  "indication": "Hemophilia A",
+  "phase": "Phase 4",
+  "fileName": "HC-1247.json",
+  "fileSize": 540612,
+  "date": "2024-05-02",
+  "completionDate": "2027-12-12",
+  "drugName": "MSC-135 (oligonucleotide)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Withdrawn",
+  "description": "This is a  double-blind, active-controlled  study designed to evaluate the efficacy and safety of MSC-135 (oligonucleotide) in patients with Hemophilia A. The study will enroll approximately 249 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 26-65 years\n- Confirmed diagnosis of Hemophilia A\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1306",
+  "title": "A  Double-Blind, Active-Controlled  Study of CDN-468 (integrin inhibitor) in Patients With Duchenne Muscular Dystrophy",
+  "officialTitle": "A  Double-Blind, Active-Controlled  Study of CDN-468 (integrin inhibitor) in Patients With Duchenne Muscular Dystrophy",
+  "sponsor": "McGill University Health Center",
+  "indication": "Duchenne Muscular Dystrophy",
+  "phase": "Phase 1",
+  "fileName": "HC-1306.json",
+  "fileSize": 448415,
+  "date": "2023-06-06",
+  "completionDate": "2028-10-03",
+  "drugName": "CDN-468 (integrin inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Not yet recruiting",
+  "description": "This is a  double-blind, active-controlled  study designed to evaluate the efficacy and safety of CDN-468 (integrin inhibitor) in patients with Duchenne Muscular Dystrophy. The study will enroll approximately 336 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 20-71 years\n- Confirmed diagnosis of Duchenne Muscular Dystrophy\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}
