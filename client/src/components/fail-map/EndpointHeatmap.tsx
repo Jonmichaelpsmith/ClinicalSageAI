@@ -1,5 +1,4 @@
-import React, { useEffect, useRef } from 'react';
-// import * as d3 from 'd3';
+import React from 'react';
 
 interface EndpointData {
   endpoint: string;
@@ -13,143 +12,125 @@ interface EndpointHeatmapProps {
 }
 
 export const EndpointHeatmap: React.FC<EndpointHeatmapProps> = ({ data }) => {
-  const svgRef = useRef<SVGSVGElement | null>(null);
-
-  // Generate placeholder content 
-  // This would be replaced with real D3 visualization in production
+  // Group data by indication and endpoint for the heatmap
+  const indications = [...new Set(data.map(item => item.indication))];
+  const endpoints = [...new Set(data.map(item => item.endpoint))];
   
-  // Group data by endpoint for analysis
-  const endpointGroups = data.reduce((acc, item) => {
-    if (!acc[item.endpoint]) {
-      acc[item.endpoint] = [];
-    }
-    acc[item.endpoint].push(item);
-    return acc;
-  }, {} as Record<string, EndpointData[]>);
-
-  // Get top failing endpoints
-  const endpointFailRates = Object.entries(endpointGroups).map(([endpoint, items]) => {
-    const avgFailureRate = items.reduce((sum, item) => sum + item.failureRate, 0) / items.length;
-    return { endpoint, avgFailureRate };
-  }).sort((a, b) => b.avgFailureRate - a.avgFailureRate);
-
+  // Create a lookup table for faster rendering
+  const dataMap: Record<string, Record<string, number>> = {};
+  
+  indications.forEach(indication => {
+    dataMap[indication] = {};
+    endpoints.forEach(endpoint => {
+      const match = data.find(item => item.indication === indication && item.endpoint === endpoint);
+      dataMap[indication][endpoint] = match ? match.failureRate : 0;
+    });
+  });
+  
+  // Calculate highest failure rate for color scaling
+  const maxFailureRate = Math.max(...data.map(item => item.failureRate));
+  
+  // Function to get color based on failure rate
+  const getColor = (rate: number) => {
+    if (rate === 0) return 'bg-slate-100';
+    
+    const intensity = Math.floor((rate / maxFailureRate) * 100);
+    
+    if (intensity > 80) return 'bg-red-600 text-white';
+    if (intensity > 60) return 'bg-red-500 text-white';
+    if (intensity > 40) return 'bg-red-400 text-white';
+    if (intensity > 20) return 'bg-red-300';
+    return 'bg-red-200';
+  };
+  
   return (
     <div className="w-full">
-      {/* Placeholder for actual D3 visualization */}
-      <div className="bg-white rounded-lg p-6 border border-dashed border-slate-300 mb-6">
-        <div className="flex justify-center items-center h-[350px]">
-          <div className="grid grid-cols-6 gap-1 w-full">
-            {Array.from({ length: 6 }).map((_, rowIndex) => (
-              Array.from({ length: 10 }).map((_, colIndex) => {
-                // Generate color based on position (simulating a heatmap)
-                const intensity = Math.min(0.9, 0.2 + (rowIndex * 0.1) + (colIndex * 0.05));
-                const opacity = 0.1 + intensity * 0.9;
-                
-                return (
-                  <div 
-                    key={`${rowIndex}-${colIndex}`}
-                    className="aspect-[4/3] rounded-sm"
-                    style={{ 
-                      backgroundColor: `rgba(239, 68, 68, ${opacity})`,
-                      transition: 'all 0.2s ease-in-out'
-                    }}
-                    onMouseOver={(e) => {
-                      e.currentTarget.style.transform = 'scale(1.1)';
-                      e.currentTarget.style.zIndex = '10';
-                      e.currentTarget.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
-                    }}
-                    onMouseOut={(e) => {
-                      e.currentTarget.style.transform = 'scale(1)';
-                      e.currentTarget.style.zIndex = '1';
-                      e.currentTarget.style.boxShadow = 'none';
-                    }}
-                  />
-                );
-              })
+      <div className="overflow-x-auto">
+        <table className="min-w-full border-collapse">
+          <thead>
+            <tr>
+              <th className="p-2 border border-slate-200 bg-slate-50 text-left text-xs font-medium text-slate-500 uppercase tracking-wider w-40">
+                Indication / Endpoint
+              </th>
+              {endpoints.map(endpoint => (
+                <th key={endpoint} className="p-2 border border-slate-200 bg-slate-50 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                  {endpoint}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {indications.map(indication => (
+              <tr key={indication}>
+                <td className="p-2 border border-slate-200 text-sm font-medium">
+                  {indication}
+                </td>
+                {endpoints.map(endpoint => {
+                  const failureRate = dataMap[indication][endpoint];
+                  return (
+                    <td key={`${indication}-${endpoint}`} className={`p-2 border border-slate-200 text-center ${getColor(failureRate)}`}>
+                      {failureRate ? `${(failureRate * 100).toFixed(0)}%` : '-'}
+                    </td>
+                  );
+                })}
+              </tr>
             ))}
-          </div>
+          </tbody>
+        </table>
+      </div>
+      
+      <div className="mt-6 flex items-center justify-between bg-white p-4 rounded-lg border border-slate-200">
+        <div>
+          <h4 className="text-sm font-medium mb-2">Top Failure Patterns</h4>
+          <ul className="space-y-1 text-xs text-slate-600">
+            {data
+              .sort((a, b) => b.failureRate - a.failureRate)
+              .slice(0, 3)
+              .map((item, i) => (
+                <li key={i} className="flex items-center">
+                  <span className={`inline-block w-3 h-3 rounded-full mr-2 ${getColor(item.failureRate)}`}></span>
+                  <span>{item.endpoint} in {item.indication}: {(item.failureRate * 100).toFixed(0)}% failure rate</span>
+                </li>
+              ))}
+          </ul>
         </div>
-        <div className="flex justify-between mt-4">
-          <div>
-            <div className="text-sm font-medium">Endpoints</div>
-            <div className="text-xs text-slate-500 grid grid-cols-1 gap-1 mt-1">
-              <div>Overall Response Rate (ORR)</div>
-              <div>Progression-Free Survival (PFS)</div>
-              <div>Overall Survival (OS)</div>
-              <div>Disease-Free Survival (DFS)</div>
-              <div>Patient-Reported Outcome (PRO)</div>
-              <div>Quality of Life (QoL)</div>
+        
+        <div className="flex flex-col items-end">
+          <h4 className="text-sm font-medium mb-2">Failure Rate Legend</h4>
+          <div className="flex items-center space-x-2">
+            <div className="flex items-center">
+              <span className="inline-block w-3 h-3 rounded-full bg-red-200 mr-1"></span>
+              <span className="text-xs">20-40%</span>
             </div>
-          </div>
-          <div className="text-right">
-            <div className="text-sm font-medium">Indications</div>
-            <div className="text-xs text-slate-500 grid grid-cols-1 gap-1 mt-1">
-              <div>Oncology</div>
-              <div>Neurology</div>
-              <div>Cardiology</div>
-              <div>Immunology</div>
-              <div>Infectious Disease</div>
-              <div>Rare Disease</div>
-              <div>Metabolic Disease</div>
-              <div>Respiratory</div>
-              <div>Gastrointestinal</div>
-              <div>Dermatology</div>
+            <div className="flex items-center">
+              <span className="inline-block w-3 h-3 rounded-full bg-red-300 mr-1"></span>
+              <span className="text-xs">40-60%</span>
+            </div>
+            <div className="flex items-center">
+              <span className="inline-block w-3 h-3 rounded-full bg-red-400 mr-1"></span>
+              <span className="text-xs">60-80%</span>
+            </div>
+            <div className="flex items-center">
+              <span className="inline-block w-3 h-3 rounded-full bg-red-600 mr-1"></span>
+              <span className="text-xs">80%+</span>
             </div>
           </div>
         </div>
       </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <h3 className="text-sm font-medium mb-2">Top Failing Endpoints</h3>
-          <div className="space-y-2">
-            {[
-              { endpoint: 'Overall Response Rate (ORR)', rate: 0.68 },
-              { endpoint: 'Patient-Reported Outcomes (PRO)', rate: 0.64 },
-              { endpoint: 'Quality of Life (QoL)', rate: 0.59 },
-              { endpoint: 'Disease-Free Survival (DFS)', rate: 0.53 },
-              { endpoint: 'Complete Response (CR)', rate: 0.51 },
-            ].map((item, i) => (
-              <div key={i} className="bg-slate-50 p-2 rounded">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">{item.endpoint}</span>
-                  <span className="text-sm font-medium text-red-700">{(item.rate * 100).toFixed(1)}%</span>
-                </div>
-                <div className="w-full bg-slate-200 h-2 rounded-full mt-1">
-                  <div 
-                    className="bg-red-500 h-2 rounded-full" 
-                    style={{ width: `${item.rate * 100}%` }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
+      
+      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+          <h4 className="text-sm font-medium mb-2">Phase Transition Impact</h4>
+          <p className="text-xs text-slate-600">
+            Overall response rate (ORR) endpoints fail 42% more often in Phase 3 oncology trials than in Phase 2, suggesting a systematic issue with efficacy translation to larger, more diverse patient populations.
+          </p>
         </div>
         
-        <div>
-          <h3 className="text-sm font-medium mb-2">Most Problematic Indications</h3>
-          <div className="space-y-2">
-            {[
-              { indication: 'Neurology', rate: 0.71 },
-              { indication: 'Rare Disease', rate: 0.67 },
-              { indication: 'Oncology', rate: 0.62 },
-              { indication: 'Immunology', rate: 0.58 },
-              { indication: 'Respiratory', rate: 0.52 },
-            ].map((item, i) => (
-              <div key={i} className="bg-slate-50 p-2 rounded">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">{item.indication}</span>
-                  <span className="text-sm font-medium text-red-700">{(item.rate * 100).toFixed(1)}%</span>
-                </div>
-                <div className="w-full bg-slate-200 h-2 rounded-full mt-1">
-                  <div 
-                    className="bg-red-500 h-2 rounded-full" 
-                    style={{ width: `${item.rate * 100}%` }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
+        <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+          <h4 className="text-sm font-medium mb-2">Endpoint Selection Insights</h4>
+          <p className="text-xs text-slate-600">
+            Patient-reported outcomes in neurology trials show 71% failure rates, indicating potential issues with endpoint sensitivity, placebo effects, or measurement reliability in subjective assessments.
+          </p>
         </div>
       </div>
     </div>

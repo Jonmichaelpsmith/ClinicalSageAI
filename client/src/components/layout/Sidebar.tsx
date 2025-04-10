@@ -40,15 +40,13 @@ function NavItem({ href, icon, children, end = false }: NavItemProps) {
   const isActive = end ? location === href : location.startsWith(href);
 
   return (
-    <Link href={href}>
-      <a
-        className={cn(
+    <div>
+      <Link href={href} className={cn(
           "group flex items-center px-3 py-2.5 text-sm font-medium rounded-md transition-colors duration-150",
           isActive
             ? "bg-primary/10 text-primary"
             : "text-slate-700 hover:bg-slate-100 hover:text-primary"
-        )}
-      >
+        )}>
         <div className={cn(
           "mr-3 h-5 w-5 flex-shrink-0",
           isActive
@@ -58,8 +56,8 @@ function NavItem({ href, icon, children, end = false }: NavItemProps) {
           {icon}
         </div>
         {children}
-      </a>
-    </Link>
+      </Link>
+    </div>
   );
 }
 
