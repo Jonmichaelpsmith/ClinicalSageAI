@@ -1153,7 +1153,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Generate a response using Hugging Face model
         const prompt = `${context}\n\nQuestion: ${query}\n\nAnswer:`;
-        const agentResponse = await queryHuggingFace(prompt, HFModel.MISTRAL_7B, 1000, 0.3);
+        const agentResponse = await queryHuggingFace(prompt, HFModel.TEXT, 0.3, 1000);
         
         content = agentResponse; // huggingFaceService.queryModel returns the text content directly
       } catch (error) {

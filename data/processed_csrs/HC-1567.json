@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1567",
+  "title": "A Randomized Double-Blind, Placebo-Controlled  Study of AST-611 (anti-IL-5 antibody) in Patients With Duchenne Muscular Dystrophy",
+  "officialTitle": "A Randomized Double-Blind, Placebo-Controlled  Study of AST-611 (anti-IL-5 antibody) in Patients With Duchenne Muscular Dystrophy",
+  "sponsor": "SickKids Research Institute",
+  "indication": "Duchenne Muscular Dystrophy",
+  "phase": "Phase 2/Phase 3",
+  "fileName": "HC-1567.json",
+  "fileSize": 242393,
+  "date": "2023-05-26",
+  "completionDate": "2025-07-31",
+  "drugName": "AST-611 (anti-IL-5 antibody)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Terminated",
+  "description": "This is a randomized double-blind, placebo-controlled  study designed to evaluate the efficacy and safety of AST-611 (anti-IL-5 antibody) in patients with Duchenne Muscular Dystrophy. The study will enroll approximately 494 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 27-60 years\n- Confirmed diagnosis of Duchenne Muscular Dystrophy\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}
