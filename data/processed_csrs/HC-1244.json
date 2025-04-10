@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1244",
+  "title": "A Randomized Open-Label, Active-Controlled Multi-Center Study of ALZ-309 (beta-amyloid antibody) in Patients With Colorectal Cancer",
+  "officialTitle": "A Randomized Open-Label, Active-Controlled Multi-Center Study of ALZ-309 (beta-amyloid antibody) in Patients With Colorectal Cancer",
+  "sponsor": "Princess Margaret Cancer Centre",
+  "indication": "Colorectal Cancer",
+  "phase": "Phase 2",
+  "fileName": "HC-1244.json",
+  "fileSize": 204850,
+  "date": "2024-11-26",
+  "completionDate": "2025-06-27",
+  "drugName": "ALZ-309 (beta-amyloid antibody)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Recruiting",
+  "description": "This is a randomized open-label, active-controlled multi-center study designed to evaluate the efficacy and safety of ALZ-309 (beta-amyloid antibody) in patients with Colorectal Cancer. The study will enroll approximately 286 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 20-56 years\n- Confirmed diagnosis of Colorectal Cancer\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n- Measurable disease per RECIST v1.1\n- Prior treatment with standard therapy\n- Life expectancy ≥3 months\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment\n- Brain metastases unless treated and stable\n- Prior treatment with similar mechanism of action\n- Other active malignancy requiring treatment"
+}

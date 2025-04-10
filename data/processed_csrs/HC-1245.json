@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1245",
+  "title": "A Randomized Double-Blind, Placebo-Controlled Multi-Center Study of PAN-967 (PARP inhibitor) in Patients With Systemic Lupus Erythematosus",
+  "officialTitle": "A Randomized Double-Blind, Placebo-Controlled Multi-Center Study of PAN-967 (PARP inhibitor) in Patients With Systemic Lupus Erythematosus",
+  "sponsor": "Sunnybrook Research Institute",
+  "indication": "Systemic Lupus Erythematosus",
+  "phase": "Phase 3",
+  "fileName": "HC-1245.json",
+  "fileSize": 319771,
+  "date": "2023-09-23",
+  "completionDate": "2028-03-11",
+  "drugName": "PAN-967 (PARP inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Recruiting",
+  "description": "This is a randomized double-blind, placebo-controlled multi-center study designed to evaluate the efficacy and safety of PAN-967 (PARP inhibitor) in patients with Systemic Lupus Erythematosus. The study will enroll approximately 424 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 27-71 years\n- Confirmed diagnosis of Systemic Lupus Erythematosus\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n- Active disease defined by standard criteria\n- Inadequate response to conventional therapy\n- Positive serology (if applicable)\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment\n- Active infection including tuberculosis\n- History of recurrent serious infections\n- Concurrent autoimmune disease other than study indication"
+}
