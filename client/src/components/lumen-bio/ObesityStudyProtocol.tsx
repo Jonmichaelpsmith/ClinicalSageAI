@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { 
   Card, 
   CardContent, 
@@ -42,8 +42,15 @@ import {
 } from "@/components/ui/table";
 import ProtocolComparisonTab from "./ProtocolComparisonTab";
 import ProtocolVersionCompare from "./ProtocolVersionCompare";
+import { getObesityProtocolText } from "../../utils/pdfUtils";
 
 const ObesityStudyProtocol = () => {
+  const [protocolText, setProtocolText] = useState<string>("");
+  
+  useEffect(() => {
+    // Load the protocol text when the component mounts
+    setProtocolText(getObesityProtocolText());
+  }, []);
   return (
     <Card className="w-full shadow-sm">
       <CardHeader className="border-b bg-slate-50 dark:bg-slate-900 rounded-t-lg">
@@ -601,7 +608,7 @@ const ObesityStudyProtocol = () => {
           </TabsContent>
           
           <TabsContent value="recommendations" className="p-6">
-            <ProtocolComparisonTab protocolText="Obesity POC Study (WT02) - LMN-0801: A Dose-Ranging Study Evaluating the Safety and Efficacy of LMN-0801 for Weight Loss in adults with BMI ≥30 kg/m² or ≥27 kg/m² with weight-related comorbidity. This is a 12-week randomized, double-blind, placebo-controlled study with 90 participants (72 active, 18 placebo)." />
+            <ProtocolComparisonTab protocolText={protocolText} />
             
             <div className="mt-8 border-t pt-6">
               <h3 className="text-lg font-medium mb-4">Version History</h3>

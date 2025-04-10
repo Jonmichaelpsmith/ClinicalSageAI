@@ -1,0 +1,103 @@
+Final Enhancements
+📥 1. Export Versioned Protocol to Word/PDF
+Let users download improved or historical protocols for sharing or filing.
+
+📁 /api/protocol/export-pdf
+python
+Copy
+Edit
+from fastapi import APIRouter, Body
+from fpdf import FPDF
+import time
+
+router = APIRouter()
+
+@router.post("/api/protocol/export-pdf")
+def export_protocol_to_pdf(text: str = Body(...), label: str = Body("Protocol Export")):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+    pdf.multi_cell(0, 10, f"{label}\n\n{text}")
+    filename = f"/mnt/data/protocol_{int(time.time())}.pdf"
+    pdf.output(filename)
+    return {"download_url": filename}
+🧩 2. Button in UI
+In your ProtocolComparisonTab.tsx or ProtocolVersionCompare.tsx:
+
+tsx
+Copy
+Edit
+<Button
+  onClick={async () => {
+    const res = await fetch('/api/protocol/export-pdf', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text: selectedVersionText,
+        label: 'AI-Recommended Obesity Protocol'
+      })
+    });
+    const { download_url } = await res.json();
+    window.open(download_url, '_blank');
+  }}
+>
+  📄 Export to PDF
+</Button>
+🟢 3. “Promote to Active Protocol” Feature
+Allow user to replace current editable protocol draft with an AI-recommended version:
+
+Endpoint:
+python
+Copy
+Edit
+@router.post("/api/protocol/promote")
+def promote_version(req: SaveVersionRequest):
+    active_path = f"data/active_protocols/{req.protocol_id}.txt"
+    with open(active_path, "w") as f:
+        f.write(req.version_text)
+    return {"message": "Active protocol updated"}
+Button in UI:
+tsx
+Copy
+Edit
+<Button
+  onClick={async () => {
+    await fetch('/api/protocol/promote', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        protocol_id: 'obesity_v1',
+        version_text: selectedVersionText
+      })
+    });
+    alert("Protocol promoted to active version!");
+  }}
+>
+  ✅ Promote to Active Protocol
+</Button>
+You now have:
+
+✅ Full protocol improvement pipeline
+
+✅ Side-by-side version review
+
+✅ Export + publish to active version
+
+Would you like to queue these for batch simulation next (power, dropout, risk)?
+
+
+
+
+
+
+
+
+
+
+
+Search
+
+Deep research
+
+
+

@@ -163,6 +163,37 @@ const ProtocolComparisonTab: React.FC<ProtocolComparisonTabProps> = ({ protocolT
     // In a real implementation, this would trigger a download of the PDF
     window.open("/attached_assets/Obesity POC Study Protocol (Australia) v1.1c 07MAR25 (1).pdf", "_blank");
   };
+  
+  // Function to export the protocol with recommendations as PDF
+  const handleExportPDF = async () => {
+    try {
+      const res = await apiRequest("POST", "/api/protocol/export-pdf", {
+        text: protocolText,
+        label: "AI-Recommended Obesity Protocol"
+      });
+      
+      const data = await res.json();
+      if (data.download_url) {
+        window.open(data.download_url, "_blank");
+      }
+    } catch (error) {
+      console.error("Error exporting protocol to PDF:", error);
+    }
+  };
+  
+  // Function to promote protocol version to active
+  const handlePromoteVersion = async () => {
+    try {
+      await apiRequest("POST", "/api/protocol/promote", {
+        protocol_id: "obesity_wt02_v1",
+        version_text: protocolText
+      });
+      
+      alert("Protocol promoted to active version!");
+    } catch (error) {
+      console.error("Error promoting protocol version:", error);
+    }
+  };
 
   return (
     <div className="space-y-6">
