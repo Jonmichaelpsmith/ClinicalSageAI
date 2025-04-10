@@ -71,7 +71,7 @@ export default function ProtocolOptimizer() {
         useSimilarTrials,
         indication,
         phase
-      });
+      }) as ProtocolOptimizationResponse;
       
       if (response.success) {
         setGeneratedContent({
@@ -202,18 +202,22 @@ export default function ProtocolOptimizer() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
-      <h1 className="text-3xl font-bold text-blue-700 mb-2">Protocol Optimizer</h1>
-      <p className="text-gray-600 mb-6">
-        Enter your protocol summary and our AI will provide optimization suggestions based on
-        successful clinical study reports.
-      </p>
+      <div className="mb-8 text-center">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-3">
+          Protocol Optimizer
+        </h1>
+        <p className="text-slate-600 max-w-2xl mx-auto">
+          Enter your protocol summary and our AI will provide optimization suggestions based on 
+          successful clinical study reports.
+        </p>
+      </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="overflow-hidden">
-          <CardHeader className="pb-3">
-            <CardTitle>Protocol Input</CardTitle>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <Card className="overflow-hidden border-0 shadow-lg rounded-xl">
+          <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 pb-3 border-b">
+            <CardTitle className="text-blue-800">Protocol Input</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 pt-6">
             {dossierId && (
               <div className="bg-blue-50 p-3 rounded-md border border-blue-200 mb-2">
                 <p className="text-sm text-blue-700 flex items-center">
@@ -295,18 +299,18 @@ export default function ProtocolOptimizer() {
             </div>
             
             <Button 
-              className="w-full bg-blue-600 hover:bg-blue-700"
+              className="w-full text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md py-6 font-medium rounded-xl mt-2"
               disabled={analyzeLoading}
               onClick={analyzeProtocol}
             >
               {analyzeLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Analyzing...
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Analyzing Protocol...
                 </>
               ) : (
                 <>
-                  <ArrowRight className="mr-2 h-4 w-4" />
+                  <ArrowRight className="mr-2 h-5 w-5" />
                   Optimize Protocol
                 </>
               )}
@@ -317,15 +321,16 @@ export default function ProtocolOptimizer() {
         <div className="space-y-6">
           {generatedContent ? (
             <>
-              <Card className="overflow-hidden">
-                <CardHeader className="pb-3">
+              <Card className="overflow-hidden border-0 shadow-lg rounded-xl">
+                <CardHeader className="bg-gradient-to-r from-indigo-50 to-blue-50 pb-3 border-b">
                   <div className="flex justify-between items-center">
-                    <CardTitle>Optimization Results</CardTitle>
-                    <div className="flex gap-2">
+                    <CardTitle className="text-blue-800">Optimization Results</CardTitle>
+                    <div className="flex gap-3">
                       <Button 
                         variant="outline" 
                         size="sm"
                         onClick={exportPDF}
+                        className="bg-white hover:bg-blue-50 transition-colors border-blue-200 text-blue-700 hover:text-blue-800 font-medium"
                       >
                         <FileDown className="h-4 w-4 mr-2" />
                         Export PDF
@@ -337,6 +342,7 @@ export default function ProtocolOptimizer() {
                           size="sm"
                           onClick={saveOptimizationToDossier}
                           disabled={saveLoading}
+                          className="bg-white hover:bg-green-50 transition-colors border-green-200 text-green-700 hover:text-green-800 font-medium"
                         >
                           {saveLoading ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
@@ -349,14 +355,14 @@ export default function ProtocolOptimizer() {
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pt-6">
                   {savedMessageVisible && (
-                    <div className="mb-4 p-2 bg-green-50 border border-green-200 rounded-md text-sm text-green-700 flex items-center">
+                    <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md text-sm text-green-800 flex items-center">
                       <PlusCircle className="h-4 w-4 mr-2" />
-                      Saved successfully as version {versionCount}
+                      <span className="font-medium">Successfully saved as version {versionCount}</span>
                       <Button 
                         variant="link" 
-                        className="ml-auto text-blue-600 p-0 h-auto" 
+                        className="ml-auto text-blue-600 hover:text-blue-800 transition-colors p-0 h-auto" 
                         onClick={viewDossier}
                       >
                         View Dossier
@@ -364,52 +370,80 @@ export default function ProtocolOptimizer() {
                     </div>
                   )}
                   
-                  <div ref={outputRef}>
+                  <div ref={outputRef} className="mt-2">
                     <Tabs defaultValue="recommendations">
-                      <TabsList className="mb-4">
-                        <TabsTrigger value="recommendations">Recommendations</TabsTrigger>
-                        <TabsTrigger value="key-points">Key Points</TabsTrigger>
-                        <TabsTrigger value="references">Similar Trials</TabsTrigger>
+                      <TabsList className="mb-4 bg-slate-100 p-1 rounded-lg">
+                        <TabsTrigger value="recommendations" className="data-[state=active]:bg-white data-[state=active]:text-blue-700 rounded-md">Recommendations</TabsTrigger>
+                        <TabsTrigger value="key-points" className="data-[state=active]:bg-white data-[state=active]:text-blue-700 rounded-md">Key Points</TabsTrigger>
+                        <TabsTrigger value="references" className="data-[state=active]:bg-white data-[state=active]:text-blue-700 rounded-md">Similar Trials</TabsTrigger>
                       </TabsList>
                       
                       <TabsContent value="recommendations" className="space-y-4">
-                        <div className="whitespace-pre-wrap p-4 border rounded-md bg-white">
+                        <div className="whitespace-pre-wrap p-6 border rounded-xl bg-white shadow-sm">
                           {generatedContent.recommendation}
                         </div>
                       </TabsContent>
                       
-                      <TabsContent value="key-points" className="space-y-4">
-                        <div className="space-y-4">
-                          <div>
-                            <h3 className="text-md font-semibold mb-2">Suggested Endpoints</h3>
-                            <ul className="list-disc pl-5 space-y-1">
+                      <TabsContent value="key-points" className="space-y-5">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                          <div className="bg-blue-50 p-5 rounded-xl border border-blue-100">
+                            <h3 className="text-md font-semibold mb-3 text-blue-800 flex items-center">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="m12 16 4-4-4-4"/>
+                                <path d="M8 12h8"/>
+                              </svg>
+                              Suggested Endpoints
+                            </h3>
+                            <ul className="list-disc pl-5 space-y-2">
                               {generatedContent.suggestedEndpoints?.map((item, i) => (
-                                <li key={i} className="text-sm">{item}</li>
+                                <li key={i} className="text-sm text-blue-700">{item}</li>
                               ))}
                             </ul>
                           </div>
                           
-                          <div>
-                            <h3 className="text-md font-semibold mb-2">Suggested Treatment Arms</h3>
-                            <ul className="list-disc pl-5 space-y-1">
+                          <div className="bg-indigo-50 p-5 rounded-xl border border-indigo-100">
+                            <h3 className="text-md font-semibold mb-3 text-indigo-800 flex items-center">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                                <path d="M4 19h16"/>
+                                <path d="M4 15h16"/>
+                                <path d="M4 11h16"/>
+                                <path d="M4 7h16"/>
+                              </svg>
+                              Suggested Treatment Arms
+                            </h3>
+                            <ul className="list-disc pl-5 space-y-2">
                               {generatedContent.suggestedArms?.map((item, i) => (
-                                <li key={i} className="text-sm">{item}</li>
+                                <li key={i} className="text-sm text-indigo-700">{item}</li>
                               ))}
                             </ul>
                           </div>
                           
-                          <div>
-                            <h3 className="text-md font-semibold mb-2">Key Suggestions</h3>
-                            <ul className="list-disc pl-5 space-y-1">
+                          <div className="bg-emerald-50 p-5 rounded-xl border border-emerald-100">
+                            <h3 className="text-md font-semibold mb-3 text-emerald-800 flex items-center">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                                <path d="m9 12 2 2 4-4"/>
+                                <path d="M12 3c-1.2 0-2.4.6-3 1.7A3.6 3.6 0 0 0 4.6 9c-1 .6-1.7 1.8-1.7 3s.7 2.4 1.7 3c-.3 1.2 0 2.5 1 3.4.8.8 2.1 1.1 3.3.8.6 1 1.8 1.7 3 1.7s2.4-.6 3-1.7c1.2.3 2.5 0 3.4-1 .8-.8 1.1-2.1.8-3.3 1-.6 1.7-1.8 1.7-3s-.7-2.4-1.7-3c.3-1.2 0-2.5-1-3.4-.8-.8-2.1-1.1-3.3-.8A3.6 3.6 0 0 0 12 3z"/>
+                              </svg>
+                              Key Suggestions
+                            </h3>
+                            <ul className="list-disc pl-5 space-y-2">
                               {generatedContent.keySuggestions?.map((item, i) => (
-                                <li key={i} className="text-sm">{item}</li>
+                                <li key={i} className="text-sm text-emerald-700">{item}</li>
                               ))}
                             </ul>
                           </div>
                           
-                          <div>
-                            <h3 className="text-md font-semibold text-amber-700 mb-2">Risk Factors</h3>
-                            <ul className="list-disc pl-5 space-y-1">
+                          <div className="bg-amber-50 p-5 rounded-xl border border-amber-100">
+                            <h3 className="text-md font-semibold mb-3 text-amber-800 flex items-center">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                                <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                                <line x1="12" y1="9" x2="12" y2="13"/>
+                                <line x1="12" y1="17" x2="12.01" y2="17"/>
+                              </svg>
+                              Risk Factors
+                            </h3>
+                            <ul className="list-disc pl-5 space-y-2">
                               {generatedContent.riskFactors?.map((item, i) => (
                                 <li key={i} className="text-sm text-amber-700">{item}</li>
                               ))}
@@ -419,17 +453,30 @@ export default function ProtocolOptimizer() {
                       </TabsContent>
                       
                       <TabsContent value="references" className="space-y-4">
-                        <div className="space-y-4">
+                        <div className="grid grid-cols-1 gap-4">
                           {generatedContent.matchedCsrInsights?.length > 0 ? (
                             generatedContent.matchedCsrInsights.map((csr, i) => (
-                              <div key={i} className="p-3 border rounded-md">
-                                <h3 className="font-medium">{csr.title}</h3>
-                                <p className="text-sm text-gray-600">Phase: {csr.phase} | Indication: {csr.indication}</p>
-                                <p className="text-sm mt-2">{csr.insight || 'No specific insights available'}</p>
+                              <div key={i} className="p-5 border border-slate-200 rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow">
+                                <h3 className="font-medium text-blue-800">{csr.title}</h3>
+                                <div className="flex items-center mt-2 mb-3">
+                                  <span className="text-xs font-medium px-2 py-1 bg-blue-100 text-blue-800 rounded-full mr-2">Phase: {csr.phase}</span>
+                                  <span className="text-xs font-medium px-2 py-1 bg-indigo-100 text-indigo-800 rounded-full">Indication: {csr.indication}</span>
+                                </div>
+                                <p className="text-sm text-slate-600 mt-2">{csr.insight || 'No specific insights available'}</p>
                               </div>
                             ))
                           ) : (
-                            <p className="text-gray-500 italic">No similar trials found</p>
+                            <div className="text-center py-10 text-gray-500 italic bg-slate-50 rounded-xl border border-slate-200">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="mx-auto mb-3 text-slate-300">
+                                <line x1="8" y1="6" x2="21" y2="6"></line>
+                                <line x1="8" y1="12" x2="21" y2="12"></line>
+                                <line x1="8" y1="18" x2="21" y2="18"></line>
+                                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                              </svg>
+                              <p>No similar trials found</p>
+                            </div>
                           )}
                         </div>
                       </TabsContent>
@@ -439,13 +486,34 @@ export default function ProtocolOptimizer() {
               </Card>
             </>
           ) : (
-            <Card>
-              <CardContent className="p-10 flex flex-col items-center justify-center text-center h-[400px]">
-                <FileText className="h-16 w-16 text-gray-300 mb-4" />
-                <h3 className="text-xl font-semibold text-gray-700">No Optimization Results Yet</h3>
-                <p className="text-gray-500 mt-2 max-w-md">
-                  Enter your protocol details and click "Optimize Protocol" to receive AI-powered recommendations.
+            <Card className="overflow-hidden border-0 shadow-lg rounded-xl">
+              <CardContent className="p-12 flex flex-col items-center justify-center text-center h-[500px] bg-gradient-to-br from-blue-50 to-indigo-50">
+                <div className="rounded-full bg-white p-5 shadow-md mb-6">
+                  <FileText className="h-12 w-12 text-blue-400" />
+                </div>
+                <h3 className="text-2xl font-semibold text-blue-800 mb-3">No Optimization Results Yet</h3>
+                <p className="text-slate-600 mt-2 max-w-md leading-relaxed">
+                  Enter your protocol details in the form and click "Optimize Protocol" to receive 
+                  AI-powered recommendations and insights based on successful clinical study reports.
                 </p>
+                <div className="mt-8 flex flex-col sm:flex-row gap-3 items-center justify-center">
+                  <div className="flex items-center text-indigo-600 font-medium text-sm bg-white rounded-full py-2 px-4 shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                      <path d="m9 12 2 2 4-4"/>
+                      <circle cx="12" cy="12" r="10"/>
+                    </svg>
+                    Evidence-based suggestions
+                  </div>
+                  <div className="flex items-center text-emerald-600 font-medium text-sm bg-white rounded-full py-2 px-4 shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                      <path d="M12 2H2v10h10V2Z"/>
+                      <path d="M22 12h-10v10h10V12Z"/>
+                      <path d="M12 12H2v10h10V12Z"/>
+                      <path d="M22 2h-10v10h10V2Z"/>
+                    </svg>
+                    Similar trial insights
+                  </div>
+                </div>
               </CardContent>
             </Card>
           )}
