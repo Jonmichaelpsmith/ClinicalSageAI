@@ -1,0 +1,67 @@
+// Updated Features Section for Home Page (client/src/pages/home.tsx)
+
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
+
+const features = [
+  {
+    title: '📄 Structured Extraction',
+    description: 'Extract endpoints, populations, outcomes, and safety profiles from CSR PDFs using AI.',
+    action: 'Upload a CSR',
+    path: '/csrs/upload',
+  },
+  {
+    title: '🧠 AI Protocol Generator',
+    description: 'Create optimized trial designs based on historical precedent.',
+    action: 'Optimize a Protocol',
+    path: '/optimizer',
+  },
+  {
+    title: '📊 Competitive Benchmarking',
+    description: 'Compare your protocol to top CSR-backed trials to find differentiation.',
+    action: 'Compare Trials',
+    path: '/search',
+  },
+  {
+    title: '📚 Study Design Agent',
+    description: 'Ask our AI agent for guidance on trial structure and risk.',
+    action: 'Ask the Agent',
+    path: '/agent',
+  },
+  {
+    title: '📈 Statistical Modeling',
+    description: 'Forecast success, identify risks, and simulate virtual trials.',
+    action: 'Run Simulation',
+    path: '/simulator',
+  },
+  {
+    title: '🔎 Clean UI & Search',
+    description: 'Explore and filter 5,000+ CSR trials with a user-friendly interface.',
+    action: 'Search CSRs',
+    path: '/search',
+  },
+];
+
+export default function HomeFeatures() {
+  const navigate = useNavigate();
+
+  return (
+    <section className="py-12 px-4 md:px-16">
+      <h2 className="text-3xl font-bold text-center text-blue-800 mb-6">🧬 Key Capabilities of TrialSage</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {features.map((f, i) => (
+          <Card key={i} className="hover:shadow-xl transition">
+            <CardContent className="space-y-4 p-5">
+              <h3 className="text-lg font-semibold text-blue-700">{f.title}</h3>
+              <p className="text-sm text-gray-700">{f.description}</p>
+              <Button size="sm" onClick={() => navigate(f.path)} className="bg-blue-600 text-white hover:bg-blue-700">
+                {f.action}
+              </Button>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </section>
+  );
+}
