@@ -131,6 +131,7 @@ function Router() {
       <Route path="/endpoint-recommender">{() => renderWithLayout(SimpleEndpointRecommender)}</Route>
       <Route path="/endpoint-designer">{() => renderWithLayout(EndpointDesigner)}</Route>
       <Route path="/academic-knowledge-demo">{() => renderWithLayout(AcademicKnowledgeDemo)}</Route>
+      <Route path="/competitive-intelligence">{() => renderWithLayout(CompetitiveIntelligence)}</Route>
 
       {/* Fallback to 404 */}
       <Route>{() => renderWithLayout(NotFound)}</Route>
