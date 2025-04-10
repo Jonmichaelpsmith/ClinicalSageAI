@@ -1,11 +1,11 @@
 // React Page: DossierViewer.tsx (with Print, JSON Export, Annotations, and Shareable Link)
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'wouter';
+import { useParams, useLocation } from 'wouter';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2 } from 'lucide-react';
+import { Loader2, FileText, ArrowRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export default function DossierViewer() {
@@ -15,6 +15,7 @@ export default function DossierViewer() {
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
+  const [_, navigate] = useLocation();
 
   useEffect(() => {
     const fetchDossier = async () => {
@@ -168,13 +169,30 @@ export default function DossierViewer() {
         </Card>
       ))}
 
-      <div className="text-center pt-8 space-x-4 print:hidden">
-        <Button onClick={() => window.print()} className="bg-blue-600 text-white hover:bg-blue-700">
-          🖨️ Print Dossier
-        </Button>
-        <Button onClick={downloadJSON} className="bg-gray-700 text-white hover:bg-gray-800">
-          📥 Download JSON (with Notes)
-        </Button>
+      <div className="text-center pt-8 space-y-4 print:hidden">
+        <div className="flex justify-center space-x-4">
+          <Button onClick={() => window.print()} className="bg-blue-600 text-white hover:bg-blue-700">
+            🖨️ Print Dossier
+          </Button>
+          <Button onClick={downloadJSON} className="bg-gray-700 text-white hover:bg-gray-800">
+            📥 Download JSON (with Notes)
+          </Button>
+        </div>
+        
+        <div className="flex justify-center items-center border-t border-gray-200 pt-4 mt-6">
+          <Button 
+            onClick={() => {
+              // Create CSR IDs string from dossier
+              const csrIds = dossier.csrs.map((csr: any) => csr.csr_id).join(',');
+              navigate(`/protocol-optimizer?csr_ids=${encodeURIComponent(csrIds)}`);
+            }}
+            className="bg-emerald-700 text-white hover:bg-emerald-800 flex items-center gap-2"
+          >
+            <FileText className="h-4 w-4" />
+            Continue to Protocol Optimizer
+            <ArrowRight className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
       {/* Print-only styling */}

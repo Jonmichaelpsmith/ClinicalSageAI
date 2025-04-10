@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation } from 'wouter';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { apiRequest } from '@/lib/queryClient';
-import { Loader2, Download, Copy, ArrowRight } from 'lucide-react';
+import { Loader2, Download, Copy, ArrowRight, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import html2pdf from 'html2pdf.js';
 
@@ -21,7 +22,22 @@ export default function ProtocolOptimizer() {
   const [suggestedEndpoints, setSuggestedEndpoints] = useState<string[]>([]);
   const [suggestedArms, setSuggestedArms] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [location] = useLocation();
   const { toast } = useToast();
+  
+  // Parse CSR IDs from URL query parameters
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const csrIdsParam = params.get('csr_ids');
+    
+    if (csrIdsParam) {
+      setCsrIds(csrIdsParam);
+      toast({
+        title: "CSR IDs Loaded",
+        description: "CSR IDs have been loaded from your dossier.",
+      });
+    }
+  }, [location, toast]);
 
   const handleSubmit = async () => {
     if (!summary) {
@@ -85,16 +101,45 @@ export default function ProtocolOptimizer() {
   const exportToPdf = () => {
     const element = document.getElementById('recommendation-content');
     if (!element) return;
-
+    
+    // Add current date to PDF
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+    
+    // Create a timestamp for the filename
+    const timestamp = now.toISOString().replace(/[:.]/g, '-').substring(0, 19);
+    
     const opt = {
       margin: 1,
-      filename: 'protocol-optimization-report.pdf',
+      filename: `protocol-optimization-report-${timestamp}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2 },
       jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
     };
+    
+    // Add report metadata
+    const footer = document.createElement('div');
+    footer.className = 'pdf-footer';
+    footer.innerHTML = `
+      <div style="margin-top: 20px; padding-top: 10px; border-top: 1px solid #e2e8f0; font-size: 10px; color: #64748b;">
+        <p>Generated on ${dateStr} • TrialSage Protocol Optimizer</p>
+        ${csrIds ? `<p>Referenced CSR IDs: ${csrIds}</p>` : ''}
+        <p>This report is generated based on AI analysis of historical clinical study reports. Professional clinical judgment is required for implementation.</p>
+      </div>
+    `;
+    
+    // Temporarily append footer to the content for PDF generation
+    const originalElement = element.cloneNode(true);
+    element.appendChild(footer);
 
     html2pdf().set(opt).from(element).save().then(() => {
+      // Restore original element (remove footer)
+      element.innerHTML = originalElement.innerHTML;
+      
       toast({
         title: "PDF Export Complete",
         description: "Your protocol optimization report has been exported as PDF."
@@ -102,6 +147,14 @@ export default function ProtocolOptimizer() {
     });
   };
 
+  // Get the dossierId from URL if available
+  const getDossierId = () => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('dossier_id');
+  };
+  
+  const dossierId = getDossierId();
+  
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -111,6 +164,12 @@ export default function ProtocolOptimizer() {
             Enhance your clinical trial design with AI-powered insights from historical CSR data.
           </p>
         </div>
+        {dossierId && (
+          <Link to={`/dossier/${dossierId}`} className="flex items-center text-sm text-blue-600 hover:text-blue-800">
+            <ArrowRight className="w-4 h-4 mr-1 rotate-180" />
+            Back to Dossier
+          </Link>
+        )}
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
@@ -210,8 +269,27 @@ export default function ProtocolOptimizer() {
                   <TabsTrigger value="full">Full Analysis</TabsTrigger>
                 </TabsList>
                 <TabsContent value="structured" className="space-y-4">
-                  <div id="recommendation-content" className="p-4 border rounded-md space-y-6">
-                    <div className="text-center">
+                  <div id="recommendation-content" className="p-6 border rounded-md space-y-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center">
+                        <div className="text-4xl font-bold text-blue-600 mr-3">TS</div>
+                        <div>
+                          <h2 className="text-lg font-semibold">TrialSage</h2>
+                          <p className="text-xs text-muted-foreground">Protocol Optimizer</p>
+                        </div>
+                      </div>
+                      <div className="text-right text-sm">
+                        <p className="font-bold">Optimization Report</p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date().toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-center border-t border-b py-4 my-4">
                       <h2 className="text-xl font-bold">Protocol Optimization Report</h2>
                       <p className="text-sm text-muted-foreground mb-4">
                         Based on analysis of historical clinical study reports
@@ -225,6 +303,11 @@ export default function ProtocolOptimizer() {
                         {phase && (
                           <span className="bg-green-50 text-green-700 px-2 py-1 rounded">
                             {phase}
+                          </span>
+                        )}
+                        {csrIds && (
+                          <span className="bg-purple-50 text-purple-700 px-2 py-1 rounded">
+                            {csrIds.split(',').length} CSR References
                           </span>
                         )}
                       </div>
