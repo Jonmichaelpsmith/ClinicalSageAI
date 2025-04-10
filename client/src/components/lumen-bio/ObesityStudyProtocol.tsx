@@ -25,7 +25,9 @@ import {
   Pill, 
   ChevronRight,
   AlertTriangle,
-  CheckCircle
+  CheckCircle,
+  BookOpenCheck,
+  Download
 } from "lucide-react";
 import { Link } from "wouter";
 import { Progress } from "@/components/ui/progress";
@@ -38,6 +40,7 @@ import {
   TableHeader, 
   TableRow 
 } from "@/components/ui/table";
+import ProtocolComparisonTab from "./ProtocolComparisonTab";
 
 const ObesityStudyProtocol = () => {
   return (
@@ -56,12 +59,18 @@ const ObesityStudyProtocol = () => {
       </CardHeader>
       <CardContent className="p-0">
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="w-full grid grid-cols-5 rounded-none border-b">
+          <TabsList className="w-full grid grid-cols-6 rounded-none border-b">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="endpoints">Endpoints</TabsTrigger>
             <TabsTrigger value="population">Population</TabsTrigger>
             <TabsTrigger value="design">Study Design</TabsTrigger>
             <TabsTrigger value="analysis">Analysis</TabsTrigger>
+            <TabsTrigger value="recommendations">
+              <div className="flex items-center">
+                <BookOpenCheck className="h-4 w-4 mr-1" />
+                Recommendations
+              </div>
+            </TabsTrigger>
           </TabsList>
           
           <TabsContent value="overview" className="p-6">

@@ -1,0 +1,111 @@
+Next Features: Protocol Versioning & Side-by-Side Comparison
+✅ 1. Save Recommended Changes as Versioned Protocol
+What It Does:
+
+Stores AI-improved versions of protocols with:
+
+Timestamp
+
+CSR context (if used)
+
+Author/AI label
+
+Associates each version with the originating study/dossier
+
+FastAPI Endpoint: /api/protocol/save-version
+
+python
+Copy
+Edit
+from fastapi import APIRouter
+from pydantic import BaseModel
+import json
+import time
+import os
+
+router = APIRouter()
+
+VERSION_PATH = "data/protocol_versions"
+
+class SaveVersionRequest(BaseModel):
+    protocol_id: str
+    version_text: str
+    source: str = "AI Agent"
+
+@router.post("/api/protocol/save-version")
+def save_version(req: SaveVersionRequest):
+    os.makedirs(VERSION_PATH, exist_ok=True)
+    filename = f"{VERSION_PATH}/{req.protocol_id}_{int(time.time())}.json"
+    with open(filename, "w") as f:
+        json.dump({
+            "timestamp": time.time(),
+            "source": req.source,
+            "version_text": req.version_text
+        }, f)
+    return {"message": "Version saved", "path": filename}
+✅ 2. Side-by-Side Comparison Component
+📁 ProtocolVersionCompare.tsx
+
+tsx
+Copy
+Edit
+import { useState, useEffect } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+
+export default function ProtocolVersionCompare({ protocolId }) {
+  const [versions, setVersions] = useState([]);
+
+  useEffect(() => {
+    const fetchVersions = async () => {
+      const res = await fetch(`/api/protocol/versions/${protocolId}`);
+      const data = await res.json();
+      setVersions(data || []);
+    };
+    fetchVersions();
+  }, [protocolId]);
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+      {versions.slice(0, 2).map((v, idx) => (
+        <Card key={idx}>
+          <CardContent className="space-y-2">
+            <p className="text-xs text-gray-500 italic">
+              {new Date(v.timestamp * 1000).toLocaleString()} — {v.source}
+            </p>
+            <pre className="text-sm bg-gray-100 p-2 rounded whitespace-pre-wrap">{v.version_text}</pre>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
+✅ 3. Endpoint: /api/protocol/versions/{protocol_id}
+python
+Copy
+Edit
+@router.get("/api/protocol/versions/{protocol_id}")
+def get_versions(protocol_id: str):
+    versions = []
+    for fname in os.listdir(VERSION_PATH):
+        if fname.startswith(protocol_id):
+            with open(os.path.join(VERSION_PATH, fname)) as f:
+                versions.append(json.load(f))
+    versions.sort(key=lambda x: x["timestamp"], reverse=True)
+    return versions
+✅ Integration in UI
+In your ObesityStudyProtocol.tsx, under the AI recommendations tab:
+
+tsx
+Copy
+Edit
+<ProtocolVersionCompare protocolId="obesity_v1" />
+✅ You now have a version-controlled, explainable protocol improvement system — with audit trail and side-by-side review.
+
+Want to add export to Word/PDF, or a “Promote to Active Protocol” button next?
+
+
+
+
+
+
+
