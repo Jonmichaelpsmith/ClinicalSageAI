@@ -16,7 +16,8 @@ import {
   Lightbulb, 
   Upload, 
   AlertCircle, 
-  X 
+  X,
+  Download
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
@@ -51,18 +52,6 @@ const ProtocolDesigner = () => {
     if (files && files.length > 0) {
       setUploadedFile(files[0]);
     }
-  };
-
-  // Handler for reading file content
-  const readFileContent = () => {
-    if (!uploadedFile) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const content = e.target?.result as string;
-      setUploadedProtocolContent(content);
-    };
-    reader.readAsText(uploadedFile);
   };
 
   // Handler for analyzing uploaded protocol
@@ -380,73 +369,106 @@ const ProtocolDesigner = () => {
                         </div>
                       </div>
                     </div>
-                    <Button className="w-full mt-2" onClick={() => setActiveTab("preview")}>
-                      View Full Protocol
-                    </Button>
                   </TabsContent>
                   <TabsContent value="preview">
-                    <div className="space-y-5">
+                    <div className="space-y-6 pb-4">
                       {generatedProtocol.sections.map((section: any, index: number) => (
-                        <div key={index} className="border rounded-lg overflow-hidden">
-                          <div className="bg-gray-50 p-3 border-b">
-                            <h3 className="text-md font-semibold">{section.sectionName}</h3>
+                        <div key={index} className="border border-gray-200 rounded-lg overflow-hidden">
+                          <div className="bg-gray-50 p-3 flex justify-between items-start">
+                            <h3 className="font-medium">{section.sectionName}</h3>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div className="bg-green-50 border border-green-100 text-green-700 text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                                    <CheckCircle className="h-3 w-3" />
+                                    <span>Precedent-based</span>
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p className="text-sm">{section.precedent}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                           </div>
-                          <div className="p-4">
-                            <p className="whitespace-pre-line text-gray-800">{section.content}</p>
-
-                            <div className="mt-4 pt-3 border-t grid grid-cols-1 md:grid-cols-2 gap-3">
-                              <div className="bg-green-50 rounded p-2 text-sm">
-                                <span className="text-green-800 font-medium block mb-1">Precedent:</span>
-                                <span className="text-green-700">{section.precedent}</span>
-                              </div>
-                              <div className="bg-blue-50 rounded p-2 text-sm">
-                                <span className="text-blue-800 font-medium block mb-1">Regulatory Alignment:</span>
-                                <span className="text-blue-700">{section.regulatoryGuidance}</span>
-                              </div>
-                            </div>
+                          <div className="p-3 whitespace-pre-line">{section.content}</div>
+                          <div className="bg-blue-50 p-2 text-xs text-blue-700 flex items-center gap-1.5">
+                            <AlertCircle className="h-3 w-3" />
+                            {section.regulatoryGuidance}
                           </div>
                         </div>
                       ))}
                     </div>
                   </TabsContent>
                   <TabsContent value="download">
-                    <div className="space-y-5">
-                      <p className="text-gray-600">Download your protocol in the following formats:</p>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                        <Button variant="outline" className="border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100">
-                          <FileText className="h-4 w-4 mr-2" />
-                          Download as PDF
-                        </Button>
-                        <Button variant="outline" className="border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100">
-                          <FileText className="h-4 w-4 mr-2" />
-                          Download as Word
-                        </Button>
-                        <Button variant="outline" className="border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100">
-                          <FileText className="h-4 w-4 mr-2" />
-                          Download as Text
-                        </Button>
+                    <div className="space-y-6 py-4">
+                      <div className="bg-gray-50 p-5 rounded-lg">
+                        <h3 className="text-lg font-medium mb-4">Export Protocol Document</h3>
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="h-10 w-10 bg-white rounded-lg border border-gray-200 flex items-center justify-center">
+                                <FileText className="h-5 w-5 text-blue-600" />
+                              </div>
+                              <div>
+                                <div className="font-medium">Full Protocol Document (Word)</div>
+                                <div className="text-sm text-gray-500">Editable document with all sections</div>
+                              </div>
+                            </div>
+                            <Button size="sm" className="gap-1">
+                              <Download className="h-4 w-4" />
+                              Export DOCX
+                            </Button>
+                          </div>
+                          
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="h-10 w-10 bg-white rounded-lg border border-gray-200 flex items-center justify-center">
+                                <FileText className="h-5 w-5 text-red-600" />
+                              </div>
+                              <div>
+                                <div className="font-medium">Full Protocol Document (PDF)</div>
+                                <div className="text-sm text-gray-500">Final version for submission</div>
+                              </div>
+                            </div>
+                            <Button size="sm" className="gap-1" variant="outline">
+                              <Download className="h-4 w-4" />
+                              Export PDF
+                            </Button>
+                          </div>
+                          
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="h-10 w-10 bg-white rounded-lg border border-gray-200 flex items-center justify-center">
+                                <PieChart className="h-5 w-5 text-emerald-600" />
+                              </div>
+                              <div>
+                                <div className="font-medium">Protocol Summary Slides</div>
+                                <div className="text-sm text-gray-500">Presentation-ready overview</div>
+                              </div>
+                            </div>
+                            <Button size="sm" className="gap-1" variant="outline">
+                              <Download className="h-4 w-4" />
+                              Export PPT
+                            </Button>
+                          </div>
+                        </div>
                       </div>
-
-                      <div className="mt-6 border rounded-lg p-4 bg-amber-50">
-                        <h3 className="font-medium text-amber-800 mb-2 flex items-center gap-2">
-                          <PieChart className="h-4 w-4" />
-                          Protocol Performance Projection
-                        </h3>
-                        <p className="text-amber-700 text-sm mb-3">
-                          Based on similar historical studies, we project the following outcomes:
-                        </p>
-                        <div className="grid grid-cols-3 gap-3">
-                          <div className="bg-white rounded p-2 shadow-sm">
-                            <div className="text-xs text-gray-500 mb-1">Est. Enrollment Rate</div>
-                            <div className="font-medium">5-7 subjects/site/month</div>
+                      
+                      <div className="p-4 border border-yellow-200 bg-yellow-50 rounded-lg">
+                        <div className="flex items-start gap-3">
+                          <div className="mt-1">
+                            <AlertCircle className="h-5 w-5 text-yellow-600" />
                           </div>
-                          <div className="bg-white rounded p-2 shadow-sm">
-                            <div className="text-xs text-gray-500 mb-1">Est. Screen Failure</div>
-                            <div className="font-medium">25-30%</div>
-                          </div>
-                          <div className="bg-white rounded p-2 shadow-sm">
-                            <div className="text-xs text-gray-500 mb-1">Est. Dropout Rate</div>
-                            <div className="font-medium">15-20%</div>
+                          <div>
+                            <h3 className="font-medium text-yellow-800 mb-1">Protocol Validation Notice</h3>
+                            <p className="text-sm text-yellow-700 mb-2">
+                              This protocol has minor issues that should be addressed before finalization:
+                            </p>
+                            <ul className="list-disc pl-5 space-y-1">
+                              <li className="text-sm text-yellow-700">Add detailed statistical analysis plan</li>
+                              <li className="text-sm text-yellow-700">Define secondary endpoints more specifically</li>
+                              <li className="text-sm text-yellow-700">Review inclusion/exclusion criteria for consistency</li>
+                            </ul>
                           </div>
                         </div>
                       </div>
@@ -454,48 +476,36 @@ const ProtocolDesigner = () => {
                   </TabsContent>
                 </Tabs>
               </div>
-              <CardFooter className="flex justify-between mt-4 pt-4 border-t">
-                <Button variant="outline">
-                  Edit Protocol
+              <CardFooter className="border-t bg-gray-50 flex justify-between">
+                <Button variant="outline" size="sm">
+                  <Brain className="h-4 w-4 mr-2" />
+                  Get Design Feedback
                 </Button>
-                <Button>
-                  Finalize Protocol
+                <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                  <FileText className="h-4 w-4 mr-2" />
+                  Save to Dossier
                 </Button>
               </CardFooter>
             </Card>
           ) : (
-            <Card className="shadow-sm border-gray-200 h-full">
-              <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-xl">Protocol Preview</CardTitle>
-                  <FileText className="h-5 w-5 text-blue-500" />
+            <div className="h-full flex items-center justify-center">
+              <div className="text-center p-8 max-w-md">
+                <div className="mx-auto w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center mb-4">
+                  <FileText className="h-8 w-8 text-blue-500" />
                 </div>
-                <CardDescription>
-                  Your AI-generated protocol will appear here
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex-1 flex flex-col items-center justify-center py-12">
-                <div className="text-center max-w-md mx-auto">
-                  <div className="bg-blue-100 h-14 w-14 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <FileText className="h-6 w-6 text-blue-600" />
-                  </div>
-                  <h3 className="text-lg font-medium mb-2">Create Your Evidence-Based Protocol</h3>
-                  <p className="text-gray-500 mb-6">
-                    Fill in the form and generate a protocol that incorporates clinical study design elements backed by real-world regulatory precedent.
-                  </p>
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div className="bg-gray-50 p-3 rounded-lg">
-                      <p className="font-medium mb-1 text-gray-700">Study Design</p>
-                      <p className="text-gray-500">The scientific architecture of your clinical trial</p>
-                    </div>
-                    <div className="bg-gray-50 p-3 rounded-lg">
-                      <p className="font-medium mb-1 text-gray-700">Protocol Document</p>
-                      <p className="text-gray-500">The complete instructions to execute that design</p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                <h3 className="text-xl font-medium mb-2">Protocol Builder</h3>
+                <p className="text-gray-500 mb-6">
+                  Fill in the form to generate a clinical trial protocol using our AI-powered protocol builder, backed by real-world evidence.
+                </p>
+                <Button onClick={handleUploadClick} variant="outline" className="mb-3">
+                  <Upload className="h-4 w-4 mr-2" />
+                  Import from Existing Protocol
+                </Button>
+                <p className="text-sm text-gray-400">
+                  Or use the form to create a new protocol from scratch
+                </p>
+              </div>
+            </div>
           )}
         </div>
       </div>
@@ -523,19 +533,19 @@ const ProtocolDesigner = () => {
                   type="file" 
                   ref={fileInputRef}
                   className="hidden" 
-                  accept=".txt,.doc,.docx,.pdf" 
+                  accept=".pdf" 
                   onChange={handleFileChange}
                 />
                 <div className="mx-auto w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center mb-4">
                   <Upload className="h-6 w-6 text-blue-600" />
                 </div>
-                <h3 className="text-lg font-medium mb-2">Drag & drop your protocol file or click to browse</h3>
+                <h3 className="text-lg font-medium mb-2">Drag & drop your protocol PDF or click to browse</h3>
                 <p className="text-gray-500 mb-2">
-                  Supported formats: .txt, .doc, .docx, .pdf
+                  Upload your Lumen Bio protocol or any PDF protocol document for analysis
                 </p>
-                <Button variant="outline" className="mt-2">Select File</Button>
+                <Button variant="outline" className="mt-2">Select PDF File</Button>
               </div>
-            ) : (
+            ) : !analysisResults ? (
               <div className="space-y-4">
                 <div className="flex items-center justify-between bg-blue-50 p-3 rounded-lg">
                   <div className="flex items-center gap-3">
@@ -553,7 +563,6 @@ const ProtocolDesigner = () => {
                     className="text-gray-400 hover:text-red-600"
                     onClick={() => {
                       setUploadedFile(null);
-                      setUploadedProtocolContent("");
                       setAnalysisResults(null);
                       if (fileInputRef.current) fileInputRef.current.value = '';
                     }}
@@ -562,122 +571,108 @@ const ProtocolDesigner = () => {
                   </Button>
                 </div>
                 
-                {!uploadedProtocolContent ? (
-                  <div className="text-center">
-                    <Button onClick={readFileContent}>Extract Protocol Content</Button>
-                  </div>
-                ) : !analysisResults ? (
-                  <div className="space-y-4">
-                    <Textarea 
-                      className="min-h-[200px]" 
-                      value={uploadedProtocolContent} 
-                      onChange={(e) => setUploadedProtocolContent(e.target.value)}
-                      placeholder="Protocol content will appear here..."
-                    />
-                    <div className="flex justify-center">
-                      <Button 
-                        onClick={handleAnalyzeProtocol} 
-                        disabled={isAnalyzing}
-                        className="gap-2"
-                      >
-                        {isAnalyzing && <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />}
-                        {isAnalyzing ? "Analyzing..." : "Analyze Protocol"}
-                      </Button>
+                <div className="flex justify-center">
+                  <Button 
+                    onClick={handleAnalyzeProtocol} 
+                    disabled={isAnalyzing}
+                    className="gap-2"
+                  >
+                    {isAnalyzing && <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />}
+                    {isAnalyzing ? "Analyzing Protocol PDF..." : "Analyze Protocol PDF"}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <h3 className="text-md font-medium mb-3">Extracted Protocol Information</h3>
+                    <div className="space-y-2">
+                      {Object.entries(analysisResults.extractedInfo).map(([key, value]) => (
+                        <div key={key} className="bg-gray-50 p-3 rounded-lg">
+                          <div className="text-xs text-gray-500 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</div>
+                          <div className="font-medium">{value as string}</div>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                ) : (
-                  <div className="space-y-6">
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div>
-                        <h3 className="text-md font-medium mb-3">Extracted Protocol Information</h3>
-                        <div className="space-y-2">
-                          {Object.entries(analysisResults.extractedInfo).map(([key, value]) => (
-                            <div key={key} className="bg-gray-50 p-3 rounded-lg">
-                              <div className="text-xs text-gray-500 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</div>
-                              <div className="font-medium">{value as string}</div>
-                            </div>
+                  
+                  <div>
+                    <h3 className="text-md font-medium mb-3">Protocol Evaluation</h3>
+                    <div className="space-y-3">
+                      <div className="bg-green-50 p-3 rounded-lg">
+                        <div className="text-green-800 font-medium mb-2">Strengths</div>
+                        <ul className="list-disc pl-5 space-y-1">
+                          {analysisResults.evaluation.strengths.map((strength: string, index: number) => (
+                            <li key={index} className="text-sm text-green-700">{strength}</li>
                           ))}
-                        </div>
+                        </ul>
                       </div>
                       
-                      <div>
-                        <h3 className="text-md font-medium mb-3">Protocol Evaluation</h3>
-                        <div className="space-y-3">
-                          <div className="bg-green-50 p-3 rounded-lg">
-                            <div className="text-green-800 font-medium mb-2">Strengths</div>
-                            <ul className="list-disc pl-5 space-y-1">
-                              {analysisResults.evaluation.strengths.map((strength: string, index: number) => (
-                                <li key={index} className="text-sm text-green-700">{strength}</li>
-                              ))}
-                            </ul>
-                          </div>
-                          
-                          <div className="bg-amber-50 p-3 rounded-lg">
-                            <div className="text-amber-800 font-medium mb-2">Improvement Areas</div>
-                            <ul className="list-disc pl-5 space-y-1">
-                              {analysisResults.evaluation.improvements.map((improvement: string, index: number) => (
-                                <li key={index} className="text-sm text-amber-700">{improvement}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <h3 className="text-md font-medium mb-3">Alignment Scoring</h3>
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <div className="bg-blue-50 p-3 rounded-lg">
-                          <div className="text-blue-800 font-medium mb-1">Regulatory Alignment</div>
-                          <div className="mt-1">
-                            <Progress value={analysisResults.evaluation.regulatoryAlignment} className="h-2" />
-                            <div className="flex justify-between text-xs mt-1">
-                              <span className="text-gray-500">Score</span>
-                              <span className="font-medium text-blue-800">{analysisResults.evaluation.regulatoryAlignment}%</span>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className="bg-indigo-50 p-3 rounded-lg">
-                          <div className="text-indigo-800 font-medium mb-1">Precedent Matching</div>
-                          <div className="mt-1">
-                            <Progress value={analysisResults.evaluation.precedentMatching} className="h-2" />
-                            <div className="flex justify-between text-xs mt-1">
-                              <span className="text-gray-500">Score</span>
-                              <span className="font-medium text-indigo-800">{analysisResults.evaluation.precedentMatching}%</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <h3 className="text-md font-medium mb-3">Similar Precedent Trials</h3>
-                      <div className="bg-gray-50 rounded-lg overflow-hidden">
-                        <table className="min-w-full text-sm">
-                          <thead>
-                            <tr className="bg-gray-100">
-                              <th className="py-2 px-3 text-left font-medium text-gray-700">Trial ID</th>
-                              <th className="py-2 px-3 text-left font-medium text-gray-700">Title</th>
-                              <th className="py-2 px-3 text-left font-medium text-gray-700">Sponsor</th>
-                              <th className="py-2 px-3 text-left font-medium text-gray-700">Date</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {analysisResults.evaluation.similarTrials.map((trial: any, index: number) => (
-                              <tr key={index} className="border-t border-gray-200">
-                                <td className="py-2 px-3 font-medium text-blue-600">{trial.id}</td>
-                                <td className="py-2 px-3">{trial.title}</td>
-                                <td className="py-2 px-3">{trial.sponsor}</td>
-                                <td className="py-2 px-3 text-gray-500">{trial.date}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                      <div className="bg-amber-50 p-3 rounded-lg">
+                        <div className="text-amber-800 font-medium mb-2">Improvement Areas</div>
+                        <ul className="list-disc pl-5 space-y-1">
+                          {analysisResults.evaluation.improvements.map((improvement: string, index: number) => (
+                            <li key={index} className="text-sm text-amber-700">{improvement}</li>
+                          ))}
+                        </ul>
                       </div>
                     </div>
                   </div>
-                )}
+                </div>
+                
+                <div>
+                  <h3 className="text-md font-medium mb-3">Alignment Scoring</h3>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="bg-blue-50 p-3 rounded-lg">
+                      <div className="text-blue-800 font-medium mb-1">Regulatory Alignment</div>
+                      <div className="mt-1">
+                        <Progress value={analysisResults.evaluation.regulatoryAlignment} className="h-2" />
+                        <div className="flex justify-between text-xs mt-1">
+                          <span className="text-gray-500">Score</span>
+                          <span className="font-medium text-blue-800">{analysisResults.evaluation.regulatoryAlignment}%</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-indigo-50 p-3 rounded-lg">
+                      <div className="text-indigo-800 font-medium mb-1">Precedent Matching</div>
+                      <div className="mt-1">
+                        <Progress value={analysisResults.evaluation.precedentMatching} className="h-2" />
+                        <div className="flex justify-between text-xs mt-1">
+                          <span className="text-gray-500">Score</span>
+                          <span className="font-medium text-indigo-800">{analysisResults.evaluation.precedentMatching}%</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <h3 className="text-md font-medium mb-3">Similar Precedent Trials</h3>
+                  <div className="bg-gray-50 rounded-lg overflow-hidden">
+                    <table className="min-w-full text-sm">
+                      <thead>
+                        <tr className="bg-gray-100">
+                          <th className="py-2 px-3 text-left font-medium text-gray-700">Trial ID</th>
+                          <th className="py-2 px-3 text-left font-medium text-gray-700">Title</th>
+                          <th className="py-2 px-3 text-left font-medium text-gray-700">Sponsor</th>
+                          <th className="py-2 px-3 text-left font-medium text-gray-700">Date</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {analysisResults.evaluation.similarTrials.map((trial: any, index: number) => (
+                          <tr key={index} className="border-t border-gray-200">
+                            <td className="py-2 px-3 font-medium text-blue-600">{trial.id}</td>
+                            <td className="py-2 px-3">{trial.title}</td>
+                            <td className="py-2 px-3">{trial.sponsor}</td>
+                            <td className="py-2 px-3 text-gray-500">{trial.date}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -688,7 +683,7 @@ const ProtocolDesigner = () => {
             </DialogClose>
             {analysisResults && (
               <Button onClick={handleUseAnalysisResults}>
-                Use Analysis Results
+                Use Protocol Data
               </Button>
             )}
           </DialogFooter>
