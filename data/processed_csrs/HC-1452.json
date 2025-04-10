@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1452",
+  "title": "A Randomized Double-Blind, Active-Controlled  Study of HTN-295 (ACE inhibitor) in Patients With Hypertension",
+  "officialTitle": "A Randomized Double-Blind, Active-Controlled  Study of HTN-295 (ACE inhibitor) in Patients With Hypertension",
+  "sponsor": "Dalhousie University",
+  "indication": "Hypertension",
+  "phase": "Phase 1",
+  "fileName": "HC-1452.json",
+  "fileSize": 368342,
+  "date": "2024-04-17",
+  "completionDate": "2027-09-22",
+  "drugName": "HTN-295 (ACE inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Recruiting",
+  "description": "This is a randomized double-blind, active-controlled  study designed to evaluate the efficacy and safety of HTN-295 (ACE inhibitor) in patients with Hypertension. The study will enroll approximately 483 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 19-76 years\n- Confirmed diagnosis of Hypertension\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

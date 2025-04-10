@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1466",
+  "title": "A  Open-Label, Active-Controlled  Study of CDN-468 (integrin inhibitor) in Patients With Parkinson's Disease",
+  "officialTitle": "A  Open-Label, Active-Controlled  Study of CDN-468 (integrin inhibitor) in Patients With Parkinson's Disease",
+  "sponsor": "McGill University Health Center",
+  "indication": "Parkinson's Disease",
+  "phase": "Phase 1",
+  "fileName": "HC-1466.json",
+  "fileSize": 253492,
+  "date": "2023-11-16",
+  "completionDate": "2026-12-14",
+  "drugName": "CDN-468 (integrin inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Terminated",
+  "description": "This is a  open-label, active-controlled  study designed to evaluate the efficacy and safety of CDN-468 (integrin inhibitor) in patients with Parkinson's Disease. The study will enroll approximately 416 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 25-82 years\n- Confirmed diagnosis of Parkinson's Disease\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

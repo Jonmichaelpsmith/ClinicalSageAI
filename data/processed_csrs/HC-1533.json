@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1533",
+  "title": "A Randomized Open-Label, Active-Controlled  Study of PDK-277 (dopamine agonist) in Patients With Osteoarthritis",
+  "officialTitle": "A Randomized Open-Label, Active-Controlled  Study of PDK-277 (dopamine agonist) in Patients With Osteoarthritis",
+  "sponsor": "Dalhousie University",
+  "indication": "Osteoarthritis",
+  "phase": "Phase 3",
+  "fileName": "HC-1533.json",
+  "fileSize": 458069,
+  "date": "2024-02-11",
+  "completionDate": "2027-01-03",
+  "drugName": "PDK-277 (dopamine agonist)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Withdrawn",
+  "description": "This is a randomized open-label, active-controlled  study designed to evaluate the efficacy and safety of PDK-277 (dopamine agonist) in patients with Osteoarthritis. The study will enroll approximately 277 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 25-63 years\n- Confirmed diagnosis of Osteoarthritis\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

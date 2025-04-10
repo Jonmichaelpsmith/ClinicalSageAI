@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1441",
+  "title": "A Randomized Double-Blind, Active-Controlled Multi-Center Study of LUN-841 (ALK inhibitor) in Patients With Irritable Bowel Syndrome",
+  "officialTitle": "A Randomized Double-Blind, Active-Controlled Multi-Center Study of LUN-841 (ALK inhibitor) in Patients With Irritable Bowel Syndrome",
+  "sponsor": "University Health Network",
+  "indication": "Irritable Bowel Syndrome",
+  "phase": "Phase 2",
+  "fileName": "HC-1441.json",
+  "fileSize": 227250,
+  "date": "2025-01-19",
+  "completionDate": "2026-06-24",
+  "drugName": "LUN-841 (ALK inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Withdrawn",
+  "description": "This is a randomized double-blind, active-controlled multi-center study designed to evaluate the efficacy and safety of LUN-841 (ALK inhibitor) in patients with Irritable Bowel Syndrome. The study will enroll approximately 225 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 22-68 years\n- Confirmed diagnosis of Irritable Bowel Syndrome\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

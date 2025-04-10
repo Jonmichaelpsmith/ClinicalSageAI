@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1502",
+  "title": "A Randomized Double-Blind, Active-Controlled  Study of HEM-779 (factor VIII gene therapy) in Patients With Alzheimer's Disease",
+  "officialTitle": "A Randomized Double-Blind, Active-Controlled  Study of HEM-779 (factor VIII gene therapy) in Patients With Alzheimer's Disease",
+  "sponsor": "SickKids Research Institute",
+  "indication": "Alzheimer's Disease",
+  "phase": "Phase 1/Phase 2",
+  "fileName": "HC-1502.json",
+  "fileSize": 165843,
+  "date": "2023-07-25",
+  "completionDate": "2028-04-27",
+  "drugName": "HEM-779 (factor VIII gene therapy)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Recruiting",
+  "description": "This is a randomized double-blind, active-controlled  study designed to evaluate the efficacy and safety of HEM-779 (factor VIII gene therapy) in patients with Alzheimer's Disease. The study will enroll approximately 293 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 20-75 years\n- Confirmed diagnosis of Alzheimer's Disease\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

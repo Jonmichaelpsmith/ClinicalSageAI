@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1518",
+  "title": "A Randomized Double-Blind, Active-Controlled  Study of CDN-468 (integrin inhibitor) in Patients With Hypertension",
+  "officialTitle": "A Randomized Double-Blind, Active-Controlled  Study of CDN-468 (integrin inhibitor) in Patients With Hypertension",
+  "sponsor": "Health Canada Research Institute",
+  "indication": "Hypertension",
+  "phase": "Phase 4",
+  "fileName": "HC-1518.json",
+  "fileSize": 401932,
+  "date": "2023-10-01",
+  "completionDate": "2028-06-03",
+  "drugName": "CDN-468 (integrin inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Withdrawn",
+  "description": "This is a randomized double-blind, active-controlled  study designed to evaluate the efficacy and safety of CDN-468 (integrin inhibitor) in patients with Hypertension. The study will enroll approximately 82 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 22-67 years\n- Confirmed diagnosis of Hypertension\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

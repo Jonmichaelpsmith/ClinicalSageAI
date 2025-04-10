@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1481",
+  "title": "A Randomized Double-Blind, Active-Controlled  Study of OST-957 (cathepsin K inhibitor) in Patients With Alzheimer's Disease",
+  "officialTitle": "A Randomized Double-Blind, Active-Controlled  Study of OST-957 (cathepsin K inhibitor) in Patients With Alzheimer's Disease",
+  "sponsor": "Dalhousie University",
+  "indication": "Alzheimer's Disease",
+  "phase": "Phase 4",
+  "fileName": "HC-1481.json",
+  "fileSize": 416308,
+  "date": "2025-03-27",
+  "completionDate": "2026-01-14",
+  "drugName": "OST-957 (cathepsin K inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Completed",
+  "description": "This is a randomized double-blind, active-controlled  study designed to evaluate the efficacy and safety of OST-957 (cathepsin K inhibitor) in patients with Alzheimer's Disease. The study will enroll approximately 143 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 18-58 years\n- Confirmed diagnosis of Alzheimer's Disease\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

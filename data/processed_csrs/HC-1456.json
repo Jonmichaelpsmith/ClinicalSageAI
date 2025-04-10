@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1456",
+  "title": "A  Double-Blind, Active-Controlled  Study of PAN-967 (PARP inhibitor) in Patients With Crohn's Disease",
+  "officialTitle": "A  Double-Blind, Active-Controlled  Study of PAN-967 (PARP inhibitor) in Patients With Crohn's Disease",
+  "sponsor": "Centre for Addiction and Mental Health",
+  "indication": "Crohn's Disease",
+  "phase": "Phase 4",
+  "fileName": "HC-1456.json",
+  "fileSize": 371053,
+  "date": "2024-01-24",
+  "completionDate": "2028-05-10",
+  "drugName": "PAN-967 (PARP inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Recruiting",
+  "description": "This is a  double-blind, active-controlled  study designed to evaluate the efficacy and safety of PAN-967 (PARP inhibitor) in patients with Crohn's Disease. The study will enroll approximately 427 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 27-59 years\n- Confirmed diagnosis of Crohn's Disease\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

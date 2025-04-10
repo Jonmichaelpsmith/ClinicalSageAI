@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1455",
+  "title": "A Randomized Double-Blind, Active-Controlled  Study of DMD-551 (exon-skipping antisense oligonucleotide) in Patients With Chronic Obstructive Pulmonary Disease",
+  "officialTitle": "A Randomized Double-Blind, Active-Controlled  Study of DMD-551 (exon-skipping antisense oligonucleotide) in Patients With Chronic Obstructive Pulmonary Disease",
+  "sponsor": "Laval University Medical Center",
+  "indication": "Chronic Obstructive Pulmonary Disease",
+  "phase": "Phase 2/Phase 3",
+  "fileName": "HC-1455.json",
+  "fileSize": 235778,
+  "date": "2023-09-18",
+  "completionDate": "2026-04-23",
+  "drugName": "DMD-551 (exon-skipping antisense oligonucleotide)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Recruiting",
+  "description": "This is a randomized double-blind, active-controlled  study designed to evaluate the efficacy and safety of DMD-551 (exon-skipping antisense oligonucleotide) in patients with Chronic Obstructive Pulmonary Disease. The study will enroll approximately 273 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 19-81 years\n- Confirmed diagnosis of Chronic Obstructive Pulmonary Disease\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

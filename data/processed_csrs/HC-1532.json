@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1532",
+  "title": "A Randomized Open-Label, Placebo-Controlled  Study of HIV-335 (integrase inhibitor) in Patients With Type 2 Diabetes",
+  "officialTitle": "A Randomized Open-Label, Placebo-Controlled  Study of HIV-335 (integrase inhibitor) in Patients With Type 2 Diabetes",
+  "sponsor": "Centre for Addiction and Mental Health",
+  "indication": "Type 2 Diabetes",
+  "phase": "Phase 4",
+  "fileName": "HC-1532.json",
+  "fileSize": 384301,
+  "date": "2023-09-02",
+  "completionDate": "2027-07-20",
+  "drugName": "HIV-335 (integrase inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Recruiting",
+  "description": "This is a randomized open-label, placebo-controlled  study designed to evaluate the efficacy and safety of HIV-335 (integrase inhibitor) in patients with Type 2 Diabetes. The study will enroll approximately 473 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 19-84 years\n- Confirmed diagnosis of Type 2 Diabetes\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n- HbA1c between 7.0% and 10.0%\n- Body mass index (BMI) between 25 and 40 kg/m²\n- On stable antidiabetic medication for ≥3 months\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment\n- History of severe hypoglycemia within past 6 months\n- Estimated GFR <45 mL/min/1.73m²\n- History of diabetic ketoacidosis"
+}
