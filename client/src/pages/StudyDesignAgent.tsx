@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { BookOpen, Brain, MessageSquare, Send, Microscope, ChevronRight, Beaker, FileText, RefreshCw } from "lucide-react";
 import {
@@ -43,7 +43,7 @@ export default function StudyDesignAgent() {
     queryKey: ['/api/reports'],
   });
   
-  const indications = reports ? Array.from(new Set(reports.map((r: CsrReport) => r.indication))) : [];
+  const indications = reports && Array.isArray(reports) ? Array.from(new Set(reports.map((r: CsrReport) => r.indication))) : [];
 
   // State for tracking free trial
   const [trialSessionStart, setTrialSessionStart] = useState<number | null>(null);
@@ -246,7 +246,7 @@ export default function StudyDesignAgent() {
                     <SelectValue placeholder="Select indication" />
                   </SelectTrigger>
                   <SelectContent>
-                    {indications.map((indication: string) => (
+                    {indications.map((indication) => (
                       <SelectItem key={indication} value={indication}>
                         {indication}
                       </SelectItem>
@@ -323,11 +323,11 @@ export default function StudyDesignAgent() {
               <div className="space-y-3 text-sm">
                 <div className="flex items-center justify-between">
                   <span>CSRs analyzed</span>
-                  <Badge variant="outline">{reports?.length || 0}+</Badge>
+                  <Badge variant="outline">{reports && Array.isArray(reports) ? reports.length : 0}+</Badge>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Therapeutic areas</span>
-                  <Badge variant="outline">{indications?.length || 0}</Badge>
+                  <Badge variant="outline">{indications.length}</Badge>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Design patterns</span>
