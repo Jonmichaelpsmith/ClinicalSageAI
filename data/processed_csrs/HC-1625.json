@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1625",
+  "title": "A Randomized Double-Blind, Active-Controlled Multi-Center Study of SMA-668 (SMN2 splicing modifier) in Patients With Colorectal Cancer",
+  "officialTitle": "A Randomized Double-Blind, Active-Controlled Multi-Center Study of SMA-668 (SMN2 splicing modifier) in Patients With Colorectal Cancer",
+  "sponsor": "University of Toronto Medical Center",
+  "indication": "Colorectal Cancer",
+  "phase": "Phase 3",
+  "fileName": "HC-1625.json",
+  "fileSize": 569176,
+  "date": "2023-07-19",
+  "completionDate": "2025-04-14",
+  "drugName": "SMA-668 (SMN2 splicing modifier)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Not yet recruiting",
+  "description": "This is a randomized double-blind, active-controlled multi-center study designed to evaluate the efficacy and safety of SMA-668 (SMN2 splicing modifier) in patients with Colorectal Cancer. The study will enroll approximately 134 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 25-67 years\n- Confirmed diagnosis of Colorectal Cancer\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n- Measurable disease per RECIST v1.1\n- Prior treatment with standard therapy\n- Life expectancy ≥3 months\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment\n- Brain metastases unless treated and stable\n- Prior treatment with similar mechanism of action\n- Other active malignancy requiring treatment"
+}

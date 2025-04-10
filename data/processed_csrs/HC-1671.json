@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1671",
+  "title": "A Randomized Double-Blind, Placebo-Controlled  Study of PSO-602 (phosphodiesterase-4 inhibitor) in Patients With Hemophilia A",
+  "officialTitle": "A Randomized Double-Blind, Placebo-Controlled  Study of PSO-602 (phosphodiesterase-4 inhibitor) in Patients With Hemophilia A",
+  "sponsor": "Canadian Blood Services",
+  "indication": "Hemophilia A",
+  "phase": "Phase 3",
+  "fileName": "HC-1671.json",
+  "fileSize": 457260,
+  "date": "2024-10-02",
+  "completionDate": "2026-06-18",
+  "drugName": "PSO-602 (phosphodiesterase-4 inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Not yet recruiting",
+  "description": "This is a randomized double-blind, placebo-controlled  study designed to evaluate the efficacy and safety of PSO-602 (phosphodiesterase-4 inhibitor) in patients with Hemophilia A. The study will enroll approximately 409 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 22-72 years\n- Confirmed diagnosis of Hemophilia A\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

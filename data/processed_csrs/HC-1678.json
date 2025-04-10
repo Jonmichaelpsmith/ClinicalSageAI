@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1678",
+  "title": "A Randomized Double-Blind, Placebo-Controlled Multi-Center Study of HTN-295 (ACE inhibitor) in Patients With Colorectal Cancer",
+  "officialTitle": "A Randomized Double-Blind, Placebo-Controlled Multi-Center Study of HTN-295 (ACE inhibitor) in Patients With Colorectal Cancer",
+  "sponsor": "McGill University Health Center",
+  "indication": "Colorectal Cancer",
+  "phase": "Phase 1",
+  "fileName": "HC-1678.json",
+  "fileSize": 245789,
+  "date": "2023-05-07",
+  "completionDate": "2027-11-09",
+  "drugName": "HTN-295 (ACE inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Not yet recruiting",
+  "description": "This is a randomized double-blind, placebo-controlled multi-center study designed to evaluate the efficacy and safety of HTN-295 (ACE inhibitor) in patients with Colorectal Cancer. The study will enroll approximately 348 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 22-56 years\n- Confirmed diagnosis of Colorectal Cancer\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n- Measurable disease per RECIST v1.1\n- Prior treatment with standard therapy\n- Life expectancy ≥3 months\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment\n- Brain metastases unless treated and stable\n- Prior treatment with similar mechanism of action\n- Other active malignancy requiring treatment"
+}

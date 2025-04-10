@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1630",
+  "title": "A Randomized Double-Blind, Active-Controlled  Study of CAD-101 (monoclonal antibody) in Patients With Hemophilia A",
+  "officialTitle": "A Randomized Double-Blind, Active-Controlled  Study of CAD-101 (monoclonal antibody) in Patients With Hemophilia A",
+  "sponsor": "Centre for Addiction and Mental Health",
+  "indication": "Hemophilia A",
+  "phase": "Phase 3",
+  "fileName": "HC-1630.json",
+  "fileSize": 147262,
+  "date": "2024-06-01",
+  "completionDate": "2028-03-18",
+  "drugName": "CAD-101 (monoclonal antibody)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Not yet recruiting",
+  "description": "This is a randomized double-blind, active-controlled  study designed to evaluate the efficacy and safety of CAD-101 (monoclonal antibody) in patients with Hemophilia A. The study will enroll approximately 459 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 26-57 years\n- Confirmed diagnosis of Hemophilia A\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

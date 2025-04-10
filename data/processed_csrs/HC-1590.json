@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1590",
+  "title": "A Randomized Open-Label, Placebo-Controlled Multi-Center Study of HTN-295 (ACE inhibitor) in Patients With Alzheimer's Disease",
+  "officialTitle": "A Randomized Open-Label, Placebo-Controlled Multi-Center Study of HTN-295 (ACE inhibitor) in Patients With Alzheimer's Disease",
+  "sponsor": "Ottawa Hospital Research Institute",
+  "indication": "Alzheimer's Disease",
+  "phase": "Phase 1/Phase 2",
+  "fileName": "HC-1590.json",
+  "fileSize": 437309,
+  "date": "2023-05-16",
+  "completionDate": "2025-10-30",
+  "drugName": "HTN-295 (ACE inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Active, not recruiting",
+  "description": "This is a randomized open-label, placebo-controlled multi-center study designed to evaluate the efficacy and safety of HTN-295 (ACE inhibitor) in patients with Alzheimer's Disease. The study will enroll approximately 397 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 19-71 years\n- Confirmed diagnosis of Alzheimer's Disease\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

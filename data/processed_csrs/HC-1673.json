@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1673",
+  "title": "A  Double-Blind, Placebo-Controlled  Study of OPS-108 (bisphosphonate) in Patients With HIV Infection",
+  "officialTitle": "A  Double-Blind, Placebo-Controlled  Study of OPS-108 (bisphosphonate) in Patients With HIV Infection",
+  "sponsor": "Canadian Blood Services",
+  "indication": "HIV Infection",
+  "phase": "Phase 1",
+  "fileName": "HC-1673.json",
+  "fileSize": 204098,
+  "date": "2023-12-07",
+  "completionDate": "2028-09-26",
+  "drugName": "OPS-108 (bisphosphonate)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Recruiting",
+  "description": "This is a  double-blind, placebo-controlled  study designed to evaluate the efficacy and safety of OPS-108 (bisphosphonate) in patients with HIV Infection. The study will enroll approximately 477 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 19-56 years\n- Confirmed diagnosis of HIV Infection\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

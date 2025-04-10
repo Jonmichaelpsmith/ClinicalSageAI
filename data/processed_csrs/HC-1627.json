@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1627",
+  "title": "A Randomized Double-Blind, Active-Controlled  Study of HEM-779 (factor VIII gene therapy) in Patients With Hemophilia A",
+  "officialTitle": "A Randomized Double-Blind, Active-Controlled  Study of HEM-779 (factor VIII gene therapy) in Patients With Hemophilia A",
+  "sponsor": "BC Cancer Agency",
+  "indication": "Hemophilia A",
+  "phase": "Phase 2/Phase 3",
+  "fileName": "HC-1627.json",
+  "fileSize": 368152,
+  "date": "2024-12-02",
+  "completionDate": "2027-07-22",
+  "drugName": "HEM-779 (factor VIII gene therapy)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Active, not recruiting",
+  "description": "This is a randomized double-blind, active-controlled  study designed to evaluate the efficacy and safety of HEM-779 (factor VIII gene therapy) in patients with Hemophilia A. The study will enroll approximately 56 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 20-73 years\n- Confirmed diagnosis of Hemophilia A\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

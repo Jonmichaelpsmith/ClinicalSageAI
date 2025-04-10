@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1626",
+  "title": "A Randomized Double-Blind, Placebo-Controlled Multi-Center Study of BRE-701 (selective estrogen receptor modulator) in Patients With Alzheimer's Disease",
+  "officialTitle": "A Randomized Double-Blind, Placebo-Controlled Multi-Center Study of BRE-701 (selective estrogen receptor modulator) in Patients With Alzheimer's Disease",
+  "sponsor": "Sunnybrook Research Institute",
+  "indication": "Alzheimer's Disease",
+  "phase": "Phase 2/Phase 3",
+  "fileName": "HC-1626.json",
+  "fileSize": 256481,
+  "date": "2023-04-26",
+  "completionDate": "2028-11-09",
+  "drugName": "BRE-701 (selective estrogen receptor modulator)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Active, not recruiting",
+  "description": "This is a randomized double-blind, placebo-controlled multi-center study designed to evaluate the efficacy and safety of BRE-701 (selective estrogen receptor modulator) in patients with Alzheimer's Disease. The study will enroll approximately 184 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 27-79 years\n- Confirmed diagnosis of Alzheimer's Disease\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

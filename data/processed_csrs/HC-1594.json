@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1594",
+  "title": "A Randomized Open-Label, Placebo-Controlled  Study of PUL-502 (bronchodilator) in Patients With Cystic Fibrosis",
+  "officialTitle": "A Randomized Open-Label, Placebo-Controlled  Study of PUL-502 (bronchodilator) in Patients With Cystic Fibrosis",
+  "sponsor": "Princess Margaret Cancer Centre",
+  "indication": "Cystic Fibrosis",
+  "phase": "Phase 4",
+  "fileName": "HC-1594.json",
+  "fileSize": 406800,
+  "date": "2024-07-09",
+  "completionDate": "2029-01-29",
+  "drugName": "PUL-502 (bronchodilator)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Recruiting",
+  "description": "This is a randomized open-label, placebo-controlled  study designed to evaluate the efficacy and safety of PUL-502 (bronchodilator) in patients with Cystic Fibrosis. The study will enroll approximately 143 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 22-60 years\n- Confirmed diagnosis of Cystic Fibrosis\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}
