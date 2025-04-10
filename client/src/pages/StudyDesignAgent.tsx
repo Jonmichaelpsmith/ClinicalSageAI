@@ -45,8 +45,71 @@ export default function StudyDesignAgent() {
   
   const indications = reports ? Array.from(new Set(reports.map((r: CsrReport) => r.indication))) : [];
 
-  const handleSendMessage = () => {
+  // State for tracking free trial
+  const [trialSessionStart, setTrialSessionStart] = useState<number | null>(null);
+  const [remainingTrialTime, setRemainingTrialTime] = useState<number | null>(null);
+  const [trialExpired, setTrialExpired] = useState(false);
+  
+  // Initialize or get existing session start timestamp
+  useEffect(() => {
+    const storedSessionStart = sessionStorage.getItem('agent_session_start');
+    if (storedSessionStart) {
+      setTrialSessionStart(parseInt(storedSessionStart));
+    }
+  }, []);
+  
+  // Calculate and update remaining trial time
+  useEffect(() => {
+    if (trialSessionStart) {
+      const checkRemainingTime = () => {
+        const now = Date.now();
+        const elapsed = now - trialSessionStart;
+        const remaining = Math.max(0, Math.floor((300000 - elapsed) / 1000)); // 5 minutes in ms
+        
+        setRemainingTrialTime(remaining);
+        
+        // Check if trial has expired
+        if (remaining <= 0 && !trialExpired) {
+          setTrialExpired(true);
+        }
+      };
+      
+      // Check immediately and then set interval
+      checkRemainingTime();
+      const intervalId = setInterval(checkRemainingTime, 1000);
+      
+      return () => clearInterval(intervalId);
+    }
+  }, [trialSessionStart, trialExpired]);
+  
+  const handleSendMessage = async () => {
     if (!userQuery.trim()) return;
+    
+    // Initialize session time if not already set
+    if (!trialSessionStart) {
+      const now = Date.now();
+      setTrialSessionStart(now);
+      sessionStorage.setItem('agent_session_start', now.toString());
+    }
+    
+    // If trial has expired, show subscription message
+    if (trialExpired) {
+      setChatHistory(prev => [
+        ...prev,
+        {
+          role: "user",
+          content: userQuery,
+          timestamp: new Date()
+        },
+        {
+          role: "assistant",
+          content: "🔒 Your free trial has expired. Please subscribe to continue using the Study Design Agent.",
+          timestamp: new Date()
+        }
+      ]);
+      setUserQuery("");
+      return;
+    }
     
     // Add user message to chat
     setChatHistory(prev => [
@@ -60,39 +123,74 @@ export default function StudyDesignAgent() {
     
     setIsThinking(true);
     
-    // Simulate AI response
-    setTimeout(() => {
-      // Generate response based on user query
-      let response = "";
+    try {
+      // Call the actual API endpoint
+      const response = await fetch('/api/study-design-agent/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          query: userQuery,
+          indication: selectedIndication,
+          phase: selectedPhase,
+          sessionStart: trialSessionStart
+        })
+      });
       
-      if (userQuery.toLowerCase().includes("endpoint")) {
-        response = `Based on my analysis of ${Math.floor(Math.random() * 15) + 10} clinical studies in ${selectedIndication || "this therapeutic area"}, I recommend considering these endpoints:\n\n1. Primary: Change from baseline in disease activity score at Week 24\n2. Secondary: Patient-reported outcomes using the validated PROMIS-29 instrument\n3. Exploratory: Biomarker changes in inflammatory markers\n\nThese endpoints were associated with regulatory success in 78% of similar trials.`;
-      } else if (userQuery.toLowerCase().includes("sample size") || userQuery.toLowerCase().includes("population")) {
-        response = `For a Phase ${selectedPhase || "2"} study in ${selectedIndication || "this indication"}, historical data suggests a sample size of 120-150 patients would provide adequate power (>80%) to detect clinically meaningful differences in the primary endpoint.\n\nConsiderations:\n• Effect size of 0.4-0.5 is realistic based on previous trials\n• Accounting for ~15% dropout rate\n• 1:1 randomization between treatment and control`;
-      } else if (userQuery.toLowerCase().includes("inclusion") || userQuery.toLowerCase().includes("exclusion") || userQuery.toLowerCase().includes("criteria")) {
-        response = `Looking at successful trials in ${selectedIndication || "this area"}, I recommend these key eligibility criteria:\n\nInclusion:\n• Adults 18-75 years with confirmed diagnosis\n• Disease duration >6 months\n• Inadequate response to standard therapy\n• ECOG performance status 0-1\n\nExclusion:\n• Recent major surgery (<3 months)\n• Active or latent infectious disease\n• Malignancy within past 5 years\n• Significant organ dysfunction\n\nThese criteria balanced enrollment feasibility with population homogeneity in previous studies.`;
-      } else if (userQuery.toLowerCase().includes("duration") || userQuery.toLowerCase().includes("timeline")) {
-        response = `For ${selectedIndication || "this indication"} trials, optimal study duration typically includes:\n\n• Screening period: 4 weeks\n• Treatment period: 24-48 weeks (depending on endpoint kinetics)\n• Follow-up period: 8-12 weeks\n\nThis timeline allows adequate time for observing both efficacy signals and safety events based on patterns from similar successful studies.`;
-      } else if (userQuery.toLowerCase().includes("statistical") || userQuery.toLowerCase().includes("analysis")) {
-        response = `Based on successful regulatory submissions for ${selectedIndication || "similar"} trials, I recommend:\n\n• Primary analysis: MMRM (Mixed Model for Repeated Measures)\n• Handling of missing data: Multiple imputation\n• Sensitivity analyses: LOCF and BOCF approaches\n• Interim analysis: Consider at 50% enrollment for futility\n\nThis approach aligns with recent FDA feedback for similar development programs.`;
-      } else if (userQuery.toLowerCase().includes("success") || userQuery.toLowerCase().includes("approval")) {
-        response = `Based on my analysis of historical data, key success factors for ${selectedIndication || "this indication"} trials include:\n\n1. Well-defined patient population with clear diagnostic criteria\n2. Clinically meaningful endpoints accepted by regulators\n3. Adequate study power (>90% preferred)\n4. Robust statistical analysis plan addressing missing data\n5. Comprehensive safety monitoring\n\nTrials incorporating these elements had a 68% higher likelihood of regulatory approval.`;
+      const data = await response.json();
+      
+      if (!data.success) {
+        // Handle API error
+        setChatHistory(prev => [
+          ...prev,
+          {
+            role: "assistant",
+            content: `Error: ${data.message || "Failed to get a response. Please try again."}`,
+            timestamp: new Date()
+          }
+        ]);
+      } else if (data.trialExpired) {
+        // Handle expired trial
+        setTrialExpired(true);
+        setChatHistory(prev => [
+          ...prev,
+          {
+            role: "assistant",
+            content: data.message || "🔒 Your free trial has expired. Please subscribe to continue using the Study Design Agent.",
+            timestamp: new Date()
+          }
+        ]);
       } else {
-        response = `Thank you for your question about ${userQuery.split(' ').slice(0, 3).join(' ')}...\n\nBased on my analysis of historical CSR data for ${selectedIndication || "similar indications"} in Phase ${selectedPhase || "clinical trials"}, I found several relevant insights:\n\n1. Successful trial designs typically incorporate validated endpoints with clear clinical relevance\n2. Patient selection criteria should balance specificity with feasible enrollment\n3. Consider stratification factors that have shown impact on outcomes\n\nWould you like me to provide more specific recommendations on any aspect of your trial design?`;
+        // Update remaining trial time if provided
+        if (data.response.remainingTrialTime !== undefined) {
+          setRemainingTrialTime(data.response.remainingTrialTime);
+        }
+        
+        // Add AI response to chat
+        setChatHistory(prev => [
+          ...prev,
+          {
+            role: "assistant",
+            content: data.response.content,
+            timestamp: new Date()
+          }
+        ]);
       }
-      
+    } catch (error) {
+      console.error("Error calling study design agent API:", error);
       setChatHistory(prev => [
         ...prev,
         {
           role: "assistant",
-          content: response,
+          content: "⚠️ Sorry, I encountered a technical error. Please try again later.",
           timestamp: new Date()
         }
       ]);
-      
+    } finally {
       setIsThinking(false);
       setUserQuery("");
-    }, 3000);
+    }
   };
   
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -251,10 +349,24 @@ export default function StudyDesignAgent() {
           <Card className="shadow-md h-[calc(100vh-13rem)]">
             <CardHeader className="border-b pb-3">
               <div className="flex justify-between items-center">
-                <CardTitle className="text-lg flex items-center">
-                  <MessageSquare className="h-5 w-5 text-primary mr-2" />
-                  Study Design Assistant
-                </CardTitle>
+                <div>
+                  <CardTitle className="text-lg flex items-center">
+                    <MessageSquare className="h-5 w-5 text-primary mr-2" />
+                    Study Design Assistant
+                    {remainingTrialTime !== null && (
+                      <Badge variant="outline" className="ml-2 text-xs bg-amber-50">
+                        BETA
+                      </Badge>
+                    )}
+                  </CardTitle>
+                  {remainingTrialTime !== null && (
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {remainingTrialTime > 0 
+                        ? `🕐 Free trial: ${Math.floor(remainingTrialTime / 60)}m ${remainingTrialTime % 60}s remaining` 
+                        : "🔒 Free trial expired. Please subscribe to continue."}
+                    </div>
+                  )}
+                </div>
                 <Button 
                   variant="ghost" 
                   size="sm" 
