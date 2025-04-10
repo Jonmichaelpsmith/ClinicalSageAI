@@ -1,0 +1,65 @@
+// React UI: ProtocolOptimizer.jsx
+// Upload or input protocol summary, get AI-driven optimization recommendations
+
+import { useState } from 'react';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+
+export default function ProtocolOptimizer() {
+  const [summary, setSummary] = useState('');
+  const [csrIds, setCsrIds] = useState('');
+  const [output, setOutput] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async () => {
+    setLoading(true);
+    setOutput('');
+
+    const response = await fetch('/api/optimizer/protocol', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        summary,
+        top_csr_ids: csrIds.split(',').map(id => id.trim())
+      })
+    });
+
+    const data = await response.json();
+    setOutput(data.recommendation || '[No response]');
+    setLoading(false);
+  };
+
+  return (
+    <div className="p-6 max-w-4xl mx-auto space-y-4">
+      <h2 className="text-xl font-bold text-blue-800">🧠 Protocol Design Optimizer</h2>
+      <p className="text-sm text-gray-600">Input a draft protocol summary and reference CSR IDs. SagePlus will suggest improvements based on real precedent.</p>
+
+      <Textarea
+        value={summary}
+        onChange={(e) => setSummary(e.target.value)}
+        placeholder="Paste your protocol summary here..."
+        rows={8}
+        className="text-sm"
+      />
+
+      <Input
+        value={csrIds}
+        onChange={(e) => setCsrIds(e.target.value)}
+        placeholder="Enter CSR IDs (comma-separated)"
+        className="text-sm"
+      />
+
+      <Button onClick={handleSubmit} disabled={loading} className="bg-blue-700 text-white hover:bg-blue-800">
+        {loading ? 'Analyzing...' : 'Optimize Protocol'}
+      </Button>
+
+      {output && (
+        <div className="mt-6 p-4 bg-gray-50 border rounded">
+          <h3 className="font-medium mb-2 text-blue-700">🔍 Optimization Results</h3>
+          <pre className="text-sm whitespace-pre-wrap text-gray-800">{output}</pre>
+        </div>
+      )}
+    </div>
+  );
+}
