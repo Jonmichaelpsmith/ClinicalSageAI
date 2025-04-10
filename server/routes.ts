@@ -222,12 +222,155 @@ const notesUpdateRequestSchema = z.object({
   notes: z.array(noteEntrySchema)
 });
 
+// Dossier signature update request schema
+const signatureUpdateRequestSchema = z.object({
+  csr_id: z.string(),
+  signer: z.string(),
+  role: z.string() // e.g., "PI", "Sponsor", "QA"
+});
+
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Create uploads directory if it doesn't exist
+  // Create necessary directories
   const uploadsDir = path.join(process.cwd(), 'uploads');
   if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
   }
+  
+  // Create dossiers directory if it doesn't exist
+  const dossiersDir = path.join(process.cwd(), 'data/dossiers');
+  if (!fs.existsSync(dossiersDir)) {
+    fs.mkdirSync(dossiersDir, { recursive: true });
+  }
+  
+  // Dossier-related API endpoints
+  app.post('/api/dossier/:dossier_id/update-notes', async (req: Request, res: Response) => {
+    try {
+      const { dossier_id } = req.params;
+      const payload = notesUpdateRequestSchema.parse(req.body);
+      
+      // Validate dossier path
+      const dossierPath = path.join(dossiersDir, `${dossier_id}.json`);
+      if (!fs.existsSync(dossierPath)) {
+        return res.status(404).json({ 
+          success: false, 
+          message: 'Dossier not found' 
+        });
+      }
+      
+      // Read current dossier data
+      const dossierData = JSON.parse(fs.readFileSync(dossierPath, 'utf8'));
+      
+      // Initialize notes and note_history if they don't exist
+      if (!dossierData.notes) {
+        dossierData.notes = {};
+      }
+      
+      if (!dossierData.note_history) {
+        dossierData.note_history = {};
+      }
+      
+      // Update notes and add to history
+      for (const noteEntry of payload.notes) {
+        const { csr_id, user, comment } = noteEntry;
+        
+        // Update the current note
+        dossierData.notes[csr_id] = comment;
+        
+        // Add to note history with timestamp
+        if (!dossierData.note_history[csr_id]) {
+          dossierData.note_history[csr_id] = [];
+        }
+        
+        dossierData.note_history[csr_id].push({
+          user,
+          comment,
+          timestamp: new Date().toISOString()
+        });
+      }
+      
+      // Save updated dossier
+      fs.writeFileSync(dossierPath, JSON.stringify(dossierData, null, 2));
+      
+      res.json({ 
+        success: true, 
+        message: 'Notes updated successfully',
+        updatedCount: payload.notes.length
+      });
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+  
+  app.post('/api/dossier/:dossier_id/update-signature', async (req: Request, res: Response) => {
+    try {
+      const { dossier_id } = req.params;
+      const payload = signatureUpdateRequestSchema.parse(req.body);
+      
+      // Validate dossier path
+      const dossierPath = path.join(dossiersDir, `${dossier_id}.json`);
+      if (!fs.existsSync(dossierPath)) {
+        return res.status(404).json({ 
+          success: false, 
+          message: 'Dossier not found' 
+        });
+      }
+      
+      // Read current dossier data
+      const dossierData = JSON.parse(fs.readFileSync(dossierPath, 'utf8'));
+      
+      // Initialize signatures, signature_audit, and locked_csrs if they don't exist
+      if (!dossierData.signatures) {
+        dossierData.signatures = {};
+      }
+      
+      if (!dossierData.signature_audit) {
+        dossierData.signature_audit = [];
+      }
+      
+      if (!dossierData.locked_csrs) {
+        dossierData.locked_csrs = [];
+      }
+      
+      // Add signature with timestamp and role
+      const timestamp = new Date().toISOString();
+      const signatureRecord = {
+        signer: payload.signer,
+        role: payload.role,
+        timestamp
+      };
+      
+      // Lock the CSR and save the signature
+      dossierData.signatures[payload.csr_id] = signatureRecord;
+      
+      // Add to locked CSRs if not already locked
+      if (!dossierData.locked_csrs.includes(payload.csr_id)) {
+        dossierData.locked_csrs.push(payload.csr_id);
+      }
+      
+      // Add to audit trail
+      dossierData.signature_audit.push({
+        csr_id: payload.csr_id,
+        signer: payload.signer,
+        role: payload.role,
+        timestamp
+      });
+      
+      // Save updated dossier
+      fs.writeFileSync(dossierPath, JSON.stringify(dossierData, null, 2));
+      
+      res.json({ 
+        success: true, 
+        message: 'Signature added successfully',
+        csr_id: payload.csr_id,
+        signer: payload.signer,
+        role: payload.role,
+        timestamp,
+        locked: true
+      });
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
 
   // API routes
   app.get('/api/reports', async (req: Request, res: Response) => {
