@@ -217,8 +217,8 @@ async function findRelevantTrials(query: string): Promise<any[]> {
       phase: csrReports.phase,
       status: csrReports.status,
       date: csrReports.date,
-      drugName: csrReports.drug_name,
-      nctrialId: csrReports.nctrial_id,
+      drugName: csrReports.drugName,
+      nctrialId: csrReports.nctrialId,
       region: csrReports.region
     })
     .from(csrReports)
@@ -239,7 +239,7 @@ async function findRelevantTrials(query: string): Promise<any[]> {
     }
     
     if (params.drug) {
-      dbQuery = dbQuery.where(ilike(csrReports.drug_name, `%${params.drug}%`));
+      dbQuery = dbQuery.where(ilike(csrReports.drugName, `%${params.drug}%`));
     }
     
     if (params.status) {
@@ -327,12 +327,12 @@ async function extractTrialIdsFromQuery(query: string): Promise<number[]> {
     // If we have explicit IDs, look them up
     if (trialIds.length > 0) {
       const results = await db
-        .select({ id: csr_reports.id })
-        .from(csr_reports)
+        .select({ id: csrReports.id })
+        .from(csrReports)
         .where(
           or(
-            inArray(csr_reports.id, trialIds.filter(id => !isNaN(Number(id))).map(id => Number(id))),
-            inArray(csr_reports.nctrial_id, trialIds)
+            inArray(csrReports.id, trialIds.filter(id => !isNaN(Number(id))).map(id => Number(id))),
+            inArray(csrReports.nctrialId, trialIds)
           )
         );
       
@@ -383,25 +383,25 @@ async function extractTrialIdsFromQuery(query: string): Promise<number[]> {
     if (trialDescriptions.trials && trialDescriptions.trials.length > 0) {
       for (const trialDesc of trialDescriptions.trials) {
         let trialQuery = db
-          .select({ id: csr_reports.id })
-          .from(csr_reports)
-          .where(eq(csr_reports.deleted_at, null))
+          .select({ id: csrReports.id })
+          .from(csrReports)
+          .where(eq(csrReports.deletedAt, null))
           .limit(1);
         
         if (trialDesc.indication) {
-          trialQuery = trialQuery.where(ilike(csr_reports.indication, `%${trialDesc.indication}%`));
+          trialQuery = trialQuery.where(ilike(csrReports.indication, `%${trialDesc.indication}%`));
         }
         
         if (trialDesc.sponsor) {
-          trialQuery = trialQuery.where(ilike(csr_reports.sponsor, `%${trialDesc.sponsor}%`));
+          trialQuery = trialQuery.where(ilike(csrReports.sponsor, `%${trialDesc.sponsor}%`));
         }
         
         if (trialDesc.drug) {
-          trialQuery = trialQuery.where(ilike(csr_reports.drug_name, `%${trialDesc.drug}%`));
+          trialQuery = trialQuery.where(ilike(csrReports.drugName, `%${trialDesc.drug}%`));
         }
         
         if (trialDesc.phase) {
-          trialQuery = trialQuery.where(ilike(csr_reports.phase, `%${trialDesc.phase}%`));
+          trialQuery = trialQuery.where(ilike(csrReports.phase, `%${trialDesc.phase}%`));
         }
         
         const result = await trialQuery;
@@ -414,10 +414,10 @@ async function extractTrialIdsFromQuery(query: string): Promise<number[]> {
     // If we still don't have enough trials, just return the two most recent
     if (ids.length < 2) {
       const recentTrials = await db
-        .select({ id: csr_reports.id })
-        .from(csr_reports)
-        .where(eq(csr_reports.deleted_at, null))
-        .orderBy(desc(csr_reports.date))
+        .select({ id: csrReports.id })
+        .from(csrReports)
+        .where(eq(csrReports.deletedAt, null))
+        .orderBy(desc(csrReports.date))
         .limit(2);
       
       for (const trial of recentTrials) {
@@ -433,10 +433,10 @@ async function extractTrialIdsFromQuery(query: string): Promise<number[]> {
     
     // Fallback to returning the two most recent trials
     const recentTrials = await db
-      .select({ id: csr_reports.id })
-      .from(csr_reports)
-      .where(eq(csr_reports.deleted_at, null))
-      .orderBy(desc(csr_reports.date))
+      .select({ id: csrReports.id })
+      .from(csrReports)
+      .where(eq(csrReports.deletedAt, null))
+      .orderBy(desc(csrReports.date))
       .limit(2);
     
     return recentTrials.map(t => t.id);
@@ -942,29 +942,29 @@ async function provideProtocolAdvice(query: string): Promise<any[]> {
     
     // Look for similar trials to use as reference
     let similarTrialsQuery = db.select({
-      id: csr_reports.id,
-      title: csr_reports.title,
-      sponsor: csr_reports.sponsor,
-      indication: csr_reports.indication,
-      phase: csr_reports.phase,
-      status: csr_reports.status,
-      date: csr_reports.date,
-      drugName: csr_reports.drug_name
+      id: csrReports.id,
+      title: csrReports.title,
+      sponsor: csrReports.sponsor,
+      indication: csrReports.indication,
+      phase: csrReports.phase,
+      status: csrReports.status,
+      date: csrReports.date,
+      drugName: csrReports.drugName
     })
-    .from(csr_reports)
-    .innerJoin(csr_details, eq(csr_reports.id, csr_details.report_id))
-    .where(eq(csr_reports.deleted_at, null));
+    .from(csrReports)
+    .innerJoin(csrDetails, eq(csrReports.id, csrDetails.reportId))
+    .where(eq(csrReports.deletedAt, null));
     
     if (params.indication) {
-      similarTrialsQuery = similarTrialsQuery.where(ilike(csr_reports.indication, `%${params.indication}%`));
+      similarTrialsQuery = similarTrialsQuery.where(ilike(csrReports.indication, `%${params.indication}%`));
     }
     
     if (params.phase) {
-      similarTrialsQuery = similarTrialsQuery.where(ilike(csr_reports.phase, `%${params.phase}%`));
+      similarTrialsQuery = similarTrialsQuery.where(ilike(csrReports.phase, `%${params.phase}%`));
     }
     
     if (params.intervention) {
-      similarTrialsQuery = similarTrialsQuery.where(ilike(csr_reports.drug_name, `%${params.intervention}%`));
+      similarTrialsQuery = similarTrialsQuery.where(ilike(csrReports.drugName, `%${params.intervention}%`));
     }
     
     const similarTrials = await similarTrialsQuery.limit(5);
