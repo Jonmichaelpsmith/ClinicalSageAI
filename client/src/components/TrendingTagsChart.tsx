@@ -81,8 +81,8 @@ export default function TrendingTagsChart({ trendingByMonth }: TrendingTagsChart
     });
   }, [trendingByMonth, tagLimit]);
 
-  // Export chart as PNG
-  const exportChart = () => {
+  // Export chart as PNG or PDF
+  const exportChart = (format: 'png' | 'pdf') => {
     if (!chartRef.current) return;
     
     setIsExporting(true);
@@ -90,11 +90,47 @@ export default function TrendingTagsChart({ trendingByMonth }: TrendingTagsChart
     // Using html2canvas library
     import('html2canvas').then(({ default: html2canvas }) => {
       html2canvas(chartRef.current as HTMLElement).then(canvas => {
-        const link = document.createElement('a');
-        link.download = `trending-tags-${new Date().toISOString().slice(0, 10)}.png`;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-        setIsExporting(false);
+        if (format === 'png') {
+          // Export as PNG
+          const link = document.createElement('a');
+          link.download = `trending-tags-${new Date().toISOString().slice(0, 10)}.png`;
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+          setIsExporting(false);
+        } else {
+          // Export as PDF
+          import('jspdf').then(({ default: jsPDF }) => {
+            const pdf = new jsPDF({
+              orientation: 'landscape',
+              unit: 'mm'
+            });
+            
+            // Add title
+            pdf.setFontSize(16);
+            pdf.text('Tag Trends Analysis', 14, 15);
+            
+            // Add date
+            pdf.setFontSize(10);
+            pdf.text(`Generated: ${new Date().toLocaleString()}`, 14, 22);
+            
+            // Add chart image
+            const imgData = canvas.toDataURL('image/png');
+            const width = pdf.internal.pageSize.getWidth();
+            const height = pdf.internal.pageSize.getHeight();
+            pdf.addImage(imgData, 'PNG', 10, 30, width - 20, height - 60);
+            
+            // Add footer
+            pdf.setFontSize(8);
+            pdf.text('TrialSage Study Design Agent Analysis Report', 14, height - 10);
+            
+            // Save the PDF
+            pdf.save(`trending-tags-${new Date().toISOString().slice(0, 10)}.pdf`);
+            setIsExporting(false);
+          }).catch(err => {
+            console.error('Error generating PDF:', err);
+            setIsExporting(false);
+          });
+        }
       });
     }).catch(err => {
       console.error('Error exporting chart:', err);
@@ -155,15 +191,44 @@ export default function TrendingTagsChart({ trendingByMonth }: TrendingTagsChart
               </SelectContent>
             </Select>
             
-            <Button 
-              onClick={exportChart} 
-              variant="outline" 
-              size="sm" 
-              disabled={isExporting}
-              className="h-8"
-            >
-              {isExporting ? 'Exporting...' : '📷 Export'}
-            </Button>
+            <div className="relative group">
+              <Button 
+                onClick={() => exportChart('png')} 
+                variant="outline" 
+                size="sm" 
+                disabled={isExporting}
+                className="h-8 flex items-center gap-1"
+              >
+                {isExporting ? (
+                  <>Exporting...</>
+                ) : (
+                  <>
+                    <DownloadIcon size={14} />
+                    Export
+                  </>
+                )}
+              </Button>
+              <div className="absolute top-full right-0 mt-1 bg-white rounded-md shadow-md border border-gray-200 p-1 w-36 z-10 hidden group-hover:block">
+                <Button
+                  onClick={() => exportChart('png')}
+                  variant="ghost"
+                  size="sm"
+                  className="w-full flex items-center justify-start gap-2 mb-1"
+                >
+                  <ImageIcon size={14} />
+                  PNG Image
+                </Button>
+                <Button
+                  onClick={() => exportChart('pdf')}
+                  variant="ghost"
+                  size="sm"
+                  className="w-full flex items-center justify-start gap-2"
+                >
+                  <FileIcon size={14} />
+                  PDF Document
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
         
