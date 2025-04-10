@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1407",
+  "title": "A Randomized Open-Label, Active-Controlled Multi-Center Study of DRM-581 (IL-17 inhibitor) in Patients With Alzheimer's Disease",
+  "officialTitle": "A Randomized Open-Label, Active-Controlled Multi-Center Study of DRM-581 (IL-17 inhibitor) in Patients With Alzheimer's Disease",
+  "sponsor": "Sunnybrook Research Institute",
+  "indication": "Alzheimer's Disease",
+  "phase": "Phase 1",
+  "fileName": "HC-1407.json",
+  "fileSize": 533369,
+  "date": "2025-03-05",
+  "completionDate": "2028-02-08",
+  "drugName": "DRM-581 (IL-17 inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Completed",
+  "description": "This is a randomized open-label, active-controlled multi-center study designed to evaluate the efficacy and safety of DRM-581 (IL-17 inhibitor) in patients with Alzheimer's Disease. The study will enroll approximately 194 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 26-66 years\n- Confirmed diagnosis of Alzheimer's Disease\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

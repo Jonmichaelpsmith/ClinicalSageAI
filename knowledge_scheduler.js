@@ -378,8 +378,10 @@ function parseArgs() {
   }
 }
 
-// Run if this is the main module
-if (require.main === module) {
+// Run main function when directly executed
+// ES Module version of the traditional CommonJS check
+const isMainModule = import.meta.url === `file://${process.argv[1]}`;
+if (isMainModule) {
   parseArgs();
 }
 
