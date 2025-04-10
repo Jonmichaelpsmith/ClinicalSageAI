@@ -15,12 +15,94 @@ load_dotenv()
 
 # Constants
 HF_API_KEY = os.getenv("HF_API_KEY")
+if not HF_API_KEY:
+    raise EnvironmentError("Missing Hugging Face API key. Please set HF_API_KEY in your environment.")
+
 HF_EMBEDDING_URL = "https://api-inference.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2"
 HEADERS = {"Authorization": f"Bearer {HF_API_KEY}"}
 
 PROCESSED_CSR_DIR = "data/processed_csrs"
 VECTOR_STORE_DIR = "data/vector_store"
 DB_PATH = os.path.join(VECTOR_STORE_DIR, "csr_metadata.db")
+
+# In-memory embedding store for faster similarity search
+embedding_store = []
+
+def load_embeddings_to_memory():
+    """Load all CSR embeddings into memory for faster search"""
+    global embedding_store
+    embedding_store = []
+    
+    # Ensure directories exist
+    os.makedirs(PROCESSED_CSR_DIR, exist_ok=True)
+    
+    # Load all JSON files with embeddings
+    for filename in os.listdir(PROCESSED_CSR_DIR):
+        if filename.endswith('.json'):
+            try:
+                with open(os.path.join(PROCESSED_CSR_DIR, filename), 'r') as f:
+                    data = json.load(f)
+                    
+                # Only include files with embeddings
+                if "embedding" in data:
+                    embedding_store.append({
+                        "csr_id": data.get("csr_id", ""),
+                        "title": data.get("title", ""),
+                        "embedding": data["embedding"],
+                        "indication": data.get("indication", ""),
+                        "phase": data.get("phase", ""),
+                        "sample_size": data.get("sample_size", 0),
+                        "outcome": data.get("outcome", "")
+                    })
+            except Exception as e:
+                print(f"Error loading {filename}: {e}")
+                
+    print(f"🔍 Loaded {len(embedding_store)} embedded CSRs into memory.")
+    return len(embedding_store)
+
+def fast_search_by_embedding(query_embedding, top_k=5, filters=None):
+    """Search for similar CSRs using in-memory embeddings"""
+    if not query_embedding or not embedding_store:
+        return []
+        
+    # Calculate similarities for all CSRs in memory
+    results = []
+    
+    for csr in embedding_store:
+        # Calculate cosine similarity using NumPy for speed
+        a = np.array(query_embedding, dtype=np.float32)
+        b = np.array(csr["embedding"], dtype=np.float32)
+        
+        # Calculate similarity
+        dot_product = np.dot(a, b)
+        norm_a = np.linalg.norm(a)
+        norm_b = np.linalg.norm(b)
+        
+        if norm_a * norm_b == 0:
+            similarity = 0.0
+        else:
+            similarity = dot_product / (norm_a * norm_b)
+        
+        # Apply filters if provided
+        include = True
+        if filters:
+            if filters.get("indication") and filters["indication"].lower() not in csr.get("indication", "").lower():
+                include = False
+            if filters.get("phase") and filters["phase"] != csr.get("phase"):
+                include = False
+            if filters.get("outcome") and filters["outcome"].lower() not in csr.get("outcome", "").lower():
+                include = False
+            if filters.get("min_sample_size") is not None and csr.get("sample_size", 0) < filters["min_sample_size"]:
+                include = False
+        
+        if include:
+            results.append({**csr, "similarity": float(similarity)})
+    
+    # Sort by similarity
+    results.sort(key=lambda x: x["similarity"], reverse=True)
+    
+    # Return top results
+    return results[:top_k]
 
 class CSRSearchEngine:
     """Search engine for finding CSRs by embedding similarity and field filtering"""
@@ -29,6 +111,22 @@ class CSRSearchEngine:
         """Initialize the search engine"""
         self._ensure_directories()
         self._ensure_database()
+        # Load embeddings to memory on initialization
+        self.reload_embeddings()
+        
+    def reload_embeddings(self):
+        """Reload all embeddings from disk to memory"""
+        return load_embeddings_to_memory()
+        
+    def fast_search(self, query_text: str, limit: int = 5, filters: Dict = None) -> List[Dict[str, Any]]:
+        """Perform a fast search using in-memory embeddings"""
+        # Generate embedding for query text
+        query_embedding = self.create_embedding(query_text)
+        if not query_embedding:
+            return []
+            
+        # Use in-memory search for better performance
+        return fast_search_by_embedding(query_embedding, top_k=limit, filters=filters)
         
     def _ensure_directories(self):
         """Ensure all required directories exist"""
@@ -156,18 +254,34 @@ class CSRSearchEngine:
             return []
             
     def cosine_similarity(self, vec1: List[float], vec2: List[float]) -> float:
-        """Calculate cosine similarity between two vectors"""
+        """Calculate cosine similarity between two vectors using NumPy for better performance"""
         if not vec1 or not vec2:
             return 0.0
             
-        dot_product = sum(a * b for a, b in zip(vec1, vec2))
-        mag1 = math.sqrt(sum(a * a for a in vec1))
-        mag2 = math.sqrt(sum(b * b for b in vec2))
-        
-        if mag1 * mag2 == 0:
-            return 0.0
+        try:
+            # Convert to numpy arrays for faster computation
+            a = np.array(vec1, dtype=np.float32)
+            b = np.array(vec2, dtype=np.float32)
             
-        return dot_product / (mag1 * mag2)
+            # Calculate cosine similarity
+            dot_product = np.dot(a, b)
+            norm_a = np.linalg.norm(a)
+            norm_b = np.linalg.norm(b)
+            
+            if norm_a * norm_b == 0:
+                return 0.0
+                
+            return dot_product / (norm_a * norm_b)
+        except Exception:
+            # Fallback to pure Python if NumPy calculation fails
+            dot_product = sum(a * b for a, b in zip(vec1, vec2))
+            mag1 = math.sqrt(sum(a * a for a in vec1))
+            mag2 = math.sqrt(sum(b * b for b in vec2))
+            
+            if mag1 * mag2 == 0:
+                return 0.0
+                
+            return dot_product / (mag1 * mag2)
         
     def search_by_embedding(self, query_text: str, limit: int = 5) -> List[Dict[str, Any]]:
         """Search for CSRs by text query using embedding similarity"""
