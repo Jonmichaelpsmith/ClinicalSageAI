@@ -333,6 +333,168 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // GET endpoint to retrieve a dossier by ID
+  app.get('/api/dossier/:dossier_id', async (req: Request, res: Response) => {
+    try {
+      const { dossier_id } = req.params;
+      
+      // Validate dossier path
+      const dossierPath = path.join(dossiersDir, `${dossier_id}.json`);
+      if (!fs.existsSync(dossierPath)) {
+        return res.status(404).json({ 
+          success: false, 
+          message: 'Dossier not found' 
+        });
+      }
+      
+      // Read and return dossier data
+      const dossierData = JSON.parse(fs.readFileSync(dossierPath, 'utf8'));
+      res.json(dossierData);
+    } catch (error) {
+      console.error('Error retrieving dossier:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Error retrieving dossier' 
+      });
+    }
+  });
+
+  // POST endpoint to create a new dossier
+  app.post('/api/create-dossier', async (req: Request, res: Response) => {
+    try {
+      const { name, description, csrs = [] } = req.body;
+      
+      // Generate a unique ID for the dossier
+      const dossier_id = `dossier_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
+      // Create dossier object
+      const dossierData = {
+        id: dossier_id,
+        name: name || 'Untitled Dossier',
+        description: description || '',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        csrs: csrs || [],
+        notes: {},
+        note_history: {},
+        signatures: {},
+        signature_audit: [],
+        locked_csrs: [],
+        optimizer_versions: []
+      };
+      
+      // Save dossier to file
+      const dossierPath = path.join(dossiersDir, `${dossier_id}.json`);
+      fs.writeFileSync(dossierPath, JSON.stringify(dossierData, null, 2));
+      
+      res.json({ 
+        success: true, 
+        dossier_id, 
+        message: 'Dossier created successfully' 
+      });
+    } catch (error) {
+      console.error('Error creating dossier:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Error creating dossier' 
+      });
+    }
+  });
+
+  // POST endpoint to save protocol optimization to dossier
+  app.post('/api/dossier/:dossier_id/save-optimization', async (req: Request, res: Response) => {
+    try {
+      const { dossier_id } = req.params;
+      const { 
+        recommendation, 
+        protocolSummary,
+        csr_ids = []
+      } = req.body;
+      
+      if (!recommendation) {
+        return res.status(400).json({
+          success: false,
+          message: 'Recommendation text is required'
+        });
+      }
+      
+      // Validate dossier path
+      const dossierPath = path.join(dossiersDir, `${dossier_id}.json`);
+      if (!fs.existsSync(dossierPath)) {
+        return res.status(404).json({ 
+          success: false, 
+          message: 'Dossier not found' 
+        });
+      }
+      
+      // Read current dossier data
+      const dossierData = JSON.parse(fs.readFileSync(dossierPath, 'utf8'));
+      
+      // Initialize optimizer_versions if it doesn't exist
+      if (!dossierData.optimizer_versions) {
+        dossierData.optimizer_versions = [];
+      }
+      
+      // Add new version
+      const optimizationVersion = {
+        timestamp: new Date().toISOString(),
+        recommendation,
+        protocol_summary: protocolSummary || '',
+        csr_ids
+      };
+      
+      dossierData.optimizer_versions.push(optimizationVersion);
+      dossierData.updated_at = new Date().toISOString();
+      
+      // Save updated dossier
+      fs.writeFileSync(dossierPath, JSON.stringify(dossierData, null, 2));
+      
+      res.json({ 
+        success: true, 
+        saved: true,
+        version_count: dossierData.optimizer_versions.length,
+        message: 'Optimization saved to dossier successfully' 
+      });
+    } catch (error) {
+      console.error('Error saving optimization to dossier:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Error saving optimization to dossier' 
+      });
+    }
+  });
+
+  // GET endpoint to list all dossiers
+  app.get('/api/dossiers', async (req: Request, res: Response) => {
+    try {
+      // Read all dossier files
+      const dossierFiles = fs.readdirSync(dossiersDir).filter(file => file.endsWith('.json'));
+      
+      // Extract basic info from each dossier
+      const dossiers = dossierFiles.map(file => {
+        const dossierPath = path.join(dossiersDir, file);
+        const dossierData = JSON.parse(fs.readFileSync(dossierPath, 'utf8'));
+        return {
+          id: dossierData.id,
+          name: dossierData.name,
+          description: dossierData.description,
+          created_at: dossierData.created_at,
+          updated_at: dossierData.updated_at,
+          csr_count: dossierData.csrs?.length || 0,
+          optimization_count: dossierData.optimizer_versions?.length || 0
+        };
+      });
+      
+      res.json(dossiers);
+    } catch (error) {
+      console.error('Error listing dossiers:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Error listing dossiers' 
+      });
+    }
+  });
+
   app.post('/api/dossier/:dossier_id/update-signature', async (req: Request, res: Response) => {
     try {
       const { dossier_id } = req.params;
