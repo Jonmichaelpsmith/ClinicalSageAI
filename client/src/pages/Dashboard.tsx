@@ -107,7 +107,7 @@ const Dashboard = () => {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card className="shadow-sm border-emerald-100">
             <CardHeader className="bg-gradient-to-r from-emerald-50 to-teal-50">
               <CardTitle className="text-lg">Protocol Development</CardTitle>

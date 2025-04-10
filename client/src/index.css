@@ -29,19 +29,35 @@
 
 @layer components {
   .glass-card {
-    @apply bg-white/50 backdrop-blur-md border border-white/20 shadow-sm;
+    @apply bg-white/60 backdrop-blur-lg border border-white/30 shadow-md rounded-xl;
   }
   
   .gradient-heading {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 font-bold;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 font-bold tracking-tight;
   }
   
   .feature-card {
-    @apply p-6 rounded-xl bg-white border border-gray-200 shadow-sm transition-all duration-200 hover:shadow-md hover:border-blue-200;
+    @apply p-6 rounded-xl bg-white border border-gray-100 shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-blue-100;
   }
   
   .card-hover {
-    @apply transition-all duration-200 hover:shadow-md hover:border-blue-200;
+    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-blue-100;
+  }
+  
+  .frosted-panel {
+    @apply bg-white/80 backdrop-blur-md border border-gray-100 shadow-sm rounded-xl;
+  }
+  
+  .dashboard-card {
+    @apply bg-gradient-to-br from-white to-gray-50 border border-gray-100 shadow-sm rounded-xl p-6 hover:shadow-md transition-all duration-300;
+  }
+  
+  .data-card {
+    @apply bg-white border border-gray-100 shadow-sm rounded-xl overflow-hidden hover:shadow-md transition-all duration-300;
+  }
+  
+  .card-header-gradient {
+    @apply bg-gradient-to-r from-blue-50/80 to-indigo-50/80 backdrop-blur-sm p-6;
   }
 }
 
