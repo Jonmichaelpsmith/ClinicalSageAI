@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1695",
+  "title": "A Randomized Double-Blind, Placebo-Controlled  Study of PDK-277 (dopamine agonist) in Patients With Crohn's Disease",
+  "officialTitle": "A Randomized Double-Blind, Placebo-Controlled  Study of PDK-277 (dopamine agonist) in Patients With Crohn's Disease",
+  "sponsor": "Alberta Health Services",
+  "indication": "Crohn's Disease",
+  "phase": "Phase 2",
+  "fileName": "HC-1695.json",
+  "fileSize": 163071,
+  "date": "2024-05-02",
+  "completionDate": "2027-07-14",
+  "drugName": "PDK-277 (dopamine agonist)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Active, not recruiting",
+  "description": "This is a randomized double-blind, placebo-controlled  study designed to evaluate the efficacy and safety of PDK-277 (dopamine agonist) in patients with Crohn's Disease. The study will enroll approximately 124 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 26-70 years\n- Confirmed diagnosis of Crohn's Disease\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

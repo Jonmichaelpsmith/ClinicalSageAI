@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1725",
+  "title": "A  Open-Label, Placebo-Controlled Multi-Center Study of MSC-135 (oligonucleotide) in Patients With Metastatic Breast Cancer",
+  "officialTitle": "A  Open-Label, Placebo-Controlled Multi-Center Study of MSC-135 (oligonucleotide) in Patients With Metastatic Breast Cancer",
+  "sponsor": "Montreal Heart Institute",
+  "indication": "Metastatic Breast Cancer",
+  "phase": "Phase 2/Phase 3",
+  "fileName": "HC-1725.json",
+  "fileSize": 271694,
+  "date": "2024-08-12",
+  "completionDate": "2027-09-12",
+  "drugName": "MSC-135 (oligonucleotide)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Completed",
+  "description": "This is a  open-label, placebo-controlled multi-center study designed to evaluate the efficacy and safety of MSC-135 (oligonucleotide) in patients with Metastatic Breast Cancer. The study will enroll approximately 139 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 26-55 years\n- Confirmed diagnosis of Metastatic Breast Cancer\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n- Measurable disease per RECIST v1.1\n- Prior treatment with standard therapy\n- Life expectancy ≥3 months\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment\n- Brain metastases unless treated and stable\n- Prior treatment with similar mechanism of action\n- Other active malignancy requiring treatment"
+}

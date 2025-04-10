@@ -13,6 +13,8 @@ import {
 import { translationService, supportedLanguages } from "./translation-service";
 import { generateProtocolTemplate, getStatisticalApproaches } from "./protocol-service";
 import { huggingFaceService, queryHuggingFace, HFModel } from "./huggingface-service";
+import { academicKnowledgeTracker } from "./academic-knowledge-tracker";
+import { academicUpload, processAcademicResource } from "./academic-resource-upload";
 import { SagePlusService } from "./sage-plus-service";
 import { csrTrainingService } from "./csr-training-service";
 import { researchCompanionService } from "./research-companion-service";

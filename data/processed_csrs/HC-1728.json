@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1728",
+  "title": "A  Double-Blind, Active-Controlled  Study of SMA-668 (SMN2 splicing modifier) in Patients With HIV Infection",
+  "officialTitle": "A  Double-Blind, Active-Controlled  Study of SMA-668 (SMN2 splicing modifier) in Patients With HIV Infection",
+  "sponsor": "Sunnybrook Research Institute",
+  "indication": "HIV Infection",
+  "phase": "Phase 2",
+  "fileName": "HC-1728.json",
+  "fileSize": 308824,
+  "date": "2023-06-30",
+  "completionDate": "2028-09-30",
+  "drugName": "SMA-668 (SMN2 splicing modifier)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Terminated",
+  "description": "This is a  double-blind, active-controlled  study designed to evaluate the efficacy and safety of SMA-668 (SMN2 splicing modifier) in patients with HIV Infection. The study will enroll approximately 333 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 20-76 years\n- Confirmed diagnosis of HIV Infection\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

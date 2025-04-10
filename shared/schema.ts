@@ -274,3 +274,54 @@ export type ChatConversation = typeof chatConversations.$inferSelect;
 
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type ChatMessage = typeof chatMessages.$inferSelect;
+
+// Academic Knowledge Base Tables
+export const academicResources = pgTable('academic_resources', {
+  id: serial('id').primaryKey(),
+  title: text('title').notNull(),
+  authors: text('authors').notNull().default('[]'), // JSON string of authors array
+  publicationDate: text('publication_date').notNull(),
+  source: text('source').notNull(), // pubmed, clinicaltrials.gov, manual_upload, etc.
+  resourceType: text('resource_type').notNull(), // pdf, text, xml, json
+  summary: text('summary'),
+  topics: text('topics').notNull().default('[]'), // JSON string of topics array
+  keywords: text('keywords').notNull().default('[]'), // JSON string of keywords array
+  filePath: text('file_path').notNull(),
+  fileSize: integer('file_size').notNull(),
+  uploadDate: timestamp('upload_date').notNull().defaultNow(),
+  lastAccessed: timestamp('last_accessed'),
+  accessCount: integer('access_count').notNull().default(0)
+});
+
+export const academicEmbeddings = pgTable('academic_embeddings', {
+  id: serial('id').primaryKey(),
+  resourceId: integer('resource_id').notNull().references(() => academicResources.id),
+  embedding: text('embedding').notNull() // JSON string of embedding vector
+});
+
+export const insertAcademicResourceSchema = createInsertSchema(academicResources).pick({
+  title: true,
+  authors: true,
+  publicationDate: true,
+  source: true,
+  resourceType: true,
+  summary: true,
+  topics: true,
+  keywords: true,
+  filePath: true,
+  fileSize: true,
+  uploadDate: true,
+  lastAccessed: true,
+  accessCount: true
+});
+
+export const insertAcademicEmbeddingSchema = createInsertSchema(academicEmbeddings).pick({
+  resourceId: true,
+  embedding: true
+});
+
+export type InsertAcademicResource = z.infer<typeof insertAcademicResourceSchema>;
+export type AcademicResource = typeof academicResources.$inferSelect;
+
+export type InsertAcademicEmbedding = z.infer<typeof insertAcademicEmbeddingSchema>;
+export type AcademicEmbedding = typeof academicEmbeddings.$inferSelect;
