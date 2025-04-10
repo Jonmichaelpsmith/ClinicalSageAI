@@ -668,7 +668,7 @@ export default function CompetitiveIntelligence() {
                                   <p className="text-[10px] text-slate-500 mt-0.5">Lumen Bio</p>
                                 </div>
                                 <div className="flex-1">
-                                  <Progress value={62} className="h-1.5" indicatorClass="bg-slate-400" />
+                                  <Progress value={62} className="h-1.5" />
                                   <p className="text-[10px] text-slate-500 mt-0.5">Competitor</p>
                                 </div>
                               </div>
@@ -685,7 +685,7 @@ export default function CompetitiveIntelligence() {
                                   <p className="text-[10px] text-slate-500 mt-0.5">Lumen Bio</p>
                                 </div>
                                 <div className="flex-1">
-                                  <Progress value={78} className="h-1.5" indicatorClass="bg-slate-400" />
+                                  <Progress value={78} className="h-1.5" />
                                   <p className="text-[10px] text-slate-500 mt-0.5">Competitor</p>
                                 </div>
                               </div>
@@ -702,7 +702,7 @@ export default function CompetitiveIntelligence() {
                                   <p className="text-[10px] text-slate-500 mt-0.5">Lumen Bio</p>
                                 </div>
                                 <div className="flex-1">
-                                  <Progress value={66} className="h-1.5" indicatorClass="bg-slate-400" />
+                                  <Progress value={66} className="h-1.5" />
                                   <p className="text-[10px] text-slate-500 mt-0.5">Competitor</p>
                                 </div>
                               </div>
