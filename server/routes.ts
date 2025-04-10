@@ -211,6 +211,17 @@ function errorHandler(err: Error, res: Response): Response {
   });
 }
 
+// Dossier notes update request schema
+const noteEntrySchema = z.object({
+  csr_id: z.string(),
+  user: z.string(),
+  comment: z.string()
+});
+
+const notesUpdateRequestSchema = z.object({
+  notes: z.array(noteEntrySchema)
+});
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Create uploads directory if it doesn't exist
   const uploadsDir = path.join(process.cwd(), 'uploads');
