@@ -272,8 +272,8 @@ async function findRelevantTrials(query: string): Promise<any[]> {
         // Get trial details
         const [details] = await db
           .select()
-          .from(csr_details)
-          .where(eq(csr_details.report_id, trial.id));
+          .from(csrDetails)
+          .where(eq(csrDetails.reportId, trial.id));
         
         return {
           ...trial,
@@ -461,13 +461,13 @@ async function compareTrials(trialIds: number[]): Promise<any[]> {
       trialIds.map(async (id) => {
         const [trialData] = await db
           .select()
-          .from(csr_reports)
-          .where(eq(csr_reports.id, id));
+          .from(csrReports)
+          .where(eq(csrReports.id, id));
         
         const [trialDetails] = await db
           .select()
-          .from(csr_details)
-          .where(eq(csr_details.report_id, id));
+          .from(csrDetails)
+          .where(eq(csrDetails.reportId, id));
         
         return {
           ...trialData,
@@ -489,7 +489,7 @@ async function compareTrials(trialIds: number[]): Promise<any[]> {
               { name: 'Sponsor', values: trials.map(t => t.sponsor) },
               { name: 'Phase', values: trials.map(t => t.phase) },
               { name: 'Status', values: trials.map(t => t.status) },
-              { name: 'Drug', values: trials.map(t => t.drug_name) }
+              { name: 'Drug', values: trials.map(t => t.drugName) }
             ]
           },
           {
@@ -497,11 +497,11 @@ async function compareTrials(trialIds: number[]): Promise<any[]> {
             attributes: [
               { 
                 name: 'Study Design', 
-                values: trials.map(t => t.details?.study_design || 'Not specified') 
+                values: trials.map(t => t.details?.studyDesign || 'Not specified') 
               },
               { 
                 name: 'Primary Objective', 
-                values: trials.map(t => t.details?.primary_objective || 'Not specified') 
+                values: trials.map(t => t.details?.primaryObjective || 'Not specified') 
               }
             ]
           },
@@ -510,11 +510,11 @@ async function compareTrials(trialIds: number[]): Promise<any[]> {
             attributes: [
               { 
                 name: 'Inclusion Criteria', 
-                values: trials.map(t => t.details?.inclusion_criteria || 'Not specified') 
+                values: trials.map(t => t.details?.inclusionCriteria || 'Not specified') 
               },
               { 
                 name: 'Exclusion Criteria', 
-                values: trials.map(t => t.details?.exclusion_criteria || 'Not specified') 
+                values: trials.map(t => t.details?.exclusionCriteria || 'Not specified') 
               }
             ]
           },
@@ -601,29 +601,29 @@ async function analyzeEndpoint(endpoint: string, indication?: string): Promise<a
   try {
     // First, search for trials with relevant endpoints in their details
     let trialQuery = db.select({
-      id: csr_reports.id,
-      title: csr_reports.title,
-      sponsor: csr_reports.sponsor,
-      indication: csr_reports.indication,
-      phase: csr_reports.phase,
-      date: csr_reports.date,
-      drugName: csr_reports.drug_name
+      id: csrReports.id,
+      title: csrReports.title,
+      sponsor: csrReports.sponsor,
+      indication: csrReports.indication,
+      phase: csrReports.phase,
+      date: csrReports.date,
+      drugName: csrReports.drugName
     })
-    .from(csr_reports)
-    .innerJoin(csr_details, eq(csr_reports.id, csr_details.report_id))
-    .where(eq(csr_reports.deleted_at, null));
+    .from(csrReports)
+    .innerJoin(csrDetails, eq(csrReports.id, csrDetails.reportId))
+    .where(eq(csrReports.deletedAt, null));
     
     // Add endpoint search conditions
     trialQuery = trialQuery.where(
       or(
-        ilike(csr_details.primary_objective, `%${endpoint}%`),
-        ilike(csr_details.study_description, `%${endpoint}%`)
+        ilike(csrDetails.primaryObjective, `%${endpoint}%`),
+        ilike(csrDetails.studyDescription, `%${endpoint}%`)
       )
     );
     
     // Add indication filter if provided
     if (indication) {
-      trialQuery = trialQuery.where(ilike(csr_reports.indication, `%${indication}%`));
+      trialQuery = trialQuery.where(ilike(csrReports.indication, `%${indication}%`));
     }
     
     // Execute the query with limit
@@ -683,19 +683,19 @@ async function analyzeIndication(indication: string): Promise<any[]> {
   try {
     // Find trials for this indication
     const trials = await db.select({
-      id: csr_reports.id,
-      title: csr_reports.title,
-      sponsor: csr_reports.sponsor,
-      phase: csr_reports.phase,
-      status: csr_reports.status,
-      date: csr_reports.date,
-      drugName: csr_reports.drug_name
+      id: csrReports.id,
+      title: csrReports.title,
+      sponsor: csrReports.sponsor,
+      phase: csrReports.phase,
+      status: csrReports.status,
+      date: csrReports.date,
+      drugName: csrReports.drugName
     })
-    .from(csr_reports)
+    .from(csrReports)
     .where(
       and(
-        eq(csr_reports.deleted_at, null),
-        ilike(csr_reports.indication, `%${indication}%`)
+        eq(csrReports.deletedAt, null),
+        ilike(csrReports.indication, `%${indication}%`)
       )
     )
     .limit(20);
@@ -764,19 +764,19 @@ async function analyzeSponsor(sponsor: string): Promise<any[]> {
   try {
     // Find trials for this sponsor
     const trials = await db.select({
-      id: csr_reports.id,
-      title: csr_reports.title,
-      indication: csr_reports.indication,
-      phase: csr_reports.phase,
-      status: csr_reports.status,
-      date: csr_reports.date,
-      drugName: csr_reports.drug_name
+      id: csrReports.id,
+      title: csrReports.title,
+      indication: csrReports.indication,
+      phase: csrReports.phase,
+      status: csrReports.status,
+      date: csrReports.date,
+      drugName: csrReports.drugName
     })
-    .from(csr_reports)
+    .from(csrReports)
     .where(
       and(
-        eq(csr_reports.deleted_at, null),
-        ilike(csr_reports.sponsor, `%${sponsor}%`)
+        eq(csrReports.deletedAt, null),
+        ilike(csrReports.sponsor, `%${sponsor}%`)
       )
     )
     .limit(30);
