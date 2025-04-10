@@ -11,11 +11,12 @@ import Upload from "@/pages/Upload";
 import Analytics from "@/pages/Analytics";
 import StatisticalModeling from "@/pages/StatisticalModeling";
 import UseCaseLibrary from "@/pages/UseCaseLibrary";
-import ProtocolGenerator from "./pages/ProtocolGenerator";
+import ProtocolGenerator from "./pages/ProtocolGenerator"; //This component might need to be renamed or replaced
+import ProtocolDesigner from "./pages/ProtocolDesigner"; // Assuming this component exists
 import StudyDesignAgent from "./pages/StudyDesignAgent";
-import Translation from "./pages/Translation";
-import CsrExtractionGuide from "./pages/CsrExtractionGuide";
-import { Sidebar } from "@/components/layout/SidebarUpdated";
+import Translation from "@/pages/Translation";
+import CsrExtractionGuide from "@/pages/CsrExtractionGuide";
+import { Sidebar } from "@/components/layout/Sidebar";
 import { TopNavbar } from "@/components/layout/TopNavbar";
 import ProductFeatures from "./pages/ProductFeatures";
 import PricingPage from "./pages/PricingPage";
@@ -94,7 +95,7 @@ function Router() {
       <Route path="/analytics">{() => renderWithLayout(Analytics)}</Route>
       <Route path="/statistical-modeling">{() => renderWithLayout(StatisticalModeling)}</Route>
       <Route path="/use-cases">{() => renderWithLayout(UseCaseLibrary)}</Route>
-      <Route path="/protocol-generator">{() => renderWithLayout(ProtocolGenerator)}</Route>
+      <Route path="/protocol-designer">{() => renderWithLayout(ProtocolDesigner)}</Route>
       <Route path="/study-design-agent">{() => renderWithLayout(StudyDesignAgent)}</Route>
       <Route path="/translation">{() => renderWithLayout(Translation)}</Route>
       <Route path="/csr-extraction-guide">{() => renderWithLayout(CsrExtractionGuide)}</Route>
