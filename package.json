@@ -13,6 +13,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.37.0",
     "@hookform/resolvers": "^3.9.1",
+    "@huggingface/inference": "^2.8.1",
     "@jridgewell/trace-mapping": "^0.3.25",
     "@langchain/community": "^0.3.40",
     "@langchain/openai": "^0.5.5",
