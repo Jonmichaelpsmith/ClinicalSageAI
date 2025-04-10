@@ -1,0 +1,89 @@
+Let’s Now Prioritize What's Next
+🟨 1. Complete Structured JSON Schema & Storage Logic
+Make sure every extracted CSR outputs a consistent JSON structure:
+
+json
+Copy
+Edit
+{
+  "csr_id": "A0081186",
+  "title": "...",
+  "indication": "...",
+  "phase": "Phase 2",
+  "arms": ["Placebo", "50mg", "100mg"],
+  "primary_endpoints": ["Change in EDSS score"],
+  "outcome": "Positive (p<0.01)",
+  "adverse_events": [{ "event": "Nausea", "grade": 2, "count": 8 }],
+  "raw_text": "...",
+  "vector_summary": "...",
+  "embedding": [0.234, 0.554, ...]
+}
+✅ Next: Validate and normalize schema in csr_extractor.py, and store full JSON in /data/processed_csrs/.
+
+🟨 2. Plug Vector Store + Metadata into Search Layer
+Use chromadb or weaviate to store vectorized summaries
+
+Store csr_id, phase, indication, success flags, etc., in SQLite or Supabase for filtering
+
+✅ Next: Create csr_search.py to run queries like:
+
+python
+Copy
+Edit
+search_by_embedding("Phase 2 NSCLC trial with ORR endpoint")
+search_by_field(phase="Phase 3", indication="Ulcerative Colitis")
+🟨 3. Expose API for Frontend and SagePlus AI Agent
+Create /api/csrs/query endpoint that accepts:
+
+text_query (semantic search)
+
+filters (indication, phase, etc.)
+
+optional draft protocol for similarity scoring
+
+✅ Next: Scaffold csr_api.py using FastAPI or Flask
+
+🟩 4. Pipeline Enhancements (LLM-powered Extraction)
+In csr_extractor.py, improve accuracy with:
+
+Mixtral or Phi-2 prompt to label sections
+
+Section-to-field mapping (via keyword + prompt combo)
+
+Error recovery + logging
+
+🟦 5. Real-Time UI for Monitoring + Querying
+React/Tailwind dashboard to:
+
+View ingested CSRs
+
+Search by keyword/filters
+
+Visualize vector matches (e.g. cosine similarity)
+
+✅ Next: Start building csr_dashboard.jsx with filters + table view
+
+🧠 Optional Enhancements to Queue Up
+Feature	Benefit
+📈 Auto-Fail Classifier	Flag high-risk trials (design pitfalls, AE load, etc.)
+🧪 Interactive Protocol Comparison Tool	Match draft to N top similar CSRs
+🧭 Timeline Viewer	Show trial journey from CSR summary
+🧬 Endpoint Frequency Map	Guide endpoint selection per indication
+📤 Export to Notion, Slack, PDF	Instant protocol support tool
+🚀 Your Suggested Next Move
+Would you like me to now:
+
+Generate csr_search.py for filtering + embedding search?
+
+Build the FastAPI backend (csr_api.py) for frontend/agent access?
+
+Create the csr_dashboard.jsx interface?
+
+You're building what will be the clinical search engine of record—let’s make it tangible.
+
+
+
+
+
+
+

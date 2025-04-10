@@ -1,0 +1,100 @@
+ Immediate Action Items (in order)
+✅ 1. Implement csr_schema.py: Schema Validation & Normalization
+Your goal here is to:
+
+Validate that extracted CSR data includes all key fields
+
+Auto-fill or normalize common values (e.g., “phase ii” → “Phase 2”)
+
+Enforce safe structure before writing JSON to /data/processed_csrs/
+
+python
+Copy
+Edit
+# csr_schema.py
+
+def validate_and_normalize_csr(raw_data: dict) -> dict:
+    schema = {
+        "csr_id": str,
+        "title": str,
+        "indication": str,
+        "phase": str,
+        "arms": list,
+        "primary_endpoints": list,
+        "secondary_endpoints": list,
+        "sample_size": int,
+        "outcome_summary": str,
+        "adverse_events": list,
+        "raw_text": str,
+        "vector_summary": str,
+        "embedding": list
+    }
+
+    # Normalize fields
+    if 'phase' in raw_data:
+        raw_data['phase'] = raw_data['phase'].capitalize().replace("ii", "Phase 2").replace("iii", "Phase 3")
+
+    for key, expected_type in schema.items():
+        if key not in raw_data:
+            print(f"[⚠️] Missing field: {key}")
+            raw_data[key] = [] if expected_type is list else "" if expected_type is str else 0
+
+    return raw_data
+✅ 2. Update csr_extractor.py to Use This Schema
+In your CSR extraction loop, right before saving the JSON file:
+
+python
+Copy
+Edit
+from csr_schema import validate_and_normalize_csr
+
+# raw_extracted = { ... } ← your extracted dictionary
+validated = validate_and_normalize_csr(raw_extracted)
+
+# Save to /data/processed_csrs/{csr_id}.json
+output_path = f"data/processed_csrs/{validated['csr_id']}.json"
+with open(output_path, "w") as f:
+    json.dump(validated, f, indent=2)
+✅ 3. Prepare for Vector Embedding Indexing
+In csr_vectorizer.py, write a small batch process that:
+
+Loads each JSON from /data/processed_csrs/
+
+Embeds the vector_summary field
+
+Stores vectors + metadata into your Chroma or SQLite-based store
+
+✅ 4. Prepare csr_search.py Queries
+This file will handle:
+
+search_by_text("Your query") → return top-N cosine match CSRs
+
+search_by_filter(phase="Phase 2", indication="Lung Cancer") → return list of matching IDs
+
+✅ 5. Launch API with csr_api.py
+Add FastAPI routes like:
+
+python
+Copy
+Edit
+@app.post("/search/text")
+def search_by_text(query: str):
+    return csr_search.search_by_text(query)
+
+@app.get("/search/filter")
+def filter_trials(phase: str = "", indication: str = ""):
+    return csr_search.search_by_filter(phase, indication)
+🧠 You’re Now Unlocking:
+✅ Safe, consistent CSR JSON records
+
+✅ Searchable interface for UI and LLM agent
+
+✅ Foundation for full SagePlus interactivity
+
+Would you like me to:
+
+Write the initial code for csr_vectorizer.py to embed and store vector data?
+
+Scaffold a basic search result display component in the frontend?
+
+You're at the turning point—your CSR data is about to come alive.

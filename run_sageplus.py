@@ -1,79 +1,81 @@
-# 🧠 SagePlus | Run Script
-# Helper script to run the SagePlus pipeline with common options
+# 🧠 SagePlus | Main Runner Script
+# Launches the SagePlus CSR processing pipeline
 
 import os
 import sys
-import argparse
 import logging
 from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
 
-# Setup logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler("sageplus_run.log"),
+        logging.StreamHandler()
+    ]
+)
 logger = logging.getLogger("SagePlus-Runner")
 
 def check_environment():
     """Check if the environment is properly set up"""
-    # Check for HF_API_KEY
-    if not os.getenv("HF_API_KEY"):
-        logger.error("❌ HF_API_KEY not found in environment variables!")
-        logger.error("Please set HF_API_KEY in your .env file or environment.")
+    required_dirs = ["csrs", "csr_json", "data/processed_csrs", "data/vector_store"]
+    
+    # Check required directories
+    for directory in required_dirs:
+        if not os.path.exists(directory):
+            os.makedirs(directory, exist_ok=True)
+            logger.info(f"Created directory: {directory}")
+    
+    # Check required environment variables
+    hf_api_key = os.getenv("HF_API_KEY")
+    if not hf_api_key:
+        logger.error("HF_API_KEY environment variable is not set")
+        logger.error("Please set this variable to use Hugging Face API for extraction and embeddings")
         return False
+    
+    # Check for PDF files
+    pdf_count = len([f for f in os.listdir("csrs") if f.lower().endswith(".pdf")])
+    if pdf_count == 0:
+        logger.warning("No PDF files found in the 'csrs' directory")
+        logger.warning("Please add some CSR PDF files to process")
+    else:
+        logger.info(f"Found {pdf_count} PDF files to process")
+    
     return True
 
 def main():
     """Main function to run the SagePlus pipeline"""
-    parser = argparse.ArgumentParser(description="SagePlus CSR Processing Pipeline Runner")
-    
-    # Add command groups
-    subparsers = parser.add_subparsers(dest="command", help="Command to run")
-    
-    # Test command
-    test_parser = subparsers.add_parser("test", help="Run pipeline tests")
-    
-    # Process command
-    process_parser = subparsers.add_parser("process", help="Process CSR PDFs")
-    process_parser.add_argument("--input", "-i", default="csrs", help="Directory containing CSR PDFs")
-    process_parser.add_argument("--database", "-db", action="store_true", help="Enable database integration")
-    
-    # Import command
-    import_parser = subparsers.add_parser("import", help="Import existing vectors to database")
-    
-    # Parse arguments
-    args = parser.parse_args()
-    
-    # Check environment
+    # Check the environment
     if not check_environment():
-        return 1
+        logger.error("Environment check failed. Exiting.")
+        sys.exit(1)
     
-    # Execute requested command
-    if args.command == "test":
-        logger.info("Running pipeline tests...")
-        from test_pipeline import test_pipeline
-        success = test_pipeline()
-        return 0 if success else 1
+    # Launch the pipeline
+    from sage_plus_pipeline import SagePlusPipeline
     
-    elif args.command == "process":
-        logger.info(f"Processing CSR PDFs from {args.input}...")
-        from sage_plus_pipeline import SagePlusPipeline
-        pipeline = SagePlusPipeline(use_db=args.database)
-        pipeline.process_directory(args.input)
-        return 0
+    logger.info("Starting SagePlus pipeline...")
+    pipeline = SagePlusPipeline(use_db=False)
     
-    elif args.command == "import":
-        logger.info("Importing existing vectors to database...")
-        from sage_plus_pipeline import SagePlusPipeline
-        pipeline = SagePlusPipeline(use_db=True)
-        count = pipeline.import_existing_vectors()
-        logger.info(f"Imported {count} vectors to database")
-        return 0
+    # Process all PDFs
+    results = pipeline.process_directory()
     
+    # Report results
+    if results:
+        logger.info(f"Successfully processed {len(results)} CSRs")
+        logger.info("Pipeline execution completed successfully")
+        
+        # Display first 3 CSR IDs
+        for i, result in enumerate(results[:3]):
+            logger.info(f"Processed CSR #{i+1}: {result.get('csr_id', 'Unknown')} - {result.get('title', 'Untitled')}")
     else:
-        # No command specified, show help
-        parser.print_help()
-        return 0
+        logger.warning("No CSRs were processed successfully")
+    
+    logger.info("To search or query the processed CSRs, use the API server:")
+    logger.info("python csr_api.py")
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()
