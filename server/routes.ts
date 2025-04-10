@@ -1460,15 +1460,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Create directory if it doesn't exist
       const fs = require('fs');
-      if (!fs.existsSync('./data/reports')) {
-        fs.mkdirSync('./data/reports', { recursive: true });
+      if (!fs.existsSync('./data/exports')) {
+        fs.mkdirSync('./data/exports', { recursive: true });
       }
       
       // Generate PDF using PDFKit
       const PDFDocument = require('pdfkit');
       const path = require('path');
       
-      const filename = `./data/reports/Strategic_Report_${Date.now()}.pdf`;
+      const filename = `./data/exports/Strategic_Report_${Date.now()}.pdf`;
       const doc = new PDFDocument();
       const stream = fs.createWriteStream(filename);
       

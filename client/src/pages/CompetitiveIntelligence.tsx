@@ -1233,11 +1233,18 @@ export default function CompetitiveIntelligence() {
 
             {/* Action Buttons */}
             <div className="flex justify-end gap-3">
-              <Button variant="outline">
+              <Button 
+                variant="outline"
+                onClick={handleSaveToDossier}
+                disabled={!generatedReport}
+              >
                 <FileText className="mr-2 h-4 w-4" />
                 Save to Study Dossier
               </Button>
-              <Button>
+              <Button
+                onClick={handleExportPdf}
+                disabled={!generatedReport}
+              >
                 <Download className="mr-2 h-4 w-4" />
                 Export Full Report (PDF)
               </Button>
