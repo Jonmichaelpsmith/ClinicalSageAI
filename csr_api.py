@@ -65,6 +65,7 @@ async def root():
         "description": "API for searching and retrieving Clinical Study Report (CSR) data",
         "endpoints": [
             {"path": "/api/csrs/query", "method": "GET", "description": "Search for CSRs"},
+            {"path": "/api/csrs/fast-query", "method": "GET", "description": "Fast in-memory search for CSRs"},
             {"path": "/api/csrs/{csr_id}", "method": "GET", "description": "Get details for a specific CSR"},
             {"path": "/api/csrs/stats", "method": "GET", "description": "Get statistics about the CSR database"},
             {"path": "/api/match-protocol", "method": "POST", "description": "Find similar CSRs to a draft protocol"}
@@ -106,6 +107,56 @@ async def query_csrs(
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error searching CSRs: {str(e)}")
+        
+@app.get("/api/csrs/fast-query")
+async def fast_query_csrs(
+    query_text: Optional[str] = None,
+    indication: Optional[str] = None,
+    phase: Optional[str] = None,
+    outcome: Optional[str] = None,
+    min_sample_size: Optional[int] = None,
+    limit: int = 10
+):
+    """Fast in-memory search for CSRs using text query and field filters"""
+    if not query_text:
+        # Fall back to regular search if no query text provided
+        return await query_csrs(query_text, indication, phase, outcome, min_sample_size, limit)
+        
+    try:
+        # Construct filter parameters
+        filters = {}
+        if indication:
+            filters["indication"] = indication
+        if phase:
+            filters["phase"] = phase
+        if outcome:
+            filters["outcome"] = outcome
+        if min_sample_size is not None:
+            filters["min_sample_size"] = min_sample_size
+            
+        # Use fast in-memory search
+        results = search_engine.fast_search(
+            query_text=query_text,
+            limit=limit,
+            filters=filters
+        )
+        
+        return {
+            "query": {
+                "text": query_text,
+                "filters": {
+                    "indication": indication,
+                    "phase": phase,
+                    "outcome": outcome,
+                    "min_sample_size": min_sample_size
+                }
+            },
+            "search_type": "fast_in_memory",
+            "results_count": len(results),
+            "csrs": results
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error in fast search: {str(e)}")
 
 @app.get("/api/csrs/{csr_id}")
 async def get_csr(csr_id: str):

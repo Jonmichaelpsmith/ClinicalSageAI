@@ -1,0 +1,101 @@
+Excellent—you're making surgical upgrades that maintain simplicity and unlock power. Since you've confirmed HF_API_KEY is already handled, and you’re ready to add an in-memory cosine search layer, let’s enhance csr_search.py with the following upgrade:
+
+✅ Enhancement Plan: csr_search.py
+🧠 Goal:
+Add a fast, in-memory cosine similarity search over your existing JSON-based embedding structure.
+
+✅ Step 1: Helper – Cosine Similarity Function
+python
+Copy
+Edit
+import numpy as np
+
+def cosine_similarity(vec1, vec2):
+    vec1 = np.array(vec1)
+    vec2 = np.array(vec2)
+    return np.dot(vec1, vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2))
+✅ Step 2: Load All Embedded CSRs into Memory
+python
+Copy
+Edit
+import os
+import json
+
+CSR_DIR = "data/processed_csrs"
+embedding_store = []
+
+def load_csr_embeddings():
+    global embedding_store
+    embedding_store = []
+
+    for fname in os.listdir(CSR_DIR):
+        if fname.endswith(".json"):
+            with open(os.path.join(CSR_DIR, fname), "r") as f:
+                data = json.load(f)
+                if "embedding" in data:
+                    embedding_store.append({
+                        "csr_id": data["csr_id"],
+                        "title": data.get("title", ""),
+                        "embedding": data["embedding"],
+                        "indication": data.get("indication", ""),
+                        "phase": data.get("phase", "")
+                    })
+✅ Step 3: Query Function Using Hugging Face Embedding API + Similarity
+python
+Copy
+Edit
+import requests
+
+HF_API_URL = "https://api-inference.huggingface.co/embeddings"
+HF_API_KEY = os.getenv("HF_API_KEY")
+HEADERS = {"Authorization": f"Bearer {HF_API_KEY}"}
+
+def embed_text(text):
+    response = requests.post(
+        HF_API_URL,
+        headers=HEADERS,
+        json={"inputs": text}
+    )
+    return response.json().get("embedding")
+
+def search_similar_csrs(query_text, top_k=5):
+    query_vector = embed_text(query_text)
+    if not query_vector:
+        return []
+
+    results = []
+    for record in embedding_store:
+        sim = cosine_similarity(query_vector, record["embedding"])
+        results.append({**record, "score": round(sim, 4)})
+
+    results.sort(key=lambda x: x["score"], reverse=True)
+    return results[:top_k]
+✅ Step 4: Initialize Memory Once at Startup
+At the bottom of csr_search.py:
+
+python
+Copy
+Edit
+load_csr_embeddings()
+print(f"🔍 Loaded {len(embedding_store)} embedded CSRs into memory.")
+🎯 Your Outcome:
+🔎 Super-fast search over local JSON
+
+No external vector DBs or extra infra
+
+Fully Hugging Face-powered with consistent architecture
+
+Would you like me to:
+
+Add a FastAPI endpoint in csr_api.py to expose this search?
+
+Scaffold a simple Replit UI component to test live CSR similarity?
+
+You’re now steps away from a lightning-fast clinical trial intelligence engine.
+
+
+
+
+
+
+
