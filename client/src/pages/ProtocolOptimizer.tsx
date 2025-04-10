@@ -1,462 +1,455 @@
-import { useState, useEffect } from 'react';
-import { useLocation, Link } from 'wouter';
-import { Textarea } from '@/components/ui/textarea';
+import { useState, useRef, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input'; 
+import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { apiRequest } from '@/lib/queryClient';
-import { Loader2, Download, Copy, ArrowRight, FileText, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useLocation } from 'wouter';
 import html2pdf from 'html2pdf.js';
+import { 
+  ArrowRight, 
+  FileDown, 
+  FileText, 
+  Save, 
+  Loader2,
+  PlusCircle,
+  BookCopy
+} from 'lucide-react';
 
 export default function ProtocolOptimizer() {
-  const [summary, setSummary] = useState('');
-  const [indication, setIndication] = useState('');
-  const [phase, setPhase] = useState('');
-  const [csrIds, setCsrIds] = useState('');
-  const [recommendation, setRecommendation] = useState('');
-  const [keySuggestions, setKeySuggestions] = useState<string[]>([]);
-  const [riskFactors, setRiskFactors] = useState<string[]>([]);
-  const [matchedCsrInsights, setMatchedCsrInsights] = useState<{csrId: string, relevance: string}[]>([]);
-  const [suggestedEndpoints, setSuggestedEndpoints] = useState<string[]>([]);
-  const [suggestedArms, setSuggestedArms] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
   const [location] = useLocation();
-  const { toast } = useToast();
+  const dossierId = new URLSearchParams(location.split('?')[1]).get('dossier_id');
   
-  // Parse CSR IDs from URL query parameters
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const csrIdsParam = params.get('csr_ids');
-    
-    if (csrIdsParam) {
-      setCsrIds(csrIdsParam);
-      toast({
-        title: "CSR IDs Loaded",
-        description: "CSR IDs have been loaded from your dossier.",
-      });
-    }
-  }, [location, toast]);
+  const [protocolSummary, setProtocolSummary] = useState<string>('');
+  const [studyType, setStudyType] = useState<string>('rct');
+  const [includeReferences, setIncludeReferences] = useState<boolean>(true);
+  const [useSimilarTrials, setUseSimilarTrials] = useState<boolean>(true);
+  const [indication, setIndication] = useState<string>('');
+  const [phase, setPhase] = useState<string>('phase3');
+  
+  const [analyzeLoading, setAnalyzeLoading] = useState<boolean>(false);
+  const [generatedContent, setGeneratedContent] = useState<{
+    recommendation: string;
+    keySuggestions: string[];
+    riskFactors: string[];
+    matchedCsrInsights: any[];
+    suggestedEndpoints: string[];
+    suggestedArms: string[];
+  } | null>(null);
+  
+  const [saveLoading, setSaveLoading] = useState<boolean>(false);
+  const [savedMessageVisible, setSavedMessageVisible] = useState<boolean>(false);
+  const [versionCount, setVersionCount] = useState<number>(0);
+  
+  const outputRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
-  const handleSubmit = async () => {
-    if (!summary) {
+  // Generate protocol optimization recommendation
+  const analyzeProtocol = async () => {
+    if (!protocolSummary.trim()) {
       toast({
-        title: "Missing Information",
-        description: "Please provide a protocol summary.",
+        title: "Empty Protocol",
+        description: "Please enter a protocol summary or description.",
         variant: "destructive"
       });
       return;
     }
-
-    setLoading(true);
-
+    
+    setAnalyzeLoading(true);
+    setGeneratedContent(null);
+    
     try {
-      const response = await apiRequest('POST', '/api/protocol-optimizer', {
-        summary,
+      const response = await apiRequest('POST', '/api/protocol/optimize', {
+        protocolSummary,
+        studyType,
+        includeReferences,
+        useSimilarTrials,
         indication,
-        phase,
-        topCsrIds: csrIds ? csrIds.split(',').map(id => id.trim()) : undefined
+        phase
       });
-
+      
       if (response.success) {
-        setRecommendation(response.recommendation || '');
-        setKeySuggestions(response.keySuggestions || []);
-        setRiskFactors(response.riskFactors || []);
-        setMatchedCsrInsights(response.matchedCsrInsights || []);
-        setSuggestedEndpoints(response.suggestedEndpoints || []);
-        setSuggestedArms(response.suggestedArms || []);
-
-        toast({
-          title: "Protocol Analysis Complete",
-          description: "Your protocol has been analyzed with AI and historical CSR data."
+        setGeneratedContent({
+          recommendation: response.recommendation,
+          keySuggestions: response.keySuggestions || [],
+          riskFactors: response.riskFactors || [],
+          matchedCsrInsights: response.matchedCsrInsights || [],
+          suggestedEndpoints: response.suggestedEndpoints || [],
+          suggestedArms: response.suggestedArms || []
         });
       } else {
         toast({
           title: "Analysis Failed",
-          description: "Failed to analyze the protocol. Please try again.",
+          description: response.error || "Failed to analyze protocol. Please try again.",
           variant: "destructive"
         });
       }
     } catch (error) {
+      console.error("Protocol analysis error:", error);
       toast({
         title: "Error",
-        description: "An error occurred while analyzing the protocol.",
+        description: "An unexpected error occurred during analysis.",
         variant: "destructive"
       });
-      console.error(error);
     } finally {
-      setLoading(false);
+      setAnalyzeLoading(false);
     }
   };
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(recommendation);
-    toast({
-      title: "Copied to clipboard",
-      description: "Recommendation has been copied to clipboard."
-    });
-  };
-
-  const exportToPdf = () => {
-    const element = document.getElementById('recommendation-content');
-    if (!element) return;
+  // Export the recommendation as PDF
+  const exportPDF = () => {
+    if (!outputRef.current) return;
     
-    // Add current date to PDF
-    const now = new Date();
-    const dateStr = now.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-    
-    // Create a timestamp for the filename
-    const timestamp = now.toISOString().replace(/[:.]/g, '-').substring(0, 19);
-    
+    const content = outputRef.current;
     const opt = {
-      margin: 1,
-      filename: `protocol-optimization-report-${timestamp}.pdf`,
+      margin: 10,
+      filename: `protocol_optimization_${new Date().toISOString().split('T')[0]}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2 },
-      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+      jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }
     };
     
-    // Add report metadata
-    const footer = document.createElement('div');
-    footer.className = 'pdf-footer';
-    footer.innerHTML = `
-      <div style="margin-top: 20px; padding-top: 10px; border-top: 1px solid #e2e8f0; font-size: 10px; color: #64748b;">
-        <p>Generated on ${dateStr} • TrialSage Protocol Optimizer</p>
-        ${csrIds ? `<p>Referenced CSR IDs: ${csrIds}</p>` : ''}
-        <p>This report is generated based on AI analysis of historical clinical study reports. Professional clinical judgment is required for implementation.</p>
+    // Add TrialSage branding header
+    const header = document.createElement('div');
+    header.innerHTML = `
+      <div style="margin-bottom: 20px; text-align: center;">
+        <h1 style="color: #2563eb; margin-bottom: 5px;">TrialSage Protocol Optimization</h1>
+        <p style="color: #64748b; margin: 0;">Generated on ${new Date().toLocaleString()}</p>
+        <p style="color: #64748b; margin-top: 5px;">Indication: ${indication || 'Not specified'} | Phase: ${phase.replace('phase', 'Phase ') || 'Not specified'}</p>
       </div>
     `;
     
-    // Temporarily append footer to the content for PDF generation
-    const originalElement = element.cloneNode(true);
-    element.appendChild(footer);
-
-    html2pdf().set(opt).from(element).save().then(() => {
-      // Restore original element (remove footer)
-      element.innerHTML = originalElement.innerHTML;
-      
-      toast({
-        title: "PDF Export Complete",
-        description: "Your protocol optimization report has been exported as PDF."
+    content.prepend(header);
+    
+    // Generate PDF
+    html2pdf()
+      .set(opt)
+      .from(content)
+      .save()
+      .then(() => {
+        // Remove the temporary header after PDF generation
+        content.removeChild(header);
+        
+        toast({
+          title: "Export Complete",
+          description: "Protocol optimization report has been exported as PDF",
+        });
       });
-    });
   };
 
   // Save optimization to dossier
   const saveOptimizationToDossier = async () => {
-    if (!recommendation || !dossierId) {
+    if (!dossierId || !generatedContent) {
       toast({
         title: "Cannot Save",
-        description: "Please generate a recommendation first or ensure you're viewing from a dossier.",
+        description: dossierId ? "No optimization to save." : "No dossier selected.",
         variant: "destructive"
       });
       return;
     }
     
+    setSaveLoading(true);
+    
     try {
       const response = await apiRequest('POST', `/api/dossier/${dossierId}/save-optimization`, {
-        summary,
-        csr_ids: csrIds ? csrIds.split(',').map(id => id.trim()) : [],
-        recommendation
+        recommendation: generatedContent.recommendation,
+        protocolSummary,
+        csr_ids: generatedContent.matchedCsrInsights?.map(csr => csr.id) || []
       });
       
       if (response.saved) {
+        setSavedMessageVisible(true);
+        setVersionCount(response.version_count || 0);
+        
+        setTimeout(() => {
+          setSavedMessageVisible(false);
+        }, 3000);
+        
         toast({
-          title: "Optimization Saved",
-          description: `Saved to dossier with ${response.version_count} versions total.`,
+          title: "Saved Successfully",
+          description: "Optimization saved to dossier.",
         });
       } else {
-        throw new Error(response.error || "Failed to save optimization");
+        toast({
+          title: "Save Failed",
+          description: response.error || "Failed to save optimization.",
+          variant: "destructive"
+        });
       }
     } catch (error) {
-      console.error("Error saving optimization:", error);
+      console.error("Save error:", error);
       toast({
-        title: "Save Failed",
-        description: "Failed to save optimization to dossier.",
-        variant: "destructive",
+        title: "Error",
+        description: "An unexpected error occurred when saving.",
+        variant: "destructive"
       });
+    } finally {
+      setSaveLoading(false);
     }
   };
-  
-  // Get the dossierId from URL if available
-  const getDossierId = () => {
-    const params = new URLSearchParams(window.location.search);
-    return params.get('dossier_id');
-  };
-  
-  const dossierId = getDossierId();
-  
-  return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Protocol Optimizer</h1>
-          <p className="text-muted-foreground">
-            Enhance your clinical trial design with AI-powered insights from historical CSR data.
-          </p>
-        </div>
-        {dossierId && (
-          <Link to={`/dossier/${dossierId}`} className="flex items-center text-sm text-blue-600 hover:text-blue-800">
-            <ArrowRight className="w-4 h-4 mr-1 rotate-180" />
-            Back to Dossier
-          </Link>
-        )}
-      </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Protocol Information</CardTitle>
-            <CardDescription>
-              Enter your draft protocol details to receive optimization suggestions.
-            </CardDescription>
+  // Handle view dossier button click
+  const viewDossier = () => {
+    if (dossierId) {
+      window.location.href = `/dossier/${dossierId}`;
+    }
+  };
+
+  return (
+    <div className="p-6 max-w-7xl mx-auto">
+      <h1 className="text-3xl font-bold text-blue-700 mb-2">Protocol Optimizer</h1>
+      <p className="text-gray-600 mb-6">
+        Enter your protocol summary and our AI will provide optimization suggestions based on
+        successful clinical study reports.
+      </p>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="overflow-hidden">
+          <CardHeader className="pb-3">
+            <CardTitle>Protocol Input</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
-              <label className="text-sm font-medium mb-1 block">Protocol Summary</label>
-              <Textarea 
-                value={summary}
-                onChange={(e) => setSummary(e.target.value)}
-                placeholder="Describe your trial design, endpoints, inclusion/exclusion criteria..."
-                rows={6}
+            {dossierId && (
+              <div className="bg-blue-50 p-3 rounded-md border border-blue-200 mb-2">
+                <p className="text-sm text-blue-700 flex items-center">
+                  <BookCopy className="h-4 w-4 mr-2" />
+                  Optimization will be saved to Dossier ID: {dossierId.slice(0, 8)}...
+                </p>
+              </div>
+            )}
+            
+            <div className="space-y-2">
+              <Label htmlFor="indication">Indication/Condition</Label>
+              <Input 
+                id="indication" 
+                placeholder="e.g., Type 2 Diabetes, Breast Cancer, etc." 
+                value={indication}
+                onChange={(e) => setIndication(e.target.value)}
               />
             </div>
             
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium mb-1 block">Indication</label>
-                <Input 
-                  value={indication}
-                  onChange={(e) => setIndication(e.target.value)}
-                  placeholder="e.g., Breast Cancer"
-                />
+                <Label htmlFor="phase">Study Phase</Label>
+                <Select value={phase} onValueChange={setPhase}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select phase" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="phase1">Phase 1</SelectItem>
+                    <SelectItem value="phase2">Phase 2</SelectItem>
+                    <SelectItem value="phase3">Phase 3</SelectItem>
+                    <SelectItem value="phase4">Phase 4</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
+              
               <div>
-                <label className="text-sm font-medium mb-1 block">Phase</label>
-                <Input 
-                  value={phase}
-                  onChange={(e) => setPhase(e.target.value)}
-                  placeholder="e.g., Phase 2"
-                />
+                <Label htmlFor="studyType">Study Design</Label>
+                <Select value={studyType} onValueChange={setStudyType}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select study type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="rct">Randomized Controlled Trial</SelectItem>
+                    <SelectItem value="observational">Observational Study</SelectItem>
+                    <SelectItem value="singleArm">Single Arm Study</SelectItem>
+                    <SelectItem value="crossover">Crossover Study</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             
-            <div>
-              <label className="text-sm font-medium mb-1 block">Reference CSR IDs (Optional)</label>
-              <Input 
-                value={csrIds}
-                onChange={(e) => setCsrIds(e.target.value)}
-                placeholder="Enter CSR IDs (comma-separated)"
+            <div className="space-y-2">
+              <Label htmlFor="protocolSummary">Protocol Summary</Label>
+              <Textarea 
+                id="protocolSummary" 
+                placeholder="Enter your protocol summary or design here..."
+                className="min-h-[200px]"
+                value={protocolSummary}
+                onChange={(e) => setProtocolSummary(e.target.value)}
               />
-              <p className="text-xs text-muted-foreground mt-1">
-                Include specific CSR IDs for more targeted recommendations.
-              </p>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="includeReferences" 
+                checked={includeReferences}
+                onCheckedChange={(checked) => setIncludeReferences(checked as boolean)}
+              />
+              <Label htmlFor="includeReferences">Include references to regulatory guidelines</Label>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="useSimilarTrials" 
+                checked={useSimilarTrials}
+                onCheckedChange={(checked) => setUseSimilarTrials(checked as boolean)}
+              />
+              <Label htmlFor="useSimilarTrials">Find and use similar trials</Label>
             </div>
             
             <Button 
-              onClick={handleSubmit} 
-              disabled={loading || !summary} 
-              className="w-full"
+              className="w-full bg-blue-600 hover:bg-blue-700"
+              disabled={analyzeLoading}
+              onClick={analyzeProtocol}
             >
-              {loading ? (
+              {analyzeLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Analyzing Protocol...
+                  Analyzing...
                 </>
               ) : (
                 <>
+                  <ArrowRight className="mr-2 h-4 w-4" />
                   Optimize Protocol
-                  <ArrowRight className="ml-2 h-4 w-4" />
                 </>
               )}
             </Button>
           </CardContent>
         </Card>
-
-        {recommendation ? (
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <div>
-                <CardTitle>Optimization Results</CardTitle>
-                <CardDescription>
-                  AI-powered recommendations based on historical CSR data
-                </CardDescription>
-              </div>
-              <div className="flex space-x-2">
-                <Button size="sm" variant="outline" onClick={copyToClipboard}>
-                  <Copy className="h-4 w-4 mr-1" />
-                  Copy
-                </Button>
-                <Button size="sm" variant="outline" onClick={exportToPdf}>
-                  <Download className="h-4 w-4 mr-1" />
-                  Export PDF
-                </Button>
-                {dossierId && (
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    className="bg-green-50 text-green-700 hover:bg-green-100 border-green-200"
-                    onClick={saveOptimizationToDossier}
-                  >
-                    <FileText className="h-4 w-4 mr-1" />
-                    Save to Dossier
-                  </Button>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent>
-              <Tabs defaultValue="structured" className="w-full">
-                <TabsList className="w-full grid grid-cols-2">
-                  <TabsTrigger value="structured">Structured View</TabsTrigger>
-                  <TabsTrigger value="full">Full Analysis</TabsTrigger>
-                </TabsList>
-                <TabsContent value="structured" className="space-y-4">
-                  <div id="recommendation-content" className="p-6 border rounded-md space-y-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center">
-                        <div className="text-4xl font-bold text-blue-600 mr-3">TS</div>
-                        <div>
-                          <h2 className="text-lg font-semibold">TrialSage</h2>
-                          <p className="text-xs text-muted-foreground">Protocol Optimizer</p>
+        
+        <div className="space-y-6">
+          {generatedContent ? (
+            <>
+              <Card className="overflow-hidden">
+                <CardHeader className="pb-3">
+                  <div className="flex justify-between items-center">
+                    <CardTitle>Optimization Results</CardTitle>
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={exportPDF}
+                      >
+                        <FileDown className="h-4 w-4 mr-2" />
+                        Export PDF
+                      </Button>
+                      
+                      {dossierId && (
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={saveOptimizationToDossier}
+                          disabled={saveLoading}
+                        >
+                          {saveLoading ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Save className="h-4 w-4 mr-2" />
+                          )}
+                          Save to Dossier
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {savedMessageVisible && (
+                    <div className="mb-4 p-2 bg-green-50 border border-green-200 rounded-md text-sm text-green-700 flex items-center">
+                      <PlusCircle className="h-4 w-4 mr-2" />
+                      Saved successfully as version {versionCount}
+                      <Button 
+                        variant="link" 
+                        className="ml-auto text-blue-600 p-0 h-auto" 
+                        onClick={viewDossier}
+                      >
+                        View Dossier
+                      </Button>
+                    </div>
+                  )}
+                  
+                  <div ref={outputRef}>
+                    <Tabs defaultValue="recommendations">
+                      <TabsList className="mb-4">
+                        <TabsTrigger value="recommendations">Recommendations</TabsTrigger>
+                        <TabsTrigger value="key-points">Key Points</TabsTrigger>
+                        <TabsTrigger value="references">Similar Trials</TabsTrigger>
+                      </TabsList>
+                      
+                      <TabsContent value="recommendations" className="space-y-4">
+                        <div className="whitespace-pre-wrap p-4 border rounded-md bg-white">
+                          {generatedContent.recommendation}
                         </div>
-                      </div>
-                      <div className="text-right text-sm">
-                        <p className="font-bold">Optimization Report</p>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date().toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                          })}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-center border-t border-b py-4 my-4">
-                      <h2 className="text-xl font-bold">Protocol Optimization Report</h2>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        Based on analysis of historical clinical study reports
-                      </p>
-                      <div className="flex justify-center space-x-4 text-sm">
-                        {indication && (
-                          <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded">
-                            {indication}
-                          </span>
-                        )}
-                        {phase && (
-                          <span className="bg-green-50 text-green-700 px-2 py-1 rounded">
-                            {phase}
-                          </span>
-                        )}
-                        {csrIds && (
-                          <span className="bg-purple-50 text-purple-700 px-2 py-1 rounded">
-                            {csrIds.split(',').length} CSR References
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    {keySuggestions.length > 0 && (
-                      <div>
-                        <h3 className="font-semibold text-blue-800 border-b pb-1 mb-2">
-                          Key Design Suggestions
-                        </h3>
-                        <ul className="list-disc pl-5 space-y-1">
-                          {keySuggestions.map((suggestion, idx) => (
-                            <li key={idx}>{suggestion}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-
-                    {riskFactors.length > 0 && (
-                      <div>
-                        <h3 className="font-semibold text-red-800 border-b pb-1 mb-2">
-                          Risk Factors
-                        </h3>
-                        <ul className="list-disc pl-5 space-y-1">
-                          {riskFactors.map((risk, idx) => (
-                            <li key={idx}>{risk}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-
-                    {matchedCsrInsights.length > 0 && (
-                      <div>
-                        <h3 className="font-semibold text-purple-800 border-b pb-1 mb-2">
-                          Matched CSR Insights
-                        </h3>
-                        <ul className="space-y-2">
-                          {matchedCsrInsights.map((insight, idx) => (
-                            <li key={idx} className="flex">
-                              <span className="font-medium mr-2">{insight.csrId}:</span>
-                              <span>{insight.relevance}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-
-                    {suggestedEndpoints.length > 0 && (
-                      <div>
-                        <h3 className="font-semibold text-green-800 border-b pb-1 mb-2">
-                          Suggested Endpoints
-                        </h3>
-                        <ul className="list-disc pl-5 space-y-1">
-                          {suggestedEndpoints.map((endpoint, idx) => (
-                            <li key={idx}>{endpoint}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-
-                    {suggestedArms.length > 0 && (
-                      <div>
-                        <h3 className="font-semibold text-amber-800 border-b pb-1 mb-2">
-                          Suggested Trial Arms
-                        </h3>
-                        <ul className="list-disc pl-5 space-y-1">
-                          {suggestedArms.map((arm, idx) => (
-                            <li key={idx}>{arm}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
+                      </TabsContent>
+                      
+                      <TabsContent value="key-points" className="space-y-4">
+                        <div className="space-y-4">
+                          <div>
+                            <h3 className="text-md font-semibold mb-2">Suggested Endpoints</h3>
+                            <ul className="list-disc pl-5 space-y-1">
+                              {generatedContent.suggestedEndpoints?.map((item, i) => (
+                                <li key={i} className="text-sm">{item}</li>
+                              ))}
+                            </ul>
+                          </div>
+                          
+                          <div>
+                            <h3 className="text-md font-semibold mb-2">Suggested Treatment Arms</h3>
+                            <ul className="list-disc pl-5 space-y-1">
+                              {generatedContent.suggestedArms?.map((item, i) => (
+                                <li key={i} className="text-sm">{item}</li>
+                              ))}
+                            </ul>
+                          </div>
+                          
+                          <div>
+                            <h3 className="text-md font-semibold mb-2">Key Suggestions</h3>
+                            <ul className="list-disc pl-5 space-y-1">
+                              {generatedContent.keySuggestions?.map((item, i) => (
+                                <li key={i} className="text-sm">{item}</li>
+                              ))}
+                            </ul>
+                          </div>
+                          
+                          <div>
+                            <h3 className="text-md font-semibold text-amber-700 mb-2">Risk Factors</h3>
+                            <ul className="list-disc pl-5 space-y-1">
+                              {generatedContent.riskFactors?.map((item, i) => (
+                                <li key={i} className="text-sm text-amber-700">{item}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                      </TabsContent>
+                      
+                      <TabsContent value="references" className="space-y-4">
+                        <div className="space-y-4">
+                          {generatedContent.matchedCsrInsights?.length > 0 ? (
+                            generatedContent.matchedCsrInsights.map((csr, i) => (
+                              <div key={i} className="p-3 border rounded-md">
+                                <h3 className="font-medium">{csr.title}</h3>
+                                <p className="text-sm text-gray-600">Phase: {csr.phase} | Indication: {csr.indication}</p>
+                                <p className="text-sm mt-2">{csr.insight || 'No specific insights available'}</p>
+                              </div>
+                            ))
+                          ) : (
+                            <p className="text-gray-500 italic">No similar trials found</p>
+                          )}
+                        </div>
+                      </TabsContent>
+                    </Tabs>
                   </div>
-                </TabsContent>
-                <TabsContent value="full">
-                  <div className="p-4 border rounded-md">
-                    <pre className="whitespace-pre-wrap text-sm">
-                      {recommendation}
-                    </pre>
-                  </div>
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
-        ) : (
-          <Card>
-            <CardHeader>
-              <CardTitle>Optimization Results</CardTitle>
-              <CardDescription>
-                Submit your protocol to see AI-powered recommendations
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="min-h-[200px] flex items-center justify-center">
-              <div className="text-center text-muted-foreground">
-                <p>Protocol analysis results will appear here</p>
-                <p className="text-sm mt-2">
-                  The AI will analyze your protocol and provide suggestions based on historical CSR data
+                </CardContent>
+              </Card>
+            </>
+          ) : (
+            <Card>
+              <CardContent className="p-10 flex flex-col items-center justify-center text-center h-[400px]">
+                <FileText className="h-16 w-16 text-gray-300 mb-4" />
+                <h3 className="text-xl font-semibold text-gray-700">No Optimization Results Yet</h3>
+                <p className="text-gray-500 mt-2 max-w-md">
+                  Enter your protocol details and click "Optimize Protocol" to receive AI-powered recommendations.
                 </p>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </div>
     </div>
   );
