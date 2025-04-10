@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1425",
+  "title": "A Randomized Open-Label, Placebo-Controlled Multi-Center Study of PSO-602 (phosphodiesterase-4 inhibitor) in Patients With Multiple Sclerosis",
+  "officialTitle": "A Randomized Open-Label, Placebo-Controlled Multi-Center Study of PSO-602 (phosphodiesterase-4 inhibitor) in Patients With Multiple Sclerosis",
+  "sponsor": "Alberta Health Services",
+  "indication": "Multiple Sclerosis",
+  "phase": "Phase 2/Phase 3",
+  "fileName": "HC-1425.json",
+  "fileSize": 420103,
+  "date": "2023-10-13",
+  "completionDate": "2026-09-03",
+  "drugName": "PSO-602 (phosphodiesterase-4 inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Terminated",
+  "description": "This is a randomized open-label, placebo-controlled multi-center study designed to evaluate the efficacy and safety of PSO-602 (phosphodiesterase-4 inhibitor) in patients with Multiple Sclerosis. The study will enroll approximately 239 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 25-76 years\n- Confirmed diagnosis of Multiple Sclerosis\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1398",
+  "title": "A Randomized Double-Blind, Active-Controlled  Study of MEL-802 (checkpoint inhibitor) in Patients With Irritable Bowel Syndrome",
+  "officialTitle": "A Randomized Double-Blind, Active-Controlled  Study of MEL-802 (checkpoint inhibitor) in Patients With Irritable Bowel Syndrome",
+  "sponsor": "McGill University Health Center",
+  "indication": "Irritable Bowel Syndrome",
+  "phase": "Phase 2/Phase 3",
+  "fileName": "HC-1398.json",
+  "fileSize": 239336,
+  "date": "2023-11-05",
+  "completionDate": "2026-09-01",
+  "drugName": "MEL-802 (checkpoint inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Active, not recruiting",
+  "description": "This is a randomized double-blind, active-controlled  study designed to evaluate the efficacy and safety of MEL-802 (checkpoint inhibitor) in patients with Irritable Bowel Syndrome. The study will enroll approximately 545 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 19-79 years\n- Confirmed diagnosis of Irritable Bowel Syndrome\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

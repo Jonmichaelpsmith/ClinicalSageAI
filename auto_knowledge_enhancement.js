@@ -488,8 +488,9 @@ async function setupAutomatedUpdates() {
   }
 }
 
-// Run the setup
-if (require.main === module) {
+// Run the setup when file is executed directly (ES module version)
+const isMainModule = import.meta.url === `file://${process.argv[1]}`;
+if (isMainModule) {
   setupAutomatedUpdates()
     .then(result => {
       console.log('Setup result:', result);

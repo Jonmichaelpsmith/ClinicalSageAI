@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1421",
+  "title": "A  Double-Blind, Active-Controlled  Study of LUP-223 (calcineurin inhibitor) in Patients With Cystic Fibrosis",
+  "officialTitle": "A  Double-Blind, Active-Controlled  Study of LUP-223 (calcineurin inhibitor) in Patients With Cystic Fibrosis",
+  "sponsor": "SickKids Research Institute",
+  "indication": "Cystic Fibrosis",
+  "phase": "Phase 2",
+  "fileName": "HC-1421.json",
+  "fileSize": 402602,
+  "date": "2025-02-01",
+  "completionDate": "2029-03-20",
+  "drugName": "LUP-223 (calcineurin inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Completed",
+  "description": "This is a  double-blind, active-controlled  study designed to evaluate the efficacy and safety of LUP-223 (calcineurin inhibitor) in patients with Cystic Fibrosis. The study will enroll approximately 465 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 24-64 years\n- Confirmed diagnosis of Cystic Fibrosis\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

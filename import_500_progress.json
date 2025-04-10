@@ -1,0 +1,8 @@
+{
+  "targetBatches": 10,
+  "batchesProcessed": 0,
+  "startTimestamp": "2025-04-10T20:06:37.386Z",
+  "lastBatchTimestamp": null,
+  "status": "in_progress",
+  "errors": []
+}

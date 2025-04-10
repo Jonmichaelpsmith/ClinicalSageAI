@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1401",
+  "title": "A Randomized Open-Label, Placebo-Controlled  Study of PRO-108 (androgen receptor antagonist) in Patients With Psoriasis",
+  "officialTitle": "A Randomized Open-Label, Placebo-Controlled  Study of PRO-108 (androgen receptor antagonist) in Patients With Psoriasis",
+  "sponsor": "University of Calgary",
+  "indication": "Psoriasis",
+  "phase": "Phase 2/Phase 3",
+  "fileName": "HC-1401.json",
+  "fileSize": 417001,
+  "date": "2023-12-26",
+  "completionDate": "2027-10-03",
+  "drugName": "PRO-108 (androgen receptor antagonist)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Withdrawn",
+  "description": "This is a randomized open-label, placebo-controlled  study designed to evaluate the efficacy and safety of PRO-108 (androgen receptor antagonist) in patients with Psoriasis. The study will enroll approximately 417 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 19-81 years\n- Confirmed diagnosis of Psoriasis\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

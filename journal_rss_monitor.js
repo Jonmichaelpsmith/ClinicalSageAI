@@ -449,8 +449,9 @@ async function runJournalMonitor() {
   }
 }
 
-// Run the monitor
-if (require.main === module) {
+// Run the monitor when file is executed directly (ES module version)
+const isMainModule = import.meta.url === `file://${process.argv[1]}`;
+if (isMainModule) {
   runJournalMonitor()
     .then(result => {
       console.log('Journal monitoring complete:', result);

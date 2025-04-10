@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1391",
+  "title": "A Randomized Double-Blind, Active-Controlled Multi-Center Study of CDN-468 (integrin inhibitor) in Patients With Systemic Lupus Erythematosus",
+  "officialTitle": "A Randomized Double-Blind, Active-Controlled Multi-Center Study of CDN-468 (integrin inhibitor) in Patients With Systemic Lupus Erythematosus",
+  "sponsor": "BC Cancer Agency",
+  "indication": "Systemic Lupus Erythematosus",
+  "phase": "Phase 3",
+  "fileName": "HC-1391.json",
+  "fileSize": 206072,
+  "date": "2023-06-16",
+  "completionDate": "2027-09-01",
+  "drugName": "CDN-468 (integrin inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Terminated",
+  "description": "This is a randomized double-blind, active-controlled multi-center study designed to evaluate the efficacy and safety of CDN-468 (integrin inhibitor) in patients with Systemic Lupus Erythematosus. The study will enroll approximately 404 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 19-78 years\n- Confirmed diagnosis of Systemic Lupus Erythematosus\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n- Active disease defined by standard criteria\n- Inadequate response to conventional therapy\n- Positive serology (if applicable)\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment\n- Active infection including tuberculosis\n- History of recurrent serious infections\n- Concurrent autoimmune disease other than study indication"
+}

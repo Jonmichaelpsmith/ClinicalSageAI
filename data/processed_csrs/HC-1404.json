@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1404",
+  "title": "A Randomized Double-Blind, Active-Controlled  Study of DRM-581 (IL-17 inhibitor) in Patients With Pancreatic Cancer",
+  "officialTitle": "A Randomized Double-Blind, Active-Controlled  Study of DRM-581 (IL-17 inhibitor) in Patients With Pancreatic Cancer",
+  "sponsor": "Dalhousie University",
+  "indication": "Pancreatic Cancer",
+  "phase": "Phase 3",
+  "fileName": "HC-1404.json",
+  "fileSize": 505836,
+  "date": "2025-03-19",
+  "completionDate": "2027-05-21",
+  "drugName": "DRM-581 (IL-17 inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Completed",
+  "description": "This is a randomized double-blind, active-controlled  study designed to evaluate the efficacy and safety of DRM-581 (IL-17 inhibitor) in patients with Pancreatic Cancer. The study will enroll approximately 270 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 23-68 years\n- Confirmed diagnosis of Pancreatic Cancer\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n- Measurable disease per RECIST v1.1\n- Prior treatment with standard therapy\n- Life expectancy ≥3 months\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment\n- Brain metastases unless treated and stable\n- Prior treatment with similar mechanism of action\n- Other active malignancy requiring treatment"
+}

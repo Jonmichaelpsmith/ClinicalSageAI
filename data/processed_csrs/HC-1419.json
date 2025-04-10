@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1419",
+  "title": "A Randomized Double-Blind, Placebo-Controlled Multi-Center Study of DRM-581 (IL-17 inhibitor) in Patients With Type 2 Diabetes",
+  "officialTitle": "A Randomized Double-Blind, Placebo-Controlled Multi-Center Study of DRM-581 (IL-17 inhibitor) in Patients With Type 2 Diabetes",
+  "sponsor": "SickKids Research Institute",
+  "indication": "Type 2 Diabetes",
+  "phase": "Phase 2",
+  "fileName": "HC-1419.json",
+  "fileSize": 307609,
+  "date": "2023-12-04",
+  "completionDate": "2028-04-26",
+  "drugName": "DRM-581 (IL-17 inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Terminated",
+  "description": "This is a randomized double-blind, placebo-controlled multi-center study designed to evaluate the efficacy and safety of DRM-581 (IL-17 inhibitor) in patients with Type 2 Diabetes. The study will enroll approximately 532 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 25-72 years\n- Confirmed diagnosis of Type 2 Diabetes\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n- HbA1c between 7.0% and 10.0%\n- Body mass index (BMI) between 25 and 40 kg/m²\n- On stable antidiabetic medication for ≥3 months\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment\n- History of severe hypoglycemia within past 6 months\n- Estimated GFR <45 mL/min/1.73m²\n- History of diabetic ketoacidosis"
+}
