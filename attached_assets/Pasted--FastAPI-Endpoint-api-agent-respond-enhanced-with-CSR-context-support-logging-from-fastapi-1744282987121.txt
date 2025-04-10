@@ -1,0 +1,72 @@
+# FastAPI Endpoint: /api/agent/respond (enhanced with CSR context support + logging)
+
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+import os
+import requests
+import json
+import datetime
+
+router = APIRouter()
+
+HF_API_KEY = os.getenv("HF_API_KEY")
+HF_MODEL_URL = "https://api-inference.huggingface.co/models/mistralai/Mixtral-8x7B-Instruct-v0.1"
+HEADERS = {"Authorization": f"Bearer {HF_API_KEY}"}
+LOG_FILE = "data/agent_logs.jsonl"
+
+class AgentRequest(BaseModel):
+    message: str
+    csr_ids: list[str] = []
+
+@router.post("/api/agent/respond")
+def agent_respond(payload: AgentRequest):
+    if not HF_API_KEY:
+        raise HTTPException(status_code=500, detail="Missing Hugging Face API key")
+
+    context_blocks = []
+    for csr_id in payload.csr_ids:
+        try:
+            with open(f"data/processed_csrs/{csr_id}.json", "r") as f:
+                csr = json.load(f)
+                summary = csr.get('vector_summary', '')
+                if summary:
+                    context_blocks.append(f"[{csr_id}] {summary}")
+        except Exception:
+            continue
+
+    context_text = "\n\nRelevant CSR Insights:\n" + "\n".join(context_blocks) if context_blocks else ""
+
+    prompt = f"""
+You are TrialSage, an AI trained on thousands of successful Clinical Study Reports (CSRs).
+Your job is to help clinical teams improve their trial design based on precedent.
+
+{payload.message}
+{context_text}
+
+Respond with study design recommendations, endpoint suggestions, and regulatory considerations.
+"""
+
+    response = requests.post(
+        HF_MODEL_URL,
+        headers=HEADERS,
+        json={"inputs": prompt, "parameters": {"max_new_tokens": 500, "temperature": 0.4}}
+    )
+
+    try:
+        result = response.json()
+        reply = result[0]["generated_text"].strip()
+
+        # Log Q&A
+        log_entry = {
+            "timestamp": datetime.datetime.now().isoformat(),
+            "message": payload.message,
+            "csr_ids": payload.csr_ids,
+            "response": reply
+        }
+        os.makedirs("data", exist_ok=True)
+        with open(LOG_FILE, "a") as log_file:
+            log_file.write(json.dumps(log_entry) + "\n")
+
+        return {"response": reply}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Agent error: {e}")
