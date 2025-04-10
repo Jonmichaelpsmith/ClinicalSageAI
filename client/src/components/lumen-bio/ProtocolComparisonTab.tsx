@@ -24,7 +24,8 @@ import {
   ListChecks,
   Users,
   Clock,
-  Download
+  Download,
+  FileText
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -434,9 +435,38 @@ const ProtocolComparisonTab: React.FC<ProtocolComparisonTabProps> = ({ protocolT
         </TabsContent>
       </Tabs>
       
-      <div className="flex justify-between mt-6">
-        <Button variant="outline">Save to Dossier</Button>
-        <Button>Apply Selected Recommendations</Button>
+      <div className="flex flex-wrap gap-2 justify-between mt-6">
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            onClick={() => apiRequest("POST", "/api/protocol/save-version", {
+              protocol_id: "obesity_wt02_v1",
+              version_text: protocolText,
+              source: "Manual Save"
+            })}
+          >
+            Save to Dossier
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={handleExportPDF}
+            className="flex items-center gap-1"
+          >
+            <FileText className="h-4 w-4" />
+            Export to PDF
+          </Button>
+        </div>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline"
+            onClick={handlePromoteVersion}
+            className="flex items-center gap-1"
+          >
+            <CheckCircle className="h-4 w-4" />
+            Promote to Active
+          </Button>
+          <Button>Apply Selected Recommendations</Button>
+        </div>
       </div>
     </div>
   );

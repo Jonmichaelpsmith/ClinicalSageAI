@@ -244,6 +244,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   if (!fs.existsSync(dossiersDir)) {
     fs.mkdirSync(dossiersDir, { recursive: true });
   }
+
+  // Create exports directory if it doesn't exist
+  const exportsDir = path.join(process.cwd(), 'data/exports');
+  if (!fs.existsSync(exportsDir)) {
+    fs.mkdirSync(exportsDir, { recursive: true });
+  }
   
   // Dossier-related API endpoints
   app.post('/api/dossier/:dossier_id/update-notes', async (req: Request, res: Response) => {
