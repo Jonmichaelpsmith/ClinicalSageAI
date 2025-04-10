@@ -1,0 +1,75 @@
+// React Component: StudyDesignAgent.jsx (with message memory and optional CSR context)
+
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+
+export default function StudyDesignAgent() {
+  const [messages, setMessages] = useState([
+    { role: 'agent', text: "👋 Hello! I'm the TrialSage Study Design Agent. I can help you design clinical trials based on insights from historical CSRs. What questions do you have about your trial design?" }
+  ]);
+  const [input, setInput] = useState('');
+  const [csrIds, setCsrIds] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const sendMessage = async () => {
+    if (!input.trim()) return;
+    const newMessage = { role: 'user', text: input };
+    const contextMessages = messages.slice(-4).map(m => `${m.role === 'user' ? 'User' : 'Agent'}: ${m.text}`).join('\n');
+
+    setMessages(prev => [...prev, newMessage]);
+    setInput('');
+    setLoading(true);
+
+    try {
+      const response = await fetch('/api/agent/respond', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: `${contextMessages}\nUser: ${input}`,
+          csr_ids: csrIds.split(',').map(id => id.trim()).filter(Boolean)
+        })
+      });
+      const data = await response.json();
+      setMessages(prev => [...prev, { role: 'agent', text: data.response }]);
+    } catch (err) {
+      setMessages(prev => [...prev, { role: 'agent', text: '[Error processing your request]' }]);
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="p-6 max-w-3xl mx-auto space-y-4">
+      <h2 className="text-xl font-bold text-blue-800">💬 Study Design Agent</h2>
+
+      <div className="bg-white border rounded p-4 h-[400px] overflow-y-auto space-y-2">
+        {messages.map((m, i) => (
+          <div key={i} className={`text-sm p-2 rounded ${m.role === 'agent' ? 'bg-gray-100 text-gray-800' : 'bg-blue-100 text-blue-800 text-right'}`}>
+            {m.text}
+          </div>
+        ))}
+      </div>
+
+      <div className="flex gap-2">
+        <Textarea
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Ask about study design, endpoints, sample size, etc."
+          rows={2}
+          className="flex-1"
+        />
+        <Button onClick={sendMessage} disabled={loading}>
+          {loading ? 'Sending...' : 'Send'}
+        </Button>
+      </div>
+
+      <div className="pt-2">
+        <label className="text-sm text-gray-600 font-medium">Optional: CSR IDs for context (comma-separated)</label>
+        <Input value={csrIds} onChange={(e) => setCsrIds(e.target.value)} placeholder="e.g., CSR001, CSR002" />
+      </div>
+
+      <p className="text-xs text-gray-500">Study Design Agent provides recommendations based on historical CSR analysis. Always consult with regulatory experts.</p>
+    </div>
+  );
+}

@@ -17,6 +17,7 @@ import { SagePlusService } from "./sage-plus-service";
 import { csrTrainingService } from "./csr-training-service";
 import { processResearchQuery } from "./research-companion-service";
 import { optimizeProtocol } from "./protocol-optimizer-service";
+import { studyDesignAgentService } from "./agent-service";
 import { 
   fetchClinicalTrialData, 
   importTrialsFromCsv, 
