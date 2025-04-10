@@ -15,6 +15,7 @@ import { generateProtocolTemplate, getStatisticalApproaches } from "./protocol-s
 import { huggingFaceService, queryHuggingFace, HFModel } from "./huggingface-service";
 import { SagePlusService } from "./sage-plus-service";
 import { csrTrainingService } from "./csr-training-service";
+import { processResearchQuery } from "./research-companion-service";
 import { 
   fetchClinicalTrialData, 
   importTrialsFromCsv, 
