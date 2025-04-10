@@ -18,7 +18,7 @@ import { csrTrainingService } from "./csr-training-service";
 import { processResearchQuery } from "./research-companion-service";
 import { optimizeProtocol } from "./protocol-optimizer-service";
 import { studyDesignAgentService } from "./agent-service";
-import { getEndpointRecommendations, type EndpointSearchParams } from "./services/endpoint-recommender-service";
+import { getEndpointRecommenderService } from "./services/endpoint-recommender-service";
 import { 
   fetchClinicalTrialData, 
   importTrialsFromCsv, 
