@@ -20,7 +20,7 @@ const pool = new pg.Pool({
 
 // Configuration
 const BATCH_SIZE = 50;         // Batch size of 50 as requested
-const TARGET_TOTAL = 2000;     // Target for total CSRs from Health Canada
+const TARGET_TOTAL = 4000;     // Target for total CSRs from Health Canada
 const PHASES = ['Phase 1', 'Phase 1/Phase 2', 'Phase 2', 'Phase 2/Phase 3', 'Phase 3', 'Phase 4'];
 const STATUSES = ['Recruiting', 'Active, not recruiting', 'Completed', 'Terminated', 'Withdrawn', 'Not yet recruiting'];
 

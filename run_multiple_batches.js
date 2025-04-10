@@ -15,7 +15,7 @@ const execPromise = util.promisify(exec);
 const TRACKING_FILE = 'micro_batch_progress.json';
 const BATCH_SIZE = 50;
 const BATCH_DELAY_SECONDS = 3;
-const TARGET_TOTAL = 2000;
+const TARGET_TOTAL = 4000;
 
 // Get tracking data
 function getTrackingData() {
