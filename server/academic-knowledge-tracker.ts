@@ -276,10 +276,10 @@ export class AcademicKnowledgeTracker {
   async getStats(): Promise<any> {
     const totalResources = await db.select({ count: academicResources.id }).from(academicResources);
     
-    // Get stats by resource type
+    // Get stats by resource type - using COUNT aggregation function to fix the SQL error
     const resourceTypes = await db.select({ 
       type: academicResources.resourceType,
-      count: academicResources.id
+      count: db.fn.count(academicResources.id)
     })
     .from(academicResources)
     .groupBy(academicResources.resourceType);
