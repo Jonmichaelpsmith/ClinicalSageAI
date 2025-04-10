@@ -4,6 +4,13 @@ import { Link } from 'wouter';
 
 const features = [
   {
+    title: '🧬 Study Design Agent (Beta)',
+    description: 'Chat with our flagship AI agent trained on 5,000+ CSR trials to refine your study design, reduce risk, and align with regulatory precedent.',
+    action: 'Launch Study Agent',
+    path: '/study-design-agent',
+    highlight: true
+  },
+  {
     title: '📄 Structured Extraction',
     description: 'Extract endpoints, populations, outcomes, and safety profiles from CSR PDFs using AI.',
     action: 'Upload a CSR',
@@ -22,12 +29,6 @@ const features = [
     path: '/dashboard',
   },
   {
-    title: '📚 Study Design Agent',
-    description: 'Ask our AI agent for guidance on trial structure and risk.',
-    action: 'Ask the Agent',
-    path: '/study-design-agent',
-  },
-  {
     title: '📈 Statistical Modeling',
     description: 'Forecast success, identify risks, and simulate virtual trials.',
     action: 'Run Simulation',
@@ -35,7 +36,7 @@ const features = [
   },
   {
     title: '🔎 Clean UI & Search',
-    description: 'Explore and filter CSR trials with a user-friendly interface.',
+    description: 'Explore and filter 1,900+ CSR trials with a user-friendly interface.',
     action: 'Search CSRs',
     path: '/reports',
   },
@@ -50,7 +51,7 @@ export default function HomeFeatures() {
             Powerful CSR Intelligence
           </div>
           <h2 className="text-3xl font-bold text-center bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-transparent">
-            🧬 Key Capabilities of TrialSage
+            Key Capabilities of TrialSage
           </h2>
           <p className="max-w-2xl text-slate-600 text-lg">
             Transform your clinical trial design with data-driven insights from our comprehensive CSR platform
@@ -59,13 +60,28 @@ export default function HomeFeatures() {
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((f, i) => (
-            <Card key={i} className="hover:shadow-xl transition border border-slate-200 dark:border-slate-700 hover:border-blue-200 dark:hover:border-blue-900 rounded-xl overflow-hidden">
+            <Card 
+              key={i} 
+              className={`hover:shadow-xl transition border dark:border-slate-700 rounded-xl overflow-hidden
+                ${f.highlight 
+                  ? 'border-2 border-blue-600 shadow-md bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 dark:border-blue-600/40' 
+                  : 'border-slate-200 hover:border-blue-200 dark:hover:border-blue-900/40'}
+              `}
+            >
               <CardContent className="space-y-4 p-6 pt-5">
-                <h3 className="text-xl font-semibold text-slate-800 dark:text-white">{f.title}</h3>
+                <h3 className={`text-xl font-semibold ${f.highlight ? 'text-blue-700 dark:text-blue-400' : 'text-slate-800 dark:text-white'}`}>
+                  {f.title}
+                </h3>
                 <p className="text-slate-600 dark:text-slate-400">{f.description}</p>
                 <div className="pt-2">
                   <Link href={f.path}>
-                    <Button size="sm" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium">
+                    <Button 
+                      size="sm" 
+                      className={f.highlight 
+                        ? "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium shadow-sm"
+                        : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium"
+                      }
+                    >
                       {f.action}
                     </Button>
                   </Link>
