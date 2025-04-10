@@ -10,7 +10,7 @@
     "CSR003"
   ],
   "notes": {
-    "CSR001": "Agree with assessment. Also notable for clear efficacy endpoints."
+    "CSR001": "Attempting to update a locked CSR."
   },
   "note_history": {
     "CSR001": [
@@ -23,6 +23,16 @@
         "user": "reviewer1",
         "comment": "Agree with assessment. Also notable for clear efficacy endpoints.",
         "timestamp": "2025-04-10T05:00:13.550Z"
+      },
+      {
+        "user": "late_reviewer",
+        "comment": "Attempting to update a locked CSR.",
+        "timestamp": "2025-04-10T05:03:01.389Z"
+      },
+      {
+        "user": "late_reviewer",
+        "comment": "Attempting to update a locked CSR.",
+        "timestamp": "2025-04-10T05:04:08.830Z"
       }
     ]
   },

@@ -269,9 +269,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         dossierData.note_history = {};
       }
       
+      // Initialize locked_csrs if it doesn't exist
+      if (!dossierData.locked_csrs) {
+        dossierData.locked_csrs = [];
+      }
+      
+      const lockedCsrs = dossierData.locked_csrs || [];
+      const rejectedNotes = [];
+      const updatedNotes = [];
+      
       // Update notes and add to history
       for (const noteEntry of payload.notes) {
         const { csr_id, user, comment } = noteEntry;
+        
+        // Check if CSR is locked
+        if (lockedCsrs.includes(csr_id)) {
+          rejectedNotes.push({
+            csr_id,
+            reason: 'CSR is locked due to signature'
+          });
+          continue;
+        }
         
         // Update the current note
         dossierData.notes[csr_id] = comment;
@@ -286,16 +304,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
           comment,
           timestamp: new Date().toISOString()
         });
+        
+        updatedNotes.push(csr_id);
       }
       
       // Save updated dossier
       fs.writeFileSync(dossierPath, JSON.stringify(dossierData, null, 2));
       
-      res.json({ 
-        success: true, 
-        message: 'Notes updated successfully',
-        updatedCount: payload.notes.length
-      });
+      // Customize the response based on whether notes were rejected
+      if (rejectedNotes.length > 0) {
+        res.json({ 
+          success: true, 
+          message: 'Notes processed with some rejections',
+          updatedCount: updatedNotes.length,
+          rejectedCount: rejectedNotes.length,
+          rejectedNotes: rejectedNotes
+        });
+      } else {
+        res.json({ 
+          success: true, 
+          message: 'Notes updated successfully',
+          updatedCount: updatedNotes.length
+        });
+      }
     } catch (err) {
       errorHandler(err as Error, res);
     }
