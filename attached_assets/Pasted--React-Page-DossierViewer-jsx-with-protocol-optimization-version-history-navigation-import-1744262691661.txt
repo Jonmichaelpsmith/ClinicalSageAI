@@ -1,0 +1,91 @@
+// React Page: DossierViewer.jsx (with protocol optimization version history + navigation)
+
+import { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+
+export default function DossierViewer() {
+  const { dossier_id } = useParams();
+  const navigate = useNavigate();
+  const [dossier, setDossier] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [notes, setNotes] = useState({});
+  const [signatures, setSignatures] = useState({});
+
+  useEffect(() => {
+    const fetchDossier = async () => {
+      const res = await fetch(`/data/dossiers/${dossier_id}.json`);
+      const data = await res.json();
+      setDossier(data);
+      setNotes(data.notes || {});
+      setSignatures(data.signatures || {});
+      setLoading(false);
+    };
+    if (dossier_id) fetchDossier();
+  }, [dossier_id]);
+
+  const downloadJSON = () => {
+    const enriched = { ...dossier, notes, signatures };
+    const blob = new Blob([JSON.stringify(enriched, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `dossier_${dossier_id}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const shareableURL = `${window.location.origin}/dossier/${dossier_id}`;
+  const noteHistory = dossier?.note_history || {};
+  const versions = dossier?.optimizer_versions || [];
+
+  if (loading) return <p className="text-center">Loading dossier...</p>;
+  if (!dossier) return <p className="text-center text-red-500">Dossier not found.</p>;
+
+  return (
+    <div className="p-6 max-w-5xl mx-auto space-y-6">
+      <h2 className="text-2xl font-bold text-blue-800">📁 TrialSage Dossier: {dossier_id.slice(0, 8)}...</h2>
+      <p className="text-sm text-gray-600 pb-2">{dossier.csrs.length} CSRs included | Created at {new Date(dossier.created_at).toLocaleString()}</p>
+      <div className="text-sm text-blue-700 pb-4">🔗 Shareable Link: <a href={shareableURL} target="_blank" className="underline text-blue-600">{shareableURL}</a></div>
+
+      {dossier.csrs.map((csr, idx) => (
+        <Card key={csr.csr_id || idx} className="border border-gray-200">
+          <CardContent className="space-y-3">
+            <h3 className="text-lg font-semibold">{csr.title} ({csr.phase})</h3>
+            <p className="text-sm text-gray-600">Indication: {csr.indication}</p>
+            <p className="text-sm">Primary Endpoints: {csr.primary_endpoints?.join(', ')}</p>
+            <p className="text-sm">Arms: {csr.arms?.join(', ')}</p>
+            <p className="text-sm">Sample Size: {csr.sample_size}</p>
+            <p className="text-sm">Outcome: {csr.outcome_summary}</p>
+            <p className="text-sm text-gray-500 italic">AE Summary: {JSON.stringify(csr.adverse_events || [])}</p>
+          </CardContent>
+        </Card>
+      ))}
+
+      {versions.length > 0 && (
+        <Card className="border border-green-300">
+          <CardContent className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-semibold text-green-700">📘 Protocol Optimization History</h3>
+              <Button variant="outline" size="sm" onClick={() => navigate(`/optimizer?dossier=${dossier_id}`)}>Run New Optimization</Button>
+            </div>
+            {versions.map((v, i) => (
+              <div key={i} className="border p-3 bg-gray-50 rounded">
+                <p className="text-sm text-gray-700">Version {i + 1} | Saved: {new Date(v.timestamp).toLocaleString()}</p>
+                <p className="text-xs text-gray-600 mb-2">Referenced CSRs: {v.csr_ids.join(', ')}</p>
+                <Textarea value={v.recommendation} rows={6} readOnly className="text-xs bg-white border" />
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="text-center pt-6 space-x-4">
+        <Button onClick={() => window.print()} className="bg-blue-600 text-white hover:bg-blue-700">🖨️ Print Dossier</Button>
+        <Button onClick={downloadJSON} className="bg-gray-700 text-white hover:bg-gray-800">📥 Download JSON (with Notes & Signatures)</Button>
+      </div>
+    </div>
+  );
+}

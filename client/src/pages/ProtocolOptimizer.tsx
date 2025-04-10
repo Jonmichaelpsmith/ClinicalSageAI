@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import { useLocation } from 'wouter';
+import { useLocation, Link } from 'wouter';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { apiRequest } from '@/lib/queryClient';
-import { Loader2, Download, Copy, ArrowRight, FileText } from 'lucide-react';
+import { Loader2, Download, Copy, ArrowRight, FileText, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import html2pdf from 'html2pdf.js';
 
@@ -147,6 +147,42 @@ export default function ProtocolOptimizer() {
     });
   };
 
+  // Save optimization to dossier
+  const saveOptimizationToDossier = async () => {
+    if (!recommendation || !dossierId) {
+      toast({
+        title: "Cannot Save",
+        description: "Please generate a recommendation first or ensure you're viewing from a dossier.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    try {
+      const response = await apiRequest('POST', `/api/dossier/${dossierId}/save-optimization`, {
+        summary,
+        csr_ids: csrIds ? csrIds.split(',').map(id => id.trim()) : [],
+        recommendation
+      });
+      
+      if (response.saved) {
+        toast({
+          title: "Optimization Saved",
+          description: `Saved to dossier with ${response.version_count} versions total.`,
+        });
+      } else {
+        throw new Error(response.error || "Failed to save optimization");
+      }
+    } catch (error) {
+      console.error("Error saving optimization:", error);
+      toast({
+        title: "Save Failed",
+        description: "Failed to save optimization to dossier.",
+        variant: "destructive",
+      });
+    }
+  };
+  
   // Get the dossierId from URL if available
   const getDossierId = () => {
     const params = new URLSearchParams(window.location.search);
@@ -260,6 +296,17 @@ export default function ProtocolOptimizer() {
                   <Download className="h-4 w-4 mr-1" />
                   Export PDF
                 </Button>
+                {dossierId && (
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="bg-green-50 text-green-700 hover:bg-green-100 border-green-200"
+                    onClick={saveOptimizationToDossier}
+                  >
+                    <FileText className="h-4 w-4 mr-1" />
+                    Save to Dossier
+                  </Button>
+                )}
               </div>
             </CardHeader>
             <CardContent>
