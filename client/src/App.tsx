@@ -31,7 +31,7 @@ import CSRDetail from "@/pages/CSRDetail";
 import ProtocolOptimizer from "@/pages/ProtocolOptimizer";
 import AgentLogDashboard from "@/pages/AgentLogDashboard";
 import SimpleEndpointRecommender from "@/pages/SimpleEndpointRecommender";
-import EndpointDesigner from "@/pages/EndpointDesigner";
+import EndpointDesigner from "@/pages/EndpointDesigner.jsx";
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
