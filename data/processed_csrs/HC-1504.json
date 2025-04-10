@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1504",
+  "title": "A Randomized Double-Blind, Active-Controlled Multi-Center Study of CFS-446 (CFTR modulator) in Patients With Hemophilia A",
+  "officialTitle": "A Randomized Double-Blind, Active-Controlled Multi-Center Study of CFS-446 (CFTR modulator) in Patients With Hemophilia A",
+  "sponsor": "University of Calgary",
+  "indication": "Hemophilia A",
+  "phase": "Phase 2",
+  "fileName": "HC-1504.json",
+  "fileSize": 291241,
+  "date": "2025-03-14",
+  "completionDate": "2029-02-02",
+  "drugName": "CFS-446 (CFTR modulator)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Completed",
+  "description": "This is a randomized double-blind, active-controlled multi-center study designed to evaluate the efficacy and safety of CFS-446 (CFTR modulator) in patients with Hemophilia A. The study will enroll approximately 443 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 18-68 years\n- Confirmed diagnosis of Hemophilia A\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

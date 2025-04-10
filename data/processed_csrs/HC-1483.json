@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1483",
+  "title": "A  Open-Label, Active-Controlled Multi-Center Study of PDK-277 (dopamine agonist) in Patients With Osteoporosis",
+  "officialTitle": "A  Open-Label, Active-Controlled Multi-Center Study of PDK-277 (dopamine agonist) in Patients With Osteoporosis",
+  "sponsor": "Vancouver Coastal Health Research Institute",
+  "indication": "Osteoporosis",
+  "phase": "Phase 2/Phase 3",
+  "fileName": "HC-1483.json",
+  "fileSize": 250518,
+  "date": "2025-03-22",
+  "completionDate": "2028-11-02",
+  "drugName": "PDK-277 (dopamine agonist)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Recruiting",
+  "description": "This is a  open-label, active-controlled multi-center study designed to evaluate the efficacy and safety of PDK-277 (dopamine agonist) in patients with Osteoporosis. The study will enroll approximately 416 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 25-56 years\n- Confirmed diagnosis of Osteoporosis\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

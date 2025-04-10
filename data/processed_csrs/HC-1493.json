@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1493",
+  "title": "A Randomized Double-Blind, Placebo-Controlled  Study of HYP-735 (angiotensin receptor blocker) in Patients With Hemophilia A",
+  "officialTitle": "A Randomized Double-Blind, Placebo-Controlled  Study of HYP-735 (angiotensin receptor blocker) in Patients With Hemophilia A",
+  "sponsor": "Canadian Blood Services",
+  "indication": "Hemophilia A",
+  "phase": "Phase 1/Phase 2",
+  "fileName": "HC-1493.json",
+  "fileSize": 472756,
+  "date": "2024-09-04",
+  "completionDate": "2027-02-09",
+  "drugName": "HYP-735 (angiotensin receptor blocker)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Recruiting",
+  "description": "This is a randomized double-blind, placebo-controlled  study designed to evaluate the efficacy and safety of HYP-735 (angiotensin receptor blocker) in patients with Hemophilia A. The study will enroll approximately 529 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 18-63 years\n- Confirmed diagnosis of Hemophilia A\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

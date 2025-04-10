@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1501",
+  "title": "A  Double-Blind, Active-Controlled  Study of BRE-701 (selective estrogen receptor modulator) in Patients With Colorectal Cancer",
+  "officialTitle": "A  Double-Blind, Active-Controlled  Study of BRE-701 (selective estrogen receptor modulator) in Patients With Colorectal Cancer",
+  "sponsor": "McGill University Health Center",
+  "indication": "Colorectal Cancer",
+  "phase": "Phase 1",
+  "fileName": "HC-1501.json",
+  "fileSize": 387244,
+  "date": "2024-12-16",
+  "completionDate": "2025-07-28",
+  "drugName": "BRE-701 (selective estrogen receptor modulator)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Not yet recruiting",
+  "description": "This is a  double-blind, active-controlled  study designed to evaluate the efficacy and safety of BRE-701 (selective estrogen receptor modulator) in patients with Colorectal Cancer. The study will enroll approximately 57 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 21-65 years\n- Confirmed diagnosis of Colorectal Cancer\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n- Measurable disease per RECIST v1.1\n- Prior treatment with standard therapy\n- Life expectancy ≥3 months\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment\n- Brain metastases unless treated and stable\n- Prior treatment with similar mechanism of action\n- Other active malignancy requiring treatment"
+}

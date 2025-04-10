@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1524",
+  "title": "A  Double-Blind, Active-Controlled Multi-Center Study of CAD-101 (monoclonal antibody) in Patients With Pancreatic Cancer",
+  "officialTitle": "A  Double-Blind, Active-Controlled Multi-Center Study of CAD-101 (monoclonal antibody) in Patients With Pancreatic Cancer",
+  "sponsor": "SickKids Research Institute",
+  "indication": "Pancreatic Cancer",
+  "phase": "Phase 2",
+  "fileName": "HC-1524.json",
+  "fileSize": 567590,
+  "date": "2023-04-18",
+  "completionDate": "2029-01-18",
+  "drugName": "CAD-101 (monoclonal antibody)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Active, not recruiting",
+  "description": "This is a  double-blind, active-controlled multi-center study designed to evaluate the efficacy and safety of CAD-101 (monoclonal antibody) in patients with Pancreatic Cancer. The study will enroll approximately 409 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 27-61 years\n- Confirmed diagnosis of Pancreatic Cancer\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n- Measurable disease per RECIST v1.1\n- Prior treatment with standard therapy\n- Life expectancy ≥3 months\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment\n- Brain metastases unless treated and stable\n- Prior treatment with similar mechanism of action\n- Other active malignancy requiring treatment"
+}

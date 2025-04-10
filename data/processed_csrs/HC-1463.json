@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1463",
+  "title": "A  Double-Blind, Active-Controlled  Study of AST-611 (anti-IL-5 antibody) in Patients With Sickle Cell Disease",
+  "officialTitle": "A  Double-Blind, Active-Controlled  Study of AST-611 (anti-IL-5 antibody) in Patients With Sickle Cell Disease",
+  "sponsor": "Dalhousie University",
+  "indication": "Sickle Cell Disease",
+  "phase": "Phase 2",
+  "fileName": "HC-1463.json",
+  "fileSize": 563690,
+  "date": "2024-12-10",
+  "completionDate": "2028-01-09",
+  "drugName": "AST-611 (anti-IL-5 antibody)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Completed",
+  "description": "This is a  double-blind, active-controlled  study designed to evaluate the efficacy and safety of AST-611 (anti-IL-5 antibody) in patients with Sickle Cell Disease. The study will enroll approximately 482 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 27-82 years\n- Confirmed diagnosis of Sickle Cell Disease\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

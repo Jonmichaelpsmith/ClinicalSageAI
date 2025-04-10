@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1480",
+  "title": "A Randomized Double-Blind, Placebo-Controlled  Study of PSO-602 (phosphodiesterase-4 inhibitor) in Patients With Systemic Lupus Erythematosus",
+  "officialTitle": "A Randomized Double-Blind, Placebo-Controlled  Study of PSO-602 (phosphodiesterase-4 inhibitor) in Patients With Systemic Lupus Erythematosus",
+  "sponsor": "University of British Columbia",
+  "indication": "Systemic Lupus Erythematosus",
+  "phase": "Phase 2/Phase 3",
+  "fileName": "HC-1480.json",
+  "fileSize": 325165,
+  "date": "2023-04-13",
+  "completionDate": "2028-08-17",
+  "drugName": "PSO-602 (phosphodiesterase-4 inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Active, not recruiting",
+  "description": "This is a randomized double-blind, placebo-controlled  study designed to evaluate the efficacy and safety of PSO-602 (phosphodiesterase-4 inhibitor) in patients with Systemic Lupus Erythematosus. The study will enroll approximately 409 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 27-83 years\n- Confirmed diagnosis of Systemic Lupus Erythematosus\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n- Active disease defined by standard criteria\n- Inadequate response to conventional therapy\n- Positive serology (if applicable)\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment\n- Active infection including tuberculosis\n- History of recurrent serious infections\n- Concurrent autoimmune disease other than study indication"
+}
