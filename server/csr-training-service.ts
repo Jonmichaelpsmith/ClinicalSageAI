@@ -12,6 +12,14 @@ import { csrReports, csrDetails } from '../shared/schema';
 import { sql } from 'drizzle-orm';
 import { queryHuggingFace, generateEmbeddings, trainCustomModel } from './huggingface-service';
 
+// Export service functions as a single object
+export const csrTrainingService = {
+  processBatchForTraining,
+  extractStructuredData,
+  trainModels,
+  makePrediction
+};
+
 // Constants
 const UPLOADS_DIR = path.join(process.cwd(), 'uploads');
 const TRAINING_DIR = path.join(UPLOADS_DIR, 'training');

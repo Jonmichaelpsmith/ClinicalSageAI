@@ -1,0 +1,98 @@
+Platform Overview
+✔️ Strong if you frame it like:
+
+Protocol Builder = Canva for trial designs
+
+Research Companion = ChatGPT, but knows CTCAE and EMA guidance
+
+🛠 Enhancement: Add visuals or architecture sketch if you’re pitching this live or in a deck.
+
+✅ Current Progress (1,921 trials)
+✔️ Be sure to mention:
+
+Data source (ClinicalTrials.gov + CSR match)
+
+Format (structured JSON, searchable tags, extracted endpoints)
+
+Target KPI: 4,000+ to cover 85% of therapeutic space
+
+🛠 Enhancement: Show % mapped to CSRs, not just trial count.
+
+✅ Tech Stack
+✔️ Clean, professional.
+
+🛠 Enhancement: Include AI stack:
+
+Mixtral via Hugging Face
+
+LangChain / LlamaIndex for memory
+
+PDF parsing + Whisper for transcript processing
+
+✅ Roadmap
+✔️ Include:
+
+Short term: UX polish, trial comparator
+
+Medium term: eTMF compliance, risk engine
+
+Long term: Sponsor/CRO integrations, rare disease expansion
+
+🛠 Enhancement: Bullet “enterprise-ready” tasks like:
+
+HIPAA/21 CFR Part 11 support
+
+API for data teams
+
+Audit logging layer
+
+✅ Database Insights
+✔️ Strong if you use visuals:
+
+Trials by phase
+
+Common endpoints
+
+Top 10 sponsors
+
+Most covered indications (e.g., oncology, cardiology)
+
+🛠 Enhancement: Add a dynamic dashboard or quick demo video to boost shareability.
+
+🔧 Server Startup Error
+Yes, let’s fix the missing export issue too. It’s likely in your server/index.ts or main.ts file.
+
+🔧 Add at the bottom of your Express server:
+ts
+Copy
+Edit
+// Ensure this is exported
+export default app;
+Then ensure your main entry (e.g., index.ts) does:
+
+ts
+Copy
+Edit
+import app from './server'; // or wherever your app is defined
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`✅ TrialSage backend running on port ${PORT}`);
+});
+✅ Final Step?
+Would you like me to:
+
+Generate a full pitch-ready PDF version of this overview?
+
+Write a sample Slack/email update to send to your team or boss?
+
+Package your MVP in a Replit showcase template?
+
+You're ready for visibility. Let’s get it polished and shared.
+
+
+
+
+
+
+

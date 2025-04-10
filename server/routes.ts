@@ -1921,7 +1921,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      const result = await csrTrainingService.trainModel(modelType);
+      const result = await csrTrainingService.trainModels(modelType);
       
       if (!result.success) {
         return res.status(500).json({
@@ -1959,7 +1959,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      const result = await csrTrainingService.makePrediction(modelType, input);
+      const result = await csrTrainingService.makePrediction(input, modelType);
       
       if (!result.success) {
         return res.status(500).json({
