@@ -1,0 +1,103 @@
+import { useEffect, useState } from 'react';
+import HeatMap from 'react-heatmap-grid';
+import { Button } from '@/components/ui/button';
+
+export default function EndpointFrequencyHeatmap() {
+  const [rawData, setRawData] = useState([]);
+  const [heatmapData, setHeatmapData] = useState([]);
+  const [phases, setPhases] = useState([]);
+  const [indications, setIndications] = useState([]);
+  const [viewType, setViewType] = useState('per100');
+  const [endpointType, setEndpointType] = useState('All');
+
+  useEffect(() => {
+    const fetchHeatmap = async () => {
+      const res = await fetch('/api/endpoint/frequency-heatmap');
+      const data = await res.json();
+      setRawData(data);
+    };
+    fetchHeatmap();
+  }, []);
+
+  useEffect(() => {
+    const filtered = rawData.filter(row => endpointType === 'All' || row.type === endpointType);
+    const uniquePhases = [...new Set(filtered.map(row => row.phase))];
+    const uniqueIndications = [...new Set(filtered.map(row => row.indication))];
+
+    const matrix = uniqueIndications.map(indication =>
+      uniquePhases.map(phase => {
+        const row = filtered.find(d => d.phase === phase && d.indication === indication);
+        if (!row) return 0;
+        return viewType === 'per100' ? row.per100 : row.count;
+      })
+    );
+
+    setPhases(uniquePhases);
+    setIndications(uniqueIndications);
+    setHeatmapData(matrix);
+  }, [rawData, viewType, endpointType]);
+
+  const handleCellClick = (xIdx, yIdx) => {
+    const phase = phases[xIdx];
+    const indication = indications[yIdx];
+    const message = `Filter: ${indication} × ${phase} × ${endpointType}`;
+    alert(message); // Replace with modal or redirect in your app
+  };
+
+  const exportCSV = () => {
+    const rows = [
+      ['Indication/Phase', ...phases],
+      ...indications.map((indication, i) => [indication, ...heatmapData[i]])
+    ];
+    const csv = rows.map(r => r.join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `endpoint_heatmap_${viewType}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div className="bg-white border rounded p-4 my-6">
+      <div className="flex justify-between items-center mb-3">
+        <h3 className="text-lg font-bold text-purple-800">
+          📊 Endpoint Frequency Heatmap
+        </h3>
+        <Button onClick={exportCSV} className="bg-gray-700 text-white hover:bg-gray-800">
+          Export CSV
+        </Button>
+      </div>
+
+      <p className="text-sm text-gray-600 mb-3">
+        View usage of {endpointType === 'All' ? 'all endpoints' : endpointType.toLowerCase()} by indication and trial phase ({viewType === 'per100' ? 'normalized' : 'raw count'}).
+      </p>
+
+      <div className="flex items-center gap-4 mb-4">
+        <Button onClick={() => setViewType(viewType === 'per100' ? 'raw' : 'per100')}>
+          Toggle View: {viewType === 'per100' ? 'Per 100 Trials' : 'Raw Count'}
+        </Button>
+        <Button onClick={() => setEndpointType('All')}>All</Button>
+        <Button onClick={() => setEndpointType('Primary')}>Primary</Button>
+        <Button onClick={() => setEndpointType('Secondary')}>Secondary</Button>
+      </div>
+
+      {heatmapData.length > 0 && (
+        <HeatMap
+          xLabels={phases}
+          yLabels={indications}
+          data={heatmapData}
+          squares
+          onClick={handleCellClick}
+          cellStyle={(background, value) => ({
+            background: `rgba(128, 0, 128, ${Math.min(value / 100, 1)})`,
+            fontSize: '11px',
+            color: '#fff'
+          })}
+          cellRender={value => <div>{value}</div>}
+        />
+      )}
+    </div>
+  );
+}
