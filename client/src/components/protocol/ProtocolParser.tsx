@@ -51,9 +51,7 @@ export function ProtocolParser({ onParseComplete }: ProtocolParserProps) {
   // Upload and parse protocol file
   const uploadMutation = useMutation({
     mutationFn: async (formData: FormData) => {
-      const response = await apiRequest('POST', '/api/protocol/analyze-file', formData, {
-        headers: {},
-      });
+      const response = await apiRequest('POST', '/api/protocol/analyze-file', formData);
       return response.json();
     },
     onSuccess: (data) => {

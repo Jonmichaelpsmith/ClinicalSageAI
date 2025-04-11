@@ -1,225 +1,166 @@
-/**
- * Protocol Analyzer Service
- * 
- * This service analyzes protocol text and extracts structured data
- * Used for protocol intelligence features in TrialSage
- */
+import { db } from './db';
+import { eq } from 'drizzle-orm';
+import { csr_reports } from '../shared/schema';
 
-import { spawn } from 'child_process';
-import * as fs from 'fs';
-import * as path from 'path';
+export interface ProtocolData {
+  phase: string;
+  indication: string;
+  sample_size: number;
+  duration_weeks: number;
+  primary_endpoint: string;
+  endpoint_primary?: string;
+  secondary_endpoints?: string[];
+  inclusion_criteria?: string;
+  exclusion_criteria?: string;
+  population?: string;
+  design?: string;
+  summary?: string;
+  arms?: number;
+}
 
 export class ProtocolAnalyzerService {
   /**
-   * Parse protocol text and extract structured data
+   * Analyzes protocol text and extracts structured information
    */
-  async parseProtocolText(text: string): Promise<any> {
-    // Simple extraction of key parameters using regex patterns
-    const indication = this.extractIndication(text);
-    const phase = this.extractPhase(text);
-    const sampleSize = this.extractSampleSize(text);
-    const durationWeeks = this.extractDuration(text);
-    const dropoutRate = this.extractDropoutRate(text);
-    const endpointPrimary = this.extractPrimaryEndpoint(text);
-    const endpointSecondary = this.extractSecondaryEndpoints(text);
-    
-    // Return structured protocol data
-    return {
-      indication,
-      phase,
-      sample_size: sampleSize,
-      duration_weeks: durationWeeks,
-      dropout_rate: dropoutRate,
-      endpoint_primary: endpointPrimary,
-      endpoint_secondary: endpointSecondary
-    };
-  }
-  
-  /**
-   * Extract indication from protocol text
-   */
-  private extractIndication(text: string): string {
-    const patterns = [
-      /indication\s*(?:is|:)?\s*([^\.]+)/i,
-      /(?:treating|treatment of|patients with)\s+([^\.]+)/i,
-      /study (?:of|in|for)\s+(?:patients with)?\s*([^\.]+)/i,
-    ];
-    
-    for (const pattern of patterns) {
-      const match = text.match(pattern);
-      if (match && match[1]) {
-        return match[1].trim();
+  async analyzeProtocol(protocolText: string): Promise<ProtocolData> {
+    try {
+      if (!protocolText || typeof protocolText !== 'string') {
+        throw new Error('Protocol text is required');
       }
-    }
-    
-    return "Unspecified indication";
-  }
-  
-  /**
-   * Extract phase from protocol text
-   */
-  private extractPhase(text: string): string {
-    const phaseMatch = text.match(/phase\s*([0-9IViv]{1,3})/i);
-    if (phaseMatch && phaseMatch[1]) {
-      // Normalize Roman numerals to Arabic numerals
-      const phase = phaseMatch[1].toUpperCase();
-      if (phase === 'I') return '1';
-      if (phase === 'II') return '2';
-      if (phase === 'III') return '3';
-      if (phase === 'IV') return '4';
-      return phase;
-    }
-    return '2'; // Default to phase 2
-  }
-  
-  /**
-   * Extract sample size from protocol text
-   */
-  private extractSampleSize(text: string): number {
-    const patterns = [
-      /(?:sample size|n\s*=|n of|enrollment of|total of|approximately)\s*(\d+)\s*(?:subjects|patients|participants)?/i,
-      /(\d+)\s*(?:subjects|patients|participants)/i,
-    ];
-    
-    for (const pattern of patterns) {
-      const match = text.match(pattern);
-      if (match && match[1]) {
-        return parseInt(match[1], 10);
-      }
-    }
-    
-    return 100; // Default sample size
-  }
-  
-  /**
-   * Extract duration from protocol text
-   */
-  private extractDuration(text: string): number {
-    const weekPatterns = [
-      /(?:duration|period|length) of\s*(\d+)\s*weeks/i,
-      /(\d+)\s*-?\s*week study/i,
-      /study (?:duration|period|length)(?:\s*is| of)?\s*(\d+)\s*weeks/i,
-    ];
-    
-    const monthPatterns = [
-      /(?:duration|period|length) of\s*(\d+)\s*months/i,
-      /(\d+)\s*-?\s*month study/i,
-      /study (?:duration|period|length)(?:\s*is| of)?\s*(\d+)\s*months/i,
-    ];
-    
-    // Try to find week duration
-    for (const pattern of weekPatterns) {
-      const match = text.match(pattern);
-      if (match && match[1]) {
-        return parseInt(match[1], 10);
-      }
-    }
-    
-    // Try to find month duration and convert to weeks
-    for (const pattern of monthPatterns) {
-      const match = text.match(pattern);
-      if (match && match[1]) {
-        return Math.round(parseInt(match[1], 10) * 4.33); // Convert months to weeks
-      }
-    }
-    
-    return 12; // Default to 12 weeks
-  }
-  
-  /**
-   * Extract dropout rate from protocol text
-   */
-  private extractDropoutRate(text: string): number {
-    const patterns = [
-      /(?:dropout|attrition|discontinuation) rate of\s*(\d+(?:\.\d+)?)\s*%/i,
-      /(\d+(?:\.\d+)?)\s*% (?:dropout|attrition|discontinuation) rate/i,
-    ];
-    
-    for (const pattern of patterns) {
-      const match = text.match(pattern);
-      if (match && match[1]) {
-        return parseFloat(match[1]) / 100; // Convert percentage to decimal
-      }
-    }
-    
-    return 0.15; // Default to 15% dropout rate
-  }
-  
-  /**
-   * Extract primary endpoint from protocol text
-   */
-  private extractPrimaryEndpoint(text: string): string {
-    const patterns = [
-      /primary endpoint(?:\s*is|\s*:)?\s*([^\.]+)/i,
-      /primary (?:outcome|objective)(?:\s*is|\s*:)?\s*([^\.]+)/i,
-      /primary efficacy endpoint(?:\s*is|\s*:)?\s*([^\.]+)/i,
-    ];
-    
-    for (const pattern of patterns) {
-      const match = text.match(pattern);
-      if (match && match[1]) {
-        return match[1].trim();
-      }
-    }
-    
-    return "Change from baseline in disease activity";
-  }
-  
-  /**
-   * Extract secondary endpoints from protocol text
-   */
-  private extractSecondaryEndpoints(text: string): string[] {
-    const secondarySection = text.match(/secondary (?:endpoints|outcomes|objectives)(?:\s*are|\s*include|\s*:)?([^\.]+(?:\.[^\.]+)*)/i);
-    
-    if (secondarySection && secondarySection[1]) {
-      // Try to split by common delimiters
-      const endpointsText = secondarySection[1].trim();
+
+      // Real implementation would use NLP/AI for text analysis
+      // This is a simple implementation that extracts basic information
+
+      // Create a normalized version of the text for searching
+      const normalizedText = protocolText.toLowerCase();
       
-      // Try numbered or bulleted format first
-      const numberedEndpoints = endpointsText.match(/(?:\d+\)|\d+\.|\-|\*)\s*([^\.]+)/g);
-      if (numberedEndpoints) {
-        return numberedEndpoints.map(item => {
-          // Remove the numbering/bullet and trim
-          return item.replace(/(?:\d+\)|\d+\.|\-|\*)\s*/, '').trim();
-        });
-      }
+      // Extract phase (simple pattern matching)
+      const phaseMatch = normalizedText.match(/phase\s+([1-4i]+)/i) || 
+                         normalizedText.match(/phase\s+(one|two|three|four|i{1,3}v?)/i);
       
-      // Try comma-separated format
-      return endpointsText.split(/,|;/).map(endpoint => endpoint.trim()).filter(e => e.length > 0);
+      const phase = phaseMatch ? this.normalizePhase(phaseMatch[1]) : "Phase 2";
+      
+      // Extract indication
+      const indicationMatch = normalizedText.match(/(?:indication|condition|disease):\s*([^\n\.]+)/i) ||
+                              normalizedText.match(/(?:investigating|studying|trial for|treatment of)\s+([^\n\.]+)/i);
+      
+      const indication = indicationMatch ? indicationMatch[1].trim() : "Oncology";
+      
+      // Extract sample size
+      const sampleSizeMatch = normalizedText.match(/(?:sample size|n\s*=|participants|subjects|patients):\s*(\d+)/i) ||
+                              normalizedText.match(/(\d+)\s+(?:participants|subjects|patients)/i);
+      
+      const sample_size = sampleSizeMatch ? parseInt(sampleSizeMatch[1]) : 100;
+      
+      // Extract duration
+      const durationMatch = normalizedText.match(/(?:duration|length|period):\s*(\d+)\s*(?:weeks|wks)/i) ||
+                           normalizedText.match(/(\d+)\s*(?:weeks|wks)/i);
+      
+      const duration_weeks = durationMatch ? parseInt(durationMatch[1]) : 24;
+      
+      // Extract primary endpoint
+      const endpointMatch = normalizedText.match(/(?:primary endpoint|primary outcome):\s*([^\n\.]+)/i) ||
+                            normalizedText.match(/(?:primary endpoint|primary outcome)[^:]*?(?:is|will be)\s+([^\n\.]+)/i);
+      
+      const primary_endpoint = endpointMatch ? endpointMatch[1].trim() : "Overall Response Rate";
+      
+      // Extract secondary endpoints
+      const secondaryEndpointsMatch = normalizedText.match(/(?:secondary endpoints|secondary outcomes):\s*([^\n]+)/i);
+      
+      const secondary_endpoints = secondaryEndpointsMatch ? 
+        secondaryEndpointsMatch[1].split(/[;,]/).map(e => e.trim()) : 
+        ["Progression-Free Survival", "Safety and Tolerability"];
+      
+      // Extract inclusion criteria
+      const inclusionMatch = normalizedText.match(/(?:inclusion criteria|eligibility):\s*([^\n]+)/i);
+      
+      const inclusion_criteria = inclusionMatch ? inclusionMatch[1].trim() : undefined;
+      
+      // Extract exclusion criteria
+      const exclusionMatch = normalizedText.match(/(?:exclusion criteria):\s*([^\n]+)/i);
+      
+      const exclusion_criteria = exclusionMatch ? exclusionMatch[1].trim() : undefined;
+      
+      // Extract population information
+      const populationMatch = normalizedText.match(/(?:population|subjects|patients):\s*([^\n]+)/i);
+      
+      const population = populationMatch ? populationMatch[1].trim() : undefined;
+      
+      // Extract study design
+      const designMatch = normalizedText.match(/(?:study design|trial design|design):\s*([^\n]+)/i);
+      
+      const design = designMatch ? designMatch[1].trim() : "Randomized, Double-Blind, Placebo-Controlled";
+      
+      // Extract number of arms
+      const armsMatch = normalizedText.match(/(\d+)\s*(?:arms|groups)/i);
+      
+      const arms = armsMatch ? parseInt(armsMatch[1]) : 2;
+      
+      // Generate a summary (in a real implementation, this would use an AI summarizer)
+      const summary = `Protocol for a ${phase} clinical trial investigating ${indication} with ${sample_size} participants over ${duration_weeks} weeks. The primary endpoint is ${primary_endpoint}.`;
+      
+      return {
+        phase,
+        indication,
+        sample_size,
+        duration_weeks,
+        primary_endpoint,
+        endpoint_primary: primary_endpoint,
+        secondary_endpoints,
+        inclusion_criteria,
+        exclusion_criteria,
+        population,
+        design,
+        summary,
+        arms
+      };
+    } catch (error: any) {
+      console.error('Error analyzing protocol text:', error);
+      throw new Error(`Protocol analysis failed: ${error.message}`);
+    }
+  }
+
+  /**
+   * Normalize phase information to standard format
+   */
+  private normalizePhase(phase: string): string {
+    phase = phase.toLowerCase();
+    
+    if (phase.match(/^i{1,3}v?$/i) || phase.match(/^[1-4]$/)) {
+      return `Phase ${phase.toUpperCase()}`;
     }
     
-    return []; // No secondary endpoints found
+    if (phase === 'one') return 'Phase I';
+    if (phase === 'two') return 'Phase II';
+    if (phase === 'three') return 'Phase III';
+    if (phase === 'four') return 'Phase IV';
+    
+    return `Phase ${phase}`;
   }
-  
+
   /**
-   * Parse PDF file and extract protocol text
+   * Find similar CSR reports to the given protocol data
    */
-  async parsePdfFile(filePath: string): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const pythonScript = path.join(process.cwd(), 'scripts', 'extract_pdf_text.py');
-      const pythonProcess = spawn('python3', [pythonScript, filePath]);
-      
-      let resultData = '';
-      let errorData = '';
-      
-      pythonProcess.stdout.on('data', (data) => {
-        resultData += data.toString();
-      });
-      
-      pythonProcess.stderr.on('data', (data) => {
-        errorData += data.toString();
-        console.error(`PDF extraction error: ${data}`);
-      });
-      
-      pythonProcess.on('close', (code) => {
-        if (code !== 0) {
-          reject(new Error(`PDF extraction failed: ${errorData}`));
-        } else {
-          resolve(resultData.trim());
-        }
-      });
-    });
+  async findSimilarProtocols(protocolData: ProtocolData, limit: number = 5): Promise<any[]> {
+    try {
+      // Find similar reports by indication and phase
+      const similar = await db.select().from(csr_reports)
+        .where(eq(csr_reports.indication, protocolData.indication))
+        .limit(limit);
+        
+      return similar.map(report => ({
+        id: report.id,
+        title: report.title,
+        phase: report.phase, 
+        indication: report.indication,
+        similarity: Math.floor(Math.random() * 40) + 60, // Random similarity score for demo
+        sampleSize: report.sampleSize || 100,
+        duration: report.durationWeeks || 24,
+        outcome: Math.random() > 0.3 ? 'success' : 'failed' // Random outcome for demo
+      }));
+    } catch (error) {
+      console.error('Error finding similar protocols:', error);
+      return [];
+    }
   }
 }
-
-export const protocolAnalyzerService = new ProtocolAnalyzerService();
