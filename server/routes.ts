@@ -243,6 +243,127 @@ const signatureUpdateRequestSchema = z.object({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Export trial success prediction to PDF
+  app.post("/api/export/success-summary", async (req: Request, res: Response) => {
+    try {
+      const { success_rate, inputs, protocol_id } = req.body;
+      
+      if (success_rate === undefined || !inputs || !protocol_id) {
+        return res.status(400).json({
+          success: false,
+          message: "Missing required parameters: success_rate, inputs, protocol_id"
+        });
+      }
+      
+      // Create exports directory if it doesn't exist
+      const exportsDir = path.join(process.cwd(), 'data/exports');
+      if (!fs.existsSync(exportsDir)) {
+        fs.mkdirSync(exportsDir, { recursive: true });
+      }
+      
+      // Generate PDF using Python script
+      const inputData = {
+        success_rate,
+        inputs,
+        protocol_id,
+        timestamp: Date.now()
+      };
+      
+      const tempInputFile = path.join('data', `pdf_export_input_${Date.now()}.json`);
+      fs.writeFileSync(tempInputFile, JSON.stringify(inputData));
+      
+      const pythonProcess = spawn('python3', [
+        'scripts/generate_success_pdf.py',
+        tempInputFile
+      ]);
+      
+      let resultData = '';
+      let errorData = '';
+      
+      pythonProcess.stdout.on('data', (data) => {
+        resultData += data.toString();
+      });
+      
+      pythonProcess.stderr.on('data', (data) => {
+        errorData += data.toString();
+        console.error(`PDF generation error: ${data}`);
+      });
+      
+      pythonProcess.on('close', (code) => {
+        // Clean up temp file
+        try {
+          fs.unlinkSync(tempInputFile);
+        } catch (err) {
+          console.error('Error cleaning up temp file:', err);
+        }
+        
+        if (code !== 0) {
+          return res.status(500).json({
+            success: false,
+            message: `PDF generation failed: ${errorData}`
+          });
+        }
+        
+        try {
+          // The Python script should output the path to the PDF file
+          const filePath = resultData.trim();
+          const fileName = path.basename(filePath);
+          
+          res.json({
+            success: true,
+            download_url: `/download/${fileName}`,
+            file_name: fileName
+          });
+        } catch (error) {
+          res.status(500).json({
+            success: false,
+            message: 'Error parsing PDF generation result'
+          });
+        }
+      });
+    } catch (error: any) {
+      console.error('Error generating PDF:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message || 'Failed to generate PDF report'
+      });
+    }
+  });
+  
+  // Trial Success Prediction API Endpoint
+  app.post("/api/ai/predict-success", async (req: Request, res: Response) => {
+    try {
+      const { sample_size, duration_weeks, dropout_rate } = req.body;
+      
+      // Validate input
+      if (sample_size === undefined || duration_weeks === undefined || dropout_rate === undefined) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Missing required parameters: sample_size, duration_weeks, dropout_rate" 
+        });
+      }
+      
+      // Call the prediction service
+      const result = await trialPredictorService.predictTrialSuccess(
+        Number(sample_size),
+        Number(duration_weeks),
+        Number(dropout_rate)
+      );
+      
+      res.json({
+        success: true,
+        probability: result.probability,
+        prediction: result.success,
+        featureContributions: result.featureContributions
+      });
+    } catch (error: any) {
+      console.error("Error predicting trial success:", error);
+      res.status(500).json({ 
+        success: false, 
+        message: error.message || "Failed to predict trial success" 
+      });
+    }
+  });
   // Create necessary directories
   const uploadsDir = path.join(process.cwd(), 'uploads');
   if (!fs.existsSync(uploadsDir)) {
