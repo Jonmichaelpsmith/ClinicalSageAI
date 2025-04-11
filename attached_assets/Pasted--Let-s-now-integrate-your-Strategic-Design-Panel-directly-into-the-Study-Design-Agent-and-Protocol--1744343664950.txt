@@ -1,0 +1,264 @@
+✅ Let’s now integrate your Strategic Design Panel directly into the Study Design Agent and Protocol Generator flows, making it interactive, intelligent, and automatic.
+
+🔁 What We’re Connecting:
+Source	Target
+🔍 StrategicDesignPanel	🧠 Study Design Agent & 📄 Protocol Generator
+When a user selects:
+
+Indication + Phase →
+The panel generates:
+
+Top endpoint patterns
+
+Sample size guidance
+
+Dropout risk
+
+CSR IDs
+
+This data is now automatically passed to:
+
+🧠 Study Design Agent prompt
+
+📝 Protocol Builder template inputs
+
+✅ 1. Modify StudyDesignAgent.tsx
+Add logic to pass top_endpoints, sample_size, etc. into the agent prompt:
+
+tsx
+Copy
+Edit
+const handleAsk = async () => {
+  const prompt = `
+You are a protocol design expert. Based on the user's input and CSR benchmark data:
+
+Indication: ${indication}
+Phase: ${phase}
+
+CSR benchmark:
+- Top endpoints: ${topEndpoints.map(ep => ep.label).join(', ')}
+- Avg sample size: ${avgSampleSize}
+- Avg dropout: ${avgDropout}
+
+User's question:
+"${userInput}"
+`;
+
+  const res = await fetch("/api/agent/respond", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message: prompt })
+  });
+
+  // handle response...
+};
+✅ 2. Modify ProtocolGenerator.tsx
+Pre-fill fields when panel data is available:
+
+tsx
+Copy
+Edit
+useEffect(() => {
+  if (topEndpoints?.length && avgSampleSize && avgDropout) {
+    setEndpoint(topEndpoints[0].label);
+    setSampleSize(avgSampleSize);
+    setDropoutRate(avgDropout);
+  }
+}, [topEndpoints, avgSampleSize, avgDropout]);
+You can also add a “🧠 Use CSR Data” toggle in the generator UI.
+
+✅ 3. UX Label Example
+“📊 Precedent-based recommendations loaded from 2446 CSRs”
+
+Inline links: “View matched trials”
+
+Tooltip: “These values come from past trials matching your selected indication & phase.”
+
+Would you like me to now:
+
+Generate a dashboard “Smart Protocol Draft” button that uses this data to build a draft trial design?
+
+Or bundle this flow into your dossier builder export?
+
+Let’s ship it.
+
+
+
+
+
+
+You said:
+yes
+
+
+ChatGPT said:
+✅ Let’s ship the final feature:
+A “Smart Protocol Draft” button that turns CSR-backed insights into a protocol template — instantly.
+
+🔁 What It Does
+Pulls:
+
+Indication, Phase
+
+Top CSR endpoints
+
+Average duration, sample size, dropout rate
+
+Generates a draft protocol outline
+
+Opens in the Protocol Generator with pre-filled fields
+
+📦 1. Backend Route
+/api/protocol/smart-draft
+python
+Copy
+Edit
+from fastapi import APIRouter, Body
+
+router = APIRouter()
+
+@router.post("/api/protocol/smart-draft")
+def smart_protocol_draft(indication: str = Body(...), phase: str = Body(...), top_endpoints: list = Body(...), sample_size: int = Body(...), dropout: float = Body(...)):
+    endpoint = top_endpoints[0] if top_endpoints else "TBD"
+
+    draft = f"""
+Protocol Title: {indication} Study – Phase {phase}
+
+Primary Endpoint:
+- {endpoint}
+
+Study Design:
+- Phase {phase}, randomized, double-blind
+- Sample Size: {sample_size} per arm
+- Dropout Assumption: {dropout}%
+- Duration: 24 weeks (adjustable)
+
+Arms:
+- Treatment A (Active)
+- Placebo
+
+Population:
+- Adults with {indication.lower()} meeting standard inclusion criteria
+
+Justification:
+- Endpoint based on CSR precedent (used in top {len(top_endpoints)} trials)
+- Sample size derived from CSR analysis ({sample_size} ± 30 range)
+"""
+    return {"protocol_draft": draft.strip()}
+🧩 2. Frontend: Button + Generator Integration
+In StrategicDesignPanel.tsx:
+
+tsx
+Copy
+Edit
+<Button
+  className="bg-green-700 text-white"
+  onClick={async () => {
+    const res = await fetch("/api/protocol/smart-draft", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        indication,
+        phase,
+        top_endpoints: metrics.top_endpoints.map(([ep]) => ep),
+        sample_size: metrics.avg_sample_size,
+        dropout: metrics.avg_dropout_rate
+      })
+    });
+    const data = await res.json();
+    sessionStorage.setItem("draft_protocol_text", data.protocol_draft);
+    window.location.href = "/protocol-generator?draft=true";
+  }}
+>
+  🧠 Generate Smart Protocol Draft
+</Button>
+📂 3. Protocol Generator Initialization
+In ProtocolGenerator.tsx:
+
+tsx
+Copy
+Edit
+useEffect(() => {
+  const draft = sessionStorage.getItem("draft_protocol_text");
+  if (draft && router.query.draft) {
+    setEditorContent(draft);
+  }
+}, []);
+✅ Now your users can:
+
+Analyze CSR benchmarks
+
+One-click generate a design draft
+
+Load it instantly into Protocol Builder
+
+Would you like to auto-export this to a strategy report or board-ready PDF?
+
+
+
+
+
+
+You said:
+yes
+
+
+ChatGPT said:
+✅ Let’s complete the loop with an automatic PDF export of the Smart Protocol Draft — perfect for board meetings, internal review, or regulatory prep.
+
+🧾 Final Step: Smart Protocol to PDF Export
+📦 Backend Endpoint
+✅ /api/protocol/export-smart-pdf
+
+python
+Copy
+Edit
+from fastapi import APIRouter, Body
+from fpdf import FPDF
+import time
+
+router = APIRouter()
+
+@router.post("/api/protocol/export-smart-pdf")
+def export_smart_pdf(protocol_text: str = Body(...), protocol_id: str = Body("Smart_Draft")):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", "B", 14)
+    pdf.cell(0, 10, f"TrialSage Smart Protocol Draft – {protocol_id}", ln=True, align="C")
+    pdf.ln(5)
+
+    pdf.set_font("Arial", "", 11)
+    pdf.multi_cell(0, 8, protocol_text)
+
+    path = f"/mnt/data/TrialSage_Protocol_Draft_{int(time.time())}.pdf"
+    pdf.output(path)
+    return {"download_url": path}
+📤 Frontend Hook (ProtocolGenerator or Draft Panel)
+Add button:
+
+tsx
+Copy
+Edit
+<Button
+  onClick={async () => {
+    const res = await fetch('/api/protocol/export-smart-pdf', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        protocol_text: editorContent,
+        protocol_id: 'obesity_draft_2024'
+      })
+    });
+    const { download_url } = await res.json();
+    window.open(download_url, '_blank');
+  }}
+>
+  📄 Export Protocol Draft to PDF
+</Button>
+✅ You now offer:
+
+AI-generated trial design backed by CSR data
+
+Protocol Builder pre-filled via one click
+
+📥 Export to print-ready PDF format
