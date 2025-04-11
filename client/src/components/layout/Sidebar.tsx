@@ -21,7 +21,10 @@ import {
   AlertTriangle,
   Target,
   Beaker,
-  GraduationCap
+  GraduationCap,
+  BarChart,
+  LineChart,
+  PieChart
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
