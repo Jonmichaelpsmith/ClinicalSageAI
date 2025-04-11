@@ -1,0 +1,13 @@
+{
+  "nct_id": "NCT12345680",
+  "indication": "Hypertension",
+  "phase": "Phase 2",
+  "sample_size": 150,
+  "duration_weeks": 12,
+  "dropout_rate": 0.28,
+  "primary_endpoints": ["Blood pressure reduction >=5 mmHg"],
+  "control_arm": "placebo",
+  "blinding": "double-blind",
+  "outcome_summary": "Failed to meet primary endpoint, no significant difference vs placebo",
+  "failure_reason": "Insufficient efficacy"
+}
