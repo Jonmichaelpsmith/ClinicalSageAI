@@ -3,6 +3,7 @@ import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
+import { AuthProvider } from "@/contexts/AuthContext";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import Dashboard from "@/pages/Dashboard";
@@ -39,6 +40,8 @@ import StrategicIntelligenceTest from "@/pages/StrategicIntelligenceTest";
 import SmartProtocolPage from "@/pages/SmartProtocolPage";
 import TrialPredictorPage from "@/pages/TrialPredictorPage";
 import DossierViewerPage from "@/pages/DossierViewerPage";
+import LoginPage from "@/pages/LoginPage";
+import SignupPage from "@/pages/SignupPage";
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -87,7 +90,7 @@ function Router() {
   const [location] = useLocation();
 
   // Only use the app layout on pages that need it
-  const needsLayout = !["/", "/login", "/register"].includes(location);
+  const needsLayout = !["/", "/login", "/signup"].includes(location);
 
   const renderWithLayout = (Component: React.ComponentType) => {
     return needsLayout ? (
@@ -103,6 +106,10 @@ function Router() {
     <Switch>
       {/* Landing page */}
       <Route path="/" component={Home} />
+      
+      {/* Auth pages */}
+      <Route path="/login" component={LoginPage} />
+      <Route path="/signup" component={SignupPage} />
 
       {/* App pages with layout */}
       <Route path="/dashboard">{() => renderWithLayout(Dashboard)}</Route>
@@ -152,8 +159,10 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Router />
-      <Toaster />
+      <AuthProvider>
+        <Router />
+        <Toaster />
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

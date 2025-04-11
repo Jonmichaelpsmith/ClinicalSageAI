@@ -1,0 +1,131 @@
+TRIALSAGE AUTH LAYER
+Powered by Supabase Auth – secure, scalable, Replit-friendly
+
+✅ STEP 1: Supabase Setup (one-time)
+Go to https://supabase.com and create a project
+
+In your project:
+
+Go to Auth → Settings → Email Auth and enable "Email/password"
+
+Get your keys:
+
+SUPABASE_URL
+
+SUPABASE_ANON_KEY
+
+✅ STEP 2: Install SDK in Replit
+bash
+Copy
+Edit
+npm install @supabase/supabase-js
+✅ STEP 3: Create Supabase Client
+📁 lib/supabaseClient.ts
+
+ts
+Copy
+Edit
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.SUPABASE_URL!;
+const supabaseKey = process.env.SUPABASE_ANON_KEY!;
+
+export const supabase = createClient(supabaseUrl, supabaseKey);
+✅ STEP 4: Auth Context (React)
+📁 contexts/AuthContext.tsx
+
+tsx
+Copy
+Edit
+import { createContext, useEffect, useState, useContext } from 'react';
+import { supabase } from '@/lib/supabaseClient';
+
+const AuthContext = createContext(null);
+
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null);
+    });
+    supabase.auth.getSession().then(({ data }) => setUser(data.session?.user));
+    return () => listener?.subscription.unsubscribe();
+  }, []);
+
+  return <AuthContext.Provider value={{ user }}>{children}</AuthContext.Provider>;
+}
+
+export const useAuth = () => useContext(AuthContext);
+✅ STEP 5: Login & Signup Pages
+📁 pages/Login.tsx
+
+tsx
+Copy
+Edit
+import { useState } from 'react';
+import { supabase } from '@/lib/supabaseClient';
+import { useRouter } from 'next/router';
+
+export default function Login() {
+  const [email, setEmail] = useState('');
+  const [pass, setPass] = useState('');
+  const router = useRouter();
+
+  const handleLogin = async () => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password: pass });
+    if (!error) router.push('/dashboard');
+    else alert("Login failed");
+  };
+
+  return (
+    <div className="p-6 space-y-4">
+      <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" />
+      <input type="password" value={pass} onChange={e => setPass(e.target.value)} placeholder="Password" />
+      <button onClick={handleLogin}>Login</button>
+    </div>
+  );
+}
+📁 pages/Signup.tsx
+
+tsx
+Copy
+Edit
+const handleSignup = async () => {
+  const { error } = await supabase.auth.signUp({ email, password: pass });
+  if (!error) alert("Check your inbox!");
+};
+✅ STEP 6: Protect Dashboard Routes
+In Dashboard.tsx or DossierViewer.tsx:
+
+tsx
+Copy
+Edit
+import { useAuth } from '@/contexts/AuthContext';
+
+const { user } = useAuth();
+if (!user) return <p>🔒 Please login to access your data</p>;
+✅ STEP 7: Attach Auth to Backend Endpoints
+In your FastAPI endpoints:
+python
+Copy
+Edit
+@router.post("/api/dossier/save")
+def save(..., user_id: str = Body(...)):
+    path = f"data/dossiers/{user_id}_{protocol_id}_dossier.json"
+    ...
+In frontend:
+
+tsx
+Copy
+Edit
+body: JSON.stringify({ ..., user_id: user?.id })
+✅ Your platform now supports:
+
+Secure login/signup
+
+Per-user data save/view/export
+
+Auth context inside frontend
+
+Session-aware backend logic
