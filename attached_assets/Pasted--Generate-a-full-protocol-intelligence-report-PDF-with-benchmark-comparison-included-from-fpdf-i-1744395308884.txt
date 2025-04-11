@@ -1,0 +1,74 @@
+# Generate a full protocol intelligence report PDF with benchmark comparison included
+
+from fpdf import FPDF
+import time
+
+# Simulated input values (from analyzer + predictor + benchmarks)
+protocol_id = "obesity_trial_2024_v2"
+parsed = {
+    "phase": "Phase 2",
+    "sample_size": 250,
+    "duration_weeks": 24,
+    "dropout_rate": 0.15,
+    "endpoint_primary": "BMI reduction ≥5%",
+    "indication": "Obesity"
+}
+prediction = 0.83
+benchmarks = {
+    "avg_sample_size": 270,
+    "avg_duration_weeks": 26,
+    "avg_dropout_rate": 0.18,
+    "total_trials": 46
+}
+
+# Clean utility
+def clean(text):
+    return text.replace("–", "-").replace("’", "'").replace("≥", ">=")
+
+# PDF setup
+class PDF(FPDF):
+    def header(self):
+        self.set_font("Arial", "B", 14)
+        self.cell(0, 10, f"Protocol Intelligence Report – {protocol_id}", ln=True, align="C")
+        self.ln(5)
+
+    def add_section(self, title, content):
+        self.set_font("Arial", "B", 12)
+        self.cell(0, 10, clean(title), ln=True)
+        self.ln(1)
+        self.set_font("Arial", "", 11)
+        self.multi_cell(0, 8, clean(content))
+        self.ln(2)
+
+# Build PDF
+pdf = PDF()
+pdf.add_page()
+
+pdf.add_section("Protocol Summary", f"""
+- Indication: {parsed['indication']}
+- Phase: {parsed['phase']}
+- Sample Size: {parsed['sample_size']}
+- Duration: {parsed['duration_weeks']} weeks
+- Dropout Rate: {parsed['dropout_rate'] * 100:.1f}%
+- Primary Endpoint: {parsed['endpoint_primary']}
+""")
+
+pdf.add_section("Trial Success Prediction", f"{round(prediction * 100, 1)}%")
+
+pdf.add_section("CSR Benchmark Comparison", f"""
+Based on {benchmarks['total_trials']} CSR-matched trials:
+- Avg Sample Size: {benchmarks['avg_sample_size']}
+- Avg Duration: {benchmarks['avg_duration_weeks']} weeks
+- Avg Dropout Rate: {benchmarks['avg_dropout_rate'] * 100:.1f}%
+""")
+
+pdf.add_section("Recommendations", f"""
+- Your sample size is slightly below CSR median
+- Dropout rate appears slightly optimistic
+- Trial duration is well aligned with precedent
+""")
+
+pdf_path = f"/mnt/data/Protocol_Intelligence_Report_{int(time.time())}.pdf"
+pdf.output(pdf_path)
+
+pdf_path
