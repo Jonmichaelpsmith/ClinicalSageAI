@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { FileText, User, Calendar, BarChart2 } from 'lucide-react';
+import { FileText, User, FileType, BarChart2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface ExportLog {
@@ -95,7 +95,7 @@ export default function ExportLogDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Unique Users</CardTitle>
-            <UserIcon className="h-4 w-4 text-muted-foreground" />
+            <User className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{uniqueUsers}</div>
@@ -105,7 +105,7 @@ export default function ExportLogDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Unique Protocols</CardTitle>
-            <DocumentIcon className="h-4 w-4 text-muted-foreground" />
+            <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{uniqueProtocols}</div>
@@ -115,7 +115,7 @@ export default function ExportLogDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Report Types</CardTitle>
-            <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+            <FileType className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{reportTypes.length}</div>
