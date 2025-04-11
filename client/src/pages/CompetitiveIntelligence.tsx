@@ -17,12 +17,12 @@ import {
   Beaker,
   ExternalLink,
   Search,
-  Lightbulb
+  Lightbulb,
+  AlertTriangle
 } from 'lucide-react';
 
-// Import our new Strategic Intelligence components
+// We'll use StrategicRecommendations for our unified intelligence component
 import StrategicRecommendations from '@/components/competitive/StrategicRecommendations';
-import CompetitiveIntelligenceForm from '@/components/competitive/CompetitiveIntelligenceForm';
 import { Textarea } from '@/components/ui/textarea';
 
 import { 
