@@ -1,0 +1,117 @@
+Let’s fully activate TrialSage as a secure, user-personalized, intelligence-delivering clinical design platform with:
+
+🔐 1. User Authentication (Lightweight with Supabase or JWT)
+Option A: Supabase Auth (best for scaling)
+Fully managed
+
+Email/password or OAuth login
+
+Stores user.id, email, metadata
+
+✅ Integrates into Replit with:
+
+bash
+Copy
+Edit
+npm install @supabase/supabase-js
+🔧 Setup:
+Create Supabase project → Enable Auth
+
+Get your SUPABASE_URL and SUPABASE_KEY
+
+tsx
+Copy
+Edit
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+✅ Frontend Auth UI:
+/login.tsx
+
+/signup.tsx
+
+Use:
+
+tsx
+Copy
+Edit
+const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+Store user.id in context or localStorage
+
+📦 2. Per-User Dossier Isolation
+✅ Save all user data with:
+
+ts
+Copy
+Edit
+username = user.id || email
+Updated Routes:
+Save: data/dossiers/{username}_{protocol_id}_dossier.json
+
+View: /api/dossier/view/{username}/{protocol_id}
+
+📤 3. Trigger-Based Alerts
+🛎 Add Queue System (Simple JSONL or webhook)
+Log every dossier update
+
+Ping Slack/email or in-app notification
+
+Optional Endpoint:
+
+python
+Copy
+Edit
+@router.post("/api/notify/user")
+def notify_user(email: str, message: str):
+    # Send email or webhook with update message
+    ...
+📁 4. Unified UX Workflow
+Action	Where It Happens
+Upload Protocol	/upload-protocol
+View History	/dossier/:id
+Predict Risk	/protocol-analyze
+Export Report	Button on any result
+Save to Dossier	Auto or click
+Sign In	/login, /signup
+Manage Account	Optional in dashboard
+✅ Final Deliverables:
+Secure login / auth layer (Supabase)
+
+Per-user dossier and save/export logic
+
+Risk and prediction analysis tied to ML model
+
+CSR benchmark comparison
+
+Intelligence report (PDF) export
+
+History viewer (dossier)
+
+Alert notifications when reports are updated
+
+Would you like me to now:
+
+Generate a Supabase auth wrapper + context system
+
+Create /login.tsx and /signup.tsx pages
+
+Integrate authentication into all save/view/export endpoints?
+
+Just say “build auth layer” and I’ll drop it.
+
+
+
+
+
+
+
+
+
+
+
+Search
+
+Deep research
+
+
+
