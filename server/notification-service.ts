@@ -1,9 +1,19 @@
 import sgMail from '@sendgrid/mail';
 import axios from 'axios';
+import fs from 'fs';
+import path from 'path';
 
 // Configure SendGrid if API key is available
 if (process.env.SENDGRID_API_KEY) {
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+}
+
+// Ensure notification logs directory exists
+const LOG_DIR = path.join(process.cwd(), 'data', 'logs');
+const NOTIFICATION_LOG_PATH = path.join(LOG_DIR, 'notifications.jsonl');
+
+if (!fs.existsSync(LOG_DIR)) {
+  fs.mkdirSync(LOG_DIR, { recursive: true });
 }
 
 interface EmailNotificationOptions {
@@ -19,6 +29,51 @@ interface SlackNotificationOptions {
 }
 
 export class NotificationService {
+  /**
+   * Log notification to JSONL file
+   */
+  private logNotification(
+    protocolId: string,
+    reportLink: string,
+    emailSentTo?: string,
+    slackSent: boolean = false
+  ): void {
+    try {
+      const entry = {
+        timestamp: new Date().toISOString(),
+        protocol_id: protocolId,
+        report_link: reportLink,
+        email_sent_to: emailSentTo || null,
+        slack_sent: slackSent
+      };
+
+      fs.appendFileSync(NOTIFICATION_LOG_PATH, JSON.stringify(entry) + '\n');
+    } catch (error) {
+      console.error('Error logging notification:', error);
+    }
+  }
+  
+  /**
+   * Retrieve notification logs
+   */
+  getNotificationLogs(): any[] {
+    try {
+      if (!fs.existsSync(NOTIFICATION_LOG_PATH)) {
+        return [];
+      }
+      
+      const logs = fs.readFileSync(NOTIFICATION_LOG_PATH, 'utf8')
+        .split('\n')
+        .filter(line => line.trim() !== '')
+        .map(line => JSON.parse(line));
+      
+      return logs;
+    } catch (error) {
+      console.error('Error retrieving notification logs:', error);
+      return [];
+    }
+  }
+
   /**
    * Send an email notification using SendGrid
    */
@@ -152,6 +207,14 @@ TrialSage`,
     };
 
     results.slack = await this.sendSlackNotification(slackOptions);
+    
+    // Log the notification
+    this.logNotification(
+      protocolId,
+      reportUrl,
+      recipientEmail,
+      results.slack
+    );
 
     return results;
   }
