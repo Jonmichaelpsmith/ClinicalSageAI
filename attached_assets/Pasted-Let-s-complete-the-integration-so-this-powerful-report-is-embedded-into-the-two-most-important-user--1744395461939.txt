@@ -1,0 +1,121 @@
+Let’s complete the integration so this powerful report is embedded into the two most important user flows in TrialSage:
+
+🔁 Integration Targets
+1. 🧠 Study Design Agent
+After the agent analyzes the protocol, it auto-suggests:
+
+“📄 Export Full Intelligence Report”
+
+“💾 Add to Dossier”
+
+2. 📝 Protocol Generator
+While editing a protocol, users can:
+
+Click “📊 Benchmark Design”
+
+Instantly get success score + benchmark
+
+Export full PDF
+
+✅ Replit Integration Instructions
+🔧 Backend: Add Smart Export Trigger
+📁 /api/export/intelligence-report.py
+
+python
+Copy
+Edit
+from fastapi import APIRouter, Body
+from fpdf import FPDF
+import time
+import os
+
+router = APIRouter()
+os.makedirs("data/reports", exist_ok=True)
+
+@router.post("/api/export/intelligence-report")
+def export_full_report(
+    protocol_id: str = Body(...),
+    parsed: dict = Body(...),
+    prediction: float = Body(...),
+    benchmarks: dict = Body(...)
+):
+    class PDF(FPDF):
+        def header(self):
+            self.set_font("Arial", "B", 14)
+            self.cell(0, 10, f"Protocol Intelligence Report – {protocol_id}", ln=True, align="C")
+            self.ln(5)
+        def add_section(self, title, content):
+            self.set_font("Arial", "B", 12)
+            self.cell(0, 10, title, ln=True)
+            self.ln(1)
+            self.set_font("Arial", "", 11)
+            self.multi_cell(0, 8, content)
+            self.ln(2)
+
+    pdf = PDF()
+    pdf.add_page()
+
+    pdf.add_section("Protocol Summary", f"""
+- Indication: {parsed['indication']}
+- Phase: {parsed['phase']}
+- Sample Size: {parsed['sample_size']}
+- Duration: {parsed['duration_weeks']} weeks
+- Dropout Rate: {parsed['dropout_rate']}%
+- Primary Endpoint: {parsed['endpoint_primary']}
+""")
+
+    pdf.add_section("Trial Success Prediction", f"{round(prediction * 100, 1)}%")
+
+    pdf.add_section("CSR Benchmark Comparison", f"""
+- Based on {benchmarks['total_trials']} trials
+- Avg Sample Size: {benchmarks['avg_sample_size']}
+- Avg Duration: {benchmarks['avg_duration_weeks']} weeks
+- Avg Dropout Rate: {benchmarks['avg_dropout_rate']}%
+""")
+
+    pdf.add_section("Recommendations", f"""
+- Consider increasing sample size to CSR average
+- Plan for realistic dropout (current average ~{benchmarks['avg_dropout_rate']}%)
+- Endpoint aligns with successful trial designs
+""")
+
+    path = f"data/reports/{protocol_id}_intelligence.pdf"
+    pdf.output(path)
+    return {"download_url": f"/{path}"}
+✅ Frontend: Study Design Agent + Protocol Generator
+Add export button inside response/output section:
+
+tsx
+Copy
+Edit
+<Button
+  onClick={async () => {
+    const res = await fetch('/api/export/intelligence-report', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        protocol_id: 'obesity_trial_v3',
+        parsed,
+        prediction: prediction.success_probability,
+        benchmarks
+      })
+    });
+    const { download_url } = await res.json();
+    window.open(download_url, '_blank');
+  }}
+>
+  📥 Export Full Intelligence Report
+</Button>
+✅ Now, when a user:
+
+Runs the Study Design Agent
+
+Or edits a protocol in the Generator
+
+They can:
+
+📊 See benchmarked design insight
+
+🧠 Get ML-powered feedback
+
+📄 Export an investor

@@ -1,0 +1,97 @@
+Let’s now complete the workflow with a one-click “Send to Dossier” integration — allowing users to permanently store and version their intelligence report.
+
+📁 BACKEND API
+/api/dossier/save-intelligence-report
+python
+Copy
+Edit
+from fastapi import APIRouter, Body
+import json
+import os
+from datetime import datetime
+
+router = APIRouter()
+DOSSIER_PATH = "data/dossiers"
+os.makedirs(DOSSIER_PATH, exist_ok=True)
+
+@router.post("/api/dossier/save-intelligence-report")
+def save_to_dossier(protocol_id: str = Body(...), report_data: dict = Body(...)):
+    timestamp = datetime.utcnow().isoformat()
+    path = f"{DOSSIER_PATH}/{protocol_id}_dossier.json"
+
+    try:
+        # Load existing or create new
+        if os.path.exists(path):
+            with open(path, "r") as f:
+                dossier = json.load(f)
+        else:
+            dossier = {"protocol_id": protocol_id, "reports": []}
+
+        dossier["reports"].append({
+            "created_at": timestamp,
+            "data": report_data
+        })
+
+        with open(path, "w") as f:
+            json.dump(dossier, f, indent=2)
+
+        return {"message": "Report added to dossier", "path": path}
+
+    except Exception as e:
+        return {"error": str(e)}
+✅ FRONTEND BUTTON
+📁 Add to UploadAndAnalyze.tsx or StudyDesignAgent.tsx
+
+tsx
+Copy
+Edit
+<Button
+  onClick={async () => {
+    const res = await fetch('/api/dossier/save-intelligence-report', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        protocol_id: 'obesity_trial_v3',
+        report_data: {
+          parsed,
+          prediction: prediction.success_probability,
+          benchmarks
+        }
+      })
+    });
+    const msg = await res.json();
+    alert("✅ Saved to Dossier");
+  }}
+>
+  💾 Save to Dossier
+</Button>
+✅ Summary: You Now Have
+📥 Upload → Auto-analyze protocol
+
+🧠 AI prediction + risk assessment
+
+📊 Benchmark comparison from CSR archive
+
+📄 Export full report to PDF
+
+💾 Save to dossier with versioning
+
+Would you like to build a Dossier Viewer now to display saved reports by protocol?
+
+
+
+
+
+
+
+
+
+
+
+Search
+
+Deep research
+
+
+
+ChatGPT can m

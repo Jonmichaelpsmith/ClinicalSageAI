@@ -1,0 +1,105 @@
+Let’s build your Dossier Viewer — this will give your users real visibility into saved reports, past protocol versions, and AI analyses across time.
+
+📁 Dossier Viewer: Feature Overview
+Feature	Purpose
+🗂 Load past intelligence reports	For any protocol ID
+📅 Show timestamps	When each report was created
+📋 View parsed data, prediction, benchmarks	All saved info
+📄 Download full PDF again	Or re-generate
+🔍 Search/filter by protocol ID	Optional UX boost
+✅ Step 1: Backend API to Load Reports
+📁 /api/dossier/view.py
+
+python
+Copy
+Edit
+from fastapi import APIRouter
+import os
+import json
+
+router = APIRouter()
+DOSSIER_PATH = "data/dossiers"
+
+@router.get("/api/dossier/view/{protocol_id}")
+def view_dossier(protocol_id: str):
+    path = f"{DOSSIER_PATH}/{protocol_id}_dossier.json"
+    if not os.path.exists(path):
+        return {"message": "No dossier found", "reports": []}
+
+    with open(path, "r") as f:
+        dossier = json.load(f)
+
+    return {"protocol_id": protocol_id, "reports": dossier["reports"]}
+✅ Step 2: Frontend Viewer Component
+📁 components/DossierViewer.tsx
+
+tsx
+Copy
+Edit
+import { useEffect, useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+
+export default function DossierViewer() {
+  const [protocolId, setProtocolId] = useState('');
+  const [reports, setReports] = useState([]);
+
+  const fetchReports = async () => {
+    const res = await fetch(`/api/dossier/view/${protocolId}`);
+    const data = await res.json();
+    setReports(data.reports || []);
+  };
+
+  return (
+    <div className="p-6 max-w-5xl mx-auto space-y-4">
+      <h2 className="text-xl font-bold text-blue-800">📁 Dossier Viewer</h2>
+      <Input value={protocolId} onChange={e => setProtocolId(e.target.value)} placeholder="Enter Protocol ID..." />
+      <button onClick={fetchReports} className="bg-blue-700 text-white px-4 py-2 mt-2 rounded">Load Reports</button>
+
+      {reports.map((r, idx) => (
+        <Card key={idx} className="mt-4 border">
+          <CardContent className="text-sm space-y-2">
+            <p className="text-gray-500 italic">🕒 Created: {new Date(r.created_at).toLocaleString()}</p>
+            <p><strong>Success Probability:</strong> {(r.data.prediction * 100).toFixed(1)}%</p>
+            <p><strong>Sample Size:</strong> {r.data.parsed.sample_size}</p>
+            <p><strong>Endpoint:</strong> {r.data.parsed.endpoint_primary}</p>
+            <p><strong>Dropout:</strong> {r.data.parsed.dropout_rate * 100}%</p>
+            <p><strong>Benchmark Sample Avg:</strong> {r.data.benchmarks.avg_sample_size}</p>
+            <p className="text-blue-600 underline cursor-pointer" onClick={() => alert("🔜 Add PDF re-export here")}>📄 Export Report</p>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
+✅ Your clients now get:
+
+Long-term protocol intelligence history
+
+Re-downloadable insights
+
+Audit trail of decisions
+
+Would you like to:
+
+Add PDF export from this page?
+
+Or enable per-user dossier access with login support?
+
+
+
+
+
+
+
+
+
+
+
+Search
+
+Deep research
+
+
+
+ChatGPT can make mistakes. Check important info.
