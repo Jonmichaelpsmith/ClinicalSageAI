@@ -3450,6 +3450,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
+  // Notification logs endpoint
+  app.get("/api/notifications/logs", async (req, res) => {
+    try {
+      // Get notification logs
+      const logs = notificationService.getNotificationLogs();
+      
+      res.json(logs);
+    } catch (error) {
+      console.error("Error retrieving notification logs:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to retrieve notification logs",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;
