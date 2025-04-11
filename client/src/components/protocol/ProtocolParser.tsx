@@ -1,234 +1,239 @@
+
 import React, { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
-import { useToast } from '@/hooks/use-toast';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import axios from 'axios';
+import { 
+  Card, 
+  CardContent, 
+  CardFooter, 
+  CardHeader, 
+  CardTitle, 
+  CardDescription 
+} from '@/components/ui/card';
+import { 
+  Tabs, 
+  TabsContent, 
+  TabsList, 
+  TabsTrigger 
+} from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { FileUploader } from '@/components/ui/file-uploader';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FileText, Upload, PenTool, Search, Loader2 } from 'lucide-react';
+import { 
+  FileUploader, 
+  UploadedFile 
+} from '@/components/ui/file-uploader';
+import { 
+  AlertCircle, 
+  Upload, 
+  FileText, 
+  Zap, 
+  Loader2 
+} from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 interface ProtocolParserProps {
-  onParseComplete: (parsedData: any) => void;
+  onParseComplete: (data: any) => void;
 }
 
 export function ProtocolParser({ onParseComplete }: ProtocolParserProps) {
   const [protocolText, setProtocolText] = useState('');
-  const [selectedTab, setSelectedTab] = useState('upload');
-  const { toast } = useToast();
+  const [selectedTab, setSelectedTab] = useState<string>('upload');
 
-  // Parse protocol text
+  // File upload mutation
+  const uploadMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const response = await axios.post('/api/protocol/parse-file', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      return response.data;
+    },
+    onSuccess: (data) => {
+      console.log('Protocol file successfully parsed:', data);
+      onParseComplete(data);
+      toast({
+        title: "Protocol parsed successfully",
+        description: "Your protocol has been processed",
+        variant: "default",
+      });
+    },
+    onError: (error: any) => {
+      console.error('Error parsing protocol file:', error);
+      toast({
+        title: "Error parsing protocol",
+        description: error.response?.data?.message || "Failed to parse protocol file",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Text parsing mutation
   const parseTextMutation = useMutation({
     mutationFn: async (text: string) => {
-      const response = await apiRequest('POST', '/api/protocol/parse-text', { text });
-      return response.json();
+      const response = await axios.post('/api/protocol/parse-text', { text });
+      return response.data;
     },
     onSuccess: (data) => {
-      if (data.success) {
-        toast({
-          title: "Protocol Parsed",
-          description: "Successfully analyzed protocol text",
-        });
-        onParseComplete(data.protocol);
-      } else {
-        toast({
-          title: "Parse Failed",
-          description: data.message || "Failed to parse protocol",
-          variant: "destructive",
-        });
-      }
-    },
-    onError: (error: any) => {
+      console.log('Protocol text successfully parsed:', data);
+      onParseComplete(data);
       toast({
-        title: "Parse Failed",
-        description: error.message || "An error occurred while analyzing protocol text",
-        variant: "destructive",
+        title: "Protocol text parsed successfully",
+        description: "Your protocol has been processed",
+        variant: "default",
       });
     },
-  });
-
-  // Upload and parse protocol file
-  const uploadMutation = useMutation({
-    mutationFn: async (formData: FormData) => {
-      const response = await apiRequest('POST', '/api/protocol/analyze-file', formData);
-      return response.json();
-    },
-    onSuccess: (data) => {
-      if (data.success) {
-        toast({
-          title: "Protocol Analyzed",
-          description: "Successfully analyzed protocol file",
-        });
-        onParseComplete(data.protocol);
-      } else {
-        toast({
-          title: "Analysis Failed",
-          description: data.message || "Failed to analyze protocol",
-          variant: "destructive",
-        });
-      }
-    },
     onError: (error: any) => {
+      console.error('Error parsing protocol text:', error);
       toast({
-        title: "Analysis Failed",
-        description: error.message || "An error occurred while analyzing protocol file",
+        title: "Error parsing protocol text",
+        description: error.response?.data?.message || "Failed to parse protocol text",
         variant: "destructive",
       });
-    },
+    }
   });
 
-  // Full protocol analysis
+  // Deep analysis mutation
   const analyzeMutation = useMutation({
     mutationFn: async (text: string) => {
-      const response = await apiRequest('POST', '/api/protocol/full-analyze', { text });
-      return response.json();
+      const response = await axios.post('/api/protocol/deep-analyze', { text });
+      return response.data;
     },
     onSuccess: (data) => {
-      if (data.success) {
-        toast({
-          title: "Deep Analysis Complete",
-          description: "Successfully analyzed protocol with AI",
-        });
-        onParseComplete(data.protocol);
-      } else {
-        toast({
-          title: "Analysis Failed",
-          description: data.message || "Failed to analyze protocol",
-          variant: "destructive",
-        });
-      }
-    },
-    onError: (error: any) => {
-      console.error("Error analyzing protocol text:", error);
-      const errorMessage = error?.message || "An error occurred during AI analysis";
+      console.log('Protocol deeply analyzed:', data);
+      onParseComplete(data);
       toast({
-        title: "Analysis Failed",
-        description: errorMessage,
-        variant: "destructive",
+        title: "Deep analysis complete",
+        description: "Advanced protocol insights are ready",
+        variant: "default",
       });
     },
+    onError: (error: any) => {
+      console.error('Error analyzing protocol text:', error);
+      toast({
+        title: "Error in deep analysis",
+        description: error.response?.data?.message || "Failed to perform deep analysis",
+        variant: "destructive",
+      });
+    }
   });
 
   // Handle file upload
-  const handleFilesAdded = (files: File[]) => {
-    if (files.length === 0) return;
-
-    const formData = new FormData();
-    formData.append('file', files[0]);
-    uploadMutation.mutate(formData);
+  const handleFileUpload = (files: UploadedFile[]) => {
+    if (files.length > 0 && files[0].file) {
+      uploadMutation.mutate(files[0].file);
+    }
   };
 
   // Handle text parsing
   const handleParseText = () => {
-    if (!protocolText.trim()) {
+    if (protocolText.trim()) {
+      parseTextMutation.mutate(protocolText);
+    } else {
       toast({
-        title: "No Text",
-        description: "Please enter protocol text to analyze",
+        title: "Empty input",
+        description: "Please enter protocol text to parse",
         variant: "destructive",
       });
-      return;
     }
-    
-    parseTextMutation.mutate(protocolText);
   };
 
   // Handle deep analysis
-  const handleDeepAnalysis = () => {
-    if (!protocolText.trim()) {
+  const handleDeepAnalyze = () => {
+    if (protocolText.trim()) {
+      analyzeMutation.mutate(protocolText);
+    } else {
       toast({
-        title: "No Text",
+        title: "Empty input",
         description: "Please enter protocol text to analyze",
         variant: "destructive",
       });
-      return;
     }
-    
-    analyzeMutation.mutate(protocolText);
   };
-  
+
+  const isPending = uploadMutation.isPending || parseTextMutation.isPending || analyzeMutation.isPending;
+
   return (
-    <Card>
+    <Card className="w-full max-w-4xl mx-auto">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <FileText className="h-5 w-5 text-primary" />
-          Protocol Parser
-        </CardTitle>
+        <CardTitle>Protocol Intelligence Engine</CardTitle>
         <CardDescription>
-          Upload a protocol file or paste protocol text to analyze
+          Upload your protocol document or paste text to extract key insights
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Tabs 
-          defaultValue="upload" 
-          value={selectedTab} 
-          onValueChange={setSelectedTab}
-          className="space-y-4"
-        >
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="upload" className="flex gap-2 items-center">
-              <Upload className="h-4 w-4" />
-              Upload File
-            </TabsTrigger>
-            <TabsTrigger value="text" className="flex gap-2 items-center">
-              <PenTool className="h-4 w-4" />
-              Enter Text
-            </TabsTrigger>
+        <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
+          <TabsList className="grid grid-cols-2 mb-4">
+            <TabsTrigger value="upload">Upload File</TabsTrigger>
+            <TabsTrigger value="text">Paste Text</TabsTrigger>
           </TabsList>
           
           <TabsContent value="upload" className="space-y-4">
-            <FileUploader
-              accept=".pdf,.docx,.doc,.txt"
-              maxSize={20}
-              onFilesAdded={handleFilesAdded}
-              uploadText="Drag & drop protocol files here"
-              className="h-32"
+            <FileUploader 
+              accept="application/pdf"
+              maxFiles={1}
+              maxSize={10 * 1024 * 1024} // 10MB
+              onUpload={handleFileUpload}
+              disabled={isPending}
+              uploadMessage="Drag & drop your protocol file here or click to browse"
+              className="h-64"
             />
             <div className="text-xs text-muted-foreground mt-2">
-              Supported formats: PDF, Word, or Text files up to 20MB
+              Supported formats: PDF (max 10MB)
             </div>
           </TabsContent>
           
           <TabsContent value="text" className="space-y-4">
-            <Textarea
-              placeholder="Paste protocol text here..."
+            <Textarea 
+              placeholder="Paste your protocol text here..."
               value={protocolText}
               onChange={(e) => setProtocolText(e.target.value)}
-              className="min-h-[200px]"
+              className="min-h-[300px] font-mono text-sm"
+              disabled={isPending}
             />
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
+            <div className="flex space-x-2">
+              <Button 
                 onClick={handleParseText}
-                disabled={parseTextMutation.isPending || !protocolText.trim()}
-                className="flex gap-2 items-center"
+                disabled={isPending || !protocolText.trim()}
+                className="flex-1"
               >
                 {parseTextMutation.isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Processing...
+                  </>
                 ) : (
-                  <Search className="h-4 w-4" />
+                  <>
+                    <FileText className="mr-2 h-4 w-4" />
+                    Parse Protocol
+                  </>
                 )}
-                Basic Parse
               </Button>
-              
-              <Button
-                onClick={handleDeepAnalysis}
-                disabled={analyzeMutation.isPending || !protocolText.trim()}
-                className="flex gap-2 items-center"
+              <Button 
+                onClick={handleDeepAnalyze}
+                disabled={isPending || !protocolText.trim()}
+                variant="outline"
+                className="flex-1"
               >
                 {analyzeMutation.isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Analyzing...
+                  </>
                 ) : (
-                  <FileText className="h-4 w-4" />
+                  <>
+                    <Zap className="mr-2 h-4 w-4" />
+                    Deep AI Analysis
+                  </>
                 )}
-                Deep AI Analysis
               </Button>
             </div>
           </TabsContent>
         </Tabs>
       </CardContent>
       
-      {(uploadMutation.isPending || parseTextMutation.isPending || analyzeMutation.isPending) && (
+      {isPending && (
         <CardFooter className="border-t pt-4">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" />
