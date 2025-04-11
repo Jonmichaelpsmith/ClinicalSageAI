@@ -22,6 +22,7 @@ import { optimizeProtocol } from "./protocol-optimizer-service";
 import { studyDesignAgentService } from "./agent-service";
 import { getEndpointRecommenderService } from "./services/endpoint-recommender-service";
 import { notificationService } from "./notification-service";
+import { strategicIntelligenceService } from "./strategic-intelligence-service";
 import { 
   fetchClinicalTrialData, 
   importTrialsFromCsv, 
@@ -3477,6 +3478,132 @@ export async function registerRoutes(app: Express): Promise<Server> {
         success: false,
         message: "Failed to retrieve notification logs",
         error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Strategic Intelligence Report API endpoints
+  app.post('/api/strategy/generate-report', async (req: Request, res: Response) => {
+    try {
+      const { protocolData, options } = req.body;
+      
+      if (!protocolData) {
+        return res.status(400).json({
+          success: false,
+          message: 'Protocol data is required'
+        });
+      }
+      
+      // Generate the strategic report
+      const report = await strategicIntelligenceService.generateStrategicReport(protocolData, options);
+      
+      res.json({
+        success: true,
+        report
+      });
+    } catch (error) {
+      console.error('Error generating strategic report:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error generating strategic report',
+        error: (error as Error).message
+      });
+    }
+  });
+  
+  app.post('/api/strategy/export-pdf', async (req: Request, res: Response) => {
+    try {
+      const { reportData, notifyOptions } = req.body;
+      
+      if (!reportData) {
+        return res.status(400).json({
+          success: false,
+          message: 'Report data is required'
+        });
+      }
+      
+      // Set base URL for download links in notifications
+      const baseUrl = `${req.protocol}://${req.get('host')}`;
+      const notify = notifyOptions?.notify || false;
+      
+      // Export the report as PDF
+      const result = await strategicIntelligenceService.exportReportAsPDF(reportData, {
+        ...notifyOptions,
+        baseUrl,
+        notify
+      });
+      
+      res.json({
+        success: true,
+        filePath: result.filePath,
+        downloadUrl: `/download/${path.basename(result.filePath)}`
+      });
+    } catch (error) {
+      console.error('Error exporting report as PDF:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error exporting report as PDF',
+        error: (error as Error).message
+      });
+    }
+  });
+  
+  app.post('/api/strategy/export-markdown', async (req: Request, res: Response) => {
+    try {
+      const { reportData } = req.body;
+      
+      if (!reportData) {
+        return res.status(400).json({
+          success: false,
+          message: 'Report data is required'
+        });
+      }
+      
+      // Export the report as Markdown
+      const result = strategicIntelligenceService.exportReportAsMarkdown(reportData);
+      
+      res.json({
+        success: true,
+        markdown: result.markdown,
+        filePath: result.filePath,
+        fileName: path.basename(result.filePath)
+      });
+    } catch (error) {
+      console.error('Error exporting report as Markdown:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error exporting report as Markdown',
+        error: (error as Error).message
+      });
+    }
+  });
+  
+  app.get('/api/strategy/sample-report', (_req: Request, res: Response) => {
+    try {
+      // Path to the sample report
+      const samplePath = path.join(process.cwd(), 'server/templates/sample-strategic-report.json');
+      
+      // Check if the sample report exists
+      if (!fs.existsSync(samplePath)) {
+        return res.status(404).json({
+          success: false,
+          message: 'Sample report not found'
+        });
+      }
+      
+      // Read and parse the sample report
+      const sampleData = JSON.parse(fs.readFileSync(samplePath, 'utf8'));
+      
+      res.json({
+        success: true,
+        report: sampleData
+      });
+    } catch (error) {
+      console.error('Error retrieving sample report:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error retrieving sample report',
+        error: (error as Error).message
       });
     }
   });
