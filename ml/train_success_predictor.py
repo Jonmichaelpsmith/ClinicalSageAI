@@ -3,10 +3,10 @@ import pickle
 import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
-from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, accuracy_score, roc_auc_score
 from sklearn.impute import SimpleImputer
 
@@ -17,121 +17,138 @@ def train_success_predictor():
     """
     print("Training trial success predictor...")
     
+    # Get the absolute path to the dataset from the project root
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.abspath(os.path.join(script_dir, '..'))
+    dataset_path = os.path.join(project_root, "data", "csr_dataset.csv")
+    
     # Check if the dataset exists
-    if not os.path.exists("data/csr_dataset.csv"):
-        print("Error: data/csr_dataset.csv not found. Run parse_csrs_to_csv.py first.")
+    if not os.path.exists(dataset_path):
+        print(f"Error: {dataset_path} not found. Run parse_csrs_to_csv.py first.")
         return
     
     # Load the dataset
-    df = pd.read_csv("data/csr_dataset.csv")
-    
-    if len(df) == 0:
-        print("Error: Empty dataset.")
-        return
+    df = pd.read_csv(dataset_path)
     
     print(f"Loaded dataset with {len(df)} records")
     
-    # Check the column distribution
-    print("\nFeature Distribution:")
-    for col in ['phase', 'indication', 'blinding', 'control_type']:
-        if col in df.columns:
-            print(f"\n{col} value counts:")
-            print(df[col].value_counts().head(5))
+    # Drop records with missing target
+    df = df.dropna(subset=['success'])
     
-    # Define features to use
-    numeric_features = ['sample_size', 'duration_weeks', 'dropout_rate']
-    categorical_features = ['phase', 'blinding', 'control_type']
+    print(f"Working with {len(df)} records after dropping missing targets")
+    print(f"Success rate in dataset: {df['success'].mean():.2f}")
     
-    # For indications, if there are too many unique values, we'll use only the top N
-    if 'indication' in df.columns:
-        top_indications = df['indication'].value_counts().head(15).index.tolist()
-        df['indication_grouped'] = df['indication'].apply(lambda x: x if x in top_indications else 'Other')
-        categorical_features.append('indication_grouped')
+    # Define features
+    categorical_features = ['indication', 'phase', 'blinding', 'control_arm']
+    numerical_features = ['sample_size', 'duration_weeks', 'dropout_rate']
     
-    # Define feature transformers
-    numeric_transformer = Pipeline(steps=[
-        ('imputer', SimpleImputer(strategy='median')),
-        ('scaler', StandardScaler())
-    ])
+    # Drop rows where all features are missing
+    required_columns = categorical_features + numerical_features
+    df = df.dropna(subset=required_columns, how='all')
     
+    print(f"Final dataset size: {len(df)} records")
+    
+    # Split the data
+    X = df[categorical_features + numerical_features]
+    y = df['success'].astype(int)
+    
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    
+    print(f"Training set: {len(X_train)} records")
+    print(f"Test set: {len(X_test)} records")
+    
+    # Build preprocessing pipeline
     categorical_transformer = Pipeline(steps=[
         ('imputer', SimpleImputer(strategy='constant', fill_value='missing')),
         ('onehot', OneHotEncoder(handle_unknown='ignore'))
     ])
     
-    preprocessor = ColumnTransformer(
-        transformers=[
-            ('num', numeric_transformer, numeric_features),
-            ('cat', categorical_transformer, categorical_features)
-        ])
-    
-    # Create the model pipeline
-    model = Pipeline(steps=[
-        ('preprocessor', preprocessor),
-        ('classifier', RandomForestClassifier(n_estimators=100, random_state=42))
+    numerical_transformer = Pipeline(steps=[
+        ('imputer', SimpleImputer(strategy='median')),
+        ('scaler', StandardScaler())
     ])
     
-    # Prepare data
-    X = df[numeric_features + categorical_features]
-    y = df['success']
+    preprocessor = ColumnTransformer(
+        transformers=[
+            ('cat', categorical_transformer, categorical_features),
+            ('num', numerical_transformer, numerical_features)
+        ])
     
-    # Train-test split
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-    
-    print(f"\nTraining set: {len(X_train)} records")
-    print(f"Test set: {len(X_test)} records")
-    
-    # Cross-validation
-    cv_scores = cross_val_score(model, X_train, y_train, cv=5)
-    print(f"\nCross-validation scores: {cv_scores}")
-    print(f"Mean CV accuracy: {cv_scores.mean():.3f}")
+    # Build the full pipeline
+    clf = Pipeline(steps=[
+        ('preprocessor', preprocessor),
+        ('classifier', RandomForestClassifier(n_estimators=100, 
+                                             max_depth=10,
+                                             min_samples_split=5,
+                                             random_state=42))
+    ])
     
     # Train the model
-    model.fit(X_train, y_train)
+    clf.fit(X_train, y_train)
     
-    # Evaluate on test set
-    y_pred = model.predict(X_test)
-    y_pred_proba = model.predict_proba(X_test)[:, 1]
+    # Evaluate the model
+    train_pred = clf.predict(X_train)
+    test_pred = clf.predict(X_test)
+    test_prob = clf.predict_proba(X_test)[:, 1]
     
     print("\nModel Evaluation:")
-    print(f"Test accuracy: {accuracy_score(y_test, y_pred):.3f}")
+    print(f"Training accuracy: {accuracy_score(y_train, train_pred):.3f}")
+    print(f"Test accuracy: {accuracy_score(y_test, test_pred):.3f}")
     
     if len(np.unique(y_test)) > 1:  # Check if test set has both classes
         try:
-            print(f"ROC-AUC score: {roc_auc_score(y_test, y_pred_proba):.3f}")
+            print(f"ROC-AUC score: {roc_auc_score(y_test, test_prob):.3f}")
         except Exception as e:
             print(f"Could not calculate ROC-AUC: {e}")
     
     print("\nClassification Report:")
-    print(classification_report(y_test, y_pred))
+    print(classification_report(y_test, test_pred))
     
     # Create models directory if it doesn't exist
-    os.makedirs("models", exist_ok=True)
+    models_dir = os.path.join(project_root, "models")
+    os.makedirs(models_dir, exist_ok=True)
     
     # Save the model
-    with open("models/success_predictor.pkl", "wb") as f:
-        pickle.dump(model, f)
+    model_path = os.path.join(models_dir, "success_predictor.pkl")
+    with open(model_path, "wb") as f:
+        pickle.dump(clf, f)
     
-    print("\nModel saved to models/success_predictor.pkl")
+    print(f"\nModel saved to: {model_path}")
     
-    # Feature importance analysis
-    feature_names = (
-        numeric_features +
-        model.named_steps['preprocessor'].transformers_[1][1].named_steps['onehot'].get_feature_names_out(categorical_features).tolist()
-    )
-    
+    # Try to extract feature importance (for Random Forest)
     try:
+        feature_names = categorical_features + numerical_features
+        rf_model = clf.named_steps['classifier']
+        
+        # Determine feature names after one-hot encoding
+        cat_encoder = clf.named_steps['preprocessor'].transformers_[0][1].named_steps['onehot']
+        if hasattr(cat_encoder, 'get_feature_names_out'):
+            cat_features = cat_encoder.get_feature_names_out(categorical_features)
+            all_features = list(cat_features) + numerical_features
+        else:
+            all_features = feature_names
+        
+        # Get importance scores
+        importance = rf_model.feature_importances_
+        
+        # If the lengths don't match, use generic feature names
+        if len(importance) != len(all_features):
+            all_features = [f"feature_{i}" for i in range(len(importance))]
+        
+        # Print top 10 important features
         feature_importance = pd.DataFrame({
-            'feature': feature_names,
-            'importance': model.named_steps['classifier'].feature_importances_
+            'feature': all_features[:len(importance)],
+            'importance': importance
         }).sort_values('importance', ascending=False)
         
-        print("\nTop 10 most important features:")
-        print(feature_importance.head(10))
-    except Exception as e:
-        print(f"Could not get feature importances: {e}")
+        print("\nTop 10 important features:")
+        for _, row in feature_importance.head(10).iterrows():
+            print(f"- {row['feature']}: {row['importance']:.3f}")
     
-    return model
+    except Exception as e:
+        print(f"Could not extract feature importance: {e}")
+    
+    return clf
 
 if __name__ == "__main__":
     train_success_predictor()
