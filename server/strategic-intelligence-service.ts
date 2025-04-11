@@ -11,6 +11,9 @@ import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import { storage } from './storage';
 import { notificationService } from './notification-service';
+import { academicKnowledgeService } from './academic-knowledge-service';
+import { protocolKnowledgeService } from './protocol-knowledge-service';
+import { huggingFaceService, HFModel } from './huggingface-service';
 
 // Ensure exports directory exists
 const exportsDir = path.join(process.cwd(), 'data/exports');
