@@ -1,5 +1,6 @@
 {pkgs}: {
   deps = [
+    pkgs.wget
     pkgs.libxcrypt
     pkgs.glibcLocales
     pkgs.xcbuild
