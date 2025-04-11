@@ -1,6 +1,6 @@
 import { db } from './db';
 import { eq } from 'drizzle-orm';
-import { csr_reports } from '../shared/schema';
+import { csrReports } from '../shared/schema';
 
 export interface ProtocolData {
   phase: string;
