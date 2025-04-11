@@ -1,0 +1,151 @@
+PART 1: Build Visual Benchmark Comparison Panel (React + Recharts)
+📁 components/ProtocolBenchmarkPanel.tsx
+tsx
+Copy
+Edit
+import { useEffect, useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+
+export default function ProtocolBenchmarkPanel({ parsed }) {
+  const [benchmarks, setBenchmarks] = useState(null);
+
+  useEffect(() => {
+    const fetchBenchmarks = async () => {
+      const res = await fetch('/api/strategy/from-csrs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ indication: parsed.indication || 'Obesity', phase: parsed.phase || 'Phase 2' })
+      });
+      const data = await res.json();
+      setBenchmarks(data.metrics);
+    };
+    if (parsed?.indication && parsed?.phase) {
+      fetchBenchmarks();
+    }
+  }, [parsed]);
+
+  if (!benchmarks) return null;
+
+  const chartData = [
+    { label: 'Your Trial', sample: parsed.sample_size, duration: parsed.duration_weeks },
+    { label: 'CSR Median', sample: benchmarks.avg_sample_size, duration: benchmarks.avg_duration_weeks }
+  ];
+
+  return (
+    <Card>
+      <CardContent className="space-y-4">
+        <h3 className="text-md font-bold text-blue-700">📊 Protocol Benchmark Comparison</h3>
+        <ResponsiveContainer width="100%" height={250}>
+          <BarChart data={chartData}>
+            <XAxis dataKey="label" />
+            <YAxis />
+            <Tooltip />
+            <Bar dataKey="sample" fill="#4C51BF" name="Sample Size" />
+            <Bar dataKey="duration" fill="#38B2AC" name="Duration (weeks)" />
+          </BarChart>
+        </ResponsiveContainer>
+        <p className="text-xs text-gray-500">Source: CSR archive (n = {benchmarks.total_trials})</p>
+      </CardContent>
+    </Card>
+  );
+}
+📁 PART 2: Add to Dossier + Export Intelligence Report Button
+📁 UploadAndAnalyze.tsx (Add Below Existing Output)
+tsx
+Copy
+Edit
+<Button
+  className="bg-blue-700 text-white"
+  onClick={async () => {
+    const res = await fetch('/api/export/success-summary', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        success_rate: risk.success_probability,
+        inputs: {
+          sample_size: parsed.sample_size,
+          duration_weeks: parsed.duration_weeks,
+          dropout_rate: parsed.dropout_rate
+        },
+        protocol_id: 'auto_uploaded'
+      })
+    });
+    const { download_url } = await res.json();
+    window.open(download_url, '_blank');
+  }}
+>
+  📄 Export Report to PDF
+</Button>
+✅ Add second button (save to dossier):
+
+tsx
+Copy
+Edit
+<Button
+  className="bg-gray-800 text-white"
+  onClick={async () => {
+    await fetch('/api/dossier/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        protocol_id: 'auto_uploaded',
+        data: {
+          text: parsed.raw_text,
+          prediction: risk.success_probability,
+          timestamp: new Date().toISOString()
+        }
+      })
+    });
+    alert('Added to Dossier');
+  }}
+>
+  💾 Add to Dossier
+</Button>
+✅ Add /api/dossier/save Backend Endpoint
+python
+Copy
+Edit
+from fastapi import APIRouter, Body
+import json, os
+
+router = APIRouter()
+os.makedirs("data/dossiers", exist_ok=True)
+
+@router.post("/api/dossier/save")
+def save_to_dossier(protocol_id: str = Body(...), data: dict = Body(...)):
+    with open(f"data/dossiers/{protocol_id}.json", "w") as f:
+        json.dump(data, f, indent=2)
+    return {"message": "Saved to dossier"}
+You now have:
+
+✅ A full design benchmark visual panel
+
+✅ A report generator
+
+✅ A dossier tracking system
+
+Would you like me to next:
+
+Generate the PDF exporter that includes the benchmark comparison
+
+Or plug this system into your Study Design Agent and Protocol Optimizer?
+
+Say the word and we’ll lock it in.
+
+
+
+
+
+
+
+
+
+
+
+Search
+
+Deep research
+
+
+

@@ -9,6 +9,41 @@ import sys
 import os
 from datetime import datetime
 from fpdf import FPDF
+import time
+
+def clean_unicode_for_pdf(text):
+    """Clean Unicode characters that can cause issues in PDF generation"""
+    if text is None:
+        return ""
+    
+    # Replace problematic characters
+    replacements = {
+        '–': '-',  # en dash
+        '—': '-',  # em dash
+        '"': '"',  # left double quote
+        '"': '"',  # right double quote
+        ''': "'",  # left single quote
+        ''': "'",  # right single quote
+        '…': '...',  # ellipsis
+        '≥': '>=',  # greater than or equal
+        '≤': '<=',  # less than or equal
+        '°': ' degrees',  # degree symbol
+        '±': '+/-',  # plus-minus
+        '×': 'x',  # multiplication
+        '÷': '/',  # division
+        '•': '*',  # bullet
+        '​': '',  # zero-width space
+        '\u200b': '',  # zero-width space
+        '\u200e': '',  # left-to-right mark
+        '\u200f': '',  # right-to-left mark
+        '\u2028': ' ',  # line separator
+        '\u2029': ' '   # paragraph separator
+    }
+    
+    for old, new in replacements.items():
+        text = text.replace(old, new)
+    
+    return text
 
 def create_success_prediction_pdf(input_data):
     """Generate a PDF report for trial success prediction results"""
@@ -24,6 +59,9 @@ def create_success_prediction_pdf(input_data):
     
     # Format date
     date_str = datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
+    
+    # Clean protocol ID to ensure safe PDF generation
+    protocol_id = clean_unicode_for_pdf(str(protocol_id))
     
     # Create PDF document
     pdf = FPDF()
@@ -55,6 +93,8 @@ def create_success_prediction_pdf(input_data):
         pdf.set_text_color(255, 0, 0)  # Red
         status = "Low Probability of Success"
     
+    # Clean status message to prevent PDF encoding issues
+    status = clean_unicode_for_pdf(status)
     pdf.cell(0, 10, f'Success Prediction: {success_percentage}% ({status})', 0, 1, 'L')
     pdf.set_text_color(0, 0, 0)  # Reset to black
     pdf.ln(5)
@@ -67,10 +107,14 @@ def create_success_prediction_pdf(input_data):
     sample_size = inputs.get('sample_size', 'Not specified')
     duration_weeks = inputs.get('duration_weeks', 'Not specified')
     dropout_rate = inputs.get('dropout_rate', 'Not specified')
+    indication = clean_unicode_for_pdf(str(inputs.get('indication', 'Not specified')))
+    phase = clean_unicode_for_pdf(str(inputs.get('phase', 'Not specified')))
     
     pdf.cell(0, 8, f'Sample Size: {sample_size}', 0, 1, 'L')
     pdf.cell(0, 8, f'Duration: {duration_weeks} weeks', 0, 1, 'L')
     pdf.cell(0, 8, f'Dropout Rate: {dropout_rate}', 0, 1, 'L')
+    pdf.cell(0, 8, f'Indication: {indication}', 0, 1, 'L')
+    pdf.cell(0, 8, f'Phase: {phase}', 0, 1, 'L')
     pdf.ln(5)
     
     # Recommendations (based on prediction)
@@ -99,7 +143,9 @@ def create_success_prediction_pdf(input_data):
         ]
     
     for i, rec in enumerate(recommendations, 1):
-        pdf.cell(0, 8, f"{i}. {rec}", 0, 1, 'L')
+        # Clean any Unicode characters in recommendations
+        clean_rec = clean_unicode_for_pdf(rec)
+        pdf.cell(0, 8, f"{i}. {clean_rec}", 0, 1, 'L')
     
     pdf.ln(5)
     
