@@ -1,0 +1,76 @@
+Protocol Version Comparison System
+✅ 1. Update Dossier Save to Include Version Label
+📁 /api/dossier/save-intelligence-report — append this:
+
+python
+Copy
+Edit
+version_label = report_data.get("version", f"v{len(dossier['reports']) + 1}")
+...
+dossier["reports"].append({
+    "created_at": timestamp,
+    "version": version_label,
+    "data": report_data
+})
+✅ 2. Frontend Viewer: ProtocolCompareViewer.tsx
+tsx
+Copy
+Edit
+import { useEffect, useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+
+export default function ProtocolCompareViewer({ protocolId, userId }) {
+  const [reports, setReports] = useState([]);
+
+  useEffect(() => {
+    fetch(`/api/dossier/view/${userId}/${protocolId}`)
+      .then(res => res.json())
+      .then(data => setReports(data.reports || []));
+  }, [protocolId, userId]);
+
+  if (reports.length < 2) return <p>Need at least 2 versions to compare.</p>;
+
+  const [latest, previous] = [reports[0], reports[1]];
+
+  const difference = (field) => latest.data.parsed[field] !== previous.data.parsed[field];
+
+  return (
+    <div className="p-6 space-y-4">
+      <h2 className="text-lg font-bold text-blue-800">🔍 Protocol Version Comparison</h2>
+      <Card>
+        <CardContent className="text-sm space-y-2">
+          <p><strong>Compared Versions:</strong> {latest.version} vs {previous.version}</p>
+          {["sample_size", "duration_weeks", "dropout_rate", "endpoint_primary"].map((key) => (
+            <p key={key}>
+              <strong>{key.replace("_", " ")}:</strong><br />
+              Latest: {latest.data.parsed[key]}<br />
+              Previous: {previous.data.parsed[key]}<br />
+              {difference(key) && <span className="text-red-600">⚠️ Changed</span>}
+            </p>
+          ))}
+          <p><strong>Success Δ:</strong> {(latest.data.prediction - previous.data.prediction) * 100}%</p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+✅ 3. Sidebar Option (Admins or Logged-In Users)
+tsx
+Copy
+Edit
+<SidebarNavItem href="/compare" icon={AdjustmentsHorizontalIcon}>
+  Compare Protocols
+</SidebarNavItem>
+Route:
+
+tsx
+Copy
+Edit
+<Route path="/compare" element={<ProtocolCompareViewer userId={user.id} protocolId={"obesity_trial_v4"} />} />
+✅ With this:
+
+Users can track improvement over time
+
+You can detect protocol drift
+
+You give investors and reviewers real history
