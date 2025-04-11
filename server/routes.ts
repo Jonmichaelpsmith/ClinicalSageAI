@@ -23,6 +23,7 @@ import path from 'path';
 import { registerSmartProtocolRoutes } from "./smart-protocol-routes";
 import { optimizeProtocol } from "./protocol-optimizer-service";
 import { studyDesignAgentService } from "./agent-service";
+import { strategicStatsRouter } from "./strategic-stats-routes";
 import { getEndpointRecommenderService } from "./services/endpoint-recommender-service";
 import { notificationService } from "./notification-service";
 import { strategicIntelligenceService } from "./strategic-intelligence-service";
@@ -266,6 +267,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register Smart Protocol routes
   registerSmartProtocolRoutes(app);
+  
+  // Register Strategic Statistics Analysis routes
+  app.use('/api/stats-analysis', strategicStatsRouter);
   
   // Get notification logs
   app.get('/api/notifications/logs', async (_req: Request, res: Response) => {
