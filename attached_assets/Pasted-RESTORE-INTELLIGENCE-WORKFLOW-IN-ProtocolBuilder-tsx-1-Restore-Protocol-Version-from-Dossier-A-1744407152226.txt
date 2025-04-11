@@ -1,0 +1,80 @@
+RESTORE INTELLIGENCE WORKFLOW IN ProtocolBuilder.tsx
+✅ 1. Restore Protocol Version from Dossier
+📁 Add to MyDossiers.tsx (or DossierViewer.tsx)
+tsx
+Copy
+Edit
+<Button
+  className="bg-green-600 text-white"
+  onClick={async () => {
+    const { data: dossier } = await fetch(`/api/dossier/view/${user.id}/${protocolId}`).then(res => res.json());
+    const version = dossier.reports.find(r => r.version === 'v3'); // or latest
+    sessionStorage.setItem("restored_protocol", JSON.stringify(version));
+    alert("✅ Protocol version restored to editor");
+    window.location.href = "/protocol-generator?restored=true";
+  }}
+>
+  🔁 Restore This Version
+</Button>
+✅ 2. Load Restored Version in Builder
+📁 In ProtocolBuilder.tsx
+
+tsx
+Copy
+Edit
+useEffect(() => {
+  if (router.query.restored === "true") {
+    const restored = JSON.parse(sessionStorage.getItem("restored_protocol"));
+    setProtocolFields(restored.optimized?.new_fields || restored.original?.parsed);
+    setEditorText(restored.original?.raw_text || "");
+  }
+}, []);
+✅ This:
+
+Loads sample size, endpoint, dropout, etc.
+
+Loads the editor text (if available)
+
+Switches active version in memory
+
+✅ 3. Add “Compare with Previous” Button
+📁 Still in ProtocolBuilder.tsx:
+
+tsx
+Copy
+Edit
+<Button onClick={() => setCompareVisible(true)}>
+  🧠 Compare to Last Version
+</Button>
+📁 ComparePanel.tsx
+tsx
+Copy
+Edit
+<Card>
+  <CardContent>
+    <h3>Version Comparison</h3>
+    <ul>
+      <li><strong>Sample Size:</strong> {previous.sample_size} → {restored.sample_size}</li>
+      <li><strong>Duration:</strong> {previous.duration_weeks} → {restored.duration_weeks}</li>
+      <li><strong>Endpoint:</strong> {previous.endpoint_primary} → {restored.endpoint_primary}</li>
+    </ul>
+  </CardContent>
+</Card>
+✅ You now have:
+
+Full version restoration
+
+Editable restored protocol
+
+Visual side-by-side comparison
+
+Applied changes sent into intelligence, export, SAP engine, and dossier
+
+Would you like to now automate version tagging + changelog tracking (e.g. “v4 added PRO endpoint, increased sample size”)?
+
+
+
+
+
+
+
