@@ -59,10 +59,44 @@ const ProtocolDesigner = () => {
     if (!uploadedFile) {
       toast({
         title: "No file uploaded",
-        description: "Please select a PDF protocol file first.",
+        description: "Please select a protocol file first.",
         variant: "destructive",
       });
       return;
+    }
+    
+    try {
+      setIsAnalyzing(true);
+      const formData = new FormData();
+      formData.append('file', uploadedFile);
+      
+      const response = await fetch('/api/protocol/analyze-file', {
+        method: 'POST',
+        body: formData
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to analyze protocol');
+      }
+      
+      setAnalysisResults(data.protocol);
+      setShowUploadDialog(false);
+      
+      toast({
+        title: "Protocol Analyzed",
+        description: "Successfully analyzed your protocol.",
+      });
+    } catch (error) {
+      console.error("Error analyzing protocol:", error);
+      toast({
+        title: "Analysis Failed",
+        description: error instanceof Error ? error.message : "Failed to analyze protocol",
+        variant: "destructive",
+      });
+    } finally {
+      setIsAnalyzing(false);
     }
 
     // Make sure the file is a PDF

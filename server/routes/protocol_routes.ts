@@ -112,9 +112,10 @@ router.post('/full-analyze', async (req, res) => {
     });
   } catch (error: any) {
     console.error('Error during deep protocol analysis:', error);
+    const errorMessage = error?.message || 'Failed to perform deep protocol analysis';
     return res.status(500).json({ 
       success: false, 
-      message: error.message || 'Failed to perform deep protocol analysis' 
+      message: errorMessage
     });
   }
 });
