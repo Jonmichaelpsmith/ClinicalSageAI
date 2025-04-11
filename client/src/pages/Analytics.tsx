@@ -1955,7 +1955,7 @@ export default function Analytics() {
                   <h4 className="text-md font-medium mb-3">Therapeutic Area Focus</h4>
                   <div className="h-64">
                     <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
+                      <RechartsPieChart>
                         <Pie
                           data={[
                             { name: 'Oncology', value: 35, fill: '#ec4899' },
@@ -1975,7 +1975,7 @@ export default function Analytics() {
                         />
                         <Legend verticalAlign="bottom" height={36} />
                         <Tooltip formatter={(value) => `${value} trials`} />
-                      </PieChart>
+                      </RechartsPieChart>
                     </ResponsiveContainer>
                   </div>
                 </div>

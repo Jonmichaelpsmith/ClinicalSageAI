@@ -21,7 +21,7 @@ import { researchCompanionService } from "./research-companion-service";
 import { spawn } from 'child_process';
 import path from 'path';
 import { registerSmartProtocolRoutes } from "./smart-protocol-routes";
-import { optimizeProtocol } from "./protocol-optimizer-service";
+import { protocolOptimizerService } from "./protocol-optimizer-service";
 import { studyDesignAgentService } from "./agent-service";
 import { strategicStatsRouter } from "./strategic-stats-routes";
 import { csrDeepLearningRouter } from "./csr-deep-learning-routes";
@@ -2122,7 +2122,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Generate clinical trial protocol
-  // Protocol Optimizer endpoint
+  // Protocol Optimizer endpoint - Legacy version
   app.post('/api/protocol-optimizer', async (req: Request, res: Response) => {
     try {
       // Validate input
@@ -2136,12 +2136,92 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = requestSchema.parse(req.body);
       
       // Use the protocol optimizer service to generate recommendations
-      const optimizationResult = await optimizeProtocol({
-        summary: validatedData.summary,
-        topCsrIds: validatedData.topCsrIds,
-        indication: validatedData.indication,
-        phase: validatedData.phase
+      const optimizationResult = await protocolOptimizerService.getOptimizationRecommendations(
+        {
+          indication: validatedData.indication || "",
+          phase: validatedData.phase || "",
+          sample_size: 0,
+          duration_weeks: 0,
+          endpoint_primary: "",
+          summary: validatedData.summary
+        },
+        {
+          avg_sample_size: 0,
+          avg_duration_weeks: 0
+        },
+        0.5
+      );
+  
+  // Advanced Protocol Optimizer with Field-Level Intelligence
+  app.post('/api/protocol/optimize-deep', async (req: Request, res: Response) => {
+    try {
+      // Validate input
+      const requestSchema = z.object({
+        protocolId: z.number().optional(),
+        indication: z.string(),
+        phase: z.string(),
+        sample_size: z.number(),
+        duration_weeks: z.number(),
+        primary_endpoint: z.string(),
+        secondary_endpoints: z.array(z.string()).optional(),
+        blinding: z.string().optional(),
+        randomization: z.string().optional(),
+        population: z.string().optional(),
+        arms: z.number().optional(),
+        control_type: z.string().optional(),
+        summary: z.string().optional()
       });
+
+      const protocolData = requestSchema.parse(req.body);
+      
+      try {
+        // Get benchmark data from similar trials for comparison
+        const benchmarkData = await protocolOptimizerService.getBenchmarkData(
+          protocolData.indication,
+          protocolData.phase
+        );
+        
+        // Get current success prediction
+        const predictionResult = await trialPredictorService.predictTrialSuccess(
+          protocolData.sample_size,
+          protocolData.duration_weeks,
+          0.15 // Default dropout rate if not provided
+        );
+        
+        // Get deep optimization recommendations
+        const optimizationResult = await protocolOptimizerService.getDeepOptimizationRecommendations(
+          protocolData,
+          benchmarkData,
+          predictionResult.probability
+        );
+          
+        // Return all the detailed information
+        res.json({
+          success: true,
+          protocol: {
+            ...protocolData
+          },
+          currentPrediction: predictionResult.probability,
+          benchmarks: benchmarkData,
+          fieldLevelInsights: optimizationResult.fieldLevelInsights,
+          optimizationRecommendations: optimizationResult.recommendations,
+          modelWeights: optimizationResult.modelWeights,
+          optimizedProtocol: optimizationResult.optimizedProtocol,
+          improvedPrediction: optimizationResult.improvedPrediction,
+          sapRecommendations: optimizationResult.sapRecommendations || []
+        });
+      } catch (innerError) {
+        console.error("Error in deep protocol optimization:", innerError);
+        return res.status(500).json({
+          success: false,
+          message: "Failed to generate advanced protocol optimizations",
+          error: innerError instanceof Error ? innerError.message : String(innerError)
+        });
+      }
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
       
       res.json({
         success: true,

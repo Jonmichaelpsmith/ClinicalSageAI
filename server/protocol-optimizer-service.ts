@@ -1,258 +1,265 @@
-/**
- * Protocol Optimizer Agent Service
- * 
- * This service optimizes clinical trial protocols based on historical CSR data.
- * It uses Hugging Face's Mixtral model to generate design suggestions, risk insights,
- * endpoint optimization recommendations, and CSR precedent matches.
- */
-
-import fs from 'fs';
-import path from 'path';
-import { queryHuggingFace, HFModel } from './huggingface-service';
+import { huggingFaceService } from './huggingface-service';
+import { trialPredictorService } from './trial-predictor-service';
 import { db } from './db';
-import { csrReports, csrDetails } from '../shared/schema';
-import { eq, inArray, ilike, and, isNull, sql } from 'drizzle-orm';
-
-// The directory where processed CSR JSON files are stored
-const PROCESSED_CSR_DIR = path.join(process.cwd(), 'data', 'processed_csrs');
-
-// Ensure the directory exists
-if (!fs.existsSync(PROCESSED_CSR_DIR)) {
-  fs.mkdirSync(PROCESSED_CSR_DIR, { recursive: true });
-}
+import { csrReports } from '../shared/schema';
+import { eq, like, and, desc } from 'drizzle-orm';
+import { ProtocolAnalyzerService } from './protocol-analyzer-service';
 
 /**
- * Protocol optimization request parameters
- */
-export interface ProtocolOptimizationRequest {
-  summary: string;           // Summary of the protocol to optimize
-  topCsrIds?: string[];      // Optional array of CSR IDs to use as context
-  indication?: string;       // Optional indication to use for finding similar CSRs
-  phase?: string;            // Optional phase to use for finding similar CSRs
-}
-
-/**
- * Protocol optimization response
- */
-export interface ProtocolOptimizationResponse {
-  recommendation: string;   // The full text recommendation from the LLM
-  keySuggestions?: string[];          // Key suggestions extracted from the recommendation
-  riskFactors?: string[];             // Risk factors extracted from the recommendation
-  matchedCsrInsights?: {             // Insights from matched CSRs
-    csrId: string;
-    relevance: string;
-  }[];
-  suggestedEndpoints?: string[];     // Suggested endpoints
-  suggestedArms?: string[];          // Suggested trial arms
-}
-
-/**
- * Optimize a clinical trial protocol based on historical CSR data
+ * Protocol Optimizer Service
  * 
- * @param request The protocol optimization request
- * @returns Protocol optimization recommendations
+ * This service provides recommendations for optimizing clinical trial protocols
+ * based on historical data from Clinical Study Reports (CSRs) and machine learning predictions.
  */
-export async function optimizeProtocol(
-  request: ProtocolOptimizationRequest
-): Promise<ProtocolOptimizationResponse> {
-  try {
-    // Build context blocks from top CSR IDs
-    const contextBlocks: string[] = [];
+class ProtocolOptimizerService {
+  private protocolAnalyzerService: ProtocolAnalyzerService;
 
-    // If CSR IDs are provided, load their data for context
-    if (request.topCsrIds && request.topCsrIds.length > 0) {
-      for (const csrId of request.topCsrIds) {
-        try {
-          const csrFilePath = path.join(PROCESSED_CSR_DIR, `${csrId}.json`);
-          if (fs.existsSync(csrFilePath)) {
-            const csrData = JSON.parse(fs.readFileSync(csrFilePath, 'utf8'));
-            contextBlocks.push(
-              `CSR ${csrId}: ${csrData.indication || ''}, Phase: ${csrData.phase || ''}, Outcome: ${csrData.outcome_summary || ''}, Endpoints: ${(csrData.primary_endpoints || []).join(', ')}`
-            );
-          }
-        } catch (error) {
-          console.error(`Error loading CSR ${csrId}:`, error);
-          // Continue with other CSRs
-        }
-      }
-    }
-    
-    // If indication/phase are provided but not enough CSR IDs, find more similar trials from the database
-    if ((request.indication || request.phase) && contextBlocks.length < 3) {
-      try {
-        const similarTrialReports = await findSimilarTrialReports(request.indication, request.phase);
-        
-        if (similarTrialReports.length > 0) {
-          // Get the details for these similar trials
-          const trialIds = similarTrialReports.map(report => report.id);
-          const trialDetails = await db.select()
-            .from(csrDetails)
-            .where(inArray(csrDetails.reportId, trialIds));
-          
-          // Create a map for faster lookups
-          const detailsMap = new Map();
-          trialDetails.forEach(detail => {
-            detailsMap.set(detail.reportId, detail);
-          });
-          
-          // Add context from similar trials
-          for (const report of similarTrialReports) {
-            const detail = detailsMap.get(report.id);
-            if (detail) {
-              const primaryEndpoint = detail.primaryEndpoint || 'Not specified';
-              const outcome = report.summary?.includes('successful') ? 'Successful' : 
-                (report.summary?.includes('failed') ? 'Failed' : 'Unknown');
-              
-              contextBlocks.push(
-                `Similar Trial ${report.id}: ${report.indication}, Phase: ${report.phase}, Outcome: ${outcome}, Endpoints: ${primaryEndpoint}`
-              );
-            }
-          }
-        }
-      } catch (error) {
-        console.error('Error finding similar trial reports:', error);
-        // Continue with available context
-      }
-    }
-
-    // Build the prompt with the available context
-    const prompt = `
-You are a senior clinical trial strategist. Based on the following protocol summary and historical precedent, suggest improvements:
-
-Protocol Summary:
-${request.summary}
-
-${contextBlocks.length > 0 ? `Relevant Trial Context:
-${contextBlocks.join('\n')}` : ''}
-
-Return a structured response with:
-- Key suggestions (numbered list)
-- Risk factors (bulleted list)
-- Matched CSR insights (which precedent trials support your recommendations)
-- Suggested endpoints or arms if applicable
-
-Format your response with clear headings and concise points. Focus on evidence-based recommendations that would increase trial success probability.
-`;
-
-    // Generate recommendation using Hugging Face's Mixtral model
-    const rawRecommendation = await queryHuggingFace(
-      prompt,
-      HFModel.TEXT, // Use the default TEXT model (Mixtral-8x7B)
-      0.4,  // Lower temperature for more focused output
-      600   // Reasonable token limit for a detailed but concise response
-    );
-
-    // Process the raw recommendation to extract structured data
-    const processedResponse = processRecommendation(rawRecommendation);
-
-    return {
-      recommendation: rawRecommendation,
-      ...processedResponse
-    };
-  } catch (error) {
-    console.error('Protocol optimization error:', error);
-    throw new Error(`Failed to optimize protocol: ${error.message}`);
+  constructor() {
+    this.protocolAnalyzerService = new ProtocolAnalyzerService();
   }
-}
 
-/**
- * Find similar trial reports based on indication and/or phase
- */
-async function findSimilarTrialReports(indication?: string, phase?: string): Promise<any[]> {
-  try {
-    let conditions = [];
-    
-    // Add condition for non-deleted reports
-    conditions.push(isNull(csrReports.deletedAt));
-    
-    // Add indication condition if provided
-    if (indication) {
-      conditions.push(ilike(csrReports.indication, `%${indication}%`));
-    }
-    
-    // Add phase condition if provided
-    if (phase) {
-      conditions.push(eq(csrReports.phase, phase));
-    }
-    
-    // Combine all conditions with AND
-    const whereCondition = and(...conditions);
-    
-    // Execute the query
-    const results = await db.select()
-      .from(csrReports)
-      .where(whereCondition)
-      .limit(5);
-    
-    return results;
-  } catch (error) {
-    console.error('Error finding similar trial reports:', error);
-    return [];
-  }
-}
+  /**
+   * Get optimization recommendations for a clinical trial protocol
+   * 
+   * @param protocolData Protocol data including phase, indication, sample size, duration, endpoints
+   * @param benchmarks Benchmark data for similar trials
+   * @param prediction Current prediction score (0-1)
+   * @returns Array of optimization recommendations
+   */
+  async getOptimizationRecommendations(
+    protocolData: ProtocolData,
+    benchmarks: BenchmarkData,
+    prediction: number
+  ): Promise<OptimizationResult> {
+    try {
+      // Collect relevant successful trials from the same indication and phase
+      const similarSuccessfulTrials = await this.getSimilarSuccessfulTrials(
+        protocolData.indication, 
+        protocolData.phase
+      );
 
-/**
- * Process the raw recommendation to extract structured data
- */
-function processRecommendation(rawRecommendation: string): Partial<ProtocolOptimizationResponse> {
-  const result: Partial<ProtocolOptimizationResponse> = {};
-  
-  // Extract key suggestions
-  const suggestionMatch = rawRecommendation.match(/Key suggestions[:\s]*([\s\S]*?)(?=Risk factors|\n\n|$)/i);
-  if (suggestionMatch && suggestionMatch[1]) {
-    result.keySuggestions = suggestionMatch[1]
-      .split('\n')
-      .map(line => line.trim())
-      .filter(line => line.match(/^\d+\.|\-/) && line.length > 5)
-      .map(line => line.replace(/^\d+\.|\-/, '').trim());
-  }
-  
-  // Extract risk factors
-  const riskMatch = rawRecommendation.match(/Risk factors[:\s]*([\s\S]*?)(?=Matched CSR|\n\n|$)/i);
-  if (riskMatch && riskMatch[1]) {
-    result.riskFactors = riskMatch[1]
-      .split('\n')
-      .map(line => line.trim())
-      .filter(line => line.match(/^•|\*|\-/) && line.length > 5)
-      .map(line => line.replace(/^•|\*|\-/, '').trim());
-  }
-  
-  // Extract matched CSR insights
-  const insightMatch = rawRecommendation.match(/Matched CSR insights[:\s]*([\s\S]*?)(?=Suggested endpoints|\n\n|$)/i);
-  if (insightMatch && insightMatch[1]) {
-    const insights = insightMatch[1]
-      .split('\n')
-      .map(line => line.trim())
-      .filter(line => line.match(/CSR|Trial/) && line.length > 5);
-      
-    result.matchedCsrInsights = insights.map(insight => {
-      const csrMatch = insight.match(/CSR\s+([A-Za-z0-9]+)/);
+      // Generate recommendations based on the data
+      return await this.generateRecommendations(
+        protocolData,
+        benchmarks,
+        prediction,
+        similarSuccessfulTrials
+      );
+    } catch (error) {
+      console.error('Error generating optimization recommendations:', error);
       return {
-        csrId: csrMatch ? csrMatch[1] : 'Unknown',
-        relevance: insight.replace(/CSR\s+([A-Za-z0-9]+)/, '').trim()
+        recommendations: [
+          "Unable to generate optimization recommendations due to an error.",
+          "Please check your protocol data and try again."
+        ],
+        error: error instanceof Error ? error.message : String(error)
       };
-    });
+    }
+  }
+
+  /**
+   * Get similar successful trials from the database
+   * 
+   * @param indication The indication (therapeutic area)
+   * @param phase The trial phase
+   * @returns Array of successful trial data
+   */
+  private async getSimilarSuccessfulTrials(indication: string, phase: string): Promise<any[]> {
+    try {
+      const trials = await db.select()
+        .from(csrReports)
+        .where(
+          and(
+            like(csrReports.indication, `%${indication}%`),
+            like(csrReports.phase, `%${phase}%`),
+            eq(csrReports.status, 'Completed')
+          )
+        )
+        .orderBy(desc(csrReports.uploadDate))
+        .limit(15);
+      
+      return trials;
+    } catch (error) {
+      console.error('Error fetching similar successful trials:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Generate specific recommendations based on protocol data, benchmarks, and ML prediction
+   * 
+   * @param protocolData Protocol data
+   * @param benchmarks Benchmark data
+   * @param prediction Current prediction score
+   * @param similarTrials Similar successful trials
+   * @returns Optimization recommendations and improved metrics
+   */
+  private async generateRecommendations(
+    protocolData: ProtocolData,
+    benchmarks: BenchmarkData,
+    prediction: number,
+    similarTrials: any[]
+  ): Promise<OptimizationResult> {
+    const recommendations: string[] = [];
+    let improvedPrediction = prediction;
+    
+    // Sample size optimization
+    if (protocolData.sample_size < benchmarks.avg_sample_size * 0.8) {
+      const recommendedSampleSize = Math.round(benchmarks.avg_sample_size);
+      recommendations.push(
+        `Increase sample size from ${protocolData.sample_size} to at least ${recommendedSampleSize} to align with successful trials (avg: ${benchmarks.avg_sample_size}).`
+      );
+      improvedPrediction += 0.05; // Estimate improvement in prediction
+    }
+    
+    // Trial duration optimization
+    const avgDuration = benchmarks.avg_duration_weeks;
+    if (protocolData.duration_weeks > avgDuration * 1.5) {
+      recommendations.push(
+        `Consider reducing trial duration from ${protocolData.duration_weeks} to ${Math.round(avgDuration)} weeks to improve completion rates and reduce dropout.`
+      );
+      improvedPrediction += 0.03;
+    } else if (protocolData.duration_weeks < avgDuration * 0.6) {
+      recommendations.push(
+        `Consider extending trial duration from ${protocolData.duration_weeks} to at least ${Math.round(avgDuration * 0.7)} weeks to ensure adequate follow-up for ${protocolData.endpoint_primary}.`
+      );
+      improvedPrediction += 0.02;
+    }
+    
+    // Use HuggingFace for more sophisticated endpoint recommendations
+    try {
+      const endpointRecommendations = await this.getEndpointRecommendations(
+        protocolData.indication, 
+        protocolData.phase, 
+        protocolData.endpoint_primary
+      );
+      
+      if (endpointRecommendations && endpointRecommendations.length > 0) {
+        recommendations.push(...endpointRecommendations);
+        improvedPrediction += 0.04;
+      }
+    } catch (error) {
+      console.error('Error getting endpoint recommendations from HuggingFace:', error);
+      // Fallback recommendation for endpoints
+      recommendations.push(
+        `Ensure ${protocolData.endpoint_primary} definition aligns with FDA guidelines for ${protocolData.indication} clinical trials.`
+      );
+    }
+    
+    // If prediction is still below threshold, add more specific recommendations
+    if (improvedPrediction < 0.8) {
+      recommendations.push(
+        `Consider adding secondary endpoints that have shown correlation with ${protocolData.endpoint_primary} in recent successful trials.`
+      );
+      recommendations.push(
+        `Implement stratified randomization based on key prognostic factors for ${protocolData.indication}.`
+      );
+    }
+
+    // Additional optimization for Phase 2/3 trials
+    if (protocolData.phase.includes('2') || protocolData.phase.includes('3')) {
+      recommendations.push(
+        `Consider implementing an adaptive design with sample size re-estimation to optimize resource allocation.`
+      );
+    }
+    
+    // Format and clean recommendations
+    const uniqueRecommendations = [...new Set(recommendations)].map(rec => 
+      rec.trim().replace(/\s+/g, ' ')
+    );
+    
+    return {
+      recommendations: uniqueRecommendations,
+      improvedPrediction: Math.min(0.95, improvedPrediction), // Cap at 0.95
+      optimizedProtocol: {
+        sample_size: protocolData.sample_size < benchmarks.avg_sample_size * 0.8 
+          ? Math.round(benchmarks.avg_sample_size) 
+          : protocolData.sample_size,
+        duration_weeks: protocolData.duration_weeks > avgDuration * 1.5
+          ? Math.round(avgDuration)
+          : protocolData.duration_weeks
+      },
+      benchmarks
+    };
   }
   
-  // Extract suggested endpoints
-  const endpointMatch = rawRecommendation.match(/Suggested endpoints[:\s]*([\s\S]*?)(?=Suggested arms|\n\n|$)/i);
-  if (endpointMatch && endpointMatch[1]) {
-    result.suggestedEndpoints = endpointMatch[1]
-      .split('\n')
-      .map(line => line.trim())
-      .filter(line => line.match(/^•|\*|\-|\d+\./) && line.length > 5)
-      .map(line => line.replace(/^•|\*|\-|\d+\./, '').trim());
+  /**
+   * Get endpoint-specific recommendations using HuggingFace
+   * 
+   * @param indication Trial indication
+   * @param phase Trial phase
+   * @param primaryEndpoint Primary endpoint
+   * @returns Array of endpoint-specific recommendations
+   */
+  private async getEndpointRecommendations(
+    indication: string,
+    phase: string,
+    primaryEndpoint: string
+  ): Promise<string[]> {
+    try {
+      const prompt = `
+        As a clinical trial design expert, analyze the following clinical trial primary endpoint and provide specific optimization recommendations:
+        
+        Indication: ${indication}
+        Phase: ${phase}
+        Primary Endpoint: ${primaryEndpoint}
+        
+        Provide 2-3 specific, concise recommendations for optimizing this endpoint definition or measurement to increase trial success probability. Focus on:
+        1. Statistical analysis plan recommendations
+        2. Endpoint definition refinements
+        3. Measurement timing optimization
+        
+        Format each recommendation as a single, concise sentence. No introduction or conclusion needed.
+      `;
+      
+      const response = await huggingFaceService.getTextGenerationResponse(prompt);
+      
+      if (!response) {
+        return [];
+      }
+      
+      // Process the response to extract specific recommendations
+      const lines = response
+        .split('\n')
+        .filter(line => line.trim().length > 0)
+        .filter(line => !line.includes('recommendation') && !line.includes('Recommendation'))
+        .map(line => line.replace(/^\d+\.\s+/, '').trim())
+        .filter(line => line.length > 20 && line.length < 150);
+      
+      return lines.slice(0, 3); // Return up to 3 recommendations
+    } catch (error) {
+      console.error('Error getting endpoint recommendations:', error);
+      return [];
+    }
   }
-  
-  // Extract suggested arms
-  const armMatch = rawRecommendation.match(/Suggested arms[:\s]*([\s\S]*?)(?=\n\n|$)/i);
-  if (armMatch && armMatch[1]) {
-    result.suggestedArms = armMatch[1]
-      .split('\n')
-      .map(line => line.trim())
-      .filter(line => line.match(/^•|\*|\-|\d+\./) && line.length > 5)
-      .map(line => line.replace(/^•|\*|\-|\d+\./, '').trim());
-  }
-  
-  return result;
 }
+
+// Types for the protocol optimizer service
+interface ProtocolData {
+  phase: string;
+  indication: string;
+  sample_size: number;
+  duration_weeks: number;
+  endpoint_primary: string;
+  [key: string]: any; // Allow for additional properties
+}
+
+interface BenchmarkData {
+  avg_sample_size: number;
+  avg_duration_weeks: number;
+  [key: string]: any; // Allow for additional properties
+}
+
+interface OptimizationResult {
+  recommendations: string[];
+  improvedPrediction?: number;
+  optimizedProtocol?: {
+    sample_size?: number;
+    duration_weeks?: number;
+    [key: string]: any;
+  };
+  benchmarks?: BenchmarkData;
+  error?: string;
+}
+
+export const protocolOptimizerService = new ProtocolOptimizerService();
