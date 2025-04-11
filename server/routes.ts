@@ -2151,6 +2151,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         },
         0.5
       );
+      
+      res.json({
+        success: true,
+        ...optimizationResult
+      });
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
   
   // Advanced Protocol Optimizer with Field-Level Intelligence
   app.post('/api/protocol/optimize-deep', async (req: Request, res: Response) => {
@@ -2218,15 +2227,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           error: innerError instanceof Error ? innerError.message : String(innerError)
         });
       }
-    } catch (err) {
-      errorHandler(err as Error, res);
-    }
-  });
-      
-      res.json({
-        success: true,
-        ...optimizationResult
-      });
     } catch (err) {
       errorHandler(err as Error, res);
     }
