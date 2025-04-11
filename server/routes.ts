@@ -254,6 +254,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     fs.mkdirSync(exportsDir, { recursive: true });
   }
   
+  // Get notification logs
+  app.get('/api/notifications/logs', async (_req: Request, res: Response) => {
+    try {
+      const logs = notificationService.getNotificationLogs();
+      res.json(logs);
+    } catch (error) {
+      console.error('Error fetching notification logs:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to retrieve notification logs' 
+      });
+    }
+  });
+  
   // Handle PDF file downloads
   app.get('/download/:filename', (req: Request, res: Response) => {
     try {
