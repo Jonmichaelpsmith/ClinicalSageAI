@@ -1,0 +1,101 @@
+Let’s now build a Weekly Digest Notification System for TrialSage that automatically summarizes all:
+
+📄 Protocol versions created
+
+📥 Reports exported
+
+⚠️ Changes in predicted success or flags
+
+📊 Top shifts in design trends (optional)
+
+And delivers them via:
+
+✉️ Email
+
+📂 Dashboard widget
+
+🔔 Slack (optional)
+
+📬 TrialSage Weekly Digest System (Intelligent Report Log)
+✅ 1. Digest Generator Script
+📁 scripts/generate_weekly_digest.py
+
+python
+Copy
+Edit
+import json
+import os
+from datetime import datetime, timedelta
+
+LOG_PATH = "data/logs/export_actions.jsonl"
+
+def generate_digest(user_id=None):
+    if not os.path.exists(LOG_PATH):
+        return []
+
+    since = datetime.utcnow() - timedelta(days=7)
+    entries = []
+
+    with open(LOG_PATH) as f:
+        for line in f:
+            log = json.loads(line)
+            log_time = datetime.fromisoformat(log["timestamp"])
+            if log_time >= since and (user_id is None or log["user_id"] == user_id):
+                entries.append(log)
+
+    digest = f"📊 TrialSage Weekly Digest – {datetime.utcnow().strftime('%Y-%m-%d')}\n"
+    digest += f"Total Reports Exported: {len(entries)}\n\n"
+
+    for entry in entries:
+        digest += f"• {entry['report_type']} for {entry['protocol_id']} by {entry['user_id']} at {entry['timestamp']}\n"
+
+    return digest.strip()
+✅ 2. Send Email with Digest
+📁 /api/notify/send-weekly-digest
+
+python
+Copy
+Edit
+@router.post("/api/notify/send-weekly-digest")
+def send_digest(user_email: str = Body(...), user_id: str = Body(...)):
+    from scripts.generate_weekly_digest import generate_digest
+
+    digest = generate_digest(user_id)
+    if not digest:
+        return {"message": "No entries this week."}
+
+    msg = MIMEText(digest)
+    msg['Subject'] = "🧠 Your TrialSage Weekly Protocol Digest"
+    msg['From'] = "noreply@trialsage.ai"
+    msg['To'] = user_email
+
+    with smtplib.SMTP("smtp.gmail.com", 587) as smtp:
+        smtp.starttls()
+        smtp.login("your-email@gmail.com", "your-app-password")
+        smtp.send_message(msg)
+
+    return {"message": "Weekly digest sent"}
+✅ 3. Optionally Display In Dashboard UI
+📁 In DashboardHome.tsx or user landing page:
+
+tsx
+Copy
+Edit
+const [digest, setDigest] = useState("");
+
+useEffect(() => {
+  fetch(`/api/notify/send-weekly-digest`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ user_email: user.email, user_id: user.id })
+  })
+  .then(res => res.json())
+  .then(data => setDigest(data.message));
+}, []);
+✅ TrialSage now:
+
+Delivers weekly summaries of all exports per user
+
+Centralizes activity intelligence
+
+Keeps teams in the loop

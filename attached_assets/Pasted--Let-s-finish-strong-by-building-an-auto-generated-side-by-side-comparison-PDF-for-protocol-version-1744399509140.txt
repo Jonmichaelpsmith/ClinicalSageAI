@@ -1,0 +1,87 @@
+ Let’s finish strong by building an auto-generated, side-by-side comparison PDF for protocol versions — ready for:
+
+📄 Regulatory review
+
+💼 Investor decks
+
+🧠 Internal decision support
+
+🧾 Protocol Comparison Report – Export to PDF
+✅ 1. Backend Endpoint: /api/export/protocol-comparison
+📁 export_compare_pdf.py
+
+python
+Copy
+Edit
+from fastapi import APIRouter, Body
+from fpdf import FPDF
+from datetime import datetime
+
+router = APIRouter()
+
+@router.post("/api/export/protocol-comparison")
+def export_comparison(protocol_id: str = Body(...), v1: dict = Body(...), v2: dict = Body(...)):
+    class ComparePDF(FPDF):
+        def header(self):
+            self.set_font("Arial", "B", 14)
+            self.cell(0, 10, f"Protocol Version Comparison – {protocol_id}", ln=True, align="C")
+            self.ln(5)
+
+        def row(self, label, val1, val2):
+            self.set_font("Arial", "", 11)
+            self.cell(60, 8, label, border=1)
+            self.cell(65, 8, str(val1), border=1)
+            self.cell(65, 8, str(val2), border=1)
+            self.ln()
+
+    pdf = ComparePDF()
+    pdf.add_page()
+
+    pdf.set_font("Arial", "B", 12)
+    pdf.cell(60, 8, "Parameter", border=1)
+    pdf.cell(65, 8, v1["version"], border=1)
+    pdf.cell(65, 8, v2["version"], border=1)
+    pdf.ln()
+
+    fields = ["sample_size", "duration_weeks", "dropout_rate", "endpoint_primary"]
+    for f in fields:
+        pdf.row(f.replace("_", " ").title(), v1["data"]["parsed"][f], v2["data"]["parsed"][f])
+
+    pdf.row("Success Probability (%)",
+            round(v1["data"]["prediction"] * 100, 1),
+            round(v2["data"]["prediction"] * 100, 1))
+
+    path = f"/mnt/data/Protocol_Comparison_{protocol_id}_{datetime.now().strftime('%Y%m%d%H%M%S')}.pdf"
+    pdf.output(path)
+    return {"download_url": path}
+✅ 2. Trigger in ProtocolCompareViewer.tsx
+Add button below comparison:
+
+tsx
+Copy
+Edit
+<Button
+  className="bg-blue-700 text-white"
+  onClick={async () => {
+    const res = await fetch('/api/export/protocol-comparison', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        protocol_id,
+        v1: previous,
+        v2: latest
+      })
+    });
+    const { download_url } = await res.json();
+    window.open(download_url, '_blank');
+  }}
+>
+  📥 Download Comparison Report (PDF)
+</Button>
+✅ You now give users:
+
+Full visibility into trial evolution
+
+Audit-grade comparison documents
+
+A ready-to-share deliverable for FDA, board, or CRO

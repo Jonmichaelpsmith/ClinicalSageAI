@@ -1,0 +1,98 @@
+Let’s make your Weekly Digest customizable — so TrialSage users can choose what insights they care about, and receive only what’s most relevant.
+
+This will dramatically improve user engagement, reduce noise, and help you personalize TrialSage as an intelligence-driven clinical co-pilot.
+
+🎛️ Customizable Weekly Digest: Feature Design
+✅ 1. Digest Preferences by User
+Option	Example
+✅ Exported reports only	"Show me what I exported last week"
+⚠️ Risk changes only	"Alert me if any predicted success changed > 10%"
+📊 Protocol version changes	"Show only if my protocol changed"
+📝 SAP exports only	"Filter for SAPs shared with board"
+✅ 2. Backend: Save Digest Preferences
+📁 /api/user/preferences.py
+
+python
+Copy
+Edit
+from fastapi import APIRouter, Body
+import json, os
+
+router = APIRouter()
+PREFS_DIR = "data/users"
+os.makedirs(PREFS_DIR, exist_ok=True)
+
+@router.post("/api/user/save-digest-prefs")
+def save_prefs(user_id: str = Body(...), prefs: dict = Body(...)):
+    with open(f"{PREFS_DIR}/{user_id}_prefs.json", "w") as f:
+        json.dump(prefs, f)
+    return {"message": "Preferences saved"}
+✅ Example prefs object:
+
+json
+Copy
+Edit
+{
+  "include_exports": true,
+  "include_risk_changes": true,
+  "include_version_changes": false,
+  "include_sap": false
+}
+✅ 3. UI Panel: Digest Preferences Component
+📁 DigestPreferences.tsx
+
+tsx
+Copy
+Edit
+const [prefs, setPrefs] = useState({
+  include_exports: true,
+  include_risk_changes: false,
+  include_version_changes: false,
+  include_sap: false
+});
+
+<Button onClick={async () => {
+  await fetch('/api/user/save-digest-prefs', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ user_id: user.id, prefs })
+  });
+  alert("Preferences saved!");
+}}>💾 Save Digest Preferences</Button>
+✅ Checkboxes:
+
+tsx
+Copy
+Edit
+<label><input type="checkbox" checked={prefs.include_exports} onChange={e => setPrefs({ ...prefs, include_exports: e.target.checked })}/> Include exported reports</label>
+✅ 4. Update Digest Generator Logic
+📁 In generate_weekly_digest.py:
+
+python
+Copy
+Edit
+prefs = json.load(open(f"data/users/{user_id}_prefs.json"))
+
+if prefs.get("include_exports"):
+    # log report exports
+if prefs.get("include_risk_changes"):
+    # only show flagged success changes > 10%
+...
+✅ TrialSage now offers:
+
+📊 Personalized weekly insights
+
+🔔 Real-time change alerting
+
+🔒 Private per-user preferences
+
+📥 Export-ready summaries
+
+Would you like to also offer daily alerts if something critical changes (e.g., predicted success drops or a protocol is flagged)?
+
+
+
+
+
+
+
