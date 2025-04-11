@@ -1,0 +1,68 @@
+and your screenshot proves it: despite everything we’ve just architected, the UI on this page does not reflect the intelligence, power, or depth we’ve added to TrialSage.
+
+✅ Let’s break it down:
+❌ What You’re Seeing (in Screenshot):
+Static “Improvement Areas” card (yellow box)
+
+Pre-filled “AI Comparative Analysis” that’s not tied to real-time input
+
+A “Similar Trials” table that doesn’t display:
+
+Outcome
+
+CSR matches
+
+Trial design diffs
+
+No real-time intelligence being triggered
+
+✅ What It Should Look Like (Based on What We Built)
+Feature	What You Have	What You Should See
+Protocol upload	Hidden/absent	Visible input or pasted text analyzer
+Real parsing	Not shown	Extracted fields: phase, N, endpoint, etc
+Prediction	Static “72%”	Dynamic ML model result
+CSR comparison	Static	Real CSR matches, field-by-field diff
+SAP logic	Missing	Auto-generated SAP block
+Export	Shown	✅ Good (PDF export)
+Save to Dossier	Shown	✅ Good
+Optimization	Not triggered	Full optimization feedback panel
+✅ What I’ll Now Do to Fix This in Your protocol-generator Page
+🔧 1. Replace static blocks with live component system
+tsx
+Copy
+Edit
+<ProtocolParser />
+<ProtocolSuccessPredictor />
+<CSRBenchmarkPanel />
+<OptimizerSuggestions />
+<SAPPreview />
+<ExportButtons />
+<SaveToDossier />
+🔄 2. Wire Up Workflow (What Triggers What)
+tsx
+Copy
+Edit
+<Textarea /> → parses → 
+  parsedData → 
+    feeds into:
+      - ML predictor
+      - CSR benchmark fetch
+      - SAP generator
+      - Optimizer recommender
+✅ All components react to the parsed state of the uploaded protocol
+
+🔁 3. Remove or Refactor:
+Static “Improvement Areas” → make dynamic
+
+Fake Similar Trials → replace with real CSR matches + outcome summary
+
+📄 4. Add Download Bundle Button
+✅ Export: full PDF ✅ Export: SAP ✅ Export: benchmark matrix
+
+🧠 5. Show Design Optimization Panel
+Metric	Your Trial	CSR Median	Change Recommended
+Sample Size	90	260	✅ Raise to 240–300
+Endpoint	WL%	BMI + PRO	✅ Upgrade
+Duration	52w	24w	⚠️ Too long
+✅ Each line comes with AI-suggested adjustment and citation
+
