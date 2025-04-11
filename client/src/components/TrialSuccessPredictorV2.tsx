@@ -389,16 +389,16 @@ export default function TrialSuccessPredictorV2() {
               </div>
 
               <div className="space-y-2">
-                <FormLabel>Or paste protocol text</FormLabel>
+                <div className="text-sm font-medium">Or paste protocol text</div>
                 <Textarea
                   placeholder="Paste your protocol or study design summary here..."
                   value={protocolText}
                   onChange={(e) => setProtocolText(e.target.value)}
                   rows={10}
                 />
-                <FormDescription>
+                <p className="text-sm text-muted-foreground">
                   Paste the protocol text or study design summary for automatic parameter extraction.
-                </FormDescription>
+                </p>
               </div>
 
               <Button 
