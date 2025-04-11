@@ -87,36 +87,44 @@ export default function Home() {
             <div className="flex items-center justify-center">
               <div className="grid grid-cols-2 gap-4 md:gap-8">
                 <div className="grid gap-4 md:gap-8">
-                  <div className="rounded-lg bg-gradient-to-b from-blue-500 to-blue-700 p-8 text-white">
-                    <Database className="mb-2 h-10 w-10" />
-                    <h3 className="text-xl font-bold">CSR Repository</h3>
-                    <p className="text-blue-100">
-                      Access hundreds of structured CSRs from public sources
-                    </p>
-                  </div>
-                  <div className="rounded-lg bg-gradient-to-b from-purple-500 to-purple-700 p-8 text-white">
-                    <Microscope className="mb-2 h-10 w-10" />
-                    <h3 className="text-xl font-bold">Biomarker Analysis</h3>
-                    <p className="text-purple-100">
-                      Cross-study analysis of biomarker response patterns
-                    </p>
-                  </div>
+                  <Link href="/use-cases#repository" className="block">
+                    <div className="rounded-lg bg-gradient-to-b from-blue-500 to-blue-700 p-8 text-white hover:shadow-lg transition-shadow">
+                      <Database className="mb-2 h-10 w-10" />
+                      <h3 className="text-xl font-bold">CSR Repository</h3>
+                      <p className="text-blue-100">
+                        Access hundreds of structured CSRs from public sources
+                      </p>
+                    </div>
+                  </Link>
+                  <Link href="/use-cases#biomarker" className="block">
+                    <div className="rounded-lg bg-gradient-to-b from-purple-500 to-purple-700 p-8 text-white hover:shadow-lg transition-shadow">
+                      <Microscope className="mb-2 h-10 w-10" />
+                      <h3 className="text-xl font-bold">Biomarker Analysis</h3>
+                      <p className="text-purple-100">
+                        Cross-study analysis of biomarker response patterns
+                      </p>
+                    </div>
+                  </Link>
                 </div>
                 <div className="grid gap-4 md:gap-8">
-                  <div className="rounded-lg bg-gradient-to-b from-emerald-500 to-emerald-700 p-8 text-white">
-                    <Beaker className="mb-2 h-10 w-10" />
-                    <h3 className="text-xl font-bold">Protocol Design</h3>
-                    <p className="text-emerald-100">
-                      AI-generated protocol templates based on successful trials
-                    </p>
-                  </div>
-                  <div className="rounded-lg bg-gradient-to-b from-amber-500 to-amber-700 p-8 text-white">
-                    <Users className="mb-2 h-10 w-10" />
-                    <h3 className="text-xl font-bold">Patient Selection</h3>
-                    <p className="text-amber-100">
-                      Optimize inclusion/exclusion criteria for your study
-                    </p>
-                  </div>
+                  <Link href="/use-cases#protocol" className="block">
+                    <div className="rounded-lg bg-gradient-to-b from-emerald-500 to-emerald-700 p-8 text-white hover:shadow-lg transition-shadow">
+                      <Beaker className="mb-2 h-10 w-10" />
+                      <h3 className="text-xl font-bold">Protocol Design</h3>
+                      <p className="text-emerald-100">
+                        AI-generated protocol templates based on successful trials
+                      </p>
+                    </div>
+                  </Link>
+                  <Link href="/use-cases#patient" className="block">
+                    <div className="rounded-lg bg-gradient-to-b from-amber-500 to-amber-700 p-8 text-white hover:shadow-lg transition-shadow">
+                      <Users className="mb-2 h-10 w-10" />
+                      <h3 className="text-xl font-bold">Patient Selection</h3>
+                      <p className="text-amber-100">
+                        Optimize inclusion/exclusion criteria for your study
+                      </p>
+                    </div>
+                  </Link>
                 </div>
               </div>
             </div>
