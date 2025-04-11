@@ -5,6 +5,7 @@ import sys
 import json
 
 def deep_clean(text):
+    """Clean text of Unicode characters that might cause issues in the PDF"""
     if not isinstance(text, str):
         return str(text)
         
@@ -19,12 +20,25 @@ def deep_clean(text):
     )
 
 def generate_restore_report(protocol_id, version_id, restored_data):
-    restored_timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
+    """
+    Generate a PDF report documenting a protocol version restoration
+    
+    Args:
+        protocol_id: The protocol identifier
+        version_id: The version identifier of the restored protocol
+        restored_data: The restored protocol data
+        
+    Returns:
+        Path to the generated PDF file
+    """
+    timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
     
     class RestoredPDF(FPDF):
         def header(self):
             self.set_font("Arial", "B", 14)
-            self.cell(0, 10, deep_clean(f"Protocol Version Restore Report - {protocol_id} ({version_id})"), ln=True, align="C")
+            self.cell(0, 10, deep_clean(f"Protocol Restoration Report - {protocol_id}"), ln=True, align="C")
+            self.set_font("Arial", "I", 10)
+            self.cell(0, 5, deep_clean(f"Restored to version {version_id}"), ln=True, align="C")
             self.ln(5)
 
         def section(self, title, content):
@@ -38,33 +52,51 @@ def generate_restore_report(protocol_id, version_id, restored_data):
     pdf = RestoredPDF()
     pdf.add_page()
 
-    pdf.section("Restored Version Metadata", f"""
+    # Metadata section
+    pdf.section("Restoration Metadata", f"""
     - Protocol ID: {protocol_id}
-    - Version Restored: {version_id}
-    - Restore Time (UTC): {restored_timestamp}
+    - Restored Version: {version_id}
+    - Restoration Date: {timestamp}
+    - Restoration Type: Manual version restoration
     """)
 
-    # Extract key protocol data
-    indication = restored_data.get('indication', 'N/A')
-    phase = restored_data.get('phase', 'N/A')
-    sample_size = restored_data.get('sample_size', 'N/A')
-    duration_weeks = restored_data.get('duration_weeks', 'N/A')
-    dropout_rate = restored_data.get('dropout_rate', 0)
-    endpoint_primary = restored_data.get('endpoint_primary', 'N/A')
+    # Protocol details section
+    if isinstance(restored_data, dict):
+        parsed_data = restored_data.get('parsed', {})
+        if parsed_data:
+            protocol_details = []
+            
+            # Add key protocol details
+            if 'indication' in parsed_data:
+                protocol_details.append(f"Indication: {parsed_data['indication']}")
+            if 'phase' in parsed_data:
+                protocol_details.append(f"Phase: {parsed_data['phase']}")
+            if 'sample_size' in parsed_data:
+                protocol_details.append(f"Sample Size: {parsed_data['sample_size']}")
+            if 'duration_weeks' in parsed_data:
+                protocol_details.append(f"Duration: {parsed_data['duration_weeks']} weeks")
+            if 'endpoint_primary' in parsed_data:
+                protocol_details.append(f"Primary Endpoint: {parsed_data['endpoint_primary']}")
+            
+            if protocol_details:
+                pdf.section("Restored Protocol Details", "\n".join(protocol_details))
+        
+        # Add prediction if available
+        if 'prediction' in restored_data:
+            prediction_percent = restored_data['prediction'] * 100
+            pdf.section("Success Prediction", f"The restored protocol version has a predicted success probability of {prediction_percent:.1f}%.")
+        
+        # Add SAP if available
+        if 'sap' in restored_data:
+            pdf.section("Restored Statistical Analysis Plan", restored_data['sap'])
 
-    pdf.section("Restored Protocol Configuration", f"""
-    - Indication: {indication}
-    - Phase: {phase}
-    - Sample Size: {sample_size}
-    - Duration: {duration_weeks} weeks
-    - Dropout Rate: {dropout_rate * 100:.1f}% (if applicable)
-    - Primary Endpoint: {endpoint_primary}
-    """)
-
-    pdf.section("Next Steps", """
-    - This version has been restored into the Protocol Builder.
-    - All intelligence tools are now using this version.
-    - Export options, dossier tracking, and AI recommendations will reflect this restored version.
+    # Regulatory notes
+    pdf.section("Regulatory Notes", """
+    This document certifies that a previous version of the protocol has been restored.
+    
+    In accordance with ICH E6(R2) guidelines, this restoration has been documented with
+    all relevant metadata and details for audit trail purposes. The restored version
+    should be reviewed carefully before proceeding with any regulatory submissions.
     """)
 
     # Ensure the directory exists
@@ -72,7 +104,7 @@ def generate_restore_report(protocol_id, version_id, restored_data):
     os.makedirs(reports_dir, exist_ok=True)
     
     timestamp = int(time.time())
-    pdf_filename = f"Protocol_Version_Restore_Report_{protocol_id}_{version_id}_{timestamp}.pdf"
+    pdf_filename = f"Protocol_Restore_Report_{protocol_id}_{version_id}_{timestamp}.pdf"
     pdf_path = os.path.join(reports_dir, pdf_filename)
     
     pdf.output(pdf_path)
@@ -80,15 +112,15 @@ def generate_restore_report(protocol_id, version_id, restored_data):
 
 if __name__ == "__main__":
     if len(sys.argv) < 4:
-        print("Usage: python generate_restore_report.py <protocol_id> <version_id> <json_data_path>")
+        print("Usage: python generate_restore_report.py <protocol_id> <version_id> <restored_data_json_file>")
         sys.exit(1)
         
     protocol_id = sys.argv[1]
     version_id = sys.argv[2]
-    json_path = sys.argv[3]
+    restored_data_file = sys.argv[3]
     
-    with open(json_path, 'r') as f:
-        data = json.load(f)
+    with open(restored_data_file, 'r') as f:
+        restored_data = json.load(f)
         
-    pdf_path = generate_restore_report(protocol_id, version_id, data)
-    print(f"Report generated: {pdf_path}")
+    pdf_path = generate_restore_report(protocol_id, version_id, restored_data)
+    print(f"Restoration report generated: {pdf_path}")
