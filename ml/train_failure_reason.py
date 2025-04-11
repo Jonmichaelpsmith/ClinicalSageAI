@@ -51,49 +51,20 @@ def train_failure_reason_classifier():
         ngram_range=(1, 2)
     )
     
-    # Transform failure reasons to feature vectors
-    X = vectorizer.fit_transform(failure_df['failure_reason'])
-    y = failure_df['success']  # Always 0 in this case
+    # Skip trying to predict success/failure since all records are failures
+    # Instead, focus directly on categorizing failure reasons
     
-    # Split data for training and testing
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.3, random_state=42
-    )
+    # Assign failure categories
+    print("\nSkipping success/failure prediction (all records are failures)")
+    print("Directly training category classifier...")
     
-    # Train model to predict success/failure based on failure reason text
-    clf = LogisticRegression(C=1.0, class_weight='balanced', max_iter=1000, random_state=42)
-    clf.fit(X_train, y_train)
+    # Call the category classifier directly
+    category_clf, category_vec = train_category_classifier(failure_df, failure_categories, project_root)
     
-    # Evaluate the model
-    y_pred = clf.predict(X_test)
-    accuracy = accuracy_score(y_test, y_pred)
+    # Skip saving the original classifier - not useful in this context
     
-    print(f"\nAccuracy: {accuracy:.2f}")
-    print("\nClassification Report:")
-    print(classification_report(y_test, y_pred))
-    
-    # Create models directory if it doesn't exist
-    models_dir = os.path.join(project_root, "models")
-    os.makedirs(models_dir, exist_ok=True)
-    
-    # Save the trained failure reason classifier and vectorizer
-    model_path = os.path.join(models_dir, "failure_reason_classifier.pkl")
-    vectorizer_path = os.path.join(models_dir, "failure_reason_vectorizer.pkl")
-    
-    with open(model_path, 'wb') as f:
-        pickle.dump(clf, f)
-    
-    with open(vectorizer_path, 'wb') as f:
-        pickle.dump(vectorizer, f)
-    
-    print(f"\nFailure reason model saved to: {model_path}")
-    print(f"Vectorizer saved to: {vectorizer_path}")
-    
-    # Train a model to predict new categories
-    if failure_categories:
-        train_category_classifier(failure_df, failure_categories, project_root)
-    
-    return clf, vectorizer
+    # Return the category classifier only - no need to create directories as that's done in train_category_classifier
+    return category_clf, category_vec
 
 def extract_failure_categories(df):
     """
