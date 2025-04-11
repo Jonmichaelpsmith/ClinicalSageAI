@@ -1,0 +1,93 @@
+Let’s add smart filters to your NotificationLogViewer.tsx for full control over log viewing.
+
+🧠 Enhanced Notification Log Viewer Features
+Filter	Type
+🔎 Protocol ID	Text input
+📧 Email Address	Text input
+📅 Date Range (Optional)	Future enhancement
+✅ Updated NotificationLogViewer.tsx with Filters
+tsx
+Copy
+Edit
+import { useEffect, useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+
+export default function NotificationLogViewer() {
+  const [logs, setLogs] = useState([]);
+  const [filtered, setFiltered] = useState([]);
+  const [protocolFilter, setProtocolFilter] = useState('');
+  const [emailFilter, setEmailFilter] = useState('');
+
+  useEffect(() => {
+    const fetchLogs = async () => {
+      const res = await fetch('/api/notifications/logs');
+      const data = await res.json();
+      setLogs(data.reverse());
+      setFiltered(data.reverse());
+    };
+    fetchLogs();
+  }, []);
+
+  useEffect(() => {
+    const result = logs.filter(log => {
+      return (
+        (protocolFilter === '' || log.protocol_id.toLowerCase().includes(protocolFilter.toLowerCase())) &&
+        (emailFilter === '' || log.email_sent_to.toLowerCase().includes(emailFilter.toLowerCase()))
+      );
+    });
+    setFiltered(result);
+  }, [protocolFilter, emailFilter, logs]);
+
+  return (
+    <div className="p-6 max-w-5xl mx-auto space-y-4">
+      <h2 className="text-xl font-bold text-blue-800">📬 Notification Log</h2>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4">
+        <Input
+          placeholder="Filter by Protocol ID"
+          value={protocolFilter}
+          onChange={(e) => setProtocolFilter(e.target.value)}
+        />
+        <Input
+          placeholder="Filter by Email"
+          value={emailFilter}
+          onChange={(e) => setEmailFilter(e.target.value)}
+        />
+      </div>
+
+      {filtered.length === 0 && (
+        <p className="text-sm text-gray-500 italic">No matching notifications found.</p>
+      )}
+
+      {filtered.map((log, idx) => (
+        <Card key={idx}>
+          <CardContent className="space-y-1 text-sm">
+            <p><strong>📄 Protocol:</strong> {log.protocol_id}</p>
+            <p><strong>🕒 Sent:</strong> {new Date(log.timestamp).toLocaleString()}</p>
+            <p><strong>📧 Email:</strong> {log.email_sent_to}</p>
+            <p><strong>🔗 Report:</strong> <a href={log.report_link} className="text-blue-600" target="_blank">Download</a></p>
+            <p><strong>💬 Slack:</strong> {log.slack_sent ? "✅ Sent" : "❌ Not Sent"}</p>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
+✅ Your log viewer now supports:
+
+🔍 Fast filtering by protocol or recipient
+
+📜 Full audit trail visibility
+
+🛡️ Compliant and shareable logs for team ops or client use
+
+Would you like to optionally export this filtered log list to CSV or PDF?
+
+
+
+
+
+
+
+
