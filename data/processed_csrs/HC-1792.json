@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1792",
+  "title": "A Randomized Open-Label, Placebo-Controlled Multi-Center Study of COL-735 (EGFR inhibitor) in Patients With Hypertension",
+  "officialTitle": "A Randomized Open-Label, Placebo-Controlled Multi-Center Study of COL-735 (EGFR inhibitor) in Patients With Hypertension",
+  "sponsor": "BC Cancer Agency",
+  "indication": "Hypertension",
+  "phase": "Phase 1",
+  "fileName": "HC-1792.json",
+  "fileSize": 413006,
+  "date": "2024-03-24",
+  "completionDate": "2026-03-14",
+  "drugName": "COL-735 (EGFR inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Recruiting",
+  "description": "This is a randomized open-label, placebo-controlled multi-center study designed to evaluate the efficacy and safety of COL-735 (EGFR inhibitor) in patients with Hypertension. The study will enroll approximately 163 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 26-72 years\n- Confirmed diagnosis of Hypertension\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}
