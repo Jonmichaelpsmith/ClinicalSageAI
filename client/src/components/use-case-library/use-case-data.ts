@@ -149,7 +149,7 @@ export const useCaseData: UseCase[] = [
       inputs: {
         indication: "Multiple (CNS, Metabolic, Oncology)",
         phase: "Preclinical to Phase 2",
-        sampleSize: "N/A",
+        sampleSize: 0, // N/A represented as 0
         duration: "10-year development window",
         primaryEndpoint: "ROI and success probability"
       },
