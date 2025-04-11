@@ -1,292 +1,257 @@
-#!/usr/bin/env python3
-"""
-Weekly Digest Generator for TrialSage
-
-Generates weekly summaries of user activities and important protocol changes
-based on user preferences.
-"""
-
-import json
 import os
-import sys
+import json
+import time
 from datetime import datetime, timedelta
-from pathlib import Path
+from fpdf import FPDF
 
-# Set up paths
-ROOT_DIR = Path(__file__).parent.parent
-LOG_PATH = ROOT_DIR / "data/logs/export_actions.jsonl"
-PREFS_DIR = ROOT_DIR / "data/users"
-REPORTS_DIR = ROOT_DIR / "data/exports"
-
-# Ensure directories exist
-os.makedirs(PREFS_DIR, exist_ok=True)
-os.makedirs(REPORTS_DIR.parent / "logs", exist_ok=True)
-
-def get_user_preferences(user_id):
-    """Get user digest preferences or return defaults"""
-    pref_file = PREFS_DIR / f"{user_id}_prefs.json"
-    
-    # Default preferences
-    default_prefs = {
-        "include_exports": True,
-        "include_risk_changes": True,
-        "include_version_changes": True,
-        "include_sap": True,
-        "risk_change_threshold": 10  # percentage points
-    }
-    
-    if not pref_file.exists():
-        return default_prefs
-    
-    try:
-        with open(pref_file, 'r') as f:
-            prefs = json.load(f)
-            # Ensure all preference keys exist
-            for key in default_prefs:
-                if key not in prefs:
-                    prefs[key] = default_prefs[key]
-            return prefs
-    except Exception as e:
-        print(f"Error reading preferences for user {user_id}: {e}", file=sys.stderr)
-        return default_prefs
-
-def generate_digest(user_id=None, days=7):
-    """Generate weekly digest based on user preferences"""
-    if not LOG_PATH.exists():
-        return "No logs found."
-
-    # Get time range for digest
-    since = datetime.utcnow() - timedelta(days=days)
-    entries = []
-
-    # Load user preferences
-    prefs = get_user_preferences(user_id) if user_id else {
-        "include_exports": True,
-        "include_risk_changes": True,
-        "include_version_changes": True,
-        "include_sap": True
-    }
-    
-    # Read log entries
-    try:
-        with open(LOG_PATH, 'r') as f:
-            for line in f:
-                if not line.strip():
-                    continue
-                    
-                try:
-                    log = json.loads(line)
-                    log_time = datetime.fromisoformat(log["timestamp"])
-                    
-                    # Filter by time and user
-                    if log_time >= since and (user_id is None or log.get("user_id") == user_id):
-                        entries.append(log)
-                except json.JSONDecodeError:
-                    continue
-                except Exception as e:
-                    print(f"Error parsing log entry: {e}", file=sys.stderr)
-                    continue
-    except Exception as e:
-        print(f"Error reading logs: {e}", file=sys.stderr)
-        return f"Error generating digest: {e}"
-
-    # Start building digest
-    digest = f"📊 TrialSage Weekly Digest – {datetime.utcnow().strftime('%Y-%m-%d')}\n\n"
-    
-    # Add export summary if enabled
-    if prefs.get("include_exports", True):
-        export_entries = [e for e in entries if e.get("report_type") in ["intelligence_report", "comparison_report", "sap"]]
+def deep_clean(text):
+    """Clean text of Unicode characters that might cause issues in the PDF"""
+    if not isinstance(text, str):
+        return str(text)
         
-        if export_entries:
-            digest += f"📤 Report Exports ({len(export_entries)} total):\n"
-            for entry in export_entries:
-                # Skip SAP reports if not included in preferences
-                if entry.get("report_type") == "sap" and not prefs.get("include_sap", True):
-                    continue
-                    
-                digest += f"• {entry.get('report_type', 'Unknown')} for {entry.get('protocol_id', 'Unknown')} "
-                digest += f"on {datetime.fromisoformat(entry['timestamp']).strftime('%Y-%m-%d %H:%M')}\n"
-            digest += "\n"
-    
-    # Add risk changes if enabled
-    if prefs.get("include_risk_changes", True):
-        risk_threshold = prefs.get("risk_change_threshold", 10) / 100  # Convert to decimal
-        risk_entries = []
-        
-        for entry in entries:
-            if entry.get("report_details") and "previous_success_rate" in entry.get("report_details", {}):
-                prev = entry["report_details"]["previous_success_rate"]
-                curr = entry["report_details"]["current_success_rate"]
-                
-                if prev is not None and curr is not None:
-                    delta = abs(curr - prev)
-                    if delta >= risk_threshold:
-                        risk_entries.append({
-                            **entry,
-                            "delta": delta,
-                            "direction": "increased" if curr > prev else "decreased"
-                        })
-        
-        if risk_entries:
-            digest += f"⚠️ Significant Risk Changes ({len(risk_entries)} total):\n"
-            for entry in risk_entries:
-                delta_pct = entry["delta"] * 100
-                digest += f"• {entry.get('protocol_id', 'Unknown')} success probability "
-                digest += f"{entry['direction']} by {delta_pct:.1f}% "
-                digest += f"on {datetime.fromisoformat(entry['timestamp']).strftime('%Y-%m-%d')}\n"
-            digest += "\n"
-    
-    # Add protocol version changes if enabled
-    if prefs.get("include_version_changes", True):
-        version_entries = [e for e in entries if e.get("report_type") == "comparison_report"]
-        
-        if version_entries:
-            digest += f"📝 Protocol Version Changes ({len(version_entries)} total):\n"
-            for entry in version_entries:
-                digest += f"• {entry.get('protocol_id', 'Unknown')} "
-                
-                if entry.get("report_details") and "changes" in entry.get("report_details", {}):
-                    changes = entry["report_details"]["changes"]
-                    if changes:
-                        digest += f"changes in: {', '.join(changes)} "
-                
-                digest += f"on {datetime.fromisoformat(entry['timestamp']).strftime('%Y-%m-%d')}\n"
-            digest += "\n"
-    
-    # Add footer
-    digest += "\n"
-    digest += "You can customize these weekly digests in your TrialSage preferences.\n"
-    digest += "This is an automated message from TrialSage."
+    return (
+        text.replace("–", "-")
+            .replace("'", "'")
+            .replace(""", '"')
+            .replace(""", '"')
+            .replace("≥", ">=")
+            .replace("•", "-")
+            .replace("–", "-")
+    )
 
-    return digest.strip()
-
-def generate_html_digest(user_id=None, days=7):
-    """Generate weekly digest as HTML"""
-    text_digest = generate_digest(user_id, days)
-    if text_digest.startswith("Error") or text_digest == "No logs found.":
-        return f"<p>{text_digest}</p>"
-    
-    # Convert plain text to HTML
-    html_content = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>TrialSage Weekly Digest</title>
-        <style>
-            body {{
-                font-family: Arial, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                max-width: 800px;
-                margin: 0 auto;
-                padding: 20px;
-            }}
-            .header {{
-                background-color: #2563eb;
-                color: white;
-                padding: 15px;
-                border-radius: 5px;
-                margin-bottom: 20px;
-                text-align: center;
-            }}
-            .section {{
-                background-color: #f8fafc;
-                padding: 15px;
-                border-radius: 5px;
-                margin-bottom: 15px;
-                border-left: 4px solid #2563eb;
-            }}
-            .section h2 {{
-                margin-top: 0;
-                color: #1e40af;
-            }}
-            .item {{
-                margin-bottom: 10px;
-                padding-left: 20px;
-                position: relative;
-            }}
-            .item:before {{
-                content: "•";
-                position: absolute;
-                left: 0;
-                color: #2563eb;
-            }}
-            .footer {{
-                margin-top: 30px;
-                font-size: 12px;
-                color: #64748b;
-                text-align: center;
-                border-top: 1px solid #e2e8f0;
-                padding-top: 15px;
-            }}
-            .warning {{
-                border-left: 4px solid #dc2626;
-            }}
-            .warning h2 {{
-                color: #dc2626;
-            }}
-        </style>
-    </head>
-    <body>
+def get_recent_protocol_changes(days=7):
     """
+    Get all protocol changes from the past week from dossier files
     
-    # Extract sections from text digest
-    sections = text_digest.split("\n\n")
+    Args:
+        days: Number of days to look back for changes
+        
+    Returns:
+        List of change entries with metadata
+    """
+    dossiersDir = os.path.join(os.getcwd(), 'data/dossiers')
+    if not os.path.exists(dossiersDir):
+        return []
+        
+    cutoff_date = datetime.now() - timedelta(days=days)
+    changes = []
     
-    # Add header
-    html_content += f'<div class="header"><h1>{sections[0]}</h1></div>'
-    
-    # Process each section
-    for section in sections[1:-1]:  # Skip header and footer
-        if not section:
+    # Iterate through all dossier files
+    for filename in os.listdir(dossiersDir):
+        if not filename.endswith('.json'):
             continue
             
-        lines = section.split("\n")
-        title = lines[0]
-        items = lines[1:]
+        dossier_path = os.path.join(dossiersDir, filename)
         
-        section_class = "section"
-        if "Risk Changes" in title:
-            section_class += " warning"
-        
-        html_content += f'<div class="{section_class}">'
-        html_content += f'<h2>{title}</h2>'
-        
-        for item in items:
-            html_content += f'<div class="item">{item}</div>'
-        
-        html_content += '</div>'
+        try:
+            with open(dossier_path, 'r') as f:
+                dossier = json.load(f)
+                
+            protocol_id = dossier.get('protocol_id', 'unknown')
+            user_id = dossier.get('user_id', 'unknown')
+            
+            # Look for recent reports
+            for report in dossier.get('reports', []):
+                created_at = report.get('created_at')
+                if not created_at:
+                    continue
+                    
+                # Parse the timestamp
+                try:
+                    report_date = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
+                except (ValueError, TypeError):
+                    # If date parsing fails, use a fallback approach
+                    try:
+                        report_date = datetime.strptime(created_at[:19], "%Y-%m-%dT%H:%M:%S")
+                    except (ValueError, TypeError):
+                        continue
+                
+                # Check if report is within the time window
+                if report_date >= cutoff_date:
+                    # Extract relevant data
+                    version = report.get('version', 'unknown')
+                    changelog = report.get('changelog', [])
+                    summary = report.get('summary', 'Protocol updated')
+                    
+                    # Check for SAP updates
+                    has_sap = bool(report.get('original', {}).get('sap'))
+                    
+                    # Get prediction changes
+                    prev_prediction = report.get('previous_prediction')
+                    current_prediction = report.get('original', {}).get('prediction')
+                    prediction_change = None
+                    
+                    if prev_prediction is not None and current_prediction is not None:
+                        change = (current_prediction - prev_prediction) * 100
+                        if abs(change) >= 1:  # Only report meaningful changes (≥1%)
+                            prediction_change = f"{change:+.1f}% success probability"
+                    
+                    changes.append({
+                        'protocol_id': protocol_id,
+                        'user_id': user_id,
+                        'version': version,
+                        'date': report_date,
+                        'changelog': changelog,
+                        'summary': summary,
+                        'has_sap': has_sap,
+                        'prediction_change': prediction_change
+                    })
+        except Exception as e:
+            print(f"Error processing dossier {filename}: {e}")
+            continue
     
-    # Add footer
-    html_content += '<div class="footer">'
-    html_content += '<p>You can customize these weekly digests in your TrialSage preferences.</p>'
-    html_content += '<p>This is an automated message from TrialSage.</p>'
-    html_content += '</div>'
-    
-    html_content += """
-    </body>
-    </html>
-    """
-    
-    return html_content
+    # Sort changes by date (newest first)
+    changes.sort(key=lambda x: x['date'], reverse=True)
+    return changes
 
-def main():
-    """Main function to run from command line"""
-    if len(sys.argv) < 2:
-        print("Error: User ID not specified", file=sys.stderr)
-        sys.exit(1)
+def generate_text_digest(changes):
+    """
+    Generate a plain text digest of recent protocol changes
     
-    user_id = sys.argv[1]
-    days = int(sys.argv[2]) if len(sys.argv) > 2 else 7
+    Args:
+        changes: List of change entries with metadata
+        
+    Returns:
+        A formatted text digest
+    """
+    if not changes:
+        return "No protocol changes in the past week."
+        
+    digest = "🧠 TrialSage Weekly Digest\n\n"
     
-    try:
-        digest = generate_digest(user_id, days)
-        print(digest)
-    except Exception as e:
-        print(f"Error generating digest: {str(e)}", file=sys.stderr)
-        sys.exit(1)
+    for i, change in enumerate(changes, 1):
+        protocol_id = change['protocol_id']
+        version = change['version']
+        date_str = change['date'].strftime("%Y-%m-%d")
+        
+        digest += f"{i}. {version} of {protocol_id} saved on {date_str}\n"
+        
+        # Add changelog if available
+        if change['changelog']:
+            for log_entry in change['changelog']:
+                digest += f"   🔁 {log_entry}\n"
+        
+        # Add SAP update if available
+        if change['has_sap']:
+            digest += f"   🧾 SAP updated\n"
+        
+        # Add prediction change if available
+        if change['prediction_change']:
+            digest += f"   📊 {change['prediction_change']}\n"
+        
+        # Add hypothetical download links
+        digest += f"   📥 Reports: /reports/{protocol_id}_{version}.pdf\n"
+        if change['has_sap']:
+            digest += f"   🧾 SAP: /sap/{protocol_id}_{version}_sap.pdf\n"
+        
+        digest += "\n"
+    
+    return digest
+
+def generate_pdf_digest(changes, output_path=None):
+    """
+    Generate a PDF digest of recent protocol changes
+    
+    Args:
+        changes: List of change entries with metadata
+        output_path: Optional path to save the PDF
+        
+    Returns:
+        Path to the generated PDF
+    """
+    if not changes:
+        return None
+        
+    class DigestPDF(FPDF):
+        def header(self):
+            self.set_font("Arial", "B", 16)
+            self.cell(0, 10, "TrialSage Weekly Protocol Digest", ln=True, align="C")
+            self.set_font("Arial", "I", 10)
+            self.cell(0, 5, f"Generated on {datetime.now().strftime('%Y-%m-%d')}", ln=True, align="C")
+            self.ln(5)
+            
+        def footer(self):
+            self.set_y(-15)
+            self.set_font("Arial", "I", 8)
+            self.cell(0, 10, f"Page {self.page_no()}", 0, 0, "C")
+    
+    pdf = DigestPDF()
+    pdf.add_page()
+    
+    # Add summary
+    pdf.set_font("Arial", "B", 12)
+    pdf.cell(0, 10, f"Protocol Changes Summary ({len(changes)} updates in the past week)", ln=True)
+    pdf.ln(5)
+    
+    # Add each change
+    for i, change in enumerate(changes, 1):
+        protocol_id = change['protocol_id']
+        version = change['version']
+        date_str = change['date'].strftime("%Y-%m-%d")
+        
+        # Protocol header
+        pdf.set_font("Arial", "B", 11)
+        pdf.cell(0, 8, f"{i}. Protocol {protocol_id} - {version} ({date_str})", ln=True)
+        
+        # Summary
+        pdf.set_font("Arial", "", 10)
+        pdf.multi_cell(0, 6, deep_clean(f"Summary: {change['summary']}"))
+        
+        # Changelog
+        if change['changelog']:
+            pdf.ln(2)
+            pdf.set_font("Arial", "B", 10)
+            pdf.cell(0, 6, "Changes:", ln=True)
+            pdf.set_font("Arial", "", 10)
+            
+            for log_entry in change['changelog']:
+                pdf.cell(10)  # Indent
+                pdf.multi_cell(0, 6, deep_clean(f"• {log_entry}"))
+        
+        # SAP update
+        if change['has_sap']:
+            pdf.ln(2)
+            pdf.set_font("Arial", "B", 10)
+            pdf.cell(0, 6, "Statistical Analysis Plan:", ln=True)
+            pdf.set_font("Arial", "", 10)
+            pdf.cell(10)
+            pdf.multi_cell(0, 6, "• SAP has been updated based on protocol changes")
+        
+        # Prediction change
+        if change['prediction_change']:
+            pdf.ln(2)
+            pdf.set_font("Arial", "B", 10)
+            pdf.cell(0, 6, "Success Prediction:", ln=True)
+            pdf.set_font("Arial", "", 10)
+            pdf.cell(10)
+            pdf.multi_cell(0, 6, deep_clean(f"• {change['prediction_change']}"))
+        
+        pdf.ln(5)
+    
+    # Set default output path if none provided
+    if not output_path:
+        reports_dir = os.path.join('temp', 'reports')
+        os.makedirs(reports_dir, exist_ok=True)
+        output_path = os.path.join(reports_dir, f"TrialSage_Weekly_Digest_{int(time.time())}.pdf")
+    
+    pdf.output(output_path)
+    return output_path
 
 if __name__ == "__main__":
-    main()
+    # Set days to look back (default: 7 days)
+    days_back = 7
+    
+    # Get recent changes
+    changes = get_recent_protocol_changes(days=days_back)
+    
+    # Generate text digest
+    text_digest = generate_text_digest(changes)
+    print("\n==== TEXT DIGEST ====\n")
+    print(text_digest)
+    
+    # Generate PDF digest
+    if changes:
+        pdf_path = generate_pdf_digest(changes)
+        print(f"\nPDF digest generated: {pdf_path}")
+    else:
+        print("\nNo changes found, PDF digest not generated.")
