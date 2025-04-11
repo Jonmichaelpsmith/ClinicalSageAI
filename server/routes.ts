@@ -2478,26 +2478,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Extract text from PDF using the existing function
+      // Extract text from PDF
       let pdfText = "";
       try {
-        // Use PDF extraction function if available
-        if (typeof extractTextFromPdf === 'function') {
-          pdfText = await extractTextFromPdf(Buffer.from(buffer));
-        } else {
-          // Fallback to a basic extraction approach
-          const pdfParse = require('pdf-parse');
-          const data = await pdfParse(buffer);
-          pdfText = data.text;
-        }
+        // Use pdf-parse for reliable PDF text extraction
+        const pdfParse = require('pdf-parse');
+        const data = await pdfParse(buffer);
+        pdfText = data.text;
+        
+        // Log the first 100 characters to help with debugging
+        console.log(`PDF Text extracted (first 100 chars): ${pdfText.substring(0, 100)}`);
       } catch (pdfError) {
         console.error('Error extracting text from PDF:', pdfError);
-        // If extraction fails, use a minimal approach based on filename
-        if (originalname.toLowerCase().includes('obesity') || 
-            originalname.toLowerCase().includes('lumen') || 
-            originalname.toLowerCase().includes('lmn-0801')) {
-          pdfText = "Obesity POC Study Protocol for LMN-0801";
-        }
+        
+        // Return friendly error to client
+        return res.status(400).json({
+          success: false,
+          message: 'Could not extract text from this PDF. Please try a different file or use manual entry.',
+        });
+      }
+      
+      // If we got no text or extremely short text, reject the file
+      if (!pdfText || pdfText.length < 50) {
+        console.error('PDF text extraction returned insufficient text');
+        return res.status(400).json({
+          success: false,
+          message: 'The PDF appears to be empty or contains too little text. Please try a different file.',
+        });
       }
       
       // Helper functions for extracting protocol information
@@ -2616,19 +2623,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get similar trials based on the extracted indication
       let similarTrials = [];
       try {
+        // Import ilike from drizzle-orm
+        const { ilike } = require('drizzle-orm/pg-core');
+        
         similarTrials = await db
           .select()
           .from(csrReports)
-          .where(like(csrReports.indication, `%${extractedInfo.indication}%`))
+          .where(ilike(csrReports.indication, `%${extractedInfo.indication}%`))
           .limit(3);
       } catch (dbError) {
         console.error('Error fetching similar trials:', dbError);
-        // Provide some default similar trials if database query fails
-        similarTrials = [
-          { id: 1, title: "Weight Management Study A", sponsor: "Pharma Research Inc", date: "2024-01" },
-          { id: 2, title: "Clinical Evaluation of Novel Weight Loss Therapy", sponsor: "Medical Innovations", date: "2023-12" },
-          { id: 3, title: "Obesity Treatment Comparative Analysis", sponsor: "Global Health Partners", date: "2023-10" }
-        ];
+        // Return an empty array instead of fallbacks to ensure data integrity
+        similarTrials = [];
       }
       
       // Prepare evaluation based on extracted information
