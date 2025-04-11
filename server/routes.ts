@@ -20,6 +20,7 @@ import { csrTrainingService } from "./csr-training-service";
 import { researchCompanionService } from "./research-companion-service";
 import { spawn } from 'child_process';
 import path from 'path';
+import { registerSmartProtocolRoutes } from "./smart-protocol-routes";
 import { optimizeProtocol } from "./protocol-optimizer-service";
 import { studyDesignAgentService } from "./agent-service";
 import { getEndpointRecommenderService } from "./services/endpoint-recommender-service";
