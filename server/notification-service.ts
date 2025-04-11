@@ -54,6 +54,22 @@ export class NotificationService {
   }
   
   /**
+   * Add a general notification to the log
+   */
+  addNotification(notification: {
+    type: string;
+    message: string;
+    timestamp: string;
+    details?: any;
+  }): void {
+    try {
+      fs.appendFileSync(NOTIFICATION_LOG_PATH, JSON.stringify(notification) + '\n');
+    } catch (error) {
+      console.error('Error adding notification:', error);
+    }
+  }
+  
+  /**
    * Retrieve notification logs
    */
   getNotificationLogs(): any[] {

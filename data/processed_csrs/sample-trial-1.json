@@ -1,0 +1,13 @@
+{
+  "nct_id": "SAMPLE-001",
+  "title": "A Randomized Double-Blind, Placebo-Controlled Multi-Center Study of Drug-X in Patients With Obesity",
+  "indication": "Obesity",
+  "phase": "Phase 2",
+  "sample_size": 250,
+  "duration_weeks": 24,
+  "dropout_rate": 0.18,
+  "primary_endpoints": ["BMI reduction"],
+  "control_arm": "placebo",
+  "blinding": "double-blind",
+  "outcome_summary": "Primary endpoint met with statistical significance"
+}

@@ -1,0 +1,13 @@
+{
+  "nct_id": "SAMPLE-002",
+  "title": "A Randomized Open-Label, Active-Controlled Study of Drug-Y in Patients With Type 2 Diabetes",
+  "indication": "Type 2 Diabetes",
+  "phase": "Phase 3",
+  "sample_size": 520,
+  "duration_weeks": 52,
+  "dropout_rate": 0.12,
+  "primary_endpoints": ["HbA1c reduction"],
+  "control_arm": "standard of care",
+  "blinding": "open-label",
+  "outcome_summary": "Primary endpoint met with statistical significance"
+}

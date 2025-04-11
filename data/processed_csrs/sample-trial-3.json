@@ -1,0 +1,13 @@
+{
+  "nct_id": "SAMPLE-003",
+  "title": "A Randomized Double-Blind, Placebo-Controlled Study of Drug-Z in Patients With Hypertension",
+  "indication": "Hypertension",
+  "phase": "Phase 3",
+  "sample_size": 180,
+  "duration_weeks": 16,
+  "dropout_rate": 0.22,
+  "primary_endpoints": ["Reduction in systolic blood pressure"],
+  "control_arm": "placebo",
+  "blinding": "double-blind",
+  "outcome_summary": "Primary endpoint not met"
+}
