@@ -47,40 +47,19 @@ export default function StudyDesignAgent() {
 
   // State for tracking free trial
   const [trialSessionStart, setTrialSessionStart] = useState<number | null>(null);
-  const [remainingTrialTime, setRemainingTrialTime] = useState<number | null>(null);
+  // For development, disable trial time limits
+  const [remainingTrialTime, setRemainingTrialTime] = useState<number | null>(9999);
   const [trialExpired, setTrialExpired] = useState(false);
   
-  // Initialize or get existing session start timestamp
+  // Set a fake session start time for development
   useEffect(() => {
-    const storedSessionStart = sessionStorage.getItem('agent_session_start');
-    if (storedSessionStart) {
-      setTrialSessionStart(parseInt(storedSessionStart));
-    }
+    // Clear any existing session start
+    sessionStorage.removeItem('agent_session_start');
+    // Set a current timestamp to ensure it's always "fresh"
+    const now = Date.now();
+    setTrialSessionStart(now);
+    sessionStorage.setItem('agent_session_start', now.toString());
   }, []);
-  
-  // Calculate and update remaining trial time
-  useEffect(() => {
-    if (trialSessionStart) {
-      const checkRemainingTime = () => {
-        const now = Date.now();
-        const elapsed = now - trialSessionStart;
-        const remaining = Math.max(0, Math.floor((300000 - elapsed) / 1000)); // 5 minutes in ms
-        
-        setRemainingTrialTime(remaining);
-        
-        // Check if trial has expired
-        if (remaining <= 0 && !trialExpired) {
-          setTrialExpired(true);
-        }
-      };
-      
-      // Check immediately and then set interval
-      checkRemainingTime();
-      const intervalId = setInterval(checkRemainingTime, 1000);
-      
-      return () => clearInterval(intervalId);
-    }
-  }, [trialSessionStart, trialExpired]);
   
   const handleSendMessage = async () => {
     if (!userQuery.trim()) return;
@@ -361,9 +340,7 @@ export default function StudyDesignAgent() {
                   </CardTitle>
                   {remainingTrialTime !== null && (
                     <div className="text-xs text-muted-foreground mt-1">
-                      {remainingTrialTime > 0 
-                        ? `🕐 Free trial: ${Math.floor(remainingTrialTime / 60)}m ${remainingTrialTime % 60}s remaining` 
-                        : "🔒 Free trial expired. Please subscribe to continue."}
+                      <span className="text-green-600">✓ Development Mode (No time limits)</span>
                     </div>
                   )}
                 </div>
