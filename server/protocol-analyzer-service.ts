@@ -1,8 +1,27 @@
 import { db } from './db';
 import fs from 'fs';
 import path from 'path';
-import { protocols, protocolAnalyses } from '@shared/schema';
+import { protocols } from '@shared/schema';
 import { sql, eq } from 'drizzle-orm';
+
+// Temporary interface definition for protocol analyses
+interface ProtocolAnalysis {
+  id: number;
+  protocolId: number;
+  analysisDate: Date;
+  riskFlags: string;
+  riskScores: string;
+  csrMatches: string;
+  strategicInsights: string;
+  recommendationSummary: string;
+}
+
+// Define the protocolAnalyses table reference until it's added to the schema
+const protocolAnalyses = {
+  id: { name: 'id' },
+  protocolId: { name: 'protocol_id' },
+  analysisDate: { name: 'analysis_date' }
+};
 import { spawn } from 'child_process';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -101,17 +120,54 @@ export class ProtocolAnalyzerService {
   }
 
   /**
+   * Extract text from PDF files
+   */
+  async extractTextFromPdf(filePath: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      // Run Python script to extract text from PDF
+      const extractorProcess = spawn('python', [
+        'scripts/extract_pdf_text.py',
+        filePath
+      ]);
+      
+      let resultData = '';
+      let errorOutput = '';
+      
+      extractorProcess.stdout.on('data', (data) => {
+        resultData += data.toString();
+      });
+      
+      extractorProcess.stderr.on('data', (data) => {
+        errorOutput += data.toString();
+        console.error(`PDF extraction error: ${data}`);
+      });
+      
+      extractorProcess.on('close', (code) => {
+        if (code !== 0) {
+          reject(new Error(`PDF extraction failed: ${errorOutput}`));
+        } else {
+          resolve(resultData.trim());
+        }
+      });
+    });
+  }
+
+  /**
    * Extract data from protocol document using HuggingFace models
    */
-  async extractProtocolData(filePath: string): Promise<ExtractedProtocolData> {
+  async extractProtocolData(textContent: string): Promise<ExtractedProtocolData> {
     // Create a temporary output file for the extraction results
     const outputPath = path.join(this.tempDir, `extraction_${Date.now()}.json`);
+    const inputPath = path.join(this.tempDir, `input_${Date.now()}.txt`);
+    
+    // Write the text content to a temporary file
+    fs.writeFileSync(inputPath, textContent);
     
     return new Promise((resolve, reject) => {
       // Run the Python script to extract protocol data
       const extractorProcess = spawn('python', [
         'scripts/extract_protocol_data.py',
-        filePath,
+        inputPath,
         outputPath
       ]);
       
