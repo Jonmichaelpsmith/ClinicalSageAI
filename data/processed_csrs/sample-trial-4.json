@@ -1,0 +1,12 @@
+{
+  "nct_id": "NCT0000001",
+  "indication": "Obesity",
+  "phase": "Phase 2",
+  "sample_size": 300,
+  "duration_weeks": 24,
+  "dropout_rate": 0.15,
+  "primary_endpoints": ["BMI reduction"],
+  "outcome_summary": "Primary endpoint met with significance",
+  "control_arm": "placebo",
+  "blinding": "double-blind"
+}
