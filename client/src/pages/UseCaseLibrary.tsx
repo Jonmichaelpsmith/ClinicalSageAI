@@ -1,16 +1,11 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { 
-  Microscope, Calendar, ArrowRight, Beaker, FileSearch, 
-  PieChart, Lock, Users, SlidersHorizontal, GraduationCap 
-} from "lucide-react";
-
 import { PageContainer, HeaderSection, ContentSection } from "@/components/layout";
 import Navbar from "@/components/navbar";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { ChevronRight, BarChart4, FileText, MessageCircle } from "lucide-react";
+import UseCaseLibraryComponent from "@/components/use-case-library/UseCaseLibrary";
 
 export default function UseCaseLibrary() {
   const [showContactForm, setShowContactForm] = useState(false);
@@ -22,13 +17,15 @@ export default function UseCaseLibrary() {
         <div className="container px-4 md:px-6 flex flex-col items-center text-center space-y-4 py-8 md:py-12">
           <div className="space-y-2">
             <Badge variant="outline" className="text-primary border-primary px-3 py-1">
-              Use Case Library
+              Strategic Intelligence Launcher
             </Badge>
             <h1 className="text-3xl md:text-5xl font-bold tracking-tighter">
-              How Teams Use TrialSage
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
+                More Than Use Cases, Real Solutions
+              </span>
             </h1>
             <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-              Real-world applications for biotech companies at every stage
+              Interactive scenario simulations with downloadable assets and pre-built workflows
             </p>
           </div>
         </div>
@@ -36,87 +33,15 @@ export default function UseCaseLibrary() {
       
       <ContentSection>
         <div className="container px-4 md:px-6 py-8 md:py-12">
-          <Tabs defaultValue="biotech" className="space-y-8">
-            <TabsList className="w-full max-w-xl mx-auto grid grid-cols-1 sm:grid-cols-4 h-auto">
-              <TabsTrigger value="biotech" className="py-3">Biotech Founders</TabsTrigger>
-              <TabsTrigger value="clinical" className="py-3">Clinical Operations</TabsTrigger>
-              <TabsTrigger value="regulatory" className="py-3">Regulatory Teams</TabsTrigger>
-              <TabsTrigger value="investors" className="py-3">VCs & Investors</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="biotech" className="space-y-8">
-              <div className="space-y-2 text-center max-w-3xl mx-auto">
-                <h2 className="text-3xl font-bold">For Biotech Founders & CEOs</h2>
-                <p className="text-lg text-muted-foreground">
-                  Plan clinical development more effectively with data-backed decisions, 
-                  avoid costly design errors, and minimize reliance on expensive consultants.
-                </p>
-              </div>
-              
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                <Card className="border rounded-xl shadow-sm transition-all hover:shadow-md">
-                  <CardHeader>
-                    <Calendar className="h-8 w-8 text-primary mb-2" />
-                    <CardTitle>Phase 1 Planning</CardTitle>
-                    <CardDescription>First-in-human study design</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm">
-                      Analyze dosing strategies, safety monitoring parameters, and inclusion/exclusion criteria from 
-                      similar compounds to design a Phase 1 study with the highest chance of success.
-                    </p>
-                  </CardContent>
-                  <CardFooter>
-                    <Button variant="ghost" size="sm" className="gap-1 text-primary">
-                      See Example <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </CardFooter>
-                </Card>
-                
-                <Card className="border rounded-xl shadow-sm transition-all hover:shadow-md">
-                  <CardHeader>
-                    <FileSearch className="h-8 w-8 text-primary mb-2" />
-                    <CardTitle>Due Diligence Support</CardTitle>
-                    <CardDescription>Fundraising preparation</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm">
-                      Generate comprehensive trial landscape reports to validate your development plan
-                      and strengthen investor presentations with data-backed rationale for program strategy.
-                    </p>
-                  </CardContent>
-                  <CardFooter>
-                    <Button variant="ghost" size="sm" className="gap-1 text-primary">
-                      See Example <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </CardFooter>
-                </Card>
-                
-                <Card className="border rounded-xl shadow-sm transition-all hover:shadow-md">
-                  <CardHeader>
-                    <Beaker className="h-8 w-8 text-primary mb-2" />
-                    <CardTitle>Pipeline Strategy</CardTitle>
-                    <CardDescription>Multi-asset planning</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm">
-                      Determine optimal clinical development paths for multiple assets by
-                      comparing precedent development timelines and identifying strategic efficiencies.
-                    </p>
-                  </CardContent>
-                  <CardFooter>
-                    <Button variant="ghost" size="sm" className="gap-1 text-primary">
-                      See Example <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </CardFooter>
-                </Card>
-              </div>
-            </TabsContent>
-          </Tabs>
+          {/* New Strategic Intelligence Launcher */}
+          <UseCaseLibraryComponent />
           
+          {/* Contact Form Section */}
           <div className="mt-16 text-center">
             <div className="space-y-2 max-w-2xl mx-auto mb-8">
-              <h2 className="text-2xl md:text-3xl font-bold">Need a Custom Use Case?</h2>
+              <h2 className="text-2xl md:text-3xl font-bold">
+                Need a Custom Strategic Solution?
+              </h2>
               <p className="text-muted-foreground">
                 Our team can help you apply TrialSage to your specific clinical development challenges
               </p>
@@ -124,7 +49,7 @@ export default function UseCaseLibrary() {
             
             {!showContactForm ? (
               <Button onClick={() => setShowContactForm(true)} size="lg" className="px-8">
-                Request Custom Use Case
+                Request Custom Solution
               </Button>
             ) : (
               <>
@@ -173,7 +98,7 @@ export default function UseCaseLibrary() {
                     </div>
                     
                     <div className="space-y-2">
-                      <label htmlFor="description" className="text-sm font-medium">Describe Your Use Case</label>
+                      <label htmlFor="description" className="text-sm font-medium">Describe Your Strategic Need</label>
                       <textarea 
                         id="description" 
                         rows={4}
@@ -186,11 +111,47 @@ export default function UseCaseLibrary() {
                     <Button variant="outline" onClick={() => setShowContactForm(false)}>
                       Cancel
                     </Button>
-                    <Button>Request Custom Use Case</Button>
+                    <Button>Request Strategic Solution</Button>
                   </div>
                 </div>
               </>
             )}
+          </div>
+          
+          {/* Additional Value Propositions */}
+          <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-6">
+              <div className="mb-4">
+                <BarChart4 className="h-10 w-10 text-blue-600" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Data-Backed Decisions</h3>
+              <p className="text-muted-foreground">
+                Turn thousands of CSRs into actionable intelligence for your clinical 
+                development strategy.
+              </p>
+            </div>
+            
+            <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg p-6">
+              <div className="mb-4">
+                <FileText className="h-10 w-10 text-indigo-600" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Downloadable Assets</h3>
+              <p className="text-muted-foreground">
+                Get instant access to reports, protocol sections, and statistical analyses
+                from our strategic intelligence engine.
+              </p>
+            </div>
+            
+            <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-6">
+              <div className="mb-4">
+                <MessageCircle className="h-10 w-10 text-purple-600" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Expert Support</h3>
+              <p className="text-muted-foreground">
+                Our team of clinical trial experts can help customize solutions for your 
+                specific therapeutic area and development stage.
+              </p>
+            </div>
           </div>
         </div>
       </ContentSection>
