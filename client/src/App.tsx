@@ -13,6 +13,7 @@ import Analytics from "@/pages/Analytics";
 import StatisticalModeling from "@/pages/StatisticalModeling";
 import UseCaseLibrary from "@/pages/UseCaseLibrary";
 import ProtocolGenerator from "@/pages/ProtocolGenerator";
+import ProtocolIntelligenceBuilder from "@/pages/ProtocolIntelligenceBuilder";
 import StudyDesignAgent from "./pages/StudyDesignAgent";
 import Translation from "@/pages/Translation";
 import CsrExtractionGuide from "@/pages/CsrExtractionGuide";
