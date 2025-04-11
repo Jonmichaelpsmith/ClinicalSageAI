@@ -85,7 +85,7 @@ export class AcademicKnowledgeTracker {
     let embedding: number[] = [];
     try {
       const textContent = await this.extractText(filePath, resourceType);
-      embedding = await generateEmbeddings(textContent.substring(0, 10000)); // First 10k chars
+      embedding = await huggingFaceService.generateEmbeddings(textContent.substring(0, 10000)); // First 10k chars
     } catch (error) {
       console.error('Error generating embeddings:', error);
     }
@@ -192,7 +192,7 @@ export class AcademicKnowledgeTracker {
    */
   async searchResources(query: string, limit: number = 10): Promise<any[]> {
     // Generate embeddings for the query
-    const queryEmbedding = await generateEmbeddings(query);
+    const queryEmbedding = await huggingFaceService.generateEmbeddings(query);
     
     // Get all resource embeddings
     const allEmbeddings = await db.select().from(academicEmbeddings);
