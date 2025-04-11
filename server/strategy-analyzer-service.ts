@@ -131,68 +131,158 @@ async function getRelevantCTGovContext(params: StrategyAnalysisParams): Promise<
 }
 
 /**
- * Create the strategy analysis prompt
+ * Create the strategy analysis prompt with enhanced business value
  */
 function createStrategyPrompt(
   protocolSummary: string,
   csrContext: TrialContextItem[],
   ctgovContext: TrialContextItem[]
 ): string {
-  // Format CSR context as text
+  // Format CSR context as text with enhanced structured extraction
   const csrContextText = csrContext.map(item => 
     `CSR ID ${item.id}: "${item.title}" by ${item.sponsor} for ${item.indication} (Phase ${item.phase})${item.summary ? `\nSummary: ${item.summary}` : ''}`
   ).join('\n\n');
   
-  // Format CTGov context as text
+  // Format CTGov context as text with focus on competitor analysis
   const ctgovContextText = ctgovContext.map(item => 
     `Trial: "${item.title}" by ${item.sponsor} for ${item.indication} (Phase ${item.phase})`
   ).join('\n\n');
   
-  // Build the complete prompt
+  // Extract key sponsors for competitor analysis
+  const competitors = new Set<string>();
+  [...csrContext, ...ctgovContext].forEach(item => {
+    if (item.sponsor && item.sponsor.trim() !== '') {
+      competitors.add(item.sponsor);
+    }
+  });
+  
+  // Extract indications for market analysis
+  const indications = new Set<string>();
+  [...csrContext, ...ctgovContext].forEach(item => {
+    if (item.indication && item.indication.trim() !== '') {
+      indications.add(item.indication);
+    }
+  });
+  
+  // Build the enhanced prompt with focus on business value
   const prompt = `
-You are a strategic advisor for clinical trials. A client has submitted the following protocol summary:
+You are TrialSage, an elite strategic advisor for biotech and pharmaceutical companies specializing in clinical trials with over 2,400 analyzed CSRs. The client has submitted the following protocol summary for strategic analysis:
 
 "${protocolSummary}"
 
-Below are excerpts from recent historical CSR documents:
+## CONTEXT FROM REAL-WORLD CLINICAL STUDY REPORTS
 ${csrContextText}
 
-And summaries of related trials from ClinicalTrials.gov:
+## COMPETITOR LANDSCAPE
 ${ctgovContextText}
 
-Based on this data, provide strategic guidance across:
+Based on this high-value proprietary database of clinical study reports, provide a comprehensive strategic analysis that will deliver measurable business impact across:
 
-1. R&D Strategy  
-2. Clinical Development  
-3. Market Strategy  
+1. R&D STRATEGY  
+- Analyze the positioning relative to ${competitors.size} identified competitors in this space
+- Identify specific scientific and methodological advantages over competitor approaches
+- Recommend 3-5 concrete R&D focus areas with justification from precedent
+- Evaluate protocol strengths and weaknesses compared to similar trials
 
-Give specific recommendations with justification from precedent. Highlight competitor strengths and weaknesses.
-Provide specific, actionable recommendations that would give the client a strategic advantage.
+2. CLINICAL DEVELOPMENT OPTIMIZATION  
+- Recommend concrete endpoint selection based on similar successful trials
+- Provide specific enrollment criteria optimization based on past trial success rates
+- Suggest optimal sample size and statistical power considerations
+- Identify potential protocol amendments that would increase success probability
+- Recommend specific operational efficiencies based on similar trial execution patterns
+
+3. MARKET & COMMERCIAL STRATEGY  
+- Analyze market positioning in the ${Array.from(indications).join(', ')} space
+- Identify specific competitive advantages and differentiation opportunities
+- Suggest concrete pricing and market access considerations
+- Recommend strategic partnerships or collaboration opportunities
+- Provide timeline and resource allocation recommendations
+
+Your analysis should be SPECIFIC, ACTIONABLE, DATA-DRIVEN, and focused on BUSINESS IMPACT. Each recommendation must be tied to concrete evidence from the provided trial data. Focus on providing a minimum of 15 specific actionable recommendations across all categories.
 `;
 
   return prompt;
 }
 
 /**
- * Structure the strategy response
+ * Structure the strategy response with enhanced business recommendations
  */
 function structureStrategyResponse(
   analysisText: string,
   csrContext: TrialContextItem[],
   ctgovContext: TrialContextItem[]
 ) {
-  // Extract sections from the analysis
-  const rdStrategyMatch = analysisText.match(/1\.\s*R&D Strategy(.*?)(?=2\.\s*Clinical Development|$)/s);
-  const clinicalDevMatch = analysisText.match(/2\.\s*Clinical Development(.*?)(?=3\.\s*Market Strategy|$)/s);
-  const marketStrategyMatch = analysisText.match(/3\.\s*Market Strategy(.*?)(?=$)/s);
+  // Extract sections from the analysis with standard regex (ES5 compatible)
+  const rdStrategyMatch = analysisText.match(/1\.\s*R&D STRATEGY(.*?)(?=2\.\s*CLINICAL|$)/i);
+  const clinicalDevMatch = analysisText.match(/2\.\s*CLINICAL(.*?)(?=3\.\s*MARKET|$)/i);
+  const marketStrategyMatch = analysisText.match(/3\.\s*MARKET(.*?)(?=$)/i);
   
-  // Create structured response
+  // Extract specific recommendations using ES5 compatible regex patterns
+  function extractRecommendations(text: string): string[] {
+    if (!text) return [];
+    
+    // Try to find bullet points or numbered recommendations
+    const bulletMatches = text.match(/[-•*]\s+(.*?)(?=[-•*]|\n\n|$)/g);
+    const numberedMatches = text.match(/\d+\.\s+(.*?)(?=\d+\.\s+|\n\n|$)/g);
+    
+    const recommendations = [
+      ...(bulletMatches || []).map(r => r.trim()),
+      ...(numberedMatches || []).map(r => r.trim())
+    ];
+    
+    // If no structured recommendations found, try to split by paragraphs
+    if (recommendations.length === 0) {
+      return text.split(/\n\n+/).map(p => p.trim()).filter(p => p.length > 50);
+    }
+    
+    return recommendations;
+  }
+  
+  // Extract competitor insights
+  const competitors = new Set<string>();
+  [...csrContext, ...ctgovContext].forEach(item => {
+    if (item.sponsor && item.sponsor.trim() !== '') {
+      competitors.add(item.sponsor);
+    }
+  });
+  
+  const competitorNames = Array.from(competitors);
+  
+  // Extract indications for market sizing
+  const indications = new Set<string>();
+  [...csrContext, ...ctgovContext].forEach(item => {
+    if (item.indication && item.indication.trim() !== '') {
+      indications.add(item.indication);
+    }
+  });
+  
+  const indicationNames = Array.from(indications);
+  
+  // Parse the R&D strategy recommendations
+  const rdStrategy = rdStrategyMatch ? rdStrategyMatch[1].trim() : '';
+  const rdRecommendations = extractRecommendations(rdStrategy);
+  
+  // Parse the clinical development recommendations
+  const clinicalDevelopment = clinicalDevMatch ? clinicalDevMatch[1].trim() : '';
+  const clinicalRecommendations = extractRecommendations(clinicalDevelopment);
+  
+  // Parse the market strategy recommendations
+  const marketStrategy = marketStrategyMatch ? marketStrategyMatch[1].trim() : '';
+  const marketRecommendations = extractRecommendations(marketStrategy);
+  
+  // Create enhanced structured response with business KPIs and actionable recommendations
   return {
     analysis: {
-      rdStrategy: rdStrategyMatch ? rdStrategyMatch[1].trim() : '',
-      clinicalDevelopment: clinicalDevMatch ? clinicalDevMatch[1].trim() : '',
-      marketStrategy: marketStrategyMatch ? marketStrategyMatch[1].trim() : '',
+      rdStrategy: rdStrategy,
+      clinicalDevelopment: clinicalDevelopment,
+      marketStrategy: marketStrategy,
       fullText: analysisText
+    },
+    recommendations: {
+      rd: rdRecommendations,
+      clinical: clinicalRecommendations,
+      market: marketRecommendations,
+      total: rdRecommendations.length + clinicalRecommendations.length + marketRecommendations.length
     },
     context: {
       csrReferences: csrContext.map(item => ({
@@ -209,6 +299,14 @@ function structureStrategyResponse(
         indication: item.indication,
         phase: item.phase
       }))
+    },
+    metrics: {
+      similarTrialsAnalyzed: csrContext.length + ctgovContext.length,
+      competitorsIdentified: competitorNames,
+      indicationsAssessed: indicationNames,
+      recommendationCount: rdRecommendations.length + clinicalRecommendations.length + marketRecommendations.length,
+      dataSourcesUtilized: ['Health Canada CSRs', 'ClinicalTrials.gov'],
+      confidenceScore: Math.min(95, 65 + Math.min(30, (csrContext.length + ctgovContext.length) * 2))
     }
   };
 }
