@@ -123,33 +123,38 @@ export class ProtocolAnalyzerService {
    * Extract text from PDF files
    */
   async extractTextFromPdf(filePath: string): Promise<string> {
-    return new Promise((resolve, reject) => {
-      // Run Python script to extract text from PDF
-      const extractorProcess = spawn('python', [
-        'scripts/extract_pdf_text.py',
-        filePath
-      ]);
-      
-      let resultData = '';
-      let errorOutput = '';
-      
-      extractorProcess.stdout.on('data', (data) => {
-        resultData += data.toString();
+    try {
+      return new Promise((resolve, reject) => {
+        // Run Python script to extract text from PDF
+        const extractorProcess = spawn('python', [
+          'scripts/extract_pdf_text.py',
+          filePath
+        ]);
+        
+        let resultData = '';
+        let errorOutput = '';
+        
+        extractorProcess.stdout.on('data', (data) => {
+          resultData += data.toString();
+        });
+        
+        extractorProcess.stderr.on('data', (data) => {
+          errorOutput += data.toString();
+          console.error(`PDF extraction error: ${data}`);
+        });
+        
+        extractorProcess.on('close', (code) => {
+          if (code !== 0) {
+            reject(new Error(`PDF extraction failed: ${errorOutput}`));
+          } else {
+            resolve(resultData.trim());
+          }
+        });
       });
-      
-      extractorProcess.stderr.on('data', (data) => {
-        errorOutput += data.toString();
-        console.error(`PDF extraction error: ${data}`);
-      });
-      
-      extractorProcess.on('close', (code) => {
-        if (code !== 0) {
-          reject(new Error(`PDF extraction failed: ${errorOutput}`));
-        } else {
-          resolve(resultData.trim());
-        }
-      });
-    });
+    } catch (error) {
+      console.error('Error extracting text from PDF:', error);
+      throw new Error(`Failed to extract text from PDF: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
 
   /**
@@ -203,20 +208,36 @@ export class ProtocolAnalyzerService {
     fileSize: number,
     extractedData: ExtractedProtocolData
   ): Promise<number> {
-    const [protocol] = await db.insert(protocols).values({
-      title: extractedData.title || 'Untitled Protocol',
-      fileName: fileName,
-      filePath: filePath,
-      fileSize: fileSize,
-      uploadDate: new Date(),
-      phase: extractedData.phase,
-      indication: extractedData.indication,
-      status: 'Uploaded',
-      sponsor: 'Unknown', // This could be extracted or provided by user
-      summary: JSON.stringify(extractedData),
-    }).returning({ id: protocols.id });
+    // Use direct SQL to insert protocol into database
+    const insertQuery = `
+      INSERT INTO protocols (
+        title, file_name, file_path, file_size, upload_date, phase, 
+        indication, status, sponsor, summary
+      )
+      VALUES (
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
+      )
+      RETURNING id
+    `;
     
-    return protocol.id;
+    const result = await db.execute(insertQuery, [
+      extractedData.title || 'Untitled Protocol',
+      fileName,
+      filePath,
+      fileSize,
+      new Date(),
+      extractedData.phase,
+      extractedData.indication,
+      'Uploaded',
+      'Unknown', // This could be extracted or provided by user
+      JSON.stringify(extractedData)
+    ]);
+    
+    if (result.length === 0) {
+      throw new Error('Failed to insert protocol into database');
+    }
+    
+    return result[0].id;
   }
 
   /**
@@ -277,20 +298,32 @@ export class ProtocolAnalyzerService {
    * Store analysis results in database
    */
   private async storeAnalysisResults(protocolId: number, analysisResult: ProtocolAnalysisResult): Promise<void> {
-    await db.insert(protocolAnalyses).values({
-      protocolId: protocolId,
-      analysisDate: new Date(),
-      riskFlags: JSON.stringify(analysisResult.risk_flags),
-      riskScores: JSON.stringify(analysisResult.risk_scores),
-      csrMatches: JSON.stringify(analysisResult.csr_matches),
-      strategicInsights: JSON.stringify(analysisResult.strategic_insights),
-      recommendationSummary: analysisResult.recommendation_summary,
-    });
+    // Create SQL query to insert analysis results directly
+    const insertQuery = `
+      INSERT INTO protocol_analyses (
+        protocol_id, analysis_date, risk_flags, risk_scores, 
+        csr_matches, strategic_insights, recommendation_summary
+      )
+      VALUES (
+        $1, $2, $3, $4, $5, $6, $7
+      )
+    `;
+    
+    // Execute the SQL query with parameter values
+    await db.execute(insertQuery, [
+      protocolId,
+      new Date(),
+      JSON.stringify(analysisResult.risk_flags),
+      JSON.stringify(analysisResult.risk_scores),
+      JSON.stringify(analysisResult.csr_matches),
+      JSON.stringify(analysisResult.strategic_insights),
+      analysisResult.recommendation_summary
+    ]);
     
     // Update protocol status
     await db
       .update(protocols)
-      .set({ status: 'Analyzed', lastUpdated: new Date() })
+      .set({ status: 'Analyzed', updatedAt: new Date() })
       .where(eq(protocols.id, protocolId));
   }
 
@@ -298,12 +331,16 @@ export class ProtocolAnalyzerService {
    * Get protocol analysis by ID
    */
   async getProtocolAnalysis(protocolId: number): Promise<ProtocolAnalysisResult | null> {
-    const [analysis] = await db
-      .select()
-      .from(protocolAnalyses)
-      .where(eq(protocolAnalyses.protocolId, protocolId))
-      .orderBy(sql`${protocolAnalyses.analysisDate} DESC`)
-      .limit(1);
+    // Use direct SQL query to get analysis data
+    const analysisQuery = `
+      SELECT * FROM protocol_analyses
+      WHERE protocol_id = $1
+      ORDER BY analysis_date DESC
+      LIMIT 1
+    `;
+    
+    const analysisResult = await db.execute(analysisQuery, [protocolId]);
+    const analysis = analysisResult.length > 0 ? analysisResult[0] : null;
     
     if (!analysis) {
       return null;
@@ -322,7 +359,8 @@ export class ProtocolAnalyzerService {
     let extractedData: ExtractedProtocolData;
     try {
       extractedData = JSON.parse(protocol.summary as string);
-    } catch (err) {
+    } catch (error) {
+      // Fallback data in case parsing fails
       extractedData = {
         title: protocol.title,
         phase: protocol.phase,
@@ -346,11 +384,11 @@ export class ProtocolAnalyzerService {
     return {
       protocol_id: protocolId,
       extracted_data: extractedData,
-      risk_flags: JSON.parse(analysis.riskFlags as string),
-      csr_matches: JSON.parse(analysis.csrMatches as string),
-      risk_scores: JSON.parse(analysis.riskScores as string),
-      strategic_insights: JSON.parse(analysis.strategicInsights as string),
-      recommendation_summary: analysis.recommendationSummary as string
+      risk_flags: JSON.parse(analysis.risk_flags),
+      csr_matches: JSON.parse(analysis.csr_matches),
+      risk_scores: JSON.parse(analysis.risk_scores),
+      strategic_insights: JSON.parse(analysis.strategic_insights),
+      recommendation_summary: analysis.recommendation_summary
     };
   }
 
