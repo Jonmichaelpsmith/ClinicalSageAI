@@ -144,8 +144,8 @@ export class ProtocolAnalyzerService {
   async findSimilarProtocols(protocolData: ProtocolData, limit: number = 5): Promise<any[]> {
     try {
       // Find similar reports by indication and phase
-      const similar = await db.select().from(csr_reports)
-        .where(eq(csr_reports.indication, protocolData.indication))
+      const similar = await db.select().from(csrReports)
+        .where(eq(csrReports.indication, protocolData.indication))
         .limit(limit);
         
       return similar.map(report => ({
