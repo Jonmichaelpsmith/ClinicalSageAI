@@ -24,7 +24,9 @@ import {
   GraduationCap,
   BarChart,
   LineChart,
-  PieChart
+  PieChart,
+  FolderOpen,
+  Save
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -157,6 +159,9 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                 <NavItem href="/competitive-intelligence" icon={<Target />}>
                   Strategic Intelligence
                 </NavItem>
+                <NavItem href="/dossier" icon={<FolderOpen />}>
+                  Protocol Dossier
+                </NavItem>
               </div>
             </div>
 
@@ -247,6 +252,9 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
               <div className="space-y-1">
                 <NavItem href="/competitive-intelligence" icon={<Target />}>
                   Strategic Intelligence
+                </NavItem>
+                <NavItem href="/dossier" icon={<FolderOpen />}>
+                  Protocol Dossier
                 </NavItem>
               </div>
             </div>
