@@ -152,10 +152,12 @@ const ProtocolDesigner = () => {
 
   // Handler for using analysis results to create a new protocol
   const handleUseAnalysisResults = () => {
-    if (!analysisResults) return;
+    if (!analysisResults || !analysisResults.extractedInfo) return;
 
-    // Extract values from analysis results
-    const { indication, phase, primaryEndpoint } = analysisResults.extractedInfo;
+    // Extract values from analysis results with fallbacks
+    const indication = analysisResults.extractedInfo.indication || '';
+    const phase = analysisResults.extractedInfo.phase || '';
+    const primaryEndpoint = analysisResults.extractedInfo.primaryEndpoint || '';
 
     // Set form values
     setIndication(indication);
@@ -959,12 +961,15 @@ const ProtocolDesigner = () => {
                   <div>
                     <h3 className="text-md font-medium mb-3">Extracted Protocol Information</h3>
                     <div className="space-y-2">
-                      {Object.entries(analysisResults.extractedInfo).map(([key, value]) => (
-                        <div key={key} className="bg-gray-50 p-3 rounded-lg">
-                          <div className="text-xs text-gray-500 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</div>
-                          <div className="font-medium">{value as string}</div>
-                        </div>
-                      ))}
+                      {analysisResults && analysisResults.extractedInfo ? 
+                        Object.entries(analysisResults.extractedInfo).map(([key, value]) => (
+                          <div key={key} className="bg-gray-50 p-3 rounded-lg">
+                            <div className="text-xs text-gray-500 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</div>
+                            <div className="font-medium">{value as string}</div>
+                          </div>
+                        ))
+                      : <div className="text-gray-500 italic">No extracted information available</div>
+                      }
                     </div>
                   </div>
 
@@ -979,7 +984,7 @@ const ProtocolDesigner = () => {
                           </div>
                         </div>
                         <ul className="list-disc pl-5 space-y-2">
-                          {analysisResults.evaluation.strengths.map((strength: string, index: number) => (
+                          {analysisResults?.evaluation?.strengths?.map((strength: string, index: number) => (
                             <li key={index} className="text-sm text-green-700">
                               <div>{strength}</div>
                               <div className="text-xs text-green-600 mt-1 italic">
@@ -1000,7 +1005,7 @@ const ProtocolDesigner = () => {
                           </div>
                         </div>
                         <ul className="list-disc pl-5 space-y-2">
-                          {analysisResults.evaluation.improvements.map((improvement: string, index: number) => (
+                          {analysisResults?.evaluation?.improvements?.map((improvement: string, index: number) => (
                             <li key={index} className="text-sm text-amber-700">
                               <div>{improvement}</div>
                               <div className="text-xs text-amber-600 mt-1 italic">
@@ -1026,10 +1031,10 @@ const ProtocolDesigner = () => {
                     <div className="bg-blue-50 p-3 rounded-lg">
                       <div className="text-blue-800 font-medium mb-1">Regulatory Alignment</div>
                       <div className="mt-1">
-                        <Progress value={analysisResults.evaluation.regulatoryAlignment} className="h-2" />
+                        <Progress value={analysisResults?.evaluation?.regulatoryAlignment || 0} className="h-2" />
                         <div className="flex justify-between text-xs mt-1">
                           <span className="text-gray-500">Score</span>
-                          <span className="font-medium text-blue-800">{analysisResults.evaluation.regulatoryAlignment}%</span>
+                          <span className="font-medium text-blue-800">{analysisResults?.evaluation?.regulatoryAlignment || 0}%</span>
                         </div>
                       </div>
                       <div className="mt-2 text-xs text-blue-700">
@@ -1045,10 +1050,10 @@ const ProtocolDesigner = () => {
                     <div className="bg-indigo-50 p-3 rounded-lg">
                       <div className="text-indigo-800 font-medium mb-1">Precedent Matching</div>
                       <div className="mt-1">
-                        <Progress value={analysisResults.evaluation.precedentMatching} className="h-2" />
+                        <Progress value={analysisResults?.evaluation?.precedentMatching || 0} className="h-2" />
                         <div className="flex justify-between text-xs mt-1">
                           <span className="text-gray-500">Score</span>
-                          <span className="font-medium text-indigo-800">{analysisResults.evaluation.precedentMatching}%</span>
+                          <span className="font-medium text-indigo-800">{analysisResults?.evaluation?.precedentMatching || 0}%</span>
                         </div>
                       </div>
                       <div className="mt-2 text-xs text-indigo-700">
@@ -1103,7 +1108,7 @@ const ProtocolDesigner = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {analysisResults.evaluation.similarTrials.map((trial: any, index: number) => (
+                        {analysisResults?.evaluation?.similarTrials?.map((trial: any, index: number) => (
                           <tr key={index} className="border-t border-gray-200">
                             <td className="py-2 px-3 font-medium text-blue-600">{trial.id}</td>
                             <td className="py-2 px-3">{trial.title}</td>
