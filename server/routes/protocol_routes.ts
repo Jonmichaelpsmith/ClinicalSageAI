@@ -298,7 +298,8 @@ async function analyzeProtocolText(text: string) {
     phase: phase,
     sample_size: sampleSize,
     duration_weeks: durationWeeks,
-    endpoint_primary: primaryEndpoint,
+    primary_endpoint: primaryEndpoint, // Using the required field name
+    endpoint_primary: primaryEndpoint, // Keep for backward compatibility
     secondary_endpoints: [
       `Safety and tolerability of the treatment regimen`,
       `Quality of life measures using standardized questionnaires`

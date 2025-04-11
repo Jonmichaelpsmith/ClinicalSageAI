@@ -32,6 +32,8 @@ import dossierRoutes from "./routes/dossier_routes";
 import strategicReportRoutes from "./strategic-report-routes";
 import { trialPredictorService } from "./trial-predictor-service";
 import { protocolRoutes } from "./routes/protocol_routes";
+import { sapRoutes } from "./routes/sap_routes";
+import { exportRoutes } from "./routes/export_routes";
 import { 
   fetchClinicalTrialData, 
   importTrialsFromCsv, 
@@ -404,6 +406,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register Protocol Routes
   app.use('/api/protocol', protocolRoutes);
+  
+  // Register SAP Routes
+  app.use('/api/sap', sapRoutes);
+  
+  // Register Export Routes
+  app.use('/api/export', exportRoutes);
   
   // Register Dossier Routes with version tracking and changelog capabilities
   app.use('/api/dossier', dossierRoutes);
