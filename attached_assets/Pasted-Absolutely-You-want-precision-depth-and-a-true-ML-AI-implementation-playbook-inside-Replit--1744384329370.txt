@@ -1,0 +1,241 @@
+Absolutely. You want precision, depth, and a true **ML + AI implementation playbook** inside Replit for TrialSage. Below is a much more **granular, dev-level implementation guide**, fully customized to your CSR use case, including:
+
+- Data normalization  
+- Feature engineering  
+- Deep model training (w/ AutoML, embeddings, and failure reason classification)  
+- Interactive prediction, visualization, and export  
+- How to do it **all in Replit** using your current stack.
+
+---
+
+# 💡 TrialSage Intelligence Engine — Full Replit Build Blueprint  
+**“From 5,000 CSRs to a learning, predictive, self-improving system.”**
+
+---
+
+## 🧱 PHASE 1: DATA PIPELINE & NORMALIZATION
+
+### 🎯 Goal:
+Transform raw CSR JSON files into a structured dataframe for ML.
+
+---
+
+### ✅ Task 1: Parse & Normalize CSR Fields
+
+📁 `scripts/parse_csrs_to_csv.py`
+
+Loop through `/data/processed_csrs/*.json` → write to `data/csr_dataset.csv`
+
+```python
+import os, json
+import pandas as pd
+
+records = []
+for fname in os.listdir("data/processed_csrs"):
+    with open(f"data/processed_csrs/{fname}") as f:
+        csr = json.load(f)
+    
+    try:
+        record = {
+            "nct_id": csr.get("nct_id", fname.replace(".json", "")),
+            "indication": csr.get("indication", "").strip(),
+            "phase": csr.get("phase", "").replace("Phase ", "").strip(),
+            "sample_size": csr.get("sample_size", 0),
+            "duration_weeks": csr.get("duration_weeks", 0),
+            "dropout_rate": csr.get("dropout_rate", None),
+            "endpoint_primary": csr.get("primary_endpoints", [""])[0],
+            "control_type": csr.get("control_arm", "Unknown"),
+            "blinding": csr.get("blinding", "None"),
+            "outcome": csr.get("outcome_summary", "").lower(),
+        }
+
+        # Heuristic for success
+        record["success"] = int("significant" in record["outcome"] or "met endpoint" in record["outcome"])
+        record["failure_reason"] = csr.get("failure_reason", record["outcome"])
+        records.append(record)
+
+    except Exception as e:
+        print(f"Error in {fname}: {e}")
+
+df = pd.DataFrame(records)
+df.to_csv("data/csr_dataset.csv", index=False)
+```
+
+✅ Now you have a clean CSV for modeling.
+
+---
+
+## 🤖 PHASE 2: TRAIN MACHINE LEARNING MODELS (NO GPU)
+
+---
+
+### ✅ Task 2a: Train Success Prediction Model
+
+📁 `ml/train_success_predictor.py`
+
+```python
+from autogluon.tabular import TabularPredictor
+import pandas as pd
+
+df = pd.read_csv("data/csr_dataset.csv")
+
+# Drop obvious leakage columns
+predictor = TabularPredictor(label="success").fit(
+    df.drop(columns=["nct_id", "outcome", "failure_reason"]),
+    time_limit=180,
+    presets="best_quality"
+)
+
+predictor.save("models/success_predictor")
+```
+
+---
+
+### ✅ Task 2b: Train Failure Reason Classifier
+
+📁 `ml/train_failure_reason.py`
+
+```python
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
+import pandas as pd
+import pickle
+
+df = pd.read_csv("data/csr_dataset.csv")
+
+X = df["failure_reason"]
+y = df["success"]  # Binary success/fail
+vectorizer = TfidfVectorizer(max_features=300)
+X_vec = vectorizer.fit_transform(X)
+
+clf = LogisticRegression()
+clf.fit(X_vec, y)
+
+# Save models
+pickle.dump(vectorizer, open("models/failure_vec.pkl", "wb"))
+pickle.dump(clf, open("models/failure_clf.pkl", "wb"))
+```
+
+---
+
+## 🧠 PHASE 3: SERVE INTELLIGENCE VIA API
+
+### ✅ Task 3a: Predict Success via AutoGluon
+
+📁 `api/predictor_api.py`
+
+```python
+from fastapi import APIRouter, Body
+from autogluon.tabular import TabularPredictor
+import pandas as pd
+
+router = APIRouter()
+predictor = TabularPredictor.load("models/success_predictor")
+
+@router.post("/api/ai/predict-success")
+def predict_success(protocol: dict = Body(...)):
+    df = pd.DataFrame([protocol])
+    prob = predictor.predict_proba(df)[1]  # class = success
+    return {"success_probability": round(float(prob), 3)}
+```
+
+---
+
+### ✅ Task 3b: Classify Failure Reason
+
+📁 `api/failure_reason_api.py`
+
+```python
+import pickle
+from fastapi import APIRouter, Body
+
+router = APIRouter()
+vec = pickle.load(open("models/failure_vec.pkl", "rb"))
+clf = pickle.load(open("models/failure_clf.pkl", "rb"))
+
+@router.post("/api/ai/classify-failure")
+def classify_failure(text: str = Body(...)):
+    X = vec.transform([text])
+    prediction = clf.predict_proba(X)[0][1]
+    return {"predicted_failure_risk": round(float(prediction), 3)}
+```
+
+---
+
+## 📊 PHASE 4: EMBED INSIGHTS IN UI
+
+### ✅ `SuccessRiskPanel.tsx` (Trial Design Interface)
+
+- Accepts trial design input
+- Calls `/api/ai/predict-success`
+- Displays:
+  - ✅ Predicted success probability
+  - 🔍 Warnings if below threshold
+  - 📈 Endpoint-level suggestion
+
+---
+
+## 📉 PHASE 5: VISUALIZE PATTERN INTELLIGENCE
+
+Use `networkx` or `sentence-transformers` to:
+
+- Cluster trial designs by similarity
+- Overlay:
+  - Trials that succeeded (green)
+  - Trials that failed (red)
+- Expose patterns like:
+  - “3-arm design with endpoint X = 78% success”
+  - “Underpowered trials = 3x failure rate”
+
+Optional: Export these to image/PDF using `matplotlib`.
+
+---
+
+## 📄 PHASE 6: EXPORT ALL INTELLIGENCE TO PDF
+
+📁 `api/export/design-report.py`
+
+```python
+from fastapi import APIRouter, Body
+from fpdf import FPDF
+import time
+
+@router.post("/api/export/design-report")
+def export_report(summary: str = Body(...), protocol_id: str = Body(...)):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", "B", 14)
+    pdf.cell(0, 10, f"Design Report – {protocol_id}", ln=True, align="C")
+    pdf.ln(5)
+    pdf.set_font("Arial", "", 11)
+    pdf.multi_cell(0, 8, summary)
+    path = f"/mnt/data/TrialSage_Design_Report_{int(time.time())}.pdf"
+    pdf.output(path)
+    return {"download_url": path}
+```
+
+---
+
+## ✅ Replit Integration Notes
+
+- 💾 Store models in `/models/`
+- 🧪 Train in sessions < 3 mins to avoid timeout
+- 📁 Use `replit.db` or Supabase if storing user data
+- 💡 Use Hugging Face Inference API for LLM-generated SAP or summarization
+
+---
+
+## 📊 Final User Value
+
+| Feature | Powered By |
+|--------|------------|
+| Predict trial success | AutoGluon |
+| Predict dropout | Regression |
+| Flag failed design elements | Failure NLP classifier |
+| Recommend endpoint | CSR cluster frequency |
+| Visualize peer design space | Sentence embeddings + cosine |
+| Export protocol insights | fpdf → PDF or Notion export |
+
+---
+
+Would you like me to now generate the `parse_csrs_to_dataset.py` and `train_trial_predictor.py` scripts in Replit format so you can run immediately?
