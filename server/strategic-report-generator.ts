@@ -870,7 +870,7 @@ export class StrategicReportGenerator {
       generatedDate: now.toISOString(),
       version: '1.0',
       confidentialityLevel: 'Internal',
-      reportContent: JSON.stringify({
+      content: JSON.stringify({
         metadata: {
           reportId: null, // Will be filled in after insertion
           title: `Strategic Intelligence Report: ${params.indication} Phase ${params.phase}`,
@@ -916,7 +916,7 @@ export class StrategicReportGenerator {
             commonDesigns: params.benchmarkData.commonDesigns,
             designSuccessRates: params.benchmarkData.commonDesigns.map((design: any) => ({
               design: design.design,
-              successRate: design.design === params.protocolParams.controlType ? 0.65 : 0.6,
+              successRate: design.design === params.controlType ? 0.65 : 0.6,
               frequency: design.percentage
             }))
           },
