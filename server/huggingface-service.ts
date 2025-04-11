@@ -14,8 +14,8 @@ import path from 'path';
 
 // Hugging Face API configuration
 const HF_API_URL = 'https://api-inference.huggingface.co/models';
-// Use the API key directly while testing, fallback to environment variable
-const HF_API_KEY = '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' || process.env.HF_API_KEY;
+// Use environment variable for API key
+const HF_API_KEY = process.env.HF_API_KEY;
 
 /**
  * Check if the Hugging Face API key is available
