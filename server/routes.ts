@@ -31,7 +31,7 @@ import { strategicIntelligenceService } from "./strategic-intelligence-service";
 import dossierRoutes from "./routes/dossier_routes";
 import strategicReportRoutes from "./strategic-report-routes";
 import { trialPredictorService } from "./trial-predictor-service";
-import { registerProtocolRoutes } from "./routes/protocol_routes";
+import { protocolRoutes } from "./routes/protocol_routes";
 import { 
   fetchClinicalTrialData, 
   importTrialsFromCsv, 
@@ -403,7 +403,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/strategic-reports', strategicReportRoutes);
   
   // Register Protocol Routes
-  registerProtocolRoutes(app);
+  app.use('/api/protocol', protocolRoutes);
   
   // Register Dossier Routes with version tracking and changelog capabilities
   app.use('/api/dossier', dossierRoutes);

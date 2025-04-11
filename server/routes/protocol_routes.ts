@@ -2,17 +2,12 @@ import express from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
-import { ProtocolAnalyzerService } from '../protocol-analyzer-service';
-import { ProtocolOptimizerService } from '../protocol-optimizer-service';
-import { HuggingFaceService } from '../huggingface-service';
+import { protocolAnalyzerService } from '../protocol-analyzer-service';
+import { protocolOptimizerService } from '../protocol-optimizer-service';
+import { huggingFaceService } from '../huggingface-service';
 
 const router = express.Router();
 const upload = multer({ dest: 'uploads/' });
-
-// Service instances
-const protocolAnalyzer = new ProtocolAnalyzerService();
-const protocolOptimizer = new ProtocolOptimizerService();
-const huggingFaceService = new HuggingFaceService(process.env.HF_API_KEY || '');
 
 // Upload and analyze protocol file
 router.post('/analyze-file', upload.single('file'), async (req, res) => {
@@ -42,7 +37,7 @@ router.post('/analyze-file', upload.single('file'), async (req, res) => {
     }
 
     // Analyze the protocol text
-    const protocol = await protocolAnalyzer.analyzeProtocol(text);
+    const protocol = await protocolAnalyzerService.analyzeProtocol(text);
     
     // Clean up uploaded file
     fs.unlinkSync(filePath);
@@ -73,7 +68,7 @@ router.post('/parse-text', async (req, res) => {
     }
 
     // Basic protocol parsing
-    const protocol = await protocolAnalyzer.analyzeProtocol(text);
+    const protocol = await protocolAnalyzerService.analyzeProtocol(text);
     
     return res.json({ 
       success: true, 
@@ -101,7 +96,7 @@ router.post('/full-analyze', async (req, res) => {
     }
 
     // Deep protocol analysis with HuggingFace
-    const basicAnalysis = await protocolAnalyzer.analyzeProtocol(text);
+    const basicAnalysis = await protocolAnalyzerService.analyzeProtocol(text);
     
     // Use HuggingFace for deeper analysis
     const enhancedAnalysis = await huggingFaceService.enhanceProtocolAnalysis(text, basicAnalysis);
@@ -112,9 +107,10 @@ router.post('/full-analyze', async (req, res) => {
     });
   } catch (error: any) {
     console.error('Error during deep protocol analysis:', error);
+    const errorMessage = error?.message || 'Failed to perform deep protocol analysis';
     return res.status(500).json({ 
       success: false, 
-      message: error.message || 'Failed to perform deep protocol analysis' 
+      message: errorMessage
     });
   }
 });
@@ -132,7 +128,7 @@ router.post('/optimize', async (req, res) => {
     }
 
     // Get optimization recommendations
-    const optimizationResult = await protocolOptimizer.optimizeProtocol(protocolData);
+    const optimizationResult = await protocolOptimizerService.optimizeProtocol(protocolData);
     
     return res.json({ 
       success: true, 

@@ -101,9 +101,10 @@ export function ProtocolParser({ onParseComplete }: ProtocolParserProps) {
     },
     onError: (error: any) => {
       console.error("Error analyzing protocol text:", error);
+      const errorMessage = error?.message || "An error occurred during AI analysis";
       toast({
         title: "Analysis Failed",
-        description: error.message || "An error occurred during AI analysis",
+        description: errorMessage,
         variant: "destructive",
       });
     },
