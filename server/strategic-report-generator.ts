@@ -94,7 +94,12 @@ export class StrategicReportGenerator {
         successPrediction,
         failureRisks,
         competitiveAnalysis,
-        strategicRecommendations
+        strategicRecommendations,
+        sampleSize,
+        duration,
+        controlType,
+        blinding,
+        primaryEndpoints
       });
       
       // 8. Save to database
@@ -824,6 +829,11 @@ export class StrategicReportGenerator {
     failureRisks: any;
     competitiveAnalysis: any;
     strategicRecommendations: any;
+    sampleSize: number;
+    duration: number;
+    controlType: string;
+    blinding: string;
+    primaryEndpoints: string[];
   }): InsertStrategicReport {
     const now = new Date();
     
@@ -890,17 +900,17 @@ export class StrategicReportGenerator {
             historicalMean: params.benchmarkData.sampleSizeStats.mean,
             historicalMedian: params.benchmarkData.sampleSizeStats.median,
             historicalRange: params.benchmarkData.sampleSizeStats.range,
-            recommendation: params.protocolParams.sampleSize < params.benchmarkData.sampleSizeStats.mean ? 
-              `Consider increasing sample size (currently ${params.protocolParams.sampleSize})` : 
-              `Current sample size (${params.protocolParams.sampleSize}) appears adequate based on historical data`
+            recommendation: params.sampleSize < params.benchmarkData.sampleSizeStats.mean ? 
+              `Consider increasing sample size (currently ${params.sampleSize})` : 
+              `Current sample size (${params.sampleSize}) appears adequate based on historical data`
           },
           durationAnalysis: {
             historicalMean: params.benchmarkData.durationStats.mean,
             historicalMedian: params.benchmarkData.durationStats.median,
             historicalRange: params.benchmarkData.durationStats.range,
-            recommendation: params.protocolParams.duration < params.benchmarkData.durationStats.mean ? 
-              `Consider extending study duration (currently ${params.protocolParams.duration} weeks)` : 
-              `Current duration (${params.protocolParams.duration} weeks) appears adequate based on historical data`
+            recommendation: params.duration < params.benchmarkData.durationStats.mean ? 
+              `Consider extending study duration (currently ${params.duration} weeks)` : 
+              `Current duration (${params.duration} weeks) appears adequate based on historical data`
           },
           designAnalysis: {
             commonDesigns: params.benchmarkData.commonDesigns,
