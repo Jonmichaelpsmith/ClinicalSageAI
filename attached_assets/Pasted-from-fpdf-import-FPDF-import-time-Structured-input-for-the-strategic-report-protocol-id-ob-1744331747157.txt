@@ -1,0 +1,80 @@
+from fpdf import FPDF
+import time
+
+# Structured input for the strategic report
+protocol_id = "obesity_trial_2024_v1"
+sections = [
+    {
+        "title": "Historical Trial Benchmarking",
+        "content": "Matched 17 trials from CSRs and CTGov with similar endpoints and design. 11 were successful; 6 failed. Your trial aligns with 5 of the successful designs."
+    },
+    {
+        "title": "Endpoint Benchmarking",
+        "table": [
+            { "endpoint": "BMI reduction >=5%", "frequency": 14, "success_rate": "64%" },
+            { "endpoint": "Weight loss % at 12w", "frequency": 4, "success_rate": "25%" }
+        ]
+    },
+    {
+        "title": "Design Risk Prediction",
+        "content": "Your dropout-adjusted sample size may be too low. Based on similar trials, projected dropout is 18% (vs your plan: 10%)."
+    },
+    {
+        "title": "Regulatory Alignment",
+        "content": "Your endpoint is included in 3 EMA-approved studies. Risk appears acceptable based on recent EMA obesity guidance."
+    },
+    {
+        "title": "Strategic Positioning",
+        "content": "Your trial has a faster timeline and fewer visits than the top 5 comparators. This is an advantage in both fundraising and regulatory conversation."
+    },
+    {
+        "title": "AI-Powered Recommendations",
+        "bullets": [
+            "Replace endpoint with 'BMI reduction >=5%'",
+            "Increase sample size by 20% to accommodate dropout risk",
+            "Include regulatory precedent in your protocol footnotes"
+        ]
+    }
+]
+
+# PDF generation
+class PDF(FPDF):
+    def header(self):
+        self.set_font("Arial", "B", 14)
+        self.cell(0, 10, f"Strategic Report – {protocol_id}", ln=True, align="C")
+        self.ln(5)
+
+    def section_title(self, title):
+        self.set_font("Arial", "B", 12)
+        self.cell(0, 10, title, ln=True)
+        self.ln(1)
+
+    def section_body(self, body):
+        self.set_font("Arial", "", 11)
+        self.multi_cell(0, 8, body)
+        self.ln(1)
+
+pdf = PDF()
+pdf.add_page()
+
+for section in sections:
+    pdf.section_title(section["title"])
+    if "content" in section:
+        pdf.section_body(section["content"])
+    if "table" in section:
+        pdf.set_font("Arial", "B", 11)
+        pdf.cell(0, 8, "Endpoint     Frequency     Success Rate", ln=True)
+        pdf.set_font("Arial", "", 11)
+        for row in section["table"]:
+            line = f"{row['endpoint']:<20} {row['frequency']:<10} {row['success_rate']}"
+            pdf.cell(0, 8, line, ln=True)
+        pdf.ln(2)
+    if "bullets" in section:
+        for bullet in section["bullets"]:
+            pdf.cell(0, 8, f"- {bullet}", ln=True)
+        pdf.ln(2)
+
+pdf_path = f"/mnt/data/TrialSage_Strategic_Report_Full.pdf"
+pdf.output(pdf_path)
+
+pdf_path
