@@ -35,6 +35,7 @@ import EndpointDesigner from "@/pages/EndpointDesigner.jsx";
 import AcademicKnowledgeDemo from "@/pages/AcademicKnowledgeDemo";
 import CompetitiveIntelligence from "@/pages/CompetitiveIntelligence";
 import AdminNotifications from "@/pages/AdminNotifications";
+import StrategicIntelligenceTest from "@/pages/StrategicIntelligenceTest";
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -134,6 +135,7 @@ function Router() {
       <Route path="/academic-knowledge-demo">{() => renderWithLayout(AcademicKnowledgeDemo)}</Route>
       <Route path="/competitive-intelligence">{() => renderWithLayout(CompetitiveIntelligence)}</Route>
       <Route path="/admin/notifications">{() => renderWithLayout(AdminNotifications)}</Route>
+      <Route path="/strategic-intelligence">{() => renderWithLayout(StrategicIntelligenceTest)}</Route>
 
       {/* Fallback to 404 */}
       <Route>{() => renderWithLayout(NotFound)}</Route>

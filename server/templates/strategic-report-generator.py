@@ -50,7 +50,7 @@ class StrategicReportPDF(FPDF):
         if level == 1:
             self.set_font("Arial", "B", 14)
             self.set_fill_color(220, 220, 220)
-            self.cell(0, 10, self.clean_text(title), 0, 1, "L", 1)
+            self.cell(0, 10, self.clean_text(title), 0, 1, "L", True)
         elif level == 2:
             self.set_font("Arial", "B", 12)
             self.cell(0, 10, self.clean_text(title), 0, 1, "L")
@@ -93,7 +93,7 @@ class StrategicReportPDF(FPDF):
         # Table headers with gray background
         self.set_fill_color(200, 200, 200)
         for i, header in enumerate(headers):
-            self.cell(column_widths[i], 7, self.clean_text(header), 1, 0, "C", 1)
+            self.cell(column_widths[i], 7, self.clean_text(header), 1, 0, "C", True)
         self.ln()
         
         # Table rows with alternating background
