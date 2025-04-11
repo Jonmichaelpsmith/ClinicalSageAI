@@ -3,29 +3,40 @@ import { useToast } from '@/hooks/use-toast';
 import { Upload, FileText, X, FileCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+export interface UploadedFile {
+  file: File;
+  id: string;
+  progress: number;
+}
+
 interface FileUploaderProps {
   accept?: string;
+  maxFiles?: number;
   maxSize?: number; // in MB
-  onFilesAdded: (files: File[]) => void;
-  uploadText?: string;
+  onUpload: (files: UploadedFile[]) => void;
+  uploadMessage?: string;
   className?: string;
+  disabled?: boolean;
 }
 
 export const FileUploader: React.FC<FileUploaderProps> = ({
   accept = '*',
+  maxFiles = 1,
   maxSize = 10,
-  onFilesAdded,
-  uploadText = 'Drag & drop files here or click to browse',
-  className
+  onUpload,
+  uploadMessage = 'Drag & drop files here or click to browse',
+  className,
+  disabled = false
 }) => {
   const [dragging, setDragging] = useState(false);
-  const [files, setFiles] = useState<File[]>([]);
+  const [files, setFiles] = useState<UploadedFile[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
+    if (disabled) return;
     setDragging(true);
   };
 
@@ -42,9 +53,20 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
 
   const validateFiles = (selectedFiles: FileList | null) => {
     if (!selectedFiles || selectedFiles.length === 0) return [];
+    if (disabled) return [];
 
     const validFiles: File[] = [];
     const maxSizeBytes = maxSize * 1024 * 1024;
+
+    // Check if we'd exceed max files
+    if (files.length + selectedFiles.length > maxFiles) {
+      toast({
+        title: 'Too many files',
+        description: `You can only upload a maximum of ${maxFiles} files.`,
+        variant: 'destructive',
+      });
+      return [];
+    }
 
     for (let i = 0; i < selectedFiles.length; i++) {
       const file = selectedFiles[i];
@@ -90,6 +112,8 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
     e.stopPropagation();
     setDragging(false);
     
+    if (disabled) return;
+    
     const droppedFiles = e.dataTransfer.files;
     handleFiles(droppedFiles);
   };
@@ -98,8 +122,15 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
     const validFiles = validateFiles(selectedFiles);
     
     if (validFiles.length > 0) {
-      setFiles(prev => [...prev, ...validFiles]);
-      onFilesAdded(validFiles);
+      const newUploadedFiles = validFiles.map(file => ({
+        file,
+        id: Math.random().toString(36).substring(2, 9),
+        progress: 100, // Instantly complete for this implementation
+      }));
+      
+      const updatedFiles = [...files, ...newUploadedFiles];
+      setFiles(updatedFiles);
+      onUpload(updatedFiles);
     }
   };
 
@@ -111,8 +142,10 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
     }
   };
 
-  const handleRemoveFile = (index: number) => {
-    setFiles(prev => prev.filter((_, i) => i !== index));
+  const handleRemoveFile = (id: string) => {
+    const updatedFiles = files.filter(file => file.id !== id);
+    setFiles(updatedFiles);
+    onUpload(updatedFiles);
   };
 
   const formatFileSize = (bytes: number): string => {
@@ -125,54 +158,60 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
     <div className={cn('w-full', className)}>
       <div
         className={cn(
-          'flex flex-col items-center justify-center w-full p-6 border-2 border-dashed rounded-lg cursor-pointer transition-colors',
+          'flex flex-col items-center justify-center w-full p-6 border-2 border-dashed rounded-lg transition-colors',
           dragging 
             ? 'border-primary bg-primary/5' 
-            : 'border-gray-300 hover:border-primary/50 hover:bg-primary/5',
+            : disabled
+              ? 'border-gray-200 bg-gray-50 cursor-not-allowed opacity-60'
+              : 'border-gray-300 hover:border-primary/50 hover:bg-primary/5 cursor-pointer',
           className
         )}
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
-        onClick={() => fileInputRef.current?.click()}
+        onClick={() => !disabled && fileInputRef.current?.click()}
       >
         {files.length === 0 ? (
           <div className="flex flex-col items-center">
             <Upload className="w-8 h-8 mb-2 text-muted-foreground" />
-            <p className="mb-2 text-sm text-center text-muted-foreground">{uploadText}</p>
+            <p className="mb-2 text-sm text-center text-muted-foreground">{uploadMessage}</p>
             <p className="text-xs text-muted-foreground">Max file size: {maxSize}MB</p>
           </div>
         ) : (
           <div className="w-full space-y-2">
-            {files.map((file, index) => (
+            {files.map((file) => (
               <div 
-                key={index} 
+                key={file.id} 
                 className="flex items-center justify-between p-2 rounded bg-gray-50"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="flex items-center space-x-2">
                   <FileCheck className="flex-shrink-0 w-5 h-5 text-green-500" />
                   <div className="flex flex-col">
-                    <span className="text-sm font-medium truncate max-w-[200px]">{file.name}</span>
-                    <span className="text-xs text-muted-foreground">{formatFileSize(file.size)}</span>
+                    <span className="text-sm font-medium truncate max-w-[200px]">{file.file.name}</span>
+                    <span className="text-xs text-muted-foreground">{formatFileSize(file.file.size)}</span>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleRemoveFile(index);
-                  }}
-                  className="p-1 rounded-full hover:bg-gray-200"
-                >
-                  <X className="w-4 h-4 text-muted-foreground" />
-                </button>
+                {!disabled && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRemoveFile(file.id);
+                    }}
+                    className="p-1 rounded-full hover:bg-gray-200"
+                  >
+                    <X className="w-4 h-4 text-muted-foreground" />
+                  </button>
+                )}
               </div>
             ))}
-            <p className="text-xs text-center text-muted-foreground">
-              Click to add more files
-            </p>
+            {!disabled && files.length < maxFiles && (
+              <p className="text-xs text-center text-muted-foreground">
+                Click to add {maxFiles > 1 ? 'more files' : 'another file'}
+              </p>
+            )}
           </div>
         )}
         <input
@@ -181,7 +220,8 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
           accept={accept}
           onChange={handleInputChange}
           className="hidden"
-          multiple
+          multiple={maxFiles > 1}
+          disabled={disabled}
         />
       </div>
     </div>
