@@ -1,0 +1,54 @@
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+
+export default function StrategicDesignPanel() {
+  const [indication, setIndication] = useState('');
+  const [phase, setPhase] = useState('');
+  const [metrics, setMetrics] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const fetchMetrics = async () => {
+    setLoading(true);
+    const res = await fetch('/api/strategy/from-csrs', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ indication, phase })
+    });
+    const data = await res.json();
+    setMetrics(data.metrics || {});
+    setLoading(false);
+  };
+
+  return (
+    <div className="space-y-6">
+      <h2 className="text-xl font-bold text-blue-800">📊 Strategic Design Insights</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Input placeholder="Indication (e.g. Obesity)" value={indication} onChange={(e) => setIndication(e.target.value)} />
+        <Input placeholder="Phase (e.g. Phase 2)" value={phase} onChange={(e) => setPhase(e.target.value)} />
+        <Button onClick={fetchMetrics} disabled={loading} className="bg-blue-700 text-white col-span-1 sm:col-span-2">
+          {loading ? "Loading..." : "Analyze CSR Data"}
+        </Button>
+      </div>
+
+      {metrics && (
+        <Card>
+          <CardContent className="space-y-2 text-sm">
+            <p><strong>Matched Trials:</strong> {metrics.total_trials}</p>
+            <p><strong>Top Endpoints:</strong></p>
+            <ul className="list-disc ml-6">
+              {metrics.top_endpoints?.map(([ep, count], idx) => (
+                <li key={idx}>{ep} – {count} trials</li>
+              ))}
+            </ul>
+            <p><strong>Average Duration (weeks):</strong> {metrics.avg_duration_weeks}</p>
+            <p><strong>Average Sample Size:</strong> {metrics.avg_sample_size}</p>
+            <p><strong>Average Dropout Rate:</strong> {metrics.avg_dropout_rate}%</p>
+            <p><strong>Matched NCT IDs:</strong> {metrics.matched_trial_ids?.join(', ')}</p>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}

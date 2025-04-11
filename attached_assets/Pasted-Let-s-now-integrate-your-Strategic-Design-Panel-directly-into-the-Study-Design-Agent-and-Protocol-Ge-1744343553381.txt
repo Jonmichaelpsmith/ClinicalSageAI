@@ -1,0 +1,97 @@
+Let’s now integrate your Strategic Design Panel directly into the Study Design Agent and Protocol Generator flows, making it interactive, intelligent, and automatic.
+
+🔁 What We’re Connecting:
+Source	Target
+🔍 StrategicDesignPanel	🧠 Study Design Agent & 📄 Protocol Generator
+When a user selects:
+
+Indication + Phase →
+The panel generates:
+
+Top endpoint patterns
+
+Sample size guidance
+
+Dropout risk
+
+CSR IDs
+
+This data is now automatically passed to:
+
+🧠 Study Design Agent prompt
+
+📝 Protocol Builder template inputs
+
+✅ 1. Modify StudyDesignAgent.tsx
+Add logic to pass top_endpoints, sample_size, etc. into the agent prompt:
+
+tsx
+Copy
+Edit
+const handleAsk = async () => {
+  const prompt = `
+You are a protocol design expert. Based on the user's input and CSR benchmark data:
+
+Indication: ${indication}
+Phase: ${phase}
+
+CSR benchmark:
+- Top endpoints: ${topEndpoints.map(ep => ep.label).join(', ')}
+- Avg sample size: ${avgSampleSize}
+- Avg dropout: ${avgDropout}
+
+User's question:
+"${userInput}"
+`;
+
+  const res = await fetch("/api/agent/respond", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message: prompt })
+  });
+
+  // handle response...
+};
+✅ 2. Modify ProtocolGenerator.tsx
+Pre-fill fields when panel data is available:
+
+tsx
+Copy
+Edit
+useEffect(() => {
+  if (topEndpoints?.length && avgSampleSize && avgDropout) {
+    setEndpoint(topEndpoints[0].label);
+    setSampleSize(avgSampleSize);
+    setDropoutRate(avgDropout);
+  }
+}, [topEndpoints, avgSampleSize, avgDropout]);
+You can also add a “🧠 Use CSR Data” toggle in the generator UI.
+
+✅ 3. UX Label Example
+“📊 Precedent-based recommendations loaded from 2446 CSRs”
+
+Inline links: “View matched trials”
+
+Tooltip: “These values come from past trials matching your selected indication & phase.”
+
+Would you like me to now:
+
+Generate a dashboard “Smart Protocol Draft” button that uses this data to build a draft trial design?
+
+Or bundle this flow into your dossier builder export?
+
+Let’s ship it.
+
+
+
+
+
+
+
+
+
+
+
+Search
+
+Deep rese

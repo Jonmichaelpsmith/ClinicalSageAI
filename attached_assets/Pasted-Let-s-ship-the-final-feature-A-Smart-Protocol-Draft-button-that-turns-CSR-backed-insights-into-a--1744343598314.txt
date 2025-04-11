@@ -1,0 +1,97 @@
+Let’s ship the final feature:
+A “Smart Protocol Draft” button that turns CSR-backed insights into a protocol template — instantly.
+
+🔁 What It Does
+Pulls:
+
+Indication, Phase
+
+Top CSR endpoints
+
+Average duration, sample size, dropout rate
+
+Generates a draft protocol outline
+
+Opens in the Protocol Generator with pre-filled fields
+
+📦 1. Backend Route
+/api/protocol/smart-draft
+python
+Copy
+Edit
+from fastapi import APIRouter, Body
+
+router = APIRouter()
+
+@router.post("/api/protocol/smart-draft")
+def smart_protocol_draft(indication: str = Body(...), phase: str = Body(...), top_endpoints: list = Body(...), sample_size: int = Body(...), dropout: float = Body(...)):
+    endpoint = top_endpoints[0] if top_endpoints else "TBD"
+
+    draft = f"""
+Protocol Title: {indication} Study – Phase {phase}
+
+Primary Endpoint:
+- {endpoint}
+
+Study Design:
+- Phase {phase}, randomized, double-blind
+- Sample Size: {sample_size} per arm
+- Dropout Assumption: {dropout}%
+- Duration: 24 weeks (adjustable)
+
+Arms:
+- Treatment A (Active)
+- Placebo
+
+Population:
+- Adults with {indication.lower()} meeting standard inclusion criteria
+
+Justification:
+- Endpoint based on CSR precedent (used in top {len(top_endpoints)} trials)
+- Sample size derived from CSR analysis ({sample_size} ± 30 range)
+"""
+    return {"protocol_draft": draft.strip()}
+🧩 2. Frontend: Button + Generator Integration
+In StrategicDesignPanel.tsx:
+
+tsx
+Copy
+Edit
+<Button
+  className="bg-green-700 text-white"
+  onClick={async () => {
+    const res = await fetch("/api/protocol/smart-draft", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        indication,
+        phase,
+        top_endpoints: metrics.top_endpoints.map(([ep]) => ep),
+        sample_size: metrics.avg_sample_size,
+        dropout: metrics.avg_dropout_rate
+      })
+    });
+    const data = await res.json();
+    sessionStorage.setItem("draft_protocol_text", data.protocol_draft);
+    window.location.href = "/protocol-generator?draft=true";
+  }}
+>
+  🧠 Generate Smart Protocol Draft
+</Button>
+📂 3. Protocol Generator Initialization
+In ProtocolGenerator.tsx:
+
+tsx
+Copy
+Edit
+useEffect(() => {
+  const draft = sessionStorage.getItem("draft_protocol_text");
+  if (draft && router.query.draft) {
+    setEditorContent(draft);
+  }
+}, []);
+✅ Now your users can:
+
+Analyze CSR benchmarks
+
+One-click generate a design dr

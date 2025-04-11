@@ -18,6 +18,8 @@ import { academicUpload, processAcademicResource } from "./academic-resource-upl
 import { SagePlusService } from "./sage-plus-service";
 import { csrTrainingService } from "./csr-training-service";
 import { researchCompanionService } from "./research-companion-service";
+import { spawn } from 'child_process';
+import path from 'path';
 import { optimizeProtocol } from "./protocol-optimizer-service";
 import { studyDesignAgentService } from "./agent-service";
 import { getEndpointRecommenderService } from "./services/endpoint-recommender-service";
@@ -253,6 +255,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const exportsDir = path.join(process.cwd(), 'data/exports');
   if (!fs.existsSync(exportsDir)) {
     fs.mkdirSync(exportsDir, { recursive: true });
+  }
+  
+  // Create processed CSRs directory if it doesn't exist
+  const processedCsrsDir = path.join(process.cwd(), 'data/processed_csrs');
+  if (!fs.existsSync(processedCsrsDir)) {
+    fs.mkdirSync(processedCsrsDir, { recursive: true });
   }
   
   // Get notification logs
