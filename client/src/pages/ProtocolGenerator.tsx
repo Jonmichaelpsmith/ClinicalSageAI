@@ -132,7 +132,13 @@ const ProtocolDesigner = () => {
         throw new Error(data.message || 'Unknown error occurred');
       }
 
-      setAnalysisResults(data);
+      // Make sure data has the expected structure before setting state
+      const formattedData = {
+        ...data,
+        extractedInfo: data.extractedInfo || {} // Ensure extractedInfo is always at least an empty object
+      };
+      
+      setAnalysisResults(formattedData);
       setIsAnalyzing(false);
 
       toast({
@@ -152,7 +158,17 @@ const ProtocolDesigner = () => {
 
   // Handler for using analysis results to create a new protocol
   const handleUseAnalysisResults = () => {
-    if (!analysisResults || !analysisResults.extractedInfo) return;
+    if (!analysisResults) return;
+    
+    // Make sure extractedInfo exists
+    if (!analysisResults.extractedInfo) {
+      toast({
+        title: "Missing protocol information",
+        description: "Could not find extracted protocol data. Please try again.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     // Extract values from analysis results with fallbacks
     const indication = analysisResults.extractedInfo.indication || '';
