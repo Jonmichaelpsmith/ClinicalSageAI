@@ -33,7 +33,7 @@ const ProtocolDesigner = () => {
   const [generatedProtocol, setGeneratedProtocol] = useState<any>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeTab, setActiveTab] = useState("design");
-  
+
   // Protocol upload states
   const [showUploadDialog, setShowUploadDialog] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -64,26 +64,26 @@ const ProtocolDesigner = () => {
       });
       return;
     }
-    
+
     try {
       setIsAnalyzing(true);
       const formData = new FormData();
       formData.append('file', uploadedFile);
-      
+
       const response = await fetch('/api/protocol/analyze-file', {
         method: 'POST',
         body: formData
       });
-      
+
       const data = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(data.message || 'Failed to analyze protocol');
       }
-      
+
       setAnalysisResults(data.protocol);
       setShowUploadDialog(false);
-      
+
       toast({
         title: "Protocol Analyzed",
         description: "Successfully analyzed your protocol.",
@@ -127,14 +127,14 @@ const ProtocolDesigner = () => {
       }
 
       const data = await response.json();
-      
+
       if (!data.success) {
         throw new Error(data.message || 'Unknown error occurred');
       }
 
       setAnalysisResults(data);
       setIsAnalyzing(false);
-      
+
       toast({
         title: "Protocol analyzed successfully",
         description: `Analysis complete for ${uploadedFile.name}`,
@@ -153,18 +153,18 @@ const ProtocolDesigner = () => {
   // Handler for using analysis results to create a new protocol
   const handleUseAnalysisResults = () => {
     if (!analysisResults) return;
-    
+
     // Extract values from analysis results
     const { indication, phase, primaryEndpoint } = analysisResults.extractedInfo;
-    
+
     // Set form values
     setIndication(indication);
     setPhase(phase);
     setEndpoint(primaryEndpoint);
-    
+
     // Close the dialog
     setShowUploadDialog(false);
-    
+
     // Show toast notification
     toast({
       title: "Protocol data imported",
@@ -417,7 +417,7 @@ const ProtocolDesigner = () => {
           }
         }
       };
-      
+
       setGeneratedProtocol(protocol);
       setIsGenerating(false);
       setActiveTab("preview");
@@ -623,7 +623,7 @@ const ProtocolDesigner = () => {
                             </div>
                           </div>
                           <div className="p-3 whitespace-pre-line">{section.content}</div>
-                          
+
                           {/* Academic Citations Section */}
                           {section.citations && section.citations.length > 0 && (
                             <div className="border-t border-gray-100 bg-gray-50 px-3 py-2">
@@ -651,14 +651,14 @@ const ProtocolDesigner = () => {
                               </div>
                             </div>
                           )}
-                          
+
                           <div className="bg-blue-50 p-2 text-xs text-blue-700 flex items-center gap-1.5">
                             <AlertCircle className="h-3 w-3" />
                             {section.regulatoryGuidance}
                           </div>
                         </div>
                       ))}
-                      
+
                       {/* AI Insights & Recommendations Section */}
                       {generatedProtocol.aiInsights && (
                         <div className="border border-purple-200 rounded-lg overflow-hidden">
@@ -673,7 +673,7 @@ const ProtocolDesigner = () => {
                               </div>
                             </div>
                           </div>
-                          
+
                           <div className="p-4 space-y-4">
                             {/* Strengths */}
                             <div>
@@ -695,7 +695,7 @@ const ProtocolDesigner = () => {
                                 ))}
                               </div>
                             </div>
-                            
+
                             {/* Improvement Areas */}
                             <div>
                               <h4 className="text-sm font-medium mb-2 text-amber-700">Improvement Opportunities</h4>
@@ -720,7 +720,7 @@ const ProtocolDesigner = () => {
                                 ))}
                               </div>
                             </div>
-                            
+
                             {/* Regulatory Alignment */}
                             <div className="bg-white rounded-lg border border-gray-200 p-3">
                               <h4 className="text-sm font-medium mb-2 text-blue-800">Regulatory Alignment</h4>
@@ -744,7 +744,7 @@ const ProtocolDesigner = () => {
                                 </ul>
                               </div>
                             </div>
-                            
+
                             {/* Competitive Market Analysis */}
                             {generatedProtocol.aiInsights.competitiveAnalysis && (
                               <div className="bg-white rounded-lg border border-gray-200 p-3">
@@ -790,7 +790,7 @@ const ProtocolDesigner = () => {
                               Export DOCX
                             </Button>
                           </div>
-                          
+
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                               <div className="h-10 w-10 bg-white rounded-lg border border-gray-200 flex items-center justify-center">
@@ -806,7 +806,7 @@ const ProtocolDesigner = () => {
                               Export PDF
                             </Button>
                           </div>
-                          
+
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                               <div className="h-10 w-10 bg-white rounded-lg border border-gray-200 flex items-center justify-center">
@@ -824,7 +824,7 @@ const ProtocolDesigner = () => {
                           </div>
                         </div>
                       </div>
-                      
+
                       <div className="p-4 border border-yellow-200 bg-yellow-50 rounded-lg">
                         <div className="flex items-start gap-3">
                           <div className="mt-1">
@@ -893,7 +893,7 @@ const ProtocolDesigner = () => {
               Upload your existing protocol to analyze and improve using our AI-powered recommendations.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-6">
             {!uploadedFile ? (
               <div 
@@ -941,7 +941,7 @@ const ProtocolDesigner = () => {
                     <X className="h-4 w-4" />
                   </Button>
                 </div>
-                
+
                 <div className="flex justify-center">
                   <Button 
                     onClick={handleAnalyzeProtocol} 
@@ -967,7 +967,7 @@ const ProtocolDesigner = () => {
                       ))}
                     </div>
                   </div>
-                  
+
                   <div>
                     <h3 className="text-md font-medium mb-3">Protocol Evaluation</h3>
                     <div className="space-y-3">
@@ -991,7 +991,7 @@ const ProtocolDesigner = () => {
                           ))}
                         </ul>
                       </div>
-                      
+
                       <div className="bg-amber-50 p-3 rounded-lg">
                         <div className="flex justify-between">
                           <div className="text-amber-800 font-medium mb-2">Improvement Areas</div>
@@ -1015,13 +1015,13 @@ const ProtocolDesigner = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="bg-white border border-blue-100 rounded-lg p-4">
                   <h3 className="text-md font-medium mb-3 text-blue-800">AI Comparative Analysis</h3>
                   <p className="text-sm text-gray-700 mb-4">
                     Our analysis compared this protocol against 245 obesity trials from our database, with particular attention to recent Phase 2 studies from 2021-2024.
                   </p>
-                  
+
                   <div className="grid md:grid-cols-3 gap-4">
                     <div className="bg-blue-50 p-3 rounded-lg">
                       <div className="text-blue-800 font-medium mb-1">Regulatory Alignment</div>
@@ -1041,7 +1041,7 @@ const ProtocolDesigner = () => {
                         </ul>
                       </div>
                     </div>
-                    
+
                     <div className="bg-indigo-50 p-3 rounded-lg">
                       <div className="text-indigo-800 font-medium mb-1">Precedent Matching</div>
                       <div className="mt-1">
@@ -1060,7 +1060,7 @@ const ProtocolDesigner = () => {
                         </ul>
                       </div>
                     </div>
-                    
+
                     <div className="bg-emerald-50 p-3 rounded-lg">
                       <div className="text-emerald-800 font-medium mb-1">Success Probability</div>
                       <div className="mt-1">
@@ -1083,7 +1083,7 @@ const ProtocolDesigner = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="text-md font-medium">Similar Precedent Trials</h3>
@@ -1140,7 +1140,7 @@ const ProtocolDesigner = () => {
                     </table>
                   </div>
                 </div>
-                
+
                 <div className="bg-purple-50 rounded-lg p-4">
                   <h3 className="text-md font-medium mb-3 text-purple-800">Expert Recommendations</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1156,7 +1156,7 @@ const ProtocolDesigner = () => {
                         <span className="text-purple-600 font-medium">Source:</span> Analysis of 18 successful adaptive design obesity trials from 2020-2024
                       </div>
                     </div>
-                    
+
                     <div className="bg-white rounded-lg p-3 border border-purple-100">
                       <div className="flex items-center gap-2 mb-2">
                         <PieChart className="h-5 w-5 text-purple-600" />
@@ -1174,7 +1174,7 @@ const ProtocolDesigner = () => {
               </div>
             )}
           </div>
-          
+
           <DialogFooter>
             <DialogClose asChild>
               <Button variant="outline">Cancel</Button>
