@@ -28,6 +28,7 @@ import { csrDeepLearningRouter } from "./csr-deep-learning-routes";
 import { getEndpointRecommenderService } from "./services/endpoint-recommender-service";
 import { notificationService } from "./notification-service";
 import { strategicIntelligenceService } from "./strategic-intelligence-service";
+import dossierRoutes from "./routes/dossier_routes";
 import strategicReportRoutes from "./strategic-report-routes";
 import { trialPredictorService } from "./trial-predictor-service";
 import registerProtocolRoutes from "./routes/protocol_routes";
@@ -403,6 +404,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register Protocol Routes
   registerProtocolRoutes(app);
+  
+  // Register Dossier Routes with version tracking and changelog capabilities
+  app.use('/api/dossier', dossierRoutes);
   
   // Trial Success Prediction endpoint
   app.post('/api/trial-prediction', async (req: Request, res: Response) => {
