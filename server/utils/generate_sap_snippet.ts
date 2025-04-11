@@ -1,169 +1,228 @@
 /**
- * Generate Statistical Analysis Plan (SAP) snippets based on protocol data
- * This utility automatically creates appropriate SAP text for different protocol configurations
+ * Statistical Analysis Plan (SAP) Generator
+ * 
+ * This module generates SAP text snippets based on protocol data.
+ * The generated SAP text covers key statistical aspects including:
+ * - Primary analysis methods
+ * - Sample size justification
+ * - Handling missing data
+ * - Interim analyses (if applicable)
+ * - Subgroup analyses
  */
 
-interface ProtocolData {
-  endpoint_primary?: string;
-  sample_size?: number;
-  duration_weeks?: number;
-  phase?: string;
-  indication?: string;
-  [key: string]: any;
+export interface ProtocolData {
+  indication: string;
+  phase: string;
+  sample_size: number;
+  duration_weeks: number;
+  dropout_rate: number;
+  endpoint_primary: string;
+  endpoint_secondary?: string[];
+  arms?: number;
+  blinding?: string;
+  randomization?: string;
+  population?: string;
+  inclusion_criteria?: string[];
+  exclusion_criteria?: string[];
 }
 
 /**
- * Generate a complete Statistical Analysis Plan based on protocol data
- * Handles different endpoint types and study designs
- * 
- * @param protocolData The parsed protocol data
- * @returns A formatted SAP string
+ * Generate a Statistical Analysis Plan snippet based on protocol data
  */
-export function generateSAP(protocolData: ProtocolData): string {
-  const endpoint = protocolData.endpoint_primary?.toLowerCase() || "primary endpoint";
-  const sampleSize = protocolData.sample_size || 200;
-  const duration = protocolData.duration_weeks || 24;
-  const phase = protocolData.phase || "Phase 2";
-  const indication = protocolData.indication || "specified indication";
+export function generateSAP(protocol: ProtocolData): string {
+  // Extract key parameters
+  const {
+    indication,
+    phase,
+    sample_size,
+    duration_weeks,
+    dropout_rate,
+    endpoint_primary,
+    endpoint_secondary = [],
+    arms = 2,
+    blinding = "double-blind",
+    randomization = "1:1",
+    population = "adult patients",
+  } = protocol;
   
-  // Determine appropriate test type based on endpoint
-  let testType = "Two-sided t-test";
-  let analysisApproach = "ANCOVA with baseline as covariate";
+  // Determine analysis method based on endpoint type and phase
+  const primaryAnalysisMethod = determineAnalysisMethod(endpoint_primary, phase);
   
-  if (endpoint.includes("survival") || endpoint.includes("time to") || endpoint.includes("progression")) {
-    testType = "Log-rank test";
-    analysisApproach = "Cox proportional hazards model";
-  } else if (endpoint.includes("response") || endpoint.includes("remission") || endpoint.includes("cure")) {
-    testType = "Chi-square test";
-    analysisApproach = "Logistic regression";
-  }
+  // Calculate adjusted sample size accounting for dropout
+  const adjustedSampleSize = Math.ceil(sample_size / (1 - dropout_rate));
   
-  // Determine sample size rationale
-  const powerLevel = phase.includes("3") ? "90%" : "80%";
+  // Generate SAP sections
+  const sections = [
+    generateStudyDesignSection(phase, arms, blinding, randomization),
+    generateSampleSizeSection(sample_size, adjustedSampleSize, dropout_rate),
+    generateAnalysisPopulationsSection(population, indication),
+    generatePrimaryAnalysisSection(endpoint_primary, primaryAnalysisMethod),
+    generateSecondaryAnalysesSection(endpoint_secondary),
+    generateMissingDataSection(dropout_rate),
+    generateInterimAnalysisSection(phase, duration_weeks),
+    generateSubgroupAnalysesSection(indication)
+  ];
   
-  // Determine population definitions
-  const populationDefs = [
-    "Intent-to-Treat (ITT): All randomized subjects",
-    "Per-Protocol (PP): Subjects who complete the study without major protocol deviations",
-    "Safety Population: All subjects who receive at least one dose of study treatment"
-  ].join("\n- ");
-  
-  // Generate appropriate missing data handling approach
-  const missingDataApproach = phase.includes("3") ? 
-    "Multiple Imputation (MI) using Rubin's rules as primary approach with sensitivity analyses using LOCF and WOCF" :
-    "Mixed-effects model for repeated measures (MMRM) with missing at random (MAR) assumption";
-  
-  // Generate appropriate interim analysis plan
-  const interimAnalysis = phase.includes("3") ? 
-    `Planned at 50% of target events with O'Brien-Fleming stopping boundary and alpha spending function` :
-    `No formal interim analysis planned for efficacy`;
-  
-  return `Statistical Analysis Plan (Auto-Generated)
-
-Primary Analysis:
-- Endpoint: ${endpoint.charAt(0).toUpperCase() + endpoint.slice(1)}
-- Null Hypothesis: No difference between treatment and control groups on ${endpoint}
-- Test Type: ${testType} (alpha = 0.05)
-- Primary Analysis Method: ${analysisApproach}
-- Sample Size: ${sampleSize} subjects, powered at ${powerLevel} to detect clinically meaningful difference
-- Duration: ${duration} weeks
-
-Analysis Populations:
-- ${populationDefs}
-
-Missing Data Strategy:
-- ${missingDataApproach}
-
-Interim Analysis:
-- ${interimAnalysis}
-
-Multiple Testing:
-- Hierarchical testing procedure for primary and key secondary endpoints
-- Hochberg procedure for other secondary endpoints
-
-Subgroup Analyses:
-- Pre-specified analyses by age, gender, and disease severity
-- Forest plot visualization of treatment effects across subgroups
-
-Safety Analyses:
-- Descriptive statistics for adverse events by severity and causality
-- Time-to-event analysis for discontinuations
-- Shift tables for laboratory parameters
-`;
+  return sections.join("\n\n");
 }
 
 /**
- * Generate a shorter SAP snippet focused on core elements
- * 
- * @param protocolData The parsed protocol data
- * @returns A formatted brief SAP string
+ * Determine appropriate analysis method based on endpoint and phase
  */
-export function generateBriefSAP(protocolData: ProtocolData): string {
-  const endpoint = protocolData.endpoint_primary?.toLowerCase() || "primary endpoint";
-  const sampleSize = protocolData.sample_size || 200;
-  const duration = protocolData.duration_weeks || 24;
+function determineAnalysisMethod(endpoint: string, phase: string): string {
+  // Check for continuous endpoints
+  const continuousPatterns = [
+    /score/i, /level/i, /concentration/i, /change from baseline/i,
+    /reduction/i, /improvement/i, /increase/i, /decrease/i,
+    /measurement/i, /value/i, /scale/i, /index/i
+  ];
   
-  // Determine appropriate test type based on endpoint
-  let testType = "Two-sided t-test";
+  // Check for time-to-event endpoints
+  const survivalPatterns = [
+    /survival/i, /time to/i, /progression/i, /recurrence/i,
+    /relapse/i, /free/i, /event/i, /death/i
+  ];
   
-  if (endpoint.includes("survival") || endpoint.includes("time to")) {
-    testType = "Log-rank test";
-  } else if (endpoint.includes("response") || endpoint.includes("remission")) {
-    testType = "Chi-square test";
+  // Check for binary endpoints
+  const binaryPatterns = [
+    /response/i, /responder/i, /remission/i, /cure/i,
+    /success/i, /failure/i, /resolution/i, /achievement/i
+  ];
+  
+  // Determine endpoint type
+  let endpointType = "unknown";
+  
+  if (continuousPatterns.some(pattern => pattern.test(endpoint))) {
+    endpointType = "continuous";
+  } else if (survivalPatterns.some(pattern => pattern.test(endpoint))) {
+    endpointType = "survival";
+  } else if (binaryPatterns.some(pattern => pattern.test(endpoint))) {
+    endpointType = "binary";
   }
   
-  return `Statistical Analysis Plan (Brief):
-- Primary Endpoint: ${endpoint.charAt(0).toUpperCase() + endpoint.slice(1)}
-- Null Hypothesis: No difference between treatment and control on ${endpoint}
-- Test Type: ${testType} (alpha = 0.05)
-- Sample Size: ${sampleSize}, powered at 80% for minimal clinically important difference
-- Analysis Set: ITT population with per-protocol sensitivity analysis
-- Duration: ${duration} weeks
-- Missing Data: Multiple imputation approach
-`;
+  // Return appropriate analysis method
+  switch (endpointType) {
+    case "continuous":
+      return phase === "1" 
+        ? "Descriptive statistics and ANCOVA adjusting for baseline"
+        : "Mixed model for repeated measures (MMRM) with baseline as covariate";
+      
+    case "survival":
+      return phase === "1"
+        ? "Kaplan-Meier estimates and descriptive statistics"
+        : "Cox proportional hazards model stratified by randomization factors";
+      
+    case "binary":
+      return phase === "1"
+        ? "Frequency tables and Fisher's exact test"
+        : "Logistic regression adjusting for stratification factors";
+      
+    default:
+      return "Statistical methods appropriate for the endpoint type";
+  }
 }
 
 /**
- * Detect changes in key statistical parameters between protocol versions
- * 
- * @param previousData The previous protocol data
- * @param currentData The current protocol data
- * @returns An array of strings describing statistical implications
+ * Generate Study Design section
  */
-export function detectStatisticalImplications(
-  previousData: ProtocolData,
-  currentData: ProtocolData
-): string[] {
-  const implications: string[] = [];
+function generateStudyDesignSection(
+  phase: string,
+  arms: number,
+  blinding: string,
+  randomization: string
+): string {
+  return `1. STUDY DESIGN\nThis is a Phase ${phase}, ${arms}-arm, ${blinding}, randomized (${randomization}) clinical trial. The statistical analyses will align with this design and follow the principles outlined in ICH E9.`;
+}
+
+/**
+ * Generate Sample Size section with justification
+ */
+function generateSampleSizeSection(
+  sampleSize: number,
+  adjustedSampleSize: number,
+  dropoutRate: number
+): string {
+  const dropoutPercentage = (dropoutRate * 100).toFixed(1);
   
-  // Sample size changes
-  if (previousData.sample_size !== currentData.sample_size) {
-    const oldSize = previousData.sample_size || 0;
-    const newSize = currentData.sample_size || 0;
-    
-    if (newSize > oldSize) {
-      implications.push(`Increased sample size (${oldSize} → ${newSize}) will improve study power and ability to detect smaller effect sizes.`);
-    } else {
-      implications.push(`Decreased sample size (${oldSize} → ${newSize}) may reduce study power. Consider re-evaluating power calculations.`);
-    }
+  return `2. SAMPLE SIZE JUSTIFICATION\nThe planned enrollment is ${sampleSize} participants. Accounting for an anticipated dropout rate of ${dropoutPercentage}%, the target adjusted sample size is ${adjustedSampleSize} participants. This sample size provides approximately 80% power to detect the primary endpoint at a two-sided significance level of 0.05.`;
+}
+
+/**
+ * Generate Analysis Populations section
+ */
+function generateAnalysisPopulationsSection(
+  population: string,
+  indication: string
+): string {
+  return `3. ANALYSIS POPULATIONS\n- Intent-to-Treat (ITT) Population: All randomized ${population} with ${indication}.\n- Per-Protocol (PP) Population: All ITT participants who complete the study without major protocol deviations.\n- Safety Population: All randomized participants who receive at least one dose of study treatment.`;
+}
+
+/**
+ * Generate Primary Analysis section
+ */
+function generatePrimaryAnalysisSection(
+  primaryEndpoint: string,
+  analysisMethod: string
+): string {
+  return `4. PRIMARY ANALYSIS\nThe primary endpoint is ${primaryEndpoint}. The primary analysis will use ${analysisMethod}. Statistical significance will be determined at the two-sided alpha level of 0.05.`;
+}
+
+/**
+ * Generate Secondary Analyses section
+ */
+function generateSecondaryAnalysesSection(
+  secondaryEndpoints: string[]
+): string {
+  if (!secondaryEndpoints.length) {
+    return `5. SECONDARY ANALYSES\nSecondary endpoints will be analyzed using appropriate statistical methods based on the type of endpoint. No formal adjustment for multiplicity will be applied to secondary endpoints, and results will be considered supportive.`;
   }
   
-  // Duration changes
-  if (previousData.duration_weeks !== currentData.duration_weeks) {
-    const oldDuration = previousData.duration_weeks || 0;
-    const newDuration = currentData.duration_weeks || 0;
-    
-    if (newDuration > oldDuration) {
-      implications.push(`Extended duration (${oldDuration} → ${newDuration} weeks) may improve endpoint capture but increase dropout risk.`);
-    } else {
-      implications.push(`Shortened duration (${oldDuration} → ${newDuration} weeks) may reduce dropouts but potentially miss delayed treatment effects.`);
-    }
+  const endpointList = secondaryEndpoints
+    .map((endpoint, index) => `   ${index + 1}. ${endpoint}`)
+    .join("\n");
+  
+  return `5. SECONDARY ANALYSES\nThe following secondary endpoints will be analyzed:\n${endpointList}\n\nAnalyses will use appropriate statistical methods based on the type of each endpoint. No formal adjustment for multiplicity will be applied to secondary endpoints, and results will be considered supportive.`;
+}
+
+/**
+ * Generate Missing Data handling section
+ */
+function generateMissingDataSection(dropoutRate: number): string {
+  // Determine missing data approach based on dropout rate
+  let approach = "";
+  
+  if (dropoutRate < 0.1) {
+    approach = "The primary analysis will use all available data without imputation. Sensitivity analyses will assess the impact of missing data using multiple imputation.";
+  } else if (dropoutRate < 0.2) {
+    approach = "Missing data will be handled using multiple imputation. Sensitivity analyses will include complete case analysis and pattern mixture models.";
+  } else {
+    approach = "Due to the anticipated high dropout rate, a careful strategy for missing data is necessary. The primary approach will use multiple imputation with sensitivity analyses using pattern mixture models and tipping point analyses.";
   }
   
-  // Endpoint changes
-  if (previousData.endpoint_primary !== currentData.endpoint_primary) {
-    implications.push(`Primary endpoint change requires verification of statistical approach and power calculations.`);
+  return `6. HANDLING OF MISSING DATA\n${approach}`;
+}
+
+/**
+ * Generate Interim Analysis section
+ */
+function generateInterimAnalysisSection(phase: string, durationWeeks: number): string {
+  // Determine if interim analysis is appropriate
+  let interimAnalysis = "";
+  
+  if (phase === "3" && durationWeeks > 26) {
+    interimAnalysis = "An interim analysis for efficacy and futility will be conducted when approximately 50% of participants have completed the primary endpoint assessment. The O'Brien-Fleming spending function will be used to control the overall type I error rate.";
+  } else if (phase === "2" && durationWeeks > 16) {
+    interimAnalysis = "An interim analysis for futility only will be conducted when approximately 50% of participants have completed the primary endpoint assessment. No efficacy claims will be made based on this interim analysis.";
+  } else {
+    interimAnalysis = "No interim analyses are planned for this study.";
   }
   
-  return implications;
+  return `7. INTERIM ANALYSES\n${interimAnalysis}`;
+}
+
+/**
+ * Generate Subgroup Analyses section
+ */
+function generateSubgroupAnalysesSection(indication: string): string {
+  return `8. SUBGROUP ANALYSES\nExploratory subgroup analyses for the primary endpoint will be performed for the following factors:\n- Age groups (< 65 vs. ≥ 65 years)\n- Sex (male vs. female)\n- Disease severity at baseline\n- Geographic region\n\nThese analyses will be considered exploratory and will be used to assess the consistency of the treatment effect across subgroups of interest in ${indication}.`;
 }

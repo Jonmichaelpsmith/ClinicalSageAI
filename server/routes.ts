@@ -31,7 +31,7 @@ import { strategicIntelligenceService } from "./strategic-intelligence-service";
 import dossierRoutes from "./routes/dossier_routes";
 import strategicReportRoutes from "./strategic-report-routes";
 import { trialPredictorService } from "./trial-predictor-service";
-import registerProtocolRoutes from "./routes/protocol_routes";
+import { registerProtocolRoutes } from "./routes/protocol_routes";
 import { 
   fetchClinicalTrialData, 
   importTrialsFromCsv, 

@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import { FileUploader } from '@/components/ui/file-uploader';
-import { Loader2, FileText, Upload, Clipboard } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { FileText, Upload, PenTool, Search, Loader2 } from 'lucide-react';
 
 interface ProtocolParserProps {
   onParseComplete: (parsedData: any) => void;
@@ -14,197 +15,232 @@ interface ProtocolParserProps {
 
 export function ProtocolParser({ onParseComplete }: ProtocolParserProps) {
   const [protocolText, setProtocolText] = useState('');
-  const [isProtocolUploaded, setIsProtocolUploaded] = useState(false);
+  const [selectedTab, setSelectedTab] = useState('upload');
   const { toast } = useToast();
 
-  const parseMutation = useMutation({
-    mutationFn: async (data: { text: string }) => {
-      const response = await apiRequest('POST', '/api/protocol/parse', data);
+  // Parse protocol text
+  const parseTextMutation = useMutation({
+    mutationFn: async (text: string) => {
+      const response = await apiRequest('POST', '/api/protocol/parse-text', { text });
       return response.json();
     },
     onSuccess: (data) => {
-      toast({
-        title: "Protocol parsed successfully",
-        description: "Key protocol metrics extracted and ready for analysis.",
-        variant: "default",
-      });
-      onParseComplete(data.parsed);
+      if (data.success) {
+        toast({
+          title: "Protocol Parsed",
+          description: "Successfully analyzed protocol text",
+        });
+        onParseComplete(data.protocol);
+      } else {
+        toast({
+          title: "Parse Failed",
+          description: data.message || "Failed to parse protocol",
+          variant: "destructive",
+        });
+      }
     },
     onError: (error: any) => {
       toast({
-        title: "Parsing failed",
-        description: error.message || "Failed to parse protocol.",
+        title: "Parse Failed",
+        description: error.message || "An error occurred while analyzing protocol text",
         variant: "destructive",
       });
     },
   });
 
-  const handleFileUpload = async (file: File) => {
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      
-      const response = await fetch('/api/protocol/upload-pdf', {
-        method: 'POST',
-        body: formData,
+  // Upload and parse protocol file
+  const uploadMutation = useMutation({
+    mutationFn: async (formData: FormData) => {
+      const response = await apiRequest('POST', '/api/protocol/analyze-file', formData, {
+        headers: {},
       });
-      
-      if (!response.ok) {
-        throw new Error('Failed to upload protocol PDF');
+      return response.json();
+    },
+    onSuccess: (data) => {
+      if (data.success) {
+        toast({
+          title: "Protocol Analyzed",
+          description: "Successfully analyzed protocol file",
+        });
+        onParseComplete(data.protocol);
+      } else {
+        toast({
+          title: "Analysis Failed",
+          description: data.message || "Failed to analyze protocol",
+          variant: "destructive",
+        });
       }
-      
-      const result = await response.json();
-      
-      if (result.text) {
-        setProtocolText(result.text);
-        setIsProtocolUploaded(true);
-        
-        // Auto-parse after upload
-        parseMutation.mutate({ text: result.text });
-      }
-    } catch (error: any) {
+    },
+    onError: (error: any) => {
       toast({
-        title: "Upload failed",
-        description: error.message || "Failed to upload protocol PDF.",
+        title: "Analysis Failed",
+        description: error.message || "An error occurred while analyzing protocol file",
         variant: "destructive",
       });
-    }
+    },
+  });
+
+  // Full protocol analysis
+  const analyzeMutation = useMutation({
+    mutationFn: async (text: string) => {
+      const response = await apiRequest('POST', '/api/protocol/full-analyze', { text });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      if (data.success) {
+        toast({
+          title: "Deep Analysis Complete",
+          description: "Successfully analyzed protocol with AI",
+        });
+        onParseComplete(data.protocol);
+      } else {
+        toast({
+          title: "Analysis Failed",
+          description: data.message || "Failed to analyze protocol",
+          variant: "destructive",
+        });
+      }
+    },
+    onError: (error: any) => {
+      console.error("Error analyzing protocol text:", error);
+      toast({
+        title: "Analysis Failed",
+        description: error.message || "An error occurred during AI analysis",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Handle file upload
+  const handleFilesAdded = (files: File[]) => {
+    if (files.length === 0) return;
+
+    const formData = new FormData();
+    formData.append('file', files[0]);
+    uploadMutation.mutate(formData);
   };
 
-  const handleParse = () => {
+  // Handle text parsing
+  const handleParseText = () => {
     if (!protocolText.trim()) {
       toast({
-        title: "No protocol text",
-        description: "Please enter or upload protocol text first.",
+        title: "No Text",
+        description: "Please enter protocol text to analyze",
         variant: "destructive",
       });
       return;
     }
     
-    parseMutation.mutate({ text: protocolText });
+    parseTextMutation.mutate(protocolText);
   };
 
-  const handlePasteExample = () => {
-    // Paste a structured example protocol text
-    const exampleText = `Protocol Title: Safety and efficacy of LMN-0801 for weight loss
-Phase: Phase 2
-Population: Adult patients (18-75 years) with BMI ≥30 kg/m² or ≥27 kg/m² with comorbidity
-Sample Size: 90 participants
-Duration: 24 weeks
-Primary Endpoint: Change from baseline in body weight (%)
-Secondary Endpoints: Change in waist circumference, blood pressure, lipid profile
-Randomization: 1:1:1 ratio to LMN-0801 low dose, high dose, or placebo
-Blinding: Double-blind
-Safety Assessments: Adverse events, clinical lab tests, ECG, vital signs
-Statistical Analysis: ANCOVA model for primary endpoint`;
+  // Handle deep analysis
+  const handleDeepAnalysis = () => {
+    if (!protocolText.trim()) {
+      toast({
+        title: "No Text",
+        description: "Please enter protocol text to analyze",
+        variant: "destructive",
+      });
+      return;
+    }
     
-    setProtocolText(exampleText);
-    setIsProtocolUploaded(true);
+    analyzeMutation.mutate(protocolText);
   };
-
+  
   return (
-    <Card className="mb-6">
+    <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <FileText className="w-5 h-5 text-primary" />
+          <FileText className="h-5 w-5 text-primary" />
           Protocol Parser
         </CardTitle>
         <CardDescription>
-          Upload or paste your protocol text to extract key metrics for optimization and analysis
+          Upload a protocol file or paste protocol text to analyze
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid md:grid-cols-2 gap-6">
-          <div>
-            <FileUploader
-              accept=".pdf,.docx,.txt"
-              maxSize={10}
-              onFilesAdded={(files) => handleFileUpload(files[0])}
-              uploadText="Drag & drop your protocol PDF/DOCX here"
-              className="mb-4"
-            />
-            
-            <div className="text-center">
-              <span className="text-sm text-muted-foreground">or</span>
-            </div>
-            
-            <Textarea
-              value={protocolText}
-              onChange={(e) => {
-                setProtocolText(e.target.value);
-                setIsProtocolUploaded(!!e.target.value.trim());
-              }}
-              placeholder="Paste your protocol text here..."
-              className="mt-4"
-              rows={10}
-            />
-          </div>
+        <Tabs 
+          defaultValue="upload" 
+          value={selectedTab} 
+          onValueChange={setSelectedTab}
+          className="space-y-4"
+        >
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="upload" className="flex gap-2 items-center">
+              <Upload className="h-4 w-4" />
+              Upload File
+            </TabsTrigger>
+            <TabsTrigger value="text" className="flex gap-2 items-center">
+              <PenTool className="h-4 w-4" />
+              Enter Text
+            </TabsTrigger>
+          </TabsList>
           
-          <div className="flex flex-col">
-            <div className="bg-slate-50 p-4 rounded-lg mb-4">
-              <h3 className="text-sm font-semibold mb-2">What we extract:</h3>
-              <ul className="space-y-2 text-sm">
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
-                  <span>Phase & Trial Type</span>
-                </li>
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
-                  <span>Population & Eligibility</span>
-                </li>
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
-                  <span>Sample Size & Power</span>
-                </li>
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
-                  <span>Endpoints & Outcomes</span>
-                </li>
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
-                  <span>Study Design & Duration</span>
-                </li>
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
-                  <span>Statistical Approach</span>
-                </li>
-              </ul>
+          <TabsContent value="upload" className="space-y-4">
+            <FileUploader
+              accept=".pdf,.docx,.doc,.txt"
+              maxSize={20}
+              onFilesAdded={handleFilesAdded}
+              uploadText="Drag & drop protocol files here"
+              className="h-32"
+            />
+            <div className="text-xs text-muted-foreground mt-2">
+              Supported formats: PDF, Word, or Text files up to 20MB
             </div>
-            
-            <div className="bg-blue-50 p-4 rounded-lg text-sm">
-              <p className="text-blue-700">
-                <strong>Real-time extraction:</strong> Our AI parser extracts key protocol metrics in real-time, allowing immediate optimization and comparison with similar CSRs.
-              </p>
-            </div>
-            
-            <div className="mt-auto">
+          </TabsContent>
+          
+          <TabsContent value="text" className="space-y-4">
+            <Textarea
+              placeholder="Paste protocol text here..."
+              value={protocolText}
+              onChange={(e) => setProtocolText(e.target.value)}
+              className="min-h-[200px]"
+            />
+            <div className="flex gap-3">
               <Button
                 variant="outline"
-                onClick={handlePasteExample}
-                className="w-full mb-2"
+                onClick={handleParseText}
+                disabled={parseTextMutation.isPending || !protocolText.trim()}
+                className="flex gap-2 items-center"
               >
-                <Clipboard className="w-4 h-4 mr-2" />
-                Paste Example Protocol
+                {parseTextMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Search className="h-4 w-4" />
+                )}
+                Basic Parse
+              </Button>
+              
+              <Button
+                onClick={handleDeepAnalysis}
+                disabled={analyzeMutation.isPending || !protocolText.trim()}
+                className="flex gap-2 items-center"
+              >
+                {analyzeMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <FileText className="h-4 w-4" />
+                )}
+                Deep AI Analysis
               </Button>
             </div>
-          </div>
-        </div>
+          </TabsContent>
+        </Tabs>
       </CardContent>
-      <CardFooter className="justify-end">
-        <Button 
-          variant="default" 
-          onClick={handleParse}
-          disabled={!isProtocolUploaded || parseMutation.isPending}
-          className="gap-2"
-        >
-          {parseMutation.isPending ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Upload className="w-4 h-4" />
-          )}
-          Analyze Protocol
-        </Button>
-      </CardFooter>
+      
+      {(uploadMutation.isPending || parseTextMutation.isPending || analyzeMutation.isPending) && (
+        <CardFooter className="border-t pt-4">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            {uploadMutation.isPending 
+              ? "Analyzing protocol file..." 
+              : parseTextMutation.isPending 
+                ? "Parsing protocol text..." 
+                : "Performing deep AI analysis..."}
+          </div>
+        </CardFooter>
+      )}
     </Card>
   );
 }

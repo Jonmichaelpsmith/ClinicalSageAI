@@ -1,417 +1,332 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
+import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Database, Loader2, BarChart, Info, Search } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Button } from '@/components/ui/button';
-import { 
-  BarChart, 
-  Bar, 
-  Cell, 
-  XAxis, 
-  YAxis, 
-  Tooltip, 
-  ResponsiveContainer 
-} from 'recharts';
-import { Loader2, Database, ArrowRight, ArrowUp, ArrowDown, Minus, AlertCircle, ExternalLink } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Separator } from '@/components/ui/separator';
 
 interface CSRBenchmarkPanelProps {
   protocolData: any;
-  onBenchmarkComplete?: (benchmarkData: any) => void;
+  onBenchmarkComplete: (data: any) => void;
 }
 
-export function CSRBenchmarkPanel({ 
-  protocolData, 
-  onBenchmarkComplete 
-}: CSRBenchmarkPanelProps) {
+export function CSRBenchmarkPanel({ protocolData, onBenchmarkComplete }: CSRBenchmarkPanelProps) {
+  const [benchmarkData, setBenchmarkData] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState('similar');
+  const { toast } = useToast();
+  
+  // Fetch benchmark data
   const benchmarkMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const response = await apiRequest('POST', '/api/strategy/from-csrs', data);
+    mutationFn: async () => {
+      const response = await apiRequest('POST', '/api/benchmarks/analyze-protocol', protocolData);
       return response.json();
     },
     onSuccess: (data) => {
-      if (onBenchmarkComplete) {
-        onBenchmarkComplete(data);
+      if (data.success) {
+        setBenchmarkData(data.result);
+        onBenchmarkComplete(data.result);
+      } else {
+        toast({
+          title: "Benchmark Failed",
+          description: data.message || "Failed to analyze protocol against CSR benchmarks",
+          variant: "destructive",
+        });
       }
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Benchmark Analysis Failed",
+        description: error.message || "An error occurred during benchmark analysis",
+        variant: "destructive",
+      });
     },
   });
 
+  // Run benchmark when protocol data changes
   useEffect(() => {
-    if (protocolData && Object.keys(protocolData).length > 0) {
-      // Extract relevant data for benchmarking
-      const {
-        indication,
-        phase,
-        sample_size,
-        duration_weeks,
-        endpoint_primary
-      } = protocolData;
-
-      // Only run benchmark if we have the minimum required data
-      if (indication && phase) {
-        benchmarkMutation.mutate({
-          indication,
-          phase,
-          sample_size,
-          duration_weeks,
-          endpoint_primary
-        });
-      }
+    if (protocolData) {
+      benchmarkMutation.mutate();
     }
   }, [protocolData]);
 
-  const formatPercent = (value: number) => {
-    return `${(value * 100).toFixed(1)}%`;
-  };
+  if (benchmarkMutation.isPending) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Database className="h-5 w-5 text-primary" />
+            CSR Benchmark Analysis
+          </CardTitle>
+          <CardDescription>
+            Analyzing your protocol against similar clinical study reports
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center h-48">
+            <div className="flex flex-col items-center">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <p className="text-sm text-muted-foreground mt-2">Analyzing protocol against CSR database...</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
-  // Calculate the difference and determine if it's good or bad
-  const calculateDiff = (userValue: number, benchmarkValue: number) => {
-    const diff = userValue - benchmarkValue;
-    const percentDiff = (Math.abs(diff) / benchmarkValue) * 100;
-    
-    // For sample size, higher can be better (up to a point)
-    if (percentDiff < 5) {
-      return { icon: <Minus className="w-4 h-4 text-slate-500" />, color: 'text-slate-500', text: 'Aligned' };
-    } else if (diff > 0 && percentDiff > 30) {
-      // Much higher than benchmark
-      return { icon: <ArrowUp className="w-4 h-4 text-amber-500" />, color: 'text-amber-500', text: 'Higher' };
-    } else if (diff > 0) {
-      // Higher than benchmark but within reasonable range
-      return { icon: <ArrowUp className="w-4 h-4 text-green-500" />, color: 'text-green-500', text: 'Better' };
-    } else {
-      // Lower than benchmark
-      return { icon: <ArrowDown className="w-4 h-4 text-red-500" />, color: 'text-red-500', text: 'Lower' };
-    }
-  };
+  if (!benchmarkData) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Database className="h-5 w-5 text-primary" />
+            CSR Benchmark Analysis
+          </CardTitle>
+          <CardDescription>
+            Analyzing your protocol against similar clinical study reports
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col items-center justify-center h-48 text-muted-foreground">
+            <Search className="h-8 w-8 mb-2 text-muted-foreground" />
+            <p>No benchmark data available</p>
+            <p className="text-sm mt-1">Unable to find similar trials in our database</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
-  // Calculate the difference for duration - shorter can be better
-  const calculateDurationDiff = (userValue: number, benchmarkValue: number) => {
-    const diff = userValue - benchmarkValue;
-    const percentDiff = (Math.abs(diff) / benchmarkValue) * 100;
-    
-    if (percentDiff < 10) {
-      return { icon: <Minus className="w-4 h-4 text-slate-500" />, color: 'text-slate-500', text: 'Aligned' };
-    } else if (diff < 0 && percentDiff <= 30) {
-      // Shorter but not too short
-      return { icon: <ArrowDown className="w-4 h-4 text-green-500" />, color: 'text-green-500', text: 'Efficient' };
-    } else if (diff < 0) {
-      // Much shorter than benchmark
-      return { icon: <ArrowDown className="w-4 h-4 text-amber-500" />, color: 'text-amber-500', text: 'Very Short' };
-    } else {
-      // Longer than benchmark
-      return { icon: <ArrowUp className="w-4 h-4 text-red-500" />, color: 'text-red-500', text: 'Too Long' };
-    }
-  };
-
-  // Calculate the difference for dropout rate - lower is better
-  const calculateDropoutDiff = (userValue: number, benchmarkValue: number) => {
-    const diff = userValue - benchmarkValue;
-    const percentDiff = (Math.abs(diff) / benchmarkValue) * 100;
-    
-    if (percentDiff < 10) {
-      return { icon: <Minus className="w-4 h-4 text-slate-500" />, color: 'text-slate-500', text: 'Aligned' };
-    } else if (diff < 0) {
-      // Lower dropout rate
-      return { icon: <ArrowDown className="w-4 h-4 text-green-500" />, color: 'text-green-500', text: 'Better' };
-    } else {
-      // Higher dropout rate
-      return { icon: <ArrowUp className="w-4 h-4 text-red-500" />, color: 'text-red-500', text: 'Higher Risk' };
-    }
-  };
-
-  // Prepare data for the comparison chart
-  const prepareComparisonData = () => {
-    if (!benchmarkMutation.data || !protocolData) return [];
-    
-    const { avgSampleSize, avgDuration, avgDropoutRate } = benchmarkMutation.data;
-    const { sample_size, duration_weeks, dropout_rate } = protocolData;
-    
-    return [
-      {
-        name: 'Sample Size',
-        your: sample_size,
-        benchmark: avgSampleSize,
-        ratio: sample_size / avgSampleSize
-      },
-      {
-        name: 'Duration (weeks)',
-        your: duration_weeks,
-        benchmark: avgDuration,
-        ratio: duration_weeks / avgDuration
-      },
-      {
-        name: 'Dropout Rate (%)',
-        your: dropout_rate * 100,
-        benchmark: avgDropoutRate * 100,
-        ratio: dropout_rate / avgDropoutRate
-      }
-    ];
-  };
-
-  const getSimilarityBadge = (score: number) => {
-    if (score >= 85) {
-      return <Badge className="bg-green-100 text-green-800 hover:bg-green-200">High Match</Badge>;
-    } else if (score >= 70) {
-      return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">Good Match</Badge>;
-    } else if (score >= 50) {
-      return <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-200">Partial Match</Badge>;
-    } else {
-      return <Badge className="bg-red-100 text-red-800 hover:bg-red-200">Low Match</Badge>;
-    }
-  };
-
+  const similarTrials = benchmarkData.similarTrials || [];
+  const statistics = benchmarkData.statistics || {};
+  const insights = benchmarkData.insights || [];
+  
   return (
-    <Card className="mb-6">
+    <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Database className="w-5 h-5 text-primary" />
-          CSR Benchmark Comparison
+          <Database className="h-5 w-5 text-primary" />
+          CSR Benchmark Analysis
         </CardTitle>
-        <CardDescription>
-          Comparing your protocol against similar clinical study reports with known outcomes
+        <CardDescription className="flex items-center gap-2">
+          {similarTrials.length > 0 ? (
+            <span>Found {similarTrials.length} similar clinical study reports ({statistics.successRate?.toFixed(1)}% success rate)</span>
+          ) : (
+            <span>No similar clinical trials found</span>
+          )}
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        {benchmarkMutation.isPending ? (
-          <div className="flex items-center justify-center h-64">
-            <div className="flex flex-col items-center">
-              <Loader2 className="w-8 h-8 animate-spin text-primary mb-2" />
-              <p className="text-sm text-muted-foreground">Finding similar trials in our database...</p>
-            </div>
-          </div>
-        ) : benchmarkMutation.isError ? (
-          <div className="flex items-center justify-center h-64">
-            <div className="flex flex-col items-center text-destructive">
-              <AlertCircle className="w-8 h-8 mb-2" />
-              <p>Error finding benchmark data</p>
-              <p className="text-sm text-muted-foreground mt-1">Please check your protocol information and try again</p>
-            </div>
-          </div>
-        ) : benchmarkMutation.data ? (
-          <div className="space-y-6">
-            <div className="grid md:grid-cols-3 gap-4">
-              <div className="p-4 bg-slate-50 rounded-lg">
-                <h3 className="text-sm font-medium text-muted-foreground mb-1">Precedent Analysis</h3>
-                <div className="flex items-end mb-2">
-                  <div className="text-2xl font-bold">
-                    {benchmarkMutation.data.similarTrials?.length || 0}
-                  </div>
-                  <div className="text-sm text-muted-foreground ml-2 mb-1">similar trials</div>
-                </div>
-                <div className="mb-2 flex items-center">
-                  <span className="text-sm mr-2">Similarity Score:</span>
-                  {getSimilarityBadge(benchmarkMutation.data.similarityScore || 0)}
-                </div>
-                <Progress value={benchmarkMutation.data.similarityScore || 0} className="h-2" />
-              </div>
-
-              <div className="p-4 bg-slate-50 rounded-lg">
-                <h3 className="text-sm font-medium text-muted-foreground mb-1">Historical Success Rate</h3>
-                <div className="flex items-end mb-2">
-                  <div className="text-2xl font-bold">
-                    {formatPercent(benchmarkMutation.data.successRate || 0)}
-                  </div>
-                  <div className="text-sm text-muted-foreground ml-2 mb-1">success rate</div>
-                </div>
+      <CardContent className="space-y-6">
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card>
+            <CardHeader className="py-3">
+              <CardTitle className="text-sm">Similarity Score</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{benchmarkData.similarityScore || 0}%</div>
+              <p className="text-xs text-muted-foreground mt-1">Match with database</p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="py-3">
+              <CardTitle className="text-sm">Sample Size Comparison</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-baseline gap-2">
+                <div className="text-2xl font-bold">{protocolData.sample_size}</div>
                 <div className="text-sm text-muted-foreground">
-                  Based on trials with similar characteristics
+                  vs {statistics.avgSampleSize || 0} avg
                 </div>
               </div>
-
-              <div className="p-4 bg-slate-50 rounded-lg">
-                <h3 className="text-sm font-medium text-muted-foreground mb-1">Endpoint Precedent</h3>
-                <div className="flex items-center mb-2">
-                  <div className="text-2xl font-bold mr-2">
-                    {benchmarkMutation.data.endpointPrecedent ? 'Yes' : 'No'}
-                  </div>
-                  {benchmarkMutation.data.endpointPrecedent ? (
-                    <Badge className="bg-green-100 text-green-800 hover:bg-green-200">Found in Similar Trials</Badge>
-                  ) : (
-                    <Badge className="bg-red-100 text-red-800 hover:bg-red-200">Novel Endpoint</Badge>
-                  )}
-                </div>
+              <div className="flex items-center mt-1">
+                <Badge variant="outline" className={
+                  protocolData.sample_size > statistics.avgSampleSize ? "bg-green-100 text-green-800 hover:bg-green-100" : 
+                  protocolData.sample_size < statistics.avgSampleSize ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-100" :
+                  "bg-blue-100 text-blue-800 hover:bg-blue-100"
+                }>
+                  {protocolData.sample_size > statistics.avgSampleSize ? 
+                    `${((protocolData.sample_size / statistics.avgSampleSize - 1) * 100).toFixed(0)}% larger` : 
+                    protocolData.sample_size < statistics.avgSampleSize ? 
+                    `${((1 - protocolData.sample_size / statistics.avgSampleSize) * 100).toFixed(0)}% smaller` : 
+                    'Same size'}
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="py-3">
+              <CardTitle className="text-sm">Duration Comparison</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-baseline gap-2">
+                <div className="text-2xl font-bold">{protocolData.duration_weeks} wks</div>
                 <div className="text-sm text-muted-foreground">
-                  {benchmarkMutation.data.endpointPrecedent ? 
-                    `Found in ${benchmarkMutation.data.endpointCount || 'multiple'} similar trials` : 
-                    'Consider establishing endpoint validity'}
+                  vs {statistics.avgDuration || 0} avg
                 </div>
               </div>
-            </div>
-
-            {/* Key Metrics Comparison */}
-            <div>
-              <h3 className="text-sm font-semibold mb-3">Key Metrics Comparison</h3>
+              <div className="flex items-center mt-1">
+                <Badge variant="outline" className={
+                  protocolData.duration_weeks > statistics.avgDuration ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-100" : 
+                  protocolData.duration_weeks < statistics.avgDuration ? "bg-green-100 text-green-800 hover:bg-green-100" :
+                  "bg-blue-100 text-blue-800 hover:bg-blue-100"
+                }>
+                  {protocolData.duration_weeks > statistics.avgDuration ? 
+                    `${((protocolData.duration_weeks / statistics.avgDuration - 1) * 100).toFixed(0)}% longer` : 
+                    protocolData.duration_weeks < statistics.avgDuration ? 
+                    `${((1 - protocolData.duration_weeks / statistics.avgDuration) * 100).toFixed(0)}% shorter` : 
+                    'Same duration'}
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+        
+        <Separator />
+        
+        {/* Main Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+          <TabsList className="grid grid-cols-3 w-full">
+            <TabsTrigger value="similar" className="flex gap-2 items-center">
+              <Database className="h-4 w-4" />
+              Similar Trials
+            </TabsTrigger>
+            <TabsTrigger value="insights" className="flex gap-2 items-center">
+              <Info className="h-4 w-4" />
+              Key Insights
+            </TabsTrigger>
+            <TabsTrigger value="statistics" className="flex gap-2 items-center">
+              <BarChart className="h-4 w-4" />
+              Statistics
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="similar">
+            <div className="rounded-md border">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Metric</TableHead>
-                    <TableHead>Your Protocol</TableHead>
-                    <TableHead>Benchmark Average</TableHead>
-                    <TableHead>Comparison</TableHead>
-                    <TableHead>Recommendation</TableHead>
+                    <TableHead className="w-[180px]">Trial ID</TableHead>
+                    <TableHead>Phase</TableHead>
+                    <TableHead>Sample Size</TableHead>
+                    <TableHead>Duration</TableHead>
+                    <TableHead>Outcome</TableHead>
+                    <TableHead className="text-right">Similarity</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  <TableRow>
-                    <TableCell className="font-medium">Sample Size</TableCell>
-                    <TableCell>{protocolData.sample_size}</TableCell>
-                    <TableCell>{Math.round(benchmarkMutation.data.avgSampleSize || 0)}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center">
-                        {calculateDiff(
-                          protocolData.sample_size, 
-                          benchmarkMutation.data.avgSampleSize || 1
-                        ).icon}
-                        <span className={`ml-1 ${calculateDiff(
-                          protocolData.sample_size, 
-                          benchmarkMutation.data.avgSampleSize || 1
-                        ).color}`}>
-                          {calculateDiff(
-                            protocolData.sample_size, 
-                            benchmarkMutation.data.avgSampleSize || 1
-                          ).text}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {protocolData.sample_size < (benchmarkMutation.data.avgSampleSize * 0.8) ? (
-                        <span className="text-sm text-red-600">Consider increasing sample size</span>
-                      ) : protocolData.sample_size > (benchmarkMutation.data.avgSampleSize * 1.3) ? (
-                        <span className="text-sm text-amber-600">Consider optimizing sample size</span>
-                      ) : (
-                        <span className="text-sm text-green-600">Well aligned with benchmarks</span>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                  
-                  <TableRow>
-                    <TableCell className="font-medium">Duration (weeks)</TableCell>
-                    <TableCell>{protocolData.duration_weeks}</TableCell>
-                    <TableCell>{Math.round(benchmarkMutation.data.avgDuration || 0)}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center">
-                        {calculateDurationDiff(
-                          protocolData.duration_weeks, 
-                          benchmarkMutation.data.avgDuration || 1
-                        ).icon}
-                        <span className={`ml-1 ${calculateDurationDiff(
-                          protocolData.duration_weeks, 
-                          benchmarkMutation.data.avgDuration || 1
-                        ).color}`}>
-                          {calculateDurationDiff(
-                            protocolData.duration_weeks, 
-                            benchmarkMutation.data.avgDuration || 1
-                          ).text}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {protocolData.duration_weeks > (benchmarkMutation.data.avgDuration * 1.3) ? (
-                        <span className="text-sm text-red-600">Consider shortening trial duration</span>
-                      ) : protocolData.duration_weeks < (benchmarkMutation.data.avgDuration * 0.7) ? (
-                        <span className="text-sm text-amber-600">May be insufficient to capture outcomes</span>
-                      ) : (
-                        <span className="text-sm text-green-600">Well aligned with benchmarks</span>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                  
-                  <TableRow>
-                    <TableCell className="font-medium">Dropout Rate</TableCell>
-                    <TableCell>{formatPercent(protocolData.dropout_rate || 0)}</TableCell>
-                    <TableCell>{formatPercent(benchmarkMutation.data.avgDropoutRate || 0)}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center">
-                        {calculateDropoutDiff(
-                          protocolData.dropout_rate || 0, 
-                          benchmarkMutation.data.avgDropoutRate || 0.15
-                        ).icon}
-                        <span className={`ml-1 ${calculateDropoutDiff(
-                          protocolData.dropout_rate || 0, 
-                          benchmarkMutation.data.avgDropoutRate || 0.15
-                        ).color}`}>
-                          {calculateDropoutDiff(
-                            protocolData.dropout_rate || 0, 
-                            benchmarkMutation.data.avgDropoutRate || 0.15
-                          ).text}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {(protocolData.dropout_rate || 0) > (benchmarkMutation.data.avgDropoutRate * 1.2) ? (
-                        <span className="text-sm text-red-600">Consider strategies to reduce dropout</span>
-                      ) : (
-                        <span className="text-sm text-green-600">Well aligned with benchmarks</span>
-                      )}
-                    </TableCell>
-                  </TableRow>
+                  {similarTrials.length > 0 ? (
+                    similarTrials.map((trial: any, idx: number) => (
+                      <TableRow key={idx}>
+                        <TableCell className="font-medium">{trial.id || `CSR-${idx+1}`}</TableCell>
+                        <TableCell>{trial.phase}</TableCell>
+                        <TableCell>{trial.sampleSize}</TableCell>
+                        <TableCell>{trial.duration} weeks</TableCell>
+                        <TableCell>
+                          <Badge 
+                            variant={trial.outcome === 'success' ? 'default' : 'secondary'}
+                            className={trial.outcome === 'success' ? 'bg-green-100 text-green-800 hover:bg-green-100' : ''}
+                          >
+                            {trial.outcome === 'success' ? 'Success' : 'Failed'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">{trial.similarity}%</TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={6} className="h-24 text-center">
+                        No similar trials found
+                      </TableCell>
+                    </TableRow>
+                  )}
                 </TableBody>
               </Table>
             </div>
-
-            {/* Similar Trials Table */}
-            {benchmarkMutation.data.similarTrials && benchmarkMutation.data.similarTrials.length > 0 && (
+          </TabsContent>
+          
+          <TabsContent value="insights">
+            <div className="space-y-4">
+              {insights.length > 0 ? (
+                insights.map((insight: any, idx: number) => (
+                  <Alert key={idx}>
+                    <Info className="h-4 w-4" />
+                    <AlertDescription>
+                      <div className="font-medium">{insight.title}</div>
+                      <div className="text-sm mt-1 text-muted-foreground">{insight.description}</div>
+                    </AlertDescription>
+                  </Alert>
+                ))
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>No insights available for this protocol</p>
+                </div>
+              )}
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="statistics">
+            <div className="space-y-6">
               <div>
-                <h3 className="text-sm font-semibold mb-3">Similar Precedent Trials</h3>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Trial ID</TableHead>
-                      <TableHead>Title</TableHead>
-                      <TableHead>Sponsor</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Outcome</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {benchmarkMutation.data.similarTrials.map((trial: any, index: number) => (
-                      <TableRow key={index}>
-                        <TableCell className="font-medium">{trial.id}</TableCell>
-                        <TableCell>{trial.title}</TableCell>
-                        <TableCell>{trial.sponsor}</TableCell>
-                        <TableCell>{trial.date}</TableCell>
-                        <TableCell>
-                          {trial.outcome === 'Success' ? (
-                            <Badge className="bg-green-100 text-green-800 hover:bg-green-200">Success</Badge>
-                          ) : trial.outcome === 'Failure' ? (
-                            <Badge className="bg-red-100 text-red-800 hover:bg-red-200">Failure</Badge>
-                          ) : (
-                            <Badge className="bg-slate-100 text-slate-800 hover:bg-slate-200">Unknown</Badge>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button variant="link" size="sm" className="h-8 gap-1">
-                            View Insight
-                            <ExternalLink className="w-3 h-3" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                <h3 className="text-sm font-medium mb-3">Trial Statistics</h3>
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <div className="text-sm text-muted-foreground mb-1">Average Sample Size</div>
+                      <div className="text-lg font-semibold">{statistics.avgSampleSize || 0}</div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-muted-foreground mb-1">Average Duration (weeks)</div>
+                      <div className="text-lg font-semibold">{statistics.avgDuration || 0}</div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-muted-foreground mb-1">Success Rate</div>
+                      <div className="text-lg font-semibold">{statistics.successRate?.toFixed(1) || 0}%</div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-muted-foreground mb-1">Dropout Rate</div>
+                      <div className="text-lg font-semibold">{(statistics.dropoutRate * 100)?.toFixed(1) || 0}%</div>
+                    </div>
+                  </div>
+                </div>
               </div>
-            )}
-
-            {benchmarkMutation.data.similarityScore < 50 && (
-              <Alert className="bg-amber-50 text-amber-800 border-amber-200">
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Low Similarity Score</AlertTitle>
-                <AlertDescription>
-                  Your protocol has limited precedent in our database. Consider reviewing the design elements
-                  or consult with domain experts for this specific indication and phase.
-                </AlertDescription>
-              </Alert>
-            )}
-          </div>
-        ) : (
-          <div className="flex items-center justify-center h-64 text-muted-foreground">
-            <p>Upload or enter protocol data to generate benchmark comparison</p>
-          </div>
-        )}
+              
+              <Separator />
+              
+              <div>
+                <h3 className="text-sm font-medium mb-3">Endpoint Frequency</h3>
+                <div className="space-y-2">
+                  {(statistics.endpointFrequency || []).slice(0, 5).map((endpoint: any, idx: number) => (
+                    <div key={idx} className="flex justify-between items-center">
+                      <div className="text-sm">{endpoint.name}</div>
+                      <div className="text-sm font-medium">{endpoint.frequency}%</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <Separator />
+              
+              <div>
+                <h3 className="text-sm font-medium mb-3">Critical Success Factors</h3>
+                <div className="space-y-2">
+                  {(statistics.successFactors || []).slice(0, 3).map((factor: any, idx: number) => (
+                    <div key={idx}>
+                      <div className="font-medium">{factor.factor}</div>
+                      <div className="text-xs text-muted-foreground">{factor.description}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
       </CardContent>
     </Card>
   );
