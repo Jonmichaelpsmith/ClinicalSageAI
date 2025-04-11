@@ -50,7 +50,7 @@ export default function UseCaseLibrary() {
   const [currentTab, setCurrentTab] = useState('biotech');
   const { toast } = useToast();
 
-  const filteredUseCases = useCaseData.filter(useCase => {
+  const filteredUseCases = useCaseData.filter((useCase: UseCase) => {
     if (currentTab === 'all') return true;
     if (currentTab === 'biotech') return useCase.audience.toLowerCase().includes('biotech');
     if (currentTab === 'cro') return useCase.audience.toLowerCase().includes('cro');
@@ -99,7 +99,7 @@ export default function UseCaseLibrary() {
         
         {Object.keys(useCaseData).length > 0 ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-2">
-            {filteredUseCases.map((useCase) => (
+            {filteredUseCases.map((useCase: UseCase) => (
               <Card 
                 key={useCase.id} 
                 className="overflow-hidden border-l-4 border-l-blue-500 shadow-md hover:shadow-lg transition-shadow"
@@ -140,7 +140,7 @@ export default function UseCaseLibrary() {
                     </div>
                     
                     <div className="flex flex-wrap gap-1 mb-2">
-                      {useCase.trialSageSolution.modules.slice(0, 3).map((module, idx) => (
+                      {useCase.trialSageSolution.modules.slice(0, 3).map((module: string, idx: number) => (
                         <Badge key={idx} variant="secondary" className="bg-blue-50">
                           {module}
                         </Badge>
