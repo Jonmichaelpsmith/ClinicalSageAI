@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1794",
+  "title": "A Randomized Open-Label, Placebo-Controlled  Study of HTN-295 (ACE inhibitor) in Patients With Irritable Bowel Syndrome",
+  "officialTitle": "A Randomized Open-Label, Placebo-Controlled  Study of HTN-295 (ACE inhibitor) in Patients With Irritable Bowel Syndrome",
+  "sponsor": "Sunnybrook Research Institute",
+  "indication": "Irritable Bowel Syndrome",
+  "phase": "Phase 2",
+  "fileName": "HC-1794.json",
+  "fileSize": 365397,
+  "date": "2024-09-12",
+  "completionDate": "2028-04-28",
+  "drugName": "HTN-295 (ACE inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Withdrawn",
+  "description": "This is a randomized open-label, placebo-controlled  study designed to evaluate the efficacy and safety of HTN-295 (ACE inhibitor) in patients with Irritable Bowel Syndrome. The study will enroll approximately 139 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 20-67 years\n- Confirmed diagnosis of Irritable Bowel Syndrome\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}
