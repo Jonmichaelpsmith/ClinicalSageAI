@@ -1,216 +1,245 @@
 import { Request, Response } from 'express';
-import { spawn } from 'child_process';
+import { exec } from 'child_process';
 import path from 'path';
+import fs from 'fs';
+import { v4 as uuidv4 } from 'uuid';
 
 export function registerSmartProtocolRoutes(app: any) {
-  // CSR Benchmark API Endpoints
+  // Create necessary directories if they don't exist
+  const exportsDir = path.join(process.cwd(), 'data/exports');
+  if (!fs.existsSync(exportsDir)) {
+    fs.mkdirSync(exportsDir, { recursive: true });
+  }
+
+  // API endpoint to get CSR benchmark metrics
   app.get('/api/csr/benchmark', async (req: Request, res: Response) => {
     try {
       const { indication, phase } = req.query;
       
       if (!indication || !phase) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'Missing required parameters: indication and phase' 
+        return res.status(400).json({
+          success: false,
+          message: 'Missing required parameters: indication and phase are required'
         });
       }
+
+      // Run the Python benchmark script with the provided parameters
+      const pythonScript = exec(
+        `python3 -c "import csr_benchmark_api; csr_benchmark_api.get_benchmark_metrics('${indication}', '${phase}')"`,
+        { timeout: 60000 }
+      );
       
-      // Call the Python function using spawn
-      const python = spawn('python3', [
-        path.join(process.cwd(), 'server/csr_benchmark_api.py'),
-        '--action', 'get_metrics',
-        '--indication', indication.toString(),
-        '--phase', phase.toString()
-      ]);
+      let stdout = '';
+      let stderr = '';
       
-      let dataString = '';
-      
-      python.stdout.on('data', (data) => {
-        dataString += data.toString();
+      pythonScript.stdout?.on('data', (data: Buffer) => {
+        stdout += data.toString();
       });
       
-      python.stderr.on('data', (data) => {
-        console.error(`Python stderr: ${data}`);
+      pythonScript.stderr?.on('data', (data: Buffer) => {
+        stderr += data.toString();
       });
       
-      python.on('close', (code) => {
+      pythonScript.on('close', (code) => {
         if (code !== 0) {
-          return res.status(500).json({ 
-            success: false, 
-            message: 'Failed to get CSR benchmark metrics' 
+          console.error(`Python benchmark script exited with code ${code}`);
+          console.error(`stderr: ${stderr}`);
+          return res.status(500).json({
+            success: false,
+            message: 'Failed to run CSR benchmark analysis',
+            error: stderr
           });
         }
         
         try {
-          const metricsData = JSON.parse(dataString);
-          res.json(metricsData);
-        } catch (error) {
-          console.error('Error parsing Python output:', error);
-          res.status(500).json({ 
-            success: false, 
-            message: 'Error parsing metrics data' 
-          });
-        }
-      });
-    } catch (error) {
-      console.error('CSR benchmark error:', error);
-      res.status(500).json({ 
-        success: false, 
-        message: 'Internal server error' 
-      });
-    }
-  });
-  
-  // Smart Protocol Draft endpoint
-  app.post('/api/protocol/smart-draft', async (req: Request, res: Response) => {
-    try {
-      const { indication, phase, top_endpoints, sample_size, dropout } = req.body;
-      
-      if (!indication || !phase) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'Missing required parameters: indication and phase' 
-        });
-      }
-      
-      // Call the Python function using spawn
-      const python = spawn('python3', [
-        path.join(process.cwd(), 'server/csr_benchmark_api.py'),
-        '--action', 'generate_smart_protocol',
-        '--indication', indication.toString(),
-        '--phase', phase.toString(),
-        '--top_endpoints', JSON.stringify(top_endpoints || []),
-        '--sample_size', (sample_size || 0).toString(),
-        '--dropout', (dropout || 0).toString()
-      ]);
-      
-      let dataString = '';
-      
-      python.stdout.on('data', (data) => {
-        dataString += data.toString();
-      });
-      
-      python.stderr.on('data', (data) => {
-        console.error(`Python stderr: ${data}`);
-      });
-      
-      python.on('close', (code) => {
-        if (code !== 0) {
-          return res.status(500).json({ 
-            success: false, 
-            message: 'Failed to generate smart protocol draft' 
-          });
-        }
-        
-        try {
-          const draftData = JSON.parse(dataString);
-          res.json(draftData);
-        } catch (error) {
-          console.error('Error parsing Python output:', error);
-          res.status(500).json({ 
-            success: false, 
-            message: 'Error parsing protocol draft data' 
-          });
-        }
-      });
-    } catch (error) {
-      console.error('Smart protocol draft error:', error);
-      res.status(500).json({ 
-        success: false, 
-        message: 'Internal server error' 
-      });
-    }
-  });
-  
-  // Protocol Draft PDF Export
-  app.post('/api/protocol/export-smart-pdf', async (req: Request, res: Response) => {
-    try {
-      const { protocol_text, protocol_id = "Smart_Draft" } = req.body;
-      
-      if (!protocol_text) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'Missing required parameter: protocol_text' 
-        });
-      }
-      
-      const timestamp = Date.now();
-      const filename = `TrialSage_Protocol_Draft_${timestamp}.pdf`;
-      const outputPath = path.join(process.cwd(), 'data/exports', filename);
-      
-      // Create the PDF using Python's FPDF
-      const python = spawn('python3', ['-c', `
-from fpdf import FPDF
-import sys
-import json
-
-try:
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", "B", 14)
-    pdf.cell(0, 10, f"TrialSage Smart Protocol Draft – ${protocol_id}", ln=True, align="C")
-    pdf.ln(5)
-
-    pdf.set_font("Arial", "", 11)
-    protocol_text = """${protocol_text.replace(/"/g, '\\"')}"""
-    for line in protocol_text.split('\\n'):
-        pdf.multi_cell(0, 8, line)
-
-    pdf.output("${outputPath}")
-    print(json.dumps({"success": True}))
-except Exception as e:
-    print(json.dumps({"success": False, "error": str(e)}))
-      `]);
-      
-      let dataString = '';
-      
-      python.stdout.on('data', (data) => {
-        dataString += data.toString();
-      });
-      
-      python.stderr.on('data', (data) => {
-        console.error(`Python stderr: ${data}`);
-      });
-      
-      python.on('close', (code) => {
-        if (code !== 0) {
-          return res.status(500).json({ 
-            success: false, 
-            message: 'Failed to generate PDF' 
-          });
-        }
-        
-        try {
-          const result = JSON.parse(dataString);
-          if (!result.success) {
-            return res.status(500).json({
+          const result = JSON.parse(stdout);
+          
+          if (result.metrics && result.metrics.total_trials > 0) {
+            return res.json({
+              success: true,
+              message: `Found ${result.metrics.total_trials} matching trial(s)`,
+              metrics: result.metrics
+            });
+          } else {
+            return res.json({
               success: false,
-              message: `PDF generation failed: ${result.error}`
+              message: 'No matches found',
+              metrics: null
             });
           }
-          
-          res.json({
-            success: true,
-            download_url: `/download/${filename}`
-          });
         } catch (error) {
-          console.error('Error parsing Python output:', error);
-          res.status(500).json({ 
-            success: false, 
-            message: 'Error processing PDF generation result' 
+          console.error('Error parsing benchmark results:', error);
+          return res.status(500).json({
+            success: false,
+            message: 'Failed to parse benchmark results',
+            error: error.toString()
           });
         }
       });
     } catch (error) {
-      console.error('Protocol PDF export error:', error);
-      res.status(500).json({ 
-        success: false, 
-        message: 'Internal server error' 
+      console.error('Error in CSR benchmark endpoint:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error',
+        error: error.toString()
       });
     }
   });
-  
-  // Export Full Bundle (Protocol + Strategic + SAP)
+
+  // API endpoint to generate smart protocol draft
+  app.post('/api/protocol/smart-draft', async (req: Request, res: Response) => {
+    try {
+      const { 
+        indication, 
+        phase, 
+        top_endpoints, 
+        sample_size, 
+        dropout 
+      } = req.body;
+      
+      if (!indication || !phase) {
+        return res.status(400).json({
+          success: false,
+          message: 'Missing required parameters: indication and phase are required'
+        });
+      }
+
+      // Prepare CLI arguments as a JSON string to pass to the Python script
+      const args = JSON.stringify({
+        indication,
+        phase,
+        top_endpoints: top_endpoints || [],
+        sample_size: sample_size || 0,
+        dropout: dropout || 0
+      });
+      
+      // Run the Python protocol generation script
+      const pythonScript = exec(
+        `python3 -c "import csr_benchmark_api; csr_benchmark_api.generate_protocol_draft('${args.replace(/'/g, "\\'")}')"`,
+        { timeout: 120000 }
+      );
+      
+      let stdout = '';
+      let stderr = '';
+      
+      pythonScript.stdout?.on('data', (data: Buffer) => {
+        stdout += data.toString();
+      });
+      
+      pythonScript.stderr?.on('data', (data: Buffer) => {
+        stderr += data.toString();
+      });
+      
+      pythonScript.on('close', (code) => {
+        if (code !== 0) {
+          console.error(`Python protocol draft script exited with code ${code}`);
+          console.error(`stderr: ${stderr}`);
+          return res.status(500).json({
+            success: false,
+            message: 'Failed to generate smart protocol draft',
+            error: stderr
+          });
+        }
+        
+        try {
+          const result = JSON.parse(stdout);
+          
+          return res.json({
+            success: true,
+            protocol_draft: result.protocol_draft,
+            protocol_id: result.protocol_id
+          });
+        } catch (error) {
+          console.error('Error parsing protocol draft results:', error);
+          return res.status(500).json({
+            success: false,
+            message: 'Failed to parse protocol draft results',
+            error: error.toString()
+          });
+        }
+      });
+    } catch (error) {
+      console.error('Error in smart protocol draft endpoint:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error',
+        error: error.toString()
+      });
+    }
+  });
+
+  // API endpoint to export protocol draft as PDF
+  app.post('/api/protocol/export-smart-pdf', async (req: Request, res: Response) => {
+    try {
+      const { protocol_text, protocol_id } = req.body;
+      
+      if (!protocol_text) {
+        return res.status(400).json({
+          success: false,
+          message: 'Missing required parameter: protocol_text is required'
+        });
+      }
+
+      const filename = `protocol_${protocol_id || uuidv4()}_${Date.now()}.pdf`;
+      const outputPath = path.join(exportsDir, filename);
+      
+      // Write protocol text to a temporary file
+      const tempFilePath = path.join(process.cwd(), 'temp_protocol.txt');
+      fs.writeFileSync(tempFilePath, protocol_text);
+      
+      // Run the Python PDF generation script
+      const pythonScript = exec(
+        `python3 -c "import report_pdf_generator; report_pdf_generator.generate_protocol_pdf('${tempFilePath}', '${outputPath}')"`,
+        { timeout: 60000 }
+      );
+      
+      let stderr = '';
+      
+      pythonScript.stderr?.on('data', (data: Buffer) => {
+        stderr += data.toString();
+      });
+      
+      pythonScript.on('close', (code) => {
+        // Remove the temporary file
+        if (fs.existsSync(tempFilePath)) {
+          fs.unlinkSync(tempFilePath);
+        }
+        
+        if (code !== 0) {
+          console.error(`Python PDF generation script exited with code ${code}`);
+          console.error(`stderr: ${stderr}`);
+          return res.status(500).json({
+            success: false,
+            message: 'Failed to generate PDF',
+            error: stderr
+          });
+        }
+        
+        // Check if the PDF was created
+        if (fs.existsSync(outputPath)) {
+          return res.json({
+            success: true,
+            message: 'PDF generated successfully',
+            download_url: `/download/${filename}`
+          });
+        } else {
+          return res.status(500).json({
+            success: false,
+            message: 'PDF file was not created'
+          });
+        }
+      });
+    } catch (error) {
+      console.error('Error in protocol PDF export endpoint:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error',
+        error: error.toString()
+      });
+    }
+  });
+
+  // API endpoint to export full bundle (Protocol + Strategic + SAP)
   app.post('/api/export/full-bundle', async (req: Request, res: Response) => {
     try {
       const { 
@@ -218,64 +247,79 @@ except Exception as e:
         phase, 
         protocol_draft, 
         strategic_summary, 
-        sap_section 
+        sap_section
       } = req.body;
       
-      if (!indication || !phase || !protocol_draft || !strategic_summary || !sap_section) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'Missing required parameters for bundle export' 
+      if (!protocol_draft || !strategic_summary || !sap_section) {
+        return res.status(400).json({
+          success: false,
+          message: 'Missing required parameters: all three document components are required'
         });
       }
+
+      const bundleId = uuidv4();
+      const filename = `protocol_bundle_${indication.replace(/\s+/g, '_')}_${phase.replace(/\s+/g, '_')}_${bundleId}.pdf`;
+      const outputPath = path.join(exportsDir, filename);
       
-      // Call the Python function using spawn
-      const python = spawn('python3', [
-        path.join(process.cwd(), 'server/csr_benchmark_api.py'),
-        '--action', 'generate_bundle',
-        '--indication', indication.toString(),
-        '--phase', phase.toString(),
-        '--protocol_draft', protocol_draft.toString(),
-        '--strategic_summary', strategic_summary.toString(),
-        '--sap_section', sap_section.toString()
-      ]);
+      // Create temporary files for each component
+      const protocolFilePath = path.join(process.cwd(), `temp_protocol_${bundleId}.txt`);
+      const strategicFilePath = path.join(process.cwd(), `temp_strategic_${bundleId}.txt`);
+      const sapFilePath = path.join(process.cwd(), `temp_sap_${bundleId}.txt`);
       
-      let dataString = '';
+      fs.writeFileSync(protocolFilePath, protocol_draft);
+      fs.writeFileSync(strategicFilePath, strategic_summary);
+      fs.writeFileSync(sapFilePath, sap_section);
       
-      python.stdout.on('data', (data) => {
-        dataString += data.toString();
+      // Run the Python bundle generation script
+      const pythonScript = exec(
+        `python3 -c "import report_pdf_generator; report_pdf_generator.generate_full_bundle('${protocolFilePath}', '${strategicFilePath}', '${sapFilePath}', '${outputPath}', '${indication}', '${phase}')"`,
+        { timeout: 120000 }
+      );
+      
+      let stderr = '';
+      
+      pythonScript.stderr?.on('data', (data: Buffer) => {
+        stderr += data.toString();
       });
       
-      python.stderr.on('data', (data) => {
-        console.error(`Python stderr: ${data}`);
-      });
-      
-      python.on('close', (code) => {
+      pythonScript.on('close', (code) => {
+        // Clean up temporary files
+        [protocolFilePath, strategicFilePath, sapFilePath].forEach(tempFile => {
+          if (fs.existsSync(tempFile)) {
+            fs.unlinkSync(tempFile);
+          }
+        });
+        
         if (code !== 0) {
-          return res.status(500).json({ 
-            success: false, 
-            message: 'Failed to generate bundle export' 
+          console.error(`Python bundle generation script exited with code ${code}`);
+          console.error(`stderr: ${stderr}`);
+          return res.status(500).json({
+            success: false,
+            message: 'Failed to generate bundle PDF',
+            error: stderr
           });
         }
         
-        try {
-          const bundleData = JSON.parse(dataString);
-          res.json({
+        // Check if the PDF was created
+        if (fs.existsSync(outputPath)) {
+          return res.json({
             success: true,
-            ...bundleData
+            message: 'Bundle PDF generated successfully',
+            pdf_url: `/download/${filename}`
           });
-        } catch (error) {
-          console.error('Error parsing Python output:', error);
-          res.status(500).json({ 
-            success: false, 
-            message: 'Error parsing bundle export result' 
+        } else {
+          return res.status(500).json({
+            success: false,
+            message: 'Bundle PDF file was not created'
           });
         }
       });
     } catch (error) {
-      console.error('Bundle export error:', error);
-      res.status(500).json({ 
-        success: false, 
-        message: 'Internal server error' 
+      console.error('Error in bundle export endpoint:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error',
+        error: error.toString()
       });
     }
   });

@@ -264,6 +264,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     fs.mkdirSync(processedCsrsDir, { recursive: true });
   }
   
+  // Register Smart Protocol routes
+  registerSmartProtocolRoutes(app);
+  
   // Get notification logs
   app.get('/api/notifications/logs', async (_req: Request, res: Response) => {
     try {
