@@ -10,7 +10,8 @@ import path from 'path';
 import { db } from './db';
 import { csrReports, csrDetails } from '../shared/schema';
 import { sql } from 'drizzle-orm';
-import { queryHuggingFace, generateEmbeddings, trainCustomModel } from './huggingface-service';
+import { queryHuggingFace, trainCustomModel } from './huggingface-service';
+import { huggingFaceService } from './huggingface-service';
 
 // Export service functions as a single object
 export const csrTrainingService = {
