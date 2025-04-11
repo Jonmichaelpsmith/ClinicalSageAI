@@ -38,6 +38,7 @@ import AdminNotifications from "@/pages/AdminNotifications";
 import StrategicIntelligenceTest from "@/pages/StrategicIntelligenceTest";
 import SmartProtocolPage from "@/pages/SmartProtocolPage";
 import TrialPredictorPage from "@/pages/TrialPredictorPage";
+import DossierViewerPage from "@/pages/DossierViewerPage";
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -140,6 +141,7 @@ function Router() {
       <Route path="/strategic-intelligence">{() => renderWithLayout(StrategicIntelligenceTest)}</Route>
       <Route path="/smart-protocol">{() => renderWithLayout(SmartProtocolPage)}</Route>
       <Route path="/trial-predictor">{() => renderWithLayout(TrialPredictorPage)}</Route>
+      <Route path="/dossier">{() => renderWithLayout(DossierViewerPage)}</Route>
 
       {/* Fallback to 404 */}
       <Route>{() => renderWithLayout(NotFound)}</Route>

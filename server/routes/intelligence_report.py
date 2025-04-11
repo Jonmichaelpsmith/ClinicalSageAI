@@ -49,15 +49,16 @@ def export_intelligence_report(
         return {"error": str(e), "message": "Failed to generate report"}
 
 @router.post("/api/dossier/save-intelligence-report")
-def save_to_dossier(protocol_id: str = Body(...), report_data: dict = Body(...)):
+def save_to_dossier(protocol_id: str = Body(...), report_data: dict = Body(...), username: str = Body("default")):
     """
-    Save protocol intelligence report data to dossier
+    Save protocol intelligence report data to dossier with user-specific access
     """
     timestamp = datetime.utcnow().isoformat()
     dossier_path = "data/dossiers"
     os.makedirs(dossier_path, exist_ok=True)
     
-    path = f"{dossier_path}/{protocol_id}_dossier.json"
+    # Include username in filename for per-user dossiers
+    path = f"{dossier_path}/{username}_{protocol_id}_dossier.json"
 
     try:
         # Load existing or create new
@@ -65,7 +66,7 @@ def save_to_dossier(protocol_id: str = Body(...), report_data: dict = Body(...))
             with open(path, "r", encoding="utf-8") as f:
                 dossier = json.load(f)
         else:
-            dossier = {"protocol_id": protocol_id, "reports": []}
+            dossier = {"protocol_id": protocol_id, "username": username, "reports": []}
 
         # Add the new report with timestamp
         dossier["reports"].append({
@@ -82,13 +83,13 @@ def save_to_dossier(protocol_id: str = Body(...), report_data: dict = Body(...))
     except Exception as e:
         return {"error": str(e), "message": "Failed to save to dossier"}
 
-@router.get("/api/dossier/view/{protocol_id}")
-def view_dossier(protocol_id: str):
+@router.get("/api/dossier/view/{username}/{protocol_id}")
+def view_dossier(username: str, protocol_id: str):
     """
-    Retrieve all intelligence reports for a specific protocol ID
+    Retrieve all intelligence reports for a specific protocol ID and user
     """
     dossier_path = "data/dossiers"
-    path = f"{dossier_path}/{protocol_id}_dossier.json"
+    path = f"{dossier_path}/{username}_{protocol_id}_dossier.json"
     
     if not os.path.exists(path):
         return {"message": "No dossier found for this protocol", "reports": []}
@@ -97,7 +98,7 @@ def view_dossier(protocol_id: str):
         with open(path, "r", encoding="utf-8") as f:
             dossier = json.load(f)
         
-        return {"protocol_id": protocol_id, "reports": dossier["reports"]}
+        return {"protocol_id": protocol_id, "username": username, "reports": dossier["reports"]}
     
     except Exception as e:
         return {"error": str(e), "message": "Failed to load dossier"}

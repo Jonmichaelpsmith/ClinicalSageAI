@@ -1,0 +1,92 @@
+Let’s finish this like a product — we’ll now implement:
+
+📄 One-click PDF export from the Dossier Viewer
+
+🔐 Per-user dossier access based on login sessions
+
+🔁 PART 1: PDF Export Button from DossierViewer
+🔧 Update in DossierViewer.tsx
+Replace the inline alert with an actual fetch:
+
+tsx
+Copy
+Edit
+<p className="text-blue-600 underline cursor-pointer"
+   onClick={async () => {
+     const res = await fetch('/api/export/intelligence-report', {
+       method: 'POST',
+       headers: { 'Content-Type': 'application/json' },
+       body: JSON.stringify({
+         protocol_id: protocolId,
+         parsed: r.data.parsed,
+         prediction: r.data.prediction,
+         benchmarks: r.data.benchmarks
+       })
+     });
+     const { download_url } = await res.json();
+     window.open(download_url, '_blank');
+   }}>
+   📄 Export Full Report (PDF)
+</p>
+✅ Users can now re-export any saved report directly from their dossier view.
+
+🔐 PART 2: Per-User Dossier Access
+✅ Backend Adjustments
+Update /api/dossier/save-intelligence-report to support session auth or username:
+
+python
+Copy
+Edit
+@router.post("/api/dossier/save-intelligence-report")
+def save_to_dossier(protocol_id: str = Body(...), report_data: dict = Body(...), username: str = Body("default")):
+    path = f"data/dossiers/{username}_{protocol_id}_dossier.json"
+    ...
+Update /api/dossier/view/{protocol_id} to:
+
+python
+Copy
+Edit
+@router.get("/api/dossier/view/{username}/{protocol_id}")
+def view_dossier(username: str, protocol_id: str):
+    path = f"data/dossiers/{username}_{protocol_id}_dossier.json"
+    ...
+✅ Frontend Dossier Viewer Update
+Add user awareness:
+
+tsx
+Copy
+Edit
+const [username, setUsername] = useState('biotech_user1'); // from session/token in real app
+...
+const res = await fetch(`/api/dossier/view/${username}/${protocolId}`);
+✅ You now have:
+
+🔒 User-specific protocol storage
+
+🧠 Persistent versioned intelligence history
+
+📄 Re-exportable protocol intelligence reports
+
+Would you like to next:
+
+Create a real login + auth layer (JWT or Supabase)?
+
+Or enable per-user alerts when new analytics are ready?
+
+
+
+
+
+
+
+
+
+
+
+Search
+
+Deep research
+
+
+
+Ch
