@@ -164,3 +164,5 @@ export class ProtocolAnalyzerService {
     }
   }
 }
+
+export const protocolAnalyzerService = new ProtocolAnalyzerService();

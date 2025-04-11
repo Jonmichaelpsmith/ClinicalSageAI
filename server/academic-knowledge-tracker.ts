@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { db } from './db';
-import { huggingFaceService, generateEmbeddings } from './huggingface-service';
+import { huggingFaceService } from './huggingface-service';
 import { academicResources, academicEmbeddings } from '@shared/schema';
 import { eq, and, like, or, sql } from 'drizzle-orm';
 
