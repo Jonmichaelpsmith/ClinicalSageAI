@@ -1,0 +1,82 @@
+# Generate new Trial Success Predictor Report v2 (all intelligence layers)
+
+from fpdf import FPDF
+import time
+
+# Input data (final combined snapshot for demo/test)
+protocol_id = "TS-4980"
+parsed = {
+    "phase": "Phase 2",
+    "sample_size": 200,
+    "duration_weeks": 52,
+    "dropout_rate": 0.15,
+    "endpoint_primary": "BMI reduction >=5%",
+    "indication": "Obesity"
+}
+prediction = 0.734
+benchmarks = {
+    "avg_sample_size": 260,
+    "avg_duration_weeks": 26,
+    "avg_dropout_rate": 0.18,
+    "total_trials": 72
+}
+flags = {
+    "sample_size_flag": True,
+    "dropout_flag": True,
+    "duration_flag": True
+}
+
+def clean(text):
+    return text.replace("–", "-").replace("’", "'").replace("≥", ">=").replace("•", "-")
+
+class ReportPDF(FPDF):
+    def header(self):
+        self.set_font("Arial", "B", 14)
+        self.cell(0, 10, f"Trial Intelligence Report – {protocol_id}", ln=True, align="C")
+        self.ln(5)
+
+    def section(self, title, content):
+        self.set_font("Arial", "B", 12)
+        self.cell(0, 10, clean(title), ln=True)
+        self.ln(1)
+        self.set_font("Arial", "", 11)
+        self.multi_cell(0, 8, clean(content))
+        self.ln(2)
+
+pdf = ReportPDF()
+pdf.add_page()
+
+pdf.section("Protocol Summary", f"""
+- Indication: {parsed['indication']}
+- Phase: {parsed['phase']}
+- Sample Size: {parsed['sample_size']}
+- Duration: {parsed['duration_weeks']} weeks
+- Dropout Rate: {parsed['dropout_rate'] * 100:.1f}%
+- Primary Endpoint: {parsed['endpoint_primary']}
+""")
+
+pdf.section("Predicted Trial Success", f"{round(prediction * 100, 1)}%")
+
+pdf.section("CSR Benchmark Comparison", f"""
+Benchmarked against {benchmarks['total_trials']} prior trials:
+- Median Sample Size: {benchmarks['avg_sample_size']}
+- Median Duration: {benchmarks['avg_duration_weeks']} weeks
+- Median Dropout Rate: {benchmarks['avg_dropout_rate'] * 100:.1f}%
+""")
+
+pdf.section("Risk Flags", f"""
+{"⚠️ Sample size below benchmark." if flags["sample_size_flag"] else "✅ Sample size acceptable."}
+{"⚠️ Dropout rate appears optimistic." if flags["dropout_flag"] else "✅ Dropout rate in range."}
+{"⚠️ Trial duration is longer than typical." if flags["duration_flag"] else "✅ Duration is within benchmark."}
+""")
+
+pdf.section("Strategic Suggestions", f"""
+- Increase sample size closer to 260 per arm.
+- Consider adjusting duration to match 24-28w standards.
+- Align endpoint definitions with EMA precedent to reduce risk.
+""")
+
+pdf_path = f"/mnt/data/Trial_Intelligence_Report_v2_{int(time.time())}.pdf"
+pdf.output(pdf_path)
+
+pdf_path

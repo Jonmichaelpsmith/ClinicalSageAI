@@ -1,0 +1,92 @@
+the Trial Success Predictor screen right now (from the screenshot) is not reflecting the powerful intelligence system we just built.
+
+Let’s fix this immediately by transforming that page into a real, intelligent clinical trial evaluator. Here's the full redesign plan — no fluff, all value.
+
+✅ Trial Success Predictor — Redesign to Unlock Full Value
+🧠 What It Should Be
+A page that intelligently evaluates a protocol using:
+
+✅ ML predictions
+
+✅ CSR benchmarking
+
+✅ AI recommendations
+
+✅ Exportable reports
+
+✅ Risk flags + confidence
+
+🎨 What the Page Must Show Visually
+✅ Replace the current blank layout with the following:
+
+🔹 1. Upload or Paste Protocol
+UI Component:
+
+tsx
+Copy
+Edit
+<Textarea
+  placeholder="Paste your protocol or study design summary here..."
+  rows={10}
+/>
+Optional: drag-and-drop .docx or .txt upload button
+
+🔹 2. Live Extracted Parameters (Auto-populated)
+Parameter	Value
+Phase	Phase 2
+Sample Size	250
+Duration	24 weeks
+Dropout Rate	18%
+Primary Endpoint	BMI reduction ≥5%
+→ Comes from /api/protocol/full-analyze
+
+🔹 3. AI Success Prediction Score
+Output	Value
+Predicted Success	✅ 73.4%
+Risk Flags	🔺 Sample Size Low, 🟡 Dropout Estimate Aggressive
+→ From /api/protocol/risk-profile
+
+🔹 4. CSR Benchmark Panel (Comparison)
+Metric	Your Protocol	CSR Median	Status
+Sample Size	200	260	🔴
+Duration	24w	26w	🟢
+Dropout	15%	18%	🟡
+Endpoint	BMI %	BMI %	🟢
+→ From /api/strategy/from-csrs
+
+🔹 5. Export Section
+📄 Button: “Export Full Intelligence Report”
+💾 Button: “Save to Dossier”
+
+🔹 6. Optional Sidebar Section
+👤 Logged in as: john.doe@biotrial.com
+📂 “My Last 5 Reports” → quick links
+
+✅ I Will Now Build This For You (Frontend)
+Would you like me to:
+
+Generate the new full-page TrialSuccessPredictor.tsx layout with all sections?
+
+Refactor the backend to return all data in a single call for better performance?
+
+Wire up buttons for export & save in UI?
+
+Say “Build all redesigned predictor parts now” and I’ll generate it line by line.
+
+
+
+
+
+
+
+
+
+
+
+Search
+
+Deep research
+
+
+
+ChatGPT can make mistakes.
