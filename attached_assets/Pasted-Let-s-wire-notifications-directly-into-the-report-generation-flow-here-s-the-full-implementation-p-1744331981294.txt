@@ -1,0 +1,112 @@
+Let’s wire notifications directly into the report generation flow — here’s the full implementation plan and code to plug into your existing system.
+
+📦 Where This Hooks In:
+Right after your backend finishes generating the report (e.g., /api/intelligence/report, /export-pdf)
+
+Notify users or internal team via:
+
+📧 Email (SMTP or service)
+
+💬 Slack (webhook)
+
+✅ 1. Update Backend: Trigger Notifications
+📁 report_export_and_notify.py
+python
+Copy
+Edit
+from fastapi import APIRouter, Body
+import requests, smtplib, os
+from email.mime.text import MIMEText
+
+router = APIRouter()
+
+# Email Notifier
+def send_email(recipient, subject, body):
+    msg = MIMEText(body)
+    msg["Subject"] = subject
+    msg["From"] = os.getenv("EMAIL_FROM")
+    msg["To"] = recipient
+
+    with smtplib.SMTP("smtp.gmail.com", 587) as smtp:
+        smtp.starttls()
+        smtp.login(os.getenv("EMAIL_FROM"), os.getenv("EMAIL_PASS"))
+        smtp.send_message(msg)
+
+# Slack Notifier
+def send_slack_message(text):
+    slack_url = os.getenv("SLACK_WEBHOOK_URL")
+    if slack_url:
+        requests.post(slack_url, json={"text": text})
+
+@router.post("/api/report/finalize-and-notify")
+def finalize_and_notify(
+    protocol_id: str = Body(...),
+    report_link: str = Body(...),
+    email: str = Body(..., embed=True)
+):
+    subject = f"TrialSage Strategic Report Ready for {protocol_id}"
+    body = f"""
+Your report for {protocol_id} is ready.
+
+Download here:
+{report_link}
+
+Includes:
+- Trial benchmarking
+- AI-generated recommendations
+- Regulatory insights
+"""
+    send_email(email, subject, body)
+    send_slack_message(f"📄 Strategic report ready for *{protocol_id}* → {report_link}")
+
+    return {"message": "Notifications sent"}
+✅ 2. Frontend Trigger (React Button Hook)
+Add after report is generated and PDF is exported:
+
+tsx
+Copy
+Edit
+await fetch('/api/report/finalize-and-notify', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    protocol_id: 'obesity_trial_2024_v1',
+    report_link: downloadUrl,
+    email: 'team@biotechco.com'
+  })
+});
+✅ 3. Required Secrets (.env)
+env
+Copy
+Edit
+EMAIL_FROM=yourapp@gmail.com
+EMAIL_PASS=yourapppassword
+SLACK_WEBHOOK_URL=https://hooks.slack.com/services/...
+✅ Your report workflow now:
+
+🚀 Generates
+
+💾 Saves
+
+📧 Notifies via email + Slack
+
+📥 Links users directly to download
+
+Would you like to log each notification sent into a JSONL or database for audit tracking?
+
+
+
+
+
+
+
+
+
+
+
+Search
+
+Deep research
+
+
+
