@@ -29,6 +29,7 @@ import { getEndpointRecommenderService } from "./services/endpoint-recommender-s
 import { notificationService } from "./notification-service";
 import { strategicIntelligenceService } from "./strategic-intelligence-service";
 import strategicReportRoutes from "./strategic-report-routes";
+import { trialPredictorService } from "./trial-predictor-service";
 import { 
   fetchClinicalTrialData, 
   importTrialsFromCsv, 
@@ -277,6 +278,103 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register Strategic Report routes
   app.use('/api/strategic-reports', strategicReportRoutes);
+  
+  // Trial Success Prediction endpoint
+  app.post('/api/trial-prediction', async (req: Request, res: Response) => {
+    try {
+      // Validate request body
+      const { sample_size, duration_weeks, dropout_rate, indication, phase, primary_endpoints, control_arm, blinding } = req.body;
+      
+      if (sample_size === undefined || duration_weeks === undefined || dropout_rate === undefined) {
+        return res.status(400).json({
+          success: false,
+          message: 'Required parameters missing: sample_size, duration_weeks, and dropout_rate are required'
+        });
+      }
+      
+      // Check if model exists
+      if (!trialPredictorService.modelExists()) {
+        return res.status(500).json({
+          success: false,
+          message: 'Trial prediction model not available'
+        });
+      }
+      
+      // Prepare trial data
+      const trialData = {
+        sample_size: parseFloat(sample_size),
+        duration_weeks: parseFloat(duration_weeks),
+        dropout_rate: parseFloat(dropout_rate),
+        indication,
+        phase,
+        primary_endpoints: primary_endpoints ? (Array.isArray(primary_endpoints) ? primary_endpoints : [primary_endpoints]) : undefined,
+        control_arm,
+        blinding
+      };
+      
+      // Get prediction
+      const prediction = await trialPredictorService.predictTrialSuccess(trialData);
+      
+      // Add log entry
+      notificationService.addNotification({
+        type: 'prediction',
+        message: `Trial success prediction for ${indication || 'unknown indication'} (${phase || 'unknown phase'})`,
+        timestamp: new Date().toISOString(),
+        details: {
+          result: prediction.prediction ? 'Success' : 'Failure',
+          probability: prediction.success_probability,
+          confidence: prediction.confidence
+        }
+      });
+      
+      res.json({
+        success: true,
+        prediction: {
+          ...prediction,
+          trial_parameters: {
+            sample_size: trialData.sample_size,
+            duration_weeks: trialData.duration_weeks,
+            dropout_rate: trialData.dropout_rate,
+            indication: trialData.indication || 'Not specified',
+            phase: trialData.phase || 'Not specified'
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Error in trial prediction:', error);
+      res.status(500).json({
+        success: false,
+        message: error instanceof Error ? error.message : 'An unexpected error occurred during trial prediction'
+      });
+    }
+  });
+  
+  // Get feature importance for trial success prediction
+  app.get('/api/trial-prediction/factors', async (_req: Request, res: Response) => {
+    try {
+      // Check if model exists
+      if (!trialPredictorService.modelExists()) {
+        return res.status(500).json({
+          success: false,
+          message: 'Trial prediction model not available'
+        });
+      }
+      
+      // Get feature importance
+      const featureImportance = await trialPredictorService.getFeatureImportance();
+      
+      res.json({
+        success: true,
+        factors: featureImportance
+      });
+    } catch (error) {
+      console.error('Error getting feature importance:', error);
+      res.status(500).json({
+        success: false,
+        message: error instanceof Error ? error.message : 'An unexpected error occurred'
+      });
+    }
+  });
   
   // Get notification logs
   app.get('/api/notifications/logs', async (_req: Request, res: Response) => {

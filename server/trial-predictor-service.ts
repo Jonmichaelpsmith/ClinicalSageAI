@@ -1,6 +1,6 @@
 /**
  * Trial Predictor Service
- * Integrates the scikit-learn model for predicting trial success
+ * Integrates the simplified scikit-learn RandomForest model for predicting trial success
  */
 import { spawn } from 'child_process';
 import path from 'path';
@@ -10,28 +10,26 @@ interface PredictionResult {
   success_probability: number;
   prediction: boolean;
   confidence: number;
+  key_factors: Record<string, number>;
 }
 
 interface TrialData {
-  phase: string;
-  indication: string;
   sample_size: number;
   duration_weeks: number;
-  has_placebo_arm?: boolean; 
-  endpoint_count?: number;
-  dropout_rate?: number;
+  dropout_rate: number;
+  // Additional data for context but not used in prediction
+  indication?: string;
+  phase?: string;
+  primary_endpoints?: string[];
+  control_arm?: string;
   blinding?: string;
-  control_type?: string;
-  endpoint_primary?: string;
 }
 
 export class TrialPredictorService {
   private modelPath: string;
-  private predictionScriptPath: string;
 
   constructor() {
-    this.modelPath = path.join(process.cwd(), 'models', 'trial_success_model.pkl');
-    this.predictionScriptPath = path.join(process.cwd(), 'models', 'predict_success.py');
+    this.modelPath = path.join(process.cwd(), 'models', 'trial_success_rf.pkl');
   }
 
   /**
@@ -42,16 +40,20 @@ export class TrialPredictorService {
   }
 
   /**
-   * Predict trial success probability using the scikit-learn model
+   * Predict trial success probability using the scikit-learn RandomForest model
    * 
-   * @param trialData Trial parameters
+   * @param trialData Trial parameters (only sample_size, duration_weeks, and dropout_rate are used)
    * @returns Promise with prediction result
    */
   public async predictTrialSuccess(trialData: TrialData): Promise<PredictionResult> {
     return new Promise((resolve, reject) => {
-      // Create a temporary input file
+      // Create a temporary input file with just the needed features
       const tempInput = path.join(process.cwd(), 'models', `temp_input_${Date.now()}.json`);
-      fs.writeFileSync(tempInput, JSON.stringify(trialData));
+      fs.writeFileSync(tempInput, JSON.stringify({
+        sample_size: trialData.sample_size,
+        duration_weeks: trialData.duration_weeks,
+        dropout_rate: trialData.dropout_rate
+      }));
 
       // Run the Python prediction script
       const pythonProcess = spawn('python', [
@@ -61,40 +63,47 @@ import sys
 import json
 import pickle
 import pandas as pd
-
-# Load the model
-try:
-    with open('${this.modelPath}', 'rb') as f:
-        model = pickle.load(f)
-except Exception as e:
-    print(json.dumps({'error': f'Failed to load model: {str(e)}'}))
-    sys.exit(1)
+import numpy as np
 
 # Load input data
 try:
     with open('${tempInput}', 'r') as f:
         trial_data = json.load(f)
+        
+    # Load the model
+    with open('${this.modelPath}', 'rb') as f:
+        model = pickle.load(f)
     
-    # Convert to DataFrame
-    trial_df = pd.DataFrame([trial_data])
+    # Create input dataframe
+    X = pd.DataFrame({
+        "sample_size": [trial_data["sample_size"]],
+        "duration_weeks": [trial_data["duration_weeks"]],
+        "dropout_rate": [trial_data["dropout_rate"]]
+    })
     
     # Make prediction
-    success_prob = float(model.predict_proba(trial_df)[0][1])
-    prediction = bool(model.predict(trial_df)[0])
+    success_probability = float(model.predict_proba(X)[0][1])
+    prediction = bool(model.predict(X)[0])
     
     # Calculate confidence (distance from 0.5, scaled to 0-1)
-    confidence = abs(success_prob - 0.5) * 2
+    confidence = abs(success_probability - 0.5) * 2
+    
+    # Calculate feature impacts
+    feature_impacts = {}
+    for i, feature in enumerate(["sample_size", "duration_weeks", "dropout_rate"]):
+        feature_impacts[feature] = float(model.feature_importances_[i])
     
     # Return result
     result = {
-        'success_probability': success_prob,
-        'prediction': prediction,
-        'confidence': confidence
+        "success_probability": success_probability,
+        "prediction": prediction,
+        "confidence": confidence,
+        "key_factors": feature_impacts
     }
     
     print(json.dumps(result))
 except Exception as e:
-    print(json.dumps({'error': f'Prediction failed: {str(e)}'}))
+    print(json.dumps({"error": str(e)}))
     sys.exit(1)
 finally:
     import os
@@ -139,9 +148,7 @@ finally:
             resolve(result as PredictionResult);
           }
         } catch (e) {
-          console.error('Failed to parse prediction result:', e);
-          console.error('Output was:', output);
-          reject(new Error(`Failed to parse prediction result: ${e.message}`));
+          reject(new Error(`Failed to parse prediction result: ${e}`));
         }
       });
     });
@@ -149,7 +156,6 @@ finally:
 
   /**
    * Get feature importance from the model
-   * Returns top factors that influence trial success
    */
   public async getFeatureImportance(): Promise<{feature: string, importance: number}[]> {
     return new Promise((resolve, reject) => {
@@ -165,47 +171,20 @@ try:
         model = pickle.load(f)
     
     # Get feature importances
-    if hasattr(model[-1], 'feature_importances_'):
-        importances = model[-1].feature_importances_
-        
-        # Get feature names
-        feature_names = []
-        try:
-            # Attempt to extract feature names from pipeline
-            # This won't work for all models
-            numeric_features = model[0].transformers_[0][2]
-            categorical_features = model[0].transformers_[1][2]
-            
-            # Get categorical feature names after one-hot encoding
-            ohe_features = []
-            if len(categorical_features) > 0:
-                try:
-                    ohe_features = model[0].transformers_[1][1]['onehot'].get_feature_names_out(categorical_features)
-                except:
-                    pass
-                    
-            # Combine numeric and OHE feature names
-            feature_names = list(numeric_features) + list(ohe_features)
-        except:
-            # Fallback to index numbers if names can't be extracted
-            feature_names = [f"feature_{i}" for i in range(len(importances))]
-            
-        # Create feature importance list
-        if len(feature_names) == len(importances):
-            feature_importance = [
-                {"feature": feature_names[i], "importance": float(importances[i])}
-                for i in range(len(feature_names))
-            ]
-            
-            # Sort by importance
-            feature_importance.sort(key=lambda x: x["importance"], reverse=True)
-            
-            # Return top factors
-            print(json.dumps(feature_importance[:10]))
-        else:
-            print(json.dumps({"error": "Feature names and importances length mismatch"}))
-    else:
-        print(json.dumps({"error": "Model doesn't have feature_importances_ attribute"}))
+    feature_names = ["sample_size", "duration_weeks", "dropout_rate"]
+    importances = model.feature_importances_
+    
+    # Create feature importance list
+    feature_importance = [
+        {"feature": feature_names[i], "importance": float(importances[i])}
+        for i in range(len(feature_names))
+    ]
+    
+    # Sort by importance
+    feature_importance.sort(key=lambda x: x["importance"], reverse=True)
+    
+    # Return top factors
+    print(json.dumps(feature_importance))
 except Exception as e:
     print(json.dumps({"error": str(e)}))
         `
@@ -236,7 +215,7 @@ except Exception as e:
             resolve(result);
           }
         } catch (e) {
-          reject(new Error(`Failed to parse feature importance: ${e.message}`));
+          reject(new Error(`Failed to parse feature importance: ${e}`));
         }
       });
     });
