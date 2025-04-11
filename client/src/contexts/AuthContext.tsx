@@ -1,14 +1,14 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { apiRequest } from '@/lib/queryClient';
+import { supabase } from '@/lib/supabaseClient';
 
-interface User {
+interface TrialSageUser {
   id: string;
   email: string;
   username: string;
 }
 
 interface AuthContextType {
-  user: User | null;
+  user: TrialSageUser | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
@@ -18,17 +18,30 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Helper function to convert Supabase User to TrialSageUser
+const convertUser = (supabaseUser: any | null): TrialSageUser | null => {
+  if (!supabaseUser) return null;
+  
+  return {
+    id: supabaseUser.id,
+    email: supabaseUser.email || '',
+    username: supabaseUser.user_metadata?.username || supabaseUser.email?.split('@')[0] || ''
+  };
+};
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<TrialSageUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is already logged in
+    // Check if user is already logged in via Supabase session
     const checkAuthStatus = async () => {
       try {
-        const storedUser = localStorage.getItem('trialsage_user');
-        if (storedUser) {
-          setUser(JSON.parse(storedUser));
+        // Get the current session
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session?.user) {
+          setUser(convertUser(session.user));
         }
       } catch (error) {
         console.error('Error checking auth status:', error);
@@ -37,25 +50,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
+    // Setup auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(convertUser(session?.user || null));
+      setIsLoading(false);
+    });
+
     checkAuthStatus();
+
+    // Cleanup subscription on unmount
+    return () => subscription.unsubscribe();
   }, []);
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      // In a real app, this would be a call to your auth API
-      // const response = await apiRequest('POST', '/api/auth/login', { email, password });
-      // const data = await response.json();
-      
-      // For development purposes, we'll simulate a successful login
-      const mockUser = {
-        id: '123',
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
-        username: email.split('@')[0]
-      };
+        password
+      });
       
-      setUser(mockUser);
-      localStorage.setItem('trialsage_user', JSON.stringify(mockUser));
+      if (error) throw error;
+      
+      setUser(convertUser(data.user));
     } catch (error) {
       console.error('Login error:', error);
       throw error;
@@ -67,19 +84,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signup = async (email: string, username: string, password: string) => {
     setIsLoading(true);
     try {
-      // In a real app, this would be a call to your auth API
-      // const response = await apiRequest('POST', '/api/auth/signup', { email, username, password });
-      // const data = await response.json();
-      
-      // For development purposes, we'll simulate a successful signup
-      const mockUser = {
-        id: '123',
+      const { data, error } = await supabase.auth.signUp({
         email,
-        username
-      };
+        password,
+        options: {
+          data: {
+            username
+          }
+        }
+      });
       
-      setUser(mockUser);
-      localStorage.setItem('trialsage_user', JSON.stringify(mockUser));
+      if (error) throw error;
+      
+      // In Supabase, signUp might not automatically log the user in
+      // if email confirmation is required
+      if (data.user) {
+        setUser(convertUser(data.user));
+      }
     } catch (error) {
       console.error('Signup error:', error);
       throw error;
@@ -91,11 +112,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     setIsLoading(true);
     try {
-      // In a real app, this would be a call to your auth API
-      // await apiRequest('POST', '/api/auth/logout');
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
       
       setUser(null);
-      localStorage.removeItem('trialsage_user');
     } catch (error) {
       console.error('Logout error:', error);
       throw error;
