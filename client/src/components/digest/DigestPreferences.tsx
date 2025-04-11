@@ -1,13 +1,12 @@
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { Slider } from '@/components/ui/slider';
-import { Input } from '@/components/ui/input'; 
-import { toast } from '@/hooks/use-toast';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Slider } from "@/components/ui/slider";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from '@/hooks/use-auth';
-import { Loader2 } from 'lucide-react';
 
 interface DigestPreferences {
   include_exports: boolean;
@@ -19,190 +18,193 @@ interface DigestPreferences {
 
 export default function DigestPreferences() {
   const { user } = useAuth();
-  const [prefs, setPrefs] = useState<DigestPreferences>({
+  const { toast } = useToast();
+  const [saving, setSaving] = useState(false);
+  const [preferences, setPreferences] = useState<DigestPreferences>({
     include_exports: true,
     include_risk_changes: true,
     include_version_changes: true,
     include_sap: false,
     risk_change_threshold: 10
   });
-  const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
   
-  // Load user preferences on component mount
+  // Fetch user preferences when component loads
   useEffect(() => {
-    if (!user) return;
-    
     const fetchPreferences = async () => {
+      if (!user) return;
+      
       try {
-        setLoading(true);
-        const response = await fetch(`/api/user/preferences?user_id=${user.id}`);
-        if (response.ok) {
-          const data = await response.json();
-          if (data.prefs) {
-            setPrefs(data.prefs);
-          }
+        const response = await apiRequest('GET', `/api/user/preferences?user_id=${user.id}`);
+        const data = await response.json();
+        
+        if (data && data.prefs) {
+          setPreferences(data.prefs);
         }
       } catch (error) {
-        console.error('Error fetching digest preferences:', error);
-      } finally {
-        setLoading(false);
+        console.error('Error fetching preferences:', error);
+        toast({
+          title: "Failed to load preferences",
+          description: "Your digest preferences could not be loaded. Default settings will be used.",
+          variant: "destructive",
+        });
       }
     };
     
     fetchPreferences();
-  }, [user]);
+  }, [user, toast]);
   
   const handleSavePreferences = async () => {
     if (!user) return;
     
+    setSaving(true);
+    
     try {
-      setSaving(true);
-      const response = await fetch('/api/user/save-digest-prefs', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          user_id: user.id, 
-          prefs 
-        })
+      const response = await apiRequest('POST', '/api/user/save-digest-prefs', {
+        user_id: user.id,
+        prefs: preferences
       });
       
       if (response.ok) {
         toast({
-          title: "Success",
-          description: "Digest preferences saved successfully",
+          title: "Preferences saved",
+          description: "Your digest preferences have been updated successfully.",
         });
       } else {
         throw new Error('Failed to save preferences');
       }
     } catch (error) {
-      console.error('Error saving digest preferences:', error);
+      console.error('Error saving preferences:', error);
       toast({
-        title: "Error",
-        description: "Failed to save digest preferences",
-        variant: "destructive"
+        title: "Failed to save preferences",
+        description: "Your digest preferences could not be saved. Please try again.",
+        variant: "destructive",
       });
     } finally {
       setSaving(false);
     }
   };
   
-  if (loading) {
-    return (
-      <Card className="w-full">
-        <CardContent className="p-6 flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-          <span className="ml-2">Loading preferences...</span>
-        </CardContent>
-      </Card>
-    );
-  }
+  const sendTestDigest = async () => {
+    if (!user) return;
+    
+    setSaving(true);
+    
+    try {
+      const response = await apiRequest('POST', '/api/notify/send-weekly-digest', {
+        user_id: user.id,
+        user_email: user.email || 'test@example.com' // Fallback for testing
+      });
+      
+      if (response.ok) {
+        toast({
+          title: "Test digest sent",
+          description: "A test weekly digest has been generated and sent.",
+        });
+      } else {
+        throw new Error('Failed to send test digest');
+      }
+    } catch (error) {
+      console.error('Error sending test digest:', error);
+      toast({
+        title: "Failed to send test digest",
+        description: "The test digest could not be sent. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
   
   return (
     <Card className="w-full">
       <CardHeader>
         <CardTitle>Weekly Digest Preferences</CardTitle>
         <CardDescription>
-          Customize what information you receive in your weekly digest emails
+          Customize what information is included in your weekly digest emails
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="include_exports" className="flex-1">Show exported reports</Label>
-            <Switch 
-              id="include_exports"
-              checked={prefs.include_exports}
-              onCheckedChange={(checked) => setPrefs({ ...prefs, include_exports: checked })}
+          <h3 className="text-sm font-medium">Content Preferences</h3>
+          <div className="flex items-center space-x-2">
+            <Checkbox 
+              id="include_exports" 
+              checked={preferences.include_exports} 
+              onCheckedChange={(checked) => setPreferences(prev => ({ ...prev, include_exports: !!checked }))}
             />
+            <label htmlFor="include_exports" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              Include PDF Exports
+            </label>
           </div>
-          <p className="text-sm text-slate-500">Receive summaries of reports you've exported</p>
-        </div>
-        
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="include_risk_changes" className="flex-1">Show risk changes</Label>
-            <Switch 
-              id="include_risk_changes"
-              checked={prefs.include_risk_changes}
-              onCheckedChange={(checked) => setPrefs({ ...prefs, include_risk_changes: checked })}
-            />
-          </div>
-          <p className="text-sm text-slate-500">Alert when predicted success rates change significantly</p>
           
-          {prefs.include_risk_changes && (
-            <div className="pt-2">
-              <Label htmlFor="risk_threshold">Minimum change threshold (%)</Label>
-              <div className="flex items-center gap-4 pt-2">
-                <Slider
-                  id="risk_threshold"
-                  value={[prefs.risk_change_threshold]}
-                  onValueChange={(value) => setPrefs({ ...prefs, risk_change_threshold: value[0] })}
-                  max={50}
-                  min={1}
-                  step={1}
-                  className="flex-1"
-                />
-                <Input 
-                  type="number" 
-                  value={prefs.risk_change_threshold}
-                  onChange={(e) => {
-                    const value = parseInt(e.target.value);
-                    if (!isNaN(value) && value >= 1 && value <= 50) {
-                      setPrefs({ ...prefs, risk_change_threshold: value });
-                    }
-                  }}
-                  className="w-16"
-                  min={1}
-                  max={50}
-                />
-              </div>
-              <p className="text-xs text-slate-500 mt-1">
-                Only show changes greater than {prefs.risk_change_threshold}%
-              </p>
-            </div>
-          )}
+          <div className="flex items-center space-x-2">
+            <Checkbox 
+              id="include_risk_changes" 
+              checked={preferences.include_risk_changes} 
+              onCheckedChange={(checked) => setPreferences(prev => ({ ...prev, include_risk_changes: !!checked }))}
+            />
+            <label htmlFor="include_risk_changes" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              Include Risk Assessment Changes
+            </label>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Checkbox 
+              id="include_version_changes" 
+              checked={preferences.include_version_changes} 
+              onCheckedChange={(checked) => setPreferences(prev => ({ ...prev, include_version_changes: !!checked }))}
+            />
+            <label htmlFor="include_version_changes" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              Include Protocol Version Changes
+            </label>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Checkbox 
+              id="include_sap" 
+              checked={preferences.include_sap} 
+              onCheckedChange={(checked) => setPreferences(prev => ({ ...prev, include_sap: !!checked }))}
+            />
+            <label htmlFor="include_sap" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              Include Statistical Analysis Plan Updates
+            </label>
+          </div>
         </div>
+        
+        <Separator />
         
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="include_version_changes" className="flex-1">Show protocol version changes</Label>
-            <Switch 
-              id="include_version_changes"
-              checked={prefs.include_version_changes}
-              onCheckedChange={(checked) => setPrefs({ ...prefs, include_version_changes: checked })}
-            />
+            <h3 className="text-sm font-medium">Risk Change Threshold (%)</h3>
+            <span className="text-sm font-medium">{preferences.risk_change_threshold}%</span>
           </div>
-          <p className="text-sm text-slate-500">Receive updates on protocol version comparisons</p>
+          <Slider 
+            value={[preferences.risk_change_threshold]} 
+            min={1} 
+            max={20} 
+            step={1}
+            onValueChange={(value) => setPreferences(prev => ({ ...prev, risk_change_threshold: value[0] }))}
+          />
+          <p className="text-sm text-muted-foreground">
+            Only notify about risk assessment changes that exceed this threshold
+          </p>
         </div>
-        
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="include_sap" className="flex-1">Show SAP exports only</Label>
-            <Switch 
-              id="include_sap"
-              checked={prefs.include_sap}
-              onCheckedChange={(checked) => setPrefs({ ...prefs, include_sap: checked })}
-            />
-          </div>
-          <p className="text-sm text-slate-500">Filter for Statistical Analysis Plans (SAPs)</p>
-        </div>
-        
+      </CardContent>
+      <CardFooter className="flex justify-between">
         <Button 
-          onClick={handleSavePreferences} 
-          className="w-full mt-4"
+          variant="outline" 
+          onClick={sendTestDigest}
           disabled={saving}
         >
-          {saving ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Saving preferences...
-            </>
-          ) : (
-            <>💾 Save Digest Preferences</>
-          )}
+          Send Test Digest
         </Button>
-      </CardContent>
+        <Button 
+          onClick={handleSavePreferences}
+          disabled={saving}
+        >
+          {saving ? "Saving..." : "Save Preferences"}
+        </Button>
+      </CardFooter>
     </Card>
   );
 }

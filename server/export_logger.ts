@@ -1,85 +1,149 @@
 import fs from 'fs';
 import path from 'path';
 
+const LOGS_DIRECTORY = path.join(__dirname, '..', 'logs');
+const EXPORT_LOG_FILE = path.join(LOGS_DIRECTORY, 'export_actions.jsonl');
+
 // Create logs directory if it doesn't exist
-const logsDir = path.join(process.cwd(), 'data/logs');
-if (!fs.existsSync(logsDir)) {
-  fs.mkdirSync(logsDir, { recursive: true });
+if (!fs.existsSync(LOGS_DIRECTORY)) {
+  fs.mkdirSync(LOGS_DIRECTORY, { recursive: true });
 }
 
-const LOG_PATH = path.join(logsDir, 'export_actions.jsonl');
+// Create export log file if it doesn't exist
+if (!fs.existsSync(EXPORT_LOG_FILE)) {
+  fs.writeFileSync(EXPORT_LOG_FILE, '');
+}
+
+export interface ExportAction {
+  userId: string;
+  actionType: 'export_pdf' | 'export_comparison' | 'send_digest' | 'upload_protocol' | 'send_comparison_notification';
+  objectId: string;
+  objectName: string;
+  objectType: 'report' | 'protocol' | 'comparison' | 'digest' | 'notification';
+  timestamp?: Date;
+  metadata?: Record<string, any>;
+}
 
 /**
  * Log an export action to the export_actions.jsonl file
  */
 export const logExportAction = (
-  action: {
-    user_id: string; 
-    protocol_id: string;
-    report_type: string;
-    report_details?: any;
-    success_rate?: number;
-    version?: string;
-    file_path?: string;
-  }
-) => {
-  try {
-    const logEntry = {
-      ...action,
-      timestamp: new Date().toISOString()
-    };
-    
-    // Append to log file
-    fs.appendFileSync(LOG_PATH, JSON.stringify(logEntry) + '\n');
-    
-    return true;
-  } catch (error) {
-    console.error('Error logging export action:', error);
-    return false;
-  }
+  action: ExportAction
+): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    try {
+      // Add timestamp if not provided
+      const actionWithTimestamp = {
+        ...action,
+        timestamp: action.timestamp || new Date()
+      };
+      
+      // Convert to JSON line
+      const line = JSON.stringify(actionWithTimestamp) + '\n';
+      
+      // Append to file
+      fs.appendFile(EXPORT_LOG_FILE, line, (err) => {
+        if (err) {
+          console.error('Error writing to export log:', err);
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
+    } catch (error) {
+      console.error('Error in logExportAction:', error);
+      reject(error);
+    }
+  });
 };
+
+interface GetExportLogsOptions {
+  since?: Date;
+  until?: Date;
+}
 
 /**
  * Get export logs for specific user or all users within a time range
  */
 export const getExportLogs = (
-  options: {
-    user_id?: string;
-    since?: Date;
-    until?: Date;
-    limit?: number;
-  } = {}
-) => {
-  try {
-    if (!fs.existsSync(LOG_PATH)) {
-      return [];
-    }
-    
-    const { user_id, since, until, limit } = options;
-    const now = new Date();
-    const sinceDate = since || new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); // Default to 30 days ago
-    const untilDate = until || now;
-    
-    const logs = fs.readFileSync(LOG_PATH, 'utf8')
-      .split('\n')
-      .filter(line => line.trim() !== '')
-      .map(line => JSON.parse(line))
-      .filter(log => {
-        const logTime = new Date(log.timestamp);
-        return (
-          logTime >= sinceDate && 
-          logTime <= untilDate && 
-          (!user_id || log.user_id === user_id)
-        );
+  userId?: string,
+  options: GetExportLogsOptions = {}
+): Promise<ExportAction[]> => {
+  return new Promise((resolve, reject) => {
+    try {
+      // Read the file
+      fs.readFile(EXPORT_LOG_FILE, 'utf8', (err, data) => {
+        if (err) {
+          if (err.code === 'ENOENT') {
+            // File doesn't exist yet, return empty array
+            return resolve([]);
+          }
+          return reject(err);
+        }
+        
+        if (!data.trim()) {
+          // Empty file
+          return resolve([]);
+        }
+        
+        // Parse each line as JSON
+        const lines = data.trim().split('\n');
+        let logs: ExportAction[] = lines
+          .filter(line => line.trim() !== '')
+          .map(line => {
+            try {
+              const log = JSON.parse(line);
+              // Convert timestamp string to Date object
+              if (log.timestamp && typeof log.timestamp === 'string') {
+                log.timestamp = new Date(log.timestamp);
+              }
+              return log;
+            } catch (e) {
+              console.error('Error parsing log line:', line, e);
+              return null;
+            }
+          })
+          .filter(log => log !== null) as ExportAction[];
+        
+        // Filter by user ID if provided
+        if (userId) {
+          logs = logs.filter(log => log.userId === userId);
+        }
+        
+        // Filter by date range if provided
+        if (options.since) {
+          logs = logs.filter(log => log.timestamp && log.timestamp >= options.since!);
+        }
+        
+        if (options.until) {
+          logs = logs.filter(log => log.timestamp && log.timestamp <= options.until!);
+        }
+        
+        // Sort by timestamp (newest first)
+        logs.sort((a, b) => {
+          const dateA = a.timestamp ? new Date(a.timestamp) : new Date(0);
+          const dateB = b.timestamp ? new Date(b.timestamp) : new Date(0);
+          return dateB.getTime() - dateA.getTime();
+        });
+        
+        resolve(logs);
       });
-    
-    if (limit && logs.length > limit) {
-      return logs.slice(0, limit);
+    } catch (error) {
+      console.error('Error in getExportLogs:', error);
+      reject(error);
     }
-    
-    return logs;
-  } catch (error) {
-    console.error('Error reading export logs:', error);
-    return [];
-  }
+  });
+};
+
+// Function to clear all logs (for testing)
+export const clearExportLogs = (): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    fs.writeFile(EXPORT_LOG_FILE, '', (err) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve();
+      }
+    });
+  });
 };
