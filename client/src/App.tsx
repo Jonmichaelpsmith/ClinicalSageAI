@@ -15,7 +15,7 @@ import ProtocolGenerator from "@/pages/ProtocolGenerator";
 import StudyDesignAgent from "./pages/StudyDesignAgent";
 import Translation from "@/pages/Translation";
 import CsrExtractionGuide from "@/pages/CsrExtractionGuide";
-import { Sidebar } from "@/components/layout/Sidebar";
+import { Sidebar } from "@/components/layout/NewSidebar";
 import { TopNavbar } from "@/components/layout/TopNavbar";
 import ProductFeatures from "./pages/ProductFeatures";
 import PricingPage from "@/pages/PricingPage";
