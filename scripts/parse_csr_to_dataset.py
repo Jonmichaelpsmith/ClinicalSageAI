@@ -29,39 +29,20 @@ for fname in os.listdir(csr_dir):
             "sample_size": csr.get("sample_size", 0),
             "duration_weeks": csr.get("duration_weeks", 0),
             "dropout_rate": csr.get("dropout_rate", 0),
-            "endpoint_primary": csr.get("primary_endpoints", [""])[0] if isinstance(csr.get("primary_endpoints", []), list) else csr.get("primary_endpoints", ""),
+            "endpoint_primary": csr.get("primary_endpoints", [""])[0] if isinstance(csr.get("primary_endpoints", [""]), list) else "",
             "control_type": csr.get("control_arm", "Unknown"),
             "blinding": csr.get("blinding", "None"),
             "outcome": outcome,
-            "success": int("significant" in outcome or "met endpoint" in outcome or "met with" in outcome),
-            "failure_reason": csr.get("failure_reason", outcome)
+            "success": int("significant" in outcome or "met endpoint" in outcome or "primary endpoint met" in outcome),
+            "failure_reason": csr.get("failure_reason", "")
         }
         records.append(record)
-        print(f"Processed {fname}: {'Success' if record['success'] == 1 else 'Failure'}")
+        print(f"Processed {fname}: {'Success' if record['success'] else 'Failure'}")
     except Exception as e:
         print(f"Error in {fname}: {e}")
 
 df = pd.DataFrame(records)
-csv_path = "data/csr_dataset_new.csv"
+csv_path = "data/csr_dataset.csv"
 df.to_csv(csv_path, index=False)
 
-print(f"\nDataset generation complete. Saved to {csv_path}")
-print(f"Total records: {len(df)}")
-print(f"Success rate: {df['success'].mean() * 100:.1f}%")
-print(f"Records with sample_size: {df['sample_size'].notna().sum()}")
-print(f"Records with duration_weeks: {df['duration_weeks'].notna().sum()}")
-print(f"Records with dropout_rate: {df['dropout_rate'].notna().sum()}")
-
-# Display some stats
-print("\nIndication distribution:")
-print(df['indication'].value_counts().head(5))
-
-print("\nPhase distribution:")
-print(df['phase'].value_counts().head(5))
-
-print("\nSample Size distribution:")
-print(df['sample_size'].describe())
-
-# Count records with all required fields
-complete_records = df.dropna(subset=["sample_size", "duration_weeks", "dropout_rate", "success"])
-print(f"\nComplete records with all required fields: {len(complete_records)}")
+print(f"Dataset saved to {csv_path} with {len(records)} records")
