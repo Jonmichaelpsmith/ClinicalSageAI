@@ -122,6 +122,7 @@ function Router() {
       <Route path="/use-cases">{() => renderWithLayout(UseCaseLibrary)}</Route>
       <Route path="/protocol-generator">{() => renderWithLayout(ProtocolGenerator)}</Route>
       <Route path="/protocol-designer">{() => renderWithLayout(ProtocolGenerator)}</Route>
+      <Route path="/protocol-intelligence">{() => renderWithLayout(ProtocolIntelligenceBuilder)}</Route>
       <Route path="/study-design-agent">{() => renderWithLayout(StudyDesignAgent)}</Route>
       <Route path="/translation">{() => renderWithLayout(Translation)}</Route>
       <Route path="/csr-extraction-guide">{() => renderWithLayout(CsrExtractionGuide)}</Route>

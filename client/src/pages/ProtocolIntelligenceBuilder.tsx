@@ -21,7 +21,8 @@ import {
   AlertTriangle,
   CheckCircle,
   RefreshCw,
-  Lightbulb
+  Lightbulb,
+  ArrowRight
 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -316,7 +317,7 @@ export default function ProtocolIntelligenceBuilder() {
                       {isOptimized && (
                         <div className="ml-2 text-green-600 font-medium text-sm flex items-center">
                           <RefreshCw className="w-3 h-3 mr-1" />
-                          {`+${((prediction.optimizedProbability || (prediction.probability * 1.2)) - prediction.probability).toFixed(2) * 100}%`}
+                          {`+${(((prediction.optimizedProbability || (prediction.probability * 1.2)) - prediction.probability) * 100).toFixed(2)}%`}
                         </div>
                       )}
                     </div>
@@ -350,7 +351,7 @@ export default function ProtocolIntelligenceBuilder() {
                       <AlertTitle className="text-sm">AI Insight</AlertTitle>
                       <AlertDescription className="text-xs">
                         {isOptimized ? 
-                          `Optimizing this protocol could increase success probability by ${((prediction?.optimizedProbability || (prediction?.probability * 1.2)) - (prediction?.probability || 0)).toFixed(2) * 100}%.` : 
+                          `Optimizing this protocol could increase success probability by ${(((prediction?.optimizedProbability || (prediction?.probability * 1.2)) - (prediction?.probability || 0)) * 100).toFixed(2)}%.` : 
                           'Click "Optimize Protocol" to receive AI-powered improvement recommendations.'}
                       </AlertDescription>
                     </Alert>
