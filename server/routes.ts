@@ -2802,6 +2802,252 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // User Dossier API Endpoints
+  
+  // Get user's saved dossiers
+  app.get('/api/dossier', async (req: Request, res: Response) => {
+    try {
+      // Check if user is authenticated
+      if (!req.user) {
+        return res.status(401).json({
+          success: false,
+          message: 'Authentication required'
+        });
+      }
+      
+      const userId = req.user.id;
+      
+      // Get dossiers for the user from database
+      const dossiers = await db.query.userDossiers.findMany({
+        where: eq(userDossiers.userId, userId),
+        orderBy: [desc(userDossiers.createdAt)]
+      });
+      
+      res.json({
+        success: true,
+        dossiers
+      });
+    } catch (error) {
+      console.error('Error fetching user dossiers:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to fetch dossiers'
+      });
+    }
+  });
+  
+  // Get specific dossier by ID
+  app.get('/api/dossier/:dossierId', async (req: Request, res: Response) => {
+    try {
+      // Check if user is authenticated
+      if (!req.user) {
+        return res.status(401).json({
+          success: false,
+          message: 'Authentication required'
+        });
+      }
+      
+      const userId = req.user.id;
+      const dossierId = parseInt(req.params.dossierId);
+      
+      if (isNaN(dossierId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid dossier ID'
+        });
+      }
+      
+      // Get the specific dossier
+      const dossier = await db.query.userDossiers.findFirst({
+        where: and(
+          eq(userDossiers.id, dossierId),
+          eq(userDossiers.userId, userId)
+        )
+      });
+      
+      if (!dossier) {
+        return res.status(404).json({
+          success: false,
+          message: 'Dossier not found'
+        });
+      }
+      
+      res.json({
+        success: true,
+        dossier
+      });
+    } catch (error) {
+      console.error('Error fetching dossier:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to fetch dossier'
+      });
+    }
+  });
+  
+  // Save protocol to dossier
+  app.post('/api/dossier/save-protocol', async (req: Request, res: Response) => {
+    try {
+      // Check if user is authenticated
+      if (!req.user) {
+        return res.status(401).json({
+          success: false,
+          message: 'Authentication required'
+        });
+      }
+      
+      const userId = req.user.id;
+      const { protocolId, analysisId, name, description, content } = req.body;
+      
+      if (!protocolId || !analysisId || !name || !content) {
+        return res.status(400).json({
+          success: false,
+          message: 'Missing required fields'
+        });
+      }
+      
+      // Save to dossier
+      const [newDossier] = await db.insert(userDossiers).values({
+        userId,
+        name,
+        description: description || '',
+        type: 'protocol',
+        protocolId,
+        analysisId,
+        content: JSON.stringify(content),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }).returning();
+      
+      res.status(201).json({
+        success: true,
+        message: 'Protocol saved to dossier',
+        dossier: newDossier
+      });
+    } catch (error) {
+      console.error('Error saving protocol to dossier:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to save protocol to dossier'
+      });
+    }
+  });
+  
+  // Delete dossier
+  app.delete('/api/dossier/:dossierId', async (req: Request, res: Response) => {
+    try {
+      // Check if user is authenticated
+      if (!req.user) {
+        return res.status(401).json({
+          success: false,
+          message: 'Authentication required'
+        });
+      }
+      
+      const userId = req.user.id;
+      const dossierId = parseInt(req.params.dossierId);
+      
+      if (isNaN(dossierId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid dossier ID'
+        });
+      }
+      
+      // Check if dossier exists and belongs to user
+      const dossier = await db.query.userDossiers.findFirst({
+        where: and(
+          eq(userDossiers.id, dossierId),
+          eq(userDossiers.userId, userId)
+        )
+      });
+      
+      if (!dossier) {
+        return res.status(404).json({
+          success: false,
+          message: 'Dossier not found or you do not have permission to delete it'
+        });
+      }
+      
+      // Delete the dossier
+      await db.delete(userDossiers).where(eq(userDossiers.id, dossierId));
+      
+      res.json({
+        success: true,
+        message: 'Dossier deleted successfully'
+      });
+    } catch (error) {
+      console.error('Error deleting dossier:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to delete dossier'
+      });
+    }
+  });
+  
+  // Generate PDF report from dossier
+  app.get('/api/dossier/:dossierId/generate-pdf', async (req: Request, res: Response) => {
+    try {
+      // Check if user is authenticated
+      if (!req.user) {
+        return res.status(401).json({
+          success: false,
+          message: 'Authentication required'
+        });
+      }
+      
+      const userId = req.user.id;
+      const dossierId = parseInt(req.params.dossierId);
+      
+      if (isNaN(dossierId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid dossier ID'
+        });
+      }
+      
+      // Get the specific dossier
+      const dossier = await db.query.userDossiers.findFirst({
+        where: and(
+          eq(userDossiers.id, dossierId),
+          eq(userDossiers.userId, userId)
+        )
+      });
+      
+      if (!dossier) {
+        return res.status(404).json({
+          success: false,
+          message: 'Dossier not found'
+        });
+      }
+      
+      // Generate PDF file from dossier content
+      const pdfPath = await generatePdfReport(dossier);
+      
+      // Send the PDF file
+      res.download(pdfPath, `${dossier.name.replace(/\s+/g, '_')}_report.pdf`, (err) => {
+        if (err) {
+          console.error('Error sending PDF file:', err);
+          // Clean up the temporary file
+          fs.unlink(pdfPath, (unlinkErr) => {
+            if (unlinkErr) console.error('Error deleting temporary PDF file:', unlinkErr);
+          });
+        } else {
+          // Clean up the temporary file after sending
+          fs.unlink(pdfPath, (unlinkErr) => {
+            if (unlinkErr) console.error('Error deleting temporary PDF file:', unlinkErr);
+          });
+        }
+      });
+    } catch (error) {
+      console.error('Error generating PDF from dossier:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to generate PDF report'
+      });
+    }
+  });
+  
   // Protocol Builder & Validator Endpoints
   
   // Get regulatory agency guidelines

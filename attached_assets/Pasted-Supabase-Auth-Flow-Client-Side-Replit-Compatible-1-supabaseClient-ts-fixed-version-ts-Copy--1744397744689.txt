@@ -1,0 +1,118 @@
+Supabase Auth Flow (Client-Side) – Replit Compatible
+✅ 1. supabaseClient.ts (fixed version)
+ts
+Copy
+Edit
+import { createClient } from '@supabase/supabase-js';
+
+export const supabase = createClient(
+  "https://your-project.supabase.co",     // replace with your Supabase project URL
+  "your-anon-key"                         // replace with your anon key
+);
+📌 Paste your real values here (from Supabase dashboard)
+
+✅ 2. Login.tsx
+tsx
+Copy
+Edit
+import { useState } from 'react';
+import { supabase } from '@/lib/supabaseClient';
+import { useNavigate } from 'react-router-dom';
+
+export default function Login() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
+
+  const handleLogin = async () => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      alert(error.message);
+    } else {
+      navigate('/dashboard');
+    }
+  };
+
+  return (
+    <div className="p-6 max-w-md mx-auto space-y-4">
+      <h2 className="text-lg font-bold text-blue-700">🔐 Login</h2>
+      <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" />
+      <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Password" />
+      <button onClick={handleLogin}>Login</button>
+    </div>
+  );
+}
+✅ 3. Signup.tsx
+tsx
+Copy
+Edit
+const handleSignup = async () => {
+  const { error } = await supabase.auth.signUp({ email, password });
+  if (error) alert(error.message);
+  else alert("Signup complete! Check your email for confirmation.");
+};
+✅ 4. Auth Context (already done but wrap root app)
+In App.tsx:
+
+tsx
+Copy
+Edit
+import { AuthProvider } from '@/contexts/AuthContext';
+
+function App() {
+  return (
+    <AuthProvider>
+      <Routes>{/* your routes */}</Routes>
+    </AuthProvider>
+  );
+}
+✅ 5. Redirect Wrapper for Protected Routes
+📁 ProtectedRoute.tsx
+
+tsx
+Copy
+Edit
+import { useAuth } from '@/contexts/AuthContext';
+import { Navigate } from 'react-router-dom';
+
+export default function ProtectedRoute({ children }) {
+  const { user } = useAuth();
+  if (!user) return <Navigate to="/login" />;
+  return children;
+}
+Then wrap in routing:
+
+tsx
+Copy
+Edit
+<Route path="/upload-protocol" element={<ProtectedRoute><UploadProtocol /></ProtectedRoute>} />
+✅ You now have:
+
+🟢 Secure login and signup
+
+🔒 Protected routes
+
+🔁 Persistent session
+
+📁 Per-user dossier and intelligence access
+
+Would you like to now show user email in the sidebar header + add a logout button?
+
+
+
+
+
+
+
+
+
+
+
+
+Search
+
+Deep research
+
+
+
+ChatGP

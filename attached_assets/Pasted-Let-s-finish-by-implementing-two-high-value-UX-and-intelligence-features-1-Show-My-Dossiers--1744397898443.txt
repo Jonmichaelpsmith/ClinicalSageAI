@@ -1,0 +1,103 @@
+Let’s finish by implementing two high-value UX and intelligence features:
+
+🎯 1. Show “My Dossiers” in Sidebar only when logged in
+📁 In your Sidebar.tsx or nav component:
+
+tsx
+Copy
+Edit
+import { useAuth } from '@/contexts/AuthContext';
+
+export default function Sidebar() {
+  const { user } = useAuth();
+
+  return (
+    <div className="sidebar p-4">
+      {user && (
+        <>
+          <div className="text-xs text-gray-500 mb-2">
+            Logged in as <strong>{user.email}</strong>
+          </div>
+
+          <SidebarNavItem href="/my-dossiers" icon={ClipboardIcon}>
+            My Dossiers
+          </SidebarNavItem>
+        </>
+      )}
+
+      {!user && (
+        <SidebarNavItem href="/login" icon={LockClosedIcon}>
+          Login
+        </SidebarNavItem>
+      )}
+    </div>
+  );
+}
+✅ Ensures clean UX. No “My Dossiers” shown unless a user is active.
+
+📈 2. Track All Export Actions Per User
+📁 Backend route: /api/log/export-action.py
+
+python
+Copy
+Edit
+from fastapi import APIRouter, Body
+import json, os
+from datetime import datetime
+
+router = APIRouter()
+EXPORT_LOG_PATH = "data/logs/export_actions.jsonl"
+os.makedirs("data/logs", exist_ok=True)
+
+@router.post("/api/log/export")
+def log_export(user_id: str = Body(...), protocol_id: str = Body(...), report_type: str = Body(...)):
+    log_entry = {
+        "timestamp": datetime.utcnow().isoformat(),
+        "user_id": user_id,
+        "protocol_id": protocol_id,
+        "report_type": report_type
+    }
+    with open(EXPORT_LOG_PATH, "a") as f:
+        f.write(json.dumps(log_entry) + "\n")
+    return {"message": "Export logged"}
+📁 Frontend: Call this any time a user downloads or exports a report:
+
+tsx
+Copy
+Edit
+await fetch('/api/log/export', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    user_id: user.id,
+    protocol_id: currentProtocolId,
+    report_type: "Protocol Intelligence Report"
+  })
+});
+✅ Now you have:
+
+Clean auth-aware navigation
+
+Fully traceable user export behavior
+
+Audit-ready export logs by user, protocol, timestamp
+
+Would you like a visual export dashboard next? Something like “Last 10 exports” with filters?
+
+
+
+
+
+
+
+
+
+
+
+Search
+
+Deep research
+
+
+
+ChatGPT can make mistakes. Check i
