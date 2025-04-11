@@ -7,6 +7,7 @@ import {
   Lightbulb, Users, Flag, FileSymlink, ChevronUp, ChevronDown,
   CheckCircle, AlertCircle, BarChart2, FlaskConical, Brain, Database
 } from "lucide-react";
+import { DeepLearningPanel } from "@/components/analytics/DeepLearningPanel";
 import { motion } from "framer-motion";
 import {
   Card,
