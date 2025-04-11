@@ -401,6 +401,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register Strategic Report routes
   app.use('/api/strategic-reports', strategicReportRoutes);
   
+  // Register Protocol Routes
+  registerProtocolRoutes(app);
+  
   // Trial Success Prediction endpoint
   app.post('/api/trial-prediction', async (req: Request, res: Response) => {
     try {
