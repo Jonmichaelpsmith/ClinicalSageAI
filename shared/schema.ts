@@ -324,3 +324,88 @@ export type AcademicResource = typeof academicResources.$inferSelect;
 
 export type InsertAcademicEmbedding = z.infer<typeof insertAcademicEmbeddingSchema>;
 export type AcademicEmbedding = typeof academicEmbeddings.$inferSelect;
+
+// Protocol schema for clinical trial protocols
+export const protocols = pgTable('protocols', {
+  id: serial('id').primaryKey(),
+  title: text('title').notNull(),
+  indication: text('indication').notNull(),
+  phase: text('phase').notNull(),
+  sponsorId: integer('sponsor_id').references(() => users.id),
+  primaryEndpoints: jsonb('primary_endpoints').notNull(),
+  secondaryEndpoints: jsonb('secondary_endpoints'),
+  sampleSize: integer('sample_size'),
+  durationWeeks: integer('duration_weeks'),
+  controlType: text('control_type'),
+  blinding: text('blinding'),
+  status: text('status').notNull().default('draft'),
+  createdById: integer('created_by_id').references(() => users.id),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  content: jsonb('content') // Full protocol content (sections, etc.)
+});
+
+// Strategic reports for protocols
+export const strategicReports = pgTable('strategic_reports', {
+  id: serial('id').primaryKey(),
+  title: text('title').notNull(),
+  protocolId: integer('protocol_id').references(() => protocols.id),
+  generatedDate: text('generated_date').notNull(),
+  indication: text('indication').notNull(),
+  phase: text('phase').notNull(),
+  executiveSummary: jsonb('executive_summary').notNull(),
+  content: jsonb('content').notNull() // Full report content
+});
+
+// Define relations for protocols and strategic reports
+export const protocolsRelations = relations(protocols, ({ one, many }) => ({
+  createdBy: one(users, {
+    fields: [protocols.createdById],
+    references: [users.id]
+  }),
+  sponsor: one(users, {
+    fields: [protocols.sponsorId],
+    references: [users.id]
+  }),
+  strategicReports: many(strategicReports)
+}));
+
+export const strategicReportsRelations = relations(strategicReports, ({ one }) => ({
+  protocol: one(protocols, {
+    fields: [strategicReports.protocolId],
+    references: [protocols.id]
+  })
+}));
+
+// Insert schemas for protocols and strategic reports
+export const insertProtocolSchema = createInsertSchema(protocols).pick({
+  title: true,
+  indication: true,
+  phase: true,
+  sponsorId: true,
+  primaryEndpoints: true,
+  secondaryEndpoints: true,
+  sampleSize: true,
+  durationWeeks: true,
+  controlType: true,
+  blinding: true,
+  status: true,
+  createdById: true,
+  content: true
+});
+
+export const insertStrategicReportSchema = createInsertSchema(strategicReports).pick({
+  title: true,
+  protocolId: true,
+  generatedDate: true,
+  indication: true,
+  phase: true,
+  executiveSummary: true,
+  content: true
+});
+
+export type InsertProtocol = z.infer<typeof insertProtocolSchema>;
+export type Protocol = typeof protocols.$inferSelect;
+
+export type InsertStrategicReport = z.infer<typeof insertStrategicReportSchema>;
+export type StrategicReport = typeof strategicReports.$inferSelect;
