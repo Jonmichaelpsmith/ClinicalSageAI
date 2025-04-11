@@ -30,6 +30,7 @@ import { notificationService } from "./notification-service";
 import { strategicIntelligenceService } from "./strategic-intelligence-service";
 import strategicReportRoutes from "./strategic-report-routes";
 import { trialPredictorService } from "./trial-predictor-service";
+import registerProtocolRoutes from "./routes/protocol_routes";
 import { 
   fetchClinicalTrialData, 
   importTrialsFromCsv, 
