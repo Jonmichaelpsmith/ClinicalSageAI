@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Spinner } from '@/components/ui/spinner';
+// import { Spinner } from '@/components/ui/spinner';
 import { BarChart, LineChart, XAxis, YAxis, Tooltip, Legend, Bar, Line, ResponsiveContainer, PieChart, Pie, Cell, ScatterChart, Scatter, ZAxis } from 'recharts';
 import { Loader2, FileText, Brain, Database, Activity, Search, TrendingUp, ChevronDown, ChevronRight, ArrowRightCircle } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
@@ -407,7 +407,8 @@ export function DeepLearningPanel({ csrs = [], onAnalysisComplete }: DeepLearnin
                         y: coord[1],
                         cluster: kmeans.labels[i],
                       }))}
-                      fill={(entry) => COLORS[entry.cluster % COLORS.length]}
+                      fill="#8884d8"
+                      className="fill-blue-500"
                     />
                   </ScatterChart>
                 </ResponsiveContainer>
@@ -416,10 +417,10 @@ export function DeepLearningPanel({ csrs = [], onAnalysisComplete }: DeepLearnin
           </Card>
         )}
         
-        {visualization_path && (
+        {analysisResult?.visualization && (
           <div className="flex justify-center mt-4">
             <img 
-              src={visualization_path} 
+              src={analysisResult.visualization} 
               alt="CSR Cluster Visualization" 
               className="max-w-full rounded-lg border border-gray-200 shadow-md"
             />

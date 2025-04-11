@@ -5,7 +5,7 @@ import {
   BarChart3, PieChart as PieChartIcon, LineChart, Microscope, Pill, Activity, 
   Beaker, Dna, TrendingUp, Search, BrainCircuit, ArrowUpDown, 
   Lightbulb, Users, Flag, FileSymlink, ChevronUp, ChevronDown,
-  CheckCircle, AlertCircle, BarChart2, FlaskConical
+  CheckCircle, AlertCircle, BarChart2, FlaskConical, Brain, Database
 } from "lucide-react";
 import { motion } from "framer-motion";
 import {
@@ -1578,13 +1578,14 @@ export default function Analytics() {
       </div>
 
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid grid-cols-3 md:grid-cols-6 w-full bg-slate-100 p-1 rounded-lg">
+        <TabsList className="grid grid-cols-3 md:grid-cols-7 w-full bg-slate-100 p-1 rounded-lg">
           <TabsTrigger value="overview" className="rounded-md">Overview</TabsTrigger>
           <TabsTrigger value="predictive" className="rounded-md">Predictive Analysis</TabsTrigger>
           <TabsTrigger value="compare" className="rounded-md">Trial Comparison</TabsTrigger>
           <TabsTrigger value="virtual" className="rounded-md">Virtual Trial</TabsTrigger>
           <TabsTrigger value="design" className="rounded-md">Study Design</TabsTrigger>
           <TabsTrigger value="modeling" className="rounded-md">Statistical Modeling</TabsTrigger>
+          <TabsTrigger value="deep-learning" className="rounded-md">Deep Learning</TabsTrigger>
           <TabsTrigger value="competitors" className="rounded-md">Competitor Analysis</TabsTrigger>
         </TabsList>
         
@@ -2110,6 +2111,13 @@ export default function Analytics() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+        
+        <TabsContent value="deep-learning" className="space-y-4">
+          <DeepLearningPanel csrs={reports} onAnalysisComplete={(result) => {
+            // Handle analysis result if needed
+            console.log("Deep Learning Analysis completed:", result);
+          }} />
         </TabsContent>
         
         <TabsContent value="modeling" className="space-y-4">
