@@ -224,4 +224,226 @@ TrialSage`,
   }
 });
 
+// Save user preferences for digest
+router.post('/user/save-digest-prefs', async (req: Request, res: Response) => {
+  try {
+    const { user_id, prefs } = req.body;
+    
+    if (!user_id || !prefs) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required parameters: user_id and prefs are required"
+      });
+    }
+    
+    // Create user preferences directory if it doesn't exist
+    const prefsDir = path.join(process.cwd(), 'data/users');
+    if (!fs.existsSync(prefsDir)) {
+      fs.mkdirSync(prefsDir, { recursive: true });
+    }
+    
+    // Validate preferences structure
+    const validPrefs = {
+      include_exports: Boolean(prefs.include_exports),
+      include_risk_changes: Boolean(prefs.include_risk_changes),
+      include_version_changes: Boolean(prefs.include_version_changes),
+      include_sap: Boolean(prefs.include_sap),
+      risk_change_threshold: Number(prefs.risk_change_threshold) || 10
+    };
+    
+    // Save preferences to file
+    const prefsPath = path.join(prefsDir, `${user_id}_prefs.json`);
+    fs.writeFileSync(prefsPath, JSON.stringify(validPrefs, null, 2));
+    
+    res.json({
+      success: true,
+      message: "Digest preferences saved successfully"
+    });
+  } catch (error) {
+    console.error('Error saving digest preferences:', error);
+    res.status(500).json({
+      success: false,
+      message: error instanceof Error ? error.message : "Failed to save digest preferences"
+    });
+  }
+});
+
+// Send weekly digest to user
+router.post('/notify/send-weekly-digest', async (req: Request, res: Response) => {
+  try {
+    const { user_email, user_id, days = 7 } = req.body;
+    
+    if (!user_email || !user_id) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required parameters: user_email and user_id are required"
+      });
+    }
+    
+    // Generate digest using Python script
+    const pythonProcess = spawn('python3', [
+      'scripts/generate_weekly_digest.py',
+      user_id,
+      days.toString()
+    ]);
+    
+    let digestText = '';
+    let errorText = '';
+    
+    pythonProcess.stdout.on('data', (data) => {
+      digestText += data.toString();
+    });
+    
+    pythonProcess.stderr.on('data', (data) => {
+      errorText += data.toString();
+      console.error(`Weekly digest generation error: ${data}`);
+    });
+    
+    pythonProcess.on('close', (code) => {
+      if (code !== 0 || errorText.trim()) {
+        return res.status(500).json({
+          success: false,
+          message: `Weekly digest generation failed: ${errorText}`
+        });
+      }
+      
+      if (!digestText.trim() || digestText.includes("No logs found")) {
+        return res.json({
+          success: true,
+          message: "No digest entries this week."
+        });
+      }
+      
+      const transporter = getTransporter();
+      
+      if (!transporter) {
+        return res.status(503).json({
+          success: false,
+          message: "Email service not configured"
+        });
+      }
+      
+      // Generate HTML version of the digest
+      const htmlProcess = spawn('python3', [
+        '-c', 
+        `from scripts.generate_weekly_digest import generate_html_digest; \
+        print(generate_html_digest("${user_id}", ${days}))`
+      ]);
+      
+      let htmlContent = '';
+      let htmlError = '';
+      
+      htmlProcess.stdout.on('data', (data) => {
+        htmlContent += data.toString();
+      });
+      
+      htmlProcess.stderr.on('data', (data) => {
+        htmlError += data.toString();
+        console.error(`HTML digest generation error: ${data}`);
+      });
+      
+      htmlProcess.on('close', async (htmlCode) => {
+        // Fall back to text version if HTML generation fails
+        if (htmlCode !== 0 || !htmlContent.trim()) {
+          htmlContent = `<pre>${digestText}</pre>`;
+        }
+        
+        // Send email with digest
+        const mailOptions = {
+          from: FROM_EMAIL,
+          to: user_email,
+          subject: `🧠 Your TrialSage Weekly Protocol Digest - ${new Date().toLocaleDateString()}`,
+          text: digestText,
+          html: htmlContent
+        };
+        
+        try {
+          await transporter.sendMail(mailOptions);
+          console.log(`Weekly digest sent to ${user_email}`);
+          
+          res.json({
+            success: true,
+            message: "Weekly digest sent successfully",
+            digest: digestText
+          });
+        } catch (emailError) {
+          console.error('Error sending digest email:', emailError);
+          res.status(500).json({
+            success: false,
+            message: `Error sending digest email: ${emailError instanceof Error ? emailError.message : "Unknown error"}`,
+            digest: digestText
+          });
+        }
+      });
+    });
+  } catch (error) {
+    console.error('Error in weekly digest generation:', error);
+    res.status(500).json({
+      success: false,
+      message: error instanceof Error ? error.message : "An unexpected error occurred during digest generation"
+    });
+  }
+});
+
+// Get weekly digest data (for displaying in dashboard)
+router.post('/digest/get-data', async (req: Request, res: Response) => {
+  try {
+    const { user_id, days = 7 } = req.body;
+    
+    if (!user_id) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required parameter: user_id is required"
+      });
+    }
+    
+    // Generate digest using Python script
+    const pythonProcess = spawn('python3', [
+      'scripts/generate_weekly_digest.py',
+      user_id,
+      days.toString()
+    ]);
+    
+    let digestText = '';
+    let errorText = '';
+    
+    pythonProcess.stdout.on('data', (data) => {
+      digestText += data.toString();
+    });
+    
+    pythonProcess.stderr.on('data', (data) => {
+      errorText += data.toString();
+      console.error(`Weekly digest data generation error: ${data}`);
+    });
+    
+    pythonProcess.on('close', (code) => {
+      if (code !== 0 || errorText.trim()) {
+        return res.status(500).json({
+          success: false,
+          message: `Weekly digest data generation failed: ${errorText}`
+        });
+      }
+      
+      if (!digestText.trim() || digestText.includes("No logs found")) {
+        return res.json({
+          success: true,
+          message: "No digest entries this week.",
+          digest: ""
+        });
+      }
+      
+      res.json({
+        success: true,
+        digest: digestText
+      });
+    });
+  } catch (error) {
+    console.error('Error in weekly digest data generation:', error);
+    res.status(500).json({
+      success: false,
+      message: error instanceof Error ? error.message : "An unexpected error occurred during digest data generation"
+    });
+  }
+});
+
 export default router;
