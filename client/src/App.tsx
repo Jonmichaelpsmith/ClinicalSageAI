@@ -16,7 +16,7 @@ import ProtocolGenerator from "@/pages/ProtocolGenerator";
 import StudyDesignAgent from "./pages/StudyDesignAgent";
 import Translation from "@/pages/Translation";
 import CsrExtractionGuide from "@/pages/CsrExtractionGuide";
-import { Sidebar } from "@/components/layout/NewSidebar";
+import { Sidebar } from "@/components/layout/UpdatedSidebar";
 import { TopNavbar } from "@/components/layout/TopNavbar";
 import ProductFeatures from "./pages/ProductFeatures";
 import PricingPage from "@/pages/PricingPage";
@@ -42,6 +42,7 @@ import TrialPredictorPage from "@/pages/TrialPredictorPage";
 import DossierViewerPage from "@/pages/DossierViewerPage";
 import LoginPage from "@/pages/LoginPage";
 import SignupPage from "@/pages/SignupPage";
+import ExportLogPage from "@/pages/ExportLogPage";
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -149,6 +150,8 @@ function Router() {
       <Route path="/smart-protocol">{() => renderWithLayout(SmartProtocolPage)}</Route>
       <Route path="/trial-predictor">{() => renderWithLayout(TrialPredictorPage)}</Route>
       <Route path="/dossier">{() => renderWithLayout(DossierViewerPage)}</Route>
+      <Route path="/my-dossiers">{() => renderWithLayout(DossierViewerPage)}</Route>
+      <Route path="/export-log">{() => renderWithLayout(ExportLogPage)}</Route>
 
       {/* Fallback to 404 */}
       <Route>{() => renderWithLayout(NotFound)}</Route>

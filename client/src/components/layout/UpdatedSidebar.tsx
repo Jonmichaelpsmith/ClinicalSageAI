@@ -203,6 +203,12 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                 <NavItem href="/dossier" icon={<FolderOpen />}>
                   Protocol Dossier
                 </NavItem>
+                <NavItem href="/my-dossiers" icon={<Save />}>
+                  My Dossiers
+                </NavItem>
+                <NavItem href="/export-log" icon={<FileOutput />}>
+                  Export Log
+                </NavItem>
               </div>
             </div>
 
@@ -325,6 +331,12 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                 </NavItem>
                 <NavItem href="/dossier" icon={<FolderOpen />}>
                   Protocol Dossier
+                </NavItem>
+                <NavItem href="/my-dossiers" icon={<Save />}>
+                  My Dossiers
+                </NavItem>
+                <NavItem href="/export-log" icon={<FileOutput />}>
+                  Export Log
                 </NavItem>
               </div>
             </div>
