@@ -1,0 +1,215 @@
+Always show details
+
+Copy
+from fpdf import FPDF
+import time
+
+# Sample structured recommendation
+structured_response = {
+    "protocol_id": "study_design_2024_phase2",
+    "indication": "Obesity",
+    "phase": "Phase 2",
+    "recommended_endpoint": "BMI reduction >=5% at 24 weeks",
+    "historical_success_rate": "62%",
+    "recommended_sample_size": "250 per arm",
+    "dropout_risk": "Moderate (18%)",
+    "regulatory_precedent": "EMA-approved in 3 obesity trials since 2022",
+    "top_matched_trials": [
+        "NCT01234567 – Success – 300 patients – BMI reduction",
+        "NCT02345678 – Failed – 150 patients – Weight loss %",
+        "NCT03456789 – Success – 260 patients – BMI + quality of life"
+    ]
+}
+
+# PDF generation
+class PDF(FPDF):
+    def header(self):
+        self.set_font("Arial", "B", 14)
+        self.cell(0, 10, f"TrialSage Study Design Summary – {structured_response['protocol_id']}", ln=True, align="C")
+        self.ln(5)
+
+    def add_section(self, title, content):
+        self.set_font("Arial", "B", 12)
+        self.cell(0, 10, title, ln=True)
+        self.ln(1)
+        self.set_font("Arial", "", 11)
+        self.multi_cell(0, 8, content)
+        self.ln(2)
+
+pdf = FPDF()
+pdf.add_page()
+
+pdf.add_section("Indication", structured_response["indication"])
+pdf.add_section("Phase", structured_response["phase"])
+pdf.add_section("Recommended Primary Endpoint", structured_response["recommended_endpoint"])
+pdf.add_section("Historical Success Rate", structured_response["historical_success_rate"])
+pdf.add_section("Recommended Sample Size", structured_response["recommended_sample_size"])
+pdf.add_section("Dropout Risk", structured_response["dropout_risk"])
+pdf.add_section("Regulatory Precedent", structured_response["regulatory_precedent"])
+pdf.add_section("Top Matched Trials", "\n".join(structured_response["top_matched_trials"]))
+
+pdf_path = f"/mnt/data/Study_Design_Recommendations_{int(time.time())}.pdf"
+pdf.output(pdf_path)
+
+pdf_path
+---------------------------------------------------------------------------
+AttributeError                            Traceback (most recent call last)
+Cell In[1], line 39
+     36 pdf = FPDF()
+     37 pdf.add_page()
+---> 39 pdf.add_section("Indication", structured_response["indication"])
+     40 pdf.add_section("Phase", structured_response["phase"])
+     41 pdf.add_section("Recommended Primary Endpoint", structured_response["recommended_endpoint"])
+
+AttributeError: 'FPDF' object has no attribute 'add_section'
+
+Analysis errored
+python
+Always show details
+
+Copy
+# Re-define PDF class to include the add_section method
+
+class CustomPDF(FPDF):
+    def header(self):
+        self.set_font("Arial", "B", 14)
+        self.cell(0, 10, f"TrialSage Study Design Summary – {structured_response['protocol_id']}", ln=True, align="C")
+        self.ln(5)
+
+    def add_section(self, title, content):
+        self.set_font("Arial", "B", 12)
+        self.cell(0, 10, title, ln=True)
+        self.ln(1)
+        self.set_font("Arial", "", 11)
+        self.multi_cell(0, 8, content)
+        self.ln(2)
+
+# Create and build the PDF
+pdf = CustomPDF()
+pdf.add_page()
+
+pdf.add_section("Indication", structured_response["indication"])
+pdf.add_section("Phase", structured_response["phase"])
+pdf.add_section("Recommended Primary Endpoint", structured_response["recommended_endpoint"])
+pdf.add_section("Historical Success Rate", structured_response["historical_success_rate"])
+pdf.add_section("Recommended Sample Size", structured_response["recommended_sample_size"])
+pdf.add_section("Dropout Risk", structured_response["dropout_risk"])
+pdf.add_section("Regulatory Precedent", structured_response["regulatory_precedent"])
+pdf.add_section("Top Matched Trials", "\n".join(structured_response["top_matched_trials"]))
+
+pdf_path = f"/mnt/data/Study_Design_Recommendations_{int(time.time())}.pdf"
+pdf.output(pdf_path)
+
+pdf_path
+---------------------------------------------------------------------------
+UnicodeEncodeError                        Traceback (most recent call last)
+Cell In[2], line 31
+     28 pdf.add_section("Top Matched Trials", "\n".join(structured_response["top_matched_trials"]))
+     30 pdf_path = f"/mnt/data/Study_Design_Recommendations_{int(time.time())}.pdf"
+---> 31 pdf.output(pdf_path)
+     33 pdf_path
+
+File ~/.local/lib/python3.11/site-packages/fpdf/fpdf.py:1065, in FPDF.output(self, name, dest)
+   1063 #Finish document if necessary
+   1064 if(self.state<3):
+-> 1065     self.close()
+   1066 dest=dest.upper()
+   1067 if(dest==''):
+
+File ~/.local/lib/python3.11/site-packages/fpdf/fpdf.py:246, in FPDF.close(self)
+    244 self._endpage()
+    245 #close document
+--> 246 self._enddoc()
+
+File ~/.local/lib/python3.11/site-packages/fpdf/fpdf.py:1636, in FPDF._enddoc(self)
+   1634 def _enddoc(self):
+   1635     self._putheader()
+-> 1636     self._putpages()
+   1637     self._putresources()
+   1638     #Info
+
+File ~/.local/lib/python3.11/site-packages/fpdf/fpdf.py:1170, in FPDF._putpages(self)
+   1167 #Page content
+   1168 if self.compress:
+   1169     # manage binary data as latin1 until PEP461 or similar is implemented
+-> 1170     p = self.pages[n].encode("latin1") if PY3K else self.pages[n] 
+   1171     p = zlib.compress(p)
+   1172 else:
+
+UnicodeEncodeError: 'latin-1' codec can't encode character '\u2013' in position 81: ordinal not in range(256)
+
+Analyzed
+python
+Always show details
+
+Copy
+# Replace problematic characters to avoid encoding errors
+def clean_text(text):
+    return (
+        text.replace("–", "-")
+            .replace("’", "'")
+            .replace("“", '"')
+            .replace("”", '"')
+            .replace("≥", ">=")
+    )
+
+class CustomPDF(FPDF):
+    def header(self):
+        self.set_font("Arial", "B", 14)
+        title = clean_text(f"TrialSage Study Design Summary – {structured_response['protocol_id']}")
+        self.cell(0, 10, title, ln=True, align="C")
+        self.ln(5)
+
+    def add_section(self, title, content):
+        self.set_font("Arial", "B", 12)
+        self.cell(0, 10, clean_text(title), ln=True)
+        self.ln(1)
+        self.set_font("Arial", "", 11)
+        self.multi_cell(0, 8, clean_text(content))
+        self.ln(2)
+
+pdf = CustomPDF()
+pdf.add_page()
+
+pdf.add_section("Indication", structured_response["indication"])
+pdf.add_section("Phase", structured_response["phase"])
+pdf.add_section("Recommended Primary Endpoint", structured_response["recommended_endpoint"])
+pdf.add_section("Historical Success Rate", structured_response["historical_success_rate"])
+pdf.add_section("Recommended Sample Size", structured_response["recommended_sample_size"])
+pdf.add_section("Dropout Risk", structured_response["dropout_risk"])
+pdf.add_section("Regulatory Precedent", structured_response["regulatory_precedent"])
+pdf.add_section("Top Matched Trials", "\n".join(structured_response["top_matched_trials"]))
+
+pdf_path = f"/mnt/data/Study_Design_Recommendations_{int(time.time())}.pdf"
+pdf.output(pdf_path)
+
+pdf_path
+Result
+'/mnt/data/Study_Design_Recommendations_1744341802.pdf'
+✅ Your upgraded Study Design Agent report is now ready!
+
+📄 Download the new structured, precedent-based PDF here:
+Study_Design_Recommendations.pdf
+
+Would you like to:
+
+Auto-generate this report when the AI chat finishes?
+
+Or plug this directly into the Protocol Optimizer or Dossier system? ​​
+
+
+
+
+
+
+
+
+
+
+
+Search
+
+Deep research
+
+
+
