@@ -1,180 +1,177 @@
-import express from 'express';
+import { Request, Response, Router } from 'express';
 import { db } from './db';
 import { strategicReports, protocols } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 import { strategicReportGenerator } from './strategic-report-generator';
 
-const router = express.Router();
+const router = Router();
 
 /**
  * Get all strategic reports
  */
-router.get('/api/strategic-reports', async (req, res) => {
+router.get('/', async (_req: Request, res: Response) => {
   try {
-    const allReports = await db.select().from(strategicReports).orderBy(strategicReports.generatedDate);
-    res.json(allReports);
+    const reports = await db.select().from(strategicReports).orderBy(strategicReports.createdAt);
+    return res.status(200).json(reports);
   } catch (error) {
     console.error('Error fetching strategic reports:', error);
-    res.status(500).json({ error: 'Failed to fetch strategic reports' });
+    return res.status(500).json({ error: 'Failed to fetch strategic reports' });
   }
 });
 
 /**
  * Get a specific strategic report by ID
  */
-router.get('/api/strategic-reports/:id', async (req, res) => {
+router.get('/:id', async (req: Request, res: Response) => {
   try {
-    const reportId = parseInt(req.params.id);
-    if (isNaN(reportId)) {
-      return res.status(400).json({ error: 'Invalid report ID' });
-    }
-    
-    const [report] = await db.select().from(strategicReports).where(eq(strategicReports.id, reportId));
-    
+    const { id } = req.params;
+    const [report] = await db
+      .select()
+      .from(strategicReports)
+      .where(eq(strategicReports.id, parseInt(id)));
+
     if (!report) {
       return res.status(404).json({ error: 'Strategic report not found' });
     }
-    
-    res.json(report);
+
+    return res.status(200).json(report);
   } catch (error) {
-    console.error(`Error fetching strategic report ${req.params.id}:`, error);
-    res.status(500).json({ error: 'Failed to fetch strategic report' });
+    console.error(`Error fetching strategic report with ID ${req.params.id}:`, error);
+    return res.status(500).json({ error: 'Failed to fetch strategic report' });
   }
 });
 
 /**
  * Generate a strategic report for a protocol
  */
-router.post('/api/strategic-reports/generate', async (req, res) => {
+router.post('/generate/:protocolId', async (req: Request, res: Response) => {
   try {
-    const { protocolId } = req.body;
+    const { protocolId } = req.params;
     
-    if (!protocolId) {
-      return res.status(400).json({ error: 'Protocol ID is required' });
-    }
-    
-    // Get protocol data
-    const [protocol] = await db.select().from(protocols).where(eq(protocols.id, protocolId));
-    
+    // Fetch protocol data
+    const [protocol] = await db
+      .select()
+      .from(protocols)
+      .where(eq(protocols.id, parseInt(protocolId)));
+
     if (!protocol) {
       return res.status(404).json({ error: 'Protocol not found' });
     }
     
-    // Check if report already exists
+    // Check if a strategic report already exists for this protocol
     const [existingReport] = await db
       .select()
       .from(strategicReports)
-      .where(eq(strategicReports.protocolId, protocolId));
+      .where(eq(strategicReports.protocolId, parseInt(protocolId)));
     
     if (existingReport) {
-      return res.json({ 
-        reportId: existingReport.id,
+      return res.status(200).json({ 
         message: 'Strategic report already exists for this protocol',
-        isNew: false
+        reportId: existingReport.id 
       });
     }
+
+    // Parse primary endpoints
+    let primaryEndpoints: string[] = [];
+    if (protocol.primaryEndpoints) {
+      try {
+        primaryEndpoints = JSON.parse(protocol.primaryEndpoints);
+      } catch (e) {
+        primaryEndpoints = [protocol.primaryEndpoints];
+      }
+    }
     
-    // Extract needed data from protocol
-    const primaryEndpoints = protocol.primaryEndpoints 
-      ? (typeof protocol.primaryEndpoints === 'string' 
-        ? [protocol.primaryEndpoints] 
-        : protocol.primaryEndpoints) 
-      : [];
-      
-    // Generate the report
+    // Generate strategic report
     const reportId = await strategicReportGenerator.generateReport(
       protocol.id,
-      protocol.indication || '',
-      protocol.phase || '',
+      protocol.indication,
+      protocol.phase,
       primaryEndpoints,
-      protocol.sampleSize || 0,
-      protocol.durationWeeks || 0,
-      protocol.controlType || '',
-      protocol.blinding || ''
+      protocol.sampleSize || 100,
+      protocol.duration || 12,
+      protocol.controlType || 'placebo',
+      protocol.blinding || 'double-blind'
     );
     
-    res.json({ 
-      reportId,
+    return res.status(201).json({ 
       message: 'Strategic report generated successfully',
-      isNew: true
+      reportId
     });
-    
   } catch (error) {
-    console.error('Error generating strategic report:', error);
-    res.status(500).json({ error: 'Failed to generate strategic report' });
+    console.error(`Error generating strategic report for protocol ${req.params.protocolId}:`, error);
+    return res.status(500).json({ error: 'Failed to generate strategic report' });
   }
 });
 
 /**
  * Generate or regenerate a strategic report on demand
  */
-router.post('/api/strategic-reports/generate-custom', async (req, res) => {
+router.post('/generate-manual', async (req: Request, res: Response) => {
   try {
     const { 
       protocolId,
-      indication, 
-      phase, 
-      primaryEndpoints, 
-      sampleSize, 
-      duration, 
-      controlType, 
-      blinding 
+      indication,
+      phase,
+      primaryEndpoints,
+      sampleSize,
+      duration,
+      controlType,
+      blinding
     } = req.body;
     
+    // Validate required fields
     if (!indication || !phase) {
       return res.status(400).json({ error: 'Indication and phase are required' });
     }
     
-    // Generate the report
+    // Generate strategic report
     const reportId = await strategicReportGenerator.generateReport(
       protocolId || 0,
       indication,
       phase,
       primaryEndpoints || [],
-      sampleSize || 0,
-      duration || 0,
-      controlType || '',
-      blinding || ''
+      sampleSize || 100,
+      duration || 12,
+      controlType || 'placebo',
+      blinding || 'double-blind'
     );
     
-    res.json({ 
-      reportId,
-      message: 'Custom strategic report generated successfully'
+    return res.status(201).json({ 
+      message: 'Strategic report generated successfully',
+      reportId
     });
-    
   } catch (error) {
-    console.error('Error generating custom strategic report:', error);
-    res.status(500).json({ error: 'Failed to generate custom strategic report' });
+    console.error('Error generating manual strategic report:', error);
+    return res.status(500).json({ error: 'Failed to generate strategic report' });
   }
 });
 
 /**
  * Delete a strategic report
  */
-router.delete('/api/strategic-reports/:id', async (req, res) => {
+router.delete('/:id', async (req: Request, res: Response) => {
   try {
-    const reportId = parseInt(req.params.id);
-    if (isNaN(reportId)) {
-      return res.status(400).json({ error: 'Invalid report ID' });
-    }
+    const { id } = req.params;
     
     // Check if report exists
     const [report] = await db
       .select()
       .from(strategicReports)
-      .where(eq(strategicReports.id, reportId));
+      .where(eq(strategicReports.id, parseInt(id)));
     
     if (!report) {
       return res.status(404).json({ error: 'Strategic report not found' });
     }
     
-    // Delete the report
-    await db.delete(strategicReports).where(eq(strategicReports.id, reportId));
+    // Delete report
+    await db
+      .delete(strategicReports)
+      .where(eq(strategicReports.id, parseInt(id)));
     
-    res.json({ message: 'Strategic report deleted successfully' });
+    return res.status(200).json({ message: 'Strategic report deleted successfully' });
   } catch (error) {
-    console.error(`Error deleting strategic report ${req.params.id}:`, error);
-    res.status(500).json({ error: 'Failed to delete strategic report' });
+    console.error(`Error deleting strategic report with ID ${req.params.id}:`, error);
+    return res.status(500).json({ error: 'Failed to delete strategic report' });
   }
 });
 

@@ -36,7 +36,6 @@ import {
   findLatestDataFile,
   importTrialsFromApiV2
 } from "./data-importer";
-import path from "path";
 import fs from "fs";
 import { insertCsrReportSchema, csrReports, csrDetails } from "@shared/schema";
 import { ZodError, z } from "zod";
@@ -275,6 +274,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register CSR Deep Learning Analysis routes
   app.use('/api/deep-learning', csrDeepLearningRouter);
+  
+  // Register Strategic Report routes
+  app.use('/api/strategic-reports', strategicReportRoutes);
   
   // Get notification logs
   app.get('/api/notifications/logs', async (_req: Request, res: Response) => {
