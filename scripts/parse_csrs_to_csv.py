@@ -1,6 +1,7 @@
 import os
 import json
 import pandas as pd
+from datetime import datetime
 
 def parse_csrs_to_dataset():
     """
@@ -11,81 +12,80 @@ def parse_csrs_to_dataset():
     """
     print("Starting CSR data normalization process...")
     
-    # Check if directory exists
-    if not os.path.exists("data/processed_csrs"):
-        print("Directory data/processed_csrs does not exist, creating...")
-        os.makedirs("data/processed_csrs", exist_ok=True)
+    # Setup paths
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.abspath(os.path.join(script_dir, '..'))
+    processed_dir = os.path.join(project_root, "data", "processed_csrs")
+    output_dir = os.path.join(script_dir, "data")
+    output_file = os.path.join(output_dir, "csr_dataset.csv")
     
-    # Get list of all JSON files
-    json_files = [f for f in os.listdir("data/processed_csrs") if f.endswith('.json')]
+    # Create output directory if it doesn't exist
+    os.makedirs(output_dir, exist_ok=True)
     
-    if len(json_files) == 0:
-        print("No JSON files found in data/processed_csrs directory")
-        return
+    # Get all JSON files
+    json_files = [f for f in os.listdir(processed_dir) if f.endswith('.json')]
     
     print(f"Found {len(json_files)} CSR JSON files to process")
     
+    # Initialize data collection
     records = []
-    error_count = 0
+    errors = 0
     
-    for fname in json_files:
+    # Process each file
+    for filename in json_files:
         try:
-            with open(f"data/processed_csrs/{fname}") as f:
-                csr = json.load(f)
+            file_path = os.path.join(processed_dir, filename)
+            with open(file_path, 'r') as f:
+                data = json.load(f)
             
-            # Extract primary endpoint from list if it exists
-            primary_endpoint = ""
-            if "primary_endpoints" in csr and isinstance(csr["primary_endpoints"], list) and len(csr["primary_endpoints"]) > 0:
-                primary_endpoint = csr["primary_endpoints"][0]
-            
-            # Normalize the record
+            # Extract key fields for ML dataset
             record = {
-                "nct_id": csr.get("nct_id", fname.replace(".json", "")),
-                "indication": csr.get("indication", "").strip(),
-                "phase": csr.get("phase", "").replace("Phase ", "").strip(),
-                "sample_size": int(csr.get("sample_size", 0)),
-                "duration_weeks": int(csr.get("duration_weeks", 0)),
-                "dropout_rate": float(csr.get("dropout_rate", 0)) if csr.get("dropout_rate") not in [None, ""] else None,
-                "endpoint_primary": primary_endpoint,
-                "control_type": csr.get("control_arm", "Unknown"),
-                "blinding": csr.get("blinding", "None"),
-                "outcome": csr.get("outcome_summary", "").lower(),
+                'nct_id': data.get('nct_id', ''),
+                'indication': data.get('indication', ''),
+                'phase': data.get('phase', ''),
+                'sample_size': data.get('sample_size', None),
+                'duration_weeks': data.get('duration_weeks', None),
+                'dropout_rate': data.get('dropout_rate', None),
+                'blinding': data.get('blinding', ''),
+                'control_arm': data.get('control_arm', ''),
+                'primary_endpoints': ', '.join(data.get('primary_endpoints', [])) if isinstance(data.get('primary_endpoints'), list) else data.get('primary_endpoints', ''),
+                'secondary_endpoints': ', '.join(data.get('secondary_endpoints', [])) if isinstance(data.get('secondary_endpoints'), list) else data.get('secondary_endpoints', ''),
+                'outcome_summary': data.get('outcome_summary', ''),
+                'success': data.get('success', None),
+                'failure_reason': data.get('failure_reason', '')
             }
             
-            # Determine success - multiple indicators in the outcome
-            success_terms = ["significant", "met endpoint", "positive outcome", "successful", "efficacy demonstrated"]
-            record["success"] = int(any(term in record["outcome"] for term in success_terms))
-            
-            # Capture failure reason if available
-            record["failure_reason"] = csr.get("failure_reason", record["outcome"] if record["success"] == 0 else "")
-            
             records.append(record)
-
+            
         except Exception as e:
-            error_count += 1
-            print(f"Error processing {fname}: {e}")
+            print(f"Error processing {filename}: {str(e)}")
+            errors += 1
     
-    print(f"Processed {len(records)} records successfully with {error_count} errors")
-    
-    if len(records) == 0:
-        print("No valid records found, dataset not created")
-        return
-    
-    # Create dataframe and save to CSV
+    # Convert to dataframe
     df = pd.DataFrame(records)
-    output_path = "data/csr_dataset.csv"
-    df.to_csv(output_path, index=False)
     
-    print(f"Dataset saved to {output_path}")
+    # Save to CSV
+    df.to_csv(output_file, index=False)
+    
+    print(f"Processed {len(records)} records successfully with {errors} errors")
+    print(f"Dataset saved to {output_file}")
     print(f"Dataset shape: {df.shape}")
     
-    # Print summary statistics
+    # Print some basic analytics
     print("\nDataset Summary:")
     print(f"Total CSRs: {len(df)}")
-    print(f"Successful trials: {df['success'].sum()} ({df['success'].sum()/len(df)*100:.1f}%)")
-    print(f"Indications: {df['indication'].nunique()}")
-    print(f"Phases: {df['phase'].nunique()}")
-    print(f"Average sample size: {df['sample_size'].mean():.1f}")
+    if 'success' in df.columns:
+        success_count = df['success'].sum()
+        print(f"Successful trials: {success_count} ({success_count/len(df)*100:.1f}%)")
+    
+    if 'indication' in df.columns:
+        print(f"Indications: {df['indication'].nunique()}")
+    
+    if 'phase' in df.columns:
+        print(f"Phases: {df['phase'].nunique()}")
+    
+    if 'sample_size' in df.columns:
+        print(f"Average sample size: {df['sample_size'].mean()}")
     
     return df
 

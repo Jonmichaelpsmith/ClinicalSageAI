@@ -14,13 +14,18 @@ def train_failure_reason_classifier():
     """
     print("Training failure reason classifier...")
     
+    # Get the absolute path to the dataset from the project root
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.abspath(os.path.join(script_dir, '..'))
+    dataset_path = os.path.join(project_root, "data", "csr_dataset.csv")
+    
     # Check if the dataset exists
-    if not os.path.exists("data/csr_dataset.csv"):
-        print("Error: data/csr_dataset.csv not found. Run parse_csrs_to_csv.py first.")
+    if not os.path.exists(dataset_path):
+        print(f"Error: {dataset_path} not found. Run parse_csrs_to_csv.py first.")
         return
     
     # Load the dataset
-    df = pd.read_csv("data/csr_dataset.csv")
+    df = pd.read_csv(dataset_path)
     
     # Filter out rows with empty failure_reason
     df = df[df['failure_reason'].notna() & (df['failure_reason'] != '')]
@@ -73,18 +78,21 @@ def train_failure_reason_classifier():
     print(classification_report(y_test, test_pred))
     
     # Create models directory if it doesn't exist
-    os.makedirs("models", exist_ok=True)
+    models_dir = os.path.join(project_root, "models")
+    os.makedirs(models_dir, exist_ok=True)
     
     # Save the models
-    with open("models/failure_vec.pkl", "wb") as f:
+    vectorizer_path = os.path.join(models_dir, "failure_vec.pkl")
+    with open(vectorizer_path, "wb") as f:
         pickle.dump(vectorizer, f)
     
-    with open("models/failure_clf.pkl", "wb") as f:
+    clf_path = os.path.join(models_dir, "failure_clf.pkl")
+    with open(clf_path, "wb") as f:
         pickle.dump(clf, f)
     
     print("\nModel saved to:")
-    print("- models/failure_vec.pkl")
-    print("- models/failure_clf.pkl")
+    print(f"- {vectorizer_path}")
+    print(f"- {clf_path}")
     
     # Display some important features
     feature_importance = pd.DataFrame({
