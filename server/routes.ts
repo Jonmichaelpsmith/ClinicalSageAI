@@ -28,6 +28,7 @@ import { csrDeepLearningRouter } from "./csr-deep-learning-routes";
 import { getEndpointRecommenderService } from "./services/endpoint-recommender-service";
 import { notificationService } from "./notification-service";
 import { strategicIntelligenceService } from "./strategic-intelligence-service";
+import strategicReportRoutes from "./strategic-report-routes";
 import { 
   fetchClinicalTrialData, 
   importTrialsFromCsv, 
