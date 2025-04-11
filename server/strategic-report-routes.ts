@@ -11,7 +11,7 @@ const router = Router();
  */
 router.get('/', async (_req: Request, res: Response) => {
   try {
-    const reports = await db.select().from(strategicReports).orderBy(strategicReports.createdAt);
+    const reports = await db.select().from(strategicReports).orderBy(strategicReports.generatedDate);
     return res.status(200).json(reports);
   } catch (error) {
     console.error('Error fetching strategic reports:', error);
@@ -88,8 +88,8 @@ router.post('/generate/:protocolId', async (req: Request, res: Response) => {
       protocol.phase,
       primaryEndpoints,
       protocol.sampleSize || 100,
-      protocol.duration || 12,
-      protocol.controlType || 'placebo',
+      protocol.durationWeeks || 12,
+      protocol.controlType || 'placebo', 
       protocol.blinding || 'double-blind'
     );
     
