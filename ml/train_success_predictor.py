@@ -38,18 +38,26 @@ def train_success_predictor():
     print(f"Working with {len(df)} records after dropping missing targets")
     print(f"Success rate in dataset: {df['success'].mean():.2f}")
     
-    # Define features
-    categorical_features = ['indication', 'phase', 'blinding', 'control_arm']
+    # Define features based on actual column names in CSV
+    categorical_features = ['indication', 'phase', 'blinding', 'control_type']
     numerical_features = ['sample_size', 'duration_weeks', 'dropout_rate']
     
-    # Drop rows where all features are missing
-    required_columns = categorical_features + numerical_features
+    # Check which columns actually exist in the dataframe
+    available_cat_features = [col for col in categorical_features if col in df.columns]
+    available_num_features = [col for col in numerical_features if col in df.columns]
+    
+    print(f"Available categorical features: {available_cat_features}")
+    print(f"Available numerical features: {available_num_features}")
+    
+    # Drop rows where all available features are missing
+    required_columns = available_cat_features + available_num_features
     df = df.dropna(subset=required_columns, how='all')
     
     print(f"Final dataset size: {len(df)} records")
     
     # Split the data
-    X = df[categorical_features + numerical_features]
+    available_features = available_cat_features + available_num_features
+    X = df[available_features]
     y = df['success'].astype(int)
     
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -68,11 +76,17 @@ def train_success_predictor():
         ('scaler', StandardScaler())
     ])
     
+    # Only use available features in the transformers
     preprocessor = ColumnTransformer(
         transformers=[
-            ('cat', categorical_transformer, categorical_features),
-            ('num', numerical_transformer, numerical_features)
-        ])
+            ('cat', categorical_transformer, available_cat_features) if available_cat_features else None,
+            ('num', numerical_transformer, available_num_features) if available_num_features else None
+        ],
+        remainder='drop'
+    )
+    
+    # Filter out None transformers
+    preprocessor.transformers = [t for t in preprocessor.transformers if t is not None]
     
     # Build the full pipeline
     clf = Pipeline(steps=[
@@ -117,14 +131,23 @@ def train_success_predictor():
     
     # Try to extract feature importance (for Random Forest)
     try:
-        feature_names = categorical_features + numerical_features
+        feature_names = available_cat_features + available_num_features
         rf_model = clf.named_steps['classifier']
         
         # Determine feature names after one-hot encoding
-        cat_encoder = clf.named_steps['preprocessor'].transformers_[0][1].named_steps['onehot']
-        if hasattr(cat_encoder, 'get_feature_names_out'):
-            cat_features = cat_encoder.get_feature_names_out(categorical_features)
-            all_features = list(cat_features) + numerical_features
+        if available_cat_features and len(clf.named_steps['preprocessor'].transformers_) > 0:
+            cat_transformer_idx = 0
+            if clf.named_steps['preprocessor'].transformers_[0][0] == 'cat':
+                cat_transformer_idx = 0
+            elif len(clf.named_steps['preprocessor'].transformers_) > 1 and clf.named_steps['preprocessor'].transformers_[1][0] == 'cat':
+                cat_transformer_idx = 1
+                
+            cat_encoder = clf.named_steps['preprocessor'].transformers_[cat_transformer_idx][1].named_steps['onehot']
+            if hasattr(cat_encoder, 'get_feature_names_out'):
+                cat_features = cat_encoder.get_feature_names_out(available_cat_features)
+                all_features = list(cat_features) + available_num_features
+            else:
+                all_features = feature_names
         else:
             all_features = feature_names
         
