@@ -1,0 +1,69 @@
+# /services/openai_engine.py
+import os
+import openai
+from typing import Dict
+
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
+# --- Core Assistant Logic ---
+ASSISTANT_ID = os.getenv("TRIALSAGE_ASSISTANT_ID")  # Pre-created Assistant ID in OpenAI
+
+
+def create_assistant_thread() -> str:
+    thread = openai.beta.threads.create()
+    return thread.id
+
+
+def run_assistant(thread_id: str, message: str) -> str:
+    run = openai.beta.threads.runs.create(
+        thread_id=thread_id,
+        assistant_id=ASSISTANT_ID,
+        instructions=(
+            "You are TrialSage, an expert clinical trial assistant."
+            " Use regulatory-grade insight, CSR precedent, and ICH/FDA frameworks to help users design, defend, and optimize trials."
+        ),
+        messages=[{"role": "user", "content": message}]
+    )
+    return run.id
+
+
+def get_run_output(thread_id: str, run_id: str) -> str:
+    status = openai.beta.threads.runs.retrieve(thread_id=thread_id, run_id=run_id)
+    while status.status != "completed":
+        status = openai.beta.threads.runs.retrieve(thread_id=thread_id, run_id=run_id)
+    messages = openai.beta.threads.messages.list(thread_id=thread_id)
+    for message in messages.data:
+        if message.role == "assistant":
+            return message.content[0].text.value
+    return "[No response returned]"
+
+
+def generate_protocol_from_evidence(indication: str, thread_id: str = None) -> Dict:
+    thread_id = thread_id or create_assistant_thread()
+    prompt = (
+        f"Design a Phase 2 trial for '{indication}'. "
+        "Include arms, randomization, sample size, endpoints, and duration. "
+        "Cite 3-5 real CSR precedents and assess regulatory risk."
+    )
+    run_id = run_assistant(thread_id, prompt)
+    result = get_run_output(thread_id, run_id)
+
+    # Dummy extract until structured tool response: TODO
+    return {
+        "recommendation": result.strip(),
+        "citations": ["CSR_2020_NASH_01", "CSR_2022_NASH_05"],
+        "ind_module_2_5": {"section": "2.5", "content": result},
+        "risk_summary": "This protocol may trigger FDA concern over 12-week duration due to past precedent.",
+        "thread_id": thread_id
+    }
+
+
+def generate_ind_section(study_id: str, section: str, context: str, thread_id: str = None) -> Dict:
+    thread_id = thread_id or create_assistant_thread()
+    prompt = (
+        f"Draft IND module {section} for {study_id} using this input:\n{context}\n"
+        "Format per FDA expectations, citing historical trial evidence."
+    )
+    run_id = run_assistant(thread_id, prompt)
+    result = get_run_output(thread_id, run_id)
+    return {"section": section, "content": result.strip()}
