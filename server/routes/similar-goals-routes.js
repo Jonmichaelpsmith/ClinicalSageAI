@@ -1,7 +1,7 @@
 import { db } from '../db.js';
-import { getHuggingFaceService } from '../services/huggingface-service.js';
+import HuggingFaceService from '../services/huggingface-service.js';
 
-const hfService = getHuggingFaceService();
+const hfService = new HuggingFaceService();
 
 /**
  * Find clinical studies with similar goals using text search
@@ -17,7 +17,7 @@ export async function findSimilarGoals(req, res) {
     }
     
     // Generate embedding for the query using HF model
-    const queryEmbedding = await hfService.generateEmbedding(query);
+    const queryEmbedding = await hfService.getTextEmbedding(query);
     
     if (!queryEmbedding) {
       return res.status(500).json({ 
