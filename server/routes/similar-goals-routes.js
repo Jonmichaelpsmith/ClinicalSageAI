@@ -1,343 +1,379 @@
-/**
- * Similar Goals Search Routes for TrialSage
- * Handles API endpoints for finding CSRs with similar study goals
- * and analyzing them with AI
- */
+import { db } from '../db.js';
+import { getHuggingFaceService } from '../services/huggingface-service.js';
 
-import { db } from '../db';
-import { csr_reports, csr_details } from '@shared/schema';
-import { eq, like, desc, and } from 'drizzle-orm';
-import { HuggingFaceService } from '../services/huggingface-service';
+const hfService = getHuggingFaceService();
 
 /**
- * Find CSRs with study goals similar to the provided goal text
+ * Find clinical studies with similar goals using text search
  */
-export async function findSimilarGoalsByText(req, res) {
+export async function findSimilarGoals(req, res) {
+  try {
+    const { query } = req.body;
+    
+    if (!query || query.trim() === '') {
+      return res.status(400).json({ 
+        error: 'Query text is required' 
+      });
+    }
+    
+    // Generate embedding for the query using HF model
+    const queryEmbedding = await hfService.generateEmbedding(query);
+    
+    if (!queryEmbedding) {
+      return res.status(500).json({ 
+        error: 'Failed to generate embedding for query'
+      });
+    }
+    
+    // Retrieve trials from database with vector similarity search
+    const similarTrials = await performVectorSearch(queryEmbedding);
+    
+    res.json({ 
+      results: similarTrials 
+    });
+    
+  } catch (error) {
+    console.error('Error in similar goals search:', error);
+    res.status(500).json({ 
+      error: 'An error occurred while searching for similar studies' 
+    });
+  }
+}
+
+/**
+ * Match specific protocol elements to find similar studies
+ */
+export async function matchProtocol(req, res) {
   try {
     const { 
-      goalText, 
-      minSimilarity = 0.6, 
-      maxResults = 10,
-      includeEndpoints = true,
-      includeAdverseEvents = true,
-      includeSampleSize = true,
-      searchType = 'semantic'
+      title, 
+      description, 
+      endpoints, 
+      criteria, 
+      matchThreshold = 0.7 
     } = req.body;
     
-    if (!goalText) {
-      return res.status(400).json({ error: 'Goal text is required' });
-    }
+    // Create a combined text representation of the protocol
+    const protocolText = [
+      title || '',
+      description || '',
+      endpoints ? (Array.isArray(endpoints) ? endpoints.join('\n') : endpoints) : '',
+      criteria ? (Array.isArray(criteria) ? criteria.join('\n') : criteria) : ''
+    ].filter(Boolean).join('\n\n');
     
-    // Call Hugging Face service to get embeddings for the goal text
-    const hfService = new HuggingFaceService();
-    
-    // Get text embedding with Hugging Face service
-    const embedding = await hfService.getTextEmbedding(goalText);
-    
-    if (!embedding) {
-      return res.status(500).json({ error: 'Failed to generate embeddings for goal text' });
-    }
-    
-    // Perform semantic search using the embedding
-    let similarCSRs = [];
-    
-    if (searchType === 'semantic' || searchType === 'hybrid') {
-      // Get all CSRs from database to use for semantic search
-      const allReports = await db.select().from(csr_reports);
-      const allDetails = await db.select().from(csr_details);
-      
-      // Match reports with details
-      const csrsWithDetails = allReports.map(report => {
-        const detail = allDetails.find(d => d.reportId === report.id);
-        return { ...report, ...detail };
+    if (!protocolText.trim()) {
+      return res.status(400).json({ 
+        error: 'Protocol details are required' 
       });
-      
-      // Filter out reports without primary objectives
-      const reportsWithObjectives = csrsWithDetails.filter(csr => 
-        csr && csr.primaryObjective && csr.primaryObjective.length > 10
-      );
-      
-      // For each CSR, calculate similarity with the goal text
-      for (const csr of reportsWithObjectives) {
-        // Combine primary and secondary objectives
-        const csrGoalText = `${csr.primaryObjective || ''} ${csr.secondaryObjective || ''}`;
-        
-        // Get embedding for the CSR goal text
-        const csrEmbedding = await hfService.getTextEmbedding(csrGoalText);
-        
-        if (csrEmbedding) {
-          // Calculate cosine similarity between the goal text and CSR goal text
-          const similarity = calculateCosineSimilarity(embedding, csrEmbedding);
-          
-          if (similarity >= minSimilarity) {
-            // Process endpoints if available and requested
-            const endpoints = [];
-            if (includeEndpoints && csr.primaryEndpoint) {
-              endpoints.push(csr.primaryEndpoint);
-            }
-            
-            if (includeEndpoints && csr.secondaryEndpoints) {
-              const secondaryEndpoints = typeof csr.secondaryEndpoints === 'string' 
-                ? csr.secondaryEndpoints.split(',').map(e => e.trim())
-                : Array.isArray(csr.secondaryEndpoints) ? csr.secondaryEndpoints : [];
-              
-              endpoints.push(...secondaryEndpoints);
-            }
-            
-            // Add to similar CSRs
-            similarCSRs.push({
-              id: csr.id,
-              title: csr.title,
-              sponsor: csr.sponsor,
-              indication: csr.indication,
-              phase: csr.phase,
-              sampleSize: includeSampleSize ? parseInt(csr.sampleSize) || null : null,
-              primaryObjective: csr.primaryObjective || '',
-              secondaryObjectives: csr.secondaryObjective || '',
-              endpoints: endpoints.filter(e => e && e.length > 0),
-              adverseEvents: includeAdverseEvents && csr.adverseEvents ? csr.adverseEvents : [],
-              similarityScore: similarity
-            });
-          }
-        }
-      }
     }
     
-    // For keyword search or hybrid search, also perform text-based search
-    if (searchType === 'keyword' || searchType === 'hybrid') {
-      // Get reports that match keywords in goal text
-      const keywords = extractKeywords(goalText);
-      
-      if (keywords.length > 0) {
-        for (const keyword of keywords) {
-          if (keyword.length < 3) continue; // Skip short keywords
-          
-          const keywordResults = await db.select()
-            .from(csr_reports)
-            .leftJoin(csr_details, eq(csr_reports.id, csr_details.reportId))
-            .where(
-              and(
-                or(
-                  like(csr_reports.title, `%${keyword}%`),
-                  like(csr_details.primaryObjective || '', `%${keyword}%`),
-                  like(csr_details.secondaryObjective || '', `%${keyword}%`)
-                )
-              )
-            );
-          
-          for (const result of keywordResults) {
-            const report = result.csr_reports;
-            const detail = result.csr_details;
-            
-            // Skip if already in similar CSRs
-            if (similarCSRs.some(csr => csr.id === report.id)) {
-              continue;
-            }
-            
-            // Calculate keyword match score (simple heuristic)
-            let keywordMatchScore = 0;
-            keywords.forEach(kw => {
-              if ((report.title || '').toLowerCase().includes(kw.toLowerCase())) keywordMatchScore += 0.2;
-              if ((detail?.primaryObjective || '').toLowerCase().includes(kw.toLowerCase())) keywordMatchScore += 0.3;
-              if ((detail?.secondaryObjective || '').toLowerCase().includes(kw.toLowerCase())) keywordMatchScore += 0.2;
-            });
-            
-            // Normalize score
-            keywordMatchScore = Math.min(keywordMatchScore, 0.95);
-            
-            // Only include if meets minimum similarity
-            if (keywordMatchScore >= minSimilarity) {
-              // Process endpoints if available and requested
-              const endpoints = [];
-              if (includeEndpoints && detail?.primaryEndpoint) {
-                endpoints.push(detail.primaryEndpoint);
-              }
-              
-              if (includeEndpoints && detail?.secondaryEndpoints) {
-                const secondaryEndpoints = typeof detail.secondaryEndpoints === 'string' 
-                  ? detail.secondaryEndpoints.split(',').map(e => e.trim())
-                  : Array.isArray(detail.secondaryEndpoints) ? detail.secondaryEndpoints : [];
-                
-                endpoints.push(...secondaryEndpoints);
-              }
-              
-              // Add to similar CSRs
-              similarCSRs.push({
-                id: report.id,
-                title: report.title,
-                sponsor: report.sponsor,
-                indication: report.indication,
-                phase: report.phase,
-                sampleSize: includeSampleSize ? parseInt(detail?.sampleSize) || null : null,
-                primaryObjective: detail?.primaryObjective || '',
-                secondaryObjectives: detail?.secondaryObjective || '',
-                endpoints: endpoints.filter(e => e && e.length > 0),
-                adverseEvents: includeAdverseEvents && detail?.adverseEvents ? detail.adverseEvents : [],
-                similarityScore: keywordMatchScore
-              });
-            }
-          }
-        }
-      }
+    // Generate embedding for protocol
+    const protocolEmbedding = await hfService.generateEmbedding(protocolText);
+    
+    if (!protocolEmbedding) {
+      return res.status(500).json({ 
+        error: 'Failed to generate embedding for protocol'
+      });
     }
     
-    // Sort by similarity score and limit results
-    similarCSRs.sort((a, b) => b.similarityScore - a.similarityScore);
-    similarCSRs = similarCSRs.slice(0, maxResults);
+    // Find similar trials with higher threshold
+    const similarTrials = await performVectorSearch(
+      protocolEmbedding, 
+      20, 
+      matchThreshold
+    );
     
-    return res.json({ results: similarCSRs });
+    // Extract protocol-specific elements for better matching
+    const protocolElements = extractProtocolElements(protocolText);
+    
+    // Re-rank results based on additional criteria matching
+    const rankedResults = rankProtocolMatches(similarTrials, protocolElements);
+    
+    res.json({ 
+      results: rankedResults 
+    });
+    
   } catch (error) {
-    console.error('Error finding similar goals:', error);
-    return res.status(500).json({ error: 'Failed to find similar studies' });
+    console.error('Error in protocol matching:', error);
+    res.status(500).json({ 
+      error: 'An error occurred while matching protocol' 
+    });
   }
 }
 
 /**
- * Query a specific study with AI using Hugging Face
+ * Structured search for trials matching specific criteria
  */
-export async function queryStudyWithAI(req, res) {
+export async function structuredSearch(req, res) {
   try {
-    const { studyId, userGoal, conversation } = req.body;
+    const { 
+      indication, 
+      phase, 
+      primaryEndpoint, 
+      sampleSize, 
+      includePlaceboControl 
+    } = req.body;
     
-    if (!studyId || !conversation || !Array.isArray(conversation)) {
-      return res.status(400).json({ error: 'Study ID and conversation are required' });
+    // Validate required fields
+    if (!indication || !phase) {
+      return res.status(400).json({ 
+        error: 'Indication and phase are required for structured search' 
+      });
     }
     
-    // Get study details from database
-    const study = await db.select()
-      .from(csr_reports)
-      .where(eq(csr_reports.id, studyId))
-      .leftJoin(csr_details, eq(csr_reports.id, csr_details.reportId));
+    // Build query for database
+    let query = `
+      SELECT 
+        r.id, r.title, r.indication, r.phase, r.status, r.date, 
+        r.sponsor, r.summary, r.fileName
+      FROM csr_reports r
+      JOIN csr_details d ON r.id = d.reportId
+      WHERE 1=1
+    `;
     
-    if (!study || study.length === 0) {
-      return res.status(404).json({ error: 'Study not found' });
+    const params = [];
+    
+    // Add filters
+    if (indication) {
+      query += ` AND LOWER(r.indication) LIKE $${params.length + 1}`;
+      params.push(`%${indication.toLowerCase()}%`);
     }
     
-    const studyData = {
-      ...study[0].csr_reports,
-      ...study[0].csr_details
-    };
-    
-    // Format context for the AI
-    const context = `
-You are an AI assistant specializing in clinical study reports (CSR) analysis for TrialSage.
-You're analyzing a specific CSR with the following details:
-
-Title: ${studyData.title}
-Sponsor: ${studyData.sponsor}
-Indication: ${studyData.indication}
-Phase: ${studyData.phase}
-${studyData.sampleSize ? `Sample Size: ${studyData.sampleSize}` : ''}
-
-Primary Objective: ${studyData.primaryObjective || 'Not specified'}
-${studyData.secondaryObjective ? `Secondary Objectives: ${studyData.secondaryObjective}` : ''}
-${studyData.primaryEndpoint ? `Primary Endpoint: ${studyData.primaryEndpoint}` : ''}
-${studyData.studyDesign ? `Study Design: ${studyData.studyDesign}` : ''}
-${studyData.populationDescription ? `Population: ${studyData.populationDescription}` : ''}
-
-The user's research goal is: "${userGoal}"
-
-Analyze how this study relates to the user's goal. Be specific, concise, and provide actionable insights.
-Focus on clinical relevance and practical applications. If you're unsure or information is missing, be transparent.
-
-The user is a biomedical researcher or pharmaceutical professional seeking to understand this CSR in relation to their study goals.
-Answer questions only about this specific study and its comparison to the user's goal.
-`;
-
-    const hfService = new HuggingFaceService();
-    
-    // Process and filter conversation for AI
-    const filteredConversation = conversation.filter(msg => msg.role !== 'system');
-    
-    // Add system context as the first message
-    const processedConversation = [
-      { role: 'system', content: context },
-      ...filteredConversation
-    ];
-    
-    // Get response from Hugging Face
-    const response = await hfService.generateStudyAnalysis(processedConversation);
-    
-    if (!response) {
-      return res.status(500).json({ error: 'Failed to generate analysis' });
+    if (phase) {
+      query += ` AND LOWER(r.phase) LIKE $${params.length + 1}`;
+      params.push(`%${phase.toLowerCase()}%`);
     }
     
-    return res.json({ response });
+    if (primaryEndpoint) {
+      // Search in primary_objective and endpoints array
+      query += ` AND (
+        LOWER(d.primaryObjective) LIKE $${params.length + 1}
+        OR d.endpoint_primary LIKE $${params.length + 1}
+      )`;
+      params.push(`%${primaryEndpoint.toLowerCase()}%`);
+    }
+    
+    if (sampleSize) {
+      // Find trials with similar sample size (±30%)
+      const minSize = Math.floor(sampleSize * 0.7);
+      const maxSize = Math.ceil(sampleSize * 1.3);
+      
+      query += ` AND (
+        CAST(d.sampleSize AS INTEGER) BETWEEN $${params.length + 1} AND $${params.length + 2}
+      )`;
+      params.push(minSize, maxSize);
+    }
+    
+    if (includePlaceboControl !== undefined) {
+      query += ` AND d.placeboControlled = $${params.length + 1}`;
+      params.push(includePlaceboControl);
+    }
+    
+    query += ` ORDER BY r.id DESC LIMIT 25`;
+    
+    // Execute query
+    const result = await db.query(query, params);
+    
+    // Process results
+    const trials = result.rows.map(row => ({
+      id: row.id,
+      title: row.title,
+      indication: row.indication,
+      phase: row.phase,
+      sponsor: row.sponsor,
+      date: row.date,
+      summary: row.summary,
+      matchScore: 0.85, // Default match score for structured search
+      fileName: row.fileName
+    }));
+    
+    res.json({ 
+      results: trials 
+    });
+    
   } catch (error) {
-    console.error('Error querying study with AI:', error);
-    return res.status(500).json({ error: 'Failed to analyze study' });
+    console.error('Error in structured search:', error);
+    res.status(500).json({ 
+      error: 'An error occurred during structured search' 
+    });
   }
 }
 
 /**
- * Helper function to calculate cosine similarity between two vectors
+ * Helper function to perform vector similarity search
+ */
+async function performVectorSearch(embedding, limit = 10, threshold = 0.6) {
+  try {
+    // Query to find trials with similar embeddings using vector similarity
+    const query = `
+      SELECT 
+        r.id, r.title, r.indication, r.phase, r.sponsor, 
+        r.date, r.summary, r.fileName,
+        d.primaryObjective, d.secondaryObjective, 
+        d.sampleSize, d.endpoint_primary AS primaryEndpoint,
+        d.endpoint_secondary AS secondaryEndpoints,
+        d.inclusionCriteria,
+        d.exclusionCriteria,
+        1 - (r.embedding <=> $1::vector) AS similarity
+      FROM csr_reports r
+      LEFT JOIN csr_details d ON r.id = d.reportId
+      WHERE r.embedding IS NOT NULL
+      AND (1 - (r.embedding <=> $1::vector)) > $2
+      ORDER BY similarity DESC
+      LIMIT $3
+    `;
+    
+    const result = await db.query(query, [
+      JSON.stringify(embedding),
+      threshold,
+      limit
+    ]);
+    
+    // Process and format the results
+    return result.rows.map(row => ({
+      id: row.id,
+      title: row.title,
+      indication: row.indication,
+      phase: row.phase,
+      sponsor: row.sponsor,
+      date: row.date,
+      summary: row.summary,
+      matchScore: row.similarity,
+      primaryObjective: row.primaryobjective,
+      secondaryObjective: row.secondaryobjective,
+      primaryEndpoints: row.primaryendpoint ? 
+        (Array.isArray(row.primaryendpoint) ? row.primaryendpoint : [row.primaryendpoint]) : 
+        [],
+      secondaryEndpoints: row.secondaryendpoints ? 
+        (Array.isArray(row.secondaryendpoints) ? row.secondaryendpoints : [row.secondaryendpoints]) : 
+        [],
+      sampleSize: row.samplesize,
+      inclusionCriteria: row.inclusioncriteria ? 
+        (Array.isArray(row.inclusioncriteria) ? row.inclusioncriteria : [row.inclusioncriteria]) : 
+        [],
+      exclusionCriteria: row.exclusioncriteria ? 
+        (Array.isArray(row.exclusioncriteria) ? row.exclusioncriteria : [row.exclusioncriteria]) : 
+        [],
+      fileName: row.filename
+    }));
+    
+  } catch (error) {
+    console.error('Vector search error:', error);
+    return [];
+  }
+}
+
+/**
+ * Helper function to calculate cosine similarity between vectors
  */
 function calculateCosineSimilarity(vec1, vec2) {
-  if (vec1.length !== vec2.length) {
-    throw new Error('Vectors must have the same length');
-  }
-  
-  let dotProduct = 0;
-  let magnitude1 = 0;
-  let magnitude2 = 0;
-  
-  for (let i = 0; i < vec1.length; i++) {
-    dotProduct += vec1[i] * vec2[i];
-    magnitude1 += vec1[i] * vec1[i];
-    magnitude2 += vec2[i] * vec2[i];
-  }
-  
-  magnitude1 = Math.sqrt(magnitude1);
-  magnitude2 = Math.sqrt(magnitude2);
-  
-  if (magnitude1 === 0 || magnitude2 === 0) {
+  if (!vec1 || !vec2 || vec1.length !== vec2.length) {
     return 0;
   }
   
-  return dotProduct / (magnitude1 * magnitude2);
+  let dotProduct = 0;
+  let normA = 0;
+  let normB = 0;
+  
+  for (let i = 0; i < vec1.length; i++) {
+    dotProduct += vec1[i] * vec2[i];
+    normA += vec1[i] * vec1[i];
+    normB += vec2[i] * vec2[i];
+  }
+  
+  if (normA === 0 || normB === 0) {
+    return 0;
+  }
+  
+  return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
 }
 
 /**
- * Helper function to extract keywords from text
+ * Extract key elements from protocol text
  */
-function extractKeywords(text) {
-  // Simple keyword extraction - remove common words and punctuation
-  const stopWords = [
-    'a', 'an', 'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'of', 'for',
-    'with', 'by', 'about', 'as', 'into', 'like', 'through', 'after', 'over',
-    'between', 'out', 'against', 'during', 'without', 'before', 'under', 'around',
-    'among', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has',
-    'had', 'do', 'does', 'did', 'will', 'would', 'shall', 'should', 'can', 'could',
-    'may', 'might', 'must', 'this', 'that', 'these', 'those', 'i', 'you', 'he',
-    'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them', 'my', 'your',
-    'his', 'its', 'our', 'their', 'mine', 'yours', 'hers', 'ours', 'theirs',
-    'what', 'who', 'which', 'whose', 'whom', 'where', 'when', 'why', 'how',
-    'all', 'any', 'both', 'each', 'few', 'more', 'most', 'some', 'such', 'no',
-    'nor', 'not', 'only', 'own', 'same', 'so', 'than', 'too', 'very', 'just',
-    'study', 'clinical', 'trial', 'research', 'patient', 'patients', 'objective',
-    'objectives', 'goal', 'goals'
-  ];
+function extractProtocolElements(protocolText) {
+  // Simple extraction - in production this would use NER or structured extraction
+  const lines = protocolText.split('\n');
   
-  // Normalize text and extract words
-  const words = text.toLowerCase()
-    .replace(/[^\w\s]/g, '') // Remove punctuation
-    .split(/\s+/) // Split by whitespace
-    .filter(word => word.length > 2 && !stopWords.includes(word));
+  // Extract potential endpoints (lines with typical endpoint keywords)
+  const endpoints = lines.filter(line => 
+    line.toLowerCase().includes('endpoint') ||
+    line.toLowerCase().includes('outcome') ||
+    line.toLowerCase().includes('survival') ||
+    line.toLowerCase().includes('response') ||
+    line.toLowerCase().includes('safety') ||
+    line.toLowerCase().includes('efficacy')
+  );
   
-  // Return unique words
-  return [...new Set(words)];
-}
-
-// Helper function for OR in drizzle-orm
-function or(...conditions) {
-  // Simple implementation of OR for Drizzle ORM
+  // Extract potential inclusion/exclusion criteria
+  const criteria = lines.filter(line =>
+    line.toLowerCase().includes('criteria') ||
+    line.toLowerCase().includes('inclusion') ||
+    line.toLowerCase().includes('exclusion') ||
+    line.toLowerCase().includes('eligible') ||
+    line.toLowerCase().includes('ages') ||
+    line.toLowerCase().includes('patient')
+  );
+  
   return {
-    type: 'or',
-    conditions
+    endpoints,
+    criteria,
+    fullText: protocolText
   };
 }
 
+/**
+ * Re-rank matching results based on protocol-specific elements
+ */
+function rankProtocolMatches(trials, protocolElements) {
+  return trials.map(trial => {
+    let adjustedScore = trial.matchScore;
+    
+    // Check for endpoint matches
+    if (trial.primaryEndpoints && protocolElements.endpoints.length > 0) {
+      for (const endpoint of protocolElements.endpoints) {
+        for (const trialEndpoint of trial.primaryEndpoints) {
+          if (trialEndpoint && endpoint && 
+              trialEndpoint.toLowerCase().includes(endpoint.toLowerCase())) {
+            adjustedScore += 0.05; // Boost score for endpoint match
+          }
+        }
+      }
+    }
+    
+    // Check for criteria matches
+    if (trial.inclusionCriteria && protocolElements.criteria.length > 0) {
+      for (const criteria of protocolElements.criteria) {
+        for (const trialCriteria of trial.inclusionCriteria) {
+          if (trialCriteria && criteria && 
+              trialCriteria.toLowerCase().includes(criteria.toLowerCase())) {
+            adjustedScore += 0.03; // Boost score for criteria match
+          }
+        }
+      }
+    }
+    
+    // Cap maximum score at 1.0
+    return {
+      ...trial,
+      matchScore: Math.min(adjustedScore, 1.0)
+    };
+  }).sort((a, b) => b.matchScore - a.matchScore);
+}
+
+/**
+ * Register routes with Express app
+ */
+export function registerSimilarGoalsRoutes(app) {
+  app.post('/api/similar-goals', findSimilarGoals);
+  app.post('/api/similar-goals/protocol', matchProtocol);
+  app.post('/api/similar-goals/structured', structuredSearch);
+}
+
+// Export the functions as a module
 export default {
-  findSimilarGoalsByText,
-  queryStudyWithAI
+  findSimilarGoals,
+  matchProtocol,
+  structuredSearch,
+  registerSimilarGoalsRoutes
 };

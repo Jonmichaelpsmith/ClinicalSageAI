@@ -38,6 +38,7 @@ import { sapRoutes } from "./routes/sap_routes";
 import { exportRoutes } from "./routes/export_routes";
 import { academicRegulatoryRouter } from "./routes/academic_regulatory_routes";
 import { csrSearchRouter } from './routes/csr_search_routes';
+import { registerSimilarGoalsRoutes } from './routes/similar-goals-routes.js';
 import { 
   fetchClinicalTrialData, 
   importTrialsFromCsv, 
@@ -407,6 +408,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Use our integrated CSR search router instead of Python proxy
   app.use('/api/csrs', csrSearchRouter);
+  
+  // Register Similar Goals Search routes
+  registerSimilarGoalsRoutes(app);
   
   // Register Strategic Report routes
   app.use('/api/strategic-reports', strategicReportRoutes);
