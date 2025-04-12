@@ -1,295 +1,327 @@
-# /trialsage/services/report_generator.py
-# Weekly report generation and email delivery
-
+# /services/report_generator.py
 import os
+import time
 import smtplib
 import datetime
-from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
-from pathlib import Path
-from typing import Dict, Any, List, Optional
+from fpdf import FPDF
+from typing import Dict, Any, Optional, List
 
-from .openai_engine import (
-    generate_protocol_from_evidence,
-    generate_ind_section
-)
-
-# Email configuration
-SMTP_SERVER = os.environ.get("MAILGUN_SMTP_SERVER", "smtp.mailgun.org")
-SMTP_PORT = int(os.environ.get("MAILGUN_SMTP_PORT", "587"))
-SMTP_USERNAME = os.environ.get("MAILGUN_USER", "")
-SMTP_PASSWORD = os.environ.get("MAILGUN_PASSWORD", "")
-SENDER_EMAIL = os.environ.get("TRIALSAGE_SENDER_EMAIL", "no-reply@trialsage.ai")
-
-# Report storage
-REPORTS_DIR = Path(__file__).parent.parent / "data" / "reports"
-REPORTS_DIR.mkdir(exist_ok=True, parents=True)
-
-def generate_weekly_brief(indication: str) -> Dict[str, Any]:
-    """Generate a comprehensive weekly intelligence brief for the specified indication"""
-    try:
-        # Create a new thread for this report
-        protocol_result = generate_protocol_from_evidence(indication)
-        thread_id = protocol_result.get("thread_id")
-        
-        # Generate additional sections
-        result = {}
-        result["protocol"] = protocol_result.get("recommendation", "")
-        result["citations"] = protocol_result.get("citations", [])
-        result["ind_module_2_5"] = protocol_result.get("ind_module_2_5", {}).get("content", "")
-        result["risk_summary"] = protocol_result.get("risk_summary", "")
-        
-        # Generate SAP section using the same thread
-        sap_data = generate_ind_section(
-            study_id=f"{indication}-WEEKLY",
-            section="SAP",
-            context=f"Based on the protocol for {indication}, generate a comprehensive Statistical Analysis Plan.",
-            thread_id=thread_id
-        )
-        result["sap"] = sap_data.get("content", "")
-        
-        # Generate IND 2.7 section
-        ind27_data = generate_ind_section(
-            study_id=f"{indication}-WEEKLY",
-            section="2.7",
-            context=f"Based on the protocol for {indication}, generate the IND Module 2.7 (Summary of Clinical Efficacy).",
-            thread_id=thread_id
-        )
-        result["ind_module_2_7"] = ind27_data.get("content", "")
-        
-        # Generate trial intelligence summary
-        intel_data = generate_ind_section(
-            study_id=f"{indication}-WEEKLY",
-            section="intelligence",
-            context=f"Summarize the latest trends, breakthroughs, and regulatory developments for clinical trials in {indication}.",
-            thread_id=thread_id
-        )
-        result["intelligence_summary"] = intel_data.get("content", "")
-        
-        result["thread_id"] = thread_id
-        result["generated_at"] = datetime.datetime.now().isoformat()
-        
-        return result
-    except Exception as e:
-        return {
-            "error": str(e),
-            "generated_at": datetime.datetime.now().isoformat()
+# Mock AI service for now
+def generate_protocol_content(indication: str) -> Dict[str, Any]:
+    """
+    Generate protocol content using OpenAI GPT
+    
+    In production, this would call the OpenAI service
+    """
+    return {
+        "title": f"Protocol Recommendations for {indication}",
+        "thread_id": f"thread_{int(time.time())}",
+        "indication": indication,
+        "phases": ["Phase I", "Phase II", "Phase III"],
+        "primary_endpoint": "Change in disease activity score",
+        "secondary_endpoints": [
+            "Treatment response rate",
+            "Change in biomarker levels",
+            "Safety and tolerability"
+        ],
+        "inclusion_criteria": [
+            "Adults 18-75 years of age",
+            f"Confirmed diagnosis of {indication}",
+            "Disease activity score >= 6"
+        ],
+        "exclusion_criteria": [
+            "Previous biologic therapy",
+            "Significant comorbidities",
+            "Pregnancy or breastfeeding"
+        ],
+        "evidence": [
+            {
+                "source": "Clinical Trial NCT12345678",
+                "quote": f"The primary endpoint for this {indication} study was change in disease activity score from baseline."
+            },
+            {
+                "source": "FDA Guidance Document",
+                "quote": f"For {indication} trials, inclusion of biomarker endpoints is strongly recommended."
+            }
+        ],
+        "ind_recommendations": {
+            "module_2_5": "This section would include a clinical overview with literature and CSR evidence.",
+            "module_2_7": "This section would include clinical summaries with evidence tables."
+        },
+        "statistical_analysis_plan": {
+            "primary_analysis": "ANCOVA with baseline as covariate",
+            "sample_size_justification": "Based on anticipated effect size of 0.4, power 90%",
+            "interim_analyses": "One planned interim analysis at 50% enrollment"
+        },
+        "regulatory_risk_assessment": {
+            "overall_risk": "Moderate",
+            "key_concerns": [
+                "Endpoint selection may require FDA alignment",
+                "Historical control selection will need justification"
+            ],
+            "recommended_actions": [
+                "Request Type C meeting with FDA",
+                "Prepare robust statistical analysis plan"
+            ]
         }
+    }
 
-def format_html_report(brief: Dict[str, Any]) -> str:
-    """Format the intelligence brief as an HTML email"""
-    if "error" in brief:
-        return f"""
-        <html>
-        <body>
-            <h1>TrialSage Weekly Intelligence Brief - Error</h1>
-            <p>An error occurred while generating the weekly report:</p>
-            <pre>{brief['error']}</pre>
-            <p>Generated at: {brief['generated_at']}</p>
-        </body>
-        </html>
-        """
-    
-    # Format citations as HTML list
-    citations_html = ""
-    if brief.get("citations"):
-        citations_html = "<ul>"
-        for citation in brief.get("citations", []):
-            citations_html += f"<li>{citation}</li>"
-        citations_html += "</ul>"
-    
-    return f"""
-    <html>
-    <head>
-        <style>
-            body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; }}
-            h1 {{ color: #2c3e50; border-bottom: 1px solid #eee; padding-bottom: 10px; }}
-            h2 {{ color: #3498db; margin-top: 30px; }}
-            h3 {{ color: #2980b9; }}
-            .summary {{ background-color: #f8f9fa; padding: 15px; border-left: 4px solid #3498db; margin: 20px 0; }}
-            .section {{ margin-bottom: 30px; }}
-        </style>
-    </head>
-    <body>
-        <h1>TrialSage Weekly Intelligence Brief</h1>
-        <p>Generated at: {brief.get('generated_at')}</p>
-        
-        <div class="section">
-            <h2>Intelligence Summary</h2>
-            <div class="summary">{brief.get('intelligence_summary', '').replace('\\n', '<br>')}</div>
-        </div>
-        
-        <div class="section">
-            <h2>Protocol Recommendations</h2>
-            {brief.get('protocol', '').replace('\\n', '<br>')}
-        </div>
-        
-        <div class="section">
-            <h2>Regulatory Risk Analysis</h2>
-            {brief.get('risk_summary', '').replace('\\n', '<br>')}
-        </div>
-        
-        <div class="section">
-            <h2>Evidence Base</h2>
-            {citations_html}
-        </div>
-        
-        <div class="section">
-            <h2>IND Module 2.5 (Clinical Overview)</h2>
-            {brief.get('ind_module_2_5', '').replace('\\n', '<br>')}
-        </div>
-        
-        <div class="section">
-            <h2>IND Module 2.7 (Summary of Clinical Efficacy)</h2>
-            {brief.get('ind_module_2_7', '').replace('\\n', '<br>')}
-        </div>
-        
-        <div class="section">
-            <h2>Statistical Analysis Plan</h2>
-            {brief.get('sap', '').replace('\\n', '<br>')}
-        </div>
-        
-        <p>Thread ID for Continued Analysis: {brief.get('thread_id')}</p>
-    </body>
-    </html>
+def generate_weekly_report(indication: str = "NASH") -> Dict[str, str]:
     """
-
-def format_markdown_report(brief: Dict[str, Any]) -> str:
-    """Format the intelligence brief as Markdown text"""
-    if "error" in brief:
-        return f"""
-        # TrialSage Weekly Intelligence Brief - Error
+    Generate a weekly report for a specific indication
+    
+    Args:
+        indication: The medical indication to generate a report for
         
-        An error occurred while generating the weekly report:
-        
-        ```
-        {brief['error']}
-        ```
-        
-        Generated at: {brief['generated_at']}
-        """
-    
-    # Format citations as Markdown list
-    citations_md = ""
-    if brief.get("citations"):
-        citations_md = "\n"
-        for citation in brief.get("citations", []):
-            citations_md += f"- {citation}\n"
-    
-    return f"""
-    # TrialSage Weekly Intelligence Brief
-    
-    Generated at: {brief.get('generated_at')}
-    
-    ## Intelligence Summary
-    
-    {brief.get('intelligence_summary', '')}
-    
-    ## Protocol Recommendations
-    
-    {brief.get('protocol', '')}
-    
-    ## Regulatory Risk Analysis
-    
-    {brief.get('risk_summary', '')}
-    
-    ## Evidence Base
-    {citations_md}
-    
-    ## IND Module 2.5 (Clinical Overview)
-    
-    {brief.get('ind_module_2_5', '')}
-    
-    ## IND Module 2.7 (Summary of Clinical Efficacy)
-    
-    {brief.get('ind_module_2_7', '')}
-    
-    ## Statistical Analysis Plan
-    
-    {brief.get('sap', '')}
-    
-    Thread ID for Continued Analysis: {brief.get('thread_id')}
+    Returns:
+        dict: Contains report paths and metadata
     """
+    # Generate protocol content
+    content = generate_protocol_content(indication)
+    
+    # Create PDF report
+    pdf_path = export_pdf(content)
+    
+    # Send email with the report
+    if os.getenv("MAILGUN_SMTP_SERVER") and os.getenv("TRIALSAGE_SENDER_EMAIL"):
+        send_email_report(
+            recipients=["team@example.com"],
+            subject=f"Weekly {indication} Intelligence Report",
+            body=f"Attached is your weekly intelligence report for {indication}.",
+            attachment_path=pdf_path
+        )
+    
+    return {
+        "pdf": pdf_path,
+        "thread_id": content["thread_id"],
+        "indication": indication
+    }
 
-def save_report_file(brief: Dict[str, Any]) -> str:
-    """Save report to file and return the file path"""
-    date_str = datetime.datetime.now().strftime("%Y%m%d")
-    indication = brief.get("indication", "Unknown")
+def export_report_to_pdf(indication: str, title: Optional[str] = None) -> Dict[str, str]:
+    """
+    Generate and export a PDF report for a specific indication
     
-    # Create filename
-    filename = f"TrialSage_Weekly_Brief_{indication}_{date_str}.md"
-    filepath = REPORTS_DIR / filename
-    
-    # Save as markdown
-    with open(filepath, "w") as f:
-        f.write(format_markdown_report(brief))
-    
-    return str(filepath)
-
-def send_email_report(
-    brief: Dict[str, Any], 
-    to_emails: List[str]
-) -> bool:
-    """Send the report via email"""
-    if not SMTP_USERNAME or not SMTP_PASSWORD:
-        return False
+    Args:
+        indication: The medical indication to generate a report for
+        title: Optional custom title for the report
         
+    Returns:
+        dict: Contains report paths and metadata
+    """
+    # Generate protocol content
+    content = generate_protocol_content(indication)
+    
+    # Override title if provided
+    if title:
+        content["title"] = title
+    
+    # Create PDF report
+    pdf_path = export_pdf(content)
+    
+    return {
+        "pdf": pdf_path,
+        "thread_id": content["thread_id"],
+        "indication": indication
+    }
+
+def export_pdf(content: Dict[str, Any]) -> str:
+    """
+    Export report content to PDF
+    
+    Args:
+        content: The report content to export
+        
+    Returns:
+        str: Path to the generated PDF file
+    """
+    # Ensure static directory exists
+    os.makedirs("trialsage/static", exist_ok=True)
+    
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    pdf_filename = f"trialsage_report_{timestamp}.pdf"
+    pdf_path = f"/static/{pdf_filename}"
+    full_path = f"trialsage/static/{pdf_filename}"
+    
+    # Create PDF document
+    pdf = FPDF()
+    pdf.add_page()
+    
+    # Title
+    pdf.set_font("Arial", "B", 16)
+    pdf.cell(0, 10, content["title"], ln=True, align="C")
+    pdf.ln(5)
+    
+    # Subtitle
+    pdf.set_font("Arial", "I", 12)
+    pdf.cell(0, 10, f"Generated for {content['indication']} on {datetime.datetime.now().strftime('%B %d, %Y')}", ln=True, align="C")
+    pdf.ln(10)
+    
+    # Protocol Recommendations Section
+    pdf.set_font("Arial", "B", 14)
+    pdf.cell(0, 10, "Protocol Recommendations", ln=True)
+    pdf.ln(5)
+    
+    # Protocol Content
+    pdf.set_font("Arial", "", 12)
+    pdf.multi_cell(0, 10, f"Primary Endpoint: {content['primary_endpoint']}")
+    
+    pdf.set_font("Arial", "B", 12)
+    pdf.cell(0, 10, "Secondary Endpoints:", ln=True)
+    pdf.set_font("Arial", "", 12)
+    for endpoint in content['secondary_endpoints']:
+        pdf.cell(0, 10, f"• {endpoint}", ln=True)
+    pdf.ln(5)
+    
+    pdf.set_font("Arial", "B", 12)
+    pdf.cell(0, 10, "Inclusion Criteria:", ln=True)
+    pdf.set_font("Arial", "", 12)
+    for criteria in content['inclusion_criteria']:
+        pdf.cell(0, 10, f"• {criteria}", ln=True)
+    pdf.ln(5)
+    
+    pdf.set_font("Arial", "B", 12)
+    pdf.cell(0, 10, "Exclusion Criteria:", ln=True)
+    pdf.set_font("Arial", "", 12)
+    for criteria in content['exclusion_criteria']:
+        pdf.cell(0, 10, f"• {criteria}", ln=True)
+    pdf.ln(10)
+    
+    # Evidence Section
+    pdf.set_font("Arial", "B", 14)
+    pdf.cell(0, 10, "Supporting Evidence", ln=True)
+    pdf.ln(5)
+    
+    pdf.set_font("Arial", "", 12)
+    for evidence in content['evidence']:
+        pdf.set_font("Arial", "B", 12)
+        pdf.cell(0, 10, f"Source: {evidence['source']}", ln=True)
+        pdf.set_font("Arial", "I", 12)
+        pdf.multi_cell(0, 10, f'"{evidence["quote"]}"')
+        pdf.ln(5)
+    pdf.ln(5)
+    
+    # IND Recommendations Section
+    pdf.set_font("Arial", "B", 14)
+    pdf.cell(0, 10, "IND Strategy", ln=True)
+    pdf.ln(5)
+    
+    pdf.set_font("Arial", "B", 12)
+    pdf.cell(0, 10, "Module 2.5 (Clinical Overview):", ln=True)
+    pdf.set_font("Arial", "", 12)
+    pdf.multi_cell(0, 10, content['ind_recommendations']['module_2_5'])
+    pdf.ln(5)
+    
+    pdf.set_font("Arial", "B", 12)
+    pdf.cell(0, 10, "Module 2.7 (Clinical Summary):", ln=True)
+    pdf.set_font("Arial", "", 12)
+    pdf.multi_cell(0, 10, content['ind_recommendations']['module_2_7'])
+    pdf.ln(10)
+    
+    # Statistical Analysis Plan
+    pdf.set_font("Arial", "B", 14)
+    pdf.cell(0, 10, "Statistical Analysis Plan", ln=True)
+    pdf.ln(5)
+    
+    pdf.set_font("Arial", "B", 12)
+    pdf.cell(0, 10, "Primary Analysis:", ln=True)
+    pdf.set_font("Arial", "", 12)
+    pdf.multi_cell(0, 10, content['statistical_analysis_plan']['primary_analysis'])
+    
+    pdf.set_font("Arial", "B", 12)
+    pdf.cell(0, 10, "Sample Size Justification:", ln=True)
+    pdf.set_font("Arial", "", 12)
+    pdf.multi_cell(0, 10, content['statistical_analysis_plan']['sample_size_justification'])
+    
+    pdf.set_font("Arial", "B", 12)
+    pdf.cell(0, 10, "Interim Analyses:", ln=True)
+    pdf.set_font("Arial", "", 12)
+    pdf.multi_cell(0, 10, content['statistical_analysis_plan']['interim_analyses'])
+    pdf.ln(10)
+    
+    # Regulatory Risk Assessment
+    pdf.set_font("Arial", "B", 14)
+    pdf.cell(0, 10, "Regulatory Risk Assessment", ln=True)
+    pdf.ln(5)
+    
+    pdf.set_font("Arial", "B", 12)
+    pdf.cell(0, 10, f"Overall Risk: {content['regulatory_risk_assessment']['overall_risk']}", ln=True)
+    pdf.ln(5)
+    
+    pdf.set_font("Arial", "B", 12)
+    pdf.cell(0, 10, "Key Concerns:", ln=True)
+    pdf.set_font("Arial", "", 12)
+    for concern in content['regulatory_risk_assessment']['key_concerns']:
+        pdf.cell(0, 10, f"• {concern}", ln=True)
+    pdf.ln(5)
+    
+    pdf.set_font("Arial", "B", 12)
+    pdf.cell(0, 10, "Recommended Actions:", ln=True)
+    pdf.set_font("Arial", "", 12)
+    for action in content['regulatory_risk_assessment']['recommended_actions']:
+        pdf.cell(0, 10, f"• {action}", ln=True)
+    pdf.ln(5)
+    
+    # Footer
+    pdf.set_y(-30)
+    pdf.set_font("Arial", "I", 10)
+    pdf.cell(0, 10, "TrialSage Intelligence Platform - Confidential", ln=True, align="C")
+    pdf.cell(0, 10, f"Thread ID: {content['thread_id']}", ln=True, align="C")
+    
+    # Save PDF
+    pdf.output(full_path)
+    
+    # Also save as latest_report.pdf for easy access
+    latest_path = "trialsage/static/latest_report.pdf"
+    pdf.output(latest_path)
+    
+    return pdf_path
+
+def send_email_report(recipients: List[str], subject: str, body: str, attachment_path: str) -> bool:
+    """
+    Send an email with the report attached
+    
+    Args:
+        recipients: List of email addresses to send to
+        subject: Email subject
+        body: Email body text
+        attachment_path: Path to the attachment
+        
+    Returns:
+        bool: Whether the email was sent successfully
+    """
     try:
-        # Create message
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = f"TrialSage Weekly Intelligence Brief"
-        msg["From"] = SENDER_EMAIL
-        msg["To"] = ", ".join(to_emails)
+        # Create email
+        msg = MIMEMultipart()
+        msg['From'] = os.getenv("TRIALSAGE_SENDER_EMAIL", "reports@trialsage.com")
+        msg['To'] = ", ".join(recipients)
+        msg['Subject'] = subject
         
-        # Attach HTML and plaintext versions
-        html_part = MIMEText(format_html_report(brief), "html")
-        text_part = MIMEText(format_markdown_report(brief), "plain")
+        # Attach body
+        msg.attach(MIMEText(body, 'plain'))
         
-        msg.attach(text_part)
-        msg.attach(html_part)
-        
-        # Save report to file and attach it
-        report_filepath = save_report_file(brief)
-        with open(report_filepath, "rb") as f:
-            attachment = MIMEApplication(f.read(), Name=Path(report_filepath).name)
-            attachment["Content-Disposition"] = f'attachment; filename="{Path(report_filepath).name}"'
-            msg.attach(attachment)
+        # Attach PDF
+        full_path = f"trialsage{attachment_path}"
+        with open(full_path, "rb") as f:
+            attach = MIMEApplication(f.read(), _subtype="pdf")
+            attach.add_header('Content-Disposition', 'attachment', filename=os.path.basename(attachment_path))
+            msg.attach(attach)
         
         # Send email
-        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+        with smtplib.SMTP(
+            os.getenv("MAILGUN_SMTP_SERVER", "smtp.mailgun.org"),
+            int(os.getenv("MAILGUN_SMTP_PORT", "587"))
+        ) as server:
             server.starttls()
-            server.login(SMTP_USERNAME, SMTP_PASSWORD)
+            server.login(
+                os.getenv("MAILGUN_USER", ""),
+                os.getenv("MAILGUN_PASSWORD", "")
+            )
             server.send_message(msg)
-            
+        
         return True
     except Exception as e:
         print(f"Error sending email: {e}")
         return False
-
-def send_weekly_report(indication: str, recipients: Optional[List[str]] = None) -> Dict[str, Any]:
-    """Generate and send the weekly report"""
-    # Default recipients if none provided
-    if not recipients:
-        recipients = ["intel@trialsage.ai"]
-    
-    # Generate brief
-    brief = generate_weekly_brief(indication)
-    brief["indication"] = indication
-    
-    # Save report locally
-    report_path = save_report_file(brief)
-    
-    # Try to send email if SMTP is configured
-    email_sent = False
-    if SMTP_USERNAME and SMTP_PASSWORD:
-        email_sent = send_email_report(brief, recipients)
-    
-    return {
-        "success": True,
-        "message": "Weekly report generated successfully",
-        "email_sent": email_sent,
-        "report_path": report_path,
-        "brief": brief.get("intelligence_summary", ""),
-        "thread_id": brief.get("thread_id", "")
-    }
