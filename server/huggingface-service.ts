@@ -8,7 +8,14 @@ export enum HFModel {
   FLAN_T5_XL = 'google/flan-t5-xl',
   STARLING = 'HuggingFaceH4/starling-lm-7b-alpha',
   MISTRAL = 'mistralai/Mistral-7B-Instruct-v0.2',
-  LLAMA = 'meta-llama/Llama-2-7b-chat-hf'
+  MISTRAL_LATEST = 'mistralai/Mixtral-8x7B-Instruct-v0.1',
+  LLAMA = 'meta-llama/Llama-2-7b-chat-hf',
+  ZEPHYR = 'HuggingFaceH4/zephyr-7b-beta',
+  FALCON = 'tiiuae/falcon-7b-instruct',
+  EMBEDDINGS = 'sentence-transformers/all-MiniLM-L6-v2',
+  CLINICAL_EMBEDDINGS = 'pritamdeka/BioBERT-mnli-snli-clinicalNLI',
+  TEXT = 'gpt2',
+  BIOMEDICAL = 'microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract-fulltext'
 }
 
 export class HuggingFaceService {
@@ -46,15 +53,81 @@ export class HuggingFaceService {
 
   /**
    * Generate text embeddings using HuggingFace models
+   * @param text The text to generate embeddings for
+   * @param model The model to use for generating embeddings
+   * @returns An array of floating point numbers representing the embedding
    */
-  async generateEmbeddings(text: string): Promise<number[]> {
+  async generateEmbeddings(
+    text: string,
+    model: HFModel = HFModel.EMBEDDINGS
+  ): Promise<number[]> {
     if (!this.isApiKeyAvailable()) {
       throw new Error('Hugging Face API key not provided');
     }
 
-    // This would actually call the HF API for embeddings
-    // For now, return mock embeddings
-    return Array(384).fill(0).map(() => Math.random() - 0.5);
+    try {
+      console.log(`Generating embeddings with model ${model}...`);
+      
+      // Set up API endpoint for the embedding model
+      const apiUrl = `https://api-inference.huggingface.co/models/${model}`;
+      
+      // Prepare input text - truncate if needed
+      const maxInputLength = 8192; // Character limit to avoid oversized requests
+      const truncatedText = text.length > maxInputLength 
+        ? text.substring(0, maxInputLength) 
+        : text;
+      
+      // Make the API call
+      const response = await axios.post(
+        apiUrl,
+        { inputs: truncatedText },
+        {
+          headers: {
+            'Authorization': `Bearer ${this.apiKey}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      // Handle different response formats from different models
+      if (response.data) {
+        if (Array.isArray(response.data) && response.data.length > 0) {
+          // Handle sentence-transformers format
+          if (Array.isArray(response.data[0])) {
+            return response.data[0];
+          }
+          // Handle embedding models that return a single array
+          return response.data;
+        } else if (response.data.embeddings) {
+          // Some models return { embeddings: [...] }
+          return response.data.embeddings;
+        } else if (response.data.embedding) {
+          // Some models return { embedding: [...] }
+          return response.data.embedding;
+        } else if (typeof response.data === 'object' && !Array.isArray(response.data)) {
+          // Last attempt - try to find the longest array property in the response
+          const arrays = Object.values(response.data).filter(v => Array.isArray(v));
+          const longestArray = arrays.reduce((longest, current) => 
+            current.length > longest.length ? current : longest, []);
+          
+          if (longestArray.length > 0) {
+            return longestArray;
+          }
+        }
+      }
+      
+      // If we couldn't parse the response in any expected format
+      console.error('Unexpected embedding response format:', response.data);
+      throw new Error('Failed to parse embedding response');
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error(`Error generating embeddings (${error.response.status}):`, error.response.data);
+        throw new Error(`Embedding API error: ${error.response.data.error || 'Unknown error'}`);
+      }
+      
+      console.error('Error generating embeddings:', error);
+      throw new Error(`Failed to generate embeddings: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   }
   
   /**
