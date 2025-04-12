@@ -294,7 +294,7 @@
     "HC-1938",
     "HC-1939"
   ],
-  "totalImported": null,
-  "nextStartId": null,
-  "lastRunDate": "2025-04-12T12:53:59.557Z"
+  "totalImported": 50,
+  "nextStartId": 50,
+  "lastRunDate": "2025-04-12T12:56:02.415Z"
 }

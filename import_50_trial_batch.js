@@ -26,7 +26,7 @@ const HC_REGION = 'Health Canada';
 
 // Configuration
 const BATCH_SIZE = 50; // Fixed batch size of 50 trials
-const PROGRESS_FILE = 'hc_import_tracker.json';
+const TRACKING_FILE = 'hc_import_tracker.json';
 
 // Database connection
 const pool = new Pool({
@@ -37,9 +37,9 @@ const pool = new Pool({
  * Get tracking data to maintain progress across runs
  */
 function getTrackingData() {
-  if (fs.existsSync(PROGRESS_FILE)) {
+  if (fs.existsSync(TRACKING_FILE)) {
     try {
-      const data = JSON.parse(fs.readFileSync(PROGRESS_FILE, 'utf8'));
+      const data = JSON.parse(fs.readFileSync(TRACKING_FILE, 'utf8'));
       console.log(`Loaded progress: ${data.totalImported} trials imported, next ID: ${data.nextStartId}`);
       return data;
     } catch (error) {
@@ -60,7 +60,7 @@ function getTrackingData() {
  */
 function saveTrackingData(data) {
   data.lastRunDate = new Date().toISOString();
-  fs.writeFileSync(PROGRESS_FILE, JSON.stringify(data, null, 2));
+  fs.writeFileSync(TRACKING_FILE, JSON.stringify(data, null, 2));
   console.log(`Progress saved: ${data.totalImported} trials imported, next ID: ${data.nextStartId}`);
 }
 
