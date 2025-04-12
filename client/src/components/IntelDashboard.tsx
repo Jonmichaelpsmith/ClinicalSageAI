@@ -24,6 +24,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 // Import new components
 import StudyDesignAssistant from './StudyDesignAssistant';
+import ConversationalAssistant from './ConversationalAssistant';
 import KnowledgeBasePanel from './KnowledgeBasePanel';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
@@ -1025,11 +1026,11 @@ export default function IntelDashboard() {
               CSR Intelligence Explorer
             </DialogTitle>
             <DialogDescription>
-              AI-powered clinical study design guidance based on real-world evidence
+              AI-powered clinical study insights based on real-world evidence
             </DialogDescription>
           </DialogHeader>
-          <div className="flex-1 overflow-hidden">
-            <StudyDesignAssistant />
+          <div className="flex-1 overflow-hidden p-6">
+            <ConversationalAssistant />
           </div>
         </DialogContent>
       </Dialog>

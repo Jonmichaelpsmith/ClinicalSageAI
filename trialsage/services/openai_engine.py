@@ -75,16 +75,37 @@ def add_message_to_thread(thread_id: str, content: str, role: str = "user") -> D
     )
     return {"id": message.id, "thread_id": thread_id}
 
-def run_assistant(thread_id: str, assistant_id: Optional[str] = None) -> Dict[str, Any]:
-    """Run the assistant on a thread"""
+def create_assistant_thread() -> str:
+    """Create a new thread and return its ID"""
+    thread = create_thread()
+    return thread["id"]
+
+def run_assistant(thread_id: str, message: str, assistant_id: Optional[str] = None) -> str:
+    """
+    Run the assistant on a thread with a new message
+    
+    Args:
+        thread_id: The ID of the thread to use
+        message: The message to add to the thread
+        assistant_id: Optional assistant ID (will use default if not provided)
+        
+    Returns:
+        The run ID
+    """
+    # Add the message to the thread
+    add_message_to_thread(thread_id, message)
+    
+    # Get assistant ID
     if not assistant_id:
         assistant_id = get_or_create_assistant()
     
+    # Create the run
     run = client.beta.threads.runs.create(
         thread_id=thread_id,
         assistant_id=assistant_id
     )
-    return {"id": run.id, "thread_id": thread_id, "assistant_id": assistant_id}
+    
+    return run.id
 
 def get_run_status(thread_id: str, run_id: str) -> Dict[str, Any]:
     """Get the status of an assistant run"""
