@@ -26,7 +26,7 @@ import {
 import { Slider } from "@/components/ui/slider";
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
-import { Loader2, Download, BarChart3, Brain } from 'lucide-react';
+import { Loader2, Download, BarChart3, Brain, GitBranch, BookOpen, Microscope, LineChart } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 interface MAMSTrialFormProps {
@@ -1668,9 +1668,79 @@ const AdvancedBiostatisticsPanel: React.FC = () => {
                   <div className="mt-4">
                     <h3 className="font-semibold mb-2">Regulatory Considerations:</h3>
                     <div className="text-sm p-2 bg-blue-50 border border-blue-200 rounded-md">
-                      <p>This MAMS design complies with FDA, EMA, PMDA, and MHRA guidance for multi-arm studies. The chosen stopping boundaries maintain strong familywise error rate control using {mamsSimulationResult.procedureDetails.method} with {mamsSimulationResult.procedureDetails.correction} correction.</p>
+                      <p>This MAMS design complies with FDA, EMA, PMDA, and MHRA guidance for multi-arm studies. The chosen stopping boundaries maintain strong familywise error rate control using {mamsSimulationResult.procedureDetails?.method || "Dunnett's"} with {mamsSimulationResult.procedureDetails?.correction || "Bonferroni-Holm"} correction.</p>
                     </div>
                   </div>
+                  
+                  {mamsSimulationResult.csrLibraryInsights && mamsSimulationResult.enableCsrLibraryComparison !== false && (
+                    <div className="mt-6">
+                      <h3 className="font-semibold mb-2 flex items-center">
+                        <BookOpen className="h-4 w-4 mr-2 text-blue-500" />
+                        CSR Library Comparison
+                      </h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="border rounded-md p-3 bg-slate-50">
+                          <h4 className="text-sm font-medium mb-2">Historical Insights for {mamsSimulationResult.csrLibraryInsights.indication}, {mamsSimulationResult.csrLibraryInsights.phase}</h4>
+                          <ul className="text-sm space-y-1">
+                            <li>Historical Trials: {mamsSimulationResult.csrLibraryInsights.historicalTrials}</li>
+                            <li>Average Sample Size: {mamsSimulationResult.csrLibraryInsights.averageSampleSize}</li>
+                            <li>Median Duration: {mamsSimulationResult.csrLibraryInsights.medianDuration} weeks</li>
+                            <li>Historical Success Rate: {(mamsSimulationResult.csrLibraryInsights.successRate * 100).toFixed(1)}%</li>
+                            <li>Avg. Dropout Rate: {(mamsSimulationResult.csrLibraryInsights.dropoutRate * 100).toFixed(1)}%</li>
+                          </ul>
+                        </div>
+                        
+                        <div className="border rounded-md p-3 bg-slate-50">
+                          <h4 className="text-sm font-medium mb-2">Design Efficiency Comparison</h4>
+                          <ul className="text-sm space-y-1">
+                            <li className="flex items-center">
+                              <LineChart className="h-3 w-3 mr-1 text-green-600" />
+                              {mamsSimulationResult.csrLibraryInsights.designEfficiency.sampleSizeComparison}
+                            </li>
+                            <li className="flex items-center">
+                              <LineChart className="h-3 w-3 mr-1 text-green-600" />
+                              {mamsSimulationResult.csrLibraryInsights.designEfficiency.expectedDuration}
+                            </li>
+                            <li className="flex items-center">
+                              <LineChart className="h-3 w-3 mr-1 text-green-600" />
+                              {mamsSimulationResult.csrLibraryInsights.designEfficiency.powerAdvantage}
+                            </li>
+                            <li className="flex items-center">
+                              <LineChart className="h-3 w-3 mr-1 text-green-600" />
+                              {mamsSimulationResult.csrLibraryInsights.designEfficiency.costSavings}
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-3 border rounded-md p-3 bg-slate-50">
+                        <h4 className="text-sm font-medium mb-2 flex items-center">
+                          <Microscope className="h-4 w-4 mr-1 text-violet-600" />
+                          Regulatory Context
+                        </h4>
+                        <div className="text-sm mb-2">
+                          Predicted Success Probability: {mamsSimulationResult.csrLibraryInsights.regulatoryContext.successProbability}
+                        </div>
+                        <div className="text-sm space-y-1">
+                          <div className="font-medium">Key Regulatory Considerations:</div>
+                          <ul className="list-disc pl-5 space-y-1">
+                            {mamsSimulationResult.csrLibraryInsights.regulatoryContext.regulatoryNotes.map((note: string, i: number) => (
+                              <li key={i}>{note}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-3 border rounded-md p-3 bg-blue-50 border-blue-200">
+                        <h4 className="text-sm font-medium mb-2">Recommended Adjustments Based on CSR Insights:</h4>
+                        <ul className="list-disc pl-5 text-sm space-y-1">
+                          {mamsSimulationResult.csrLibraryInsights.regulatoryContext.recommendedAdjustments.map((rec: string, i: number) => (
+                            <li key={i}>{rec}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
                 <CardFooter className="flex justify-between">
                   <Button 
