@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1885",
+  "title": "A Randomized Open-Label, Placebo-Controlled  Study of COL-735 (EGFR inhibitor) in Patients With Parkinson's Disease",
+  "officialTitle": "A Randomized Open-Label, Placebo-Controlled  Study of COL-735 (EGFR inhibitor) in Patients With Parkinson's Disease",
+  "sponsor": "Health Canada Research Institute",
+  "indication": "Parkinson's Disease",
+  "phase": "Phase 1",
+  "fileName": "HC-1885.json",
+  "fileSize": 156108,
+  "date": "2024-11-24",
+  "completionDate": "2026-07-25",
+  "drugName": "COL-735 (EGFR inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Not yet recruiting",
+  "description": "This is a randomized open-label, placebo-controlled  study designed to evaluate the efficacy and safety of COL-735 (EGFR inhibitor) in patients with Parkinson's Disease. The study will enroll approximately 108 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 22-76 years\n- Confirmed diagnosis of Parkinson's Disease\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

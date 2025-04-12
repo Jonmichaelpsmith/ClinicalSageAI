@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1890",
+  "title": "A  Double-Blind, Placebo-Controlled  Study of DRM-581 (IL-17 inhibitor) in Patients With Osteoarthritis",
+  "officialTitle": "A  Double-Blind, Placebo-Controlled  Study of DRM-581 (IL-17 inhibitor) in Patients With Osteoarthritis",
+  "sponsor": "Dalhousie University",
+  "indication": "Osteoarthritis",
+  "phase": "Phase 2/Phase 3",
+  "fileName": "HC-1890.json",
+  "fileSize": 313784,
+  "date": "2023-04-24",
+  "completionDate": "2028-07-23",
+  "drugName": "DRM-581 (IL-17 inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Recruiting",
+  "description": "This is a  double-blind, placebo-controlled  study designed to evaluate the efficacy and safety of DRM-581 (IL-17 inhibitor) in patients with Osteoarthritis. The study will enroll approximately 415 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 23-71 years\n- Confirmed diagnosis of Osteoarthritis\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}
