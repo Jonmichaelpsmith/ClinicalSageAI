@@ -30,7 +30,10 @@ import {
   LogOut,
   User,
   ClipboardList as ClipboardIcon,
-  FileOutput
+  FileOutput,
+  BookOpen as BookIcon,
+  ScrollText,
+  Library
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
