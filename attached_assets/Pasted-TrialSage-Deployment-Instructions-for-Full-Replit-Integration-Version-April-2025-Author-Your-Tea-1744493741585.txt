@@ -1,0 +1,115 @@
+TrialSage: Deployment Instructions for Full Replit Integration
+Version: April 2025
+Author: [Your Team]
+Platform Target: Replit (GPT-4 Turbo, Assistants API, Embeddings, Code Interpreter, SMTP Enabled)
+
+🧱 Purpose
+To stand up a fully OpenAI-powered clinical trial design intelligence engine inside Replit, delivering a user-ready system for protocol drafting, IND module generation, SAP creation, and evidence-backed regulatory insight—based entirely on uploaded CSR documents and structured clinical reasoning.
+
+📂 Directory Structure (Replit Workspace)
+bash
+Copy
+Edit
+/trialsage/
+├── main.py                          # Entrypoint: FastAPI app
+├── router.py                        # Includes protocol routes
+├── controllers/
+│   └── protocol.py                  # ✅ Latest logic from canvas
+├── services/
+│   ├── openai_engine.py             # Wraps all Assistant API logic
+│   ├── report_generator.py          # Formats & sends PDF or plaintext briefings
+├── models/
+│   └── schemas.py                   # Pydantic request classes
+├── utils/
+│   ├── emailer.py                   # SMTP utility for Mailgun or Resend
+│   └── file_parser.py               # PDF table/section extractor (future)
+├── data/
+│   └── csr_index.json               # Optional CSR metadata cache (if no DB)
+✅ Required Functionalities from Replit Implementation
+1. OpenAI Integration
+Assistants API with memory + thread ID persistence
+
+GPT-4 Turbo for generation + reasoning
+
+Code interpreter enabled (for sample size & SAP math)
+
+Embeddings via text-embedding-3-large
+
+File uploads into assistant thread (CSR PDFs)
+
+2. Endpoint Wiring from protocol.py
+Must be connected in main.py:
+
+python
+Copy
+Edit
+from fastapi import FastAPI
+from controllers import protocol
+
+app = FastAPI()
+app.include_router(protocol.router)
+3. External Services Required
+✅ OpenAI API Key
+
+✅ SMTP credentials (e.g. Mailgun) for report_generator.py
+
+✅ Replit’s native task scheduler (or webhook) for weekly GET to /api/intel/scheduled-report
+
+🧠 Functional Summary of What We Expect Replit to Deploy
+Route	Function
+POST /api/intel/protocol-suggestions	Return protocol scaffold, IND 2.5, risk summary, CSR citations + quotes
+POST /api/intel/continue-thread	Continue protocol conversation (2.7, SAP, etc.)
+POST /api/intel/trigger-followup	One-off assistant expansion
+POST /api/intel/sap-draft	Returns AI-generated SAP content
+POST /api/intel/csr-evidence	Locates evidence from CSR corpus (RAG)
+GET /api/intel/scheduled-report	Weekly briefing output: Protocol, 2.5, 2.7, SAP, Risk, CSR Trail
+📩 Output/Delivery Expectations
+Every assistant output should include:
+
+thread_id for memory continuity
+
+Clear "section" label (e.g., "SAP", "IND 2.7")
+
+"content" (rendered markdown-compatible)
+
+"citations" + "quotes" from CSR archive
+
+For PDF/Email: use services/report_generator.py or plug in emailer.py
+
+🔐 ENVIRONMENT VARIABLES TO SET IN .env
+env
+Copy
+Edit
+OPENAI_API_KEY=sk-...
+MAILGUN_SMTP_SERVER=smtp.mailgun.org
+MAILGUN_SMTP_PORT=587
+MAILGUN_USER=postmaster@yourdomain.com
+MAILGUN_PASSWORD=your-password
+TRIALSAGE_SENDER_EMAIL=no-reply@trialsage.ai
+📦 Deployment Notes for Replit Agent
+All assistant logic is contained in openai_engine.py
+
+Use POST /api/intel/protocol-suggestions as the primary intelligence entrypoint
+
+Use the consolidated protocol.py file from canvas as your backend brain
+
+Memory persistence must use OpenAI Assistants thread_id, passed throughout
+
+🧪 Optional Enhancements Replit May Add
+Add-on	Benefit
+PDF export to /static/weekly_report.pdf	Branding-ready client deliverables
+Real-time streamable assistant outputs	Ideal for chat-like assistant
+Frontend dashboard tabs	Protocol, Risk, IND, SAP, Evidence
+Upload endpoint /api/intel/upload-csr	Adds CSR to vector DB & Assistant memory
+🧠 Final Result We Expect from Replit
+Upon successful deployment:
+
+Access to https://[replit-domain]/api/intel/* for all endpoints
+
+Assistant responds with memory, citations, and structured reasoning
+
+Client can use assistant via UI or automated tasks
+
+Replit schedule pings /scheduled-report weekly
+
+Would you like me to now prepare the actual main.py, openai_engine.py, and report_generator.py files to fully populate this Replit project?
