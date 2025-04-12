@@ -197,6 +197,9 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                 <NavItem href="/trial-predictor" icon={<BarChart />}>
                   Trial Success Predictor
                 </NavItem>
+                <NavItem href="/csr-insights" icon={<Split />}>
+                  CSR Insights
+                </NavItem>
               </div>
             </div>
 
@@ -328,6 +331,9 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                 </NavItem>
                 <NavItem href="/trial-predictor" icon={<BarChart />}>
                   Trial Success Predictor
+                </NavItem>
+                <NavItem href="/csr-insights" icon={<Split />}>
+                  CSR Insights
                 </NavItem>
               </div>
             </div>
