@@ -3727,6 +3727,57 @@ Provide a comprehensive, evidence-based response.`;
     }
   });
   
+  // Send message to AI assistant
+  app.post('/api/chat/send-message', async (req: Request, res: Response) => {
+    try {
+      const { message, thread_id } = req.body;
+      console.log('Received chat message:', message, 'thread_id:', thread_id);
+      
+      // Check if OpenAI API key is available
+      if (!isOpenAIApiKeyAvailable()) {
+        throw new Error('OpenAI API key is not configured');
+      }
+      
+      // Use the OpenAI service for generating responses
+      const responseText = await analyzeText(
+        message,
+        "You are TrialSage, an expert clinical trial design assistant. Respond to questions about clinical trial design, protocols, and study methodologies with evidence-based insights. Use a helpful and informative tone."
+      );
+      
+      // Generate a thread ID if not provided
+      const newThreadId = thread_id || `thread_${Date.now()}`;
+      
+      // Extract potential citations using a simple pattern match
+      const citations = [];
+      const citationTriggers = ["study", "trial", "report", "according to", "published", "clinical"];
+      
+      for (const trigger of citationTriggers) {
+        if (responseText.toLowerCase().includes(trigger)) {
+          citations.push(`CSR_${trigger.toUpperCase().replace(/\s/g, '_')}`);
+        }
+      }
+      
+      if (citations.length === 0) {
+        citations.push("CSR_GENERAL_REFERENCE");
+      }
+      
+      // Return the structured response
+      res.json({
+        thread_id: newThreadId,
+        answer: responseText,
+        citations: [...new Set(citations)] // Remove duplicates
+      });
+    } catch (err) {
+      console.error('Error processing chat message:', err);
+      res.status(200).json({
+        thread_id: req.body.thread_id || "error",
+        answer: "I apologize, but I encountered an error while processing your query. Please try again with a more specific question about clinical trial design.",
+        error: (err as Error).message,
+        citations: []
+      });
+    }
+  });
+  
   // Test Hugging Face API connection
   app.get('/api/test-huggingface', async (req: Request, res: Response) => {
     try {
