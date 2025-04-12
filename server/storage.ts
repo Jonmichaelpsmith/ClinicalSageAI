@@ -60,8 +60,41 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllCsrReports(): Promise<CsrReport[]> {
-    const reports = await db.select().from(csrReports).orderBy(csrReports.uploadDate);
-    return reports.reverse(); // Most recent first
+    try {
+      // Select only the columns that exist in the database
+      const reports = await db.select({
+        id: csrReports.id,
+        title: csrReports.title,
+        sponsor: csrReports.sponsor,
+        indication: csrReports.indication,
+        phase: csrReports.phase,
+        status: csrReports.status,
+        date: csrReports.date,
+        uploadDate: csrReports.uploadDate,
+        summary: csrReports.summary,
+        fileName: csrReports.fileName,
+        fileSize: csrReports.fileSize,
+        // Omit fileType as it doesn't exist in the database
+        processedAt: csrReports.processedAt,
+        vectorized: csrReports.vectorized,
+        source: csrReports.source,
+        hasDetails: csrReports.hasDetails,
+        deletedAt: csrReports.deletedAt
+      }).from(csrReports).orderBy(csrReports.uploadDate);
+      
+      // Add fileType property with default value for each report
+      const reportsWithFileType = reports.map(report => {
+        return {
+          ...report,
+          fileType: 'pdf' // Default value
+        };
+      });
+      
+      return reportsWithFileType.reverse(); // Most recent first
+    } catch (error) {
+      console.error('Error in getAllCsrReports:', error);
+      throw error;
+    }
   }
 
   async updateCsrReport(id: number, data: Partial<CsrReport>): Promise<CsrReport | undefined> {
