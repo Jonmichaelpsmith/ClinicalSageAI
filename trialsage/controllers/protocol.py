@@ -1,0 +1,93 @@
+# /controllers/protocol.py (Consolidated + Replit-Ready Intelligence Controller)
+from fastapi import APIRouter
+from pydantic import BaseModel
+from services.openai_engine import (
+    generate_protocol_from_evidence,
+    generate_ind_section
+)
+from services.report_generator import send_weekly_report
+
+router = APIRouter()
+
+# --- Request Models ---
+class ProtocolRequest(BaseModel):
+    indication: str
+    thread_id: str | None = None
+    include_quotes: bool = True
+    verbose: bool = True
+
+class ContinueRequest(BaseModel):
+    thread_id: str
+    study_id: str
+    section: str
+    context: str
+
+class EvidenceQuery(BaseModel):
+    topic: str
+    thread_id: str | None = None
+
+# --- Core Intelligence Routes ---
+@router.post("/api/intel/protocol-suggestions")
+def suggest_protocol(req: ProtocolRequest):
+    result = generate_protocol_from_evidence(req.indication, req.thread_id)
+
+    quotes = []
+    if req.include_quotes:
+        for citation in result["citations"][:3]:
+            quote = generate_ind_section(
+                study_id="CSR-LIBRARY",
+                section="quote",
+                context=f"Pull direct supporting quote for: {citation}"
+            )
+            quotes.append({"csr": citation, "quote": quote["content"]})
+
+    return {
+        "recommendation": result["recommendation"],
+        "citations": result["citations"],
+        "ind_module_2_5": result["ind_module_2_5"],
+        "risk_summary": result["risk_summary"],
+        "thread_id": result["thread_id"],
+        "quotes": quotes
+    }
+
+@router.post("/api/intel/continue-thread")
+def continue_analysis(req: ContinueRequest):
+    result = generate_ind_section(req.study_id, req.section, req.context, req.thread_id)
+    return {
+        "section": result["section"],
+        "content": result["content"],
+        "thread_id": req.thread_id
+    }
+
+@router.post("/api/intel/trigger-followup")
+def trigger_followup(req: ContinueRequest):
+    followup = generate_ind_section(req.study_id, req.section, req.context, req.thread_id)
+    return {
+        "message": f"Follow-up module {req.section} generated successfully.",
+        "section": followup["section"],
+        "content": followup["content"],
+        "thread_id": req.thread_id
+    }
+
+@router.post("/api/intel/sap-draft")
+def generate_sap(req: ContinueRequest):
+    sap = generate_ind_section(req.study_id, "SAP", req.context, req.thread_id)
+    return {
+        "message": "SAP draft generated successfully.",
+        "section": "SAP",
+        "content": sap["content"],
+        "thread_id": req.thread_id
+    }
+
+@router.post("/api/intel/csr-evidence")
+def csr_evidence_lookup(req: EvidenceQuery):
+    result = generate_ind_section("CSR-LIBRARY", "evidence", req.topic, req.thread_id or "")
+    return {
+        "message": f"Evidence retrieved for topic '{req.topic}'.",
+        "content": result["content"],
+        "thread_id": req.thread_id
+    }
+
+@router.get("/api/intel/scheduled-report")
+def scheduled_intelligence_report():
+    return send_weekly_report("NASH")
