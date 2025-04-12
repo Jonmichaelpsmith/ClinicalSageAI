@@ -24,6 +24,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CsrReport } from "@/lib/types";
+import ConversationalAssistant from "@/components/ConversationalAssistant";
 
 export default function StudyDesignAgent() {
   const [userQuery, setUserQuery] = useState("");
@@ -357,55 +358,11 @@ export default function StudyDesignAgent() {
             </CardHeader>
             <CardContent className="p-0">
               <div className="flex flex-col h-[calc(100vh-23rem)]">
-                <div className="flex-1 overflow-auto p-4 space-y-4">
-                  {chatHistory.map((message, idx) => (
-                    <div 
-                      key={idx} 
-                      className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
-                    >
-                      <div 
-                        className={`max-w-[80%] rounded-lg p-3 ${
-                          message.role === "user" 
-                            ? "bg-primary text-primary-foreground" 
-                            : "bg-muted"
-                        }`}
-                      >
-                        <div className="whitespace-pre-line">{message.content}</div>
-                        <div className="text-xs opacity-70 mt-1 text-right">
-                          {message.timestamp.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  {isThinking && (
-                    <div className="flex justify-start">
-                      <div className="max-w-[80%] rounded-lg p-3 bg-muted">
-                        <div className="flex space-x-2 items-center">
-                          <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                          <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                          <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-                <div className="p-4 border-t">
-                  <div className="flex space-x-2">
-                    <Textarea 
-                      value={userQuery}
-                      onChange={(e) => setUserQuery(e.target.value)}
-                      onKeyDown={handleKeyDown}
-                      placeholder="Ask about study design, endpoints, sample size, etc."
-                      className="min-h-[60px] resize-none"
-                    />
-                    <Button 
-                      onClick={handleSendMessage}
-                      className="shrink-0"
-                      disabled={!userQuery.trim() || isThinking}
-                    >
-                      <Send className="h-4 w-4" />
-                    </Button>
-                  </div>
+                {/* Use the ConversationalAssistant component for enhanced functionality */}
+                <div className="flex-1 p-4">
+                  <ConversationalAssistant 
+                    initialPrompt={`You are a TrialSage Study Design Agent specializing in ${selectedIndication || 'clinical trials'} ${selectedPhase ? `at Phase ${selectedPhase}` : ''}.`}
+                  />
                 </div>
               </div>
             </CardContent>

@@ -1,12 +1,12 @@
 // client/components/ConversationalAssistant.jsx
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Upload, Send, Paperclip, File, Loader2, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-export default function ConversationalAssistant() {
+export default function ConversationalAssistant({ initialPrompt }) {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
   const [threadId, setThreadId] = useState(null);
@@ -15,6 +15,18 @@ export default function ConversationalAssistant() {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
   const { toast } = useToast();
+  
+  // Initialize with system message if initialPrompt is provided
+  useEffect(() => {
+    if (initialPrompt && messages.length === 0) {
+      setMessages([
+        {
+          role: "assistant",
+          content: "👋 Hello! I'm the TrialSage assistant specializing in clinical trial design and analysis. How can I help you today?"
+        }
+      ]);
+    }
+  }, [initialPrompt, messages.length]);
 
   const handleSend = async () => {
     if (!input.trim() && !uploadedFile) return;
@@ -68,6 +80,7 @@ export default function ConversationalAssistant() {
           message: input,
           thread_id: threadId,
           file_id: fileId,
+          system_prompt: initialPrompt, // Pass the initialPrompt as a system prompt
         }),
       });
       
