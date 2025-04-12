@@ -20,6 +20,21 @@ import {
   generateEmbeddings, 
   isApiKeyAvailable as isOpenAIApiKeyAvailable 
 } from "./openai-service";
+import path from "path";
+import fs from "fs";
+import pdfParse from "pdf-parse";
+
+// Map to store uploaded files for chat sessions
+interface ChatFile {
+  originalName: string;
+  mimeType: string;
+  filePath: string;
+  content: string;
+  uploadedAt: Date;
+}
+
+// Initialize in-memory storage for chat files
+const CHAT_FILES = new Map<string, ChatFile>();
 
 // Legacy compatibility layer to avoid breaking changes
 const huggingFaceService = {
@@ -39,7 +54,6 @@ import { SagePlusService } from "./sage-plus-service";
 import { csrTrainingService } from "./csr-training-service";
 import { researchCompanionService } from "./research-companion-service";
 import { spawn } from 'child_process';
-import path from 'path';
 import { registerSmartProtocolRoutes } from "./smart-protocol-routes";
 import { protocolOptimizerService } from "./protocol-optimizer-service";
 // Importing StudyDesignAgentService directly to avoid dynamic imports later
@@ -59,7 +73,6 @@ import { sapRoutes } from "./routes/sap_routes";
 import { exportRoutes } from "./routes/export_routes";
 import { academicRegulatoryRouter } from "./routes/academic_regulatory_routes";
 import { csrSearchRouter } from './routes/csr_search_routes';
-import pdfParse from 'pdf-parse';
 import { registerSimilarGoalsRoutes } from './routes/similar-goals-routes.js';
 import intelRoutes from './routes/intel-routes';
 import { 
@@ -69,7 +82,6 @@ import {
   findLatestDataFile,
   importTrialsFromApiV2
 } from "./data-importer";
-import fs from "fs";
 import { insertCsrReportSchema, csrReports, csrDetails } from "@shared/schema";
 import { ZodError, z } from "zod";
 import { fromZodError } from "zod-validation-error";
