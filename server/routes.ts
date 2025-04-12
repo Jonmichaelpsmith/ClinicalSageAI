@@ -34,6 +34,7 @@ import { trialPredictorService } from "./trial-predictor-service";
 import { protocolRoutes } from "./routes/protocol_routes";
 import { sapRoutes } from "./routes/sap_routes";
 import { exportRoutes } from "./routes/export_routes";
+import { academicRegulatoryRouter } from "./routes/academic_regulatory_routes";
 import { 
   fetchClinicalTrialData, 
   importTrialsFromCsv, 
@@ -415,6 +416,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register Dossier Routes with version tracking and changelog capabilities
   app.use('/api/dossier', dossierRoutes);
+  
+  // Register Academic and Regulatory Intelligence routes
+  app.use('/api', academicRegulatoryRouter);
   
   // Trial Success Prediction endpoint
   app.post('/api/trial-prediction', async (req: Request, res: Response) => {
