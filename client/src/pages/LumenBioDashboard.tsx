@@ -261,22 +261,30 @@ export default function LumenBioDashboard() {
                 <CardTitle className="text-lg">Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button variant="outline" className="w-full justify-start gap-2">
-                  <Microscope className="h-4 w-4" />
-                  Compare LUM-1 to Similar Trials
-                </Button>
-                <Button variant="outline" className="w-full justify-start gap-2">
-                  <Beaker className="h-4 w-4" />
-                  Generate Protocol Template
-                </Button>
-                <Button variant="outline" className="w-full justify-start gap-2">
-                  <BarChart className="h-4 w-4" />
-                  View Oncology Market Trends
-                </Button>
-                <Button variant="outline" className="w-full justify-start gap-2">
-                  <PieChart className="h-4 w-4" />
-                  Analyze Enrollment Strategies
-                </Button>
+                <Link href="/analytics/trial-comparison/LUM-1">
+                  <Button variant="outline" className="w-full justify-start gap-2">
+                    <Microscope className="h-4 w-4" />
+                    Compare LUM-1 to Similar Trials
+                  </Button>
+                </Link>
+                <Link href="/protocols/templates/new">
+                  <Button variant="outline" className="w-full justify-start gap-2">
+                    <Beaker className="h-4 w-4" />
+                    Generate Protocol Template
+                  </Button>
+                </Link>
+                <Link href="/analytics/market/oncology">
+                  <Button variant="outline" className="w-full justify-start gap-2">
+                    <BarChart className="h-4 w-4" />
+                    View Oncology Market Trends
+                  </Button>
+                </Link>
+                <Link href="/analytics/enrollment-strategies">
+                  <Button variant="outline" className="w-full justify-start gap-2">
+                    <PieChart className="h-4 w-4" />
+                    Analyze Enrollment Strategies
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           </div>
