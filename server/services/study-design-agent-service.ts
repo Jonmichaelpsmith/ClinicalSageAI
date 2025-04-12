@@ -4,6 +4,8 @@ import { memoryService, type ChatMessage } from './memory-service';
 import { clinicalIntelligenceService } from './clinical-intelligence-service';
 import { academicKnowledgeService } from './academic-knowledge-service';
 import { semanticSearchService } from './semantic-search-service';
+import { regulatoryIntelligenceService } from './regulatory-intelligence-service';
+import { academicDocumentProcessor } from './academic-document-processor';
 
 interface StudyDesignQuery {
   query: string;
@@ -47,6 +49,25 @@ export class StudyDesignAgentService {
       
       // Initialize academic knowledge service
       await academicKnowledgeService.initialize();
+      
+      // Initialize regulatory intelligence service
+      await regulatoryIntelligenceService.initialize();
+      
+      // Create necessary directories for document processing
+      const fs = require('fs');
+      const requiredDirs = [
+        'regulatory_data',
+        'academic_resources',
+        'academic_embeddings', 
+        'temp'
+      ];
+      
+      for (const dir of requiredDirs) {
+        if (!fs.existsSync(dir)) {
+          fs.mkdirSync(dir, { recursive: true });
+          console.log(`Created directory: ${dir}`);
+        }
+      }
       
       this.initialized = true;
       console.log('Study Design Agent service initialized successfully');
@@ -140,6 +161,50 @@ export class StudyDesignAgentService {
       context += 'ACADEMIC KNOWLEDGE INSIGHTS:\n';
       context += academicInsights.substring(0, 1000);
       context += '\n\n';
+      
+      // Add regulatory intelligence if appropriate
+      if (this.categorizeQuery(queryData.query) === 'regulatory' || 
+          queryData.query.toLowerCase().includes('fda') || 
+          queryData.query.toLowerCase().includes('regul')) {
+        
+        console.log('Getting regulatory intelligence...');
+        try {
+          // Get regulatory intelligence for the phase and indication
+          const phase = queryData.phase || '';
+          const regulatorySummary = await regulatoryIntelligenceService.getRegulatoryIntelligence(
+            phase,
+            queryData.indication
+          );
+          
+          context += 'REGULATORY INTELLIGENCE:\n';
+          
+          // Add key requirements
+          context += 'Key Regulatory Requirements:\n';
+          for (const req of regulatorySummary.key_requirements.slice(0, 3)) {
+            context += `- ${req.guideline}: ${req.requirement} (${req.compliance_level})\n`;
+            context += `  Reference: ${req.document_reference}\n`;
+          }
+          context += '\n';
+          
+          // Add relevant guidance
+          context += 'Relevant Guidance Documents:\n';
+          for (const guidance of regulatorySummary.relevant_guidance.slice(0, 2)) {
+            context += `- ${guidance.title} (${guidance.agency}, ${guidance.year})\n`;
+            context += `  ${guidance.summary.substring(0, 100)}...\n`;
+          }
+          context += '\n';
+          
+          // Add special considerations
+          context += 'Special Regulatory Considerations:\n';
+          for (const consideration of regulatorySummary.special_considerations.slice(0, 3)) {
+            context += `- ${consideration}\n`;
+          }
+          context += '\n\n';
+        } catch (error) {
+          console.error('Error getting regulatory intelligence:', error);
+          // Continue without regulatory intelligence
+        }
+      }
       
       // Add clinical report references
       context += 'RELEVANT CLINICAL STUDY REPORTS:\n';
@@ -276,7 +341,9 @@ Structure your response in a clear, professional manner with appropriate section
     return {
       initialized: this.initialized,
       clinicalIntelligence: clinicalIntelligenceService.getIndexStats(),
-      academicKnowledge: academicKnowledgeService.getStats()
+      academicKnowledge: academicKnowledgeService.getStats(),
+      regulatoryIntelligence: regulatoryIntelligenceService.getStats(),
+      recentlyProcessedDocuments: academicDocumentProcessor.getRecentlyProcessedDocuments(5)
     };
   }
 }
