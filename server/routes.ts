@@ -12,8 +12,27 @@ import {
 } from "./analytics-service";
 import { translationService, supportedLanguages } from "./translation-service";
 import { generateProtocolTemplate, getStatisticalApproaches } from "./protocol-service";
-// Legacy Hugging Face service - now archived
-// import { huggingFaceService, queryHuggingFace, HFModel } from "./huggingface-service";
+// Legacy Hugging Face service has been replaced with OpenAI-based services
+// Migration notice: The HuggingFace service has been completely replaced with OpenAI-based services.
+import { 
+  analyzeText, 
+  generateStructuredResponse,
+  generateEmbeddings, 
+  isApiKeyAvailable as isOpenAIApiKeyAvailable 
+} from "./openai-service";
+
+// Legacy compatibility layer to avoid breaking changes
+const huggingFaceService = {
+  isApiKeyAvailable: () => isOpenAIApiKeyAvailable(),
+  queryHuggingFace: (prompt: string) => analyzeText(prompt, "You are a helpful clinical trial analysis assistant."),
+  generateEmbeddings: (text: string) => generateEmbeddings(text)
+};
+
+enum HFModel {
+  DEFAULT = "gpt-4o",
+  BERT = "gpt-4o",
+  LARGE = "gpt-4o"
+}
 import { academicKnowledgeTracker } from "./academic-knowledge-tracker";
 import { academicUpload, processAcademicResource } from "./academic-resource-upload";
 import { SagePlusService } from "./sage-plus-service";
