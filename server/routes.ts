@@ -2731,12 +2731,35 @@ Provide a comprehensive, evidence-based response.`;
       // Get similar trials based on the extracted indication
       let similarTrials = [];
       try {
-        // Use the imported like from drizzle-orm
+        // Use the imported like from drizzle-orm and explicitly select columns to avoid file_type issues
         similarTrials = await db
-          .select()
+          .select({
+            id: csrReports.id,
+            title: csrReports.title,
+            sponsor: csrReports.sponsor,
+            indication: csrReports.indication,
+            phase: csrReports.phase,
+            status: csrReports.status,
+            date: csrReports.date,
+            uploadDate: csrReports.uploadDate,
+            summary: csrReports.summary,
+            fileName: csrReports.fileName,
+            fileSize: csrReports.fileSize,
+            processedAt: csrReports.processedAt,
+            vectorized: csrReports.vectorized,
+            source: csrReports.source,
+            hasDetails: csrReports.hasDetails,
+            deletedAt: csrReports.deletedAt
+          })
           .from(csrReports)
           .where(like(csrReports.indication, `%${extractedInfo.indication}%`))
           .limit(3);
+        
+        // Add fileType property manually
+        similarTrials = similarTrials.map(trial => ({
+          ...trial,
+          fileType: 'pdf' // Default value
+        }));
       } catch (dbError) {
         console.error('Error fetching similar trials:', dbError);
         // Return an empty array instead of fallbacks to ensure data integrity
