@@ -6,8 +6,11 @@
   "sample_size": 180,
   "duration_weeks": 16,
   "dropout_rate": 0.22,
-  "primary_endpoints": ["Reduction in systolic blood pressure"],
+  "primary_endpoints": [
+    "Reduction in systolic blood pressure"
+  ],
   "control_arm": "placebo",
   "blinding": "double-blind",
-  "outcome_summary": "Primary endpoint not met"
+  "outcome_summary": "Primary endpoint not met",
+  "csr_id": "sample-trial-3"
 }

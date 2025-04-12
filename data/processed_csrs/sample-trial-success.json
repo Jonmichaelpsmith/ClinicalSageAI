@@ -5,9 +5,12 @@
   "sample_size": 500,
   "duration_weeks": 52,
   "dropout_rate": 0.12,
-  "primary_endpoints": ["HbA1c reduction >=0.5%"],
+  "primary_endpoints": [
+    "HbA1c reduction >=0.5%"
+  ],
   "control_arm": "active comparator",
   "blinding": "double-blind",
   "outcome_summary": "Primary endpoint met with statistical significance (p<0.01)",
-  "failure_reason": "N/A"
+  "failure_reason": "N/A",
+  "csr_id": "sample-trial-success"
 }

@@ -14,5 +14,6 @@
   "studyType": "Interventional",
   "status": "Terminated",
   "description": "This is a randomized double-blind, placebo-controlled  study designed to evaluate the efficacy and safety of HIV-335 (integrase inhibitor) in patients with Major Depressive Disorder. The study will enroll approximately 263 patients.",
-  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 21-84 years\n- Confirmed diagnosis of Major Depressive Disorder\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 21-84 years\n- Confirmed diagnosis of Major Depressive Disorder\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment",
+  "csr_id": "HC-1880"
 }
