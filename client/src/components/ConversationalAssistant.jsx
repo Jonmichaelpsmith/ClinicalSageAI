@@ -16,6 +16,7 @@ export default function ConversationalAssistant() {
     setMessages((prev) => [...prev, { role: "user", content: input }]);
 
     try {
+      console.log("Sending chat message to /api/chat/send-message");
       const res = await fetch("/api/chat/send-message", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -24,7 +25,13 @@ export default function ConversationalAssistant() {
           thread_id: threadId,
         }),
       });
+      
+      if (!res.ok) {
+        throw new Error(`Server returned ${res.status}: ${res.statusText}`);
+      }
+      
       const data = await res.json();
+      console.log("Received response:", data);
       setThreadId(data.thread_id);
 
       setMessages((prev) => [
@@ -40,7 +47,7 @@ export default function ConversationalAssistant() {
         ...prev,
         {
           role: "assistant",
-          content: "Sorry, there was an error processing your request. Please try again.",
+          content: `Sorry, there was an error processing your request: ${error.message}. Please try again.`,
         },
       ]);
     } finally {
