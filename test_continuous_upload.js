@@ -5,7 +5,10 @@
  * that the continuous upload service is working correctly
  */
 
-const { Client } = require('pg');
+import pg from 'pg';
+import fs from 'fs';
+
+const { Client } = pg;
 
 async function checkUploadProgress() {
   console.log('Checking continuous upload progress...');

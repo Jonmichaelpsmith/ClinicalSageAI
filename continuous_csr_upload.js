@@ -12,11 +12,14 @@
  * 5. Automatically rotates between different data sources
  */
 
-const fs = require('fs');
-const path = require('path');
-const { Client } = require('pg');
-const { parseString } = require('xml2js');
-const cron = require('node-cron');
+import fs from 'fs';
+import path from 'path';
+import pg from 'pg';
+import xml2js from 'xml2js';
+import cron from 'node-cron';
+
+const { Client } = pg;
+const { parseString } = xml2js;
 
 // Configuration
 const BATCH_SIZE = 50;
