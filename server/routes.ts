@@ -1060,7 +1060,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         reference: null
       }));
       
-      res.json(formattedRecommendations);
+      // Extract the endpoints and send them as the recommendations array
+      const endpointStrings = formattedRecommendations.map(rec => rec.endpoint);
+      
+      // Send the response in the format the client expects
+      res.json({ 
+        recommendations: endpointStrings
+      });
     } catch (error) {
       console.error('Error generating endpoint recommendations:', error);
       res.status(500).json({ 
