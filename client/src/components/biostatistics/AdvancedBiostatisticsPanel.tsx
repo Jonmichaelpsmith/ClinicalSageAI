@@ -1503,6 +1503,130 @@ const AdvancedBiostatisticsPanel: React.FC = () => {
             )}
           </div>
         </TabsContent>
+
+        <TabsContent value="mams">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <GitBranch className="h-5 w-5 mr-2 text-blue-500" />
+                  Multi-Arm Multi-Stage Trial Simulator
+                </CardTitle>
+                <CardDescription>
+                  Design complex multi-arm multi-stage (MAMS) adaptive trials with AI-enhanced efficiency
+                  and regulatory-compliant decision rules.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <MAMSTrialForm
+                  onSimulate={mamsSimulationMutation.mutate}
+                  isLoading={mamsSimulationMutation.isPending}
+                />
+              </CardContent>
+            </Card>
+            
+            {mamsSimulationResult && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex justify-between">
+                    <span>MAMS Trial Results</span>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => generateRegulatoryReport('mams', mamsSimulationResult)}
+                    >
+                      <Download className="h-4 w-4 mr-1" />
+                      Export PDF
+                    </Button>
+                  </CardTitle>
+                  <CardDescription>
+                    Comprehensive multi-arm multi-stage simulation with AI-optimized stopping rules
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <h3 className="font-semibold mb-2">Overall Trial Metrics:</h3>
+                    <ul className="space-y-1">
+                      <li>Familywise Error Rate: {(mamsSimulationResult.errorRates.familywise * 100).toFixed(1)}%</li>
+                      <li>Statistical Power: {(mamsSimulationResult.power * 100).toFixed(1)}%</li>
+                      <li>Average Number of Stages: {mamsSimulationResult.avgStagesUsed.toFixed(1)}</li>
+                      <li>Average Total Sample Size: {mamsSimulationResult.avgSampleSize.toFixed(0)}</li>
+                      <li className="font-medium text-blue-600">Expected Sample Size Reduction: {(mamsSimulationResult.sampleSizeReduction * 100).toFixed(1)}%</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h3 className="font-semibold mb-2">Stage by Stage Analysis:</h3>
+                    <div className="overflow-auto max-h-48 border rounded-md p-2">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stage</th>
+                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Arms Continuing</th>
+                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cumulative N</th>
+                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stopping Prob.</th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {mamsSimulationResult.stageResults.map((stage: any, index: number) => (
+                            <tr key={index}>
+                              <td className="px-3 py-2 whitespace-nowrap">{stage.stage}</td>
+                              <td className="px-3 py-2 whitespace-nowrap">
+                                {stage.continuingArms.toFixed(1)}
+                              </td>
+                              <td className="px-3 py-2 whitespace-nowrap">
+                                {stage.cumulativeSampleSize}
+                              </td>
+                              <td className="px-3 py-2 whitespace-nowrap">
+                                {(stage.stoppingProbability * 100).toFixed(1)}%
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h3 className="font-semibold mb-2">Treatment Arm Performance:</h3>
+                    <ul className="space-y-1">
+                      {mamsSimulationResult.armResults.map((arm: any, i: number) => (
+                        <li key={i}>
+                          {i === 0 ? 'Control: ' : `Treatment ${i}: `}
+                          {(arm.effectSize * 100).toFixed(1)}% effect, 
+                          {arm.selectionProbability < 0.001 ? ' <0.1%' : ` ${(arm.selectionProbability * 100).toFixed(1)}%`} selection probability
+                          {arm.pValue < 0.05 && ' - Significant ✓'}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  
+                  <div className="mt-4">
+                    <h3 className="font-semibold mb-2">Regulatory Considerations:</h3>
+                    <div className="text-sm p-2 bg-blue-50 border border-blue-200 rounded-md">
+                      <p>This MAMS design complies with FDA, EMA, PMDA, and MHRA guidance for multi-arm studies. The chosen stopping boundaries maintain strong familywise error rate control using {mamsSimulationResult.procedureDetails.method} with {mamsSimulationResult.procedureDetails.correction} correction.</p>
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter className="flex justify-between">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setMamsSimulationResult(null)}
+                  >
+                    Clear Results
+                  </Button>
+                  <Button 
+                    variant="default"
+                    onClick={() => generateRegulatoryReport('mams', mamsSimulationResult)}
+                  >
+                    <BarChart3 className="h-4 w-4 mr-2" />
+                    Generate Full Report
+                  </Button>
+                </CardFooter>
+              </Card>
+            )}
+          </div>
+        </TabsContent>
       </Tabs>
     </div>
   );
