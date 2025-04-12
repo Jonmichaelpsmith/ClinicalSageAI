@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1825",
+  "title": "A Randomized Double-Blind, Active-Controlled Multi-Center Study of ARH-921 (JAK inhibitor) in Patients With Psoriasis",
+  "officialTitle": "A Randomized Double-Blind, Active-Controlled Multi-Center Study of ARH-921 (JAK inhibitor) in Patients With Psoriasis",
+  "sponsor": "University of Toronto Medical Center",
+  "indication": "Psoriasis",
+  "phase": "Phase 3",
+  "fileName": "HC-1825.json",
+  "fileSize": 139898,
+  "date": "2024-10-22",
+  "completionDate": "2026-07-30",
+  "drugName": "ARH-921 (JAK inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Active, not recruiting",
+  "description": "This is a randomized double-blind, active-controlled multi-center study designed to evaluate the efficacy and safety of ARH-921 (JAK inhibitor) in patients with Psoriasis. The study will enroll approximately 401 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 22-59 years\n- Confirmed diagnosis of Psoriasis\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}
