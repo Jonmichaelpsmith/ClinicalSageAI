@@ -1,0 +1,92 @@
+# 🧠 TrialSage Intelligence Engine
+
+An OpenAI-powered study design system for biotech, regulatory, and biostatistics teams. Delivers protocol recommendations, IND modules, SAPs, and risk analysis based on real CSR evidence and expert GPT-4 outputs.
+
+---
+
+## ✅ Features
+- GPT-4 Turbo assistant with thread memory
+- Protocol suggestion and justification engine
+- IND 2.5 / 2.7 / SAP generator with FDA-aligned formatting
+- CSR document-based evidence lookup (quote-aware)
+- Regulatory risk analyzer
+- Weekly PDF report generator + Mailgun email delivery
+- Replit-ready FastAPI backend with static asset hosting
+
+---
+
+## 📦 Folder Structure
+```
+/trialsage/
+├── main.py                        # Entrypoint
+├── controllers/
+│   ├── protocol.py               # Main assistant controller
+│   └── export.py                 # PDF export endpoint
+├── services/
+│   ├── openai_engine.py          # GPT-4 + assistant thread manager
+│   ├── report_generator.py       # Weekly email + PDF delivery
+│   └── pdf_exporter.py           # PDF writer using FPDF
+├── models/
+│   └── schemas.py                # Request/response model classes
+├── static/                       # Exports PDF to /static/latest_report.pdf
+```
+
+---
+
+## 🚀 Getting Started on Replit
+### 1. Set your environment variables in `.env`
+```
+OPENAI_API_KEY=sk-...
+TRIALSAGE_ASSISTANT_ID=asst-...
+MAILGUN_USER=postmaster@yourdomain.com
+MAILGUN_PASSWORD=your-password
+```
+
+### 2. Confirm your `.replit` config:
+```toml
+entrypoint = "main.py"
+[env]
+PYTHONUNBUFFERED = "1"
+[interpreter]
+command = ["python3"]
+```
+
+### 3. Run the app
+```bash
+python main.py
+```
+
+### 4. Test endpoints
+- `POST /api/intel/protocol-suggestions`
+- `GET /api/intel/scheduled-report`
+- `POST /api/intel/export-pdf` → download `/static/latest_report.pdf`
+
+---
+
+## 📬 Optional Replit Scheduler
+Create a scheduled GET to:
+```
+https://your-replit-url/api/intel/scheduled-report
+```
+To generate and email briefing packets weekly.
+
+---
+
+## 📎 Example: PDF Download Endpoint
+```
+POST /api/intel/export-pdf
+Body: { "indication": "NASH" }
+```
+→ Response: `{ "download_url": "/static/latest_report.pdf" }`
+
+---
+
+## 🔒 Notes
+- All assistant logic uses OpenAI GPT-4 + Assistants API
+- CSR citations can be further grounded via file upload + embeddings (future enhancement)
+
+---
+
+## 📌 Status
+TrialSage is now deployable, AI-complete, and Replit compatible.
+Ready to power real-world biotech study design at scale.
