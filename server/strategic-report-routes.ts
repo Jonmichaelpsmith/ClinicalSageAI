@@ -1,6 +1,6 @@
 import { Request, Response, Router } from 'express';
 import { db } from './db';
-import { strategicReports, protocols } from '@shared/schema';
+import { strategicReports, trials } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 import { strategicReportGenerator } from './strategic-report-generator';
 
@@ -51,8 +51,8 @@ router.post('/generate/:protocolId', async (req: Request, res: Response) => {
     // Fetch protocol data
     const [protocol] = await db
       .select()
-      .from(protocols)
-      .where(eq(protocols.id, parseInt(protocolId)));
+      .from(trials)
+      .where(eq(trials.id, parseInt(protocolId)));
 
     if (!protocol) {
       return res.status(404).json({ error: 'Protocol not found' });
