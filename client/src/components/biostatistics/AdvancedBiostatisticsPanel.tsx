@@ -29,6 +29,293 @@ import { apiRequest } from '@/lib/queryClient';
 import { Loader2, Download, BarChart3, Brain } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
+interface MAMSTrialFormProps {
+  onSimulate: (data: any) => void;
+  isLoading: boolean;
+}
+
+const MAMSTrialForm: React.FC<MAMSTrialFormProps> = ({ onSimulate, isLoading }) => {
+  const [sampleSize, setSampleSize] = useState(500);
+  const [numTreatmentArms, setNumTreatmentArms] = useState(3);
+  const [numStages, setNumStages] = useState(3);
+  const [stageSplits, setStageSplits] = useState([0.33, 0.67]);
+  const [familywiseErrorRate, setFamilywiseErrorRate] = useState(0.05);
+  const [targetPower, setTargetPower] = useState(0.9);
+  const [effectSizes, setEffectSizes] = useState([0.2, 0.35, 0.5]);
+  const [dropoutRate, setDropoutRate] = useState(0.15);
+  const [correlationMatrix, setCorrelationMatrix] = useState("auto");
+  const [multipleTestingProcedure, setMultipleTestingProcedure] = useState("dunnett");
+  const [useRaoScottCorrection, setUseRaoScottCorrection] = useState(true);
+  const [useMonteCarlo, setUseMonteCarlo] = useState(true);
+  const [adaptiveSampleSize, setAdaptiveSampleSize] = useState(true);
+  
+  // Update stage splits when number of stages changes
+  useEffect(() => {
+    const newStageSplits = Array(numStages - 1).fill(0)
+      .map((_, i) => (i + 1) / numStages);
+    setStageSplits(newStageSplits);
+  }, [numStages]);
+  
+  // Update effect sizes when number of treatment arms changes
+  useEffect(() => {
+    const baseEffectSize = 0.2;
+    const newEffectSizes = Array(numTreatmentArms).fill(0)
+      .map((_, i) => baseEffectSize + (i * 0.15));
+    setEffectSizes(newEffectSizes);
+  }, [numTreatmentArms]);
+  
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Calculate futility boundaries based on number of stages
+    const futilityBoundaries = stageSplits.map((split, index) => ({
+      stageIndex: index,
+      zScore: -0.5 * (index + 1)
+    }));
+    
+    // Calculate efficacy boundaries using O'Brien-Fleming spending function
+    const efficacyBoundaries = stageSplits.map((split, index) => ({
+      stageIndex: index,
+      zScore: 2.5 / Math.sqrt(split)
+    }));
+    
+    const stageInfo = stageSplits.map((split, index) => ({
+      proportion: index === 0 ? split : split - stageSplits[index - 1],
+      cumulativeProportion: split,
+      futilityBoundary: futilityBoundaries[index].zScore,
+      efficacyBoundary: efficacyBoundaries[index].zScore
+    }));
+    
+    // Prepare advanced statistical parameters
+    const advancedParameters = {
+      correlationMatrix: correlationMatrix === "auto" ? null : correlationMatrix,
+      multipleTesting: {
+        procedure: multipleTestingProcedure,
+        adjustmentMethod: "bonferroni-holm"
+      },
+      adaptiveSampleSize: adaptiveSampleSize ? {
+        enabled: true,
+        reassessmentAtInterim: true,
+        maxIncreaseFactor: 1.5
+      } : { enabled: false },
+      computationalMethods: {
+        useMonteCarlo,
+        numberSimulations: useMonteCarlo ? 10000 : 0,
+        seedValue: 12345,
+        useRaoScottCorrection
+      },
+      regulatoryCompliance: {
+        FDA: true,
+        EMA: true,
+        PMDA: true,
+        NMPA: true,
+        MHRA: true,
+        TGA: true,
+        ANVISA: true,
+        CDSCO: true
+      },
+      modelParameters: {
+        endpoint: "continuous",
+        variance: 1.0,
+        allocationRatio: Array(numTreatmentArms + 1).fill(1 / (numTreatmentArms + 1)),
+        driftPrevention: true
+      }
+    };
+    
+    onSimulate({
+      sampleSize,
+      numTreatmentArms,
+      numStages,
+      stageSplits,
+      stages: stageInfo,
+      familywiseErrorRate,
+      targetPower,
+      effectSizes,
+      dropoutRate,
+      advancedParameters
+    });
+  };
+  
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="sampleSize">Maximum Sample Size</Label>
+          <Input
+            id="sampleSize"
+            type="number"
+            value={sampleSize}
+            onChange={(e) => setSampleSize(Number(e.target.value))}
+            min={100}
+            max={2000}
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="numTreatmentArms">Number of Treatment Arms</Label>
+          <Select 
+            value={numTreatmentArms.toString()}
+            onValueChange={(value) => setNumTreatmentArms(Number(value))}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select number of treatment arms" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="2">2 Treatment Arms</SelectItem>
+              <SelectItem value="3">3 Treatment Arms</SelectItem>
+              <SelectItem value="4">4 Treatment Arms</SelectItem>
+              <SelectItem value="5">5 Treatment Arms</SelectItem>
+              <SelectItem value="6">6 Treatment Arms</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="numStages">Number of Stages</Label>
+          <Select 
+            value={numStages.toString()}
+            onValueChange={(value) => setNumStages(Number(value))}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select number of stages" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="2">2 Stages</SelectItem>
+              <SelectItem value="3">3 Stages</SelectItem>
+              <SelectItem value="4">4 Stages</SelectItem>
+              <SelectItem value="5">5 Stages</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="familywiseErrorRate">Familywise Error Rate (α)</Label>
+          <Select 
+            value={familywiseErrorRate.toString()}
+            onValueChange={(value) => setFamilywiseErrorRate(Number(value))}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select error rate" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="0.01">0.01 (1%)</SelectItem>
+              <SelectItem value="0.025">0.025 (2.5%)</SelectItem>
+              <SelectItem value="0.05">0.05 (5%)</SelectItem>
+              <SelectItem value="0.1">0.1 (10%)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="targetPower">Target Power (1-β)</Label>
+          <Select 
+            value={targetPower.toString()}
+            onValueChange={(value) => setTargetPower(Number(value))}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select target power" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="0.8">0.8 (80%)</SelectItem>
+              <SelectItem value="0.85">0.85 (85%)</SelectItem>
+              <SelectItem value="0.9">0.9 (90%)</SelectItem>
+              <SelectItem value="0.95">0.95 (95%)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="dropoutRate">Expected Dropout Rate</Label>
+          <Slider
+            id="dropoutRate"
+            value={[dropoutRate]}
+            onValueChange={(value) => setDropoutRate(value[0])}
+            min={0}
+            max={0.5}
+            step={0.01}
+            className="mt-2"
+          />
+          <div className="text-sm text-muted-foreground text-center">{(dropoutRate * 100).toFixed(1)}%</div>
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="multipleTestingProcedure">Multiple Testing Procedure</Label>
+          <Select 
+            value={multipleTestingProcedure}
+            onValueChange={(value) => setMultipleTestingProcedure(value)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select procedure" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="dunnett">Dunnett's Test</SelectItem>
+              <SelectItem value="bonferroni">Bonferroni</SelectItem>
+              <SelectItem value="holm">Holm-Bonferroni</SelectItem>
+              <SelectItem value="hochberg">Hochberg</SelectItem>
+              <SelectItem value="hommel">Hommel</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      
+      <div className="space-y-2">
+        <h3 className="text-sm font-medium">Advanced Statistical Options</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 bg-slate-50 p-3 rounded-md dark:bg-slate-900">
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="useRaoScottCorrection"
+              checked={useRaoScottCorrection}
+              onChange={(e) => setUseRaoScottCorrection(e.target.checked)}
+              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+            />
+            <Label htmlFor="useRaoScottCorrection" className="text-sm font-medium leading-none cursor-pointer">
+              Rao-Scott Correlation Correction
+            </Label>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="useMonteCarlo"
+              checked={useMonteCarlo}
+              onChange={(e) => setUseMonteCarlo(e.target.checked)}
+              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+            />
+            <Label htmlFor="useMonteCarlo" className="text-sm font-medium leading-none cursor-pointer">
+              Monte Carlo Simulations
+            </Label>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="adaptiveSampleSize"
+              checked={adaptiveSampleSize}
+              onChange={(e) => setAdaptiveSampleSize(e.target.checked)}
+              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+            />
+            <Label htmlFor="adaptiveSampleSize" className="text-sm font-medium leading-none cursor-pointer">
+              Adaptive Sample Size Reassessment
+            </Label>
+          </div>
+        </div>
+      </div>
+      
+      <Button type="submit" className="w-full" disabled={isLoading}>
+        {isLoading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Calculating...
+          </>
+        ) : (
+          'Simulate MAMS Trial'
+        )}
+      </Button>
+    </form>
+  );
+};
+
 interface AdaptiveTrialFormProps {
   onSimulate: (data: any) => void;
   isLoading: boolean;
@@ -699,11 +986,12 @@ const AdvancedBiostatisticsPanel: React.FC = () => {
       </div>
       
       <Tabs defaultValue="adaptive" className="w-full">
-        <TabsList className="grid grid-cols-4 mb-4">
+        <TabsList className="grid grid-cols-5 mb-4">
           <TabsTrigger value="adaptive">Adaptive Trial Design</TabsTrigger>
           <TabsTrigger value="bayesian">Bayesian Prediction</TabsTrigger>
           <TabsTrigger value="noninferiority">Non-Inferiority</TabsTrigger>
           <TabsTrigger value="survival">Survival Analysis</TabsTrigger>
+          <TabsTrigger value="mams">MAMS Trials</TabsTrigger>
         </TabsList>
         
         <TabsContent value="adaptive">
