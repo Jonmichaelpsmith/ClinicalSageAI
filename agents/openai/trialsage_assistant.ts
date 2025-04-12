@@ -1,19 +1,20 @@
-import OpenAI from "openai";
 import { 
   generateStructuredResponse,
-  analyzeText
+  analyzeText,
+  createThread,
+  addMessageToThread,
+  runAssistant,
+  getRunStatus,
+  listMessages,
+  createAssistant
 } from "../../server/services/openai-service";
 import fs from "fs";
 import path from "path";
 
-// Initialize OpenAI client
+// Check for OpenAI API key
 if (!process.env.OPENAI_API_KEY) {
-  throw new Error("OPENAI_API_KEY is not defined in the environment variables");
+  console.error("OPENAI_API_KEY is not defined in the environment variables");
 }
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
 
 /**
  * Initialize the TrialSage assistant
@@ -55,7 +56,7 @@ export async function initializeAssistant() {
  */
 export async function createAssistantThread() {
   try {
-    const thread = await openai.beta.threads.create();
+    const thread = await createThread();
     return thread.id;
   } catch (error) {
     console.error("Error creating assistant thread:", error);
@@ -76,21 +77,16 @@ export async function getAssistantResponse(threadId: string, userMessage: string
     const assistantId = fs.readFileSync(assistantIdPath, 'utf8');
 
     // Add the user message to the thread
-    await openai.beta.threads.messages.create(threadId, {
-      role: "user",
-      content: userMessage,
-    });
+    await addMessageToThread(threadId, userMessage);
 
     // Run the assistant on the thread
-    const run = await openai.beta.threads.runs.create(threadId, {
-      assistant_id: assistantId,
-    });
+    const run = await runAssistant(threadId, assistantId);
 
     // Poll for the run completion
-    let runStatus = await openai.beta.threads.runs.retrieve(threadId, run.id);
+    let runStatus = await getRunStatus(threadId, run.id);
     while (runStatus.status !== "completed" && runStatus.status !== "failed") {
       await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for 1 second
-      runStatus = await openai.beta.threads.runs.retrieve(threadId, run.id);
+      runStatus = await getRunStatus(threadId, run.id);
     }
 
     if (runStatus.status === "failed") {
@@ -98,7 +94,7 @@ export async function getAssistantResponse(threadId: string, userMessage: string
     }
 
     // Get the assistant's response
-    const messages = await openai.beta.threads.messages.list(threadId);
+    const messages = await listMessages(threadId);
     const assistantMessages = messages.data.filter(msg => msg.role === "assistant");
     if (assistantMessages.length === 0) {
       throw new Error("No assistant response found");
