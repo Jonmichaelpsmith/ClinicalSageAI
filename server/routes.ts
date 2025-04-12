@@ -36,6 +36,7 @@ import { protocolRoutes } from "./routes/protocol_routes";
 import { sapRoutes } from "./routes/sap_routes";
 import { exportRoutes } from "./routes/export_routes";
 import { academicRegulatoryRouter } from "./routes/academic_regulatory_routes";
+import { csrSearchRouter } from './routes/csr_search_routes';
 import { 
   fetchClinicalTrialData, 
   importTrialsFromCsv, 
@@ -403,43 +404,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register CSR Deep Learning Analysis routes
   app.use('/api/deep-learning', csrDeepLearningRouter);
   
-  // Setup CSR API proxy to Python FastAPI service
-  // Forward requests to /api/csrs/* to the Python FastAPI backend on port 8000
-  app.use('/api/csrs', async (req, res) => {
-    try {
-      const url = `http://localhost:8000/api${req.url}`;
-      console.log(`Proxying CSR request to: ${url}`);
-      
-      // Import axios directly
-      const axios = (await import('axios')).default;
-      
-      // Make request to Python backend using axios
-      const response = await axios({
-        method: req.method,
-        url: url,
-        data: req.method !== 'GET' ? req.body : undefined,
-        params: req.method === 'GET' ? req.query : undefined,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      
-      // Forward response back to client
-      res.status(response.status).json(response.data);
-    } catch (error: any) {
-      console.error('CSR API proxy error:', error);
-      if (error.response) {
-        // Forward error response from Python backend
-        res.status(error.response.status).json(error.response.data);
-      } else {
-        // Generic error if Python service is unreachable
-        res.status(500).json({
-          error: 'Failed to connect to CSR API service',
-          message: 'The CSR search service is currently unavailable. Please ensure the Python FastAPI service is running on port 8000.'
-        });
-      }
-    }
-  });
+  // Use our integrated CSR search router instead of Python proxy
+  app.use('/api/csrs', csrSearchRouter);
   
   // Register Strategic Report routes
   app.use('/api/strategic-reports', strategicReportRoutes);
