@@ -12,7 +12,8 @@ import {
 } from "./analytics-service";
 import { translationService, supportedLanguages } from "./translation-service";
 import { generateProtocolTemplate, getStatisticalApproaches } from "./protocol-service";
-import { huggingFaceService, queryHuggingFace, HFModel } from "./huggingface-service";
+// Legacy Hugging Face service - now archived
+// import { huggingFaceService, queryHuggingFace, HFModel } from "./huggingface-service";
 import { academicKnowledgeTracker } from "./academic-knowledge-tracker";
 import { academicUpload, processAcademicResource } from "./academic-resource-upload";
 import { SagePlusService } from "./sage-plus-service";
@@ -25,7 +26,8 @@ import { protocolOptimizerService } from "./protocol-optimizer-service";
 // Importing StudyDesignAgentService directly to avoid dynamic imports later
 import { studyDesignAgentService } from "./services/study-design-agent-service";
 import { strategicStatsRouter } from "./strategic-stats-routes";
-import { csrDeepLearningRouter } from "./csr-deep-learning-routes";
+// Legacy CSR Deep Learning router - now replaced with OpenAI-based intelligence
+// import { csrDeepLearningRouter } from "./csr-deep-learning-routes";
 import { getEndpointRecommenderService } from "./services/endpoint-recommender-service";
 import axios from "axios";
 import { notificationService } from "./notification-service";
@@ -40,6 +42,7 @@ import { academicRegulatoryRouter } from "./routes/academic_regulatory_routes";
 import { csrSearchRouter } from './routes/csr_search_routes';
 import pdfParse from 'pdf-parse';
 import { registerSimilarGoalsRoutes } from './routes/similar-goals-routes.js';
+import intelRoutes from './routes/intel-routes';
 import { 
   fetchClinicalTrialData, 
   importTrialsFromCsv, 
@@ -405,8 +408,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register Strategic Statistics Analysis routes
   app.use('/api/stats-analysis', strategicStatsRouter);
   
-  // Register CSR Deep Learning Analysis routes
-  app.use('/api/deep-learning', csrDeepLearningRouter);
+  // Legacy CSR Deep Learning routes are now disabled in favor of OpenAI-based intelligence
+  // app.use('/api/deep-learning', csrDeepLearningRouter);
+  
+  // Register Intelligence routes for the new OpenAI-based architecture
+  app.use('/api/intel', intelRoutes);
   
   // Use our integrated CSR search router instead of Python proxy
   app.use('/api/csrs', csrSearchRouter);

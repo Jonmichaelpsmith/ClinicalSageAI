@@ -1,0 +1,69 @@
+// /components/IntelDashboard.tsx
+import { useState } from 'react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+
+export default function IntelDashboard() {
+  const [indication, setIndication] = useState('');
+  const [brief, setBrief] = useState('');
+  const [metrics, setMetrics] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const fetchIntel = async () => {
+    setLoading(true);
+    const res = await fetch(`/api/intel/summary`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ aggregated_metrics: { indication } })
+    });
+    const data = await res.json();
+    setBrief(data.brief);
+    setLoading(false);
+  };
+
+  const fetchKPI = async () => {
+    setLoading(true);
+    const res = await fetch(`/api/intel/kpi-dashboard`);
+    const data = await res.json();
+    setMetrics(data.global_kpis);
+    setLoading(false);
+  };
+
+  return (
+    <div className="p-6 max-w-5xl mx-auto">
+      <h1 className="text-2xl font-bold mb-4">TrialSage Intelligence Dashboard</h1>
+      <div className="flex gap-2 mb-6">
+        <Input
+          placeholder="Enter indication keyword (e.g., NASH, RA, NSCLC)"
+          value={indication}
+          onChange={(e) => setIndication(e.target.value)}
+        />
+        <Button onClick={fetchIntel}>Generate Insight Brief</Button>
+        <Button variant="outline" onClick={fetchKPI}>Global KPI Summary</Button>
+      </div>
+
+      {loading && <p className="text-muted-foreground">Loading...</p>}
+
+      {brief && (
+        <Card className="mb-6">
+          <CardContent>
+            <h2 className="text-xl font-semibold mb-2">Weekly Intelligence Brief</h2>
+            <p className="whitespace-pre-wrap text-sm">{brief}</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {metrics && (
+        <Card>
+          <CardContent>
+            <h2 className="text-xl font-semibold mb-2">Global KPI Summary</h2>
+            <pre className="text-xs whitespace-pre-wrap text-muted-foreground">
+              {JSON.stringify(metrics, null, 2)}
+            </pre>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}

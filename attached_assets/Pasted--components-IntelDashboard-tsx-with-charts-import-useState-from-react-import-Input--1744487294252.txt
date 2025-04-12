@@ -1,0 +1,107 @@
+// /components/IntelDashboard.tsx (with charts)
+import { useState } from 'react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
+} from 'recharts';
+
+export default function IntelDashboard() {
+  const [indication, setIndication] = useState('');
+  const [brief, setBrief] = useState('');
+  const [metrics, setMetrics] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const fetchIntel = async () => {
+    setLoading(true);
+    const res = await fetch(`/api/intel/summary`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ aggregated_metrics: { indication } })
+    });
+    const data = await res.json();
+    setBrief(data.brief);
+    setLoading(false);
+  };
+
+  const fetchKPI = async () => {
+    setLoading(true);
+    const res = await fetch(`/api/intel/kpi-dashboard`);
+    const data = await res.json();
+    setMetrics(data.global_kpis);
+    setLoading(false);
+  };
+
+  const formatBarData = (obj: Record<string, number>) =>
+    Object.entries(obj).map(([key, value]) => ({ name: key, count: value }));
+
+  return (
+    <div className="p-6 max-w-6xl mx-auto">
+      <h1 className="text-2xl font-bold mb-4">TrialSage Intelligence Dashboard</h1>
+      <div className="flex gap-2 mb-6">
+        <Input
+          placeholder="Enter indication keyword (e.g., NASH, RA, NSCLC)"
+          value={indication}
+          onChange={(e) => setIndication(e.target.value)}
+        />
+        <Button onClick={fetchIntel}>Generate Insight Brief</Button>
+        <Button variant="outline" onClick={fetchKPI}>Global KPI Summary</Button>
+      </div>
+
+      {loading && <p className="text-muted-foreground">Loading...</p>}
+
+      {brief && (
+        <Card className="mb-6">
+          <CardContent>
+            <h2 className="text-xl font-semibold mb-2">Weekly Intelligence Brief</h2>
+            <p className="whitespace-pre-wrap text-sm">{brief}</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {metrics && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card>
+            <CardContent>
+              <h2 className="text-lg font-semibold mb-2">AE Frequency Trends</h2>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={formatBarData(metrics.AE_Frequencies)}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="count" fill="#8884d8" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent>
+              <h2 className="text-lg font-semibold mb-2">Endpoint Usage</h2>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={formatBarData(metrics.Endpoint_Usage)}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="count" fill="#82ca9d" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          <Card className="col-span-2">
+            <CardContent>
+              <h2 className="text-lg font-semibold mb-2">Dropout Rate Summary</h2>
+              <p className="text-sm text-muted-foreground">{metrics.Avg_Dropout_Rate}</p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+    </div>
+  );
+}

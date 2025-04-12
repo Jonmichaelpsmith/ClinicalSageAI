@@ -1,0 +1,98 @@
+// /routes/api/protocol_suggestion.py (with IND Module 2.7 + Replit scheduler ready)
+from fastapi import APIRouter, Request
+from pydantic import BaseModel
+from agents.openai.trialsage_assistant import (
+    generate_protocol_from_evidence,
+    generate_ind_section
+)
+import smtplib
+from email.message import EmailMessage
+
+router = APIRouter()
+
+class ProtocolRequest(BaseModel):
+    indication: str
+    thread_id: str | None = None
+
+@router.post("/api/intel/protocol-suggestions")
+def suggest_protocol(req: ProtocolRequest):
+    result = generate_protocol_from_evidence(req.indication, req.thread_id)
+    return {
+        "recommendation": result["recommendation"],
+        "citations": result["citations"],
+        "ind_module_2_5": result["ind_module_2_5"],
+        "risk_summary": result["risk_summary"],
+        "thread_id": result["thread_id"]
+    }
+
+class ContinueRequest(BaseModel):
+    thread_id: str
+    study_id: str
+    section: str
+    context: str
+
+@router.post("/api/intel/continue-thread")
+def continue_analysis(req: ContinueRequest):
+    result = generate_ind_section(req.study_id, req.section, req.context, req.thread_id)
+    return {
+        "section": result["section"],
+        "content": result["content"],
+        "thread_id": req.thread_id
+    }
+
+@router.post("/api/intel/trigger-followup")
+def trigger_followup(req: ContinueRequest):
+    followup = generate_ind_section(req.study_id, req.section, req.context, req.thread_id)
+    return {
+        "message": f"Follow-up module {req.section} generated successfully.",
+        "section": followup["section"],
+        "content": followup["content"],
+        "thread_id": req.thread_id
+    }
+
+# Scheduler-compatible weekly report task
+@router.get("/api/intel/scheduled-report")
+def scheduled_intelligence_report():
+    from agents.openai.trialsage_assistant import generate_protocol_from_evidence
+    result = generate_protocol_from_evidence("NASH")  # Example trial trigger
+
+    # Also generate Module 2.7 for completeness
+    mod_2_7 = generate_ind_section("NASH", "2.7", result["recommendation"], result["thread_id"])
+
+    summary = f"""
+TrialSage Weekly Protocol Intelligence Report
+
+Protocol Design Recommendation:
+{result['recommendation']}
+
+IND Module 2.5:
+{result['ind_module_2_5']['content']}
+
+IND Module 2.7:
+{mod_2_7['content']}
+
+Regulatory Risk Summary:
+{result['risk_summary']}
+
+CSR Evidence: {', '.join(result['citations'])}
+
+Thread ID: {result['thread_id']}
+"""
+
+    # Email report
+    msg = EmailMessage()
+    msg.set_content(summary)
+    msg['Subject'] = "TrialSage Weekly Report"
+    msg['From'] = "no-reply@trialsage.ai"
+    msg['To'] = "founder@example.com"
+
+    try:
+        with smtplib.SMTP("smtp.mailgun.org", 587) as smtp:
+            smtp.login("your_mailgun_user", "your_mailgun_password")
+            smtp.send_message(msg)
+    except Exception as e:
+        return {"error": str(e)}
+
+    return {"status": "Report sent", "thread_id": result["thread_id"]}
+
+# Scheduler trigger: GET https://your-replit-domain/api/intel/scheduled-report
