@@ -137,6 +137,7 @@ function Router() {
       <Route path="/api-documentation" component={ApiDocumentation} />
       <Route path="/lumen-bio/dashboard">{() => renderWithLayout(LumenBioDashboard)}</Route>
       <Route path="/lumen-bio/dashboard/wt02/recommendations">{() => renderWithLayout(ProtocolOptimizer)}</Route>
+      <Route path="/lumen-bio/dashboard/wt02/endpoint-recommendations">{() => renderWithLayout(SimpleEndpointRecommender)}</Route>
       <Route path="/lumen-bio/dashboard/wt02/similar-trials">{() => renderWithLayout(CompetitiveIntelligence)}</Route>
       <Route path="/reports/lumen-bio">{() => renderWithLayout(LumenBioReport)}</Route>
       <Route path="/analytics/lumen-bio">{() => renderWithLayout(CompetitiveIntelligence)}</Route>
