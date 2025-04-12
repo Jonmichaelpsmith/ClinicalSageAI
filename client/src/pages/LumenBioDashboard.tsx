@@ -245,7 +245,7 @@ export default function LumenBioDashboard() {
         </div>
 
         {/* Main Dashboard Content */}
-        <Tabs defaultValue="overview" onValueChange={setActiveTab} className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid grid-cols-5 w-full">
             <TabsTrigger value="overview">
               <Activity className="h-4 w-4 mr-2" />
