@@ -122,6 +122,20 @@ export const academicEmbeddings = pgTable('academic_embeddings', {
   updatedAt: timestamp('updated_at')
 });
 
+// CSR Segments table - for storing segmented content from clinical study reports with vector embeddings
+export const csrSegments = pgTable('csr_segments', {
+  id: serial('id').primaryKey(),
+  reportId: integer('report_id').notNull(),
+  segmentNumber: integer('segment_number').notNull(),
+  segmentType: text('segment_type').notNull().default('text'), // text, table, figure, etc.
+  content: text('content').notNull(),
+  pageNumbers: text('page_numbers'), // Page numbers where this segment appears
+  embedding: text('embedding').notNull(), // JSON numeric array of embedding vectors
+  extractedEntities: json('extracted_entities'), // Optional JSON with named entities
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at')
+});
+
 // Define the insert schema for users
 export const insertUserSchema = createInsertSchema(users, {
   // Add additional validation if needed
@@ -152,6 +166,11 @@ export const insertAcademicEmbeddingSchema = createInsertSchema(academicEmbeddin
   // Add additional validation if needed
 }).omit({ id: true, createdAt: true, updatedAt: true });
 
+// Define insert schema for CSR Segments
+export const insertCsrSegmentSchema = createInsertSchema(csrSegments, {
+  // Add additional validation if needed
+}).omit({ id: true, createdAt: true, updatedAt: true });
+
 // Define types based on the schema
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -170,6 +189,11 @@ export type InsertAcademicResource = z.infer<typeof insertAcademicResourceSchema
 
 export type AcademicEmbedding = typeof academicEmbeddings.$inferSelect;
 export type InsertAcademicEmbedding = z.infer<typeof insertAcademicEmbeddingSchema>;
+
+export type CsrSegment = typeof csrSegments.$inferSelect;
+export type InsertCsrSegment = z.infer<typeof insertCsrSegmentSchema>;
+
+export type StrategicReport = typeof strategicReports.$inferSelect;
 
 // Define relations
 export const usersRelations = relations(users, ({ many }) => ({
@@ -204,3 +228,44 @@ export const academicEmbeddingsRelations = relations(academicEmbeddings, ({ one 
     references: [academicResources.id],
   }),
 }));
+
+export const csrSegmentsRelations = relations(csrSegments, ({ one }) => ({
+  report: one(csrReports, {
+    fields: [csrSegments.reportId],
+    references: [csrReports.id],
+  }),
+}));
+
+// Strategic Reports table - for storing generated strategic reports
+export const strategicReports = pgTable('strategic_reports', {
+  id: serial('id').primaryKey(),
+  title: text('title').notNull(),
+  protocolId: integer('protocol_id').references(() => trials.id),
+  indication: text('indication').notNull(),
+  phase: text('phase').notNull(),
+  reportType: text('report_type').notNull(),
+  content: text('content').notNull(),
+  generatedDate: timestamp('generated_date').defaultNow(),
+  updatedDate: timestamp('updated_date').defaultNow(),
+  userId: integer('user_id').references(() => users.id),
+  status: text('status').default('draft'),
+  version: text('version').default('1.0'),
+});
+
+export const strategicReportsRelations = relations(strategicReports, ({ one }) => ({
+  protocol: one(trials, {
+    fields: [strategicReports.protocolId],
+    references: [trials.id],
+  }),
+  user: one(users, {
+    fields: [strategicReports.userId],
+    references: [users.id],
+  }),
+}));
+
+// Define insert schema for Strategic Reports
+export const insertStrategicReportSchema = createInsertSchema(strategicReports, {
+  // Add additional validation if needed
+}).omit({ id: true, generatedDate: true, updatedDate: true });
+
+export type InsertStrategicReport = z.infer<typeof insertStrategicReportSchema>;
