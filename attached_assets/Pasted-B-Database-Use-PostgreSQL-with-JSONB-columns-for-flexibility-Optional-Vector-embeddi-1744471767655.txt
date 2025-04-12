@@ -1,0 +1,63 @@
+B. Database
+   •   Use PostgreSQL with JSONB columns for flexibility
+   •   Optional: Vector embeddings table using pgvector
+
+C. RESTful API
+   •   /api/csrs/{id}
+   •   /api/csrs/search?q=endpoint:"HbA1c"&phase=2
+
+Replit Integration Instructions:
+   •   Add PostgreSQL via Replit’s DB plugin or connect external managed PostgreSQL (e.g., Supabase)
+   •   Create models/csr.py for ORM
+   •   Add new FastAPI routes in main.py under /api/csrs
+   •   Use sqlalchemy + pgvector for CSR search and filtering
+
+⸻
+
+3. AI INTELLIGENCE LAYER
+
+Client Value:
+Transforms CSR data into a real-time trial design assistant.
+Clients can:
+   •   Ask: “What AE risks are common for oral oncology trials?”
+   •   Compare: “Which Phase 2 NASH trials had primary endpoints like ours?”
+   •   Benchmark: “How does our protocol’s control arm compare to industry norms?”
+
+Components:
+
+A. Q&A + Semantic Search (RAG System)
+   •   Store text chunks from CSRs using OpenAI Embeddings or Instructor-XL
+   •   Query flow:
+	1.	User question
+	2.	Convert to vector
+	3.	Retrieve matching CSR sections
+	4.	Inject into LLM prompt
+	5.	Stream back structured response
+
+B. Benchmarking Engine
+   •   Compute similarity scores across:
+      •   Population
+      •   Endpoint class
+      •   AE patterns
+      •   Study arm structure
+   •   Output: Ranked similar trials + summarized differences
+
+Replit Integration Instructions:
+   •   Add:
+      •   agents/intelligence/qa_agent.py – handles prompt construction and embedding retrieval
+      •   agents/intelligence/comparator.py – performs benchmarking
+   •   Store embeddings in weaviate or qdrant if Replit supports Docker-based containers or use pgvector
+   •   Mount UI access via:
+      •   /intelligence/compare
+      •   /intelligence/ask
+
+⸻
+
+Bonus: Value Narrative for Clients
+
+“TrialSage is the first system that turns thousands of global Clinical Study Reports into a live, intelligent protocol optimization engine. We help sponsors reduce risk, match effective precedent, and validate assumptions using regulatory-grade historical trials—not just literature.”
+
+⸻
+
+Would you like me to now:
+   •   Begin coding and integrating this module-by-module in Replit?
