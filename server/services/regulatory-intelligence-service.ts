@@ -37,6 +37,7 @@ export class RegulatoryIntelligenceService {
   private regulatoryRequirements: RegulatoryRequirement[];
   private regulatoryGuidance: RegulatoryGuidance[];
   private models = getHuggingfaceModels();
+  private initialized: boolean = false;
 
   constructor() {
     this.huggingFaceService = new HuggingFaceService();
@@ -44,6 +45,53 @@ export class RegulatoryIntelligenceService {
     this.regulatoryRequirements = [];
     this.regulatoryGuidance = [];
     this.loadRegulatoryData();
+  }
+  
+  /**
+   * Initialize the regulatory intelligence service
+   */
+  async initialize(): Promise<boolean> {
+    if (this.initialized) {
+      return true;
+    }
+    
+    try {
+      console.log('Initializing Regulatory Intelligence Service...');
+      
+      // Create necessary directories
+      const fs = require('fs');
+      const regulatoryDir = './regulatory_data';
+      
+      if (!fs.existsSync(regulatoryDir)) {
+        fs.mkdirSync(regulatoryDir, { recursive: true });
+        console.log('Created regulatory data directory');
+        
+        // Initialize with default data since directory didn't exist
+        this.initializeDefaultRegulatoryData();
+      } else {
+        // Load existing regulatory data
+        this.loadRegulatoryData();
+      }
+      
+      this.initialized = true;
+      console.log('Regulatory Intelligence Service initialized successfully');
+      return true;
+    } catch (error) {
+      console.error('Error initializing Regulatory Intelligence Service:', error);
+      return false;
+    }
+  }
+  
+  /**
+   * Get stats about the regulatory intelligence service
+   */
+  getStats(): Record<string, any> {
+    return {
+      requirementsCount: this.regulatoryRequirements.length,
+      guidanceCount: this.regulatoryGuidance.length,
+      initialized: this.initialized,
+      agencies: Array.from(new Set(this.regulatoryRequirements.map(r => r.agency)))
+    };
   }
 
   private loadRegulatoryData() {
