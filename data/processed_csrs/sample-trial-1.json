@@ -6,8 +6,11 @@
   "sample_size": 250,
   "duration_weeks": 24,
   "dropout_rate": 0.18,
-  "primary_endpoints": ["BMI reduction"],
+  "primary_endpoints": [
+    "BMI reduction"
+  ],
   "control_arm": "placebo",
   "blinding": "double-blind",
-  "outcome_summary": "Primary endpoint met with statistical significance"
+  "outcome_summary": "Primary endpoint met with statistical significance",
+  "csr_id": "sample-trial-1"
 }

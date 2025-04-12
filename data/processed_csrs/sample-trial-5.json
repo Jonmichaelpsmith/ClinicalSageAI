@@ -5,9 +5,12 @@
   "sample_size": 250,
   "duration_weeks": 24,
   "dropout_rate": 0.18,
-  "primary_endpoints": ["BMI reduction >=5%"],
+  "primary_endpoints": [
+    "BMI reduction >=5%"
+  ],
   "control_arm": "placebo",
   "blinding": "double-blind",
   "outcome_summary": "Primary endpoint met with statistical significance",
-  "failure_reason": "N/A"
+  "failure_reason": "N/A",
+  "csr_id": "sample-trial-5"
 }

@@ -5,9 +5,12 @@
   "sample_size": 150,
   "duration_weeks": 12,
   "dropout_rate": 0.28,
-  "primary_endpoints": ["Blood pressure reduction >=5 mmHg"],
+  "primary_endpoints": [
+    "Blood pressure reduction >=5 mmHg"
+  ],
   "control_arm": "placebo",
   "blinding": "double-blind",
   "outcome_summary": "Failed to meet primary endpoint, no significant difference vs placebo",
-  "failure_reason": "Insufficient efficacy"
+  "failure_reason": "Insufficient efficacy",
+  "csr_id": "sample-trial-failure"
 }

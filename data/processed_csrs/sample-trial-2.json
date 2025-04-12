@@ -6,8 +6,11 @@
   "sample_size": 520,
   "duration_weeks": 52,
   "dropout_rate": 0.12,
-  "primary_endpoints": ["HbA1c reduction"],
+  "primary_endpoints": [
+    "HbA1c reduction"
+  ],
   "control_arm": "standard of care",
   "blinding": "open-label",
-  "outcome_summary": "Primary endpoint met with statistical significance"
+  "outcome_summary": "Primary endpoint met with statistical significance",
+  "csr_id": "sample-trial-2"
 }
