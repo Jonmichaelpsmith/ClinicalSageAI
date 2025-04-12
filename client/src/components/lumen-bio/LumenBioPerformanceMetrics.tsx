@@ -49,20 +49,28 @@ import {
   LogOut
 } from "lucide-react";
 
-// Risk classification component
+// Risk classification component with enhanced gradient colors
 const RiskIndicator = ({ level, text }: { level: 'low' | 'medium' | 'high', text: string }) => {
+  // Base colors for each risk level
   const bgColor = 
-    level === 'low' ? 'bg-green-100 border-green-300 text-green-800' : 
-    level === 'medium' ? 'bg-amber-100 border-amber-300 text-amber-800' : 
-    'bg-red-100 border-red-300 text-red-800';
+    level === 'low' ? 'bg-gradient-to-r from-green-50 to-green-100 border-green-300 text-green-800' : 
+    level === 'medium' ? 'bg-gradient-to-r from-amber-50 to-amber-100 border-amber-300 text-amber-800' : 
+    'bg-gradient-to-r from-red-50 to-red-100 border-red-300 text-red-800';
   
+  // Icon for each risk level
   const icon = 
     level === 'low' ? <CheckCircle className="h-4 w-4 mr-1" /> : 
     level === 'medium' ? <AlertCircle className="h-4 w-4 mr-1" /> : 
     <AlertTriangle className="h-4 w-4 mr-1" />;
   
+  // Hover effects
+  const hoverEffect = 
+    level === 'low' ? 'hover:from-green-100 hover:to-green-200 hover:shadow-sm' : 
+    level === 'medium' ? 'hover:from-amber-100 hover:to-amber-200 hover:shadow-sm' : 
+    'hover:from-red-100 hover:to-red-200 hover:shadow-sm';
+  
   return (
-    <div className={`flex items-center px-3 py-1.5 rounded-full text-sm font-medium border ${bgColor}`}>
+    <div className={`flex items-center px-3 py-1.5 rounded-full text-sm font-medium border transition-all duration-200 ${bgColor} ${hoverEffect}`}>
       {icon}
       <span>{text}</span>
     </div>
@@ -152,7 +160,7 @@ const MetricCard = ({
   );
 };
 
-// Risk factor component
+// Risk factor component with enhanced gradients
 const RiskFactorCard = ({ 
   title, 
   riskLevel, 
@@ -170,14 +178,23 @@ const RiskFactorCard = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   
+  // Enhanced gradient styling
+  const gradientStyle = 
+    riskLevel === 'low' ? 'bg-gradient-to-r from-green-50 to-green-100 border-l-green-500' : 
+    riskLevel === 'medium' ? 'bg-gradient-to-r from-amber-50 to-amber-100 border-l-amber-500' : 
+    'bg-gradient-to-r from-red-50 to-red-100 border-l-red-500';
+
+  const headerColor =
+    riskLevel === 'low' ? 'text-green-800' : 
+    riskLevel === 'medium' ? 'text-amber-800' : 
+    'text-red-800';
+  
   return (
     <Card className={`
-      border-l-4 
-      ${riskLevel === 'low' ? 'border-l-green-500' : 
-        riskLevel === 'medium' ? 'border-l-amber-500' : 
-        'border-l-red-500'}
+      border-l-4 transition-all duration-200 hover:shadow-md
+      ${gradientStyle}
     `}>
-      <CardHeader className="pb-2">
+      <CardHeader className={`pb-2 ${headerColor}`}>
         <div className="flex justify-between items-center">
           <TooltipProvider>
             <Tooltip>
@@ -236,7 +253,7 @@ const RiskFactorCard = ({
   );
 };
 
-// Insight card component
+// Insight card component with enhanced gradient styling
 const InsightCard = ({ 
   title, 
   insight,
@@ -252,18 +269,31 @@ const InsightCard = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   
+  // Badge styling with enhanced colors
   const impactColors = {
-    low: 'bg-blue-50 text-blue-800',
-    medium: 'bg-purple-50 text-purple-800',
-    high: 'bg-indigo-50 text-indigo-800'
+    low: 'bg-gradient-to-r from-blue-50 to-blue-100 text-blue-800 border border-blue-200',
+    medium: 'bg-gradient-to-r from-purple-50 to-purple-100 text-purple-800 border border-purple-200',
+    high: 'bg-gradient-to-r from-indigo-50 to-indigo-100 text-indigo-800 border border-indigo-200'
   };
   
+  // Card background gradient based on impact level
+  const cardGradient = 
+    impactLevel === 'low' ? 'bg-gradient-to-r from-blue-50/30 to-white' : 
+    impactLevel === 'medium' ? 'bg-gradient-to-r from-purple-50/30 to-white' : 
+    'bg-gradient-to-r from-indigo-50/30 to-white';
+  
+  // Title color based on impact level
+  const titleColor = 
+    impactLevel === 'low' ? 'text-blue-800' : 
+    impactLevel === 'medium' ? 'text-purple-800' : 
+    'text-indigo-800';
+  
   return (
-    <Card>
+    <Card className={`transition-all duration-200 hover:shadow-md ${cardGradient}`}>
       <CardHeader className="pb-2">
         <div className="flex justify-between items-center">
-          <CardTitle className="text-base">{title}</CardTitle>
-          <Badge className={impactColors[impactLevel]}>
+          <CardTitle className={`text-base ${titleColor}`}>{title}</CardTitle>
+          <Badge className={`${impactColors[impactLevel]} shadow-sm`}>
             {impactLevel.charAt(0).toUpperCase() + impactLevel.slice(1)} Impact
           </Badge>
         </div>
