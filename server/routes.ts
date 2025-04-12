@@ -2267,11 +2267,99 @@ Provide a comprehensive, evidence-based response.`;
     }
   });
   
+  // Upload file for chat assistant
+  app.post('/api/chat/upload', upload.single('file'), async (req: Request, res: Response) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'No file provided' 
+        });
+      }
+      
+      // Get file information
+      const { originalname, mimetype, buffer, size } = req.file;
+      
+      // Check file size (10MB limit)
+      if (size > 10 * 1024 * 1024) {
+        return res.status(400).json({
+          success: false,
+          message: 'File too large. Maximum size is 10MB.'
+        });
+      }
+      
+      // Check file type
+      const allowedTypes = ['application/pdf', 'text/plain', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword'];
+      
+      if (!allowedTypes.includes(mimetype)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Unsupported file type. Please upload a PDF, TXT, or DOC/DOCX file.'
+        });
+      }
+      
+      // Create uploads directory if it doesn't exist
+      const uploadDir = path.join(process.cwd(), 'uploads', 'chat');
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      
+      // Generate a unique filename
+      const fileId = `chat_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+      const fileExtension = path.extname(originalname);
+      const filename = `${fileId}${fileExtension}`;
+      const filePath = path.join(uploadDir, filename);
+      
+      // Save the file
+      fs.writeFileSync(filePath, buffer);
+      
+      // Extract text from file if PDF
+      let fileContent = '';
+      if (mimetype === 'application/pdf') {
+        try {
+          const pdfData = await pdfParse(buffer);
+          fileContent = pdfData.text;
+        } catch (error) {
+          console.error('Error extracting text from PDF:', error);
+          fileContent = 'Error extracting text from PDF';
+        }
+      } else if (mimetype === 'text/plain') {
+        fileContent = buffer.toString('utf-8');
+      } else {
+        fileContent = 'Binary file uploaded (conversion not supported yet)';
+      }
+      
+      // Store file info in database or memory for later use
+      // For now, we'll just associate the file content with the fileId for simplicity
+      // In a real implementation, you would store this in a database
+      CHAT_FILES.set(fileId, {
+        originalName: originalname,
+        mimeType: mimetype,
+        filePath,
+        content: fileContent,
+        uploadedAt: new Date()
+      });
+      
+      res.status(200).json({
+        success: true,
+        fileId,
+        message: 'File uploaded successfully'
+      });
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to upload file',
+        error: (error as Error).message
+      });
+    }
+  });
+
   // Send message to AI assistant
   app.post('/api/chat/send-message', async (req: Request, res: Response) => {
     try {
-      const { message, thread_id } = req.body;
-      console.log('Received chat message:', message, 'thread_id:', thread_id);
+      const { message, thread_id, file_id } = req.body;
+      console.log('Received chat message:', message, 'thread_id:', thread_id, 'file_id:', file_id);
       
       // Import needed functions from openai-service
       const { isApiKeyAvailable, analyzeText } = await import('./openai-service');
@@ -2281,10 +2369,21 @@ Provide a comprehensive, evidence-based response.`;
         throw new Error('OpenAI API key is not configured');
       }
       
+      // Get file content if a file ID was provided
+      let fileContext = '';
+      if (file_id && CHAT_FILES.has(file_id)) {
+        const fileInfo = CHAT_FILES.get(file_id);
+        fileContext = `\n\nContent from uploaded file "${fileInfo.originalName}":\n\n${fileInfo.content}\n\n`;
+        console.log(`Including file context for file ${file_id}`);
+      }
+      
+      // Combine message with file content if available
+      const fullMessage = fileContext ? `${message}\n\n${fileContext}` : message;
+      
       // Use the OpenAI service for generating responses
       const responseText = await analyzeText(
-        message,
-        "You are TrialSage, an expert clinical trial design assistant. Respond to questions about clinical trial design, protocols, and study methodologies with evidence-based insights. Use a helpful and informative tone."
+        fullMessage,
+        "You are TrialSage, an expert clinical trial design assistant. Respond to questions about clinical trial design, protocols, and study methodologies with evidence-based insights. If the user uploaded a document, analyze it and provide insights relevant to the user's query. Use a helpful and informative tone."
       );
       
       // Generate a thread ID if not provided
@@ -2298,6 +2397,11 @@ Provide a comprehensive, evidence-based response.`;
         if (responseText.toLowerCase().includes(trigger)) {
           citations.push(`CSR_${trigger.toUpperCase().replace(/\s/g, '_')}`);
         }
+      }
+      
+      // Add a citation for the uploaded file if one was provided
+      if (file_id) {
+        citations.push(`FILE_${file_id}`);
       }
       
       if (citations.length === 0) {
