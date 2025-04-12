@@ -38,6 +38,7 @@ import { sapRoutes } from "./routes/sap_routes";
 import { exportRoutes } from "./routes/export_routes";
 import { academicRegulatoryRouter } from "./routes/academic_regulatory_routes";
 import { csrSearchRouter } from './routes/csr_search_routes';
+import pdfParse from 'pdf-parse';
 import { registerSimilarGoalsRoutes } from './routes/similar-goals-routes.js';
 import { 
   fetchClinicalTrialData, 
@@ -51,6 +52,7 @@ import { insertCsrReportSchema, csrReports, csrDetails } from "@shared/schema";
 import { ZodError, z } from "zod";
 import { fromZodError } from "zod-validation-error";
 import { sql } from "drizzle-orm";
+import { eq, and, or, like } from "drizzle-orm";
 import { db } from "./db";
 
 // Virtual Trial Simulation Function
@@ -2588,8 +2590,7 @@ Provide a comprehensive, evidence-based response.`;
       // Extract text from PDF
       let pdfText = "";
       try {
-        // Use pdf-parse for reliable PDF text extraction
-        const pdfParse = require('pdf-parse');
+        // Use pdf-parse for reliable PDF text extraction (imported at the top of the file)
         const data = await pdfParse(buffer);
         pdfText = data.text;
         
@@ -2730,13 +2731,11 @@ Provide a comprehensive, evidence-based response.`;
       // Get similar trials based on the extracted indication
       let similarTrials = [];
       try {
-        // Import ilike from drizzle-orm
-        const { ilike } = require('drizzle-orm/pg-core');
-        
+        // Use the imported like from drizzle-orm
         similarTrials = await db
           .select()
           .from(csrReports)
-          .where(ilike(csrReports.indication, `%${extractedInfo.indication}%`))
+          .where(like(csrReports.indication, `%${extractedInfo.indication}%`))
           .limit(3);
       } catch (dbError) {
         console.error('Error fetching similar trials:', dbError);
