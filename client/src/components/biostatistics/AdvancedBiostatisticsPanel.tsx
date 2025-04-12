@@ -878,7 +878,7 @@ const AdvancedBiostatisticsPanel: React.FC = () => {
                     <ul className="space-y-1">
                       <li>Predictive Probability of Success: <span className="font-medium">{(bayesianPredictionResult.predictiveProbability * 100).toFixed(1)}%</span></li>
                       <li>Expected Information Gain: {bayesianPredictionResult.expectedInformation.toFixed(2)} bits</li>
-                      <li>Posterior Probability (Rate > Target): {(bayesianPredictionResult.posteriorProbability * 100).toFixed(1)}%</li>
+                      <li>Posterior Probability (Rate {'>'} Target): {(bayesianPredictionResult.posteriorProbability * 100).toFixed(1)}%</li>
                       <li className="font-medium text-blue-600">ML-Enhanced Confidence: {(bayesianPredictionResult.mlEnhancedConfidence || 85).toFixed(1)}%</li>
                     </ul>
                   </div>
