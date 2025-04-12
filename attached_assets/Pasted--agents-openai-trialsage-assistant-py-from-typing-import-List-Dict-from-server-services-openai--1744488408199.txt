@@ -1,0 +1,67 @@
+# /agents/openai/trialsage_assistant.py
+from typing import List, Dict
+from server.services.openai_service import createAssistantThread, runAssistant, getRunOutput
+
+# --- Function: Generate IND Module Section (e.g., 2.5 or 2.7) ---
+def generate_ind_section(study_id: str, section: str, context: str) -> Dict:
+    message = f"Generate IND Module {section} for Study ID {study_id} using the following structured data and findings:\n{context}\n\nOutput in clean prose format ready for submission."
+    thread_id = createAssistantThread()
+    run_id = runAssistant(thread_id, message)
+    result = getRunOutput(thread_id, run_id)
+    return {"section": section, "content": result}
+
+# --- Function: Compare CSR Protocols ---
+def compare_protocols(study_ids: List[str], study_summaries: List[str]) -> Dict:
+    message = f"Compare the following study protocols:\n\n1. {study_ids[0]}:\n{study_summaries[0]}\n\n2. {study_ids[1]}:\n{study_summaries[1]}\n\nSummarize key differences across endpoints, dropout rates, safety signals, and inclusion criteria."
+    thread_id = createAssistantThread()
+    run_id = runAssistant(thread_id, message)
+    result = getRunOutput(thread_id, run_id)
+    return {"summary": result}
+
+# --- Function: Generate Weekly Trial Intelligence Brief ---
+def generate_weekly_brief(aggregated_metrics: Dict) -> str:
+    message = f"Based on the following cross-study metrics, generate a strategic weekly intelligence brief for clinical, regulatory, and operational leaders:\n\n{aggregated_metrics}"
+    thread_id = createAssistantThread()
+    run_id = runAssistant(thread_id, message)
+    result = getRunOutput(thread_id, run_id)
+    return result
+
+# --- Function: Answer Protocol Design Question ---
+def answer_protocol_question(question: str, related_studies: List[str]) -> str:
+    formatted = "\n\n".join(related_studies)
+    message = f"Using the following precedent study data, answer this protocol design question: {question}\n\n{formatted}"
+    thread_id = createAssistantThread()
+    run_id = runAssistant(thread_id, message)
+    result = getRunOutput(thread_id, run_id)
+    return result
+
+# --- Function: Generate Protocol Suggestion from Evidence ---
+def generate_protocol_from_evidence(indication: str) -> Dict:
+    message = f"You are a clinical protocol intelligence agent. Based on real-world clinical study reports, recommend a complete Phase 2 protocol design for the indication: '{indication}'. Include:\n- Study arms and doses\n- Randomization method\n- Duration\n- Primary and secondary endpoints\n- Sample size range\nAlso include 3-5 real CSR examples (by title or ID) as evidence for your suggestions."
+
+    thread_id = createAssistantThread()
+    run_id = runAssistant(thread_id, message)
+    result = getRunOutput(thread_id, run_id)
+
+    recommendation = result.strip()
+    citations = []
+    if "Evidence from:" in recommendation:
+        parts = recommendation.split("Evidence from:")
+        recommendation = parts[0].strip()
+        citations = [c.strip() for c in parts[1].split(",") if c.strip()]
+
+    # Generate IND 2.5 Module
+    ind_2_5 = generate_ind_section(study_id=indication, section="2.5", context=recommendation)
+
+    # Generate Risk Summary
+    risk_msg = f"Based on this proposed protocol for {indication}, what regulatory risks or reviewer questions are most likely to arise? Respond in list format with rationale.\n\n{recommendation}"
+    thread_id_risk = createAssistantThread()
+    run_id_risk = runAssistant(thread_id_risk, risk_msg)
+    risk_summary = getRunOutput(thread_id_risk, run_id_risk)
+
+    return {
+        "recommendation": recommendation,
+        "citations": citations,
+        "ind_module_2_5": ind_2_5,
+        "risk_summary": risk_summary
+    }

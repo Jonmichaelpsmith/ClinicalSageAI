@@ -1,0 +1,145 @@
+// /components/IntelDashboard.tsx (Protocol Recommendation Upgrade)
+import { useState, useRef } from 'react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
+} from 'recharts';
+import html2pdf from 'html2pdf.js';
+
+export default function IntelDashboard() {
+  const [indication, setIndication] = useState('');
+  const [brief, setBrief] = useState('');
+  const [metrics, setMetrics] = useState(null);
+  const [protocol, setProtocol] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const pdfRef = useRef(null);
+
+  const fetchIntel = async () => {
+    setLoading(true);
+    const res = await fetch(`/api/intel/summary`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ aggregated_metrics: { indication } })
+    });
+    const data = await res.json();
+    setBrief(data.brief);
+    setLoading(false);
+  };
+
+  const fetchKPI = async () => {
+    setLoading(true);
+    const res = await fetch(`/api/intel/kpi-dashboard`);
+    const data = await res.json();
+    setMetrics(data.global_kpis);
+    setLoading(false);
+  };
+
+  const fetchProtocol = async () => {
+    setLoading(true);
+    const res = await fetch(`/api/intel/protocol-suggestions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ indication })
+    });
+    const data = await res.json();
+    setProtocol(data);
+    setLoading(false);
+  };
+
+  const formatBarData = (obj: Record<string, number>) =>
+    Object.entries(obj).map(([key, value]) => ({ name: key, count: value }));
+
+  const exportPDF = () => {
+    if (pdfRef.current) {
+      html2pdf()
+        .set({ margin: 0.5, filename: 'TrialSage_Intelligence_Report.pdf', html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } })
+        .from(pdfRef.current)
+        .save();
+    }
+  };
+
+  return (
+    <div className="p-6 max-w-6xl mx-auto">
+      <h1 className="text-2xl font-bold mb-4">TrialSage Intelligence Dashboard</h1>
+      <div className="flex gap-2 mb-6">
+        <Input
+          placeholder="Enter indication keyword (e.g., NASH, RA, NSCLC)"
+          value={indication}
+          onChange={(e) => setIndication(e.target.value)}
+        />
+        <Button onClick={fetchIntel}>Generate Insight Brief</Button>
+        <Button variant="outline" onClick={fetchKPI}>Global KPI Summary</Button>
+        <Button variant="default" onClick={fetchProtocol}>Protocol Suggestion</Button>
+        <Button variant="secondary" onClick={exportPDF}>Export to PDF</Button>
+      </div>
+
+      <div ref={pdfRef}>
+        {loading && <p className="text-muted-foreground">Loading...</p>}
+
+        {brief && (
+          <Card className="mb-6">
+            <CardContent>
+              <h2 className="text-xl font-semibold mb-2">Weekly Intelligence Brief</h2>
+              <p className="whitespace-pre-wrap text-sm">{brief}</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {protocol && (
+          <Card className="mb-6">
+            <CardContent>
+              <h2 className="text-xl font-semibold mb-2">AI-Recommended Study Protocol</h2>
+              <p className="text-sm whitespace-pre-wrap">{protocol.recommendation}</p>
+              <p className="text-xs mt-2 text-muted-foreground">Evidence from: {protocol.citations?.join(', ')}</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {metrics && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+              <CardContent>
+                <h2 className="text-lg font-semibold mb-2">AE Frequency Trends</h2>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={formatBarData(metrics.AE_Frequencies)}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="count" fill="#8884d8" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent>
+                <h2 className="text-lg font-semibold mb-2">Endpoint Usage</h2>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={formatBarData(metrics.Endpoint_Usage)}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="count" fill="#82ca9d" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card className="col-span-2">
+              <CardContent>
+                <h2 className="text-lg font-semibold mb-2">Dropout Rate Summary</h2>
+                <p className="text-sm text-muted-foreground">{metrics.Avg_Dropout_Rate}</p>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,75 @@
+// /routes/api/protocol_suggestion.py (fully enabled: continuation + scheduling)
+from fastapi import APIRouter, Request
+from pydantic import BaseModel
+from agents.openai.trialsage_assistant import (
+    generate_protocol_from_evidence,
+    generate_ind_section
+)
+import html2pdf
+import smtplib
+from email.message import EmailMessage
+
+router = APIRouter()
+
+class ProtocolRequest(BaseModel):
+    indication: str
+    thread_id: str | None = None
+
+@router.post("/api/intel/protocol-suggestions")
+def suggest_protocol(req: ProtocolRequest):
+    result = generate_protocol_from_evidence(req.indication, req.thread_id)
+    return {
+        "recommendation": result["recommendation"],
+        "citations": result["citations"],
+        "ind_module_2_5": result["ind_module_2_5"],
+        "risk_summary": result["risk_summary"],
+        "thread_id": result["thread_id"]
+    }
+
+class ContinueRequest(BaseModel):
+    thread_id: str
+    study_id: str
+    section: str
+    context: str
+
+@router.post("/api/intel/continue-thread")
+def continue_analysis(req: ContinueRequest):
+    result = generate_ind_section(req.study_id, req.section, req.context, req.thread_id)
+    return {
+        "section": result["section"],
+        "content": result["content"]
+    }
+
+# Scheduler-compatible weekly report task
+@router.get("/api/intel/scheduled-report")
+def scheduled_intelligence_report():
+    from agents.openai.trialsage_assistant import generate_protocol_from_evidence
+    result = generate_protocol_from_evidence("NASH")  # Example trial trigger
+
+    pdf_content = f"""
+    TrialSage Weekly Protocol Intelligence Report\n\n
+    Protocol Design Recommendation:\n{result['recommendation']}\n\n
+    IND Module 2.5:\n{result['ind_module_2_5']['content']}\n\n
+    Regulatory Risk Summary:\n{result['risk_summary']}\n\n
+    CSR Evidence: {', '.join(result['citations'])}\n
+    Thread ID: {result['thread_id']}
+    """
+
+    # Email the PDF report (basic text for now)
+    msg = EmailMessage()
+    msg.set_content(pdf_content)
+    msg['Subject'] = "TrialSage Weekly Report"
+    msg['From'] = "no-reply@trialsage.ai"
+    msg['To'] = "founder@example.com"
+
+    try:
+        with smtplib.SMTP("smtp.mailgun.org", 587) as smtp:
+            smtp.login("your_mailgun_user", "your_mailgun_password")
+            smtp.send_message(msg)
+    except Exception as e:
+        return {"error": str(e)}
+
+    return {"status": "Report sent", "thread_id": result["thread_id"]}
+
+# Now ready to add weekly CRON or scheduler in Replit to ping this endpoint
+# Example: GET https://your-replit-domain/api/intel/scheduled-report
