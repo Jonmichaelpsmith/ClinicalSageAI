@@ -33,18 +33,18 @@ export async function initializeAssistant() {
       return assistantId;
     }
 
-    // Create new assistant
-    const assistant = await openai.beta.assistants.create({
-      name: profileData.assistant.name,
-      instructions: profileData.assistant.instructions,
-      tools: profileData.assistant.tools,
-      model: "gpt-4o",
-    });
+    // Create new assistant using the centralized OpenAI service
+    const assistant = await createAssistant(
+      profileData.assistant.name,
+      profileData.assistant.instructions,
+      profileData.assistant.tools
+    );
+    const assistantId = assistant.id;
     
     // Save assistant ID for future use
-    fs.writeFileSync(assistantIdPath, assistant.id);
-    console.log(`Created new assistant with ID: ${assistant.id}`);
-    return assistant.id;
+    fs.writeFileSync(assistantIdPath, assistantId);
+    console.log(`Created new assistant with ID: ${assistantId}`);
+    return assistantId;
   } catch (error) {
     console.error("Error initializing assistant:", error);
     throw error;
