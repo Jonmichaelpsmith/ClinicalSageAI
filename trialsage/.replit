@@ -1,0 +1,31 @@
+entrypoint = "main.py"
+[env]
+PYTHONUNBUFFERED = "1"
+
+[interpreter]
+command = ["python3"]
+
+[nix]
+channel = "stable-23_05"
+
+[packager]
+language = "python3"
+ignoredPackages = ["unit_tests"]
+
+[packager.features]
+packageSearch = true
+enabledForHosting = true
+
+[unitTest]
+language = "python3"
+
+[languages.python3]
+pattern = "**/*.py"
+syntax = "python"
+
+[languages.python3.languageServer]
+start = ["pyls"]
+
+[deployment]
+run = ["python3", "main.py"]
+deploymentTarget = "cloudrun"

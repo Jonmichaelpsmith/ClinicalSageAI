@@ -1,0 +1,55 @@
+# /services/report_generator.py (Now with PDF export + public download endpoint support)
+import smtplib
+from email.message import EmailMessage
+from services.openai_engine import generate_protocol_from_evidence, generate_ind_section
+from services.pdf_exporter import export_pdf
+import os
+
+MAIL_SENDER = "no-reply@trialsage.ai"
+MAIL_RECIPIENT = "founder@example.com"
+SMTP_SERVER = "smtp.mailgun.org"
+SMTP_PORT = 587
+SMTP_USER = os.getenv("MAILGUN_USER")
+SMTP_PASS = os.getenv("MAILGUN_PASSWORD")
+
+LATEST_PDF_FILENAME = "latest_report.pdf"
+
+
+def send_weekly_report(indication: str = "NASH") -> dict:
+    protocol_data = generate_protocol_from_evidence(indication)
+    thread_id = protocol_data["thread_id"]
+
+    mod_2_7 = generate_ind_section(indication, "2.7", protocol_data["recommendation"], thread_id)
+    sap = generate_ind_section(indication, "SAP", protocol_data["recommendation"], thread_id)
+
+    protocol_data.update({
+        "indication": indication,
+        "ind_module_2_7": mod_2_7["content"],
+        "sap": sap["content"]
+    })
+
+    pdf_path = export_pdf(protocol_data)
+    static_path = os.path.join("static", LATEST_PDF_FILENAME)
+    os.replace(pdf_path, static_path)  # Make latest accessible at static/latest_report.pdf
+
+    summary = f"""
+[TrialSage] Weekly Protocol Intelligence Report
+
+📌 Protocol: {indication}
+Assistant Thread: {thread_id}
+📄 Download PDF: /static/{LATEST_PDF_FILENAME}
+"""
+
+    msg = EmailMessage()
+    msg.set_content(summary)
+    msg["Subject"] = f"TrialSage Weekly Report – {indication}"
+    msg["From"] = MAIL_SENDER
+    msg["To"] = MAIL_RECIPIENT
+
+    try:
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as smtp:
+            smtp.login(SMTP_USER, SMTP_PASS)
+            smtp.send_message(msg)
+        return {"status": "Email sent", "thread_id": thread_id, "pdf": f"/static/{LATEST_PDF_FILENAME}"}
+    except Exception as e:
+        return {"error": str(e), "thread_id": thread_id, "pdf": f"/static/{LATEST_PDF_FILENAME}"}

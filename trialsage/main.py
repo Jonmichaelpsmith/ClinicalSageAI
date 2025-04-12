@@ -5,6 +5,9 @@ import os
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from pathlib import Path
 from controllers import protocol
 
 # Initialize FastAPI app
@@ -23,25 +26,41 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Setup directories
+static_dir = Path("static")
+static_dir.mkdir(exist_ok=True)
+frontend_dir = Path("frontend")
+
+# Mount static files directory
+app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+
+# Set up templates
+templates = Jinja2Templates(directory=str(frontend_dir))
+
 # Include the protocol router
 app.include_router(protocol.router)
 
-# Root endpoint
+# Root endpoint (serve frontend)
 @app.get("/")
-def read_root():
-    """Root endpoint providing API information"""
-    return {
-        "name": "TrialSage Intelligence API",
-        "version": "1.0",
-        "endpoints": {
-            "/api/intel/protocol-suggestions": "Generate protocol scaffolds with IND 2.5 and risk analysis",
-            "/api/intel/continue-thread": "Continue protocol development with thread memory",
-            "/api/intel/trigger-followup": "Generate follow-up modules like IND 2.7",
-            "/api/intel/sap-draft": "Generate Statistical Analysis Plan drafts",
-            "/api/intel/csr-evidence": "Find evidence in CSR corpus for a topic",
-            "/api/intel/scheduled-report": "Generate weekly intelligence briefing",
+async def read_root(request: Request):
+    """Serve the frontend application"""
+    try:
+        return templates.TemplateResponse("index.html", {"request": request})
+    except Exception as e:
+        # Fallback to API info if frontend isn't available
+        return {
+            "name": "TrialSage Intelligence API",
+            "version": "1.0",
+            "endpoints": {
+                "/api/intel/protocol-suggestions": "Generate protocol scaffolds with IND 2.5 and risk analysis",
+                "/api/intel/continue-thread": "Continue protocol development with thread memory",
+                "/api/intel/trigger-followup": "Generate follow-up modules like IND 2.7",
+                "/api/intel/sap-draft": "Generate Statistical Analysis Plan drafts",
+                "/api/intel/csr-evidence": "Find evidence in CSR corpus for a topic",
+                "/api/intel/scheduled-report": "Generate weekly intelligence briefing",
+                "/static/latest_report.pdf": "Download the latest intelligence briefing PDF"
+            }
         }
-    }
 
 # Error handler
 @app.exception_handler(Exception)

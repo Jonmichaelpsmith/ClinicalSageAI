@@ -1,0 +1,62 @@
+# /services/report_generator.py (Updated with export endpoint support)
+import smtplib
+from email.message import EmailMessage
+from services.openai_engine import generate_protocol_from_evidence, generate_ind_section
+from services.pdf_exporter import export_pdf
+import os
+
+MAIL_SENDER = "no-reply@trialsage.ai"
+SMTP_SERVER = "smtp.mailgun.org"
+SMTP_PORT = 587
+SMTP_USER = os.getenv("MAILGUN_USER")
+SMTP_PASS = os.getenv("MAILGUN_PASSWORD")
+
+LATEST_PDF_FILENAME = "latest_report.pdf"
+STATIC_DIR = "static"
+
+
+def export_report_to_pdf(indication: str = "NASH") -> dict:
+    protocol_data = generate_protocol_from_evidence(indication)
+    thread_id = protocol_data["thread_id"]
+
+    mod_2_7 = generate_ind_section(indication, "2.7", protocol_data["recommendation"], thread_id)
+    sap = generate_ind_section(indication, "SAP", protocol_data["recommendation"], thread_id)
+
+    protocol_data.update({
+        "indication": indication,
+        "ind_module_2_7": mod_2_7["content"],
+        "sap": sap["content"]
+    })
+
+    pdf_path = export_pdf(protocol_data)
+    static_path = os.path.join(STATIC_DIR, LATEST_PDF_FILENAME)
+    os.makedirs(STATIC_DIR, exist_ok=True)
+    os.replace(pdf_path, static_path)
+
+    return {"pdf": f"/{STATIC_DIR}/{LATEST_PDF_FILENAME}", "thread_id": thread_id}
+
+
+def send_weekly_report(indication: str = "NASH", recipient: str = "founder@example.com") -> dict:
+    export = export_report_to_pdf(indication)
+
+    summary = f"""
+[TrialSage] Weekly Protocol Intelligence Report
+
+📌 Protocol: {indication}
+Assistant Thread: {export['thread_id']}
+📄 Download PDF: {export['pdf']}
+"""
+
+    msg = EmailMessage()
+    msg.set_content(summary)
+    msg["Subject"] = f"TrialSage Weekly Report – {indication}"
+    msg["From"] = MAIL_SENDER
+    msg["To"] = recipient
+
+    try:
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as smtp:
+            smtp.login(SMTP_USER, SMTP_PASS)
+            smtp.send_message(msg)
+        return {"status": "Email sent", "pdf": export["pdf"], "thread_id": export["thread_id"]}
+    except Exception as e:
+        return {"error": str(e), "pdf": export["pdf"], "thread_id": export["thread_id"]}
