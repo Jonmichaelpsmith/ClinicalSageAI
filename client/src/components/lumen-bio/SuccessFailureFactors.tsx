@@ -356,21 +356,35 @@ const ImplementationScorecard = ({
           </div>
           
           <div className="flex flex-col items-center">
-            <div style={{ width: 120, height: 120 }}>
-              <CircularProgressbarWithChildren
-                value={riskMitigationScore}
-                strokeWidth={10}
-                styles={buildStyles({
-                  strokeLinecap: 'round',
-                  pathColor: `rgba(34, 197, 94, ${riskMitigationScore / 100})`,
-                  trailColor: '#e2e8f0'
-                })}
-              >
-                <div className="flex flex-col items-center">
-                  <span className="font-bold text-2xl">{riskMitigationScore}%</span>
-                  <span className="text-xs text-slate-500">Mitigation</span>
-                </div>
-              </CircularProgressbarWithChildren>
+            <div style={{ width: 120, height: 120 }} className="relative">
+              <svg width="120" height="120" viewBox="0 0 120 120">
+                {/* Background circle */}
+                <circle 
+                  cx="60" 
+                  cy="60" 
+                  r="50" 
+                  fill="none" 
+                  stroke="#e2e8f0" 
+                  strokeWidth="10" 
+                />
+                {/* Progress circle - using strokeDasharray and strokeDashoffset */}
+                <circle 
+                  cx="60" 
+                  cy="60" 
+                  r="50" 
+                  fill="none" 
+                  stroke={`rgba(34, 197, 94, ${riskMitigationScore / 100})`} 
+                  strokeWidth="10" 
+                  strokeDasharray={`${2 * Math.PI * 50}`} 
+                  strokeDashoffset={`${2 * Math.PI * 50 * (1 - riskMitigationScore / 100)}`}
+                  strokeLinecap="round"
+                  transform="rotate(-90, 60, 60)"
+                />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="font-bold text-2xl">{riskMitigationScore}%</span>
+                <span className="text-xs text-slate-500">Mitigation</span>
+              </div>
             </div>
             <p className="text-sm text-center mt-2">Risk factors mitigated</p>
           </div>
