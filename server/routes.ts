@@ -2370,7 +2370,7 @@ Provide a comprehensive, evidence-based response.`;
   // Send message to AI assistant
   app.post('/api/chat/send-message', async (req: Request, res: Response) => {
     try {
-      const { message, thread_id, file_id } = req.body;
+      const { message, thread_id, file_id, system_prompt } = req.body;
       console.log('Received chat message:', message, 'thread_id:', thread_id, 'file_id:', file_id);
       
       // Import needed functions from openai-service
@@ -2392,10 +2392,13 @@ Provide a comprehensive, evidence-based response.`;
       // Combine message with file content if available
       const fullMessage = fileContext ? `${message}\n\n${fileContext}` : message;
       
+      // Use custom system prompt from StudyDesignAgent component if provided
+      const defaultSystemPrompt = "You are TrialSage, an expert clinical trial design assistant. Respond to questions about clinical trial design, protocols, and study methodologies with evidence-based insights. If the user uploaded a document, analyze it and provide insights relevant to the user's query. Use a helpful and informative tone.";
+      
       // Use the OpenAI service for generating responses
       const responseText = await analyzeText(
         fullMessage,
-        "You are TrialSage, an expert clinical trial design assistant. Respond to questions about clinical trial design, protocols, and study methodologies with evidence-based insights. If the user uploaded a document, analyze it and provide insights relevant to the user's query. Use a helpful and informative tone."
+        system_prompt || defaultSystemPrompt
       );
       
       // Generate a thread ID if not provided
