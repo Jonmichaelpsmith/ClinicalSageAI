@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1864",
+  "title": "A Randomized Open-Label, Placebo-Controlled Multi-Center Study of LUN-841 (ALK inhibitor) in Patients With Osteoporosis",
+  "officialTitle": "A Randomized Open-Label, Placebo-Controlled Multi-Center Study of LUN-841 (ALK inhibitor) in Patients With Osteoporosis",
+  "sponsor": "Health Canada Research Institute",
+  "indication": "Osteoporosis",
+  "phase": "Phase 1",
+  "fileName": "HC-1864.json",
+  "fileSize": 367465,
+  "date": "2024-05-01",
+  "completionDate": "2027-09-21",
+  "drugName": "LUN-841 (ALK inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Recruiting",
+  "description": "This is a randomized open-label, placebo-controlled multi-center study designed to evaluate the efficacy and safety of LUN-841 (ALK inhibitor) in patients with Osteoporosis. The study will enroll approximately 249 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 24-57 years\n- Confirmed diagnosis of Osteoporosis\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1843",
+  "title": "A Randomized Double-Blind, Active-Controlled Multi-Center Study of CAN-456 (receptor antagonist) in Patients With Advanced Melanoma",
+  "officialTitle": "A Randomized Double-Blind, Active-Controlled Multi-Center Study of CAN-456 (receptor antagonist) in Patients With Advanced Melanoma",
+  "sponsor": "McMaster University",
+  "indication": "Advanced Melanoma",
+  "phase": "Phase 1/Phase 2",
+  "fileName": "HC-1843.json",
+  "fileSize": 207380,
+  "date": "2025-01-02",
+  "completionDate": "2025-09-24",
+  "drugName": "CAN-456 (receptor antagonist)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Not yet recruiting",
+  "description": "This is a randomized double-blind, active-controlled multi-center study designed to evaluate the efficacy and safety of CAN-456 (receptor antagonist) in patients with Advanced Melanoma. The study will enroll approximately 102 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 23-64 years\n- Confirmed diagnosis of Advanced Melanoma\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

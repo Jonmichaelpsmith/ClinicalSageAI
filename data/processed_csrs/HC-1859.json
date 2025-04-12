@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1859",
+  "title": "A  Open-Label, Active-Controlled  Study of MEL-802 (checkpoint inhibitor) in Patients With Cystic Fibrosis",
+  "officialTitle": "A  Open-Label, Active-Controlled  Study of MEL-802 (checkpoint inhibitor) in Patients With Cystic Fibrosis",
+  "sponsor": "Sunnybrook Research Institute",
+  "indication": "Cystic Fibrosis",
+  "phase": "Phase 1/Phase 2",
+  "fileName": "HC-1859.json",
+  "fileSize": 161108,
+  "date": "2024-05-13",
+  "completionDate": "2027-04-07",
+  "drugName": "MEL-802 (checkpoint inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Recruiting",
+  "description": "This is a  open-label, active-controlled  study designed to evaluate the efficacy and safety of MEL-802 (checkpoint inhibitor) in patients with Cystic Fibrosis. The study will enroll approximately 419 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 26-74 years\n- Confirmed diagnosis of Cystic Fibrosis\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}
