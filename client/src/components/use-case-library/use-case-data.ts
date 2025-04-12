@@ -2,6 +2,51 @@ import { UseCase } from './UseCaseLibrary';
 
 export const useCaseData: UseCase[] = [
   {
+    id: "deep-csr-intelligence",
+    title: "Deep CSR Intelligence for Protocol Design",
+    audience: "Biotech Leaders & Clinical Strategic Teams",
+    challenge: "Your team needs to design an optimal protocol for a new therapeutic in a competitive indication. You need to leverage global CSR data to inform study design decisions and maximize success probability.",
+    background: "CSRs contain rich historical data on study design, endpoints, outcomes, and regulatory success. Analyzing patterns across large CSR databases can provide unprecedented strategic insights.",
+    traditionalApproach: {
+      cost: "$120,000",
+      timeline: "12 weeks",
+      challenges: "Limited access to global CSR data, inability to process thousands of documents, subjective analysis methods"
+    },
+    trialSageSolution: {
+      modules: [
+        "Global CSR Analysis Engine",
+        "Deep Intelligence Protocol Designer",
+        "Multi-parameter Success Modeling",
+        "Competitive Intelligence Scanner",
+        "Strategic Protocol Optimizer"
+      ],
+      inputs: {
+        indication: "Any indication",
+        phase: "All phases",
+        sampleSize: 0, // Dynamic
+        duration: "Variable",
+        primaryEndpoint: "Multiple endpoint analysis"
+      },
+      outcomes: {
+        timeSaved: "10 weeks",
+        costAvoided: "$95,000",
+        regulatoryAlignment: "98% alignment with successful historical protocols",
+        riskMitigation: "85% increase in protocol design confidence based on > 2,500 CSRs"
+      }
+    },
+    deliverables: [
+      "Deep CSR analysis report across your indication",
+      "Parameter-by-parameter design recommendations",
+      "Competitive intelligence summary",
+      "Strategic protocol template with evidence-based design choices",
+      "Regulatory submission strategy based on successful precedents"
+    ],
+    interactiveDemo: {
+      sampleChartData: {},
+      sampleProtocolSection: "// Endpoint Selection Based on CSR Intelligence\nOur analysis of 2,479 Health Canada CSRs and 70 ClinicalTrials.gov studies revealed that for Phase 2 trials in this indication, the most successful primary endpoints combined both [biomarker change] and [functional improvement]. Based on CSR pattern recognition, we recommend a dual primary endpoint approach with:\n\n1. Reduction in [biomarker X] of ≥30% from baseline at Week 12\n2. Improvement in [functional measure Y] of ≥2 points on the validated scale\n\nThis approach aligns with 87% of successfully approved products in this therapeutic area over the past decade."
+    }
+  },
+  {
     id: "first-in-human",
     title: "First-In-Human IND Readiness",
     audience: "Biotech Founders & Clinical VP",
