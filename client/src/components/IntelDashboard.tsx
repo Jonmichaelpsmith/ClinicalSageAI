@@ -18,6 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
@@ -1015,6 +1016,23 @@ export default function IntelDashboard() {
           </div>
         )}
       </div>
+      {/* Dialog for Study Design Assistant */}
+      <Dialog open={showStudyDesignAssistant} onOpenChange={setShowStudyDesignAssistant}>
+        <DialogContent className="max-w-3xl h-[80vh] flex flex-col p-0">
+          <DialogHeader className="px-6 pt-6 pb-2">
+            <DialogTitle className="flex items-center">
+              <Microscope className="mr-2 h-5 w-5 text-blue-500" />
+              CSR Intelligence Explorer
+            </DialogTitle>
+            <DialogDescription>
+              AI-powered clinical study design guidance based on real-world evidence
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 overflow-hidden">
+            <StudyDesignAssistant />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
