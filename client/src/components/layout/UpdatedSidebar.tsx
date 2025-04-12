@@ -189,6 +189,9 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                 <NavItem href="/academic-knowledge-demo" icon={<GraduationCap />}>
                   Academic Knowledge
                 </NavItem>
+                <NavItem href="/academic-regulatory" icon={<Library />}>
+                  Academic & Regulatory
+                </NavItem>
                 <NavItem href="/trial-predictor" icon={<BarChart />}>
                   Trial Success Predictor
                 </NavItem>
@@ -317,6 +320,9 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                 </NavItem>
                 <NavItem href="/academic-knowledge-demo" icon={<GraduationCap />}>
                   Academic Knowledge
+                </NavItem>
+                <NavItem href="/academic-regulatory" icon={<Library />}>
+                  Academic & Regulatory
                 </NavItem>
                 <NavItem href="/trial-predictor" icon={<BarChart />}>
                   Trial Success Predictor

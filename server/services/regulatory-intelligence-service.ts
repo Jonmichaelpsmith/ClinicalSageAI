@@ -1,7 +1,7 @@
-import { huggingFaceService, HFModel } from '../huggingface-service';
-import { academicKnowledgeService } from './academic-knowledge-service';
 import fs from 'fs';
 import path from 'path';
+import { HuggingFaceService } from '../huggingface-service';
+import { getHuggingfaceModels } from '../config/huggingface-models';
 
 interface RegulatoryRequirement {
   agency: string;
@@ -31,525 +31,576 @@ interface RegulatorySummary {
   special_considerations: string[];
 }
 
-/**
- * Service for providing FDA and global regulatory intelligence
- */
 export class RegulatoryIntelligenceService {
-  private guidanceDocuments: Map<string, RegulatoryGuidance> = new Map();
-  private regulatoryRequirements: RegulatoryRequirement[] = [];
-  private initialized: boolean = false;
-  private regulatoryDataDir: string;
-  
+  private huggingFaceService: HuggingFaceService;
+  private regulatoryKnowledgeBase: Map<string, any>;
+  private regulatoryRequirements: RegulatoryRequirement[];
+  private regulatoryGuidance: RegulatoryGuidance[];
+  private models = getHuggingfaceModels();
+
   constructor() {
-    // Define the directory where regulatory data is stored
-    this.regulatoryDataDir = path.join(process.cwd(), 'regulatory_data');
-    
-    // Create the directory if it doesn't exist
-    if (!fs.existsSync(this.regulatoryDataDir)) {
-      fs.mkdirSync(this.regulatoryDataDir, { recursive: true });
-    }
+    this.huggingFaceService = new HuggingFaceService();
+    this.regulatoryKnowledgeBase = new Map();
+    this.regulatoryRequirements = [];
+    this.regulatoryGuidance = [];
+    this.loadRegulatoryData();
   }
-  
-  /**
-   * Initialize the regulatory intelligence service
-   */
-  async initialize(): Promise<boolean> {
-    if (this.initialized) {
-      return true;
+
+  private loadRegulatoryData() {
+    // In a real implementation, we would load from a database
+    // This is a simplified implementation for demonstration purposes
+    const regulatoryDir = './regulatory_data';
+    if (!fs.existsSync(regulatoryDir)) {
+      fs.mkdirSync(regulatoryDir, { recursive: true });
+      this.initializeDefaultRegulatoryData();
+      return;
     }
-    
+
     try {
-      console.log('Initializing regulatory intelligence service...');
-      
-      // Initialize academic knowledge service (if not already)
-      await academicKnowledgeService.initialize();
-      
-      // Load pre-defined regulatory requirements
-      await this.loadRegulatoryRequirements();
-      
-      // Load guidance documents
-      await this.loadGuidanceDocuments();
-      
-      this.initialized = true;
-      console.log(`Regulatory intelligence service initialized with ${this.regulatoryRequirements.length} requirements and ${this.guidanceDocuments.size} guidance documents`);
-      return true;
-    } catch (error) {
-      console.error('Error initializing regulatory intelligence service:', error);
-      return false;
-    }
-  }
-  
-  /**
-   * Load regulatory requirements data
-   */
-  private async loadRegulatoryRequirements(): Promise<void> {
-    try {
-      // Define base FDA requirements
-      const baseRequirements: RegulatoryRequirement[] = [
-        {
-          agency: 'FDA',
-          guideline: 'ICH E6(R2) GCP',
-          requirement: 'Informed Consent Documentation',
-          applicable_phases: ['1', '2', '3', '4'],
-          compliance_level: 'mandatory',
-          document_reference: 'Section 4.8',
-          last_updated: '2016-11-09'
-        },
-        {
-          agency: 'FDA',
-          guideline: 'ICH E6(R2) GCP',
-          requirement: 'Adverse Event Reporting',
-          applicable_phases: ['1', '2', '3', '4'],
-          compliance_level: 'mandatory',
-          document_reference: 'Section 4.11',
-          last_updated: '2016-11-09'
-        },
-        {
-          agency: 'FDA',
-          guideline: '21 CFR Part 312',
-          requirement: 'IND Submission',
-          applicable_phases: ['1', '2', '3'],
-          compliance_level: 'mandatory',
-          document_reference: 'Subpart B',
-          last_updated: '2021-04-01'
-        },
-        {
-          agency: 'FDA',
-          guideline: 'ICH E8(R1)',
-          requirement: 'Quality by Design in Clinical Research',
-          applicable_phases: ['1', '2', '3', '4'],
-          compliance_level: 'recommended',
-          document_reference: 'Section 3',
-          last_updated: '2022-01-15'
-        },
-        {
-          agency: 'FDA',
-          guideline: 'ICH E9',
-          requirement: 'Statistical Principles for Clinical Trials',
-          applicable_phases: ['2', '3'],
-          compliance_level: 'recommended',
-          document_reference: 'Full Document',
-          last_updated: '1998-02-05'
-        },
-        {
-          agency: 'FDA',
-          guideline: 'Guidance for Industry: Adaptive Designs for Clinical Trials of Drugs and Biologics',
-          requirement: 'Adaptive Trial Design Considerations',
-          applicable_phases: ['2', '3'],
-          compliance_level: 'recommended',
-          document_reference: 'Full Document',
-          last_updated: '2019-11-01'
-        },
-        {
-          agency: 'FDA',
-          guideline: 'ICH E2A',
-          requirement: 'Clinical Safety Data Management',
-          applicable_phases: ['1', '2', '3', '4'],
-          compliance_level: 'mandatory',
-          document_reference: 'Full Document',
-          last_updated: '1994-03-01'
-        },
-        {
-          agency: 'FDA',
-          guideline: 'Guidance for Industry: Patient-Reported Outcome Measures',
-          requirement: 'Patient-Reported Outcome Validation',
-          applicable_phases: ['2', '3'],
-          compliance_level: 'recommended',
-          document_reference: 'Full Document',
-          last_updated: '2009-12-01'
-        },
-        {
-          agency: 'FDA',
-          guideline: '21 CFR Part 50',
-          requirement: 'Protection of Human Subjects',
-          applicable_phases: ['1', '2', '3', '4'],
-          compliance_level: 'mandatory',
-          document_reference: 'Full Document',
-          last_updated: '2019-10-01'
-        },
-        {
-          agency: 'FDA',
-          guideline: 'ICH E3',
-          requirement: 'Structure and Content of Clinical Study Reports',
-          applicable_phases: ['1', '2', '3'],
-          compliance_level: 'mandatory',
-          document_reference: 'Full Document',
-          last_updated: '1995-11-30'
-        },
-        {
-          agency: 'FDA',
-          guideline: 'FDAMA 115',
-          requirement: 'Demographic Subgroup Reporting',
-          applicable_phases: ['2', '3'],
-          compliance_level: 'mandatory',
-          document_reference: 'Section 115',
-          last_updated: '2014-08-01'
-        },
-        {
-          agency: 'EMA',
-          guideline: 'Guideline on strategies to identify and mitigate risks for first-in-human clinical trials',
-          requirement: 'First-in-Human Risk Mitigation',
-          applicable_phases: ['1'],
-          compliance_level: 'mandatory',
-          document_reference: 'EMEA/CHMP/SWP/28367/07 Rev. 1',
-          last_updated: '2017-07-20'
-        }
-      ];
-      
-      // Check if we have persisted requirements data file
-      const requirementsFile = path.join(this.regulatoryDataDir, 'requirements.json');
-      if (fs.existsSync(requirementsFile)) {
-        try {
-          const data = fs.readFileSync(requirementsFile, 'utf8');
-          const savedRequirements = JSON.parse(data) as RegulatoryRequirement[];
-          this.regulatoryRequirements = savedRequirements;
-          console.log(`Loaded ${this.regulatoryRequirements.length} regulatory requirements from disk`);
-        } catch (fileError) {
-          console.error('Error loading regulatory requirements from file:', fileError);
-          this.regulatoryRequirements = baseRequirements;
-        }
+      // Load requirements
+      const requirementsPath = path.join(regulatoryDir, 'requirements.json');
+      if (fs.existsSync(requirementsPath)) {
+        const requirementsContent = fs.readFileSync(requirementsPath, 'utf8');
+        this.regulatoryRequirements = JSON.parse(requirementsContent);
       } else {
-        // Use base requirements and save to disk
-        this.regulatoryRequirements = baseRequirements;
-        this.saveRegulatoryRequirements();
-        console.log('Created initial regulatory requirements data');
+        this.initializeDefaultRequirements();
       }
-    } catch (error) {
-      console.error('Error in loadRegulatoryRequirements:', error);
-      throw error;
-    }
-  }
-  
-  /**
-   * Save regulatory requirements to disk
-   */
-  private saveRegulatoryRequirements(): void {
-    try {
-      const requirementsFile = path.join(this.regulatoryDataDir, 'requirements.json');
-      fs.writeFileSync(requirementsFile, JSON.stringify(this.regulatoryRequirements, null, 2));
-    } catch (error) {
-      console.error('Error saving regulatory requirements:', error);
-    }
-  }
-  
-  /**
-   * Load guidance documents
-   */
-  private async loadGuidanceDocuments(): Promise<void> {
-    try {
-      // Define base guidance documents
-      const baseGuidance: RegulatoryGuidance[] = [
-        {
-          title: 'E6(R2) Good Clinical Practice',
-          agency: 'ICH/FDA',
-          year: 2016,
-          url: 'https://www.fda.gov/regulatory-information/search-fda-guidance-documents/e6r2-good-clinical-practice-integrated-addendum-ich-e6r1',
-          summary: 'Integrated addendum to ICH E6(R1) providing standards for the conduct of clinical trials.',
-          relevance_score: 1.0,
-          tags: ['GCP', 'clinical practice', 'trial conduct']
-        },
-        {
-          title: 'Adaptive Designs for Clinical Trials of Drugs and Biologics',
-          agency: 'FDA',
-          year: 2019,
-          url: 'https://www.fda.gov/regulatory-information/search-fda-guidance-documents/adaptive-designs-clinical-trials-drugs-and-biologics-guidance-industry',
-          summary: 'Guidance on the use of adaptive designs for clinical trials to provide flexibility while maintaining trial integrity.',
-          relevance_score: 0.9,
-          tags: ['adaptive design', 'trial design', 'statistical methodology']
-        },
-        {
-          title: 'E9 Statistical Principles for Clinical Trials',
-          agency: 'ICH/FDA',
-          year: 1998,
-          url: 'https://www.fda.gov/regulatory-information/search-fda-guidance-documents/e9-statistical-principles-clinical-trials',
-          summary: 'Guidance on statistical principles to be considered in the design, conduct, analysis, and evaluation of clinical trials.',
-          relevance_score: 0.95,
-          tags: ['statistics', 'trial design', 'methodology']
-        },
-        {
-          title: 'Patient-Reported Outcome Measures: Use in Medical Product Development to Support Labeling Claims',
-          agency: 'FDA',
-          year: 2009,
-          url: 'https://www.fda.gov/regulatory-information/search-fda-guidance-documents/patient-reported-outcome-measures-use-medical-product-development-support-labeling-claims',
-          summary: 'Guidance on the use of patient-reported outcome (PRO) instruments in medical product development.',
-          relevance_score: 0.85,
-          tags: ['PRO', 'endpoints', 'labeling']
-        },
-        {
-          title: 'Considerations for the Development of Rare Disease Drugs',
-          agency: 'FDA',
-          year: 2019,
-          url: 'https://www.fda.gov/regulatory-information/search-fda-guidance-documents/rare-diseases-common-issues-drug-development-guidance-industry',
-          summary: 'Guidance on drug development for rare diseases addressing unique challenges in trial design and evidence generation.',
-          relevance_score: 0.8,
-          tags: ['rare disease', 'orphan drugs', 'small populations']
-        },
-        {
-          title: 'E11 Clinical Investigation of Medicinal Products in the Pediatric Population',
-          agency: 'ICH/FDA',
-          year: 2018,
-          url: 'https://www.fda.gov/regulatory-information/search-fda-guidance-documents/e11r1-addendum-clinical-investigation-medicinal-products-pediatric-population',
-          summary: 'Guidance on the investigation of medicinal products in pediatric populations.',
-          relevance_score: 0.75,
-          tags: ['pediatric', 'children', 'special population']
-        },
-        {
-          title: 'E7 Studies in Support of Special Populations: Geriatrics',
-          agency: 'ICH/FDA',
-          year: 1994,
-          url: 'https://www.fda.gov/regulatory-information/search-fda-guidance-documents/e7-studies-support-special-populations-geriatrics',
-          summary: 'Guidance on the inclusion of geriatric patients in clinical trials.',
-          relevance_score: 0.75,
-          tags: ['geriatric', 'elderly', 'special population']
-        },
-        {
-          title: 'Multiple Endpoints in Clinical Trials',
-          agency: 'FDA',
-          year: 2017,
-          url: 'https://www.fda.gov/regulatory-information/search-fda-guidance-documents/multiple-endpoints-clinical-trials-guidance-industry',
-          summary: 'Guidance on handling multiple endpoints in clinical trials, including approaches to multiplicity.',
-          relevance_score: 0.9,
-          tags: ['endpoints', 'multiplicity', 'statistical methodology']
-        },
-        {
-          title: 'Enrichment Strategies for Clinical Trials',
-          agency: 'FDA',
-          year: 2019,
-          url: 'https://www.fda.gov/regulatory-information/search-fda-guidance-documents/enrichment-strategies-clinical-trials-support-approval-human-drugs-and-biological-products',
-          summary: 'Guidance on enrichment strategies to increase the efficiency of clinical trials.',
-          relevance_score: 0.85,
-          tags: ['enrichment', 'patient selection', 'trial efficiency']
-        },
-        {
-          title: 'Master Protocols: Efficient Clinical Trial Design Strategies',
-          agency: 'FDA',
-          year: 2022,
-          url: 'https://www.fda.gov/regulatory-information/search-fda-guidance-documents/master-protocols-efficient-clinical-trial-design-strategies-expedite-development-drugs-and-biologics',
-          summary: 'Guidance on the use of master protocols to evaluate multiple drugs or multiple indications efficiently.',
-          relevance_score: 0.9,
-          tags: ['master protocols', 'platform trials', 'umbrella trials', 'basket trials']
-        }
-      ];
-      
-      // Check if we have persisted guidance data file
-      const guidanceFile = path.join(this.regulatoryDataDir, 'guidance.json');
-      if (fs.existsSync(guidanceFile)) {
-        try {
-          const data = fs.readFileSync(guidanceFile, 'utf8');
-          const savedGuidance = JSON.parse(data) as RegulatoryGuidance[];
-          
-          // Convert array to Map for faster lookups
-          this.guidanceDocuments.clear();
-          for (const doc of savedGuidance) {
-            this.guidanceDocuments.set(doc.title, doc);
-          }
-          
-          console.log(`Loaded ${this.guidanceDocuments.size} guidance documents from disk`);
-        } catch (fileError) {
-          console.error('Error loading guidance documents from file:', fileError);
-          // Initialize with base guidance
-          this.guidanceDocuments.clear();
-          for (const doc of baseGuidance) {
-            this.guidanceDocuments.set(doc.title, doc);
-          }
-        }
+
+      // Load guidance
+      const guidancePath = path.join(regulatoryDir, 'guidance.json');
+      if (fs.existsSync(guidancePath)) {
+        const guidanceContent = fs.readFileSync(guidancePath, 'utf8');
+        this.regulatoryGuidance = JSON.parse(guidanceContent);
       } else {
-        // Use base guidance and save to disk
-        this.guidanceDocuments.clear();
-        for (const doc of baseGuidance) {
-          this.guidanceDocuments.set(doc.title, doc);
+        this.initializeDefaultGuidance();
+      }
+
+      console.log(`Loaded ${this.regulatoryRequirements.length} regulatory requirements and ${this.regulatoryGuidance.length} guidance documents`);
+    } catch (error) {
+      console.error('Error loading regulatory data:', error);
+      this.initializeDefaultRegulatoryData();
+    }
+  }
+
+  private initializeDefaultRegulatoryData() {
+    this.initializeDefaultRequirements();
+    this.initializeDefaultGuidance();
+    this.saveRegulatoryData();
+  }
+
+  private initializeDefaultRequirements() {
+    // Sample data for demonstration purposes
+    this.regulatoryRequirements = [
+      // FDA/US Requirements
+      {
+        agency: 'FDA',
+        guideline: 'ICH E6(R2)',
+        requirement: 'Ensure adequate informed consent procedures are in place and properly documented.',
+        applicable_phases: ['Phase 1', 'Phase 2', 'Phase 3', 'Phase 4'],
+        compliance_level: 'mandatory',
+        document_reference: 'ICH E6(R2) Section 4.8',
+        last_updated: '2023-01-15'
+      },
+      {
+        agency: 'FDA',
+        guideline: 'ICH E8(R1)',
+        requirement: 'Implement quality by design principles in the study design phase.',
+        applicable_phases: ['Phase 1', 'Phase 2', 'Phase 3'],
+        compliance_level: 'recommended',
+        document_reference: 'ICH E8(R1) Section 3.2',
+        last_updated: '2023-02-20'
+      },
+      {
+        agency: 'FDA',
+        guideline: '21 CFR Part 50',
+        requirement: 'Obtain IRB approval before initiating a clinical trial.',
+        applicable_phases: ['Phase 1', 'Phase 2', 'Phase 3', 'Phase 4'],
+        compliance_level: 'mandatory',
+        document_reference: '21 CFR 50.20',
+        last_updated: '2022-11-05'
+      },
+      {
+        agency: 'FDA',
+        guideline: 'ICH E9',
+        requirement: 'Define primary and secondary endpoints clearly in the protocol.',
+        applicable_phases: ['Phase 2', 'Phase 3'],
+        compliance_level: 'mandatory',
+        document_reference: 'ICH E9 Statistical Principles',
+        last_updated: '2022-09-18'
+      },
+      {
+        agency: 'FDA',
+        guideline: 'FDORA 2022',
+        requirement: 'Include plans for ensuring diverse trial populations in the protocol.',
+        applicable_phases: ['Phase 2', 'Phase 3'],
+        compliance_level: 'mandatory',
+        document_reference: 'FDORA Section 5',
+        last_updated: '2023-04-01'
+      },
+      
+      // EMA/Europe Requirements
+      {
+        agency: 'EMA',
+        guideline: 'GDPR Compliance',
+        requirement: 'Ensure data protection impact assessment is conducted for processing health data.',
+        applicable_phases: ['Phase 1', 'Phase 2', 'Phase 3', 'Phase 4'],
+        compliance_level: 'mandatory',
+        document_reference: 'GDPR Article 35',
+        last_updated: '2023-03-10'
+      },
+      {
+        agency: 'EMA',
+        guideline: 'Clinical Trial Regulation (EU) No 536/2014',
+        requirement: 'Register all clinical trials in the EU Clinical Trials Information System (CTIS) before initiation.',
+        applicable_phases: ['Phase 1', 'Phase 2', 'Phase 3', 'Phase 4'],
+        compliance_level: 'mandatory',
+        document_reference: 'EU CTR Article 4',
+        last_updated: '2023-05-15'
+      },
+      {
+        agency: 'EMA',
+        guideline: 'EMA/CHMP/ICH/135/1995',
+        requirement: 'Implementation of the estimand framework in the analysis of clinical trials in Europe.',
+        applicable_phases: ['Phase 2', 'Phase 3'],
+        compliance_level: 'mandatory',
+        document_reference: 'ICH E9(R1) Addendum',
+        last_updated: '2023-02-10'
+      },
+      {
+        agency: 'EMA',
+        guideline: 'EMA/CHMP/292464/2014',
+        requirement: 'Follow the EMA guideline on the evaluation of anticancer medicinal products in humans.',
+        applicable_phases: ['Phase 1', 'Phase 2', 'Phase 3'],
+        compliance_level: 'mandatory',
+        document_reference: 'EMA Oncology Guideline Section 4',
+        last_updated: '2022-12-05'
+      },
+      
+      // PMDA/Japan Requirements
+      {
+        agency: 'PMDA',
+        guideline: 'Japanese GCP Ordinance',
+        requirement: 'Obtain approval from the heads of all medical institutions participating in the trial.',
+        applicable_phases: ['Phase 1', 'Phase 2', 'Phase 3', 'Phase 4'],
+        compliance_level: 'mandatory',
+        document_reference: 'JGCP Article 5',
+        last_updated: '2023-01-20'
+      },
+      {
+        agency: 'PMDA',
+        guideline: 'Basic Principles on Global Clinical Trials',
+        requirement: 'Consider ethnic factors that might affect efficacy and safety for Japanese patients in global trials.',
+        applicable_phases: ['Phase 2', 'Phase 3'],
+        compliance_level: 'mandatory',
+        document_reference: 'PMDA Global CT Guidance Section 2.2',
+        last_updated: '2023-06-12'
+      },
+      
+      // NMPA/China Requirements
+      {
+        agency: 'NMPA',
+        guideline: 'Drug Registration Regulation',
+        requirement: 'Obtain Ethics Committee approval and NMPA Clinical Trial Authorization (CTA) before starting trials in China.',
+        applicable_phases: ['Phase 1', 'Phase 2', 'Phase 3', 'Phase 4'],
+        compliance_level: 'mandatory',
+        document_reference: 'DRR Article 19',
+        last_updated: '2023-07-01'
+      },
+      {
+        agency: 'NMPA',
+        guideline: 'Technical Guidelines for Clinical Trials',
+        requirement: 'For registration in China, include a minimum number of Chinese subjects in pivotal trials proportional to the Chinese population.',
+        applicable_phases: ['Phase 3'],
+        compliance_level: 'mandatory',
+        document_reference: 'NMPA Technical Guidelines Section 3.4',
+        last_updated: '2023-03-18'
+      },
+      
+      // Academic/Scientific Requirements
+      {
+        agency: 'Academic',
+        guideline: 'CONSORT Statement',
+        requirement: 'Follow CONSORT guidelines for reporting randomized clinical trials in academic publications.',
+        applicable_phases: ['Phase 2', 'Phase 3', 'Phase 4'],
+        compliance_level: 'recommended',
+        document_reference: 'CONSORT 2024 Checklist',
+        last_updated: '2024-01-10'
+      },
+      {
+        agency: 'Academic',
+        guideline: 'SPIRIT Statement',
+        requirement: 'Follow SPIRIT guidelines for complete protocol documentation.',
+        applicable_phases: ['Phase 1', 'Phase 2', 'Phase 3', 'Phase 4'],
+        compliance_level: 'recommended',
+        document_reference: 'SPIRIT 2022 Checklist',
+        last_updated: '2022-08-24'
+      }
+    ];
+  }
+
+  private initializeDefaultGuidance() {
+    // Sample data for demonstration purposes
+    this.regulatoryGuidance = [
+      // FDA Guidance (US)
+      {
+        title: 'Guidance for Industry: E6(R2) Good Clinical Practice',
+        agency: 'FDA',
+        year: 2023,
+        url: 'https://www.fda.gov/regulatory-information/search-fda-guidance-documents/e6r2-good-clinical-practice-integrated-addendum-ich-e6r1',
+        summary: 'This guidance provides updated standards for the conduct of clinical trials of medical products.',
+        relevance_score: 0.95,
+        tags: ['GCP', 'clinical trials', 'quality', 'ethics']
+      },
+      {
+        title: 'Enhancing the Diversity of Clinical Trial Populations',
+        agency: 'FDA',
+        year: 2023,
+        url: 'https://www.fda.gov/regulatory-information/search-fda-guidance-documents/enhancing-diversity-clinical-trial-populations-eligibility-criteria-enrollment-practices-and-trial',
+        summary: 'This guidance provides recommendations to sponsors on approaches to increasing diversity in clinical trial populations.',
+        relevance_score: 0.9,
+        tags: ['diversity', 'inclusion', 'clinical trials', 'enrollment']
+      },
+      {
+        title: 'Adaptive Designs for Clinical Trials of Drugs and Biologics',
+        agency: 'FDA',
+        year: 2022,
+        url: 'https://www.fda.gov/regulatory-information/search-fda-guidance-documents/adaptive-design-clinical-trials-drugs-and-biologics-guidance-industry',
+        summary: 'This guidance describes adaptive design principles for clinical trials and provides recommendations for their implementation.',
+        relevance_score: 0.85,
+        tags: ['adaptive design', 'clinical trials', 'statistical methods']
+      },
+      
+      // EMA Guidance (Europe)
+      {
+        title: 'Guideline on strategies to identify and mitigate risks for first-in-human and early clinical trials with investigational medicinal products',
+        agency: 'EMA',
+        year: 2023,
+        url: 'https://www.ema.europa.eu/en/documents/scientific-guideline/guideline-strategies-identify-mitigate-risks-first-human-early-clinical-trials-investigational_en.pdf',
+        summary: 'This guideline provides strategies to calculate the first dose in humans, dose escalation, and risk mitigation for early phase trials.',
+        relevance_score: 0.93,
+        tags: ['Phase 1', 'first-in-human', 'dose escalation', 'risk mitigation', 'safety']
+      },
+      {
+        title: 'ICH E9 (R1) addendum on estimands and sensitivity analysis in clinical trials',
+        agency: 'EMA',
+        year: 2022,
+        url: 'https://www.ema.europa.eu/en/ich-e9-statistical-principles-clinical-trials',
+        summary: 'This guideline provides a framework to align clinical trial planning, design, conduct, analysis, and interpretation.',
+        relevance_score: 0.9,
+        tags: ['estimands', 'statistical analysis', 'clinical trials', 'ICH']
+      },
+      {
+        title: 'Guideline on the evaluation of anticancer medicinal products in man',
+        agency: 'EMA',
+        year: 2023,
+        url: 'https://www.ema.europa.eu/en/evaluation-anticancer-medicinal-products-man',
+        summary: 'This guideline addresses methodological considerations for the development of anticancer medicinal products.',
+        relevance_score: 0.87,
+        tags: ['oncology', 'anticancer', 'clinical development', 'efficacy endpoints']
+      },
+      {
+        title: 'Guideline on clinical investigation of medicinal products for the treatment of Multiple Sclerosis',
+        agency: 'EMA',
+        year: 2022,
+        url: 'https://www.ema.europa.eu/en/clinical-investigation-medicinal-products-treatment-multiple-sclerosis',
+        summary: 'This guideline provides specific considerations for clinical trials in multiple sclerosis.',
+        relevance_score: 0.82,
+        tags: ['multiple sclerosis', 'neurology', 'clinical trials', 'endpoint selection']
+      },
+      
+      // PMDA Guidance (Japan/Asia)
+      {
+        title: 'Basic Principles on Global Clinical Trials',
+        agency: 'PMDA',
+        year: 2023,
+        url: 'https://www.pmda.go.jp/files/000156939.pdf',
+        summary: 'This document outlines considerations for conducting global clinical trials including Japanese subjects.',
+        relevance_score: 0.88,
+        tags: ['global clinical trials', 'multiregional', 'Japan', 'ethnicity factors']
+      },
+      {
+        title: 'Points to Consider for Drug Master Files',
+        agency: 'PMDA',
+        year: 2022,
+        url: 'https://www.pmda.go.jp/english/review-services/regulations-standards/0009.html',
+        summary: 'This document provides guidance on preparation and submission of Drug Master Files in Japan.',
+        relevance_score: 0.75,
+        tags: ['drug master file', 'chemistry manufacturing controls', 'Japan', 'quality']
+      },
+      
+      // NMPA Guidance (China/Asia)
+      {
+        title: 'Technical Guidelines for Clinical Trials of Drugs in China',
+        agency: 'NMPA',
+        year: 2023,
+        url: 'https://english.nmpa.gov.cn/',
+        summary: 'These guidelines provide technical requirements for conducting clinical trials in China.',
+        relevance_score: 0.85,
+        tags: ['China', 'clinical trials', 'NMPA', 'regulatory requirements']
+      },
+      {
+        title: 'Guidelines for Acceptance of Overseas Clinical Trial Data',
+        agency: 'NMPA',
+        year: 2022,
+        url: 'https://english.nmpa.gov.cn/',
+        summary: 'This document provides guidance on the acceptance of foreign clinical trial data for drug registration in China.',
+        relevance_score: 0.83,
+        tags: ['China', 'foreign data', 'clinical trials', 'drug registration']
+      },
+      
+      // Academic Guidance
+      {
+        title: 'CONSORT 2024 Statement: Updated Guidelines for Reporting Randomized Trials',
+        agency: 'Academic',
+        year: 2024,
+        url: 'https://www.consort-statement.org/',
+        summary: 'These updated guidelines provide best practices for reporting randomized controlled trials to ensure transparency and reproducibility.',
+        relevance_score: 0.92,
+        tags: ['reporting guidelines', 'randomized trials', 'transparency', 'academic', 'publication']
+      },
+      {
+        title: 'SPIRIT 2022 Statement: Standard Protocol Items for Clinical Trials',
+        agency: 'Academic',
+        year: 2022,
+        url: 'https://www.spirit-statement.org/',
+        summary: 'This academic guidance provides recommendations for minimum protocol items to include when designing clinical trials.',
+        relevance_score: 0.9,
+        tags: ['protocol design', 'academic', 'methodology', 'clinical trial standards']
+      },
+      {
+        title: 'Clinical Trials 2.0: A Vision for More Efficient, Informative, and Ethical Clinical Trials',
+        agency: 'Academic',
+        year: 2023,
+        url: 'https://www.nejm.org/',
+        summary: 'This academic paper outlines a vision for next-generation clinical trials that are more efficient, participant-centered, and generate higher quality evidence.',
+        relevance_score: 0.87,
+        tags: ['clinical trial design', 'innovation', 'efficiency', 'patient-centricity', 'academic']
+      }
+    ];
+  }
+
+  private saveRegulatoryData() {
+    const regulatoryDir = './regulatory_data';
+    if (!fs.existsSync(regulatoryDir)) {
+      fs.mkdirSync(regulatoryDir, { recursive: true });
+    }
+
+    // Save requirements
+    const requirementsPath = path.join(regulatoryDir, 'requirements.json');
+    fs.writeFileSync(requirementsPath, JSON.stringify(this.regulatoryRequirements, null, 2));
+
+    // Save guidance
+    const guidancePath = path.join(regulatoryDir, 'guidance.json');
+    fs.writeFileSync(guidancePath, JSON.stringify(this.regulatoryGuidance, null, 2));
+  }
+
+  async getRegulatoryIntelligence(phase: string, indication?: string): Promise<RegulatorySummary> {
+    // Filter requirements by phase
+    const filteredRequirements = this.regulatoryRequirements.filter(req => 
+      req.applicable_phases.includes(phase)
+    );
+
+    // Sort guidance by relevance for the given phase and indication
+    const sortedGuidance = [...this.regulatoryGuidance].sort((a, b) => {
+      // Adjust relevance score based on phase and indication
+      let scoreA = a.relevance_score;
+      let scoreB = b.relevance_score;
+
+      // Boost score if tags include the phase or indication
+      if (indication) {
+        const normalizedIndication = indication.toLowerCase();
+        
+        if (a.tags.some(tag => tag.toLowerCase().includes(normalizedIndication))) {
+          scoreA += 0.1;
         }
         
-        this.saveGuidanceDocuments();
-        console.log('Created initial guidance documents data');
+        if (b.tags.some(tag => tag.toLowerCase().includes(normalizedIndication))) {
+          scoreB += 0.1;
+        }
       }
-    } catch (error) {
-      console.error('Error in loadGuidanceDocuments:', error);
-      throw error;
-    }
-  }
-  
-  /**
-   * Save guidance documents to disk
-   */
-  private saveGuidanceDocuments(): void {
-    try {
-      const guidanceFile = path.join(this.regulatoryDataDir, 'guidance.json');
-      const documents = Array.from(this.guidanceDocuments.values());
-      fs.writeFileSync(guidanceFile, JSON.stringify(documents, null, 2));
-    } catch (error) {
-      console.error('Error saving guidance documents:', error);
-    }
-  }
-  
-  /**
-   * Get regulatory requirements for a specific phase and therapeutic area
-   */
-  async getRequirements(phase: string, therapeuticArea?: string): Promise<RegulatoryRequirement[]> {
-    // Ensure service is initialized
-    if (!this.initialized) {
-      await this.initialize();
-    }
-    
-    // Filter requirements by phase
-    let requirements = this.regulatoryRequirements.filter(req => 
-      req.applicable_phases.includes(phase) || req.applicable_phases.includes('all')
-    );
-    
-    // Further filter by therapeutic area if provided
-    if (therapeuticArea) {
-      // This would need a more sophisticated mapping of therapeutic areas to requirements
-      // For now, just return the phase-specific requirements
-    }
-    
-    return requirements;
-  }
-  
-  /**
-   * Get relevant guidance documents for a specific phase and therapeutic area
-   */
-  async getGuidanceDocuments(phase: string, therapeuticArea?: string): Promise<RegulatoryGuidance[]> {
-    // Ensure service is initialized
-    if (!this.initialized) {
-      await this.initialize();
-    }
-    
-    // Convert Map to array
-    const allDocuments = Array.from(this.guidanceDocuments.values());
-    
-    // Filter by relevance to phase and therapeutic area
-    // This would need a more sophisticated mapping in a real implementation
-    // For now, return all documents sorted by relevance score
-    return allDocuments.sort((a, b) => b.relevance_score - a.relevance_score);
-  }
-  
-  /**
-   * Get a comprehensive regulatory summary for a trial
-   */
-  async getRegulatoryIntelligence(phase: string, therapeuticArea?: string): Promise<RegulatorySummary> {
-    // Ensure service is initialized
-    if (!this.initialized) {
-      await this.initialize();
-    }
-    
-    // Get requirements and guidance
-    const requirements = await this.getRequirements(phase, therapeuticArea);
-    const guidance = await this.getGuidanceDocuments(phase, therapeuticArea);
-    
-    // Generate special considerations using HuggingFace
-    let specialConsiderations: string[] = [];
-    
-    try {
-      const prompt = `
-You are a regulatory expert at the FDA. Based on your knowledge of clinical trial regulations, provide 5 specific regulatory considerations for a Phase ${phase} clinical trial${therapeuticArea ? ` in ${therapeuticArea}` : ''}.
 
-These should be focused on recent regulatory developments, common pitfalls, and areas of special regulatory scrutiny.
+      return scoreB - scoreA;
+    });
 
-Format your response as a numbered list of 5 brief but specific considerations.
-`;
+    // Get the top guidance documents
+    const relevantGuidance = sortedGuidance.slice(0, 5);
 
-      const response = await huggingFaceService.queryHuggingFace(
-        prompt,
-        HFModel.MISTRAL_LATEST,
-        800,
-        0.3
-      );
-      
-      // Parse the numbered list
-      specialConsiderations = response
-        .split(/\n\d+\.|\n-/)
-        .map(item => item.trim())
-        .filter(item => item.length > 0);
-    } catch (error) {
-      console.error('Error generating special considerations:', error);
-      specialConsiderations = [
-        "Ensure complete adverse event reporting with appropriate causality assessment",
-        "Verify that protocol amendments receive proper IRB/EC review and approval",
-        "Maintain rigorous documentation of informed consent processes",
-        "Implement robust data integrity and source data verification procedures",
-        "Establish clear stopping rules and safety monitoring processes"
-      ];
-    }
-    
-    // Return comprehensive summary
+    // Generate special considerations based on phase and indication
+    const specialConsiderations = await this.generateSpecialConsiderations(phase, indication);
+
     return {
-      therapeutic_area: therapeuticArea || 'General',
+      therapeutic_area: indication || 'All Therapeutic Areas',
       phase,
-      key_requirements: requirements.slice(0, 8), // Limit to most important
-      relevant_guidance: guidance.slice(0, 5),    // Top 5 most relevant
+      key_requirements: filteredRequirements,
+      relevant_guidance: relevantGuidance,
       special_considerations: specialConsiderations
     };
   }
-  
-  /**
-   * Get FDA and global regulatory analysis for a specific protocol
-   */
-  async analyzeProtocolRegulatory(protocolText: string, phase: string, indication?: string): Promise<string> {
-    // Ensure service is initialized
-    if (!this.initialized) {
-      await this.initialize();
+
+  private async generateSpecialConsiderations(phase: string, indication?: string): Promise<string[]> {
+    // In a real implementation, this would use the Hugging Face service
+    // to generate considerations based on the context
+    
+    // For now, return some sample considerations
+    if (phase === 'Phase 1') {
+      if (indication && indication.toLowerCase().includes('oncology')) {
+        return [
+          'First-in-human oncology trials may require specialized monitoring for cytokine release syndrome',
+          'Consider implementation of accelerated titration designs to minimize exposure of patients to sub-therapeutic doses',
+          'Ensure robust PK/PD modeling to support dose selection'
+        ];
+      } else {
+        return [
+          'Ensure robust safety monitoring plans are included in the protocol',
+          'Consider adaptive designs for early signal detection'
+        ];
+      }
+    } else if (phase === 'Phase 2') {
+      if (indication && indication.toLowerCase().includes('rare')) {
+        return [
+          'Consider innovative trial designs such as basket or platform trials',
+          'Engage with FDA for early feedback on endpoints and sample size'
+        ];
+      } else {
+        return [
+          'Ensure appropriate endpoint selection to support phase 3 planning',
+          'Consider implementation of biomarker strategies'
+        ];
+      }
+    } else if (phase === 'Phase 3') {
+      return [
+        'Ensure trial diversity meets FDORA 2022 requirements',
+        'Consider implementation of decentralized elements to enhance recruitment and retention',
+        'Develop a robust statistical analysis plan aligned with ICH E9(R1) estimand framework'
+      ];
+    } else {
+      return [
+        'Ensure post-approval study plans align with risk management plans',
+        'Consider real-world evidence collection strategies'
+      ];
     }
-    
-    // Get regulatory intelligence relevant to this protocol
-    const regulatoryContext = await this.getRegulatoryIntelligence(phase, indication);
-    
-    // Create context for AI analysis
-    let regulatoryPrompt = `
-You are a regulatory affairs expert specializing in clinical trials. Analyze the following protocol excerpt for regulatory compliance:
+  }
 
-PROTOCOL EXCERPT:
-${protocolText.substring(0, 3000)}...
-
-RELEVANT FDA AND ICH REQUIREMENTS:
-${regulatoryContext.key_requirements.map(req => 
-  `- ${req.guideline}: ${req.requirement} (${req.compliance_level})`
-).join('\n')}
-
-APPLICABLE GUIDANCE:
-${regulatoryContext.relevant_guidance.map(guide => 
-  `- ${guide.title} (${guide.agency}, ${guide.year})`
-).join('\n')}
-
-SPECIAL CONSIDERATIONS:
-${regulatoryContext.special_considerations.join('\n')}
-
-Please provide a comprehensive regulatory analysis of this protocol addressing:
-1. Compliance status with key FDA/ICH requirements
-2. Potential regulatory gaps or concerns
-3. Recommendations for addressing identified issues
-4. Required regulatory submissions and timelines
-
-Format your response as a structured professional regulatory assessment report.
-`;
-
-    // Get AI-generated analysis
+  async analyzeProtocolCompliance(protocolText: string, phase: string, indication?: string): Promise<string> {
     try {
-      const response = await huggingFaceService.queryHuggingFace(
-        regulatoryPrompt,
-        HFModel.MISTRAL_LATEST,
-        1500,
-        0.3
-      );
+      // In a real implementation, this would use a more sophisticated approach
+      // with the Hugging Face service to analyze the protocol
       
-      return response;
+      // Get regulatory requirements for the phase
+      const regulatorySummary = await this.getRegulatoryIntelligence(phase, indication);
+      
+      // Analyze protocol for compliance with key requirements
+      const complianceResults = [];
+      
+      // Check for key requirements in the protocol text
+      for (const requirement of regulatorySummary.key_requirements) {
+        // Simple keyword-based check (in a real implementation, this would be more sophisticated)
+        const keyPhrases = this.extractKeyPhrases(requirement.requirement);
+        const found = keyPhrases.some(phrase => protocolText.toLowerCase().includes(phrase.toLowerCase()));
+        
+        complianceResults.push({
+          requirement: requirement,
+          compliant: found,
+          reason: found 
+            ? 'Requirement appears to be addressed in the protocol' 
+            : 'Requirement may not be adequately addressed in the protocol'
+        });
+      }
+      
+      // Generate the analysis text
+      let analysisText = `Regulatory Compliance Analysis for ${phase} Protocol`;
+      if (indication) {
+        analysisText += ` in ${indication}`;
+      }
+      analysisText += '\n\n';
+      
+      const mandatoryIssues = complianceResults
+        .filter(r => !r.compliant && r.requirement.compliance_level === 'mandatory')
+        .map(r => r.requirement);
+      
+      const recommendedIssues = complianceResults
+        .filter(r => !r.compliant && r.requirement.compliance_level === 'recommended')
+        .map(r => r.requirement);
+      
+      if (mandatoryIssues.length > 0) {
+        analysisText += 'CRITICAL ISSUES REQUIRING IMMEDIATE ATTENTION:\n\n';
+        mandatoryIssues.forEach(issue => {
+          analysisText += `- ${issue.agency} ${issue.guideline}: ${issue.requirement}\n`;
+          analysisText += `  Reference: ${issue.document_reference}\n\n`;
+        });
+      }
+      
+      if (recommendedIssues.length > 0) {
+        analysisText += 'RECOMMENDED IMPROVEMENTS:\n\n';
+        recommendedIssues.forEach(issue => {
+          analysisText += `- ${issue.agency} ${issue.guideline}: ${issue.requirement}\n`;
+          analysisText += `  Reference: ${issue.document_reference}\n\n`;
+        });
+      }
+      
+      // Add special considerations
+      if (regulatorySummary.special_considerations.length > 0) {
+        analysisText += 'SPECIAL CONSIDERATIONS FOR THIS PROTOCOL:\n\n';
+        regulatorySummary.special_considerations.forEach(consideration => {
+          analysisText += `- ${consideration}\n`;
+        });
+        analysisText += '\n';
+      }
+      
+      // Add compliance summary
+      const compliantCount = complianceResults.filter(r => r.compliant).length;
+      const totalCount = complianceResults.length;
+      const complianceRate = Math.round((compliantCount / totalCount) * 100);
+      
+      analysisText += `COMPLIANCE SUMMARY: ${complianceRate}% (${compliantCount}/${totalCount}) of regulatory requirements appear to be addressed.\n\n`;
+      
+      // Add recommended guidance
+      analysisText += 'RECOMMENDED GUIDANCE DOCUMENTS:\n\n';
+      regulatorySummary.relevant_guidance.slice(0, 3).forEach(guidance => {
+        analysisText += `- ${guidance.title} (${guidance.agency}, ${guidance.year})\n`;
+        analysisText += `  ${guidance.summary}\n\n`;
+      });
+      
+      return analysisText;
     } catch (error) {
-      console.error('Error generating regulatory analysis:', error);
-      return 'Unable to generate regulatory analysis at this time. Please try again later.';
+      console.error('Error analyzing protocol compliance:', error);
+      throw error;
     }
   }
   
-  /**
-   * Get stats about the regulatory intelligence service
-   */
-  getStats() {
-    return {
-      initialized: this.initialized,
-      requirements_count: this.regulatoryRequirements.length,
-      guidance_count: this.guidanceDocuments.size,
-      agencies: [...new Set(this.regulatoryRequirements.map(req => req.agency))]
-    };
+  private extractKeyPhrases(text: string): string[] {
+    // Simple implementation to extract key phrases from a requirement
+    // In a real implementation, this would use more sophisticated NLP techniques
+    const words = text.toLowerCase().split(/\s+/);
+    const stopWords = new Set(['the', 'a', 'an', 'and', 'or', 'in', 'on', 'at', 'to', 'for', 'with', 'by', 'of', 'is', 'are']);
+    
+    const filteredWords = words.filter(word => !stopWords.has(word) && word.length > 3);
+    
+    // Create phrases from consecutive meaningful words
+    const phrases = [];
+    let currentPhrase = [];
+    
+    for (const word of filteredWords) {
+      currentPhrase.push(word);
+      
+      if (currentPhrase.length === 3) {
+        phrases.push(currentPhrase.join(' '));
+        currentPhrase.shift(); // Remove the first word to slide the window
+      }
+    }
+    
+    // Add any remaining phrases
+    if (currentPhrase.length > 1) {
+      phrases.push(currentPhrase.join(' '));
+    }
+    
+    // Also add individual important words
+    filteredWords.forEach(word => {
+      if (word.length > 5) {
+        phrases.push(word);
+      }
+    });
+    
+    return phrases;
   }
 }
-
-// Export a singleton instance for convenience
-export const regulatoryIntelligenceService = new RegulatoryIntelligenceService();
