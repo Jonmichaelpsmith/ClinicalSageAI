@@ -78,6 +78,7 @@ const RiskIndicator = ({ level, text }: { level: 'low' | 'medium' | 'high', text
 };
 
 // Enhanced metric component
+// Enhanced MetricCard with gradient styling
 const MetricCard = ({ 
   title, 
   value, 
@@ -110,16 +111,47 @@ const MetricCard = ({
     if (trend < 0) return "text-red-600";
     return "text-slate-600";
   };
+  
+  // Determine status based on target and value
+  const getStatus = () => {
+    if (target === null || typeof value !== 'number') return 'neutral';
+    if (value >= target) return 'success';
+    if (value >= target * 0.8) return 'warning';
+    return 'danger';
+  };
+  
+  const status = getStatus();
+  
+  // Card gradient styling based on status
+  const cardGradient = 
+    status === 'success' ? 'bg-gradient-to-r from-green-50 to-white border-l-4 border-l-green-500' : 
+    status === 'warning' ? 'bg-gradient-to-r from-amber-50 to-white border-l-4 border-l-amber-500' : 
+    status === 'danger' ? 'bg-gradient-to-r from-red-50 to-white border-l-4 border-l-red-500' : 
+    'bg-gradient-to-r from-blue-50/40 to-white';
+  
+  // Badge styling based on status
+  const badgeStyle = 
+    status === 'success' ? 'bg-green-100 text-green-800 border border-green-200' : 
+    status === 'warning' ? 'bg-amber-100 text-amber-800 border border-amber-200' : 
+    status === 'danger' ? 'bg-red-100 text-red-800 border border-red-200' : 
+    'bg-blue-100 text-blue-800 border border-blue-200';
+  
+  // Title styling based on status
+  const titleColor = 
+    status === 'success' ? 'text-green-800' : 
+    status === 'warning' ? 'text-amber-800' : 
+    status === 'danger' ? 'text-red-800' : 
+    'text-primary';
 
   return (
-    <Card>
+    <Card className={`${cardGradient} transition-all duration-200 hover:shadow-md`}>
       <CardContent className="p-6">
         <div className="flex justify-between items-start">
-          <div className="bg-primary/10 p-3 rounded-full">
+          <div className={`${status === 'neutral' ? 'bg-primary/10' : ''} p-3 rounded-full`}>
             {icon}
           </div>
           {target !== null && (
-            <Badge variant="outline" className="bg-blue-50 text-blue-700">
+            <Badge variant="outline" className={`${badgeStyle} shadow-sm`}>
               Target: {target}{unit}
             </Badge>
           )}
@@ -128,7 +160,7 @@ const MetricCard = ({
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <h3 className="text-xl font-semibold mt-4 cursor-help border-b border-dotted border-slate-400">{title}</h3>
+              <h3 className={`text-xl font-semibold mt-4 cursor-help border-b border-dotted border-slate-400 ${titleColor}`}>{title}</h3>
             </TooltipTrigger>
             {tooltipContent && (
               <TooltipContent side="top" className="max-w-xs p-3">
@@ -139,7 +171,7 @@ const MetricCard = ({
         </TooltipProvider>
         
         <div className="flex items-end gap-2 mt-2">
-          <span className="text-3xl font-bold">{value}</span>
+          <span className={`text-3xl font-bold ${titleColor}`}>{value}</span>
           {unit && <span className="text-xl text-slate-500">{unit}</span>}
         </div>
         {trend !== 0 && (
