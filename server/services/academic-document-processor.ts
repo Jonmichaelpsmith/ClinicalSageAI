@@ -157,7 +157,7 @@ export class AcademicDocumentProcessor {
       const tags = tagsResponse?.tags || [];
       
       // Generate embeddings for the document
-      const embedding = await this.huggingFaceService.generateEmbedding(text);
+      const embedding = await this.huggingFaceService.generateEmbeddings(text);
       
       // Create document ID
       const documentId = Buffer.from(`${title}-${source}-${year}`).toString('base64');
@@ -211,7 +211,7 @@ export class AcademicDocumentProcessor {
   async searchAcademicKnowledge(query: string, limit: number = 10): Promise<AcademicKnowledgeResult[]> {
     try {
       // Generate embedding for the query
-      const queryEmbedding = await this.huggingFaceService.generateEmbedding(query);
+      const queryEmbedding = await this.huggingFaceService.generateEmbeddings(query);
       
       if (!queryEmbedding) {
         throw new Error('Failed to generate embedding for query');

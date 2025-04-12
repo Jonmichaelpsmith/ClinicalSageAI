@@ -1045,28 +1045,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      console.log(`Endpoint recommendation request for ${indication} (${phase || 'all phases'})`);
+      
       // Get endpoint recommender service
       const recommenderService = getEndpointRecommenderService();
       
-      // Get recommendations
-      const endpoints = await recommenderService.getEndpointRecommendations(indication, phase, count);
+      // Get comprehensive recommendations with evidence and justification
+      const comprehensiveRecommendations = await recommenderService.getComprehensiveEndpointRecommendations(
+        indication, 
+        phase, 
+        count,
+        therapeuticArea
+      );
       
-      // Convert to format expected by frontend
-      const formattedRecommendations = endpoints.map(endpoint => ({
-        endpoint: endpoint,
-        summary: `Recommended endpoint for ${indication} in ${phase || 'clinical'} trials`,
-        matchCount: Math.floor(Math.random() * 15) + 5, // Will be replaced with actual data
-        successRate: Math.floor(Math.random() * 30) + 70, // Will be replaced with actual data
-        reference: null
-      }));
+      console.log(`Generated ${comprehensiveRecommendations.length} comprehensive recommendations`);
       
-      // Extract the endpoints and send them as the recommendations array
-      const endpointStrings = formattedRecommendations.map(rec => rec.endpoint);
-      
-      // Send the response in the format the client expects
-      res.json({ 
-        recommendations: endpointStrings
-      });
+      // If we have comprehensive recommendations
+      if (comprehensiveRecommendations.length > 0) {
+        // Format the results for the client
+        const formattedRecommendations = comprehensiveRecommendations.map(rec => ({
+          endpoint: rec.endpoint,
+          summary: `Recommended ${rec.is_primary ? 'primary' : 'secondary'} endpoint for ${indication} in ${phase || 'clinical'} trials`,
+          matchCount: rec.occurrence_count,
+          successRate: rec.success_rate,
+          reference: rec.evidence && rec.evidence.length > 0 ? {
+            title: rec.evidence[0].title,
+            source: rec.evidence[0].source_type,
+            text: rec.evidence[0].reference_text
+          } : null,
+          evidenceCount: rec.evidence ? rec.evidence.length : 0,
+          hasRegulatoryGuidance: rec.regulatory_guidance && rec.regulatory_guidance.length > 0,
+          hasAcademicReferences: rec.academic_references && rec.academic_references.length > 0
+        }));
+        
+        // Extract the endpoints and send them as the recommendations array
+        const endpointStrings = formattedRecommendations.map(rec => rec.endpoint);
+        
+        // Send the response with both basic and comprehensive data
+        res.json({ 
+          recommendations: endpointStrings,
+          detailed_recommendations: formattedRecommendations,
+          justification: {
+            csr_evidence: comprehensiveRecommendations.some(r => r.evidence.some(e => e.source_type === 'csr')),
+            academic_evidence: comprehensiveRecommendations.some(r => r.academic_references && r.academic_references.length > 0),
+            regulatory_guidance: comprehensiveRecommendations.some(r => r.regulatory_guidance && r.regulatory_guidance.length > 0),
+            evidence_count: comprehensiveRecommendations.reduce((sum, r) => sum + r.evidence.length, 0),
+            confidence_score: comprehensiveRecommendations.length > 0 ? 
+              Math.min(0.95, comprehensiveRecommendations.reduce((sum, r) => sum + r.success_rate, 0) / (comprehensiveRecommendations.length * 100)) : 
+              0.7
+          },
+          meta: {
+            indication,
+            phase: phase || 'All Phases',
+            therapeutic_area: therapeuticArea || 'Not specified',
+            generated_at: new Date().toISOString()
+          }
+        });
+      } else {
+        // Fallback to simple recommendations if comprehensive ones failed
+        const endpoints = await recommenderService.getEndpointRecommendations(indication, phase, count);
+        
+        // Format the results for backward compatibility
+        const formattedRecommendations = endpoints.map(endpoint => ({
+          endpoint: endpoint,
+          summary: `Recommended endpoint for ${indication} in ${phase || 'clinical'} trials`,
+          matchCount: 1,
+          successRate: 75, // Default fallback success rate
+          reference: null
+        }));
+        
+        // Extract the endpoints and send them as the recommendations array
+        const endpointStrings = formattedRecommendations.map(rec => rec.endpoint);
+        
+        // Send the response in the format the client expects
+        res.json({ 
+          recommendations: endpointStrings,
+          message: 'Generated using fallback system due to limited CSR evidence'
+        });
+      }
     } catch (error) {
       console.error('Error generating endpoint recommendations:', error);
       res.status(500).json({ 

@@ -170,7 +170,7 @@ export class CSRSearchService {
     if (params.query_text && params.query_text.trim()) {
       try {
         // Get embedding for query text using Hugging Face
-        const queryEmbedding = await huggingFaceService.getEmbedding(params.query_text);
+        const queryEmbedding = await huggingFaceService.generateEmbeddings(params.query_text);
         
         // Calculate similarity for each CSR
         const scoredResults = results
