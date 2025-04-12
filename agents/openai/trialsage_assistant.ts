@@ -115,20 +115,39 @@ export async function getAssistantResponse(threadId: string, userMessage: string
 /**
  * Generate a protocol based on evidence from similar clinical trials
  * Also generates IND Module 2.5 and regulatory risk analysis
+ * 
+ * @param indication The disease or condition being studied
+ * @param phase The clinical trial phase (e.g., Phase I, II, III, IV)
+ * @param primaryEndpoint Optional. The primary endpoint for the trial
+ * @param thread_id Optional. Thread ID for maintaining conversation context
+ * @returns Object containing recommendation, citations, IND module 2.5, and risk summary
  */
 export async function generateProtocolFromEvidence(
   indication: string, 
   phase: string = "Phase II",
-  primaryEndpoint?: string
+  primaryEndpoint?: string,
+  thread_id?: string
 ): Promise<{ 
   recommendation: string; 
   citations: string[]; 
   ind_module_2_5?: { section: string; content: string }; 
-  risk_summary?: string 
+  risk_summary?: string;
+  thread_id?: string;
 }> {
+  console.log(`Generating protocol for ${indication} (${phase}) with thread_id: ${thread_id || 'new'}`);
+  
+  // Enhanced system prompt for more evidence-based, regulatory-compliant protocol design
   const systemPrompt = `
-    You are TrialSage, an expert AI assisting with clinical trial protocol design. 
-    Generate a detailed clinical trial protocol for the given indication and phase.
+    You are TrialSage, an expert AI specialized in clinical trial protocol design with deep knowledge of regulatory requirements, 
+    scientific literature, and evidence-based medicine. Generate a detailed clinical trial protocol for the given indication and phase 
+    that would be suitable for submission to regulatory agencies.
+    
+    Guidelines:
+    - Use the most current evidence-based approaches for the specific indication
+    - Incorporate appropriate sample size calculations based on statistical power considerations
+    - Include detailed eligibility criteria that account for specific disease characteristics
+    - Provide comprehensive safety monitoring plans with appropriate stopping rules
+    - Suggest optimal endpoints that are clinically meaningful and regulatory-acceptable
     
     Your response should be a JSON object with these fields:
     1. recommendation - A comprehensive protocol outline with these sections:
@@ -136,93 +155,194 @@ export async function generateProtocolFromEvidence(
        - Study Design (type, duration, arms)
        - Eligibility (inclusion/exclusion criteria)
        - Endpoints (primary and secondary)
-       - Treatment Plan
+       - Treatment Plan with specific dosing
        - Safety Assessments
        - Statistical Considerations
     2. citations - An array of real clinical study reports (CSRs) that informed this protocol
     
-    Base your protocol on evidence from similar clinical trials. Be specific and practical.
+    Base your protocol on evidence from similar clinical trials. Be specific, practical, and focused on regulatory success.
   `;
 
+  // Enhanced user prompt with more specific requirements
   const userPrompt = `
-    Generate a clinical trial protocol for a ${phase} trial investigating treatments for ${indication}.
+    Please develop a comprehensive, evidence-based clinical trial protocol for a ${phase} trial investigating treatments for ${indication}.
     ${primaryEndpoint ? `The primary endpoint should be: ${primaryEndpoint}` : ''}
     
-    Make sure to include specific dosing information, visit schedules, and endpoints that would 
-    be appropriate for this type of trial. Cite real clinical study reports that informed your 
-    recommendations.
+    Include detailed specifics on:
+    1. Study design (randomization strategy, blinding approach, control group details)
+    2. Precise eligibility criteria with clear inclusion/exclusion parameters
+    3. Detailed primary and secondary endpoints with justification
+    4. Dosing regimen with specific amounts, frequency, and administration route
+    5. Visit schedule with exact timing and procedures per visit
+    6. Statistical analysis plan including sample size calculation and handling of missing data
+    7. Safety monitoring approach with DSMB criteria
+    
+    Use the most recent evidence and guidelines available for ${indication}.
   `;
 
   let recommendation = '';
   let citations: string[] = [];
 
   try {
-    // Generate structured response for the protocol
-    const protocolData = await generateStructuredResponse<{
-      recommendation: string;
-      citations: string[];
-    }>(userPrompt, systemPrompt);
-    
-    recommendation = protocolData.recommendation;
-    citations = protocolData.citations || [];
+    // Use thread-based conversation if thread_id is provided
+    if (thread_id) {
+      console.log(`Using existing thread: ${thread_id}`);
+      
+      // Add the protocol generation request to the existing thread
+      const threadResponse = await getAssistantResponse(thread_id, 
+        `Please generate a clinical trial protocol for ${indication} (${phase})
+        ${primaryEndpoint ? `with primary endpoint: ${primaryEndpoint}` : ''}
+        
+        Include all key sections:
+        - Study design details
+        - Patient eligibility
+        - Endpoints
+        - Treatment plan
+        - Safety monitoring
+        - Statistical approach
+        
+        Format the response with clear sections and cite evidence sources.`
+      );
+      
+      // Extract core content and citations from the response
+      const processedResponse = processAssistantResponse(threadResponse);
+      recommendation = processedResponse.content;
+      citations = processedResponse.citations;
+      
+    } else {
+      // Standard approach for new protocol generation
+      console.log("Generating new protocol with OpenAI structured response");
+      
+      // Generate structured response for the protocol
+      const protocolData = await generateStructuredResponse<{
+        recommendation: string;
+        citations: string[];
+      }>(userPrompt, systemPrompt);
+      
+      recommendation = protocolData.recommendation;
+      citations = protocolData.citations || [];
+      
+      // Create a new thread for this protocol
+      thread_id = await createAssistantThread();
+      console.log(`Created new thread: ${thread_id}`);
+      
+      // Initialize the thread with the protocol context
+      await getAssistantResponse(thread_id, 
+        `This thread is for a clinical trial protocol on ${indication} (${phase}).
+        The generated protocol is: 
+        
+        ${recommendation}
+        
+        Please maintain this context for future questions about this protocol.`
+      );
+    }
   } catch (error) {
     console.error("Error generating protocol from evidence:", error);
-    // Fallback to direct text generation if structured response fails
+    // Improved fallback approach with more specific prompting
     const textResponse = await analyzeText(
-      userPrompt,
-      `${systemPrompt}\nRespond in plain text with the protocol recommendation followed by citations.`
+      `Generate a detailed clinical trial protocol for ${phase} ${indication} trial.
+      Include all standard sections of a protocol including eligibility, endpoints, treatment plan, and statistics.
+      After the protocol, list real clinical trials that inform this protocol design.`,
+      "You are an expert in clinical trial design. Provide a detailed protocol outline followed by citations."
     );
     
-    // Extract citations from text (simplified)
-    citations = (textResponse.match(/Citations:([\s\S]*)/i) || ['', ''])[1]
-      .split(/\n/)
-      .filter(line => line.trim().length > 0)
-      .map(line => line.replace(/^[•\-*]\s*/, '').trim());
+    // More robust citation extraction
+    const citationSection = textResponse.match(/(?:Citations|References|Evidence Base):([\s\S]*)/i);
+    if (citationSection) {
+      citations = citationSection[1]
+        .split(/\n/)
+        .filter(line => line.trim().length > 0)
+        .map(line => line.replace(/^[•\-*\d\.]\s*/, '').trim());
+      
+      recommendation = textResponse.replace(/(?:Citations|References|Evidence Base):[\s\S]*/i, '').trim();
+    } else {
+      recommendation = textResponse;
+      citations = [];
+    }
     
-    recommendation = textResponse.replace(/Citations:[\s\S]*/i, '').trim();
+    // Create a new thread if we don't have one yet
+    if (!thread_id) {
+      try {
+        thread_id = await createAssistantThread();
+        await getAssistantResponse(thread_id, 
+          `This thread is for a clinical trial protocol on ${indication} (${phase}).
+          The generated protocol is: 
+          
+          ${recommendation}
+          
+          Please maintain this context for future questions about this protocol.`
+        );
+      } catch (threadError) {
+        console.error("Error creating assistant thread:", threadError);
+        // Generate a temporary thread ID if needed
+        thread_id = `backup-${Date.now()}`;
+      }
+    }
   }
 
-  // Generate IND Module 2.5 (Clinical Overview)
+  // Enhanced IND Module 2.5 (Clinical Overview) with more regulatory focus
   const ind25SystemPrompt = `
-    You are TrialSage, an expert AI assisting with IND (Investigational New Drug) application preparation.
-    Generate content for IND Module 2.5 (Clinical Overview) based on the provided protocol information.
+    You are TrialSage, an expert AI specializing in IND (Investigational New Drug) application preparation.
+    Generate comprehensive content for IND Module 2.5 (Clinical Overview) based on the provided protocol information.
     
-    Your response should be comprehensive, evidence-based, and follow FDA guidance for IND applications.
-    Structure your response with appropriate sections for a Clinical Overview document.
+    Your response should follow FDA guidance for Module 2.5 with these key sections:
+    - Overview of Clinical Pharmacology
+    - Overview of Clinical Efficacy
+    - Overview of Clinical Safety
+    - Benefit-Risk Conclusions
+    
+    Use precise regulatory language and focus on supporting the rationale for the proposed investigation.
   `;
 
   const ind25UserPrompt = `
-    Generate IND Module 2.5 (Clinical Overview) for a drug to treat ${indication} using the following protocol outline:
+    Please generate a detailed IND Module 2.5 (Clinical Overview) for a drug investigation in ${indication} 
+    based on this protocol:
     
     ${recommendation}
     
-    Output in clean prose format ready for submission in an IND application.
+    Structure the response according to ICH M4E guidelines with appropriate headings and subheadings.
+    Focus on the scientific rationale, risk-benefit assessment, and dose selection justification.
+    Format as a submission-ready document that will satisfy regulatory reviewers.
   `;
 
-  // Generate Regulatory Risk Analysis
+  // Enhanced Regulatory Risk Analysis with mitigation strategies
   const riskSystemPrompt = `
-    You are TrialSage, an expert AI conducting regulatory risk assessment for clinical trial protocols.
+    You are TrialSage, an expert AI regulatory consultant specialized in clinical trial risk assessment.
     Based on the provided protocol information, identify potential regulatory concerns or reviewer questions
     that might arise during FDA/IRB review.
     
-    Your response should be thorough, practical, and based on current regulatory expectations.
-    Focus on specific aspects of the protocol that might raise concerns, with justification.
+    Your response should follow this structure:
+    1. Executive Summary of Risks
+    2. Identified Risks (categorized as High/Medium/Low)
+    3. Specific Mitigation Strategies for each risk
+    4. Recommended Protocol Modifications
+    
+    Focus on specific aspects of the protocol that might raise concerns with clear rationale and solutions.
   `;
 
   const riskUserPrompt = `
-    Based on this proposed protocol for ${indication}, what regulatory risks or reviewer questions are most likely to arise?
-    Respond in list format with rationale for each concern.
+    Conduct a thorough regulatory risk assessment for this ${phase} protocol in ${indication}:
     
     ${recommendation}
+    
+    Identify specific risks related to:
+    - Patient safety concerns
+    - Endpoint selection and justification
+    - Statistical approach and sample size
+    - Inclusion/exclusion criteria appropriateness
+    - Procedural or ethical considerations
+    
+    For each risk, provide a practical mitigation strategy that could be implemented.
   `;
 
   try {
-    // Run both additional analyses in parallel
+    // Run both additional analyses in parallel for efficiency
     const [ind25Response, riskResponse] = await Promise.all([
       analyzeText(ind25UserPrompt, ind25SystemPrompt),
       analyzeText(riskUserPrompt, riskSystemPrompt)
     ]);
 
+    // Return the complete package with thread ID for continuity
     return {
       recommendation,
       citations,
@@ -230,17 +350,58 @@ export async function generateProtocolFromEvidence(
         section: "2.5",
         content: ind25Response
       },
-      risk_summary: riskResponse
+      risk_summary: riskResponse,
+      thread_id
     };
   } catch (error) {
     console.error("Error generating extended protocol information:", error);
     
-    // Return what we have even if extended analyses fail
+    // Return what we have even if extended analyses fail, but still include thread_id
     return {
       recommendation,
-      citations
+      citations,
+      thread_id
     };
   }
+}
+
+/**
+ * Helper function to process assistant responses into structured data
+ * Extracts content and citations from the assistant's text response
+ */
+function processAssistantResponse(response: string): { content: string; citations: string[] } {
+  // Check if the response has a dedicated citations section
+  const citationsMatch = response.match(/(?:Citations|References|Evidence Base|Sources):([\s\S]*)/i);
+  
+  if (citationsMatch) {
+    // Extract citations as an array
+    const citations = citationsMatch[1]
+      .split(/\n/)
+      .filter(line => line.trim().length > 0)
+      .map(line => line.replace(/^[•\-*\d\.]\s*/, '').trim());
+    
+    // Extract the main content without the citations section
+    const content = response.replace(/(?:Citations|References|Evidence Base|Sources):[\s\S]*/i, '').trim();
+    
+    return { content, citations };
+  }
+  
+  // Look for inline citations in brackets or parentheses if no explicit section
+  const inlineCitations: string[] = [];
+  const citationRegex = /\[([^\]]+)\]|\(([^)]+(?:\([^)]*\)[^)]*)*)\)/g;
+  let match;
+  
+  while ((match = citationRegex.exec(response)) !== null) {
+    const citation = match[1] || match[2];
+    if (citation && !citation.match(/^\d+$/)) { // Avoid capturing just numbers in brackets
+      inlineCitations.push(citation);
+    }
+  }
+  
+  return {
+    content: response,
+    citations: [...new Set(inlineCitations)] // Remove duplicates
+  };
 }
 
 /**
