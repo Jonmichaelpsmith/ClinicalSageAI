@@ -44,33 +44,48 @@ export default function ProductFeatures() {
                 <p className="text-muted-foreground text-lg">Extract actionable insights from clinical study reports</p>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <Card className="border-2 border-transparent hover:border-primary/30 transition-all">
-                  <CardHeader className="pb-3">
-                    <Database className="h-8 w-8 text-primary mb-2" />
-                    <CardTitle>Structured Report Repository</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p>Access a comprehensive library of processed CSRs with normalized data formats and searchable fields</p>
-                  </CardContent>
-                </Card>
-                <Card className="border-2 border-transparent hover:border-primary/30 transition-all">
-                  <CardHeader className="pb-3">
-                    <Search className="h-8 w-8 text-primary mb-2" />
-                    <CardTitle>Advanced Search & Filtering</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p>Find relevant CSRs by indication, phase, endpoint type, target population, and other key parameters</p>
-                  </CardContent>
-                </Card>
-                <Card className="border-2 border-transparent hover:border-primary/30 transition-all">
-                  <CardHeader className="pb-3">
-                    <PieChart className="h-8 w-8 text-primary mb-2" />
-                    <CardTitle>Comparative Analytics</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p>Compare study designs, statistical approaches, and outcomes across multiple trials and sponsors</p>
-                  </CardContent>
-                </Card>
+                <Link href="/csr-search" className="block">
+                  <Card className="border-2 border-transparent hover:border-primary/30 transition-all h-full">
+                    <CardHeader className="pb-3">
+                      <Database className="h-8 w-8 text-primary mb-2" />
+                      <CardTitle>Structured Report Repository</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p>Access a comprehensive library of processed CSRs with normalized data formats and searchable fields</p>
+                    </CardContent>
+                    <CardFooter>
+                      <Button variant="ghost" size="sm" className="w-full">Open Repository</Button>
+                    </CardFooter>
+                  </Card>
+                </Link>
+                <Link href="/csr-search" className="block">
+                  <Card className="border-2 border-transparent hover:border-primary/30 transition-all h-full">
+                    <CardHeader className="pb-3">
+                      <Search className="h-8 w-8 text-primary mb-2" />
+                      <CardTitle>Advanced Search & Filtering</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p>Find relevant CSRs by indication, phase, endpoint type, target population, and other key parameters</p>
+                    </CardContent>
+                    <CardFooter>
+                      <Button variant="ghost" size="sm" className="w-full">Search CSRs</Button>
+                    </CardFooter>
+                  </Card>
+                </Link>
+                <Link href="/competitive-intelligence" className="block">
+                  <Card className="border-2 border-transparent hover:border-primary/30 transition-all h-full">
+                    <CardHeader className="pb-3">
+                      <PieChart className="h-8 w-8 text-primary mb-2" />
+                      <CardTitle>Comparative Analytics</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p>Compare study designs, statistical approaches, and outcomes across multiple trials and sponsors</p>
+                    </CardContent>
+                    <CardFooter>
+                      <Button variant="ghost" size="sm" className="w-full">Open Analytics</Button>
+                    </CardFooter>
+                  </Card>
+                </Link>
               </div>
             </div>
 
@@ -84,33 +99,48 @@ export default function ProductFeatures() {
                 <p className="text-muted-foreground text-lg">Create evidence-based clinical trial protocols</p>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <Card className="border-2 border-transparent hover:border-primary/30 transition-all">
-                  <CardHeader className="pb-3">
-                    <Brain className="h-8 w-8 text-primary mb-2" />
-                    <CardTitle>AI Protocol Generator</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p>Generate protocol templates based on successful precedent trials and regulatory standards</p>
-                  </CardContent>
-                </Card>
-                <Card className="border-2 border-transparent hover:border-primary/30 transition-all">
-                  <CardHeader className="pb-3">
-                    <FileText className="h-8 w-8 text-primary mb-2" />
-                    <CardTitle>Study Design Agent</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p>Interactive AI assistant that helps craft and optimize trial designs with evidence-based recommendations</p>
-                  </CardContent>
-                </Card>
-                <Card className="border-2 border-transparent hover:border-primary/30 transition-all">
-                  <CardHeader className="pb-3">
-                    <Clipboard className="h-8 w-8 text-primary mb-2" />
-                    <CardTitle>Protocol Optimizer</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p>Review and enhance your existing protocol with targeted suggestions for improvement</p>
-                  </CardContent>
-                </Card>
+                <Link href="/protocol-builder" className="block">
+                  <Card className="border-2 border-transparent hover:border-primary/30 transition-all h-full">
+                    <CardHeader className="pb-3">
+                      <Brain className="h-8 w-8 text-primary mb-2" />
+                      <CardTitle>AI Protocol Generator</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p>Generate protocol templates based on successful precedent trials and regulatory standards</p>
+                    </CardContent>
+                    <CardFooter>
+                      <Button variant="ghost" size="sm" className="w-full">Open Protocol Generator</Button>
+                    </CardFooter>
+                  </Card>
+                </Link>
+                <Link href="/study-design" className="block">
+                  <Card className="border-2 border-transparent hover:border-primary/30 transition-all h-full">
+                    <CardHeader className="pb-3">
+                      <FileText className="h-8 w-8 text-primary mb-2" />
+                      <CardTitle>Study Design Agent</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p>Interactive AI assistant that helps craft and optimize trial designs with evidence-based recommendations</p>
+                    </CardContent>
+                    <CardFooter>
+                      <Button variant="ghost" size="sm" className="w-full">Open Study Design Agent</Button>
+                    </CardFooter>
+                  </Card>
+                </Link>
+                <Link href="/protocol-optimizer" className="block">
+                  <Card className="border-2 border-transparent hover:border-primary/30 transition-all h-full">
+                    <CardHeader className="pb-3">
+                      <Clipboard className="h-8 w-8 text-primary mb-2" />
+                      <CardTitle>Protocol Optimizer</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p>Review and enhance your existing protocol with targeted suggestions for improvement</p>
+                    </CardContent>
+                    <CardFooter>
+                      <Button variant="ghost" size="sm" className="w-full">Open Protocol Optimizer</Button>
+                    </CardFooter>
+                  </Card>
+                </Link>
               </div>
             </div>
 
@@ -124,33 +154,48 @@ export default function ProductFeatures() {
                 <p className="text-muted-foreground text-lg">Make data-driven decisions for trial design</p>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <Card className="border-2 border-transparent hover:border-primary/30 transition-all">
-                  <CardHeader className="pb-3">
-                    <LineChart className="h-8 w-8 text-primary mb-2" />
-                    <CardTitle>Statistical Modeling</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p>Explore sample size, power calculations, and endpoint selection with interactive visualizations</p>
-                  </CardContent>
-                </Card>
-                <Card className="border-2 border-transparent hover:border-primary/30 transition-all">
-                  <CardHeader className="pb-3">
-                    <Microscope className="h-8 w-8 text-primary mb-2" />
-                    <CardTitle>Endpoint Analysis</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p>Analyze endpoint selection patterns and performance across similar trials</p>
-                  </CardContent>
-                </Card>
-                <Card className="border-2 border-transparent hover:border-primary/30 transition-all">
-                  <CardHeader className="pb-3">
-                    <Users className="h-8 w-8 text-primary mb-2" />
-                    <CardTitle>Patient Population Insights</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p>Optimize inclusion/exclusion criteria with real-world evidence from similar studies</p>
-                  </CardContent>
-                </Card>
+                <Link href="/advanced-biostatistics" className="block">
+                  <Card className="border-2 border-transparent hover:border-primary/30 transition-all h-full">
+                    <CardHeader className="pb-3">
+                      <LineChart className="h-8 w-8 text-primary mb-2" />
+                      <CardTitle>Statistical Modeling</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p>Explore sample size, power calculations, and endpoint selection with interactive visualizations</p>
+                    </CardContent>
+                    <CardFooter>
+                      <Button variant="ghost" size="sm" className="w-full">Open Statistical Modeling</Button>
+                    </CardFooter>
+                  </Card>
+                </Link>
+                <Link href="/endpoint-recommender" className="block">
+                  <Card className="border-2 border-transparent hover:border-primary/30 transition-all h-full">
+                    <CardHeader className="pb-3">
+                      <Microscope className="h-8 w-8 text-primary mb-2" />
+                      <CardTitle>Endpoint Analysis</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p>Analyze endpoint selection patterns and performance across similar trials</p>
+                    </CardContent>
+                    <CardFooter>
+                      <Button variant="ghost" size="sm" className="w-full">Open Endpoint Analysis</Button>
+                    </CardFooter>
+                  </Card>
+                </Link>
+                <Link href="/analytics" className="block">
+                  <Card className="border-2 border-transparent hover:border-primary/30 transition-all h-full">
+                    <CardHeader className="pb-3">
+                      <Users className="h-8 w-8 text-primary mb-2" />
+                      <CardTitle>Patient Population Insights</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p>Optimize inclusion/exclusion criteria with real-world evidence from similar studies</p>
+                    </CardContent>
+                    <CardFooter>
+                      <Button variant="ghost" size="sm" className="w-full">Open Population Insights</Button>
+                    </CardFooter>
+                  </Card>
+                </Link>
               </div>
             </div>
 
@@ -164,33 +209,48 @@ export default function ProductFeatures() {
                 <p className="text-muted-foreground text-lg">Share insights and integrate with your workflow</p>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <Card className="border-2 border-transparent hover:border-primary/30 transition-all">
-                  <CardHeader className="pb-3">
-                    <Award className="h-8 w-8 text-primary mb-2" />
-                    <CardTitle>Research Dossiers</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p>Create and share curated collections of CSRs with annotations and team notes</p>
-                  </CardContent>
-                </Card>
-                <Card className="border-2 border-transparent hover:border-primary/30 transition-all">
-                  <CardHeader className="pb-3">
-                    <Zap className="h-8 w-8 text-primary mb-2" />
-                    <CardTitle>API Access</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p>Integrate TrialSage data and insights directly into your existing tools and systems</p>
-                  </CardContent>
-                </Card>
-                <Card className="border-2 border-transparent hover:border-primary/30 transition-all">
-                  <CardHeader className="pb-3">
-                    <Beaker className="h-8 w-8 text-primary mb-2" />
-                    <CardTitle>Client Intelligence</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p>Customized analytics and reports tailored to your specific pipeline and therapeutic areas</p>
-                  </CardContent>
-                </Card>
+                <Link href="/my-dossiers" className="block">
+                  <Card className="border-2 border-transparent hover:border-primary/30 transition-all h-full">
+                    <CardHeader className="pb-3">
+                      <Award className="h-8 w-8 text-primary mb-2" />
+                      <CardTitle>Research Dossiers</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p>Create and share curated collections of CSRs with annotations and team notes</p>
+                    </CardContent>
+                    <CardFooter>
+                      <Button variant="ghost" size="sm" className="w-full">Open Research Dossiers</Button>
+                    </CardFooter>
+                  </Card>
+                </Link>
+                <Link href="/api-documentation" className="block">
+                  <Card className="border-2 border-transparent hover:border-primary/30 transition-all h-full">
+                    <CardHeader className="pb-3">
+                      <Zap className="h-8 w-8 text-primary mb-2" />
+                      <CardTitle>API Access</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p>Integrate TrialSage data and insights directly into your existing tools and systems</p>
+                    </CardContent>
+                    <CardFooter>
+                      <Button variant="ghost" size="sm" className="w-full">View API Documentation</Button>
+                    </CardFooter>
+                  </Card>
+                </Link>
+                <Link href="/client-intelligence" className="block">
+                  <Card className="border-2 border-transparent hover:border-primary/30 transition-all h-full">
+                    <CardHeader className="pb-3">
+                      <Beaker className="h-8 w-8 text-primary mb-2" />
+                      <CardTitle>Client Intelligence</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p>Customized analytics and reports tailored to your specific pipeline and therapeutic areas</p>
+                    </CardContent>
+                    <CardFooter>
+                      <Button variant="ghost" size="sm" className="w-full">Open Client Intelligence</Button>
+                    </CardFooter>
+                  </Card>
+                </Link>
               </div>
             </div>
           </div>
