@@ -6,7 +6,7 @@ import {
   XAxis, 
   YAxis, 
   CartesianGrid, 
-  Tooltip, 
+  Tooltip as RechartsTooltip, 
   Legend, 
   ResponsiveContainer,
   LineChart,
@@ -24,6 +24,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger
+} from "@/components/ui/tooltip";
 import { 
   AlertCircle, 
   TrendingUp, 
@@ -72,7 +78,8 @@ const MetricCard = ({
   icon, 
   trend = 0,
   target = null,
-  trendText = ""
+  trendText = "",
+  tooltipContent = ""
 }: { 
   title: string, 
   value: number | string, 
@@ -81,7 +88,8 @@ const MetricCard = ({
   icon: React.ReactNode,
   trend?: number,
   target?: number | null,
-  trendText?: string
+  trendText?: string,
+  tooltipContent?: string
 }) => {
   const getTrendIcon = () => {
     if (trend > 0) return <TrendingUp className="h-4 w-4 text-green-500" />;
@@ -108,7 +116,20 @@ const MetricCard = ({
             </Badge>
           )}
         </div>
-        <h3 className="text-xl font-semibold mt-4">{title}</h3>
+        
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <h3 className="text-xl font-semibold mt-4 cursor-help border-b border-dotted border-slate-400">{title}</h3>
+            </TooltipTrigger>
+            {tooltipContent && (
+              <TooltipContent side="top" className="max-w-xs p-3">
+                <p className="text-sm">{tooltipContent}</p>
+              </TooltipContent>
+            )}
+          </Tooltip>
+        </TooltipProvider>
+        
         <div className="flex items-end gap-2 mt-2">
           <span className="text-3xl font-bold">{value}</span>
           {unit && <span className="text-xl text-slate-500">{unit}</span>}
@@ -137,13 +158,15 @@ const RiskFactorCard = ({
   riskLevel, 
   impact,
   mitigationSteps,
-  potentialUpside
+  potentialUpside,
+  tooltipContent
 }: { 
   title: string, 
   riskLevel: 'low' | 'medium' | 'high',
   impact: string,
   mitigationSteps: string[],
-  potentialUpside?: string
+  potentialUpside?: string,
+  tooltipContent?: string
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   
@@ -156,7 +179,18 @@ const RiskFactorCard = ({
     `}>
       <CardHeader className="pb-2">
         <div className="flex justify-between items-center">
-          <CardTitle className="text-base">{title}</CardTitle>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <CardTitle className="text-base cursor-help border-b border-dotted border-slate-400">{title}</CardTitle>
+              </TooltipTrigger>
+              {tooltipContent && (
+                <TooltipContent side="top" className="max-w-xs p-3">
+                  <p className="text-sm">{tooltipContent}</p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
           <RiskIndicator 
             level={riskLevel} 
             text={riskLevel.charAt(0).toUpperCase() + riskLevel.slice(1)} 
@@ -461,6 +495,7 @@ const LumenBioPerformanceMetrics = () => {
               trend={enrollmentMetrics.enrollmentChange}
               trendText="vs previous month"
               target={100}
+              tooltipContent="Percentage of target enrollment achieved to date. Higher is better and indicates the trial is on track to complete on schedule."
             />
             
             <MetricCard
@@ -469,6 +504,7 @@ const LumenBioPerformanceMetrics = () => {
               unit=" pts/week"
               icon={<TrendingUp className="h-6 w-6 text-primary" />}
               target={8}
+              tooltipContent="Average number of participants enrolled per week. Current target is 8 participants/week based on protocol timeline projections."
             />
             
             <MetricCard
@@ -476,6 +512,7 @@ const LumenBioPerformanceMetrics = () => {
               value={enrollmentMetrics.currentEnrollment}
               prevValue={enrollmentMetrics.targetEnrollment}
               icon={<Users className="h-6 w-6 text-primary" />}
+              tooltipContent="Total number of participants currently enrolled compared to the target sample size of 150 participants."
             />
             
             <MetricCard
@@ -484,6 +521,7 @@ const LumenBioPerformanceMetrics = () => {
               unit="%"
               icon={<XCircle className="h-6 w-6 text-primary" />}
               target={15}
+              tooltipContent="Percentage of screened participants who do not meet eligibility criteria. Lower is better. Rates above 15% may indicate overly restrictive inclusion/exclusion criteria."
             />
             
             <MetricCard
@@ -492,12 +530,14 @@ const LumenBioPerformanceMetrics = () => {
               unit="%"
               icon={<LogOut className="h-6 w-6 text-primary" />}
               target={10}
+              tooltipContent="Percentage of enrolled participants who discontinue the study. Lower is better. Target is below 10% to maintain statistical power and data integrity."
             />
             
             <MetricCard
               title="Projected Completion"
               value={formattedCompletionDate}
               icon={<Calendar className="h-6 w-6 text-primary" />}
+              tooltipContent="Estimated completion date based on current enrollment rate and remaining sample size requirements."
             />
           </div>
           
