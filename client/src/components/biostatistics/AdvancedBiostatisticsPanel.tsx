@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -865,6 +865,7 @@ const AdvancedBiostatisticsPanel: React.FC = () => {
   const [bayesianPredictionResult, setBayesianPredictionResult] = useState<any>(null);
   const [nonInferiorityResult, setNonInferiorityResult] = useState<any>(null);
   const [survivalSimulationResult, setSurvivalSimulationResult] = useState<any>(null);
+  const [mamsSimulationResult, setMamsSimulationResult] = useState<any>(null);
   
   const adaptiveTrialMutation = useMutation({
     mutationFn: async (params) => {
@@ -938,6 +939,27 @@ const AdvancedBiostatisticsPanel: React.FC = () => {
       setSurvivalSimulationResult(data);
       toast({
         title: "Survival Simulation Complete",
+        description: "Results are now available below.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Simulation Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+  
+  const mamsSimulationMutation = useMutation({
+    mutationFn: async (params) => {
+      const res = await apiRequest("POST", "/api/stats-analysis/mams-trial-simulation", params);
+      return res.json();
+    },
+    onSuccess: (data) => {
+      setMamsSimulationResult(data);
+      toast({
+        title: "MAMS Trial Simulation Complete",
         description: "Results are now available below.",
       });
     },
