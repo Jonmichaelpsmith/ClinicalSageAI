@@ -355,23 +355,40 @@ strategicStatsRouter.post('/mams-trial-simulation', async (req, res) => {
   try {
     const params = req.body;
     
-    if (!params || !params.numTreatmentArms || !params.numStages || !params.indication || !params.phase) {
+    if (!params || !params.numTreatmentArms || !params.numStages) {
       return res.status(400).json({ 
-        error: 'Invalid request. Must include numTreatmentArms, numStages, indication, and phase.' 
+        error: 'Invalid request. Must include numTreatmentArms and numStages.' 
       });
     }
     
-    // Step 1: Get historical CSR data for this indication and phase
-    const statisticsService = new StatisticsService();
-    const historicalData = await statisticsService.getCombinedStatistics({
-      indication: params.indication,
-      phase: params.phase
-    });
+    // Check if CSR Library comparison is enabled
+    const enableCsrLibraryComparison = params.enableCsrLibraryComparison !== undefined 
+      ? params.enableCsrLibraryComparison 
+      : true; // Default to enabled
     
-    const endpointData = await statisticsService.getEndpointStatistics({
-      indication: params.indication,
-      phase: params.phase
-    });
+    // For CSR Library comparison, we need indication and phase
+    if (enableCsrLibraryComparison && (!params.indication || !params.phase)) {
+      return res.status(400).json({ 
+        error: 'Invalid request. Must include indication and phase when CSR Library comparison is enabled.' 
+      });
+    }
+    
+    // Step 1: Get historical CSR data for this indication and phase (if comparison is enabled)
+    const statisticsService = new StatisticsService();
+    let historicalData = {};
+    let endpointData = {};
+    
+    if (enableCsrLibraryComparison) {
+      historicalData = await statisticsService.getCombinedStatistics({
+        indication: params.indication,
+        phase: params.phase
+      });
+      
+      endpointData = await statisticsService.getEndpointStatistics({
+        indication: params.indication,
+        phase: params.phase
+      });
+    }
     
     // Step 2: Simulate MAMS trial with parameters and historical insights
     const simulationResult = {

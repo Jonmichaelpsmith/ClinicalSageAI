@@ -48,6 +48,9 @@ const MAMSTrialForm: React.FC<MAMSTrialFormProps> = ({ onSimulate, isLoading }) 
   const [useRaoScottCorrection, setUseRaoScottCorrection] = useState(true);
   const [useMonteCarlo, setUseMonteCarlo] = useState(true);
   const [adaptiveSampleSize, setAdaptiveSampleSize] = useState(true);
+  const [indication, setIndication] = useState("Oncology");
+  const [phase, setPhase] = useState("Phase 2");
+  const [enableCsrLibraryComparison, setEnableCsrLibraryComparison] = useState(true);
   
   // Update stage splits when number of stages changes
   useEffect(() => {
@@ -132,7 +135,11 @@ const MAMSTrialForm: React.FC<MAMSTrialFormProps> = ({ onSimulate, isLoading }) 
       targetPower,
       effectSizes,
       dropoutRate,
-      advancedParameters
+      advancedParameters,
+      // CSR Library comparison data
+      indication,
+      phase,
+      enableCsrLibraryComparison
     });
   };
   
@@ -258,6 +265,50 @@ const MAMSTrialForm: React.FC<MAMSTrialFormProps> = ({ onSimulate, isLoading }) 
         </div>
       </div>
       
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="indication">Indication</Label>
+          <Select 
+            value={indication}
+            onValueChange={(value) => setIndication(value)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select indication" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Oncology">Oncology</SelectItem>
+              <SelectItem value="Cardiovascular">Cardiovascular</SelectItem>
+              <SelectItem value="Neurology">Neurology</SelectItem>
+              <SelectItem value="Immunology">Immunology</SelectItem>
+              <SelectItem value="Infectious Disease">Infectious Disease</SelectItem>
+              <SelectItem value="Metabolic">Metabolic</SelectItem>
+              <SelectItem value="Respiratory">Respiratory</SelectItem>
+              <SelectItem value="Psychiatry">Psychiatry</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="phase">Clinical Trial Phase</Label>
+          <Select 
+            value={phase}
+            onValueChange={(value) => setPhase(value)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select phase" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Phase 1">Phase 1</SelectItem>
+              <SelectItem value="Phase 1/2">Phase 1/2</SelectItem>
+              <SelectItem value="Phase 2">Phase 2</SelectItem>
+              <SelectItem value="Phase 2/3">Phase 2/3</SelectItem>
+              <SelectItem value="Phase 3">Phase 3</SelectItem>
+              <SelectItem value="Phase 4">Phase 4</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      
       <div className="space-y-2">
         <h3 className="text-sm font-medium">Advanced Statistical Options</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2 bg-slate-50 p-3 rounded-md dark:bg-slate-900">
@@ -297,6 +348,19 @@ const MAMSTrialForm: React.FC<MAMSTrialFormProps> = ({ onSimulate, isLoading }) 
             />
             <Label htmlFor="adaptiveSampleSize" className="text-sm font-medium leading-none cursor-pointer">
               Adaptive Sample Size Reassessment
+            </Label>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="enableCsrLibraryComparison"
+              checked={enableCsrLibraryComparison}
+              onChange={(e) => setEnableCsrLibraryComparison(e.target.checked)}
+              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+            />
+            <Label htmlFor="enableCsrLibraryComparison" className="text-sm font-medium leading-none cursor-pointer">
+              Enable CSR Library Comparison
             </Label>
           </div>
         </div>
