@@ -22,7 +22,8 @@ import { spawn } from 'child_process';
 import path from 'path';
 import { registerSmartProtocolRoutes } from "./smart-protocol-routes";
 import { protocolOptimizerService } from "./protocol-optimizer-service";
-import { studyDesignAgentService } from "./agent-service";
+// Importing StudyDesignAgentService directly to avoid dynamic imports later
+import { studyDesignAgentService } from "./services/study-design-agent-service";
 import { strategicStatsRouter } from "./strategic-stats-routes";
 import { csrDeepLearningRouter } from "./csr-deep-learning-routes";
 import { getEndpointRecommenderService } from "./services/endpoint-recommender-service";
