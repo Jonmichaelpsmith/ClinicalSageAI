@@ -1,63 +1,80 @@
-#!/usr/bin/env node
-
 /**
- * Import 500 ClinicalTrials.gov Trials in Batches of 50
+ * Enhanced ClinicalTrials.gov Import Script for TrialSage
  * 
- * This script will download and import 500 trials from ClinicalTrials.gov in batches of 50
- * to build up the knowledge base.
+ * This script imports trials from ClinicalTrials.gov while carefully handling
+ * duplicates and API limitations.
  */
 
-import { execSync } from 'child_process';
-import * as fs from 'fs';
-import * as path from 'path';
-import { fileURLToPath } from 'url';
-import { Pool, neonConfig } from '@neondatabase/serverless';
+import fs from 'fs';
+import path from 'path';
 import axios from 'axios';
-import ws from 'ws';
+import pg from 'pg';
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
 
-// Configure neon with WebSocket
-neonConfig.webSocketConstructor = ws;
+// Initialize environment variables
+dotenv.config();
 
-// Get the current directory
+// Set up paths for ES module context
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Path for tracking progress
-const PROGRESS_FILE = 'ct_import_progress.json';
+const { Pool } = pg;
+
+// Initialize PostgreSQL connection
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL
+});
+
+// Track successful imports to avoid duplicates
 const SUCCESSFUL_IMPORTS_FILE = 'ct_successful_imports.json';
+const PROGRESS_FILE = 'ct_import_progress.json';
 
-// Make sure we have the DATABASE_URL environment variable
-if (!process.env.DATABASE_URL) {
-  console.error('DATABASE_URL environment variable not set');
-  process.exit(1);
-}
-
-// Connect to the database
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-
-// Initialize or read progress tracking
-function getProgressData() {
-  if (fs.existsSync(PROGRESS_FILE)) {
-    try {
-      return JSON.parse(fs.readFileSync(PROGRESS_FILE, 'utf-8'));
-    } catch (error) {
-      console.error('Error reading progress file:', error);
+// Get successful imports from tracking file
+function getSuccessfulImports() {
+  try {
+    if (fs.existsSync(SUCCESSFUL_IMPORTS_FILE)) {
+      const data = fs.readFileSync(SUCCESSFUL_IMPORTS_FILE, 'utf8');
+      return JSON.parse(data);
     }
+  } catch (error) {
+    console.error('Error reading successful imports:', error.message);
   }
   
-  // Default initial state
+  return { ids: [] };
+}
+
+// Save successful imports to tracking file
+function saveSuccessfulImports(imports) {
+  try {
+    fs.writeFileSync(SUCCESSFUL_IMPORTS_FILE, JSON.stringify(imports, null, 2));
+  } catch (error) {
+    console.error('Error saving successful imports data:', error);
+  }
+}
+
+// Get import progress data
+function getProgressData() {
+  try {
+    if (fs.existsSync(PROGRESS_FILE)) {
+      const data = fs.readFileSync(PROGRESS_FILE, 'utf8');
+      return JSON.parse(data);
+    }
+  } catch (error) {
+    console.error('Error reading progress data:', error.message);
+  }
+  
   return {
-    targetBatches: 10,
-    batchesProcessed: 0,
-    startTimestamp: new Date().toISOString(),
-    lastBatchTimestamp: null,
-    status: 'starting',
     currentOffset: 0,
+    batchesProcessed: 0,
+    targetBatches: 10,
+    status: 'not_started',
+    lastBatchTimestamp: null,
     errors: []
   };
 }
 
-// Save progress tracking data
+// Save import progress data
 function saveProgressData(data) {
   try {
     fs.writeFileSync(PROGRESS_FILE, JSON.stringify(data, null, 2));
@@ -67,92 +84,108 @@ function saveProgressData(data) {
   }
 }
 
-// Initialize or read successful imports
-function getSuccessfulImports() {
-  if (fs.existsSync(SUCCESSFUL_IMPORTS_FILE)) {
-    try {
-      return JSON.parse(fs.readFileSync(SUCCESSFUL_IMPORTS_FILE, 'utf-8'));
-    } catch (error) {
-      console.error('Error reading successful imports file:', error);
-    }
-  }
+// Fetch trial IDs from ClinicalTrials.gov using their public API
+async function fetchTrialIds(pageSize = 50, pageNum = 1) {
+  console.log(`Fetching page ${pageNum} (${pageSize} records per page)`);
   
-  return { ids: [] };
-}
-
-// Save successful imports
-function saveSuccessfulImports(data) {
   try {
-    fs.writeFileSync(SUCCESSFUL_IMPORTS_FILE, JSON.stringify(data, null, 2));
-  } catch (error) {
-    console.error('Error saving successful imports data:', error);
-  }
-}
-
-// Search ClinicalTrials.gov API to get trial IDs
-async function searchClinicalTrials(limit = 50, offset = 0) {
-  try {
-    console.log(`Attempting to query ClinicalTrials.gov API with offset ${offset}, page ${Math.floor(offset / limit) + 1}`);
-    // Using the API v2 with even simpler parameters
+    // Use a very simple query to avoid API errors
     const response = await axios.get('https://clinicaltrials.gov/api/v2/studies', {
       params: {
         format: 'json',
-        pageSize: limit,
-        page: Math.floor(offset / limit) + 1  // Convert offset to page number (1-based)
-      }
+        pageSize,
+        page: pageNum
+      },
+      timeout: 30000 // 30 second timeout
     });
     
-    if (response.data && response.data.studies) {
-      console.log(`Found ${response.data.studies.length} studies in API response`);
-      
-      // Just take the first 'limit' studies
-      const startIndex = offset;
-      const endIndex = Math.min(startIndex + limit, response.data.studies.length);
-      return response.data.studies.slice(startIndex, endIndex);
-    } else {
-      console.log('API response does not contain studies array');
+    if (!response.data || !response.data.studies || !Array.isArray(response.data.studies)) {
+      console.log('API response missing studies array');
       return [];
     }
-  } catch (error) {
-    console.error('Error searching ClinicalTrials.gov:', error.message);
-    console.log('Using hardcoded trial IDs as last resort fallback');
     
-    // Last resort: use a list of known trial IDs
-    const knownIds = [
-      'NCT03432403', 'NCT02578186', 'NCT03135899', 'NCT03596866', 'NCT02514031',
-      'NCT03547973', 'NCT01828723', 'NCT03028740', 'NCT02588443', 'NCT02510664',
-      'NCT03041311', 'NCT03099941', 'NCT03128294', 'NCT01757041', 'NCT02499835',
-      'NCT02484547', 'NCT02450331', 'NCT02516774', 'NCT03055793', 'NCT02559674'
-    ];
-    
-    // Create stub objects with just the required protocol section
-    return knownIds.slice(0, limit).map(id => ({
-      protocolSection: {
-        identificationModule: {
-          nctId: id
-        }
+    // Extract just the NCT IDs from the response
+    return response.data.studies.map(study => {
+      if (study.protocolSection && study.protocolSection.identificationModule) {
+        return study.protocolSection.identificationModule.nctId;
       }
-    }));
+      return null;
+    }).filter(id => id !== null);
+    
+  } catch (error) {
+    console.error(`Error fetching trials from ClinicalTrials.gov: ${error.message}`);
+    
+    // For certain types of errors, wait and retry
+    if (error.response && (error.response.status === 429 || error.response.status === 503)) {
+      console.log('Rate limit or server error, waiting 60 seconds before retrying...');
+      await new Promise(resolve => setTimeout(resolve, 60000));
+      return fetchTrialIds(pageSize, pageNum);
+    }
+    
+    // For other errors, return fallback IDs
+    return getFallbackTrialIds();
   }
 }
 
-// Get detailed information for a single trial
-async function getTrialDetails(nctId) {
+// Fallback list of trial IDs if API is not responsive
+function getFallbackTrialIds() {
+  console.log('Using fallback trial IDs');
+  
+  // These are real NCT IDs from ClinicalTrials.gov
+  const knownIds = [
+    'NCT04368728', 'NCT04380532', 'NCT04470427', 'NCT04516746', 'NCT04646590',
+    'NCT04649151', 'NCT04814459', 'NCT04816643', 'NCT04824638', 'NCT04905836',
+    'NCT04904120', 'NCT04400838', 'NCT04796896', 'NCT04674189', 'NCT04380896',
+    'NCT04405076', 'NCT04283461', 'NCT04405570', 'NCT04348370', 'NCT04336410',
+    'NCT04324606', 'NCT04327206', 'NCT04283461', 'NCT04341389', 'NCT04324606',
+    'NCT04252664', 'NCT04280705', 'NCT04276688', 'NCT04283461', 'NCT04315948',
+    'NCT04349241', 'NCT04320615', 'NCT04342728', 'NCT04345289', 'NCT04313127'
+  ];
+  
+  return knownIds;
+}
+
+// Get detailed information about a single trial
+async function fetchTrialDetails(nctId) {
   try {
+    console.log(`Fetching details for trial ${nctId}`);
+    
     const response = await axios.get(`https://clinicaltrials.gov/api/v2/studies/${nctId}`, {
-      params: {
-        format: 'json'
-      }
+      params: { format: 'json' },
+      timeout: 30000 // 30 second timeout
     });
     
     return response.data;
   } catch (error) {
-    console.error(`Error getting details for trial ${nctId}:`, error.message);
+    console.error(`Error fetching details for trial ${nctId}: ${error.message}`);
+    
+    // For certain types of errors, wait and retry
+    if (error.response && (error.response.status === 429 || error.response.status === 503)) {
+      console.log('Rate limit or server error, waiting 30 seconds before retrying...');
+      await new Promise(resolve => setTimeout(resolve, 30000));
+      return fetchTrialDetails(nctId);
+    }
+    
     throw error;
   }
 }
 
-// Transform trial data to our format
+// Check if trial already exists in database
+async function checkTrialExists(nctId) {
+  try {
+    const { rows } = await pool.query(
+      'SELECT id FROM csr_reports WHERE nctrial_id = $1',
+      [nctId]
+    );
+    
+    return rows.length > 0;
+  } catch (error) {
+    console.error(`Error checking if trial ${nctId} exists:`, error.message);
+    return false;
+  }
+}
+
+// Transform trial data to our database format
 function transformTrialData(trialData) {
   const protocolSection = trialData.protocolSection || {};
   const identificationModule = protocolSection.identificationModule || {};
@@ -248,7 +281,7 @@ function getSponsorName(sponsorModule) {
   return 'Unknown';
 }
 
-// Extract indication
+// Extract indication/condition
 function getIndication(conditionsModule) {
   if (!conditionsModule) return 'Not specified';
   
@@ -271,125 +304,6 @@ function getInterventions(protocolSection) {
   }
   
   return 'Not specified';
-}
-
-// Check if trial already exists in database
-async function checkTrialExists(nctId) {
-  try {
-    const { rows } = await pool.query(
-      'SELECT id FROM csr_reports WHERE nctrial_id = $1',
-      [nctId]
-    );
-    
-    return rows.length > 0;
-  } catch (error) {
-    console.error(`Error checking if trial ${nctId} exists:`, error);
-    return false;
-  }
-}
-
-// Import a batch of trials to database
-async function importTrialBatch(batchSize = 50, offset = 0) {
-  console.log(`\n=== Starting Import of ${batchSize} ClinicalTrials.gov Trials ===`);
-  console.log(`Timestamp: ${new Date().toISOString()}`);
-  console.log(`Offset: ${offset}`);
-  
-  const successfulImports = getSuccessfulImports();
-  const startTime = Date.now();
-  let importedCount = 0;
-  let skippedCount = 0;
-  let failedCount = 0;
-  
-  try {
-    // Search for trials
-    console.log('Searching ClinicalTrials.gov API...');
-    const trials = await searchClinicalTrials(batchSize, offset);
-    
-    if (!trials || trials.length === 0) {
-      console.log('No trials found.');
-      return { imported: 0, skipped: 0, failed: 0, newOffset: offset };
-    }
-    
-    console.log(`Found ${trials.length} trials.`);
-    
-    // Process each trial
-    for (const trial of trials) {
-      const nctId = trial.protocolSection?.identificationModule?.nctId;
-      
-      if (!nctId) {
-        console.log('Trial missing NCT ID, skipping.');
-        skippedCount++;
-        continue;
-      }
-      
-      // Skip if already imported
-      if (successfulImports.ids.includes(nctId)) {
-        console.log(`Skipping already imported trial ID: ${nctId}`);
-        skippedCount++;
-        continue;
-      }
-      
-      // Skip if already in database
-      const exists = await checkTrialExists(nctId);
-      if (exists) {
-        console.log(`Skipping trial already in database: ${nctId}`);
-        // Add to our tracking to avoid checking the database again
-        successfulImports.ids.push(nctId);
-        skippedCount++;
-        continue;
-      }
-      
-      try {
-        // Get detailed data
-        const trialDetails = await getTrialDetails(nctId);
-        
-        // Transform to our format
-        const transformedTrial = transformTrialData(trialDetails);
-        
-        // Insert into database
-        await importTrialToDatabase(transformedTrial);
-        
-        // Track successful import
-        successfulImports.ids.push(nctId);
-        importedCount++;
-        
-        console.log(`Successfully imported trial ${nctId}`);
-      } catch (error) {
-        console.error(`Failed to import trial ${nctId}:`, error);
-        failedCount++;
-      }
-    }
-    
-    // Save successful imports
-    saveSuccessfulImports(successfulImports);
-    
-    const processingTime = ((Date.now() - startTime) / 1000).toFixed(1);
-    
-    // Get current database counts
-    const dbStatus = await getDatabaseStatus();
-    
-    console.log(`\n=== Import Summary ===`);
-    console.log(`Total trials processed: ${trials.length}`);
-    console.log(`Successfully imported: ${importedCount}`);
-    console.log(`Skipped (already exists): ${skippedCount}`);
-    console.log(`Failed imports: ${failedCount}`);
-    console.log(`Processing time: ${processingTime}s`);
-    
-    console.log(`\n=== Current Database Status ===`);
-    console.log(`Total trials in database: ${dbStatus.total}`);
-    console.log(`ClinicalTrials.gov trials: ${dbStatus.ctTrials}`);
-    console.log(`Health Canada trials: ${dbStatus.hcTrials}`);
-    
-    return { 
-      imported: importedCount, 
-      skipped: skippedCount, 
-      failed: failedCount, 
-      newOffset: offset + batchSize
-    };
-  } catch (error) {
-    console.error('Error in batch import:', error);
-    return { imported: importedCount, skipped: skippedCount, failed: failedCount, newOffset: offset };
-  }
 }
 
 // Import a single trial to database
@@ -435,6 +349,92 @@ async function importTrialToDatabase(trial) {
       new Date()
     ]
   );
+  
+  return newReport.id;
+}
+
+// Process a batch of trials
+async function processBatch(batchSize = 50, pageNum = 1) {
+  console.log(`\n=== Processing Batch - Page ${pageNum} ===`);
+  console.log(`Timestamp: ${new Date().toISOString()}`);
+  
+  const successfulImports = getSuccessfulImports();
+  const startTime = Date.now();
+  let importedCount = 0;
+  let skippedCount = 0;
+  let failedCount = 0;
+  
+  try {
+    // Fetch trial IDs
+    const trialIds = await fetchTrialIds(batchSize, pageNum);
+    
+    if (!trialIds || trialIds.length === 0) {
+      console.log('No trial IDs found.');
+      return { imported: 0, skipped: 0, failed: 0 };
+    }
+    
+    console.log(`Found ${trialIds.length} trial IDs`);
+    
+    // Process each trial
+    for (const nctId of trialIds) {
+      // Skip if already imported
+      if (successfulImports.ids.includes(nctId)) {
+        console.log(`Skipping already imported trial ID: ${nctId}`);
+        skippedCount++;
+        continue;
+      }
+      
+      // Skip if already in database
+      const exists = await checkTrialExists(nctId);
+      if (exists) {
+        console.log(`Skipping trial already in database: ${nctId}`);
+        // Track to avoid database check in future
+        successfulImports.ids.push(nctId);
+        skippedCount++;
+        continue;
+      }
+      
+      try {
+        // Get detailed data
+        const trialDetails = await fetchTrialDetails(nctId);
+        
+        // Transform to our format
+        const transformedTrial = transformTrialData(trialDetails);
+        
+        // Import to database
+        await importTrialToDatabase(transformedTrial);
+        
+        // Track successful import
+        successfulImports.ids.push(nctId);
+        importedCount++;
+        
+        console.log(`Successfully imported trial ${nctId}`);
+        
+        // Small delay between trials to avoid hitting rate limits
+        await new Promise(resolve => setTimeout(resolve, 500));
+      } catch (error) {
+        console.error(`Failed to import trial ${nctId}:`, error.message);
+        failedCount++;
+      }
+    }
+    
+    // Save successful imports
+    saveSuccessfulImports(successfulImports);
+    
+    const processingTime = ((Date.now() - startTime) / 1000).toFixed(1);
+    
+    console.log(`\n=== Batch Summary ===`);
+    console.log(`Total trials processed: ${trialIds.length}`);
+    console.log(`Successfully imported: ${importedCount}`);
+    console.log(`Skipped (already exists): ${skippedCount}`);
+    console.log(`Failed imports: ${failedCount}`);
+    console.log(`Processing time: ${processingTime}s`);
+    
+    return { imported: importedCount, skipped: skippedCount, failed: failedCount };
+  } catch (error) {
+    console.error('Error processing batch:', error.message);
+    return { imported: importedCount, skipped: skippedCount, failed: failedCount };
+  }
 }
 
 // Get current database status
@@ -460,9 +460,9 @@ async function getDatabaseStatus() {
 }
 
 // Main function to run the import
-async function runImport() {
+async function runEnhancedImport() {
   console.log('\n=========================================================');
-  console.log('IMPORTING 500 CLINICALTRIALS.GOV TRIALS IN BATCHES OF 50');
+  console.log('ENHANCED CLINICALTRIALS.GOV TRIAL IMPORT');
   console.log('=========================================================\n');
   
   try {
@@ -492,21 +492,29 @@ async function runImport() {
       console.log(`\n=== Processing batch ${progress.batchesProcessed + 1}/${progress.targetBatches} ===\n`);
       
       try {
-        // Import batch
-        const result = await importTrialBatch(50, progress.currentOffset);
+        // Process batch - page number is 1-based
+        const pageNum = progress.batchesProcessed + 1;
+        const result = await processBatch(50, pageNum);
         
         // Update progress
         progress.batchesProcessed++;
         progress.lastBatchTimestamp = new Date().toISOString();
         progress.status = 'in_progress';
-        progress.currentOffset = result.newOffset;
         
         saveProgressData(progress);
         
-        // Wait before next batch
+        // Get updated database counts
+        const updatedStatus = await getDatabaseStatus();
+        console.log(`\n=== Current Database Status ===`);
+        console.log(`Total trials in database: ${updatedStatus.total}`);
+        console.log(`ClinicalTrials.gov trials: ${updatedStatus.ctTrials}`);
+        console.log(`Health Canada trials: ${updatedStatus.hcTrials}`);
+        
+        // Wait before next batch to avoid rate limiting
         if (progress.batchesProcessed < progress.targetBatches) {
-          console.log('\nWaiting 5 seconds before next batch...');
-          await new Promise(resolve => setTimeout(resolve, 5000));
+          const waitTime = 10000; // 10 seconds
+          console.log(`\nWaiting ${waitTime/1000} seconds before next batch...`);
+          await new Promise(resolve => setTimeout(resolve, waitTime));
         }
       } catch (error) {
         console.error('Error processing batch:', error);
@@ -516,6 +524,9 @@ async function runImport() {
           error: error.message
         });
         saveProgressData(progress);
+        
+        // Wait after an error before continuing
+        await new Promise(resolve => setTimeout(resolve, 30000));
       }
     }
     
@@ -533,10 +544,10 @@ async function runImport() {
     // Close the database connection
     await pool.end();
   } catch (error) {
-    console.error('Error in import process:', error);
+    console.error('Error in import process:', error.message);
     process.exit(1);
   }
 }
 
 // Run the import
-runImport();
+runEnhancedImport();
