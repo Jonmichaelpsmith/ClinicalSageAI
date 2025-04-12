@@ -1,21 +1,29 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "wouter";
 import { LumenBioReport } from "@/components/reports/LumenBioReport";
 import ObesityStudyProtocol from "@/components/lumen-bio/ObesityStudyProtocol";
+import LumenBioPerformanceMetrics from "@/components/lumen-bio/LumenBioPerformanceMetrics";
+import SuccessFailureFactors from "@/components/lumen-bio/SuccessFailureFactors";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
+import { Progress } from "@/components/ui/progress";
 import { useQuery } from "@tanstack/react-query";
 import { 
-  FileText, Microscope, BarChart, PieChart, 
+  FileText, Microscope, BarChart, PieChart, ChartBar,
   BookOpen, Download, Share, AlertCircle, Beaker, Target,
-  Weight, ChevronRight
+  Weight, ChevronRight, ArrowUpRight, Clock, Users,
+  TrendingUp, Layers, Loader2, CheckCircle, XCircle, FileCheck,
+  ExternalLink, LineChart, BellDot, Sparkles, Award, Activity, Database
 } from "lucide-react";
 
 export default function LumenBioDashboard() {
-  const { data: recentReports, isLoading } = useQuery({
+  const [activeTab, setActiveTab] = useState<string>("overview");
+  
+  const { data: recentReports, isLoading: reportsLoading } = useQuery({
     queryKey: ['/api/reports/lumen-bio/recent'],
     // Mocked data for now
     initialData: [
@@ -42,6 +50,73 @@ export default function LumenBioDashboard() {
       }
     ]
   });
+
+  const { data: pipelineOverview, isLoading: pipelineLoading } = useQuery({
+    queryKey: ['/api/lumen-bio/pipeline-overview'],
+    initialData: {
+      pipelineSummary: {
+        totalCandidates: 5,
+        activeClinicalTrials: 3,
+        totalEnrollment: 128,
+        enrollmentTarget: 150,
+        avgTimeToFPFV: 4.2, // months
+        industryAvgTimeToFPFV: 6.0, // months
+        pipelineValue: 420, // million
+        successProbability: 67, // percent
+      },
+      enrollmentProgress: {
+        LUM1: 94, // percent
+        LUM2: 42, // percent
+        LMN0801: 57 // percent
+      },
+      keyRisks: [
+        {
+          title: "LUM-1 Manufacturing Delay",
+          severity: "high",
+          impact: "Potential 3-week delay in drug availability for phase 3",
+          dueDate: "2025-05-15",
+          owner: "Manufacturing"
+        },
+        {
+          title: "LMN-0801 Enrollment Rate",
+          severity: "medium",
+          impact: "Currently 22% below target enrollment rate",
+          dueDate: "2025-04-30",
+          owner: "Clinical Ops"
+        },
+        {
+          title: "LUM-2 Protocol Amendment",
+          severity: "low",
+          impact: "Minor amendment for additional biomarker collection",
+          dueDate: "2025-04-25",
+          owner: "Clinical Dev"
+        }
+      ],
+      upcomingMilestones: [
+        {
+          title: "LUM-1 Phase 2 Data Readout",
+          date: "2025-04-28",
+          program: "LUM-1",
+          type: "Clinical",
+          status: "On Track"
+        },
+        {
+          title: "LMN-0801 DSMB Review",
+          date: "2025-05-15",
+          program: "LMN-0801",
+          type: "Regulatory",
+          status: "On Track"
+        },
+        {
+          title: "LUM-2 Cohort 2 Enrollment Complete",
+          date: "2025-06-10",
+          program: "LUM-2",
+          type: "Clinical",
+          status: "At Risk"
+        }
+      ]
+    }
+  });
   
   return (
     <motion.div
@@ -56,13 +131,13 @@ export default function LumenBioDashboard() {
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-slate-800">Lumen Biosciences Dashboard</h1>
               <p className="text-slate-600 mt-1">
-                Clinical development analytics and intelligence for your pipeline
+                Clinical development analytics and CSR-driven intelligence for your pipeline
               </p>
             </div>
             <div className="flex gap-3">
               <Button className="flex items-center gap-2">
-                <FileText className="h-4 w-4" />
-                Download Full Report
+                <Database className="h-4 w-4" />
+                CSR Intelligence
               </Button>
               <Button variant="outline" className="flex items-center gap-2">
                 <Share className="h-4 w-4" />
@@ -72,11 +147,380 @@ export default function LumenBioDashboard() {
           </div>
         </div>
 
-        {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left column (wider) */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Obesity Study Protocol (WT02) */}
+        {/* Pipeline Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-sm text-slate-500">Pipeline Assets</p>
+                  <div className="flex items-end mt-1">
+                    <p className="text-3xl font-bold">{pipelineOverview.pipelineSummary.totalCandidates}</p>
+                    <p className="text-sm text-slate-500 ml-1 mb-1">Candidates</p>
+                  </div>
+                </div>
+                <div className="bg-primary/10 p-2 rounded-full">
+                  <Layers className="h-6 w-6 text-primary" />
+                </div>
+              </div>
+              <div className="mt-3">
+                <div className="flex items-center text-xs">
+                  <ArrowUpRight className="h-3 w-3 text-green-500 mr-1" />
+                  <span className="text-green-600 font-medium">+1 from previous year</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-sm text-slate-500">Active Trials</p>
+                  <div className="flex items-end mt-1">
+                    <p className="text-3xl font-bold">{pipelineOverview.pipelineSummary.activeClinicalTrials}</p>
+                    <p className="text-sm text-slate-500 ml-1 mb-1">Studies</p>
+                  </div>
+                </div>
+                <div className="bg-primary/10 p-2 rounded-full">
+                  <FileCheck className="h-6 w-6 text-primary" />
+                </div>
+              </div>
+              <div className="mt-3">
+                <div className="flex items-center text-xs">
+                  <ArrowUpRight className="h-3 w-3 text-green-500 mr-1" />
+                  <span className="text-green-600 font-medium">+2 from previous year</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-sm text-slate-500">Enrollment</p>
+                  <div className="flex items-end mt-1">
+                    <p className="text-3xl font-bold">{pipelineOverview.pipelineSummary.totalEnrollment}/{pipelineOverview.pipelineSummary.enrollmentTarget}</p>
+                    <p className="text-sm text-slate-500 ml-1 mb-1">Patients</p>
+                  </div>
+                </div>
+                <div className="bg-primary/10 p-2 rounded-full">
+                  <Users className="h-6 w-6 text-primary" />
+                </div>
+              </div>
+              <div className="mt-1">
+                <Progress value={(pipelineOverview.pipelineSummary.totalEnrollment/pipelineOverview.pipelineSummary.enrollmentTarget)*100} className="h-2" />
+              </div>
+              <div className="mt-1">
+                <div className="flex items-center text-xs">
+                  <span className="text-blue-600 font-medium">{Math.round((pipelineOverview.pipelineSummary.totalEnrollment/pipelineOverview.pipelineSummary.enrollmentTarget)*100)}% Complete</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-sm text-slate-500">FPFV Time</p>
+                  <div className="flex items-end mt-1">
+                    <p className="text-3xl font-bold">{pipelineOverview.pipelineSummary.avgTimeToFPFV}</p>
+                    <p className="text-sm text-slate-500 ml-1 mb-1">months</p>
+                  </div>
+                </div>
+                <div className="bg-primary/10 p-2 rounded-full">
+                  <Clock className="h-6 w-6 text-primary" />
+                </div>
+              </div>
+              <div className="mt-3">
+                <div className="flex items-center text-xs">
+                  <ArrowUpRight className="h-3 w-3 text-green-500 mr-1" />
+                  <span className="text-green-600 font-medium">{(pipelineOverview.pipelineSummary.industryAvgTimeToFPFV - pipelineOverview.pipelineSummary.avgTimeToFPFV).toFixed(1)}mo faster than industry avg</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Main Dashboard Content */}
+        <Tabs defaultValue="overview" onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid grid-cols-5 w-full">
+            <TabsTrigger value="overview">
+              <Activity className="h-4 w-4 mr-2" />
+              Pipeline Overview
+            </TabsTrigger>
+            <TabsTrigger value="wt02">
+              <Weight className="h-4 w-4 mr-2" />
+              Obesity Program (WT02)
+            </TabsTrigger>
+            <TabsTrigger value="csr-insights">
+              <ChartBar className="h-4 w-4 mr-2" />
+              CSR Intelligence
+            </TabsTrigger>
+            <TabsTrigger value="success-factors">
+              <Award className="h-4 w-4 mr-2" />
+              Success Factors
+            </TabsTrigger>
+            <TabsTrigger value="pipeline-report">
+              <LineChart className="h-4 w-4 mr-2" />
+              Full Pipeline Report
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Overview Tab */}
+          <TabsContent value="overview" className="space-y-6 mt-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 space-y-6">
+                {/* Enrollment by Program Section */}
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="flex items-center">
+                      <TrendingUp className="h-5 w-5 text-blue-600 mr-2" />
+                      Program Enrollment Progress
+                    </CardTitle>
+                    <CardDescription>
+                      Current enrollment status across active clinical programs
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-6">
+                      <div>
+                        <div className="flex justify-between mb-1">
+                          <div className="flex items-center">
+                            <span className="font-medium">LUM-1 (NSCLC)</span>
+                            <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded-full">Phase 2</span>
+                          </div>
+                          <span className="text-sm font-medium">{pipelineOverview.enrollmentProgress.LUM1}%</span>
+                        </div>
+                        <Progress value={pipelineOverview.enrollmentProgress.LUM1} className="h-2" />
+                        <div className="flex justify-between mt-1 text-xs text-slate-500">
+                          <span>Target: 120 patients</span>
+                          <span>Current: {Math.round(120 * pipelineOverview.enrollmentProgress.LUM1/100)} patients</span>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <div className="flex justify-between mb-1">
+                          <div className="flex items-center">
+                            <span className="font-medium">LUM-2 (IBD)</span>
+                            <span className="ml-2 px-2 py-0.5 bg-purple-100 text-purple-800 text-xs rounded-full">Phase 1</span>
+                          </div>
+                          <span className="text-sm font-medium">{pipelineOverview.enrollmentProgress.LUM2}%</span>
+                        </div>
+                        <Progress value={pipelineOverview.enrollmentProgress.LUM2} className="h-2" />
+                        <div className="flex justify-between mt-1 text-xs text-slate-500">
+                          <span>Target: 45 patients</span>
+                          <span>Current: {Math.round(45 * pipelineOverview.enrollmentProgress.LUM2/100)} patients</span>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <div className="flex justify-between mb-1">
+                          <div className="flex items-center">
+                            <span className="font-medium">LMN-0801 (Obesity)</span>
+                            <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">Phase 2</span>
+                          </div>
+                          <span className="text-sm font-medium">{pipelineOverview.enrollmentProgress.LMN0801}%</span>
+                        </div>
+                        <Progress value={pipelineOverview.enrollmentProgress.LMN0801} className="h-2" />
+                        <div className="flex justify-between mt-1 text-xs text-slate-500">
+                          <span>Target: 90 patients</span>
+                          <span>Current: {Math.round(90 * pipelineOverview.enrollmentProgress.LMN0801/100)} patients</span>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                {/* Upcoming Milestones */}
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="flex items-center">
+                      <Sparkles className="h-5 w-5 text-blue-600 mr-2" />
+                      Upcoming Key Milestones
+                    </CardTitle>
+                    <CardDescription>
+                      Critical events and deliverables across your pipeline
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {pipelineOverview.upcomingMilestones.map((milestone, index) => (
+                        <div key={index} className="flex items-start p-3 border rounded-md">
+                          <div className={`p-2 rounded-full ${
+                            milestone.type === 'Clinical' ? 'bg-blue-100' : 
+                            milestone.type === 'Regulatory' ? 'bg-purple-100' : 'bg-green-100'
+                          } mr-4 flex-shrink-0`}>
+                            {milestone.type === 'Clinical' ? (
+                              <Microscope className={`h-5 w-5 ${
+                                milestone.type === 'Clinical' ? 'text-blue-600' : 
+                                milestone.type === 'Regulatory' ? 'text-purple-600' : 'text-green-600'
+                              }`} />
+                            ) : milestone.type === 'Regulatory' ? (
+                              <FileCheck className="h-5 w-5 text-purple-600" />
+                            ) : (
+                              <Beaker className="h-5 w-5 text-green-600" />
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between">
+                              <h4 className="font-medium">{milestone.title}</h4>
+                              <span className={`px-2 py-0.5 text-xs rounded-full ${
+                                milestone.status === 'On Track' ? 'bg-green-100 text-green-800' : 
+                                milestone.status === 'At Risk' ? 'bg-amber-100 text-amber-800' : 
+                                'bg-red-100 text-red-800'
+                              }`}>
+                                {milestone.status}
+                              </span>
+                            </div>
+                            <div className="flex items-center mt-1 text-sm text-slate-500">
+                              <span>{new Date(milestone.date).toLocaleDateString('en-US', { 
+                                year: 'numeric', 
+                                month: 'short', 
+                                day: 'numeric' 
+                              })}</span>
+                              <span className="mx-2">•</span>
+                              <span>{milestone.program}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="space-y-6">
+                {/* KPIs and Risk Card */}
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="flex items-center">
+                      <BellDot className="h-5 w-5 text-amber-500 mr-2" />
+                      Priority Risks
+                    </CardTitle>
+                    <CardDescription>Actively monitored risks requiring attention</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {pipelineOverview.keyRisks.map((risk, index) => (
+                        <div key={index} className={`border-l-4 ${
+                          risk.severity === 'high' ? 'border-l-red-500' : 
+                          risk.severity === 'medium' ? 'border-l-amber-500' : 
+                          'border-l-blue-500'
+                        } p-3 rounded-r-md`}>
+                          <div className="flex items-center justify-between">
+                            <p className="font-medium">{risk.title}</p>
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${
+                              risk.severity === 'high' ? 'bg-red-100 text-red-800' : 
+                              risk.severity === 'medium' ? 'bg-amber-100 text-amber-800' : 
+                              'bg-blue-100 text-blue-800'
+                            }`}>
+                              {risk.severity.charAt(0).toUpperCase() + risk.severity.slice(1)}
+                            </span>
+                          </div>
+                          <p className="text-sm text-slate-600 mt-1">
+                            {risk.impact}
+                          </p>
+                          <div className="flex items-center text-xs text-slate-500 gap-2 mt-2">
+                            <span>Due: {new Date(risk.dueDate).toLocaleDateString('en-US', { 
+                              month: 'short', 
+                              day: 'numeric' 
+                            })}</span>
+                            <span>•</span>
+                            <span>Owner: {risk.owner}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                {/* CRS-Driven Insights Teaser */}
+                <Card className="bg-gradient-to-br from-slate-50 to-blue-50 border-blue-200">
+                  <CardContent className="pt-6 pb-4">
+                    <div className="flex justify-between items-start mb-4">
+                      <h3 className="font-semibold text-primary">CSR Intelligence</h3>
+                      <div className="bg-white p-2 rounded-full shadow-sm">
+                        <ChartBar className="h-5 w-5 text-primary" />
+                      </div>
+                    </div>
+                    
+                    <p className="text-sm text-slate-700 mb-4">
+                      Our system has analyzed 693 CSRs relevant to your pipeline, providing key insights to optimize trial success.
+                    </p>
+                    
+                    <div className="space-y-2 my-4">
+                      <div className="flex items-center">
+                        <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                        <span className="text-sm">Endpoint optimization recommendations</span>
+                      </div>
+                      <div className="flex items-center">
+                        <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                        <span className="text-sm">Protocol design success factors</span>
+                      </div>
+                      <div className="flex items-center">
+                        <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                        <span className="text-sm">Operational performance metrics</span>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-4">
+                      <Button 
+                        variant="default" 
+                        size="sm" 
+                        className="w-full"
+                        onClick={() => setActiveTab("csr-insights")}
+                      >
+                        <Database className="h-4 w-4 mr-2" />
+                        Explore CSR Intelligence
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                {/* Recent Reports Preview */}
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg">Recent Reports</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {recentReports.slice(0, 2).map(report => (
+                      <div key={report.id} className="flex items-center justify-between p-3 rounded-md hover:bg-slate-50 transition-colors border">
+                        <div className="flex items-center gap-3">
+                          {report.type === "Analysis" ? (
+                            <BarChart className="h-6 w-6 text-indigo-500" />
+                          ) : report.type === "Market" ? (
+                            <PieChart className="h-6 w-6 text-amber-500" />
+                          ) : (
+                            <BookOpen className="h-6 w-6 text-emerald-500" />
+                          )}
+                          <div>
+                            <p className="font-medium text-sm">{report.title}</p>
+                            <div className="flex items-center text-xs text-slate-500 gap-1">
+                              <span>{new Date(report.date).toLocaleDateString('en-US', { 
+                                month: 'short', 
+                                day: 'numeric' 
+                              })}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </CardContent>
+                  <CardFooter className="pt-0">
+                    <Button variant="ghost" size="sm" className="w-full" onClick={() => setActiveTab("pipeline-report")}>
+                      View All Reports
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Obesity Program (WT02) Tab */}
+          <TabsContent value="wt02" className="space-y-6 mt-6">
             <Card className="mb-6">
               <CardHeader className="pb-2">
                 <CardTitle className="flex items-center">
@@ -91,8 +535,62 @@ export default function LumenBioDashboard() {
                 <ObesityStudyProtocol />
               </CardContent>
             </Card>
-            
-            {/* Pipeline Report */}
+          </TabsContent>
+
+          {/* CSR Intelligence Tab */}
+          <TabsContent value="csr-insights" className="space-y-6 mt-6">
+            <Card>
+              <CardHeader className="pb-2">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle className="flex items-center">
+                      <Database className="h-5 w-5 text-indigo-600 mr-2" />
+                      CSR-Driven Performance Intelligence
+                    </CardTitle>
+                    <CardDescription>
+                      Actionable insights derived from 693 analyzed clinical study reports
+                    </CardDescription>
+                  </div>
+                  <Button variant="outline" size="sm" className="flex items-center gap-2">
+                    <ExternalLink className="h-4 w-4" />
+                    Export Insights
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <LumenBioPerformanceMetrics />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Success Factors Tab */}
+          <TabsContent value="success-factors" className="space-y-6 mt-6">
+            <Card>
+              <CardHeader className="pb-2">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle className="flex items-center">
+                      <Award className="h-5 w-5 text-indigo-600 mr-2" />
+                      Success & Failure Factor Analysis
+                    </CardTitle>
+                    <CardDescription>
+                      Evidence-based factors that drive trial success and failure
+                    </CardDescription>
+                  </div>
+                  <Button variant="outline" size="sm" className="flex items-center gap-2">
+                    <ExternalLink className="h-4 w-4" />
+                    Export Analysis
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <SuccessFailureFactors />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Full Pipeline Report Tab */}
+          <TabsContent value="pipeline-report" className="space-y-6 mt-6">
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle>Pipeline Analysis</CardTitle>
@@ -155,140 +653,8 @@ export default function LumenBioDashboard() {
                 </Link>
               </CardFooter>
             </Card>
-          </div>
-
-          {/* Right column (narrower) */}
-          <div className="space-y-6">
-            {/* Key Metrics */}
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg flex items-center">
-                  <Target className="h-5 w-5 text-blue-600 mr-2" />
-                  Lumen Bio Key Metrics
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="border rounded-lg p-4">
-                    <p className="text-sm text-slate-500">Pipeline Candidates</p>
-                    <p className="text-2xl font-bold">5</p>
-                    <div className="flex items-center text-xs mt-1">
-                      <span className="text-green-600 font-medium">↑ 1 from previous year</span>
-                    </div>
-                  </div>
-                  
-                  <div className="border rounded-lg p-4">
-                    <p className="text-sm text-slate-500">Active Clinical Trials</p>
-                    <p className="text-2xl font-bold">3</p>
-                    <div className="flex items-center text-xs mt-1">
-                      <span className="text-green-600 font-medium">↑ 2 from previous year</span>
-                    </div>
-                  </div>
-                  
-                  <div className="border rounded-lg p-4">
-                    <p className="text-sm text-slate-500">Total Patients Enrolled</p>
-                    <p className="text-2xl font-bold">128</p>
-                    <div className="flex items-center text-xs mt-1">
-                      <span className="text-green-600 font-medium">86% of target</span>
-                    </div>
-                  </div>
-                  
-                  <div className="border rounded-lg p-4">
-                    <p className="text-sm text-slate-500">Time to First Patient Enrolled</p>
-                    <p className="text-2xl font-bold">4.2 mo</p>
-                    <div className="flex items-center text-xs mt-1">
-                      <span className="text-green-600 font-medium">1.8 mo faster than industry avg</span>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            {/* Alerts and Updates */}
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg flex items-center">
-                  <AlertCircle className="h-5 w-5 text-blue-600 mr-2" />
-                  Pipeline Alerts
-                </CardTitle>
-                <CardDescription>
-                  Important updates for your therapeutic areas
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="bg-amber-50 border-l-4 border-amber-500 p-3 rounded-r-md">
-                    <p className="font-medium text-amber-800">Competitor Trial Update</p>
-                    <p className="text-sm text-amber-700 mt-1">
-                      CompetitorX initiated Phase 2 trial for similar NSCLC indication as LUM-1
-                    </p>
-                    <p className="text-xs text-amber-600 mt-2">
-                      April 5, 2025 • High Priority
-                    </p>
-                  </div>
-                  
-                  <div className="bg-green-50 border-l-4 border-green-500 p-3 rounded-r-md">
-                    <p className="font-medium text-green-800">Regulatory Update</p>
-                    <p className="text-sm text-green-700 mt-1">
-                      FDA released new guidance for checkpoint inhibitor combination trials
-                    </p>
-                    <p className="text-xs text-green-600 mt-2">
-                      March 28, 2025 • Medium Priority
-                    </p>
-                  </div>
-                  
-                  <div className="bg-blue-50 border-l-4 border-blue-500 p-3 rounded-r-md">
-                    <p className="font-medium text-blue-800">Publication Alert</p>
-                    <p className="text-sm text-blue-700 mt-1">
-                      New meta-analysis published on dual cytokine inhibitors in IBD
-                    </p>
-                    <p className="text-xs text-blue-600 mt-2">
-                      March 15, 2025 • Medium Priority
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter className="border-t px-6 py-4">
-                <Link href="/alerts/lumen-bio">
-                  <Button variant="outline" className="w-full">View All Alerts</Button>
-                </Link>
-              </CardFooter>
-            </Card>
-            
-            {/* Quick Actions */}
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg">Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <Link href="/analytics/trial-comparison/LUM-1">
-                  <Button variant="outline" className="w-full justify-start gap-2">
-                    <Microscope className="h-4 w-4" />
-                    Compare LUM-1 to Similar Trials
-                  </Button>
-                </Link>
-                <Link href="/protocols/templates/new">
-                  <Button variant="outline" className="w-full justify-start gap-2">
-                    <Beaker className="h-4 w-4" />
-                    Generate Protocol Template
-                  </Button>
-                </Link>
-                <Link href="/analytics/market/oncology">
-                  <Button variant="outline" className="w-full justify-start gap-2">
-                    <BarChart className="h-4 w-4" />
-                    View Oncology Market Trends
-                  </Button>
-                </Link>
-                <Link href="/analytics/enrollment-strategies">
-                  <Button variant="outline" className="w-full justify-start gap-2">
-                    <PieChart className="h-4 w-4" />
-                    Analyze Enrollment Strategies
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </motion.div>
   );
