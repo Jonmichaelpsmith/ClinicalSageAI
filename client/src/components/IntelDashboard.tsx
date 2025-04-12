@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription }
 import { Badge } from '@/components/ui/badge';
 import { AlertCircle, BookOpen, ClipboardCheck, Brain, FileText, BarChart2, ArrowRight, 
   Zap, FileSearch, Award, Clock, Activity, Link, Save, Filter, BrainCircuit, BarChart3, 
-  ScrollText, FileQuestion, Sparkles, RefreshCw, ChevronRight, ChevronDown, Check } from 'lucide-react';
+  ScrollText, FileQuestion, Sparkles, RefreshCw, ChevronRight, ChevronDown, Check,
+  Microscope, FileSymlink, Database } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, 
@@ -20,6 +21,9 @@ import { toast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
+// Import new components
+import StudyDesignAssistant from './StudyDesignAssistant';
+import KnowledgeBasePanel from './KnowledgeBasePanel';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
@@ -35,6 +39,7 @@ export default function IntelDashboard() {
   const [citationExpanded, setCitationExpanded] = useState(false);
   const [successMetrics, setSuccessMetrics] = useState(null);
   const [selectedTab, setSelectedTab] = useState('protocol');
+  const [showStudyDesignAssistant, setShowStudyDesignAssistant] = useState(false);
   const pdfRef = useRef(null);
 
   useEffect(() => {
@@ -374,6 +379,15 @@ export default function IntelDashboard() {
                 <Button variant="outline" size="sm" onClick={exportPDF}>
                   <Save className="mr-2 h-4 w-4" />
                   Export Report
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setShowStudyDesignAssistant(true)}
+                  className="bg-gradient-to-r from-blue-100 to-violet-100 border-blue-300 hover:from-blue-200 hover:to-violet-200"
+                >
+                  <Microscope className="mr-2 h-4 w-4 text-blue-600" />
+                  Explore CSR Intelligence
                 </Button>
                 <Popover>
                   <PopoverTrigger asChild>
