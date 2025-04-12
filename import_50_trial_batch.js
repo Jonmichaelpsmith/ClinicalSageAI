@@ -7,10 +7,12 @@
 
 import fs from 'fs';
 import path from 'path';
-import { Pool } from 'pg';
+import pg from 'pg';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { dirname } from 'path';
+
+const { Pool } = pg;
 
 // Initialize dotenv
 dotenv.config();
@@ -258,8 +260,8 @@ async function importTrialsToDatabase(trials) {
         // Insert the main report
         const reportResult = await client.query(
           `INSERT INTO csr_reports 
-          (title, sponsor, indication, phase, status, date, nctrial_id, study_id, drug_name, region) 
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
+          (title, sponsor, indication, phase, status, date, nctrial_id, study_id, drug_name, region, file_name, file_path, file_size, upload_date, summary) 
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) 
           RETURNING id`,
           [
             trial.title,
@@ -271,7 +273,12 @@ async function importTrialsToDatabase(trials) {
             trial.nctrialId,
             trial.studyId,
             trial.drugName,
-            trial.region
+            trial.region,
+            `HC_synthetic_${trial.nctrialId}.pdf`, // file_name
+            `synthetic/${trial.nctrialId}`, // file_path
+            Math.floor(Math.random() * 5000000) + 500000, // file_size
+            new Date(), // upload_date
+            `Synthetic Health Canada trial data for ${trial.indication} using ${trial.drugName}` // summary
           ]
         );
         

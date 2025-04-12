@@ -6,10 +6,12 @@
  */
 
 import { run50TrialBatch } from './import_50_trial_batch.js';
-import { Pool } from 'pg';
+import pg from 'pg';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+
+const { Pool } = pg;
 
 // Initialize dotenv
 dotenv.config();
