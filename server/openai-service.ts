@@ -1,13 +1,79 @@
 /**
- * PDF and CSR Analysis Service
+ * OpenAI-based Intelligence Service
  * 
- * Note: Despite the filename (kept for backward compatibility), 
- * this service uses the Hugging Face API for all AI functionality.
- * No OpenAI services are used.
+ * This service provides OpenAI-powered natural language processing and
+ * intelligence capabilities for TrialSage, supporting threading and
+ * persistent context.
  */
 import { InsertCsrDetails } from "@shared/schema";
-import { queryHuggingFace, HFModel } from './huggingface-service';
+import OpenAI from "openai";
 import * as PDFParse from 'pdf-parse';
+
+// Initialize OpenAI client
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY || "",
+});
+
+// Check if API key is available
+export function isApiKeyAvailable(): boolean {
+  return !!process.env.OPENAI_API_KEY;
+}
+
+// Analyze text with OpenAI
+export async function analyzeText(prompt: string, systemMessage: string = ""): Promise<string> {
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { role: "system", content: systemMessage || "You are a helpful clinical trial analysis assistant." },
+        { role: "user", content: prompt }
+      ],
+      temperature: 0.6,
+    });
+    
+    return response.choices[0].message.content || "";
+  } catch (error) {
+    console.error("Error analyzing text with OpenAI:", error);
+    throw new Error("Failed to analyze text with OpenAI");
+  }
+}
+
+// Generate structured response
+export async function generateStructuredResponse(prompt: string, systemMessage: string = ""): Promise<any> {
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { role: "system", content: systemMessage || "You are a helpful assistant that responds with structured JSON." },
+        { role: "user", content: prompt }
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.5,
+    });
+    
+    const content = response.choices[0].message.content || "{}";
+    return JSON.parse(content);
+  } catch (error) {
+    console.error("Error generating structured response with OpenAI:", error);
+    throw new Error("Failed to generate structured response with OpenAI");
+  }
+}
+
+// Generate embeddings using OpenAI
+export async function generateEmbeddings(text: string): Promise<number[]> {
+  try {
+    const response = await openai.embeddings.create({
+      model: "text-embedding-3-large",
+      input: text,
+      dimensions: 1536
+    });
+    
+    return response.data[0].embedding;
+  } catch (error) {
+    console.error("Error generating embeddings with OpenAI:", error);
+    throw new Error("Failed to generate embeddings with OpenAI");
+  }
+}
 
 // Extract text from PDF buffer
 export async function extractTextFromPdf(pdfBuffer: Buffer): Promise<string> {
@@ -71,33 +137,31 @@ function generateMockCsrAnalysis(): Partial<InsertCsrDetails> {
 // Analyze CSR content and generate structured data
 export async function analyzeCsrContent(pdfText: string): Promise<Partial<InsertCsrDetails>> {
   try {
-    // System prompt for Hugging Face
-    const prompt = `
+    // System prompt for OpenAI
+    const systemMessage = `
       You are an AI assistant specialized in analyzing clinical study reports (CSRs).
-      Extract key information from the provided CSR text and structure it according to the following categories:
-      - Study Design
-      - Primary Objective
-      - Study Description
-      - Inclusion Criteria
-      - Exclusion Criteria
-      - Treatment Arms (as array with arm, intervention, dosing regimen, participants)
-      - Study Duration
-      - Endpoints (with primary and secondary array)
-      - Results (with primaryResults, secondaryResults, biomarkerResults)
-      - Safety (with overallSafety, major concerns, common adverse events)
+      Extract key information from the provided CSR text and structure it according to the specified categories.
+      Format your response as a valid JSON object with the following fields:
+      - studyDesign: string
+      - primaryObjective: string
+      - studyDescription: string
+      - inclusionCriteria: string
+      - exclusionCriteria: string
+      - treatmentArms: array of objects with arm, intervention, dosingRegimen, participants
+      - studyDuration: string
+      - endpoints: object with primary (string) and secondary (array of strings)
+      - results: object with primaryResults, secondaryResults, biomarkerResults
+      - safety: object with overallSafety, commonAEs, severeEvents, discontinuationRates
+    `;
+    
+    const prompt = `
+      Analyze the following clinical study report text and extract the structured information:
       
-      Format the response as a JSON object with these fields.
-      
-      CSR Text:
-      ${pdfText}
+      ${pdfText.substring(0, 15000)} // Limit text size for token limits
     `;
 
     try {
-      const response = await queryHuggingFace(prompt, HFModel.STARLING, 1024, 0.5);
-      
-      // Try to parse JSON from the response
-      const jsonStr = response.match(/\{[\s\S]*\}/)?.[0] || "";
-      const analysis = JSON.parse(jsonStr);
+      const analysis = await generateStructuredResponse(prompt, systemMessage);
       
       return {
         studyDesign: analysis.studyDesign,
@@ -113,7 +177,7 @@ export async function analyzeCsrContent(pdfText: string): Promise<Partial<Insert
         processed: true
       };
     } catch (parseError) {
-      console.error("Error parsing HF response:", parseError);
+      console.error("Error parsing OpenAI response:", parseError);
       // Fall back to mock data if parsing fails
       return generateMockCsrAnalysis();
     }
@@ -127,15 +191,19 @@ export async function analyzeCsrContent(pdfText: string): Promise<Partial<Insert
 // Generate a simple summary of the CSR
 export async function generateCsrSummary(pdfText: string): Promise<string> {
   try {
+    const systemMessage = `
+      You are an expert in clinical trials and medical research.
+      Create a concise but comprehensive summary (max 150 words) of clinical study reports,
+      focusing on the study objective, design, key findings, and safety profile.
+    `;
+    
     const prompt = `
-      Generate a brief, concise summary (max 150 words) of the following clinical study report text, 
-      focusing on the study objective, design, and key findings.
+      Generate a brief, concise summary of the following clinical study report text:
       
-      CSR Text:
-      ${pdfText}
+      ${pdfText.substring(0, 12000)} // Limit text size for token limits
     `;
 
-    return await queryHuggingFace(prompt, HFModel.FLAN_T5_XL, 512, 0.6);
+    return await analyzeText(prompt, systemMessage);
   } catch (error) {
     console.error("Error generating CSR summary:", error);
     // Return mock summary if generation fails
