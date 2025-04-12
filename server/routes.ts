@@ -1397,186 +1397,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Get database statistics to include in the context
-      const dbStatsQuery = await db.query.csrReports.count();
-      const totalReports = Number(dbStatsQuery.toString()) || 0;
+      // Import the Study Design Agent service
+      const { studyDesignAgentService } = await import('./services/study-design-agent-service');
       
-      // Get all reports from the database
-      const allReports = await storage.getAllCsrReports();
-      
-      // Get all unique indications
-      const allIndications = [...new Set(allReports.map(r => r.indication))];
-      
-      // Get all unique phases
-      const allPhases = [...new Set(allReports.map(r => r.phase))];
-      
-      // Perform detailed filtering based on the query content and specified filters
-      const keywords = query.toLowerCase().split(' ');
-      
-      // Create a sophisticated ranking function for reports
-      function rankReport(report) {
-        let score = 0;
-        
-        // Filter match
-        if (indication && report.indication.toLowerCase().includes(indication.toLowerCase())) {
-          score += 3;
-        }
-        if (phase && report.phase === phase) {
-          score += 3;
-        }
-        
-        // Title and summary match with query keywords
-        const titleWords = (report.title || '').toLowerCase();
-        const summaryWords = (report.summary || '').toLowerCase();
-        
-        keywords.forEach(keyword => {
-          if (keyword.length > 3) { // Only consider meaningful keywords
-            if (titleWords.includes(keyword)) score += 2;
-            if (summaryWords.includes(keyword)) score += 1;
-          }
-        });
-        
-        // Prioritize reports with more complete data
-        if (report.summary && report.summary.length > 100) score += 1;
-        
-        return score;
-      }
-      
-      // Rank and sort all reports
-      const rankedReports = allReports
-        .map(report => ({
-          ...report,
-          relevanceScore: rankReport(report)
-        }))
-        .sort((a, b) => b.relevanceScore - a.relevanceScore);
-      
-      // Get top reports (more if available)
-      const mostRelevantReports = rankedReports.slice(0, 10);
-      
-      // Fetch detailed information for the top reports
-      const detailedReports = [];
-      for (const report of mostRelevantReports.slice(0, 5)) { // Limit to 5 for performance
-        try {
-          const details = await storage.getCsrDetails(report.id);
-          if (details) {
-            detailedReports.push({
-              ...report,
-              details
-            });
-          }
-        } catch (error) {
-          console.error(`Error fetching details for report ${report.id}:`, error);
-        }
-      }
-      
-      // Generate response using Hugging Face
-      let content;
-      try {
-        // Create a comprehensive system context with database statistics
-        let systemContext = `You are TrialSage's AI Clinical Trial Study Design Agent, a sophisticated AI assistant that helps researchers design effective clinical trials.
-
-IMPORTANT CAPABILITIES & KNOWLEDGE:
-- You have analyzed ${totalReports} clinical study reports (CSRs) from Health Canada and ClinicalTrials.gov databases.
-- You understand trial design patterns across ${allIndications.length} therapeutic indications and all clinical trial phases.
-- You can reference specific, real clinical trials from our database to support your answers.
-- Your knowledge covers endpoint selection, sample size calculation, inclusion/exclusion criteria, study duration, and regulatory considerations.
-
-FACTS ABOUT OUR DATABASE:
-- Contains ${totalReports} clinical trials
-- Covers therapeutic areas including: ${allIndications.slice(0, 5).join(', ')}${allIndications.length > 5 ? ` and ${allIndications.length - 5} more` : ''}
-- Includes trials from phases: ${allPhases.join(', ')}
-- Most recent data update: ${new Date().toISOString().split('T')[0]}
-
-COMMUNICATION STYLE:
-- Be concise but informative
-- Support claims with data from our trial database when possible
-- Explain the rationale behind recommendations
-- Acknowledge limitations when appropriate
-`;
-
-        // Add specific question context
-        if (indication) systemContext += `\nThe current query concerns ${indication} trials.\n`;
-        if (phase) systemContext += `\nThe focus is on Phase ${phase} trials.\n`;
-
-        // Create a detailed context from the most relevant reports
-        let reportContext = '';
-        if (detailedReports.length > 0) {
-          reportContext = `\nRELEVANT CLINICAL TRIALS FROM OUR DATABASE:\n\n`;
-          
-          detailedReports.forEach((report, i) => {
-            reportContext += `TRIAL ${i+1}: ${report.title} (${report.sponsor}, Phase ${report.phase})\n`;
-            reportContext += `Indication: ${report.indication}\n`;
-            reportContext += `Summary: ${report.summary || 'No summary available'}\n`;
-            
-            // Add more detailed information if available
-            if (report.details) {
-              if (report.details.primaryObjective) 
-                reportContext += `Primary Objective: ${report.details.primaryObjective}\n`;
-              
-              if (report.details.sampleSize) 
-                reportContext += `Sample Size: ${report.details.sampleSize}\n`;
-              
-              if (report.details.studyDesign) 
-                reportContext += `Study Design: ${report.details.studyDesign}\n`;
-              
-              if (report.details.duration) 
-                reportContext += `Duration: ${report.details.duration}\n`;
-            }
-            
-            reportContext += `\n`;
-          });
-        }
-        
-        const userQueryContext = query;
-        
-        // Format the complete prompt for high-quality responses
-        const prompt = `<context>
-${systemContext}
-${reportContext}
-</context>
-
-<query>
-${userQueryContext}
-</query>
-
-<answer>`;
-
-        // Use Hugging Face API to generate the response
-        const agentResponse = await queryHuggingFace(
-          prompt, 
-          HFModel.MISTRAL, // Use Mistral model for better reasoning
-          1000, // Max tokens
-          0.3 // Temperature for more focused responses
-        );
-        
-        content = agentResponse;
-      } catch (error) {
-        console.error('Error generating study design response:', error);
-        content = `I'm sorry, but I encountered an error while processing your query: "${query}". Please try again later or rephrase your question.`;
-      }
+      // Generate response using the Study Design Agent service
+      console.log('Generating response using Study Design Agent service...');
+      const agentResponse = await studyDesignAgentService.generateResponse(
+        {
+          query,
+          indication,
+          phase
+        },
+        `chat_${sessionStart || Date.now()}`
+      );
       
       // If there's a warning message from the free trial, prepend it to the content
       if (res.locals.warningMessage) {
-        content = `${res.locals.warningMessage}\n\n${content}`;
+        agentResponse.content = `${res.locals.warningMessage}\n\n${agentResponse.content}`;
       }
       
-      // Prepare the final response with source information
-      const response = {
-        content,
-        sources: mostRelevantReports.slice(0, 5).map(report => ({
-          id: report.id,
-          title: report.title,
-          relevance: report.relevanceScore / 10 // Normalize to a 0-1 scale
-        })),
-        confidence: 0.85 + (Math.random() * 0.1), // Simulate confidence score
+      // Add remaining trial time to the response metadata
+      agentResponse.metadata = {
+        ...agentResponse.metadata,
         remainingTrialTime: res.locals.remainingTrialTime
       };
       
       res.json({ 
         success: true,
-        response
+        response: {
+          ...agentResponse,
+          remainingTrialTime: res.locals.remainingTrialTime
+        }
       });
     } catch (err) {
+      console.error('Error in study design agent API:', err);
+      
+      // Fallback in case the service is not available
+      if (err.message && err.message.includes('import')) {
+        // Legacy implementation - used if the service module fails to load
+        console.log('Falling back to basic study design agent implementation...');
+        
+        // Get all reports from the database
+        const allReports = await storage.getAllCsrReports();
+        
+        // Simple filtering
+        const filteredReports = allReports.filter(report => {
+          let match = true;
+          if (indication) match = match && report.indication.toLowerCase().includes(indication.toLowerCase());
+          if (phase) match = match && report.phase === phase;
+          return match;
+        });
+        
+        // Get the top 5 reports
+        const relevantReports = filteredReports.slice(0, 5);
+        
+        // Generate response using Hugging Face directly
+        const prompt = `
+You are a clinical trial design expert. Help with this query: ${query}
+${indication ? `For indication: ${indication}` : ''}
+${phase ? `In phase: ${phase}` : ''}
+
+Provide a comprehensive, evidence-based response.`;
+
+        const content = await huggingFaceService.queryHuggingFace(
+          prompt,
+          HFModel.MISTRAL_LATEST,
+          1000,
+          0.4
+        );
+        
+        // Add warning message if needed
+        const finalContent = res.locals.warningMessage 
+          ? `${res.locals.warningMessage}\n\n${content}`
+          : content;
+        
+        res.json({
+          success: true,
+          response: {
+            content: finalContent,
+            sources: relevantReports.map(report => ({
+              id: report.id,
+              title: report.title,
+              relevance: 0.7
+            })),
+            confidence: 0.6,
+            remainingTrialTime: res.locals.remainingTrialTime
+          }
+        });
+        
+        return;
+      }
+      
+      // Handle all other errors
       errorHandler(err as Error, res);
     }
   });
