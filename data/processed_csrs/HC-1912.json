@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1912",
+  "title": "A  Double-Blind, Placebo-Controlled  Study of HFR-841 (SGLT2 inhibitor) in Patients With Non-Small Cell Lung Cancer",
+  "officialTitle": "A  Double-Blind, Placebo-Controlled  Study of HFR-841 (SGLT2 inhibitor) in Patients With Non-Small Cell Lung Cancer",
+  "sponsor": "Sunnybrook Research Institute",
+  "indication": "Non-Small Cell Lung Cancer",
+  "phase": "Phase 1",
+  "fileName": "HC-1912.json",
+  "fileSize": 323507,
+  "date": "2025-03-18",
+  "completionDate": "2027-07-27",
+  "drugName": "HFR-841 (SGLT2 inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Not yet recruiting",
+  "description": "This is a  double-blind, placebo-controlled  study designed to evaluate the efficacy and safety of HFR-841 (SGLT2 inhibitor) in patients with Non-Small Cell Lung Cancer. The study will enroll approximately 387 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 18-69 years\n- Confirmed diagnosis of Non-Small Cell Lung Cancer\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n- Measurable disease per RECIST v1.1\n- Prior treatment with standard therapy\n- Life expectancy ≥3 months\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment\n- Brain metastases unless treated and stable\n- Prior treatment with similar mechanism of action\n- Other active malignancy requiring treatment"
+}

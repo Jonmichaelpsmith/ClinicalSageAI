@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1913",
+  "title": "A  Double-Blind, Active-Controlled Multi-Center Study of DEP-410 (SSRI/SNRI) in Patients With Irritable Bowel Syndrome",
+  "officialTitle": "A  Double-Blind, Active-Controlled Multi-Center Study of DEP-410 (SSRI/SNRI) in Patients With Irritable Bowel Syndrome",
+  "sponsor": "Montreal Heart Institute",
+  "indication": "Irritable Bowel Syndrome",
+  "phase": "Phase 1",
+  "fileName": "HC-1913.json",
+  "fileSize": 587267,
+  "date": "2024-07-08",
+  "completionDate": "2025-10-23",
+  "drugName": "DEP-410 (SSRI/SNRI)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Not yet recruiting",
+  "description": "This is a  double-blind, active-controlled multi-center study designed to evaluate the efficacy and safety of DEP-410 (SSRI/SNRI) in patients with Irritable Bowel Syndrome. The study will enroll approximately 361 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 26-64 years\n- Confirmed diagnosis of Irritable Bowel Syndrome\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}
