@@ -68,7 +68,7 @@ export async function matchProtocol(req, res) {
     }
     
     // Generate embedding for protocol
-    const protocolEmbedding = await hfService.generateEmbedding(protocolText);
+    const protocolEmbedding = await hfService.getTextEmbedding(protocolText);
     
     if (!protocolEmbedding) {
       return res.status(500).json({ 
