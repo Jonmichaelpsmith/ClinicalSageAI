@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1936",
+  "title": "A  Double-Blind, Active-Controlled  Study of HFR-841 (SGLT2 inhibitor) in Patients With Crohn's Disease",
+  "officialTitle": "A  Double-Blind, Active-Controlled  Study of HFR-841 (SGLT2 inhibitor) in Patients With Crohn's Disease",
+  "sponsor": "Sunnybrook Research Institute",
+  "indication": "Crohn's Disease",
+  "phase": "Phase 4",
+  "fileName": "HC-1936.json",
+  "fileSize": 550927,
+  "date": "2023-12-20",
+  "completionDate": "2025-08-24",
+  "drugName": "HFR-841 (SGLT2 inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Active, not recruiting",
+  "description": "This is a  double-blind, active-controlled  study designed to evaluate the efficacy and safety of HFR-841 (SGLT2 inhibitor) in patients with Crohn's Disease. The study will enroll approximately 136 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 19-82 years\n- Confirmed diagnosis of Crohn's Disease\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}
