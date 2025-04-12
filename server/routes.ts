@@ -26,6 +26,7 @@ import { studyDesignAgentService } from "./agent-service";
 import { strategicStatsRouter } from "./strategic-stats-routes";
 import { csrDeepLearningRouter } from "./csr-deep-learning-routes";
 import { getEndpointRecommenderService } from "./services/endpoint-recommender-service";
+import axios from "axios";
 import { notificationService } from "./notification-service";
 import { strategicIntelligenceService } from "./strategic-intelligence-service";
 import dossierRoutes from "./routes/dossier_routes";
@@ -409,6 +410,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const url = `http://localhost:8000/api${req.url}`;
       console.log(`Proxying CSR request to: ${url}`);
       
+      // Import axios directly
+      const axios = (await import('axios')).default;
+      
       // Make request to Python backend using axios
       const response = await axios({
         method: req.method,
@@ -422,7 +426,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Forward response back to client
       res.status(response.status).json(response.data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('CSR API proxy error:', error);
       if (error.response) {
         // Forward error response from Python backend
