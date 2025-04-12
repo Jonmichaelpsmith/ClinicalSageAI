@@ -15,49 +15,91 @@ from datetime import datetime
 # Ensure reports directory exists
 os.makedirs("data/reports", exist_ok=True)
 
-def deep_clean(text):
-    """Clean text of problematic Unicode characters for PDF generation"""
+def hard_clean_text(text):
+    """Deep sanitization of all unicode characters before writing to PDF
+    This function ensures complete compatibility with PDF generation by removing or 
+    replacing all potentially problematic characters. Critical for PDF export reliability.
+    """
     if not text:
         return ""
     
-    # Replace problematic characters
+    # First pass: Replace common problematic characters with ASCII equivalents
     replacements = {
-        "–": "-",  # en dash
-        "—": "-",  # em dash
-        "'": "'",  # curly quote
-        "'": "'",  # curly quote
-        """: '"',  # curly quote
-        """: '"',  # curly quote
-        "≥": ">=",
-        "≤": "<=",
-        "±": "+/-",
-        "°": " degrees ",
-        "…": "...",
-        "→": "->",
-        "⁄": "/",
-        "≠": "!=",
-        "≈": "~=",
-        "×": "x",
-        "÷": "/",
-        "•": "*",
-        "·": "*",
-        "α": "alpha",
-        "β": "beta",
-        "μ": "mu",
-        "σ": "sigma",
-        "Δ": "Delta",
-        "©": "(c)",
-        "®": "(R)",
-        "™": "(TM)",
+        # Quotes and apostrophes
+        "'": "'", "'": "'", "‚": ",", "‛": "'",
+        """: '"', """: '"', "„": '"', "‟": '"',
+        # Dashes and hyphens
+        "–": "-", "—": "-", "―": "-", "‐": "-", "‑": "-", "‒": "-", "‾": "-",
+        # Math symbols
+        "≥": ">=", "≤": "<=", "≠": "!=", "≈": "~", "≡": "=", "≜": "=", "≝": "=", "≞": "=", "≟": "=",
+        "±": "+/-", "∓": "-/+", "÷": "/", "×": "x", "⋅": "*", "∙": "*", "⋯": "...", "…": "...",
+        "√": "sqrt", "∛": "cbrt", "∜": "4rt",
+        "∑": "sum", "∏": "prod", "∐": "coprod", "∫": "int", "∬": "iint", "∭": "iiint", "∮": "oint",
+        "∞": "inf", "∝": "prop to", "∀": "for all", "∃": "exists", "∄": "not exists", "∴": "therefore", "∵": "because",
+        "⊂": "subset", "⊃": "superset", "⊆": "subseteq", "⊇": "supseteq", "⊄": "not subset", "⊅": "not superset",
+        "∈": "in", "∉": "not in", "∋": "ni", "∌": "not ni", "∩": "intersect", "∪": "union", "⊎": "uplus",
+        # Arrows and direction
+        "←": "<-", "→": "->", "↑": "^", "↓": "v", "↔": "<->", "↕": "^v", "⇐": "<=", "⇒": "=>", "⇑": "^", "⇓": "v", "⇔": "<=>",
+        # Greek letters (common in scientific writing)
+        "α": "alpha", "β": "beta", "γ": "gamma", "δ": "delta", "ε": "epsilon", "ζ": "zeta", "η": "eta",
+        "θ": "theta", "ι": "iota", "κ": "kappa", "λ": "lambda", "μ": "mu", "ν": "nu", "ξ": "xi",
+        "π": "pi", "ρ": "rho", "σ": "sigma", "τ": "tau", "υ": "upsilon", "φ": "phi", "χ": "chi",
+        "ψ": "psi", "ω": "omega",
+        "Α": "Alpha", "Β": "Beta", "Γ": "Gamma", "Δ": "Delta", "Ε": "Epsilon", "Ζ": "Zeta", "Η": "Eta",
+        "Θ": "Theta", "Ι": "Iota", "Κ": "Kappa", "Λ": "Lambda", "Μ": "Mu", "Ν": "Nu", "Ξ": "Xi",
+        "Π": "Pi", "Ρ": "Rho", "Σ": "Sigma", "Τ": "Tau", "Υ": "Upsilon", "Φ": "Phi", "Χ": "Chi",
+        "Ψ": "Psi", "Ω": "Omega",
+        # Common symbols
+        "©": "(c)", "®": "(R)", "™": "(TM)", "℠": "(SM)", "℗": "(P)",
+        "•": "*", "·": "*", "⋆": "*", "∗": "*",
+        "°": " degrees ", "′": "'", "″": '"',
+        "†": "+", "‡": "++", "§": "Section", "¶": "Paragraph", "‖": "||",
+        # Currency symbols
+        "€": "EUR", "£": "GBP", "¥": "JPY", "₹": "INR", "₽": "RUB", "₩": "KRW", "₺": "TRY", "₴": "UAH",
+        # Whitespace and special characters
+        "\u00A0": " ", "\u2002": " ", "\u2003": " ", "\u2004": " ", "\u2005": " ",
+        "\u2006": " ", "\u2007": " ", "\u2008": " ", "\u2009": " ", "\u200A": " ",
+        "\u200B": "", "\u200C": "", "\u200D": "", "\u2060": "",
+        # Fractions
+        "½": "1/2", "⅓": "1/3", "⅔": "2/3", "¼": "1/4", "¾": "3/4", "⅕": "1/5", "⅖": "2/5",
+        "⅗": "3/5", "⅘": "4/5", "⅙": "1/6", "⅚": "5/6", "⅐": "1/7", "⅛": "1/8", "⅜": "3/8",
+        "⅝": "5/8", "⅞": "7/8", "⅑": "1/9", "⅒": "1/10",
+        # Superscripts
+        "⁰": "^0", "¹": "^1", "²": "^2", "³": "^3", "⁴": "^4", "⁵": "^5", "⁶": "^6", "⁷": "^7", "⁸": "^8", "⁹": "^9",
+        "⁺": "^+", "⁻": "^-", "⁼": "^=", "⁽": "^(", "⁾": "^)",
+        # Subscripts
+        "₀": "_0", "₁": "_1", "₂": "_2", "₃": "_3", "₄": "_4", "₅": "_5", "₆": "_6", "₇": "_7", "₈": "_8", "₉": "_9",
+        "₊": "_+", "₋": "_-", "₌": "_=", "₍": "_(", "₎": "_)",
+        # Accented characters (common in European languages)
+        "à": "a", "á": "a", "â": "a", "ä": "a", "ã": "a", "å": "a", "æ": "ae",
+        "è": "e", "é": "e", "ê": "e", "ë": "e",
+        "ì": "i", "í": "i", "î": "i", "ï": "i",
+        "ò": "o", "ó": "o", "ô": "o", "ö": "o", "õ": "o", "ø": "o", "œ": "oe",
+        "ù": "u", "ú": "u", "û": "u", "ü": "u",
+        "ý": "y", "ÿ": "y",
+        "ç": "c", "ñ": "n",
+        "À": "A", "Á": "A", "Â": "A", "Ä": "A", "Ã": "A", "Å": "A", "Æ": "AE",
+        "È": "E", "É": "E", "Ê": "E", "Ë": "E",
+        "Ì": "I", "Í": "I", "Î": "I", "Ï": "I",
+        "Ò": "O", "Ó": "O", "Ô": "O", "Ö": "O", "Õ": "O", "Ø": "O", "Œ": "OE",
+        "Ù": "U", "Ú": "U", "Û": "U", "Ü": "U",
+        "Ý": "Y", "Ÿ": "Y",
+        "Ç": "C", "Ñ": "N",
     }
     
     for old, new in replacements.items():
         text = text.replace(old, new)
     
-    # Remove any remaining non-ASCII characters
+    # Second pass: Strip any remaining non-ASCII characters to ensure PDF compatibility
     text = ''.join(c if ord(c) < 128 else ' ' for c in text)
     
+    # Third pass: Normalize whitespace (no double spaces, no leading/trailing whitespace)
+    text = ' '.join(text.split())
+    
     return text
+
+# Alias for backward compatibility
+deep_clean = hard_clean_text
 
 class ProtocolReportPDF(FPDF):
     def __init__(self, protocol_id, title=None):
@@ -169,10 +211,10 @@ class ProtocolReportPDF(FPDF):
         # Move to position after chart
         self.set_y(legend_y + 15)
 
-def generate_intelligence_report(protocol_data, benchmarks, prediction, protocol_id, output_path=None):
-    """Generate a full protocol intelligence report PDF"""
+def generate_intelligence_report(protocol_data, benchmarks, prediction, protocol_id, output_path=None, regulatory_data=None):
+    """Generate a full protocol intelligence report PDF with global regulatory intelligence"""
     # Create PDF
-    pdf = ProtocolReportPDF(protocol_id, f"Protocol Intelligence Report: {protocol_data.get('indication', 'Unknown')} Trial")
+    pdf = ProtocolReportPDF(protocol_id, f"Global Protocol Intelligence Report: {protocol_data.get('indication', 'Unknown')} Trial")
     pdf.add_page()
     
     # Protocol Summary Section
@@ -190,6 +232,14 @@ Dropout Rate: {protocol_data.get('dropout_rate', 0) * 100:.1f}%
         else:
             endpoint_text = protocol_data['primary_endpoints']
         summary_content += f"Primary Endpoint: {endpoint_text}\n"
+    
+    # Add global intelligence fields if available
+    if protocol_data.get('geographic_regions'):
+        if isinstance(protocol_data['geographic_regions'], list):
+            regions_text = ", ".join(protocol_data['geographic_regions'])
+        else:
+            regions_text = protocol_data['geographic_regions']
+        summary_content += f"Geographic Regions: {regions_text}\n"
     
     pdf.add_section("Protocol Summary", summary_content)
     
@@ -227,7 +277,90 @@ Avg Dropout Rate: {benchmarks.get('avg_dropout', 0) * 100:.1f}%
     
     pdf.add_section("CSR Benchmark Comparison", benchmark_content)
     
+    # Global Regulatory Intelligence Section
+    if regulatory_data or protocol_data.get('global_compliance') or protocol_data.get('regulatory_notes'):
+        pdf.add_page()
+        pdf.add_section("Global Regulatory Intelligence", "Cross-regional regulatory compliance analysis:")
+        
+        # Formatted regulatory notes
+        if protocol_data.get('regulatory_notes'):
+            pdf.add_section("Key Regulatory Insights", protocol_data.get('regulatory_notes', ''))
+        
+        # Global compliance table
+        if protocol_data.get('global_compliance'):
+            pdf.set_font('Arial', 'B', 11)
+            pdf.cell(80, 8, "Regulatory Region", 1)
+            pdf.cell(40, 8, "Compliance", 1)
+            pdf.cell(70, 8, "Key Requirements", 1)
+            pdf.ln()
+            
+            pdf.set_font('Arial', '', 10)
+            
+            # Get region information
+            regions = {
+                'FDA': 'US FDA', 
+                'EMA': 'European EMA', 
+                'PMDA': 'Japan PMDA', 
+                'NMPA': 'China NMPA',
+                'MHRA': 'UK MHRA',
+                'TGA': 'Australia TGA',
+                'ANVISA': 'Brazil ANVISA',
+                'CDSCO': 'India CDSCO'
+            }
+            
+            global_compliance = protocol_data.get('global_compliance', {})
+            regional_requirements = protocol_data.get('regional_requirements', {})
+            
+            for region_id, region_name in regions.items():
+                compliant = global_compliance.get(region_id, False)
+                requirements = regional_requirements.get(region_id, [])
+                
+                if isinstance(requirements, list) and requirements:
+                    req_text = requirements[0]
+                else:
+                    req_text = str(requirements) if requirements else "Standard requirements apply"
+                
+                status = "✓ Compliant" if compliant else "⚠ Review Needed"
+                status_color = (0, 128, 0) if compliant else (220, 50, 50)  # Green or Red
+                
+                pdf.cell(80, 8, region_name, 1)
+                
+                # Save current settings
+                current_text_color = pdf.text_color
+                
+                # Change text color for status
+                pdf.set_text_color(*status_color)
+                pdf.cell(40, 8, status, 1)
+                
+                # Restore text color
+                pdf.set_text_color(*current_text_color)
+                
+                pdf.cell(70, 8, deep_clean(req_text)[:40] + "...", 1)
+                pdf.ln()
+            
+            pdf.ln(5)
+        
+        # Ethnic considerations
+        if protocol_data.get('ethnic_considerations'):
+            ethnic_considerations = protocol_data.get('ethnic_considerations', [])
+            if ethnic_considerations:
+                pdf.add_section("Ethnic and Cultural Considerations", "")
+                if isinstance(ethnic_considerations, list):
+                    pdf.add_bullet_list(ethnic_considerations)
+                else:
+                    pdf.multi_cell(0, 5, deep_clean(str(ethnic_considerations)))
+        
+        # Site distribution
+        if protocol_data.get('site_distribution'):
+            site_dist = protocol_data.get('site_distribution', {})
+            if site_dist:
+                content = "Recommended site distribution:\n\n"
+                for region, count in site_dist.items():
+                    content += f"{region}: {count} sites\n"
+                pdf.add_section("Global Site Distribution", content)
+    
     # Recommendations Section
+    pdf.add_page()
     recommendations = []
     
     # Sample size recommendation
@@ -263,7 +396,36 @@ Avg Dropout Rate: {benchmarks.get('avg_dropout', 0) * 100:.1f}%
     else:
         recommendations.append(f"Your protocol has a moderate predicted success probability ({prediction_value * 100:.1f}%) - consider optimizations noted above")
     
-    pdf.add_section("Strategic Recommendations", "Based on CSR analysis and ML prediction:")
+    # Add global recommendations if available
+    if protocol_data.get('global_compliance'):
+        non_compliant_regions = []
+        for region, compliant in protocol_data.get('global_compliance', {}).items():
+            if not compliant:
+                region_names = {
+                    'FDA': 'US FDA', 
+                    'EMA': 'European EMA', 
+                    'PMDA': 'Japan PMDA', 
+                    'NMPA': 'China NMPA',
+                    'MHRA': 'UK MHRA',
+                    'TGA': 'Australia TGA',
+                    'ANVISA': 'Brazil ANVISA',
+                    'CDSCO': 'India CDSCO'
+                }
+                non_compliant_regions.append(region_names.get(region, region))
+        
+        if non_compliant_regions:
+            regions_text = ", ".join(non_compliant_regions)
+            recommendations.append(f"Address regulatory compliance issues for: {regions_text}")
+    
+    # Add ethnic diversity considerations
+    if not protocol_data.get('ethnic_considerations') and protocol_data.get('geographic_regions') and len(protocol_data.get('geographic_regions', [])) > 1:
+        recommendations.append("Consider adding specific ethnic diversity considerations for your multi-region trial")
+    
+    # Add translation requirements if missing
+    if protocol_data.get('geographic_regions') and len(protocol_data.get('geographic_regions', [])) > 1 and not protocol_data.get('translation_requirements'):
+        recommendations.append("Document translation requirements for consent forms and patient materials across all regions")
+    
+    pdf.add_section("Strategic Recommendations", "Based on global CSR analysis, ML prediction, and regulatory intelligence:")
     pdf.add_bullet_list(recommendations)
     
     # Add timestamp and source note
@@ -281,11 +443,12 @@ Avg Dropout Rate: {benchmarks.get('avg_dropout', 0) * 100:.1f}%
     return output_path
 
 def main():
-    parser = argparse.ArgumentParser(description="Generate protocol intelligence report PDF")
+    parser = argparse.ArgumentParser(description="Generate global protocol intelligence report PDF")
     parser.add_argument("--protocol", required=True, help="Protocol data JSON file")
     parser.add_argument("--benchmarks", required=True, help="Benchmark data JSON file")
     parser.add_argument("--prediction", type=float, default=0.5, help="Success prediction value (0-1)")
     parser.add_argument("--id", default="protocol", help="Protocol identifier")
+    parser.add_argument("--regulatory", help="Regulatory data JSON file")
     parser.add_argument("--output", help="Output PDF path")
     
     args = parser.parse_args()
@@ -298,16 +461,26 @@ def main():
     with open(args.benchmarks, 'r', encoding='utf-8') as f:
         benchmarks = json.load(f)
     
+    # Load regulatory data if provided
+    regulatory_data = None
+    if args.regulatory:
+        try:
+            with open(args.regulatory, 'r', encoding='utf-8') as f:
+                regulatory_data = json.load(f)
+        except Exception as e:
+            print(f"Warning: Could not load regulatory data: {e}")
+    
     # Generate report
     output_path = generate_intelligence_report(
         protocol_data, 
         benchmarks, 
         args.prediction, 
         args.id,
-        args.output
+        output_path=args.output,
+        regulatory_data=regulatory_data
     )
     
-    print(f"Protocol intelligence report generated successfully at {output_path}")
+    print(f"Global protocol intelligence report generated successfully at {output_path}")
     return output_path
 
 if __name__ == "__main__":
