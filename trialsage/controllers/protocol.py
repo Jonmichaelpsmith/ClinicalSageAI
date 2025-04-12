@@ -1,474 +1,336 @@
-# /controllers/protocol.py
-from fastapi import HTTPException
+# /trialsage/controllers/protocol.py
+# Protocol controller for TrialSage intelligence engine
+
+import os
+import json
 import uuid
-import time
-from typing import Dict, Any, List, Optional
+from typing import Dict, List, Optional, Any
+from fastapi import APIRouter, HTTPException, Query
+from pydantic import BaseModel
+import openai
 
-from trialsage.models.schemas import ProtocolRequest, ContinueRequest, EvidenceQuery
+# Check if OpenAI API key is available
+if not os.environ.get("OPENAI_API_KEY"):
+    raise Exception("OPENAI_API_KEY not found in environment variables")
 
+# Setup OpenAI client
+openai.api_key = os.environ.get("OPENAI_API_KEY")
 
-def get_protocol_suggestions(req: ProtocolRequest) -> Dict[str, Any]:
-    """
-    Generate protocol suggestions for a specific indication
+# In-memory thread storage (would use database in production)
+THREAD_STORAGE = {}
+
+# Create API router
+router = APIRouter(prefix="/api/intel", tags=["intelligence"])
+
+# Model for protocol suggestions request
+class ProtocolRequest(BaseModel):
+    indication: str
+    thread_id: Optional[str] = None
+    include_quotes: bool = True
+    verbose: bool = False
+    additional_context: Optional[str] = None
+
+# Model for continue request (SAP, IND 2.7, etc.)
+class ContinueRequest(BaseModel):
+    thread_id: str
+    section: str  # "sap", "ind_2_7", etc.
+    context: Optional[str] = None
+
+# Model for evidence query
+class EvidenceQuery(BaseModel):
+    query: str
+    indication: Optional[str] = None
+    thread_id: Optional[str] = None
+
+# Model for report export request
+class ReportExportRequest(BaseModel):
+    indication: str
+    include_visuals: bool = True
+    thread_id: Optional[str] = None
+
+# Create or retrieve thread
+def get_or_create_thread(thread_id: Optional[str] = None) -> str:
+    """Create a new thread or retrieve an existing one"""
+    if thread_id and thread_id in THREAD_STORAGE:
+        return thread_id
     
-    Args:
-        req: A ProtocolRequest containing indication details and preferences
-        
+    new_thread_id = str(uuid.uuid4())
+    THREAD_STORAGE[new_thread_id] = {
+        "messages": [],
+        "context": {}
+    }
+    return new_thread_id
+
+# Add message to thread
+def add_message_to_thread(thread_id: str, role: str, content: str) -> None:
+    """Add a message to the thread storage"""
+    if thread_id not in THREAD_STORAGE:
+        raise ValueError(f"Thread {thread_id} not found")
+    
+    THREAD_STORAGE[thread_id]["messages"].append({
+        "role": role,
+        "content": content
+    })
+
+# Get thread messages
+def get_thread_messages(thread_id: str) -> List[Dict[str, str]]:
+    """Get all messages from a thread"""
+    if thread_id not in THREAD_STORAGE:
+        raise ValueError(f"Thread {thread_id} not found")
+    
+    return THREAD_STORAGE[thread_id]["messages"]
+
+# Generate protocol recommendations
+@router.post("/protocol-suggestions")
+async def get_protocol_suggestions(request: ProtocolRequest) -> Dict[str, Any]:
+    """
+    Generate protocol recommendations based on the provided indication
+    
+    Parameters:
+    - indication: The medical condition/indication for the study
+    - thread_id: Optional thread ID for conversation continuity
+    - include_quotes: Include supporting quotes from CSRs
+    - verbose: Include additional details in response
+    
     Returns:
-        dict: Contains protocol recommendations and evidence
+    - Dictionary with protocol recommendations and supporting evidence
     """
     try:
-        # In production, would call OpenAI or similar for intelligent suggestions
+        # Get or create thread
+        thread_id = get_or_create_thread(request.thread_id)
         
-        # Generate a thread ID if one wasn't provided
-        thread_id = req.thread_id or f"thread_{uuid.uuid4().hex[:8]}"
+        # Generate prompt for AI
+        prompt = f"""You are the TrialSage Clinical Study Intelligence Engine, an expert in protocol design.
         
-        # Build a protocol suggestion structure
-        protocol_suggestion = {
-            "thread_id": thread_id,
-            "timestamp": int(time.time()),
-            "indication": req.indication,
-            "phase": req.phase or "Phase II",
-            "summary": f"Protocol suggestion for {req.indication} {req.phase or 'study'}",
-            "introduction": {
-                "background": f"This protocol addresses the need for clinical evaluation of novel treatments for {req.indication}.",
-                "rationale": "The study design is based on recent regulatory guidance and statistical best practices."
-            },
-            "design": {
-                "type": "Randomized, double-blind, placebo-controlled study",
-                "duration_weeks": req.duration_weeks or 24,
-                "sample_size": req.sample_size or 120,
-                "arms": [
-                    {"name": "Treatment arm", "description": "Active treatment group", "size_percent": 50},
-                    {"name": "Control arm", "description": "Placebo control", "size_percent": 50}
-                ],
-                "randomization": "1:1 randomization with stratification by baseline disease severity"
-            },
-            "population": {
-                "inclusion_criteria": [
-                    f"Adult patients with confirmed diagnosis of {req.indication}",
-                    "Age 18-75 years",
-                    "Able to provide informed consent"
-                ],
-                "exclusion_criteria": [
-                    "Pregnancy or breastfeeding",
-                    "Participation in another clinical trial within 30 days",
-                    "History of hypersensitivity to the study medication"
-                ]
-            },
-            "endpoints": {
-                "primary": req.primary_endpoint or "Change from baseline in disease activity score at Week 12",
-                "secondary": [
-                    "Safety and tolerability",
-                    "Change from baseline in quality of life measures",
-                    "Proportion of patients achieving clinical response"
-                ]
-            },
-            "statistical_considerations": {
-                "power": 0.90,
-                "alpha": 0.05,
-                "analysis_population": "Intent-to-treat (ITT)",
-                "handling_missing_data": "Multiple imputation"
-            },
-            "safety": {
-                "assessments": [
-                    "Adverse event monitoring",
-                    "Laboratory safety tests",
-                    "Vital signs"
-                ],
-                "stopping_rules": "The study will be stopped if safety concerns arise that outweigh potential benefits."
-            },
-            "supporting_evidence": [
-                {
-                    "source": "Clinical Study Report 12345",
-                    "citation": "Smith et al. (2023)",
-                    "relevance": "Similar study design with positive outcomes",
-                    "strength": "High"
-                },
-                {
-                    "source": "Regulatory Guidance",
-                    "citation": "FDA Guidance for Industry (2022)",
-                    "relevance": "Recent regulatory recommendations",
-                    "strength": "High"
-                }
-            ],
-            "regulatory_considerations": {
-                "ind_requirements": "Standard IND submission with 30-day review period",
-                "special_populations": "Optional cohort expansion for elderly patients may be considered"
-            }
-        }
+Generate an evidence-based clinical trial protocol recommendation for: {request.indication}
         
-        return {
-            "protocol": protocol_suggestion,
-            "thread_id": thread_id,
+Your response should include:
+1. A detailed protocol recommendation
+2. IND Module 2.5 (Clinical Overview) content
+3. Risk analysis summary
+4. Supporting citations from CSRs
+
+{request.additional_context or ''}"""
+        
+        # Add user message to thread
+        add_message_to_thread(thread_id, "user", prompt)
+        
+        # Get conversation history
+        messages = get_thread_messages(thread_id)
+        
+        # Call OpenAI API
+        response = openai.ChatCompletion.create(
+            model="gpt-4-turbo",  # Use the best available model
+            messages=[{"role": m["role"], "content": m["content"]} for m in messages],
+            max_tokens=2000,
+            temperature=0.3,
+        )
+        
+        # Extract AI response
+        ai_response = response.choices[0].message.content
+        
+        # Add AI response to thread
+        add_message_to_thread(thread_id, "assistant", ai_response)
+        
+        # Extract structured content from response
+        # In a production system, this would be more sophisticated parsing
+        sections = ai_response.split("\n\n")
+        
+        recommendation = ""
+        ind_module_2_5 = {"title": "Clinical Overview", "content": ""}
+        risk_summary = ""
+        citations = []
+        evidence = []
+        
+        for section in sections:
+            if "protocol recommendation" in section.lower():
+                recommendation = section
+            elif "ind module 2.5" in section.lower() or "clinical overview" in section.lower():
+                ind_module_2_5["content"] = section
+            elif "risk" in section.lower() and "summary" in section.lower():
+                risk_summary = section
+            elif "citation" in section.lower() or "reference" in section.lower():
+                citations = [cit.strip() for cit in section.split("\n") if cit.strip()]
+            elif "evidence" in section.lower() or "supporting data" in section.lower():
+                evidence = [ev.strip() for ev in section.split("\n") if ev.strip()]
+        
+        result = {
             "success": True,
-            "message": "Protocol suggestions generated successfully."
+            "thread_id": thread_id,
+            "recommendation": recommendation,
+            "ind_module_2_5": ind_module_2_5,
+            "risk_summary": risk_summary,
+            "response": ai_response,
         }
+        
+        if request.include_quotes:
+            result["citations"] = citations
+            result["evidence"] = evidence
+            
+        return result
+        
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating protocol suggestions: {str(e)}")
 
-
-def continue_study_workflow(req: ContinueRequest) -> Dict[str, Any]:
+# Continue thread with specified section
+@router.post("/continue-workflow")
+async def continue_workflow(request: ContinueRequest) -> Dict[str, Any]:
     """
-    Continue a study workflow with a specific thread and section
+    Continue a conversation thread to generate additional protocol sections
     
-    Args:
-        req: A ContinueRequest containing thread_id, study_id, section, and context
-        
+    Parameters:
+    - thread_id: The conversation thread ID
+    - section: The section to generate (e.g., "sap", "ind_2_7")
+    - context: Optional additional context
+    
     Returns:
-        dict: Contains updated protocol information for the requested section
+    - Dictionary with the generated content
     """
     try:
-        # In production, would retrieve existing thread context and call AI service
+        if request.thread_id not in THREAD_STORAGE:
+            raise HTTPException(status_code=404, detail="Thread not found")
         
-        if not req.thread_id:
-            raise ValueError("Thread ID is required")
+        # Generate prompt based on requested section
+        if request.section.lower() == "sap":
+            prompt = """Based on the protocol we've discussed, generate a Statistical Analysis Plan (SAP) that includes:
             
-        # Mock response based on requested section
-        section_data = {}
-        
-        if req.section == "ind":
-            section_data = {
-                "title": "IND Application Components",
-                "components": [
-                    {
-                        "name": "Form FDA 1571",
-                        "description": "Investigation New Drug Application Cover Sheet",
-                        "status": "Required",
-                        "notes": "Must be signed by sponsor"
-                    },
-                    {
-                        "name": "Table of Contents",
-                        "description": "Comprehensive listing of all items submitted",
-                        "status": "Required",
-                        "notes": "Follow standard CTD format"
-                    },
-                    {
-                        "name": "Introductory Statement",
-                        "description": "Brief description of the investigational drug",
-                        "status": "Required",
-                        "notes": "Include proposed indication and phase of study"
-                    },
-                    {
-                        "name": "General Investigational Plan",
-                        "description": "Overview of planned clinical investigations",
-                        "status": "Required",
-                        "notes": "Include estimated duration and number of subjects"
-                    },
-                    {
-                        "name": "Investigator's Brochure",
-                        "description": "Information about the investigational drug",
-                        "status": "Required",
-                        "notes": "Must be comprehensive and up-to-date"
-                    },
-                    {
-                        "name": "Clinical Protocol",
-                        "description": "Detailed study design and procedures",
-                        "status": "Required",
-                        "notes": "Must include safety monitoring plan"
-                    },
-                    {
-                        "name": "Chemistry, Manufacturing, and Control (CMC) Information",
-                        "description": "Information on drug composition and manufacturing",
-                        "status": "Required",
-                        "notes": "Must include stability data and certificate of analysis"
-                    },
-                    {
-                        "name": "Pharmacology and Toxicology Information",
-                        "description": "Non-clinical study results",
-                        "status": "Required",
-                        "notes": "Must include adequate animal testing data"
-                    },
-                    {
-                        "name": "Previous Human Experience",
-                        "description": "Information from prior clinical use",
-                        "status": "Required if available",
-                        "notes": "Include any existing clinical data"
-                    }
-                ],
-                "timeline": {
-                    "submission_prep": "4-6 weeks",
-                    "fda_review": "30 days",
-                    "total_estimated": "2-3 months"
-                },
-                "key_considerations": [
-                    "Ensure all sections are complete and internally consistent",
-                    "Provide clear justification for the proposed dose selection",
-                    "Include comprehensive safety monitoring plan",
-                    "Address any specific concerns from pre-IND interactions with FDA",
-                    "Ensure protocol is designed to meet both research objectives and regulatory requirements"
-                ]
-            }
-        elif req.section == "sap":
-            section_data = {
-                "title": "Statistical Analysis Plan",
-                "overview": "This Statistical Analysis Plan (SAP) provides details of the statistical analyses that will be conducted for the clinical study.",
-                "sections": [
-                    {
-                        "name": "Study Objectives",
-                        "content": "Detailed primary and secondary objectives aligned with protocol endpoints"
-                    },
-                    {
-                        "name": "Study Design",
-                        "content": "Brief description of study design, including treatment arms and visit schedule"
-                    },
-                    {
-                        "name": "Sample Size Determination",
-                        "content": "Justification for the sample size based on power calculations"
-                    },
-                    {
-                        "name": "Analysis Populations",
-                        "content": "Definitions of Intent-to-Treat (ITT), Modified Intent-to-Treat (mITT), Per Protocol (PP), and Safety populations"
-                    },
-                    {
-                        "name": "Primary Endpoint Analysis",
-                        "content": "Detailed statistical methodology for analyzing the primary endpoint, including handling of missing data"
-                    },
-                    {
-                        "name": "Secondary Endpoint Analyses",
-                        "content": "Statistical approaches for each secondary endpoint with multiplicity adjustments if applicable"
-                    },
-                    {
-                        "name": "Safety Analyses",
-                        "content": "Methods for summarizing adverse events, laboratory data, and other safety parameters"
-                    },
-                    {
-                        "name": "Interim Analyses",
-                        "content": "Plans for any interim analyses and stopping rules if applicable"
-                    },
-                    {
-                        "name": "Subgroup Analyses",
-                        "content": "Pre-specified subgroups of interest for efficacy and safety analyses"
-                    },
-                    {
-                        "name": "Handling of Missing Data",
-                        "content": "Detailed approach for handling missing data, including sensitivity analyses"
-                    }
-                ],
-                "statistical_methods": [
-                    {
-                        "test": "Mixed Model for Repeated Measures (MMRM)",
-                        "application": "Primary efficacy analysis for continuous endpoints with repeated measurements",
-                        "justification": "Accounts for within-subject correlation and handles missing data under MAR assumption"
-                    },
-                    {
-                        "test": "Logistic Regression",
-                        "application": "Analysis of binary endpoints",
-                        "justification": "Allows adjustment for covariates"
-                    },
-                    {
-                        "test": "Kaplan-Meier Estimator",
-                        "application": "Time-to-event analyses",
-                        "justification": "Standard approach for censored time-to-event data"
-                    },
-                    {
-                        "test": "Cox Proportional Hazards Model",
-                        "application": "Multivariate time-to-event analyses",
-                        "justification": "Allows assessment of multiple predictors on survival outcomes"
-                    }
-                ],
-                "multiplicity_strategy": "Hierarchical testing procedure for key secondary endpoints to control Type I error rate",
-                "randomization_details": "Permuted block randomization with stratification factors"
-            }
-        elif req.section == "risk":
-            section_data = {
-                "title": "Risk Assessment and Mitigation Strategy",
-                "risk_categories": [
-                    {
-                        "category": "Scientific/Study Design Risks",
-                        "risks": [
-                            {
-                                "name": "Inadequate sample size",
-                                "likelihood": "Medium",
-                                "impact": "High",
-                                "mitigation": "Conduct rigorous power calculations with sensitivity analyses"
-                            },
-                            {
-                                "name": "Inappropriate endpoint selection",
-                                "likelihood": "Medium",
-                                "impact": "High",
-                                "mitigation": "Review regulatory precedents and consult with KOLs"
-                            },
-                            {
-                                "name": "High dropout rate",
-                                "likelihood": "Medium",
-                                "impact": "Medium",
-                                "mitigation": "Implement retention strategies and plan for higher enrollment"
-                            }
-                        ]
-                    },
-                    {
-                        "category": "Operational Risks",
-                        "risks": [
-                            {
-                                "name": "Slow recruitment",
-                                "likelihood": "High",
-                                "impact": "High",
-                                "mitigation": "Diversify recruitment sites and implement flexible recruitment strategies"
-                            },
-                            {
-                                "name": "Data quality issues",
-                                "likelihood": "Medium",
-                                "impact": "High",
-                                "mitigation": "Implement robust data monitoring plan and site training"
-                            },
-                            {
-                                "name": "Supply chain disruptions",
-                                "likelihood": "Medium",
-                                "impact": "High",
-                                "mitigation": "Maintain adequate buffer stock and backup vendors"
-                            }
-                        ]
-                    },
-                    {
-                        "category": "Safety Risks",
-                        "risks": [
-                            {
-                                "name": "Serious adverse events",
-                                "likelihood": "Low",
-                                "impact": "High",
-                                "mitigation": "Implement rigorous safety monitoring and stopping rules"
-                            },
-                            {
-                                "name": "Drug-drug interactions",
-                                "likelihood": "Medium",
-                                "impact": "Medium",
-                                "mitigation": "Clear exclusion criteria and medication review process"
-                            }
-                        ]
-                    },
-                    {
-                        "category": "Regulatory Risks",
-                        "risks": [
-                            {
-                                "name": "IND rejection/clinical hold",
-                                "likelihood": "Low",
-                                "impact": "High",
-                                "mitigation": "Pre-IND consultation with FDA and thorough application review"
-                            },
-                            {
-                                "name": "Protocol amendments",
-                                "likelihood": "Medium",
-                                "impact": "Medium",
-                                "mitigation": "Thorough protocol review and anticipation of potential issues"
-                            }
-                        ]
-                    }
-                ],
-                "risk_summary": {
-                    "high_priority_risks": 3,
-                    "medium_priority_risks": 5,
-                    "low_priority_risks": 1,
-                    "overall_risk_level": "Medium"
-                },
-                "monitoring_plan": {
-                    "safety_monitoring": "Independent Data Monitoring Committee (IDMC) with regular safety reviews",
-                    "recruitment_monitoring": "Weekly tracking and monthly stakeholder reviews",
-                    "data_quality_monitoring": "Risk-based monitoring approach with remote data review"
-                }
-            }
+1. Primary analysis methods
+2. Statistical assumptions
+3. Sample size calculations
+4. Interim analysis plans
+5. Handling of missing data
+            """
+        elif request.section.lower() == "ind_2_7":
+            prompt = """Based on the protocol we've discussed, generate Module 2.7 (Clinical Summary) content that includes:
+            
+1. Summary of clinical pharmacology studies
+2. Summary of clinical efficacy
+3. Summary of clinical safety
+4. Benefit-risk conclusions
+            """
         else:
-            section_data = {
-                "title": f"Section: {req.section}",
-                "message": "Section content not implemented yet."
-            }
-            
-        return {
-            "thread_id": req.thread_id,
-            "section": req.section,
-            "data": section_data,
-            "success": True,
-            "message": f"Continued workflow for section: {req.section}"
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error continuing study workflow: {str(e)}")
-
-
-def get_supporting_evidence(req: EvidenceQuery) -> Dict[str, List[Dict[str, str]]]:
-    """
-    Retrieve supporting evidence for a specific topic
-    
-    Args:
-        req: An EvidenceQuery containing the topic and optional filters
+            prompt = f"Generate additional information for the {request.section} section of our protocol."
         
+        if request.context:
+            prompt += f"\n\nAdditional context: {request.context}"
+        
+        # Add user message to thread
+        add_message_to_thread(request.thread_id, "user", prompt)
+        
+        # Get conversation history
+        messages = get_thread_messages(request.thread_id)
+        
+        # Call OpenAI API
+        response = openai.ChatCompletion.create(
+            model="gpt-4-turbo",  # Use the best available model
+            messages=[{"role": m["role"], "content": m["content"]} for m in messages],
+            max_tokens=2000,
+            temperature=0.3,
+        )
+        
+        # Extract AI response
+        ai_response = response.choices[0].message.content
+        
+        # Add AI response to thread
+        add_message_to_thread(request.thread_id, "assistant", ai_response)
+        
+        # Return the response
+        return {
+            "success": True,
+            "thread_id": request.thread_id,
+            "section": request.section,
+            "content": ai_response,
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error continuing workflow: {str(e)}")
+
+# Query for CSR evidence
+@router.post("/csr-evidence")
+async def get_csr_evidence(request: EvidenceQuery) -> Dict[str, Any]:
+    """
+    Find evidence in CSR corpus for a specific query
+    
+    Parameters:
+    - query: The natural language query to search for
+    - indication: Optional indication to filter by
+    - thread_id: Optional thread ID for conversation continuity
+    
     Returns:
-        dict: Contains evidence items with sources and quotes
+    - Dictionary with matching evidence
     """
     try:
-        # In production, would search vector database or call evidence retrieval service
+        # Get or create thread
+        thread_id = get_or_create_thread(request.thread_id)
         
-        # Mock evidence response
-        evidence_items = [
-            {
-                "source": "Smith et al. (2022). Journal of Clinical Research",
-                "title": "Efficacy and Safety of Novel Treatments in Advanced Disease",
-                "relevance_score": 0.92,
-                "quote": "The study demonstrated a significant improvement in primary endpoints with an acceptable safety profile.",
-                "study_design": "Randomized, double-blind, placebo-controlled study",
-                "publication_date": "2022-03-15",
-                "indication": req.indication or "Multiple indications",
-                "phase": req.phase or "Phase III"
-            },
-            {
-                "source": "FDA Guidance for Industry (2023)",
-                "title": "Clinical Trial Design Considerations for Rare Diseases",
-                "relevance_score": 0.87,
-                "quote": "For rare diseases, innovative trial designs with adaptive elements may provide valuable solutions to common challenges.",
-                "study_design": "Regulatory guidance",
-                "publication_date": "2023-01-10",
-                "indication": "Multiple rare diseases",
-                "phase": "All phases"
-            },
-            {
-                "source": "Johnson et al. (2021). Clinical Trials Journal",
-                "title": "Statistical Considerations for Endpoint Selection",
-                "relevance_score": 0.85,
-                "quote": "Endpoint selection should balance regulatory requirements, statistical powering, and clinical meaningfulness.",
-                "study_design": "Methodological review",
-                "publication_date": "2021-11-05",
-                "indication": "Multiple indications",
-                "phase": "All phases"
-            },
-            {
-                "source": "EMA Reflection Paper (2022)",
-                "title": "Use of Patient-Reported Outcomes in Clinical Trials",
-                "relevance_score": 0.82,
-                "quote": "Patient-reported outcomes can provide valuable insights into treatment effects that may not be captured by traditional clinical measures.",
-                "study_design": "Regulatory guidance",
-                "publication_date": "2022-07-22",
-                "indication": "Multiple indications",
-                "phase": "All phases"
-            },
-            {
-                "source": "Lee et al. (2023). Translational Research",
-                "title": f"Novel Biomarkers for {req.indication or 'Disease'} Progression",
-                "relevance_score": 0.80,
-                "quote": "The identified biomarkers demonstrated strong correlation with disease progression and treatment response.",
-                "study_design": "Prospective biomarker study",
-                "publication_date": "2023-02-18",
-                "indication": req.indication or "Multiple indications",
-                "phase": req.phase or "Phase II"
-            }
+        # Generate mock evidence (in production, this would search a vector database)
+        evidence = [
+            f"Evidence for '{request.query}' found in CSR-123: Endpoint success rate of 68% vs 42% for placebo",
+            f"Evidence for '{request.query}' found in CSR-456: Mean change from baseline was statistically significant (p<0.001)",
+            f"Evidence for '{request.query}' found in CSR-789: Safety profile showed acceptable tolerability with common AEs of headache (12%) and nausea (8%)"
         ]
         
-        # Filter by indication and phase if provided
-        if req.indication:
-            evidence_items = [item for item in evidence_items 
-                             if req.indication.lower() in item['indication'].lower()]
-                             
-        if req.phase:
-            evidence_items = [item for item in evidence_items 
-                             if req.phase.lower() in item['phase'].lower()]
-        
-        # Apply limit
-        evidence_items = evidence_items[:req.limit]
+        # Add query and response to thread for context continuity
+        add_message_to_thread(thread_id, "user", f"Find evidence for: {request.query}")
+        add_message_to_thread(thread_id, "assistant", "\n".join(evidence))
         
         return {
-            "topic": req.topic,
-            "thread_id": req.thread_id,
-            "evidence": evidence_items,
             "success": True,
-            "message": f"Found {len(evidence_items)} evidence items for topic: {req.topic}"
+            "thread_id": thread_id,
+            "query": request.query,
+            "evidence": evidence,
+            "count": len(evidence)
         }
+        
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error retrieving supporting evidence: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error retrieving CSR evidence: {str(e)}")
+
+# Generate and export report
+@router.post("/generate-report")
+async def generate_report(request: ReportExportRequest) -> Dict[str, Any]:
+    """
+    Generate a comprehensive report for the given indication
+    
+    Parameters:
+    - indication: The medical condition/indication for the report
+    - include_visuals: Include visualizations in the report
+    - thread_id: Optional thread ID for conversation continuity
+    
+    Returns:
+    - Dictionary with report details and download link
+    """
+    try:
+        # Get or create thread
+        thread_id = get_or_create_thread(request.thread_id)
+        
+        # In a production system, this would call a report generation service
+        # For now, we'll simulate the report generation with a delay
+        
+        # Generate report filename
+        timestamp = uuid.uuid4().hex[:8]
+        filename = f"trialsage_report_{timestamp}.pdf"
+        
+        # Update static/latest_report.pdf symlink 
+        # This would be done by the actual report generator in production
+        
+        return {
+            "success": True,
+            "thread_id": thread_id,
+            "indication": request.indication,
+            "report_url": f"/static/{filename}",
+            "latest_report_url": "/static/latest_report.pdf",
+            "timestamp": timestamp
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error generating report: {str(e)}")
+
+# Health check endpoint
+@router.get("/health")
+async def health_check() -> Dict[str, Any]:
+    """Check the health of the intelligence engine"""
+    return {
+        "status": "healthy",
+        "model": "gpt-4-turbo",
+        "threads_active": len(THREAD_STORAGE)
+    }
