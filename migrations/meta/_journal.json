@@ -1,20 +1,18 @@
 {
-  "version": "7",
-  "dialect": "postgresql",
+  "version": "5",
+  "dialect": "pg",
   "entries": [
     {
       "idx": 0,
-      "version": "7",
-      "when": 1744222544810,
-      "tag": "0000_curious_vampiro",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1744222676297,
-      "tag": "0001_breezy_clea",
-      "breakpoints": true
+      "version": "0000",
+      "name": "create_trials_table",
+      "checksum": "9c7ec22fe9c1f03b93e2b7c3e53d5f4bb28aa4c099c3dd02b4a7c7de7c29268f",
+      "actions": [
+        {
+          "type": "create-table",
+          "table": "trials"
+        }
+      ]
     }
   ]
 }

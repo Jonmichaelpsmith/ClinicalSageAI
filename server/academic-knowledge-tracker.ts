@@ -1,337 +1,337 @@
-import fs from 'fs';
-import path from 'path';
+import { 
+  academicResources, 
+  academicEmbeddings, 
+  InsertAcademicResource, 
+  InsertAcademicEmbedding, 
+  AcademicResource,
+  AcademicEmbedding
+} from '@shared/schema';
 import { db } from './db';
-import { huggingFaceService } from './huggingface-service';
-import { academicResources, academicEmbeddings } from '@shared/schema';
-import { eq, and, like, or, sql } from 'drizzle-orm';
-
-interface ResourceMetadata {
-  title: string;
-  authors: string[];
-  publicationDate: string;
-  source: string;
-  resourceType: 'pdf' | 'text' | 'xml' | 'json';
-  summary: string;
-  topics: string[];
-  keywords: string[];
-  filePath: string;
-  fileSize: number;
-}
+import { eq, like, and, desc, asc, or, inArray, sql, count } from 'drizzle-orm';
 
 /**
- * Academic Knowledge Tracker
+ * Academic Knowledge Tracker Service
  * 
- * This service maintains a registry of all academic resources uploaded to the system
- * and ensures they are persistently available for AI services to reference.
- * 
- * It handles:
- * 1. Tracking uploaded academic resources
- * 2. Extracting metadata and content
- * 3. Generating embeddings for search
- * 4. Maintaining a searchable index
+ * This service manages the storage and retrieval of academic resources and embeddings.
+ * It provides functionality for tracking academic and regulatory literature,
+ * embeddings, and semantic search capabilities.
  */
 export class AcademicKnowledgeTracker {
-  private readonly resourcesDir: string;
-  private readonly embeddingsDir: string;
-  
-  constructor() {
-    this.resourcesDir = path.join(process.cwd(), 'academic_resources');
-    this.embeddingsDir = path.join(process.cwd(), 'academic_embeddings');
-    
-    // Ensure directories exist
-    if (!fs.existsSync(this.resourcesDir)) {
-      fs.mkdirSync(this.resourcesDir, { recursive: true });
-    }
-    
-    if (!fs.existsSync(this.embeddingsDir)) {
-      fs.mkdirSync(this.embeddingsDir, { recursive: true });
-    }
-  }
-  
   /**
-   * Register a new academic resource
+   * Add a new academic resource to the knowledge base
    * 
-   * @param filePath Path to the resource file
-   * @param metadata Resource metadata
-   * @returns The resource ID
+   * @param resource Academic resource metadata to add
+   * @returns The created resource with ID
    */
-  async registerResource(filePath: string, metadata: Partial<ResourceMetadata>): Promise<number> {
-    // Extract basic file information
-    const fileName = path.basename(filePath);
-    const stats = fs.statSync(filePath);
-    const fileSize = stats.size;
-    const fileExt = path.extname(filePath).toLowerCase();
-    
-    // Determine resource type from extension
-    let resourceType: 'pdf' | 'text' | 'xml' | 'json' = 'text';
-    if (fileExt === '.pdf') resourceType = 'pdf';
-    else if (fileExt === '.xml') resourceType = 'xml';
-    else if (fileExt === '.json') resourceType = 'json';
-    
-    // Generate a summary if none provided
-    let summary = metadata.summary || '';
-    if (!summary) {
-      try {
-        const textContent = await this.extractText(filePath, resourceType);
-        const truncatedContent = textContent.substring(0, 5000); // First 5000 chars
-        summary = await this.generateSummary(truncatedContent);
-      } catch (error) {
-        console.error('Error generating summary:', error);
-        summary = 'Failed to generate summary automatically.';
-      }
-    }
-    
-    // Generate embeddings for the resource
-    let embedding: number[] = [];
+  async addResource(resource: InsertAcademicResource): Promise<AcademicResource> {
     try {
-      const textContent = await this.extractText(filePath, resourceType);
-      embedding = await huggingFaceService.generateEmbeddings(textContent.substring(0, 10000)); // First 10k chars
-    } catch (error) {
-      console.error('Error generating embeddings:', error);
-    }
-    
-    // Store in database
-    const [resource] = await db.insert(academicResources).values({
-      title: metadata.title || fileName,
-      authors: JSON.stringify(metadata.authors || []),
-      publicationDate: metadata.publicationDate || new Date().toISOString().split('T')[0],
-      source: metadata.source || 'manual_upload',
-      resourceType,
-      summary,
-      topics: JSON.stringify(metadata.topics || []),
-      keywords: JSON.stringify(metadata.keywords || []),
-      filePath: this.copyToResourcesDir(filePath),
-      fileSize,
-      uploadDate: new Date(),
-      lastAccessed: new Date(),
-      accessCount: 0
-    }).returning();
-    
-    // Store embeddings
-    if (embedding.length > 0) {
-      await db.insert(academicEmbeddings).values({
-        resourceId: resource.id,
-        embedding: JSON.stringify(embedding)
-      });
-    }
-    
-    return resource.id;
-  }
-  
-  /**
-   * Extract text from a resource file
-   * 
-   * @param filePath Path to the resource file
-   * @param resourceType Type of resource
-   * @returns Extracted text content
-   */
-  private async extractText(filePath: string, resourceType: 'pdf' | 'text' | 'xml' | 'json'): Promise<string> {
-    if (resourceType === 'text') {
-      return fs.readFileSync(filePath, 'utf8');
-    } else if (resourceType === 'json') {
-      const jsonContent = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-      return JSON.stringify(jsonContent, null, 2);
-    } else if (resourceType === 'xml') {
-      return fs.readFileSync(filePath, 'utf8');
-    } else if (resourceType === 'pdf') {
-      // Basic text extraction from PDF
-      // In a real implementation, we would use a PDF parser library
-      return 'PDF text extraction not implemented yet';
-    }
-    
-    return '';
-  }
-  
-  /**
-   * Generate a summary for a text
-   * 
-   * @param text Text to summarize
-   * @returns Generated summary
-   */
-  private async generateSummary(text: string): Promise<string> {
-    const prompt = `
-    Please provide a concise summary (around 200 words) of the following academic content:
-    
-    ${text.substring(0, 3000)}
-    
-    Summary:
-    `;
-    
-    try {
-      const summary = await huggingFaceService.queryHuggingFace(prompt);
-      return summary;
-    } catch (error) {
-      console.error('Error generating summary:', error);
-      return 'Failed to generate summary.';
-    }
-  }
-  
-  /**
-   * Copy a file to the resources directory
-   * 
-   * @param filePath Original file path
-   * @returns New file path in resources directory
-   */
-  private copyToResourcesDir(filePath: string): string {
-    const fileName = path.basename(filePath);
-    const timestamp = Date.now();
-    const newName = `${timestamp}_${fileName}`;
-    const newPath = path.join(this.resourcesDir, newName);
-    
-    fs.copyFileSync(filePath, newPath);
-    
-    return newPath;
-  }
-  
-  /**
-   * Search academic resources using text query
-   * 
-   * @param query Search query
-   * @param limit Maximum number of results
-   * @returns Matching resources
-   */
-  async searchResources(query: string, limit: number = 10): Promise<any[]> {
-    // Generate embeddings for the query
-    const queryEmbedding = await huggingFaceService.generateEmbeddings(query);
-    
-    // Get all resource embeddings
-    const allEmbeddings = await db.select().from(academicEmbeddings);
-    
-    // Calculate similarity scores
-    const results = await Promise.all(
-      allEmbeddings.map(async (item) => {
-        const resourceEmbedding = JSON.parse(item.embedding as string);
-        const similarity = this.cosineSimilarity(queryEmbedding, resourceEmbedding);
-        
-        const resource = await db.select().from(academicResources)
-          .where(eq(academicResources.id, item.resourceId));
-        
-        if (!resource || resource.length === 0) return null;
-        
-        return {
-          ...resource[0],
-          similarity
-        };
-      })
-    );
-    
-    // Filter out nulls and sort by similarity
-    return results
-      .filter(item => item !== null)
-      .sort((a, b) => b.similarity - a.similarity)
-      .slice(0, limit);
-  }
-  
-  /**
-   * Calculate cosine similarity between two vectors
-   * 
-   * @param vec1 First vector
-   * @param vec2 Second vector
-   * @returns Similarity score between 0 and 1
-   */
-  private cosineSimilarity(vec1: number[], vec2: number[]): number {
-    let dotProduct = 0;
-    let mag1 = 0;
-    let mag2 = 0;
-    
-    for (let i = 0; i < vec1.length; i++) {
-      dotProduct += vec1[i] * vec2[i];
-      mag1 += vec1[i] * vec1[i];
-      mag2 += vec2[i] * vec2[i];
-    }
-    
-    mag1 = Math.sqrt(mag1);
-    mag2 = Math.sqrt(mag2);
-    
-    return dotProduct / (mag1 * mag2);
-  }
-  
-  /**
-   * Update the access timestamp for a resource
-   * 
-   * @param resourceId Resource ID
-   */
-  async recordAccess(resourceId: number): Promise<void> {
-    // First get the current access count
-    const [resource] = await db.select({
-      accessCount: academicResources.accessCount
-    })
-    .from(academicResources)
-    .where(eq(academicResources.id, resourceId));
-    
-    // Then update with the incremented value
-    await db.update(academicResources)
-      .set({ 
-        lastAccessed: new Date(),
-        accessCount: (resource?.accessCount || 0) + 1
-      })
-      .where(eq(academicResources.id, resourceId));
-  }
-  
-  /**
-   * Get statistics about the academic knowledge base
-   * 
-   * @returns Knowledge base statistics
-   */
-  async getStats(): Promise<any> {
-    // Return mock stats for now to fix the error
-    return {
-      totalResources: 5,
-      resourceTypes: [
-        { type: 'pdf', count: 3 },
-        { type: 'text', count: 2 }
-      ],
-      topTopics: [
-        { topic: 'Clinical Trials', count: 5 },
-        { topic: 'Protocols', count: 3 },
-        { topic: 'Study Design', count: 2 }
-      ],
-      avgFileSize: 1024 * 1024, // 1MB average size
-      recentUploads: [
-        {
-          id: 1,
-          title: 'Patient Engagement in Clinical Trials',
-          authors: JSON.stringify(['Smith, J.', 'Johnson, M.']),
+      const [newResource] = await db.insert(academicResources)
+        .values({
+          ...resource,
           uploadDate: new Date(),
-          resourceType: 'pdf',
-          fileSize: 2 * 1024 * 1024
-        },
-        {
-          id: 2,
-          title: 'Clinical Study Protocol Design Guidelines',
-          authors: JSON.stringify(['Brown, R.', 'Davis, S.']),
-          uploadDate: new Date(Date.now() - 86400000), // Yesterday
-          resourceType: 'pdf',
-          fileSize: 1.5 * 1024 * 1024
+          lastAccessed: new Date(),
+          accessCount: 0
+        })
+        .returning();
+
+      return newResource;
+    } catch (error) {
+      console.error('Failed to add academic resource:', error);
+      throw new Error('Failed to add academic resource to the knowledge base');
+    }
+  }
+
+  /**
+   * Store embeddings for a specific academic resource
+   * 
+   * @param embedding Embedding data to store
+   * @returns The created embedding with ID
+   */
+  async storeEmbedding(embedding: InsertAcademicEmbedding): Promise<AcademicEmbedding> {
+    try {
+      const [newEmbedding] = await db.insert(academicEmbeddings)
+        .values({
+          ...embedding,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        })
+        .returning();
+
+      return newEmbedding;
+    } catch (error) {
+      console.error('Failed to store embedding:', error);
+      throw new Error('Failed to store academic resource embedding');
+    }
+  }
+
+  /**
+   * Get a specific academic resource by ID
+   * 
+   * @param id Resource ID
+   * @returns The academic resource if found
+   */
+  async getResource(id: number): Promise<AcademicResource | undefined> {
+    try {
+      const resource = await db.query.academicResources.findFirst({
+        where: eq(academicResources.id, id),
+        with: {
+          embeddings: true
         }
-      ]
-    };
+      });
+
+      if (resource) {
+        // Update access count and timestamp
+        await db.update(academicResources)
+          .set({
+            lastAccessed: new Date(),
+            accessCount: (resource.accessCount || 0) + 1
+          })
+          .where(eq(academicResources.id, id));
+      }
+
+      return resource;
+    } catch (error) {
+      console.error('Failed to get academic resource:', error);
+      throw new Error('Failed to retrieve academic resource');
+    }
   }
-  
+
   /**
-   * Calculate the average file size of resources
+   * Get all academic resources with optional filtering
    * 
-   * @returns Average file size in bytes
+   * @param filter Optional filter parameters
+   * @returns List of academic resources
    */
-  private async calculateAverageFileSize(): Promise<number> {
-    const resources = await db.select({ fileSize: academicResources.fileSize }).from(academicResources);
-    
-    if (resources.length === 0) return 0;
-    
-    const totalSize = resources.reduce((sum, resource) => sum + resource.fileSize, 0);
-    return Math.round(totalSize / resources.length);
+  async getTrackedResources(filter?: {
+    type?: string;
+    category?: string;
+    query?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<{ resources: AcademicResource[]; total: number }> {
+    try {
+      const whereClause = [];
+      
+      if (filter?.type) {
+        whereClause.push(eq(academicResources.resourceType, filter.type));
+      }
+      
+      if (filter?.category) {
+        whereClause.push(eq(academicResources.category, filter.category));
+      }
+      
+      if (filter?.query) {
+        whereClause.push(
+          or(
+            like(academicResources.title, `%${filter.query}%`),
+            like(academicResources.authors, `%${filter.query}%`),
+            like(academicResources.summary, `%${filter.query}%`)
+          )
+        );
+      }
+
+      const conditions = whereClause.length > 0 ? and(...whereClause) : undefined;
+      
+      // Count total resources matching filter
+      const totalCount = await db.select({ count: count() })
+        .from(academicResources)
+        .where(conditions)
+        .execute()
+        .then(result => result[0]?.count || 0);
+      
+      // Get filtered resources
+      const resources = await db.query.academicResources.findMany({
+        where: conditions,
+        orderBy: desc(academicResources.uploadDate),
+        limit: filter?.limit || 100,
+        offset: filter?.offset || 0
+      });
+
+      return {
+        resources,
+        total: Number(totalCount)
+      };
+    } catch (error) {
+      console.error('Failed to get tracked resources:', error);
+      throw new Error('Failed to retrieve academic resources');
+    }
   }
-  
+
   /**
-   * Get recent uploads
+   * Search academic knowledge base with semantic search
    * 
+   * @param query Natural language query
+   * @param similarityThreshold Minimum similarity score (0-1)
    * @param limit Maximum number of results
-   * @returns Recent uploads
+   * @returns List of matching resources with similarity scores
    */
-  private async getRecentUploads(limit: number): Promise<any[]> {
-    return db.select().from(academicResources)
-      .orderBy(academicResources.uploadDate)
-      .limit(limit);
+  async searchKnowledge(
+    query: string, 
+    embedVector: number[],
+    similarityThreshold: number = 0.7,
+    limit: number = 10
+  ): Promise<Array<AcademicResource & { similarity: number }>> {
+    try {
+      // Get embeddings with similarity scores above threshold
+      const results = await db.execute(
+        `SELECT e.*, r.*, 
+         (e.vector <=> $1) as similarity
+         FROM academic_embeddings e
+         JOIN academic_resources r ON e.resource_id = r.id
+         WHERE (e.vector <=> $1) < $2
+         ORDER BY similarity ASC
+         LIMIT $3`,
+        [embedVector, 1 - similarityThreshold, limit]
+      );
+
+      // Map results and update access counts for retrieved resources
+      const resourceIds = new Set<number>();
+      const mappedResults = results.map((row: any) => {
+        resourceIds.add(row.resource_id);
+        return {
+          id: row.resource_id,
+          title: row.title,
+          authors: row.authors,
+          resourceType: row.resource_type,
+          source: row.source,
+          url: row.url,
+          publishedDate: row.published_date,
+          category: row.category,
+          summary: row.summary,
+          fullText: row.full_text,
+          keyInsights: row.key_insights,
+          tags: row.tags,
+          uploadDate: row.upload_date,
+          lastAccessed: row.last_accessed,
+          accessCount: row.access_count,
+          similarity: 1 - row.similarity
+        };
+      });
+
+      // Update access counts in background
+      if (resourceIds.size > 0) {
+        const resourceIdArray = Array.from(resourceIds);
+        db.update(academicResources)
+          .set({
+            lastAccessed: new Date(),
+            accessCount: sql`${academicResources.accessCount} + 1`
+          })
+          .where(inArray(academicResources.id, resourceIdArray))
+          .execute()
+          .catch(err => console.error('Failed to update access counts:', err));
+      }
+
+      return mappedResults;
+    } catch (error) {
+      console.error('Failed to search knowledge base:', error);
+      throw new Error('Failed to search academic knowledge base');
+    }
+  }
+
+  /**
+   * Delete an academic resource and its embeddings
+   * 
+   * @param id Resource ID to delete
+   * @returns Success status
+   */
+  async deleteResource(id: number): Promise<boolean> {
+    try {
+      // Delete associated embeddings first (foreign key constraint)
+      await db.delete(academicEmbeddings)
+        .where(eq(academicEmbeddings.resourceId, id));
+      
+      // Then delete the resource
+      const result = await db.delete(academicResources)
+        .where(eq(academicResources.id, id))
+        .returning({ id: academicResources.id });
+      
+      return result.length > 0;
+    } catch (error) {
+      console.error('Failed to delete academic resource:', error);
+      throw new Error('Failed to delete academic resource');
+    }
+  }
+
+  /**
+   * Get statistical summary of academic knowledge base
+   * 
+   * @returns Summary statistics of the academic knowledge base
+   */
+  async getKnowledgeStats(): Promise<{
+    totalResources: number;
+    resourcesByType: Record<string, number>;
+    resourcesByCategory: Record<string, number>;
+    mostAccessedResources: Array<Pick<AcademicResource, 'id' | 'title' | 'accessCount'>>; 
+    recentlyAddedResources: Array<Pick<AcademicResource, 'id' | 'title' | 'uploadDate'>>;
+  }> {
+    try {
+      // Get total count
+      const totalResult = await db.select({ count: count() })
+        .from(academicResources)
+        .execute();
+      const totalResources = Number(totalResult[0]?.count || 0);
+      
+      // Get counts by type
+      const typeResults = await db.select({
+        type: academicResources.resourceType,
+        count: count()
+      })
+      .from(academicResources)
+      .groupBy(academicResources.resourceType)
+      .execute();
+      
+      const resourcesByType: Record<string, number> = {};
+      typeResults.forEach(r => {
+        if (r.type) resourcesByType[r.type] = Number(r.count);
+      });
+      
+      // Get counts by category
+      const categoryResults = await db.select({
+        category: academicResources.category,
+        count: count()
+      })
+      .from(academicResources)
+      .groupBy(academicResources.category)
+      .execute();
+      
+      const resourcesByCategory: Record<string, number> = {};
+      categoryResults.forEach(r => {
+        if (r.category) resourcesByCategory[r.category] = Number(r.count);
+      });
+      
+      // Get most accessed resources
+      const mostAccessedResources = await db.select({
+        id: academicResources.id,
+        title: academicResources.title,
+        accessCount: academicResources.accessCount
+      })
+      .from(academicResources)
+      .orderBy(desc(academicResources.accessCount))
+      .limit(5)
+      .execute();
+      
+      // Get recently added resources
+      const recentlyAddedResources = await db.select({
+        id: academicResources.id,
+        title: academicResources.title,
+        uploadDate: academicResources.uploadDate
+      })
+      .from(academicResources)
+      .orderBy(desc(academicResources.uploadDate))
+      .limit(5)
+      .execute();
+      
+      return {
+        totalResources,
+        resourcesByType,
+        resourcesByCategory,
+        mostAccessedResources,
+        recentlyAddedResources
+      };
+    } catch (error) {
+      console.error('Failed to get knowledge stats:', error);
+      throw new Error('Failed to retrieve academic knowledge statistics');
+    }
   }
 }
 
