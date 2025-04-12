@@ -218,3 +218,132 @@ strategicStatsRouter.post('/virtual-trial', async (req, res) => {
     res.status(500).json({ error: 'Failed to simulate virtual trial' });
   }
 });
+
+/**
+ * API endpoint to simulate adaptive trial design
+ */
+strategicStatsRouter.post('/adaptive-trial-simulation', async (req, res) => {
+  try {
+    const params = req.body;
+    
+    if (!params || !params.sampleSize || !params.initialAllocation || !params.responseRates) {
+      return res.status(400).json({ 
+        error: 'Invalid request. Must include sampleSize, initialAllocation, and responseRates.' 
+      });
+    }
+    
+    const result = await statsService.simulateAdaptiveTrial(params);
+    res.json(result);
+  } catch (error) {
+    console.error('Error simulating adaptive trial:', error);
+    res.status(500).json({ error: String(error) });
+  }
+});
+
+/**
+ * API endpoint to calculate Bayesian predictive probability of success
+ */
+strategicStatsRouter.post('/bayesian-predictive-probability', async (req, res) => {
+  try {
+    const params = req.body;
+    
+    if (!params || params.currentSuccesses === undefined || 
+        params.currentTotal === undefined || params.targetSuccesses === undefined || 
+        params.plannedTotal === undefined) {
+      return res.status(400).json({ 
+        error: 'Invalid request. Must include currentSuccesses, currentTotal, targetSuccesses, and plannedTotal.' 
+      });
+    }
+    
+    const result = await statsService.calculateBayesianPredictiveProbability(params);
+    res.json(result);
+  } catch (error) {
+    console.error('Error calculating Bayesian predictive probability:', error);
+    res.status(500).json({ error: String(error) });
+  }
+});
+
+/**
+ * API endpoint to calculate non-inferiority trial sample size
+ */
+strategicStatsRouter.post('/non-inferiority-sample-size', async (req, res) => {
+  try {
+    const params = req.body;
+    
+    if (!params || params.controlRate === undefined || 
+        params.expectedRate === undefined || params.nonInferiorityMargin === undefined) {
+      return res.status(400).json({ 
+        error: 'Invalid request. Must include controlRate, expectedRate, and nonInferiorityMargin.' 
+      });
+    }
+    
+    const result = await statsService.calculateNonInferioritySampleSize(params);
+    res.json(result);
+  } catch (error) {
+    console.error('Error calculating non-inferiority sample size:', error);
+    res.status(500).json({ error: String(error) });
+  }
+});
+
+/**
+ * API endpoint to simulate survival data
+ */
+strategicStatsRouter.post('/survival-simulation', async (req, res) => {
+  try {
+    const params = req.body;
+    
+    if (!params || !params.sampleSize || !params.groups || !params.maxFollowup) {
+      return res.status(400).json({ 
+        error: 'Invalid request. Must include sampleSize, groups, and maxFollowup.' 
+      });
+    }
+    
+    const result = await statsService.simulateSurvivalData(params);
+    res.json(result);
+  } catch (error) {
+    console.error('Error simulating survival data:', error);
+    res.status(500).json({ error: String(error) });
+  }
+});
+
+/**
+ * API endpoint to evaluate prediction model
+ */
+strategicStatsRouter.post('/evaluate-prediction-model', async (req, res) => {
+  try {
+    const params = req.body;
+    
+    if (!params || !params.modelType || !params.outcomes || !params.predictedProbabilities) {
+      return res.status(400).json({ 
+        error: 'Invalid request. Must include modelType, outcomes, and predictedProbabilities.' 
+      });
+    }
+    
+    const result = await statsService.evaluatePredictionModel(params);
+    res.json(result);
+  } catch (error) {
+    console.error('Error evaluating prediction model:', error);
+    res.status(500).json({ error: String(error) });
+  }
+});
+
+/**
+ * API endpoint to perform network meta-analysis
+ */
+strategicStatsRouter.post('/network-meta-analysis', async (req, res) => {
+  try {
+    const params = req.body;
+    
+    if (!params || !params.studies || !params.outcomeType || !params.referenceGroup) {
+      return res.status(400).json({ 
+        error: 'Invalid request. Must include studies, outcomeType, and referenceGroup.' 
+      });
+    }
+    
+    const result = await statsService.performNetworkMetaAnalysis(params);
+    res.json(result);
+  } catch (error) {
+    console.error('Error performing network meta-analysis:', error);
+    res.status(500).json({ error: String(error) });
+  }
+});
