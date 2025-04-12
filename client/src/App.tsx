@@ -45,6 +45,7 @@ import LoginPage from "@/pages/LoginPage";
 import SignupPage from "@/pages/SignupPage";
 import ExportLogPage from "@/pages/ExportLogPage";
 import AcademicRegulatoryPage from "@/pages/AcademicRegulatoryPage";
+import AdvancedBiostatistics from "@/pages/AdvancedBiostatistics";
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -158,6 +159,7 @@ function Router() {
       <Route path="/my-dossiers">{() => renderWithLayout(DossierViewerPage)}</Route>
       <Route path="/export-log">{() => renderWithLayout(ExportLogPage)}</Route>
       <Route path="/academic-regulatory">{() => renderWithLayout(AcademicRegulatoryPage)}</Route>
+      <Route path="/advanced-biostatistics">{() => renderWithLayout(AdvancedBiostatistics)}</Route>
 
       {/* Fallback to 404 */}
       <Route>{() => renderWithLayout(NotFound)}</Route>
