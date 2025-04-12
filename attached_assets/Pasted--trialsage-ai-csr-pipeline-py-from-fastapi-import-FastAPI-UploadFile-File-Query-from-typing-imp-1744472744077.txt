@@ -1,0 +1,189 @@
+# trialsage_ai_csr_pipeline.py
+
+from fastapi import FastAPI, UploadFile, File, Query
+from typing import List
+import pytesseract
+import fitz  # PyMuPDF
+import json
+import uvicorn
+import os
+
+from transformers import pipeline
+from pydantic import BaseModel
+from sqlalchemy import create_engine, Column, Integer, String, JSON
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+from sentence_transformers import SentenceTransformer
+import numpy as np
+import faiss
+import openai
+
+# Initialize FastAPI
+app = FastAPI()
+
+# Setup SQLAlchemy
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./csrs.db")
+engine = create_engine(DATABASE_URL)
+Base = declarative_base()
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# Define CSR Model
+class CSR(Base):
+    __tablename__ = "csrs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    filename = Column(String)
+    text = Column(String)
+    structured_data = Column(JSON)
+    embedding = Column(String)
+
+Base.metadata.create_all(bind=engine)
+
+# HuggingFace NLP Pipeline (fine-tune as needed)
+ner = pipeline("ner", model="dslim/bert-base-NER")
+
+# Sentence transformer model for embeddings
+embed_model = SentenceTransformer('all-MiniLM-L6-v2')
+index = faiss.IndexFlatL2(384)  # Dimension must match the embedding size
+
+# Helper: Extract text from PDF
+def extract_text_from_pdf(file_path: str) -> str:
+    doc = fitz.open(file_path)
+    text = "\n".join([page.get_text() for page in doc])
+    return text
+
+# Helper: Apply NER to extract entities
+
+def extract_structured_data(text: str):
+    entities = ner(text)
+    structure = {}
+    for e in entities:
+        label = e['entity_group']
+        word = e['word']
+        if label not in structure:
+            structure[label] = []
+        structure[label].append(word)
+    return structure
+
+# Helper: Generate embedding for text
+
+def generate_embedding(text: str):
+    embedding = embed_model.encode([text])[0]
+    return embedding
+
+# API: Upload CSR PDF and parse
+@app.post("/upload_csr/")
+async def upload_csr(file: UploadFile = File(...)):
+    contents = await file.read()
+    temp_path = f"/tmp/{file.filename}"
+    with open(temp_path, "wb") as f:
+        f.write(contents)
+
+    text = extract_text_from_pdf(temp_path)
+    structured_data = extract_structured_data(text)
+    embedding = generate_embedding(text)
+    index.add(np.array([embedding]))
+
+    db = SessionLocal()
+    csr_entry = CSR(filename=file.filename, text=text, structured_data=structured_data, embedding=json.dumps(embedding.tolist()))
+    db.add(csr_entry)
+    db.commit()
+    db.refresh(csr_entry)
+    db.close()
+
+    return {"id": csr_entry.id, "filename": file.filename, "structured_data": structured_data}
+
+# API: Retrieve CSR data
+@app.get("/api/csrs/{csr_id}")
+def get_csr(csr_id: int):
+    db = SessionLocal()
+    csr = db.query(CSR).filter(CSR.id == csr_id).first()
+    db.close()
+    if not csr:
+        return {"error": "CSR not found"}
+    return {"id": csr.id, "filename": csr.filename, "structured_data": csr.structured_data}
+
+# API: Semantic search
+@app.get("/api/csrs/search/")
+def search_csrs(query: str = Query(...)):
+    query_embedding = embed_model.encode([query])[0]
+    D, I = index.search(np.array([query_embedding]), k=5)
+
+    db = SessionLocal()
+    results = []
+    for idx in I[0]:
+        csr = db.query(CSR).offset(idx).limit(1).first()
+        if csr:
+            results.append({
+                "id": csr.id,
+                "filename": csr.filename,
+                "excerpt": csr.text[:1000]
+            })
+    db.close()
+    return {"results": results}
+
+# API: LLM-powered summarization of matched CSRs
+@app.get("/api/csrs/summary/")
+def summarize_matched_csrs(query: str = Query(...)):
+    query_embedding = embed_model.encode([query])[0]
+    D, I = index.search(np.array([query_embedding]), k=3)
+
+    db = SessionLocal()
+    matched_texts = []
+    for idx in I[0]:
+        csr = db.query(CSR).offset(idx).limit(1).first()
+        if csr:
+            matched_texts.append(csr.text[:3000])
+    db.close()
+
+    full_context = "\n\n".join(matched_texts)
+    openai.api_key = os.getenv("OPENAI_API_KEY")
+    response = openai.ChatCompletion.create(
+        model="gpt-4",
+        messages=[
+            {"role": "system", "content": "You are a clinical trial design expert summarizing historical CSR data."},
+            {"role": "user", "content": f"Summarize insights from these CSRs regarding trial design: {query}\n\n{full_context}"}
+        ]
+    )
+    return {"summary": response.choices[0].message['content']}
+
+# API: Compare top 2 CSR structured fields (AE, endpoint, dropout)
+@app.get("/api/csrs/compare-deltas")
+def compare_top_two_fields(query: str = Query(...)):
+    query_embedding = embed_model.encode([query])[0]
+    D, I = index.search(np.array([query_embedding]), k=2)
+
+    db = SessionLocal()
+    csrs = []
+    for idx in I[0]:
+        csr = db.query(CSR).offset(idx).limit(1).first()
+        if csr:
+            csrs.append(csr)
+    db.close()
+
+    if len(csrs) < 2:
+        return {"error": "Not enough comparable CSRs"}
+
+    csr1 = csrs[0].structured_data
+    csr2 = csrs[1].structured_data
+
+    # Delta comparisons
+    ae1 = set(csr1.get("MISC", []))
+    ae2 = set(csr2.get("MISC", []))
+    endpoint1 = set(csr1.get("ORG", []))
+    endpoint2 = set(csr2.get("ORG", []))
+
+    drop1 = csr1.get("dropout_rate", 0)
+    drop2 = csr2.get("dropout_rate", 0)
+
+    delta = {
+        "AE_keywords": list(ae1 ^ ae2),
+        "Endpoints": list(endpoint1 ^ endpoint2),
+        "Dropout Difference": f"{drop1:.2%} vs {drop2:.2%}",
+        "summary": f"AE count {len(ae1)} vs {len(ae2)}, Endpoint terms {len(endpoint1)} vs {len(endpoint2)}"
+    }
+
+    return {"csr_ids": [csrs[0].id, csrs[1].id], "delta": delta}
+
+if __name__ == "__main__":
+    uvicorn.run("trialsage_ai_csr_pipeline:app", host="0.0.0.0", port=8000, reload=True)
