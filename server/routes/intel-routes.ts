@@ -105,9 +105,9 @@ router.post("/api/intel/summary", async (req: Request, res: Response) => {
 });
 
 /**
- * Answer protocol design questions using AI
+ * Answer protocol design questions using AI (without thread persistence)
  */
-router.post("/api/intel/qa", async (req: Request, res: Response) => {
+router.post("/api/intel/question", async (req: Request, res: Response) => {
   try {
     const { question, related_studies } = req.body;
     
