@@ -24,6 +24,23 @@ interface AcademicKnowledgeResult {
 }
 
 export class AcademicDocumentProcessor {
+  /**
+   * Get a list of recently processed documents
+   */
+  getRecentlyProcessedDocuments(limit: number = 5): any[] {
+    const documents = Array.from(this.documentMetadata.entries())
+      .map(([id, metadata]) => ({
+        id,
+        title: metadata.title,
+        type: metadata.type,
+        source: metadata.source,
+        timestamp: new Date().toISOString()
+      }))
+      .slice(0, limit);
+    
+    return documents;
+  }
+  
   private huggingFaceService: HuggingFaceService;
   private academicKnowledgeBase: Map<string, any>;
   private documentEmbeddings: Map<string, Float32Array>;
@@ -302,3 +319,6 @@ export class AcademicDocumentProcessor {
     return topParagraphs.join('\n\n...\n\n');
   }
 }
+
+// Export a singleton instance for convenience
+export const academicDocumentProcessor = new AcademicDocumentProcessor();

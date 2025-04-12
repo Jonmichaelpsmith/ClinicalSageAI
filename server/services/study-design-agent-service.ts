@@ -4,8 +4,11 @@ import { memoryService, type ChatMessage } from './memory-service';
 import { clinicalIntelligenceService } from './clinical-intelligence-service';
 import { academicKnowledgeService } from './academic-knowledge-service';
 import { semanticSearchService } from './semantic-search-service';
-import { regulatoryIntelligenceService } from './regulatory-intelligence-service';
+import { RegulatoryIntelligenceService } from './regulatory-intelligence-service';
 import { academicDocumentProcessor } from './academic-document-processor';
+
+// Create a singleton instance of the regulatory intelligence service
+const regulatoryIntelligenceService = new RegulatoryIntelligenceService();
 
 interface StudyDesignQuery {
   query: string;
