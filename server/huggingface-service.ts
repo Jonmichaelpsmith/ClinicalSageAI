@@ -420,12 +420,65 @@ export class HuggingFaceService {
     temperature: number = 0.7,
     region?: RegulatoryRegion
   ): Promise<string> {
+    if (!this.isApiKeyAvailable()) {
+      console.warn('Hugging Face API key not available, using local fallback system');
+      return await this.generateLocalResponse(prompt);
+    }
+    
     try {
-      // Always use local fallback system since HF_API_KEY issues continue
+      console.log(`Querying Hugging Face model ${model}...`);
+      
+      // Set up API endpoint for the text generation model
+      const apiUrl = `https://api-inference.huggingface.co/models/${model}`;
+      
+      // Make the API call
+      const response = await axios.post(
+        apiUrl,
+        {
+          inputs: prompt,
+          parameters: {
+            max_new_tokens: maxTokens,
+            temperature: temperature,
+            return_full_text: false,
+            do_sample: true
+          }
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${this.apiKey}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      // Process the response based on model type
+      if (response.data) {
+        if (Array.isArray(response.data) && response.data.length > 0) {
+          // Some models return an array of responses
+          const firstResponse = response.data[0];
+          if (typeof firstResponse === 'string') {
+            return firstResponse;
+          } else if (firstResponse.generated_text) {
+            return firstResponse.generated_text;
+          }
+        } else if (typeof response.data === 'string') {
+          // Some models return a string directly
+          return response.data;
+        } else if (response.data.generated_text) {
+          // Some models return { generated_text: "..." }
+          return response.data.generated_text;
+        } else if (response.data.choices && response.data.choices.length > 0) {
+          // Some models return { choices: [{ text: "..." }] }
+          return response.data.choices[0].text || '';
+        }
+      }
+      
+      console.warn('Unable to parse Hugging Face API response, using fallback');
       return await this.generateLocalResponse(prompt);
     } catch (error) {
-      console.error('Error generating local response:', error);
-      return this.getFallbackResponse(prompt);
+      console.error('Error querying Hugging Face API:', error);
+      // Fall back to local response generation
+      return await this.generateLocalResponse(prompt);
     }
   }
   
