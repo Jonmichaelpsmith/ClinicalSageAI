@@ -9,6 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pathlib import Path
 from controllers import protocol
+from controllers import analytics_routes
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -39,6 +40,13 @@ templates = Jinja2Templates(directory=str(frontend_dir))
 
 # Include the protocol router
 app.include_router(protocol.router)
+
+# Include the analytics router with prefix
+app.include_router(
+    analytics_routes.router,
+    prefix="/api/analytics",
+    tags=["analytics"]
+)
 
 # Root endpoint (serve frontend)
 @app.get("/")
