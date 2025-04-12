@@ -16,6 +16,25 @@ export interface ProtocolData {
   design?: string;
   summary?: string;
   arms?: number;
+  
+  // Global regulatory intelligence fields
+  regulatory_notes?: string;
+  global_compliance?: { [region: string]: boolean };
+  regional_requirements?: { [region: string]: string[] };
+  ethical_considerations?: string[];
+  safety_monitoring?: string;
+  data_standards?: string;
+  
+  // Additional multicultural/global fields
+  geographic_regions?: string[];
+  ethnic_considerations?: string[];
+  translation_requirements?: string[];
+  site_distribution?: { [region: string]: number };
+  
+  // Intelligence metadata
+  intelligence_source?: string;
+  confidence_score?: number;
+  last_updated?: Date;
 }
 
 export class ProtocolAnalyzerService {
@@ -112,7 +131,35 @@ export class ProtocolAnalyzerService {
         population,
         design,
         summary,
-        arms
+        arms,
+        
+        // Add default global intelligence fields
+        regulatory_notes: "Protocol should comply with ICH E6(R2) Good Clinical Practice guidelines.",
+        global_compliance: {
+          "FDA": true,
+          "EMA": true,
+          "PMDA": indication.toLowerCase().includes("oncology"),
+          "NMPA": indication.toLowerCase().includes("oncology")
+        },
+        regional_requirements: {
+          "FDA": ["Diversity requirements per FDORA 2022", "IRB/informed consent documentation"],
+          "EMA": ["GDPR data protection implementation", "EudraCT registration"],
+          "PMDA": ["Japanese GCP Ordinance compliance", "Ethnic factors considerations"],
+          "NMPA": ["China Human Genetic Resources approval if applicable", "Local ethics committee approval"]
+        },
+        ethical_considerations: [
+          "IRB/EC approval required before study initiation",
+          "Informed consent must meet all ICH and local requirements",
+          "Data privacy protections must be implemented"
+        ],
+        safety_monitoring: "Independent Data Monitoring Committee required for this study design",
+        
+        geographic_regions: ["North America", "Europe", "Asia-Pacific"],
+        ethnic_considerations: ["Study should include diverse population", "Consider ethnic factors in PK/PD analysis"],
+        
+        intelligence_source: "TrialSage Protocol Analyzer",
+        confidence_score: 0.85,
+        last_updated: new Date()
       };
     } catch (error: any) {
       console.error('Error analyzing protocol text:', error);

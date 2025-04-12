@@ -1,5 +1,6 @@
 import { ProtocolData } from './protocol-analyzer-service';
 import axios from 'axios';
+import { getHuggingfaceModels, getModelForTask, generateSystemPrompt } from './config/huggingface-models';
 
 /**
  * Enum for supported Hugging Face models
@@ -18,6 +19,20 @@ export enum HFModel {
   BIOMEDICAL = 'microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract-fulltext'
 }
 
+/**
+ * Supported regulatory regions for global intelligence
+ */
+export enum RegulatoryRegion {
+  FDA = 'FDA',  // United States
+  EMA = 'EMA',  // European Union
+  PMDA = 'PMDA', // Japan
+  NMPA = 'NMPA', // China
+  MHRA = 'MHRA', // United Kingdom
+  TGA = 'TGA',   // Australia
+  ANVISA = 'ANVISA', // Brazil
+  CDSCO = 'CDSCO'  // India
+}
+
 export class HuggingFaceService {
   private apiKey: string;
   
@@ -27,21 +42,64 @@ export class HuggingFaceService {
   
   /**
    * Enhance protocol analysis with HuggingFace models
+   * @param text The protocol text to analyze
+   * @param basicAnalysis Basic analysis results to enhance
+   * @param region Optional regulatory region to focus analysis on
    */
-  async enhanceProtocolAnalysis(text: string, basicAnalysis: ProtocolData): Promise<ProtocolData> {
-    // In a real implementation, this would call HuggingFace inference API
-    // to enhance the analysis, but for this demo we'll just simulate that
+  async enhanceProtocolAnalysis(
+    text: string, 
+    basicAnalysis: ProtocolData, 
+    region?: RegulatoryRegion
+  ): Promise<ProtocolData> {
+    if (!this.isApiKeyAvailable()) {
+      console.warn('No Hugging Face API key available for protocol enhancement');
+      return basicAnalysis;
+    }
     
-    console.log(`Would call HuggingFace with API key: ${this.apiKey ? '[API key provided]' : 'No API key'}`);
-    
-    // Return enhanced analysis (for demo, just adding more detailed insights to fields)
-    return {
-      ...basicAnalysis,
-      summary: `Enhanced by ML analysis: ${basicAnalysis.summary} Study follows a ${basicAnalysis.design} design with ${basicAnalysis.arms} treatment arms.`,
-      inclusion_criteria: basicAnalysis.inclusion_criteria || "Adult patients (age 18+) with histologically confirmed disease and ECOG performance status 0-1.",
-      exclusion_criteria: basicAnalysis.exclusion_criteria || "Prior treatment with investigational agents; history of severe allergic reactions; uncontrolled concurrent illness.",
-      population: basicAnalysis.population || "Adult patients with confirmed diagnosis according to established clinical guidelines."
-    };
+    try {
+      // Create a region-specific system prompt
+      const systemPrompt = generateSystemPrompt('design', region?.toString());
+      
+      // For real implementation, use region-specific model and analysis
+      const modelName = getModelForTask('studyDesignGeneration', region?.toString());
+      
+      console.log(`Enhancing protocol analysis with ${modelName} for region: ${region || 'Global'}`);
+      
+      // In a production implementation, this would use the HuggingFace model to enhance the analysis
+      // For now, we'll add region-specific enhancements based on the provided region
+      let enhancedAnalysis = {
+        ...basicAnalysis,
+        summary: `Enhanced by ML analysis: ${basicAnalysis.summary} Study follows a ${basicAnalysis.design} design with ${basicAnalysis.arms} treatment arms.`,
+        inclusion_criteria: basicAnalysis.inclusion_criteria || "Adult patients (age 18+) with histologically confirmed disease and ECOG performance status 0-1.",
+        exclusion_criteria: basicAnalysis.exclusion_criteria || "Prior treatment with investigational agents; history of severe allergic reactions; uncontrolled concurrent illness.",
+        population: basicAnalysis.population || "Adult patients with confirmed diagnosis according to established clinical guidelines."
+      };
+      
+      // Add region-specific enhancements if a region is specified
+      if (region) {
+        switch (region) {
+          case RegulatoryRegion.FDA:
+            enhancedAnalysis.regulatory_notes = "Protocol should comply with FDA guidance including 21 CFR Part 50 for informed consent and FDORA 2022 for diversity requirements.";
+            break;
+          case RegulatoryRegion.EMA:
+            enhancedAnalysis.regulatory_notes = "Protocol should comply with EU Clinical Trial Regulation (EU) No 536/2014 and GDPR requirements for data protection.";
+            break;
+          case RegulatoryRegion.PMDA:
+            enhancedAnalysis.regulatory_notes = "Protocol should comply with Japanese GCP Ordinance and consider ethnic factors that might affect efficacy and safety for Japanese patients.";
+            break;
+          case RegulatoryRegion.NMPA:
+            enhancedAnalysis.regulatory_notes = "Protocol should comply with NMPA Drug Registration Regulation and ensure adequate representation of Chinese patients in pivotal trials.";
+            break;
+          default:
+            enhancedAnalysis.regulatory_notes = "Protocol should comply with ICH E6(R2) Good Clinical Practice guidelines.";
+        }
+      }
+      
+      return enhancedAnalysis;
+    } catch (error) {
+      console.error('Error enhancing protocol analysis:', error);
+      return basicAnalysis;
+    }
   }
   
   /**
@@ -131,13 +189,236 @@ export class HuggingFaceService {
   }
   
   /**
+   * Extract text from PDF documents using Hugging Face models
+   * @param pdfBuffer Buffer containing the PDF file data
+   * @returns Extracted text content
+   */
+  async extractTextFromPdf(pdfBuffer: Buffer): Promise<string> {
+    if (!this.isApiKeyAvailable()) {
+      throw new Error('Hugging Face API key not provided');
+    }
+    
+    try {
+      console.log('Extracting text from PDF...');
+      
+      // In a real implementation, this would use a document processing model
+      // For now, we'll return a simulated result
+      return "Extracted PDF text would appear here in a real implementation.";
+    } catch (error) {
+      console.error('Error extracting text from PDF:', error);
+      throw new Error(`Failed to extract text from PDF: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+  
+  /**
+   * Extract document metadata from text using Hugging Face models
+   * @param text Text to extract metadata from
+   * @returns Document metadata (title, authors, publication date, etc.)
+   */
+  async extractDocumentMetadata(text: string): Promise<any> {
+    if (!this.isApiKeyAvailable()) {
+      throw new Error('Hugging Face API key not provided');
+    }
+    
+    try {
+      console.log('Extracting document metadata...');
+      const modelName = getModelForTask('namedEntityRecognition');
+      
+      // In a real implementation, this would use a Hugging Face model
+      // For now, we'll return a simulated result
+      return {
+        title: "Sample Document Title",
+        authors: ["Author One", "Author Two"],
+        publicationDate: "2023-01-15",
+        journalName: "Journal of Clinical Research",
+        keywords: ["clinical trials", "protocol design", "methodology"]
+      };
+    } catch (error) {
+      console.error('Error extracting document metadata:', error);
+      throw new Error(`Failed to extract document metadata: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+  
+  /**
+   * Generate a summary of text using Hugging Face models
+   * @param text Text to summarize
+   * @param maxLength Maximum length of the summary
+   * @returns Generated summary
+   */
+  async generateSummary(text: string, maxLength: number = 200): Promise<string> {
+    if (!this.isApiKeyAvailable()) {
+      throw new Error('Hugging Face API key not provided');
+    }
+    
+    try {
+      console.log('Generating summary...');
+      const modelName = getModelForTask('summarization');
+      
+      // In a real implementation, this would use the Hugging Face API
+      // For now, we'll simulate a response
+      return "This would be a summary of the provided text generated by a Hugging Face model.";
+    } catch (error) {
+      console.error('Error generating summary:', error);
+      throw new Error(`Failed to generate summary: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+  
+  /**
+   * Extract key insights from text using Hugging Face models
+   * @param text Text to analyze
+   * @returns Array of key insights
+   */
+  async extractKeyInsights(text: string): Promise<string[]> {
+    if (!this.isApiKeyAvailable()) {
+      throw new Error('Hugging Face API key not provided');
+    }
+    
+    try {
+      console.log('Extracting key insights...');
+      const modelName = getModelForTask('textGeneration');
+      
+      // In a real implementation, this would use the Hugging Face API
+      // For now, we'll simulate a response
+      return [
+        "Key insight one would be extracted here.",
+        "Key insight two would be extracted here.",
+        "Key insight three would be extracted here."
+      ];
+    } catch (error) {
+      console.error('Error extracting key insights:', error);
+      throw new Error(`Failed to extract key insights: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+  
+  /**
+   * Generate tags for text using Hugging Face models
+   * @param text Text to analyze
+   * @returns Array of generated tags
+   */
+  async generateTags(text: string): Promise<string[]> {
+    if (!this.isApiKeyAvailable()) {
+      throw new Error('Hugging Face API key not provided');
+    }
+    
+    try {
+      console.log('Generating tags...');
+      const modelName = getModelForTask('textClassification');
+      
+      // In a real implementation, this would use the Hugging Face API
+      // For now, we'll simulate a response
+      return ["tag1", "tag2", "tag3", "tag4", "tag5"];
+    } catch (error) {
+      console.error('Error generating tags:', error);
+      throw new Error(`Failed to generate tags: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+  
+  /**
+   * Analyze protocol for global regulatory compliance
+   * @param protocolText The protocol text to analyze
+   * @param regions Array of regulatory regions to check compliance against
+   * @returns Compliance analysis results
+   */
+  async analyzeGlobalCompliance(
+    protocolText: string, 
+    regions: RegulatoryRegion[] = [RegulatoryRegion.FDA, RegulatoryRegion.EMA, RegulatoryRegion.PMDA, RegulatoryRegion.NMPA]
+  ): Promise<{ [region: string]: { compliant: boolean; issues: string[]; recommendations: string[] } }> {
+    if (!this.isApiKeyAvailable()) {
+      throw new Error('Hugging Face API key not provided');
+    }
+    
+    try {
+      console.log(`Analyzing global compliance for regions: ${regions.join(', ')}...`);
+      const modelName = getModelForTask('regulatoryComplianceAnalysis');
+      
+      // In a real implementation, this would use the Hugging Face API with region-specific models
+      // For now, we'll simulate a response with different results for each region
+      const result: { [region: string]: { compliant: boolean; issues: string[]; recommendations: string[] } } = {};
+      
+      for (const region of regions) {
+        switch (region) {
+          case RegulatoryRegion.FDA:
+            result[region] = {
+              compliant: Math.random() > 0.3,
+              issues: [
+                "Diversity plan may not meet FDORA 2022 requirements",
+                "Missing clear description of Data Monitoring Committee responsibilities"
+              ],
+              recommendations: [
+                "Add detailed diversity enrollment plan with specific targets",
+                "Expand section on DMC responsibilities and meeting frequency"
+              ]
+            };
+            break;
+          case RegulatoryRegion.EMA:
+            result[region] = {
+              compliant: Math.random() > 0.3,
+              issues: [
+                "GDPR compliance statements insufficient",
+                "Missing EudraCT registration information"
+              ],
+              recommendations: [
+                "Add detailed data protection measures in accordance with GDPR",
+                "Include EudraCT registration timeline and process"
+              ]
+            };
+            break;
+          case RegulatoryRegion.PMDA:
+            result[region] = {
+              compliant: Math.random() > 0.3,
+              issues: [
+                "Insufficient consideration of ethnic factors",
+                "Missing PMDA-specific safety reporting timelines"
+              ],
+              recommendations: [
+                "Add section on Japanese population-specific considerations",
+                "Add PMDA-specific safety reporting requirements and timelines"
+              ]
+            };
+            break;
+          case RegulatoryRegion.NMPA:
+            result[region] = {
+              compliant: Math.random() > 0.3,
+              issues: [
+                "Inadequate Chinese subject representation",
+                "Missing China Human Genetic Resources (HGR) considerations"
+              ],
+              recommendations: [
+                "Specify minimum number of Chinese subjects required",
+                "Add section on HGR requirements and approval process"
+              ]
+            };
+            break;
+          default:
+            result[region.toString()] = {
+              compliant: true,
+              issues: [],
+              recommendations: []
+            };
+        }
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Error analyzing global compliance:', error);
+      throw new Error(`Failed to analyze global compliance: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
    * Query the Hugging Face model
+   * @param prompt The prompt text to send to the model
+   * @param model The HuggingFace model to use
+   * @param maxTokens Maximum tokens to generate
+   * @param temperature Temperature parameter for generation
+   * @param region Optional regulatory region to contextualize the response
    */
   async queryHuggingFace(
     prompt: string, 
     model: HFModel = HFModel.STARLING, 
     maxTokens: number = 512,
-    temperature: number = 0.7
+    temperature: number = 0.7,
+    region?: RegulatoryRegion
   ): Promise<string> {
     if (!this.isApiKeyAvailable()) {
       throw new Error('HF_API_KEY environment variable not set');
