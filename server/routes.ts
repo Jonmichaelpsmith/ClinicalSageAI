@@ -1397,41 +1397,159 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Get relevant reports for context
-      const reports = await storage.getAllCsrReports();
+      // Get database statistics to include in the context
+      const dbStatsQuery = await db.query.csrReports.count();
+      const totalReports = Number(dbStatsQuery.toString()) || 0;
       
-      // Filter reports by indication and phase if provided
-      const filteredReports = reports.filter(report => {
-        let match = true;
-        if (indication) match = match && report.indication.toLowerCase().includes(indication.toLowerCase());
-        if (phase) match = match && report.phase === phase;
-        return match;
-      });
+      // Get all reports from the database
+      const allReports = await storage.getAllCsrReports();
       
-      // Get the most relevant reports (up to 3)
-      const relevantReports = filteredReports.slice(0, 3);
+      // Get all unique indications
+      const allIndications = [...new Set(allReports.map(r => r.indication))];
+      
+      // Get all unique phases
+      const allPhases = [...new Set(allReports.map(r => r.phase))];
+      
+      // Perform detailed filtering based on the query content and specified filters
+      const keywords = query.toLowerCase().split(' ');
+      
+      // Create a sophisticated ranking function for reports
+      function rankReport(report) {
+        let score = 0;
+        
+        // Filter match
+        if (indication && report.indication.toLowerCase().includes(indication.toLowerCase())) {
+          score += 3;
+        }
+        if (phase && report.phase === phase) {
+          score += 3;
+        }
+        
+        // Title and summary match with query keywords
+        const titleWords = (report.title || '').toLowerCase();
+        const summaryWords = (report.summary || '').toLowerCase();
+        
+        keywords.forEach(keyword => {
+          if (keyword.length > 3) { // Only consider meaningful keywords
+            if (titleWords.includes(keyword)) score += 2;
+            if (summaryWords.includes(keyword)) score += 1;
+          }
+        });
+        
+        // Prioritize reports with more complete data
+        if (report.summary && report.summary.length > 100) score += 1;
+        
+        return score;
+      }
+      
+      // Rank and sort all reports
+      const rankedReports = allReports
+        .map(report => ({
+          ...report,
+          relevanceScore: rankReport(report)
+        }))
+        .sort((a, b) => b.relevanceScore - a.relevanceScore);
+      
+      // Get top reports (more if available)
+      const mostRelevantReports = rankedReports.slice(0, 10);
+      
+      // Fetch detailed information for the top reports
+      const detailedReports = [];
+      for (const report of mostRelevantReports.slice(0, 5)) { // Limit to 5 for performance
+        try {
+          const details = await storage.getCsrDetails(report.id);
+          if (details) {
+            detailedReports.push({
+              ...report,
+              details
+            });
+          }
+        } catch (error) {
+          console.error(`Error fetching details for report ${report.id}:`, error);
+        }
+      }
       
       // Generate response using Hugging Face
       let content;
       try {
-        // Create the chat context
-        let context = `You are a Clinical Trial Study Design Agent specializing in helping researchers design effective clinical trials.`;
-        if (indication) context += ` The query is about ${indication}.`;
-        if (phase) context += ` The trial phase is ${phase}.`;
-        
-        if (relevantReports.length > 0) {
-          context += ` Here are some relevant clinical study reports for reference:\n\n`;
-          relevantReports.forEach((report, i) => {
-            context += `Report ${i+1}: ${report.title} (${report.sponsor}, Phase ${report.phase})\n`;
-            context += `Summary: ${report.summary || 'No summary available'}\n\n`;
+        // Create a comprehensive system context with database statistics
+        let systemContext = `You are TrialSage's AI Clinical Trial Study Design Agent, a sophisticated AI assistant that helps researchers design effective clinical trials.
+
+IMPORTANT CAPABILITIES & KNOWLEDGE:
+- You have analyzed ${totalReports} clinical study reports (CSRs) from Health Canada and ClinicalTrials.gov databases.
+- You understand trial design patterns across ${allIndications.length} therapeutic indications and all clinical trial phases.
+- You can reference specific, real clinical trials from our database to support your answers.
+- Your knowledge covers endpoint selection, sample size calculation, inclusion/exclusion criteria, study duration, and regulatory considerations.
+
+FACTS ABOUT OUR DATABASE:
+- Contains ${totalReports} clinical trials
+- Covers therapeutic areas including: ${allIndications.slice(0, 5).join(', ')}${allIndications.length > 5 ? ` and ${allIndications.length - 5} more` : ''}
+- Includes trials from phases: ${allPhases.join(', ')}
+- Most recent data update: ${new Date().toISOString().split('T')[0]}
+
+COMMUNICATION STYLE:
+- Be concise but informative
+- Support claims with data from our trial database when possible
+- Explain the rationale behind recommendations
+- Acknowledge limitations when appropriate
+`;
+
+        // Add specific question context
+        if (indication) systemContext += `\nThe current query concerns ${indication} trials.\n`;
+        if (phase) systemContext += `\nThe focus is on Phase ${phase} trials.\n`;
+
+        // Create a detailed context from the most relevant reports
+        let reportContext = '';
+        if (detailedReports.length > 0) {
+          reportContext = `\nRELEVANT CLINICAL TRIALS FROM OUR DATABASE:\n\n`;
+          
+          detailedReports.forEach((report, i) => {
+            reportContext += `TRIAL ${i+1}: ${report.title} (${report.sponsor}, Phase ${report.phase})\n`;
+            reportContext += `Indication: ${report.indication}\n`;
+            reportContext += `Summary: ${report.summary || 'No summary available'}\n`;
+            
+            // Add more detailed information if available
+            if (report.details) {
+              if (report.details.primaryObjective) 
+                reportContext += `Primary Objective: ${report.details.primaryObjective}\n`;
+              
+              if (report.details.sampleSize) 
+                reportContext += `Sample Size: ${report.details.sampleSize}\n`;
+              
+              if (report.details.studyDesign) 
+                reportContext += `Study Design: ${report.details.studyDesign}\n`;
+              
+              if (report.details.duration) 
+                reportContext += `Duration: ${report.details.duration}\n`;
+            }
+            
+            reportContext += `\n`;
           });
         }
         
-        // Generate a response using Hugging Face model
-        const prompt = `${context}\n\nQuestion: ${query}\n\nAnswer:`;
-        const agentResponse = await queryHuggingFace(prompt, HFModel.TEXT, 0.3, 1000);
+        const userQueryContext = query;
         
-        content = agentResponse; // huggingFaceService.queryModel returns the text content directly
+        // Format the complete prompt for high-quality responses
+        const prompt = `<context>
+${systemContext}
+${reportContext}
+</context>
+
+<query>
+${userQueryContext}
+</query>
+
+<answer>`;
+
+        // Use Hugging Face API to generate the response
+        const agentResponse = await queryHuggingFace(
+          prompt, 
+          HFModel.MISTRAL, // Use Mistral model for better reasoning
+          1000, // Max tokens
+          0.3 // Temperature for more focused responses
+        );
+        
+        content = agentResponse;
       } catch (error) {
         console.error('Error generating study design response:', error);
         content = `I'm sorry, but I encountered an error while processing your query: "${query}". Please try again later or rephrase your question.`;
@@ -1442,12 +1560,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         content = `${res.locals.warningMessage}\n\n${content}`;
       }
       
+      // Prepare the final response with source information
       const response = {
         content,
-        sources: relevantReports.map(report => ({
+        sources: mostRelevantReports.slice(0, 5).map(report => ({
           id: report.id,
           title: report.title,
-          relevance: 0.9 - (Math.random() * 0.2) // Simulate relevance scores
+          relevance: report.relevanceScore / 10 // Normalize to a 0-1 scale
         })),
         confidence: 0.85 + (Math.random() * 0.1), // Simulate confidence score
         remainingTrialTime: res.locals.remainingTrialTime

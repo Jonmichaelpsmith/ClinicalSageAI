@@ -73,21 +73,69 @@ export class HuggingFaceService {
     try {
       console.log(`Querying HuggingFace model ${model}...`);
       
-      // For MVP, return simulated responses that look realistic
-      // In production, this would be an actual API call
-  
-      // Generate a delay between 1-3 seconds to simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+      // Set up API endpoint based on the model type
+      let apiUrl = 'https://api-inference.huggingface.co/models/';
       
-      // Return a realistic looking response based on the prompt
-      if (prompt.includes('clinical study reports')) {
-        return `This was a Phase 3, randomized, double-blind, placebo-controlled study assessing the efficacy and safety of the experimental compound in patients with advanced solid tumors. The study demonstrated a statistically significant improvement in progression-free survival, with a median of 8.2 months in the experimental arm versus 3.1 months with placebo (HR 0.52, p<0.001). Overall survival was also improved (21.4 vs 15.2 months, p=0.018). The safety profile was consistent with previous studies.`;
-      } else if (prompt.includes('protocol')) {
-        return `The protocol design is a Phase 2, randomized, double-blind, placebo-controlled study with 120 participants. The primary endpoint is Overall Response Rate at 24 weeks. The study includes patients with confirmed advanced malignancy with measurable disease per RECIST v1.1 and ECOG performance status 0-1.`;
+      // Complete the URL with the selected model
+      apiUrl += model;
+      
+      console.log(`Using HuggingFace API endpoint: ${apiUrl}`);
+      
+      // Prepare the request payload
+      const payload = {
+        inputs: prompt,
+        parameters: {
+          max_new_tokens: maxTokens,
+          temperature: temperature,
+          top_p: 0.95,
+          return_full_text: false,
+          do_sample: temperature > 0.1
+        }
+      };
+      
+      // Make the actual API call to HuggingFace
+      const response = await axios.post(apiUrl, payload, {
+        headers: {
+          'Authorization': `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      console.log('HuggingFace API response status:', response.status);
+      
+      // Extract and return the text response
+      if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+        // Handle array response format (most common)
+        return response.data[0].generated_text || '';
+      } else if (response.data && response.data.generated_text) {
+        // Handle object response format (some models)
+        return response.data.generated_text;
+      } else if (typeof response.data === 'string') {
+        // Handle direct string response (rare case)
+        return response.data;
       } else {
-        return `Analysis complete. The provided information has been processed according to your specifications. The key insights show significant potential for improvement in trial design and methodology.`;
+        // Handle unexpected response format
+        console.warn('Unexpected HuggingFace API response format:', response.data);
+        throw new Error('Unexpected API response format');
       }
     } catch (error: unknown) {
+      // Handle specific axios errors with better error messages
+      if (axios.isAxiosError(error) && error.response) {
+        const status = error.response.status;
+        const data = error.response.data;
+        
+        if (status === 401 || status === 403) {
+          console.error('Authentication error with HuggingFace API:', data);
+          throw new Error('Authentication failed. Please check the HF_API_KEY.');
+        } else if (status === 404) {
+          console.error('HuggingFace model not found:', data);
+          throw new Error(`Model "${model}" not found on HuggingFace.`);
+        } else {
+          console.error(`HuggingFace API error (${status}):`, data);
+          throw new Error(`HuggingFace API error: ${data.error || 'Unknown error'}`);
+        }
+      }
+      
       console.error('Error querying HuggingFace:', error);
       throw new Error(`Failed to query HuggingFace model: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
