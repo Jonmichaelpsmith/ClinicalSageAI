@@ -412,6 +412,34 @@ def generate_ind_section(
         "thread_id": thread_id
     }
 
+def get_run_output(thread_id: str, run_id: str) -> str:
+    """
+    Wait for a run to complete and return the assistant's response
+    
+    Args:
+        thread_id: The thread ID
+        run_id: The run ID
+        
+    Returns:
+        The text response from the assistant
+    """
+    # Wait for completion
+    run_status = wait_for_completion(thread_id, run_id)
+    
+    if run_status["status"] != "completed":
+        raise Exception(f"Assistant run failed with status: {run_status['status']}")
+    
+    # Get the messages
+    messages = get_messages(thread_id)
+    
+    # Find the latest assistant response
+    assistant_messages = [msg for msg in messages if msg["role"] == "assistant"]
+    if not assistant_messages:
+        raise Exception("No assistant response found")
+    
+    latest_response = assistant_messages[0]["content"]
+    return latest_response
+
 def generate_text_embedding(text: str) -> List[float]:
     """Generate embedding for text using OpenAI's embedding model"""
     response = client.embeddings.create(

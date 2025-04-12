@@ -10,6 +10,7 @@ from fastapi.templating import Jinja2Templates
 from pathlib import Path
 from controllers import protocol
 from controllers import analytics_routes
+from controllers import chat
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -48,6 +49,13 @@ app.include_router(
     tags=["analytics"]
 )
 
+# Include the chat router with prefix
+app.include_router(
+    chat.router,
+    prefix="/api/chat",
+    tags=["chat"]
+)
+
 # Root endpoint (serve frontend)
 @app.get("/")
 async def read_root(request: Request):
@@ -66,6 +74,7 @@ async def read_root(request: Request):
                 "/api/intel/sap-draft": "Generate Statistical Analysis Plan drafts",
                 "/api/intel/csr-evidence": "Find evidence in CSR corpus for a topic",
                 "/api/intel/scheduled-report": "Generate weekly intelligence briefing",
+                "/api/chat/send-message": "Send message to AI assistant and get response with CSR citations", 
                 "/static/latest_report.pdf": "Download the latest intelligence briefing PDF"
             }
         }
