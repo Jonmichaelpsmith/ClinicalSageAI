@@ -39,8 +39,8 @@ export class RegulatoryIntelligenceService {
   private models = getHuggingfaceModels();
   private initialized: boolean = false;
 
-  constructor() {
-    this.huggingFaceService = new HuggingFaceService();
+  constructor(hfApiKey?: string) {
+    this.huggingFaceService = new HuggingFaceService(hfApiKey);
     this.regulatoryKnowledgeBase = new Map();
     this.regulatoryRequirements = [];
     this.regulatoryGuidance = [];
