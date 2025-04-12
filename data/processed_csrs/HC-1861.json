@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1861",
+  "title": "A Randomized Double-Blind, Placebo-Controlled  Study of SCK-880 (Hb polymerization inhibitor) in Patients With Ulcerative Colitis",
+  "officialTitle": "A Randomized Double-Blind, Placebo-Controlled  Study of SCK-880 (Hb polymerization inhibitor) in Patients With Ulcerative Colitis",
+  "sponsor": "Health Canada Research Institute",
+  "indication": "Ulcerative Colitis",
+  "phase": "Phase 1/Phase 2",
+  "fileName": "HC-1861.json",
+  "fileSize": 479876,
+  "date": "2024-08-20",
+  "completionDate": "2028-01-17",
+  "drugName": "SCK-880 (Hb polymerization inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Terminated",
+  "description": "This is a randomized double-blind, placebo-controlled  study designed to evaluate the efficacy and safety of SCK-880 (Hb polymerization inhibitor) in patients with Ulcerative Colitis. The study will enroll approximately 194 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 20-81 years\n- Confirmed diagnosis of Ulcerative Colitis\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

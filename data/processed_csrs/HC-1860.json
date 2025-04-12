@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1860",
+  "title": "A Randomized Double-Blind, Placebo-Controlled Multi-Center Study of SMA-668 (SMN2 splicing modifier) in Patients With Chronic Obstructive Pulmonary Disease",
+  "officialTitle": "A Randomized Double-Blind, Placebo-Controlled Multi-Center Study of SMA-668 (SMN2 splicing modifier) in Patients With Chronic Obstructive Pulmonary Disease",
+  "sponsor": "Canadian Blood Services",
+  "indication": "Chronic Obstructive Pulmonary Disease",
+  "phase": "Phase 2",
+  "fileName": "HC-1860.json",
+  "fileSize": 346799,
+  "date": "2024-06-22",
+  "completionDate": "2026-10-26",
+  "drugName": "SMA-668 (SMN2 splicing modifier)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Terminated",
+  "description": "This is a randomized double-blind, placebo-controlled multi-center study designed to evaluate the efficacy and safety of SMA-668 (SMN2 splicing modifier) in patients with Chronic Obstructive Pulmonary Disease. The study will enroll approximately 294 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 27-81 years\n- Confirmed diagnosis of Chronic Obstructive Pulmonary Disease\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

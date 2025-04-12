@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1857",
+  "title": "A Randomized Double-Blind, Active-Controlled  Study of PSO-602 (phosphodiesterase-4 inhibitor) in Patients With Major Depressive Disorder",
+  "officialTitle": "A Randomized Double-Blind, Active-Controlled  Study of PSO-602 (phosphodiesterase-4 inhibitor) in Patients With Major Depressive Disorder",
+  "sponsor": "Vancouver Coastal Health Research Institute",
+  "indication": "Major Depressive Disorder",
+  "phase": "Phase 1/Phase 2",
+  "fileName": "HC-1857.json",
+  "fileSize": 365894,
+  "date": "2023-04-19",
+  "completionDate": "2025-11-30",
+  "drugName": "PSO-602 (phosphodiesterase-4 inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Recruiting",
+  "description": "This is a randomized double-blind, active-controlled  study designed to evaluate the efficacy and safety of PSO-602 (phosphodiesterase-4 inhibitor) in patients with Major Depressive Disorder. The study will enroll approximately 114 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 24-68 years\n- Confirmed diagnosis of Major Depressive Disorder\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}

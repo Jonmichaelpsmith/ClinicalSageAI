@@ -1,0 +1,9 @@
+{
+  "targetBatches": 10,
+  "batchesProcessed": 2,
+  "startTimestamp": "2025-04-12T00:05:32.447Z",
+  "lastBatchTimestamp": "2025-04-12T00:05:37.787Z",
+  "status": "in_progress",
+  "currentOffset": 0,
+  "errors": []
+}

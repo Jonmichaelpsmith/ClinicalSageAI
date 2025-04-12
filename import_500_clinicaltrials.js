@@ -92,19 +92,52 @@ function saveSuccessfulImports(data) {
 // Search ClinicalTrials.gov API to get trial IDs
 async function searchClinicalTrials(limit = 50, offset = 0) {
   try {
+    // Using simpler parameters for the v2 API
     const response = await axios.get('https://clinicaltrials.gov/api/v2/studies', {
       params: {
         format: 'json',
-        filter: 'phase:PHASE1,PHASE2,PHASE3,PHASE4|resultsFirst:true|status:COMPLETED',
+        query: {
+          "field": "OverallStatus",
+          "value": "COMPLETED"
+        },
         pageSize: limit,
-        offset: offset
+        pageNumber: Math.floor(offset / limit) + 1
       }
     });
     
-    return response.data.studies;
+    if (response.data && response.data.studies) {
+      return response.data.studies;
+    } else {
+      // Fallback to just getting studies without filters
+      const fallbackResponse = await axios.get('https://clinicaltrials.gov/api/v2/studies', {
+        params: {
+          format: 'json',
+          pageSize: limit,
+          pageNumber: Math.floor(offset / limit) + 1
+        }
+      });
+      
+      return fallbackResponse.data.studies;
+    }
   } catch (error) {
     console.error('Error searching ClinicalTrials.gov:', error.message);
-    throw error;
+    
+    // Attempt fallback with simpler request
+    try {
+      console.log('Attempting fallback request...');
+      const fallbackResponse = await axios.get('https://clinicaltrials.gov/api/v2/studies', {
+        params: {
+          format: 'json',
+          pageSize: limit,
+          pageNumber: Math.floor(offset / limit) + 1
+        }
+      });
+      
+      return fallbackResponse.data.studies;
+    } catch (fallbackError) {
+      console.error('Fallback request also failed:', fallbackError.message);
+      throw fallbackError;
+    }
   }
 }
 

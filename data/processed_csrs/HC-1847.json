@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-1847",
+  "title": "A  Double-Blind, Active-Controlled  Study of IBS-225 (serotonin modulator) in Patients With Ulcerative Colitis",
+  "officialTitle": "A  Double-Blind, Active-Controlled  Study of IBS-225 (serotonin modulator) in Patients With Ulcerative Colitis",
+  "sponsor": "University of British Columbia",
+  "indication": "Ulcerative Colitis",
+  "phase": "Phase 2/Phase 3",
+  "fileName": "HC-1847.json",
+  "fileSize": 417152,
+  "date": "2023-11-15",
+  "completionDate": "2025-06-19",
+  "drugName": "IBS-225 (serotonin modulator)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Terminated",
+  "description": "This is a  double-blind, active-controlled  study designed to evaluate the efficacy and safety of IBS-225 (serotonin modulator) in patients with Ulcerative Colitis. The study will enroll approximately 60 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 20-72 years\n- Confirmed diagnosis of Ulcerative Colitis\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}
