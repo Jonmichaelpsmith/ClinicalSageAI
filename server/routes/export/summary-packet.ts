@@ -1,72 +1,19 @@
-import express from 'express';
+import { Request, Response, Router } from 'express';
+import { z } from 'zod';
 import fs from 'fs';
 import path from 'path';
 import PDFDocument from 'pdfkit';
-import { z } from 'zod';
 
-const router = express.Router();
+const router = Router();
 
-// Create directory for exports if it doesn't exist
-const EXPORTS_DIR = path.join(process.cwd(), 'exports');
-if (!fs.existsSync(EXPORTS_DIR)) {
-  fs.mkdirSync(EXPORTS_DIR, { recursive: true });
-}
-
-// Create directory for static files if it doesn't exist
+// Ensure the static directory exists
 const STATIC_DIR = path.join(process.cwd(), 'client', 'public', 'static');
-if (!fs.existsSync(STATIC_DIR)) {
-  fs.mkdirSync(STATIC_DIR, { recursive: true });
-}
+fs.mkdirSync(STATIC_DIR, { recursive: true });
 
 // Create archive directory for session-based packet history
-const ARCHIVE_DIR = path.join(process.cwd(), 'data');
-const ARCHIVE_PATH = path.join(ARCHIVE_DIR, 'summary_packet_history.json');
-if (!fs.existsSync(ARCHIVE_DIR)) {
-  fs.mkdirSync(ARCHIVE_DIR, { recursive: true });
-}
-
-// Generate and export a Protocol Intelligence Report
-router.post('/intelligence-report', express.json(), async (req, res) => {
-  try {
-    const reportData = req.body;
-    
-    if (!reportData || typeof reportData !== 'object') {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Valid report data is required' 
-      });
-    }
-    
-    // Generate a unique filename
-    const protocolId = reportData.protocol_id || `TS-${Date.now()}`;
-    const filename = `protocol-intelligence-report-${protocolId}-${Date.now()}.pdf`;
-    const filePath = path.join(EXPORTS_DIR, filename);
-    
-    // Simulate PDF generation (in a real implementation we would use PDFKit or similar)
-    // This is just to simulate the endpoint behavior for now
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // Create placeholder PDF file
-    fs.writeFileSync(filePath, 'This is a placeholder for the PDF report');
-    
-    // Calculate download URL
-    const baseUrl = process.env.BASE_URL || `http://localhost:${process.env.PORT || 5000}`;
-    const downloadUrl = `${baseUrl}/exports/${filename}`;
-    
-    // Return success with download URL
-    return res.json({
-      success: true,
-      download_url: downloadUrl,
-      filename: filename
-    });
-  } catch (error: any) {
-    console.error('Error generating report:', error);
-    return res.status(500).json({ 
-      success: false, 
-      message: error.message || 'Failed to generate report' 
-    });
-  }
-});
+const ARCHIVE_PATH = path.join(process.cwd(), 'data', 'summary_packet_history.json');
+const ARCHIVE_DIR = path.dirname(ARCHIVE_PATH);
+fs.mkdirSync(ARCHIVE_DIR, { recursive: true });
 
 // Validation schema for summary packet request
 const PacketRequestSchema = z.object({
@@ -80,19 +27,21 @@ const PacketRequestSchema = z.object({
   session_id: z.string()
 });
 
+type PacketRequest = z.infer<typeof PacketRequestSchema>;
+
 // POST endpoint for generating a summary packet
-router.post('/summary-packet', express.json(), async (req, res) => {
+router.post('/summary-packet', async (req: Request, res: Response) => {
   try {
     // Validate request body
     const requestData = PacketRequestSchema.parse(req.body);
     
     // Generate filename for the PDF
     const filename = `summary_packet_${requestData.session_id}.pdf`;
-    const filePath = path.join(STATIC_DIR, filename);
+    const fullPath = path.join(STATIC_DIR, filename);
     
     // Create PDF document
     const pdf = new PDFDocument();
-    const writeStream = fs.createWriteStream(filePath);
+    const writeStream = fs.createWriteStream(fullPath);
     pdf.pipe(writeStream);
     
     // Add content to the PDF
@@ -185,26 +134,17 @@ router.post('/summary-packet', express.json(), async (req, res) => {
         console.error('Archive save error:', error);
       }
       
-      res.status(200).json({ 
-        success: true,
-        pdf_url: `/static/${filename}`
-      });
+      res.status(200).json({ pdf_url: `/static/${filename}` });
     });
     
     writeStream.on('error', (err) => {
       console.error('Error writing PDF:', err);
-      res.status(500).json({ 
-        success: false,
-        error: 'Failed to generate PDF'
-      });
+      res.status(500).json({ error: 'Failed to generate PDF' });
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Summary packet generation error:', error);
-    res.status(400).json({ 
-      success: false,
-      error: error.message || 'Invalid request data'
-    });
+    res.status(400).json({ error: 'Invalid request data' });
   }
 });
 
-export { router as exportRoutes };
+export default router;

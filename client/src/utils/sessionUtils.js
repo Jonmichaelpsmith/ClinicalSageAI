@@ -1,199 +1,215 @@
 /**
- * Session Utilities
- * 
- * This module provides centralized session validation and handling
- * functionality for use across TrialSage components.
+ * Utility functions for managing session IDs across the application
  */
-import { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React from 'react';
 
 /**
- * Hook to access and manage the current study session
- * @returns {Object} Session management object
- */
-export function useCurrentSession() {
-  const [currentSession, setCurrentSession] = useState(null);
-  
-  // Fetch the active session from the server
-  const { data: sessionData, isLoading } = useQuery({
-    queryKey: ['/api/sessions/current'],
-    staleTime: 60000, // 1 minute
-  });
-  
-  useEffect(() => {
-    if (sessionData && sessionData.session) {
-      setCurrentSession(sessionData.session);
-    }
-  }, [sessionData]);
-  
-  // Set a different session as active
-  const setActiveSession = async (sessionId) => {
-    if (!isValidSessionId(sessionId)) return false;
-    
-    try {
-      const response = await fetch('/api/sessions/set-active', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ session_id: sessionId })
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setCurrentSession(data.session);
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error('Error setting active session:', error);
-      return false;
-    }
-  };
-  
-  return {
-    currentSession,
-    setActiveSession,
-    isLoading
-  };
-}
-
-/**
- * Check if a given sessionId is valid
- * 
- * @param {any} sessionId - The session ID to validate
- * @returns {boolean} True if the session ID is valid, false otherwise
+ * Validates if a session ID is properly formatted and non-empty
+ * @param {string} sessionId - The session ID to validate
+ * @returns {boolean} - Whether the session ID is valid
  */
 export function isValidSessionId(sessionId) {
-  // Basic validation: not null/undefined, is a string, and not empty
-  if (!sessionId || typeof sessionId !== 'string' || sessionId.trim() === '') {
+  // Basic validation to ensure session ID is:
+  // 1. A non-empty string
+  // 2. At least 5 characters long (for security)
+  // 3. Contains only alphanumeric characters, dashes, and underscores
+  if (!sessionId || typeof sessionId !== 'string') {
     return false;
   }
-
-  // Optional: Check format requirements if needed 
-  // (e.g., UUID pattern, specific prefix, or length requirements)
-  // For example, if session IDs should follow a UUID pattern:
-  // const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-  // return uuidPattern.test(sessionId);
-
-  return true;
-}
-
-/**
- * Format a session ID for display
- * 
- * @param {string} sessionId - The session ID to format
- * @returns {string} Formatted session ID for display
- */
-export function formatSessionId(sessionId) {
-  if (!isValidSessionId(sessionId)) {
-    return 'Invalid Session';
+  
+  if (sessionId.length < 5) {
+    return false;
   }
-
-  // Could add formatting here if desired
-  // For example, truncating very long IDs, adding prefix/suffix, etc.
-  return sessionId;
+  
+  // Match alphanumeric characters, dashes, and underscores
+  const validSessionIdPattern = /^[a-zA-Z0-9_-]+$/;
+  return validSessionIdPattern.test(sessionId);
 }
 
 /**
- * Create error message for invalid session
- *
- * @returns {string} Standardized error message
+ * Generates a unique session ID for a new study
+ * @returns {string} - A new unique session ID
  */
-export function getInvalidSessionMessage() {
-  return "Please select a valid study session before continuing.";
+export function generateSessionId() {
+  // Generate a random session ID with a timestamp prefix for uniqueness
+  const timestamp = Date.now().toString(36);
+  const randomPart = Math.random().toString(36).substring(2, 10);
+  return `${timestamp}-${randomPart}`;
 }
 
 /**
- * Get session-aware request options to send to API endpoints
- * 
- * @param {string} sessionId - The session ID
- * @param {object} data - The data object to include in the request
- * @returns {object} Configured request options with session ID
+ * Stores a session ID in local storage
+ * @param {string} sessionId - The session ID to store
  */
-export function getSessionRequestOptions(sessionId, data = {}) {
+export function storeSessionId(sessionId) {
+  localStorage.setItem('currentSessionId', sessionId);
+}
+
+/**
+ * Retrieves the currently active session ID from local storage
+ * @returns {string|null} - The current session ID or null if none exists
+ */
+export function getCurrentSessionId() {
+  return localStorage.getItem('currentSessionId');
+}
+
+/**
+ * Clears the current session ID from local storage
+ */
+export function clearSessionId() {
+  localStorage.removeItem('currentSessionId');
+}
+
+/**
+ * Adds a session ID to the history of recent sessions
+ * @param {string} sessionId - The session ID to add to history
+ * @param {Object} metadata - Optional metadata about the session
+ */
+export function addSessionToHistory(sessionId, metadata = {}) {
+  try {
+    // Get existing history
+    const historyString = localStorage.getItem('sessionHistory');
+    const history = historyString ? JSON.parse(historyString) : [];
+    
+    // Add new session to history with timestamp
+    const sessionEntry = {
+      id: sessionId,
+      timestamp: new Date().toISOString(),
+      ...metadata
+    };
+    
+    // Add to the beginning of the array (most recent first)
+    history.unshift(sessionEntry);
+    
+    // Keep only the most recent 10 sessions
+    const trimmedHistory = history.slice(0, 10);
+    
+    // Save updated history
+    localStorage.setItem('sessionHistory', JSON.stringify(trimmedHistory));
+  } catch (error) {
+    console.error('Error saving session to history:', error);
+  }
+}
+
+/**
+ * Gets the history of recent session IDs
+ * @returns {Array} - An array of recent session objects
+ */
+export function getSessionHistory() {
+  try {
+    const historyString = localStorage.getItem('sessionHistory');
+    return historyString ? JSON.parse(historyString) : [];
+  } catch (error) {
+    console.error('Error retrieving session history:', error);
+    return [];
+  }
+}
+
+/**
+ * Hook to manage the current session ID in a component
+ * @returns {Object} - Object containing current session ID and functions to manage it
+ */
+export function useCurrentSession() {
+  const [sessionId, setSessionIdState] = React.useState(getCurrentSessionId());
+  
+  // Set a new session ID and store it
+  const setSessionId = (newSessionId) => {
+    if (isValidSessionId(newSessionId)) {
+      storeSessionId(newSessionId);
+      setSessionIdState(newSessionId);
+      // Optionally add to history
+      addSessionToHistory(newSessionId);
+    }
+  };
+  
+  // Generate and set a new session ID
+  const createNewSession = (metadata = {}) => {
+    const newId = generateSessionId();
+    storeSessionId(newId);
+    setSessionIdState(newId);
+    addSessionToHistory(newId, metadata);
+    return newId;
+  };
+  
+  // Clear the current session
+  const clearSession = () => {
+    clearSessionId();
+    setSessionIdState(null);
+  };
+  
   return {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      ...data,
-      study_id: sessionId
-    }),
+    sessionId,
+    setSessionId,
+    createNewSession,
+    clearSession,
+    isValidSession: sessionId ? isValidSessionId(sessionId) : false
   };
 }
 
 /**
- * Log an insight/action to the study session memory
- * 
- * @param {string} sessionId - The session ID
+ * Logs a user action or insight to the system
+ * @param {string} sessionId - The current session ID
  * @param {string} title - Title of the insight
- * @param {string} summary - Summary of the insight
- * @param {string} status - Status of the insight ('started', 'in_progress', 'completed', 'error')
- * @returns {Promise} - Promise resolving to the insight record
+ * @param {string} description - Description of the insight
+ * @param {string} status - Status of the insight (active, resolved, etc.)
+ * @returns {Promise<boolean>} - Whether the log was successful
  */
-export async function logInsight(sessionId, title, summary, status = 'completed') {
+export async function logInsight(sessionId, title, description, status = "active") {
   if (!isValidSessionId(sessionId)) {
-    console.error('Invalid session ID passed to logInsight');
-    return null;
+    console.error("Cannot log insight: Invalid session ID");
+    return false;
   }
   
   try {
-    const response = await fetch('/api/insight/save', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const res = await fetch("/api/insights/log", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        study_id: sessionId,
+        session_id: sessionId,
         title,
-        summary,
-        status
+        description,
+        status,
+        timestamp: new Date().toISOString()
       })
     });
     
-    if (!response.ok) {
-      throw new Error(`Failed to log insight: ${response.status}`);
-    }
-    
-    return await response.json();
+    return res.ok;
   } catch (error) {
-    console.error('Error logging insight:', error);
-    return null;
+    console.error("Failed to log insight:", error);
+    return false;
   }
 }
 
 /**
- * Log a wisdom trace entry to track decision-making steps
- * 
- * @param {string} sessionId - The session ID
- * @param {string} input - Original input or trigger
+ * Logs a wisdom trace entry for the session
+ * @param {string} sessionId - The current session ID
+ * @param {string} action - The action being performed
  * @param {string[]} reasoning - Array of reasoning steps
- * @param {string} output - Final output or decision
- * @returns {Promise} - Promise resolving to the created trace
+ * @param {string} conclusion - The conclusion of the trace
+ * @returns {Promise<boolean>} - Whether the log was successful
  */
-export async function logWisdomTrace(sessionId, input, reasoning, output) {
+export async function logWisdomTrace(sessionId, action, reasoning = [], conclusion = "") {
   if (!isValidSessionId(sessionId)) {
-    console.error('Invalid session ID passed to logWisdomTrace');
-    return null;
+    console.error("Cannot log wisdom trace: Invalid session ID");
+    return false;
   }
   
   try {
-    const response = await fetch('/api/wisdom/trace-log', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const res = await fetch("/api/wisdom-trace/log", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        study_id: sessionId,
-        input,
-        reasoning: Array.isArray(reasoning) ? reasoning : [reasoning],
-        output
+        session_id: sessionId,
+        action,
+        reasoning,
+        conclusion,
+        timestamp: new Date().toISOString()
       })
     });
     
-    if (!response.ok) {
-      throw new Error(`Failed to log wisdom trace: ${response.status}`);
-    }
-    
-    return await response.json();
+    return res.ok;
   } catch (error) {
-    console.error('Error logging wisdom trace:', error);
-    return null;
+    console.error("Failed to log wisdom trace:", error);
+    return false;
   }
 }
