@@ -23,6 +23,7 @@ import {
 import path from "path";
 import fs from "fs";
 import pdfParse from "pdf-parse";
+import { exportDatabaseToJson } from "./scripts/export-database-to-json";
 
 // Map to store uploaded files for chat sessions
 interface ChatFile {
@@ -506,6 +507,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({
         success: false,
         message: `Error during export: ${error.message || 'Unknown error'}`,
+        error: error.message
+      });
+    }
+  });
+  
+  // Reset the counter for newly exported CSRs
+  app.post('/api/csr/reset-export-counter', async (req: Request, res: Response) => {
+    try {
+      const { resetExportCounter } = await import('./scripts/export-database-to-json');
+      
+      console.log('Resetting export counter...');
+      const result = await resetExportCounter();
+      
+      res.json({
+        success: true,
+        message: 'Successfully reset CSR export counter',
+        result
+      });
+    } catch (error: any) {
+      console.error('Error resetting CSR export counter:', error);
+      res.status(500).json({
+        success: false,
+        message: `Error resetting counter: ${error.message || 'Unknown error'}`,
         error: error.message
       });
     }
