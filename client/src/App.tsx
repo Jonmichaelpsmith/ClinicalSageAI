@@ -39,6 +39,7 @@ import EndpointDesigner from "@/pages/EndpointDesigner.jsx";
 import AcademicKnowledgeDemo from "@/pages/AcademicKnowledgeDemo";
 import CompetitiveIntelligence from "@/pages/CompetitiveIntelligence";
 import AdminNotifications from "@/pages/AdminNotifications";
+import AdminPage from "@/pages/AdminPage";
 import StrategicIntelligenceTest from "@/pages/StrategicIntelligenceTest";
 import SmartProtocolPage from "@/pages/SmartProtocolPage";
 import TrialPredictorPage from "@/pages/TrialPredictorPage";
@@ -173,6 +174,7 @@ function Router() {
       <Route path="/insight-engine">{() => renderWithLayout(InsightMemoryEngine)}</Route>
       <Route path="/wisdom-trace">{() => renderWithLayout(WisdomTrace)}</Route>
       <Route path="/design-oracle">{() => renderWithLayout(DesignOraclePage)}</Route>
+      <Route path="/admin">{() => renderWithLayout(AdminPage)}</Route>
 
       {/* Fallback to 404 */}
       <Route>{() => renderWithLayout(NotFound)}</Route>

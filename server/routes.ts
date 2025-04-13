@@ -486,6 +486,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register Export Routes
   app.use('/api/export', exportRoutes);
   
+  // CSR Database to JSON Export endpoint
+  app.post('/api/csr/export-to-json', async (req: Request, res: Response) => {
+    try {
+      const { exportDatabaseToJson } = await import('./scripts/export-database-to-json');
+      
+      console.log('Starting export of database CSRs to JSON files...');
+      const results = await exportDatabaseToJson();
+      
+      res.json({
+        success: true,
+        message: `Successfully processed CSR database export to JSON files`,
+        results
+      });
+    } catch (error: any) {
+      console.error('Error during CSR database export:', error);
+      res.status(500).json({
+        success: false,
+        message: `Error during export: ${error.message || 'Unknown error'}`,
+        error: error.message
+      });
+    }
+  });
+  
   // Register Dossier Routes with version tracking and changelog capabilities
   app.use('/api/dossier', dossierRoutes);
   
