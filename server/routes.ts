@@ -529,6 +529,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register Reports Manifest Routes
   app.use('/api/reports', reportsManifestRoutes);
   
+  // Register Subscription Report Routes
+  registerSubscriptionsRoutes(app);
+  
   // CSR Database to JSON Export endpoint
   app.post('/api/csr/export-to-json', async (req: Request, res: Response) => {
     try {
