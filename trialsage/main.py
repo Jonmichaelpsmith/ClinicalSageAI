@@ -12,6 +12,7 @@ from controllers import protocol
 from controllers import analytics_routes
 from controllers import chat
 from controllers import sample_size
+from controllers import statistics
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -61,6 +62,12 @@ app.include_router(
 app.include_router(
     sample_size.router,
     tags=["sample_size"]
+)
+
+# Include the statistics router
+app.include_router(
+    statistics.router,
+    tags=["statistics"]
 )
 
 # Root endpoint (serve frontend)
