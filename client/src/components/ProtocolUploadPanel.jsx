@@ -84,18 +84,66 @@ export default function ProtocolUploadPanel({ sessionId }) {
         <CardContent className="p-4 space-y-4">
           <h3 className="text-lg font-semibold">Upload Draft Protocol</h3>
           <Input type="file" accept=".pdf,.docx,.txt" onChange={(e) => setFile(e.target.files[0])} />
-          <Button onClick={handleUpload} disabled={!file || loading}>Upload & Analyze</Button>
+          <Button onClick={handleUpload} disabled={!file || loading}>
+            {loading ? "Analyzing..." : "Upload & Analyze"}
+          </Button>
         </CardContent>
       </Card>
 
       {result && (
         <Card>
-          <CardContent className="space-y-2">
-            <h4 className="text-base font-semibold">AI Summary</h4>
-            <pre className="text-sm whitespace-pre-wrap">{result.summary}</pre>
-
-            <h4 className="text-base font-semibold">Predicted Outcome</h4>
-            <p className="text-sm text-blue-700">{result.prediction}</p>
+          <CardContent className="space-y-4">
+            <div>
+              <h4 className="text-base font-semibold">AI Summary</h4>
+              <pre className="text-sm whitespace-pre-wrap bg-slate-50 p-3 rounded-md mt-2">{result.summary}</pre>
+            </div>
+            
+            <div>
+              <h4 className="text-base font-semibold">Predicted Outcome</h4>
+              <p className="text-sm text-blue-700 font-medium mt-2">{result.prediction}</p>
+            </div>
+            
+            {result.risk_flags && result.risk_flags.length > 0 && (
+              <div>
+                <h4 className="text-base font-semibold">Risk Factors</h4>
+                <ul className="list-disc pl-5 mt-2">
+                  {result.risk_flags.map((risk, index) => (
+                    <li key={index} className="text-sm text-amber-700">{risk}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            
+            {result.pdf_link && (
+              <div className="pt-2">
+                <a 
+                  href={result.pdf_link} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline flex items-center gap-1 text-sm"
+                >
+                  📄 Download Full Analysis Report (PDF)
+                </a>
+              </div>
+            )}
+            
+            {result.recommended_design && (
+              <div>
+                <h4 className="text-base font-semibold">Design Recommendations</h4>
+                <p className="text-sm mt-2">{result.recommended_design}</p>
+                
+                {result.justification && result.justification.length > 0 && (
+                  <div className="mt-2">
+                    <h5 className="text-sm font-medium">Rationale:</h5>
+                    <ul className="list-disc pl-5">
+                      {result.justification.map((item, index) => (
+                        <li key={index} className="text-xs text-slate-700">{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
