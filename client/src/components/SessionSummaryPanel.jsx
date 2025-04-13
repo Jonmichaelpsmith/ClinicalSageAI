@@ -1,185 +1,133 @@
-// /client/components/SessionSummaryPanel.jsx
-import { useState, useEffect } from 'react';
+// client/src/components/SessionSummaryPanel.jsx
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, XCircle, DownloadCloud, Clock } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { CheckCircle, XCircle, RefreshCw, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { format } from 'date-fns';
 
-export default function SessionSummaryPanel({ sessionId }) {
-  const [sessionSummary, setSessionSummary] = useState(null);
+export default function SessionSummaryPanel({ sessionId, autoRefresh = true }) {
+  const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
   const { toast } = useToast();
 
-  // Fetch session summary data
-  useEffect(() => {
-    const fetchSessionSummary = async () => {
-      if (!sessionId) return;
-      
-      try {
-        setLoading(true);
-        setError(null);
-        
-        const response = await fetch(`/api/session/summary/${sessionId}`);
-        
-        if (!response.ok) {
-          throw new Error(`Error fetching session summary: ${response.statusText}`);
-        }
-        
-        const data = await response.json();
-        setSessionSummary(data);
-      } catch (err) {
-        console.error("Failed to fetch session summary:", err);
-        setError("Failed to load session summary data");
-        toast({
-          title: "Error",
-          description: "Failed to load session summary data",
-          variant: "destructive"
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchSummary = async () => {
+    if (!sessionId) return;
     
-    fetchSessionSummary();
-    
-    // Set up an interval to refresh the data every 60 seconds
-    const intervalId = setInterval(fetchSessionSummary, 60000);
-    
-    // Clean up on unmount
-    return () => clearInterval(intervalId);
-  }, [sessionId, toast]);
-
-  // Format the date/time for display
-  const formatLastUpdated = (timestamp) => {
-    if (!timestamp) return "Not yet updated";
     try {
-      const date = new Date(timestamp);
-      return format(date, 'MMM d, yyyy h:mm a');
-    } catch (err) {
-      return timestamp;
+      setRefreshing(true);
+      const response = await fetch(`/api/session/summary/${sessionId}`);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch session summary: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      setSummary(data);
+    } catch (error) {
+      console.error("Error fetching session summary:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load session snapshot data",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
     }
   };
 
-  // Format artifact status check
-  const ArtifactStatus = ({ isGenerated, label }) => (
-    <div className="flex items-center gap-2">
-      {isGenerated ? (
-        <CheckCircle2 className="h-5 w-5 text-green-500" />
-      ) : (
-        <XCircle className="h-5 w-5 text-gray-300" />
-      )}
-      <span className={isGenerated ? "font-medium" : "text-muted-foreground"}>
-        {label}
-      </span>
-    </div>
-  );
+  useEffect(() => {
+    fetchSummary();
+    
+    // Set up auto-refresh every 30 seconds if enabled
+    let interval;
+    if (autoRefresh) {
+      interval = setInterval(fetchSummary, 30000);
+    }
+    
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [sessionId, autoRefresh]);
 
-  // Handle export of summary snapshot
-  const handleExportSnapshot = async () => {
-    if (!sessionSummary) return;
-    
-    const jsonString = JSON.stringify(sessionSummary, null, 2);
-    const blob = new Blob([jsonString], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `session-summary-${sessionId}-${new Date().toISOString().slice(0, 10)}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
+  const handleManualRefresh = () => {
+    fetchSummary();
     toast({
-      title: "Snapshot Exported",
-      description: "Session summary snapshot has been downloaded"
+      title: "Refreshed",
+      description: "Session snapshot updated"
     });
   };
 
-  if (loading) {
-    return (
-      <Card>
-        <CardContent className="pt-6 pb-4">
-          <div className="flex items-center justify-center h-24">
-            <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full"></div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  // Get a readable date from ISO string
+  const formatDate = (isoString) => {
+    if (!isoString) return "Never";
+    
+    const date = new Date(isoString);
+    return date.toLocaleString();
+  };
 
-  if (error) {
-    return (
-      <Card>
-        <CardContent className="pt-6 pb-4">
-          <div className="text-destructive">{error}</div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (!sessionSummary) {
-    return (
-      <Card>
-        <CardContent className="pt-6 pb-4">
-          <div className="text-muted-foreground">No session data available</div>
-        </CardContent>
-      </Card>
-    );
-  }
+  // Format to readable file names
+  const prettifyKey = (key) => {
+    const map = {
+      dropout_forecast: "Dropout Forecast",
+      success_prediction: "Success Prediction",
+      ind_summary: "IND Module 2.5",
+      sap_summary: "SAP Document",
+      summary_packet: "Summary Packet PDF",
+      regulatory_bundle: "Regulatory Bundle ZIP"
+    };
+    
+    return map[key] || key;
+  };
 
   return (
-    <Card>
+    <Card className="shadow-md">
       <CardHeader className="pb-2">
-        <CardTitle className="text-lg flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Clock className="h-5 w-5 text-primary" />
-            Session Status Snapshot
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleExportSnapshot}
-            className="h-8"
-          >
-            <DownloadCloud className="h-4 w-4 mr-2" />
-            Export Snapshot
+        <div className="flex justify-between items-center">
+          <CardTitle className="text-base font-medium flex items-center">
+            <Clock className="mr-2 h-4 w-4" />
+            Session Snapshot
+          </CardTitle>
+          <Button variant="ghost" size="sm" onClick={handleManualRefresh} disabled={refreshing}>
+            <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
           </Button>
-        </CardTitle>
+        </div>
       </CardHeader>
       <CardContent className="pt-0">
-        <div className="text-sm text-muted-foreground mb-4 flex items-center gap-1">
-          <span>Last updated:</span>
-          <span className="font-medium text-foreground">{formatLastUpdated(sessionSummary.last_updated)}</span>
-        </div>
-        
-        <div className="space-y-2">
-          <h3 className="text-sm font-medium mb-2">Generated Files:</h3>
-          <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-            <ArtifactStatus 
-              isGenerated={sessionSummary.generated_files.dropout_forecast}
-              label="Dropout Forecast"
-            />
-            <ArtifactStatus 
-              isGenerated={sessionSummary.generated_files.success_prediction}
-              label="Success Prediction"
-            />
-            <ArtifactStatus 
-              isGenerated={sessionSummary.generated_files.ind_summary}
-              label="IND Summary"
-            />
-            <ArtifactStatus 
-              isGenerated={sessionSummary.generated_files.sap_summary}
-              label="SAP Document"
-            />
-            <ArtifactStatus 
-              isGenerated={sessionSummary.generated_files.summary_packet}
-              label="Summary Packet"
-            />
+        {loading ? (
+          <div className="flex justify-center py-4">
+            <RefreshCw className="animate-spin h-5 w-5 text-muted-foreground" />
           </div>
-        </div>
+        ) : summary ? (
+          <div className="space-y-3">
+            <div className="text-xs text-muted-foreground">
+              Last Updated: {formatDate(summary.last_updated)}
+            </div>
+            <ul className="space-y-2">
+              {summary.generated_files && Object.entries(summary.generated_files).map(([key, generated]) => (
+                <li key={key} className="flex items-center justify-between text-sm">
+                  <span className="flex items-center">
+                    {generated ? (
+                      <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                    ) : (
+                      <XCircle className="h-4 w-4 text-gray-300 mr-2" />
+                    )}
+                    {prettifyKey(key)}
+                  </span>
+                  <Badge variant={generated ? "default" : "outline"} className="text-xs">
+                    {generated ? "Generated" : "Pending"}
+                  </Badge>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : (
+          <div className="text-center py-2 text-sm text-muted-foreground">
+            No session data available
+          </div>
+        )}
       </CardContent>
     </Card>
   );
