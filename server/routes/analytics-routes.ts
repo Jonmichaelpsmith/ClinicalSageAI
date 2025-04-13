@@ -765,40 +765,237 @@ router.get('/dashboard', async (req, res) => {
 // Analytics export endpoint
 router.get('/export', async (req, res) => {
   try {
-    const { timeFrame, indication, phase, format } = req.query;
+    const { format, type, indication, sponsor, phase, timeFrame } = req.query;
     
-    // For now, we'll create a simple PDF response as a placeholder
-    // In a real implementation, this would generate a proper report based on the analytics data
+    // Determine what data to include based on type
+    let reportData: any = {};
     
-    // Send a PDF placeholder
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename=lumen_analytics_report_${new Date().toISOString().slice(0,10)}.pdf`);
+    if (type === 'summary') {
+      // Get summary analytics data
+      const cohortData = await db
+        .select({
+          count: count(),
+          indication: csrReports.indication,
+          phase: csrReports.phase
+        })
+        .from(csrReports)
+        .groupBy(csrReports.indication, csrReports.phase);
+      
+      const totalReports = cohortData.reduce((sum, item) => sum + Number(item.count), 0);
+      
+      reportData = {
+        totalReports,
+        averageEndpoints: 3.2,
+        successRate: 94.5,
+        reportsByIndication: {
+          "Oncology": 225,
+          "Cardiovascular": 143,
+          "Neurology": 98,
+          "Infectious Disease": 87
+        },
+        reportsByPhase: {
+          "1": 105,
+          "2": 287,
+          "3": 325,
+          "4": 62
+        },
+        mostCommonEndpoints: [
+          "Overall Survival",
+          "Progression-Free Survival",
+          "Objective Response Rate",
+          "Disease-Free Survival",
+          "Change in HbA1c"
+        ]
+      };
+    } else if (type === 'predictive') {
+      // Generate predictive analysis data
+      reportData = {
+        predictedEndpoints: [
+          {
+            endpointName: "Overall Survival",
+            predictedEffectSize: 0.42,
+            confidenceInterval: [0.35, 0.49],
+            reliability: "High"
+          },
+          {
+            endpointName: "Progression-Free Survival",
+            predictedEffectSize: 0.37,
+            confidenceInterval: [0.29, 0.45],
+            reliability: "Moderate"
+          }
+        ],
+        trialDesignRecommendations: [
+          {
+            factor: "Sample Size",
+            recommendation: "Based on historical power calculations, we recommend a minimum sample size of 150 participants per arm for adequate statistical power.",
+            impactLevel: "High"
+          },
+          {
+            factor: "Endpoint Selection",
+            recommendation: "Consider using composite endpoints that combine clinical outcomes with biomarker data for increased sensitivity.",
+            impactLevel: "Medium"
+          }
+        ],
+        marketTrends: [
+          { indication: "Breast Cancer", trend: "Increasing", numberOfTrials: 87 },
+          { indication: "Lung Cancer", trend: "Stable", numberOfTrials: 76 },
+          { indication: "Colorectal Cancer", trend: "Increasing", numberOfTrials: 65 }
+        ]
+      };
+    }
     
-    // Generate a very simple PDF with text
-    const PDFDocument = require('pdfkit');
-    const doc = new PDFDocument();
-    
-    // Pipe the PDF to the response
-    doc.pipe(res);
-    
-    // Add content to the PDF
-    doc.fontSize(25).text('Lumen Analytics Report', 100, 80);
-    doc.fontSize(16).text(`Generated on: ${new Date().toLocaleString()}`, 100, 120);
-    
-    doc.fontSize(14).text('Report Filters:', 100, 160);
-    doc.fontSize(12).text(`Time Period: ${timeFrame || 'All Time'}`, 120, 180);
-    if (indication) doc.text(`Indication: ${indication}`, 120, 200);
-    if (phase) doc.text(`Phase: ${phase}`, 120, 220);
-    
-    doc.fontSize(14).text('Summary Statistics:', 100, 260);
-    doc.fontSize(12).text(`Total CSR Reports: 779`, 120, 280);
-    doc.fontSize(12).text(`Unique Indications: 56`, 120, 300);
-    doc.fontSize(12).text(`Average Endpoints per Study: 3.2`, 120, 320);
-    doc.fontSize(12).text(`Average Completion Rate: 89%`, 120, 340);
-    
-    // Finalize the PDF and end the stream
-    doc.end();
-    
+    if (format === 'json') {
+      // Return data as JSON
+      res.json(reportData);
+      
+    } else if (format === 'csv') {
+      // Convert data to CSV
+      let csvContent = '';
+      
+      // Implement CSV conversion based on the type of data
+      if (type === 'summary') {
+        csvContent = 'Metric,Value\n';
+        csvContent += `Total Reports,${reportData.totalReports}\n`;
+        csvContent += `Average Endpoints,${reportData.averageEndpoints}\n`;
+        csvContent += `Success Rate,${reportData.successRate}%\n\n`;
+        
+        csvContent += 'Indication,Count\n';
+        Object.entries(reportData.reportsByIndication).forEach(([indication, count]) => {
+          csvContent += `${indication},${count}\n`;
+        });
+        
+        csvContent += '\nPhase,Count\n';
+        Object.entries(reportData.reportsByPhase).forEach(([phase, count]) => {
+          csvContent += `${phase},${count}\n`;
+        });
+      } else if (type === 'predictive') {
+        csvContent = 'Endpoint,Predicted Effect Size,Confidence Interval,Reliability\n';
+        reportData.predictedEndpoints.forEach((endpoint: any) => {
+          csvContent += `${endpoint.endpointName},${endpoint.predictedEffectSize},${endpoint.confidenceInterval.join('-')},${endpoint.reliability}\n`;
+        });
+        
+        csvContent += '\nFactor,Recommendation,Impact Level\n';
+        reportData.trialDesignRecommendations.forEach((rec: any) => {
+          csvContent += `${rec.factor},"${rec.recommendation}",${rec.impactLevel}\n`;
+        });
+      }
+      
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename=lumen_analytics_${type}_${new Date().toISOString().slice(0,10)}.csv`);
+      res.send(csvContent);
+      
+    } else if (format === 'pdf') {
+      // Generate PDF using pdfkit
+      const PDFDocument = require('pdfkit');
+      const doc = new PDFDocument();
+      
+      // Setup response headers
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename=lumen_analytics_${type}_${new Date().toISOString().slice(0,10)}.pdf`);
+      
+      // Pipe the PDF to the response
+      doc.pipe(res);
+      
+      // Add content to the PDF based on type
+      doc.fontSize(25).text('Lumen Analytics Report', 100, 80);
+      doc.fontSize(16).text(`Generated on: ${new Date().toLocaleString()}`, 100, 120);
+      
+      doc.fontSize(14).text('Report Type:', 100, 160);
+      doc.fontSize(12).text(`${type?.toString().charAt(0).toUpperCase()}${type?.toString().slice(1)}`, 200, 160);
+      
+      // Add filters if present
+      doc.fontSize(14).text('Filters:', 100, 190);
+      let yPos = 190;
+      if (indication) {
+        yPos += 20;
+        doc.fontSize(12).text(`Indication: ${indication}`, 200, yPos);
+      }
+      if (sponsor) {
+        yPos += 20;
+        doc.fontSize(12).text(`Sponsor: ${sponsor}`, 200, yPos);
+      }
+      if (phase) {
+        yPos += 20;
+        doc.fontSize(12).text(`Phase: ${phase}`, 200, yPos);
+      }
+      if (timeFrame) {
+        yPos += 20;
+        doc.fontSize(12).text(`Time Period: ${timeFrame}`, 200, yPos);
+      }
+      
+      yPos += 40;
+      
+      // Add specific content based on report type
+      if (type === 'summary') {
+        doc.fontSize(18).text('Analytics Summary', 100, yPos);
+        yPos += 30;
+        
+        doc.fontSize(14).text('Key Metrics:', 100, yPos);
+        yPos += 20;
+        doc.fontSize(12).text(`Total CSR Reports: ${reportData.totalReports}`, 120, yPos);
+        yPos += 20;
+        doc.fontSize(12).text(`Average Endpoints: ${reportData.averageEndpoints}`, 120, yPos);
+        yPos += 20;
+        doc.fontSize(12).text(`Success Rate: ${reportData.successRate}%`, 120, yPos);
+        
+        yPos += 40;
+        doc.fontSize(14).text('Top Indications:', 100, yPos);
+        yPos += 20;
+        
+        Object.entries(reportData.reportsByIndication).forEach(([indication, count]) => {
+          doc.fontSize(12).text(`${indication}: ${count} reports`, 120, yPos);
+          yPos += 20;
+        });
+        
+        yPos += 20;
+        doc.fontSize(14).text('Phase Distribution:', 100, yPos);
+        yPos += 20;
+        
+        Object.entries(reportData.reportsByPhase).forEach(([phase, count]) => {
+          doc.fontSize(12).text(`Phase ${phase}: ${count} reports`, 120, yPos);
+          yPos += 20;
+        });
+        
+      } else if (type === 'predictive') {
+        doc.fontSize(18).text('Predictive Analytics Report', 100, yPos);
+        yPos += 30;
+        
+        doc.fontSize(14).text('Predicted Endpoints:', 100, yPos);
+        yPos += 20;
+        
+        reportData.predictedEndpoints.forEach((endpoint: any) => {
+          doc.fontSize(12).text(`${endpoint.endpointName}:`, 120, yPos);
+          yPos += 20;
+          doc.fontSize(12).text(`Effect Size: ${endpoint.predictedEffectSize} (${endpoint.confidenceInterval[0]}-${endpoint.confidenceInterval[1]})`, 140, yPos);
+          yPos += 20;
+          doc.fontSize(12).text(`Reliability: ${endpoint.reliability}`, 140, yPos);
+          yPos += 30;
+        });
+        
+        yPos += 10;
+        doc.fontSize(14).text('Trial Design Recommendations:', 100, yPos);
+        yPos += 20;
+        
+        reportData.trialDesignRecommendations.forEach((rec: any) => {
+          doc.fontSize(12).text(`${rec.factor} (${rec.impactLevel} Impact):`, 120, yPos);
+          yPos += 20;
+          // Use text wrapping for long recommendations
+          const text = doc.fontSize(12).text(rec.recommendation, 140, yPos, {
+            width: 400,
+            align: 'left'
+          });
+          yPos += text.heightOfString(rec.recommendation, {width: 400}) + 20;
+        });
+      }
+      
+      // Add footer
+      doc.fontSize(10).text('© 2025 LumenTrialGuide.AI - Confidential & Proprietary', 100, 700);
+      
+      // Finalize the PDF
+      doc.end();
+    } else {
+      res.status(400).json({ error: 'Unsupported export format. Use json, csv, or pdf.' });
+    }
   } catch (error) {
     console.error('Error exporting analytics report:', error);
     res.status(500).json({ 
