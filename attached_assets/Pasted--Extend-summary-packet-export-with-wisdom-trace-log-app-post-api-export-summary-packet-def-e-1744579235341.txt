@@ -1,0 +1,60 @@
+# Extend summary packet export with wisdom trace log
+@app.post("/api/export/summary-packet")
+def export_summary_packet(data: Dict = Body(...)):
+    session_id = data.get("session_id", "default_session")
+    archive_dir = f"/mnt/data/lumen_reports_backend/sessions/{session_id}"
+    os.makedirs(archive_dir, exist_ok=True)
+
+    pdf_path = os.path.join(archive_dir, "summary_packet.pdf")
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+    pdf.cell(200, 10, txt=f"Summary Intelligence Report for Study: {session_id}", ln=True)
+
+    # Dropout Forecast
+    dropout_path = os.path.join(archive_dir, "dropout_forecast.json")
+    if os.path.exists(dropout_path):
+        with open(dropout_path, "r") as f:
+            dropout_data = json.load(f)
+            pdf.ln(10)
+            pdf.set_font("Arial", "B", size=12)
+            pdf.cell(200, 10, txt="📉 Dropout Risk Forecast", ln=True)
+            pdf.set_font("Arial", size=11)
+            pdf.multi_cell(0, 10, dropout_data.get("summary", ""))
+
+    # Success Prediction
+    success_path = os.path.join(archive_dir, "success_prediction.json")
+    if os.path.exists(success_path):
+        with open(success_path, "r") as f:
+            pred = json.load(f)
+            pdf.ln(10)
+            pdf.set_font("Arial", "B", size=12)
+            pdf.cell(200, 10, txt="📈 Predicted Trial Outcome", ln=True)
+            pdf.set_font("Arial", size=11)
+            pdf.multi_cell(0, 10, f"Success probability: {round(pred.get('probability', 0)*100)}% based on {pred.get('method', 'Unknown model')}.")
+
+    # IND Module 2.5 Summary
+    ind_path = os.path.join(archive_dir, "ind_summary.txt")
+    if os.path.exists(ind_path):
+        with open(ind_path, "r") as f:
+            ind_text = f.read()
+            pdf.ln(10)
+            pdf.set_font("Arial", "B", size=12)
+            pdf.cell(200, 10, txt="📄 IND Module 2.5 Summary", ln=True)
+            pdf.set_font("Arial", size=11)
+            pdf.multi_cell(0, 10, ind_text.strip())
+
+    # Wisdom Trace
+    trace_path = os.path.join(archive_dir, "wisdom_trace.json")
+    if os.path.exists(trace_path):
+        with open(trace_path, "r") as f:
+            trace = json.load(f)
+            pdf.ln(10)
+            pdf.set_font("Arial", "B", size=12)
+            pdf.cell(200, 10, txt="🧠 Assistant Wisdom Trace", ln=True)
+            pdf.set_font("Arial", size=11)
+            for step in trace.get("reasoning", []):
+                pdf.multi_cell(0, 10, f"• {step}")
+
+    pdf.output(pdf_path)
+    return {"status": "ok", "path": f"/static/{session_id}/summary_packet.pdf"}

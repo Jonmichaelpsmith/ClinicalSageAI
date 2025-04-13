@@ -138,6 +138,130 @@ class ProtocolReportPDF(FPDF):
     def add_bullet_list(self, items):
         self.set_font('Arial', '', 11)
         for item in items:
+            
+    def add_success_prediction(self, prediction_data):
+        """Add success prediction section to PDF with visualization"""
+        if not prediction_data:
+            return
+            
+        self.add_section("Trial Success Prediction", "AI-powered outcome probability forecast")
+        
+        # Extract prediction data
+        success_probability = prediction_data.get('success_probability', 0)
+        confidence = prediction_data.get('confidence', 0)
+        model_name = prediction_data.get('model_name', 'Statistical Model')
+        factors = prediction_data.get('factors', [])
+        summary = prediction_data.get('summary', '')
+        
+        # Add formatted probability
+        self.set_font('Arial', 'B', 14)
+        
+        # Determine color based on probability
+        if success_probability >= 0.7:
+            self.set_text_color(0, 128, 0)  # Green for high probability
+        elif success_probability >= 0.4:
+            self.set_text_color(255, 165, 0)  # Orange for medium probability
+        else:
+            self.set_text_color(255, 0, 0)  # Red for low probability
+            
+        # Display probability as percentage
+        self.cell(0, 10, f"{success_probability * 100:.1f}% Probability of Success", 0, 1, 'C')
+        self.set_text_color(0, 0, 0)  # Reset text color
+        
+        # Add confidence level
+        self.set_font('Arial', 'I', 10)
+        confidence_text = "Low Confidence" if confidence < 0.4 else \
+                          "Medium Confidence" if confidence < 0.7 else \
+                          "High Confidence"
+        self.cell(0, 5, f"Model: {model_name} ({confidence_text})", 0, 1, 'C')
+        self.ln(5)
+        
+        # Add summary if available
+        if summary:
+            self.set_font('Arial', '', 11)
+            self.multi_cell(0, 5, deep_clean(summary))
+            self.ln(5)
+        
+        # Visualize probability as progress bar
+        bar_width = 150
+        bar_height = 20
+        x = (self.w - bar_width) / 2  # Center the bar
+        y = self.get_y()
+        
+        # Draw background bar (gray)
+        self.set_fill_color(240, 240, 240)
+        self.rect(x, y, bar_width, bar_height, 'F')
+        
+        # Draw filled portion based on probability (use color based on value)
+        if success_probability >= 0.7:
+            self.set_fill_color(0, 128, 0)  # Green
+        elif success_probability >= 0.4:
+            self.set_fill_color(255, 165, 0)  # Orange
+        else:
+            self.set_fill_color(255, 0, 0)  # Red
+            
+        filled_width = bar_width * success_probability
+        if filled_width > 0:  # Only draw if there's something to fill
+            self.rect(x, y, filled_width, bar_height, 'F')
+        
+        # Add percentage label in the middle of the bar
+        self.set_font('Arial', 'B', 11)
+        self.set_text_color(255, 255, 255) if success_probability > 0.4 else self.set_text_color(0, 0, 0)
+        self.set_xy(x, y + (bar_height/2) - 3)
+        self.cell(bar_width, 6, f"{success_probability * 100:.1f}%", 0, 0, 'C')
+        self.set_text_color(0, 0, 0)  # Reset text color
+        
+        # Move below the bar
+        self.ln(bar_height + 10)
+        
+        # Add contributing factors if available
+        if factors:
+            self.set_font('Arial', 'B', 11)
+            self.cell(0, 5, "Contributing Factors:", 0, 1)
+            self.ln(2)
+            
+            self.set_font('Arial', '', 10)
+            for factor in factors:
+                factor_name = factor.get('factor', '')
+                impact = factor.get('impact', '')
+                weight = factor.get('weight', 0)
+                
+                if not factor_name:
+                    continue
+                    
+                # Determine impact color
+                if 'positive' in impact.lower() or 'increase' in impact.lower():
+                    impact_color = (0, 128, 0)  # Green for positive
+                elif 'negative' in impact.lower() or 'decrease' in impact.lower():
+                    impact_color = (255, 0, 0)  # Red for negative
+                else:
+                    impact_color = (100, 100, 100)  # Gray for neutral
+                
+                # Draw factor with colored impact
+                self.set_font('Arial', 'B', 10)
+                self.cell(5, 5, "•", 0, 0)
+                self.cell(60, 5, deep_clean(factor_name), 0, 0)
+                
+                self.set_font('Arial', '', 10)
+                self.set_text_color(*impact_color)
+                self.cell(0, 5, deep_clean(impact), 0, 1)
+                self.set_text_color(0, 0, 0)  # Reset text color
+                
+            self.ln(5)
+        
+        # Add recommendations if available
+        recommendations = prediction_data.get('recommendations', [])
+        if recommendations:
+            self.set_font('Arial', 'B', 11)
+            self.cell(0, 5, "Recommendations to Improve Success:", 0, 1)
+            self.ln(2)
+            
+            self.set_font('Arial', '', 10)
+            for rec in recommendations:
+                self.cell(5, 5, "✓", 0, 0)
+                self.multi_cell(0, 5, deep_clean(rec))
+                
+        self.ln(5)
             clean_item = deep_clean(item)
             self.cell(5, 5, '•', 0, 0)
             self.multi_cell(0, 5, clean_item)
