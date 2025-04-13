@@ -76,7 +76,7 @@ async function runBatch(batchIndex) {
   
   try {
     // Run the import script
-    execSync(`node import_single_canada_batch.js --batchSize ${BATCH_SIZE} --batchIndex ${batchIndex}`, { 
+    execSync(`node import_single_canada_batch.js ${batchIndex} ${BATCH_SIZE}`, { 
       stdio: 'inherit' 
     });
     
@@ -85,8 +85,8 @@ async function runBatch(batchIndex) {
     const currentCount = await getHealthCanadaCount();
     
     // Calculate how many trials were imported in this batch
-    const previousCount = trackingData.trialsImported;
-    const importedInThisBatch = currentCount - previousCount;
+    const previousCount = trackingData.trialsImported || 0;
+    const importedInThisBatch = Math.max(0, currentCount - previousCount);
     
     // Update tracking
     trackingData.lastBatchIndex = batchIndex;
