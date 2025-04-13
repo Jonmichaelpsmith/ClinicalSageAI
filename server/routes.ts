@@ -261,6 +261,41 @@ function simulateVirtualTrial(
 };
 
 // Set up multer for file uploads
+// Create a persistent storage for files
+const diskStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    // Create uploads directory if it doesn't exist
+    const uploadDir = path.join(process.cwd(), 'uploads');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    // Generate unique filename
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + '-' + file.originalname);
+  }
+});
+
+// Define upload middleware for reports (support both PDF and XML)
+const csrUpload = multer({
+  storage: diskStorage,
+  limits: {
+    fileSize: 100 * 1024 * 1024, // 100MB max file size
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'application/pdf' || 
+        file.mimetype === 'application/xml' || 
+        file.mimetype === 'text/xml' ||
+        file.originalname.endsWith('.xml')) {
+      return cb(null, true);
+    }
+    cb(new Error('Only PDF and XML files are allowed'));
+  }
+});
+
+// Original upload for backward compatibility
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
@@ -5151,6 +5186,187 @@ Provide a comprehensive, evidence-based response.`;
       });
     } catch (err) {
       errorHandler(err as Error, res);
+    }
+  });
+  
+  // Direct CSR Upload API Endpoint
+  // This endpoint allows direct upload of CSR files (PDF or XML) with minimal UI complexity
+  app.post('/api/upload-csr', csrUpload.single('file'), async (req: Request, res: Response) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          message: 'No file uploaded. Please upload a PDF or XML file.'
+        });
+      }
+      
+      const file = req.file;
+      const fileExtension = path.extname(file.originalname).toLowerCase();
+      
+      console.log(`Processing uploaded CSR file: ${file.originalname} (${file.size} bytes)`);
+      
+      // Different processing based on file type
+      if (fileExtension === '.pdf') {
+        // For PDF files
+        try {
+          // Extract basic metadata
+          const pdfData = await pdfParse(fs.readFileSync(file.path));
+          const metadata = {
+            pageCount: pdfData.numpages,
+            title: req.body.title || file.originalname.replace('.pdf', ''),
+            sponsor: req.body.sponsor || 'Unknown',
+            indication: req.body.indication || 'Unknown',
+            phase: req.body.phase || 'Unknown',
+            size: file.size
+          };
+          
+          // Create database record for the CSR
+          const csrReportData = {
+            title: metadata.title,
+            sponsor: metadata.sponsor,
+            indication: metadata.indication,
+            phase: metadata.phase,
+            fileName: file.originalname,
+            fileSize: file.size,
+            uploadDate: new Date(),
+            summary: pdfData.text.substring(0, 500)
+          };
+          
+          // Insert into the database
+          const client = await pool.connect();
+          try {
+            const { rows } = await client.query(
+              `INSERT INTO csr_reports 
+               (title, sponsor, indication, phase, file_name, file_size, upload_date, summary) 
+               VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
+               RETURNING id`,
+              [
+                csrReportData.title,
+                csrReportData.sponsor,
+                csrReportData.indication,
+                csrReportData.phase,
+                csrReportData.fileName,
+                csrReportData.fileSize,
+                csrReportData.uploadDate,
+                csrReportData.summary
+              ]
+            );
+            
+            const reportId = rows[0].id;
+            
+            // Insert blank details that will be filled in by background processing
+            await client.query(
+              `INSERT INTO csr_details 
+               (report_id, study_design, primary_objective, study_description, inclusion_criteria, exclusion_criteria, endpoints, statistical_methods, safety, results, processing_status, last_updated) 
+               VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+              [
+                reportId,
+                '',
+                '',
+                '',
+                JSON.stringify([]),
+                JSON.stringify([]),
+                JSON.stringify([]),
+                JSON.stringify({}),
+                JSON.stringify({}),
+                JSON.stringify({}),
+                'pending',
+                new Date()
+              ]
+            );
+            
+            // Start background processing using child process
+            const childProcess = await import('child_process');
+            const processingCmd = `node -e "
+              const fs = require('fs');
+              const path = require('path');
+              const { processCSR } = require('./server/scripts/process-csr');
+              
+              (async () => {
+                try {
+                  console.log('Starting CSR processing for ID ${reportId}');
+                  await processCSR('${file.path}', ${reportId});
+                  console.log('CSR processing completed for ID ${reportId}');
+                } catch (err) {
+                  console.error('Error processing CSR:', err);
+                }
+              })();
+            "`;
+            
+            childProcess.exec(processingCmd);
+            
+            return res.status(201).json({
+              success: true,
+              message: 'CSR file uploaded and processing started',
+              reportId: reportId,
+              metadata
+            });
+          } finally {
+            client.release();
+          }
+        } catch (error) {
+          console.error('Error processing PDF file:', error);
+          return res.status(500).json({
+            success: false,
+            message: 'Error processing PDF file',
+            error: (error as Error).message
+          });
+        }
+      } else if (fileExtension === '.xml') {
+        // For XML files (NCT format)
+        try {
+          // Set target directory - copy to attached_assets for XML files
+          const targetDir = path.join(process.cwd(), 'attached_assets');
+          const targetPath = path.join(targetDir, file.originalname);
+          
+          // Ensure directory exists
+          if (!fs.existsSync(targetDir)) {
+            fs.mkdirSync(targetDir, { recursive: true });
+          }
+          
+          // Copy file to attached_assets for the import script to find
+          fs.copyFileSync(file.path, targetPath);
+          
+          // Start background processing using child process
+          const childProcess = await import('child_process');
+          const processingCmd = `node batch_import.js`;
+          
+          childProcess.exec(processingCmd, (error, stdout, stderr) => {
+            if (error) {
+              console.error('Error processing XML file:', error);
+              console.error(stderr);
+            } else {
+              console.log('XML file processed:', stdout);
+            }
+          });
+          
+          return res.json({
+            success: true,
+            message: 'XML file uploaded and processing started. This may take a few minutes.',
+            fileName: file.originalname
+          });
+        } catch (error) {
+          console.error('Error processing XML file:', error);
+          return res.status(500).json({
+            success: false,
+            message: 'Error processing XML file',
+            error: (error as Error).message
+          });
+        }
+      } else {
+        // Unsupported file type
+        return res.status(400).json({
+          success: false,
+          message: 'Unsupported file type. Please upload PDF or XML files only.'
+        });
+      }
+    } catch (error) {
+      console.error('Error processing CSR upload:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Server error during CSR upload',
+        error: (error as Error).message
+      });
     }
   });
 
