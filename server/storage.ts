@@ -1,134 +1,219 @@
-import { 
-  users, type User, type InsertUser,
-  csrReports, type CsrReport, type InsertCsrReport,
-  csrDetails, type CsrDetails, type InsertCsrDetails 
-} from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { 
+  projects, 
+  summaryPackets, 
+  insightMemories, 
+  wisdomTraces, 
+  studySessions,
+  insertProjectSchema, 
+  insertSummaryPacketSchema,
+  insertInsightMemorySchema,
+  insertWisdomTraceSchema,
+  insertStudySessionSchema
+} from "@shared/schema";
+import { eq, desc, and, or, isNull } from "drizzle-orm";
+import { v4 as uuidv4 } from "uuid";
+import connectPg from "connect-pg-simple";
+import session from "express-session";
+
+const PostgresSessionStore = connectPg(session);
 
 export interface IStorage {
-  // User methods
-  getUser(id: number): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  // Project operations
+  createProject(project: typeof insertProjectSchema._type): Promise<{ id: number; project_id: string }>;
+  getProject(projectId: string): Promise<any>;
   
-  // CSR Report methods
-  createCsrReport(report: InsertCsrReport): Promise<CsrReport>;
-  getCsrReport(id: number): Promise<CsrReport | undefined>;
-  getAllCsrReports(): Promise<CsrReport[]>;
-  updateCsrReport(id: number, data: Partial<CsrReport>): Promise<CsrReport | undefined>;
+  // Summary packet operations
+  createSummaryPacket(packet: typeof insertSummaryPacketSchema._type): Promise<any>;
+  getSummaryPacket(id: number): Promise<any>;
+  getSummaryPacketsByProject(projectId: string): Promise<any[]>;
+  getAllSummaryPackets(): Promise<any[]>;
+  updateSummaryPacketVersion(id: number, newVersion: number): Promise<void>;
+  markPreviousVersionsNotLatest(projectId: string): Promise<void>;
+  getSummaryPacketByShareId(shareId: string): Promise<any>;
+  updateSummaryPacketAccess(id: number): Promise<void>;
+  addTagToSummaryPacket(id: number, tag: string): Promise<void>;
+  removeTagFromSummaryPacket(id: number, tag: string): Promise<void>;
+  sharePacketWithEmail(id: number, email: string): Promise<void>;
   
-  // CSR Details methods
-  createCsrDetails(details: InsertCsrDetails): Promise<CsrDetails>;
-  getCsrDetails(reportId: number): Promise<CsrDetails | undefined>;
-  updateCsrDetails(reportId: number, data: Partial<CsrDetails>): Promise<CsrDetails | undefined>;
+  // Study Session operations
+  createStudySession(session: typeof insertStudySessionSchema._type): Promise<any>;
+  getStudySession(sessionId: string): Promise<any>;
+  getStudySessionsByProject(projectId: string): Promise<any[]>;
+  getAllStudySessions(): Promise<any[]>;
+  updateStudySessionStatus(sessionId: string, status: string): Promise<void>;
+  
+  // Insight Memory operations
+  createInsightMemory(insight: typeof insertInsightMemorySchema._type): Promise<any>;
+  getInsightMemory(id: number): Promise<any>;
+  getInsightMemoriesByStudySession(sessionId: string): Promise<any[]>;
+  getInsightMemoriesByProject(projectId: string): Promise<any[]>;
+  updateInsightMemoryStatus(id: number, status: string): Promise<void>;
+  
+  // Wisdom Trace operations
+  createWisdomTrace(trace: typeof insertWisdomTraceSchema._type): Promise<any>;
+  getWisdomTrace(id: number): Promise<any>;
+  getWisdomTraceByTraceId(traceId: string): Promise<any>;
+  getWisdomTracesByStudySession(sessionId: string): Promise<any[]>;
+  getWisdomTracesByProject(projectId: string): Promise<any[]>;
+  
+  // Session store
+  sessionStore: session.SessionStore;
 }
 
 export class DatabaseStorage implements IStorage {
-  // User methods
-  async getUser(id: number): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user;
+  sessionStore: any; // Fixed session.SessionStore type issue
+
+  constructor() {
+    const PostgresSessionStore = require('connect-pg-simple')(require('express-session'));
+    this.sessionStore = new PostgresSessionStore({ 
+      conObject: {
+        connectionString: process.env.DATABASE_URL
+      },
+      createTableIfMissing: true
+    });
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
-    return user;
+  async createProject(project: typeof insertProjectSchema._type) {
+    const projectId = project.project_id || `project_${uuidv4()}`;
+    const [newProject] = await db.insert(projects)
+      .values({
+        ...project,
+        project_id: projectId
+      })
+      .returning({ id: projects.id, project_id: projects.project_id });
+    
+    return newProject;
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const [user] = await db.insert(users).values(insertUser).returning();
-    return user;
+  async getProject(projectId: string) {
+    const [project] = await db.select()
+      .from(projects)
+      .where(eq(projects.project_id, projectId));
+    
+    return project;
   }
 
-  // CSR Report methods
-  async createCsrReport(report: InsertCsrReport): Promise<CsrReport> {
-    const now = new Date();
-    const [csrReport] = await db.insert(csrReports).values({
-      ...report,
-      status: "Processing",
-      uploadDate: now,
-      date: now.toISOString().split('T')[0],
-      summary: ""
-    }).returning();
-    return csrReport;
+  async createSummaryPacket(packet: typeof insertSummaryPacketSchema._type) {
+    if (packet.project_id) {
+      await this.markPreviousVersionsNotLatest(packet.project_id);
+    }
+    
+    const [newPacket] = await db.insert(summaryPackets)
+      .values(packet)
+      .returning();
+    
+    return newPacket;
   }
 
-  async getCsrReport(id: number): Promise<CsrReport | undefined> {
-    const [report] = await db.select().from(csrReports).where(eq(csrReports.id, id));
-    return report;
+  async getSummaryPacket(id: number) {
+    const [packet] = await db.select()
+      .from(summaryPackets)
+      .where(eq(summaryPackets.id, id));
+    
+    return packet;
   }
 
-  async getAllCsrReports(): Promise<CsrReport[]> {
-    try {
-      // Select only the columns that exist in the database
-      const reports = await db.select({
-        id: csrReports.id,
-        title: csrReports.title,
-        sponsor: csrReports.sponsor,
-        indication: csrReports.indication,
-        phase: csrReports.phase,
-        status: csrReports.status,
-        date: csrReports.date,
-        uploadDate: csrReports.uploadDate,
-        summary: csrReports.summary,
-        fileName: csrReports.fileName,
-        fileSize: csrReports.fileSize,
-        // Omit fileType as it doesn't exist in the database
-        processedAt: csrReports.processedAt,
-        vectorized: csrReports.vectorized,
-        source: csrReports.source,
-        hasDetails: csrReports.hasDetails,
-        deletedAt: csrReports.deletedAt
-      }).from(csrReports).orderBy(csrReports.uploadDate);
-      
-      // Add fileType property with default value for each report
-      const reportsWithFileType = reports.map(report => {
-        return {
-          ...report,
-          fileType: 'pdf' // Default value
-        };
-      });
-      
-      return reportsWithFileType.reverse(); // Most recent first
-    } catch (error) {
-      console.error('Error in getAllCsrReports:', error);
-      throw error;
+  async getSummaryPacketsByProject(projectId: string) {
+    const packets = await db.select()
+      .from(summaryPackets)
+      .where(eq(summaryPackets.project_id, projectId))
+      .orderBy(desc(summaryPackets.created_at));
+    
+    return packets;
+  }
+
+  async getAllSummaryPackets() {
+    const packets = await db.select()
+      .from(summaryPackets)
+      .orderBy(desc(summaryPackets.created_at));
+    
+    return packets;
+  }
+
+  async updateSummaryPacketVersion(id: number, newVersion: number) {
+    await db.update(summaryPackets)
+      .set({ version: newVersion })
+      .where(eq(summaryPackets.id, id));
+  }
+
+  async markPreviousVersionsNotLatest(projectId: string) {
+    await db.update(summaryPackets)
+      .set({ is_latest: false })
+      .where(and(
+        eq(summaryPackets.project_id, projectId),
+        eq(summaryPackets.is_latest, true)
+      ));
+  }
+  
+  async getSummaryPacketByShareId(shareId: string) {
+    const [packet] = await db.select()
+      .from(summaryPackets)
+      .where(eq(summaryPackets.share_id, shareId));
+    
+    return packet;
+  }
+  
+  async updateSummaryPacketAccess(id: number) {
+    await db.update(summaryPackets)
+      .set({ 
+        access_count: sql`${summaryPackets.access_count} + 1`,
+        last_accessed: new Date()
+      })
+      .where(eq(summaryPackets.id, id));
+  }
+  
+  async addTagToSummaryPacket(id: number, tag: string) {
+    // First get the current tags
+    const [packet] = await db.select({ tags: summaryPackets.tags })
+      .from(summaryPackets)
+      .where(eq(summaryPackets.id, id));
+    
+    if (!packet) return;
+    
+    // Add the new tag if it doesn't exist
+    const currentTags = packet.tags as string[];
+    if (!currentTags.includes(tag)) {
+      const newTags = [...currentTags, tag];
+      await db.update(summaryPackets)
+        .set({ tags: newTags })
+        .where(eq(summaryPackets.id, id));
     }
   }
-
-  async updateCsrReport(id: number, data: Partial<CsrReport>): Promise<CsrReport | undefined> {
-    const [updatedReport] = await db.update(csrReports)
-      .set(data)
-      .where(eq(csrReports.id, id))
-      .returning();
-    return updatedReport;
+  
+  async removeTagFromSummaryPacket(id: number, tag: string) {
+    // First get the current tags
+    const [packet] = await db.select({ tags: summaryPackets.tags })
+      .from(summaryPackets)
+      .where(eq(summaryPackets.id, id));
+    
+    if (!packet) return;
+    
+    // Remove the tag
+    const currentTags = packet.tags as string[];
+    const newTags = currentTags.filter(t => t !== tag);
+    await db.update(summaryPackets)
+      .set({ tags: newTags })
+      .where(eq(summaryPackets.id, id));
   }
-
-  // CSR Details methods
-  async createCsrDetails(details: InsertCsrDetails): Promise<CsrDetails> {
-    const [csrDetail] = await db.insert(csrDetails).values(details).returning();
-    return csrDetail;
-  }
-
-  async getCsrDetails(reportId: number): Promise<CsrDetails | undefined> {
-    const [detail] = await db.select()
-      .from(csrDetails)
-      .where(eq(csrDetails.reportId, reportId));
-    return detail;
-  }
-
-  async updateCsrDetails(reportId: number, data: Partial<CsrDetails>): Promise<CsrDetails | undefined> {
-    const [updatedDetail] = await db.update(csrDetails)
-      .set(data)
-      .where(eq(csrDetails.reportId, reportId))
-      .returning();
-    return updatedDetail;
+  
+  async sharePacketWithEmail(id: number, email: string) {
+    // First get the current shared_with list
+    const [packet] = await db.select({ shared_with: summaryPackets.shared_with })
+      .from(summaryPackets)
+      .where(eq(summaryPackets.id, id));
+    
+    if (!packet) return;
+    
+    // Add the email if it doesn't exist
+    const currentSharedWith = packet.shared_with as string[];
+    if (!currentSharedWith.includes(email)) {
+      const newSharedWith = [...currentSharedWith, email];
+      await db.update(summaryPackets)
+        .set({ shared_with: newSharedWith })
+        .where(eq(summaryPackets.id, id));
+    }
   }
 }
 
-// Uncomment to use Memory Storage for development
-// export const storage = new MemStorage();
-
-// Use database storage
 export const storage = new DatabaseStorage();

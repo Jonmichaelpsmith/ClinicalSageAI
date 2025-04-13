@@ -12,6 +12,7 @@ import Upload from "@/pages/Upload";
 import Analytics from "@/pages/Analytics";
 import StatisticalModeling from "@/pages/StatisticalModeling";
 import UseCaseLibrary from "@/pages/UseCaseLibrary";
+import UseCasesPage from "@/pages/UseCasesPage";
 import ProtocolGenerator from "@/pages/ProtocolGenerator";
 import ProtocolIntelligenceBuilder from "@/pages/ProtocolIntelligenceBuilder";
 import StudyDesignAgent from "./pages/StudyDesignAgent";
@@ -48,6 +49,8 @@ import AcademicRegulatoryPage from "@/pages/AcademicRegulatoryPage";
 import AdvancedBiostatistics from "@/pages/AdvancedBiostatistics";
 import CSRInsightPage from "@/pages/CSRInsightPage";
 import PlanningPage from "@/pages/PlanningPage";
+import InsightMemoryEngine from "@/pages/InsightMemoryEngine";
+import WisdomTrace from "@/pages/WisdomTrace";
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -74,7 +77,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
           <div className="max-w-7xl mx-auto w-full">
             <div className="flex flex-col md:flex-row justify-between items-center">
               <div className="text-sm text-slate-500 dark:text-slate-400">
-                © {new Date().getFullYear()} TrialSage. All rights reserved.
+                © {new Date().getFullYear()} LumenTrialGuide.AI. All rights reserved.
               </div>
               <div className="mt-4 md:mt-0 flex space-x-6">
                 <a href="#" className="text-sm text-slate-500 hover:text-primary dark:text-slate-400">Terms</a>
@@ -124,6 +127,7 @@ function Router() {
       <Route path="/analytics">{() => renderWithLayout(Analytics)}</Route>
       <Route path="/statistical-modeling">{() => renderWithLayout(StatisticalModeling)}</Route>
       <Route path="/use-cases">{() => renderWithLayout(UseCaseLibrary)}</Route>
+      <Route path="/use-case-gallery">{() => renderWithLayout(UseCasesPage)}</Route>
       <Route path="/protocol-generator">{() => renderWithLayout(ProtocolGenerator)}</Route>
       <Route path="/protocol-designer">{() => renderWithLayout(ProtocolGenerator)}</Route>
       <Route path="/protocol-intelligence">{() => renderWithLayout(ProtocolIntelligenceBuilder)}</Route>
@@ -165,6 +169,8 @@ function Router() {
       <Route path="/advanced-biostatistics">{() => renderWithLayout(AdvancedBiostatistics)}</Route>
       <Route path="/csr-insights">{() => renderWithLayout(CSRInsightPage)}</Route>
       <Route path="/planning">{() => renderWithLayout(PlanningPage)}</Route>
+      <Route path="/insight-engine">{() => renderWithLayout(InsightMemoryEngine)}</Route>
+      <Route path="/wisdom-trace">{() => renderWithLayout(WisdomTrace)}</Route>
 
       {/* Fallback to 404 */}
       <Route>{() => renderWithLayout(NotFound)}</Route>

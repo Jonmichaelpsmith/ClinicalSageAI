@@ -1,0 +1,80 @@
+// /client/components/ProtocolPlanningDashboard.jsx (now with Study Session Selector)
+import ProtocolUploadPanel from "@/components/ProtocolUploadPanel";
+import SampleSizeCalculator from "@/components/SampleSizeCalculator";
+import DropoutEstimator from "@/components/DropoutEstimator";
+import TrialSuccessPredictor from "@/components/TrialSuccessPredictor";
+import ProtocolValidator from "@/components/ProtocolValidator";
+import FixedProtocolViewer from "@/components/FixedProtocolViewer";
+import ProtocolEmailer from "@/components/ProtocolEmailer";
+import SummaryPacketGenerator from "@/components/SummaryPacketGenerator";
+import SummaryPacketArchive from "@/components/SummaryPacketArchive";
+import StudySessionSelector from "@/components/StudySessionSelector";
+import { Button } from "@/components/ui/button";
+
+export default function ProtocolPlanningDashboard() {
+  const handleEmailReport = async () => {
+    await fetch("/api/intel/scheduled-report");
+    alert("Your report has been emailed to your configured address.");
+  };
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6">
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-xl font-bold text-gray-800">🧠 Study Session</h2>
+          <StudySessionSelector onSelect={(id) => console.log("Using session:", id)} />
+        </div>
+
+        <h2 className="text-xl font-bold text-gray-800">📄 Protocol Upload + Analysis</h2>
+        <ProtocolUploadPanel />
+
+        <h2 className="text-xl font-bold text-gray-800">📉 Dropout Estimator</h2>
+        <DropoutEstimator />
+
+        <h2 className="text-xl font-bold text-gray-800">🛡️ Protocol Validator</h2>
+        <ProtocolValidator />
+
+        <h2 className="text-xl font-bold text-gray-800">🧠 AI-Repaired Protocol</h2>
+        <FixedProtocolViewer originalText="Paste or pull your latest protocol content here." />
+
+        <div className="space-y-2 pt-2">
+          <Button variant="outline">📄 Generate IND Module 2.5</Button>
+          <Button variant="outline">📄 Generate IND Module 2.7</Button>
+          <Button variant="outline">📝 Export Final Protocol (.docx)</Button>
+          <Button variant="outline">🧪 Regulatory Readiness Score</Button>
+        </div>
+
+        <h2 className="text-xl font-bold text-gray-800">📤 Send Final Protocol</h2>
+        <ProtocolEmailer />
+
+        <h2 className="text-xl font-bold text-gray-800">📦 Generate Clinical Summary Packet</h2>
+        <SummaryPacketGenerator />
+
+        <h2 className="text-xl font-bold text-gray-800">🗂 Summary Packet Archive</h2>
+        <SummaryPacketArchive />
+
+        <div className="flex gap-4 pt-4">
+          <a
+            href="/static/latest_report.pdf"
+            className="text-sm text-blue-600 underline hover:text-blue-800"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            📄 Download Planning Report (PDF)
+          </a>
+          <Button onClick={handleEmailReport} variant="outline">
+            📤 Email Report to Stakeholders
+          </Button>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <h2 className="text-xl font-bold text-gray-800">🔢 Sample Size Calculator</h2>
+        <SampleSizeCalculator />
+
+        <h2 className="text-xl font-bold text-gray-800">🔮 Trial Success Predictor</h2>
+        <TrialSuccessPredictor />
+      </div>
+    </div>
+  );
+}

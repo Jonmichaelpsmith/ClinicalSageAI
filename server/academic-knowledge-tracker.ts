@@ -1,13 +1,72 @@
-import { 
-  academicResources, 
-  academicEmbeddings, 
-  InsertAcademicResource, 
-  InsertAcademicEmbedding, 
-  AcademicResource,
-  AcademicEmbedding
-} from '@shared/schema';
+// Temporarily defining academicResources and academicEmbeddings schema directly
+// in file to address the broken reference issues with @shared/schema
+import { pgTable, serial, varchar, text, timestamp, integer, json } from 'drizzle-orm/pg-core';
+import { count, eq, like, and, desc, asc, or, inArray, sql } from 'drizzle-orm';
 import { db } from './db';
-import { eq, like, and, desc, asc, or, inArray, sql, count } from 'drizzle-orm';
+
+// Temporary type definitions
+export type InsertAcademicResource = {
+  title: string;
+  authors?: string;
+  resourceType: string;
+  source?: string;
+  url?: string;
+  publishedDate?: Date;
+  category?: string;
+  summary?: string;
+  fullText?: string;
+  keyInsights?: string[];
+  tags?: string[];
+};
+
+export type InsertAcademicEmbedding = {
+  resourceId: number;
+  sectionType: string;
+  vector: number[];
+  textChunk?: string;
+};
+
+export type AcademicResource = InsertAcademicResource & {
+  id: number;
+  uploadDate: Date;
+  lastAccessed: Date;
+  accessCount: number;
+};
+
+export type AcademicEmbedding = InsertAcademicEmbedding & {
+  id: number;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+// Temporary schema definitions
+export const academicResources = pgTable('academic_resources', {
+  id: serial('id').primaryKey(),
+  title: text('title').notNull(),
+  authors: text('authors'),
+  resourceType: varchar('resource_type', { length: 50 }).notNull(),
+  source: varchar('source', { length: 255 }),
+  url: text('url'),
+  publishedDate: timestamp('published_date'),
+  category: varchar('category', { length: 100 }),
+  summary: text('summary'),
+  fullText: text('full_text'),
+  keyInsights: json('key_insights').$type<string[]>().default(sql`'[]'`),
+  tags: json('tags').$type<string[]>().default(sql`'[]'`),
+  uploadDate: timestamp('upload_date').defaultNow().notNull(),
+  lastAccessed: timestamp('last_accessed'),
+  accessCount: integer('access_count').default(0)
+});
+
+export const academicEmbeddings = pgTable('academic_embeddings', {
+  id: serial('id').primaryKey(),
+  resourceId: integer('resource_id').notNull(),
+  sectionType: varchar('section_type', { length: 50 }).notNull(),
+  vector: json('vector').$type<number[]>().notNull(),
+  textChunk: text('text_chunk'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
 
 /**
  * Academic Knowledge Tracker Service

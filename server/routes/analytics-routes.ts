@@ -6,7 +6,8 @@ import path from 'path';
 import { exec } from 'child_process';
 import util from 'util';
 import { db } from '../db';
-import { csrReports } from '@shared/schema';
+// Import csrReports from sage-plus-service instead of shared schema
+import { csrReports } from '../sage-plus-service';
 import { eq, like } from 'drizzle-orm';
 
 const execPromise = util.promisify(exec);

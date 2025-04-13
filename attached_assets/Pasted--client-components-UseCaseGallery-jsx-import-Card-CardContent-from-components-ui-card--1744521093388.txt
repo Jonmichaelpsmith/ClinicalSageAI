@@ -1,0 +1,58 @@
+// /client/components/UseCaseGallery.jsx
+import { Card, CardContent } from "@/components/ui/card";
+
+const useCases = [
+  {
+    role: "Emerging Biotech CEO",
+    title: "Design smarter, without a CRO.",
+    challenge: "Budget-constrained, investor-facing, under-resourced.",
+    value: "Upload protocol → receive feedback, IND module, success forecast.",
+    quote: "I had more clarity in 30 minutes than 3 weeks with a consultant."
+  },
+  {
+    role: "Clinical Program Lead",
+    title: "Plan across TAs with proven precedent.",
+    challenge: "Running multiple trials, avoiding failed designs.",
+    value: "Find CSR-backed designs that actually worked.",
+    quote: "I got a full protocol with risk logic and submission-ready text."
+  },
+  {
+    role: "Regulatory Affairs Strategist",
+    title: "Generate defendable IND content instantly.",
+    challenge: "Manual drafting, limited traceability, time pressure.",
+    value: "AI-generated modules 2.5 + 2.7 with cited CSR references.",
+    quote: "We replaced two writers and built a full packet in one sitting."
+  },
+  {
+    role: "Principal Investigator",
+    title: "Design rare disease trials with intelligence.",
+    challenge: "No direct precedent, unclear endpoints, small population.",
+    value: "Find molecule-similar studies and simulate dropout risk.",
+    quote: "Our screen fail rate dropped 40% after refining with the engine."
+  },
+  {
+    role: "Biotech Board Member",
+    title: "Get clarity before you approve a trial.",
+    challenge: "Vague assumptions, risk blindness, investor scrutiny.",
+    value: "Download executive brief: design, risk, success prediction.",
+    quote: "Our board vote took 20 minutes after reviewing the PDF."
+  }
+];
+
+export default function UseCaseGallery() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+      {useCases.map((uc, idx) => (
+        <Card key={idx} className="shadow-md border border-gray-200">
+          <CardContent className="p-4 space-y-2">
+            <h3 className="text-lg font-bold">{uc.role}</h3>
+            <p className="text-base font-semibold text-blue-600">{uc.title}</p>
+            <p className="text-sm text-muted-foreground">{uc.challenge}</p>
+            <p className="text-sm text-gray-800">{uc.value}</p>
+            <p className="text-xs italic text-green-700 pt-1">“{uc.quote}”</p>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
