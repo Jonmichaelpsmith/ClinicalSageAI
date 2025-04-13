@@ -26,6 +26,7 @@ import SampleSizeCalculator from "@/components/SampleSizeCalculator";
 import DropoutEstimator from "@/components/DropoutEstimator";
 import TrialSuccessPredictor from "@/components/TrialSuccessPredictor";
 import RegulatoryReadinessScore from "@/components/RegulatoryReadinessScore";
+import ProtocolValidator from "@/components/ProtocolValidator";
 
 export default function ProtocolPlanningDashboard() {
   const [activeTab, setActiveTab] = useState("protocol");
