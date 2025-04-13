@@ -8,7 +8,7 @@ import { Loader2, FileText, Upload, Check, AlertTriangle, FileUp } from "lucide-
 import { apiRequest } from "@/lib/queryClient";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { useNavigate } from "wouter";
+import { useLocation } from "wouter";
 
 export default function ProtocolUploadPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -16,18 +16,18 @@ export default function ProtocolUploadPage() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [extracting, setExtracting] = useState(false);
   const { toast } = useToast();
-  const navigate = useNavigate();
+  const [, navigate] = useLocation();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
       
-      // Check file type (.docx or .txt)
+      // Check file type (PDF, .docx or .txt)
       const fileType = selectedFile.name.split('.').pop()?.toLowerCase();
-      if (fileType !== 'docx' && fileType !== 'txt') {
+      if (fileType !== 'docx' && fileType !== 'txt' && fileType !== 'pdf') {
         toast({
           title: "Invalid file type",
-          description: "Please upload a .docx or .txt file.",
+          description: "Please upload a PDF, .docx, or .txt file.",
           variant: "destructive"
         });
         return;
@@ -122,7 +122,7 @@ export default function ProtocolUploadPage() {
           <CardHeader>
             <CardTitle>Upload Protocol Document</CardTitle>
             <CardDescription>
-              Supported file formats: .docx, .txt (Max 10MB)
+              Supported file formats: PDF, .docx, .txt (Max 10MB)
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -135,7 +135,7 @@ export default function ProtocolUploadPage() {
                     type="file" 
                     onChange={handleFileChange}
                     disabled={uploading || extracting}
-                    accept=".docx,.txt"
+                    accept=".docx,.txt,.pdf"
                   />
                   <Button 
                     onClick={handleUpload} 
