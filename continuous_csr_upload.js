@@ -126,10 +126,19 @@ function saveProcessedFiles() {
  */
 async function getDatabaseConnection() {
   const client = new Client({
-    connectionString: process.env.DATABASE_URL
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+      rejectUnauthorized: false // Added to handle potential certificate issues
+    }
   });
-  await client.connect();
-  return client;
+  
+  try {
+    await client.connect();
+    return client;
+  } catch (err) {
+    console.error('Database connection error:', err);
+    throw err;
+  }
 }
 
 /**
