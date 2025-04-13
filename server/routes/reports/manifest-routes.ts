@@ -90,13 +90,21 @@ reportsManifestRoutes.get('/index', async (_req: Request, res: Response) => {
     const indexPath = path.join(process.cwd(), 'attached_assets', 'report_index.json');
     
     if (!fs.existsSync(indexPath)) {
+      console.error(`Report index not found at path: ${indexPath}`);
       return res.status(404).json({
         success: false,
         message: 'Report index not found'
       });
     }
     
-    const reportIndex = JSON.parse(fs.readFileSync(indexPath, 'utf-8'));
+    // Read the file contents
+    const fileContents = fs.readFileSync(indexPath, 'utf-8');
+    console.log(`Got file contents with length: ${fileContents.length}`);
+    
+    // Parse the JSON
+    const reportIndex = JSON.parse(fileContents);
+    
+    // Send the data directly without wrapping
     res.json(reportIndex);
   } catch (error: any) {
     console.error('Error fetching report index:', error);
