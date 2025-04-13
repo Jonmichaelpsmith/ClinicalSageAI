@@ -118,6 +118,35 @@ For best results, please use PDF format.`;
       });
     }
     
+    // Score the protocol confidence
+    const confidenceScorerPath = path.join(process.cwd(), 'trialsage', 'confidence_scorer.py');
+    let confidenceOutput;
+    
+    try {
+      // Create a clean version of the text for confidence scoring
+      const tempScoreFile = path.join(process.cwd(), 'temp', `score-${Date.now()}.txt`);
+      fs.writeFileSync(tempScoreFile, extractedText);
+      
+      const scoreResult = await execPromise(`python -c "from trialsage.confidence_scorer import score_protocol; import json; import sys; print(json.dumps(score_protocol(open('${tempScoreFile}', 'r').read())))"`);
+      confidenceOutput = scoreResult.stdout;
+      
+      // Clean up temp file
+      try {
+        if (fs.existsSync(tempScoreFile)) {
+          fs.unlinkSync(tempScoreFile);
+        }
+      } catch (e) {
+        console.error('Error cleaning up temp file:', e);
+      }
+    } catch (error) {
+      console.error('Confidence scoring error:', error);
+      confidenceOutput = JSON.stringify({
+        confidence_score: 0,
+        issues: ['Error calculating confidence score'],
+        verdict: 'Unable to assess protocol design'
+      });
+    }
+    
     let analysisResult;
     try {
       analysisResult = JSON.parse(analysisOutput);
@@ -239,6 +268,20 @@ router.post('/analyze-protocol-text', async (req, res) => {
         success: false,
         message: 'Failed to analyze protocol text',
         error: (error as Error).message
+      });
+    }
+    
+    // Score the protocol confidence
+    let confidenceOutput;
+    try {
+      const scoreResult = await execPromise(`python -c "from trialsage.confidence_scorer import score_protocol; import json; import sys; print(json.dumps(score_protocol(open('${tempFilePath}', 'r').read())))"`);
+      confidenceOutput = scoreResult.stdout;
+    } catch (error) {
+      console.error('Confidence scoring error:', error);
+      confidenceOutput = JSON.stringify({
+        confidence_score: 0,
+        issues: ['Error calculating confidence score'],
+        verdict: 'Unable to assess protocol design'
       });
     }
 
