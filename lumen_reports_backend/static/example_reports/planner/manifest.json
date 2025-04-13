@@ -1,0 +1,17 @@
+{
+  "persona": "planner",
+  "title": "Study Planning Intelligence Suite",
+  "description": "Protocol design optimization, CSR-backed precedent matching, and strategy-driven planning outputs built for cross-functional trial leaders.",
+  "includes": [
+    "Design archetype strategy brief (PDF)",
+    "Endpoint utilization matrix (XLSX)",
+    "AI-optimized protocol draft (DOCX)",
+    "Timeline vs. CSR benchmark overlay (PNG)"
+  ],
+  "files": [
+    "design_archetype_brief.pdf",
+    "endpoint_utilization_matrix.xlsx",
+    "ai_optimized_protocol.docx",
+    "timeline_benchmark_overlay.png"
+  ]
+}

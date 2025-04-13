@@ -344,6 +344,7 @@ const signatureUpdateRequestSchema = z.object({
 
 // Import analytics routes
 import analyticsRoutes from './routes/analytics-routes';
+import reportsManifestRoutes from './routes/reports/manifest-routes';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Export trial success prediction to PDF
@@ -523,6 +524,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register Export Routes
   app.use('/api/export', exportRoutes);
+  
+  // Register Reports Manifest Routes
+  app.use('/api/reports', reportsManifestRoutes);
   
   // CSR Database to JSON Export endpoint
   app.post('/api/csr/export-to-json', async (req: Request, res: Response) => {
