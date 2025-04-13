@@ -1,0 +1,52 @@
+✅ Replit Development Integration Instructions for Full Deployment
+🧱 Goal:
+Ensure every front-end component in ProtocolPlanningDashboard.jsx connects to its live, functioning backend route—and that data is flowing, responses render correctly, and reports are downloadable and emailable.
+
+✅ 1. Required Backend Routes (All Must Be Live)
+Endpoint	Purpose	Connected Component
+POST /api/analytics/upload-protocol	Accepts file upload and returns AI analysis	ProtocolUploadPanel.jsx
+POST /api/analytics/sample-size	Returns calculated sample size	SampleSizeCalculator.jsx
+POST /api/analytics/dropout-estimate	Predicts dropout risk	DropoutEstimator.jsx
+POST /api/analytics/success-probability	Predicts trial success likelihood	TrialSuccessPredictor.jsx
+GET /api/intel/scheduled-report	Triggers PDF report and email	Button in ProtocolPlanningDashboard.jsx
+/static/latest_report.pdf	Hosts exported PDF for download	PDF download link
+✅ All of these must return valid JSON and not 404 or error out.
+
+✅ 2. Front-End Verification Checklist
+Component	Action Needed
+ProtocolUploadPanel.jsx	Ensure fetch uses correct FormData() and handles .txt or .docx type
+SampleSizeCalculator.jsx	Inputs must convert to float/int correctly before POST
+DropoutEstimator.jsx	Text inputs must POST JSON with all required fields (duration, control, arms)
+TrialSuccessPredictor.jsx	Checkbox must POST as has_biomarker: true/false; numeric fields validated
+ProtocolPlanningDashboard.jsx	Confirms that the email button triggers the /scheduled-report GET
+🛠 Additional Instruction for Replit Team
+Please confirm the following integration logic is respected throughout:
+
+The UI components are registered under your React app with working routes
+
+All API fetch calls return live, correct data (not 500 or mock responses)
+
+Static file serving is enabled (/static/) and .pdf is generated post-analysis
+
+The user can:
+
+Upload a protocol
+
+View analysis
+
+Predict dropout, success, sample size
+
+Download and email PDF report
+
+PDF generator script (pdf_exporter.py) must be run on analysis to ensure updated latest_report.pdf
+
+✅ 3. Test Instructions
+Before calling this feature “complete,” Replit should run this test:
+
+Action	Expected Result
+Upload protocol.txt	Summary + CSR match + confidence score appear
+Click "Predict Success"	Probability and verdict shown
+Click "Email Report"	Alert confirms delivery, PDF exists at /static/latest_report.pdf
+Sample size input	Valid input returns n values
+Final Note:
+No front-end feature should appear without a fully functional backend route and actual data flow. TrialSage is not a concept demo—this is a tool for real-world biotech decision-making.
