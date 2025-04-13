@@ -1,10 +1,9 @@
-// /client/src/components/SummaryPacketGenerator.jsx
+// /client/components/SummaryPacketGenerator.jsx
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
 import { isValidSessionId } from "@/utils/sessionUtils";
 
 export default function SummaryPacketGenerator({ sessionId }) {
@@ -19,7 +18,6 @@ export default function SummaryPacketGenerator({ sessionId }) {
   });
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const { toast } = useToast();
 
   const handleChange = (field, value) => {
     setInputs({ ...inputs, [field]: value });
@@ -27,11 +25,7 @@ export default function SummaryPacketGenerator({ sessionId }) {
 
   const handleGenerate = async () => {
     if (!isValidSessionId(sessionId)) {
-      toast({
-        title: "Invalid Session",
-        description: "Session ID is missing or invalid. Please start or select a study session.",
-        variant: "destructive"
-      });
+      alert("Session ID is missing or invalid. Please start or select a study session.");
       return;
     }
 
@@ -62,20 +56,12 @@ export default function SummaryPacketGenerator({ sessionId }) {
       if (data.pdf_url) {
         window.open(data.pdf_url, "_blank");
         setSubmitted(true);
-        toast({
-          title: "Summary Packet Generated",
-          description: "Your packet has been generated and opened in a new tab."
-        });
       } else {
         throw new Error("No PDF URL received");
       }
     } catch (error) {
       console.error("Summary packet generation error:", error);
-      toast({
-        title: "Generation Failed",
-        description: "There was an error generating your summary packet. Please try again.",
-        variant: "destructive"
-      });
+      alert("Generation failed. Please try again.");
     } finally {
       setLoading(false);
     }
