@@ -252,6 +252,10 @@ function updateTrackingData(newTrialsImported, batchIndex) {
   if (fs.existsSync(TRACKING_FILE)) {
     try {
       trackingData = JSON.parse(fs.readFileSync(TRACKING_FILE, 'utf8'));
+      // Ensure the batches array exists
+      if (!trackingData.batches) {
+        trackingData.batches = [];
+      }
     } catch (error) {
       console.error('Error reading tracking file:', error);
     }
@@ -279,8 +283,11 @@ async function runSingleBatch() {
   console.log(`Starting single batch import. Batch index: ${batchIndex}, Batch size: ${batchSize}`);
   
   try {
+    // Ensure batchIndex is a number
+    const batchIndexNum = parseInt(batchIndex, 10);
+    
     // Calculate starting ID based on batch index
-    const startId = 10000 + (batchIndex * batchSize);
+    const startId = 10000 + (batchIndexNum * batchSize);
     
     // Generate and import trials
     const trials = await generateTrials(batchSize, startId);
