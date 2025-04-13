@@ -1,0 +1,19 @@
+{
+  "available_subscriptions": [
+    {
+      "persona": "clinical",
+      "title": "Clinical Team Intelligence Suite",
+      "path": "/static/example_reports/clinical/manifest.json"
+    },
+    {
+      "persona": "regulatory",
+      "title": "Regulatory Intelligence Package",
+      "path": "/static/example_reports/regulatory/manifest.json"
+    },
+    {
+      "persona": "lumen",
+      "title": "Lumen Biosciences Protocol Analysis",
+      "path": "/static/example_reports/lumen/manifest.json"
+    }
+  ]
+}
