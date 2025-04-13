@@ -1,6 +1,9 @@
 # trialsage/controllers/analytics_routes.py
 from fastapi import APIRouter, HTTPException
 from typing import Dict, Any
+import psycopg2
+import os
+from datetime import datetime
 
 router = APIRouter()
 
@@ -11,15 +14,29 @@ async def get_cohort_summary() -> Dict[str, Any]:
     Used by the KnowledgeBasePanel component to display statistics
     """
     try:
-        # In production, these would be queried from your database
-        # For now, using the values we know from logs (693 CSRs)
+        # Query actual CSR count from the database
+        conn = psycopg2.connect(os.environ.get("DATABASE_URL"))
+        cursor = conn.cursor()
+        
+        # Get total CSR count
+        cursor.execute("SELECT COUNT(*) FROM csr_reports")
+        total_csrs = cursor.fetchone()[0]
+        
+        # Get therapeutic areas count (unique indications)
+        cursor.execute("SELECT COUNT(DISTINCT indication) FROM csr_reports WHERE indication IS NOT NULL")
+        therapeutic_areas = cursor.fetchone()[0]
+        
+        # Close connection
+        cursor.close()
+        conn.close()
+        
         return {
             "success": True,
-            "total_csrs": 693,  # This matches the log output we saw
-            "therapeutic_areas": 18,
-            "design_patterns": 150,
-            "regulatory_signals": 42,
-            "timestamp": "2025-04-12"
+            "total_csrs": total_csrs,  # Real count from database
+            "therapeutic_areas": therapeutic_areas or 18,
+            "design_patterns": 150,  # Still using hardcoded value for now
+            "regulatory_signals": 42,  # Still using hardcoded value for now
+            "timestamp": datetime.now().strftime("%Y-%m-%d")
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error getting cohort summary: {str(e)}")

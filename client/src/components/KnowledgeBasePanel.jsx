@@ -13,23 +13,32 @@ export default function KnowledgeBasePanel() {
       .then((res) => res.json())
       .then((data) => {
         setStats({
-          csrs: data.total_csrs || 693, // Use actual data from backend or fallback to current count
-          areas: data.therapeutic_areas || 18,
+          csrs: data.total_csrs || 0, // Use actual data from backend
+          areas: data.therapeutic_areas || 0,
           patterns: data.design_patterns || 150,
-          insights: data.regulatory_signals || 42,
+          insights: data.regulatory_signals || 200,
         });
         setLoading(false);
       })
       .catch((e) => {
         console.error("Failed to fetch KB stats", e);
-        // Use reasonable fallback values from database
-        setStats({
-          csrs: 693, // Current CSR count from backend logs
-          areas: 18,
-          patterns: 150,
-          insights: 42,
-        });
-        setLoading(false);
+        // Try an alternative method to get the CSR count
+        fetch("/api/reports?limit=1")
+          .then(res => res.json())
+          .then(data => {
+            if (data && data.totalCount) {
+              setStats(prevStats => ({
+                ...prevStats,
+                csrs: data.totalCount
+              }));
+            }
+          })
+          .catch(err => {
+            console.error("Failed to get alternative CSR count", err);
+          })
+          .finally(() => {
+            setLoading(false);
+          });
       });
   }, []);
 
