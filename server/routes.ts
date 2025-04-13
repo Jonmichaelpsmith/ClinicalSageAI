@@ -2367,6 +2367,9 @@ Provide a comprehensive, evidence-based response.`;
     }
   });
 
+  // Store thread to file_id mapping to maintain context
+  const THREAD_FILES = new Map<string, string>(); 
+  
   // Send message to AI assistant
   app.post('/api/chat/send-message', async (req: Request, res: Response) => {
     try {
@@ -2381,24 +2384,44 @@ Provide a comprehensive, evidence-based response.`;
         throw new Error('OpenAI API key is not configured');
       }
       
-      // Get file content if a file ID was provided
+      // Keep track of files associated with threads for context persistence
+      let effectiveFileId = file_id;
+      
+      // If a thread_id is provided but no file_id, check if we have a file associated with this thread
+      if (thread_id && !file_id && THREAD_FILES.has(thread_id)) {
+        effectiveFileId = THREAD_FILES.get(thread_id);
+        console.log(`Retrieved associated file ${effectiveFileId} for thread ${thread_id}`);
+      }
+      
+      // Get file content if a file ID was provided or retrieved
       let fileContext = '';
-      if (file_id && CHAT_FILES.has(file_id)) {
-        const fileInfo = CHAT_FILES.get(file_id);
+      if (effectiveFileId && CHAT_FILES.has(effectiveFileId)) {
+        const fileInfo = CHAT_FILES.get(effectiveFileId);
         fileContext = `\n\nContent from uploaded file "${fileInfo.originalName}":\n\n${fileInfo.content}\n\n`;
-        console.log(`Including file context for file ${file_id}`);
+        console.log(`Including file context for file ${effectiveFileId}`);
+      }
+      
+      // If this is a new file upload, associate it with the thread for future messages
+      if (thread_id && file_id) {
+        THREAD_FILES.set(thread_id, file_id);
+        console.log(`Associated file ${file_id} with thread ${thread_id} for future context`);
       }
       
       // Combine message with file content if available
       const fullMessage = fileContext ? `${message}\n\n${fileContext}` : message;
       
       // Use custom system prompt from StudyDesignAgent component if provided
-      const defaultSystemPrompt = "You are TrialSage, an expert clinical trial design assistant. Respond to questions about clinical trial design, protocols, and study methodologies with evidence-based insights. If the user uploaded a document, analyze it and provide insights relevant to the user's query. Use a helpful and informative tone.";
+      const defaultSystemPrompt = "You are TrialSage, an expert clinical trial design assistant. Respond to questions about clinical trial design, protocols, and study methodologies with evidence-based insights. If the user uploaded a document, analyze it and provide insights relevant to the user's query. Make sure to reference specific sections and details from the uploaded document in your responses. Maintain focus on the document throughout the conversation. Use a helpful and informative tone.";
+      
+      // Enhance system prompt with file context if available
+      const enhancedSystemPrompt = fileContext ? 
+        `${system_prompt || defaultSystemPrompt} The user has uploaded a document that you must reference in your responses. Always tie your advice to specific elements in the uploaded document.` : 
+        system_prompt || defaultSystemPrompt;
       
       // Use the OpenAI service for generating responses
       const responseText = await analyzeText(
         fullMessage,
-        system_prompt || defaultSystemPrompt
+        enhancedSystemPrompt
       );
       
       // Generate a thread ID if not provided
