@@ -1,459 +1,192 @@
+/**
+ * Import a single batch of CSRs from Health Canada
+ * This is specifically designed to work with the Health Canada API
+ */
+import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import pg from 'pg';
+import xml2js from 'xml2js';
+import pkg from 'pg';
+const { Pool } = pkg;
+import { importTrialsFromApiV2 } from './server/data-importer.js';
 
+// Get the current directory name
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-/**
- * Single Batch Health Canada Import for TrialSage
- * 
- * This script imports a small batch of 200 Canadian clinical trials.
- * Using a smaller batch size to avoid tool timeouts.
- */
+// Configure batch size from command line or use default
+const args = process.argv.slice(2);
+let batchSize = 50; // Default batch size
+let batchIndex = 0;
 
-// Database connection
-const pool = new pg.Pool({
+// Parse command line arguments
+for (let i = 0; i < args.length; i++) {
+  if (args[i] === '--batchSize' && args[i + 1]) {
+    batchSize = parseInt(args[i + 1], 10);
+    i++;
+  } else if (args[i] === '--batchIndex' && args[i + 1]) {
+    batchIndex = parseInt(args[i + 1], 10);
+    i++;
+  }
+}
+
+// Track CSRs already imported to avoid duplicates
+const IMPORT_TRACKER_FILE = 'hc_import_tracker.json';
+let importedIds = [];
+
+if (fs.existsSync(IMPORT_TRACKER_FILE)) {
+  try {
+    importedIds = JSON.parse(fs.readFileSync(IMPORT_TRACKER_FILE, 'utf8')).importedIds || [];
+    console.log(`Loaded ${importedIds.length} previously imported IDs`);
+  } catch (err) {
+    console.error('Error loading import tracker, starting fresh:', err);
+  }
+}
+
+// Database connection pool
+const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
 
-// Configuration
-const BATCH_SIZE = 200; // Number of trials per batch - smaller batch size
-const TRANSACTION_SIZE = 100; // Number of trials per transaction
-const TRACKING_FILE = 'hc_import_tracker.json';
+// Health Canada API endpoints
+const HC_API_BASE = 'https://clinical-information.canada.ca/ci-rc/api';
+const HC_SEARCH_ENDPOINT = `${HC_API_BASE}/search`;
+const HC_DETAIL_ENDPOINT = `${HC_API_BASE}/clinical-trial`;
 
-// Lists for generating diverse trial data
-const SPONSORS = [
-  'Health Canada Research Institute',
-  'University of Toronto Medical Center',
-  'McGill University Health Center',
-  'Sunnybrook Research Institute',
-  'Vancouver Coastal Health Research Institute',
-  'Ottawa Hospital Research Institute',
-  'SickKids Research Institute',
-  'Alberta Health Services',
-  'University Health Network',
-  'Centre for Addiction and Mental Health',
-  'BC Cancer Agency',
-  'Canadian Blood Services',
-  'Laval University Medical Center',
-  'Montreal Heart Institute',
-  'University of Calgary',
-  'University of British Columbia',
-  'McMaster University',
-  'University of Alberta',
-  'Princess Margaret Cancer Centre',
-  'Dalhousie University'
-];
+// Ensure directories exist
+const attachedAssetsDir = path.join(process.cwd(), 'attached_assets');
+if (!fs.existsSync(attachedAssetsDir)) {
+  fs.mkdirSync(attachedAssetsDir, { recursive: true });
+}
 
-const INDICATIONS = [
-  'Type 2 Diabetes',
-  'Metastatic Breast Cancer',
-  'Advanced Melanoma',
-  'Rheumatoid Arthritis',
-  'Multiple Sclerosis',
-  'Parkinson\'s Disease',
-  'Alzheimer\'s Disease',
-  'Major Depressive Disorder',
-  'Chronic Obstructive Pulmonary Disease',
-  'Asthma',
-  'Colorectal Cancer',
-  'Non-Small Cell Lung Cancer',
-  'Pancreatic Cancer',
-  'Prostate Cancer',
-  'Irritable Bowel Syndrome',
-  'Ulcerative Colitis',
-  'Crohn\'s Disease',
-  'Atopic Dermatitis',
-  'Psoriasis',
-  'Hypertension',
-  'Heart Failure',
-  'Osteoarthritis',
-  'Osteoporosis',
-  'Systemic Lupus Erythematosus',
-  'HIV Infection',
-  'Cystic Fibrosis',
-  'Duchenne Muscular Dystrophy',
-  'Spinal Muscular Atrophy',
-  'Hemophilia A',
-  'Sickle Cell Disease'
-];
-
-const DRUGS = [
-  'CAD-101 (monoclonal antibody)',
-  'HTN-295 (ACE inhibitor)',
-  'CAN-456 (receptor antagonist)',
-  'BRE-701 (selective estrogen receptor modulator)',
-  'MEL-802 (checkpoint inhibitor)',
-  'ARH-921 (JAK inhibitor)',
-  'MSC-135 (oligonucleotide)',
-  'PDK-277 (dopamine agonist)',
-  'ALZ-309 (beta-amyloid antibody)',
-  'DEP-410 (SSRI/SNRI)',
-  'PUL-502 (bronchodilator)',
-  'AST-611 (anti-IL-5 antibody)',
-  'COL-735 (EGFR inhibitor)',
-  'LUN-841 (ALK inhibitor)',
-  'PAN-967 (PARP inhibitor)',
-  'PRO-108 (androgen receptor antagonist)',
-  'IBS-225 (serotonin modulator)',
-  'ULC-345 (TNF inhibitor)',
-  'CDN-468 (integrin inhibitor)',
-  'DRM-581 (IL-17 inhibitor)',
-  'PSO-602 (phosphodiesterase-4 inhibitor)',
-  'HYP-735 (angiotensin receptor blocker)',
-  'HFR-841 (SGLT2 inhibitor)',
-  'OST-957 (cathepsin K inhibitor)',
-  'OPS-108 (bisphosphonate)',
-  'LUP-223 (calcineurin inhibitor)',
-  'HIV-335 (integrase inhibitor)',
-  'CFS-446 (CFTR modulator)',
-  'DMD-551 (exon-skipping antisense oligonucleotide)',
-  'SMA-668 (SMN2 splicing modifier)',
-  'HEM-779 (factor VIII gene therapy)',
-  'SCK-880 (Hb polymerization inhibitor)'
-];
-
-const PHASES = ['Phase 1', 'Phase 1/Phase 2', 'Phase 2', 'Phase 2/Phase 3', 'Phase 3', 'Phase 4'];
-const STATUSES = ['Recruiting', 'Active, not recruiting', 'Completed', 'Terminated', 'Withdrawn', 'Not yet recruiting'];
-
-// Get or initialize tracking data
-function getTrackingData() {
+/**
+ * Main function to import a batch of CSRs from Health Canada
+ */
+async function importCanadaCSRBatch() {
   try {
-    if (fs.existsSync(TRACKING_FILE)) {
-      const data = JSON.parse(fs.readFileSync(TRACKING_FILE, 'utf8'));
-      return data;
+    console.log(`Starting import of ${batchSize} CSRs from Health Canada (batch ${batchIndex})...`);
+    
+    // 1. Search for clinical trials
+    const searchParams = {
+      lang: 'en',
+      type: 'search',
+      query: '*',
+      page: batchIndex,
+      pageSize: batchSize
+    };
+    
+    console.log(`Searching for trials with parameters:`, searchParams);
+    const searchResponse = await axios.get(HC_SEARCH_ENDPOINT, { params: searchParams });
+    
+    if (!searchResponse.data || !searchResponse.data.content) {
+      throw new Error('Invalid response format from Health Canada search API');
     }
-  } catch (error) {
-    console.error('Error reading tracking file:', error.message);
-  }
-  
-  // Default tracking data
-  return {
-    nextId: 1000,
-    batchesCompleted: 0,
-    trialsImported: 0
-  };
-}
-
-// Save tracking data
-function saveTrackingData(data) {
-  try {
-    fs.writeFileSync(TRACKING_FILE, JSON.stringify(data, null, 2));
-  } catch (error) {
-    console.error('Error saving tracking file:', error.message);
-  }
-}
-
-// Generate a random date between start and end dates
-function randomDate(start, end) {
-  return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
-}
-
-// Generate a batch of trial data
-function generateTrials(count, startId) {
-  const trials = [];
-  const today = new Date();
-  const twoYearsAgo = new Date(today);
-  twoYearsAgo.setFullYear(today.getFullYear() - 2);
-  
-  const fourYearsFromNow = new Date(today);
-  fourYearsFromNow.setFullYear(today.getFullYear() + 4);
-  
-  for (let i = 0; i < count; i++) {
-    const id = startId + i;
-    const indication = INDICATIONS[Math.floor(Math.random() * INDICATIONS.length)];
-    const phase = PHASES[Math.floor(Math.random() * PHASES.length)];
-    const sponsor = SPONSORS[Math.floor(Math.random() * SPONSORS.length)];
-    const drug = DRUGS[Math.floor(Math.random() * DRUGS.length)];
-    const status = STATUSES[Math.floor(Math.random() * STATUSES.length)];
     
-    const startDate = randomDate(twoYearsAgo, today);
-    const endDate = randomDate(today, fourYearsFromNow);
+    // Filter out already imported trials
+    const trials = searchResponse.data.content.filter(trial => !importedIds.includes(trial.protocolId));
     
-    // Generate title
-    const studyType = Math.random() > 0.7 ? 'Open-Label' : 'Double-Blind';
-    const controlType = Math.random() > 0.5 ? 'Placebo-Controlled' : 'Active-Controlled';
-    const randomized = Math.random() > 0.3 ? 'Randomized' : '';
-    const multiCenter = Math.random() > 0.5 ? 'Multi-Center' : '';
+    if (trials.length === 0) {
+      console.log('No new trials found in this batch. Try increasing the batch index.');
+      return { success: true, imported: 0, message: 'No new trials found' };
+    }
     
-    const title = `A ${randomized} ${studyType}, ${controlType} ${multiCenter} Study of ${drug} in Patients With ${indication}`;
+    console.log(`Found ${trials.length} trials to import (filtered from ${searchResponse.data.content.length})`);
     
-    trials.push({
-      nctrialId: `HC-${id}`,
-      title,
-      officialTitle: title,
-      sponsor,
-      indication,
-      phase,
-      fileName: `HC-${id}.json`,
-      fileSize: Math.floor(Math.random() * 500000) + 100000, // Random file size
-      date: startDate.toISOString().split('T')[0],
-      completionDate: endDate.toISOString().split('T')[0],
-      drugName: drug,
-      source: "Health Canada Clinical Trials Database",
-      studyType: "Interventional",
-      status,
-      description: `This is a ${randomized.toLowerCase()} ${studyType.toLowerCase()}, ${controlType.toLowerCase()} ${multiCenter.toLowerCase()} study designed to evaluate the efficacy and safety of ${drug} in patients with ${indication}. The study will enroll approximately ${Math.floor(Math.random() * 500) + 50} patients.`,
-      eligibilityCriteria: generateEligibilityCriteria(indication)
-    });
-  }
-  
-  return trials;
-}
-
-// Generate realistic eligibility criteria
-function generateEligibilityCriteria(indication) {
-  const ageMin = Math.floor(Math.random() * 10) + 18; // 18-27
-  const ageMax = Math.floor(Math.random() * 30) + 55; // 55-84
-  
-  let inclusionCriteria = [
-    `- Adults aged ${ageMin}-${ageMax} years`,
-    `- Confirmed diagnosis of ${indication}`,
-    `- ECOG performance status 0-1`,
-    `- Adequate organ function`,
-    `- Willing and able to provide informed consent`
-  ];
-  
-  let exclusionCriteria = [
-    `- Known hypersensitivity to study drug or excipients`,
-    `- Pregnant or breastfeeding women`,
-    `- Participation in another interventional study within 30 days`,
-    `- Significant cardiovascular disease within past 6 months`,
-    `- Active or chronic infection requiring systemic treatment`
-  ];
-  
-  // Add indication-specific criteria
-  if (indication.includes('Cancer')) {
-    inclusionCriteria.push(
-      `- Measurable disease per RECIST v1.1`,
-      `- Prior treatment with standard therapy`,
-      `- Life expectancy ≥3 months`
-    );
-    exclusionCriteria.push(
-      `- Brain metastases unless treated and stable`,
-      `- Prior treatment with similar mechanism of action`,
-      `- Other active malignancy requiring treatment`
-    );
-  } else if (indication.includes('Arthritis') || indication.includes('Lupus')) {
-    inclusionCriteria.push(
-      `- Active disease defined by standard criteria`,
-      `- Inadequate response to conventional therapy`,
-      `- Positive serology (if applicable)`
-    );
-    exclusionCriteria.push(
-      `- Active infection including tuberculosis`,
-      `- History of recurrent serious infections`,
-      `- Concurrent autoimmune disease other than study indication`
-    );
-  } else if (indication.includes('Diabetes')) {
-    inclusionCriteria.push(
-      `- HbA1c between 7.0% and 10.0%`,
-      `- Body mass index (BMI) between 25 and 40 kg/m²`,
-      `- On stable antidiabetic medication for ≥3 months`
-    );
-    exclusionCriteria.push(
-      `- History of severe hypoglycemia within past 6 months`,
-      `- Estimated GFR <45 mL/min/1.73m²`,
-      `- History of diabetic ketoacidosis`
-    );
-  }
-  
-  return `\nInclusion Criteria:\n${inclusionCriteria.join('\n')}\n\nExclusion Criteria:\n${exclusionCriteria.join('\n')}`;
-}
-
-// Check if a trial already exists in the database
-async function checkTrialExists(client, nctrialId) {
-  const checkQuery = 'SELECT id FROM csr_reports WHERE nctrial_id = $1';
-  const checkResult = await client.query(checkQuery, [nctrialId]);
-  return checkResult.rows.length > 0;
-}
-
-// Import trials to the database
-async function importTrialsToDatabase(trials) {
-  console.log(`Starting import of ${trials.length} trials...`);
-  const client = await pool.connect();
-  
-  let importedCount = 0;
-  let skippedCount = 0;
-  
-  try {
-    // Process trials in transaction batches
-    for (let i = 0; i < trials.length; i += TRANSACTION_SIZE) {
-      const batchEnd = Math.min(i + TRANSACTION_SIZE, trials.length);
-      const trialBatch = trials.slice(i, batchEnd);
-      
-      console.log(`Processing batch ${i / TRANSACTION_SIZE + 1} (${i} to ${batchEnd - 1})...`);
-      
-      // Begin transaction
-      await client.query('BEGIN');
-      
+    // 2. Download details and XML for each trial
+    const importedTrials = [];
+    for (let i = 0; i < trials.length; i++) {
+      const trial = trials[i];
       try {
-        // Process each trial in this transaction batch
-        for (const trial of trialBatch) {
-          // Check if trial already exists
-          if (await checkTrialExists(client, trial.nctrialId)) {
-            skippedCount++;
-            continue;
-          }
-          
-          // Insert into csr_reports table
-          const insertReportQuery = `
-            INSERT INTO csr_reports (
-              title, sponsor, indication, phase, file_name, file_size, date, 
-              last_updated, drug_name, region, nctrial_id, status, deleted_at
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
-            RETURNING id
-          `;
-          
-          const reportValues = [
-            trial.title,
-            trial.sponsor,
-            trial.indication,
-            trial.phase,
-            trial.fileName,
-            trial.fileSize,
-            trial.date,
-            trial.completionDate,
-            trial.drugName,
-            'Health Canada',
-            trial.nctrialId,
-            trial.status,
-            null
-          ];
-          
-          const reportResult = await client.query(insertReportQuery, reportValues);
-          const reportId = reportResult.rows[0].id;
-          
-          // Insert into csr_details table
-          const insertDetailsQuery = `
-            INSERT INTO csr_details (
-              report_id, study_design, primary_objective, study_description, 
-              inclusion_criteria, exclusion_criteria, processed
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7)
-          `;
-          
-          const detailsValues = [
-            reportId,
-            trial.studyType,
-            null,
-            trial.description,
-            trial.eligibilityCriteria,
-            null,
-            true
-          ];
-          
-          await client.query(insertDetailsQuery, detailsValues);
-          
-          importedCount++;
+        console.log(`Processing trial ${i+1}/${trials.length}: ${trial.protocolId}`);
+        
+        // Get detailed information
+        const detailUrl = `${HC_DETAIL_ENDPOINT}/${trial.protocolId}?lang=en`;
+        const detailResponse = await axios.get(detailUrl);
+        
+        if (!detailResponse.data) {
+          console.error(`Error getting details for trial ${trial.protocolId}: Invalid response`);
+          continue;
         }
         
-        // Commit this batch
-        await client.query('COMMIT');
-        console.log(`Successfully committed batch ${i / TRANSACTION_SIZE + 1} (imported ${importedCount} so far)`);
+        // Download the XML data
+        const xmlResponse = await axios.get(detailResponse.data._links.xml.href);
+        const xmlData = xmlResponse.data;
+        
+        // Save XML to file
+        const xmlFilename = `NCT${trial.protocolId}.xml`;
+        const xmlPath = path.join(attachedAssetsDir, xmlFilename);
+        fs.writeFileSync(xmlPath, xmlData);
+        
+        console.log(`Saved XML for trial ${trial.protocolId} to ${xmlPath}`);
+        
+        // Convert to JSON format compatible with our importer
+        const parser = new xml2js.Parser();
+        const result = await parser.parseStringPromise(xmlData);
+        
+        // Transform to the format expected by the importer
+        const transformedData = {
+          id: trial.protocolId,
+          title: detailResponse.data.scientificTitle || 'Unknown',
+          sponsor: detailResponse.data.sponsor?.name || 'Unknown',
+          phase: detailResponse.data.phase || 'Unknown',
+          status: detailResponse.data.status || 'Unknown',
+          indication: detailResponse.data.healthCondition?.join(', ') || 'Unknown',
+          interventions: detailResponse.data.intervention?.join(', ') || 'Unknown',
+          fileName: xmlFilename,
+          filePath: xmlPath,
+          fileSize: fs.statSync(xmlPath).size,
+          uploadDate: new Date(),
+          source: 'health_canada'
+        };
+        
+        // Store the imported ID
+        importedIds.push(trial.protocolId);
+        importedTrials.push(transformedData);
+        
+        // Save the imported IDs list after each successful import to avoid duplicates
+        fs.writeFileSync(IMPORT_TRACKER_FILE, JSON.stringify({ importedIds }, null, 2));
       } catch (error) {
-        // Rollback on error
-        await client.query('ROLLBACK');
-        console.error(`Error during batch ${i / TRANSACTION_SIZE + 1}:`, error.message);
+        console.error(`Error processing trial ${trial.protocolId}:`, error);
       }
     }
     
-    console.log(`
-=== Import Summary ===
-Total Health Canada studies processed: ${trials.length}
-Successfully imported: ${importedCount}
-Skipped (already exists or error): ${skippedCount}
-    `);
-    
-    return { importedCount, skippedCount };
+    // 3. Import transformed data into our database
+    if (importedTrials.length > 0) {
+      console.log(`Importing ${importedTrials.length} trials into database...`);
+      
+      // Use the existing import function
+      const result = await importTrialsFromApiV2(importedTrials);
+      
+      console.log(`Import completed. Results:`, result);
+      return { 
+        success: true, 
+        imported: importedTrials.length,
+        message: `Successfully imported ${importedTrials.length} trials from Health Canada`
+      };
+    } else {
+      return { 
+        success: true, 
+        imported: 0, 
+        message: 'No trials were successfully processed in this batch' 
+      };
+    }
   } catch (error) {
-    console.error('Error during overall import process:', error.message);
-    throw error;
-  } finally {
-    client.release();
+    console.error('Error importing CSR batch from Health Canada:', error);
+    return { 
+      success: false, 
+      imported: 0, 
+      error: error.message || 'Unknown error',
+      message: 'Failed to import batch' 
+    };
   }
 }
 
-// Get current counts
-async function getCurrentHealthCanadaCount() {
-  const client = await pool.connect();
-  try {
-    const result = await client.query("SELECT COUNT(*) as count FROM csr_reports WHERE region = 'Health Canada'");
-    return parseInt(result.rows[0].count);
-  } finally {
-    client.release();
-  }
-}
-
-// Get total trial count
-async function getTotalTrialCount() {
-  const client = await pool.connect();
-  try {
-    const result = await client.query("SELECT COUNT(*) as count FROM csr_reports");
-    return parseInt(result.rows[0].count);
-  } finally {
-    client.release();
-  }
-}
-
-// Main function - single batch import
-async function runSingleCanadaBatch() {
-  console.log('Starting single batch Health Canada trial import...');
-  
-  try {
-    // Get tracking data
-    const trackingData = getTrackingData();
-    console.log('Current tracking data:', trackingData);
-    
-    // Get current counts
-    const currentHCCount = await getCurrentHealthCanadaCount();
-    const totalTrials = await getTotalTrialCount();
-    
-    console.log(`
-=== Current Database Status ===
-Total trials in database: ${totalTrials}
-Health Canada trials: ${currentHCCount}
-Target: 4000 Health Canada trials
-Progress: ${Math.round(currentHCCount/4000*100)}%
-`);
-    
-    // Generate and import trials
-    console.time('Trial generation');
-    console.log(`Generating batch of ${BATCH_SIZE} trials starting from ID: HC-${trackingData.nextId}`);
-    const trials = generateTrials(BATCH_SIZE, trackingData.nextId);
-    console.timeEnd('Trial generation');
-    
-    console.time('Database import');
-    const result = await importTrialsToDatabase(trials);
-    console.timeEnd('Database import');
-    
-    // Update tracking data
-    trackingData.nextId += BATCH_SIZE;
-    trackingData.batchesCompleted += 1;
-    trackingData.trialsImported += result.importedCount;
-    saveTrackingData(trackingData);
-    
-    // Get updated counts
-    const newHCCount = await getCurrentHealthCanadaCount();
-    const newTotal = await getTotalTrialCount();
-    
-    console.log(`
-=== Updated Database Status ===
-Total trials in database: ${newTotal}
-Health Canada trials: ${newHCCount}
-ClinicalTrials.gov trials: ${newTotal - newHCCount}
-Progress: ${newHCCount}/4000 Health Canada trials (${Math.round(newHCCount/4000*100)}%)
-
-To continue importing, run this script again.
-`);
-    
-  } catch (error) {
-    console.error('Error during import process:', error);
-  } finally {
-    await pool.end();
-  }
-}
-
-// Run the single batch import
-runSingleCanadaBatch();
+// Run the import process
+importCanadaCSRBatch().then(result => {
+  console.log('Batch import completed with result:', result);
+  process.exit(result.success ? 0 : 1);
+}).catch(error => {
+  console.error('Fatal error during import:', error);
+  process.exit(1);
+});
