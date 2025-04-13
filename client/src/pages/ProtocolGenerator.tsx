@@ -204,11 +204,11 @@ const ProtocolDesigner = () => {
           <p className="text-gray-500 mt-1">Design evidence-based protocols from 1,900+ precedent studies</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={handleUploadClick}>
+          <Button variant="outline" size="sm" onClick={() => window.location.href = '/protocol/upload'}>
             <Upload className="h-4 w-4 mr-2" />
             Upload Protocol
           </Button>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={() => window.location.href = '/study-design-agent'}>
             <Brain className="h-4 w-4 mr-2" />
             Study Design Tutorial
           </Button>

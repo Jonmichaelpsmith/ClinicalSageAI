@@ -14,9 +14,20 @@ import DesignFromMolecule from "@/components/DesignFromMolecule";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
-export default function ProtocolPlanningDashboard() {
-  const [activeSession, setActiveSession] = useState(null);
+export default function ProtocolPlanningDashboard({ initialProtocol = "", sessionId = null, persona = "planner" }) {
+  const [activeSession, setActiveSession] = useState(sessionId);
+  const [protocolContent, setProtocolContent] = useState(initialProtocol);
   const { toast } = useToast();
+  
+  useEffect(() => {
+    if (sessionId && !activeSession) {
+      setActiveSession(sessionId);
+      toast({
+        title: "Session Activated",
+        description: `Now working with study: ${sessionId} as ${persona}`,
+      });
+    }
+  }, [sessionId, activeSession, persona, toast]);
 
   const handleSessionChange = (sessionId) => {
     setActiveSession(sessionId);
