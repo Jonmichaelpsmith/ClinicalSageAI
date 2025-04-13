@@ -11,7 +11,7 @@ import https from 'https';
 import pg from 'pg';
 
 // Configuration
-const NUM_TO_DOWNLOAD = 50; // Number of trials to download per batch
+const NUM_TO_DOWNLOAD = 10; // Reduced number of trials to download per batch for better reliability
 const OUTPUT_DIR = path.join('.', 'attached_assets', 'ctgov_v2');
 const DOWNLOAD_LOG = 'ctgov_v2_downloaded.json';
 
@@ -70,8 +70,10 @@ async function checkTrialExists(nctId) {
   }
 }
 
-// Download JSON file from ClinicalTrials.gov API V2
-function downloadTrialJSON(nctId) {
+// Download JSON file from ClinicalTrials.gov API V2 with retry mechanism
+function downloadTrialJSON(nctId, retryCount = 0) {
+  const MAX_RETRIES = 3;
+  
   return new Promise((resolve, reject) => {
     const url = `https://clinicaltrials.gov/api/v2/studies/${nctId}?format=json`;
     const outputPath = path.join(OUTPUT_DIR, `${nctId}.json`);
@@ -87,7 +89,8 @@ function downloadTrialJSON(nctId) {
     
     const file = fs.createWriteStream(outputPath);
     
-    https.get(url, (response) => {
+    // Create request with timeout
+    const req = https.get(url, { timeout: 30000 }, (response) => {
       // Handle HTTP redirects
       if (response.statusCode === 301 || response.statusCode === 302) {
         const location = response.headers.location;
@@ -103,7 +106,7 @@ function downloadTrialJSON(nctId) {
         
         console.log(`Following redirect to ${redirectUrl}`);
         
-        https.get(redirectUrl, (finalResponse) => {
+        const redirectReq = https.get(redirectUrl, { timeout: 30000 }, (finalResponse) => {
           finalResponse.pipe(file);
           
           file.on('finish', () => {
@@ -113,8 +116,20 @@ function downloadTrialJSON(nctId) {
           });
         }).on('error', (err) => {
           fs.unlinkSync(outputPath); // Remove the incomplete file
-          console.error(`Error downloading ${nctId}: ${err.message}`);
-          reject(err);
+          console.error(`Error following redirect for ${nctId}: ${err.message}`);
+          
+          // Add retry logic for redirect errors
+          if (retryCount < MAX_RETRIES) {
+            console.log(`Retrying download for ${nctId} after redirect failure (attempt ${retryCount + 1} of ${MAX_RETRIES})...`);
+            // Exponential backoff for retries
+            const retryDelay = 5000 * Math.pow(2, retryCount);
+            setTimeout(() => {
+              resolve(downloadTrialJSON(nctId, retryCount + 1));
+            }, retryDelay);
+          } else {
+            console.error(`Failed to download ${nctId} after ${MAX_RETRIES} attempts.`);
+            reject(err);
+          }
         });
         
         return;
@@ -158,7 +173,19 @@ function downloadTrialJSON(nctId) {
       file.close();
       fs.unlinkSync(outputPath); // Remove the incomplete file
       console.error(`Error downloading ${nctId}: ${err.message}`);
-      reject(err);
+      
+      // Add retry logic
+      if (retryCount < MAX_RETRIES) {
+        console.log(`Retrying download for ${nctId} (attempt ${retryCount + 1} of ${MAX_RETRIES})...`);
+        // Wait longer between retries (exponential backoff)
+        const retryDelay = 5000 * Math.pow(2, retryCount);
+        setTimeout(() => {
+          resolve(downloadTrialJSON(nctId, retryCount + 1));
+        }, retryDelay);
+      } else {
+        console.error(`Failed to download ${nctId} after ${MAX_RETRIES} attempts.`);
+        reject(err);
+      }
     });
   });
 }
@@ -389,8 +416,8 @@ async function downloadAndImportTrials() {
           }
         }
         
-        // Add a short delay to avoid overwhelming the server
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Add a longer delay to avoid overwhelming the server and prevent timeouts
+        await new Promise(resolve => setTimeout(resolve, 3000));
         
         // If we've downloaded enough, stop
         if (successCount >= NUM_TO_DOWNLOAD) {
