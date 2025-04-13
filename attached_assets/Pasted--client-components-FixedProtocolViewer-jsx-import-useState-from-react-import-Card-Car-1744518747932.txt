@@ -1,0 +1,59 @@
+// /client/components/FixedProtocolViewer.jsx
+import { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+
+export default function FixedProtocolViewer({ originalText }) {
+  const [fixed, setFixed] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [showOriginal, setShowOriginal] = useState(false);
+
+  const handleFix = async () => {
+    setLoading(true);
+    const res = await fetch("/api/validate-protocol/fix", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content: originalText })
+    });
+    const data = await res.json();
+    setFixed(data.fixed_text);
+    setLoading(false);
+  };
+
+  return (
+    <div className="space-y-4">
+      <Card>
+        <CardContent className="p-4 space-y-2">
+          <h3 className="text-lg font-semibold">🛠️ AI-Repaired Protocol</h3>
+          <Button onClick={handleFix} disabled={loading}>
+            ✨ Generate AI-Fixed Version
+          </Button>
+          {fixed && (
+            <>
+              <Button onClick={() => setShowOriginal(!showOriginal)} variant="outline">
+                {showOriginal ? "🔁 Show Fixed Only" : "📑 Show Original for Comparison"}
+              </Button>
+              <Textarea
+                className="mt-4 text-sm"
+                rows={20}
+                value={showOriginal ? originalText : fixed}
+                readOnly
+              />
+              <div className="pt-2">
+                <a
+                  href="/api/export/fixed-protocol"
+                  className="text-sm text-blue-600 underline hover:text-blue-800"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  📤 Export Fixed Version (PDF)
+                </a>
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
