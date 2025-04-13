@@ -161,19 +161,24 @@ export async function logInsight(sessionId, title, description, status = "active
   }
   
   try {
-    const res = await fetch("/api/insights/log", {
+    const res = await fetch("/api/session/insight", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         session_id: sessionId,
         title,
         description,
-        status,
-        timestamp: new Date().toISOString()
+        status
       })
     });
     
-    return res.ok;
+    if (!res.ok) {
+      const data = await res.json();
+      console.error("Insight logging error:", data.message || "Unknown error");
+      return false;
+    }
+    
+    return true;
   } catch (error) {
     console.error("Failed to log insight:", error);
     return false;
@@ -195,19 +200,24 @@ export async function logWisdomTrace(sessionId, action, reasoning = [], conclusi
   }
   
   try {
-    const res = await fetch("/api/wisdom-trace/log", {
+    const res = await fetch("/api/session/wisdom-trace", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         session_id: sessionId,
         action,
         reasoning,
-        conclusion,
-        timestamp: new Date().toISOString()
+        conclusion
       })
     });
     
-    return res.ok;
+    if (!res.ok) {
+      const data = await res.json();
+      console.error("Wisdom trace logging error:", data.message || "Unknown error");
+      return false;
+    }
+    
+    return true;
   } catch (error) {
     console.error("Failed to log wisdom trace:", error);
     return false;
