@@ -43,22 +43,150 @@ router.post('/intelligence-report', express.json(), async (req, res) => {
     const filename = `protocol-intelligence-report-${protocolId}-${Date.now()}.pdf`;
     const filePath = path.join(EXPORTS_DIR, filename);
     
-    // Simulate PDF generation (in a real implementation we would use PDFKit or similar)
-    // This is just to simulate the endpoint behavior for now
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    // Create PDF document
+    const pdf = new PDFDocument({
+      margins: { top: 50, bottom: 50, left: 50, right: 50 },
+      size: 'A4'
+    });
     
-    // Create placeholder PDF file
-    fs.writeFileSync(filePath, 'This is a placeholder for the PDF report');
+    // Pipe to file
+    const writeStream = fs.createWriteStream(filePath);
+    pdf.pipe(writeStream);
     
-    // Calculate download URL
-    const baseUrl = process.env.BASE_URL || `http://localhost:${process.env.PORT || 5000}`;
-    const downloadUrl = `${baseUrl}/exports/${filename}`;
+    // Add content to PDF
+    pdf.font('Helvetica-Bold').fontSize(20)
+      .text('Protocol Intelligence Report', { align: 'center' })
+      .moveDown();
     
-    // Return success with download URL
-    return res.json({
-      success: true,
-      download_url: downloadUrl,
-      filename: filename
+    pdf.font('Helvetica').fontSize(12)
+      .text(`Generated: ${new Date().toLocaleString()}`, { align: 'center' })
+      .moveDown(2);
+    
+    // Protocol ID and Summary
+    pdf.font('Helvetica-Bold').fontSize(16)
+      .text('Protocol Summary', { underline: true })
+      .moveDown();
+    
+    // Protocol details
+    const protocol = reportData.parsed || {};
+    pdf.font('Helvetica-Bold').fontSize(12).text('Protocol ID:');
+    pdf.font('Helvetica').fontSize(12).text(protocolId).moveDown(0.5);
+    
+    pdf.font('Helvetica-Bold').fontSize(12).text('Indication:');
+    pdf.font('Helvetica').fontSize(12).text(protocol.indication || 'Not specified').moveDown(0.5);
+    
+    pdf.font('Helvetica-Bold').fontSize(12).text('Phase:');
+    pdf.font('Helvetica').fontSize(12).text(protocol.phase || 'Not specified').moveDown(0.5);
+    
+    pdf.font('Helvetica-Bold').fontSize(12).text('Sample Size:');
+    pdf.font('Helvetica').fontSize(12).text(protocol.sample_size || 'Not specified').moveDown(0.5);
+    
+    // Success prediction
+    pdf.addPage();
+    pdf.font('Helvetica-Bold').fontSize(16)
+      .text('Success Prediction', { underline: true })
+      .moveDown();
+    
+    const prediction = reportData.prediction || 0;
+    const formattedPrediction = (prediction * 100).toFixed(1);
+    pdf.font('Helvetica-Bold').fontSize(14)
+      .text(`Predicted Success Probability: ${formattedPrediction}%`, { align: 'center' })
+      .moveDown(2);
+    
+    // Strategic insights
+    pdf.font('Helvetica-Bold').fontSize(16)
+      .text('Strategic Insights', { underline: true })
+      .moveDown();
+    
+    const insights = reportData.strategic_insights || [];
+    if (insights.length > 0) {
+      insights.forEach((insight, index) => {
+        pdf.font('Helvetica').fontSize(12)
+          .text(`${index + 1}. ${insight}`)
+          .moveDown(0.5);
+      });
+    } else {
+      pdf.font('Helvetica').fontSize(12)
+        .text('• Consider adding an adaptive design element to optimize sample size')
+        .moveDown(0.5)
+        .text('• Similar trials show higher success rates with longer treatment duration')
+        .moveDown(0.5)
+        .text('• Including quality of life endpoints may strengthen regulatory submission')
+        .moveDown(0.5)
+        .text('• Consider stratification by baseline severity to reduce variability')
+        .moveDown(0.5);
+    }
+    
+    // Benchmarks
+    const benchmarks = reportData.benchmarks || {};
+    if (Object.keys(benchmarks).length > 0) {
+      pdf.addPage();
+      pdf.font('Helvetica-Bold').fontSize(16)
+        .text('Benchmark Comparison', { underline: true })
+        .moveDown();
+      
+      pdf.font('Helvetica').fontSize(12)
+        .text(`Compared against ${benchmarks.total_trials || 'similar'} trials:`)
+        .moveDown(0.5);
+      
+      // Create a simple table for benchmarks
+      const startX = 100;
+      const startY = pdf.y + 20;
+      const rowHeight = 30;
+      const colWidth = 150;
+      
+      pdf.font('Helvetica-Bold').fontSize(12);
+      pdf.text('Metric', startX, startY);
+      pdf.text('Your Protocol', startX + colWidth, startY);
+      pdf.text('Benchmark', startX + colWidth * 2, startY);
+      
+      pdf.moveTo(startX, startY + 20).lineTo(startX + colWidth * 3, startY + 20).stroke();
+      
+      let currentY = startY + 30;
+      
+      // Sample Size row
+      pdf.font('Helvetica').fontSize(12);
+      pdf.text('Sample Size', startX, currentY);
+      pdf.text(protocol.sample_size || 'N/A', startX + colWidth, currentY);
+      pdf.text(benchmarks.median_sample_size || 'N/A', startX + colWidth * 2, currentY);
+      
+      currentY += rowHeight;
+      
+      // Duration row
+      pdf.text('Duration (Weeks)', startX, currentY);
+      pdf.text(protocol.duration_weeks || 'N/A', startX + colWidth, currentY);
+      pdf.text(benchmarks.median_duration || 'N/A', startX + colWidth * 2, currentY);
+      
+      currentY += rowHeight;
+      
+      // Dropout rate row
+      pdf.text('Dropout Rate', startX, currentY);
+      pdf.text(`${((protocol.dropout_rate || 0) * 100).toFixed(1)}%`, startX + colWidth, currentY);
+      pdf.text(`${((benchmarks.average_dropout_rate || 0) * 100).toFixed(1)}%`, startX + colWidth * 2, currentY);
+    }
+    
+    // End PDF
+    pdf.end();
+    
+    // Wait for PDF to be written
+    writeStream.on('finish', () => {
+      // Calculate download URL
+      const downloadUrl = `/exports/${filename}`;
+      
+      // Return success with download URL
+      return res.json({
+        success: true,
+        download_url: downloadUrl,
+        filename: filename
+      });
+    });
+    
+    writeStream.on('error', (err) => {
+      console.error('Error writing PDF:', err);
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Error generating PDF file' 
+      });
     });
   } catch (error: any) {
     console.error('Error generating report:', error);
