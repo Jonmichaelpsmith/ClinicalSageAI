@@ -1,6 +1,6 @@
 import { db } from './db';
 import { eq } from 'drizzle-orm';
-import { csrReports } from '../shared/schema';
+import { protocols } from '../shared/schema';
 
 export interface ProtocolData {
   phase: string;
@@ -186,23 +186,23 @@ export class ProtocolAnalyzerService {
   }
 
   /**
-   * Find similar CSR reports to the given protocol data
+   * Find similar protocols to the given protocol data
    */
   async findSimilarProtocols(protocolData: ProtocolData, limit: number = 5): Promise<any[]> {
     try {
       // Find similar reports by indication and phase
-      const similar = await db.select().from(csrReports)
-        .where(eq(csrReports.indication, protocolData.indication))
+      const similar = await db.select().from(protocols)
+        .where(eq(protocols.indication, protocolData.indication))
         .limit(limit);
         
-      return similar.map(report => ({
-        id: report.id,
-        title: report.title,
-        phase: report.phase, 
-        indication: report.indication,
+      return similar.map(protocol => ({
+        id: protocol.id,
+        title: protocol.title,
+        phase: protocol.phase, 
+        indication: protocol.indication,
         similarity: Math.floor(Math.random() * 40) + 60, // Random similarity score for demo
-        sampleSize: report.sampleSize || 100,
-        duration: report.durationWeeks || 24,
+        sampleSize: protocol.sample_size || 100,
+        duration: protocol.duration || 24,
         outcome: Math.random() > 0.3 ? 'success' : 'failed' // Random outcome for demo
       }));
     } catch (error) {

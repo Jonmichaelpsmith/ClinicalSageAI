@@ -9,6 +9,7 @@ import {
   json,
   boolean,
   uuid,
+  doublePrecision,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -167,6 +168,115 @@ export const insertWisdomTraceSchema = createInsertSchema(wisdomTraces)
 export const insertStudySessionSchema = createInsertSchema(studySessions)
 .omit({ id: true, created_at: true, updated_at: true });
 
+// Protocols table
+export const protocols = pgTable("protocols", {
+  id: serial("id").primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  content: text("content").notNull(),
+  indication: varchar("indication", { length: 100 }).notNull(),
+  phase: varchar("phase", { length: 50 }).notNull(),
+  primary_endpoints: json("primary_endpoints").$type<string[]>().notNull().default(sql`'[]'`),
+  secondary_endpoints: json("secondary_endpoints").$type<string[]>().notNull().default(sql`'[]'`),
+  sample_size: integer("sample_size"),
+  duration: integer("duration"),
+  control_type: varchar("control_type", { length: 100 }),
+  blinding: varchar("blinding", { length: 50 }),
+  status: varchar("status", { length: 50 }).notNull().default("draft"),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  updated_at: timestamp("updated_at").defaultNow().notNull(),
+  version: integer("version").notNull().default(1),
+  project_id: varchar("project_id", { length: 255 }),
+  session_id: varchar("session_id", { length: 255 }),
+  validation_status: json("validation_status"),
+  pdf_path: varchar("pdf_path", { length: 255 }),
+});
+
+// Strategic Reports table
+export const strategicReports = pgTable("strategic_reports", {
+  id: serial("id").primaryKey(),
+  protocol_id: integer("protocol_id").references(() => protocols.id),
+  title: varchar("title", { length: 255 }).notNull(),
+  indication: varchar("indication", { length: 100 }).notNull(),
+  phase: varchar("phase", { length: 50 }).notNull(),
+  success_probability: doublePrecision("success_probability").notNull(),
+  confidence: doublePrecision("confidence").notNull().default(0.8),
+  key_factors: json("key_factors"),
+  benchmark_data: json("benchmark_data"),
+  endpoint_analysis: json("endpoint_analysis"),
+  primary_risks: json("primary_risks"),
+  risk_breakdown: json("risk_breakdown"),
+  mitigation_strategies: json("mitigation_strategies"),
+  competitive_analysis: json("competitive_analysis"),
+  strategic_recommendations: json("strategic_recommendations"),
+  sample_size: integer("sample_size"),
+  duration: integer("duration"),
+  control_type: varchar("control_type", { length: 100 }),
+  blinding: varchar("blinding", { length: 50 }),
+  primary_endpoints: json("primary_endpoints").$type<string[]>().notNull().default(sql`'[]'`),
+  pdf_path: varchar("pdf_path", { length: 255 }),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  project_id: varchar("project_id", { length: 255 }),
+  session_id: varchar("session_id", { length: 255 }),
+});
+
+// Protocol Relations
+export const protocolsRelations = relations(protocols, ({ one, many }) => ({
+  project: one(projects, {
+    fields: [protocols.project_id],
+    references: [projects.project_id],
+  }),
+  session: one(studySessions, {
+    fields: [protocols.session_id],
+    references: [studySessions.session_id],
+  }),
+  strategicReports: many(strategicReports),
+}));
+
+// Strategic Report Relations
+export const strategicReportsRelations = relations(strategicReports, ({ one }) => ({
+  protocol: one(protocols, {
+    fields: [strategicReports.protocol_id],
+    references: [protocols.id],
+  }),
+  project: one(projects, {
+    fields: [strategicReports.project_id],
+    references: [projects.project_id],
+  }),
+  session: one(studySessions, {
+    fields: [strategicReports.session_id],
+    references: [studySessions.session_id],
+  }),
+}));
+
+// Additional Schemas
+export const insertProtocolSchema = createInsertSchema(protocols)
+  .omit({ id: true, created_at: true, updated_at: true });
+
+export const insertStrategicReportSchema = createInsertSchema(strategicReports)
+  .omit({ id: true, created_at: true });
+
+// Updated Projects Relations to include new tables
+export const projectsCompleteRelations = relations(projects, ({ many }) => ({
+  summaryPackets: many(summaryPackets),
+  insightMemories: many(insightMemories),
+  wisdomTraces: many(wisdomTraces),
+  studySessions: many(studySessions),
+  protocols: many(protocols),
+  strategicReports: many(strategicReports),
+}));
+
+// Update Study Sessions Relations
+export const studySessionsCompleteRelations = relations(studySessions, ({ one, many }) => ({
+  project: one(projects, {
+    fields: [studySessions.project_id],
+    references: [projects.project_id],
+  }),
+  insightMemories: many(insightMemories),
+  wisdomTraces: many(wisdomTraces),
+  protocols: many(protocols),
+  strategicReports: many(strategicReports),
+}));
+
 // Types
 export type SummaryPacket = typeof summaryPackets.$inferSelect;
 export type InsertSummaryPacket = z.infer<typeof insertSummaryPacketSchema>;
@@ -178,3 +288,7 @@ export type WisdomTrace = typeof wisdomTraces.$inferSelect;
 export type InsertWisdomTrace = z.infer<typeof insertWisdomTraceSchema>;
 export type StudySession = typeof studySessions.$inferSelect;
 export type InsertStudySession = z.infer<typeof insertStudySessionSchema>;
+export type Protocol = typeof protocols.$inferSelect;
+export type InsertProtocol = z.infer<typeof insertProtocolSchema>;
+export type StrategicReport = typeof strategicReports.$inferSelect;
+export type InsertStrategicReport = z.infer<typeof insertStrategicReportSchema>;

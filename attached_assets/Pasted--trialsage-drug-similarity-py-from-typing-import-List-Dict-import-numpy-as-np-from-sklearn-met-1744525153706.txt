@@ -1,0 +1,99 @@
+# /trialsage/drug_similarity.py
+from typing import List, Dict
+import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
+import json
+import os
+
+# Simulated molecule registry containing pharmacologic, mechanistic, and regulatory intelligence
+REGISTRY_PATH = "data/molecule_registry.json"
+
+# Load registry data or fallback
+if os.path.exists(REGISTRY_PATH):
+    with open(REGISTRY_PATH, "r") as f:
+        molecule_db = json.load(f)
+else:
+    molecule_db = [
+        {
+            "name": "Semaglutide",
+            "moa": "GLP-1 receptor agonist",
+            "type": "Biologic",
+            "origin": "Recombinant",
+            "class": "GLP-1",
+            "indication": "Obesity",
+            "pk": {"half_life": 7.0, "route": "Subcutaneous"},
+            "pd": ["ALT reduction", "A1c improvement"],
+            "csr_links": ["CSR_2020_OBESITY_03", "CSR_2022_METABOLIC_01"],
+            "success_rate": 0.88
+        },
+        {
+            "name": "Liraglutide",
+            "moa": "GLP-1 receptor agonist",
+            "type": "Biologic",
+            "origin": "Recombinant",
+            "class": "GLP-1",
+            "indication": "Obesity",
+            "pk": {"half_life": 3.0, "route": "Subcutaneous"},
+            "pd": ["ALT reduction", "Body weight loss"],
+            "csr_links": ["CSR_2019_OBESITY_01"],
+            "success_rate": 0.82
+        },
+        {
+            "name": "Obeticholic acid",
+            "moa": "FXR agonist",
+            "type": "Small Molecule",
+            "origin": "Synthetic",
+            "class": "FXR",
+            "indication": "NASH",
+            "pk": {"half_life": 4.5, "route": "Oral"},
+            "pd": ["Fibrosis improvement", "ALT lowering"],
+            "csr_links": ["CSR_2021_NASH_03"],
+            "success_rate": 0.63
+        }
+    ]
+
+
+def match_similar_molecules(query: Dict, top_k: int = 3) -> List[Dict]:
+    def vectorize(mol: Dict) -> List[float]:
+        return [
+            len(mol.get("moa", "")),
+            len(mol.get("class", "")),
+            mol.get("pk", {}).get("half_life", 0),
+            len(mol.get("pd", [])),
+            1 if mol.get("type") == query.get("type") else 0,
+            1 if mol.get("origin") == query.get("origin") else 0,
+            1 if mol.get("route") == query.get("pk", {}).get("route") else 0
+        ]
+
+    query_vec = np.array([vectorize(query)])
+    scored = []
+
+    for mol in molecule_db:
+        mol_vec = np.array([vectorize(mol)])
+        sim = cosine_similarity(query_vec, mol_vec)[0][0]
+        scored.append({
+            "name": mol["name"],
+            "moa": mol["moa"],
+            "indication": mol["indication"],
+            "csr_links": mol["csr_links"],
+            "similarity": sim,
+            "success_rate": mol["success_rate"]
+        })
+
+    scored.sort(key=lambda x: x["similarity"], reverse=True)
+    return scored[:top_k]
+
+
+# Example query structure (for testing)
+if __name__ == "__main__":
+    result = match_similar_molecules({
+        "name": "TestDrug",
+        "moa": "GLP-1 receptor agonist",
+        "type": "Biologic",
+        "origin": "Recombinant",
+        "class": "GLP-1",
+        "indication": "Obesity",
+        "pk": {"half_life": 6.0, "route": "Subcutaneous"},
+        "pd": ["A1c improvement"]
+    })
+    print(json.dumps(result, indent=2))

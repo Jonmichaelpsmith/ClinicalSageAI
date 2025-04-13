@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { queryClient, apiRequest } from '@/lib/queryClient';
+import { apiRequest } from '@/lib/queryClient';
+import { QueryClient } from '@tanstack/react-query';
+
+// Create a local instance to avoid the imported error
+const queryClient = new QueryClient();
 import { 
   Plus, 
   FolderOpen, 
@@ -196,7 +200,7 @@ export default function StudySessionSelector({
           <PopoverTrigger asChild>
             {sessionDisplayButton}
           </PopoverTrigger>
-          <PopoverContent className="p-0" align="start" side="bottom" sideOffset={5} width="300">
+          <PopoverContent className="p-0 w-[300px]" align="start" side="bottom" sideOffset={5}>
             <Command>
               <CommandInput 
                 placeholder="Search sessions..." 

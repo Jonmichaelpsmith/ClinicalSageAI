@@ -21,6 +21,7 @@ import CsrExtractionGuide from "@/pages/CsrExtractionGuide";
 import { Sidebar } from "@/components/layout/UpdatedSidebar";
 import { TopNavbar } from "@/components/layout/TopNavbar";
 import ProductFeatures from "./pages/ProductFeatures";
+import DesignOraclePage from "@/pages/DesignOraclePage";
 import PricingPage from "@/pages/PricingPage";
 import ApiDocumentation from "@/pages/ApiDocumentation";
 import LumenBioDashboard from "@/pages/LumenBioDashboard";
@@ -171,6 +172,7 @@ function Router() {
       <Route path="/planning">{() => renderWithLayout(PlanningPage)}</Route>
       <Route path="/insight-engine">{() => renderWithLayout(InsightMemoryEngine)}</Route>
       <Route path="/wisdom-trace">{() => renderWithLayout(WisdomTrace)}</Route>
+      <Route path="/design-oracle">{() => renderWithLayout(DesignOraclePage)}</Route>
 
       {/* Fallback to 404 */}
       <Route>{() => renderWithLayout(NotFound)}</Route>

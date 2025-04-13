@@ -8,7 +8,7 @@ import {
   getAssistantResponse
 } from "../../agents/openai/trialsage_assistant";
 import { db } from "../db";
-import { csrReports, csrDetails } from "@shared/schema";
+import { protocols } from "@shared/schema";
 import { eq, sql, count, avg } from "drizzle-orm";
 
 const router = Router();
@@ -143,32 +143,31 @@ router.get("/api/intel/kpi-dashboard", async (req: Request, res: Response) => {
     // Query the database for aggregated metrics
     const reportCounts = await db.select({
       total: count(),
-      phase1: count().filter(eq(csrReports.phase, "Phase 1")),
-      phase2: count().filter(eq(csrReports.phase, "Phase 2")),
-      phase3: count().filter(eq(csrReports.phase, "Phase 3"))
-    }).from(csrReports)
-    .where(sql`${csrReports.deletedAt} IS NULL`)
+      phase1: count().filter(eq(protocols.phase, "Phase 1")),
+      phase2: count().filter(eq(protocols.phase, "Phase 2")),
+      phase3: count().filter(eq(protocols.phase, "Phase 3"))
+    }).from(protocols)
+    .where(sql`${protocols.deleted_at} IS NULL`)
     .execute();
     
     // Get top indications
     const indications = await db.select({
-      indication: csrReports.indication,
+      indication: protocols.indication,
       count: count()
     })
-    .from(csrReports)
-    .where(sql`${csrReports.deletedAt} IS NULL`)
-    .groupBy(csrReports.indication)
+    .from(protocols)
+    .where(sql`${protocols.deleted_at} IS NULL`)
+    .groupBy(protocols.indication)
     .orderBy(count(), "desc")
     .limit(5)
     .execute();
     
     // Get average sample size
     const sampleSizeResult = await db.select({
-      avgSampleSize: avg(csrDetails.sampleSize)
+      avgSampleSize: avg(protocols.sample_size)
     })
-    .from(csrDetails)
-    .innerJoin(csrReports, eq(csrDetails.reportId, csrReports.id))
-    .where(sql`${csrReports.deletedAt} IS NULL`)
+    .from(protocols)
+    .where(sql`${protocols.deleted_at} IS NULL`)
     .execute();
     
     // Prepare dashboard data

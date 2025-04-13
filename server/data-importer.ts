@@ -3,7 +3,8 @@ import path from 'path';
 import { spawn } from 'child_process';
 import csvParser from 'csv-parser';
 import { db } from './db';
-import { csrReports, csrDetails, InsertCsrReport, InsertCsrDetails } from '@shared/schema';
+// Temporarily comment out non-existent schema imports until we add them
+// import { csrReports, csrDetails, InsertCsrReport, InsertCsrDetails } from '@shared/schema';
 import { pool } from './db';
 import { sql } from 'drizzle-orm';
 import { extractTextFromPdf } from './openai-service';

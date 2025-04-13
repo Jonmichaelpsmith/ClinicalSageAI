@@ -10,6 +10,7 @@ import ProtocolEmailer from "@/components/ProtocolEmailer";
 import SummaryPacketGenerator from "@/components/SummaryPacketGenerator";
 import SummaryPacketArchive from "@/components/SummaryPacketArchive";
 import StudySessionSelector from "@/components/StudySessionSelector";
+import DesignFromMolecule from "@/components/DesignFromMolecule";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 

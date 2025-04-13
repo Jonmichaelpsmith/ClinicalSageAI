@@ -11,12 +11,12 @@ import {
   insertWisdomTraceSchema,
   insertStudySessionSchema
 } from "@shared/schema";
-import { eq, desc, and, or, isNull } from "drizzle-orm";
+import { eq, desc, and, or, isNull, sql } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
-import connectPg from "connect-pg-simple";
-import session from "express-session";
+import * as expressSession from "express-session";
 
-const PostgresSessionStore = connectPg(session);
+// We'll use a memory store for now to get the app running
+const MemoryStore = expressSession.MemoryStore;
 
 export interface IStorage {
   // Project operations
@@ -58,20 +58,139 @@ export interface IStorage {
   getWisdomTracesByProject(projectId: string): Promise<any[]>;
   
   // Session store
-  sessionStore: session.SessionStore;
+  sessionStore: any; // Use any for now to avoid type errors
 }
 
 export class DatabaseStorage implements IStorage {
-  sessionStore: any; // Fixed session.SessionStore type issue
+  sessionStore: any;
 
   constructor() {
-    const PostgresSessionStore = require('connect-pg-simple')(require('express-session'));
-    this.sessionStore = new PostgresSessionStore({ 
-      conObject: {
-        connectionString: process.env.DATABASE_URL
-      },
-      createTableIfMissing: true
-    });
+    // Use a memory store for sessions to get things working
+    this.sessionStore = new MemoryStore();
+  }
+  
+  // Implement the missing Study Session methods
+  async createStudySession(session: typeof insertStudySessionSchema._type) {
+    const [newSession] = await db.insert(studySessions)
+      .values(session)
+      .returning();
+    
+    return newSession;
+  }
+  
+  async getStudySession(sessionId: string) {
+    const [session] = await db.select()
+      .from(studySessions)
+      .where(eq(studySessions.session_id, sessionId));
+    
+    return session;
+  }
+  
+  async getStudySessionsByProject(projectId: string) {
+    const sessions = await db.select()
+      .from(studySessions)
+      .where(eq(studySessions.project_id, projectId))
+      .orderBy(desc(studySessions.created_at));
+    
+    return sessions;
+  }
+  
+  async getAllStudySessions() {
+    const sessions = await db.select()
+      .from(studySessions)
+      .orderBy(desc(studySessions.created_at));
+    
+    return sessions;
+  }
+  
+  async updateStudySessionStatus(sessionId: string, status: string) {
+    await db.update(studySessions)
+      .set({ status })
+      .where(eq(studySessions.session_id, sessionId));
+  }
+  
+  // Implement the missing Insight Memory methods
+  async createInsightMemory(insight: typeof insertInsightMemorySchema._type) {
+    const [newInsight] = await db.insert(insightMemories)
+      .values(insight)
+      .returning();
+    
+    return newInsight;
+  }
+  
+  async getInsightMemory(id: number) {
+    const [insight] = await db.select()
+      .from(insightMemories)
+      .where(eq(insightMemories.id, id));
+    
+    return insight;
+  }
+  
+  async getInsightMemoriesByStudySession(sessionId: string) {
+    const insights = await db.select()
+      .from(insightMemories)
+      .where(eq(insightMemories.session_id, sessionId))
+      .orderBy(desc(insightMemories.created_at));
+    
+    return insights;
+  }
+  
+  async getInsightMemoriesByProject(projectId: string) {
+    const insights = await db.select()
+      .from(insightMemories)
+      .where(eq(insightMemories.project_id, projectId))
+      .orderBy(desc(insightMemories.created_at));
+    
+    return insights;
+  }
+  
+  async updateInsightMemoryStatus(id: number, status: string) {
+    await db.update(insightMemories)
+      .set({ status })
+      .where(eq(insightMemories.id, id));
+  }
+  
+  // Implement the missing Wisdom Trace methods
+  async createWisdomTrace(trace: typeof insertWisdomTraceSchema._type) {
+    const [newTrace] = await db.insert(wisdomTraces)
+      .values(trace)
+      .returning();
+    
+    return newTrace;
+  }
+  
+  async getWisdomTrace(id: number) {
+    const [trace] = await db.select()
+      .from(wisdomTraces)
+      .where(eq(wisdomTraces.id, id));
+    
+    return trace;
+  }
+  
+  async getWisdomTraceByTraceId(traceId: string) {
+    const [trace] = await db.select()
+      .from(wisdomTraces)
+      .where(eq(wisdomTraces.trace_id, traceId));
+    
+    return trace;
+  }
+  
+  async getWisdomTracesByStudySession(sessionId: string) {
+    const traces = await db.select()
+      .from(wisdomTraces)
+      .where(eq(wisdomTraces.session_id, sessionId))
+      .orderBy(desc(wisdomTraces.created_at));
+    
+    return traces;
+  }
+  
+  async getWisdomTracesByProject(projectId: string) {
+    const traces = await db.select()
+      .from(wisdomTraces)
+      .where(eq(wisdomTraces.project_id, projectId))
+      .orderBy(desc(wisdomTraces.created_at));
+    
+    return traces;
   }
 
   async createProject(project: typeof insertProjectSchema._type) {
