@@ -1,0 +1,19 @@
+{
+  "nctrialId": "HC-1969",
+  "title": "A Randomized Open-Label, Placebo-Controlled Multi-Center Study of HYP-735 (angiotensin receptor blocker) in Patients With Chronic Obstructive Pulmonary Disease",
+  "officialTitle": "A Randomized Open-Label, Placebo-Controlled Multi-Center Study of HYP-735 (angiotensin receptor blocker) in Patients With Chronic Obstructive Pulmonary Disease",
+  "sponsor": "Alberta Health Services",
+  "indication": "Chronic Obstructive Pulmonary Disease",
+  "phase": "Phase 1/Phase 2",
+  "fileName": "HC-1969.json",
+  "fileSize": 140179,
+  "date": "2023-05-26",
+  "completionDate": "2026-12-04",
+  "drugName": "HYP-735 (angiotensin receptor blocker)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Terminated",
+  "description": "This is a randomized open-label, placebo-controlled multi-center study designed to evaluate the efficacy and safety of HYP-735 (angiotensin receptor blocker) in patients with Chronic Obstructive Pulmonary Disease. The study will enroll approximately 242 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 27-57 years\n- Confirmed diagnosis of Chronic Obstructive Pulmonary Disease\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment",
+  "csr_id": "HC-1969"
+}
