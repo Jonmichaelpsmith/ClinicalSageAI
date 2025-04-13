@@ -1,0 +1,19 @@
+{
+  "nctrialId": "HC-1981",
+  "title": "A Randomized Double-Blind, Active-Controlled  Study of BRE-701 (selective estrogen receptor modulator) in Patients With Duchenne Muscular Dystrophy",
+  "officialTitle": "A Randomized Double-Blind, Active-Controlled  Study of BRE-701 (selective estrogen receptor modulator) in Patients With Duchenne Muscular Dystrophy",
+  "sponsor": "Canadian Blood Services",
+  "indication": "Duchenne Muscular Dystrophy",
+  "phase": "Phase 1",
+  "fileName": "HC-1981.json",
+  "fileSize": 598503,
+  "date": "2024-11-10",
+  "completionDate": "2026-01-09",
+  "drugName": "BRE-701 (selective estrogen receptor modulator)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Active, not recruiting",
+  "description": "This is a randomized double-blind, active-controlled  study designed to evaluate the efficacy and safety of BRE-701 (selective estrogen receptor modulator) in patients with Duchenne Muscular Dystrophy. The study will enroll approximately 517 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 20-57 years\n- Confirmed diagnosis of Duchenne Muscular Dystrophy\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment",
+  "csr_id": "HC-1981"
+}
