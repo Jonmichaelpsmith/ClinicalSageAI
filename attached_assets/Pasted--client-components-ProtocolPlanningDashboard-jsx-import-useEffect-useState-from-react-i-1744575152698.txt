@@ -1,0 +1,48 @@
+// /client/components/ProtocolPlanningDashboard.jsx
+import { useEffect, useState } from "react";
+import ProtocolUploadPanel from "@/components/ProtocolUploadPanel";
+import SampleSizeCalculator from "@/components/SampleSizeCalculator";
+import DropoutEstimator from "@/components/DropoutEstimator";
+import TrialSuccessPredictor from "@/components/TrialSuccessPredictor";
+import ProtocolValidator from "@/components/ProtocolValidator";
+import FixedProtocolViewer from "@/components/FixedProtocolViewer";
+import SummaryPacketGenerator from "@/components/SummaryPacketGenerator";
+import ProtocolEmailer from "@/components/ProtocolEmailer";
+import TrialSuccessPredictor from "@/components/TrialSuccessPredictor";
+import ProtocolViewer from "@/components/FixedProtocolViewer";
+
+export default function ProtocolPlanningDashboard({ initialProtocol, sessionId, persona }) {
+  const [protocolText, setProtocolText] = useState(initialProtocol || "");
+
+  useEffect(() => {
+    console.log("Initialized dashboard for:", { sessionId, persona });
+  }, [sessionId, persona]);
+
+  if (!sessionId || !persona) {
+    return <p className="p-4 text-sm text-muted-foreground">Missing session ID or persona context.</p>;
+  }
+
+  return (
+    <div className="space-y-10">
+      <section className="space-y-4">
+        <h2 className="text-xl font-bold">📥 Protocol Preparation</h2>
+        <ProtocolUploadPanel sessionId={sessionId} initialText={protocolText} />
+        <ProtocolValidator sessionId={sessionId} />
+        <FixedProtocolViewer sessionId={sessionId} originalText={protocolText} />
+      </section>
+
+      <section className="space-y-4">
+        <h2 className="text-xl font-bold">📊 Modeling & Risk Forecasting</h2>
+        <SampleSizeCalculator sessionId={sessionId} />
+        <DropoutEstimator sessionId={sessionId} />
+        <TrialSuccessPredictor sessionId={sessionId} />
+      </section>
+
+      <section className="space-y-4">
+        <h2 className="text-xl font-bold">📦 Final Intelligence Outputs</h2>
+        <SummaryPacketGenerator sessionId={sessionId} />
+        <ProtocolEmailer sessionId={sessionId} />
+      </section>
+    </div>
+  );
+}

@@ -12,6 +12,7 @@ import {
 } from "./analytics-service";
 import { translationService, supportedLanguages } from "./translation-service";
 import { generateProtocolTemplate, getStatisticalApproaches } from "./protocol-service";
+import { exportService } from "./services/export-service";
 // Legacy Hugging Face service has been replaced with OpenAI-based services
 // Migration notice: The HuggingFace service has been completely replaced with OpenAI-based services.
 import { 

@@ -19,9 +19,14 @@ export default function FixedProtocolViewer({ originalText = "", sessionId = nul
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  // If session ID is provided, try to load any existing fixed protocol
+  // Initialize protocol content from props or load from API if available
   useEffect(() => {
-    // Validate session ID before attempting to load protocol
+    // First set the protocol text from props if available
+    if (originalText && originalText.trim() !== "") {
+      setOriginalProtocol(originalText);
+    }
+    
+    // Then, if session ID is provided, try to load any existing fixed protocol
     if (sessionId && typeof sessionId === "string" && sessionId.trim() !== "") {
       setIsLoading(true);
       console.log(`Loading existing protocol for session: ${sessionId}`);
@@ -32,7 +37,12 @@ export default function FixedProtocolViewer({ originalText = "", sessionId = nul
           throw new Error("Failed to load protocol");
         })
         .then(data => {
-          if (data.original) setOriginalProtocol(data.original);
+          // Only override with API data if it exists and there's no initial text
+          // or if the API data is more recent
+          if (data.original && (!originalText || data.timestamp)) {
+            setOriginalProtocol(data.original);
+          }
+          
           if (data.fixed) {
             setFixedProtocol(data.fixed);
             setActiveTab("fixed");
@@ -49,7 +59,7 @@ export default function FixedProtocolViewer({ originalText = "", sessionId = nul
     } else if (sessionId) {
       console.warn("Protocol load skipped: Invalid sessionId format");
     }
-  }, [sessionId]);
+  }, [sessionId, originalText]);
 
   const handleTextChange = (e) => {
     setOriginalProtocol(e.target.value);
