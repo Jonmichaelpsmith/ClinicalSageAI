@@ -17,29 +17,32 @@ import KnowledgeBasePanel from "@/components/KnowledgeBasePanel";
 export default function Home() {
   return (
     <PageContainer>
-      <HeaderSection>
+      {/* Hero Section with Navbar */}
+      <HeaderSection className="bg-gradient-to-b from-primary/5 to-primary/10 dark:from-gray-950 dark:to-gray-900 pb-8">
         <Navbar />
-        <div className="container px-4 md:px-6 flex flex-col items-center text-center space-y-3 py-8 md:py-10 lg:py-12">
-          <div className="space-y-2">
-            <Badge variant="outline" className="text-primary border-primary px-3 py-1">
-              SaaS for Early-Stage Biotechs
-            </Badge>
-            <h1 className="text-3xl md:text-5xl font-bold tracking-tighter bg-gradient-to-r from-primary to-blue-500 bg-clip-text text-transparent">
-              LumenTrialGuide.AI<span className="text-black dark:text-white"> - AI-Powered CSR Intelligence</span>
-            </h1>
-            <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
-              Extract, analyze, and generate insights from clinical study reports. 
-              Design better trials, faster, at a fraction of the cost.
-            </p>
-          </div>
-          <div className="flex flex-col md:flex-row gap-4 mt-2">
+        <div className="container px-4 md:px-6 flex flex-col items-center text-center space-y-4 py-8 md:py-12">
+          <Badge variant="outline" className="font-semibold text-primary border-primary px-3 py-1">
+            CSR Intelligence Platform
+          </Badge>
+          <h1 className="text-3xl md:text-5xl font-bold tracking-tighter leading-tight bg-gradient-to-r from-primary to-blue-500 bg-clip-text text-transparent">
+            LumenTrialGuide.AI
+          </h1>
+          <p className="text-black dark:text-white text-lg md:text-xl font-medium">
+            AI-Powered Clinical Study Report Analytics
+          </p>
+          <p className="mx-auto max-w-[700px] text-gray-600 md:text-lg dark:text-gray-300">
+            Extract, analyze, and leverage insights from 2,800+ clinical study reports.
+            Design better trials, faster, at a fraction of the cost.
+          </p>
+          
+          <div className="flex flex-col md:flex-row gap-4 mt-4">
             <Link href="/dashboard">
-              <Button size="lg" className="h-11">
+              <Button size="lg" className="h-11 px-6">
                 View Demo Dashboard <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
             <Link href="/features">
-              <Button size="lg" variant="outline" className="h-11">
+              <Button size="lg" variant="outline" className="h-11 px-6">
                 Explore Features
               </Button>
             </Link>
@@ -47,12 +50,10 @@ export default function Home() {
         </div>
       </HeaderSection>
       
-      {/* Knowledge Base Tracker Panel (positioned at the top as requested) */}
-      <ContentSection className="bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-900">
-        <div className="container px-4 md:px-6 py-6">
-          <div className="flex flex-col items-center justify-center space-y-4 text-center">
-            <KnowledgeBasePanel />
-          </div>
+      {/* Knowledge Base Tracker Panel (prominently positioned at the top) */}
+      <ContentSection className="py-0 -mt-12 md:-mt-16 z-10 relative">
+        <div className="container px-4 md:px-6">
+          <KnowledgeBasePanel />
         </div>
       </ContentSection>
       
@@ -197,29 +198,42 @@ export default function Home() {
         </div>
       </ContentSection>
       {/* Subscription Modules Section */}
-      <ContentSection className="bg-gradient-to-b from-sky-50 to-white dark:from-sky-950 dark:to-gray-950">
-        <div className="container px-4 md:px-6 py-8 md:py-10 lg:py-12">
+      <ContentSection className="bg-gradient-to-b from-primary/5 via-slate-50 to-white dark:from-primary/10 dark:via-gray-900 dark:to-gray-950 py-16">
+        <div className="container px-4 md:px-6">
           <div className="flex flex-col items-center justify-center space-y-3 text-center mb-10">
-            <div className="space-y-2">
-              <Badge variant="outline" className="mb-2">NEW</Badge>
-              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-4xl bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                Customizable Module Subscriptions
-              </h2>
-              <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
-                Subscribe only to the modules you need. Mix and match specialized use case packages tailored for your specific role.
-              </p>
-            </div>
+            <Badge variant="outline" className="mb-2 font-semibold">NEW FEATURE</Badge>
+            <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-4xl bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              Role-Based Subscription Packages
+            </h2>
+            <p className="mx-auto max-w-[700px] text-gray-600 dark:text-gray-300 md:text-lg">
+              Subscribe only to the modules you need. Choose packages designed specifically for your role 
+              and clinical development challenges.
+            </p>
           </div>
           
-          <UseCaseGallery compact={true} />
-          
-          <div className="mt-8 text-center">
-            <Link href="/use-cases">
-              <Button className="group">
-                View All Module Details
-                <ChevronRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Button>
-            </Link>
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800 overflow-hidden">
+            <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+              <div className="flex items-center gap-2">
+                <div className="h-3 w-3 rounded-full bg-blue-500"></div>
+                <h3 className="font-semibold text-gray-800 dark:text-gray-200">Featured Subscription Modules</h3>
+              </div>
+              <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100 hover:bg-blue-200">
+                Save up to 30% with bundles
+              </Badge>
+            </div>
+            
+            <div className="p-6">
+              <UseCaseGallery compact={true} />
+            </div>
+            
+            <div className="bg-gray-50 dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 p-6 text-center">
+              <Link href="/use-cases">
+                <Button className="group" size="lg">
+                  View All Module Details
+                  <ChevronRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </ContentSection>
