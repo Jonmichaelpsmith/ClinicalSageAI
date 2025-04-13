@@ -73,8 +73,14 @@ async function runUntilTarget() {
       // Run multiple batches
       for (let i = 0; i < batchesToRun; i++) {
         console.log(`\nStarting batch ${i + 1} of ${batchesToRun}...`);
-        execSync('node import_batch_of_50.js', { stdio: 'inherit' });
-        batchesRun++;
+        try {
+          console.log(`Running batch with index ${i + batchesRun}...`);
+          execSync(`node import_single_canada_batch.js --batchSize 50 --batchIndex ${i + batchesRun}`, { stdio: 'inherit' });
+          batchesRun++;
+        } catch (batchError) {
+          console.error(`Error running batch ${i + 1}: ${batchError.message}`);
+          // Continue with next batch even if this one fails
+        }
       }
       
       // Update current count

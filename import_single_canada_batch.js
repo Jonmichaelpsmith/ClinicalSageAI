@@ -88,7 +88,31 @@ async function importCanadaCSRBatch() {
     
     if (trials.length === 0) {
       console.log('No new trials found in this batch. Try increasing the batch index.');
-      return { success: true, imported: 0, message: 'No new trials found' };
+      
+      // Advance batch index if no new trials found
+      batchIndex++;
+      console.log(`Automatically advancing to batch index ${batchIndex}...`);
+      
+      // Retry with the next batch
+      searchParams.page = batchIndex;
+      const retryResponse = await axios.get(HC_SEARCH_ENDPOINT, { params: searchParams });
+      
+      if (!retryResponse.data || !retryResponse.data.content) {
+        throw new Error('Invalid response format from Health Canada search API on retry');
+      }
+      
+      // Check again with the new batch
+      const retryTrials = retryResponse.data.content.filter(trial => !importedIds.includes(trial.protocolId));
+      
+      if (retryTrials.length === 0) {
+        console.log('Still no new trials found after advancing batch index. Stopping.');
+        return { success: true, imported: 0, message: 'No new trials found after retry' };
+      }
+      
+      console.log(`Found ${retryTrials.length} trials to import in new batch (index ${batchIndex})`);
+      
+      // Use the trials from the retry
+      trials.push(...retryTrials);
     }
     
     console.log(`Found ${trials.length} trials to import (filtered from ${searchResponse.data.content.length})`);
