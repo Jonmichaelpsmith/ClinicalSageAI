@@ -3,10 +3,13 @@ import path from 'path';
 import { spawn } from 'child_process';
 import csvParser from 'csv-parser';
 import { db } from './db';
-// Temporarily comment out non-existent schema imports until we add them
-// import { csrReports, csrDetails, InsertCsrReport, InsertCsrDetails } from '@shared/schema';
 import { pool } from './db';
 import { sql } from 'drizzle-orm';
+import { csrReports, csrDetails } from './sage-plus-service';
+
+// Define types for CSR data
+export type InsertCsrReport = typeof csrReports.$inferInsert;
+export type InsertCsrDetails = typeof csrDetails.$inferInsert;
 import { extractTextFromPdf } from './openai-service';
 import { validatePdfFile, getPdfMetadata, savePdfFile } from './pdf-processor';
 import { analyzeCsrContent, generateCsrSummary } from './openai-service';
