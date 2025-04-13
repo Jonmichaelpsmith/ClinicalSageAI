@@ -53,6 +53,7 @@ import CSRInsightPage from "@/pages/CSRInsightPage";
 import PlanningPage from "@/pages/PlanningPage";
 import InsightMemoryEngine from "@/pages/InsightMemoryEngine";
 import WisdomTrace from "@/pages/WisdomTrace";
+import SubscriptionsPage from "@/pages/SubscriptionsPage";
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -136,6 +137,7 @@ function Router() {
       <Route path="/study-design-agent">{() => renderWithLayout(StudyDesignAgent)}</Route>
       <Route path="/translation">{() => renderWithLayout(Translation)}</Route>
       <Route path="/csr-extraction-guide">{() => renderWithLayout(CsrExtractionGuide)}</Route>
+      <Route path="/subscriptions">{() => renderWithLayout(SubscriptionsPage)}</Route>
       <Route path="/features" component={ProductFeatures} />
       <Route path="/pricing" component={PricingPage} />
       <Route path="/api" component={ApiDocumentation} />
