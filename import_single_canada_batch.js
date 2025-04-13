@@ -32,9 +32,12 @@ for (let i = 0; i < args.length; i++) {
 const TRACKING_FILE = 'canada_500_import_progress.json';
 const API_BASE_URL = 'https://clinical-information.canada.ca/ci-rc/api';
 
-// Database connection
+// Database connection with SSL configuration
 const pool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false // Added to handle potential certificate issues
+  }
 });
 
 /**
@@ -153,12 +156,15 @@ async function importTrialsToDatabase(trials) {
   
   const client = await pool.connect();
   let importedCount = 0;
+  let successfulImports = [];
   
   try {
-    await client.query('BEGIN');
-    
+    // Use individual transactions per trial instead of one large transaction
     for (const trial of trials) {
       try {
+        // Start a new transaction for each trial
+        await client.query('BEGIN');
+        
         // Check if this trial already exists
         const existingCheck = await client.query(
           'SELECT id FROM csr_reports WHERE title = $1 OR nctrial_id = $2',
@@ -167,6 +173,7 @@ async function importTrialsToDatabase(trials) {
         
         if (existingCheck.rows.length > 0) {
           console.log(`Trial ${trial.nctrialId} already exists, skipping.`);
+          await client.query('COMMIT');
           continue;
         }
         
@@ -174,7 +181,7 @@ async function importTrialsToDatabase(trials) {
         const reportResult = await client.query(
           `INSERT INTO csr_reports (
             title, sponsor, indication, phase, 
-            fileName, fileSize, uploadDate, summary,
+            file_name, file_size, upload_date, summary,
             region, nctrial_id, status
           ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id`,
           [
@@ -189,8 +196,8 @@ async function importTrialsToDatabase(trials) {
         // Insert CSR details
         await client.query(
           `INSERT INTO csr_details (
-            reportId, inclusionCriteria, endpoints,
-            primaryObjective, studyDesign, processingStatus, studyDuration
+            report_id, inclusion_criteria, endpoints,
+            primary_objective, study_design, processing_status, study_duration
           ) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
           [
             reportId,
@@ -203,26 +210,33 @@ async function importTrialsToDatabase(trials) {
           ]
         );
         
+        // Commit this trial's transaction
+        await client.query('COMMIT');
+        
         importedCount++;
+        successfulImports.push(trial.nctrialId);
         
         if (importedCount % 10 === 0) {
           console.log(`Imported ${importedCount} trials so far.`);
         }
         
       } catch (error) {
-        console.error(`Error importing trial ${trial.nctrialId}:`, error);
-        // Continue with next trial despite error
+        // Rollback this individual trial's transaction
+        try {
+          await client.query('ROLLBACK');
+        } catch (rollbackError) {
+          console.error(`Error rolling back transaction: ${rollbackError.message}`);
+        }
+        
+        console.error(`Error importing trial ${trial.nctrialId}:`, error.message);
       }
     }
     
-    // Commit the transaction
-    await client.query('COMMIT');
     console.log(`Successfully imported ${importedCount} trials.`);
     return importedCount;
     
   } catch (error) {
-    await client.query('ROLLBACK');
-    console.error('Error during batch import, transaction rolled back:', error);
+    console.error('Error during batch import process:', error.message);
     throw error;
   } finally {
     client.release();
