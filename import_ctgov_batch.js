@@ -156,7 +156,7 @@ async function processXmlFile(filePath) {
       uploadDate: new Date(),
       summary: `${title}. Phase: ${phase || 'Unknown'}, Sponsor: ${sponsor || 'Unknown'}`,
       region: 'ClinicalTrials.gov',
-      nctrialId: nctId
+      nctrial_id: nctId // Use underscore format as per database schema
     };
     
     // Return the structured data
@@ -185,10 +185,10 @@ async function insertTrialData(client, processedData) {
     // Insert report
     const reportResult = await client.query(
       `INSERT INTO csr_reports(
-        title, sponsor, indication, phase, fileName, fileSize, 
-        uploadDate, summary, region, "nctrialId"
+        title, sponsor, indication, phase, "fileName", "fileSize", 
+        "uploadDate", summary, region, "nctrial_id"
       ) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
-      ON CONFLICT ("nctrialId") DO NOTHING
+      ON CONFLICT ("nctrial_id") DO NOTHING
       RETURNING id`,
       [
         processedData.report.title,
@@ -200,7 +200,7 @@ async function insertTrialData(client, processedData) {
         processedData.report.uploadDate,
         processedData.report.summary,
         processedData.report.region,
-        processedData.report.nctrialId
+        processedData.report.nctrial_id
       ]
     );
     
@@ -229,7 +229,7 @@ async function insertTrialData(client, processedData) {
       
       return reportId;
     } else {
-      console.log(`Trial ${processedData.report.nctrialId} already exists in database, skipping`);
+      console.log(`Trial ${processedData.report.nctrial_id} already exists in database, skipping`);
       return null;
     }
   } catch (error) {
@@ -277,12 +277,12 @@ async function runBatchImport() {
       if (processedData) {
         // Check if trial already exists in database
         const checkResult = await client.query(
-          `SELECT id FROM csr_reports WHERE "nctrialId" = $1`,
-          [processedData.report.nctrialId]
+          `SELECT id FROM csr_reports WHERE "nctrial_id" = $1`,
+          [processedData.report.nctrial_id]
         );
         
         if (checkResult.rows.length > 0) {
-          console.log(`Trial ${processedData.report.nctrialId} already exists in database, skipping`);
+          console.log(`Trial ${processedData.report.nctrial_id} already exists in database, skipping`);
           skipCount++;
           continue;
         }
@@ -294,16 +294,16 @@ async function runBatchImport() {
           
           if (reportId) {
             await client.query('COMMIT');
-            console.log(`Successfully imported trial ${processedData.report.nctrialId}`);
+            console.log(`Successfully imported trial ${processedData.report.nctrial_id}`);
             successCount++;
           } else {
             await client.query('ROLLBACK');
-            console.error(`Failed to import trial ${processedData.report.nctrialId}`);
+            console.error(`Failed to import trial ${processedData.report.nctrial_id}`);
             errorCount++;
           }
         } catch (error) {
           await client.query('ROLLBACK');
-          console.error(`Transaction failed for ${processedData.report.nctrialId}:`, error);
+          console.error(`Transaction failed for ${processedData.report.nctrial_id}:`, error);
           errorCount++;
         }
       } else {
