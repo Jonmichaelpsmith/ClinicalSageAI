@@ -1,153 +1,142 @@
-# /controllers/chat.py
-from fastapi import APIRouter
-from pydantic import BaseModel
-from typing import Optional, List
-from services.openai_engine import create_assistant_thread, run_assistant, get_run_output
+#!/usr/bin/env python3
+# trialsage/controllers/chat.py
+# Enhanced chat controller with semantic search, design recommendations, and risk analysis
 
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+import logging
+import os
+import json
+from typing import List, Dict, Any, Optional
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, 
+                   format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+# Initialize router
 router = APIRouter()
 
+# Import local modules
+try:
+    from trialsage.semantic_search import search_similar_csrs
+    from trialsage.design_recommendations import generate_design_from_matches
+    from trialsage.deep_csr_analyzer import extract_risk_factors_from_protocol
+    from trialsage.services.openai_engine import create_assistant_thread, run_assistant, get_run_output
+    
+    MODULES_AVAILABLE = True
+    logger.info("Successfully imported all required modules")
+except ImportError as e:
+    MODULES_AVAILABLE = False
+    logger.error(f"Failed to import modules: {str(e)}")
+
+# Check for OpenAI API key
+OPENAI_AVAILABLE = os.environ.get("OPENAI_API_KEY") is not None
+if not OPENAI_AVAILABLE:
+    logger.warning("OPENAI_API_KEY not found in environment. Some functionality will be limited.")
+
+# Request model
 class ChatMessage(BaseModel):
     message: str
     thread_id: Optional[str] = None
+    files: Optional[List[str]] = None
+    context: Optional[Dict[str, Any]] = None
 
-@router.post("/send-message")
+# Thread-file mapping for tracking uploaded documents
+# In a real implementation, this would be stored in a database
+THREAD_FILES = {}
+
+@router.post("/api/chat/send-message")
 async def chat_send(chat: ChatMessage):
     """
-    Send a message to the OpenAI Assistant API
+    Enhanced chat endpoint that combines:
+    1. GPT assistant for natural language responses
+    2. Semantic CSR search for evidence-based results
+    3. Design recommendations based on similar CSRs
+    4. Risk analysis of the recommended design
+    """
+    if not MODULES_AVAILABLE:
+        raise HTTPException(status_code=500, detail="Required modules not available")
     
-    This endpoint handles:
-    1. Creating a new thread if thread_id is not provided
-    2. Sending the message to the OpenAI Assistant
-    3. Waiting for and retrieving the response
-    4. Including relevant CSR citations in the response
+    thread_id = chat.thread_id
+    
+    # Create a new thread if none provided
+    if not thread_id:
+        thread_id = create_assistant_thread()
+        logger.info(f"Created new thread: {thread_id}")
+        
+        # Initialize thread file tracking if needed
+        if thread_id not in THREAD_FILES:
+            THREAD_FILES[thread_id] = []
+    
+    # Track files if provided
+    if chat.files:
+        THREAD_FILES[thread_id].extend(chat.files)
+        logger.info(f"Added files to thread {thread_id}: {chat.files}")
+    
+    # Construct the message
+    user_message = chat.message
+    
+    try:
+        # 1. Run assistant to get natural language response
+        run_id = run_assistant(thread_id, user_message)
+        raw_response = get_run_output(thread_id, run_id)
+        
+        # 2. Perform semantic CSR search in parallel
+        similar_csrs = search_similar_csrs(user_message)
+        logger.info(f"Found {len(similar_csrs)} similar CSRs")
+        
+        # 3. Generate design recommendations based on matches
+        suggested_design = generate_design_from_matches(similar_csrs)
+        logger.info(f"Generated design recommendation with {len(suggested_design.get('source', []))} sources")
+        
+        # 4. Analyze recommended design for risks
+        design_text = suggested_design.get("protocol", "")
+        risks = extract_risk_factors_from_protocol(design_text)
+        logger.info(f"Identified {len(risks)} potential risk factors")
+        
+        # Prepare the response
+        response = {
+            "thread_id": thread_id,
+            "answer": raw_response,
+            "csr_matches": similar_csrs,
+            "recommended_design": suggested_design,
+            "risk_flags": risks
+        }
+        
+        return response
+        
+    except Exception as e:
+        logger.error(f"Error processing chat message: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error processing message: {str(e)}")
+
+@router.post("/api/chat/upload")
+async def upload_file(file_data: Dict[str, Any]):
+    """
+    Handle file upload and associate with a thread
+    
+    In a real implementation, this would store the file and extract text
     """
     try:
-        thread_id = chat.thread_id or create_assistant_thread()
-        run_id = run_assistant(thread_id, chat.message)
-        answer = get_run_output(thread_id, run_id)
-
-        # Extract comprehensive semantic citations from the answer using our advanced CSR knowledge engine
-        try:
-            # Import our deep semantic CSR analyzer
-            from ..services.deep_csr_analyzer import extract_csr_citations_from_text
+        thread_id = file_data.get("thread_id")
+        file_path = file_data.get("file_path")
+        
+        if not thread_id or not file_path:
+            raise HTTPException(status_code=400, detail="thread_id and file_path are required")
             
-            # Use the deep semantic analyzer to extract relevant CSR citations
-            csr_citations = extract_csr_citations_from_text(answer)
+        # Initialize thread tracking if needed
+        if thread_id not in THREAD_FILES:
+            THREAD_FILES[thread_id] = []
             
-            # Transform the structured citations into the format expected by the frontend
-            citations = []
-            
-            # Extract CSR citations with rich metadata
-            for citation in csr_citations:
-                csr_id = citation.get("csr_id", "unknown")
-                relevance = citation.get("relevance", "medium")
-                citation_type = citation.get("citation_type", "semantic")
-                context = citation.get("context", "")
-                metadata = citation.get("metadata", {})
-                
-                # Create a formatted citation ID that includes semantic information
-                citation_id = f"CSR_{csr_id}_"
-                if citation_type == "explicit":
-                    citation_id += "EXPLICIT"
-                else:
-                    citation_id += "SEMANTIC"
-                
-                # Include indication in the citation if available
-                if metadata and "indication" in metadata:
-                    indication = metadata.get("indication", "").upper()
-                    if indication and len(indication) > 0:
-                        # Limit to first word of indication to keep citation IDs manageable
-                        indication_word = indication.split()[0]
-                        citation_id += f"_{indication_word}"
-                
-                # Add to citations list
-                citations.append(citation_id)
-            
-            # Also extract academic citations using pattern matching (until we have a deeper academic integration)
-            academic_triggers = ["journal", "publication", "paper", "research", "article", "literature", "meta-analysis", "systematic review"]
-            for trigger in academic_triggers:
-                if trigger in answer.lower():
-                    citations.append(f"ACADEMIC_{trigger.upper().replace(' ', '_')}")
-            
-            # Add regulatory citations
-            regulatory_triggers = ["fda", "ema", "nmpa", "pmda", "health canada", "mhra", "anvisa", "regulatory", "guidance", "guideline", "ich"]
-            for trigger in regulatory_triggers:
-                if trigger in answer.lower():
-                    citations.append(f"REG_{trigger.upper().replace(' ', '_')}")
-            
-            # Add best practices citations
-            best_practice_triggers = ["best practice", "standard", "recommendation", "consensus", "industry standard", "protocol standard"]
-            for trigger in best_practice_triggers:
-                if trigger in answer.lower():
-                    citations.append(f"BP_{trigger.upper().replace(' ', '_')}")
-            
-            if not citations:
-                # If deep semantic search failed to find citations, fall back to basic pattern matching
-                csr_triggers = ["study", "trial", "report", "according to", "published", "clinical", "csr", "clinical study report"]
-                for trigger in csr_triggers:
-                    if trigger in answer.lower():
-                        citations.append(f"CSR_{trigger.upper().replace(' ', '_')}")
-            
-            if not citations:
-                # Ensure we have at least some citations
-                citations = ["CSR_GENERAL_REFERENCE"]
-                
-        except Exception as e:
-            # Log the error but continue with basic citation extraction as fallback
-            import logging
-            logging.error(f"Error using deep CSR citation extraction: {str(e)}")
-            
-            # Fall back to pattern matching
-            citations = []
-            
-            # CSR and clinical trial related citation patterns
-            csr_triggers = ["study", "trial", "report", "according to", "published", "clinical", "csr", "clinical study report"]
-            
-            # Academic literature citation patterns
-            academic_triggers = ["journal", "publication", "paper", "research", "article", "literature", "meta-analysis", "systematic review"]
-            
-            # Regulatory agency citation patterns
-            regulatory_triggers = ["fda", "ema", "nmpa", "pmda", "health canada", "mhra", "anvisa", "regulatory", "guidance", "guideline", "ich"]
-            
-            # Best practices citation patterns
-            best_practice_triggers = ["best practice", "standard", "recommendation", "consensus", "industry standard", "protocol standard"]
-            
-            # Add CSR citations
-            for trigger in csr_triggers:
-                if trigger in answer.lower():
-                    citations.append(f"CSR_{trigger.upper().replace(' ', '_')}")
-            
-            # Add academic literature citations
-            for trigger in academic_triggers:
-                if trigger in answer.lower():
-                    citations.append(f"ACADEMIC_{trigger.upper().replace(' ', '_')}")
-            
-            # Add regulatory citations
-            for trigger in regulatory_triggers:
-                if trigger in answer.lower():
-                    citations.append(f"REG_{trigger.upper().replace(' ', '_')}")
-            
-            # Add best practices citations
-            for trigger in best_practice_triggers:
-                if trigger in answer.lower():
-                    citations.append(f"BP_{trigger.upper().replace(' ', '_')}")
-            
-            if not citations:
-                # Ensure we have at least some citations
-                citations = ["CSR_GENERAL_REFERENCE"]
-            
+        # Add file to thread tracking
+        THREAD_FILES[thread_id].append(file_path)
+        
         return {
+            "success": True,
             "thread_id": thread_id,
-            "answer": answer,
-            "citations": list(set(citations))  # Remove duplicates
+            "file_path": file_path
         }
+    
     except Exception as e:
-        import traceback
-        error_details = traceback.format_exc()
-        return {
-            "thread_id": chat.thread_id or "error",
-            "answer": f"I apologize, but I encountered an error while processing your query. Please try again with a more specific question about clinical trial design.",
-            "error": str(e),
-            "error_details": error_details,
-            "citations": []
-        }
+        logger.error(f"Error uploading file: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error uploading file: {str(e)}")

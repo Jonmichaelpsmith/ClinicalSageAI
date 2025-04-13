@@ -1,0 +1,59 @@
+# /trialsage/design_recommendations.py
+from typing import List, Dict
+
+# Simulated CSR record structure
+dummy_csr_db = [
+    {
+        "id": "CSR_2022_NASH_01",
+        "phase": "2",
+        "arms": 2,
+        "control": "placebo",
+        "duration_weeks": 12,
+        "primary_endpoint": "ALT reduction",
+        "sample_size": 140,
+        "dropout_rate": 0.18
+    },
+    {
+        "id": "CSR_2021_NASH_02",
+        "phase": "2",
+        "arms": 3,
+        "control": "standard care",
+        "duration_weeks": 24,
+        "primary_endpoint": "fibrosis stage improvement",
+        "sample_size": 220,
+        "dropout_rate": 0.14
+    },
+    {
+        "id": "CSR_2020_OBESITY_03",
+        "phase": "2",
+        "arms": 2,
+        "control": "placebo",
+        "duration_weeks": 16,
+        "primary_endpoint": "% body weight loss",
+        "sample_size": 200,
+        "dropout_rate": 0.21
+    }
+]
+
+def generate_design_from_matches(csr_matches: List[str]) -> Dict:
+    # Select matching CSRs from simulated DB (normally you'd filter real embeddings)
+    matched = [csr for csr in dummy_csr_db if csr["id"] in csr_matches]
+    if not matched:
+        return {"protocol": "No matched CSR records found.", "source": []}
+
+    # Aggregate key design stats
+    avg_arms = round(sum(c["arms"] for c in matched) / len(matched))
+    avg_duration = round(sum(c["duration_weeks"] for c in matched) / len(matched))
+    most_common_control = max(set(c["control"] for c in matched), key=lambda ctrl: sum(1 for x in matched if x["control"] == ctrl))
+    most_common_endpoint = max(set(c["primary_endpoint"] for c in matched), key=lambda ep: sum(1 for x in matched if x["primary_endpoint"] == ep))
+    avg_sample_size = round(sum(c["sample_size"] for c in matched) / len(matched))
+
+    design = (
+        f"Based on {len(matched)} matching CSRs, we recommend a Phase 2 study with the following attributes:\n"
+        f"- {avg_arms} arms including a {most_common_control} control group\n"
+        f"- Primary endpoint: {most_common_endpoint}\n"
+        f"- Duration: {avg_duration} weeks\n"
+        f"- Sample size: approximately {avg_sample_size} participants\n"
+    )
+
+    return {"protocol": design, "source": [c["id"] for c in matched]}
