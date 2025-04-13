@@ -287,6 +287,9 @@ const signatureUpdateRequestSchema = z.object({
   role: z.string() // e.g., "PI", "Sponsor", "QA"
 });
 
+// Import analytics routes
+import analyticsRoutes from './routes/analytics-routes';
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Export trial success prediction to PDF
   app.post("/api/export/success-summary", async (req: Request, res: Response) => {
@@ -456,6 +459,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register Protocol Routes
   app.use('/api/protocol', protocolRoutes);
+  
+  // Register Analytics Routes
+  app.use('/api/analytics', analyticsRoutes);
   
   // Register SAP Routes
   app.use('/api/sap', sapRoutes);
@@ -2861,6 +2867,32 @@ Provide a comprehensive, evidence-based response.`;
           message: 'No protocol text or file provided'
         });
       }
+      
+      // Helper functions for text extraction
+      const extractIndication = (text: string): string => {
+        const match = text.match(/indication[:\s]+([\w\s\-]+)/i);
+        return match ? match[1].trim() : "General";
+      };
+      
+      const extractPhase = (text: string): string => {
+        const match = text.match(/phase[:\s]+([\w\s\-/]+)/i);
+        return match ? match[1].trim() : "2";
+      };
+      
+      const extractPrimaryEndpoint = (text: string): string => {
+        const match = text.match(/primary\s+endpoint[:\s]+([\w\s\-,%()\/]+)/i);
+        return match ? match[1].trim() : "Change from baseline";
+      };
+      
+      const extractPopulation = (text: string): string => {
+        const match = text.match(/population[:\s]+([\w\s\-]+)/i);
+        return match ? match[1].trim() : "Adult";
+      };
+      
+      const extractSampleSize = (text: string): string => {
+        const match = text.match(/sample\s+size[:\s]+(\d+)/i) || text.match(/n\s*=\s*(\d+)/i);
+        return match ? match[1].trim() : "200";
+      };
       
       // Extract key parameters from text
       const indication = extractIndication(text);
