@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-2111",
+  "title": "A  Open-Label, Active-Controlled Multi-Center Study of ARH-921 (JAK inhibitor) in Patients With Atopic Dermatitis",
+  "officialTitle": "A  Open-Label, Active-Controlled Multi-Center Study of ARH-921 (JAK inhibitor) in Patients With Atopic Dermatitis",
+  "sponsor": "McMaster University",
+  "indication": "Atopic Dermatitis",
+  "phase": "Phase 2",
+  "fileName": "HC-2111.json",
+  "fileSize": 383882,
+  "date": "2025-03-12",
+  "completionDate": "2027-12-03",
+  "drugName": "ARH-921 (JAK inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Not yet recruiting",
+  "description": "This is a  open-label, active-controlled multi-center study designed to evaluate the efficacy and safety of ARH-921 (JAK inhibitor) in patients with Atopic Dermatitis. The study will enroll approximately 57 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 24-59 years\n- Confirmed diagnosis of Atopic Dermatitis\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment"
+}
