@@ -1,0 +1,63 @@
+# /trialsage/semantic_search.py
+from typing import List, Dict
+import openai
+import os
+import numpy as np
+
+# Placeholder simulated CSR metadata (in real case: indexed + embedded)
+csr_library = [
+    {
+        "id": "CSR_2022_NASH_01",
+        "title": "Phase 2 NASH study with ALT reduction",
+        "description": "A double-blind, placebo-controlled study assessing ALT levels in NASH",
+        "embedding": np.random.rand(1536).tolist(),
+        "tags": ["NASH", "ALT", "phase 2", "placebo", "fibrosis"]
+    },
+    {
+        "id": "CSR_2021_NASH_02",
+        "title": "Fibrosis stage improvement in advanced NASH",
+        "description": "24-week study comparing standard care with a novel compound",
+        "embedding": np.random.rand(1536).tolist(),
+        "tags": ["NASH", "fibrosis", "biopsy", "phase 2", "efficacy"]
+    },
+    {
+        "id": "CSR_2020_OBESITY_03",
+        "title": "Obesity trial using body weight reduction as endpoint",
+        "description": "A multicenter obesity trial with weight loss outcomes",
+        "embedding": np.random.rand(1536).tolist(),
+        "tags": ["obesity", "body weight", "phase 2", "lifestyle", "dropout"]
+    }
+]
+
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
+
+# Function to generate semantic embedding for a query
+
+def generate_embedding(text: str) -> List[float]:
+    response = openai.Embedding.create(
+        model="text-embedding-3-large",
+        input=text
+    )
+    return response['data'][0]['embedding']
+
+
+# Cosine similarity helper
+
+def cosine_similarity(vec1: List[float], vec2: List[float]) -> float:
+    a = np.array(vec1)
+    b = np.array(vec2)
+    return float(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)))
+
+
+# Main semantic search
+
+def search_similar_csrs(query: str, top_k: int = 3) -> List[str]:
+    query_embedding = generate_embedding(query)
+    scored = []
+    for csr in csr_library:
+        sim = cosine_similarity(query_embedding, csr['embedding'])
+        scored.append({"id": csr['id'], "score": sim, "title": csr['title'], "tags": csr['tags']})
+
+    scored.sort(key=lambda x: x['score'], reverse=True)
+    return [s['id'] for s in scored[:top_k]]

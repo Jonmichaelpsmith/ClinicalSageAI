@@ -5,11 +5,14 @@
  * and the Python-based deep CSR semantic analysis system.
  */
 
-import { spawn } from 'child_process';
-import fs from 'fs';
-import path from 'path';
+import { exec } from 'child_process';
+import { writeFile } from 'fs/promises';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as os from 'os';
+import { v4 as uuidv4 } from 'uuid';
 
-// Define interface for CSR reference
+// Define interfaces for the module
 export interface CSRReference {
   csr_id: string;
   title?: string;
@@ -17,6 +20,26 @@ export interface CSRReference {
   relevance?: 'high' | 'medium' | 'low';
   context?: string;
   metadata?: Record<string, any>;
+}
+
+interface SearchOptions {
+  topK?: number;
+  filterByCsr?: string;
+  searchType?: string;
+}
+
+interface StudyDesignParams {
+  indication: string;
+  phase: string;
+  primaryEndpoint?: string;
+  secondaryEndpoints?: string[];
+  population?: string;
+  context?: string;
+}
+
+// Helper function to check if OpenAI API Key is available
+export function isOpenAIApiKeyAvailable(): boolean {
+  return !!process.env.OPENAI_API_KEY;
 }
 
 /**
@@ -27,85 +50,52 @@ export interface CSRReference {
  */
 export async function extractCsrReferences(text: string): Promise<CSRReference[]> {
   try {
-    // Create a temporary file to store the text
-    const tempDir = path.join(process.cwd(), 'temp');
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir, { recursive: true });
+    // Check if Python bridge is available
+    if (!fs.existsSync(path.join(process.cwd(), 'trialsage', 'extract_references.py'))) {
+      console.warn('Python bridge not found, using fallback reference extraction');
+      return extractBasicReferences(text);
     }
     
-    const tempFileName = `csr_extract_${Date.now()}.txt`;
-    const tempFilePath = path.join(tempDir, tempFileName);
+    // Create a temporary file with the text to analyze
+    const tempFile = path.join(os.tmpdir(), `csr_text_${uuidv4()}.json`);
+    await writeFile(tempFile, JSON.stringify({ text }), 'utf8');
     
-    // Write the text to extract to the temp file
-    fs.writeFileSync(tempFilePath, text);
-    
-    // Call the Python script to analyze the text
+    // Execute the Python script to extract references
     return new Promise((resolve, reject) => {
-      const pythonProcess = spawn('python3', ['trialsage/extract_references.py', tempFilePath]);
-      
-      let resultData = '';
-      let errorData = '';
-      
-      pythonProcess.stdout.on('data', (data) => {
-        resultData += data.toString();
-      });
-      
-      pythonProcess.stderr.on('data', (data) => {
-        errorData += data.toString();
-        console.error(`Python error: ${data}`);
-      });
-      
-      pythonProcess.on('close', (code) => {
-        // Clean up temp file
-        try {
-          fs.unlinkSync(tempFilePath);
-        } catch (err) {
-          console.warn(`Failed to delete temp file ${tempFilePath}:`, err);
+      exec(`python3 ${path.join(process.cwd(), 'trialsage', 'extract_references.py')} ${tempFile}`, 
+        { maxBuffer: 5 * 1024 * 1024 }, // 5MB buffer for large responses
+        (error, stdout, stderr) => {
+          try {
+            // Clean up the temporary file
+            fs.unlinkSync(tempFile);
+            
+            if (error) {
+              console.error('Error extracting CSR references:', error);
+              console.error('STDERR:', stderr);
+              // Fallback to simple extraction on error
+              return resolve(extractBasicReferences(text));
+            }
+            
+            // Parse the JSON output from the Python script
+            const result = JSON.parse(stdout);
+            
+            if (result.error) {
+              console.error('Python script returned error:', result.error);
+              // Fallback to simple extraction on error
+              return resolve(extractBasicReferences(text));
+            }
+            
+            return resolve(result.references);
+          } catch (e) {
+            console.error('Error processing CSR references:', e);
+            // Fallback to simple extraction on error
+            return resolve(extractBasicReferences(text));
+          }
         }
-        
-        if (code !== 0) {
-          console.error(`Python process exited with code ${code}`);
-          console.error(`Error output: ${errorData}`);
-          
-          // Fallback to basic pattern matching if Python fails
-          const basicReferences = extractBasicReferences(text);
-          resolve(basicReferences);
-          return;
-        }
-        
-        try {
-          // Parse the JSON output from the Python script
-          const citations = JSON.parse(resultData);
-          resolve(citations);
-        } catch (err) {
-          console.error('Failed to parse Python output:', err);
-          console.error('Python output was:', resultData);
-          
-          // Fallback to basic pattern matching
-          const basicReferences = extractBasicReferences(text);
-          resolve(basicReferences);
-        }
-      });
-      
-      pythonProcess.on('error', (err) => {
-        console.error('Failed to start Python process:', err);
-        
-        // Clean up temp file
-        try {
-          fs.unlinkSync(tempFilePath);
-        } catch (unlinkErr) {
-          console.warn(`Failed to delete temp file ${tempFilePath}:`, unlinkErr);
-        }
-        
-        // Fallback to basic pattern matching
-        const basicReferences = extractBasicReferences(text);
-        resolve(basicReferences);
-      });
+      );
     });
-  } catch (err) {
-    console.error('Error in extractCsrReferences:', err);
-    
-    // Fallback to basic pattern matching
+  } catch (error) {
+    console.error('Error in extractCsrReferences:', error);
     return extractBasicReferences(text);
   }
 }
@@ -119,49 +109,39 @@ export async function extractCsrReferences(text: string): Promise<CSRReference[]
 function extractBasicReferences(text: string): CSRReference[] {
   const references: CSRReference[] = [];
   
-  // Simple regex pattern for CSR IDs
-  const csrPattern = /CSR[_\s-]?(\w+)/gi;
-  const matches = [...text.matchAll(csrPattern)];
+  // Simple pattern matching for CSR IDs - only a basic fallback
+  const csrPatterns = [
+    /CSR-\d{5,7}/g,
+    /CSR\s+\d{5,7}/g,
+    /Clinical Study Report \d{5,7}/g,
+    /Study Report \d{5,7}/g
+  ];
   
-  const seenIds = new Set<string>();
-  
-  // Extract CSR IDs from matches
-  for (const match of matches) {
-    const csr_id = match[1];
-    
-    // Avoid duplicates
-    if (seenIds.has(csr_id)) continue;
-    seenIds.add(csr_id);
-    
-    // Create basic reference
-    references.push({
-      csr_id,
-      citation_type: 'explicit',
-      relevance: 'medium',
-      title: `CSR ${csr_id}`,
-      context: match[0]
-    });
-  }
-  
-  // If no matches were found, add a placeholder reference
-  if (references.length === 0) {
-    const keywords = [
-      'study', 'trial', 'clinical', 'outcome', 'endpoint', 'efficacy', 
-      'safety', 'adverse', 'dropout', 'intervention'
-    ];
-    
-    // Check if any keywords are present
-    for (const keyword of keywords) {
-      if (text.toLowerCase().includes(keyword.toLowerCase())) {
-        references.push({
-          csr_id: 'semantic_match',
-          citation_type: 'semantic',
-          relevance: 'low',
-          title: 'Semantic Match',
-          context: `Contains keyword: ${keyword}`
-        });
-        break;
-      }
+  for (const pattern of csrPatterns) {
+    let match;
+    while ((match = pattern.exec(text)) !== null) {
+      const matchText = match[0];
+      const csr_id = matchText
+        .replace('CSR-', '')
+        .replace('CSR ', '')
+        .replace('Clinical Study Report ', '')
+        .replace('Study Report ', '');
+      
+      // Get some context around the match
+      const contextStart = Math.max(0, match.index - 100);
+      const contextEnd = Math.min(text.length, match.index + matchText.length + 100);
+      const context = text.substring(contextStart, contextEnd);
+      
+      references.push({
+        csr_id,
+        citation_type: 'explicit',
+        relevance: 'medium',
+        context,
+        metadata: {
+          extraction_method: 'pattern_match',
+          fallback: true
+        }
+      });
     }
   }
   
@@ -176,89 +156,77 @@ function extractBasicReferences(text: string): CSRReference[] {
  * @returns Search results
  */
 export async function performDeepCsrSearch(
-  query: string, 
-  options: { 
-    topK?: number; 
-    filterByCsr?: string;
-    searchType?: 'general' | 'endpoint' | 'eligibility' | 'safety' | 'efficacy';
-  } = {}
+  query: string,
+  options: SearchOptions = {}
 ): Promise<any> {
   try {
-    // Create a temporary file to store the query
-    const tempDir = path.join(process.cwd(), 'temp');
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir, { recursive: true });
+    // Check if Python bridge is available
+    if (!fs.existsSync(path.join(process.cwd(), 'trialsage', 'semantic_search.py'))) {
+      console.warn('Python bridge not found, cannot perform deep semantic search');
+      return {
+        error: 'Deep semantic search not available',
+        results: []
+      };
     }
     
-    const tempFileName = `csr_search_${Date.now()}.json`;
-    const tempFilePath = path.join(tempDir, tempFileName);
-    
-    // Write the query and options to the temp file
-    fs.writeFileSync(tempFilePath, JSON.stringify({
+    // Prepare search parameters
+    const searchParams = {
       query,
       topK: options.topK || 5,
       filterByCsr: options.filterByCsr,
       searchType: options.searchType || 'general'
-    }));
+    };
     
-    // Call the Python script to perform the search
+    // Create a temporary file with the search parameters
+    const tempFile = path.join(os.tmpdir(), `search_params_${uuidv4()}.json`);
+    await writeFile(tempFile, JSON.stringify(searchParams), 'utf8');
+    
+    // Execute the Python script to perform the search
     return new Promise((resolve, reject) => {
-      const pythonProcess = spawn('python3', ['trialsage/semantic_search.py', tempFilePath]);
-      
-      let resultData = '';
-      let errorData = '';
-      
-      pythonProcess.stdout.on('data', (data) => {
-        resultData += data.toString();
-      });
-      
-      pythonProcess.stderr.on('data', (data) => {
-        errorData += data.toString();
-        console.error(`Python error: ${data}`);
-      });
-      
-      pythonProcess.on('close', (code) => {
-        // Clean up temp file
-        try {
-          fs.unlinkSync(tempFilePath);
-        } catch (err) {
-          console.warn(`Failed to delete temp file ${tempFilePath}:`, err);
+      exec(`python3 ${path.join(process.cwd(), 'trialsage', 'semantic_search.py')} ${tempFile}`, 
+        { maxBuffer: 5 * 1024 * 1024 }, // 5MB buffer for large responses
+        (error, stdout, stderr) => {
+          try {
+            // Clean up the temporary file
+            fs.unlinkSync(tempFile);
+            
+            if (error) {
+              console.error('Error performing semantic search:', error);
+              console.error('STDERR:', stderr);
+              return resolve({
+                error: `Failed to perform search: ${error.message}`,
+                results: []
+              });
+            }
+            
+            // Parse the JSON output from the Python script
+            const result = JSON.parse(stdout);
+            
+            if (result.error) {
+              console.error('Python script returned error:', result.error);
+              return resolve({
+                error: result.error,
+                results: result.results || []
+              });
+            }
+            
+            return resolve(result);
+          } catch (e) {
+            console.error('Error processing semantic search results:', e);
+            return resolve({
+              error: `Failed to process search results: ${e.message}`,
+              results: []
+            });
+          }
         }
-        
-        if (code !== 0) {
-          console.error(`Python process exited with code ${code}`);
-          console.error(`Error output: ${errorData}`);
-          resolve({ error: 'Failed to perform semantic search', results: [] });
-          return;
-        }
-        
-        try {
-          // Parse the JSON output from the Python script
-          const searchResults = JSON.parse(resultData);
-          resolve(searchResults);
-        } catch (err) {
-          console.error('Failed to parse Python output:', err);
-          console.error('Python output was:', resultData);
-          resolve({ error: 'Failed to parse search results', results: [] });
-        }
-      });
-      
-      pythonProcess.on('error', (err) => {
-        console.error('Failed to start Python process:', err);
-        
-        // Clean up temp file
-        try {
-          fs.unlinkSync(tempFilePath);
-        } catch (unlinkErr) {
-          console.warn(`Failed to delete temp file ${tempFilePath}:`, unlinkErr);
-        }
-        
-        resolve({ error: 'Failed to start semantic search process', results: [] });
-      });
+      );
     });
-  } catch (err) {
-    console.error('Error in performDeepCsrSearch:', err);
-    return { error: 'Error performing semantic search', results: [] };
+  } catch (error) {
+    console.error('Error in performDeepCsrSearch:', error);
+    return {
+      error: `Error performing semantic search: ${error.message}`,
+      results: []
+    };
   }
 }
 
@@ -269,85 +237,67 @@ export async function performDeepCsrSearch(
  * @returns Design recommendations
  */
 export async function generateStudyDesignRecommendations(
-  params: {
-    indication: string;
-    phase: string;
-    primaryEndpoint?: string;
-    secondaryEndpoints?: string[];
-    population?: string;
-    context?: string;
-  }
+  params: StudyDesignParams
 ): Promise<any> {
   try {
-    // Create a temporary file to store the parameters
-    const tempDir = path.join(process.cwd(), 'temp');
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir, { recursive: true });
+    // Check if Python bridge is available
+    if (!fs.existsSync(path.join(process.cwd(), 'trialsage', 'design_recommendations.py'))) {
+      console.warn('Python bridge not found, cannot generate study design recommendations');
+      return {
+        error: 'Study design recommendations not available',
+        recommendations: []
+      };
     }
     
-    const tempFileName = `design_request_${Date.now()}.json`;
-    const tempFilePath = path.join(tempDir, tempFileName);
+    // Create a temporary file with the design parameters
+    const tempFile = path.join(os.tmpdir(), `design_params_${uuidv4()}.json`);
+    await writeFile(tempFile, JSON.stringify(params), 'utf8');
     
-    // Write the parameters to the temp file
-    fs.writeFileSync(tempFilePath, JSON.stringify(params));
-    
-    // Call the Python script to generate recommendations
+    // Execute the Python script to generate recommendations
     return new Promise((resolve, reject) => {
-      const pythonProcess = spawn('python3', ['trialsage/design_recommendations.py', tempFilePath]);
-      
-      let resultData = '';
-      let errorData = '';
-      
-      pythonProcess.stdout.on('data', (data) => {
-        resultData += data.toString();
-      });
-      
-      pythonProcess.stderr.on('data', (data) => {
-        errorData += data.toString();
-        console.error(`Python error: ${data}`);
-      });
-      
-      pythonProcess.on('close', (code) => {
-        // Clean up temp file
-        try {
-          fs.unlinkSync(tempFilePath);
-        } catch (err) {
-          console.warn(`Failed to delete temp file ${tempFilePath}:`, err);
+      exec(`python3 ${path.join(process.cwd(), 'trialsage', 'design_recommendations.py')} ${tempFile}`, 
+        { maxBuffer: 5 * 1024 * 1024 }, // 5MB buffer for large responses
+        (error, stdout, stderr) => {
+          try {
+            // Clean up the temporary file
+            fs.unlinkSync(tempFile);
+            
+            if (error) {
+              console.error('Error generating study design recommendations:', error);
+              console.error('STDERR:', stderr);
+              return resolve({
+                error: `Failed to generate recommendations: ${error.message}`,
+                recommendations: []
+              });
+            }
+            
+            // Parse the JSON output from the Python script
+            const result = JSON.parse(stdout);
+            
+            if (result.error) {
+              console.error('Python script returned error:', result.error);
+              return resolve({
+                error: result.error,
+                recommendations: result.recommendations || []
+              });
+            }
+            
+            return resolve(result);
+          } catch (e) {
+            console.error('Error processing study design recommendations:', e);
+            return resolve({
+              error: `Failed to process recommendations: ${e.message}`,
+              recommendations: []
+            });
+          }
         }
-        
-        if (code !== 0) {
-          console.error(`Python process exited with code ${code}`);
-          console.error(`Error output: ${errorData}`);
-          resolve({ error: 'Failed to generate design recommendations', recommendations: [] });
-          return;
-        }
-        
-        try {
-          // Parse the JSON output from the Python script
-          const recommendations = JSON.parse(resultData);
-          resolve(recommendations);
-        } catch (err) {
-          console.error('Failed to parse Python output:', err);
-          console.error('Python output was:', resultData);
-          resolve({ error: 'Failed to parse design recommendations', recommendations: [] });
-        }
-      });
-      
-      pythonProcess.on('error', (err) => {
-        console.error('Failed to start Python process:', err);
-        
-        // Clean up temp file
-        try {
-          fs.unlinkSync(tempFilePath);
-        } catch (unlinkErr) {
-          console.warn(`Failed to delete temp file ${tempFilePath}:`, unlinkErr);
-        }
-        
-        resolve({ error: 'Failed to start design recommendations process', recommendations: [] });
-      });
+      );
     });
-  } catch (err) {
-    console.error('Error in generateStudyDesignRecommendations:', err);
-    return { error: 'Error generating design recommendations', recommendations: [] };
+  } catch (error) {
+    console.error('Error in generateStudyDesignRecommendations:', error);
+    return {
+      error: `Error generating recommendations: ${error.message}`,
+      recommendations: []
+    };
   }
 }
