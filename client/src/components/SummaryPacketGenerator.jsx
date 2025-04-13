@@ -1,413 +1,183 @@
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+// /client/src/components/SummaryPacketGenerator.jsx
+import { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { PackageCheck, Download, FileSpreadsheet, Share, ArrowRightCircle, AlertCircle, FileText } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Progress } from "@/components/ui/progress";
-import { isValidSessionId, getInvalidSessionMessage, getSessionRequestOptions } from "@/utils/sessionUtils";
+import { isValidSessionId } from "@/utils/sessionUtils";
 
-export default function SummaryPacketGenerator({ sessionId, onPacketGenerated = () => {} }) {
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [generationProgress, setGenerationProgress] = useState(0);
-  const [isPacketReady, setIsPacketReady] = useState(false);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [includeEndpoints, setIncludeEndpoints] = useState(true);
-  const [includeSampleSize, setIncludeSampleSize] = useState(true);
-  const [includeRegistry, setIncludeRegistry] = useState(true);
-  const [includeStatistics, setIncludeStatistics] = useState(true);
+export default function SummaryPacketGenerator({ sessionId }) {
+  const [inputs, setInputs] = useState({
+    protocol: "",
+    ind25: "",
+    ind27: "",
+    sap: "",
+    risks: "",
+    success_probability: "",
+    sample_size: ""
+  });
+  const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const { toast } = useToast();
 
-  // Handle packet generation
-  const handleGeneratePacket = async () => {
+  const handleChange = (field, value) => {
+    setInputs({ ...inputs, [field]: value });
+  };
+
+  const handleGenerate = async () => {
     if (!isValidSessionId(sessionId)) {
       toast({
-        title: "No Study Session",
-        description: getInvalidSessionMessage(),
-        variant: "destructive",
+        title: "Invalid Session",
+        description: "Session ID is missing or invalid. Please start or select a study session.",
+        variant: "destructive"
       });
       return;
     }
 
-    if (!title.trim()) {
-      toast({
-        title: "Title Required",
-        description: "Please provide a title for your summary packet",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsGenerating(true);
-    setGenerationProgress(0);
-
+    setLoading(true);
+    
     try {
-      // First, log this action to wisdom trace API for decision tracking
-      try {
-        await fetch('/api/wisdom/trace-log', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            study_id: sessionId,
-            input: "Summary packet generation requested",
-            reasoning: [
-              "Analyzing protocol components for inclusion",
-              "Determining relevant clinical evidence",
-              "Structuring summary content for readability",
-              "Preparing regulatory-aligned summary packet"
-            ],
-            output: "Generated comprehensive summary packet with key protocol elements"
-          })
-        });
-      } catch (traceError) {
-        console.error("Failed to log wisdom trace:", traceError);
-      }
-
-      // Start packet generation
-      const response = await fetch("/api/summary-packet/generate", {
+      const res = await fetch("/api/export/summary-packet", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          study_id: sessionId,
-          title,
-          description,
-          options: {
-            includeEndpoints,
-            includeSampleSize,
-            includeRegistry,
-            includeStatistics
-          }
-        }),
+          protocol: inputs.protocol,
+          ind25: inputs.ind25,
+          ind27: inputs.ind27,
+          sap: inputs.sap,
+          risks: inputs.risks.split("\n").filter(r => r.trim()),
+          success_probability: parseFloat(inputs.success_probability) || 0,
+          sample_size: parseInt(inputs.sample_size) || 0,
+          session_id: sessionId
+        })
       });
-
-      if (!response.ok) {
+      
+      if (!res.ok) {
         throw new Error("Failed to generate summary packet");
       }
-
-      // Simulate progress for better UX
-      const progressInterval = setInterval(() => {
-        setGenerationProgress(prev => {
-          const newProgress = prev + 10;
-          if (newProgress >= 100) {
-            clearInterval(progressInterval);
-            return 100;
-          }
-          return newProgress;
-        });
-      }, 500);
-
-      const data = await response.json();
       
-      // Clear interval if it's still running
-      clearInterval(progressInterval);
-      setGenerationProgress(100);
+      const data = await res.json();
       
-      // Update state
-      setIsPacketReady(true);
-
-      // Log the generation to insight memory
-      try {
-        await fetch('/api/insight/save', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            study_id: sessionId,
-            title: "Summary Packet Generated",
-            summary: `Generated "${title}" summary packet with ${Object.keys(data.sections || {}).length} sections.`,
-            status: "completed"
-          })
+      if (data.pdf_url) {
+        window.open(data.pdf_url, "_blank");
+        setSubmitted(true);
+        toast({
+          title: "Summary Packet Generated",
+          description: "Your packet has been generated and opened in a new tab."
         });
-      } catch (memoryError) {
-        console.error("Failed to save memory:", memoryError);
+      } else {
+        throw new Error("No PDF URL received");
       }
-
-      // Call the callback
-      onPacketGenerated(data);
-
-      toast({
-        title: "Summary Packet Ready",
-        description: "Your protocol summary packet has been generated successfully.",
-      });
-
     } catch (error) {
-      console.error("Packet generation error:", error);
+      console.error("Summary packet generation error:", error);
       toast({
         title: "Generation Failed",
-        description: error.message || "An error occurred during packet generation.",
-        variant: "destructive",
+        description: "There was an error generating your summary packet. Please try again.",
+        variant: "destructive"
       });
-      setGenerationProgress(0);
     } finally {
-      setIsGenerating(false);
-    }
-  };
-
-  // Handle download
-  const handleDownloadPacket = async () => {
-    if (!isValidSessionId(sessionId)) {
-      toast({
-        title: "No Study Session",
-        description: getInvalidSessionMessage(),
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      // First, log this action to memory
-      try {
-        await fetch('/api/insight/save', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            study_id: sessionId,
-            title: "Summary Packet Downloaded",
-            summary: "Downloaded summary packet as PDF",
-            status: "completed"
-          })
-        });
-      } catch (memoryError) {
-        console.error("Failed to log memory:", memoryError);
-      }
-
-      // Open the PDF in a new tab
-      window.open("/static/summary_packet.pdf", "_blank");
-
-      toast({
-        title: "Download Started",
-        description: "Your summary packet PDF is downloading.",
-      });
-    } catch (error) {
-      console.error("Download error:", error);
-      toast({
-        title: "Download Failed",
-        description: error.message || "An error occurred during download.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  // Handle sharing
-  const handleSharePacket = async () => {
-    if (!isValidSessionId(sessionId)) {
-      toast({
-        title: "No Study Session",
-        description: getInvalidSessionMessage(),
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      const response = await fetch("/api/summary-packet/share", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          study_id: sessionId,
-          packet_id: title.replace(/\s+/g, '-').toLowerCase()
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to share summary packet");
-      }
-
-      const data = await response.json();
-      
-      // Copy the share link to clipboard
-      navigator.clipboard.writeText(data.shareUrl);
-
-      // Log the share to memory
-      try {
-        await fetch('/api/insight/save', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            study_id: sessionId,
-            title: "Summary Packet Shared",
-            summary: `Created shareable link for "${title}" summary packet.`,
-            status: "completed"
-          })
-        });
-      } catch (memoryError) {
-        console.error("Failed to log memory:", memoryError);
-      }
-
-      toast({
-        title: "Share Link Created",
-        description: "Link copied to clipboard. You can now share this with colleagues.",
-      });
-
-    } catch (error) {
-      console.error("Share error:", error);
-      toast({
-        title: "Share Failed",
-        description: error.message || "An error occurred while creating the share link.",
-        variant: "destructive",
-      });
+      setLoading(false);
     }
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center">
-          <PackageCheck className="mr-2 h-5 w-5" />
-          Clinical Summary Packet
-        </CardTitle>
-        <CardDescription>
-          Generate a comprehensive summary packet of your protocol
-        </CardDescription>
-      </CardHeader>
-      
-      <CardContent className="space-y-4">
-        {!isPacketReady ? (
-          <>
-            <div className="space-y-2">
-              <Label htmlFor="packet-title">Summary Title</Label>
-              <Input 
-                id="packet-title" 
-                placeholder="e.g., Phase 2 NASH Trial Summary"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
+    <div className="space-y-4 mt-8">
+      <Card>
+        <CardContent className="space-y-3 p-4">
+          <h3 className="text-lg font-semibold">📦 Generate Clinical Summary Packet</h3>
+          <p className="text-sm text-muted-foreground">
+            Create a comprehensive summary document for regulatory submission or team review
+          </p>
+
+          <div className="space-y-3">
+            <div>
+              <label className="text-sm font-medium mb-1 block">Protocol Content</label>
+              <Textarea
+                rows={4}
+                placeholder="Paste protocol content"
+                value={inputs.protocol}
+                onChange={(e) => handleChange("protocol", e.target.value)}
               />
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="packet-description">Brief Description (Optional)</Label>
-              <Textarea 
-                id="packet-description"
-                placeholder="Brief description of this summary packet..."
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
+            <div>
+              <label className="text-sm font-medium mb-1 block">IND Module 2.5</label>
+              <Textarea
+                rows={3}
+                placeholder="Paste IND Module 2.5 text"
+                value={inputs.ind25}
+                onChange={(e) => handleChange("ind25", e.target.value)}
+              />
+            </div>
+            
+            <div>
+              <label className="text-sm font-medium mb-1 block">IND Module 2.7</label>
+              <Textarea
+                rows={3}
+                placeholder="Paste IND Module 2.7 text"
+                value={inputs.ind27}
+                onChange={(e) => handleChange("ind27", e.target.value)}
+              />
+            </div>
+            
+            <div>
+              <label className="text-sm font-medium mb-1 block">Statistical Analysis Plan (SAP)</label>
+              <Textarea
+                rows={3}
+                placeholder="Paste SAP draft"
+                value={inputs.sap}
+                onChange={(e) => handleChange("sap", e.target.value)}
+              />
+            </div>
+            
+            <div>
+              <label className="text-sm font-medium mb-1 block">Risk Flags</label>
+              <Textarea
                 rows={2}
+                placeholder="Paste risk flags (one per line)"
+                value={inputs.risks}
+                onChange={(e) => handleChange("risks", e.target.value)}
               />
             </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-sm font-medium mb-1 block">Success Probability (%)</label>
+                <Input
+                  type="number"
+                  placeholder="e.g., 72.5"
+                  value={inputs.success_probability}
+                  onChange={(e) => handleChange("success_probability", e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-1 block">Sample Size</label>
+                <Input
+                  type="number"
+                  placeholder="e.g., 240"
+                  value={inputs.sample_size}
+                  onChange={(e) => handleChange("sample_size", e.target.value)}
+                />
+              </div>
+            </div>
+
+            <Button 
+              onClick={handleGenerate} 
+              className="w-full"
+              disabled={loading}
+            >
+              {loading ? "Generating..." : "📄 Generate Summary Packet"}
+            </Button>
             
-            <div className="space-y-3 pt-2">
-              <Label>Packet Contents</Label>
-              
-              <div className="flex items-center space-x-2">
-                <Checkbox 
-                  id="include-endpoints" 
-                  checked={includeEndpoints}
-                  onCheckedChange={setIncludeEndpoints}
-                />
-                <Label htmlFor="include-endpoints" className="text-sm cursor-pointer">
-                  Endpoint Analysis
-                </Label>
-              </div>
-              
-              <div className="flex items-center space-x-2">
-                <Checkbox 
-                  id="include-sample-size" 
-                  checked={includeSampleSize}
-                  onCheckedChange={setIncludeSampleSize}
-                />
-                <Label htmlFor="include-sample-size" className="text-sm cursor-pointer">
-                  Sample Size Justification
-                </Label>
-              </div>
-              
-              <div className="flex items-center space-x-2">
-                <Checkbox 
-                  id="include-registry" 
-                  checked={includeRegistry}
-                  onCheckedChange={setIncludeRegistry}
-                />
-                <Label htmlFor="include-registry" className="text-sm cursor-pointer">
-                  Registry Requirements
-                </Label>
-              </div>
-              
-              <div className="flex items-center space-x-2">
-                <Checkbox 
-                  id="include-statistics" 
-                  checked={includeStatistics}
-                  onCheckedChange={setIncludeStatistics}
-                />
-                <Label htmlFor="include-statistics" className="text-sm cursor-pointer">
-                  Statistical Analysis Plan
-                </Label>
-              </div>
-            </div>
-            
-            {isGenerating && (
-              <div className="space-y-2 pt-2">
-                <div className="flex justify-between text-sm mb-1">
-                  <span>Generating packet...</span>
-                  <span>{generationProgress}%</span>
-                </div>
-                <Progress value={generationProgress} />
-              </div>
+            {submitted && (
+              <p className="text-sm text-green-700 bg-green-50 p-2 rounded">
+                ✅ Packet generated and opened in new tab. If it didn't open automatically, check your browser's popup settings.
+              </p>
             )}
-          </>
-        ) : (
-          <Alert>
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Summary Packet Generated</AlertTitle>
-            <AlertDescription>
-              Your protocol summary packet is ready to download or share
-            </AlertDescription>
-          </Alert>
-        )}
-        
-        <div className="text-sm text-muted-foreground">
-          {isValidSessionId(sessionId) ? (
-            <div className="text-green-600 flex items-center">
-              <FileText className="mr-1 h-4 w-4" />
-              Study session: {formatSessionId(sessionId)}
-            </div>
-          ) : (
-            <div className="text-amber-600">
-              Select a study session to generate a packet
-            </div>
-          )}
-        </div>
-      </CardContent>
-      
-      <CardFooter className="flex flex-wrap gap-2">
-        {!isPacketReady ? (
-          <Button 
-            onClick={handleGeneratePacket} 
-            disabled={isGenerating || !title.trim() || !sessionId}
-            className="w-full"
-          >
-            {isGenerating ? (
-              <>Generating Packet...</>
-            ) : (
-              <>
-                <ArrowRightCircle className="mr-2 h-4 w-4" />
-                Generate Summary Packet
-              </>
-            )}
-          </Button>
-        ) : (
-          <>
-            <Button variant="default" onClick={handleDownloadPacket} className="flex-1">
-              <Download className="mr-2 h-4 w-4" />
-              Download PDF
-            </Button>
-            <Button variant="outline" onClick={handleSharePacket} className="flex-1">
-              <Share className="mr-2 h-4 w-4" />
-              Create Share Link
-            </Button>
-            <Button variant="ghost" onClick={() => setIsPacketReady(false)} className="flex-1">
-              <FileSpreadsheet className="mr-2 h-4 w-4" />
-              New Packet
-            </Button>
-          </>
-        )}
-      </CardFooter>
-    </Card>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
