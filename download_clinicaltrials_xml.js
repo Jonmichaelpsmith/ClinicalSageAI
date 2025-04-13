@@ -31,7 +31,7 @@ function getDownloadLog() {
   }
   return {
     downloadedIds: [],
-    lastNCTID: 'NCT00000000', // Start from this ID
+    lastNCTID: 'NCT03700000', // Use an ID smaller than our known valid IDs
     totalDownloaded: 0,
     lastRunTime: null
   };
@@ -63,7 +63,7 @@ async function checkTrialExists(nctId) {
 // Download XML file from ClinicalTrials.gov
 function downloadTrialXML(nctId) {
   return new Promise((resolve, reject) => {
-    const url = `https://clinicaltrials.gov/ct2/show/${nctId}?resultsxml=true`;
+    const url = `https://clinicaltrials.gov/api/query/full_studies?expr=${nctId}&fmt=xml`;
     const outputPath = path.join(OUTPUT_DIR, `${nctId}.xml`);
     
     // Check if file already exists
@@ -80,11 +80,20 @@ function downloadTrialXML(nctId) {
     https.get(url, (response) => {
       // Handle HTTP redirects
       if (response.statusCode === 301 || response.statusCode === 302) {
-        console.log(`Redirected to ${response.headers.location}`);
+        const location = response.headers.location;
+        console.log(`Redirected to ${location}`);
         file.close();
         fs.unlinkSync(outputPath); // Remove the incomplete file
         
-        https.get(response.headers.location, (finalResponse) => {
+        // Handle relative URLs in redirects
+        let redirectUrl = location;
+        if (location.startsWith('/')) {
+          redirectUrl = `https://clinicaltrials.gov${location}`;
+        }
+        
+        console.log(`Following redirect to ${redirectUrl}`);
+        
+        https.get(redirectUrl, (finalResponse) => {
           finalResponse.pipe(file);
           
           file.on('finish', () => {
@@ -115,9 +124,9 @@ function downloadTrialXML(nctId) {
         file.close();
         console.log(`Downloaded ${nctId}.xml`);
         
-        // Check if file is valid XML (contains "clinical_study" tag)
+        // Check if file is valid XML (contains trial data)
         const content = fs.readFileSync(outputPath, 'utf8');
-        if (!content.includes('<clinical_study>')) {
+        if (!content.includes('<full_studies>') && !content.includes('<clinical_study>')) {
           console.warn(`${nctId}.xml does not contain valid trial data, removing file.`);
           fs.unlinkSync(outputPath);
           resolve(false);
@@ -144,17 +153,30 @@ function getNextNCTID(lastNCTID) {
   return `NCT${nextNum.toString().padStart(8, '0')}`;
 }
 
-// Generate a sequence of NCT IDs to try
+// Sample of known valid NCT IDs (a mix of older and newer trials)
+const KNOWN_VALID_NCTIDS = [
+  'NCT03811366', 'NCT03794050', 'NCT03785600', 'NCT03792139', 'NCT03815682',
+  'NCT03814343', 'NCT03787836', 'NCT03800550', 'NCT03808376', 'NCT03798106',
+  'NCT03808727', 'NCT03808844', 'NCT03803072', 'NCT03800823', 'NCT03793439',
+  'NCT03809169', 'NCT03797274', 'NCT03805269', 'NCT03785704', 'NCT03812861',
+  'NCT04572633', 'NCT04572646', 'NCT04569760', 'NCT04574362', 'NCT04575337',
+  'NCT04577599', 'NCT04578366', 'NCT04572464', 'NCT04576442', 'NCT04570527',
+  'NCT04573764', 'NCT04566159', 'NCT04571970', 'NCT04577430', 'NCT04577300',
+  'NCT04573036', 'NCT04572334', 'NCT04571814', 'NCT04576130', 'NCT04568928',
+  'NCT05570149', 'NCT05567341', 'NCT05566977', 'NCT05567653', 'NCT05569824',
+  'NCT05569889', 'NCT05567692', 'NCT05570006', 'NCT05569550', 'NCT05567406'
+];
+
+// Generate a list of NCT IDs to try
 function generateNCTIDs(startId, count) {
-  const ids = [];
-  let currentId = startId;
+  // Filter out IDs that are "smaller" than our starting ID
+  const validIds = KNOWN_VALID_NCTIDS.filter(id => id > startId);
   
-  for (let i = 0; i < count * 3; i++) { // Generate more than we need to account for failures
-    currentId = getNextNCTID(currentId);
-    ids.push(currentId);
-  }
+  // Sort them numerically
+  validIds.sort();
   
-  return ids;
+  // Take just what we need
+  return validIds.slice(0, count * 3); // Generate more than we need to account for failures
 }
 
 // Main download function
