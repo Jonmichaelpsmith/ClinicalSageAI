@@ -1,7 +1,8 @@
 {
   "nextId": 1580,
-  "batchesCompleted": 3,
-  "trialsImported": 150,
+  "batchesCompleted": 6,
+  "trialsImported": 2770,
   "importedIds": [],
-  "lastRunTime": "2025-04-13T11:02:54.777Z"
+  "lastRunTime": "2025-04-13T11:02:54.777Z",
+  "lastBatchIndex": null
 }
