@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -57,12 +57,18 @@ import InsightMemoryEngine from "@/pages/InsightMemoryEngine";
 import WisdomTrace from "@/pages/WisdomTrace";
 import SubscriptionsPage from "@/pages/SubscriptionsPage";
 import ExampleReportsPage from "@/pages/example-reports";
+import { applyCompactStyling } from "./lib/ui-utils"; // Added import
+
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+
+  useEffect(() => {
+    applyCompactStyling(); // Apply compact styling on mount
+  }, []);
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
@@ -75,17 +81,17 @@ function AppLayout({ children }: { children: React.ReactNode }) {
           setSearchQuery={setSearchQuery} 
         />
 
-        <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+        <main className="flex-1 py-4 px-2 sm:px-4 lg:px-6 max-w-7xl mx-auto w-full"> {/*Reduced padding*/}
           {children}
         </main>
 
-        <footer className="py-6 px-4 sm:px-6 lg:px-8 border-t border-gray-200 dark:border-gray-800 mt-auto">
+        <footer className="py-4 px-2 sm:px-4 lg:px-6 border-t border-gray-200 dark:border-gray-800 mt-auto"> {/*Reduced padding*/}
           <div className="max-w-7xl mx-auto w-full">
             <div className="flex flex-col md:flex-row justify-between items-center">
               <div className="text-sm text-slate-500 dark:text-slate-400">
                 © {new Date().getFullYear()} LumenTrialGuide.AI. All rights reserved.
               </div>
-              <div className="mt-4 md:mt-0 flex space-x-6">
+              <div className="mt-2 md:mt-0 flex space-x-4"> {/*Reduced spacing*/}
                 <a href="#" className="text-sm text-slate-500 hover:text-primary dark:text-slate-400">Terms</a>
                 <a href="#" className="text-sm text-slate-500 hover:text-primary dark:text-slate-400">Privacy</a>
                 <a href="#" className="text-sm text-slate-500 hover:text-primary dark:text-slate-400">Support</a>
@@ -121,7 +127,7 @@ function Router() {
     <Switch>
       {/* Landing page */}
       <Route path="/" component={Home} />
-      
+
       {/* Auth pages */}
       <Route path="/login" component={LoginPage} />
       <Route path="/signup" component={SignupPage} />

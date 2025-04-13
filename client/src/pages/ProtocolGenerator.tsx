@@ -139,7 +139,7 @@ const ProtocolDesigner = () => {
       });
       return;
     }
-    
+
     if (!phase.trim()) {
       toast({
         title: "Missing Information",
@@ -148,9 +148,9 @@ const ProtocolDesigner = () => {
       });
       return;
     }
-    
+
     setIsGenerating(true);
-    
+
     try {
       // Create protocol request data
       const protocolRequest = {
@@ -161,7 +161,7 @@ const ProtocolDesigner = () => {
         useCSRLibrary: true,  // Always use CSR library data for insights
         optimalDesign: true,  // Request optimal design based on AI analysis
       };
-      
+
       // Make API call to generate protocol using real CSR data
       const response = await fetch('/api/protocols/generate', {
         method: 'POST',
@@ -170,15 +170,15 @@ const ProtocolDesigner = () => {
         },
         body: JSON.stringify(protocolRequest)
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to generate protocol');
       }
-      
+
       // Use the actual API response data
       const data = await response.json();
-      
+
       setGeneratedProtocol(data);
       setIsGenerating(false);
       setActiveTab("preview");
@@ -204,11 +204,11 @@ const ProtocolDesigner = () => {
           <p className="text-gray-500 mt-1">Design evidence-based protocols from 1,900+ precedent studies</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => window.location.href = '/protocol/upload'}>
+          <Button variant="outline" size="sm" onClick={handleUploadClick}>
             <Upload className="h-4 w-4 mr-2" />
             Upload Protocol
           </Button>
-          <Button variant="outline" size="sm" onClick={() => window.location.href = '/study-design-agent'}>
+          <Button variant="outline" size="sm">
             <Brain className="h-4 w-4 mr-2" />
             Study Design Tutorial
           </Button>
@@ -720,7 +720,7 @@ const ProtocolDesigner = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-gray-50 p-3 rounded-lg">
                     <p className="text-xs text-gray-500 mb-1">Indication</p>
-                    <p className="font-medium">{analysisResults.indication || "Not detected"}</p>
+                    <p<p className="font-medium">{analysisResults.indication || "Not detected"}</p>
                   </div>
                   <div className="bg-gray-50 p-3 rounded-lg">
                     <p className="text-xs text-gray-500 mb-1">Phase</p>
@@ -735,7 +735,7 @@ const ProtocolDesigner = () => {
                     <p className="font-medium">{analysisResults.studyDesign || "Not detected"}</p>
                   </div>
                 </div>
-                
+
                 <div className="border-t border-gray-200 pt-4">
                   <h4 className="font-medium mb-2">AI Insights</h4>
                   <div className="space-y-2">
@@ -746,7 +746,7 @@ const ProtocolDesigner = () => {
                     ))}
                   </div>
                 </div>
-                
+
                 <div className="border-t border-gray-200 pt-4">
                   <h4 className="font-medium mb-2">Potential Improvements</h4>
                   <div className="space-y-2">
