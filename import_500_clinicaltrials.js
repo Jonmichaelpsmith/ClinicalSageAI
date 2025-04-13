@@ -53,7 +53,7 @@ async function getCurrentCTGovCount() {
       SELECT COUNT(*) 
       FROM csr_reports 
       WHERE (region = 'ClinicalTrials.gov' OR region = 'US' OR region IS NULL)
-      AND (nctrialId LIKE 'NCT%' OR fileName LIKE 'NCT%')
+      AND ("nctrial_id" LIKE 'NCT%' OR "file_name" LIKE 'NCT%')
     `);
     return parseInt(result.rows[0].count);
   } catch (error) {
