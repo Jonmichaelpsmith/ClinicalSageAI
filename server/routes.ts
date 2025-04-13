@@ -4835,6 +4835,175 @@ Provide a comprehensive, evidence-based response.`;
       });
     }
   });
+  
+  // Deep CSR Semantic Analysis API Endpoints
+  
+  // API version and capabilities
+  app.get('/api/version', (_req: Request, res: Response) => {
+    res.json({
+      version: '2.8.0',
+      buildDate: 'April 13, 2025',
+      features: [
+        'Deep Semantic CSR Analysis',
+        'Academic Literature Integration',
+        'Multi-Modal AI Assistance',
+        'Advanced Protocol Builder',
+        'Comprehensive CSR Citations',
+        'Semantic Knowledge Graph'
+      ]
+    });
+  });
+  
+  // Perform semantic search against the CSR knowledge base
+  app.post('/api/csr/semantic-search', async (req: Request, res: Response) => {
+    try {
+      const { query, topK, filterByCsr, searchType } = req.body;
+      
+      if (!query) {
+        return res.status(400).json({
+          success: false,
+          message: 'Query parameter is required'
+        });
+      }
+      
+      // Check if OpenAI API key is available (required for deep semantic search)
+      if (!isOpenAIApiKeyAvailable()) {
+        return res.status(500).json({
+          success: false, 
+          message: 'Deep Semantic Search service is not available (API key not configured)'
+        });
+      }
+      
+      // Import the deep CSR analyzer
+      const { performDeepCsrSearch } = await import('./deep-csr-analyzer');
+      
+      // Perform semantic search
+      const results = await performDeepCsrSearch(query, {
+        topK: topK || 5,
+        filterByCsr,
+        searchType: searchType || 'general'
+      });
+      
+      // Check for errors
+      if (results.error) {
+        return res.status(500).json({
+          success: false,
+          message: results.error,
+          results: results.results || []
+        });
+      }
+      
+      res.json({
+        success: true,
+        query,
+        topK: topK || 5,
+        searchType: searchType || 'general',
+        results: results.results || []
+      });
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+  
+  // Extract CSR references from text
+  app.post('/api/csr/extract-references', async (req: Request, res: Response) => {
+    try {
+      const { text } = req.body;
+      
+      if (!text) {
+        return res.status(400).json({
+          success: false,
+          message: 'Text parameter is required'
+        });
+      }
+      
+      // Check if OpenAI API key is available (required for deep reference extraction)
+      if (!isOpenAIApiKeyAvailable()) {
+        return res.status(500).json({
+          success: false, 
+          message: 'Deep Reference Extraction service is not available (API key not configured)'
+        });
+      }
+      
+      // Import the deep CSR analyzer
+      const { extractCsrReferences } = await import('./deep-csr-analyzer');
+      
+      // Extract CSR references
+      const references = await extractCsrReferences(text);
+      
+      res.json({
+        success: true,
+        text: text.substring(0, 100) + '...', // Don't send back the full text
+        referenceCount: references.length,
+        references
+      });
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
+  
+  // Generate evidence-based study design recommendations
+  app.post('/api/csr/design-recommendations', async (req: Request, res: Response) => {
+    try {
+      const { 
+        indication, 
+        phase, 
+        primaryEndpoint, 
+        secondaryEndpoints,
+        population,
+        context
+      } = req.body;
+      
+      if (!indication || !phase) {
+        return res.status(400).json({
+          success: false,
+          message: 'Indication and phase parameters are required'
+        });
+      }
+      
+      // Check if OpenAI API key is available (required for design recommendations)
+      if (!isOpenAIApiKeyAvailable()) {
+        return res.status(500).json({
+          success: false, 
+          message: 'Design Recommendations service is not available (API key not configured)'
+        });
+      }
+      
+      // Import the deep CSR analyzer
+      const { generateStudyDesignRecommendations } = await import('./deep-csr-analyzer');
+      
+      // Generate recommendations
+      const recommendations = await generateStudyDesignRecommendations({
+        indication,
+        phase,
+        primaryEndpoint,
+        secondaryEndpoints,
+        population,
+        context
+      });
+      
+      // Check for errors
+      if (recommendations.error) {
+        return res.status(500).json({
+          success: false,
+          message: recommendations.error,
+          recommendations: recommendations.recommendations || []
+        });
+      }
+      
+      res.json({
+        success: true,
+        query: {
+          indication,
+          phase,
+          primaryEndpoint
+        },
+        recommendations
+      });
+    } catch (err) {
+      errorHandler(err as Error, res);
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;
