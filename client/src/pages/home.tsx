@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import { 
   Search, FileText, Brain, Lock, Microscope, CheckCircle, 
   Database, BarChart2, PieChart, LineChart, BookOpen,
-  Rocket, ChevronRight, AreaChart, Beaker, Users
+  Rocket, ChevronRight, AreaChart, Beaker, Users, Package
 } from "lucide-react";
 
 import { PageContainer, HeaderSection, ContentSection, CardGrid, Footer } from "@/components/layout";
@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Navbar from "@/components/navbar";
 import HomeFeatures from "@/components/features/HomeFeatures";
+import UseCaseGallery from "@/components/UseCaseGallery";
+import KnowledgeBasePanel from "@/components/KnowledgeBasePanel";
 
 export default function Home() {
   return (
@@ -44,6 +46,17 @@ export default function Home() {
           </div>
         </div>
       </HeaderSection>
+      
+      {/* Knowledge Base Tracker Panel (positioned at the top as requested) */}
+      <ContentSection className="bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-900">
+        <div className="container px-4 md:px-6 py-6">
+          <div className="flex flex-col items-center justify-center space-y-4 text-center">
+            <KnowledgeBasePanel />
+          </div>
+        </div>
+      </ContentSection>
+      
+      {/* Home Features Section */}
       <HomeFeatures />
       <ContentSection>
         <div className="container px-4 md:px-6 py-8 md:py-10 lg:py-12">
@@ -183,6 +196,34 @@ export default function Home() {
           </div>
         </div>
       </ContentSection>
+      {/* Subscription Modules Section */}
+      <ContentSection className="bg-gradient-to-b from-sky-50 to-white dark:from-sky-950 dark:to-gray-950">
+        <div className="container px-4 md:px-6 py-8 md:py-10 lg:py-12">
+          <div className="flex flex-col items-center justify-center space-y-3 text-center mb-10">
+            <div className="space-y-2">
+              <Badge variant="outline" className="mb-2">NEW</Badge>
+              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-4xl bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                Customizable Module Subscriptions
+              </h2>
+              <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
+                Subscribe only to the modules you need. Mix and match specialized use case packages tailored for your specific role.
+              </p>
+            </div>
+          </div>
+          
+          <UseCaseGallery compact={true} />
+          
+          <div className="mt-8 text-center">
+            <Link href="/use-cases">
+              <Button className="group">
+                View All Module Details
+                <ChevronRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </ContentSection>
+      
       <ContentSection>
         <div className="container px-4 md:px-6 py-8 md:py-10 lg:py-12">
           <div className="flex flex-col items-center justify-center space-y-3 text-center">
