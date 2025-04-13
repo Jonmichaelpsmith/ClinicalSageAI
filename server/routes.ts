@@ -91,6 +91,27 @@ import { exportDatabaseToJson } from "./scripts/export-database-to-json";
 // Define a schema for csrDetails since it's not in schema.ts
 import { pgTable, serial, integer, varchar, text, timestamp, json, boolean } from "drizzle-orm/pg-core";
 
+// Session insights and wisdom traces storage
+interface SessionInsight {
+  session_id: string;
+  title: string;
+  description: string;
+  status: string;
+  timestamp: string;
+}
+
+interface WisdomTrace {
+  session_id: string;
+  action: string;
+  reasoning: string[];
+  conclusion: string;
+  timestamp: string;
+}
+
+// In-memory storage for session insights and wisdom traces
+const sessionInsights: Record<string, SessionInsight[]> = {};
+const wisdomTraces: Record<string, WisdomTrace[]> = {};
+
 export const csrDetails = pgTable('csr_details', {
   id: serial('id').primaryKey(),
   reportId: integer('report_id').notNull(),
@@ -5374,6 +5395,141 @@ Provide a comprehensive, evidence-based response.`;
         success: false,
         message: 'Server error during CSR upload',
         error: (error as Error).message
+      });
+    }
+  });
+
+  // Session insights and wisdom trace endpoints for protocol and analytics tracking
+  app.post('/api/session/insight', async (req: Request, res: Response) => {
+    try {
+      const { session_id, title, description, status } = req.body;
+      
+      if (!session_id || !title || !description) {
+        return res.status(400).json({
+          success: false,
+          message: 'Missing required parameters: session_id, title, description'
+        });
+      }
+      
+      // Initialize array for this session if it doesn't exist
+      if (!sessionInsights[session_id]) {
+        sessionInsights[session_id] = [];
+      }
+      
+      // Add new insight
+      const insight: SessionInsight = {
+        session_id,
+        title,
+        description,
+        status: status || 'pending',
+        timestamp: new Date().toISOString()
+      };
+      
+      sessionInsights[session_id].push(insight);
+      
+      res.json({
+        success: true,
+        insight
+      });
+    } catch (err) {
+      console.error('Error saving session insight:', err);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to save session insight' 
+      });
+    }
+  });
+  
+  app.get('/api/session/:session_id/insights', async (req: Request, res: Response) => {
+    try {
+      const { session_id } = req.params;
+      
+      if (!session_id) {
+        return res.status(400).json({
+          success: false,
+          message: 'Missing required parameter: session_id'
+        });
+      }
+      
+      // Return insights for this session or empty array if none exists
+      const insights = sessionInsights[session_id] || [];
+      
+      res.json({
+        success: true,
+        insights
+      });
+    } catch (err) {
+      console.error('Error retrieving session insights:', err);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to retrieve session insights' 
+      });
+    }
+  });
+  
+  app.post('/api/session/wisdom-trace', async (req: Request, res: Response) => {
+    try {
+      const { session_id, action, reasoning, conclusion } = req.body;
+      
+      if (!session_id || !action || !reasoning || !conclusion) {
+        return res.status(400).json({
+          success: false,
+          message: 'Missing required parameters: session_id, action, reasoning, conclusion'
+        });
+      }
+      
+      // Initialize array for this session if it doesn't exist
+      if (!wisdomTraces[session_id]) {
+        wisdomTraces[session_id] = [];
+      }
+      
+      // Add new wisdom trace
+      const trace: WisdomTrace = {
+        session_id,
+        action,
+        reasoning: Array.isArray(reasoning) ? reasoning : [reasoning],
+        conclusion,
+        timestamp: new Date().toISOString()
+      };
+      
+      wisdomTraces[session_id].push(trace);
+      
+      res.json({
+        success: true,
+        trace
+      });
+    } catch (err) {
+      console.error('Error saving wisdom trace:', err);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to save wisdom trace' 
+      });
+    }
+  });
+  
+  app.get('/api/session/:session_id/wisdom-traces', async (req: Request, res: Response) => {
+    try {
+      const { session_id } = req.params;
+      
+      if (!session_id) {
+        return res.status(400).json({
+          success: false,
+          message: 'Missing required parameter: session_id'
+        });
+      }
+      
+      // Return wisdom traces for this session or empty array if none exists
+      const traces = wisdomTraces[session_id] || [];
+      
+      res.json({
+        success: true,
+        traces
+      });
+    } catch (err) {
+      console.error('Error retrieving wisdom traces:', err);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to retrieve wisdom traces' 
       });
     }
   });
