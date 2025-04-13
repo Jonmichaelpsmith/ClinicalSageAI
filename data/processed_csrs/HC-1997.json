@@ -1,0 +1,19 @@
+{
+  "nctrialId": "HC-1997",
+  "title": "A Randomized Open-Label, Placebo-Controlled  Study of HTN-295 (ACE inhibitor) in Patients With Ulcerative Colitis",
+  "officialTitle": "A Randomized Open-Label, Placebo-Controlled  Study of HTN-295 (ACE inhibitor) in Patients With Ulcerative Colitis",
+  "sponsor": "McMaster University",
+  "indication": "Ulcerative Colitis",
+  "phase": "Phase 3",
+  "fileName": "HC-1997.json",
+  "fileSize": 508467,
+  "date": "2023-09-06",
+  "completionDate": "2027-05-27",
+  "drugName": "HTN-295 (ACE inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Completed",
+  "description": "This is a randomized open-label, placebo-controlled  study designed to evaluate the efficacy and safety of HTN-295 (ACE inhibitor) in patients with Ulcerative Colitis. The study will enroll approximately 276 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 20-58 years\n- Confirmed diagnosis of Ulcerative Colitis\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment",
+  "csr_id": "HC-1997"
+}

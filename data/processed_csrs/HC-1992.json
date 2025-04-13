@@ -1,0 +1,19 @@
+{
+  "nctrialId": "HC-1992",
+  "title": "A  Open-Label, Placebo-Controlled  Study of PAN-967 (PARP inhibitor) in Patients With Non-Small Cell Lung Cancer",
+  "officialTitle": "A  Open-Label, Placebo-Controlled  Study of PAN-967 (PARP inhibitor) in Patients With Non-Small Cell Lung Cancer",
+  "sponsor": "Sunnybrook Research Institute",
+  "indication": "Non-Small Cell Lung Cancer",
+  "phase": "Phase 3",
+  "fileName": "HC-1992.json",
+  "fileSize": 424779,
+  "date": "2024-08-06",
+  "completionDate": "2027-05-31",
+  "drugName": "PAN-967 (PARP inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Recruiting",
+  "description": "This is a  open-label, placebo-controlled  study designed to evaluate the efficacy and safety of PAN-967 (PARP inhibitor) in patients with Non-Small Cell Lung Cancer. The study will enroll approximately 141 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 19-70 years\n- Confirmed diagnosis of Non-Small Cell Lung Cancer\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n- Measurable disease per RECIST v1.1\n- Prior treatment with standard therapy\n- Life expectancy ≥3 months\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment\n- Brain metastases unless treated and stable\n- Prior treatment with similar mechanism of action\n- Other active malignancy requiring treatment",
+  "csr_id": "HC-1992"
+}
