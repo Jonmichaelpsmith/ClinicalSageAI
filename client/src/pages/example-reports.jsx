@@ -17,11 +17,11 @@ export default function ExampleReportsPage() {
     const loadReports = async () => {
       try {
         // Load report index
-        const indexRes = await axios.get("/static/example_reports/report_index.json");
+        const indexRes = await axios.get("/api/reports/index");
         setReportIndex(indexRes.data.available_subscriptions || []);
 
         // Load launch configuration
-        const launchRes = await axios.get("/api/launch-config");
+        const launchRes = await axios.get("/api/reports/launch-config");
         setLaunchConfig(launchRes.data);
 
         // Fetch all manifest files

@@ -82,4 +82,29 @@ reportsManifestRoutes.get('/launch-config', async (_req: Request, res: Response)
   }
 });
 
+/**
+ * Get report index for example reports
+ */
+reportsManifestRoutes.get('/index', async (_req: Request, res: Response) => {
+  try {
+    const indexPath = path.join(process.cwd(), 'attached_assets', 'report_index.json');
+    
+    if (!fs.existsSync(indexPath)) {
+      return res.status(404).json({
+        success: false,
+        message: 'Report index not found'
+      });
+    }
+    
+    const reportIndex = JSON.parse(fs.readFileSync(indexPath, 'utf-8'));
+    res.json(reportIndex);
+  } catch (error: any) {
+    console.error('Error fetching report index:', error);
+    res.status(500).json({
+      success: false,
+      message: `Error fetching report index: ${error.message}`
+    });
+  }
+});
+
 export default reportsManifestRoutes;
