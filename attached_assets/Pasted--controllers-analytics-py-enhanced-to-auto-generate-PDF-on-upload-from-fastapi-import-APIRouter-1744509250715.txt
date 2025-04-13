@@ -1,0 +1,69 @@
+# /controllers/analytics.py (enhanced to auto-generate PDF on upload)
+from fastapi import APIRouter, UploadFile, File
+from trialsage.deep_csr_analyzer import extract_risk_factors_from_protocol
+from trialsage.semantic_search import search_similar_csrs
+from trialsage.design_recommendations import generate_design_from_matches
+from trialsage.confidence_scorer import score_protocol
+from services.pdf_exporter import export_pdf
+import os
+
+router = APIRouter()
+
+@router.post("/api/analytics/upload-protocol")
+def upload_and_analyze(file: UploadFile = File(...)):
+    content = file.file.read().decode("utf-8") if file.content_type == "text/plain" else "Protocol text not extracted."
+
+    risks = extract_risk_factors_from_protocol(content)
+    matches = search_similar_csrs(content)
+
+    full_data = [
+        {
+            "id": "CSR_2022_NASH_01",
+            "title": "Phase 2 NASH study",
+            "duration_weeks": 12,
+            "primary_endpoint": "ALT reduction",
+            "control": "placebo",
+            "arms": 2,
+            "sample_size": 140
+        },
+        {
+            "id": "CSR_2021_NASH_02",
+            "title": "Fibrosis improvement study",
+            "duration_weeks": 24,
+            "primary_endpoint": "fibrosis",
+            "control": "standard care",
+            "arms": 3,
+            "sample_size": 220
+        }
+    ]
+    matched = [c for c in full_data if c['id'] in matches]
+    design = generate_design_from_matches(matched)
+    confidence = score_protocol(content)
+
+    # Prepare report payload and generate PDF
+    report_payload = {
+        "indication": "Uploaded Protocol",
+        "recommendation": design.get("protocol", ""),
+        "ind_module_2_5": {"content": "IND 2.5 not generated in upload route."},
+        "ind_module_2_7": "Module 2.7 not generated in upload route.",
+        "sap": "SAP not included in upload route.",
+        "risk_summary": "\n".join(risks),
+        "citations": matches,
+    }
+    pdf_path = export_pdf(report_payload)
+    pdf_link = "/static/latest_report.pdf"
+    if os.path.exists(pdf_path):
+        os.replace(pdf_path, "static/latest_report.pdf")
+
+    return {
+        "summary": "Protocol uploaded and analyzed.",
+        "prediction": "Estimated 68% success likelihood.",
+        "risk_flags": risks,
+        "csrs": matches,
+        "recommended_design": design.get("protocol", ""),
+        "justification": design.get("justification", []),
+        "confidence_score": confidence.get("confidence_score"),
+        "confidence_issues": confidence.get("issues"),
+        "confidence_verdict": confidence.get("verdict"),
+        "pdf_link": pdf_link
+    }
