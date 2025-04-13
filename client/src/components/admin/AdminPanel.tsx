@@ -5,9 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMutation } from '@tanstack/react-query';
-import { AlertCircle, CheckCircle2, Database, FileJson, Loader2 } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Database, FileJson, Loader2, RefreshCw, PlusCircle } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
+import { Separator } from "@/components/ui/separator";
 
 interface ExportResult {
   total: number;
@@ -68,6 +69,28 @@ export default function AdminPanel() {
       });
     }
   });
+  
+  // Import additional CSRs mutation
+  const importCsrMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest('POST', '/api/import/additional-csrs');
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Import Process Started",
+        description: data.message || "The CSR import process has been started in the background. This may take several minutes.",
+        variant: "default",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Import Failed",
+        description: error.message || "An error occurred while starting the CSR import process",
+        variant: "destructive",
+      });
+    }
+  });
 
   const handleExportToJson = () => {
     toast({
@@ -79,6 +102,14 @@ export default function AdminPanel() {
   
   const handleResetCounter = () => {
     resetCounterMutation.mutate();
+  };
+  
+  const handleImportCsrs = () => {
+    toast({
+      title: "Starting Import",
+      description: "Starting the CSR import process. This will run in the background and may take several minutes...",
+    });
+    importCsrMutation.mutate();
   };
 
   const results = exportMutation.data?.results as ExportResult | undefined;
@@ -193,6 +224,76 @@ export default function AdminPanel() {
                       <>
                         <FileJson className="mr-2 h-4 w-4" />
                         Export to JSON
+                      </>
+                    )}
+                  </Button>
+                </CardFooter>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <PlusCircle className="mr-2 h-5 w-5" />
+                    Import Additional CSRs
+                  </CardTitle>
+                  <CardDescription>
+                    Import additional clinical study reports to grow the TrialSage database
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm mb-4">
+                    This tool initiates a batch import process that will add more clinical study reports to the database.
+                    The import runs in the background and typically processes between 50-100 new CSRs per batch.
+                  </p>
+                  
+                  {importCsrMutation.isSuccess && (
+                    <Alert className="mb-4 bg-green-50 border-green-200">
+                      <CheckCircle2 className="h-5 w-5 text-green-600" />
+                      <AlertTitle className="text-green-800">Import Process Started</AlertTitle>
+                      <AlertDescription className="text-green-700">
+                        <div className="mt-2">
+                          <p>A new batch of CSRs is now being imported in the background. This process typically takes 
+                          5-10 minutes to complete. Once finished, the new records will be available in the database.</p>
+                          <p className="mt-2">After the import completes, use the "Export to JSON" function above 
+                          to make the new records available to the search service.</p>
+                        </div>
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                  
+                  {importCsrMutation.isError && (
+                    <Alert className="mb-4 bg-red-50 border-red-200">
+                      <AlertCircle className="h-5 w-5 text-red-600" />
+                      <AlertTitle className="text-red-800">Import Failed</AlertTitle>
+                      <AlertDescription className="text-red-700">
+                        {importCsrMutation.error instanceof Error ? importCsrMutation.error.message : 'Unknown error occurred'}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </CardContent>
+                <CardFooter className="flex justify-between">
+                  <div className="text-xs text-muted-foreground">
+                    <Badge variant="outline" className="mr-2">
+                      Current Progress: 2,871 CSRs (72%)
+                    </Badge>
+                    <Badge variant="outline">
+                      Target: 4,000 CSRs
+                    </Badge>
+                  </div>
+                  <Button 
+                    onClick={handleImportCsrs}
+                    disabled={importCsrMutation.isPending}
+                    variant="default"
+                  >
+                    {importCsrMutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Importing...
+                      </>
+                    ) : (
+                      <>
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        Start Import
                       </>
                     )}
                   </Button>
