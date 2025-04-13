@@ -1,0 +1,70 @@
+// /client/components/FixedProtocolViewer.jsx (with live PDF export button)
+import { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+
+export default function FixedProtocolViewer({ originalText }) {
+  const [fixed, setFixed] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [showOriginal, setShowOriginal] = useState(false);
+  const [pdfReady, setPdfReady] = useState(false);
+
+  const handleFix = async () => {
+    setLoading(true);
+    const res = await fetch("/api/validate-protocol/fix", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content: originalText })
+    });
+    const data = await res.json();
+    setFixed(data.fixed_text);
+    setLoading(false);
+  };
+
+  const handleExport = async () => {
+    await fetch("/api/export/fixed-protocol", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(originalText ? { text: fixed } : { text: "" })
+    });
+    setPdfReady(true);
+  };
+
+  return (
+    <div className="space-y-4">
+      <Card>
+        <CardContent className="p-4 space-y-2">
+          <h3 className="text-lg font-semibold">🛠️ AI-Repaired Protocol</h3>
+          <Button onClick={handleFix} disabled={loading}>✨ Generate AI-Fixed Version</Button>
+          {fixed && (
+            <>
+              <Button onClick={() => setShowOriginal(!showOriginal)} variant="outline">
+                {showOriginal ? "🔁 Show Fixed Only" : "📑 Show Original for Comparison"}
+              </Button>
+              <Textarea
+                className="mt-4 text-sm"
+                rows={20}
+                value={showOriginal ? originalText : fixed}
+                readOnly
+              />
+              <div className="flex gap-4 pt-4">
+                <Button onClick={handleExport} variant="outline">📄 Export Fixed Version (PDF)</Button>
+                {pdfReady && (
+                  <a
+                    href="/static/fixed_protocol.pdf"
+                    className="text-sm text-blue-600 underline hover:text-blue-800"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    📥 Download Fixed Protocol
+                  </a>
+                )}
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
