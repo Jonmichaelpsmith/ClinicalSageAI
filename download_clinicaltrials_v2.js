@@ -15,9 +15,19 @@ const NUM_TO_DOWNLOAD = 10; // Reduced number of trials to download per batch fo
 const OUTPUT_DIR = path.join('.', 'attached_assets', 'ctgov_v2');
 const DOWNLOAD_LOG = 'ctgov_v2_downloaded.json';
 
-// Database connection
+// Database connection with more reliable configuration
 const pool = new pg.Pool({
-  connectionString: process.env.DATABASE_URL
+  connectionString: process.env.DATABASE_URL,
+  max: 20, // Maximum number of clients in the pool
+  idleTimeoutMillis: 30000, // How long a client is allowed to remain idle before being closed
+  connectionTimeoutMillis: 10000, // How long to wait for a connection to become available
+  maxUses: 7500, // Close and replace a client after it has been used this many times
+  // Error handler prevents server crashes on connection issues
+  on: 'error', 
+  error: (err, client) => {
+    console.error('Unexpected error on idle client', err);
+    // Do not crash on connection errors
+  }
 });
 
 // Sample of known valid NCT IDs (a mix of older and newer trials)
@@ -72,7 +82,7 @@ async function checkTrialExists(nctId) {
 
 // Download JSON file from ClinicalTrials.gov API V2 with retry mechanism
 function downloadTrialJSON(nctId, retryCount = 0) {
-  const MAX_RETRIES = 3;
+  const MAX_RETRIES = 5; // Increased from 3 to 5 for better resilience
   
   return new Promise((resolve, reject) => {
     const url = `https://clinicaltrials.gov/api/v2/studies/${nctId}?format=json`;
@@ -139,6 +149,23 @@ function downloadTrialJSON(nctId, retryCount = 0) {
       if (response.statusCode !== 200) {
         file.close();
         fs.unlinkSync(outputPath); // Remove the incomplete file
+        
+        // Check if this is a retriable status code
+        const isRetriable = [429, 500, 502, 503, 504].includes(response.statusCode);
+        
+        if (isRetriable && retryCount < MAX_RETRIES) {
+          console.log(`Received status code ${response.statusCode} for ${nctId}, will retry (attempt ${retryCount + 1} of ${MAX_RETRIES})...`);
+          // Use exponential backoff with longer delays for rate limiting (429)
+          const retryDelay = response.statusCode === 429 
+            ? 10000 * Math.pow(2, retryCount) // Longer delay for rate limiting
+            : 5000 * Math.pow(2, retryCount);  // Standard delay for server errors
+            
+          setTimeout(() => {
+            resolve(downloadTrialJSON(nctId, retryCount + 1));
+          }, retryDelay);
+          return;
+        }
+        
         reject(new Error(`Failed to download ${nctId}. Status code: ${response.statusCode}`));
         return;
       }
@@ -370,6 +397,19 @@ async function importTrialToDatabase(nctId) {
 
 // Main download and import function
 async function downloadAndImportTrials() {
+  // First, test the database connection
+  let isDbConnected = false;
+  try {
+    const client = await pool.connect();
+    await client.query('SELECT 1');
+    client.release();
+    isDbConnected = true;
+    console.log('Database connection verified');
+  } catch (dbErr) {
+    console.error('Failed to establish database connection:', dbErr);
+    console.error('Will continue with downloads but imports will be skipped');
+  }
+
   try {
     // Create output directory if it doesn't exist
     if (!fs.existsSync(OUTPUT_DIR)) {
