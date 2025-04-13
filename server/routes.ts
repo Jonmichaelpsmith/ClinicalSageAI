@@ -75,6 +75,7 @@ import { exportRoutes } from "./routes/export_routes";
 import { academicRegulatoryRouter } from "./routes/academic_regulatory_routes";
 import { csrSearchRouter } from './routes/csr_search_routes';
 import { registerSimilarGoalsRoutes } from './routes/similar-goals-routes.js';
+import { registerSubscriptionsRoutes } from './routes/reports/subscriptions-routes';
 import intelRoutes from './routes/intel-routes';
 import { 
   fetchClinicalTrialData, 

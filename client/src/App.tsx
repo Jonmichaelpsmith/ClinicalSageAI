@@ -54,6 +54,7 @@ import PlanningPage from "@/pages/PlanningPage";
 import InsightMemoryEngine from "@/pages/InsightMemoryEngine";
 import WisdomTrace from "@/pages/WisdomTrace";
 import SubscriptionsPage from "@/pages/SubscriptionsPage";
+import ExampleReportsPage from "@/pages/example-reports";
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -138,6 +139,7 @@ function Router() {
       <Route path="/translation">{() => renderWithLayout(Translation)}</Route>
       <Route path="/csr-extraction-guide">{() => renderWithLayout(CsrExtractionGuide)}</Route>
       <Route path="/subscriptions">{() => renderWithLayout(SubscriptionsPage)}</Route>
+      <Route path="/example-reports">{() => renderWithLayout(ExampleReportsPage)}</Route>
       <Route path="/features" component={ProductFeatures} />
       <Route path="/pricing" component={PricingPage} />
       <Route path="/api" component={ApiDocumentation} />
