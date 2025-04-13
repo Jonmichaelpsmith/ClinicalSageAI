@@ -1,4 +1,4 @@
-import type { Express, Request, Response } from "express";
+import express, { type Express, type Request, type Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import multer from "multer";
@@ -367,9 +367,16 @@ const signatureUpdateRequestSchema = z.object({
 
 // Import analytics routes
 import analyticsRoutes from './routes/analytics-routes';
+import dropoutForecastRoutes from './routes/dropout-forecast-routes';
 import reportsManifestRoutes from './routes/reports/manifest-routes';
 
+// Import session routes for email persistence
+import sessionRoutes from './routes/session_routes';
+
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Register session API routes
+  app.use('/api/session', sessionRoutes);
+  
   // Export trial success prediction to PDF
   app.post("/api/export/success-summary", async (req: Request, res: Response) => {
     try {
@@ -660,6 +667,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register Dossier Routes with version tracking and changelog capabilities
   app.use('/api/dossier', dossierRoutes);
+  
+  // Register Dropout Forecast Routes
+  app.use('/api/analytics', dropoutForecastRoutes);
   
   // Register Academic and Regulatory Intelligence routes
   app.use('/api', academicRegulatoryRouter);

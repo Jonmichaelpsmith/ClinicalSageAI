@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import ProtocolUploadPanel from "@/components/ProtocolUploadPanel";
 import SampleSizeCalculator from "@/components/SampleSizeCalculator";
-import DropoutEstimator from "@/components/DropoutEstimator";
+import DropoutSimulator from "@/components/DropoutSimulator";
 import TrialSuccessPredictor from "@/components/TrialSuccessPredictor";
 import ProtocolValidator from "@/components/ProtocolValidator";
 import FixedProtocolViewer from "@/components/FixedProtocolViewer";
@@ -11,8 +11,166 @@ import SummaryPacketGenerator from "@/components/SummaryPacketGenerator";
 import SummaryPacketArchive from "@/components/SummaryPacketArchive";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookmarkPlus, Download, FileArchive, FilePlus2, Send } from "lucide-react";
+import { BookmarkPlus, Download, FileArchive, FilePlus2, Mail, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+
+// EmailArchiveButton Component
+function EmailArchiveButton({ sessionId }) {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+
+  // Function to save email to session persistence API
+  const saveEmailToSession = async (emailToSave) => {
+    try {
+      await fetch("/api/session/email/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          session_id: sessionId, 
+          recipient_email: emailToSave 
+        })
+      });
+      
+      // Also save to localStorage as fallback
+      localStorage.setItem('userEmail', emailToSave);
+      
+    } catch (error) {
+      console.error("Error saving email to session:", error);
+      // Still save to localStorage as fallback
+      localStorage.setItem('userEmail', emailToSave);
+    }
+  };
+
+  const handleSend = async () => {
+    if (!email || !email.includes('@')) {
+      toast({
+        title: "Invalid Email",
+        description: "Please enter a valid email address",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setStatus("Sending...");
+    setIsLoading(true);
+    
+    try {
+      // Save the email first
+      await saveEmailToSession(email);
+      
+      // Then send the archive
+      const res = await fetch("/api/export/email-session-archive", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          session_id: sessionId, 
+          recipient_email: email 
+        })
+      });
+      
+      const data = await res.json();
+      
+      if (data.status === "sent") {
+        setStatus(`✅ Sent to ${email}`);
+        toast({
+          title: "Archive Emailed",
+          description: `Complete study archive sent to ${email}`,
+        });
+      } else {
+        setStatus("❌ Failed to send");
+        throw new Error("Email failed to send");
+      }
+    } catch (error) {
+      console.error("Error sending email:", error);
+      setStatus("❌ Failed to send");
+      toast({
+        title: "Email Failed",
+        description: "There was an error sending your archive.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Try to get email from session persistence API, 
+  // falling back to local storage if API fails
+  useEffect(() => {
+    async function loadSavedEmail() {
+      if (!sessionId) return;
+      
+      setIsLoading(true);
+      
+      try {
+        // First try to get from session API
+        const response = await fetch(`/api/session/email/get/${sessionId}`);
+        
+        if (response.ok) {
+          const data = await response.json();
+          
+          if (data.email) {
+            setEmail(data.email);
+            setIsLoading(false);
+            return;
+          }
+        }
+        
+        // Fallback to localStorage
+        const savedEmail = localStorage.getItem('userEmail');
+        if (savedEmail) {
+          setEmail(savedEmail);
+          
+          // Since we found in localStorage but not in API, save it to API
+          await saveEmailToSession(savedEmail);
+        }
+      } catch (error) {
+        console.error("Error loading saved email:", error);
+        
+        // Final fallback to localStorage
+        const savedEmail = localStorage.getItem('userEmail');
+        if (savedEmail) {
+          setEmail(savedEmail);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    
+    loadSavedEmail();
+  }, [sessionId]);
+
+  return (
+    <Card className="mt-4">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-base font-semibold">Email My Archive</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <Input
+          type="email"
+          placeholder="Enter email address"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="text-sm"
+        />
+        <div className="flex items-center justify-between">
+          <Button
+            variant="default"
+            className="bg-gradient-to-r from-blue-500 to-indigo-500"
+            onClick={handleSend}
+          >
+            <Mail className="mr-2 h-4 w-4" />
+            📤 Email My Archive
+          </Button>
+          {status && <p className="text-xs text-muted-foreground">{status}</p>}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function ProtocolPlanningDashboard({ initialProtocol = "", sessionId = null, persona = "planner" }) {
   const [protocolText, setProtocolText] = useState(initialProtocol || "");
@@ -99,6 +257,58 @@ export default function ProtocolPlanningDashboard({ initialProtocol = "", sessio
       title: "Report Emailed",
       description: "Your report has been emailed to the configured address",
     });
+  };
+
+  const handleEmailArchive = async () => {
+    try {
+      toast({
+        title: "Preparing Archive",
+        description: "Creating and sending full session archive...",
+      });
+
+      // Log this activity
+      await logWisdomTrace(
+        "User requested email archive",
+        ["Generating full session archive", "Preparing email with attachments", "Processing delivery request"],
+        "Full study archive dispatched to user's email"
+      );
+      
+      // Get the user's email from local storage or use a default
+      const userEmail = localStorage.getItem('userEmail') || 'user@example.com';
+      
+      // Send the email request
+      const response = await fetch('/api/export/email-session-archive', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          session_id: sessionId,
+          recipient_email: userEmail
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send email archive');
+      }
+
+      // Log this action as an insight
+      await logSessionActivity(
+        "Study Archive Emailed",
+        `Complete study archive emailed to ${userEmail}`,
+        "completed"
+      );
+      
+      toast({
+        title: "Archive Emailed",
+        description: `Your complete study archive has been emailed to ${userEmail}`,
+      });
+    } catch (error) {
+      console.error("Error sending email archive:", error);
+      toast({
+        title: "Email Failed",
+        description: "There was an error emailing your archive. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleExportBundle = async () => {
@@ -201,11 +411,11 @@ export default function ProtocolPlanningDashboard({ initialProtocol = "", sessio
           }}
         />
         
-        <DropoutEstimator 
+        <DropoutSimulator 
           sessionId={sessionId}
           onEstimationComplete={(estimate, reasoning) => {
-            logSessionActivity("Dropout Rate Estimate", `Estimated ${estimate}% dropout rate for this protocol`);
-            logWisdomTrace("Calculate dropout rate estimate", reasoning, `${estimate}% dropout rate`);
+            logSessionActivity("Dropout Rate Forecast", `Predicted ${estimate}% dropout rate for this protocol`);
+            logWisdomTrace("Dynamic dropout forecast", reasoning, `${estimate}% dropout rate`);
           }}
         />
         
@@ -294,6 +504,10 @@ export default function ProtocolPlanningDashboard({ initialProtocol = "", sessio
           sessionId={sessionId}
         />
         
+        <EmailArchiveButton 
+          sessionId={sessionId} 
+        />
+        
         <ProtocolEmailer
           sessionId={sessionId}
           onEmailSent={(recipient) => {
@@ -311,6 +525,30 @@ export default function ProtocolPlanningDashboard({ initialProtocol = "", sessio
           <Button onClick={handleExportBundle} className="bg-gradient-to-r from-blue-600 to-indigo-600">
             <FileArchive className="mr-2 h-4 w-4" />
             Download Complete Study Bundle
+          </Button>
+          
+          <Button 
+            variant="default"
+            className="bg-gradient-to-r from-emerald-600 to-teal-600" 
+            onClick={() => {
+              toast({
+                title: "Preparing Archive",
+                description: "Creating full session archive with all protocol data..."
+              });
+              
+              // Log this activity
+              logSessionActivity(
+                "Session Archive Export",
+                `Exported full archive for session ${sessionId}`,
+                "completed"
+              );
+              
+              // Start archive download
+              window.location.href = `/api/export/session-archive/${sessionId}`;
+            }}
+          >
+            <FileArchive className="mr-2 h-4 w-4" />
+            📦 Download Full Archive
           </Button>
           
           <Button variant="outline" onClick={() => {
