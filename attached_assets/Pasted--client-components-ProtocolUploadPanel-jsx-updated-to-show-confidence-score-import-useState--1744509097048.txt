@@ -1,0 +1,63 @@
+// /client/components/ProtocolUploadPanel.jsx (updated to show confidence score)
+import { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
+export default function ProtocolUploadPanel() {
+  const [file, setFile] = useState(null);
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleUpload = async () => {
+    if (!file) return;
+    const formData = new FormData();
+    formData.append("file", file);
+    setLoading(true);
+
+    const res = await fetch("/api/analytics/upload-protocol", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await res.json();
+    setResult(data);
+    setLoading(false);
+  };
+
+  return (
+    <div className="space-y-4 mt-8">
+      <Card>
+        <CardContent className="p-4 space-y-4">
+          <h3 className="text-lg font-semibold">Upload Draft Protocol</h3>
+          <Input type="file" accept=".pdf,.docx,.txt" onChange={(e) => setFile(e.target.files[0])} />
+          <Button onClick={handleUpload} disabled={!file || loading}>Upload & Analyze</Button>
+        </CardContent>
+      </Card>
+
+      {result && (
+        <Card>
+          <CardContent className="space-y-2">
+            <h4 className="text-base font-semibold">AI Summary</h4>
+            <pre className="text-sm whitespace-pre-wrap">{result.summary}</pre>
+
+            <h4 className="text-base font-semibold">Predicted Outcome</h4>
+            <p className="text-sm text-blue-700">{result.prediction}</p>
+
+            <h4 className="text-base font-semibold">Confidence Score</h4>
+            <p className="text-sm">Score: <strong>{result.confidence_score}/100</strong></p>
+            <p className="text-sm text-yellow-700">{result.confidence_verdict}</p>
+            <ul className="list-disc ml-5 text-sm text-red-600">
+              {result.confidence_issues?.map((issue, idx) => <li key={idx}>{issue}</li>)}
+            </ul>
+
+            <h4 className="text-base font-semibold">CSR Matches</h4>
+            <ul className="list-disc ml-5 text-sm text-muted-foreground">
+              {result.csrs?.map((id, idx) => <li key={idx}>{id}</li>)}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}

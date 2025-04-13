@@ -23,7 +23,11 @@ import {
   Clipboard,
   ClipboardCheck,
   Download,
-  BarChart4
+  BarChart4,
+  ShieldCheck,
+  ShieldAlert,
+  ShieldX,
+  FileOutput
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
@@ -219,6 +223,15 @@ export default function ProtocolUploadPanel() {
   const generateSummary = () => {
     if (!analysisResult) return "";
     
+    // Include confidence score data if available
+    const confidenceSection = analysisResult.confidence_score ? 
+    `## Protocol Confidence Assessment
+Confidence Score: ${analysisResult.confidence_score}/100
+Verdict: ${analysisResult.confidence_verdict || 'Not assessed'}
+${analysisResult.confidence_issues?.length > 0 ? '\nIssues Identified:' : ''}
+${analysisResult.confidence_issues?.map(issue => `- ${issue}`).join('\n') || 'None identified'}
+` : '';
+    
     return `# Protocol Analysis Summary
 Date: ${new Date().toLocaleDateString()}
 
@@ -229,6 +242,7 @@ Phase: ${analysisResult.phase || 'Not specified'}
 Sample Size: ${analysisResult.sample_size || 'Not specified'}
 Duration: ${analysisResult.duration_weeks ? `${analysisResult.duration_weeks} weeks` : 'Not specified'}
 
+${confidenceSection}
 ## Risk Factors (${analysisResult.risk_factors?.length || 0})
 ${analysisResult.risk_factors?.map(risk => `- ${risk.description} (${risk.severity.toUpperCase()})`).join('\n') || 'None identified'}
 
