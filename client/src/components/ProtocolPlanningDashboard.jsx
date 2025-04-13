@@ -12,10 +12,69 @@ import SummaryPacketArchive from "@/components/SummaryPacketArchive";
 import SessionSummaryPanel from "@/components/SessionSummaryPanel";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookmarkPlus, Download, FileArchive, FilePlus2, Mail, Send } from "lucide-react";
+import { BookmarkPlus, Download, FileArchive, FilePlus2, FileSpreadsheet, Mail, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+
+// Export Everything Button Component
+function ExportEverythingButton({ sessionId }) {
+  const [status, setStatus] = useState("");
+  const { toast } = useToast();
+
+  const handleExport = async () => {
+    setStatus("📦 Generating export...");
+    toast({
+      title: "Preparing Complete Export",
+      description: "Generating all intelligence files into a single bundle..."
+    });
+    
+    try {
+      const res = await fetch(`/api/export/regulatory-bundle/${sessionId}`);
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `${sessionId}_regulatory_ready_bundle.zip`;
+        link.click();
+        setStatus("✅ Export complete.");
+        
+        toast({
+          title: "Export Complete",
+          description: "All intelligence files have been packaged and downloaded."
+        });
+      } else {
+        setStatus("❌ Failed to generate export.");
+        toast({
+          title: "Export Failed",
+          description: "There was an error generating the complete export bundle.",
+          variant: "destructive"
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      setStatus("❌ Export failed.");
+      toast({
+        title: "Export Error",
+        description: "An unexpected error occurred during export.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  return (
+    <div className="mt-4">
+      <Button
+        onClick={handleExport}
+        className="bg-green-600 hover:bg-green-700 text-white w-full"
+      >
+        📦 Export All Intelligence Files
+      </Button>
+      {status && <p className="text-xs text-muted-foreground mt-1">{status}</p>}
+    </div>
+  );
+}
 
 // EmailArchiveButton Component
 function EmailArchiveButton({ sessionId }) {
@@ -447,6 +506,9 @@ export default function ProtocolPlanningDashboard({ initialProtocol = "", sessio
 
   return (
     <div className="space-y-10 p-6">
+      {/* Session Summary Panel at the top of the component tree */}
+      <SessionSummaryPanel sessionId={sessionId} />
+      
       <Card className="bg-gradient-to-r from-slate-50 to-blue-50 border-blue-100">
         <CardHeader className="pb-2">
           <CardTitle className="text-xl font-bold">🧠 {persona.toUpperCase()} Intelligence Dashboard</CardTitle>
@@ -669,6 +731,9 @@ export default function ProtocolPlanningDashboard({ initialProtocol = "", sessio
 
       <section className="border-t pt-6">
         <div className="flex flex-wrap gap-4 justify-center">
+          {/* Export Everything Button - add the new master export button */}
+          <ExportEverythingButton sessionId={sessionId} />
+          
           <Button onClick={handleExportBundle} className="bg-gradient-to-r from-blue-600 to-indigo-600">
             <FileArchive className="mr-2 h-4 w-4" />
             Download Complete Study Bundle
