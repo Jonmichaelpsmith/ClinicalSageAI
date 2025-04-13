@@ -1,5 +1,6 @@
 import { db } from './db';
-import { csrReports, csrDetails } from '@shared/schema';
+import { summaryPackets, projects, insightMemories, wisdomTraces, studySessions } from '@shared/schema';
+import { csrReports, csrDetails } from './sage-plus-service';
 import { eq, sql, and, gte, lte, desc, count, avg, max, min } from 'drizzle-orm';
 import * as math from 'mathjs';
 import { stat } from 'ml-stat';

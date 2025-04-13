@@ -1,6 +1,6 @@
 import { eq, and, sql, desc, like, or } from 'drizzle-orm';
 import { db } from '../db';
-import { csrReports, csrDetails } from '@shared/schema';
+import { csrReports, csrDetails } from '../sage-plus-service';
 import { huggingFaceService } from '../huggingface-service';
 import { academicDocumentProcessor } from './academic-document-processor';
 import * as fs from 'fs';

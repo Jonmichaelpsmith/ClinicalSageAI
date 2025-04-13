@@ -1,0 +1,88 @@
+# /controllers/summary_packet.py (session-aware archive saving)
+from fastapi import APIRouter, Body
+from pydantic import BaseModel
+from fpdf import FPDF
+import os, json
+
+router = APIRouter()
+ARCHIVE_PATH = "data/summary_packet_history.json"
+os.makedirs("data", exist_ok=True)
+
+class PacketRequest(BaseModel):
+    protocol: str
+    ind25: str
+    ind27: str
+    sap: str
+    risks: list[str]
+    success_probability: float
+    sample_size: int
+    session_id: str
+
+@router.post("/api/export/summary-packet")
+def generate_summary_packet(req: PacketRequest):
+    filename = f"summary_packet_{req.session_id}.pdf"
+    full_path = f"static/{filename}"
+
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=11)
+    pdf.set_font("Arial", style="B", size=14)
+    pdf.cell(0, 10, f"Study Packet ({req.session_id})", ln=True)
+    pdf.set_font("Arial", size=11)
+    pdf.ln(5)
+    pdf.multi_cell(0, 8, f"Success Probability: {req.success_probability}%")
+    pdf.multi_cell(0, 8, f"Sample Size Estimate: {req.sample_size} participants")
+    pdf.ln(4)
+
+    pdf.set_font("Arial", style="B", size=12)
+    pdf.cell(0, 8, "IND Module 2.5", ln=True)
+    pdf.set_font("Arial", size=11)
+    pdf.multi_cell(0, 8, req.ind25)
+    pdf.ln(3)
+
+    pdf.set_font("Arial", style="B", size=12)
+    pdf.cell(0, 8, "IND Module 2.7", ln=True)
+    pdf.set_font("Arial", size=11)
+    pdf.multi_cell(0, 8, req.ind27)
+    pdf.ln(3)
+
+    pdf.set_font("Arial", style="B", size=12)
+    pdf.cell(0, 8, "SAP Draft", ln=True)
+    pdf.set_font("Arial", size=11)
+    pdf.multi_cell(0, 8, req.sap)
+    pdf.ln(3)
+
+    pdf.set_font("Arial", style="B", size=12)
+    pdf.cell(0, 8, "Key Risk Flags", ln=True)
+    pdf.set_font("Arial", size=11)
+    for risk in req.risks:
+        pdf.multi_cell(0, 8, f"• {risk}")
+
+    pdf.output(full_path)
+
+    # Save archive entry
+    archive_entry = {
+        "session_id": req.session_id,
+        "filename": filename,
+        "success_probability": req.success_probability,
+        "sample_size": req.sample_size,
+        "risks": req.risks,
+    }
+    try:
+        if os.path.exists(ARCHIVE_PATH):
+            with open(ARCHIVE_PATH, "r") as f:
+                db = json.load(f)
+        else:
+            db = {}
+
+        if req.session_id not in db:
+            db[req.session_id] = []
+
+        db[req.session_id].append(archive_entry)
+
+        with open(ARCHIVE_PATH, "w") as f:
+            json.dump(db, f, indent=2)
+    except Exception as e:
+        print(f"Archive save error: {e}")
+
+    return {"pdf_url": f"/static/{filename}"}

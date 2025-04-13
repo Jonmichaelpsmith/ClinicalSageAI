@@ -8,7 +8,7 @@
 import fs from 'fs';
 import path from 'path';
 import { db } from './db';
-import { csrReports, csrDetails } from '../shared/schema';
+import { csrReports, csrDetails } from './sage-plus-service';
 import { sql } from 'drizzle-orm';
 import { queryHuggingFace, trainCustomModel } from './huggingface-service';
 import { huggingFaceService } from './huggingface-service';

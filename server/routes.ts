@@ -82,7 +82,24 @@ import {
   findLatestDataFile,
   importTrialsFromApiV2
 } from "./data-importer";
-import { insertCsrReportSchema, csrReports, csrDetails } from "@shared/schema";
+// Import CSR tables from sage-plus-service instead of shared schema
+import { csrReports, csrSegments } from "./sage-plus-service";
+// Define a schema for csrDetails since it's not in schema.ts
+import { pgTable, serial, integer, varchar, text, timestamp, json, boolean } from "drizzle-orm/pg-core";
+
+export const csrDetails = pgTable('csr_details', {
+  id: serial('id').primaryKey(),
+  reportId: integer('report_id').notNull(),
+  endpoints: json('endpoints').$type<string[]>().notNull().default(sql`'[]'`),
+  outcomes: json('outcomes').$type<string[]>().notNull().default(sql`'[]'`),
+  sampleSize: integer('sample_size'),
+  arms: integer('arms'),
+  inclusionCriteria: json('inclusion_criteria').$type<string[]>().notNull().default(sql`'[]'`),
+  exclusionCriteria: json('exclusion_criteria').$type<string[]>().notNull().default(sql`'[]'`),
+  success: boolean('success'),
+  metrics: json('metrics').notNull().default(sql`'{}'`),
+  extractedAt: timestamp('extracted_at').defaultNow()
+});
 import { ZodError, z } from "zod";
 import { fromZodError } from "zod-validation-error";
 import { sql } from "drizzle-orm";

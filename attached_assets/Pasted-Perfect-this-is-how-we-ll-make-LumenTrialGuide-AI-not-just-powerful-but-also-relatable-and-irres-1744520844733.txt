@@ -1,0 +1,105 @@
+Perfect—this is how we’ll make LumenTrialGuide.AI not just powerful, but also *relatable* and *irresistible* to real-world users.
+
+---
+
+# 🧬 Flagship Use Cases for LumenTrialGuide.AI  
+*“Who uses it, why they use it, and why they’ll never go back.”*
+
+---
+
+## 🧠 1. The Emerging Biotech CEO  
+> “I can’t afford a CRO to guess through my Phase 2 design.”
+
+### 🎯 The Problem:
+- Limited budget
+- Few internal regulatory or biostat resources
+- Need for a design that will pass IRB and attract investors
+
+### ✅ Why They Use LumenTrialGuide.AI:
+- Upload their protocol draft → receive structured feedback, risks, CSR comparisons
+- Generate IND-ready sections + a polished summary packet
+- Predict trial success and model sample size
+
+### 🔥 Benefit Over Status Quo:
+> “In 30 minutes, I had more clarity than 3 weeks with a consultant. It gave my board the confidence to move forward.”
+
+---
+
+## 📊 2. The Clinical Program Lead at a Mid-Sized Biopharma  
+> “I’m designing 3 trials across 2 TAs, and I need precedent that works.”
+
+### 🎯 The Problem:
+- Needs to justify trial strategy to global regulatory teams
+- Must align endpoints with success in similar populations
+- Risks duplicating known failures
+
+### ✅ Why They Use LumenTrialGuide.AI:
+- Finds 10+ similar trials instantly
+- Pulls design patterns from successful vs. failed comparators
+- Uses AI to repair internal protocols with evidence-backed guidance
+
+### 🔥 Benefit Over Status Quo:
+> “Instead of sending spreadsheets to the biostats team, I generated a full protocol with risk justification and submission text—on demand.”
+
+---
+
+## 🔎 3. The Regulatory Affairs Strategist  
+> “I’m not here to write—I’m here to win.”
+
+### 🎯 The Problem:
+- Drafting IND modules is manual, repetitive, error-prone
+- Needs traceability back to real studies
+- Must defend rationale to regulators
+
+### ✅ Why They Use LumenTrialGuide.AI:
+- Generates IND Modules 2.5 and 2.7 from validated designs
+- Links every insight to CSR evidence
+- Exports IRB and FDA-ready packets
+
+### 🔥 Benefit Over Status Quo:
+> “We replaced 2 full-time writers and created our submission packet in one sitting—with references I could actually defend.”
+
+---
+
+## 🧪 4. The Principal Investigator at an Academic Center  
+> “We’re running a rare disease trial and can’t afford to fail.”
+
+### 🎯 The Problem:
+- No precedent data on their exact indication
+- Endpoint alignment is unclear
+- Power and dropout estimates are speculative
+
+### ✅ Why They Use LumenTrialGuide.AI:
+- Uploads past trial documents
+- Gets power estimates and dropout forecasts from similar studies
+- Uses NLP to compare AE frequency tables and control methods
+
+### 🔥 Benefit Over Status Quo:
+> “We redesigned our protocol based on molecular similarity. Our screen fail rate dropped 40%.”
+
+---
+
+## 💼 5. The Biotech Board of Directors  
+> “We don’t trust vague timelines. We want design intelligence.”
+
+### 🎯 The Problem:
+- Trial assumptions are unvalidated
+- CROs are slow to deliver clarity
+- Need IRB-ready material to greenlight budget
+
+### ✅ Why They Use LumenTrialGuide.AI:
+- Receives a shareable PDF summary packet
+- Includes success predictions, IND modules, AE clusters, risk flags
+- Allows board members to self-review in 10 minutes
+
+### 🔥 Benefit Over Status Quo:
+> “Our decision meeting went from 3 hours to 30 minutes. The packet told us everything we needed.”
+
+---
+
+Would you like me to:
+- Add these to your `/use-cases` route?
+- Create a slick landing layout with role tabs?
+- Generate a visual slider or “persona selector” UI?
+
+Let’s make your value not just real—but unforgettable.

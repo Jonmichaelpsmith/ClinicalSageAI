@@ -23,7 +23,7 @@ export default function Home() {
               SaaS for Early-Stage Biotechs
             </Badge>
             <h1 className="text-3xl md:text-5xl font-bold tracking-tighter bg-gradient-to-r from-primary to-blue-500 bg-clip-text text-transparent">
-              TrialSage<span className="text-black dark:text-white"> - AI-Powered CSR Intelligence</span>
+              LumenTrialGuide.AI<span className="text-black dark:text-white"> - AI-Powered CSR Intelligence</span>
             </h1>
             <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
               Extract, analyze, and generate insights from clinical study reports. 
@@ -51,7 +51,7 @@ export default function Home() {
             <div className="flex flex-col justify-center space-y-4">
               <div className="space-y-2">
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
-                  Why TrialSage?
+                  Why LumenTrialGuide.AI?
                 </h2>
                 <p className="max-w-[600px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
                   Early-stage biotechs waste significant resources designing trials from scratch or relying on generic consulting.
@@ -136,11 +136,19 @@ export default function Home() {
           <div className="flex flex-col items-center justify-center space-y-3 text-center">
             <div className="space-y-2">
               <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-4xl">
-                Who Uses TrialSage
+                Who Uses LumenTrialGuide.AI
               </h2>
               <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
                 Tailored for early-stage biotechs with limited resources but ambitious clinical development plans.
               </p>
+              <div className="mt-5">
+                <Link href="/use-cases">
+                  <Button variant="outline" className="group">
+                    See How Your Peers Are Using LumenTrialGuide.AI
+                    <ChevronRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  </Button>
+                </Link>
+              </div>
             </div>
           </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-5">

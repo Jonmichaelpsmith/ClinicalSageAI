@@ -6,8 +6,47 @@
  */
 
 import { db } from './db';
-import { csrSegments, csrReports } from '@shared/schema';
+import { pgTable, serial, integer, varchar, text, timestamp, json } from 'drizzle-orm/pg-core';
 import { eq, sql, desc } from 'drizzle-orm';
+
+// Define temporary schema for CSR tables until they are properly added to the schema file
+export const csrSegments = pgTable('csr_segments', {
+  id: serial('id').primaryKey(),
+  reportId: integer('report_id').notNull(),
+  segmentNumber: integer('segment_number').notNull(),
+  segmentType: varchar('segment_type', { length: 50 }).notNull(),
+  content: text('content').notNull(),
+  pageNumbers: varchar('page_numbers', { length: 100 }),
+  embedding: json('embedding').notNull(),
+  extractedEntities: json('extracted_entities')
+});
+
+export const csrReports = pgTable('csr_reports', {
+  id: serial('id').primaryKey(),
+  title: varchar('title', { length: 255 }).notNull(),
+  sponsor: varchar('sponsor', { length: 255 }),
+  indication: varchar('indication', { length: 255 }),
+  phase: varchar('phase', { length: 50 }),
+  fileName: varchar('file_name', { length: 255 }),
+  fileSize: integer('file_size'),
+  uploadDate: timestamp('upload_date').defaultNow(),
+  summary: text('summary')
+});
+
+export const csrDetails = pgTable('csr_details', {
+  id: serial('id').primaryKey(),
+  reportId: integer('report_id').notNull(),
+  filePath: varchar('file_path', { length: 255 }),
+  studyDesign: text('study_design'),
+  primaryObjective: text('primary_objective'),
+  studyDescription: text('study_description'),
+  inclusionCriteria: json('inclusion_criteria').$type<string[]>().default(sql`'[]'`),
+  exclusionCriteria: json('exclusion_criteria').$type<string[]>().default(sql`'[]'`),
+  endpoints: json('endpoints').default(sql`'[]'`),
+  treatmentArms: json('treatment_arms').default(sql`'[]'`),
+  processed: boolean('processed').default(false),
+  processingStatus: varchar('processing_status', { length: 50 }).default('pending')
+});
 import PDFParse from 'pdf-parse';
 import * as tf from '@tensorflow/tfjs-node';
 import axios from 'axios';
