@@ -4,6 +4,7 @@ import path from 'path';
 
 const reportsManifestRoutes = Router();
 const REPORTS_ROOT_DIR = 'lumen_reports_backend/static/example_reports';
+const LAUNCH_CONFIG_PATH = 'attached_assets/launch_config.json';
 
 /**
  * Get the root report index with all personas
@@ -52,6 +53,31 @@ reportsManifestRoutes.get('/persona/:personaId', async (req: Request, res: Respo
     res.status(500).json({
       success: false,
       message: `Error fetching persona manifest: ${error.message}`
+    });
+  }
+});
+
+/**
+ * Get launch configuration for example reports
+ */
+reportsManifestRoutes.get('/launch-config', async (_req: Request, res: Response) => {
+  try {
+    const configPath = path.join(process.cwd(), LAUNCH_CONFIG_PATH);
+    
+    if (!fs.existsSync(configPath)) {
+      return res.status(404).json({
+        success: false,
+        message: 'Launch configuration not found'
+      });
+    }
+    
+    const launchConfig = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+    res.json(launchConfig);
+  } catch (error: any) {
+    console.error('Error fetching launch configuration:', error);
+    res.status(500).json({
+      success: false,
+      message: `Error fetching launch configuration: ${error.message}`
     });
   }
 });
