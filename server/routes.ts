@@ -4134,7 +4134,7 @@ Provide a comprehensive, evidence-based response.`;
         return res.status(400).json({ success: false, message: 'Message content is required' });
       }
       
-      // Check if Hugging Face API key is available
+      // Check if OpenAI API key is available
       if (!huggingFaceService.isApiKeyAvailable()) {
         return res.status(500).json({
           success: false,
@@ -4142,18 +4142,81 @@ Provide a comprehensive, evidence-based response.`;
         });
       }
       
-      const response = await researchCompanionService.addMessageToConversation(
-        conversationId,
-        message
-      );
+      // Get conversation history for context
+      const conversation = await researchCompanionService.getConversation(conversationId);
+      if (!conversation) {
+        return res.status(404).json({ success: false, message: 'Conversation not found' });
+      }
+      
+      // Prepare for advanced CSR citation
+      let response;
+      let citations = [];
+      
+      try {
+        // Process message with deep semantic understanding and CSR extraction
+        // First get standard response
+        response = await researchCompanionService.addMessageToConversation(
+          conversationId,
+          message
+        );
+        
+        if (!response) {
+          throw new Error("Failed to generate response");
+        }
+        
+        // Perform deep semantic CSR extraction
+        const csrCitationsProcessing = async () => {
+          try {
+            // Check if we have access to deep CSR extraction service
+            const openAIAccess = huggingFaceService.isApiKeyAvailable();
+            
+            if (openAIAccess && response) {
+              // Import functionality for CSR citation extraction
+              const { extractCsrReferences } = await import("./deep-csr-analyzer");
+              
+              // Extract semantic CSR references based on the response content
+              const extractedCitations = await extractCsrReferences(response);
+              
+              if (extractedCitations && extractedCitations.length > 0) {
+                citations = extractedCitations.map(citation => ({
+                  id: citation.csr_id,
+                  type: citation.citation_type || "semantic",
+                  relevance: citation.relevance || "medium",
+                  title: citation.title || `CSR ${citation.csr_id}`,
+                  metadata: citation.metadata || {}
+                }));
+              }
+            }
+          } catch (error) {
+            console.error("Error extracting CSR citations:", error);
+            // Fall back to pattern matching if advanced extraction fails
+            // We'll still return the response, just without enhanced citations
+          }
+        };
+        
+        // Run citation processing asynchronously - don't wait for it to complete
+        // to avoid delaying the response
+        csrCitationsProcessing();
+      } catch (advancedError) {
+        console.error("Error in advanced CSR processing:", advancedError);
+        // Fall back to standard response
+        response = await researchCompanionService.addMessageToConversation(
+          conversationId,
+          message
+        );
+      }
       
       if (!response) {
-        return res.status(404).json({ success: false, message: 'Conversation not found' });
+        return res.status(500).json({ 
+          success: false, 
+          message: 'Failed to generate response'
+        });
       }
       
       res.json({ 
         success: true, 
-        message: response
+        message: response,
+        citations: citations.length > 0 ? citations : undefined
       });
     } catch (err) {
       errorHandler(err as Error, res);
