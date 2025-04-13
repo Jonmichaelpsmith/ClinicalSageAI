@@ -535,6 +535,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Import more CSRs to grow the database
+  app.post('/api/import/additional-csrs', async (_req: Request, res: Response) => {
+    try {
+      console.log('Starting additional CSR import process...');
+      
+      // Import dependencies at the top level
+      const childProcess = await import('child_process');
+      
+      // Execute one of the import scripts
+      const importProcess = childProcess.spawn('node', ['import_batch_of_50.js']);
+      
+      let processOutput = '';
+      let processError = '';
+      
+      importProcess.stdout.on('data', (data: Buffer) => {
+        processOutput += data.toString();
+        console.log(`CSR import stdout: ${data}`);
+      });
+      
+      importProcess.stderr.on('data', (data: Buffer) => {
+        processError += data.toString();
+        console.error(`CSR import stderr: ${data}`);
+      });
+      
+      // Send immediate response to avoid timeout
+      res.json({
+        success: true,
+        message: 'CSR import process has been started in the background',
+        note: 'This process may take several minutes to complete. Check the Admin panel for updated counts.'
+      });
+      
+      // Log completion for server-side tracking
+      importProcess.on('close', (code: number) => {
+        console.log(`CSR import process exited with code ${code}`);
+        if (code !== 0) {
+          console.error('Import process error:', processError);
+        } else {
+          console.log('Import process completed successfully');
+        }
+      });
+      
+    } catch (error: any) {
+      console.error('Error starting CSR import process:', error);
+      res.status(500).json({
+        success: false,
+        message: `Error starting import: ${error.message || 'Unknown error'}`,
+        error: error.message
+      });
+    }
+  });
+  
   // Register Dossier Routes with version tracking and changelog capabilities
   app.use('/api/dossier', dossierRoutes);
   
