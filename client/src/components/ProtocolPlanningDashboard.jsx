@@ -1,4 +1,4 @@
-// /client/components/ProtocolPlanningDashboard.jsx (now with Study Session Selector)
+// /client/components/ProtocolPlanningDashboard.jsx
 import { useState, useEffect } from 'react';
 import ProtocolUploadPanel from "@/components/ProtocolUploadPanel";
 import SampleSizeCalculator from "@/components/SampleSizeCalculator";
@@ -9,52 +9,36 @@ import FixedProtocolViewer from "@/components/FixedProtocolViewer";
 import ProtocolEmailer from "@/components/ProtocolEmailer";
 import SummaryPacketGenerator from "@/components/SummaryPacketGenerator";
 import SummaryPacketArchive from "@/components/SummaryPacketArchive";
-import StudySessionSelector from "@/components/StudySessionSelector";
-import DesignFromMolecule from "@/components/DesignFromMolecule";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { BookmarkPlus, Download, FileArchive, FilePlus2, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function ProtocolPlanningDashboard({ initialProtocol = "", sessionId = null, persona = "planner" }) {
-  const [activeSession, setActiveSession] = useState(sessionId);
-  const [protocolContent, setProtocolContent] = useState(initialProtocol);
+  const [protocolText, setProtocolText] = useState(initialProtocol || "");
   const { toast } = useToast();
   
   useEffect(() => {
-    if (sessionId && !activeSession) {
-      setActiveSession(sessionId);
-      toast({
-        title: "Session Activated",
-        description: `Now working with study: ${sessionId} as ${persona}`,
-      });
+    console.log("Initialized dashboard for:", { sessionId, persona });
+    
+    // Record the session start in memory
+    if (sessionId && persona) {
+      logSessionActivity("Session Started", `Initialized ${persona} dashboard with session ID: ${sessionId}`);
     }
-  }, [sessionId, activeSession, persona, toast]);
+  }, [sessionId, persona]);
 
-  const handleSessionChange = (sessionId) => {
-    setActiveSession(sessionId);
-    console.log("Active study session changed to:", sessionId);
-    toast({
-      title: "Study Session Active",
-      description: `Now working with study: ${sessionId}`,
-    });
-  };
+  if (!sessionId || !persona) {
+    return <p className="p-4 text-sm text-muted-foreground">Missing session ID or persona context.</p>;
+  }
 
   // Log insights to memory API
-  const logInsight = async (title, summary, status = "active") => {
-    if (!activeSession) {
-      toast({
-        title: "No active session",
-        description: "Please select a study session first",
-        variant: "destructive",
-      });
-      return;
-    }
-
+  const logSessionActivity = async (title, summary, status = "active") => {
     try {
       const response = await fetch('/api/insight/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          study_id: activeSession,
+          study_id: sessionId,
           title,
           summary,
           status
@@ -64,40 +48,21 @@ export default function ProtocolPlanningDashboard({ initialProtocol = "", sessio
       if (!response.ok) {
         throw new Error("Failed to save insight");
       }
-
-      toast({
-        title: "Insight Saved",
-        description: "Your insight has been stored in the session memory",
-      });
       
       return await response.json();
     } catch (error) {
       console.error("Error saving insight:", error);
-      toast({
-        title: "Error Saving Insight",
-        description: error.message,
-        variant: "destructive",
-      });
     }
   };
 
   // Log decision trace to wisdom API
   const logWisdomTrace = async (input, reasoning, output) => {
-    if (!activeSession) {
-      toast({
-        title: "No active session",
-        description: "Please select a study session first",
-        variant: "destructive",
-      });
-      return;
-    }
-
     try {
       const response = await fetch('/api/wisdom/trace-log', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          study_id: activeSession,
+          study_id: sessionId,
           input,
           reasoning: Array.isArray(reasoning) ? reasoning : [reasoning],
           output
@@ -107,25 +72,14 @@ export default function ProtocolPlanningDashboard({ initialProtocol = "", sessio
       if (!response.ok) {
         throw new Error("Failed to save wisdom trace");
       }
-
-      toast({
-        title: "Decision Logic Saved",
-        description: "Your reasoning trace has been stored for audit",
-      });
       
       return await response.json();
     } catch (error) {
       console.error("Error saving wisdom trace:", error);
-      toast({
-        title: "Error Saving Decision Logic",
-        description: error.message,
-        variant: "destructive",
-      });
     }
   };
 
   const handleEmailReport = async () => {
-    // Example of using the trace API to log this decision
     await logWisdomTrace(
       "User requested email report",
       ["Checking if email configuration exists", "Validating report is generated", "Preparing email delivery"],
@@ -135,7 +89,7 @@ export default function ProtocolPlanningDashboard({ initialProtocol = "", sessio
     await fetch("/api/intel/scheduled-report");
     
     // Log this action as an insight
-    await logInsight(
+    await logSessionActivity(
       "Report Emailed to Stakeholders",
       "User requested the current planning report to be emailed to the configured address",
       "completed"
@@ -143,134 +97,182 @@ export default function ProtocolPlanningDashboard({ initialProtocol = "", sessio
     
     toast({
       title: "Report Emailed",
-      description: "Your report has been emailed to your configured address",
+      description: "Your report has been emailed to the configured address",
     });
   };
 
-  // Example of capturing endpoint design decisions
-  const handleEndpointDecision = async (endpoint, reasoning) => {
-    await logInsight(
-      `Endpoint Design: ${endpoint}`,
-      `Selected ${endpoint} as the primary endpoint based on regulatory precedent and statistical power considerations.`,
-      "active"
-    );
-    
-    await logWisdomTrace(
-      `Evaluating ${endpoint} as primary endpoint`,
-      [
-        "Analyzed regulatory precedent for similar indications",
-        "Evaluated statistical power requirements",
-        "Considered measurement reliability and validity",
-        "Assessed alignment with patient-reported outcomes"
-      ],
-      `Selected ${endpoint} as primary endpoint with p<0.05 significance threshold`
-    );
+  const handleExportBundle = async () => {
+    toast({
+      title: "Preparing Export Bundle",
+      description: "Creating archive of all study assets and intelligence...",
+    });
+
+    try {
+      // Log this activity
+      await logSessionActivity(
+        "Study Bundle Export",
+        `Exported complete study bundle for ${persona} view of study ${sessionId}`,
+        "completed"
+      );
+
+      // Wait for the export to prepare
+      await fetch(`/api/export/study-bundle?study_id=${sessionId}&persona=${persona}`);
+
+      // Simulate download delay
+      setTimeout(() => {
+        toast({
+          title: "Export Ready",
+          description: "Your study bundle has been prepared and is ready to download.",
+        });
+
+        // Trigger download (in a real implementation, this would be a direct download link)
+        window.location.href = `/api/download/study-bundle?study_id=${sessionId}`;
+      }, 2000);
+    } catch (error) {
+      toast({
+        title: "Export Failed",
+        description: "There was an error preparing your export bundle.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6">
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-xl font-bold text-gray-800">🧠 Study Session</h2>
-          <StudySessionSelector onSelect={handleSessionChange} />
-        </div>
-
-        <h2 className="text-xl font-bold text-gray-800">📄 Protocol Upload + Analysis</h2>
+    <div className="space-y-10 p-6">
+      <Card className="bg-gradient-to-r from-slate-50 to-blue-50 border-blue-100">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-xl font-bold">🧠 {persona.toUpperCase()} Intelligence Dashboard</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">
+            Study Session ID: <span className="font-mono font-medium">{sessionId}</span>
+          </p>
+        </CardContent>
+      </Card>
+      
+      <section className="space-y-4">
+        <h2 className="text-xl font-bold">📥 Protocol Preparation</h2>
         <ProtocolUploadPanel 
-          sessionId={activeSession}
-          onInsightGenerated={(title, summary) => logInsight(title, summary)}
+          sessionId={sessionId}
+          initialText={protocolText} 
+          onProtocolUpdated={setProtocolText}
+          onInsightGenerated={(title, summary) => logSessionActivity(title, summary)}
         />
-
-        <h2 className="text-xl font-bold text-gray-800">📉 Dropout Estimator</h2>
-        <DropoutEstimator 
-          sessionId={activeSession}
-          onEstimationComplete={(estimate, reasoning) => {
-            logInsight("Dropout Rate Estimate", `Estimated ${estimate}% dropout rate for this protocol`);
-            logWisdomTrace("Calculate dropout rate estimate", reasoning, `${estimate}% dropout rate`);
-          }}
-        />
-
-        <h2 className="text-xl font-bold text-gray-800">🛡️ Protocol Validator</h2>
+        
         <ProtocolValidator
-          sessionId={activeSession}
+          sessionId={sessionId}
           onValidationComplete={(issues) => {
-            logInsight(
+            logSessionActivity(
               "Protocol Validation",
               `Identified ${issues.length} issues requiring attention`,
               issues.length > 0 ? "needs_attention" : "completed"
             );
           }}
         />
-
-        <h2 className="text-xl font-bold text-gray-800">🧠 AI-Repaired Protocol</h2>
+        
         <FixedProtocolViewer 
-          originalText="Paste or pull your latest protocol content here." 
-          sessionId={activeSession}
+          originalText={protocolText} 
+          sessionId={sessionId}
           onProtocolRepaired={(changes) => {
-            logInsight(
+            logSessionActivity(
               "Protocol Repair",
               `AI repaired ${changes.length} protocol sections`,
               "completed"
             );
           }}
         />
+      </section>
 
-        <div className="space-y-2 pt-2">
-          <Button 
-            variant="outline"
-            onClick={() => {
-              if (!activeSession) {
-                toast({
-                  title: "No active session",
-                  description: "Please select a study session first",
-                  variant: "destructive",
-                });
-                return;
-              }
-              // Would include actual implementation
-              logInsight("Generated IND Module 2.5", "Clinical pharmacology section generated based on protocol data");
-            }}
-          >
-            📄 Generate IND Module 2.5
-          </Button>
-          <Button 
-            variant="outline"
-            onClick={() => {
-              if (!activeSession) {
-                toast({
-                  title: "No active session",
-                  description: "Please select a study session first",
-                  variant: "destructive",
-                });
-                return;
-              }
-              // Would include actual implementation
-              logInsight("Generated IND Module 2.7", "Clinical summary section generated based on protocol data");
-            }}
-          >
-            📄 Generate IND Module 2.7
-          </Button>
-          <Button variant="outline">📝 Export Final Protocol (.docx)</Button>
-          <Button variant="outline">🧪 Regulatory Readiness Score</Button>
-        </div>
-
-        <h2 className="text-xl font-bold text-gray-800">📤 Send Final Protocol</h2>
-        <ProtocolEmailer
-          sessionId={activeSession}
-          onEmailSent={(recipient) => {
-            logInsight(
-              "Protocol Emailed",
-              `Protocol document emailed to ${recipient}`,
+      <section className="space-y-4">
+        <h2 className="text-xl font-bold">📊 Modeling & Risk Forecasting</h2>
+        <SampleSizeCalculator 
+          sessionId={sessionId}
+          onCalculationComplete={(result, reasoning) => {
+            logSessionActivity(
+              "Sample Size Calculation",
+              `Calculated required sample size of ${result.totalN} participants (${result.perGroup} per group)`,
               "completed"
+            );
+            logWisdomTrace(
+              "Sample size calculation",
+              reasoning,
+              `Sample size: ${result.totalN} total (${result.perGroup} per group)`
             );
           }}
         />
+        
+        <DropoutEstimator 
+          sessionId={sessionId}
+          onEstimationComplete={(estimate, reasoning) => {
+            logSessionActivity("Dropout Rate Estimate", `Estimated ${estimate}% dropout rate for this protocol`);
+            logWisdomTrace("Calculate dropout rate estimate", reasoning, `${estimate}% dropout rate`);
+          }}
+        />
+        
+        <TrialSuccessPredictor 
+          sessionId={sessionId}
+          onPredictionComplete={(probability, factors) => {
+            logSessionActivity(
+              "Trial Success Prediction",
+              `Predicted ${probability}% probability of trial success`,
+              probability < 30 ? "needs_attention" : "active"
+            );
+            logWisdomTrace(
+              "Trial success prediction",
+              factors.map(f => f.factor + ": " + f.impact),
+              `${probability}% probability of success`
+            );
+          }}
+        />
+      </section>
 
-        <h2 className="text-xl font-bold text-gray-800">📦 Generate Clinical Summary Packet</h2>
+      <section className="space-y-4">
+        <h2 className="text-xl font-bold">📝 Regulatory Document Generation</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Button 
+            variant="outline"
+            className="h-auto py-4 justify-start"
+            onClick={() => {
+              logSessionActivity("Generated IND Module 2.5", "Clinical pharmacology section generated based on protocol data");
+              toast({
+                title: "IND Module 2.5 Generated",
+                description: "Clinical pharmacology section has been prepared"
+              });
+            }}
+          >
+            <FilePlus2 className="mr-2 h-4 w-4" />
+            <div className="flex flex-col items-start">
+              <span>Generate IND Module 2.5</span>
+              <span className="text-xs text-muted-foreground">Clinical Pharmacology Section</span>
+            </div>
+          </Button>
+          
+          <Button 
+            variant="outline"
+            className="h-auto py-4 justify-start"
+            onClick={() => {
+              logSessionActivity("Generated IND Module 2.7", "Clinical summary section generated based on protocol data");
+              toast({
+                title: "IND Module 2.7 Generated",
+                description: "Clinical summary section has been prepared"
+              });
+            }}
+          >
+            <FilePlus2 className="mr-2 h-4 w-4" />
+            <div className="flex flex-col items-start">
+              <span>Generate IND Module 2.7</span>
+              <span className="text-xs text-muted-foreground">Clinical Summary Section</span>
+            </div>
+          </Button>
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <h2 className="text-xl font-bold">📦 Final Intelligence Outputs</h2>
         <SummaryPacketGenerator
-          sessionId={activeSession}
+          sessionId={sessionId}
           onPacketGenerated={(packetData) => {
-            logInsight(
+            logSessionActivity(
               "Summary Packet Generated",
               `Generated clinical summary packet with ${packetData.sections.length} sections`,
               "completed"
@@ -287,62 +289,54 @@ export default function ProtocolPlanningDashboard({ initialProtocol = "", sessio
             );
           }}
         />
-
-        <h2 className="text-xl font-bold text-gray-800">🗂 Summary Packet Archive</h2>
+        
         <SummaryPacketArchive
-          sessionId={activeSession}
+          sessionId={sessionId}
         />
-
-        <div className="flex gap-4 pt-4">
-          <a
-            href="/static/latest_report.pdf"
-            className="text-sm text-blue-600 underline hover:text-blue-800"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            📄 Download Planning Report (PDF)
-          </a>
-          <Button onClick={handleEmailReport} variant="outline">
-            📤 Email Report to Stakeholders
-          </Button>
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        <h2 className="text-xl font-bold text-gray-800">🔢 Sample Size Calculator</h2>
-        <SampleSizeCalculator 
-          sessionId={activeSession}
-          onCalculationComplete={(result, reasoning) => {
-            logInsight(
-              "Sample Size Calculation",
-              `Calculated required sample size of ${result.totalN} participants (${result.perGroup} per group)`,
+        
+        <ProtocolEmailer
+          sessionId={sessionId}
+          onEmailSent={(recipient) => {
+            logSessionActivity(
+              "Protocol Emailed",
+              `Protocol document emailed to ${recipient}`,
               "completed"
             );
-            logWisdomTrace(
-              "Sample size calculation",
-              reasoning,
-              `Sample size: ${result.totalN} total (${result.perGroup} per group)`
-            );
           }}
         />
+      </section>
 
-        <h2 className="text-xl font-bold text-gray-800">🔮 Trial Success Predictor</h2>
-        <TrialSuccessPredictor 
-          sessionId={activeSession}
-          onPredictionComplete={(probability, factors) => {
-            logInsight(
-              "Trial Success Prediction",
-              `Predicted ${probability}% probability of trial success`,
-              probability < 30 ? "needs_attention" : "active"
-            );
-            logWisdomTrace(
-              "Trial success prediction",
-              factors.map(f => f.factor + ": " + f.impact),
-              `${probability}% probability of success`
-            );
-          }}
-        />
-      </div>
+      <section className="border-t pt-6">
+        <div className="flex flex-wrap gap-4 justify-center">
+          <Button onClick={handleExportBundle} className="bg-gradient-to-r from-blue-600 to-indigo-600">
+            <FileArchive className="mr-2 h-4 w-4" />
+            Download Complete Study Bundle
+          </Button>
+          
+          <Button variant="outline" onClick={() => {
+            window.open(`/static/reports/${sessionId}_analysis.pdf`, '_blank');
+          }}>
+            <Download className="mr-2 h-4 w-4" />
+            Download Analysis Report (PDF)
+          </Button>
+          
+          <Button variant="outline" onClick={handleEmailReport}>
+            <Send className="mr-2 h-4 w-4" />
+            Email Report to Stakeholders
+          </Button>
+          
+          <Button variant="outline" onClick={() => {
+            logSessionActivity("Bookmark Created", "User saved a bookmark for this study session");
+            toast({
+              title: "Bookmark Created",
+              description: "This study session has been added to your bookmarks"
+            });
+          }}>
+            <BookmarkPlus className="mr-2 h-4 w-4" />
+            Save to My Bookmarks
+          </Button>
+        </div>
+      </section>
     </div>
   );
 }
