@@ -15,6 +15,7 @@ from controllers import sample_size
 from controllers import statistics
 from controllers import dropout
 from controllers import success
+from controllers import validation
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -76,6 +77,12 @@ app.include_router(
 app.include_router(
     statistics.router,
     tags=["statistics"]
+)
+
+# Include the validation router
+app.include_router(
+    validation.router,
+    tags=["validation"]
 )
 
 # Root endpoint (serve frontend)
