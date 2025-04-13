@@ -1,70 +1,59 @@
-import { Router } from "express";
-import path from "path";
-import fs from "fs";
+import { Request, Response, Router } from 'express';
+import fs from 'fs';
+import path from 'path';
 
-const router = Router();
+const reportsManifestRoutes = Router();
+const REPORTS_ROOT_DIR = 'lumen_reports_backend/static/example_reports';
 
-const REPORTS_BASE_DIR = path.join(process.cwd(), "lumen_reports_backend/static/example_reports");
-
-// Get a list of all available report bundles
-router.get("/manifest", (req, res) => {
+/**
+ * Get the root report index with all personas
+ */
+reportsManifestRoutes.get('/personas', async (_req: Request, res: Response) => {
   try {
-    const bundles = fs.readdirSync(REPORTS_BASE_DIR)
-      .filter(dir => {
-        const manifestPath = path.join(REPORTS_BASE_DIR, dir, "manifest.json");
-        return fs.existsSync(manifestPath);
-      })
-      .map(dir => {
-        const manifestPath = path.join(REPORTS_BASE_DIR, dir, "manifest.json");
-        const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf-8"));
-        return {
-          id: dir,
-          title: manifest.title,
-          description: manifest.description,
-          includes: manifest.includes
-        };
-      });
+    const indexPath = path.join(REPORTS_ROOT_DIR, 'report_index.json');
     
-    res.json(bundles);
-  } catch (error) {
-    console.error("Error fetching report bundles:", error);
-    res.status(500).json({ error: "Failed to fetch report bundles" });
+    if (!fs.existsSync(indexPath)) {
+      return res.status(404).json({
+        success: false,
+        message: 'Report index not found'
+      });
+    }
+    
+    const reportIndex = JSON.parse(fs.readFileSync(indexPath, 'utf-8'));
+    res.json(reportIndex);
+  } catch (error: any) {
+    console.error('Error fetching report personas:', error);
+    res.status(500).json({
+      success: false,
+      message: `Error fetching report personas: ${error.message}`
+    });
   }
 });
 
-// Get manifest for a specific persona
-router.get("/manifest/:personaId", (req, res) => {
+/**
+ * Get manifest for a specific persona
+ */
+reportsManifestRoutes.get('/persona/:personaId', async (req: Request, res: Response) => {
   try {
     const { personaId } = req.params;
-    const manifestPath = path.join(REPORTS_BASE_DIR, personaId, "manifest.json");
+    const manifestPath = path.join(REPORTS_ROOT_DIR, personaId, 'manifest.json');
     
     if (!fs.existsSync(manifestPath)) {
-      return res.status(404).json({ error: "Report bundle not found" });
+      return res.status(404).json({
+        success: false,
+        message: `Manifest for ${personaId} not found`
+      });
     }
     
-    const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf-8"));
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
     res.json(manifest);
-  } catch (error) {
-    console.error(`Error fetching report bundle for ${req.params.personaId}:`, error);
-    res.status(500).json({ error: "Failed to fetch report bundle" });
+  } catch (error: any) {
+    console.error(`Error fetching persona manifest:`, error);
+    res.status(500).json({
+      success: false,
+      message: `Error fetching persona manifest: ${error.message}`
+    });
   }
 });
 
-// Download a specific report file
-router.get("/download/:personaId/:fileName", (req, res) => {
-  try {
-    const { personaId, fileName } = req.params;
-    const filePath = path.join(REPORTS_BASE_DIR, personaId, fileName);
-    
-    if (!fs.existsSync(filePath)) {
-      return res.status(404).json({ error: "Report file not found" });
-    }
-    
-    res.download(filePath);
-  } catch (error) {
-    console.error(`Error downloading report file ${req.params.fileName}:`, error);
-    res.status(500).json({ error: "Failed to download report file" });
-  }
-});
-
-export default router;
+export default reportsManifestRoutes;

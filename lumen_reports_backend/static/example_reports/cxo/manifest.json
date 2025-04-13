@@ -1,0 +1,56 @@
+{
+  "persona": {
+    "id": "cxo",
+    "name": "Executive Team (CXO)",
+    "title": "Executive Decision Suite",
+    "description": "Strategic reports focused on market trends, competitive intelligence, and trial success factors for executive decision making.",
+    "icon": "ChartBarIcon"
+  },
+  "reports": [
+    {
+      "id": "market_landscape",
+      "title": "Therapeutic Area Market Landscape Analysis",
+      "description": "Comprehensive analysis of the current market landscape, pipeline competitors, and strategic opportunities for development programs.",
+      "filename": "market_landscape.pdf",
+      "filesize": "4.2 MB",
+      "tags": ["market intelligence", "competitive analysis", "pipeline assessment"],
+      "preview_img": "market_landscape_preview.png"
+    },
+    {
+      "id": "competitive_intel_dashboard",
+      "title": "Competitive Intelligence Dashboard",
+      "description": "Interactive dashboard featuring competitor trial activities, key endpoints, success rates, and time-to-market metrics.",
+      "filename": "competitive_intel_dashboard.pdf",
+      "filesize": "3.8 MB",
+      "tags": ["competitive intelligence", "trial metrics", "strategic planning"],
+      "preview_img": "competitive_dashboard_preview.png"
+    },
+    {
+      "id": "executive_summary",
+      "title": "Trial Design Executive Summary",
+      "description": "Concise executive summary of optimal trial design, key success factors, resource requirements, and strategic implications.",
+      "filename": "executive_summary.pdf",
+      "filesize": "2.1 MB",
+      "tags": ["executive brief", "strategic overview", "resource planning"],
+      "preview_img": "executive_summary_preview.png"
+    },
+    {
+      "id": "success_probability",
+      "title": "Success Probability Analysis",
+      "description": "Evidence-based estimation of trial success probability with sensitivity analysis across key design variables.",
+      "filename": "success_probability.pdf",
+      "filesize": "3.4 MB",
+      "tags": ["success modeling", "risk assessment", "probability analysis"],
+      "preview_img": "success_probability_preview.png"
+    },
+    {
+      "id": "portfolio_prioritization",
+      "title": "Portfolio Prioritization Framework",
+      "description": "Data-driven framework for evaluating and prioritizing pipeline assets based on probability of success, resource requirements, and market potential.",
+      "filename": "portfolio_prioritization.pdf",
+      "filesize": "4.6 MB",
+      "tags": ["portfolio strategy", "asset valuation", "resource allocation"],
+      "preview_img": "portfolio_framework_preview.png"
+    }
+  ]
+}

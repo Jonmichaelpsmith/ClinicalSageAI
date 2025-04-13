@@ -1,0 +1,84 @@
+{
+  "personas": [
+    {
+      "id": "cxo",
+      "name": "Executive Team (CXO)",
+      "title": "Executive Decision Suite",
+      "description": "Strategic reports focused on market trends, competitive intelligence, and trial success factors for executive decision making.",
+      "featuredReports": ["market_landscape.pdf", "competitive_intel_dashboard.pdf", "executive_summary.pdf"],
+      "icon": "ChartBarIcon"
+    },
+    {
+      "id": "planner",
+      "name": "Study Planning",
+      "title": "Study Planning Intelligence Suite",
+      "description": "Comprehensive analytics for evidence-based protocol design, sample size calculation, and endpoint selection.",
+      "featuredReports": ["endpoint_selection_guide.pdf", "sample_size_calculation.xlsx", "protocol_template.docx"],
+      "icon": "ClipboardDocumentIcon"
+    },
+    {
+      "id": "biostat",
+      "name": "Biostatistics",
+      "title": "Statistical Analysis Package",
+      "description": "Statistical analysis tools, power calculations, interim analysis strategies, and adaptive design modeling.",
+      "featuredReports": ["power_analysis.pdf", "adaptive_design_strategies.pdf", "statistical_analysis_plan_template.docx"],
+      "icon": "ChartPieIcon"
+    },
+    {
+      "id": "regulatory",
+      "name": "Regulatory",
+      "title": "Regulatory Intelligence Suite",
+      "description": "Regulatory guidance, submission templates, and approval strategy insights for expedited pathways.",
+      "featuredReports": ["regulatory_guideline_digest.pdf", "submission_readiness_checklist.pdf", "expert_panel_preparation.pdf"],
+      "icon": "DocumentCheckIcon"
+    },
+    {
+      "id": "med_writer",
+      "name": "Medical Writing",
+      "title": "Medical Writing Toolkit",
+      "description": "Templates, style guides, and narrative frameworks optimized for clinical documentation and publications.",
+      "featuredReports": ["csr_template.docx", "publication_framework.pdf", "data_visualization_guide.pdf"],
+      "icon": "DocumentTextIcon"
+    },
+    {
+      "id": "clin_ops",
+      "name": "Clinical Operations",
+      "title": "Clinical Operations Dashboard",
+      "description": "Site selection guidelines, enrollment projections, and operational excellence metrics.",
+      "featuredReports": ["site_selection_guide.pdf", "enrollment_optimization.pdf", "operational_metrics.xlsx"],
+      "icon": "BuildingOfficeIcon"
+    },
+    {
+      "id": "investor",
+      "name": "Investor Relations",
+      "title": "Investor Relations Package",
+      "description": "Market potential analysis, competitive positioning, and risk-adjusted valuation metrics for investors.",
+      "featuredReports": ["market_opportunity.pdf", "valuation_model.pdf", "risk_analysis.pdf"],
+      "icon": "PresentationChartLineIcon"
+    },
+    {
+      "id": "pi",
+      "name": "Principal Investigators",
+      "title": "Principal Investigator Toolkit",
+      "description": "Investigator-focused study materials, enrollment strategies, and evidence-based protocol design support.",
+      "featuredReports": ["investigator_guide.pdf", "recruitment_strategies.pdf", "protocol_review_checklist.pdf"],
+      "icon": "UserCircleIcon"
+    },
+    {
+      "id": "data_sci",
+      "name": "Data Science",
+      "title": "Data Science Intelligence Suite",
+      "description": "Advanced analytics, predictive modeling, and machine learning applications for clinical trial optimization.",
+      "featuredReports": ["predictive_modeling.pdf", "machine_learning_applications.pdf", "data_strategy.pdf"],
+      "icon": "CodeBracketIcon"
+    },
+    {
+      "id": "comm",
+      "name": "Commercial",
+      "title": "Commercial Launch Preparation",
+      "description": "Market access, reimbursement strategy, and value evidence planning for commercial success.",
+      "featuredReports": ["market_access_strategy.pdf", "value_proposition.pdf", "payor_evidence_requirements.pdf"],
+      "icon": "RocketLaunchIcon"
+    }
+  ]
+}

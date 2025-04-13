@@ -1,17 +1,56 @@
 {
-  "persona": "planner",
-  "title": "Study Planning Intelligence Suite",
-  "description": "Protocol design optimization, CSR-backed precedent matching, and strategy-driven planning outputs built for cross-functional trial leaders.",
-  "includes": [
-    "Design archetype strategy brief (PDF)",
-    "Endpoint utilization matrix (XLSX)",
-    "AI-optimized protocol draft (DOCX)",
-    "Timeline vs. CSR benchmark overlay (PNG)"
-  ],
-  "files": [
-    "design_archetype_brief.pdf",
-    "endpoint_utilization_matrix.xlsx",
-    "ai_optimized_protocol.docx",
-    "timeline_benchmark_overlay.png"
+  "persona": {
+    "id": "planner",
+    "name": "Study Planning",
+    "title": "Study Planning Intelligence Suite",
+    "description": "Comprehensive analytics for evidence-based protocol design, sample size calculation, and endpoint selection.",
+    "icon": "ClipboardDocumentIcon"
+  },
+  "reports": [
+    {
+      "id": "endpoint_selection_guide",
+      "title": "Evidence-Based Endpoint Selection Guide",
+      "description": "Data-driven endpoint recommendations with supporting evidence from historical trials, regulatory precedent, and optimal measurement methodologies.",
+      "filename": "endpoint_selection_guide.pdf",
+      "filesize": "5.3 MB",
+      "tags": ["endpoint selection", "regulatory precedent", "measurement methodology"],
+      "preview_img": "endpoint_selection_preview.png"
+    },
+    {
+      "id": "sample_size_calculation",
+      "title": "Advanced Sample Size Calculation Model",
+      "description": "Interactive sample size calculator with sensitivity analysis, evidence-based effect size estimates, and dropout rate modeling.",
+      "filename": "sample_size_calculation.xlsx",
+      "filesize": "2.8 MB",
+      "tags": ["sample size", "power analysis", "effect size"],
+      "preview_img": "sample_size_preview.png"
+    },
+    {
+      "id": "protocol_template",
+      "title": "Optimized Protocol Template",
+      "description": "Pre-formatted protocol template with evidence-based inclusion/exclusion criteria, visit schedules, and regulatory-aligned language.",
+      "filename": "protocol_template.docx",
+      "filesize": "3.2 MB",
+      "tags": ["protocol template", "study design", "regulatory compliance"],
+      "preview_img": "protocol_template_preview.png"
+    },
+    {
+      "id": "study_design_comparison",
+      "title": "Study Design Options Analysis",
+      "description": "Comparative analysis of alternative study designs with predictive success rates, resource requirements, and timeline projections.",
+      "filename": "study_design_comparison.pdf",
+      "filesize": "4.7 MB",
+      "tags": ["study design", "comparative analysis", "success modeling"],
+      "preview_img": "design_comparison_preview.png"
+    },
+    {
+      "id": "inclusion_exclusion_builder",
+      "title": "Inclusion/Exclusion Criteria Builder",
+      "description": "Evidence-based inclusion/exclusion criteria generator with optimization for recruitment feasibility and statistical power.",
+      "filename": "inclusion_exclusion_builder.pdf",
+      "filesize": "3.9 MB",
+      "tags": ["patient selection", "recruitment", "eligibility criteria"],
+      "preview_img": "inclusion_builder_preview.png"
+    }
   ]
 }
