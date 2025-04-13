@@ -176,19 +176,19 @@ export function ProtocolParser({ onParseComplete }: ProtocolParserProps) {
               onUpload={handleFileUpload}
               disabled={isPending}
               uploadMessage="Drag & drop your protocol file here or click to browse"
-              className="h-48" {/* Reduced height */}
+              className="h-48" /* Reduced height */
             />
-            <div className="text-xs text-muted-foreground mt-1"> {/* Reduced margin */}
+            <div className="text-xs text-muted-foreground mt-1" /* Reduced margin */>
               Supported formats: PDF (max 10MB)
             </div>
           </TabsContent>
 
-          <TabsContent value="text" className="space-y-2"> {/* Reduced spacing */}
+          <TabsContent value="text" className="space-y-2" /* Reduced spacing */>
             <Textarea 
               placeholder="Paste your protocol text here..."
               value={protocolText}
               onChange={(e) => setProtocolText(e.target.value)}
-              className="min-h-[200px] font-mono text-sm" {/* Reduced height */}
+              className="min-h-[200px] font-mono text-sm" /* Reduced height */
               disabled={isPending}
             />
             <div className="flex space-x-2">

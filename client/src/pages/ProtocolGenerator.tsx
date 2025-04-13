@@ -720,7 +720,7 @@ const ProtocolDesigner = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-gray-50 p-3 rounded-lg">
                     <p className="text-xs text-gray-500 mb-1">Indication</p>
-                    <p<p className="font-medium">{analysisResults.indication || "Not detected"}</p>
+                    <p className="font-medium">{analysisResults.indication || "Not detected"}</p>
                   </div>
                   <div className="bg-gray-50 p-3 rounded-lg">
                     <p className="text-xs text-gray-500 mb-1">Phase</p>

@@ -4,6 +4,7 @@ import path from 'path';
 import PDFDocument from 'pdfkit';
 import { z } from 'zod';
 import { exportService } from '../services/export-service';
+import { spawn } from 'child_process';
 
 const router = express.Router();
 
@@ -43,7 +44,7 @@ router.post('/intelligence-report', express.json(), async (req, res) => {
     const filename = `protocol-intelligence-report-${protocolId}-${Date.now()}.pdf`;
     const filePath = path.join(EXPORTS_DIR, filename);
     
-    // Create PDF document
+    // Create PDF document with branded cover page
     const pdf = new PDFDocument({
       margins: { top: 50, bottom: 50, left: 50, right: 50 },
       size: 'A4'
@@ -53,14 +54,50 @@ router.post('/intelligence-report', express.json(), async (req, res) => {
     const writeStream = fs.createWriteStream(filePath);
     pdf.pipe(writeStream);
     
-    // Add content to PDF
-    pdf.font('Helvetica-Bold').fontSize(20)
-      .text('Protocol Intelligence Report', { align: 'center' })
-      .moveDown();
+    // Create a temporary data file for the Python cover page generator
+    const sessionId = reportData.session_id || `TS-${Date.now()}`;
+    const persona = reportData.persona || "Intelligence";
+    const tempDataPath = path.join(EXPORTS_DIR, `${sessionId}_cover_data.json`);
     
-    pdf.font('Helvetica').fontSize(12)
-      .text(`Generated: ${new Date().toLocaleString()}`, { align: 'center' })
-      .moveDown(2);
+    // Write session data to temp file for Python script
+    fs.writeFileSync(tempDataPath, JSON.stringify({
+      session_id: sessionId,
+      title: "Protocol Intelligence Report",
+      persona: persona,
+      protocol: {
+        indication: protocol.indication || "Not specified",
+        phase: protocol.phase || "Not specified",
+        sample_size: protocol.sample_size || "Not specified",
+      },
+      sections: [
+        "Protocol Summary",
+        "Success Prediction", 
+        "Strategic Insights",
+        "Benchmark Comparison"
+      ]
+    }));
+    
+    // Get the directory of our current module
+    const currentDir = path.dirname(__filename);
+    const scriptPath = path.join(currentDir, '..', 'cover_page.py');
+    
+    // Use Python child process to add branded cover
+    const coverProcess = spawn('python3', [scriptPath, 'add_cover', tempDataPath, filePath]);
+    
+    // Listen for cover page process completion
+    coverProcess.on('close', (code) => {
+      if (code !== 0) {
+        console.error(`Cover page process exited with code ${code}`);
+        // Continue with report generation even if cover page fails
+        startReport();
+      } else {
+        // Cover page added successfully, continue with content
+        startReport();
+      }
+    });
+    
+    // Function to start the actual report content
+    function startReport() {
     
     // Protocol ID and Summary
     pdf.font('Helvetica-Bold').fontSize(16)
@@ -188,6 +225,9 @@ router.post('/intelligence-report', express.json(), async (req, res) => {
         message: 'Error generating PDF file' 
       });
     });
+      // Function end - startReport
+    }
+    
   } catch (error: any) {
     console.error('Error generating report:', error);
     return res.status(500).json({ 

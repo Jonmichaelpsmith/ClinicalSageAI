@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { db } from '../db';
 import { sql } from 'drizzle-orm';
+import fs from 'fs';
+import path from 'path';
 
 const router = Router();
 
@@ -138,6 +140,74 @@ router.get('/emails', async (req, res) => {
   } catch (error) {
     console.error('Error listing session emails:', error);
     res.status(500).json({ error: 'Failed to list session emails' });
+  }
+});
+
+// Get session summary with status of generated files
+router.get('/summary/:session_id', (req, res) => {
+  try {
+    const { session_id } = req.params;
+    
+    if (!session_id) {
+      return res.status(400).json({ error: 'Missing session_id' });
+    }
+    
+    // Determine base directory for sessions
+    const baseDir = fs.existsSync('/mnt/data') 
+      ? '/mnt/data/lumen_reports_backend' 
+      : 'data';
+    
+    const sessionDir = path.join(baseDir, 'sessions', session_id);
+    
+    // Default response structure
+    const sessionSummary = {
+      session_id,
+      last_updated: new Date().toISOString(),
+      generated_files: {
+        dropout_forecast: false,
+        success_prediction: false,
+        ind_summary: false,
+        sap_summary: false,
+        summary_packet: false
+      }
+    };
+    
+    // Check if session directory exists
+    if (!fs.existsSync(sessionDir)) {
+      return res.status(200).json(sessionSummary);
+    }
+    
+    // Check each file existence and get last modified time
+    const fileChecks = [
+      { key: 'dropout_forecast', path: path.join(sessionDir, 'dropout_forecast.json') },
+      { key: 'success_prediction', path: path.join(sessionDir, 'success_prediction.json') },
+      { key: 'ind_summary', path: path.join(sessionDir, 'ind_summary.docx') },
+      { key: 'sap_summary', path: path.join(sessionDir, 'sap_summary.docx') },
+      { key: 'summary_packet', path: path.join(sessionDir, 'summary_packet.pdf') }
+    ];
+    
+    let lastModified = null;
+    
+    // Check each file and record the most recent modification date
+    fileChecks.forEach(check => {
+      if (fs.existsSync(check.path)) {
+        sessionSummary.generated_files[check.key] = true;
+        
+        const stats = fs.statSync(check.path);
+        const modifiedTime = stats.mtime.getTime();
+        
+        if (!lastModified || modifiedTime > lastModified) {
+          lastModified = modifiedTime;
+          sessionSummary.last_updated = stats.mtime.toISOString();
+        }
+      }
+    });
+    
+    res.status(200).json(sessionSummary);
+    
+  } catch (error) {
+    console.error('Error retrieving session summary:', error);
+    res.status(500).json({ error: 'Failed to retrieve session summary' });
   }
 });
 

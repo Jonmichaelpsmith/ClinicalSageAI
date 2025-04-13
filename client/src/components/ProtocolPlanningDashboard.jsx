@@ -9,6 +9,7 @@ import FixedProtocolViewer from "@/components/FixedProtocolViewer";
 import ProtocolEmailer from "@/components/ProtocolEmailer";
 import SummaryPacketGenerator from "@/components/SummaryPacketGenerator";
 import SummaryPacketArchive from "@/components/SummaryPacketArchive";
+import SessionSummaryPanel from "@/components/SessionSummaryPanel";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookmarkPlus, Download, FileArchive, FilePlus2, Mail, Send } from "lucide-react";
@@ -346,6 +347,103 @@ export default function ProtocolPlanningDashboard({ initialProtocol = "", sessio
       });
     }
   };
+  
+  const handleRegulatoryBundleDownload = async () => {
+    toast({
+      title: "Preparing Regulatory Bundle",
+      description: "Creating regulatory-ready submission package...",
+    });
+
+    try {
+      // Log this activity
+      await logWisdomTrace(
+        "User requested regulatory-ready bundle",
+        ["Compiling IND document sections", "Formatting regulatory compliance artifacts", "Preparing submission-grade bundle"],
+        "Regulatory submission-ready package prepared for download"
+      );
+      
+      await logSessionActivity(
+        "Regulatory Bundle Export",
+        `Exported regulatory-ready submission bundle for study ${sessionId}`,
+        "completed"
+      );
+      
+      // Trigger download directly
+      window.open(`/api/export/regulatory-bundle/${sessionId}`, "_blank");
+      
+      // Show success notification after a brief delay
+      setTimeout(() => {
+        toast({
+          title: "Regulatory Bundle Ready",
+          description: "Your regulatory-ready submission package has been prepared and download should begin shortly.",
+        });
+      }, 1000);
+    } catch (error) {
+      console.error("Error downloading regulatory bundle:", error);
+      toast({
+        title: "Export Failed",
+        description: "There was an error preparing your regulatory bundle.",
+        variant: "destructive"
+      });
+    }
+  };
+  
+  const handleEmailRegulatoryBundle = async () => {
+    try {
+      toast({
+        title: "Preparing Regulatory Bundle",
+        description: "Creating and sending regulatory-ready submission package...",
+      });
+
+      // Log this activity
+      await logWisdomTrace(
+        "User requested regulatory bundle email",
+        ["Compiling submission documents", "Preparing regulatory-grade materials", "Processing delivery request"],
+        "Regulatory submission-ready package dispatched to stakeholders"
+      );
+      
+      // Get the user's email from local storage or use a default
+      const userEmail = localStorage.getItem('userEmail') || '';
+      
+      if (!userEmail || !userEmail.includes('@')) {
+        setEmailDialogOpen(true);
+        return;
+      }
+      
+      // Send the email request
+      const response = await fetch('/api/export/email-regulatory-bundle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          session_id: sessionId,
+          recipient_email: userEmail
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send regulatory bundle email');
+      }
+
+      // Log this action as an insight
+      await logSessionActivity(
+        "Regulatory Bundle Emailed",
+        `Regulatory submission package emailed to ${userEmail}`,
+        "completed"
+      );
+      
+      toast({
+        title: "Regulatory Bundle Emailed",
+        description: `Your regulatory-ready submission package has been emailed to ${userEmail}`,
+      });
+    } catch (error) {
+      console.error("Error sending regulatory bundle email:", error);
+      toast({
+        title: "Email Failed",
+        description: "There was an error emailing your regulatory bundle. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
 
   return (
     <div className="space-y-10 p-6">
@@ -438,7 +536,7 @@ export default function ProtocolPlanningDashboard({ initialProtocol = "", sessio
 
       <section className="space-y-4">
         <h2 className="text-xl font-bold">📝 Regulatory Document Generation</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Button 
             variant="outline"
             className="h-auto py-4 justify-start"
@@ -474,11 +572,60 @@ export default function ProtocolPlanningDashboard({ initialProtocol = "", sessio
               <span className="text-xs text-muted-foreground">Clinical Summary Section</span>
             </div>
           </Button>
+          
+          <Button 
+            variant="outline"
+            className="h-auto py-4 justify-start"
+            onClick={() => {
+              const sapText = "This Statistical Analysis Plan (SAP) outlines the methods for analyzing data from the clinical trial. The primary analysis will use an intent-to-treat approach with all randomized participants. Missing data will be handled using multiple imputation techniques. The primary endpoint will be analyzed using a mixed-effects model with repeated measures, adjusting for baseline values and stratification factors. Secondary endpoints will be analyzed using appropriate statistical methods with adjustment for multiplicity using the Hochberg procedure. Safety data will be summarized descriptively without formal statistical testing.";
+              
+              // Export SAP as DOCX
+              fetch('/api/export/sap-docx', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  session_id: studySessionId,
+                  sap_text: sapText
+                }),
+              })
+              .then(response => response.json())
+              .then(data => {
+                if (data.status === "ok") {
+                  logSessionActivity("Generated SAP Document", "Statistical Analysis Plan generated with branded template");
+                  toast({
+                    title: "SAP Document Generated",
+                    description: "Statistical Analysis Plan has been prepared as DOCX"
+                  });
+                  // Open the document in a new tab
+                  window.open(data.path, '_blank');
+                }
+              })
+              .catch(error => {
+                console.error('Error exporting SAP document:', error);
+                toast({
+                  title: "Export Failed",
+                  description: "There was an error generating the SAP document",
+                  variant: "destructive"
+                });
+              });
+            }}
+          >
+            <FileSpreadsheet className="mr-2 h-4 w-4" />
+            <div className="flex flex-col items-start">
+              <span>Generate SAP Document</span>
+              <span className="text-xs text-muted-foreground">Statistical Analysis Plan</span>
+            </div>
+          </Button>
         </div>
       </section>
 
       <section className="space-y-4">
         <h2 className="text-xl font-bold">📦 Final Intelligence Outputs</h2>
+        {/* Session Status Summary Panel */}
+        <SessionSummaryPanel sessionId={sessionId} />
+        
         <SummaryPacketGenerator
           sessionId={sessionId}
           onPacketGenerated={(packetData) => {
@@ -549,6 +696,15 @@ export default function ProtocolPlanningDashboard({ initialProtocol = "", sessio
           >
             <FileArchive className="mr-2 h-4 w-4" />
             📦 Download Full Archive
+          </Button>
+          
+          <Button 
+            variant="default"
+            className="bg-gradient-to-r from-purple-600 to-indigo-600" 
+            onClick={handleRegulatoryBundleDownload}
+          >
+            <Download className="mr-2 h-4 w-4" />
+            📥 Download Regulatory Ready Bundle
           </Button>
           
           <Button variant="outline" onClick={() => {

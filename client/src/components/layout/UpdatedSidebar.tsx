@@ -114,10 +114,10 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
           </div>
           <button
             type="button"
-            className="h-8 w-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-500 focus:outline-none" {/*Reduced size */}
+            className="h-8 w-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-500 focus:outline-none" 
             onClick={() => setSidebarOpen(false)}
           >
-            <XCircle className="h-5 w-5" /> {/*Reduced size */}
+            <XCircle className="h-5 w-5" /> {/* Reduced size */}
           </button>
         </div>
 

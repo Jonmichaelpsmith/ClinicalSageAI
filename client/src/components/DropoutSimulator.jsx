@@ -1,30 +1,10 @@
 // /client/components/DropoutSimulator.jsx
 import { useState } from "react";
-import { Line } from "react-chartjs-2";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-} from 'chart.js';
 import { useToast } from "@/hooks/use-toast";
 
-// Register ChartJS components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-);
+// Temporarily removed chart.js imports to allow testing the SessionSummaryPanel
 
 export default function DropoutSimulator({ sessionId, onEstimationComplete }) {
   const [duration, setDuration] = useState(24);
@@ -154,25 +134,18 @@ export default function DropoutSimulator({ sessionId, onEstimationComplete }) {
 
         {forecast.length > 0 && (
           <>
-            <div className="mt-4 h-64">
-              <Line 
-                data={chartData}
-                options={{
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  scales: {
-                    y: {
-                      beginAtZero: true,
-                      title: {
-                        display: true,
-                        text: 'Dropout Percentage (%)'
-                      }
-                    }
-                  }
-                }}
-              />
+            <div className="mt-4 p-4 border rounded bg-blue-50">
+              <h3 className="text-base font-medium">Forecast Results</h3>
+              <p className="text-sm my-2">
+                {forecast.length > 0 && 
+                  `Final Dropout Rate: ${(forecast[forecast.length-1].predicted_dropout * 100).toFixed(1)}%`
+                }
+              </p>
+              <p className="text-sm mt-2 text-muted-foreground">{summary}</p>
+              <div className="mt-2 text-xs text-gray-500">
+                <p>* Chart visualization requires chart.js to be installed</p>
+              </div>
             </div>
-            <p className="text-sm mt-2 text-muted-foreground">{summary}</p>
           </>
         )}
       </CardContent>
