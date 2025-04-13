@@ -15,6 +15,8 @@ interface ExportResult {
   skipped: number;
   errors: number;
   filesInDir: number;
+  totalExportedSinceLastRequest?: number;
+  lastExportDate?: string;
 }
 
 export default function AdminPanel() {
@@ -42,6 +44,30 @@ export default function AdminPanel() {
       });
     }
   });
+  
+  // Reset counter mutation
+  const resetCounterMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest('POST', '/api/csr/reset-export-counter');
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Counter Reset",
+        description: "The CSR export counter has been reset successfully",
+        variant: "default",
+      });
+      // Refresh the export data to show updated counter
+      exportMutation.mutate();
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Reset Failed",
+        description: error.message || "An error occurred while resetting the counter",
+        variant: "destructive",
+      });
+    }
+  });
 
   const handleExportToJson = () => {
     toast({
@@ -49,6 +75,10 @@ export default function AdminPanel() {
       description: "Exporting database CSRs to JSON files. This may take a few minutes...",
     });
     exportMutation.mutate();
+  };
+  
+  const handleResetCounter = () => {
+    resetCounterMutation.mutate();
   };
 
   const results = exportMutation.data?.results as ExportResult | undefined;
@@ -102,6 +132,30 @@ export default function AdminPanel() {
                           <p><strong>Skipped (already exist):</strong> {results?.skipped}</p>
                           <p><strong>Errors:</strong> {results?.errors}</p>
                           <p className="mt-2"><strong>Total JSON files available:</strong> {results?.filesInDir}</p>
+                          {results?.totalExportedSinceLastRequest !== undefined && (
+                            <div className="mt-2 p-2 bg-green-100 rounded border border-green-300">
+                              <p><strong>Total CSRs exported since last request:</strong> {results.totalExportedSinceLastRequest}</p>
+                              {results.lastExportDate && (
+                                <p><strong>Last export date:</strong> {new Date(results.lastExportDate).toLocaleString()}</p>
+                              )}
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={handleResetCounter}
+                                disabled={resetCounterMutation.isPending}
+                                className="mt-2"
+                              >
+                                {resetCounterMutation.isPending ? (
+                                  <>
+                                    <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                                    Resetting...
+                                  </>
+                                ) : (
+                                  'Reset Counter'
+                                )}
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       </AlertDescription>
                     </Alert>
