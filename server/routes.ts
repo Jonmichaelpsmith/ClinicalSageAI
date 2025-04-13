@@ -2411,11 +2411,11 @@ Provide a comprehensive, evidence-based response.`;
       const fullMessage = fileContext ? `${message}\n\n${fileContext}` : message;
       
       // Use custom system prompt from StudyDesignAgent component if provided
-      const defaultSystemPrompt = "You are TrialSage, an expert clinical trial design assistant. Respond to questions about clinical trial design, protocols, and study methodologies with evidence-based insights. If the user uploaded a document, analyze it and provide insights relevant to the user's query. Make sure to reference specific sections and details from the uploaded document in your responses. Maintain focus on the document throughout the conversation. Use a helpful and informative tone.";
+      const defaultSystemPrompt = "You are TrialSage, an expert clinical trial design advisor with deep knowledge of global CSRs, academic literature, and regulatory guidelines. You must speak in the manner of an experienced advisor who consistently references specific sources to support all recommendations. For EVERY point you make: 1) Cite specific CSRs from our knowledge base, including their outcomes, successes, and failures. 2) Reference relevant academic literature and peer-reviewed studies. 3) Cite global government agency guidance (FDA, EMA, NMPA, etc.) and industry best practices. 4) Draw on your deep learning understanding of our Global CSR library to identify patterns across multiple studies. Be extremely specific about what worked or didn't work in those studies and how those lessons apply to the current protocol. If the user uploaded a document, provide detailed analysis with insights relevant to their query. Make sure to reference specific sections from the uploaded document in your responses and maintain focus on it throughout the conversation. Your responses must be evidence-based, citing multiple specific sources for each recommendation. Use a professional, scholarly advisor tone.";
       
       // Enhance system prompt with file context if available
       const enhancedSystemPrompt = fileContext ? 
-        `${system_prompt || defaultSystemPrompt} The user has uploaded a document that you must reference in your responses. Always tie your advice to specific elements in the uploaded document.` : 
+        `${system_prompt || defaultSystemPrompt} The user has uploaded a document that you must reference in your responses. Always tie your advice to specific elements in the uploaded document and relate them to: 1) Actual CSR examples from similar studies, 2) Academic literature and peer-reviewed research, 3) Global regulatory agency guidelines, and 4) Best practices derived from patterns across multiple studies. For EACH recommendation, cite multiple specific sources and explain how they relate to sections in the uploaded document. Maintain this scholarly advisor role and evidence-based approach throughout the entire conversation.` : 
         system_prompt || defaultSystemPrompt;
       
       // Use the OpenAI service for generating responses
@@ -2427,13 +2427,46 @@ Provide a comprehensive, evidence-based response.`;
       // Generate a thread ID if not provided
       const newThreadId = thread_id || `thread_${Date.now()}`;
       
-      // Extract potential citations using a simple pattern match
+      // Extract potential citations using a comprehensive pattern match for multiple knowledge sources
       const citations = [];
-      const citationTriggers = ["study", "trial", "report", "according to", "published", "clinical"];
       
-      for (const trigger of citationTriggers) {
+      // CSR and clinical trial related citation patterns
+      const csrTriggers = ["study", "trial", "report", "according to", "published", "clinical", "csr", "clinical study report"];
+      
+      // Academic literature citation patterns
+      const academicTriggers = ["journal", "publication", "paper", "research", "article", "literature", "meta-analysis", "systematic review"];
+      
+      // Regulatory agency citation patterns
+      const regulatoryTriggers = ["fda", "ema", "nmpa", "pmda", "health canada", "mhra", "anvisa", "regulatory", "guidance", "guideline", "ich"];
+      
+      // Best practices citation patterns
+      const bestPracticeTriggers = ["best practice", "standard", "recommendation", "consensus", "industry standard", "protocol standard"];
+      
+      // Add CSR citations
+      for (const trigger of csrTriggers) {
         if (responseText.toLowerCase().includes(trigger)) {
           citations.push(`CSR_${trigger.toUpperCase().replace(/\s/g, '_')}`);
+        }
+      }
+      
+      // Add academic literature citations
+      for (const trigger of academicTriggers) {
+        if (responseText.toLowerCase().includes(trigger)) {
+          citations.push(`ACADEMIC_${trigger.toUpperCase().replace(/\s/g, '_')}`);
+        }
+      }
+      
+      // Add regulatory citations
+      for (const trigger of regulatoryTriggers) {
+        if (responseText.toLowerCase().includes(trigger)) {
+          citations.push(`REG_${trigger.toUpperCase().replace(/\s/g, '_')}`);
+        }
+      }
+      
+      // Add best practices citations
+      for (const trigger of bestPracticeTriggers) {
+        if (responseText.toLowerCase().includes(trigger)) {
+          citations.push(`BP_${trigger.toUpperCase().replace(/\s/g, '_')}`);
         }
       }
       
@@ -2442,6 +2475,7 @@ Provide a comprehensive, evidence-based response.`;
         citations.push(`FILE_${file_id}`);
       }
       
+      // If no citations were detected, add a generic reference
       if (citations.length === 0) {
         citations.push("CSR_GENERAL_REFERENCE");
       }
@@ -3943,13 +3977,46 @@ Provide a comprehensive, evidence-based response.`;
       // Generate a thread ID if not provided
       const newThreadId = thread_id || `thread_${Date.now()}`;
       
-      // Extract potential citations using a simple pattern match
+      // Extract potential citations using a comprehensive pattern match for multiple knowledge sources
       const citations = [];
-      const citationTriggers = ["study", "trial", "report", "according to", "published", "clinical"];
       
-      for (const trigger of citationTriggers) {
+      // CSR and clinical trial related citation patterns
+      const csrTriggers = ["study", "trial", "report", "according to", "published", "clinical", "csr", "clinical study report"];
+      
+      // Academic literature citation patterns
+      const academicTriggers = ["journal", "publication", "paper", "research", "article", "literature", "meta-analysis", "systematic review"];
+      
+      // Regulatory agency citation patterns
+      const regulatoryTriggers = ["fda", "ema", "nmpa", "pmda", "health canada", "mhra", "anvisa", "regulatory", "guidance", "guideline", "ich"];
+      
+      // Best practices citation patterns
+      const bestPracticeTriggers = ["best practice", "standard", "recommendation", "consensus", "industry standard", "protocol standard"];
+      
+      // Add CSR citations
+      for (const trigger of csrTriggers) {
         if (responseText.toLowerCase().includes(trigger)) {
           citations.push(`CSR_${trigger.toUpperCase().replace(/\s/g, '_')}`);
+        }
+      }
+      
+      // Add academic literature citations
+      for (const trigger of academicTriggers) {
+        if (responseText.toLowerCase().includes(trigger)) {
+          citations.push(`ACADEMIC_${trigger.toUpperCase().replace(/\s/g, '_')}`);
+        }
+      }
+      
+      // Add regulatory citations
+      for (const trigger of regulatoryTriggers) {
+        if (responseText.toLowerCase().includes(trigger)) {
+          citations.push(`REG_${trigger.toUpperCase().replace(/\s/g, '_')}`);
+        }
+      }
+      
+      // Add best practices citations
+      for (const trigger of bestPracticeTriggers) {
+        if (responseText.toLowerCase().includes(trigger)) {
+          citations.push(`BP_${trigger.toUpperCase().replace(/\s/g, '_')}`);
         }
       }
       
