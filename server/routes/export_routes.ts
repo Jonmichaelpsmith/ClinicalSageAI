@@ -27,6 +27,12 @@ if (!fs.existsSync(ARCHIVE_DIR)) {
   fs.mkdirSync(ARCHIVE_DIR, { recursive: true });
 }
 
+// Create directory for session summary exports
+const SESSION_SUMMARY_DIR = path.join(EXPORTS_DIR, 'session-summaries');
+if (!fs.existsSync(SESSION_SUMMARY_DIR)) {
+  fs.mkdirSync(SESSION_SUMMARY_DIR, { recursive: true });
+}
+
 // Generate and export a Protocol Intelligence Report
 router.post('/intelligence-report', express.json(), async (req, res) => {
   try {
@@ -58,6 +64,9 @@ router.post('/intelligence-report', express.json(), async (req, res) => {
     const sessionId = reportData.session_id || `TS-${Date.now()}`;
     const persona = reportData.persona || "Intelligence";
     const tempDataPath = path.join(EXPORTS_DIR, `${sessionId}_cover_data.json`);
+    
+    // Extract protocol data if available
+    const protocol = reportData.parsed || {};
     
     // Write session data to temp file for Python script
     fs.writeFileSync(tempDataPath, JSON.stringify({
@@ -456,6 +465,219 @@ router.get('/download/study-bundle', async (req, res) => {
     console.error('Download error:', error);
     res.status(500).json({
       error: 'Failed to download export bundle',
+      message: error.message || 'Unknown error'
+    });
+  }
+});
+
+/**
+ * Generate and export a Session Summary Report PDF
+ * POST /api/export/session-summary/:session_id
+ */
+router.post('/session-summary/:session_id', express.json(), async (req, res) => {
+  try {
+    const { session_id } = req.params;
+    const { include_timestamp = true, format = 'pdf' } = req.body;
+    
+    if (!session_id) {
+      return res.status(400).json({ error: 'Session ID is required' });
+    }
+
+    // Determine base directory for sessions
+    const baseDir = fs.existsSync('/mnt/data') 
+      ? '/mnt/data/lumen_reports_backend' 
+      : 'data';
+    
+    const sessionDir = path.join(baseDir, 'sessions', session_id);
+    
+    // Check if session directory exists
+    if (!fs.existsSync(sessionDir)) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+    
+    // Generate a unique filename for this export
+    const filename = `session_summary_${session_id}_${Date.now()}.pdf`;
+    const outputPath = path.join(SESSION_SUMMARY_DIR, filename);
+    
+    // Fetch the session summary data
+    const summaryResponse = await fetch(`http://localhost:${process.env.PORT || 5000}/api/session/summary/${session_id}`);
+    
+    if (!summaryResponse.ok) {
+      return res.status(500).json({ error: 'Failed to retrieve session summary data' });
+    }
+    
+    const summaryData = await summaryResponse.json();
+    
+    // Create PDF document
+    const pdf = new PDFDocument({
+      margins: { top: 50, bottom: 50, left: 60, right: 60 },
+      size: 'A4'
+    });
+    
+    // Pipe to file
+    const writeStream = fs.createWriteStream(outputPath);
+    pdf.pipe(writeStream);
+    
+    // Get the current date and time
+    const currentDate = new Date().toLocaleDateString();
+    const currentTime = new Date().toLocaleTimeString();
+    
+    // Add branded header
+    pdf.fontSize(20).font('Helvetica-Bold')
+      .text('LumenTrialGuide.AI', { align: 'center' })
+      .fontSize(16).font('Helvetica')
+      .text('Session Intelligence Snapshot', { align: 'center' })
+      .moveDown(0.5);
+    
+    // Add timestamp if requested
+    if (include_timestamp) {
+      pdf.fontSize(10).font('Helvetica')
+        .text(`Generated on: ${currentDate} at ${currentTime}`, { align: 'center' })
+        .moveDown(1);
+    }
+    
+    // Session ID section
+    pdf.fontSize(12).font('Helvetica-Bold')
+      .text('Session Information', { underline: true })
+      .moveDown(0.5);
+    
+    pdf.fontSize(11).font('Helvetica')
+      .text(`Session ID: ${session_id}`)
+      .text(`Last Updated: ${new Date(summaryData.last_updated).toLocaleString()}`)
+      .moveDown(1);
+    
+    // Generated Files section
+    pdf.fontSize(12).font('Helvetica-Bold')
+      .text('Generated Intelligence Components', { underline: true })
+      .moveDown(0.5);
+    
+    // Map of pretty names for components
+    const componentNames = {
+      dropout_forecast: "Dropout Forecast",
+      success_prediction: "Success Prediction",
+      ind_summary: "IND Module 2.5",
+      sap_summary: "SAP Document",
+      summary_packet: "Summary Packet PDF",
+      regulatory_bundle: "Regulatory Bundle ZIP"
+    };
+    
+    if (summaryData.generated_files && Object.keys(summaryData.generated_files).length > 0) {
+      // Create table-like layout for component status
+      const startX = 60;
+      let currentY = pdf.y + 10;
+      const rowHeight = 25;
+      const col1Width = 250;
+      const col2Width = 100;
+      
+      // Table header
+      pdf.font('Helvetica-Bold').fontSize(11)
+        .text('Component', startX, currentY)
+        .text('Status', startX + col1Width, currentY);
+      
+      currentY += 20;
+      pdf.moveTo(startX, currentY).lineTo(startX + col1Width + col2Width, currentY).stroke();
+      currentY += 5;
+      
+      // Table rows
+      Object.entries(summaryData.generated_files).forEach(([key, generated]) => {
+        pdf.font('Helvetica').fontSize(11)
+          .text(componentNames[key] || key, startX, currentY);
+        
+        pdf.font('Helvetica-Bold').fontSize(11)
+          .fillColor(generated ? 'green' : 'gray')
+          .text(generated ? '✓ Ready' : '× Pending', startX + col1Width, currentY);
+        
+        pdf.fillColor('black'); // Reset color
+        currentY += rowHeight;
+      });
+      
+      // Count total ready components
+      const readyCount = Object.values(summaryData.generated_files).filter(Boolean).length;
+      const totalCount = Object.keys(summaryData.generated_files).length;
+      
+      pdf.moveDown(1.5);
+      pdf.font('Helvetica-Bold').fontSize(11)
+        .text(`Summary: ${readyCount} of ${totalCount} components ready`, { align: 'center' });
+      
+    } else {
+      pdf.fontSize(11).font('Helvetica')
+        .text('No components have been generated for this session yet.');
+    }
+    
+    // Add footer
+    pdf.fontSize(8).font('Helvetica')
+      .text('LumenTrialGuide.AI - Intelligent Clinical Trial Design Platform', {
+        align: 'center', 
+        y: pdf.page.height - 50
+      });
+    
+    // End the PDF
+    pdf.end();
+    
+    // Wait for PDF to finish writing
+    writeStream.on('finish', () => {
+      res.status(200).json({
+        success: true,
+        message: 'Session summary report generated successfully',
+        filename: filename,
+        download_url: `/api/download/session-summary/${session_id}`
+      });
+    });
+    
+    writeStream.on('error', (err) => {
+      console.error('Error writing session summary PDF:', err);
+      res.status(500).json({ 
+        success: false,
+        error: 'Failed to generate session summary report'
+      });
+    });
+    
+  } catch (error: any) {
+    console.error('Error generating session summary report:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to generate session summary report'
+    });
+  }
+});
+
+/**
+ * Download a previously generated session summary report
+ * GET /api/download/session-summary/:session_id
+ */
+router.get('/download/session-summary/:session_id', (req, res) => {
+  try {
+    const { session_id } = req.params;
+    
+    if (!session_id) {
+      return res.status(400).json({ error: 'Session ID is required' });
+    }
+    
+    // Find the most recent summary PDF for this session
+    const files = fs.readdirSync(SESSION_SUMMARY_DIR);
+    const summaryFiles = files
+      .filter(file => file.startsWith(`session_summary_${session_id}_`) && file.endsWith('.pdf'))
+      .sort()
+      .reverse();
+    
+    if (summaryFiles.length === 0) {
+      return res.status(404).json({ error: 'No session summary report found for this session' });
+    }
+    
+    const filePath = path.join(SESSION_SUMMARY_DIR, summaryFiles[0]);
+    
+    // Set headers for file download
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename=${summaryFiles[0]}`);
+    
+    // Stream the file to the response
+    const fileStream = fs.createReadStream(filePath);
+    fileStream.pipe(res);
+    
+  } catch (error: any) {
+    console.error('Error downloading session summary report:', error);
+    res.status(500).json({
+      error: 'Failed to download session summary report',
       message: error.message || 'Unknown error'
     });
   }
