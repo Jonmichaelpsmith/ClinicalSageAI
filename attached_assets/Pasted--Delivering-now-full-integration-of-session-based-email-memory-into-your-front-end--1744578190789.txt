@@ -1,0 +1,79 @@
+✅ Delivering now: full integration of session-based email memory into your front end.
+
+---
+
+## 📄 Updated: `EmailArchiveButton.jsx`
+
+### 🔁 Adds:
+- Auto-fetching the stored email for this session
+- Auto-saving the email on send for future recall
+
+---
+
+```jsx
+// /client/components/EmailArchiveButton.jsx
+import { useState, useEffect } from "react";
+
+export default function EmailArchiveButton({ sessionId }) {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState(null);
+
+  useEffect(() => {
+    const loadEmail = async () => {
+      const res = await fetch(`/api/session/email/get/${sessionId}`);
+      const data = await res.json();
+      if (data?.recipient_email) setEmail(data.recipient_email);
+    };
+    loadEmail();
+  }, [sessionId]);
+
+  const handleSend = async () => {
+    if (!email) return setStatus("❌ Email is required");
+    const res = await fetch("/api/export/email-session-archive", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ session_id: sessionId, recipient_email: email })
+    });
+    const data = await res.json();
+    if (data.status === "sent") {
+      setStatus(`✅ Sent to ${email}`);
+      // Save email to session
+      await fetch("/api/session/email/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: sessionId, recipient_email: email })
+      });
+    } else {
+      setStatus("❌ Failed to send");
+    }
+  };
+
+  return (
+    <div className="space-y-2 mt-4">
+      <input
+        type="email"
+        placeholder="Enter email address"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        className="border rounded px-3 py-1 w-full text-sm"
+      />
+      <button
+        onClick={handleSend}
+        className="bg-blue-600 text-white px-4 py-2 text-sm rounded hover:bg-blue-700"
+      >
+        📤 Email My Archive
+      </button>
+      {status && <p className="text-xs text-muted-foreground">{status}</p>}
+    </div>
+  );
+}
+```
+
+---
+
+✅ Your email field is now:
+- Session-persistent
+- User-friendly
+- Enterprise-ready
+
+Would you like me to now enable **team sharing** via a multi-email entry + audit trail? Or return to enhancing planning dashboard tools (e.g. dynamic dropout simulator, IND trace log)? Ready to keep building.

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
@@ -44,7 +43,7 @@ export function ProtocolParser({ onParseComplete }: ProtocolParserProps) {
     mutationFn: async (file: File) => {
       const formData = new FormData();
       formData.append('file', file);
-      
+
       const response = await axios.post('/api/protocol/parse-file', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
@@ -155,41 +154,41 @@ export function ProtocolParser({ onParseComplete }: ProtocolParserProps) {
   const isPending = uploadMutation.isPending || parseTextMutation.isPending || analyzeMutation.isPending;
 
   return (
-    <Card className="w-full max-w-4xl mx-auto">
-      <CardHeader>
-        <CardTitle>Protocol Intelligence Engine</CardTitle>
-        <CardDescription>
+    <Card className="w-full max-w-3xl mx-auto p-4"> {/* Reduced padding */}
+      <CardHeader className="p-2"> {/* Reduced padding */}
+        <CardTitle className="text-lg">Protocol Intelligence Engine</CardTitle> {/* Reduced font size */}
+        <CardDescription className="text-sm">
           Upload your protocol document or paste text to extract key insights
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-2"> {/* Reduced padding */}
         <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-          <TabsList className="grid grid-cols-2 mb-4">
+          <TabsList className="grid grid-cols-2 mb-2"> {/* Reduced margin */}
             <TabsTrigger value="upload">Upload File</TabsTrigger>
             <TabsTrigger value="text">Paste Text</TabsTrigger>
           </TabsList>
-          
-          <TabsContent value="upload" className="space-y-4">
+
+          <TabsContent value="upload" className="space-y-2"> {/* Reduced spacing */}
             <FileUploader 
               accept="application/pdf"
               maxFiles={1}
-              maxSize={10 * 1024 * 1024} // 10MB
+              maxSize={10 * 1024 * 1024} 
               onUpload={handleFileUpload}
               disabled={isPending}
               uploadMessage="Drag & drop your protocol file here or click to browse"
-              className="h-64"
+              className="h-48" {/* Reduced height */}
             />
-            <div className="text-xs text-muted-foreground mt-2">
+            <div className="text-xs text-muted-foreground mt-1"> {/* Reduced margin */}
               Supported formats: PDF (max 10MB)
             </div>
           </TabsContent>
-          
-          <TabsContent value="text" className="space-y-4">
+
+          <TabsContent value="text" className="space-y-2"> {/* Reduced spacing */}
             <Textarea 
               placeholder="Paste your protocol text here..."
               value={protocolText}
               onChange={(e) => setProtocolText(e.target.value)}
-              className="min-h-[300px] font-mono text-sm"
+              className="min-h-[200px] font-mono text-sm" {/* Reduced height */}
               disabled={isPending}
             />
             <div className="flex space-x-2">
@@ -232,9 +231,9 @@ export function ProtocolParser({ onParseComplete }: ProtocolParserProps) {
           </TabsContent>
         </Tabs>
       </CardContent>
-      
+
       {isPending && (
-        <CardFooter className="border-t pt-4">
+        <CardFooter className="border-t pt-2 pb-2"> {/* Reduced padding */}
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" />
             {uploadMutation.isPending 
