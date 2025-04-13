@@ -548,6 +548,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register Export Routes
   app.use('/api/export', exportRoutes);
   
+  // Serve exported files from the exports directory
+  const EXPORTS_DIR = path.join(process.cwd(), 'exports');
+  if (!fs.existsSync(EXPORTS_DIR)) {
+    fs.mkdirSync(EXPORTS_DIR, { recursive: true });
+  }
+  app.use('/exports', express.static(EXPORTS_DIR));
+  
   // Register Reports Manifest Routes
   app.use('/api/reports', reportsManifestRoutes);
   
