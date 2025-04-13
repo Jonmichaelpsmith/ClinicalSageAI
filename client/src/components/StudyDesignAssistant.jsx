@@ -3,10 +3,13 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Send, Download, FileText, AlertTriangle } from "lucide-react";
+import { Loader2, Send, Download, FileText, AlertTriangle, Calculator, MessageSquare } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import SampleSizeCalculator from "@/components/SampleSizeCalculator";
 
 export default function StudyDesignAssistant() {
+  const [activeTab, setActiveTab] = useState("chat");
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([
     {
@@ -180,78 +183,99 @@ export default function StudyDesignAssistant() {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((msg, idx) => (
-          <Card 
-            key={idx} 
-            className={`whitespace-pre-wrap text-sm ${msg.role === "user" ? "bg-muted" : "bg-card"}`}
-          >
-            <CardContent className="p-4">
-              <div className="font-semibold mb-1">
-                {msg.role === "user" ? "You" : "TrialSage"}
-              </div>
-              <div className="prose prose-sm max-w-none">
-                {msg.content}
-              </div>
-              
-              {/* Show action buttons after assistant responses with data */}
-              {msg.role === "assistant" && msg.raw && idx === messages.length - 1 && (
-                <div className="flex gap-2 mt-4">
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    onClick={handleSAPRequest}
-                    disabled={loading}
-                  >
-                    <FileText className="h-4 w-4 mr-1" /> Generate SAP
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    onClick={handleIND27Request}
-                    disabled={loading}
-                  >
-                    <AlertTriangle className="h-4 w-4 mr-1" /> Generate IND 2.7
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    onClick={handleDownloadReport}
-                  >
-                    <Download className="h-4 w-4 mr-1" /> Download PDF
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-        
-        {loading && (
-          <div className="flex items-center justify-center py-2">
-            <Loader2 className="h-6 w-6 animate-spin text-primary" />
-          </div>
-        )}
-      </div>
-      
-      <div className="p-4 border-t bg-background">
-        <div className="flex gap-2">
-          <Textarea
-            value={input}
-            placeholder="Ask about study design, endpoints, sample size, etc."
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            disabled={loading}
-            className="flex-grow min-h-[60px] resize-none"
-          />
-          <Button 
-            onClick={handleAsk} 
-            disabled={loading || !input.trim()}
-            className="shrink-0"
-          >
-            <Send className="h-4 w-4" />
-          </Button>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
+        <div className="px-4 pt-4 border-b">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="chat">
+              <MessageSquare className="h-4 w-4 mr-2" />
+              Study Design Assistant
+            </TabsTrigger>
+            <TabsTrigger value="calculator">
+              <Calculator className="h-4 w-4 mr-2" />
+              Sample Size Calculator
+            </TabsTrigger>
+          </TabsList>
         </div>
-      </div>
+        
+        <TabsContent value="chat" className="flex-1 flex flex-col">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {messages.map((msg, idx) => (
+              <Card 
+                key={idx} 
+                className={`whitespace-pre-wrap text-sm ${msg.role === "user" ? "bg-muted" : "bg-card"}`}
+              >
+                <CardContent className="p-4">
+                  <div className="font-semibold mb-1">
+                    {msg.role === "user" ? "You" : "TrialSage"}
+                  </div>
+                  <div className="prose prose-sm max-w-none">
+                    {msg.content}
+                  </div>
+                  
+                  {/* Show action buttons after assistant responses with data */}
+                  {msg.role === "assistant" && msg.raw && idx === messages.length - 1 && (
+                    <div className="flex gap-2 mt-4">
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={handleSAPRequest}
+                        disabled={loading}
+                      >
+                        <FileText className="h-4 w-4 mr-1" /> Generate SAP
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={handleIND27Request}
+                        disabled={loading}
+                      >
+                        <AlertTriangle className="h-4 w-4 mr-1" /> Generate IND 2.7
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={handleDownloadReport}
+                      >
+                        <Download className="h-4 w-4 mr-1" /> Download PDF
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+            
+            {loading && (
+              <div className="flex items-center justify-center py-2">
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              </div>
+            )}
+          </div>
+          
+          <div className="p-4 border-t bg-background">
+            <div className="flex gap-2">
+              <Textarea
+                value={input}
+                placeholder="Ask about study design, endpoints, sample size, etc."
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                disabled={loading}
+                className="flex-grow min-h-[60px] resize-none"
+              />
+              <Button 
+                onClick={handleAsk} 
+                disabled={loading || !input.trim()}
+                className="shrink-0"
+              >
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="calculator" className="flex-1 overflow-auto pt-4 px-4">
+          <SampleSizeCalculator />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

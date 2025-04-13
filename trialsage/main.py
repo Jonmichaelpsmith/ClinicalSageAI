@@ -11,6 +11,7 @@ from pathlib import Path
 from controllers import protocol
 from controllers import analytics_routes
 from controllers import chat
+from controllers import sample_size
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -56,6 +57,12 @@ app.include_router(
     tags=["chat"]
 )
 
+# Include the sample size calculator router
+app.include_router(
+    sample_size.router,
+    tags=["sample_size"]
+)
+
 # Root endpoint (serve frontend)
 @app.get("/")
 async def read_root(request: Request):
@@ -75,7 +82,13 @@ async def read_root(request: Request):
                 "/api/intel/csr-evidence": "Find evidence in CSR corpus for a topic",
                 "/api/intel/scheduled-report": "Generate weekly intelligence briefing",
                 "/api/chat/send-message": "Send message to AI assistant and get response with CSR citations", 
-                "/static/latest_report.pdf": "Download the latest intelligence briefing PDF"
+                "/static/latest_report.pdf": "Download the latest intelligence briefing PDF",
+                "/api/sample-size/continuous": "Calculate sample size for continuous outcomes",
+                "/api/sample-size/binary": "Calculate sample size for binary outcomes",
+                "/api/sample-size/survival": "Calculate sample size for survival/time-to-event outcomes",
+                "/api/sample-size/non-inferiority-binary": "Calculate sample size for non-inferiority trial with binary outcome",
+                "/api/sample-size/non-inferiority-continuous": "Calculate sample size for non-inferiority trial with continuous outcome",
+                "/api/sample-size/recommend": "Get sample size recommendations based on protocol details"
             }
         }
 
