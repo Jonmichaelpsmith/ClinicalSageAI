@@ -1,6 +1,6 @@
 import { Request, Response, Router } from 'express';
 import { db } from './db';
-import { strategicReports, trials } from '@shared/schema';
+import { strategicReports, protocols } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 import { strategicReportGenerator } from './strategic-report-generator';
 
@@ -11,7 +11,7 @@ const router = Router();
  */
 router.get('/', async (_req: Request, res: Response) => {
   try {
-    const reports = await db.select().from(strategicReports).orderBy(strategicReports.generatedDate);
+    const reports = await db.select().from(strategicReports).orderBy(strategicReports.created_at);
     return res.status(200).json(reports);
   } catch (error) {
     console.error('Error fetching strategic reports:', error);
@@ -51,8 +51,8 @@ router.post('/generate/:protocolId', async (req: Request, res: Response) => {
     // Fetch protocol data
     const [protocol] = await db
       .select()
-      .from(trials)
-      .where(eq(trials.id, parseInt(protocolId)));
+      .from(protocols)
+      .where(eq(protocols.id, parseInt(protocolId)));
 
     if (!protocol) {
       return res.status(404).json({ error: 'Protocol not found' });
@@ -62,7 +62,7 @@ router.post('/generate/:protocolId', async (req: Request, res: Response) => {
     const [existingReport] = await db
       .select()
       .from(strategicReports)
-      .where(eq(strategicReports.protocolId, parseInt(protocolId)));
+      .where(eq(strategicReports.protocol_id, parseInt(protocolId)));
     
     if (existingReport) {
       return res.status(200).json({ 
@@ -73,11 +73,13 @@ router.post('/generate/:protocolId', async (req: Request, res: Response) => {
 
     // Parse primary endpoints
     let primaryEndpoints: string[] = [];
-    if (protocol.primaryEndpoints) {
+    if (protocol.primary_endpoints) {
       try {
-        primaryEndpoints = JSON.parse(protocol.primaryEndpoints);
+        primaryEndpoints = Array.isArray(protocol.primary_endpoints) 
+          ? protocol.primary_endpoints 
+          : JSON.parse(protocol.primary_endpoints as string);
       } catch (e) {
-        primaryEndpoints = [protocol.primaryEndpoints];
+        primaryEndpoints = [protocol.primary_endpoints as string];
       }
     }
     
@@ -87,9 +89,9 @@ router.post('/generate/:protocolId', async (req: Request, res: Response) => {
       protocol.indication,
       protocol.phase,
       primaryEndpoints,
-      protocol.sampleSize || 100,
-      protocol.durationWeeks || 12,
-      protocol.controlType || 'placebo', 
+      protocol.sample_size || 100,
+      protocol.duration || 12,
+      protocol.control_type || 'placebo', 
       protocol.blinding || 'double-blind'
     );
     

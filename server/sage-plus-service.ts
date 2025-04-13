@@ -6,7 +6,7 @@
  */
 
 import { db } from './db';
-import { pgTable, serial, integer, varchar, text, timestamp, json } from 'drizzle-orm/pg-core';
+import { pgTable, serial, integer, varchar, text, timestamp, json, boolean } from 'drizzle-orm/pg-core';
 import { eq, sql, desc } from 'drizzle-orm';
 
 // Define temporary schema for CSR tables until they are properly added to the schema file

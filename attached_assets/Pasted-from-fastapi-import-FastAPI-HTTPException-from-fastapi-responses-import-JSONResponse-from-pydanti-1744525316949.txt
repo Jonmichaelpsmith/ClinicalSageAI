@@ -1,0 +1,44 @@
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel
+import json
+
+# Load molecule registry from disk
+registry_path = "/mnt/data/molecule_registry.json"
+with open(registry_path, "r") as f:
+    molecule_data = json.load(f)
+
+# FastAPI stub
+app = FastAPI()
+
+class IndFromMoleculeRequest(BaseModel):
+    molecule_name: str
+
+@app.post("/api/intel/ind-from-molecule")
+async def ind_from_molecule(request: IndFromMoleculeRequest):
+    name = request.molecule_name.lower()
+    if name not in molecule_data:
+        raise HTTPException(status_code=404, detail=f"Molecule '{name}' not found.")
+
+    molecule = molecule_data[name]
+    trials = molecule.get("similar_trials", [])
+    if not trials:
+        raise HTTPException(status_code=404, detail="No trial data found for this molecule.")
+
+    # Basic IND Module 2.5-style summary
+    summary = (
+        f"This clinical development program is designed based on known outcomes from prior trials "
+        f"evaluating {name}, a {molecule['type']} of {molecule['origin']} origin. The molecule acts "
+        f"as a {molecule['moa']}, with key pharmacodynamic targets including {', '.join(molecule['pd_targets'])}. "
+        f"Pharmacokinetic profiling indicates a half-life of approximately {molecule['pk_profile']['half_life_hours']} hours, "
+        f"supporting a trial duration of ~{int(sum(t['duration_weeks'] for t in trials) / len(trials))} weeks. "
+        f"Design recommendations are derived from {len(trials)} CSR-backed studies, including endpoints such as "
+        f"{', '.join(set(t['primary_endpoint'] for t in trials))}. "
+        f"The overall historical success rate of similar trials is estimated at "
+        f"{round(sum(1 for t in trials if t['outcome'] == 'Successful') / len(trials) * 100)}%."
+    )
+
+    return JSONResponse(content={
+        "module_2_5_draft": summary,
+        "csr_evidence": [t["csr_id"] for t in trials]
+    })
