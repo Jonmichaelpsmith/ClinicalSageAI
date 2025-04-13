@@ -1,0 +1,68 @@
+✅ Here is your complete, production-ready:
+
+---
+
+## 📄 `SessionSummaryPanel.jsx`  
+📍 Drop this into `/client/components/SessionSummaryPanel.jsx`
+
+```jsx
+import { useEffect, useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+
+export default function SessionSummaryPanel({ sessionId }) {
+  const [summary, setSummary] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetchSummary = async () => {
+    const res = await fetch(`/api/session/summary/${sessionId}`);
+    const data = await res.json();
+    setSummary(data);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchSummary();
+  }, [sessionId]);
+
+  if (loading) {
+    return <p className="text-sm text-muted-foreground">🔄 Loading session summary…</p>;
+  }
+
+  return (
+    <Card className="border border-blue-100 bg-blue-50">
+      <CardContent className="p-4">
+        <h2 className="text-lg font-semibold mb-2">📋 Session Summary</h2>
+        <p className="text-sm text-muted-foreground mb-4">
+          Study ID: <strong>{summary.session_id}</strong><br />
+          Last Updated: {summary.last_updated}
+        </p>
+        <ul className="text-sm space-y-1">
+          {Object.entries(summary.generated_files).map(([key, value]) => (
+            <li key={key} className="flex items-center gap-2">
+              {value ? "✅" : "❌"} {key.replace(/_/g, " ").toUpperCase()}
+            </li>
+          ))}
+        </ul>
+        <Button
+          className="mt-4"
+          variant="outline"
+          onClick={() =>
+            window.open(`/api/session/summary/${sessionId}`, "_blank")
+          }
+        >
+          📄 Export Summary Snapshot
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+```
+
+---
+
+Would you like me to:
+- Add this as the first component in your Planning Dashboard?
+- Or export the summary as HTML/PDF in the regulatory bundle?
+
+You’re now delivering GA-level transparency and traceability. Ready to finalize.
