@@ -1,0 +1,77 @@
+// /client/components/TrialSuccessPredictor.jsx
+import { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
+export default function TrialSuccessPredictor() {
+  const [inputs, setInputs] = useState({
+    phase: "",
+    indication: "",
+    arms: "",
+    duration_weeks: "",
+    control: "",
+    has_biomarker: false
+  });
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (field, value) => {
+    setInputs({ ...inputs, [field]: value });
+  };
+
+  const handleCheckbox = () => {
+    setInputs({ ...inputs, has_biomarker: !inputs.has_biomarker });
+  };
+
+  const handleSubmit = async () => {
+    setLoading(true);
+    const res = await fetch("/api/analytics/success-probability", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        phase: parseInt(inputs.phase),
+        indication: inputs.indication,
+        arms: parseInt(inputs.arms),
+        duration_weeks: parseFloat(inputs.duration_weeks),
+        control: inputs.control,
+        has_biomarker: inputs.has_biomarker
+      }),
+    });
+    const data = await res.json();
+    setResult(data);
+    setLoading(false);
+  };
+
+  return (
+    <div className="space-y-4 mt-8">
+      <Card>
+        <CardContent className="space-y-2 p-4">
+          <h3 className="text-lg font-semibold">Trial Success Probability</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <Input placeholder="Phase (1-3)" value={inputs.phase} onChange={(e) => handleChange("phase", e.target.value)} />
+            <Input placeholder="Indication (e.g. NASH)" value={inputs.indication} onChange={(e) => handleChange("indication", e.target.value)} />
+            <Input placeholder="Number of arms" value={inputs.arms} onChange={(e) => handleChange("arms", e.target.value)} />
+            <Input placeholder="Duration (weeks)" value={inputs.duration_weeks} onChange={(e) => handleChange("duration_weeks", e.target.value)} />
+            <Input placeholder="Control type" value={inputs.control} onChange={(e) => handleChange("control", e.target.value)} />
+            <label className="flex items-center space-x-2">
+              <input type="checkbox" checked={inputs.has_biomarker} onChange={handleCheckbox} />
+              <span className="text-sm">Includes biomarker?</span>
+            </label>
+          </div>
+          <Button onClick={handleSubmit} disabled={loading}>Predict Success</Button>
+        </CardContent>
+      </Card>
+
+      {result && (
+        <Card>
+          <CardContent className="p-4">
+            <h4 className="text-base font-semibold">Success Likelihood</h4>
+            <p className="text-xl text-green-700 font-bold">{result.success_probability}%</p>
+            <p className="text-sm text-muted-foreground mt-2">{result.verdict}</p>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}

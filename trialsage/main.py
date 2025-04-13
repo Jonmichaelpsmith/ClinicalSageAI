@@ -13,6 +13,8 @@ from controllers import analytics_routes
 from controllers import chat
 from controllers import sample_size
 from controllers import statistics
+from controllers import dropout
+from controllers import success
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -43,6 +45,12 @@ templates = Jinja2Templates(directory=str(frontend_dir))
 
 # Include the protocol router
 app.include_router(protocol.router)
+
+# Include the dropout estimator router
+app.include_router(dropout.router)
+
+# Include the success probability router
+app.include_router(success.router)
 
 # Include the analytics router with prefix
 app.include_router(
