@@ -257,6 +257,13 @@ ${analysisResult.recommendations || 'No recommendations provided'}`;
   const downloadReport = () => {
     if (!analysisResult) return;
     
+    // If PDF link is available, use it directly
+    if (analysisResult.pdf_link) {
+      window.open(analysisResult.pdf_link, '_blank');
+      return;
+    }
+    
+    // Fallback to text report if PDF is not available
     const summary = generateSummary();
     const blob = new Blob([summary], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
@@ -429,6 +436,91 @@ ${analysisResult.recommendations || 'No recommendations provided'}`;
               </div>
             </div>
             
+            {/* PDF Download Card - positioned prominently at the top */}
+            {analysisResult.pdf_link && (
+              <Card className="bg-blue-50 border-blue-200 mb-4">
+                <CardContent className="pt-4 pb-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <FileOutput className="h-8 w-8 text-blue-600 mr-3" />
+                      <div>
+                        <h3 className="font-semibold text-blue-800">Complete Protocol Analysis Report</h3>
+                        <p className="text-sm text-blue-700">Includes detailed assessment, CSR matches, risk analysis and recommendations</p>
+                      </div>
+                    </div>
+                    <Button
+                      size="sm"
+                      onClick={() => window.open(analysisResult.pdf_link, '_blank')}
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Download PDF
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Protocol Analysis Metrics Card */}
+            {analysisResult.confidence_score && (
+              <Card className="mb-4">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base flex items-center">
+                    <ShieldCheck className="h-5 w-5 mr-2 text-primary" />
+                    Confidence Assessment
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="flex flex-col items-center mb-3">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <h3 className="text-xl font-bold">{analysisResult.confidence_score}</h3>
+                      <span className="text-sm text-muted-foreground">/100</span>
+                      
+                      {/* Verdict Icon */}
+                      {analysisResult.confidence_verdict && (
+                        <Badge 
+                          className={`ml-2 ${
+                            analysisResult.confidence_verdict.toLowerCase().includes('strong') 
+                              ? 'bg-green-100 text-green-800 hover:bg-green-200' 
+                              : analysisResult.confidence_verdict.toLowerCase().includes('moderate')
+                              ? 'bg-amber-100 text-amber-800 hover:bg-amber-200'
+                              : 'bg-red-100 text-red-800 hover:bg-red-200'
+                          }`}
+                        >
+                          {analysisResult.confidence_verdict}
+                        </Badge>
+                      )}
+                    </div>
+                    <Progress 
+                      value={analysisResult.confidence_score} 
+                      className="h-2 w-full" 
+                      indicatorClassName={
+                        analysisResult.confidence_score > 75 
+                          ? "bg-green-500" 
+                          : analysisResult.confidence_score > 50 
+                          ? "bg-amber-500" 
+                          : "bg-red-500"
+                      }
+                    />
+                  </div>
+                  
+                  {analysisResult.confidence_issues && analysisResult.confidence_issues.length > 0 && (
+                    <div className="mt-3">
+                      <h4 className="text-sm font-semibold mb-2">Identified Issues:</h4>
+                      <ul className="text-sm space-y-1.5">
+                        {analysisResult.confidence_issues.map((issue, idx) => (
+                          <li key={idx} className="flex items-start">
+                            <AlertTriangle className="h-4 w-4 text-amber-500 mr-2 mt-0.5 flex-shrink-0" />
+                            <span>{issue}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
             <div className="grid grid-cols-2 gap-4">
               <Card>
                 <CardHeader className="pb-2">
