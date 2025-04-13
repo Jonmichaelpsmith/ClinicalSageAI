@@ -1,0 +1,18 @@
+{
+  "nctrialId": "HC-2113",
+  "title": "A Randomized Double-Blind, Placebo-Controlled Multi-Center Study of CFS-446 (CFTR modulator) in Patients With Rheumatoid Arthritis",
+  "officialTitle": "A Randomized Double-Blind, Placebo-Controlled Multi-Center Study of CFS-446 (CFTR modulator) in Patients With Rheumatoid Arthritis",
+  "sponsor": "McMaster University",
+  "indication": "Rheumatoid Arthritis",
+  "phase": "Phase 4",
+  "fileName": "HC-2113.json",
+  "fileSize": 102302,
+  "date": "2024-01-26",
+  "completionDate": "2025-12-06",
+  "drugName": "CFS-446 (CFTR modulator)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Completed",
+  "description": "This is a randomized double-blind, placebo-controlled multi-center study designed to evaluate the efficacy and safety of CFS-446 (CFTR modulator) in patients with Rheumatoid Arthritis. The study will enroll approximately 318 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 25-55 years\n- Confirmed diagnosis of Rheumatoid Arthritis\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n- Active disease defined by standard criteria\n- Inadequate response to conventional therapy\n- Positive serology (if applicable)\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment\n- Active infection including tuberculosis\n- History of recurrent serious infections\n- Concurrent autoimmune disease other than study indication"
+}
