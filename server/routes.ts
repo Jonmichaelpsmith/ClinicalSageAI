@@ -84,6 +84,8 @@ import {
 } from "./data-importer";
 // Import CSR tables from sage-plus-service instead of shared schema
 import { csrReports, csrSegments } from "./sage-plus-service";
+// Import database-to-JSON export function
+import { exportDatabaseToJson } from "./scripts/export-database-to-json";
 // Define a schema for csrDetails since it's not in schema.ts
 import { pgTable, serial, integer, varchar, text, timestamp, json, boolean } from "drizzle-orm/pg-core";
 
