@@ -1,0 +1,17 @@
+{
+  "persona": "investor",
+  "title": "Investor Readiness Intelligence Report",
+  "description": "A complete package showing protocol viability, outcome forecast, and risk profile for funding decisions.",
+  "includes": [
+    "Trial design brief (PDF)",
+    "Dropout risk forecast",
+    "AI-repaired protocol structure",
+    "Investor boardroom slides"
+  ],
+  "files": [
+    "investor_summary.pdf",
+    "risk_curve.png",
+    "protocol_snapshot.txt",
+    "pitch_deck.pptx"
+  ]
+}
