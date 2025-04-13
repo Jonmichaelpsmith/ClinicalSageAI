@@ -1,224 +1,153 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { 
-  Database, 
-  FileJson, 
-  RefreshCw, 
-  AlertCircle, 
-  CheckCircle, 
-  FileText,
-  Download,
-  Upload
-} from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useMutation } from '@tanstack/react-query';
+import { AlertCircle, CheckCircle2, Database, FileJson, Loader2 } from 'lucide-react';
+import { apiRequest } from '@/lib/queryClient';
+import { useToast } from '@/hooks/use-toast';
+
+interface ExportResult {
+  total: number;
+  exported: number;
+  skipped: number;
+  errors: number;
+  filesInDir: number;
+}
 
 export default function AdminPanel() {
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState("data-management");
+  const [activeTab, setActiveTab] = useState("database");
   
   // Database to JSON export mutation
   const exportMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest("POST", "/api/csr/export-to-json");
+      const response = await apiRequest('POST', '/api/csr/export-to-json');
       return response.json();
     },
     onSuccess: (data) => {
-      if (data.success) {
-        toast({
-          title: "Export Successful",
-          description: `Exported ${data.results.exported} CSRs to JSON files. 
-                       Total files now available: ${data.results.filesInDir}`,
-          variant: "default",
-        });
-      } else {
-        toast({
-          title: "Export Failed",
-          description: data.message || "Failed to export CSRs to JSON",
-          variant: "destructive",
-        });
-      }
-    },
-    onError: (error: any) => {
       toast({
-        title: "Export Failed",
-        description: error.message || "An error occurred during CSR export",
-        variant: "destructive",
+        title: "Export Successful",
+        description: `Exported ${data.results.exported} new CSR files. Total available: ${data.results.filesInDir}`,
+        variant: "default",
       });
     },
+    onError: (error: Error) => {
+      toast({
+        title: "Export Failed",
+        description: error.message || "An error occurred during export",
+        variant: "destructive",
+      });
+    }
   });
 
+  const handleExportToJson = () => {
+    toast({
+      title: "Starting Export",
+      description: "Exporting database CSRs to JSON files. This may take a few minutes...",
+    });
+    exportMutation.mutate();
+  };
+
+  const results = exportMutation.data?.results as ExportResult | undefined;
+
   return (
-    <div className="container py-8">
-      <h1 className="text-3xl font-bold mb-6">Administration Panel</h1>
-      
-      <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="mb-4">
-          <TabsTrigger value="data-management">Data Management</TabsTrigger>
-          <TabsTrigger value="system-status">System Status</TabsTrigger>
-          <TabsTrigger value="user-management">User Management</TabsTrigger>
-        </TabsList>
+    <div className="w-full max-w-6xl mx-auto p-4 space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold">Admin Panel</CardTitle>
+          <CardDescription>
+            Administrative tools for managing TrialSage platform data
+          </CardDescription>
+        </CardHeader>
         
-        <TabsContent value="data-management">
-          <div className="grid gap-6 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Database className="h-5 w-5 mr-2" />
-                  CSR Database Management
-                </CardTitle>
-                <CardDescription>
-                  Manage the Clinical Study Report database and search service
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Alert className="mb-4">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Import/Export Status</AlertTitle>
-                  <AlertDescription>
-                    The search service loads CSRs from JSON files. Currently, there are more 
-                    records in the database than JSON files available to the search service.
-                  </AlertDescription>
-                </Alert>
-                
-                <div className="grid gap-4">
-                  <div className="flex flex-col gap-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium">Database to JSON Export</span>
-                      <span className="text-xs text-muted-foreground">Critical for Search</span>
-                    </div>
-                    <Button 
-                      onClick={() => exportMutation.mutate()} 
-                      disabled={exportMutation.isPending}
-                      className="w-full"
-                    >
-                      {exportMutation.isPending ? (
-                        <>
-                          <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                          Exporting...
-                        </>
-                      ) : (
-                        <>
-                          <FileJson className="h-4 w-4 mr-2" />
-                          Export Database CSRs to JSON
-                        </>
-                      )}
-                    </Button>
-                    {exportMutation.isPending && (
-                      <Progress value={45} className="h-2 mt-2" />
-                    )}
-                    {exportMutation.isSuccess && (
-                      <div className="flex items-center text-xs text-green-600 mt-1">
-                        <CheckCircle className="h-3 w-3 mr-1" />
-                        Export completed successfully
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="flex flex-col gap-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium">Import CSRs</span>
-                      <span className="text-xs text-muted-foreground">Add New Studies</span>
-                    </div>
-                    <Button variant="outline" className="w-full">
-                      <Upload className="h-4 w-4 mr-2" />
-                      Import CSR Batch
-                    </Button>
-                  </div>
-                  
-                  <div className="flex flex-col gap-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium">Export Dataset</span>
-                      <span className="text-xs text-muted-foreground">For Analytics</span>
-                    </div>
-                    <Button variant="outline" className="w-full">
-                      <Download className="h-4 w-4 mr-2" />
-                      Export Full Dataset
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter className="flex flex-col items-start gap-2">
-                <div className="text-xs text-muted-foreground">
-                  <strong>Note:</strong> The CSR search service loads data from JSON files in the 
-                  data/processed_csrs directory. Regular exports ensure all database records are 
-                  available for search.
-                </div>
-              </CardFooter>
-            </Card>
+        <Tabs defaultValue="database" value={activeTab} onValueChange={setActiveTab}>
+          <CardContent>
+            <TabsList className="mb-4">
+              <TabsTrigger value="database">
+                <Database className="mr-2 h-4 w-4" />
+                Database Management
+              </TabsTrigger>
+              {/* Add more tabs here as needed */}
+            </TabsList>
             
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <FileText className="h-5 w-5 mr-2" />
-                  Content Management
-                </CardTitle>
-                <CardDescription>
-                  Manage content, uploads, and documents
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <Alert>
-                    <AlertDescription className="text-sm">
-                      Content management features will be available in future updates
-                    </AlertDescription>
-                  </Alert>
+            <TabsContent value="database" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <FileJson className="mr-2 h-5 w-5" />
+                    CSR Database to JSON Export
+                  </CardTitle>
+                  <CardDescription>
+                    Export all CSR records from the database to JSON files so they can be loaded by the search service
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm mb-4">
+                    This tool addresses the discrepancy between the number of CSRs in the database (~2,871) 
+                    and the number loaded by the search service (~779) by converting all database records to 
+                    the required JSON format.
+                  </p>
                   
-                  <Button variant="outline" className="w-full" disabled>
-                    Manage Uploads
-                  </Button>
+                  {exportMutation.isSuccess && (
+                    <Alert className="mb-4 bg-green-50 border-green-200">
+                      <CheckCircle2 className="h-5 w-5 text-green-600" />
+                      <AlertTitle className="text-green-800">Export Complete</AlertTitle>
+                      <AlertDescription className="text-green-700">
+                        <div className="mt-2">
+                          <p><strong>Total CSRs in database:</strong> {results?.total}</p>
+                          <p><strong>Newly exported:</strong> {results?.exported}</p>
+                          <p><strong>Skipped (already exist):</strong> {results?.skipped}</p>
+                          <p><strong>Errors:</strong> {results?.errors}</p>
+                          <p className="mt-2"><strong>Total JSON files available:</strong> {results?.filesInDir}</p>
+                        </div>
+                      </AlertDescription>
+                    </Alert>
+                  )}
                   
-                  <Button variant="outline" className="w-full" disabled>
-                    PDF Document Library
+                  {exportMutation.isError && (
+                    <Alert className="mb-4 bg-red-50 border-red-200">
+                      <AlertCircle className="h-5 w-5 text-red-600" />
+                      <AlertTitle className="text-red-800">Export Failed</AlertTitle>
+                      <AlertDescription className="text-red-700">
+                        {exportMutation.error instanceof Error ? exportMutation.error.message : 'Unknown error occurred'}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </CardContent>
+                <CardFooter className="flex justify-between">
+                  <div className="text-xs text-muted-foreground">
+                    <Badge variant="outline" className="mr-2">
+                      Database: 2,871 CSRs
+                    </Badge>
+                    <Badge variant="outline">
+                      Search Service: 779 CSRs
+                    </Badge>
+                  </div>
+                  <Button 
+                    onClick={handleExportToJson}
+                    disabled={exportMutation.isPending}
+                  >
+                    {exportMutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Exporting...
+                      </>
+                    ) : (
+                      <>
+                        <FileJson className="mr-2 h-4 w-4" />
+                        Export to JSON
+                      </>
+                    )}
                   </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="system-status">
-          <Card>
-            <CardHeader>
-              <CardTitle>System Status</CardTitle>
-              <CardDescription>
-                Monitor system performance and resource usage
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Alert>
-                <AlertDescription className="text-sm">
-                  System monitoring features will be available in future updates
-                </AlertDescription>
-              </Alert>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="user-management">
-          <Card>
-            <CardHeader>
-              <CardTitle>User Management</CardTitle>
-              <CardDescription>
-                Manage users, roles, and permissions
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Alert>
-                <AlertDescription className="text-sm">
-                  User management features will be available in future updates
-                </AlertDescription>
-              </Alert>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+                </CardFooter>
+              </Card>
+            </TabsContent>
+          </CardContent>
+        </Tabs>
+      </Card>
     </div>
   );
 }
