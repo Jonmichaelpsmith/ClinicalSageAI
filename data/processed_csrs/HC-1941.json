@@ -1,0 +1,19 @@
+{
+  "nctrialId": "HC-1941",
+  "title": "A Randomized Double-Blind, Placebo-Controlled Multi-Center Study of SCK-880 (Hb polymerization inhibitor) in Patients With Type 2 Diabetes",
+  "officialTitle": "A Randomized Double-Blind, Placebo-Controlled Multi-Center Study of SCK-880 (Hb polymerization inhibitor) in Patients With Type 2 Diabetes",
+  "sponsor": "University of British Columbia",
+  "indication": "Type 2 Diabetes",
+  "phase": "Phase 1/Phase 2",
+  "fileName": "HC-1941.json",
+  "fileSize": 503377,
+  "date": "2024-06-08",
+  "completionDate": "2028-01-20",
+  "drugName": "SCK-880 (Hb polymerization inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Withdrawn",
+  "description": "This is a randomized double-blind, placebo-controlled multi-center study designed to evaluate the efficacy and safety of SCK-880 (Hb polymerization inhibitor) in patients with Type 2 Diabetes. The study will enroll approximately 135 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 21-69 years\n- Confirmed diagnosis of Type 2 Diabetes\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n- HbA1c between 7.0% and 10.0%\n- Body mass index (BMI) between 25 and 40 kg/m²\n- On stable antidiabetic medication for ≥3 months\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment\n- History of severe hypoglycemia within past 6 months\n- Estimated GFR <45 mL/min/1.73m²\n- History of diabetic ketoacidosis",
+  "csr_id": "HC-1941"
+}

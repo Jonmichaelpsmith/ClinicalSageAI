@@ -1,0 +1,19 @@
+{
+  "nctrialId": "HC-1961",
+  "title": "A  Double-Blind, Active-Controlled  Study of MSC-135 (oligonucleotide) in Patients With Alzheimer's Disease",
+  "officialTitle": "A  Double-Blind, Active-Controlled  Study of MSC-135 (oligonucleotide) in Patients With Alzheimer's Disease",
+  "sponsor": "McGill University Health Center",
+  "indication": "Alzheimer's Disease",
+  "phase": "Phase 1/Phase 2",
+  "fileName": "HC-1961.json",
+  "fileSize": 571271,
+  "date": "2023-07-13",
+  "completionDate": "2026-04-01",
+  "drugName": "MSC-135 (oligonucleotide)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Completed",
+  "description": "This is a  double-blind, active-controlled  study designed to evaluate the efficacy and safety of MSC-135 (oligonucleotide) in patients with Alzheimer's Disease. The study will enroll approximately 349 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 25-76 years\n- Confirmed diagnosis of Alzheimer's Disease\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment",
+  "csr_id": "HC-1961"
+}

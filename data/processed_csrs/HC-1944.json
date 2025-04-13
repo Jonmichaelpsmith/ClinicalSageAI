@@ -1,0 +1,19 @@
+{
+  "nctrialId": "HC-1944",
+  "title": "A Randomized Double-Blind, Placebo-Controlled Multi-Center Study of CAN-456 (receptor antagonist) in Patients With Osteoporosis",
+  "officialTitle": "A Randomized Double-Blind, Placebo-Controlled Multi-Center Study of CAN-456 (receptor antagonist) in Patients With Osteoporosis",
+  "sponsor": "Laval University Medical Center",
+  "indication": "Osteoporosis",
+  "phase": "Phase 1/Phase 2",
+  "fileName": "HC-1944.json",
+  "fileSize": 566663,
+  "date": "2024-04-16",
+  "completionDate": "2027-06-26",
+  "drugName": "CAN-456 (receptor antagonist)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Completed",
+  "description": "This is a randomized double-blind, placebo-controlled multi-center study designed to evaluate the efficacy and safety of CAN-456 (receptor antagonist) in patients with Osteoporosis. The study will enroll approximately 379 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 23-83 years\n- Confirmed diagnosis of Osteoporosis\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment",
+  "csr_id": "HC-1944"
+}

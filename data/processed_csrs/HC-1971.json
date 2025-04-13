@@ -1,0 +1,19 @@
+{
+  "nctrialId": "HC-1971",
+  "title": "A Randomized Open-Label, Placebo-Controlled  Study of OST-957 (cathepsin K inhibitor) in Patients With Crohn's Disease",
+  "officialTitle": "A Randomized Open-Label, Placebo-Controlled  Study of OST-957 (cathepsin K inhibitor) in Patients With Crohn's Disease",
+  "sponsor": "Sunnybrook Research Institute",
+  "indication": "Crohn's Disease",
+  "phase": "Phase 4",
+  "fileName": "HC-1971.json",
+  "fileSize": 567027,
+  "date": "2024-05-14",
+  "completionDate": "2029-03-28",
+  "drugName": "OST-957 (cathepsin K inhibitor)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Active, not recruiting",
+  "description": "This is a randomized open-label, placebo-controlled  study designed to evaluate the efficacy and safety of OST-957 (cathepsin K inhibitor) in patients with Crohn's Disease. The study will enroll approximately 393 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 18-68 years\n- Confirmed diagnosis of Crohn's Disease\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment",
+  "csr_id": "HC-1971"
+}

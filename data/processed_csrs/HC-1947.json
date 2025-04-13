@@ -1,0 +1,19 @@
+{
+  "nctrialId": "HC-1947",
+  "title": "A  Open-Label, Active-Controlled  Study of MSC-135 (oligonucleotide) in Patients With Hemophilia A",
+  "officialTitle": "A  Open-Label, Active-Controlled  Study of MSC-135 (oligonucleotide) in Patients With Hemophilia A",
+  "sponsor": "Dalhousie University",
+  "indication": "Hemophilia A",
+  "phase": "Phase 4",
+  "fileName": "HC-1947.json",
+  "fileSize": 393701,
+  "date": "2023-11-06",
+  "completionDate": "2025-09-29",
+  "drugName": "MSC-135 (oligonucleotide)",
+  "source": "Health Canada Clinical Trials Database",
+  "studyType": "Interventional",
+  "status": "Completed",
+  "description": "This is a  open-label, active-controlled  study designed to evaluate the efficacy and safety of MSC-135 (oligonucleotide) in patients with Hemophilia A. The study will enroll approximately 82 patients.",
+  "eligibilityCriteria": "\nInclusion Criteria:\n- Adults aged 24-84 years\n- Confirmed diagnosis of Hemophilia A\n- ECOG performance status 0-1\n- Adequate organ function\n- Willing and able to provide informed consent\n\nExclusion Criteria:\n- Known hypersensitivity to study drug or excipients\n- Pregnant or breastfeeding women\n- Participation in another interventional study within 30 days\n- Significant cardiovascular disease within past 6 months\n- Active or chronic infection requiring systemic treatment",
+  "csr_id": "HC-1947"
+}
