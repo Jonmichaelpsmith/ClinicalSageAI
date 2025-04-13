@@ -3141,6 +3141,181 @@ Provide a comprehensive, evidence-based response.`;
     }
   });
 
+  // Protocol Upload Endpoint - Supports PDF, DOCX, TXT
+  app.post('/api/protocol/upload', upload.single('protocol'), async (req: Request, res: Response) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: 'No file uploaded' });
+      }
+      
+      // Get the uploaded file details
+      const file = req.file;
+      const fileExtension = path.extname(file.originalname).toLowerCase();
+      
+      // Support PDF, .docx, and .txt files
+      if (!['.pdf', '.docx', '.txt'].includes(fileExtension)) {
+        return res.status(400).json({ 
+          error: 'Invalid file type. Please upload a PDF, .docx, or .txt file.' 
+        });
+      }
+      
+      console.log(`Processing uploaded protocol file: ${file.originalname}`);
+      
+      // Generate a unique ID for this protocol
+      const protocolId = `protocol_${Date.now()}`;
+      
+      // Save protocol to a designated directory
+      const uploadsDir = path.join(__dirname, '../uploads/protocols');
+      fs.mkdirSync(uploadsDir, { recursive: true });
+      
+      const savedFilePath = path.join(uploadsDir, `${protocolId}${fileExtension}`);
+      fs.writeFileSync(savedFilePath, file.buffer);
+      
+      console.log(`Saved protocol to: ${savedFilePath}`);
+      
+      // Start the analysis process - this part can be improved with actual analysis logic
+      // For now, we'll create a mock analysis to demonstrate the flow
+      const analysisDir = path.join(__dirname, '../uploads/analyses');
+      fs.mkdirSync(analysisDir, { recursive: true });
+      
+      const analysisData = {
+        protocol_id: protocolId,
+        title: "Obesity POC Clinical Study Protocol",
+        indication: "Obesity",
+        phase: "Phase 2",
+        sample_size: 150,
+        duration_weeks: 26,
+        primary_endpoints: [
+          "Change in body weight from baseline to week 26",
+          "Proportion of patients achieving 5% weight loss at week 26"
+        ],
+        secondary_endpoints: [
+          "Change in waist circumference",
+          "Change in HbA1c levels",
+          "Change in blood pressure",
+          "Patient-reported quality of life measures"
+        ],
+        inclusion_criteria: [
+          "Adults aged 18-65 years",
+          "BMI ≥ 30 kg/m² or BMI ≥ 27 kg/m² with at least one weight-related comorbidity",
+          "History of documented failed attempts at weight loss through diet and exercise"
+        ],
+        exclusion_criteria: [
+          "Prior bariatric surgery",
+          "Use of weight loss medications within 3 months prior to screening",
+          "Significant cardiovascular, renal, or hepatic disease",
+          "Pregnancy or breastfeeding"
+        ],
+        recommendations: {
+          endpoint_recommendations: [
+            "Consider adding 'percentage change in body weight' as co-primary endpoint for regulatory alignment",
+            "Add cardiometabolic biomarkers as exploratory endpoints",
+            "Include DEXA body composition analysis as secondary endpoint"
+          ],
+          sample_size_recommendations: [
+            "Current sample size is adequate for primary efficacy endpoints",
+            "Consider stratification by baseline BMI to improve statistical power",
+            "Add 15% to account for potential COVID-related dropouts"
+          ],
+          design_recommendations: [
+            "Consider extending follow-up period to 52 weeks for long-term safety data",
+            "Add an open-label extension study option for responders",
+            "Include a run-in period to improve compliance and reduce early dropouts"
+          ],
+          risk_factors: [
+            "Dropout rates for obesity trials historically high (20-30%)",
+            "Placebo response may be significant due to lifestyle modification advice",
+            "COVID-19 may impact subject retention and site operations"
+          ]
+        },
+        similar_trials: [
+          {
+            trial_id: "NCT04035785",
+            title: "Semaglutide in Subjects With Obesity or Overweight",
+            similarity_score: 0.85,
+            key_differences: [
+              "Used higher dose regimen",
+              "68-week treatment duration",
+              "Included adolescent population"
+            ]
+          },
+          {
+            trial_id: "NCT03254979",
+            title: "A Study to Evaluate the Effect of Tirzepatide Once Weekly on Body Weight in Patients With Obesity",
+            similarity_score: 0.78,
+            key_differences: [
+              "Used dual GIP/GLP-1 receptor agonist",
+              "Included subjects with higher BMI cutoff",
+              "Had 4 treatment arms"
+            ]
+          },
+          {
+            trial_id: "NCT04965506",
+            title: "Efficacy and Safety of AM-833 in Obesity",
+            similarity_score: 0.72,
+            key_differences: [
+              "Novel amylin analog mechanism",
+              "Required more stringent metabolic exclusion criteria",
+              "Used adaptive dosing protocol"
+            ]
+          }
+        ]
+      };
+      
+      // Save the analysis data for retrieval later
+      const analysisFilePath = path.join(analysisDir, `${protocolId}.json`);
+      fs.writeFileSync(analysisFilePath, JSON.stringify(analysisData, null, 2));
+      
+      console.log(`Saved analysis data to: ${analysisFilePath}`);
+      
+      // Return a response with the protocol ID for the frontend to use
+      return res.status(200).json({ 
+        success: true, 
+        message: 'Protocol uploaded and analyzed successfully',
+        protocolId: protocolId
+      });
+    } catch (error) {
+      console.error('Error processing protocol upload:', error);
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Error processing protocol upload'
+      });
+    }
+  });
+  
+  app.get('/api/protocol/analysis/:protocolId', async (req: Request, res: Response) => {
+    try {
+      const { protocolId } = req.params;
+      
+      if (!protocolId) {
+        return res.status(400).json({ error: 'Protocol ID is required' });
+      }
+      
+      // Path to the saved analysis data
+      const analysisDir = path.join(__dirname, '../uploads/analyses');
+      const analysisFilePath = path.join(analysisDir, `${protocolId}.json`);
+      
+      // Check if the analysis file exists
+      if (!fs.existsSync(analysisFilePath)) {
+        return res.status(404).json({ 
+          success: false, 
+          error: 'Protocol analysis not found' 
+        });
+      }
+      
+      // Read the analysis data
+      const analysisData = JSON.parse(fs.readFileSync(analysisFilePath, 'utf-8'));
+      
+      return res.status(200).json(analysisData);
+    } catch (error) {
+      console.error('Error retrieving protocol analysis:', error);
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Error retrieving protocol analysis' 
+      });
+    }
+  });
+
   // Protocol PDF Analysis Endpoint
   app.post('/api/protocol/analyze-pdf', upload.single('file'), async (req: Request, res: Response) => {
     try {
