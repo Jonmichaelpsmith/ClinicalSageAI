@@ -853,6 +853,99 @@ def create_metadata_manifest(filepath, session_id, bundle_type, region, timestam
     with open(filepath, 'w') as f:
         json.dump(metadata, f, indent=2)
 
+def send_export_notification_email(recipient_email: str, session_id: str, filename: str, download_url: str) -> bool:
+    """
+    Send a notification email when a regulatory bundle is exported
+    
+    Args:
+        recipient_email: Email address to send notification to
+        session_id: ID of the session that was exported
+        filename: Name of the exported ZIP file
+        download_url: URL to download the exported bundle
+        
+    Returns:
+        True if email sent successfully, False otherwise
+    """
+    try:
+        # Check if we have SMTP credentials configured
+        smtp_host = os.getenv("SMTP_HOST", "smtp.gmail.com")
+        smtp_port = int(os.getenv("SMTP_PORT", "587"))
+        smtp_user = os.getenv("SMTP_USER", "")
+        smtp_password = os.getenv("SMTP_PASSWORD", "")
+        
+        # If we don't have SMTP credentials, log and return False
+        if not smtp_user or not smtp_password:
+            print("SMTP credentials not configured, skipping email notification")
+            return False
+            
+        # Configure email content
+        msg = MIMEMultipart()
+        msg['From'] = smtp_user
+        msg['To'] = recipient_email
+        msg['Subject'] = f"Your Regulatory Bundle Export is Ready - Session {session_id}"
+        
+        # Build email body
+        body = f"""
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                .header {{ background-color: #4a6fdc; color: white; padding: 15px; text-align: center; border-radius: 5px 5px 0 0; }}
+                .content {{ background-color: #f9f9f9; padding: 20px; border-radius: 0 0 5px 5px; }}
+                .button {{ background-color: #4a6fdc; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 15px 0; }}
+                .footer {{ font-size: 12px; color: #777; margin-top: 20px; text-align: center; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h2>Your Regulatory Export is Ready</h2>
+                </div>
+                <div class="content">
+                    <p>Hello,</p>
+                    <p>Your regulatory bundle for session <strong>{session_id}</strong> has been successfully exported and is now ready for download.</p>
+                    
+                    <h3>Export Details:</h3>
+                    <ul>
+                        <li><strong>Session ID:</strong> {session_id}</li>
+                        <li><strong>File:</strong> {filename}</li>
+                        <li><strong>Generated:</strong> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</li>
+                    </ul>
+                    
+                    <p>You can download your bundle by clicking the button below or accessing it from your session summary panel.</p>
+                    
+                    <a href="{download_url}" class="button">Download Bundle</a>
+                    
+                    <p>If you have any questions about this export or need assistance with regulatory submissions, please contact our support team.</p>
+                    
+                    <p>Thank you for using LumenTrialGuide.AI</p>
+                </div>
+                <div class="footer">
+                    <p>This is an automated message. Please do not reply to this email.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        # Attach HTML content
+        msg.attach(MIMEText(body, 'html'))
+        
+        # Connect to SMTP server and send email
+        with smtplib.SMTP(smtp_host, smtp_port) as server:
+            server.starttls()
+            server.login(smtp_user, smtp_password)
+            server.send_message(msg)
+            
+        print(f"Email notification sent to {recipient_email} for session {session_id}")
+        return True
+        
+    except Exception as e:
+        print(f"Failed to send email notification: {str(e)}")
+        return False
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)
