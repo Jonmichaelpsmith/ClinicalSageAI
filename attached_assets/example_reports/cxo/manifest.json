@@ -1,17 +1,1 @@
-{
-  "persona": "cxo",
-  "title": "Executive Team Bundle",
-  "description": "Comprehensive executive intelligence package for leadership teams",
-  "files": [
-    "executive_portfolio_summary.pdf",
-    "strategic_recommendations.pdf",
-    "go_no_go_decision_support.pdf",
-    "investment_prioritization_analysis.pdf",
-    "pipeline_valuation_report.pdf"
-  ],
-  "blurbs": [
-    "Executive-level portfolio intelligence with decision support",
-    "Strategic pipeline assessment with valuation analysis",
-    "Cross-functional insights for prioritization decisions"
-  ]
-}
+{"reports": []}

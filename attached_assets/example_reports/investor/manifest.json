@@ -1,17 +1,1 @@
-{
-  "persona": "investor",
-  "title": "Investor Readiness Suite",
-  "description": "Financial and strategic analysis tools for investment decision-making",
-  "files": [
-    "portfolio_risk_assessment.pdf",
-    "valuation_analysis.pdf",
-    "competitor_landscape_report.pdf",
-    "market_opportunity_assessment.pdf",
-    "investment_strategy_recommendations.pdf"
-  ],
-  "blurbs": [
-    "Comprehensive financial modeling with risk-adjusted ROI projections",
-    "Detailed competitive landscape analysis with positioning strategy",
-    "Market opportunity assessment with growth projections"
-  ]
-}
+{"reports": []}

@@ -1,17 +1,1 @@
-{
-  "persona": "ops",
-  "title": "Clinical Operations Suite",
-  "description": "Tools and insights for optimizing clinical trial operations and execution",
-  "files": [
-    "site_selection_optimization.pdf",
-    "enrollment_forecast.pdf",
-    "dropout_mitigation_strategies.pdf",
-    "operational_efficiency_report.pdf",
-    "risk_management_plan.pdf"
-  ],
-  "blurbs": [
-    "AI-powered site selection with performance projections",
-    "Data-driven enrollment forecasts with optimization recommendations",
-    "Comprehensive dropout prediction with mitigation strategies"
-  ]
-}
+{"reports": []}

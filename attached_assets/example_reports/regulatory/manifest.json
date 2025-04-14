@@ -1,17 +1,1 @@
-{
-  "persona": "regulatory",
-  "title": "Regulatory Affairs Suite",
-  "description": "Comprehensive regulatory intelligence and submission preparation tools",
-  "files": [
-    "regulatory_submission_bundle.pdf",
-    "protocol_compliance_assessment.pdf",
-    "global_regulatory_strategy.pdf",
-    "submission_readiness_report.pdf",
-    "authority_engagement_plan.pdf"
-  ],
-  "blurbs": [
-    "Automated regulatory submission documents with validation",
-    "Cross-referencing with global regulatory requirements",
-    "Regulatory pathway optimization with historical context"
-  ]
-}
+{"reports": []}

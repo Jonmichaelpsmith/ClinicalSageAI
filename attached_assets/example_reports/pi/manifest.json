@@ -1,17 +1,1 @@
-{
-  "persona": "pi",
-  "title": "Principal Investigator Suite",
-  "description": "Specialized tools for principal investigators and research leaders",
-  "files": [
-    "study_feasibility_assessment.pdf",
-    "resource_allocation_plan.pdf",
-    "patient_recruitment_strategy.pdf",
-    "investigator_brochure_summary.pdf",
-    "site_management_recommendations.pdf"
-  ],
-  "blurbs": [
-    "Comprehensive study feasibility assessment with site-specific insights",
-    "Patient recruitment optimization with demographic targeting",
-    "Resource allocation planning and optimization tools"
-  ]
-}
+{"reports": []}
