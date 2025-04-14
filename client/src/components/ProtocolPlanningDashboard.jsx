@@ -358,6 +358,84 @@ ${endpoints.length > 0 ? `- Original endpoints: ${endpoints.join(', ')}` : ''}
     }
   };
 
+  // Check if the auto-generated IND document exists
+  const checkIndDocxAvailability = async () => {
+    if (!csrContext || !sessionId) return;
+    
+    try {
+      // Check if the ind_module_with_context.docx file exists by looking at the session archive
+      const response = await fetch(`/api/files/check-session-file`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          session_id: sessionId,
+          file_name: 'ind_module_with_context.docx'
+        })
+      });
+      
+      const result = await response.json();
+      if (result.exists) {
+        setDocxExportReady(true);
+      }
+    } catch (error) {
+      console.warn('Error checking IND DOCX availability:', error);
+    }
+  };
+  
+  // Call this function when component mounts if CSR context is available
+  useEffect(() => {
+    if (csrContext && csrContext.id) {
+      checkIndDocxAvailability();
+    }
+  }, [csrContext, sessionId]);
+  
+  // Download the auto-generated IND document
+  const downloadIndDocx = async () => {
+    if (!csrContext || !sessionId) return;
+    
+    try {
+      toast({
+        title: "Downloading IND document...",
+        description: "Preparing the CSR-enhanced IND document for download.",
+      });
+      
+      // Fetch the IND docx file
+      const response = await fetch(`/api/export/ind-docx-with-context`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          session_id: sessionId,
+          csr_id: csrContext.id
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to download IND document: ${response.status}`);
+      }
+      
+      // Create a blob from the response
+      const blob = await response.blob();
+      // Create a link element, use it to download the blob and remove it
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `ind_module_with_context_${sessionId}.docx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast({
+        title: "Download Complete",
+        description: "Your CSR-enhanced IND document has been downloaded.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error Downloading IND Document",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   // Display CSR context banner if available
   const renderCsrContextBanner = () => {
     if (!csrContext) return null;
@@ -436,6 +514,32 @@ ${endpoints.length > 0 ? `- Original endpoints: ${endpoints.join(', ')}` : ''}
                     </div>
                   </div>
                 )}
+                
+                {/* CSR-Enhanced IND Document Section */}
+                <div className="mt-4 border-t border-blue-200 pt-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-blue-600 font-medium">
+                      CSR-Enhanced Documents
+                    </span>
+                    
+                    <Button
+                      variant="outline" 
+                      size="sm"
+                      className="h-8 bg-blue-100 border-blue-200 text-blue-700 hover:bg-blue-200"
+                      onClick={downloadIndDocx}
+                      disabled={!docxExportReady}
+                    >
+                      <Download className="h-3 w-3 mr-2" />
+                      Download IND Module
+                    </Button>
+                  </div>
+                  
+                  <p className="text-xs text-blue-700 mt-1">
+                    {docxExportReady 
+                      ? "Auto-generated IND document with CSR evidence is ready to download" 
+                      : "Auto-generating IND document with CSR evidence..."}
+                  </p>
+                </div>
               </div>
               
               <div className="flex flex-col items-end gap-2">

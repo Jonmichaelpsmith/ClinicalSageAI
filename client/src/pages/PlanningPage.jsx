@@ -20,6 +20,24 @@ export default function PlanningPage() {
     const loadContext = async () => {
       try {
         if (csrId) {
+          // Auto-trigger the CSR-enhanced IND document generation
+          const sessionId = studyId || `planning-${Date.now()}`;
+          try {
+            const initResult = await fetch(`/api/planning/init`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                session_id: sessionId,
+                csr_id: csrId
+              })
+            });
+            const initData = await initResult.json();
+            console.log('Planning session initialized:', initData);
+          } catch (initError) {
+            console.warn('Error initializing planning session:', initError);
+            // Continue loading the page even if initialization fails
+          }
+          
           // Load CSR data from the intelligence API
           const res = await fetch(`/api/intelligence/csr/${csrId}`);
           if (!res.ok) {
