@@ -16,10 +16,12 @@ import {
   ArrowRight,
   Check,
   Beaker,
-  Target
+  Target,
+  Lightbulb
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import CSRAlignmentPanel from "@/components/CSRAlignmentPanel";
+import ProtocolCorrectionSuggestions from "@/components/ProtocolCorrectionSuggestions";
 
 export default function ProtocolPlanningDashboard({ 
   initialProtocol = "", 
@@ -378,6 +380,9 @@ ${endpoints.length > 0 ? `- Original endpoints: ${endpoints.join(', ')}` : ''}
       
       {/* CSR Semantic Alignment Panel */}
       {csrContext && <CSRAlignmentPanel sessionId={sessionId} />}
+      
+      {/* Protocol Correction Suggestions */}
+      {csrContext && <ProtocolCorrectionSuggestions sessionId={sessionId} />}
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid grid-cols-4 mb-6">

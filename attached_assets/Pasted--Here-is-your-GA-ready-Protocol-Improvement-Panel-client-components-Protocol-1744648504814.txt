@@ -1,0 +1,63 @@
+✅ Here is your GA-ready **Protocol Improvement Panel**:
+
+---
+
+## 📄 `/client/components/ProtocolImprovementPanel.jsx`
+
+```jsx
+import { useEffect, useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+
+export default function ProtocolImprovementPanel({ sessionId }) {
+  const [suggestions, setSuggestions] = useState([]);
+
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      const res = await fetch(`/api/insights/suggested-corrections/${sessionId}`);
+      const data = await res.json();
+      setSuggestions(data?.suggestions || []);
+    };
+    fetchSuggestions();
+  }, [sessionId]);
+
+  if (suggestions.length === 0) return null;
+
+  return (
+    <Card className="border border-orange-200 bg-orange-50">
+      <CardContent className="p-4 space-y-3">
+        <h2 className="text-lg font-semibold text-orange-900">🛠 Protocol Improvement Suggestions</h2>
+        <p className="text-sm text-muted-foreground">
+          These are AI-generated field suggestions based on divergence from CSR evidence.
+        </p>
+
+        <ul className="text-sm space-y-4">
+          {suggestions.map((item, idx) => (
+            <li key={idx} className="p-3 bg-white border border-orange-100 rounded shadow-sm">
+              <p><strong>Field:</strong> {item.field}</p>
+              <p><strong>Current:</strong> {item.current}</p>
+              <p><strong>Suggested:</strong> {item.suggested}</p>
+              <p className="text-xs text-orange-700 mt-1">
+                {item.justification} (Confidence: {Math.round(item.confidence * 100)}%)
+              </p>
+            </li>
+          ))}
+        </ul>
+      </CardContent>
+    </Card>
+  );
+}
+```
+
+---
+
+### ✅ Use:
+Insert this into your `ProtocolPlanningDashboard.jsx` near the top:
+```jsx
+<ProtocolImprovementPanel sessionId={sessionId} />
+```
+
+Would you like me to now:
+- Add a “✅ Apply Suggestion” button per field?
+- Or include this section in your exported summary packet?
+
+This completes the protocol improvement loop—now fully real-time and CSR-informed. Ready to deploy next.
