@@ -1,6 +1,7 @@
 import { db } from './db';
 import { eq } from 'drizzle-orm';
 import { protocols } from '../shared/schema';
+import { classifyTherapeuticArea, getTherapeuticArea } from '../shared/utils/therapeutic-area-classifier';
 
 export interface ProtocolData {
   phase: string;
@@ -59,33 +60,54 @@ export class ProtocolAnalyzerService {
       
       const phase = phaseMatch ? this.normalizePhase(phaseMatch[1]) : "Phase 2";
       
-      // Extract indication - look for obesity, metabolic disorder, or other common indications first
-      let indication = "Unknown";
+      // Extract indication using the centralized therapeutic area classifier
+      // This provides consistent, accurate classification across the entire platform
+      let indication: string;
       
-      // Check for specific therapeutic areas by keywords
-      if (normalizedText.includes('obesity') || normalizedText.includes('weight loss') || 
-          normalizedText.includes('bmi') || normalizedText.includes('overweight')) {
-        indication = "Obesity";
-      } 
-      else if (normalizedText.includes('diabetes') || normalizedText.includes('glycemic') || 
-               normalizedText.includes('insulin')) {
-        indication = "Diabetes";
-      }
-      else if (normalizedText.includes('oncology') || normalizedText.includes('cancer') || 
-               normalizedText.includes('tumor') || normalizedText.includes('carcinoma')) {
-        indication = "Oncology";
-      }
-      else if (normalizedText.includes('cardio') || normalizedText.includes('heart') || 
-               normalizedText.includes('hypertension')) {
-        indication = "Cardiovascular";
-      }
-      else {
-        // Fall back to regex pattern matching if no keywords found
-        const indicationMatch = normalizedText.match(/(?:indication|condition|disease):\s*([^\n\.]+)/i) ||
-                                normalizedText.match(/(?:investigating|studying|trial for|treatment of)\s+([^\n\.]+)/i);
+      // First, try to extract from explicit indication statements if present
+      const indicationMatch = normalizedText.match(/(?:indication|condition|disease):\s*([^\n\.]+)/i) ||
+                             normalizedText.match(/(?:investigating|studying|trial for|treatment of)\s+([^\n\.]+)/i);
+      
+      if (indicationMatch) {
+        // Extract the explicit statement and classify it
+        const explicitIndication = indicationMatch[1].trim();
+        const classificationResult = classifyTherapeuticArea(explicitIndication, { 
+          confidenceThreshold: 0.4,
+          enableLogging: true 
+        });
         
-        if (indicationMatch) {
-          indication = indicationMatch[1].trim();
+        // If we got a high-confidence match, use the therapeutic area name
+        if (classificationResult.confidence >= 0.7) {
+          indication = classificationResult.area;
+        } else {
+          // Otherwise use the explicit text but also run full-text classification
+          const fullTextResult = classifyTherapeuticArea(protocolText, { 
+            confidenceThreshold: 0.3,
+            enableLogging: true 
+          });
+          
+          // If full-text classification has higher confidence, use that
+          if (fullTextResult.confidence > classificationResult.confidence) {
+            indication = fullTextResult.area;
+            console.log(`Protocol analysis: Overriding explicit indication "${explicitIndication}" with higher confidence classification "${fullTextResult.area}" (${fullTextResult.confidence.toFixed(2)})`);
+          } else {
+            // Use the explicit text but clean it up
+            indication = explicitIndication;
+          }
+        }
+      } else {
+        // No explicit indication found, use full text classification
+        const classificationResult = classifyTherapeuticArea(protocolText, { 
+          confidenceThreshold: 0.3,
+          enableLogging: true 
+        });
+        
+        indication = classificationResult.area;
+        
+        // Log classification details for audit purposes
+        console.log(`Protocol analysis: Classified as "${indication}" with ${classificationResult.confidence.toFixed(2)} confidence`);
+        if (classificationResult.matchedKeywords.length > 0) {
+          console.log(`Protocol analysis: Matched keywords: ${classificationResult.matchedKeywords.join(", ")}`);
         }
       }
       
@@ -162,8 +184,8 @@ export class ProtocolAnalyzerService {
         global_compliance: {
           "FDA": true,
           "EMA": true,
-          "PMDA": indication.toLowerCase().includes("oncology"),
-          "NMPA": indication.toLowerCase().includes("oncology")
+          "PMDA": indication === "Oncology", // Fixed: replaced vulnerable substring matching with exact comparison
+          "NMPA": indication === "Oncology"  // Fixed: replaced vulnerable substring matching with exact comparison
         },
         regional_requirements: {
           "FDA": ["Diversity requirements per FDORA 2022", "IRB/informed consent documentation"],
