@@ -62,7 +62,7 @@ export default function ExampleReportsPage() {
     const fetchReportIndex = async () => {
       setIsLoading(true);
       try {
-        const response = await apiRequest("GET", "/api/reports/manifest/index.json");
+        const response = await apiRequest("GET", "/api/reports/index.json");
         if (!response.ok) {
           throw new Error("Failed to fetch report index");
         }
@@ -72,7 +72,7 @@ export default function ExampleReportsPage() {
         // Pre-fetch manifests for all personas
         const manifestPromises = data.personas.map(async (persona) => {
           try {
-            const manifestResponse = await apiRequest("GET", `/api/reports/manifest/persona/${persona.id}.json`);
+            const manifestResponse = await apiRequest("GET", `/api/reports/persona/${persona.id}.json`);
             if (manifestResponse.ok) {
               const manifestData = await manifestResponse.json();
               return { persona: persona.id, data: manifestData };
@@ -181,14 +181,14 @@ export default function ExampleReportsPage() {
   const previewReport = async (report) => {
     setCurrentReport(report);
     // In a real implementation, this would fetch the actual PDF
-    setPdfPreviewUrl(`/api/reports/download/${report.persona}/${report.file}`);
+    setPdfPreviewUrl(`/api/reports/persona/${report.persona}/pdf/${report.file}`);
     setIsPreviewOpen(true);
   };
 
   // Download a report
   const downloadReport = async (report) => {
     try {
-      const response = await apiRequest("GET", `/api/reports/download/${report.persona}/${report.file}`);
+      const response = await apiRequest("GET", `/api/reports/persona/${report.persona}/pdf/${report.file}`);
       if (!response.ok) {
         throw new Error("Failed to download report");
       }
