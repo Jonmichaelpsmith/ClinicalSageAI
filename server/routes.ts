@@ -371,6 +371,7 @@ const signatureUpdateRequestSchema = z.object({
 import analyticsRoutes from './routes/analytics-routes';
 import dropoutForecastRoutes from './routes/dropout-forecast-routes';
 import reportsManifestRoutes from './routes/reports/manifest-routes';
+import alignmentRoutes from './routes/alignment-routes';
 
 // Import session routes for email persistence
 import sessionRoutes from './routes/session_routes';
@@ -562,6 +563,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register Export Routes
   app.use('/api/export', exportRoutes);
+  
+  // Register Alignment Routes
+  app.use('/api', alignmentRoutes);
   
   // Serve exported files from the exports directory
   const EXPORTS_DIR = path.join(process.cwd(), 'exports');

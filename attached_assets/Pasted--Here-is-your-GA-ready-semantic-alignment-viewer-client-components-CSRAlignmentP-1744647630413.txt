@@ -1,0 +1,101 @@
+✅ Here is your GA-ready semantic alignment viewer:
+
+---
+
+## 📄 `/client/components/CSRAlignmentPanel.jsx`
+
+```jsx
+import { useEffect, useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+
+export default function CSRAlignmentPanel({ sessionId }) {
+  const [alignment, setAlignment] = useState(null);
+
+  useEffect(() => {
+    const loadAlignment = async () => {
+      try {
+        const res = await fetch(`/static/lumen_reports_backend/sessions/${sessionId}/alignment_score_report.json`);
+        const data = await res.json();
+        setAlignment(data);
+      } catch (err) {
+        console.error("Failed to load alignment report:", err);
+      }
+    };
+    loadAlignment();
+  }, [sessionId]);
+
+  if (!alignment) return null;
+
+  return (
+    <Card className="bg-yellow-50 border border-yellow-200">
+      <CardContent className="p-4 space-y-3">
+        <h2 className="text-lg font-semibold text-yellow-900">📊 CSR Semantic Alignment</h2>
+        <p className="text-sm text-yellow-800">
+          Overall Alignment Score: <strong>{Math.round(alignment.alignment_score * 100)}%</strong>
+        </p>
+
+        <table className="text-sm w-full text-left mt-2">
+          <thead>
+            <tr className="text-xs text-yellow-900 border-b">
+              <th className="py-1">Field</th>
+              <th>Protocol</th>
+              <th>CSR Match</th>
+              <th>Score</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {alignment.matches.map((item, idx) => (
+              <tr key={idx} className="border-b last:border-0">
+                <td className="py-1">{item.field}</td>
+                <td className="text-yellow-900">{item.protocol_value}</td>
+                <td className="text-yellow-900">{item.csr_value}</td>
+                <td>{Math.round(item.similarity * 100)}%</td>
+                <td>
+                  {item.match ? (
+                    <span className="text-green-600">✅ Match</span>
+                  ) : (
+                    <span className="text-red-500">⚠️ Divergent</span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        <Button
+          variant="outline"
+          className="mt-4"
+          asChild
+        >
+          <a
+            href={`/static/lumen_reports_backend/sessions/${sessionId}/alignment_score_report.json`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            📥 Download Alignment Report (JSON)
+          </a>
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+```
+
+---
+
+## ✅ What To Do:
+1. Place this near the top of your `ProtocolPlanningDashboard.jsx`  
+   ```jsx
+   <CSRAlignmentPanel sessionId={sessionId} />
+   ```
+
+2. Automatically loads if an alignment report exists  
+3. Enhances protocol trust and traceability
+
+Would you like to now:
+- Highlight these alignment insights in the Assistant Q&A logic?
+- Or include the alignment score in your final Summary PDF exports?
+
+This is evidence-aware trial intelligence—live, visual, and precise. Ready for final linkage.
