@@ -764,6 +764,20 @@ router.post('/analyze', async (req, res) => {
           agency: guidance.agency,
           relevantGuidance: guidance.document_title,
           consideration: guidance.summary
+        })),
+        
+        // Academic literature citations
+        academicLiterature: literatureCitations.map(citation => ({
+          title: citation.title,
+          authors: citation.authors,
+          journal: citation.journal,
+          year: citation.year,
+          volume: citation.volume,
+          pages: citation.pages,
+          doi: citation.doi,
+          abstract: citation.abstract,
+          citation_count: citation.citation_count,
+          relevance_score: citation.relevance_score
         }))
       }
     };
