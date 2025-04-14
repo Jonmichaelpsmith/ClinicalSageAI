@@ -421,12 +421,12 @@ export default function ExampleReportsPage() {
                       <>
                         <h3 className="text-sm font-medium mb-2">Included Reports:</h3>
                         <ul className="text-sm list-disc pl-4 mb-4 space-y-1">
-                          {manifest.includes.map((item, idx) => (
+                          {Array.isArray(manifest.includes) ? manifest.includes.map((item, idx) => (
                             <li key={idx}>{item}</li>
-                          ))}
+                          )) : null}
                         </ul>
                         <div className="space-y-2">
-                          {manifest.files.map((file, i) => (
+                          {Array.isArray(manifest.files) ? manifest.files.map((file, i) => (
                             <div key={i} className="flex justify-between items-center">
                               <span className="text-sm text-muted-foreground">{file}</span>
                               <a
@@ -438,7 +438,7 @@ export default function ExampleReportsPage() {
                                 <Download className="h-3.5 w-3.5 mr-1" /> Download
                               </a>
                             </div>
-                          ))}
+                          )) : null}
                         </div>
                       </>
                     )}
