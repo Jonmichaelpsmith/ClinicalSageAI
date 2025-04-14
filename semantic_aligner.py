@@ -5,7 +5,7 @@ This module compares protocol fields against historical CSR data,
 calculating semantic similarity and providing alignment scores.
 
 Dependencies:
-- OpenAI API for text embeddings
+- scikit-learn for TF-IDF vectorization and cosine similarity
 - semantic_normalizer for term standardization
 """
 
@@ -14,19 +14,8 @@ import json
 import numpy as np
 from typing import Dict, List, Any, Tuple, Optional
 import semantic_normalizer as normalizer
-from dotenv import load_dotenv
-load_dotenv()
-
-# Check for OpenAI API key
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
-if not OPENAI_API_KEY:
-    raise EnvironmentError("OPENAI_API_KEY environment variable must be set")
-
-try:
-    from openai import OpenAI
-    client = OpenAI(api_key=OPENAI_API_KEY)
-except ImportError:
-    raise ImportError("OpenAI package not installed. Run 'pip install openai'")
+from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 # Constants for field weighting in alignment scores
 FIELD_WEIGHTS = {
@@ -39,31 +28,21 @@ FIELD_WEIGHTS = {
     "frequency": 0.05
 }
 
-def get_embedding(text: str) -> List[float]:
-    """Get text embedding from OpenAI embedding model"""
-    # Use text-embedding-3-large model for high-quality embeddings
-    try:
-        text = normalizer.normalize_term(text)
-        response = client.embeddings.create(
-            model="text-embedding-3-large",
-            input=text
-        )
-        return response.data[0].embedding
-    except Exception as e:
-        print(f"Error getting embedding: {e}")
-        # Return empty embedding in case of error
-        return [0.0] * 3072  # text-embedding-3-large has 3072 dimensions
+def semantic_similarity(text_a: str, text_b: str) -> float:
+    """Calculate semantic similarity between two text strings using TF-IDF"""
+    vectorizer = TfidfVectorizer().fit([text_a, text_b])
+    tfidf_matrix = vectorizer.transform([text_a, text_b])
+    similarity = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])
+    return round(float(similarity[0][0]), 4)
 
-def cosine_similarity(v1: List[float], v2: List[float]) -> float:
-    """Calculate cosine similarity between two vectors"""
-    dot_product = sum(a * b for a, b in zip(v1, v2))
-    norm_v1 = sum(a * a for a in v1) ** 0.5
-    norm_v2 = sum(b * b for b in v2) ** 0.5
+def compute_text_similarity(text_a: str, text_b: str) -> float:
+    """Compute similarity between two text strings with normalization"""
+    # Normalize terms first
+    norm_a = normalizer.normalize_term(text_a)
+    norm_b = normalizer.normalize_term(text_b)
     
-    if norm_v1 == 0 or norm_v2 == 0:
-        return 0.0
-    
-    return dot_product / (norm_v1 * norm_v2)
+    # Calculate similarity
+    return semantic_similarity(norm_a, norm_b)
 
 def compare_numeric_fields(protocol_value: float, csr_value: float, field_type: str) -> float:
     """Compare numeric fields and return similarity score (0-1)"""
@@ -140,19 +119,15 @@ def compare_fields(protocol_field: Any, csr_field: Any, field_type: str) -> Tupl
         reasoning = f"Numeric comparison: {protocol_field} vs {csr_field}"
         return similarity, reasoning
     
-    # Handle text fields with embeddings
+    # Handle text fields with TF-IDF similarity
     if isinstance(protocol_field, str) and isinstance(csr_field, str):
         # Normalize terms first
         protocol_normalized = normalizer.normalize_term(protocol_field)
         csr_normalized = normalizer.normalize_term(csr_field)
         
-        # Get embeddings
-        protocol_embedding = get_embedding(protocol_normalized)
-        csr_embedding = get_embedding(csr_normalized)
-        
-        # Calculate similarity
-        similarity = cosine_similarity(protocol_embedding, csr_embedding)
-        reasoning = f"Semantic comparison between normalized terms"
+        # Calculate semantic similarity using TF-IDF and cosine similarity
+        similarity = semantic_similarity(protocol_normalized, csr_normalized)
+        reasoning = f"TF-IDF semantic comparison between normalized terms"
         return similarity, reasoning
     
     # Handle list fields (e.g., inclusion criteria)
@@ -163,9 +138,10 @@ def compare_fields(protocol_field: Any, csr_field: Any, field_type: str) -> Tupl
             best_match = 0
             for c_item in csr_field:
                 if isinstance(p_item, str) and isinstance(c_item, str):
-                    p_embed = get_embedding(normalizer.normalize_term(p_item))
-                    c_embed = get_embedding(normalizer.normalize_term(c_item))
-                    sim = cosine_similarity(p_embed, c_embed)
+                    # Normalize and compute semantic similarity using TF-IDF
+                    p_norm = normalizer.normalize_term(p_item)
+                    c_norm = normalizer.normalize_term(c_item)
+                    sim = semantic_similarity(p_norm, c_norm)
                     best_match = max(best_match, sim)
             if best_match > 0:
                 similarities.append(best_match)
@@ -174,7 +150,7 @@ def compare_fields(protocol_field: Any, csr_field: Any, field_type: str) -> Tupl
             return 0.0, "No comparable items found in lists"
         
         avg_similarity = sum(similarities) / len(similarities)
-        reasoning = f"Averaged similarity across {len(similarities)} list items"
+        reasoning = f"Averaged TF-IDF similarity across {len(similarities)} list items"
         return avg_similarity, reasoning
     
     # Default case - types don't match
