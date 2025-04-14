@@ -7,7 +7,8 @@ import { createHash } from 'crypto';
 
 // Import for database access
 import { db } from '../db';
-import { sql } from 'drizzle-orm';
+import { eq, like, desc, sql } from 'drizzle-orm';
+import { protocolAssessments, protocolAssessmentFeedback } from '@shared/schema';
 
 // Import HFModel definition
 import { HFModel } from '../routes';
@@ -814,22 +815,23 @@ router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
     
-    const assessmentResult = await db.query(`
-      SELECT assessment_results
-      FROM protocol_assessments
-      WHERE id = $1
-    `, [id]);
+    const assessment = await db.select()
+      .from(protocolAssessments)
+      .where(eq(protocolAssessments.id, id))
+      .limit(1);
     
-    if (assessmentResult.rows.length === 0) {
+    if (assessment.length === 0) {
       return res.status(404).json({ error: 'Assessment not found' });
     }
     
-    res.json(JSON.parse(assessmentResult.rows[0].assessment_results));
+    // Parse the assessment_results JSON and send it back
+    const assessmentResults = assessment[0].assessment_results;
+    res.json(assessmentResults);
   } catch (error) {
     console.error('Error retrieving protocol assessment:', error);
     res.status(500).json({ 
       error: 'Error retrieving protocol assessment', 
-      details: error.message 
+      details: error instanceof Error ? error.message : String(error)
     });
   }
 });
@@ -837,24 +839,26 @@ router.get('/:id', async (req, res) => {
 // GET endpoint to retrieve all assessments for a user
 router.get('/', async (req, res) => {
   try {
-    const assessments = await db.query(`
-      SELECT id, protocol_data->>'indication' as indication, 
-             protocol_data->>'phase' as phase,
-             assessment_results->>'fileName' as fileName,
-             assessment_results->>'status' as status,
-             assessment_results->>'uploadDate' as uploadDate,
-             assessment_results->>'completionDate' as completionDate
-      FROM protocol_assessments
-      ORDER BY created_at DESC
-      LIMIT 20
-    `);
+    // Using Drizzle ORM instead of raw SQL queries
+    const assessments = await db.select({
+      id: protocolAssessments.id,
+      indication: sql<string>`${protocolAssessments.protocol_data}->>'indication'`,
+      phase: sql<string>`${protocolAssessments.protocol_data}->>'phase'`,
+      fileName: sql<string>`${protocolAssessments.assessment_results}->>'fileName'`,
+      status: sql<string>`${protocolAssessments.assessment_results}->>'status'`,
+      uploadDate: sql<string>`${protocolAssessments.assessment_results}->>'uploadDate'`,
+      completionDate: sql<string>`${protocolAssessments.assessment_results}->>'completionDate'`
+    })
+    .from(protocolAssessments)
+    .orderBy(desc(protocolAssessments.created_at))
+    .limit(20);
     
-    res.json(assessments.rows);
+    res.json(assessments);
   } catch (error) {
     console.error('Error retrieving protocol assessments:', error);
     res.status(500).json({ 
       error: 'Error retrieving protocol assessments', 
-      details: error.message 
+      details: error instanceof Error ? error.message : String(error)
     });
   }
 });
@@ -874,25 +878,21 @@ router.post('/:id/feedback', async (req, res) => {
     
     const feedbackData = parsedData.data;
     
-    // Store feedback in the database
-    await db.query(`
-      INSERT INTO protocol_assessment_feedback (
-        assessment_id, feedback_text, rating, areas, created_at
-      ) VALUES ($1, $2, $3, $4, $5)
-    `, [
-      id,
-      feedbackData.feedbackText,
-      feedbackData.rating,
-      JSON.stringify(feedbackData.areas || []),
-      new Date()
-    ]);
+    // Store feedback in the database using Drizzle ORM
+    await db.insert(protocolAssessmentFeedback).values({
+      assessment_id: id,
+      feedback_text: feedbackData.feedbackText,
+      rating: feedbackData.rating,
+      areas: JSON.stringify(feedbackData.areas || []),
+      created_at: new Date()
+    });
     
     res.json({ success: true, message: 'Feedback submitted successfully' });
   } catch (error) {
     console.error('Error submitting feedback:', error);
     res.status(500).json({ 
       error: 'Error submitting feedback', 
-      details: error.message 
+      details: error instanceof Error ? error.message : String(error)
     });
   }
 });
@@ -902,18 +902,22 @@ router.get('/:id/export-pdf', async (req, res) => {
   try {
     const { id } = req.params;
     
-    const assessmentResult = await db.query(`
-      SELECT assessment_results, protocol_data
-      FROM protocol_assessments
-      WHERE id = $1
-    `, [id]);
+    // Using Drizzle ORM to fetch the assessment data
+    const assessmentResult = await db
+      .select({
+        assessment_results: protocolAssessments.assessment_results,
+        protocol_data: protocolAssessments.protocol_data
+      })
+      .from(protocolAssessments)
+      .where(eq(protocolAssessments.id, id))
+      .limit(1);
     
-    if (assessmentResult.rows.length === 0) {
+    if (assessmentResult.length === 0) {
       return res.status(404).json({ error: 'Assessment not found' });
     }
     
-    const assessment = JSON.parse(assessmentResult.rows[0].assessment_results);
-    const protocolData = JSON.parse(assessmentResult.rows[0].protocol_data);
+    const assessment = assessmentResult[0].assessment_results;
+    const protocolData = assessmentResult[0].protocol_data;
     
     // Create PDF document
     const doc = new PDFDocument({ margin: 50 });
