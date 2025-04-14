@@ -60,6 +60,7 @@ def export_summary_packet(data: Dict = Body(...)):
         "Dropout Risk Forecast",
         "Success Prediction Model",
         "IND Module 2.5 Summary",
+        "CSR Alignment Overview",
         "Assistant Reasoning Trace"
     ]
     
@@ -190,6 +191,94 @@ def export_summary_packet(data: Dict = Body(...)):
         except Exception as e:
             pdf.multi_cell(0, 5, f"Error loading IND summary: {str(e)}")
     
+    # Add CSR Alignment Overview section
+    alignment_path = os.path.join(archive_dir, "alignment_score_report.json")
+    if os.path.exists(alignment_path):
+        try:
+            with open(alignment_path, "r") as f:
+                alignment_data = json.load(f)
+                
+                # Add a new page for the alignment section
+                pdf.add_page()
+                pdf.set_font("Arial", "B", size=12)
+                pdf.cell(0, 10, txt="📎 CSR Alignment Overview", 0, 1, 'L')
+                
+                # Display overall alignment score
+                overall_score = alignment_data.get("alignment_score", 0)
+                score_percentage = round(overall_score * 100)
+                pdf.set_font("Arial", "B", size=11)
+                pdf.cell(0, 10, f"Overall Alignment Score: {score_percentage}%", 0, 1, 'L')
+                
+                # Add AI summary explanation
+                matched_fields = alignment_data.get("matched_fields", [])
+                match_count = sum(1 for field in matched_fields if field.get("similarity", 0) >= 0.7)
+                total_fields = len(matched_fields)
+                
+                # Generate explanation text based on match count and fields
+                pdf.set_font("Arial", "I", size=10)
+                pdf.multi_cell(0, 5, f"Design aligns {match_count}/{total_fields} key fields with historical precedent. {generate_alignment_summary(matched_fields)}")
+                pdf.ln(5)
+                
+                # Create a table header for field comparisons
+                pdf.set_font("Arial", "B", size=10)
+                pdf.cell(50, 7, "Field", 1, 0, 'C')
+                pdf.cell(70, 7, "Protocol Value", 1, 0, 'C')
+                pdf.cell(70, 7, "CSR Value", 1, 0, 'C')
+                pdf.cell(30, 7, "Status", 1, 1, 'C')
+                
+                # Add each matched field to the table
+                pdf.set_font("Arial", "", size=9)
+                for field in matched_fields:
+                    field_name = field.get("field", "")
+                    protocol_value = str(field.get("protocol", ""))
+                    csr_value = str(field.get("csr", ""))
+                    similarity = field.get("similarity", 0)
+                    
+                    # Determine match status
+                    if similarity >= 0.7:
+                        status = "✅ Match"
+                    else:
+                        status = "⚠️ Divergence"
+                    
+                    # Format long values to fit in cells
+                    if len(protocol_value) > 50:
+                        protocol_value = protocol_value[:47] + "..."
+                    if len(csr_value) > 50:
+                        csr_value = csr_value[:47] + "..."
+                    
+                    # Add row to table
+                    pdf.cell(50, 7, field_name.replace("_", " ").title(), 1, 0)
+                    pdf.cell(70, 7, protocol_value, 1, 0)
+                    pdf.cell(70, 7, csr_value, 1, 0)
+                    pdf.cell(30, 7, status, 1, 1, 'C')
+                
+                # Add risk flags if any
+                risk_flags = alignment_data.get("risk_flags", [])
+                if risk_flags:
+                    pdf.ln(5)
+                    pdf.set_font("Arial", "B", size=10)
+                    pdf.cell(0, 7, "Risk Flags:", 0, 1)
+                    
+                    pdf.set_font("Arial", "", size=9)
+                    for flag in risk_flags:
+                        pdf.cell(5, 5, "•", 0, 0)
+                        pdf.multi_cell(0, 5, flag)
+                
+                # Add recommended adjustments if any
+                recommendations = alignment_data.get("recommended_adjustments", [])
+                if recommendations:
+                    pdf.ln(5)
+                    pdf.set_font("Arial", "B", size=10)
+                    pdf.cell(0, 7, "Recommended Adjustments:", 0, 1)
+                    
+                    pdf.set_font("Arial", "", size=9)
+                    for rec in recommendations:
+                        pdf.cell(5, 5, "•", 0, 0)
+                        pdf.multi_cell(0, 5, rec)
+                        
+        except Exception as e:
+            pdf.multi_cell(0, 5, f"Error loading alignment data: {str(e)}")
+    
     # Add reasoning trace (wisdom log)
     wisdom_path = os.path.join(archive_dir, "reasoning_trace.txt")
     if os.path.exists(wisdom_path):
@@ -305,6 +394,43 @@ def export_summary_packet(data: Dict = Body(...)):
         },
         "export_log": export_log
     }
+
+
+def generate_alignment_summary(matched_fields: list) -> str:
+    """
+    Generate a descriptive summary based on matched fields
+    
+    Args:
+        matched_fields: List of field match data
+        
+    Returns:
+        A descriptive string summary of protocol alignment with CSR data
+    """
+    high_matches = [field for field in matched_fields if field.get("similarity", 0) >= 0.8]
+    medium_matches = [field for field in matched_fields if 0.6 <= field.get("similarity", 0) < 0.8]
+    low_matches = [field for field in matched_fields if field.get("similarity", 0) < 0.6]
+    
+    if not matched_fields:
+        return "No field comparisons available."
+    
+    # Generate summary based on match counts
+    if len(high_matches) >= len(matched_fields) * 0.7:
+        return "Protocol shows strong alignment with historical CSR evidence, suggesting good design foundation."
+    elif len(high_matches) + len(medium_matches) >= len(matched_fields) * 0.6:
+        return "Protocol shows moderate alignment with CSR evidence, with some adjustments recommended."
+    else:
+        major_concerns = []
+        if any(field["field"] == "primary_endpoint" for field in low_matches):
+            major_concerns.append("primary endpoint")
+        if any(field["field"] == "sample_size" for field in low_matches):
+            major_concerns.append("sample size")
+        if any(field["field"] == "duration_weeks" for field in low_matches):
+            major_concerns.append("duration")
+        
+        if major_concerns:
+            return f"Significant divergences from CSR evidence in {', '.join(major_concerns)}. Review strongly recommended."
+        else:
+            return "Protocol shows limited alignment with historical CSR precedent. Consider revisions."
 
 
 def send_export_notification_email(recipient_email: str, session_id: str, filename: str, download_url: str) -> bool:
