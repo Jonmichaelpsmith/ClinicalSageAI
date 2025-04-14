@@ -623,27 +623,34 @@ export default function ExampleReportsPage() {
           </DialogHeader>
           
           <div className="flex-1 overflow-hidden rounded-md border mt-4 bg-muted/20 min-h-[50vh] flex flex-col">
-            {/* PDF Preview (Simulated) */}
-            <div className="flex-1 flex flex-col items-center justify-center p-8 border-b">
-              <div className="flex flex-col items-center justify-center max-w-md mx-auto text-center">
-                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                  <FileText className="h-8 w-8 text-primary" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2">Interactive Preview</h3>
-                <p className="text-muted-foreground mb-4">
-                  This report preview demonstrates the comprehensive analysis and insights provided in our intelligence reports.
-                </p>
-                <div className="w-full space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Loading preview...</span>
-                      <span className="font-medium">42%</span>
+            {pdfPreviewUrl ? (
+              <iframe 
+                src={pdfPreviewUrl} 
+                className="w-full h-full min-h-[50vh]"
+                title={currentReport ? formatReportName(currentReport.name) : "Report Preview"}
+              ></iframe>
+            ) : (
+              <div className="flex-1 flex flex-col items-center justify-center p-8 border-b">
+                <div className="flex flex-col items-center justify-center max-w-md mx-auto text-center">
+                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                    <FileText className="h-8 w-8 text-primary" />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2">Loading Preview</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Please wait while we load your report preview.
+                  </p>
+                  <div className="w-full space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Loading preview...</span>
+                        <span className="font-medium">Loading</span>
+                      </div>
+                      <Progress value={50} className="h-2" />
                     </div>
-                    <Progress value={42} className="h-2" />
                   </div>
                 </div>
               </div>
-            </div>
+            )}
             
             <div className="p-4 bg-muted/5 flex flex-col gap-3">
               <h4 className="font-medium">Report Highlights:</h4>
