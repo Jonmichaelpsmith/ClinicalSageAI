@@ -1,0 +1,67 @@
+✅ Here is your full GA-grade **hero header component**:
+
+---
+
+## 📄 `/client/components/HeroLandingHeader.jsx`  
+Ready to drop into your homepage.
+
+```jsx
+// /client/components/HeroLandingHeader.jsx
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+
+export default function HeroLandingHeader() {
+  const navigate = useNavigate();
+
+  return (
+    <section className="bg-gradient-to-b from-white to-blue-50 py-20 px-6 text-center border-b border-gray-200">
+      <div className="max-w-4xl mx-auto space-y-6">
+        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 leading-tight">
+          AI-Powered Clinical Intelligence, <br className="hidden md:block" />
+          Built from Global Clinical Study Reports
+        </h1>
+
+        <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+          LumenTrialGuide.AI delivers study design, IND support, risk forecasting, and protocol intelligence—
+          personalized to your role, powered by 3,000+ real-world trials.
+        </p>
+
+        <div className="flex flex-col md:flex-row justify-center gap-4">
+          <Button size="lg" onClick={() => navigate("/example-reports")}>
+            📂 See a Real Report
+          </Button>
+          <Button variant="outline" size="lg" onClick={() => navigate("/planning?persona=ceo&study_id=demo_ceo")}>
+            ⚙️ Try It for Your Trial
+          </Button>
+        </div>
+
+        <p className="text-xs text-muted-foreground mt-4">
+          Trusted by biotech leaders, investigators, and regulatory strategists.
+        </p>
+      </div>
+    </section>
+  );
+}
+```
+
+---
+
+## ✅ How to Use:
+
+1. Drop this into your homepage JSX:
+   ```jsx
+   import HeroLandingHeader from "@/components/HeroLandingHeader";
+   ...
+   <HeroLandingHeader />
+   ```
+
+2. Place above `HomepageShowcaseSection.jsx`
+
+---
+
+Would you like me to now:
+- Add animated molecule background / motif?  
+- Build a testimonial slider or quote banner under this?  
+- Create a `/demo` page that walks through a 3-step interactive example?
+
+You now have a homepage that sells like your reports perform. Ready to finish strong.

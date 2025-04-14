@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'wouter';
+import axios from "axios";
 import { 
   Card, 
   CardContent, 
@@ -45,25 +46,36 @@ import {
  * - Clear CTAs for both viewing examples and generating new reports
  */
 const HomepageShowcaseSection = () => {
-  // State for report data, loading state, and which preview is active
-  const [showcaseData, setShowcaseData] = useState(null);
+  // State for report index, manifests, and launch configuration
+  const [reportIndex, setReportIndex] = useState([]);
+  const [reportManifests, setReportManifests] = useState({});
+  const [launchConfig, setLaunchConfig] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activePreview, setActivePreview] = useState(null);
 
-  // Fetch showcase data from the manifest file
+  // Fetch report data directly from static JSON files
   useEffect(() => {
-    const fetchShowcaseData = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/showcase/manifest');
-        
-        if (!response.ok) {
-          throw new Error('Failed to load showcase data');
+        // Fetch report index
+        const indexRes = await axios.get("/static/example_reports/report_index.json");
+        setReportIndex(indexRes.data.available_subscriptions || []);
+
+        // Fetch launch config
+        const launchRes = await axios.get("/launch_config.json");
+        setLaunchConfig(launchRes.data || {});
+
+        // Fetch individual manifest files
+        for (const sub of indexRes.data.available_subscriptions) {
+          try {
+            const manifestRes = await axios.get(sub.path);
+            setReportManifests(prev => ({ ...prev, [sub.persona]: manifestRes.data }));
+          } catch (err) {
+            console.error("Failed to load manifest:", err);
+          }
         }
-        
-        const data = await response.json();
-        setShowcaseData(data);
       } catch (err) {
         console.error('Error loading showcase data:', err);
         setError('Failed to load showcase data. Please try again later.');
@@ -72,23 +84,8 @@ const HomepageShowcaseSection = () => {
       }
     };
     
-    fetchShowcaseData();
+    fetchData();
   }, []);
-
-  // Fallback to local data if API fails
-  useEffect(() => {
-    if (error && !showcaseData) {
-      // Fallback to static manifest if API fails
-      import('@assets/manifest.json')
-        .then(data => {
-          setShowcaseData(data.default);
-          setError(null);
-        })
-        .catch(err => {
-          console.error('Error loading fallback data:', err);
-        });
-    }
-  }, [error, showcaseData]);
 
   // Helper function to get gradient based on persona
   const getPersonaGradient = (persona) => {
@@ -199,7 +196,7 @@ const HomepageShowcaseSection = () => {
   }
 
   // Handle error state
-  if (error && !showcaseData) {
+  if (error && reportIndex.length === 0) {
     return (
       <section className="py-12 px-4">
         <div className="container mx-auto">
@@ -217,6 +214,15 @@ const HomepageShowcaseSection = () => {
     );
   }
 
+  // Function to create route based on persona
+  const handleLaunch = (persona) => {
+    const config = launchConfig[persona];
+    if (config) {
+      return `${config.route}&study_id=${config.study_id}`;
+    }
+    return '/planning';
+  };
+
   return (
     <section className="py-12 px-4 bg-slate-50 dark:bg-gray-900">
       <div className="container mx-auto">
@@ -229,198 +235,96 @@ const HomepageShowcaseSection = () => {
           </p>
         </div>
 
-        {/* Intelligence Tiles Grid */}
+        {/* Intelligence Tiles Grid - Using Dynamic Data */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-10">
           
-          {/* TILE 1 — INTELLIGENT TRIAL DESIGN (STUDY PLANNER) */}
-          <Card className="overflow-hidden border-0 shadow-lg">
-            <div className={`bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-4`}>
-              <div className="flex justify-between items-start">
-                <Badge className="bg-white/20 hover:bg-white/30 border-none text-white">
-                  <BrainCircuit className="h-3.5 w-3.5 mr-1" />
-                  For Study Planners
-                </Badge>
-                <span className="text-xs bg-white/20 px-2 py-1 rounded-full">
-                  GLP-1 analog
-                </span>
-              </div>
-              <h3 className="text-xl font-bold mt-3 mb-0">
-                Intelligent Trial Design
-              </h3>
-              <p className="text-sm opacity-90">Design from data. Not guesswork.</p>
-            </div>
-            <CardContent className="p-4">
-              <dl className="grid grid-cols-2 gap-x-4 gap-y-2 mt-2 text-sm">
-                <dt className="text-muted-foreground flex items-center"><Calendar className="h-3.5 w-3.5 mr-1.5" /> Duration</dt>
-                <dd className="font-medium">24 weeks</dd>
-                
-                <dt className="text-muted-foreground flex items-center"><BarChart className="h-3.5 w-3.5 mr-1.5" /> Primary endpoints</dt>
-                <dd className="font-medium">ALT + HbA1c</dd>
-                
-                <dt className="text-muted-foreground flex items-center"><Users className="h-3.5 w-3.5 mr-1.5" /> Study arms</dt>
-                <dd className="font-medium">2 arms (active/placebo)</dd>
-                
-                <dt className="text-muted-foreground flex items-center"><Star className="h-3.5 w-3.5 mr-1.5" /> Success probability</dt>
-                <dd className="font-medium text-emerald-600">86%</dd>
-                
-                <dt className="text-muted-foreground flex items-center"><LineChart className="h-3.5 w-3.5 mr-1.5" /> Dropout projection</dt>
-                <dd className="font-medium">13.2%</dd>
-              </dl>
-              
-              {renderCitations([
-                { id: "NCT01234567", title: "Phase 2 Study of GLP-1 in T2DM", sponsor: "BioPharm Inc", year: 2022 },
-                { id: "NCT02345678", title: "MAGNIFY-3 Study", sponsor: "LifeSci Corp", year: 2023 }
-              ])}
-
-              <div className="mt-4">
-                <div className="flex items-center justify-between text-sm text-muted-foreground mb-1.5">
-                  <span>CSR match</span>
-                  <span className="font-medium">9 trials</span>
-                </div>
-                <Progress value={86} className="h-2" />
-              </div>
-            </CardContent>
-            <CardFooter className="px-4 py-3 bg-gray-50 border-t flex justify-between dark:bg-gray-900">
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-1.5">
-                    <Eye className="h-3.5 w-3.5" />
-                    View Package
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-3xl">
-                  <DialogHeader>
-                    <DialogTitle>Intelligent Trial Design Preview</DialogTitle>
-                    <DialogDescription>
-                      Complete IND-ready protocol package with CSR-backed design recommendations
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="bg-slate-50 p-4 rounded-md overflow-hidden">
-                    <object
-                      data="/static/example_reports/protocol/summary_packet.pdf"
-                      type="application/pdf"
-                      width="100%"
-                      height="500px"
-                      className="rounded border"
-                    >
-                      <p>PDF cannot be displayed</p>
-                    </object>
+          {reportIndex.map(({ persona, title }) => {
+            const manifest = reportManifests[persona];
+            if (!manifest) return null;
+            
+            // Set styling based on persona
+            const gradientClass = getPersonaGradient(persona);
+            const icon = getPersonaIcon(persona);
+            
+            return (
+              <Card key={persona} className="overflow-hidden border-0 shadow-lg">
+                <div className={`bg-gradient-to-r ${gradientClass} text-white p-4`}>
+                  <div className="flex justify-between items-start">
+                    <Badge className="bg-white/20 hover:bg-white/30 border-none text-white">
+                      {React.cloneElement(icon, { className: "h-3.5 w-3.5 mr-1" })}
+                      For {title.split(' ')[0]}
+                    </Badge>
+                    <span className="text-xs bg-white/20 px-2 py-1 rounded-full">
+                      {manifest.version}
+                    </span>
                   </div>
-                </DialogContent>
-              </Dialog>
-
-              <Link href="/planning?persona=planner&example=glp1">
-                <Button className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700 gap-1.5">
-                  <BrainCircuit className="h-3.5 w-3.5" />
-                  Build Your Protocol
-                </Button>
-              </Link>
-            </CardFooter>
-          </Card>
-          
-          {/* TILE 2 — INVESTOR BRIEF (CEO/BD) */}
-          <Card className="overflow-hidden border-0 shadow-lg">
-            <div className={`bg-gradient-to-r from-amber-500 to-orange-600 text-white p-4`}>
-              <div className="flex justify-between items-start">
-                <Badge className="bg-white/20 hover:bg-white/30 border-none text-white">
-                  <PieChart className="h-3.5 w-3.5 mr-1" />
-                  For CEO/BD
-                </Badge>
-                <span className="text-xs bg-white/20 px-2 py-1 rounded-full">
-                  Market Analysis
-                </span>
-              </div>
-              <h3 className="text-xl font-bold mt-3 mb-0">
-                Investor Intelligence Brief
-              </h3>
-              <p className="text-sm opacity-90">What they need to say yes.</p>
-            </div>
-            <CardContent className="p-4">
-              <dl className="grid grid-cols-2 gap-x-4 gap-y-2 mt-2 text-sm">
-                <dt className="text-muted-foreground flex items-center"><Star className="h-3.5 w-3.5 mr-1.5" /> Success forecast</dt>
-                <dd className="font-medium">82% (Monte Carlo)</dd>
-                
-                <dt className="text-muted-foreground flex items-center"><LineChart className="h-3.5 w-3.5 mr-1.5" /> IRR projection</dt>
-                <dd className="font-medium">17.3%</dd>
-                
-                <dt className="text-muted-foreground flex items-center"><BarChart className="h-3.5 w-3.5 mr-1.5" /> Competition</dt>
-                <dd className="font-medium">4 phase III trials</dd>
-                
-                <dt className="text-muted-foreground flex items-center"><PieChart className="h-3.5 w-3.5 mr-1.5" /> Market share</dt>
-                <dd className="font-medium text-emerald-600">15.4%</dd>
-                
-                <dt className="text-muted-foreground flex items-center"><Calendar className="h-3.5 w-3.5 mr-1.5" /> Time to market</dt>
-                <dd className="font-medium">Q2 2027</dd>
-              </dl>
-              
-              {renderCitations([
-                { id: "NCT03456789", title: "Market Model Study", sponsor: "LifeSci Research", year: 2024 },
-                { id: "NCT04567890", title: "Competitive Intelligence", sponsor: "MarketAnalytics", year: 2023 }
-              ])}
-
-              <div className="mt-4">
-                <div className="flex items-center justify-between text-sm text-muted-foreground mb-1.5">
-                  <span>Risk assessment</span>
-                  <span className="font-medium">Medium</span>
+                  <h3 className="text-xl font-bold mt-3 mb-0">
+                    {title}
+                  </h3>
+                  <p className="text-sm opacity-90">{manifest.description}</p>
                 </div>
-                <Progress value={42} className="h-2" />
-              </div>
-            </CardContent>
-            <CardFooter className="px-4 py-3 bg-gray-50 border-t flex justify-between dark:bg-gray-900">
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-1.5">
-                    <Eye className="h-3.5 w-3.5" />
-                    Preview Brief
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-3xl">
-                  <DialogHeader>
-                    <DialogTitle>Investor Intelligence Brief Preview</DialogTitle>
-                    <DialogDescription>
-                      Market analysis and competitive intelligence dashboard
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="bg-slate-50 p-4 rounded-md overflow-hidden">
-                    <object
-                      data="/static/example_reports/ceo/investor_brief.pdf"
-                      type="application/pdf"
-                      width="100%"
-                      height="500px"
-                      className="rounded border"
-                    >
-                      <p>PDF cannot be displayed</p>
-                    </object>
+                <CardContent className="p-4">
+                  <ul className="text-sm list-disc pl-5 space-y-1 mt-2">
+                    {manifest.includes.slice(0, 4).map((item, idx) => (
+                      <li key={idx}>{item}</li>
+                    ))}
+                    {manifest.includes.length > 4 && <li>+ more in the full report</li>}
+                  </ul>
+                  
+                  <div className="mt-4">
+                    <div className="flex items-center justify-between text-sm text-muted-foreground mb-1.5">
+                      <span>Last updated</span>
+                      <span className="font-medium">{formatDate(manifest.last_updated)}</span>
+                    </div>
+                    <Progress value={80} className="h-2" />
                   </div>
-                </DialogContent>
-              </Dialog>
+                </CardContent>
+                <CardFooter className="px-4 py-3 bg-gray-50 border-t flex justify-between dark:bg-gray-900">
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm" className="gap-1.5">
+                        <Eye className="h-3.5 w-3.5" />
+                        View Package
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-3xl">
+                      <DialogHeader>
+                        <DialogTitle>{title} Preview</DialogTitle>
+                        <DialogDescription>
+                          {manifest.description}
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="bg-slate-50 p-4 rounded-md overflow-hidden">
+                        <object
+                          data={`/static/example_reports/${persona}/${manifest.files[0] || 'summary.pdf'}`}
+                          type="application/pdf"
+                          width="100%"
+                          height="500px"
+                          className="rounded border"
+                        >
+                          <p>PDF cannot be displayed</p>
+                        </object>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
 
-              <Link href="/planning?persona=ceo&example=market">
-                <Button className="bg-gradient-to-r from-amber-500 to-orange-600 text-white hover:from-amber-600 hover:to-orange-700 gap-1.5">
-                  <PieChart className="h-3.5 w-3.5" />
-                  Generate Your Brief
-                </Button>
-              </Link>
-            </CardFooter>
-          </Card>
+                  <Link href={handleLaunch(persona)}>
+                    <Button className={`bg-gradient-to-r ${gradientClass} text-white hover:opacity-90 gap-1.5`}>
+                      {React.cloneElement(icon, { className: "h-3.5 w-3.5" })}
+                      Generate Your Own
+                    </Button>
+                  </Link>
+                </CardFooter>
+              </Card>
+            );
+          })}
           
-          {/* TILE 3 — REGULATORY READINESS (REG AFFAIRS) */}
-          <Card className="overflow-hidden border-0 shadow-lg">
-            <div className={`bg-gradient-to-r from-purple-500 to-indigo-600 text-white p-4`}>
-              <div className="flex justify-between items-start">
-                <Badge className="bg-white/20 hover:bg-white/30 border-none text-white">
-                  <FileCheck className="h-3.5 w-3.5 mr-1" />
-                  For Regulatory
-                </Badge>
-                <span className="text-xs bg-white/20 px-2 py-1 rounded-full">
-                  Submission Ready
-                </span>
-              </div>
-              <h3 className="text-xl font-bold mt-3 mb-0">
-                Regulatory Readiness Package
-              </h3>
-              <p className="text-sm opacity-90">Show you're submission ready—instantly.</p>
+          {/* Fallback if no packages loaded */}
+          {reportIndex.length === 0 && !loading && !error && (
+            <div className="col-span-full text-center py-10">
+              <p>No intelligence packages available. Please check back later.</p>
             </div>
+          )}
             <CardContent className="p-4">
               <dl className="grid grid-cols-2 gap-x-4 gap-y-2 mt-2 text-sm">
                 <dt className="text-muted-foreground flex items-center"><FileText className="h-3.5 w-3.5 mr-1.5" /> IND sections</dt>

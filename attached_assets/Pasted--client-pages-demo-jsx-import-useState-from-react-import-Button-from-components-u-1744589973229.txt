@@ -1,0 +1,61 @@
+// /client/pages/demo.jsx
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent } from "@/components/ui/card";
+
+export default function DemoPage() {
+  const [protocol, setProtocol] = useState("");
+  const [response, setResponse] = useState(null);
+  const [sessionId, setSessionId] = useState("demo_trial_" + Date.now());
+
+  const handleAnalyze = async () => {
+    if (!protocol) return;
+
+    const res = await fetch("/api/analytics/demo-analysis", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content: protocol, session_id: sessionId })
+    });
+    const data = await res.json();
+    setResponse(data);
+  };
+
+  return (
+    <div className="p-6 max-w-4xl mx-auto space-y-6">
+      <h1 className="text-3xl font-bold">🧠 Try LumenTrialGuide.AI in 3 Steps</h1>
+      <p className="text-muted-foreground text-sm">Paste a draft protocol below. We'll show you what our AI engine can do—in real time.</p>
+
+      <Card>
+        <CardContent className="p-4 space-y-2">
+          <Textarea
+            value={protocol}
+            onChange={(e) => setProtocol(e.target.value)}
+            rows={12}
+            placeholder="Paste a trial description or protocol paragraph here..."
+            className="text-sm"
+          />
+          <Button onClick={handleAnalyze}>⚙️ Analyze</Button>
+        </CardContent>
+      </Card>
+
+      {response && (
+        <Card>
+          <CardContent className="p-4 space-y-3">
+            <h2 className="text-xl font-semibold">📊 Results</h2>
+            <ul className="text-sm space-y-2">
+              <li><strong>Dropout Risk:</strong> {response.dropout_summary}</li>
+              <li><strong>Success Prediction:</strong> {response.success_summary}</li>
+              <li><strong>IND Summary:</strong> <pre className="bg-gray-50 p-2 rounded text-xs">{response.ind_summary}</pre></li>
+            </ul>
+            <Button variant="outline" asChild>
+              <a href={`/static/${sessionId}/summary_packet.pdf`} target="_blank" rel="noopener noreferrer">
+                📥 Download Summary Packet
+              </a>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
