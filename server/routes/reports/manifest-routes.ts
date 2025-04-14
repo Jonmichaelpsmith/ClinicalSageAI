@@ -34,14 +34,19 @@ reportsManifestRoutes.get('/personas(\\.json)?', async (_req: Request, res: Resp
 /**
  * Get manifest for a specific persona
  */
-reportsManifestRoutes.get('/persona/:personaId(\\.json)?', async (req: Request, res: Response) => {
+reportsManifestRoutes.get('/persona/:personaId', async (req: Request, res: Response) => {
   try {
     let { personaId } = req.params;
     
     // Remove the .json suffix if present
     personaId = personaId.replace(/\.json$/, '');
     
+    // Set response type to JSON explicitly
+    res.setHeader('Content-Type', 'application/json');
+    
     const manifestPath = path.join(REPORTS_ROOT_DIR, personaId, 'manifest.json');
+    
+    console.log(`Accessing manifest at: ${manifestPath}`);
     
     if (!fs.existsSync(manifestPath)) {
       console.error(`Manifest for ${personaId} not found at path: ${manifestPath}`);
@@ -52,6 +57,7 @@ reportsManifestRoutes.get('/persona/:personaId(\\.json)?', async (req: Request, 
     }
     
     const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
+    console.log(`Successfully loaded manifest for ${personaId}`);
     res.json(manifest);
   } catch (error: any) {
     console.error(`Error fetching persona manifest:`, error);
