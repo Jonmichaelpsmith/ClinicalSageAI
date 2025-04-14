@@ -58,6 +58,9 @@ export default function Home() {
         </div>
       </ContentSection>
       
+      {/* Enhanced Showcase Section - Example Reports and Interactive Demos - Moved higher */}
+      <EnhancedShowcaseSection />
+      
       {/* Home Features Section */}
       <HomeFeatures />
       <ContentSection>
@@ -199,9 +202,7 @@ export default function Home() {
         </div>
       </ContentSection>
       
-      {/* Enhanced Showcase Section - Example Reports and Interactive Demos */}
-      <EnhancedShowcaseSection />
-      
+      {/* Enhanced Showcase Section - Moved higher on the page */}
       {/* Subscription Modules Section */}
       <ContentSection className="bg-gradient-to-b from-primary/5 via-slate-50 to-white dark:from-primary/10 dark:via-gray-900 dark:to-gray-950 py-16">
         <div className="container px-4 md:px-6">
