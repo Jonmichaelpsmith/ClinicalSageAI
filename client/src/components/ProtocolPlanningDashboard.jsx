@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, createContext } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +22,15 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import CSRAlignmentPanel from "@/components/CSRAlignmentPanel";
 import ProtocolCorrectionSuggestions from "@/components/ProtocolCorrectionSuggestions";
+
+// Create a context to share protocol state with child components
+export const ProtocolPlanningContext = createContext({
+  protocol: "",
+  setProtocol: () => {},
+});
+
+// Make the context available globally for components that need it
+window.ProtocolPlanningContext = ProtocolPlanningContext;
 
 export default function ProtocolPlanningDashboard({ 
   initialProtocol = "", 

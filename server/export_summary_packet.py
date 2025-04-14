@@ -77,10 +77,102 @@ def export_summary_packet(data: Dict = Body(...)):
         protocol_metadata=protocol_metadata,
         report_type="Summary Intelligence Packet"
     )
-    pdf.set_font("Arial", "I", size=11)
-    pdf.cell(0, 10, txt=f"Session ID: {session_id}", 0, 1, 'C')
-    pdf.cell(0, 5, txt=f"Generated on {datetime.now().strftime('%Y-%m-%d %H:%M')}", 0, 1, 'C')
+    
+    # Add Executive Design Brief section (key strategic summary)
+    pdf.set_font("Arial", "B", 14)
+    pdf.cell(0, 12, txt="🧠 Executive Design Brief", 0, 1, 'L')
+    pdf.set_font("Arial", size=10)
+    
+    # Read alignment score
+    alignment_score = "N/A"
+    suggestion_count = 0
+    csr_source = "N/A"
+    
+    # Get alignment score data
+    alignment_path = os.path.join(archive_dir, "alignment_score_report.json")
+    if os.path.exists(alignment_path):
+        try:
+            with open(alignment_path, "r") as f:
+                alignment_data = json.load(f)
+                alignment_score = f"{round(alignment_data.get('alignment_score', 0) * 100)}%"
+                
+                # Extract CSR source info if available
+                csr_id = alignment_data.get("csr_id")
+                csr_source = f"CSR #{csr_id}" if csr_id else "Multiple CSRs"
+        except Exception as e:
+            print(f"Error reading alignment data: {str(e)}")
+    
+    # Get protocol improvement suggestions count
+    suggestions_path = os.path.join(archive_dir, "suggested_corrections.json")
+    if os.path.exists(suggestions_path):
+        try:
+            with open(suggestions_path, "r") as f:
+                suggestions_data = json.load(f)
+                suggestions = suggestions_data.get("suggestions", [])
+                suggestion_count = len(suggestions)
+        except Exception as e:
+            print(f"Error reading suggestions data: {str(e)}")
+    
+    # Determine AI confidence rating based on available data
+    confidence_rating = "High"
+    if alignment_score != "N/A" and alignment_score[:-1].isdigit():
+        score_val = int(alignment_score[:-1])
+        if score_val < 50:
+            confidence_rating = "Medium"
+        elif score_val < 30:
+            confidence_rating = "Low"
+    
+    # Create executive summary block with key metrics
+    pdf.ln(2)
+    pdf.set_font("Arial", "B", size=10)
+    pdf.cell(55, 8, "Study ID:", 0, 0)
+    pdf.set_font("Arial", size=10)
+    pdf.cell(0, 8, session_id, 0, 1)
+    
+    pdf.set_font("Arial", "B", size=10)
+    pdf.cell(55, 8, "CSR Source:", 0, 0)
+    pdf.set_font("Arial", size=10)
+    pdf.cell(0, 8, csr_source, 0, 1)
+    
+    pdf.set_font("Arial", "B", size=10)
+    pdf.cell(55, 8, "CSR Alignment Score:", 0, 0)
+    pdf.set_font("Arial", size=10)
+    pdf.cell(0, 8, alignment_score, 0, 1)
+    
+    pdf.set_font("Arial", "B", size=10)
+    pdf.cell(55, 8, "Improvement Suggestions:", 0, 0)
+    pdf.set_font("Arial", size=10)
+    pdf.cell(0, 8, str(suggestion_count), 0, 1)
+    
+    pdf.set_font("Arial", "B", size=10)
+    pdf.cell(55, 8, "AI Confidence Rating:", 0, 0)
+    pdf.set_font("Arial", size=10)
+    pdf.cell(0, 8, confidence_rating, 0, 1)
+    
+    pdf.set_font("Arial", "B", size=10)
+    pdf.cell(55, 8, "Analysis Timestamp:", 0, 0)
+    pdf.set_font("Arial", size=10)
+    pdf.cell(0, 8, f"{datetime.now().strftime('%Y-%m-%d %H:%M')}", 0, 1)
+    
+    pdf.set_font("Arial", "B", size=10)
+    pdf.cell(55, 8, "Persona:", 0, 0)
+    pdf.set_font("Arial", size=10)
+    pdf.cell(0, 8, persona.title(), 0, 1)
+    
+    pdf.ln(3)
+    pdf.set_font("Arial", "I", size=9)
+    pdf.multi_cell(0, 5, "All insights generated using CSR-backed evidence, semantic alignment, and protocol validation tools built into LumenTrialGuide.AI.")
+    
+    # Add a separator line
     pdf.ln(5)
+    pdf.line(10, pdf.get_y(), 200, pdf.get_y())
+    pdf.ln(8)
+    
+    # Session ID and generation timestamp moved to bottom
+    # pdf.set_font("Arial", "I", size=11)
+    # pdf.cell(0, 10, txt=f"Session ID: {session_id}", 0, 1, 'C')
+    # pdf.cell(0, 5, txt=f"Generated on {datetime.now().strftime('%Y-%m-%d %H:%M')}", 0, 1, 'C')
+    # pdf.ln(5)
 
     # Add dropout forecast section
     dropout_path = os.path.join(archive_dir, "dropout_forecast.json")
