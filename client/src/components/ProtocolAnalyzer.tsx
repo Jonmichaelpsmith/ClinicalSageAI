@@ -9,8 +9,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertCircle, BarChart, BookOpen, CheckCircle, Download, ExternalLink, FileText, GanttChart, RotateCcw, Search, Upload } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from "@/lib/queryClient";
 
 interface ProtocolAnalysisResponse {
   id: string;
@@ -85,6 +85,7 @@ export default function ProtocolAnalyzer() {
   const [activeTab, setActiveTab] = useState<string>('overview');
   const [currentAnalysisId, setCurrentAnalysisId] = useState<string | null>(null);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Fetch recent protocol analyses for this user
   const { data: recentAnalyses, isLoading: analysesLoading } = useQuery({

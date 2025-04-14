@@ -685,6 +685,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register academic-style protocol assessment routes
   app.use('/api/protocol-assessment', academicProtocolAssessment);
   
+  // Route mapper for protocol-analyses -> protocol-assessment (needed for ProtocolAnalyzer component)
+  app.use('/api/protocol-analyses', (req, res, next) => {
+    // URL rewriting for upload endpoint
+    if (req.path === '/upload' && req.method === 'POST') {
+      req.url = '/analyze';
+    }
+    academicProtocolAssessment(req, res, next);
+  });
+  
   // Trial Success Prediction endpoint
   app.post('/api/trial-prediction', async (req: Request, res: Response) => {
     try {
