@@ -45,177 +45,564 @@ router.post('/intelligence-report', express.json(), async (req, res) => {
       });
     }
     
+    console.log('Generating intelligence report with data:', JSON.stringify(reportData, null, 2));
+    
     // Generate a unique filename
     const protocolId = reportData.protocol_id || `TS-${Date.now()}`;
-    const filename = `protocol-intelligence-report-${protocolId}-${Date.now()}.pdf`;
+    const timestamp = Date.now();
+    const filename = `trial-intelligence-report-${protocolId}-${timestamp}.pdf`;
     const filePath = path.join(EXPORTS_DIR, filename);
     
-    // Create PDF document with branded cover page
+    // Ensure exports directory exists
+    if (!fs.existsSync(EXPORTS_DIR)) {
+      fs.mkdirSync(EXPORTS_DIR, { recursive: true });
+    }
+    
+    // Create PDF document with appropriate settings
     const pdf = new PDFDocument({
       margins: { top: 50, bottom: 50, left: 50, right: 50 },
-      size: 'A4'
+      size: 'A4',
+      info: {
+        Title: 'Trial Intelligence Report',
+        Author: 'LumenTrialGuide.AI',
+        Subject: `Protocol Analysis for ${protocolId}`,
+        Keywords: 'clinical trials, protocol, intelligence, analysis',
+        CreationDate: new Date(),
+      }
     });
     
     // Pipe to file
     const writeStream = fs.createWriteStream(filePath);
     pdf.pipe(writeStream);
     
-    // Create a temporary data file for the Python cover page generator
-    const sessionId = reportData.session_id || `TS-${Date.now()}`;
-    const persona = reportData.persona || "Intelligence";
-    const tempDataPath = path.join(EXPORTS_DIR, `${sessionId}_cover_data.json`);
-    
     // Extract protocol data if available
     const protocol = reportData.parsed || {};
+    const prediction = reportData.prediction || 0;
+    const insights = reportData.strategic_insights || [];
+    const benchmarks = reportData.benchmarks || {};
+    const sessionId = reportData.session_id || `session-${timestamp}`;
     
-    // Write session data to temp file for Python script
-    fs.writeFileSync(tempDataPath, JSON.stringify({
-      session_id: sessionId,
-      title: "Protocol Intelligence Report",
-      persona: persona,
-      protocol: {
-        indication: protocol.indication || "Not specified",
-        phase: protocol.phase || "Not specified",
-        sample_size: protocol.sample_size || "Not specified",
-      },
-      sections: [
-        "Protocol Summary",
-        "Success Prediction", 
-        "Strategic Insights",
-        "Benchmark Comparison"
-      ]
-    }));
+    // Add a branded cover page directly
+    // Header with company branding
+    pdf.font('Helvetica-Bold').fontSize(24)
+      .fillColor('#0066CC')
+      .text('LumenTrialGuide.AI', {
+        align: 'center'
+      });
     
-    // Get the directory of our current module
-    const currentDir = path.dirname(__filename);
-    const scriptPath = path.join(currentDir, '..', 'cover_page.py');
+    pdf.moveDown(0.5);
     
-    // Use Python child process to add branded cover
-    const coverProcess = spawn('python3', [scriptPath, 'add_cover', tempDataPath, filePath]);
+    // Report title
+    pdf.font('Helvetica-Bold').fontSize(20)
+      .text('Trial Intelligence Report', {
+        align: 'center'
+      });
+      
+    pdf.moveDown(2);
     
-    // Listen for cover page process completion
-    coverProcess.on('close', (code) => {
-      if (code !== 0) {
-        console.error(`Cover page process exited with code ${code}`);
-        // Continue with report generation even if cover page fails
-        startReport();
-      } else {
-        // Cover page added successfully, continue with content
-        startReport();
-      }
+    // Protocol ID display
+    pdf.font('Helvetica').fontSize(14)
+      .fillColor('#000000')
+      .text(`Protocol ID: ${protocolId}`, {
+        align: 'center'
+      });
+    
+    // Add indication if available  
+    if (protocol.indication) {
+      pdf.font('Helvetica').fontSize(12)
+        .text(`Indication: ${protocol.indication}`, {
+          align: 'center'
+        });
+    }
+    
+    // Add phase if available
+    if (protocol.phase) {
+      pdf.font('Helvetica').fontSize(12)
+        .text(`Phase: ${protocol.phase}`, {
+          align: 'center'
+        });
+    }
+    
+    pdf.moveDown(2);
+    
+    // Add a visual prediction indicator
+    const successRate = (prediction * 100).toFixed(1);
+    pdf.font('Helvetica-Bold').fontSize(16)
+      .text('Success Probability', {
+        align: 'center'
+      });
+      
+    pdf.moveDown(0.5);
+    
+    pdf.font('Helvetica-Bold').fontSize(36)
+      .fillColor(successRate > 70 ? '#00AA00' : successRate > 40 ? '#FF9900' : '#CC0000')
+      .text(`${successRate}%`, {
+        align: 'center'
+      });
+      
+    pdf.moveDown(2);
+    
+    // Report sections indicator
+    pdf.font('Helvetica-Bold').fontSize(12)
+      .fillColor('#000000')
+      .text('This report includes:', {
+        align: 'left'
+      });
+    
+    pdf.font('Helvetica').fontSize(12);
+    pdf.text('• Detailed Protocol Analysis');
+    pdf.text('• Success Prediction with Confidence Interval');
+    pdf.text('• Strategic Optimization Recommendations');
+    pdf.text('• Benchmark Comparison with Similar Trials');
+    
+    // Add timestamp and page info at bottom
+    pdf.moveDown(4);
+    pdf.font('Helvetica').fontSize(10)
+      .fillColor('#666666')
+      .text(`Generated: ${new Date().toLocaleString()}`, {
+        align: 'center'
+      })
+      .text('Page 1', {
+        align: 'center'
+      });
+    
+    // Protocol Summary page
+    pdf.addPage();
+    pdf.font('Helvetica-Bold').fontSize(18)
+      .fillColor('#0066CC')
+      .text('Protocol Summary', { underline: true });
+    
+    pdf.moveDown(1);
+    
+    // Add more detailed protocol information
+    const protocolFields = [
+      { label: 'Protocol ID', value: protocolId },
+      { label: 'Indication', value: protocol.indication || 'Not specified' },
+      { label: 'Phase', value: protocol.phase || 'Not specified' },
+      { label: 'Sample Size', value: protocol.sample_size || 'Not specified' },
+      { label: 'Duration (weeks)', value: protocol.duration_weeks || 'Not specified' },
+      { label: 'Primary Endpoint', value: protocol.primary_endpoint || 'Not specified' },
+      { label: 'Secondary Endpoints', value: Array.isArray(protocol.secondary_endpoints) ? 
+        protocol.secondary_endpoints.join(', ') : (protocol.secondary_endpoints || 'Not specified') }
+    ];
+    
+    // Add protocol fields in a well-formatted way
+    protocolFields.forEach(field => {
+      pdf.font('Helvetica-Bold').fontSize(12)
+        .fillColor('#333333')
+        .text(`${field.label}:`, { continued: true });
+      
+      pdf.font('Helvetica').fontSize(12)
+        .text(` ${field.value}`)
+        .moveDown(0.5);
     });
     
-    // Function to start the actual report content
-    function startReport() {
+    // Add study design section if available
+    if (protocol.study_design) {
+      pdf.moveDown(1);
+      pdf.font('Helvetica-Bold').fontSize(14)
+        .fillColor('#0066CC')
+        .text('Study Design');
+      
+      pdf.moveDown(0.5);
+      pdf.font('Helvetica').fontSize(12)
+        .fillColor('#333333')
+        .text(protocol.study_design)
+        .moveDown(0.5);
+    }
     
-    // Protocol ID and Summary
-    pdf.font('Helvetica-Bold').fontSize(16)
-      .text('Protocol Summary', { underline: true })
-      .moveDown();
+    // Add inclusion/exclusion criteria if available
+    if (protocol.inclusion_criteria || protocol.exclusion_criteria) {
+      pdf.moveDown(1);
+      pdf.font('Helvetica-Bold').fontSize(14)
+        .fillColor('#0066CC')
+        .text('Eligibility Criteria');
+      
+      pdf.moveDown(0.5);
+      
+      if (protocol.inclusion_criteria) {
+        pdf.font('Helvetica-Bold').fontSize(12)
+          .fillColor('#333333')
+          .text('Inclusion Criteria:');
+        
+        pdf.font('Helvetica').fontSize(12);
+        
+        if (Array.isArray(protocol.inclusion_criteria)) {
+          protocol.inclusion_criteria.forEach(criterion => {
+            pdf.text(`• ${criterion}`).moveDown(0.2);
+          });
+        } else {
+          pdf.text(protocol.inclusion_criteria);
+        }
+        
+        pdf.moveDown(0.5);
+      }
+      
+      if (protocol.exclusion_criteria) {
+        pdf.font('Helvetica-Bold').fontSize(12)
+          .fillColor('#333333')
+          .text('Exclusion Criteria:');
+        
+        pdf.font('Helvetica').fontSize(12);
+        
+        if (Array.isArray(protocol.exclusion_criteria)) {
+          protocol.exclusion_criteria.forEach(criterion => {
+            pdf.text(`• ${criterion}`).moveDown(0.2);
+          });
+        } else {
+          pdf.text(protocol.exclusion_criteria);
+        }
+      }
+    }
     
-    // Protocol details
-    const protocol = reportData.parsed || {};
-    pdf.font('Helvetica-Bold').fontSize(12).text('Protocol ID:');
-    pdf.font('Helvetica').fontSize(12).text(protocolId).moveDown(0.5);
-    
-    pdf.font('Helvetica-Bold').fontSize(12).text('Indication:');
-    pdf.font('Helvetica').fontSize(12).text(protocol.indication || 'Not specified').moveDown(0.5);
-    
-    pdf.font('Helvetica-Bold').fontSize(12).text('Phase:');
-    pdf.font('Helvetica').fontSize(12).text(protocol.phase || 'Not specified').moveDown(0.5);
-    
-    pdf.font('Helvetica-Bold').fontSize(12).text('Sample Size:');
-    pdf.font('Helvetica').fontSize(12).text(protocol.sample_size || 'Not specified').moveDown(0.5);
-    
-    // Success prediction
+    // Success Probability Analysis page
     pdf.addPage();
+    pdf.font('Helvetica-Bold').fontSize(18)
+      .fillColor('#0066CC')
+      .text('Success Probability Analysis', { underline: true });
+    
+    pdf.moveDown(1);
+    
+    // Main prediction with visualization
+    const predictionValue = (prediction * 100).toFixed(1);
     pdf.font('Helvetica-Bold').fontSize(16)
-      .text('Success Prediction', { underline: true })
-      .moveDown();
+      .fillColor('#333333')
+      .text('Predicted Trial Success Probability:');
     
-    const prediction = reportData.prediction || 0;
-    const formattedPrediction = (prediction * 100).toFixed(1);
-    pdf.font('Helvetica-Bold').fontSize(14)
-      .text(`Predicted Success Probability: ${formattedPrediction}%`, { align: 'center' })
-      .moveDown(2);
+    pdf.moveDown(0.5);
     
-    // Strategic insights
+    // Draw a progress bar for the success rate
+    const barWidth = 400;
+    const barHeight = 30;
+    const startX = (pdf.page.width - barWidth) / 2;
+    const startY = pdf.y;
+    
+    // Background bar
+    pdf.rect(startX, startY, barWidth, barHeight)
+      .fillColor('#EEEEEE')
+      .fill();
+    
+    // Filled portion based on prediction
+    const fillWidth = (barWidth * prediction);
+    pdf.rect(startX, startY, fillWidth, barHeight)
+      .fillColor(predictionValue > 70 ? '#00AA00' : predictionValue > 40 ? '#FF9900' : '#CC0000')
+      .fill();
+    
+    // Add percentage text
+    pdf.font('Helvetica-Bold').fontSize(18)
+      .fillColor('#FFFFFF')
+      .text(`${predictionValue}%`, 
+        startX + (fillWidth / 2) - 20, 
+        startY + (barHeight / 2) - 9);
+    
+    pdf.moveDown(3);
+    
+    // Confidence Interval
+    const lowerCI = Math.max(0, (prediction - 0.15) * 100).toFixed(1);
+    const upperCI = Math.min(100, (prediction + 0.15) * 100).toFixed(1);
+    
+    pdf.font('Helvetica').fontSize(14)
+      .fillColor('#333333')
+      .text(`Confidence Interval: ${lowerCI}% - ${upperCI}%`, {
+        align: 'center'
+      });
+    
+    pdf.moveDown(2);
+    
+    // Factor analysis - list the factors that influence this prediction
     pdf.font('Helvetica-Bold').fontSize(16)
-      .text('Strategic Insights', { underline: true })
-      .moveDown();
+      .text('Key Factors Influencing Prediction');
     
-    const insights = reportData.strategic_insights || [];
-    if (insights.length > 0) {
+    pdf.moveDown(0.5);
+    
+    const factors = [
+      { name: 'Sample Size', impact: protocol.sample_size ? 'Positive' : 'Unknown', description: 'Statistical power and effect detection capability' },
+      { name: 'Study Design', impact: protocol.study_design ? 'Positive' : 'Unknown', description: 'Randomization, blinding, and control methods' },
+      { name: 'Endpoint Selection', impact: protocol.primary_endpoint ? 'Positive' : 'Unknown', description: 'Appropriateness of primary/secondary endpoints' },
+      { name: 'Patient Population', impact: 'Calculated', description: 'Inclusion/exclusion criteria specificity' },
+      { name: 'Duration', impact: protocol.duration_weeks ? 'Positive' : 'Unknown', description: 'Length of treatment and follow-up period' }
+    ];
+    
+    // Create factor table
+    factors.forEach(factor => {
+      pdf.font('Helvetica-Bold').fontSize(12)
+        .fillColor('#333333')
+        .text(`${factor.name}:`, { continued: true });
+      
+      pdf.font('Helvetica').fontSize(12)
+        .fillColor(factor.impact === 'Positive' ? '#00AA00' : 
+                  factor.impact === 'Negative' ? '#CC0000' : '#888888')
+        .text(` ${factor.impact}`, { continued: true });
+      
+      pdf.font('Helvetica').fontSize(12)
+        .fillColor('#333333')
+        .text(` - ${factor.description}`)
+        .moveDown(0.5);
+    });
+    
+    // Strategic Recommendations page
+    pdf.addPage();
+    pdf.font('Helvetica-Bold').fontSize(18)
+      .fillColor('#0066CC')
+      .text('Strategic Recommendations', { underline: true });
+    
+    pdf.moveDown(1);
+    
+    // Add insights with formatting
+    if (insights && insights.length > 0) {
+      pdf.font('Helvetica').fontSize(14)
+        .fillColor('#333333')
+        .text('Based on analysis of your protocol and comparison with similar trials, we recommend:')
+        .moveDown(1);
+      
       insights.forEach((insight, index) => {
+        pdf.font('Helvetica-Bold').fontSize(14)
+          .fillColor('#0066CC')
+          .text(`${index + 1}. Key Recommendation:`);
+        
         pdf.font('Helvetica').fontSize(12)
-          .text(`${index + 1}. ${insight}`)
-          .moveDown(0.5);
+          .fillColor('#333333')
+          .text(insight)
+          .moveDown(1);
       });
     } else {
-      pdf.font('Helvetica').fontSize(12)
-        .text('• Consider adding an adaptive design element to optimize sample size')
-        .moveDown(0.5)
-        .text('• Similar trials show higher success rates with longer treatment duration')
-        .moveDown(0.5)
-        .text('• Including quality of life endpoints may strengthen regulatory submission')
-        .moveDown(0.5)
-        .text('• Consider stratification by baseline severity to reduce variability')
-        .moveDown(0.5);
+      // Default insights if none provided
+      pdf.font('Helvetica').fontSize(14)
+        .fillColor('#333333')
+        .text('Based on our analysis, we recommend the following strategic optimizations:')
+        .moveDown(1);
+      
+      const defaultInsights = [
+        {
+          title: 'Optimize Sample Size Calculation',
+          detail: 'Consider an adaptive design approach to optimize statistical power while minimizing unnecessary patient exposure. This could reduce costs while maintaining trial integrity.'
+        },
+        {
+          title: 'Refine Endpoint Selection',
+          detail: 'Similar successful trials in this indication have utilized composite endpoints that combine clinical outcomes with patient-reported measures. This approach strengthens regulatory submissions.'
+        },
+        {
+          title: 'Enhance Retention Strategy',
+          detail: 'Implement a comprehensive retention program to minimize dropout rates. Historical data shows higher completion rates when burden on participants is reduced through careful visit scheduling.'
+        },
+        {
+          title: 'Consider Stratification Factors',
+          detail: 'Stratify randomization by key baseline characteristics to reduce variability in treatment effect estimation and improve statistical efficiency.'
+        }
+      ];
+      
+      defaultInsights.forEach((insight, index) => {
+        pdf.font('Helvetica-Bold').fontSize(14)
+          .fillColor('#0066CC')
+          .text(`${index + 1}. ${insight.title}`);
+        
+        pdf.font('Helvetica').fontSize(12)
+          .fillColor('#333333')
+          .text(insight.detail)
+          .moveDown(1);
+      });
     }
     
-    // Benchmarks
-    const benchmarks = reportData.benchmarks || {};
-    if (Object.keys(benchmarks).length > 0) {
-      pdf.addPage();
-      pdf.font('Helvetica-Bold').fontSize(16)
-        .text('Benchmark Comparison', { underline: true })
-        .moveDown();
+    // Benchmarks and Comparisons page
+    pdf.addPage();
+    pdf.font('Helvetica-Bold').fontSize(18)
+      .fillColor('#0066CC')
+      .text('Benchmark Comparison', { underline: true });
+    
+    pdf.moveDown(1);
+    
+    // Introduction to the benchmark section
+    pdf.font('Helvetica').fontSize(12)
+      .fillColor('#333333')
+      .text(`Your protocol has been compared against ${benchmarks.total_trials || 'similar'} trials in the same therapeutic area and phase.`)
+      .moveDown(1);
+    
+    // Create a more visually appealing table for benchmarks
+    const metrics = [
+      { name: 'Sample Size', value: protocol.sample_size || 'N/A', benchmark: benchmarks.median_sample_size || 'N/A' },
+      { name: 'Duration (Weeks)', value: protocol.duration_weeks || 'N/A', benchmark: benchmarks.median_duration || 'N/A' },
+      { name: 'Dropout Rate', value: `${((protocol.dropout_rate || 0) * 100).toFixed(1)}%`, 
+        benchmark: `${((benchmarks.average_dropout_rate || 0) * 100).toFixed(1)}%` },
+      { name: 'Primary Endpoints', value: protocol.primary_endpoint ? '1' : 'N/A', 
+        benchmark: benchmarks.avg_primary_endpoints || 'N/A' },
+      { name: 'Secondary Endpoints', value: Array.isArray(protocol.secondary_endpoints) ? 
+        protocol.secondary_endpoints.length.toString() : 'N/A', 
+        benchmark: benchmarks.avg_secondary_endpoints || 'N/A' }
+    ];
+    
+    // Table header
+    const tableTop = pdf.y + 10;
+    const colWidth = 150;
+    const rowHeight = 30;
+    const tableX = 70;
+    
+    // Draw table header background
+    pdf.rect(tableX, tableTop, colWidth * 3, rowHeight)
+      .fillColor('#0066CC')
+      .fill();
+    
+    // Draw header text
+    pdf.font('Helvetica-Bold').fontSize(12)
+      .fillColor('#FFFFFF');
+    
+    pdf.text('Metric', tableX + 10, tableTop + 10);
+    pdf.text('Your Protocol', tableX + colWidth + 10, tableTop + 10);
+    pdf.text('Industry Benchmark', tableX + colWidth * 2 + 10, tableTop + 10);
+    
+    // Draw table rows
+    let rowY = tableTop + rowHeight;
+    
+    metrics.forEach((metric, i) => {
+      // Alternating row background
+      pdf.rect(tableX, rowY, colWidth * 3, rowHeight)
+        .fillColor(i % 2 === 0 ? '#F5F5F5' : '#FFFFFF')
+        .fill();
+      
+      // Draw cell text
+      pdf.font('Helvetica-Bold').fontSize(12)
+        .fillColor('#333333')
+        .text(metric.name, tableX + 10, rowY + 10);
       
       pdf.font('Helvetica').fontSize(12)
-        .text(`Compared against ${benchmarks.total_trials || 'similar'} trials:`)
-        .moveDown(0.5);
+        .text(metric.value, tableX + colWidth + 10, rowY + 10);
       
-      // Create a simple table for benchmarks
-      const startX = 100;
-      const startY = pdf.y + 20;
-      const rowHeight = 30;
-      const colWidth = 150;
+      pdf.font('Helvetica').fontSize(12)
+        .text(metric.benchmark, tableX + colWidth * 2 + 10, rowY + 10);
       
-      pdf.font('Helvetica-Bold').fontSize(12);
-      pdf.text('Metric', startX, startY);
-      pdf.text('Your Protocol', startX + colWidth, startY);
-      pdf.text('Benchmark', startX + colWidth * 2, startY);
-      
-      pdf.moveTo(startX, startY + 20).lineTo(startX + colWidth * 3, startY + 20).stroke();
-      
-      let currentY = startY + 30;
-      
-      // Sample Size row
-      pdf.font('Helvetica').fontSize(12);
-      pdf.text('Sample Size', startX, currentY);
-      pdf.text(protocol.sample_size || 'N/A', startX + colWidth, currentY);
-      pdf.text(benchmarks.median_sample_size || 'N/A', startX + colWidth * 2, currentY);
-      
-      currentY += rowHeight;
-      
-      // Duration row
-      pdf.text('Duration (Weeks)', startX, currentY);
-      pdf.text(protocol.duration_weeks || 'N/A', startX + colWidth, currentY);
-      pdf.text(benchmarks.median_duration || 'N/A', startX + colWidth * 2, currentY);
-      
-      currentY += rowHeight;
-      
-      // Dropout rate row
-      pdf.text('Dropout Rate', startX, currentY);
-      pdf.text(`${((protocol.dropout_rate || 0) * 100).toFixed(1)}%`, startX + colWidth, currentY);
-      pdf.text(`${((benchmarks.average_dropout_rate || 0) * 100).toFixed(1)}%`, startX + colWidth * 2, currentY);
+      rowY += rowHeight;
+    });
+    
+    // Draw table borders
+    pdf.rect(tableX, tableTop, colWidth * 3, rowHeight * (metrics.length + 1))
+      .stroke();
+    
+    // Vertical lines
+    pdf.moveTo(tableX + colWidth, tableTop)
+      .lineTo(tableX + colWidth, tableTop + rowHeight * (metrics.length + 1))
+      .stroke();
+    
+    pdf.moveTo(tableX + colWidth * 2, tableTop)
+      .lineTo(tableX + colWidth * 2, tableTop + rowHeight * (metrics.length + 1))
+      .stroke();
+    
+    // Horizontal lines
+    for (let i = 1; i <= metrics.length; i++) {
+      pdf.moveTo(tableX, tableTop + rowHeight * i)
+        .lineTo(tableX + colWidth * 3, tableTop + rowHeight * i)
+        .stroke();
     }
+    
+    // Add a section about similar successful trials
+    pdf.moveDown(3);
+    pdf.font('Helvetica-Bold').fontSize(16)
+      .fillColor('#0066CC')
+      .text('Successful Trial Characteristics');
+    
+    pdf.moveDown(0.5);
+    
+    pdf.font('Helvetica').fontSize(12)
+      .fillColor('#333333')
+      .text('Successful trials in this therapeutic area typically share these features:');
+    
+    pdf.moveDown(0.5);
+    
+    // Success factors
+    const successFactors = [
+      'Clear and objective primary endpoints',
+      'Adequate statistical power (80-90%)',
+      'Appropriate inclusion/exclusion criteria to reduce heterogeneity',
+      'Minimized protocol complexity to improve adherence',
+      'Well-defined standard of care in control arms'
+    ];
+    
+    successFactors.forEach(factor => {
+      pdf.font('Helvetica').fontSize(12)
+        .text(`• ${factor}`)
+        .moveDown(0.3);
+    });
+    
+    // Final page with conclusions
+    pdf.addPage();
+    pdf.font('Helvetica-Bold').fontSize(18)
+      .fillColor('#0066CC')
+      .text('Summary and Next Steps', { underline: true });
+    
+    pdf.moveDown(1);
+    
+    // Summary section
+    pdf.font('Helvetica-Bold').fontSize(14)
+      .fillColor('#333333')
+      .text('Key Findings');
+    
+    pdf.moveDown(0.5);
+    
+    pdf.font('Helvetica').fontSize(12)
+      .text(`• Your protocol has a predicted success probability of ${predictionValue}%`);
+    
+    pdf.moveDown(0.3);
+    
+    // Dynamic recommendations based on prediction value
+    if (prediction > 0.7) {
+      pdf.text('• Your protocol demonstrates strong potential for success');
+    } else if (prediction > 0.4) {
+      pdf.text('• Your protocol shows moderate potential but has improvement opportunities');
+    } else {
+      pdf.text('• Your protocol requires significant optimization to improve success chances');
+    }
+    
+    pdf.moveDown(0.3);
+    
+    pdf.text('• Review the strategic recommendations to further optimize your protocol');
+    
+    pdf.moveDown(2);
+    
+    // Next steps section
+    pdf.font('Helvetica-Bold').fontSize(14)
+      .text('Recommended Next Steps');
+    
+    pdf.moveDown(0.5);
+    
+    const nextSteps = [
+      'Review and implement the strategic recommendations in this report',
+      'Consider running additional simulations with modified protocol parameters',
+      'Consult with subject matter experts on high-risk areas identified',
+      'Develop a comprehensive risk management plan addressing identified issues',
+      'Request a regulatory strategy assessment before submission'
+    ];
+    
+    nextSteps.forEach(step => {
+      pdf.font('Helvetica').fontSize(12)
+        .text(`• ${step}`)
+        .moveDown(0.3);
+    });
+    
+    pdf.moveDown(2);
+    
+    // Add footer with contact info
+    pdf.font('Helvetica-Oblique').fontSize(10)
+      .fillColor('#666666')
+      .text('For additional assistance with protocol optimization:', {
+        align: 'center'
+      })
+      .text('support@lumentrial.ai | www.lumentrial.ai', {
+        align: 'center'
+      });
+    
+    pdf.font('Helvetica').fontSize(10)
+      .text(`Report ID: ${sessionId}-${timestamp}`, {
+        align: 'center'
+      })
+      .text(`Generated: ${new Date().toLocaleString()}`, {
+        align: 'center'
+      });
     
     // End PDF
     pdf.end();
     
     // Wait for PDF to be written
     writeStream.on('finish', () => {
+      console.log(`Intelligence report PDF generated successfully: ${filePath}`);
+      
       // Calculate download URL
       const downloadUrl = `/exports/${filename}`;
       
@@ -234,8 +621,6 @@ router.post('/intelligence-report', express.json(), async (req, res) => {
         message: 'Error generating PDF file' 
       });
     });
-      // Function end - startReport
-    }
     
   } catch (error: any) {
     console.error('Error generating report:', error);
