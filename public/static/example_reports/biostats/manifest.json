@@ -1,0 +1,30 @@
+{
+  "category": "biostats",
+  "title": "Statistical Analysis Package",
+  "description": "Comprehensive statistical analysis plan with power calculations and adaptive design options",
+  "files": [
+    "sap_draft.pdf"
+  ],
+  "data": {
+    "sample_size": 428,
+    "power": 0.9,
+    "effect_size": 0.35,
+    "alpha": 0.05,
+    "primary_endpoint": "Change in body weight at 24 weeks",
+    "secondary_endpoints": [
+      "Percentage of patients achieving ≥5% weight loss",
+      "Change in waist circumference",
+      "Change in BMI"
+    ],
+    "statisticalTests": [
+      "ANCOVA for primary endpoint",
+      "Logistic regression for categorical endpoints",
+      "Mixed model for repeated measures (MMRM)"
+    ],
+    "adaptiveDesignFeatures": [
+      "Sample size re-estimation at interim analysis",
+      "Response-adaptive randomization",
+      "Early stopping rules for efficacy and futility"
+    ]
+  }
+}

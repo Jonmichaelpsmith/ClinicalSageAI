@@ -1,0 +1,78 @@
+{
+  "category": "clinops",
+  "title": "Trial Operations Timeline",
+  "description": "Detailed timeline and operational plan for clinical trial execution",
+  "files": [
+    "timeline.pdf"
+  ],
+  "data": {
+    "studyDuration": 36,
+    "enrollment": {
+      "target": 428,
+      "period": 12,
+      "sites": 18,
+      "regions": ["North America", "Europe", "Australia"]
+    },
+    "milestones": [
+      {
+        "name": "Study Initiation",
+        "month": 0,
+        "completionStatus": "Complete"
+      },
+      {
+        "name": "First Patient In",
+        "month": 1,
+        "completionStatus": "Complete"
+      },
+      {
+        "name": "25% Enrollment",
+        "month": 4,
+        "completionStatus": "Complete"
+      },
+      {
+        "name": "50% Enrollment",
+        "month": 7,
+        "completionStatus": "In Progress"
+      },
+      {
+        "name": "75% Enrollment",
+        "month": 10,
+        "completionStatus": "Planned"
+      },
+      {
+        "name": "Last Patient In",
+        "month": 12,
+        "completionStatus": "Planned"
+      },
+      {
+        "name": "Last Patient Last Visit",
+        "month": 34,
+        "completionStatus": "Planned"
+      },
+      {
+        "name": "Database Lock",
+        "month": 35,
+        "completionStatus": "Planned"
+      },
+      {
+        "name": "Final Study Report",
+        "month": 36,
+        "completionStatus": "Planned"
+      }
+    ],
+    "keyRisks": [
+      {
+        "risk": "Slow enrollment",
+        "mitigation": "Additional sites on standby, increased recruitment resources"
+      },
+      {
+        "risk": "High dropout rate",
+        "mitigation": "Patient engagement strategy, visit burden reduction"
+      },
+      {
+        "risk": "Protocol deviations",
+        "mitigation": "Enhanced site training, routine monitoring checkpoints"
+      }
+    ]
+  }
+}
