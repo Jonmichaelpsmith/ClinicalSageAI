@@ -803,18 +803,18 @@ router.post('/analyze', async (req, res) => {
       }
     };
     
-    // Store the assessment in the database
+    // Store the assessment in the database using Drizzle ORM
     try {
-      await db.query(`
+      await db.execute(sql`
         INSERT INTO protocol_assessments (
           id, protocol_data, assessment_results, created_at
-        ) VALUES ($1, $2, $3, $4)
-      `, [
-        assessmentId, 
-        JSON.stringify(protocolData), 
-        JSON.stringify(assessment),
-        new Date()
-      ]);
+        ) VALUES (
+          ${assessmentId}, 
+          ${JSON.stringify(protocolData)}, 
+          ${JSON.stringify(assessment)},
+          ${new Date()}
+        )
+      `);
     } catch (dbError) {
       console.error('Error storing protocol assessment:', dbError);
       // Continue even if storage fails
