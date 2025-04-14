@@ -1,805 +1,691 @@
-// /client/components/ProtocolPlanningDashboard.jsx
-import { useState, useEffect } from 'react';
-import ProtocolUploadPanel from "@/components/ProtocolUploadPanel";
-import SampleSizeCalculator from "@/components/SampleSizeCalculator";
-import DropoutSimulator from "@/components/DropoutSimulator";
-import TrialSuccessPredictor from "@/components/TrialSuccessPredictor";
-import ProtocolValidator from "@/components/ProtocolValidator";
-import FixedProtocolViewer from "@/components/FixedProtocolViewer";
-import ProtocolEmailer from "@/components/ProtocolEmailer";
-import SummaryPacketGenerator from "@/components/SummaryPacketGenerator";
-import SummaryPacketArchive from "@/components/SummaryPacketArchive";
-import SessionSummaryPanel from "@/components/SessionSummaryPanel";
-import ExportLogPanel from "@/components/ExportLogPanel";
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookmarkPlus, Download, FileArchive, FilePlus2, FileSpreadsheet, Mail, Send } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Separator } from "@/components/ui/separator";
+import { 
+  AlertCircle, 
+  FileText, 
+  TestTube, 
+  Download, 
+  Microscope, 
+  ClipboardCheck, 
+  BookCheck,
+  ArrowRight,
+  Check,
+  Beaker,
+  Target
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
-// Export Everything Button Component
-function ExportEverythingButton({ sessionId }) {
-  const [status, setStatus] = useState("");
+export default function ProtocolPlanningDashboard({ 
+  initialProtocol = "", 
+  sessionId = "adhoc", 
+  persona = null,
+  csrContext = null 
+}) {
+  const [protocol, setProtocol] = useState(initialProtocol);
+  const [activeTab, setActiveTab] = useState("design");
+  const [generating, setGenerating] = useState(false);
+  const [sapContent, setSapContent] = useState("");
+  const [indContent, setIndContent] = useState("");
+  const [summaryContent, setSummaryContent] = useState("");
+  const [sapReady, setSapReady] = useState(false);
+  const [indReady, setIndReady] = useState(false);
+  const [summaryReady, setSummaryReady] = useState(false);
   const { toast } = useToast();
 
-  const handleExport = async () => {
-    setStatus("📦 Generating export...");
-    toast({
-      title: "Preparing Complete Export",
-      description: "Generating all intelligence files into a single bundle..."
-    });
+  // Parse CSR context details for display
+  const studyId = csrContext?.id || csrContext?.studyId || sessionId;
+  const indication = csrContext?.indication || csrContext?.details?.indication || "";
+  const phase = csrContext?.phase || csrContext?.details?.phase || "";
+  const molecule = csrContext?.drugName || csrContext?.details?.drugName || "";
+  
+  // Extract and format endpoints from CSR context
+  const endpoints = [];
+  if (csrContext?.details?.endpoints) {
+    if (Array.isArray(csrContext.details.endpoints)) {
+      endpoints.push(...csrContext.details.endpoints);
+    } else if (typeof csrContext.details.endpoints === 'string') {
+      endpoints.push(csrContext.details.endpoints);
+    }
+  }
+  
+  // Generate traceability metadata from CSR context
+  const generateCsrMetadata = () => {
+    if (!csrContext) return "";
     
+    return `
+---
+Source CSR Information:
+- CSR ID: ${csrContext.id || "Not specified"}
+- Title: ${csrContext.title || "Not specified"}
+- Sponsor: ${csrContext.sponsor || "Not specified"}
+- Indication: ${indication}
+- Phase: ${phase}
+- Study drug: ${molecule}
+${endpoints.length > 0 ? `- Original endpoints: ${endpoints.join(', ')}` : ''}
+---
+`;
+  };
+
+  const generateSAP = async () => {
     try {
-      const res = await fetch(`/api/export/regulatory-bundle/${sessionId}`);
-      if (res.ok) {
-        const blob = await res.blob();
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `${sessionId}_regulatory_ready_bundle.zip`;
-        link.click();
-        setStatus("✅ Export complete.");
+      setGenerating(true);
+      toast({
+        title: "Generating SAP...",
+        description: "This may take a minute as we analyze your protocol.",
+      });
+      
+      const response = await fetch("/api/planner/generate-sap", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          protocol,
+          sessionId,
+          // Include source CSR context for traceability
+          csrContext: csrContext ? {
+            id: csrContext.id,
+            title: csrContext.title,
+            sponsor: csrContext.sponsor,
+            indication,
+            phase,
+            drugName: molecule,
+            endpoints: endpoints
+          } : null
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        // Add CSR traceability metadata to SAP
+        const sapWithMetadata = data.content + "\n\n" + generateCsrMetadata();
+        setSapContent(sapWithMetadata);
+        setSapReady(true);
         
         toast({
-          title: "Export Complete",
-          description: "All intelligence files have been packaged and downloaded."
+          title: "SAP Generated Successfully",
+          description: "Your Statistical Analysis Plan is ready for review.",
         });
       } else {
-        setStatus("❌ Failed to generate export.");
-        toast({
-          title: "Export Failed",
-          description: "There was an error generating the complete export bundle.",
-          variant: "destructive"
-        });
-      }
-    } catch (err) {
-      console.error(err);
-      setStatus("❌ Export failed.");
-      toast({
-        title: "Export Error",
-        description: "An unexpected error occurred during export.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  return (
-    <div className="mt-4">
-      <Button
-        onClick={handleExport}
-        className="bg-green-600 hover:bg-green-700 text-white w-full"
-      >
-        📦 Export All Intelligence Files
-      </Button>
-      {status && <p className="text-xs text-muted-foreground mt-1">{status}</p>}
-    </div>
-  );
-}
-
-// EmailArchiveButton Component
-function EmailArchiveButton({ sessionId }) {
-  const [email, setEmail] = useState("");
-  const [status, setStatus] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
-
-  // Function to save email to session persistence API
-  const saveEmailToSession = async (emailToSave) => {
-    try {
-      await fetch("/api/session/email/save", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          session_id: sessionId, 
-          recipient_email: emailToSave 
-        })
-      });
-      
-      // Also save to localStorage as fallback
-      localStorage.setItem('userEmail', emailToSave);
-      
-    } catch (error) {
-      console.error("Error saving email to session:", error);
-      // Still save to localStorage as fallback
-      localStorage.setItem('userEmail', emailToSave);
-    }
-  };
-
-  const handleSend = async () => {
-    if (!email || !email.includes('@')) {
-      toast({
-        title: "Invalid Email",
-        description: "Please enter a valid email address",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setStatus("Sending...");
-    setIsLoading(true);
-    
-    try {
-      // Save the email first
-      await saveEmailToSession(email);
-      
-      // Then send the archive
-      const res = await fetch("/api/export/email-session-archive", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          session_id: sessionId, 
-          recipient_email: email 
-        })
-      });
-      
-      const data = await res.json();
-      
-      if (data.status === "sent") {
-        setStatus(`✅ Sent to ${email}`);
-        toast({
-          title: "Archive Emailed",
-          description: `Complete study archive sent to ${email}`,
-        });
-      } else {
-        setStatus("❌ Failed to send");
-        throw new Error("Email failed to send");
+        throw new Error(data.error || "Failed to generate SAP");
       }
     } catch (error) {
-      console.error("Error sending email:", error);
-      setStatus("❌ Failed to send");
       toast({
-        title: "Email Failed",
-        description: "There was an error sending your archive.",
-        variant: "destructive"
+        title: "Error Generating SAP",
+        description: error.message,
+        variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setGenerating(false);
     }
   };
 
-  // Try to get email from session persistence API, 
-  // falling back to local storage if API fails
-  useEffect(() => {
-    async function loadSavedEmail() {
-      if (!sessionId) return;
-      
-      setIsLoading(true);
-      
-      try {
-        // First try to get from session API
-        const response = await fetch(`/api/session/email/get/${sessionId}`);
-        
-        if (response.ok) {
-          const data = await response.json();
-          
-          if (data.email) {
-            setEmail(data.email);
-            setIsLoading(false);
-            return;
-          }
-        }
-        
-        // Fallback to localStorage
-        const savedEmail = localStorage.getItem('userEmail');
-        if (savedEmail) {
-          setEmail(savedEmail);
-          
-          // Since we found in localStorage but not in API, save it to API
-          await saveEmailToSession(savedEmail);
-        }
-      } catch (error) {
-        console.error("Error loading saved email:", error);
-        
-        // Final fallback to localStorage
-        const savedEmail = localStorage.getItem('userEmail');
-        if (savedEmail) {
-          setEmail(savedEmail);
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    
-    loadSavedEmail();
-  }, [sessionId]);
-
-  return (
-    <Card className="mt-4">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base font-semibold">Email My Archive</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <Input
-          type="email"
-          placeholder="Enter email address"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="text-sm"
-        />
-        <div className="flex items-center justify-between">
-          <Button
-            variant="default"
-            className="bg-gradient-to-r from-blue-500 to-indigo-500"
-            onClick={handleSend}
-          >
-            <Mail className="mr-2 h-4 w-4" />
-            📤 Email My Archive
-          </Button>
-          {status && <p className="text-xs text-muted-foreground">{status}</p>}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-export default function ProtocolPlanningDashboard({ initialProtocol = "", sessionId = null, persona = "planner" }) {
-  const [protocolText, setProtocolText] = useState(initialProtocol || "");
-  const { toast } = useToast();
-  
-  useEffect(() => {
-    console.log("Initialized dashboard for:", { sessionId, persona });
-    
-    // Record the session start in memory
-    if (sessionId && persona) {
-      logSessionActivity("Session Started", `Initialized ${persona} dashboard with session ID: ${sessionId}`);
-    }
-  }, [sessionId, persona]);
-
-  if (!sessionId || !persona) {
-    return <p className="p-4 text-sm text-muted-foreground">Missing session ID or persona context.</p>;
-  }
-
-  // Log insights to memory API
-  const logSessionActivity = async (title, summary, status = "active") => {
+  const generateIND = async () => {
     try {
-      const response = await fetch('/api/insight/save', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          study_id: sessionId,
-          title,
-          summary,
-          status
+      setGenerating(true);
+      toast({
+        title: "Generating IND Summary...",
+        description: "This may take a minute as we analyze your protocol.",
+      });
+      
+      const response = await fetch("/api/planner/generate-ind", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          protocol,
+          sessionId,
+          // Include source CSR context for traceability
+          csrContext: csrContext ? {
+            id: csrContext.id,
+            title: csrContext.title,
+            sponsor: csrContext.sponsor,
+            indication,
+            phase,
+            drugName: molecule,
+            endpoints: endpoints
+          } : null
         })
       });
-
-      if (!response.ok) {
-        throw new Error("Failed to save insight");
-      }
       
-      return await response.json();
-    } catch (error) {
-      console.error("Error saving insight:", error);
-    }
-  };
-
-  // Log decision trace to wisdom API
-  const logWisdomTrace = async (input, reasoning, output) => {
-    try {
-      const response = await fetch('/api/wisdom/trace-log', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          study_id: sessionId,
-          input,
-          reasoning: Array.isArray(reasoning) ? reasoning : [reasoning],
-          output
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to save wisdom trace");
-      }
+      const data = await response.json();
       
-      return await response.json();
-    } catch (error) {
-      console.error("Error saving wisdom trace:", error);
-    }
-  };
-
-  const handleEmailReport = async () => {
-    await logWisdomTrace(
-      "User requested email report",
-      ["Checking if email configuration exists", "Validating report is generated", "Preparing email delivery"],
-      "Email report dispatched to user's configured address"
-    );
-    
-    await fetch("/api/intel/scheduled-report");
-    
-    // Log this action as an insight
-    await logSessionActivity(
-      "Report Emailed to Stakeholders",
-      "User requested the current planning report to be emailed to the configured address",
-      "completed"
-    );
-    
-    toast({
-      title: "Report Emailed",
-      description: "Your report has been emailed to the configured address",
-    });
-  };
-
-  const handleEmailArchive = async () => {
-    try {
-      toast({
-        title: "Preparing Archive",
-        description: "Creating and sending full session archive...",
-      });
-
-      // Log this activity
-      await logWisdomTrace(
-        "User requested email archive",
-        ["Generating full session archive", "Preparing email with attachments", "Processing delivery request"],
-        "Full study archive dispatched to user's email"
-      );
-      
-      // Get the user's email from local storage or use a default
-      const userEmail = localStorage.getItem('userEmail') || 'user@example.com';
-      
-      // Send the email request
-      const response = await fetch('/api/export/email-session-archive', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          session_id: sessionId,
-          recipient_email: userEmail
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to send email archive');
-      }
-
-      // Log this action as an insight
-      await logSessionActivity(
-        "Study Archive Emailed",
-        `Complete study archive emailed to ${userEmail}`,
-        "completed"
-      );
-      
-      toast({
-        title: "Archive Emailed",
-        description: `Your complete study archive has been emailed to ${userEmail}`,
-      });
-    } catch (error) {
-      console.error("Error sending email archive:", error);
-      toast({
-        title: "Email Failed",
-        description: "There was an error emailing your archive. Please try again.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleExportBundle = async () => {
-    toast({
-      title: "Preparing Export Bundle",
-      description: "Creating archive of all study assets and intelligence...",
-    });
-
-    try {
-      // Log this activity
-      await logSessionActivity(
-        "Study Bundle Export",
-        `Exported complete study bundle for ${persona} view of study ${sessionId}`,
-        "completed"
-      );
-
-      // Wait for the export to prepare
-      await fetch(`/api/export/study-bundle?study_id=${sessionId}&persona=${persona}`);
-
-      // Simulate download delay
-      setTimeout(() => {
+      if (data.success) {
+        // Add CSR traceability metadata to IND
+        const indWithMetadata = data.content + "\n\n" + generateCsrMetadata();
+        setIndContent(indWithMetadata);
+        setIndReady(true);
+        
         toast({
-          title: "Export Ready",
-          description: "Your study bundle has been prepared and is ready to download.",
+          title: "IND Summary Generated Successfully",
+          description: "Your IND Summary is ready for review.",
         });
-
-        // Trigger download (in a real implementation, this would be a direct download link)
-        window.location.href = `/api/download/study-bundle?study_id=${sessionId}`;
-      }, 2000);
-    } catch (error) {
-      toast({
-        title: "Export Failed",
-        description: "There was an error preparing your export bundle.",
-        variant: "destructive"
-      });
-    }
-  };
-  
-  const handleRegulatoryBundleDownload = async () => {
-    toast({
-      title: "Preparing Regulatory Bundle",
-      description: "Creating regulatory-ready submission package...",
-    });
-
-    try {
-      // Log this activity
-      await logWisdomTrace(
-        "User requested regulatory-ready bundle",
-        ["Compiling IND document sections", "Formatting regulatory compliance artifacts", "Preparing submission-grade bundle"],
-        "Regulatory submission-ready package prepared for download"
-      );
-      
-      await logSessionActivity(
-        "Regulatory Bundle Export",
-        `Exported regulatory-ready submission bundle for study ${sessionId}`,
-        "completed"
-      );
-      
-      // Trigger download directly
-      window.open(`/api/export/regulatory-bundle/${sessionId}`, "_blank");
-      
-      // Show success notification after a brief delay
-      setTimeout(() => {
-        toast({
-          title: "Regulatory Bundle Ready",
-          description: "Your regulatory-ready submission package has been prepared and download should begin shortly.",
-        });
-      }, 1000);
-    } catch (error) {
-      console.error("Error downloading regulatory bundle:", error);
-      toast({
-        title: "Export Failed",
-        description: "There was an error preparing your regulatory bundle.",
-        variant: "destructive"
-      });
-    }
-  };
-  
-  const handleEmailRegulatoryBundle = async () => {
-    try {
-      toast({
-        title: "Preparing Regulatory Bundle",
-        description: "Creating and sending regulatory-ready submission package...",
-      });
-
-      // Log this activity
-      await logWisdomTrace(
-        "User requested regulatory bundle email",
-        ["Compiling submission documents", "Preparing regulatory-grade materials", "Processing delivery request"],
-        "Regulatory submission-ready package dispatched to stakeholders"
-      );
-      
-      // Get the user's email from local storage or use a default
-      const userEmail = localStorage.getItem('userEmail') || '';
-      
-      if (!userEmail || !userEmail.includes('@')) {
-        setEmailDialogOpen(true);
-        return;
+      } else {
+        throw new Error(data.error || "Failed to generate IND Summary");
       }
+    } catch (error) {
+      toast({
+        title: "Error Generating IND Summary",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const generateSummary = async () => {
+    try {
+      setGenerating(true);
+      toast({
+        title: "Generating Protocol Summary...",
+        description: "This may take a minute as we analyze your protocol.",
+      });
       
-      // Send the email request
-      const response = await fetch('/api/export/email-regulatory-bundle', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          session_id: sessionId,
-          recipient_email: userEmail
+      const response = await fetch("/api/planner/generate-summary", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          protocol,
+          sessionId,
+          // Include source CSR context for traceability
+          csrContext: csrContext ? {
+            id: csrContext.id,
+            title: csrContext.title,
+            sponsor: csrContext.sponsor,
+            indication,
+            phase,
+            drugName: molecule,
+            endpoints: endpoints
+          } : null
         })
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to send regulatory bundle email');
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        // Add CSR traceability metadata to Summary
+        const summaryWithMetadata = data.content + "\n\n" + generateCsrMetadata();
+        setSummaryContent(summaryWithMetadata);
+        setSummaryReady(true);
+        
+        toast({
+          title: "Protocol Summary Generated Successfully",
+          description: "Your Protocol Summary is ready for review.",
+        });
+      } else {
+        throw new Error(data.error || "Failed to generate Protocol Summary");
       }
-
-      // Log this action as an insight
-      await logSessionActivity(
-        "Regulatory Bundle Emailed",
-        `Regulatory submission package emailed to ${userEmail}`,
-        "completed"
-      );
+    } catch (error) {
+      toast({
+        title: "Error Generating Protocol Summary",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setGenerating(false);
+    }
+  };
+  
+  const exportToPDF = async (content, type) => {
+    try {
+      toast({
+        title: `Exporting ${type}...`,
+        description: "Preparing PDF document.",
+      });
+      
+      const response = await fetch(`/api/planner/export-${type.toLowerCase()}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          content,
+          sessionId,
+          metadata: csrContext ? {
+            csrId: csrContext.id,
+            title: csrContext.title,
+            sponsor: csrContext.sponsor,
+            indication,
+            phase,
+            molecule
+          } : null
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to export ${type}`);
+      }
+      
+      // Create a blob from the PDF Stream
+      const blob = await response.blob();
+      // Create a link element, use it to download the blob and remove it
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `${type.toLowerCase()}_${sessionId}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
       
       toast({
-        title: "Regulatory Bundle Emailed",
-        description: `Your regulatory-ready submission package has been emailed to ${userEmail}`,
+        title: "Export Successful",
+        description: `Your ${type} has been exported as a PDF.`,
       });
     } catch (error) {
-      console.error("Error sending regulatory bundle email:", error);
       toast({
-        title: "Email Failed",
-        description: "There was an error emailing your regulatory bundle. Please try again.",
-        variant: "destructive"
+        title: `Error Exporting ${type}`,
+        description: error.message,
+        variant: "destructive",
       });
     }
   };
 
-  return (
-    <div className="space-y-10 p-6">
-      {/* Session Summary Panel at the top of the component tree */}
-      <SessionSummaryPanel sessionId={sessionId} />
-      
-      {/* Export Log Panel showing recent export activity */}
-      <ExportLogPanel sessionId={sessionId} autoRefresh={true} />
-      
-      <Card className="bg-gradient-to-r from-slate-50 to-blue-50 border-blue-100">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-xl font-bold">🧠 {persona.toUpperCase()} Intelligence Dashboard</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            Study Session ID: <span className="font-mono font-medium">{sessionId}</span>
-          </p>
+  // Display CSR context banner if available
+  const renderCsrContextBanner = () => {
+    if (!csrContext) return null;
+    
+    return (
+      <Card className="mb-4 border-blue-200 bg-blue-50">
+        <CardContent className="p-4">
+          <div className="flex flex-wrap items-start gap-2">
+            <div className="flex-1">
+              <h3 className="text-sm font-medium flex items-center gap-1 text-blue-800">
+                <FileText className="h-4 w-4" /> Source CSR Context
+              </h3>
+              <p className="text-xs text-blue-700 mt-1">
+                This planning session is linked to CSR #{studyId}
+              </p>
+              
+              {/* CSR metadata grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mt-3">
+                {molecule && (
+                  <div className="flex flex-col">
+                    <span className="text-xs text-blue-600">Study Drug</span>
+                    <span className="text-sm font-medium flex items-center">
+                      <Beaker className="h-3 w-3 mr-1 text-blue-500" /> {molecule}
+                    </span>
+                  </div>
+                )}
+                
+                {indication && (
+                  <div className="flex flex-col">
+                    <span className="text-xs text-blue-600">Indication</span>
+                    <span className="text-sm font-medium flex items-center">
+                      <Target className="h-3 w-3 mr-1 text-blue-500" /> {indication}
+                    </span>
+                  </div>
+                )}
+                
+                {phase && (
+                  <div className="flex flex-col">
+                    <span className="text-xs text-blue-600">Phase</span>
+                    <span className="text-sm font-medium">
+                      <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-200">
+                        {phase}
+                      </Badge>
+                    </span>
+                  </div>
+                )}
+                
+                {csrContext.sponsor && (
+                  <div className="flex flex-col">
+                    <span className="text-xs text-blue-600">Sponsor</span>
+                    <span className="text-sm font-medium">{csrContext.sponsor}</span>
+                  </div>
+                )}
+              </div>
+              
+              {/* Endpoints section */}
+              {endpoints.length > 0 && (
+                <div className="mt-3">
+                  <span className="text-xs text-blue-600">Endpoints</span>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {endpoints.map((endpoint, index) => (
+                      <Badge 
+                        key={index} 
+                        variant="outline" 
+                        className="bg-blue-100 text-blue-700 border-blue-200 text-xs"
+                      >
+                        {endpoint}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            <div className="flex flex-col items-end gap-2">
+              <span className="text-xs text-blue-600">Traceability</span>
+              <div className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-green-500" />
+                <span className="text-xs text-green-700">All outputs will reference source CSR</span>
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
+    );
+  };
+
+  return (
+    <div className="max-w-7xl mx-auto">
+      <h1 className="text-2xl font-bold mb-6">Protocol Planning Dashboard</h1>
       
-      <section className="space-y-4">
-        <h2 className="text-xl font-bold">📥 Protocol Preparation</h2>
-        <ProtocolUploadPanel 
-          sessionId={sessionId}
-          initialText={protocolText} 
-          onProtocolUpdated={setProtocolText}
-          onInsightGenerated={(title, summary) => logSessionActivity(title, summary)}
-        />
-        
-        <ProtocolValidator
-          sessionId={sessionId}
-          onValidationComplete={(issues) => {
-            logSessionActivity(
-              "Protocol Validation",
-              `Identified ${issues.length} issues requiring attention`,
-              issues.length > 0 ? "needs_attention" : "completed"
-            );
-          }}
-        />
-        
-        <FixedProtocolViewer 
-          originalText={protocolText} 
-          sessionId={sessionId}
-          onProtocolRepaired={(changes) => {
-            logSessionActivity(
-              "Protocol Repair",
-              `AI repaired ${changes.length} protocol sections`,
-              "completed"
-            );
-          }}
-        />
-      </section>
+      {/* CSR Context Banner */}
+      {renderCsrContextBanner()}
+      
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid grid-cols-4 mb-6">
+          <TabsTrigger value="design" className="flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            <span>Protocol Design</span>
+          </TabsTrigger>
+          <TabsTrigger value="summary" className="flex items-center gap-2">
+            <ClipboardCheck className="h-4 w-4" />
+            <span>Protocol Summary</span>
+            {summaryReady && <Badge variant="outline" className="ml-2 bg-green-100 text-green-700 border-green-200">Ready</Badge>}
+          </TabsTrigger>
+          <TabsTrigger value="sap" className="flex items-center gap-2">
+            <BookCheck className="h-4 w-4" />
+            <span>SAP</span>
+            {sapReady && <Badge variant="outline" className="ml-2 bg-green-100 text-green-700 border-green-200">Ready</Badge>}
+          </TabsTrigger>
+          <TabsTrigger value="ind" className="flex items-center gap-2">
+            <TestTube className="h-4 w-4" />
+            <span>IND Summary</span>
+            {indReady && <Badge variant="outline" className="ml-2 bg-green-100 text-green-700 border-green-200">Ready</Badge>}
+          </TabsTrigger>
+        </TabsList>
 
-      <section className="space-y-4">
-        <h2 className="text-xl font-bold">📊 Modeling & Risk Forecasting</h2>
-        <SampleSizeCalculator 
-          sessionId={sessionId}
-          onCalculationComplete={(result, reasoning) => {
-            logSessionActivity(
-              "Sample Size Calculation",
-              `Calculated required sample size of ${result.totalN} participants (${result.perGroup} per group)`,
-              "completed"
-            );
-            logWisdomTrace(
-              "Sample size calculation",
-              reasoning,
-              `Sample size: ${result.totalN} total (${result.perGroup} per group)`
-            );
-          }}
-        />
-        
-        <DropoutSimulator 
-          sessionId={sessionId}
-          onEstimationComplete={(estimate, reasoning) => {
-            logSessionActivity("Dropout Rate Forecast", `Predicted ${estimate}% dropout rate for this protocol`);
-            logWisdomTrace("Dynamic dropout forecast", reasoning, `${estimate}% dropout rate`);
-          }}
-        />
-        
-        <TrialSuccessPredictor 
-          sessionId={sessionId}
-          onPredictionComplete={(probability, factors) => {
-            logSessionActivity(
-              "Trial Success Prediction",
-              `Predicted ${probability}% probability of trial success`,
-              probability < 30 ? "needs_attention" : "active"
-            );
-            logWisdomTrace(
-              "Trial success prediction",
-              factors.map(f => f.factor + ": " + f.impact),
-              `${probability}% probability of success`
-            );
-          }}
-        />
-      </section>
-
-      <section className="space-y-4">
-        <h2 className="text-xl font-bold">📝 Regulatory Document Generation</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Button 
-            variant="outline"
-            className="h-auto py-4 justify-start"
-            onClick={() => {
-              logSessionActivity("Generated IND Module 2.5", "Clinical pharmacology section generated based on protocol data");
-              toast({
-                title: "IND Module 2.5 Generated",
-                description: "Clinical pharmacology section has been prepared"
-              });
-            }}
-          >
-            <FilePlus2 className="mr-2 h-4 w-4" />
-            <div className="flex flex-col items-start">
-              <span>Generate IND Module 2.5</span>
-              <span className="text-xs text-muted-foreground">Clinical Pharmacology Section</span>
-            </div>
-          </Button>
-          
-          <Button 
-            variant="outline"
-            className="h-auto py-4 justify-start"
-            onClick={() => {
-              logSessionActivity("Generated IND Module 2.7", "Clinical summary section generated based on protocol data");
-              toast({
-                title: "IND Module 2.7 Generated",
-                description: "Clinical summary section has been prepared"
-              });
-            }}
-          >
-            <FilePlus2 className="mr-2 h-4 w-4" />
-            <div className="flex flex-col items-start">
-              <span>Generate IND Module 2.7</span>
-              <span className="text-xs text-muted-foreground">Clinical Summary Section</span>
-            </div>
-          </Button>
-          
-          <Button 
-            variant="outline"
-            className="h-auto py-4 justify-start"
-            onClick={() => {
-              const sapText = "This Statistical Analysis Plan (SAP) outlines the methods for analyzing data from the clinical trial. The primary analysis will use an intent-to-treat approach with all randomized participants. Missing data will be handled using multiple imputation techniques. The primary endpoint will be analyzed using a mixed-effects model with repeated measures, adjusting for baseline values and stratification factors. Secondary endpoints will be analyzed using appropriate statistical methods with adjustment for multiplicity using the Hochberg procedure. Safety data will be summarized descriptively without formal statistical testing.";
+        <TabsContent value="design">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Protocol Design Editor
+              </CardTitle>
+              <CardDescription>
+                Write or paste your protocol design details below. You can then generate associated documents.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Textarea
+                value={protocol}
+                onChange={(e) => setProtocol(e.target.value)}
+                placeholder="Enter protocol design details here..."
+                className="min-h-[400px] font-mono text-sm"
+              />
               
-              // Export SAP as DOCX
-              fetch('/api/export/sap-docx', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  session_id: studySessionId,
-                  sap_text: sapText
-                }),
-              })
-              .then(response => response.json())
-              .then(data => {
-                if (data.status === "ok") {
-                  logSessionActivity("Generated SAP Document", "Statistical Analysis Plan generated with branded template");
-                  toast({
-                    title: "SAP Document Generated",
-                    description: "Statistical Analysis Plan has been prepared as DOCX"
-                  });
-                  // Open the document in a new tab
-                  window.open(data.path, '_blank');
-                }
-              })
-              .catch(error => {
-                console.error('Error exporting SAP document:', error);
-                toast({
-                  title: "Export Failed",
-                  description: "There was an error generating the SAP document",
-                  variant: "destructive"
-                });
-              });
-            }}
-          >
-            <FileSpreadsheet className="mr-2 h-4 w-4" />
-            <div className="flex flex-col items-start">
-              <span>Generate SAP Document</span>
-              <span className="text-xs text-muted-foreground">Statistical Analysis Plan</span>
-            </div>
-          </Button>
-        </div>
-      </section>
+              <div className="flex justify-between mt-6">
+                <div className="flex items-center">
+                  <AlertCircle className="h-4 w-4 mr-2 text-amber-500" />
+                  <span className="text-sm text-muted-foreground">
+                    Include study population, primary &amp; secondary endpoints, and dosing regimen.
+                  </span>
+                </div>
+                
+                <div className="flex gap-3">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => generateSummary()} 
+                    disabled={!protocol.trim() || generating}
+                    className="gap-2"
+                  >
+                    <ClipboardCheck className="h-4 w-4" />
+                    Generate Summary
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      setActiveTab("summary");
+                      generateSummary();
+                    }} 
+                    disabled={!protocol.trim() || generating}
+                    className="gap-2"
+                  >
+                    <ArrowRight className="h-4 w-4" />
+                    Continue
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-      <section className="space-y-4">
-        <h2 className="text-xl font-bold">📦 Final Intelligence Outputs</h2>
-        {/* Export Log Panel showing recent export activity */}
-        <ExportLogPanel sessionId={sessionId} autoRefresh={false} />
-        
-        <SummaryPacketGenerator
-          sessionId={sessionId}
-          onPacketGenerated={(packetData) => {
-            logSessionActivity(
-              "Summary Packet Generated",
-              `Generated clinical summary packet with ${packetData.sections.length} sections`,
-              "completed"
-            );
-            logWisdomTrace(
-              "Summary packet generation",
-              [
-                "Extracted key protocol elements",
-                "Applied regulatory templates",
-                "Generated executive summary",
-                "Added statistical analysis plan overview"
-              ],
-              "Complete summary packet ready for review"
-            );
-          }}
-        />
-        
-        <SummaryPacketArchive
-          sessionId={sessionId}
-        />
-        
-        <EmailArchiveButton 
-          sessionId={sessionId} 
-        />
-        
-        <ProtocolEmailer
-          sessionId={sessionId}
-          onEmailSent={(recipient) => {
-            logSessionActivity(
-              "Protocol Emailed",
-              `Protocol document emailed to ${recipient}`,
-              "completed"
-            );
-          }}
-        />
-      </section>
+        <TabsContent value="summary">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ClipboardCheck className="h-5 w-5" />
+                Protocol Summary
+              </CardTitle>
+              <CardDescription>
+                Generate a comprehensive summary of your protocol design.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {summaryReady ? (
+                <>
+                  <Textarea
+                    value={summaryContent}
+                    onChange={(e) => setSummaryContent(e.target.value)}
+                    className="min-h-[400px] font-mono text-sm"
+                    readOnly
+                  />
+                  
+                  <div className="flex justify-between mt-6">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => exportToPDF(summaryContent, "Summary")}
+                      className="gap-2"
+                    >
+                      <Download className="h-4 w-4" />
+                      Export as PDF
+                    </Button>
+                    
+                    <div className="flex gap-3">
+                      <Button 
+                        variant="outline" 
+                        onClick={() => setActiveTab("design")}
+                        className="gap-2"
+                      >
+                        Back to Design
+                      </Button>
+                      <Button 
+                        onClick={() => {
+                          setActiveTab("sap");
+                          if (!sapReady) generateSAP();
+                        }}
+                        className="gap-2"
+                      >
+                        <ArrowRight className="h-4 w-4" />
+                        Continue to SAP
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="text-center py-16">
+                  <Microscope className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium mb-2">Generate Your Protocol Summary</h3>
+                  <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                    Create a detailed summary of your protocol to share with stakeholders or use for regulatory submission.
+                  </p>
+                  <Button 
+                    onClick={generateSummary}
+                    disabled={!protocol.trim() || generating}
+                    className="gap-2"
+                  >
+                    {generating ? (
+                      <>Generating...</>
+                    ) : (
+                      <>
+                        <ClipboardCheck className="h-4 w-4" />
+                        Generate Protocol Summary
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-      <section className="border-t pt-6">
-        <div className="flex flex-wrap gap-4 justify-center">
-          {/* Export Everything Button - add the new master export button */}
-          <ExportEverythingButton sessionId={sessionId} />
-          
-          <Button onClick={handleExportBundle} className="bg-gradient-to-r from-blue-600 to-indigo-600">
-            <FileArchive className="mr-2 h-4 w-4" />
-            Download Complete Study Bundle
-          </Button>
-          
-          <Button 
-            variant="default"
-            className="bg-gradient-to-r from-emerald-600 to-teal-600" 
-            onClick={() => {
-              toast({
-                title: "Preparing Archive",
-                description: "Creating full session archive with all protocol data..."
-              });
-              
-              // Log this activity
-              logSessionActivity(
-                "Session Archive Export",
-                `Exported full archive for session ${sessionId}`,
-                "completed"
-              );
-              
-              // Start archive download
-              window.location.href = `/api/export/session-archive/${sessionId}`;
-            }}
-          >
-            <FileArchive className="mr-2 h-4 w-4" />
-            📦 Download Full Archive
-          </Button>
-          
-          <Button 
-            variant="default"
-            className="bg-gradient-to-r from-purple-600 to-indigo-600" 
-            onClick={handleRegulatoryBundleDownload}
-          >
-            <Download className="mr-2 h-4 w-4" />
-            📥 Download Regulatory Ready Bundle
-          </Button>
-          
-          <Button variant="outline" onClick={() => {
-            window.open(`/static/reports/${sessionId}_analysis.pdf`, '_blank');
-          }}>
-            <Download className="mr-2 h-4 w-4" />
-            Download Analysis Report (PDF)
-          </Button>
-          
-          <Button variant="outline" onClick={handleEmailReport}>
-            <Send className="mr-2 h-4 w-4" />
-            Email Report to Stakeholders
-          </Button>
-          
-          <Button variant="outline" onClick={() => {
-            logSessionActivity("Bookmark Created", "User saved a bookmark for this study session");
-            toast({
-              title: "Bookmark Created",
-              description: "This study session has been added to your bookmarks"
-            });
-          }}>
-            <BookmarkPlus className="mr-2 h-4 w-4" />
-            Save to My Bookmarks
-          </Button>
-        </div>
-      </section>
+        <TabsContent value="sap">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BookCheck className="h-5 w-5" />
+                Statistical Analysis Plan (SAP)
+              </CardTitle>
+              <CardDescription>
+                Generate a comprehensive statistical analysis plan for your protocol.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {sapReady ? (
+                <>
+                  <Textarea
+                    value={sapContent}
+                    onChange={(e) => setSapContent(e.target.value)}
+                    className="min-h-[400px] font-mono text-sm"
+                    readOnly
+                  />
+                  
+                  <div className="flex justify-between mt-6">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => exportToPDF(sapContent, "SAP")}
+                      className="gap-2"
+                    >
+                      <Download className="h-4 w-4" />
+                      Export as PDF
+                    </Button>
+                    
+                    <div className="flex gap-3">
+                      <Button 
+                        variant="outline" 
+                        onClick={() => setActiveTab("summary")}
+                        className="gap-2"
+                      >
+                        Back to Summary
+                      </Button>
+                      <Button 
+                        onClick={() => {
+                          setActiveTab("ind");
+                          if (!indReady) generateIND();
+                        }}
+                        className="gap-2"
+                      >
+                        <ArrowRight className="h-4 w-4" />
+                        Continue to IND
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="text-center py-16">
+                  <Microscope className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium mb-2">Generate Your Statistical Analysis Plan</h3>
+                  <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                    Create a comprehensive SAP with statistical methods, sample size calculations, and analysis strategies.
+                  </p>
+                  <Button 
+                    onClick={generateSAP}
+                    disabled={!protocol.trim() || generating}
+                    className="gap-2"
+                  >
+                    {generating ? (
+                      <>Generating...</>
+                    ) : (
+                      <>
+                        <BookCheck className="h-4 w-4" />
+                        Generate SAP
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="ind">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Flask className="h-5 w-5" />
+                IND Summary
+              </CardTitle>
+              <CardDescription>
+                Generate a detailed Investigational New Drug (IND) application summary.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {indReady ? (
+                <>
+                  <Textarea
+                    value={indContent}
+                    onChange={(e) => setIndContent(e.target.value)}
+                    className="min-h-[400px] font-mono text-sm"
+                    readOnly
+                  />
+                  
+                  <div className="flex justify-between mt-6">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => exportToPDF(indContent, "IND")}
+                      className="gap-2"
+                    >
+                      <Download className="h-4 w-4" />
+                      Export as PDF
+                    </Button>
+                    
+                    <div className="flex gap-3">
+                      <Button 
+                        variant="outline" 
+                        onClick={() => setActiveTab("sap")}
+                        className="gap-2"
+                      >
+                        Back to SAP
+                      </Button>
+                      <Button 
+                        variant="outline"
+                        onClick={() => setActiveTab("design")}
+                        className="gap-2"
+                      >
+                        Back to Design
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="text-center py-16">
+                  <Microscope className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium mb-2">Generate Your IND Summary</h3>
+                  <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                    Create a comprehensive IND summary with protocol design elements formatted for regulatory submission.
+                  </p>
+                  <Button 
+                    onClick={generateIND}
+                    disabled={!protocol.trim() || generating}
+                    className="gap-2"
+                  >
+                    {generating ? (
+                      <>Generating...</>
+                    ) : (
+                      <>
+                        <Flask className="h-4 w-4" />
+                        Generate IND Summary
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
