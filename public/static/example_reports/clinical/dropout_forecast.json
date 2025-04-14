@@ -1,0 +1,80 @@
+{
+  "title": "Dropout Risk Forecast",
+  "study_id": "LMN-0801-001",
+  "indication": "Obesity",
+  "risk_score": 15.2,
+  "risk_level": "Medium",
+  "enrollmentTarget": 428,
+  "predictedDropout": {
+    "total": 65,
+    "percentage": 15.2,
+    "byMonth": [2, 5, 9, 14, 18, 17]
+  },
+  "riskFactors": [
+    {
+      "factor": "Visit frequency",
+      "impact": "High",
+      "contribution": 28
+    },
+    {
+      "factor": "Treatment duration",
+      "impact": "Medium",
+      "contribution": 22
+    },
+    {
+      "factor": "Invasive procedures",
+      "impact": "Low",
+      "contribution": 12
+    },
+    {
+      "factor": "Concomitant medications",
+      "impact": "Medium",
+      "contribution": 18
+    },
+    {
+      "factor": "Inclusion/exclusion criteria",
+      "impact": "Low",
+      "contribution": 10
+    }
+  ],
+  "mitigationStrategies": [
+    {
+      "strategy": "Reduce visit burden",
+      "impact": "High",
+      "description": "Consolidate required assessments to reduce frequency of site visits by 25%"
+    },
+    {
+      "strategy": "Remote participation options",
+      "impact": "High", 
+      "description": "Implement telehealth options for 40% of follow-up visits"
+    },
+    {
+      "strategy": "Streamline procedures",
+      "impact": "Medium",
+      "description": "Combine blood draws and reduce frequency of invasive assessments"
+    },
+    {
+      "strategy": "Patient engagement program",
+      "impact": "Medium",
+      "description": "Digital reminder system with personalized engagement"
+    }
+  ],
+  "benchmarkComparison": {
+    "thisStudy": 15.2,
+    "similarStudies": 18.7,
+    "indication": 17.5,
+    "phase": 16.8
+  },
+  "dataSourceCitations": [
+    {
+      "id": "NCT03922113",
+      "title": "Dropout Analysis in Obesity Trials",
+      "year": 2024
+    },
+    {
+      "id": "NCT04219592",
+      "title": "Patient Retention Strategies",
+      "year": 2023
+    }
+  ]
+}

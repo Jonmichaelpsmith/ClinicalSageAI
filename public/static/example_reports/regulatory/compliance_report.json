@@ -1,0 +1,105 @@
+{
+  "title": "Regulatory Compliance Report",
+  "protocol_id": "LMN-0801-001",
+  "indication": "Obesity",
+  "sponsor": "Lumen Biosciences",
+  "version": "1.1c",
+  "date": "2025-03-07",
+  "overall_compliance_score": 94,
+  "compliance_status": "Ready for submission",
+  "agency_alignment": {
+    "FDA": 95,
+    "EMA": 92,
+    "PMDA": 89,
+    "Health Canada": 94,
+    "TGA": 91
+  },
+  "section_scores": [
+    {
+      "section": "Study Design",
+      "score": 96,
+      "status": "Compliant",
+      "comments": "Design consistent with regulatory expectations for obesity trials"
+    },
+    {
+      "section": "Endpoint Selection",
+      "score": 92,
+      "status": "Compliant",
+      "comments": "Primary and secondary endpoints align with FDA guidance"
+    },
+    {
+      "section": "Statistical Analysis",
+      "score": 95,
+      "status": "Compliant",
+      "comments": "Analysis plan meets ICH E9 requirements"
+    },
+    {
+      "section": "Safety Monitoring",
+      "score": 98,
+      "status": "Compliant",
+      "comments": "Comprehensive safety monitoring and reporting plan"
+    },
+    {
+      "section": "Inclusion/Exclusion Criteria",
+      "score": 94,
+      "status": "Compliant",
+      "comments": "Criteria align with regulatory expectations for target population"
+    },
+    {
+      "section": "Informed Consent",
+      "score": 90,
+      "status": "Minor findings",
+      "comments": "Minor clarifications needed on risks section"
+    },
+    {
+      "section": "Data Management",
+      "score": 93,
+      "status": "Compliant",
+      "comments": "Data integrity controls meet 21 CFR Part 11 requirements"
+    }
+  ],
+  "findings": [
+    {
+      "severity": "Low",
+      "section": "Informed Consent",
+      "finding": "Additional detail needed on potential risks of microalgae-produced biologics",
+      "recommendation": "Expand section 4.2 of ICF with specific risk language"
+    },
+    {
+      "severity": "Low",
+      "section": "Statistical Analysis",
+      "finding": "Missing detail on handling of specific subgroup analyses",
+      "recommendation": "Add prespecified subgroup analysis methodology to SAP"
+    },
+    {
+      "severity": "Low",
+      "section": "Study Procedures",
+      "finding": "Visit window flexibility could be better defined",
+      "recommendation": "Specify acceptable visit windows more explicitly"
+    }
+  ],
+  "regulatory_guidance_applied": [
+    "FDA Guidance for Industry: Developing Products for Weight Management (2007)",
+    "EMA Guideline on Clinical Evaluation of Medicinal Products used in Weight Control (2016)",
+    "ICH E9 Statistical Principles for Clinical Trials",
+    "ICH E6(R2) Good Clinical Practice",
+    "FDA Guidance on Patient-Reported Outcome Measures (2009)"
+  ],
+  "verification_history": [
+    {
+      "date": "2025-02-15",
+      "score": 86,
+      "verifier": "Regulatory Compliance System"
+    },
+    {
+      "date": "2025-03-01",
+      "score": 91,
+      "verifier": "Regulatory Compliance System"
+    },
+    {
+      "date": "2025-03-07",
+      "score": 94,
+      "verifier": "Regulatory Compliance System"
+    }
+  ]
+}
