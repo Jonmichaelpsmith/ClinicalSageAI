@@ -120,6 +120,7 @@ Source CSR Information:
 - Title: ${csrContext.title || "Not specified"}
 - Sponsor: ${csrContext.sponsor || "Not specified"}
 - Indication: ${indication}
+- Therapeutic Area: ${therapeuticArea}
 - Phase: ${phase}
 - Study drug: ${molecule}
 ${endpoints.length > 0 ? `- Original endpoints: ${endpoints.join(', ')}` : ''}

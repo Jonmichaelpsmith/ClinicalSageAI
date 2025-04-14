@@ -1,0 +1,52 @@
+# Embed assistant memory context into a branded IND DOCX export
+from docx import Document
+from docx.shared import Pt
+
+@app.post("/api/export/ind-docx-with-context")
+def export_ind_with_context(data: Dict = Body(...)):
+    session_id = data.get("session_id", "default_session")
+    csr_id = data.get("csr_id", session_id)
+
+    archive_dir = f"/mnt/data/lumen_reports_backend/sessions/{session_id}"
+    os.makedirs(archive_dir, exist_ok=True)
+
+    # Load CSR data
+    csr_path = f"/mnt/data/lumen_reports_backend/intelligence_db/{csr_id}.json"
+    if not os.path.exists(csr_path):
+        return {"error": "CSR file not found"}
+
+    with open(csr_path, "r") as f:
+        csr_data = json.load(f)
+
+    molecule = csr_data.get("meta", {}).get("molecule", "unspecified")
+    moa = csr_data.get("meta", {}).get("moa", "unspecified")
+    endpoint = csr_data.get("efficacy", {}).get("primary", [""])[0]
+    rationale = csr_data.get("semantic", {}).get("design_rationale", "")
+    model = csr_data.get("stats_traceability", {}).get("primary_model", "")
+
+    # Create DOCX
+    doc = Document()
+    doc.add_heading("LumenTrialGuide.AI – IND Module 2.5", 0)
+    doc.add_paragraph(f"Study ID: {session_id}")
+    doc.add_paragraph(f"CSR Source: {csr_id}")
+    doc.add_paragraph(f"Generated: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    doc.add_paragraph("-" * 80)
+
+    doc.add_heading("📄 IND Summary Context", level=1)
+    doc.add_paragraph(f"Molecule: {molecule}")
+    doc.add_paragraph(f"Mechanism of Action: {moa}")
+    doc.add_paragraph(f"Primary Endpoint: {endpoint}")
+    doc.add_paragraph(f"Design Rationale: {rationale}")
+    doc.add_paragraph(f"Statistical Model: {model}")
+
+    doc.add_heading("🧠 AI-Generated Narrative", level=1)
+    doc.add_paragraph(
+        f"This protocol was derived using CSR precedent from {csr_id}, involving a {moa}. "
+        f"The study focuses on {endpoint}, with rationale: {rationale}. "
+        f"The statistical model utilized is {model}, aligning with similar regulatory-approved designs."
+    )
+
+    doc_path = os.path.join(archive_dir, "ind_module_with_context.docx")
+    doc.save(doc_path)
+
+    return FileResponse(doc_path, filename="ind_module_with_context.docx", media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
