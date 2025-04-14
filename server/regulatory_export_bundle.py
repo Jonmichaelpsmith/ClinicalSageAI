@@ -10,11 +10,16 @@ import json
 import shutil
 import sys
 import zipfile
+import requests
 from datetime import datetime
 from typing import Dict, List, Optional, Any
 from fastapi import FastAPI, Body, HTTPException
 from fastapi.responses import FileResponse
 import uuid
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.application import MIMEApplication
 
 # Import branded cover sheet module
 from branded_cover_sheet import generate_cover_sheet, load_session_metadata
@@ -38,6 +43,7 @@ def create_regulatory_bundle(data: Dict = Body(...)):
     regulatory_region = data.get("region", "fda") # Options: fda, ema, pmda, etc.
     include_metadata = data.get("include_metadata", True)
     include_source_data = data.get("include_source_data", True)
+    recipient_email = data.get("recipient_email", None)  # Optional email for automatic delivery
     
     # Determine archive directory based on environment
     if os.path.exists("/mnt/data"):
@@ -249,6 +255,89 @@ def create_regulatory_bundle(data: Dict = Body(...)):
     except Exception as e:
         print(f"Warning: Failed to clean up bundle directory: {str(e)}")
     
+    # Log the export for audit trail
+    export_log_entry = {
+        "session_id": session_id,
+        "timestamp": timestamp,
+        "bundle_type": bundle_type,
+        "regulatory_region": regulatory_region,
+        "files_included": {
+            "ind25": os.path.exists(os.path.join(archive_dir, "ind_summary.txt")),
+            "success_prediction": os.path.exists(os.path.join(archive_dir, "success_prediction.json")),
+            "dropout_forecast": os.path.exists(os.path.join(archive_dir, "dropout_forecast.json")),
+            "summary_packet": os.path.exists(os.path.join(archive_dir, "summary_packet.pdf")),
+            "wisdom_trace": os.path.exists(os.path.join(archive_dir, "wisdom_trace.json"))
+        },
+        "filename": zip_filename
+    }
+    
+    # Save export log
+    log_dir = os.path.join(base_dir, "logs")
+    os.makedirs(log_dir, exist_ok=True)
+    export_log_path = os.path.join(log_dir, "export_history.json")
+    
+    try:
+        # Load existing log if it exists
+        export_log = {}
+        if os.path.exists(export_log_path):
+            with open(export_log_path, "r") as f:
+                export_log = json.load(f)
+        
+        # Create entry for this session if it doesn't exist
+        if session_id not in export_log:
+            export_log[session_id] = []
+        
+        # Add new export entry
+        export_log[session_id].append(export_log_entry)
+        
+        # Save updated log
+        with open(export_log_path, "w") as f:
+            json.dump(export_log, f, indent=2)
+            
+        # Update session's last export timestamp
+        session_metadata_path = os.path.join(archive_dir, "metadata.json")
+        session_metadata = {}
+        if os.path.exists(session_metadata_path):
+            try:
+                with open(session_metadata_path, "r") as f:
+                    session_metadata = json.load(f)
+            except:
+                pass
+                
+        session_metadata["last_export_timestamp"] = datetime.now().isoformat()
+        session_metadata["last_export_filename"] = zip_filename
+        
+        with open(session_metadata_path, "w") as f:
+            json.dump(session_metadata, f, indent=2)
+            
+    except Exception as e:
+        print(f"Warning: Failed to log export: {str(e)}")
+    
+    # Send email notification if email is provided
+    if recipient_email:
+        try:
+            # Try to fetch from saved session emails
+            if not recipient_email.strip():
+                try:
+                    # Try to get from session email API
+                    response = requests.get(f"http://localhost:5000/api/session/email/get/{session_id}")
+                    if response.status_code == 200:
+                        email_data = response.json()
+                        if email_data.get("email"):
+                            recipient_email = email_data["email"]
+                except Exception as e:
+                    print(f"Failed to fetch email for session {session_id}: {str(e)}")
+            
+            if recipient_email and "@" in recipient_email:
+                send_export_notification_email(
+                    recipient_email, 
+                    session_id,
+                    zip_filename, 
+                    f"http://localhost:5000/api/download/regulatory-bundle/{zip_filename}"
+                )
+        except Exception as e:
+            print(f"Warning: Failed to send email notification: {str(e)}")
+    
     # Return the path to the ZIP bundle
     return {
         "status": "success",
@@ -256,7 +345,8 @@ def create_regulatory_bundle(data: Dict = Body(...)):
         "download_url": f"/api/download/regulatory-bundle/{zip_filename}",
         "bundle_type": bundle_type,
         "regulatory_region": regulatory_region,
-        "timestamp": timestamp
+        "timestamp": timestamp,
+        "email_sent": bool(recipient_email and "@" in recipient_email)
     }
 
 @app.get("/api/download/regulatory-bundle/{filename}")
