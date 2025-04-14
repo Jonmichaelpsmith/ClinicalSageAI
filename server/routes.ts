@@ -13,6 +13,7 @@ import {
 import { translationService, supportedLanguages } from "./translation-service";
 import { generateProtocolTemplate, getStatisticalApproaches } from "./protocol-service";
 import { exportService } from "./services/export-service";
+import academicProtocolAssessment from './routes/academic_protocol_assessment';
 // Legacy Hugging Face service has been replaced with OpenAI-based services
 // Migration notice: The HuggingFace service has been completely replaced with OpenAI-based services.
 import { 
@@ -673,6 +674,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register Academic and Regulatory Intelligence routes
   app.use('/api', academicRegulatoryRouter);
+  
+  // Register academic-style protocol assessment routes
+  app.use('/api/protocol-assessment', academicProtocolAssessment);
   
   // Trial Success Prediction endpoint
   app.post('/api/trial-prediction', async (req: Request, res: Response) => {
