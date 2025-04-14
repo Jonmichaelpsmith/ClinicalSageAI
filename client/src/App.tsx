@@ -195,6 +195,7 @@ function Router() {
       <Route path="/academic-regulatory">{() => renderWithLayout(AcademicRegulatoryPage)}</Route>
       <Route path="/advanced-biostatistics">{() => renderWithLayout(AdvancedBiostatistics)}</Route>
       <Route path="/csr-insights">{() => renderWithLayout(CSRInsightPage)}</Route>
+      <Route path="/csr-extractor">{() => renderWithLayout(CSRExtractorPage)}</Route>
       <Route path="/planning">{() => renderWithLayout(PlanningPage)}</Route>
       <Route path="/insight-engine">{() => renderWithLayout(InsightMemoryEngine)}</Route>
       <Route path="/wisdom-trace">{() => renderWithLayout(WisdomTrace)}</Route>

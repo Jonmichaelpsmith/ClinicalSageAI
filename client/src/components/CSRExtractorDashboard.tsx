@@ -191,6 +191,49 @@ const CSRExtractorDashboard: React.FC = () => {
   };
   
   /**
+   * Send CSR data to the intelligence engine
+   */
+  const handleUseForIntelligence = async () => {
+    if (!processedData) return;
+    
+    try {
+      setStatus("🔄 Sending to intelligence engine...");
+      
+      const response = await apiRequest('POST', '/api/intelligence/ingest-csr', {
+        csr_id: currentReportId ? `csr_${currentReportId}` : undefined,
+        content: processedData
+      });
+      
+      const data = await response.json();
+      
+      if (data.error) {
+        throw new Error(data.error);
+      }
+      
+      toast({
+        title: "Success!",
+        description: "CSR has been added to the intelligence engine.",
+      });
+      
+      setStatus(`✅ CSR indexed as ${data.csr_id}`);
+      
+      // Redirect to planning page
+      if (data.redirect_route) {
+        window.location.href = data.redirect_route;
+      }
+      
+    } catch (error) {
+      console.error('Intelligence engine error:', error);
+      toast({
+        title: "Intelligence engine error",
+        description: error instanceof Error ? error.message : "Failed to process CSR with intelligence engine",
+        variant: "destructive"
+      });
+      setStatus(`❌ Intelligence engine error: ${error instanceof Error ? error.message : "Unknown error"}`);
+    }
+  };
+  
+  /**
    * Trigger reprocessing of a CSR
    */
   const handleReprocess = async () => {
@@ -260,6 +303,12 @@ const CSRExtractorDashboard: React.FC = () => {
                 >
                   <Download className="w-4 h-4 mr-2" />
                   Download
+                </Button>
+                <Button 
+                  onClick={handleUseForIntelligence}
+                  className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700"
+                >
+                  🔗 Use This CSR for Study Planning
                 </Button>
               </div>
             )}
