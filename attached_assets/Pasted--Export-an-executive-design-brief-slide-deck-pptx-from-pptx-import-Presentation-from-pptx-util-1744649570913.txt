@@ -1,0 +1,51 @@
+# Export an executive design brief slide deck (.pptx)
+from pptx import Presentation
+from pptx.util import Inches, Pt
+
+@app.get("/api/export/executive-brief-slide/{session_id}")
+def export_exec_brief_slide(session_id: str):
+    archive_dir = f"/mnt/data/lumen_reports_backend/sessions/{session_id}"
+    os.makedirs(archive_dir, exist_ok=True)
+
+    prs = Presentation()
+    slide = prs.slides.add_slide(prs.slide_layouts[5])
+
+    # Title
+    title_shape = slide.shapes.title
+    title_shape.text = "🧠 Executive Design Brief"
+
+    alignment_score = "N/A"
+    suggestions = 0
+
+    # Read alignment and suggestions
+    align_path = os.path.join(archive_dir, "alignment_score_report.json")
+    if os.path.exists(align_path):
+        with open(align_path, "r") as f:
+            alignment_data = json.load(f)
+            alignment_score = f"{round(alignment_data.get('alignment_score', 0) * 100)}%"
+
+    sugg_path = os.path.join(archive_dir, "suggested_corrections.json")
+    if os.path.exists(sugg_path):
+        with open(sugg_path, "r") as f:
+            suggestion_data = json.load(f)
+            suggestions = suggestion_data.get("suggestion_count", 0)
+
+    # Add content
+    txBox = slide.shapes.add_textbox(Inches(0.5), Inches(1.2), Inches(9), Inches(5.5))
+    tf = txBox.text_frame
+    tf.word_wrap = True
+    p = tf.paragraphs[0]
+    p.text = (
+        f"Study ID: {session_id}\n"
+        f"Alignment Score: {alignment_score}\n"
+        f"Protocol Improvement Suggestions: {suggestions}\n"
+        f"AI Confidence: High\n\n"
+        f"All insights generated using CSR-backed evidence, semantic alignment, "
+        f"and protocol validation tools built into LumenTrialGuide.AI."
+    )
+    p.font.size = Pt(18)
+
+    slide_path = os.path.join(archive_dir, "executive_brief_slide.pptx")
+    prs.save(slide_path)
+
+    return FileResponse(slide_path, filename="executive_brief_slide.pptx", media_type="application/vnd.openxmlformats-officedocument.presentationml.presentation")
