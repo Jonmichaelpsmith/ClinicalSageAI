@@ -59,43 +59,43 @@ export default function KnowledgeBasePanel() {
         </p>
       </div>
       
-      <CardContent className="p-6">
-        <div className="mb-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium">Import Progress: {progressPercentage}%</span>
-            <span className="text-sm font-medium">{stats.csrs} / {stats.targetTrials} CSRs</span>
+      <CardContent className="p-4">
+        <div className="mb-2">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-xs font-medium">Import Progress: {progressPercentage}%</span>
+            <span className="text-xs font-medium">{stats.csrs} / {stats.targetTrials} CSRs</span>
           </div>
-          <Progress value={progressPercentage} className="h-2" />
+          <Progress value={progressPercentage} className="h-1.5" />
         </div>
       
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-          <div className="bg-blue-50 dark:bg-blue-950/30 rounded-lg p-4 flex flex-col items-center text-center">
-            <FileText className="h-8 w-8 mb-2 text-blue-500" />
-            <span className="text-sm text-gray-600 dark:text-gray-400">CSRs Analyzed</span>
-            <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">{loading ? "..." : stats.csrs}</span>
+        <div className="grid grid-cols-4 gap-2 mt-3">
+          <div className="bg-blue-50 dark:bg-blue-950/30 rounded-lg p-2 flex flex-col items-center text-center">
+            <FileText className="h-4 w-4 mb-1 text-blue-500" />
+            <span className="text-xs text-gray-600 dark:text-gray-400">CSRs</span>
+            <span className="text-sm font-bold text-blue-600 dark:text-blue-400">{loading ? "..." : stats.csrs}</span>
           </div>
           
-          <div className="bg-purple-50 dark:bg-purple-950/30 rounded-lg p-4 flex flex-col items-center text-center">
-            <Brain className="h-8 w-8 mb-2 text-purple-500" />
-            <span className="text-sm text-gray-600 dark:text-gray-400">Therapeutic Areas</span>
-            <span className="text-2xl font-bold text-purple-600 dark:text-purple-400">{loading ? "..." : stats.areas}</span>
+          <div className="bg-purple-50 dark:bg-purple-950/30 rounded-lg p-2 flex flex-col items-center text-center">
+            <Brain className="h-4 w-4 mb-1 text-purple-500" />
+            <span className="text-xs text-gray-600 dark:text-gray-400">Areas</span>
+            <span className="text-sm font-bold text-purple-600 dark:text-purple-400">{loading ? "..." : stats.areas}</span>
           </div>
           
-          <div className="bg-amber-50 dark:bg-amber-950/30 rounded-lg p-4 flex flex-col items-center text-center">
-            <Lightbulb className="h-8 w-8 mb-2 text-amber-500" />
-            <span className="text-sm text-gray-600 dark:text-gray-400">Design Patterns</span>
-            <span className="text-2xl font-bold text-amber-600 dark:text-amber-400">{loading ? "..." : stats.patterns}+</span>
+          <div className="bg-amber-50 dark:bg-amber-950/30 rounded-lg p-2 flex flex-col items-center text-center">
+            <Lightbulb className="h-4 w-4 mb-1 text-amber-500" />
+            <span className="text-xs text-gray-600 dark:text-gray-400">Patterns</span>
+            <span className="text-sm font-bold text-amber-600 dark:text-amber-400">{loading ? "..." : stats.patterns}+</span>
           </div>
           
-          <div className="bg-green-50 dark:bg-green-950/30 rounded-lg p-4 flex flex-col items-center text-center">
-            <TrendingUp className="h-8 w-8 mb-2 text-green-500" />
-            <span className="text-sm text-gray-600 dark:text-gray-400">Regulatory Insights</span>
-            <span className="text-2xl font-bold text-green-600 dark:text-green-400">{loading ? "..." : stats.insights}+</span>
+          <div className="bg-green-50 dark:bg-green-950/30 rounded-lg p-2 flex flex-col items-center text-center">
+            <TrendingUp className="h-4 w-4 mb-1 text-green-500" />
+            <span className="text-xs text-gray-600 dark:text-gray-400">Insights</span>
+            <span className="text-sm font-bold text-green-600 dark:text-green-400">{loading ? "..." : stats.insights}+</span>
           </div>
         </div>
         
-        <div className="mt-4 text-xs text-right text-gray-500 dark:text-gray-400">
-          Last updated: {new Date().toLocaleDateString()}
+        <div className="mt-2 text-xs text-right text-gray-500 dark:text-gray-400">
+          Updated: {new Date().toLocaleDateString()}
         </div>
       </CardContent>
     </Card>
