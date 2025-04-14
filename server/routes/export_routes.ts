@@ -126,7 +126,8 @@ router.post('/intelligence-report', express.json(), async (req, res) => {
     pdf.moveDown(2);
     
     // Add a visual prediction indicator
-    const successRate = (prediction * 100).toFixed(1);
+    const successRateValue = prediction * 100;
+    const successRate = successRateValue.toFixed(1);
     pdf.font('Helvetica-Bold').fontSize(16)
       .text('Success Probability', {
         align: 'center'
@@ -135,7 +136,7 @@ router.post('/intelligence-report', express.json(), async (req, res) => {
     pdf.moveDown(0.5);
     
     pdf.font('Helvetica-Bold').fontSize(36)
-      .fillColor(successRate > 70 ? '#00AA00' : successRate > 40 ? '#FF9900' : '#CC0000')
+      .fillColor(successRateValue > 70 ? '#00AA00' : successRateValue > 40 ? '#FF9900' : '#CC0000')
       .text(`${successRate}%`, {
         align: 'center'
       });
@@ -264,7 +265,8 @@ router.post('/intelligence-report', express.json(), async (req, res) => {
     pdf.moveDown(1);
     
     // Main prediction with visualization
-    const predictionValue = (prediction * 100).toFixed(1);
+    const predictionNumValue = prediction * 100;
+    const predictionValue = predictionNumValue.toFixed(1);
     pdf.font('Helvetica-Bold').fontSize(16)
       .fillColor('#333333')
       .text('Predicted Trial Success Probability:');
@@ -285,7 +287,7 @@ router.post('/intelligence-report', express.json(), async (req, res) => {
     // Filled portion based on prediction
     const fillWidth = (barWidth * prediction);
     pdf.rect(startX, startY, fillWidth, barHeight)
-      .fillColor(predictionValue > 70 ? '#00AA00' : predictionValue > 40 ? '#FF9900' : '#CC0000')
+      .fillColor(predictionNumValue > 70 ? '#00AA00' : predictionNumValue > 40 ? '#FF9900' : '#CC0000')
       .fill();
     
     // Add percentage text
