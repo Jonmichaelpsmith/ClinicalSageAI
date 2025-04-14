@@ -1745,8 +1745,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Import the Study Design Agent service
-      const { studyDesignAgentService } = await import('./services/study-design-agent-service');
+      // Use the already imported Study Design Agent service
       
       // Generate response using the Study Design Agent service
       console.log('Generating response using Study Design Agent service...');
@@ -1781,8 +1780,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Error in study design agent API:', err);
       
       // Fallback in case the service is not available
-      if (err.message && err.message.includes('import')) {
-        // Legacy implementation - used if the service module fails to load
+      if (err.message) {
+        // Legacy implementation - used if the service fails for any reason
         console.log('Falling back to basic study design agent implementation...');
         
         // Get all reports from the database
