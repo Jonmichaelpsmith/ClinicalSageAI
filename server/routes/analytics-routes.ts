@@ -9,6 +9,9 @@ import { db } from '../db';
 // Import csrReports from sage-plus-service instead of shared schema
 import { csrReports } from '../sage-plus-service';
 import { eq, like, count, sql } from 'drizzle-orm';
+import { protocolAnalyzerService } from '../protocol-analyzer-service';
+import { protocolOptimizerService } from '../protocol-optimizer-service';
+import { analyzeText } from '../openai-service';
 
 const execPromise = util.promisify(exec);
 const router = Router();
