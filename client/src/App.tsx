@@ -10,6 +10,7 @@ import Dashboard from "@/pages/Dashboard";
 import Reports from "@/pages/Reports";
 import Upload from "@/pages/Upload";
 import Analytics from "@/pages/Analytics";
+import ReportsAnalytics from "@/pages/ReportsAnalytics";
 import StatisticalModeling from "@/pages/StatisticalModeling";
 import UseCaseLibrary from "@/pages/UseCaseLibrary";
 import UseCasesPage from "@/pages/UseCasesPage";
@@ -142,9 +143,11 @@ function Router() {
 
       {/* App pages with layout */}
       <Route path="/dashboard">{() => renderWithLayout(Dashboard)}</Route>
-      <Route path="/reports">{() => renderWithLayout(Reports)}</Route>
+      <Route path="/reports-analytics">{() => renderWithLayout(ReportsAnalytics)}</Route>
       <Route path="/upload">{() => renderWithLayout(Upload)}</Route>
-      <Route path="/analytics">{() => renderWithLayout(Analytics)}</Route>
+      {/* Keeping original routes for backward compatibility */}
+      <Route path="/reports">{() => renderWithLayout(ReportsAnalytics)}</Route>
+      <Route path="/analytics">{() => renderWithLayout(ReportsAnalytics)}</Route>
       <Route path="/statistical-modeling">{() => renderWithLayout(StatisticalModeling)}</Route>
       <Route path="/use-cases">{() => renderWithLayout(UseCaseLibrary)}</Route>
       <Route path="/use-case-gallery">{() => renderWithLayout(UseCasesPage)}</Route>
