@@ -34,7 +34,7 @@ reportsManifestRoutes.get('/personas', async (_req: Request, res: Response) => {
 /**
  * Get manifest for a specific persona
  */
-reportsManifestRoutes.get('/persona/:personaId', async (req: Request, res: Response) => {
+reportsManifestRoutes.get('/persona/:personaId(.json)?', async (req: Request, res: Response) => {
   try {
     const { personaId } = req.params;
     const manifestPath = path.join(REPORTS_ROOT_DIR, personaId, 'manifest.json');
@@ -85,7 +85,7 @@ reportsManifestRoutes.get('/launch-config', async (_req: Request, res: Response)
 /**
  * Get report index for example reports
  */
-reportsManifestRoutes.get('/index', async (_req: Request, res: Response) => {
+reportsManifestRoutes.get('/index(.json)?', async (_req: Request, res: Response) => {
   try {
     const indexPath = path.join(process.cwd(), 'attached_assets', 'report_index.json');
     

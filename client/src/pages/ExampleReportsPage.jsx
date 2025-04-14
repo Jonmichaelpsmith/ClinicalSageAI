@@ -62,7 +62,7 @@ export default function ExampleReportsPage() {
     const fetchReportIndex = async () => {
       setIsLoading(true);
       try {
-        const response = await apiRequest("GET", "/api/reports/manifest/index");
+        const response = await apiRequest("GET", "/api/reports/manifest/index.json");
         if (!response.ok) {
           throw new Error("Failed to fetch report index");
         }
@@ -72,7 +72,7 @@ export default function ExampleReportsPage() {
         // Pre-fetch manifests for all personas
         const manifestPromises = data.personas.map(async (persona) => {
           try {
-            const manifestResponse = await apiRequest("GET", `/api/reports/manifest/persona/${persona.id}`);
+            const manifestResponse = await apiRequest("GET", `/api/reports/manifest/persona/${persona.id}.json`);
             if (manifestResponse.ok) {
               const manifestData = await manifestResponse.json();
               return { persona: persona.id, data: manifestData };
