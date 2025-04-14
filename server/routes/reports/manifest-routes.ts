@@ -102,10 +102,51 @@ reportsManifestRoutes.get('/index', async (_req: Request, res: Response) => {
     console.log(`Got file contents with length: ${fileContents.length}`);
     
     // Parse the JSON
-    const reportIndex = JSON.parse(fileContents);
+    const rawReportIndex = JSON.parse(fileContents);
     
-    // Send the data directly without wrapping
-    res.json(reportIndex);
+    // Transform the response to match what the client expects
+    const transformedIndex = {
+      personas: rawReportIndex.available_subscriptions.map(sub => ({
+        id: sub.persona,
+        name: sub.title,
+        color: getPersonaColor(sub.persona)
+      })),
+      reportTypes: [
+        { id: "success-prediction", name: "Success Prediction", new: false },
+        { id: "protocol-optimization", name: "Protocol Optimization", new: true },
+        { id: "endpoint-selection", name: "Endpoint Selection", new: false },
+        { id: "regulatory-package", name: "Regulatory Package", new: false },
+        { id: "investment-analysis", name: "Investment Analysis", new: false },
+        { id: "competitive-intelligence", name: "Competitive Intelligence", new: false }
+      ],
+      featuredReports: [
+        {
+          id: "clinical-001",
+          name: "Trial Success Prediction Report",
+          description: "AI-powered prediction for clinical trial success with detailed risk analysis",
+          persona: "clinical",
+          type: "success-prediction"
+        },
+        {
+          id: "regulatory-001",
+          name: "Regulatory Submission Bundle",
+          description: "Complete documentation package for regulatory submissions",
+          persona: "regulatory",
+          type: "regulatory-package"
+        },
+        {
+          id: "investor-001",
+          name: "Portfolio Risk Assessment",
+          description: "Investment portfolio analysis with risk-adjusted ROI projections",
+          persona: "investor",
+          type: "investment-analysis",
+          new: true
+        }
+      ]
+    };
+    
+    // Send the transformed data
+    res.json(transformedIndex);
   } catch (error: any) {
     console.error('Error fetching report index:', error);
     res.status(500).json({
@@ -114,5 +155,24 @@ reportsManifestRoutes.get('/index', async (_req: Request, res: Response) => {
     });
   }
 });
+
+// Helper function to assign colors to personas
+function getPersonaColor(persona: string): string {
+  const colorMap: Record<string, string> = {
+    ceo: "blue",
+    biostats: "green",
+    ops: "teal",
+    planner: "amber",
+    writer: "indigo",
+    regulatory: "purple",
+    investor: "amber",
+    pi: "teal",
+    intelligence: "blue",
+    cxo: "blue",
+    clinical: "green"
+  };
+  
+  return colorMap[persona] || "blue";
+}
 
 export default reportsManifestRoutes;
