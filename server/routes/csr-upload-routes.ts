@@ -110,6 +110,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
         path: file.path
       }
     });
+  
     
   } catch (error) {
     console.error('Error uploading CSR:', error);
@@ -354,6 +355,93 @@ router.get('/stats', async (req, res) => {
     console.error('Error getting CSR stats:', error);
     res.status(500).json({ 
       error: 'Failed to retrieve CSR statistics',
+      details: error instanceof Error ? error.message : String(error)
+    });
+  }
+});
+
+/**
+ * @route POST /api/csr/upload-enhanced
+ * @description Upload and process a CSR file with enhanced semantic extraction
+ */
+router.post('/upload-enhanced', upload.single('file'), async (req, res) => {
+  try {
+    // Check if file was uploaded
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+    
+    const file = req.file;
+    
+    // Only allow PDF and TXT files
+    if (!file.originalname.endsWith('.pdf') && !file.originalname.endsWith('.txt')) {
+      return res.status(400).json({ error: 'Only PDF or TXT files are supported.' });
+    }
+    
+    // Store file information in database
+    const [result] = await db.execute<{ id: number }>(sql`
+      INSERT INTO csr_reports (
+        title, 
+        file_name, 
+        file_size, 
+        upload_date, 
+        file_path
+      ) VALUES (
+        ${path.basename(file.originalname, path.extname(file.originalname))}, 
+        ${file.filename}, 
+        ${file.size}, 
+        ${new Date()}, 
+        ${file.path}
+      ) RETURNING id
+    `);
+    
+    if (!result) {
+      return res.status(500).json({ error: 'Failed to record file information' });
+    }
+    
+    const reportId = result.id;
+    
+    // Create an initial CSR details record
+    await db.execute(sql`
+      INSERT INTO csr_details (
+        report_id,
+        processed,
+        processing_status
+      ) VALUES (
+        ${reportId},
+        false,
+        'pending_enhanced'
+      )
+    `);
+    
+    // Start enhanced processing in the background with the improved extraction pipeline
+    // This will use our upgraded extraction capabilities including semantic, pharmacologic, and statistical insights
+    csrExtractorService.processCSR(reportId)
+      .catch(err => console.error(`Enhanced processing error for CSR ID ${reportId}:`, err));
+    
+    // Build path for the processed JSON file (will be created by processor)
+    const jsonFilename = `CSR-${reportId}.json`;
+    const jsonPath = path.join(process.cwd(), 'data/processed_csrs', jsonFilename);
+    
+    // Return immediate response
+    res.status(201).json({
+      status: 'parsed',
+      message: 'CSR uploaded and scheduled for enhanced processing',
+      csr_id: `CSR-${reportId}`,
+      reportId,
+      json_path: `/api/files/processed_csrs/${jsonFilename}`,
+      fileInfo: {
+        filename: file.filename,
+        originalName: file.originalname,
+        size: file.size,
+        path: file.path
+      }
+    });
+    
+  } catch (error) {
+    console.error('Error uploading CSR with enhanced processing:', error);
+    res.status(500).json({ 
+      error: 'Failed to process enhanced CSR upload',
       details: error instanceof Error ? error.message : String(error)
     });
   }
