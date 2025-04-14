@@ -19,33 +19,33 @@
 
 /* Compact UI elements */
 .compact-card {
-  @apply p-3 sm:p-4;
+  @apply p-2 sm:p-3;
 }
 
 .compact-card-header {
-  @apply pb-2 mb-2;
+  @apply pb-1.5 mb-1.5;
 }
 
 .compact-card-content {
-  @apply space-y-2;
+  @apply space-y-1.5;
 }
 
 .compact-section {
-  @apply py-2 space-y-3;
+  @apply py-1.5 space-y-2;
 }
 
 .compact-table th,
 .compact-table td {
-  @apply py-2 px-3;
+  @apply py-1.5 px-2.5;
 }
 
 .compact-form-group {
-  @apply space-y-1.5;
+  @apply space-y-1;
 }
 
 /* Reduce gap between grid items */
 .compact-grid {
-  @apply gap-3;
+  @apply gap-2;
 }
 
 
@@ -214,6 +214,71 @@ select:focus-visible {
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
+
+/* Density settings for more compact UI */
+.density-compact {
+  --card-padding: 0.75rem;
+  --section-padding: 1rem;
+  --item-spacing: 0.5rem;
+}
+
+/* Reduce excessive margins and paddings */
+.card {
+  @apply p-3 sm:p-4;
+}
+
+.card-header {
+  @apply pb-2 mb-2;
+}
+
+.card-content {
+  @apply space-y-2;
+}
+
+/* Compact table styles */
+table {
+  @apply w-full border-collapse;
+}
+
+td, th {
+  @apply py-1.5 px-2 text-sm;
+}
+
+/* Tighten up spacing in common components */
+.space-y-6 {
+  @apply space-y-4;
+}
+
+.space-y-8 {
+  @apply space-y-5;
+}
+
+.px-6 {
+  @apply px-4;
+}
+
+.py-6 {
+  @apply py-4;
+}
+
+.gap-6 {
+  @apply gap-4;
+}
+
+/* More compact forms */
+label {
+  @apply text-sm mb-1;
+}
+
+input, select, textarea {
+  @apply py-1.5 px-2.5 text-sm;
+}
+
+/* Tighten spacing in grid layouts */
+.grid {
+  @apply gap-3;
+}
+
   }
 
   ::-webkit-scrollbar-track {
