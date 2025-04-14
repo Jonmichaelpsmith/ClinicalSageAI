@@ -1,0 +1,110 @@
+✅ Understood. Based on your uploaded documents—including the ICH E3 guideline, FDA guidance, European CTIS framework, and actual CSR/SAP examples—we are now ready to take LumenTrialGuide.AI to **the next level of semantic clinical intelligence**.
+
+---
+
+# 🧠 Enhanced CSR Intelligence Engine: Architecture & Plan  
+**“Make every word in every CSR become structured intelligence.”**
+
+---
+
+## ✅ Goal:
+Create a system that:
+- Parses every regulatory-required data element from any CSR  
+- Semantically maps it to a structured schema (like your `csr_mapping_template.json`)  
+- Feeds into downstream modules: protocol planner, risk predictor, IND/SAP writer, investor decks
+
+---
+
+## 🔬 Regulatory & Semantic Basis (Cross-Document Validation):
+
+From your documents, we synthesize that the following **key structures must be captured**:
+
+### 🧱 Structural Backbone
+| Section | Source |
+|--------|--------|
+| Title Page | ICH E3 §1, FDA Guidelines |
+| Synopsis | ICH E3 §2, EMA CTIS |
+| Ethics | ICH E3 §5 |
+| Investigators | FDA 314.50(d)(5) |
+| Objectives & Design | E3 §7–9 |
+| Patients & Protocol Deviation | §10 |
+| Efficacy & Safety | §11–12 |
+| Statistical Methods | SAP & §9.7 |
+| Regulatory Outcomes | CTIS submission criteria |
+
+---
+
+## 🧠 Deep Data Elements to Add to Your Model:
+
+We will enhance your current `csr_mapping_template.json` with the following *semantic-level fields* extracted across all documents:
+
+### 🔗 Clinical Design Semantics
+```json
+"semantic": {
+  "design_rationale": "",
+  "regulatory_classification": "",
+  "study_type": "",
+  "statistical_principles": [],
+  "deviation_handling_method": "",
+  "adjustment_for_covariates": "",
+  "dropout_handling": "",
+  "safety_monitoring_strategy": "",
+  "subgroup_analysis_approach": ""
+}
+```
+
+### 🔗 Pharmacologic Reasoning
+```json
+"pharmacology": {
+  "moa_explained": "",
+  "dose_selection_justification": "",
+  "formulation_details": "",
+  "bioavailability_finding": "",
+  "pharmacokinetic_profiles": [],
+  "pk_parameters": {}
+}
+```
+
+### 🔗 Statistical Execution Semantics
+```json
+"stats_traceability": {
+  "primary_model": "",
+  "multiplicity_adjustment_method": "",
+  "interim_analysis_details": "",
+  "power_analysis_basis": "",
+  "data_sources": [],
+  "stratification_factors": []
+}
+```
+
+---
+
+## 🧠 Implementation Plan
+
+### Phase 1: Expanded JSON Mapping Template
+- Expand `csr_mapping_template.json` to include all fields above
+
+### Phase 2: NLP Extraction Pipeline
+- Use:
+  - 💬 Section headers (e.g. “9.7 Statistical Methods”)  
+  - 🧠 Sentence embeddings (OpenAI, BioBERT)
+  - 🔍 Ontology matchers (MeSH, SNOMED)
+- Extract and normalize:  
+  - Statistical models  
+  - Endpoint justification  
+  - SAE/AE patterns  
+  - Ethics language  
+  - Subgroup assumptions
+
+### Phase 3: Semantic QA Layer
+- Add explainability engine:
+  - “How do we know this was a randomized controlled trial?”
+  - “Why was a 12-week duration chosen?”
+
+---
+
+## ✅ Would You Like Me to Begin With:
+- Building the updated mapping JSON (Phase 1)  
+- Or wiring the NLP pipeline with OpenAI’s embedding + section locator?
+
+We are ready to **turn every sentence in every CSR** into usable, explainable, auditable clinical intelligence. Let’s build.
