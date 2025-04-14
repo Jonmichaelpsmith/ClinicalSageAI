@@ -211,4 +211,72 @@ router.get('/summary/:session_id', (req, res) => {
   }
 });
 
+// Get export log for a session
+router.get('/export-log/:session_id', (req, res) => {
+  try {
+    const { session_id } = req.params;
+    
+    if (!session_id) {
+      return res.status(400).json({ error: 'Missing session_id' });
+    }
+    
+    // Determine base directory for sessions
+    const baseDir = fs.existsSync('/mnt/data') 
+      ? '/mnt/data/lumen_reports_backend' 
+      : 'data';
+    
+    const sessionDir = path.join(baseDir, 'sessions', session_id);
+    const exportLogPath = path.join(sessionDir, 'export_log.json');
+    
+    // Default response for no export log
+    const defaultResponse = {
+      session_id,
+      exports: [],
+      last_export: null
+    };
+    
+    // Check if export log exists
+    if (!fs.existsSync(exportLogPath)) {
+      return res.status(200).json(defaultResponse);
+    }
+    
+    // Read export log file
+    const exportLogContent = fs.readFileSync(exportLogPath, 'utf8');
+    let exportLog;
+    
+    try {
+      exportLog = JSON.parse(exportLogContent);
+    } catch (e) {
+      console.error('Error parsing export log JSON:', e);
+      return res.status(200).json(defaultResponse);
+    }
+    
+    // Handle both single export log and array formats
+    let exportHistory = [];
+    let lastExport = null;
+    
+    if (Array.isArray(exportLog)) {
+      // Array format
+      exportHistory = exportLog;
+      if (exportLog.length > 0) {
+        lastExport = exportLog[exportLog.length - 1];
+      }
+    } else if (exportLog.last_exported) {
+      // Single export log format (older)
+      exportHistory = [exportLog];
+      lastExport = exportLog;
+    }
+    
+    res.status(200).json({
+      session_id,
+      exports: exportHistory,
+      last_export: lastExport
+    });
+    
+  } catch (error) {
+    console.error('Error retrieving export log:', error);
+    res.status(500).json({ error: 'Failed to retrieve export log' });
+  }
+});
+
 export default router;

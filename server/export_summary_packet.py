@@ -8,8 +8,13 @@ with multiple data sources including reasoning trace logs
 import os
 import json
 import sys
+import smtplib
+import zipfile
 from datetime import datetime
 from typing import Dict, List, Optional, Any
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.application import MIMEApplication
 from fastapi import FastAPI, Body, HTTPException
 from fpdf import FPDF
 
@@ -227,6 +232,67 @@ def export_summary_packet(data: Dict = Body(...)):
     # Finalize and save PDF
     pdf.output(pdf_path)
     
+    # Log export for audit trail
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    
+    # Look up email recipient for this session if available
+    recipient_email = None
+    email_store_path = os.path.join("/mnt/data/lumen_reports_backend/static/session_emails.json")
+    if os.path.exists(email_store_path):
+        try:
+            with open(email_store_path, "r") as f:
+                email_store = json.load(f)
+                recipient_email = email_store.get(session_id)
+        except Exception as e:
+            print(f"Error loading email store: {str(e)}")
+    
+    # Create export log entry
+    export_log = {
+        "last_exported": timestamp,
+        "filename": f"summary_packet_{session_id}_{timestamp}.pdf",
+        "recipient": recipient_email or "N/A"
+    }
+    
+    # Save export log
+    export_log_path = os.path.join(archive_dir, "export_log.json")
+    
+    # Check if existing log exists and update it
+    if os.path.exists(export_log_path):
+        try:
+            with open(export_log_path, "r") as f:
+                existing_log = json.load(f)
+                
+                # Handle both formats (single object or array of objects)
+                if isinstance(existing_log, list):
+                    existing_log.append(export_log)
+                else:
+                    # Convert to array format
+                    existing_log = [existing_log, export_log]
+                    
+            with open(export_log_path, "w") as f:
+                json.dump(existing_log, f, indent=2)
+        except Exception as e:
+            print(f"Error updating export log: {str(e)}")
+            # Fallback to creating new log
+            with open(export_log_path, "w") as f:
+                json.dump(export_log, f, indent=2)
+    else:
+        # Create new log file
+        with open(export_log_path, "w") as f:
+            json.dump(export_log, f, indent=2)
+    
+    # Send email notification if recipient email is available
+    if recipient_email:
+        try:
+            send_export_notification_email(
+                recipient_email, 
+                session_id, 
+                export_log["filename"], 
+                f"/api/download/summary-packet/{session_id}"
+            )
+        except Exception as e:
+            print(f"Error sending email notification: {str(e)}")
+    
     # Return the path to the generated PDF
     return {
         "status": "ok", 
@@ -236,8 +302,103 @@ def export_summary_packet(data: Dict = Body(...)):
             "success_prediction": os.path.exists(success_path),
             "ind_summary": os.path.exists(ind_path),
             "reasoning_trace": os.path.exists(wisdom_path)
-        }
+        },
+        "export_log": export_log
     }
+
+
+def send_export_notification_email(recipient_email: str, session_id: str, filename: str, download_url: str) -> bool:
+    """
+    Send a notification email when a summary packet is exported
+    
+    Args:
+        recipient_email: Email address to send notification to
+        session_id: ID of the session that was exported
+        filename: Name of the exported PDF file
+        download_url: URL to download the exported summary packet
+        
+    Returns:
+        True if email sent successfully, False otherwise
+    """
+    try:
+        # Check if we have SMTP credentials configured
+        smtp_host = os.getenv("SMTP_HOST", "smtp.gmail.com")
+        smtp_port = int(os.getenv("SMTP_PORT", "587"))
+        smtp_user = os.getenv("SMTP_USER", "")
+        smtp_password = os.getenv("SMTP_PASSWORD", "")
+        
+        # If we don't have SMTP credentials, log and return False
+        if not smtp_user or not smtp_password:
+            print("SMTP credentials not configured, skipping email notification")
+            return False
+            
+        # Configure email content
+        msg = MIMEMultipart()
+        msg['From'] = smtp_user
+        msg['To'] = recipient_email
+        msg['Subject'] = f"Your Summary Intelligence Packet is Ready - Session {session_id}"
+        
+        # Build email body
+        body = f"""
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                .header {{ background-color: #4a6fdc; color: white; padding: 15px; text-align: center; border-radius: 5px 5px 0 0; }}
+                .content {{ background-color: #f9f9f9; padding: 20px; border-radius: 0 0 5px 5px; }}
+                .button {{ background-color: #4a6fdc; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 15px 0; }}
+                .footer {{ font-size: 12px; color: #777; margin-top: 20px; text-align: center; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h2>Your Summary Intelligence Packet is Ready</h2>
+                </div>
+                <div class="content">
+                    <p>Hello,</p>
+                    <p>Your summary intelligence packet for session <strong>{session_id}</strong> has been successfully exported and is now ready for download.</p>
+                    
+                    <h3>Export Details:</h3>
+                    <ul>
+                        <li><strong>Session ID:</strong> {session_id}</li>
+                        <li><strong>File:</strong> {filename}</li>
+                        <li><strong>Generated:</strong> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</li>
+                    </ul>
+                    
+                    <p>You can download your intelligence packet by clicking the button below or accessing it from your session summary panel.</p>
+                    
+                    <a href="{download_url}" class="button">Download Summary Packet</a>
+                    
+                    <p>If you have any questions about this export or need assistance with regulatory submissions, please contact our support team.</p>
+                    
+                    <p>Thank you for using LumenTrialGuide.AI</p>
+                </div>
+                <div class="footer">
+                    <p>This is an automated message. Please do not reply to this email.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        # Attach HTML content
+        msg.attach(MIMEText(body, 'html'))
+        
+        # Connect to SMTP server and send email
+        with smtplib.SMTP(smtp_host, smtp_port) as server:
+            server.starttls()
+            server.login(smtp_user, smtp_password)
+            server.send_message(msg)
+            
+        print(f"Email notification sent to {recipient_email} for session {session_id}")
+        return True
+        
+    except Exception as e:
+        print(f"Failed to send email notification: {str(e)}")
+        return False
+
 
 if __name__ == "__main__":
     import uvicorn
