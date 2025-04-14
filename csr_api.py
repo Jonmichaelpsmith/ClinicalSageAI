@@ -21,6 +21,9 @@ load_dotenv()
 # Import protocol improvement API
 from server.protocol_improvement_api import router as protocol_router
 
+# Import intelligence indicators API
+from server.intelligence_indicators import register_intelligence_routes
+
 # Initialize the FastAPI app
 app = FastAPI(
     title="SagePlus CSR API",
@@ -39,6 +42,9 @@ app.add_middleware(
 
 # Include protocol improvement router
 app.include_router(protocol_router)
+
+# Register the intelligence indicators routes
+register_intelligence_routes(app)
 
 # Initialize the search engine
 search_engine = CSRSearchEngine()
@@ -77,7 +83,8 @@ async def root():
             {"path": "/api/match-protocol", "method": "POST", "description": "Find similar CSRs to a draft protocol"},
             {"path": "/api/protocol/improve", "method": "POST", "description": "Generate protocol improvement recommendations"},
             {"path": "/api/protocol/save-version", "method": "POST", "description": "Save a protocol version"},
-            {"path": "/api/protocol/versions/{protocol_id}", "method": "GET", "description": "Get versions of a protocol"}
+            {"path": "/api/protocol/versions/{protocol_id}", "method": "GET", "description": "Get versions of a protocol"},
+            {"path": "/api/session/intelligence-indicators/{session_id}", "method": "GET", "description": "Check which intelligence artifacts are available for a session"}
         ]
     }
 

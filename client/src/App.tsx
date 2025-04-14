@@ -90,11 +90,11 @@ function AppLayout({ children }: { children: React.ReactNode }) {
           setSearchQuery={setSearchQuery} 
         />
 
-        <main className="flex-1 py-4 px-3 sm:px-4 lg:px-6 max-w-7xl mx-auto w-full animate-fade-in">
+        <main className="flex-1 py-3 px-2 sm:px-3 lg:px-4 max-w-7xl mx-auto w-full animate-fade-in">
           {children}
         </main>
 
-        <footer className="py-4 px-3 sm:px-4 lg:px-6 border-t border-gray-200/70 dark:border-gray-800/50 mt-auto backdrop-blur-sm bg-white/60 dark:bg-slate-900/60">
+        <footer className="py-3 px-2 sm:px-3 lg:px-4 border-t border-gray-200/70 dark:border-gray-800/50 mt-auto backdrop-blur-sm bg-white/60 dark:bg-slate-900/60">
           <div className="max-w-7xl mx-auto w-full">
             <div className="flex flex-col md:flex-row justify-between items-center">
               <div className="text-sm text-slate-500 dark:text-slate-400">

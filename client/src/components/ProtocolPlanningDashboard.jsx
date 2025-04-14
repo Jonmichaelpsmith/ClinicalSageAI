@@ -23,6 +23,8 @@ import { useToast } from "@/hooks/use-toast";
 import { classifyTherapeuticArea } from "@shared/utils/therapeutic-area-classifier";
 import CSRAlignmentPanel from "@/components/CSRAlignmentPanel";
 import ProtocolCorrectionSuggestions from "@/components/ProtocolCorrectionSuggestions";
+import IntelligenceIndicators from "@/components/IntelligenceIndicators";
+import IntelligenceStatusBanner from "@/components/IntelligenceStatusBanner";
 
 // Create a context to share protocol state with child components
 export const ProtocolPlanningContext = createContext({
@@ -555,6 +557,9 @@ ${endpoints.length > 0 ? `- Original endpoints: ${endpoints.join(', ')}` : ''}
       
       {/* CSR-Enhanced IND Document Banner */}
       {sessionId && <INDConfirmationBanner sessionId={sessionId} />}
+      
+      {/* Intelligence Status Banner */}
+      {sessionId && <IntelligenceStatusBanner sessionId={sessionId} />}
       
       {/* CSR Semantic Alignment Panel */}
       {csrContext && <CSRAlignmentPanel sessionId={sessionId} />}
