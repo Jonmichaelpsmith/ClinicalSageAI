@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 
 const reportsManifestRoutes = Router();
-const REPORTS_ROOT_DIR = 'lumen_reports_backend/static/example_reports';
+const REPORTS_ROOT_DIR = 'attached_assets/example_reports';
 const LAUNCH_CONFIG_PATH = 'attached_assets/launch_config.json';
 
 /**
