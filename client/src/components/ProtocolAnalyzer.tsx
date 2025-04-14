@@ -531,6 +531,31 @@ export default function ProtocolAnalyzer() {
                           sortedLiterature.sort((a, b) => (b.citation_count || 0) - (a.citation_count || 0));
                         } else if (value === "year") {
                           sortedLiterature.sort((a, b) => parseInt(b.year) - parseInt(a.year));
+                        } else if (value === "regulatory") {
+                          // Prioritize papers with global regulatory relevance in their title or abstract
+                          sortedLiterature.sort((a, b) => {
+                            // Create an array of global regulatory terms to search for
+                            const regulatoryTerms = [
+                              'regulatory', 'regulation', 'regulator', 'fda', 'ema', 'mhra', 'tga', 
+                              'pmda', 'health canada', 'anvisa', 'cdsco', 'nmpa', 'kfda', 'sfda',
+                              'ich', 'guidance', 'guideline', 'compliance', 'approval', 'submission',
+                              'investigator brochure', 'drug approval', 'marketing authorization'
+                            ];
+                            
+                            // Check if paper contains regulatory terms and count occurrences
+                            const countRegTerms = (text) => {
+                              if (!text) return 0;
+                              const lowerText = text.toLowerCase();
+                              return regulatoryTerms.reduce((count, term) => 
+                                count + (lowerText.includes(term) ? 1 : 0), 0);
+                            };
+                            
+                            const aRegScore = countRegTerms(a.title) * 2 + countRegTerms(a.abstract);
+                            const bRegScore = countRegTerms(b.title) * 2 + countRegTerms(b.abstract);
+                            
+                            // First sort by regulatory score, then by relevance score
+                            return bRegScore - aRegScore || (b.relevance_score || 0) - (a.relevance_score || 0);
+                          });
                         }
                         
                         // Create a shallow copy of currentAnalysis to trigger a re-render
@@ -551,6 +576,7 @@ export default function ProtocolAnalyzer() {
                         <SelectItem value="relevance">Sort by Relevance</SelectItem>
                         <SelectItem value="citations">Sort by Citations</SelectItem>
                         <SelectItem value="year">Sort by Year</SelectItem>
+                        <SelectItem value="regulatory">Regulatory Relevance</SelectItem>
                       </SelectContent>
                     </Select>
                     
@@ -625,6 +651,12 @@ export default function ProtocolAnalyzer() {
                               <Badge variant="outline" className="text-xs">
                                 {citation.year}
                               </Badge>
+                              {/* Add a "New" badge for recent publications (published in the last two years) */}
+                              {parseInt(citation.year) >= new Date().getFullYear() - 1 && (
+                                <Badge variant="default" className="text-xs bg-green-500 hover:bg-green-600">
+                                  New
+                                </Badge>
+                              )}
                               {citation.relevance_score && (
                                 <Badge variant="secondary" className="text-xs">
                                   Relevance: {Math.round(citation.relevance_score * 100)}%

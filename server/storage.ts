@@ -112,15 +112,18 @@ export class DatabaseStorage implements IStorage {
     try {
       const { csrDetails } = await import('./sage-plus-service');
       
-      // Using a raw SQL query to handle field name differences
+      // Using a safer approach with only the columns we know exist
       const result = await db.execute(`
         SELECT 
           id, report_id as "reportId", 
-          file_path as "filePath", study_design as "studyDesign", 
-          primary_objective as "primaryObjective", study_description as "studyDescription",
-          inclusion_criteria as "inclusionCriteria", exclusion_criteria as "exclusionCriteria",
-          endpoints, treatment_arms as "treatmentArms", 
-          processed, processing_status as "processingStatus" 
+          study_design as "studyDesign", 
+          primary_objective as "primaryObjective", 
+          study_description as "studyDescription",
+          inclusion_criteria as "inclusionCriteria", 
+          exclusion_criteria as "exclusionCriteria",
+          endpoints, 
+          treatment_arms as "treatmentArms", 
+          processed
         FROM csr_details 
         WHERE report_id = $1
       `, [reportId]);
