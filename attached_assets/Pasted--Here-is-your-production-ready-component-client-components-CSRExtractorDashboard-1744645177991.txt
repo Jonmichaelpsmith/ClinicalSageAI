@@ -1,0 +1,93 @@
+✅ Here is your production-ready component:
+
+---
+
+## 📄 `/client/components/CSRExtractorDashboard.jsx`
+
+```jsx
+// /client/components/CSRExtractorDashboard.jsx
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+
+export default function CSRExtractorDashboard() {
+  const [file, setFile] = useState(null);
+  const [result, setResult] = useState(null);
+  const [status, setStatus] = useState("");
+
+  const handleUpload = async () => {
+    if (!file) return;
+    setStatus("Uploading...");
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await fetch("/api/csr/upload", {
+        method: "POST",
+        body: formData
+      });
+      const data = await res.json();
+      setResult(data);
+      setStatus("✅ Upload complete.");
+    } catch (err) {
+      setStatus("❌ Upload failed.");
+    }
+  };
+
+  return (
+    <div className="p-6 max-w-4xl mx-auto space-y-6">
+      <h1 className="text-2xl font-bold">📄 CSR Intelligence Extractor</h1>
+      <p className="text-muted-foreground text-sm">Upload a CSR file to extract and map its contents into structured data fields for predictive use.</p>
+
+      <Card>
+        <CardContent className="p-4 space-y-4">
+          <input type="file" accept=".pdf,.txt" onChange={(e) => setFile(e.target.files[0])} />
+          <Button onClick={handleUpload}>📤 Upload CSR File</Button>
+          {status && <p className="text-sm text-muted-foreground">{status}</p>}
+        </CardContent>
+      </Card>
+
+      {result && (
+        <Card>
+          <CardContent className="p-4">
+            <h2 className="text-lg font-semibold mb-2">🧠 Mapped Output</h2>
+            <pre className="bg-gray-100 text-sm p-3 rounded overflow-x-auto whitespace-pre-wrap">
+              {JSON.stringify(result, null, 2)}
+            </pre>
+            <Button
+              variant="outline"
+              className="mt-4"
+              asChild
+            >
+              <a
+                href={result.mapped_output}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                📥 Download Extracted JSON
+              </a>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+```
+
+---
+
+✅ Drop this into your sidebar as:
+```js
+{
+  name: "📄 CSR Extractor",
+  path: "/csr-extractor",
+  icon: "DocumentIcon"
+}
+```
+
+Would you like me to now:
+- Connect this extractor directly to your molecule similarity + CSR database?
+- Or begin integrating assistant feedback into parsed field summaries?
+
+You're now ingesting the intelligence that will power your future. Ready to expand.
