@@ -20,6 +20,8 @@ from fpdf import FPDF
 
 # Import branded cover sheet module
 from branded_cover_sheet import generate_cover_sheet, load_session_metadata
+# Import export utilities for generating trial strategy deck
+from export_utils import auto_generate_trial_strategy_deck, update_export_log
 
 app = FastAPI(title="Summary Packet Export Service")
 
@@ -412,6 +414,14 @@ def export_summary_packet(data: Dict = Body(...)):
     
     # Finalize and save PDF
     pdf.output(pdf_path)
+    
+    # Auto-generate Trial Strategy Deck alongside PDF
+    try:
+        # Generate the deck using the utility function (persona based on PDF export)
+        strategy_deck_result = auto_generate_trial_strategy_deck(session_id, persona.lower())
+        print(f"Auto-generated Trial Strategy Deck for session {session_id}: {strategy_deck_result['status']}")
+    except Exception as e:
+        print(f"Error generating Trial Strategy Deck: {str(e)}")
     
     # Log export for audit trail
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")

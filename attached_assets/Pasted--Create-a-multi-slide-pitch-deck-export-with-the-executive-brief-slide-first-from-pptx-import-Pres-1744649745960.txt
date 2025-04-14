@@ -1,0 +1,58 @@
+# Create a multi-slide pitch deck export with the executive brief slide first
+from pptx import Presentation
+from pptx.util import Inches, Pt
+
+@app.get("/api/export/pitch-deck/{session_id}")
+def export_pitch_deck(session_id: str):
+    archive_dir = f"/mnt/data/lumen_reports_backend/sessions/{session_id}"
+    os.makedirs(archive_dir, exist_ok=True)
+
+    prs = Presentation()
+    
+    # Slide 1: Executive Design Brief
+    slide1 = prs.slides.add_slide(prs.slide_layouts[5])
+    slide1.shapes.title.text = "🧠 Executive Design Brief"
+
+    alignment_score = "N/A"
+    suggestions = 0
+    if os.path.exists(os.path.join(archive_dir, "alignment_score_report.json")):
+        with open(os.path.join(archive_dir, "alignment_score_report.json")) as f:
+            alignment_score = f"{round(json.load(f).get('alignment_score', 0) * 100)}%"
+
+    if os.path.exists(os.path.join(archive_dir, "suggested_corrections.json")):
+        with open(os.path.join(archive_dir, "suggested_corrections.json")) as f:
+            suggestions = json.load(f).get("suggestion_count", 0)
+
+    text1 = (
+        f"Study ID: {session_id}\n"
+        f"Alignment Score: {alignment_score}\n"
+        f"Protocol Improvement Suggestions: {suggestions}\n"
+        f"AI Confidence: High\n\n"
+        f"All insights generated using CSR-backed evidence, semantic alignment, "
+        f"and protocol validation tools built into LumenTrialGuide.AI."
+    )
+    tf1 = slide1.shapes.add_textbox(Inches(0.5), Inches(1.3), Inches(9), Inches(5)).text_frame
+    tf1.word_wrap = True
+    p1 = tf1.paragraphs[0]
+    p1.text = text1
+    p1.font.size = Pt(18)
+
+    # Slide 2: Summary Packet Info (optional simulated)
+    slide2 = prs.slides.add_slide(prs.slide_layouts[5])
+    slide2.shapes.title.text = "📄 Summary Intelligence Highlights"
+    text2 = (
+        "Dropout forecast, success prediction, and protocol validation are included in the summary packet.\n"
+        "Exportable formats include: PDF, DOCX, XLSX, and ZIP.\n\n"
+        "Traceability and explainability are built into every export."
+    )
+    tf2 = slide2.shapes.add_textbox(Inches(0.5), Inches(1.3), Inches(9), Inches(5)).text_frame
+    tf2.word_wrap = True
+    p2 = tf2.paragraphs[0]
+    p2.text = text2
+    p2.font.size = Pt(18)
+
+    # Save and return
+    pptx_path = os.path.join(archive_dir, "trial_strategy_deck.pptx")
+    prs.save(pptx_path)
+
+    return FileResponse(pptx_path, filename="trial_strategy_deck.pptx", media_type="application/vnd.openxmlformats-officedocument.presentationml.presentation")
