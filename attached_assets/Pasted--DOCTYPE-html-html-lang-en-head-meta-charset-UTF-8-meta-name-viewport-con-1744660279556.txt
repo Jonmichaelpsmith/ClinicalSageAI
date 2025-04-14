@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fail Map</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body class="bg-gray-100 font-sans">
+    <div class="container mx-auto p-6">
+        <h1 class="text-3xl font-bold text-center mb-6 text-blue-800">Fail Map: Clinical Study Risk Analysis</h1>
+        <form method="POST" class="mb-6">
+            <textarea name="protocol" rows="4" class="w-full p-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter study protocol (e.g., Phase II oncology study, 150 participants, PFS endpoint, 1:1 randomization, double-blind)" required></textarea>
+            <button type="submit" class="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200">Analyze</button>
+        </form>
+
+        {% if failure_prob %}
+        <div class="bg-white p-6 rounded-lg shadow-lg mb-6">
+            <h2 class="text-2xl font-semibold mb-4 text-gray-800">Analysis Results</h2>
+            <p class="text-lg mb-2"><strong>Predicted Failure Probability:</strong> <span class="text-red-600">{{ failure_prob }}%</span></p>
+            <h3 class="text-xl font-medium mb-2 text-gray-700">Actionable Insights</h3>
+            <ul class="list-disc pl-6 mb-4 text-gray-600">
+                {% for insight in insights %}
+                <li>{{ insight }}</li>
+                {% endfor %}
+            </ul>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div id="pie-chart" class="w-full"></div>
+                <div id="hist-chart" class="w-full"></div>
+            </div>
+            <h3 class="text-xl font-medium mt-6 mb-2 text-gray-700">Similar Studies</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse border border-gray-300">
+                    <thead>
+                        <tr class="bg-gray-200">
+                            <th class="border p-2 text-left">Therapeutic Area</th>
+                            <th class="border p-2 text-left">Phase</th>
+                            <th class="border p-2 text-left">Sample Size</th>
+                            <th class="border p-2 text-left">Outcome</th>
+                            <th class="border p-2 text-left">Failure Reason</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for study in similar_studies %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="border p-2">{{ study.therapeutic_area }}</td>
+                            <td class="border p-2">{{ study.phase }}</td>
+                            <td class="border p-2">{{ study.sample_size }}</td>
+                            <td class="border p-2">{{ study.outcome }}</td>
+                            <td class="border p-2">{{ study.failure_reason or 'N/A' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <script>
+            var pieChart = {{ pie_chart | safe }};
+            var histChart = {{ hist_chart | safe }};
+            Plotly.newPlot('pie-chart', pieChart.data

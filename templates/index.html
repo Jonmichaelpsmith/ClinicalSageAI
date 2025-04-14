@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAIL MAP - Trialsage.ai</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body class="bg-gray-50">
+    <div class="container mx-auto p-6">
+        <nav class="flex justify-between items-center mb-8">
+            <a href="/" class="text-4xl font-bold text-blue-800">
+                Trialsage<span class="text-blue-600">.ai</span>
+            </a>
+            <div class="flex space-x-4">
+                <a href="/" class="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-colors">
+                    Home
+                </a>
+                <a href="/about" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors">
+                    About
+                </a>
+            </div>
+        </nav>
+
+        <div class="max-w-6xl mx-auto">
+            <!-- Hero Section -->
+            <div class="flex flex-col-reverse lg:flex-row items-center mb-16">
+                <div class="w-full lg:w-1/2 pr-0 lg:pr-12">
+                    <h1 class="text-4xl sm:text-5xl font-bold mb-6 text-blue-800">
+                        Predict Clinical Trial <span class="gradient-text">Success</span>
+                    </h1>
+                    <p class="text-xl text-gray-600 mb-8">
+                        FAIL MAP analyzes your protocol against 3,000 clinical studies to identify risk factors and improve success probability.
+                    </p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                        <div class="flex items-start">
+                            <div class="text-blue-500 mt-1 mr-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <p class="text-gray-700">Advanced machine learning algorithms</p>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="text-blue-500 mt-1 mr-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <p class="text-gray-700">Data-driven recommendations</p>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="text-blue-500 mt-1 mr-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <p class="text-gray-700">Interactive analysis dashboard</p>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="text-blue-500 mt-1 mr-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <p class="text-gray-700">Therapeutic area-specific insights</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full lg:w-1/2 mb-10 lg:mb-0">
+                    <div class="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl p-1">
+                        <div class="bg-white rounded-lg p-6">
+                            <div class="flex justify-between mb-4">
+                                <div class="flex">
+                                    <div class="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+                                    <div class="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
+                                    <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="h-3 bg-gray-200 rounded w-3/4"></div>
+                                <div class="h-3 bg-gray-200 rounded w-1/2"></div>
+                                <div class="h-3 bg-gray-200 rounded w-5/6"></div>
+                                <div class="h-3 bg-gray-200 rounded w-2/3"></div>
+                                <div class="mt-4 h-24 bg-blue-100 rounded flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                </div>
+                                <div class="h-3 bg-gray-200 rounded w-1/2"></div>
+                                <div class="h-3 bg-gray-200 rounded w-3/4"></div>
+                                <div class="mt-3 flex justify-end">
+                                    <div class="h-6 bg-blue-500 rounded w-16"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Protocol Analysis Form Section -->
+            <div class="bg-white rounded-xl shadow-lg p-8 mb-12">
+                <h2 class="text-3xl font-bold mb-6 text-blue-700">Analyze Your Clinical Trial Protocol</h2>
+                <p class="text-gray-600 mb-8">
+                    Enter your clinical trial protocol text or key details below. Our algorithm will analyze it against our database of 3,000 studies to identify risk factors and provide recommendations.
+                </p>
+
+                <form action="/analyze" method="POST" class="space-y-6">
+                    <div>
+                        <label for="protocol" class="block text-lg font-medium text-gray-700 mb-2">Protocol Text</label>
+                        <textarea 
+                            id="protocol" 
+                            name="protocol" 
+                            rows="8" 
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Paste your protocol text here or enter key details about your study design, including therapeutic area, phase, sample size, randomization approach, blinding, primary endpoints, and region..."
+                            required
+                        ></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label for="sample" class="block text-sm font-medium text-gray-700 mb-1">Sample Protocol</label>
+                            <button type="button" id="sample-phase1" class="w-full px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors text-left">
+                                <span class="font-medium">Phase I Oncology</span>
+                            </button>
+                        </div>
+                        <div>
+                            <label for="sample" class="block text-sm font-medium text-gray-700 mb-1">Sample Protocol</label>
+                            <button type="button" id="sample-phase2" class="w-full px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors text-left">
+                                <span class="font-medium">Phase II Neurology</span>
+                            </button>
+                        </div>
+                        <div>
+                            <label for="sample" class="block text-sm font-medium text-gray-700 mb-1">Sample Protocol</label>
+                            <button type="button" id="sample-phase3" class="w-full px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors text-left">
+                                <span class="font-medium">Phase III Cardiology</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="pt-4">
+                        <button type="submit" class="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                            Analyze Protocol
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Features Section -->
+            <div class="mb-12">
+                <h2 class="text-3xl font-bold mb-10 text-center text-blue-700">Key Features</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="bg-white rounded-xl shadow-md p-6 hover-card">
+                        <div class="text-blue-500 mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2 text-gray-800">Risk Assessment</h3>
+                        <p class="text-gray-600">
+                            Identifies protocol-specific risk factors based on analysis of similar historical trials and multi-factor success patterns.
+                        </p>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl shadow-md p-6 hover-card">
+                        <div class="text-blue-500 mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2 text-gray-800">Detailed Analytics</h3>
+                        <p class="text-gray-600">
+                            Provides comprehensive analytics on protocol design features with visual comparisons to similar historical trials.
+                        </p>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl shadow-md p-6 hover-card">
+                        <div class="text-blue-500 mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2 text-gray-800">Recommendations</h3>
+                        <p class="text-gray-600">
+                            Generates data-driven optimization recommendations to improve protocol design and increase success probability.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- How It Works Section -->
+            <div class="bg-blue-50 rounded-xl p-8 mb-12">
+                <h2 class="text-3xl font-bold mb-8 text-center text-blue-700">How It Works</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="flex flex-col items-center text-center">
+                        <div class="bg-white w-16 h-16 rounded-full flex items-center justify-center shadow-md mb-4">
+                            <span class="text-2xl font-bold text-blue-600">1</span>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3 text-gray-800">Enter Protocol</h3>
+                        <p class="text-gray-600">
+                            Paste your clinical trial protocol text or enter key design parameters in the analysis form.
+                        </p>
+                    </div>
+                    
+                    <div class="flex flex-col items-center text-center">
+                        <div class="bg-white w-16 h-16 rounded-full flex items-center justify-center shadow-md mb-4">
+                            <span class="text-2xl font-bold text-blue-600">2</span>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3 text-gray-800">AI Analysis</h3>
+                        <p class="text-gray-600">
+                            Our machine learning algorithms analyze your protocol against 3,000 historical studies to identify risks.
+                        </p>
+                    </div>
+                    
+                    <div class="flex flex-col items-center text-center">
+                        <div class="bg-white w-16 h-16 rounded-full flex items-center justify-center shadow-md mb-4">
+                            <span class="text-2xl font-bold text-blue-600">3</span>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3 text-gray-800">Get Results</h3>
+                        <p class="text-gray-600">
+                            Receive detailed success probability, risk factors, and actionable recommendations to optimize your protocol.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CTA Section -->
+            <div class="bg-blue-600 rounded-xl p-8 text-center mb-12">
+                <h2 class="text-3xl font-bold mb-4 text-white">Ready to Optimize Your Clinical Trial Protocol?</h2>
+                <p class="text-xl text-blue-100 mb-8 max-w-3xl mx-auto">
+                    Start analyzing your protocol today and receive data-driven insights to improve success probability.
+                </p>
+                <a href="#protocol" class="px-8 py-3 bg-white text-blue-600 font-medium rounded-lg hover:bg-blue-50 transition-colors inline-block">
+                    Get Started Now
+                </a>
+            </div>
+        </div>
+
+        <footer class="text-center text-gray-500 text-sm mt-20">
+            <p>© 2025 Trialsage.ai - Global Intelligence System for Clinical Study Reports</p>
+            <p class="mt-1">Analysis based on 3,000 clinical studies with advanced AI interpretation</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Sample protocol examples
+            const samplePhase1 = document.getElementById('sample-phase1');
+            const samplePhase2 = document.getElementById('sample-phase2');
+            const samplePhase3 = document.getElementById('sample-phase3');
+            const protocolTextarea = document.getElementById('protocol');
+            
+            samplePhase1.addEventListener('click', function() {
+                protocolTextarea.value = `Phase I Dose-Escalation Study of Novel Targeted Therapy XYZ-123 in Patients with Advanced Solid Tumors
+                
+Primary Objective: To determine the maximum tolerated dose (MTD) and recommended Phase 2 dose (RP2D) of XYZ-123.
+
+Study Design: This is an open-label, non-randomized, dose-escalation Phase I study of XYZ-123 in patients with advanced solid tumors, including but not limited to metastatic breast cancer, non-small cell lung cancer, and colorectal cancer.
+
+Sample Size: 30 patients will be enrolled across 3 clinical sites in the United States.
+
+Dosing Schedule: XYZ-123 will be administered orally once daily in 28-day cycles. Dose escalation will follow a standard 3+3 design.
+
+Primary Endpoints: Dose-limiting toxicities (DLTs), adverse events, and pharmacokinetic parameters.
+
+Secondary Endpoints: Preliminary anti-tumor activity as measured by objective response rate per RECIST v1.1 criteria.`;
+                protocolTextarea.focus();
+            });
+            
+            samplePhase2.addEventListener('click', function() {
+                protocolTextarea.value = `Phase II Randomized, Double-Blind, Placebo-Controlled Study of ABC-456 in Patients with Mild to Moderate Alzheimer's Disease
+
+Primary Objective: To evaluate the efficacy of ABC-456 compared to placebo in improving cognitive function in patients with mild to moderate Alzheimer's disease.
+
+Study Design: This is a randomized, double-blind, placebo-controlled Phase II study. Patients will be randomized 2:1 to receive either ABC-456 or placebo.
+
+Sample Size: 120 patients will be enrolled across clinical sites in Europe.
+
+Treatment Duration: Patients will receive treatment for 24 weeks with a 4-week follow-up period.
+
+Primary Endpoint: Change from baseline in the Alzheimer's Disease Assessment Scale-cognitive subscale (ADAS-cog) at week 24.
+
+Secondary Endpoints: Change from baseline in Clinician's Interview-Based Impression of Change Plus Caregiver Input (CIBIC-Plus), activities of daily living, and safety and tolerability assessments.`;
+                protocolTextarea.focus();
+            });
+            
+            samplePhase3.addEventListener('click', function() {
+                protocolTextarea.value = `Phase III Randomized, Double-Blind, Active-Controlled Study of DEF-789 in Patients with Chronic Heart Failure with Reduced Ejection Fraction
+
+Primary Objective: To evaluate the efficacy of DEF-789 compared to the current standard of care in reducing the risk of cardiovascular death or heart failure hospitalization in patients with chronic heart failure with reduced ejection fraction (HFrEF).
+
+Study Design: This is a global, randomized, double-blind, active-controlled Phase III study. Patients will be randomized 1:1 to receive either DEF-789 or the active comparator.
+
+Sample Size: 2,500 patients will be enrolled across 200 clinical sites globally.
+
+Treatment Duration: Patients will be treated until 844 primary endpoint events have occurred (estimated median follow-up of 2.5 years).
+
+Primary Endpoint: Time to first occurrence of either cardiovascular death or hospitalization for heart failure.
+
+Secondary Endpoints: All-cause mortality, change from baseline in quality of life measures, change in NYHA class, and safety and tolerability.`;
+                protocolTextarea.focus();
+            });
+            
+            // Smooth scroll to protocol section
+            document.querySelector('a[href="#protocol"]').addEventListener('click', function(e) {
+                e.preventDefault();
+                document.getElementById('protocol').scrollIntoView({ 
+                    behavior: 'smooth' 
+                });
+                setTimeout(() => {
+                    document.getElementById('protocol').focus();
+                }, 800);
+            });
+        });
+    </script>
+</body>
+</html>

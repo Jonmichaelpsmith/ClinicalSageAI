@@ -8,7 +8,7 @@ import {
   AlertTriangle,
   Lightbulb,
   Code,
-  PresentationFile,
+  Presentation, // Changed from PresentationFile to Presentation
   PieChart,
   BarChartHorizontal
 } from 'lucide-react';
@@ -81,7 +81,7 @@ function IntelligenceIndicators({ sessionId }) {
     { key: 'risk_model', label: 'Dropout Risk', icon: BarChartHorizontal },
     { key: 'suggestions', label: 'Suggestions', icon: Lightbulb },
     { key: 'alignment_score', label: 'Alignment Report', icon: FilePieChart },
-    { key: 'strategy_slide', label: 'Strategy Slide', icon: PresentationFile },
+    { key: 'strategy_slide', label: 'Strategy Slide', icon: Presentation },
     { key: 'wisdom_trace', label: 'Wisdom Trace', icon: Code }
   ];
   

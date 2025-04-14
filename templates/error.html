@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error - FAIL MAP</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body class="bg-gray-50">
+    <div class="container mx-auto p-6">
+        <nav class="flex justify-between items-center mb-8">
+            <a href="/" class="text-4xl font-bold text-blue-800">
+                Trialsage<span class="text-blue-600">.ai</span>
+            </a>
+            <div class="flex space-x-4">
+                <a href="/" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors">
+                    Home
+                </a>
+                <a href="/about" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors">
+                    About
+                </a>
+            </div>
+        </nav>
+
+        <div class="max-w-4xl mx-auto">
+            <div class="bg-white rounded-xl shadow-lg p-8 mb-12 text-center">
+                <div class="text-red-500 mb-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+                
+                <h1 class="text-4xl font-bold mb-4 text-red-600">An Error Occurred</h1>
+                
+                <p class="text-gray-700 text-xl mb-8">
+                    {{ error }}
+                </p>
+                
+                <a href="/" class="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors inline-block">
+                    Return to Home
+                </a>
+            </div>
+        </div>
+
+        <footer class="text-center text-gray-500 text-sm mt-20">
+            <p>© 2025 Trialsage.ai - Global Intelligence System for Clinical Study Reports</p>
+            <p class="mt-1">Analysis based on 3,000 clinical studies with advanced AI interpretation</p>
+        </footer>
+    </div>
+</body>
+</html>
