@@ -48,6 +48,8 @@ export default function ProtocolPlanningDashboard({
   const [sapReady, setSapReady] = useState(false);
   const [indReady, setIndReady] = useState(false);
   const [summaryReady, setSummaryReady] = useState(false);
+  const [taClassification, setTaClassification] = useState(null);
+  const [docxExportReady, setDocxExportReady] = useState(false);
   const { toast } = useToast();
 
   // Helper function to determine therapeutic area from indication
