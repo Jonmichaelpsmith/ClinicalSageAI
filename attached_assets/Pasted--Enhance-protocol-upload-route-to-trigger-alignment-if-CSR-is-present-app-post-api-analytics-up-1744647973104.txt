@@ -1,0 +1,63 @@
+# Enhance protocol upload route to trigger alignment if CSR is present
+@app.post("/api/analytics/upload-protocol")
+def upload_protocol(data: Dict = Body(...)):
+    session_id = data.get("session_id", "default_session")
+    protocol_text = data.get("protocol_text", "")
+    csr_id = data.get("csr_id", None)
+
+    archive_dir = f"/mnt/data/lumen_reports_backend/sessions/{session_id}"
+    os.makedirs(archive_dir, exist_ok=True)
+
+    with open(os.path.join(archive_dir, "protocol.txt"), "w") as f:
+        f.write(protocol_text)
+
+    alignment = None
+    if csr_id:
+        csr_path = f"/mnt/data/lumen_reports_backend/intelligence_db/{csr_id}.json"
+        if os.path.exists(csr_path):
+            with open(csr_path, "r") as f:
+                csr_data = json.load(f)
+
+            # Simulated field extraction (normally NLP + parsing)
+            protocol_fields = {
+                "primary_endpoint": "ALT reduction",
+                "control": "placebo arm",
+                "duration": "12 weeks"
+            }
+
+            csr_fields = {
+                "primary_endpoint": csr_data.get("efficacy", {}).get("primary", [""])[0],
+                "control": csr_data.get("design", {}).get("control", ""),
+                "duration": f"{csr_data.get('design', {}).get('duration_weeks', 0)} weeks"
+            }
+
+            # Use aligner
+            norm = normalize_term
+            align = semantic_similarity
+            alignment_matches = []
+            for key in protocol_fields:
+                norm_p = norm(str(protocol_fields[key]))
+                norm_c = norm(str(csr_fields.get(key, "")))
+                score = align(norm_p, norm_c)
+                alignment_matches.append({
+                    "field": key,
+                    "protocol_value": protocol_fields[key],
+                    "csr_value": csr_fields.get(key, ""),
+                    "similarity": score,
+                    "match": score > 0.7
+                })
+
+            alignment = {
+                "alignment_score": round(sum(x["similarity"] for x in alignment_matches) / len(alignment_matches), 4),
+                "matches": alignment_matches
+            }
+
+            with open(os.path.join(archive_dir, "alignment_score_report.json"), "w") as f:
+                json.dump(alignment, f, indent=2)
+
+    return {
+        "status": "uploaded",
+        "alignment_generated": bool(alignment),
+        "session_id": session_id,
+        "csr_aligned": csr_id or "N/A"
+    }
