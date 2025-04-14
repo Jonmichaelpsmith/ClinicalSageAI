@@ -30,6 +30,20 @@ interface ProtocolAssessment {
   sources: Source[];
   statisticalConsiderations: string[];
   regulatoryConsiderations: RegConsideration[];
+  academicLiterature?: AcademicCitation[];
+}
+
+interface AcademicCitation {
+  title: string;
+  authors: string;
+  journal: string;
+  year: string;
+  volume: string;
+  pages: string;
+  doi?: string;
+  abstract?: string;
+  citation_count?: number;
+  relevance_score?: number;
 }
 
 interface SectionAnalysis {
