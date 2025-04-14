@@ -292,3 +292,44 @@ export type Protocol = typeof protocols.$inferSelect;
 export type InsertProtocol = z.infer<typeof insertProtocolSchema>;
 export type StrategicReport = typeof strategicReports.$inferSelect;
 export type InsertStrategicReport = z.infer<typeof insertStrategicReportSchema>;
+
+// Protocol assessments schema for academic analysis
+export const protocolAssessments = pgTable("protocol_assessments", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  protocol_data: json("protocol_data").notNull(),
+  assessment_results: json("assessment_results").notNull(),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  updated_at: timestamp("updated_at").defaultNow().notNull()
+});
+
+// Protocol assessment feedback schema
+export const protocolAssessmentFeedback = pgTable("protocol_assessment_feedback", {
+  id: serial("id").primaryKey(),
+  assessment_id: varchar("assessment_id", { length: 255 }).notNull().references(() => protocolAssessments.id),
+  feedback_text: text("feedback_text").notNull(),
+  rating: integer("rating").notNull(),
+  areas: json("areas").$type<string[]>().default(sql`'[]'`),
+  created_at: timestamp("created_at").defaultNow().notNull()
+});
+
+// Schema relations
+export const protocolAssessmentsRelations = relations(protocolAssessments, ({ many }) => ({
+  feedback: many(protocolAssessmentFeedback)
+}));
+
+export const protocolAssessmentFeedbackRelations = relations(protocolAssessmentFeedback, ({ one }) => ({
+  assessment: one(protocolAssessments, {
+    fields: [protocolAssessmentFeedback.assessment_id],
+    references: [protocolAssessments.id]
+  })
+}));
+
+// Insert schemas
+export const insertProtocolAssessmentSchema = createInsertSchema(protocolAssessments);
+export const insertProtocolAssessmentFeedbackSchema = createInsertSchema(protocolAssessmentFeedback);
+
+// Types
+export type ProtocolAssessment = typeof protocolAssessments.$inferSelect;
+export type InsertProtocolAssessment = z.infer<typeof insertProtocolAssessmentSchema>;
+export type ProtocolAssessmentFeedback = typeof protocolAssessmentFeedback.$inferSelect;
+export type InsertProtocolAssessmentFeedback = z.infer<typeof insertProtocolAssessmentFeedbackSchema>;
