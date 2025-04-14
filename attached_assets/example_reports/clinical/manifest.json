@@ -1,0 +1,17 @@
+{
+  "persona": "clinical",
+  "title": "Clinical Research Suite",
+  "description": "Clinical research tools and insights for medical professionals and researchers",
+  "files": [
+    "trial_success_prediction.pdf",
+    "protocol_assessment.pdf",
+    "endpoint_selection_guide.pdf",
+    "inclusion_exclusion_optimization.pdf",
+    "therapeutic_area_insights.pdf"
+  ],
+  "blurbs": [
+    "Protocol analysis with evidence-based recommendations",
+    "Trial success prediction with actionable optimization insights",
+    "Comprehensive endpoint selection support with historical context"
+  ]
+}
