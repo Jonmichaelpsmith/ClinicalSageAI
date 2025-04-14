@@ -325,6 +325,24 @@ const HomepageShowcaseSection = () => {
               <p>No intelligence packages available. Please check back later.</p>
             </div>
           )}
+          
+          {/* TILE 3 — REGULATORY READINESS (REGULATORY AFFAIRS) */}
+          <Card className="overflow-hidden border-0 shadow-lg">
+            <div className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white p-4">
+              <div className="flex justify-between items-start">
+                <Badge className="bg-white/20 hover:bg-white/30 border-none text-white">
+                  <FileCheck className="h-3.5 w-3.5 mr-1" />
+                  For Regulatory Affairs
+                </Badge>
+                <span className="text-xs bg-white/20 px-2 py-1 rounded-full">
+                  Regulatory Package
+                </span>
+              </div>
+              <h3 className="text-xl font-bold mt-3 mb-0">
+                Regulatory Readiness Package
+              </h3>
+              <p className="text-sm opacity-90">Complete IND-ready submission package with compliance verification</p>
+            </div>
             <CardContent className="p-4">
               <dl className="grid grid-cols-2 gap-x-4 gap-y-2 mt-2 text-sm">
                 <dt className="text-muted-foreground flex items-center"><FileText className="h-3.5 w-3.5 mr-1.5" /> IND sections</dt>
