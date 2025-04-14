@@ -1048,6 +1048,47 @@ router.get('/:id/export-pdf', async (req, res) => {
       doc.fontSize(12).font('Helvetica').text(`• ${limitation}`);
     });
     
+    // Add Academic Literature section if available
+    if (assessment.assessment.academicLiterature && assessment.assessment.academicLiterature.length > 0) {
+      doc.addPage();
+      doc.fontSize(16).font('Helvetica-Bold').text('Supporting Academic Literature');
+      doc.moveDown();
+      
+      assessment.assessment.academicLiterature.forEach((citation, index) => {
+        // Citation title and authors
+        doc.fontSize(12).font('Helvetica-Bold').text(`${index + 1}. ${citation.title}`);
+        doc.fontSize(11).font('Helvetica').text(citation.authors);
+        
+        // Journal reference
+        doc.fontSize(11).font('Helvetica-Oblique')
+          .text(`${citation.journal} (${citation.year}), Vol ${citation.volume}, pp ${citation.pages}`);
+        
+        // Relevance score
+        if (citation.relevance_score) {
+          doc.fontSize(10).font('Helvetica')
+            .text(`Relevance: ${Math.round(citation.relevance_score * 100)}% | Citations: ${citation.citation_count || 'N/A'}`);
+        }
+        
+        // Abstract with limited length
+        if (citation.abstract) {
+          const abstract = citation.abstract.length > 300 
+            ? citation.abstract.substring(0, 300) + '...' 
+            : citation.abstract;
+          
+          doc.moveDown(0.5);
+          doc.fontSize(10).font('Helvetica').text('Abstract:', { continued: false });
+          doc.fontSize(10).font('Helvetica').text(abstract, { align: 'left' });
+        }
+        
+        // DOI link
+        if (citation.doi) {
+          doc.fontSize(10).font('Helvetica').text(`DOI: ${citation.doi}`);
+        }
+        
+        doc.moveDown(1.5);
+      });
+    }
+    
     // Add footer
     const totalPages = doc.bufferedPageCount;
     for (let i = 0; i < totalPages; i++) {

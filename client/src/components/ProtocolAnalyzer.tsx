@@ -6,7 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { AlertCircle, BarChart, BookOpen, CheckCircle, Download, ExternalLink, FileText, GanttChart, Upload } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AlertCircle, BarChart, BookOpen, CheckCircle, Download, ExternalLink, FileText, GanttChart, RotateCcw, Search, Upload } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -507,17 +508,111 @@ export default function ProtocolAnalyzer() {
               
               {/* Literature Tab */}
               <TabsContent value="literature" className="mt-4">
-                <ScrollArea className="h-[60vh]">
+                <div className="mb-6">
+                  <div className="bg-slate-50 p-4 rounded-lg mb-4">
+                    <h3 className="text-lg font-semibold mb-2 flex items-center">
+                      <BookOpen className="h-5 w-5 mr-2 text-primary" />
+                      Academic Literature Analysis
+                    </h3>
+                    <p className="text-sm text-slate-600 mb-1">
+                      Evidence-based recommendations supported by relevant scientific literature focused on clinical trial design and execution.
+                    </p>
+                  </div>
+                  
+                  {/* Filter and sort controls */}
+                  <div className="flex flex-wrap gap-3 mb-4">
+                    <Select 
+                      defaultValue="relevance" 
+                      onValueChange={(value) => {
+                        const sortedLiterature = [...(currentAnalysis.assessment.academicLiterature || [])];
+                        if (value === "relevance") {
+                          sortedLiterature.sort((a, b) => (b.relevance_score || 0) - (a.relevance_score || 0));
+                        } else if (value === "citations") {
+                          sortedLiterature.sort((a, b) => (b.citation_count || 0) - (a.citation_count || 0));
+                        } else if (value === "year") {
+                          sortedLiterature.sort((a, b) => parseInt(b.year) - parseInt(a.year));
+                        }
+                        
+                        // Create a shallow copy of currentAnalysis to trigger a re-render
+                        const updatedAnalysis = {
+                          ...currentAnalysis,
+                          assessment: {
+                            ...currentAnalysis.assessment,
+                            academicLiterature: sortedLiterature
+                          }
+                        };
+                        setCurrentAnalysis(updatedAnalysis);
+                      }}
+                    >
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Sort by..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="relevance">Sort by Relevance</SelectItem>
+                        <SelectItem value="citations">Sort by Citations</SelectItem>
+                        <SelectItem value="year">Sort by Year</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    
+                    <Input 
+                      placeholder="Filter by keyword..." 
+                      className="w-[200px]"
+                      onChange={(e) => {
+                        const searchTerm = e.target.value.toLowerCase();
+                        // Filter literature based on the search term
+                        // Create a shallow copy of currentAnalysis to trigger a re-render
+                        if (searchTerm) {
+                          const filteredLiterature = (currentAnalysis.assessment.academicLiterature || [])
+                            .filter(citation => 
+                              citation.title.toLowerCase().includes(searchTerm) || 
+                              citation.abstract?.toLowerCase().includes(searchTerm) ||
+                              citation.authors.toLowerCase().includes(searchTerm) ||
+                              citation.journal.toLowerCase().includes(searchTerm)
+                            );
+                            
+                          const updatedAnalysis = {
+                            ...currentAnalysis,
+                            assessment: {
+                              ...currentAnalysis.assessment,
+                              academicLiterature: filteredLiterature
+                            }
+                          };
+                          setCurrentAnalysis(updatedAnalysis);
+                        } else {
+                          // Reset to original data when search term is empty
+                          const originalAnalysis = assessments.find(a => a.id === currentAnalysisId);
+                          if (originalAnalysis) {
+                            setCurrentAnalysis(originalAnalysis);
+                          }
+                        }
+                      }}
+                    />
+                    
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => {
+                        // Reset to original data
+                        const originalAnalysis = assessments.find(a => a.id === currentAnalysisId);
+                        if (originalAnalysis) {
+                          setCurrentAnalysis(originalAnalysis);
+                        }
+                      }}
+                    >
+                      <RotateCcw className="h-4 w-4 mr-2" />
+                      Reset
+                    </Button>
+                  </div>
+                </div>
+                
+                <ScrollArea className="h-[50vh]">
                   <div className="space-y-4">
-                    <div className="bg-slate-50 p-4 rounded-lg mb-6">
-                      <h3 className="text-lg font-semibold mb-2 flex items-center">
-                        <BookOpen className="h-5 w-5 mr-2 text-primary" />
-                        Academic Literature Analysis
-                      </h3>
-                      <p className="text-sm text-slate-600 mb-1">
-                        Evidence-based recommendations supported by relevant scientific literature focused on clinical trial design and execution.
-                      </p>
-                    </div>
+                    {currentAnalysis.assessment.academicLiterature?.length === 0 && (
+                      <div className="text-center p-8 text-slate-500">
+                        <Search className="h-12 w-12 mx-auto mb-2 opacity-20" />
+                        <p>No literature citations match your filter criteria.</p>
+                      </div>
+                    )}
                     
                     {currentAnalysis.assessment.academicLiterature?.map((citation, idx) => (
                       <Card key={idx} className="overflow-hidden">
