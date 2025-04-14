@@ -15,6 +15,7 @@ import { generateProtocolTemplate, getStatisticalApproaches } from "./protocol-s
 import { exportService } from "./services/export-service";
 import academicProtocolAssessment from './routes/academic_protocol_assessment';
 import correctionRoutes from './routes/correction-routes';
+import { startPythonService, registerPythonRoutes } from './python_bridge';
 // Legacy Hugging Face service has been replaced with OpenAI-based services
 // Migration notice: The HuggingFace service has been completely replaced with OpenAI-based services.
 import { 
@@ -378,6 +379,16 @@ import alignmentRoutes from './routes/alignment-routes';
 import sessionRoutes from './routes/session_routes';
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Start and register Python FastAPI service for enhanced CSR context and TA classification
+  try {
+    await startPythonService();
+    registerPythonRoutes(app);
+    console.log('✅ Python FastAPI service started and routes registered');
+  } catch (error) {
+    console.error('⚠️ Failed to start Python FastAPI service:', error);
+    console.log('⚠️ Enhanced CSR context features will not be available');
+  }
+  
   // Register session API routes
   app.use('/api/session', sessionRoutes);
   
