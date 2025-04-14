@@ -19,6 +19,7 @@ import {
   Target
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import CSRAlignmentPanel from "@/components/CSRAlignmentPanel";
 
 export default function ProtocolPlanningDashboard({ 
   initialProtocol = "", 
@@ -374,6 +375,9 @@ ${endpoints.length > 0 ? `- Original endpoints: ${endpoints.join(', ')}` : ''}
       
       {/* CSR Context Banner */}
       {renderCsrContextBanner()}
+      
+      {/* CSR Semantic Alignment Panel */}
+      {csrContext && <CSRAlignmentPanel sessionId={sessionId} />}
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid grid-cols-4 mb-6">
