@@ -20,6 +20,7 @@ import {
   Lightbulb
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { classifyTherapeuticArea } from "@shared/utils/therapeutic-area-classifier";
 import CSRAlignmentPanel from "@/components/CSRAlignmentPanel";
 import ProtocolCorrectionSuggestions from "@/components/ProtocolCorrectionSuggestions";
 
@@ -49,11 +50,54 @@ export default function ProtocolPlanningDashboard({
   const [summaryReady, setSummaryReady] = useState(false);
   const { toast } = useToast();
 
+  // Helper function to determine therapeutic area from indication
+  const getTherapeuticAreaFromIndication = (indicationText) => {
+    // Use the imported classifier if available
+    if (typeof classifyTherapeuticArea === 'function') {
+      return classifyTherapeuticArea(indicationText);
+    }
+    
+    // Fallback classification based on common keywords
+    const indicationLower = indicationText.toLowerCase();
+    
+    if (/cancer|oncology|tumor|carcinoma|lymphoma|leukemia|melanoma|sarcoma/.test(indicationLower)) {
+      return "Oncology";
+    } else if (/diabetes|insulin|glycemic|hyperglycemia/.test(indicationLower)) {
+      return "Endocrinology";
+    } else if (/alzheimer|dementia|parkinsons|epilepsy|seizure|neurology|multiple sclerosis|neurological/.test(indicationLower)) {
+      return "Neurology";
+    } else if (/cardio|heart|vascular|arterial|hypertension|cholesterol|stroke/.test(indicationLower)) {
+      return "Cardiovascular";
+    } else if (/depression|anxiety|bipolar|schizophrenia|psychiatric|mental health/.test(indicationLower)) {
+      return "Psychiatry";
+    } else if (/respiratory|asthma|copd|lung|pulmonary/.test(indicationLower)) {
+      return "Respiratory";
+    } else if (/inflammat|rheumatoid|arthritis|autoimmune|lupus|psoriasis/.test(indicationLower)) {
+      return "Immunology";
+    } else if (/infect|hiv|viral|bacteria|hepatitis|covid|antibiotic/.test(indicationLower)) {
+      return "Infectious Disease";
+    } else if (/gastr|crohn|ibs|colitis|bowel|intestinal/.test(indicationLower)) {
+      return "Gastroenterology";
+    } else if (/renal|kidney|urinary|bladder/.test(indicationLower)) {
+      return "Nephrology";
+    } else if (/rare disease|orphan|genetic disorder/.test(indicationLower)) {
+      return "Rare Disease";
+    } else if (/obesity|weight|metabolic/.test(indicationLower)) {
+      return "Metabolic Disorders";
+    } else if (/women|gynecology|fertility|contraception|pregnancy/.test(indicationLower)) {
+      return "Women's Health";
+    }
+    
+    return "Other";
+  };
+  
   // Parse CSR context details for display
   const studyId = csrContext?.id || csrContext?.studyId || sessionId;
   const indication = csrContext?.indication || csrContext?.details?.indication || "";
   const phase = csrContext?.phase || csrContext?.details?.phase || "";
   const molecule = csrContext?.drugName || csrContext?.details?.drugName || "";
+  const therapeuticArea = csrContext?.meta?.therapeuticArea || 
+                          (indication ? getTherapeuticAreaFromIndication(indication) : "Unknown");
   
   // Extract and format endpoints from CSR context
   const endpoints = [];
