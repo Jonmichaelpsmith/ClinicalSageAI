@@ -1,30 +1,22 @@
 {
   "clinical": {
-    "route": "/planning?persona=planner",
-    "study_id": "EXAMPLE_CLINICAL_ID"
+    "route": "/planning?persona=clinical",
+    "study_id": "LMN-0801-001"
   },
   "regulatory": {
     "route": "/planning?persona=regulatory",
-    "study_id": "EXAMPLE_REGULATORY_ID"
+    "study_id": "LMN-0801-001"
   },
   "lumen": {
-    "route": "/planning?persona=planner",
-    "study_id": "EXAMPLE_LUMEN_ID" 
-  },
-  "planner": {
-    "route": "/planning?persona=planner",
-    "study_id": "EXAMPLE_PLANNER_ID"
-  },
-  "ceo": {
-    "route": "/planning?persona=ceo",
-    "study_id": "EXAMPLE_CEO_ID"
+    "route": "/planning?persona=lumen",
+    "study_id": "LMN-0801-001"
   },
   "biostats": {
     "route": "/planning?persona=biostats",
-    "study_id": "EXAMPLE_BIOSTATS_ID"
+    "study_id": "LMN-0801-001"
   },
   "clinops": {
     "route": "/planning?persona=clinops",
-    "study_id": "EXAMPLE_CLINOPS_ID"
+    "study_id": "LMN-0801-001"
   }
 }
