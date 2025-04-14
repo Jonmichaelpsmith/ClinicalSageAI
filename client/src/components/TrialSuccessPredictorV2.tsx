@@ -218,23 +218,32 @@ export default function TrialSuccessPredictorV2() {
     try {
       const protocolId = form.getValues("protocol_id");
       
+      // Enhanced report data with all necessary information for generating comprehensive recommendations
       const reportData = {
         protocol_id: protocolId,
-        success_rate: analysisResult.risk_scores.success_probability,
-        inputs: {
+        prediction: analysisResult.risk_scores.success_probability,
+        parsed: {
+          // Complete protocol information for analysis
           indication: analysisResult.extracted_data.indication,
           phase: analysisResult.extracted_data.phase,
           sample_size: analysisResult.extracted_data.sample_size,
           duration_weeks: analysisResult.extracted_data.duration_weeks,
           dropout_rate: analysisResult.extracted_data.dropout_rate,
           primary_endpoint: analysisResult.extracted_data.primary_endpoints?.[0] || "",
+          secondary_endpoints: analysisResult.extracted_data.secondary_endpoints || [],
+          study_design: analysisResult.extracted_data.study_design || "",
+          arms: analysisResult.extracted_data.arms || [],
+          blinding: analysisResult.extracted_data.blinding || ""
         },
         benchmarks: analysisResult.csr_benchmarks,
         risk_flags: analysisResult.risk_flags,
+        risk_scores: analysisResult.risk_scores, // Include all risk scores for multi-dimensional analysis
         strategic_insights: analysisResult.strategic_insights,
+        recommendation_summary: analysisResult.recommendation_summary || "",
+        session_id: `session-${Date.now()}` // Add session tracking for future reference
       };
       
-      const response = await apiRequest("POST", "/api/export/success-summary", reportData);
+      const response = await apiRequest("POST", "/api/export/intelligence-report", reportData);
       
       if (!response.ok) {
         const errorData = await response.json();
