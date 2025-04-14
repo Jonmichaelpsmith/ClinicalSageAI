@@ -23,6 +23,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Progress } from "@/components/ui/progress";
+import ProtocolImprovementPanel from "@/components/ProtocolImprovementPanel";
 
 const ProtocolDesigner = () => {
   const { toast } = useToast();
@@ -705,78 +706,13 @@ const ProtocolDesigner = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Analysis Results Dialog */}
-      <Dialog open={!!analysisResults} onOpenChange={(open) => !open && setAnalysisResults(null)}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Protocol Analysis Results</DialogTitle>
-            <DialogDescription>
-              AI analysis of your uploaded protocol document.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4">
-            {analysisResults && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-gray-50 p-3 rounded-lg">
-                    <p className="text-xs text-gray-500 mb-1">Indication</p>
-                    <p className="font-medium">{analysisResults.indication || "Not detected"}</p>
-                  </div>
-                  <div className="bg-gray-50 p-3 rounded-lg">
-                    <p className="text-xs text-gray-500 mb-1">Phase</p>
-                    <p className="font-medium">{analysisResults.phase || "Not detected"}</p>
-                  </div>
-                  <div className="bg-gray-50 p-3 rounded-lg">
-                    <p className="text-xs text-gray-500 mb-1">Primary Endpoint</p>
-                    <p className="font-medium">{analysisResults.primaryEndpoint || "Not detected"}</p>
-                  </div>
-                  <div className="bg-gray-50 p-3 rounded-lg">
-                    <p className="text-xs text-gray-500 mb-1">Study Design</p>
-                    <p className="font-medium">{analysisResults.studyDesign || "Not detected"}</p>
-                  </div>
-                </div>
-
-                <div className="border-t border-gray-200 pt-4">
-                  <h4 className="font-medium mb-2">AI Insights</h4>
-                  <div className="space-y-2">
-                    {analysisResults.insights && analysisResults.insights.map((insight: string, index: number) => (
-                      <div key={index} className="bg-blue-50 p-3 rounded-lg text-sm">
-                        {insight}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="border-t border-gray-200 pt-4">
-                  <h4 className="font-medium mb-2">Potential Improvements</h4>
-                  <div className="space-y-2">
-                    {analysisResults.improvements && analysisResults.improvements.map((improvement: string, index: number) => (
-                      <div key={index} className="bg-amber-50 p-3 rounded-lg text-sm">
-                        {improvement}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-          <DialogFooter className="sm:justify-between">
-            <Button 
-              type="button" 
-              variant="outline"
-              onClick={() => setAnalysisResults(null)}
-            >
-              Close
-            </Button>
-            <Button 
-              type="button"
-              onClick={handleImportFromAnalysis}
-            >
-              Import to Protocol Designer
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Protocol Intelligence Panel */}
+      <ProtocolImprovementPanel 
+        analysisResults={analysisResults}
+        open={!!analysisResults}
+        onOpenChange={(open) => !open && setAnalysisResults(null)}
+        onImport={handleImportFromAnalysis}
+      />
     </div>
   );
 };

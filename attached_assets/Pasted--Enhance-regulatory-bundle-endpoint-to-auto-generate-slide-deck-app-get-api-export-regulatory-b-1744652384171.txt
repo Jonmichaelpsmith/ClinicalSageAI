@@ -1,0 +1,51 @@
+# Enhance regulatory bundle endpoint to auto-generate slide deck
+@app.get("/api/export/regulatory-bundle/{session_id}")
+def export_regulatory_bundle(session_id: str):
+    archive_dir = f"/mnt/data/lumen_reports_backend/sessions/{session_id}"
+    os.makedirs(archive_dir, exist_ok=True)
+
+    # Ensure branded summary packet exists
+    pdf_path = os.path.join(archive_dir, "summary_packet.pdf")
+    if not os.path.exists(pdf_path):
+        pdf = FPDF()
+        add_cover_page(pdf, session_id=session_id, title="Regulatory Intelligence Report")
+        pdf.add_page()
+        pdf.set_font("Arial", size=12)
+        pdf.multi_cell(0, 10, f"No content yet available for {session_id}.")
+        pdf.output(pdf_path)
+
+    # Rebuild branded DOCX if missing
+    ind_path = os.path.join(archive_dir, "ind_summary.txt")
+    docx_path = os.path.join(archive_dir, "ind_summary_branded.docx")
+    if os.path.exists(ind_path) and not os.path.exists(docx_path):
+        with open(ind_path, "r") as f:
+            export_branded_docx(session_id, f.read())
+
+    # Auto-create slide deck
+    slide_path = os.path.join(archive_dir, "trial_strategy_deck.pptx")
+    if not os.path.exists(slide_path):
+        export_pitch_deck(session_id=session_id)
+
+    # Generate ZIP
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    zip_filename = f"{session_id}_regulatory_ready_bundle_{timestamp}.zip"
+    zip_path = f"/mnt/data/{zip_filename}"
+
+    bundle_files = [
+        "summary_packet.pdf",
+        "dropout_forecast.json",
+        "success_prediction.json",
+        "ind_summary.txt",
+        "ind_summary_branded.docx",
+        "sap_summary_branded.docx",
+        "trial_strategy_deck.pptx",
+        "wisdom_trace.json"
+    ]
+
+    with zipfile.ZipFile(zip_path, 'w') as zipf:
+        for file in bundle_files:
+            file_path = os.path.join(archive_dir, file)
+            if os.path.exists(file_path):
+                zipf.write(file_path, arcname=file)
+
+    return FileResponse(zip_path, filename=zip_filename, media_type="application/zip")
