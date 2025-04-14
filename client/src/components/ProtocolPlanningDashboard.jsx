@@ -614,7 +614,7 @@ ${endpoints.length > 0 ? `- Original endpoints: ${endpoints.join(', ')}` : ''}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Flask className="h-5 w-5" />
+                <TestTube className="h-5 w-5" />
                 IND Summary
               </CardTitle>
               <CardDescription>
@@ -675,7 +675,7 @@ ${endpoints.length > 0 ? `- Original endpoints: ${endpoints.join(', ')}` : ''}
                       <>Generating...</>
                     ) : (
                       <>
-                        <Flask className="h-4 w-4" />
+                        <TestTube className="h-4 w-4" />
                         Generate IND Summary
                       </>
                     )}

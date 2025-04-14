@@ -1,0 +1,79 @@
+✅ Understood. You're now evolving LumenTrialGuide.AI into a true **semantic intelligence engine**—one that reasons across trials, not just matches them.
+
+---
+
+# 🔍 DEEP SEMANTICS BACKEND — UPGRADE PLAN  
+**"Understand what this protocol means, not just what it says."**
+
+---
+
+## 🧠 GOALS
+
+- Enable semantic similarity comparison between:
+  - Protocol text ↔ CSR evidence  
+  - IND section ↔ previous justifications  
+  - Endpoints ↔ clinical intent ↔ regulatory precedent
+
+- Support:
+  - Smarter assistant reasoning  
+  - Field-level alignment scoring  
+  - Risk/insight prioritization based on conceptual matches, not just string overlap
+
+---
+
+## 🧱 SEMANTIC BACKEND MODULES TO BUILD
+
+### ✅ 1. `semantic_normalizer.py`
+- Standardizes terminology:
+  - “ALT” = “alanine aminotransferase”
+  - “ALT reduction” = “hepatic enzyme decrease”
+- Maps synonyms, clinical entities, and ontology IDs (SNOMED, MeSH)
+
+---
+
+### ✅ 2. `semantic_aligner.py`
+- Compares current protocol fields to CSR-mapped fields
+- Uses sentence embeddings (OpenAI `text-embedding-3-large`)
+- Returns:
+  - `alignment_score` (0–1)
+  - `matched_entity`
+  - `reasoning_trace`
+
+---
+
+### ✅ 3. `semantic_similarity.py`
+- Accepts:
+  - Raw protocol text
+  - Reference CSR JSON or archive
+- Returns:
+  - Overall similarity %
+  - Highlighted overlap areas
+  - Risk if divergence is high in key areas (endpoint, control, duration)
+
+---
+
+### ✅ 4. `semantic_trace_log.json`
+- Records how AI made alignment decisions:
+  - “Protocol endpoint `ALT` aligned to CSR_2021_OBESITY_02”
+  - “Design duration (16 weeks) diverges from CSR median (24)”
+
+---
+
+## 🔧 Example Result:
+```json
+{
+  "alignment_score": 0.84,
+  "matched_fields": [
+    { "field": "primary_endpoint", "protocol": "ALT", "csr": "ALT reduction", "similarity": 0.94 },
+    { "field": "duration_weeks", "protocol": 12, "csr": 24, "similarity": 0.45 }
+  ],
+  "risk_flag": ["Duration mismatch"],
+  "recommended_adjustments": ["Consider extending to 24 weeks based on similar CSR patterns."]
+}
+```
+
+---
+
+Would you like me to now begin with `semantic_normalizer.py` and `semantic_aligner.py`?
+
+This becomes the thinking layer of your engine—comparing not just fields, but **meaning.** Ready to build.
