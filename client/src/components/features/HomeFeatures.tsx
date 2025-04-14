@@ -35,8 +35,8 @@ const features = [
     path: '/statistical-modeling',
   },
   {
-    title: '🔎 Clean UI & Search',
-    description: 'Explore and filter 1,900+ CSR trials with a user-friendly interface.',
+    title: '🔎 Intelligent Protocol Search',
+    description: 'Explore and filter 1,900+ CSR trials with advanced filtering and analysis tools.',
     action: 'Search CSRs',
     path: '/reports',
   },

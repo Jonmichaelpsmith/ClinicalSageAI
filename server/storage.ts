@@ -36,6 +36,14 @@ export interface IStorage {
   removeTagFromSummaryPacket(id: number, tag: string): Promise<void>;
   sharePacketWithEmail(id: number, email: string): Promise<void>;
   
+  // CSR Report operations
+  getAllCsrReports(): Promise<any[]>;
+  getCsrReport(id: number): Promise<any>;
+  getCsrDetails(reportId: number): Promise<any>;
+  createCsrReport(reportData: any): Promise<any>;
+  updateCsrReport(id: number, reportData: any): Promise<any>;
+  createCsrDetails(detailsData: any): Promise<any>;
+  
   // Study Session operations
   createStudySession(session: typeof insertStudySessionSchema._type): Promise<any>;
   getStudySession(sessionId: string): Promise<any>;
@@ -67,6 +75,98 @@ export class DatabaseStorage implements IStorage {
   constructor() {
     // Use a memory store for sessions to get things working
     this.sessionStore = new MemoryStore();
+  }
+  
+  // CSR Reports methods
+  async getAllCsrReports() {
+    try {
+      // Import csrReports from sage-plus-service to avoid circular dependencies
+      const { csrReports } = await import('./sage-plus-service');
+      
+      // Get all CSR reports ordered by upload date (newest first)
+      const reports = await db.select().from(csrReports).orderBy(desc(csrReports.uploadDate));
+      
+      return reports;
+    } catch (error) {
+      console.error('Error fetching CSR reports:', error);
+      return [];
+    }
+  }
+  
+  async getCsrReport(id: number) {
+    try {
+      const { csrReports } = await import('./sage-plus-service');
+      
+      const [report] = await db.select()
+        .from(csrReports)
+        .where(eq(csrReports.id, id));
+      
+      return report;
+    } catch (error) {
+      console.error(`Error fetching CSR report with ID ${id}:`, error);
+      return null;
+    }
+  }
+  
+  async getCsrDetails(reportId: number) {
+    try {
+      const { csrDetails } = await import('./sage-plus-service');
+      
+      const [details] = await db.select()
+        .from(csrDetails)
+        .where(eq(csrDetails.reportId, reportId));
+      
+      return details;
+    } catch (error) {
+      console.error(`Error fetching CSR details for report ID ${reportId}:`, error);
+      return null;
+    }
+  }
+  
+  async createCsrReport(reportData: any) {
+    try {
+      const { csrReports } = await import('./sage-plus-service');
+      
+      const [report] = await db.insert(csrReports)
+        .values(reportData)
+        .returning();
+      
+      return report;
+    } catch (error) {
+      console.error('Error creating CSR report:', error);
+      throw error;
+    }
+  }
+  
+  async updateCsrReport(id: number, reportData: any) {
+    try {
+      const { csrReports } = await import('./sage-plus-service');
+      
+      const [updatedReport] = await db.update(csrReports)
+        .set(reportData)
+        .where(eq(csrReports.id, id))
+        .returning();
+      
+      return updatedReport;
+    } catch (error) {
+      console.error(`Error updating CSR report with ID ${id}:`, error);
+      throw error;
+    }
+  }
+  
+  async createCsrDetails(detailsData: any) {
+    try {
+      const { csrDetails } = await import('./sage-plus-service');
+      
+      const [details] = await db.insert(csrDetails)
+        .values(detailsData)
+        .returning();
+      
+      return details;
+    } catch (error) {
+      console.error('Error creating CSR details:', error);
+      throw error;
+    }
   }
   
   // Implement the missing Study Session methods
