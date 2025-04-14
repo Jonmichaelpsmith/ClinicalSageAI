@@ -27,7 +27,7 @@ import {
   TrendingUp, 
   LineChart,
   BarChartHorizontal,
-  Flask,
+  TestTube,
   FileCheck,
   Briefcase,
   ChevronRight,
@@ -225,7 +225,7 @@ export default function ExampleReportsPage() {
   // Get icon for persona
   const getPersonaIcon = (personaId) => {
     const iconMap = {
-      clinical: <Flask className="h-5 w-5" />,
+      clinical: <TestTube className="h-5 w-5" />,
       regulatory: <FileCheck className="h-5 w-5" />,
       statistical: <BarChartHorizontal className="h-5 w-5" />,
       investor: <TrendingUp className="h-5 w-5" />,
@@ -522,7 +522,7 @@ export default function ExampleReportsPage() {
                           return (
                             <Card key={report.id} className="hover:border-primary/50 transition-all">
                               <CardHeader className="pb-2">
-                                <Badge className={getPersonaColor(report.persona)} className="mb-2 w-fit">
+                                <Badge className={`${getPersonaColor(report.persona)} mb-2 w-fit`}>
                                   <div className="flex items-center gap-1.5">
                                     {getPersonaIcon(report.persona)}
                                     <span>{persona?.name || report.persona}</span>
@@ -567,7 +567,7 @@ export default function ExampleReportsPage() {
         <div className="mt-8 p-6 border rounded-xl bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
           <div className="flex flex-col md:flex-row gap-8 items-center">
             <div className="space-y-4 flex-1">
-              <Badge className="bg-primary/10 text-primary hover:bg-primary/20 border-none" className="mb-2">Premium Intelligence</Badge>
+              <Badge className="bg-primary/10 text-primary hover:bg-primary/20 border-none mb-2">Premium Intelligence</Badge>
               <h2 className="text-2xl lg:text-3xl font-bold">Ready to access the full suite of intelligence tools?</h2>
               <p className="text-muted-foreground">
                 Subscribe today to access our complete suite of protocol optimization tools, success prediction models, 
