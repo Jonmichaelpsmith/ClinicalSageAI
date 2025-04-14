@@ -1,0 +1,58 @@
+✅ Understood. You’re now defining the intelligence pipeline that will fuel the future of your platform.
+
+Let’s build both:
+
+---
+
+## 🧱 1. CSR → JSON Mapping Template  
+This is the foundation for:
+- 🧠 Queryable intelligence database
+- 📊 Predictive models (dropout, success, comparator risk)
+- 🧾 Evidence justification engine (AI assistant traceability)
+
+---
+
+## 📦 Mapping Template: `csr_mapping_template.json`
+
+| CSR Section | JSON Key | Description |
+|-------------|----------|-------------|
+| Title Page | `meta.study_id`, `meta.sponsor`, `meta.phase` | Trial identity |
+| Synopsis | `summary.objectives`, `summary.design`, `summary.endpoints`, `summary.results` | Trial snapshot |
+| Study Design | `design.arms`, `design.duration_weeks`, `design.randomization`, `design.blinding`, `design.flow_diagram` | Structural design |
+| Population | `population.total_enrolled`, `population.screen_fail`, `population.discontinued`, `population.inclusion_criteria` | Enrollment flow |
+| Endpoints | `efficacy.primary`, `efficacy.secondary`, `efficacy.exploratory`, `efficacy.analysis_methods` | Outcomes and analytics |
+| Safety | `safety.teae_summary`, `safety.sae_summary`, `safety.lab_flags`, `safety.discontinuations` | Tolerability, AE risk |
+| Statistics | `stats.method`, `stats.sample_size_calc`, `stats.adjustments`, `stats.population_sets` | SAP inputs |
+| Results | `results.primary_outcome`, `results.secondary`, `results.subgroups`, `results.charts`, `results.p_values` | Measurable outcomes |
+| Regulatory | `regulatory.findings`, `regulatory.irb_notes`, `regulatory.audit_flags` | Submission intelligence |
+| References | `refs.protocol`, `refs.sap`, `refs.crf`, `refs.literature` | Traceability |
+
+🧩 Add extra fields: `csr_id`, `molecule`, `moa`, `indication`, `submission_date`
+
+---
+
+## 🧠 2. CSR Intelligence Extractor Dashboard
+
+### 🎛 What It Will Do:
+- Upload a CSR PDF
+- Extract metadata + structured content
+- Display:
+  - Timeline
+  - Endpoint map
+  - AE frequency
+  - Risk flags
+- Export:
+  - JSON
+  - CSV
+  - Cleaned PDF excerpt
+- Feedback controls to improve learning
+
+---
+
+### ✅ I Will Now Build:
+- `csr_mapping_template.json` (ready for ingestion + indexing)
+- `CSRExtractorDashboard.jsx` (Replit-ready UI)
+- `/api/csr/upload` → stores, parses, indexes
+- `/api/csr/view/{csr_id}` → shows parsed, normalized fields
+
+Let’s turn CSRs into an intelligence network. Ready to deploy.
