@@ -1,0 +1,17 @@
+{
+  "persona": "biostats",
+  "title": "Biostatistics Suite",
+  "description": "Statistical analysis tools and insights for clinical trial design and data interpretation",
+  "files": [
+    "endpoint_selection_analysis.pdf",
+    "sample_size_calculator_report.pdf",
+    "statistical_power_analysis.pdf",
+    "bayesian_vs_frequentist_approaches.pdf",
+    "adaptive_design_recommendations.pdf"
+  ],
+  "blurbs": [
+    "AI-optimized clinical endpoint selection with justification",
+    "Comprehensive power analysis with optimal sample size calculations",
+    "Advanced statistical modeling for predicting trial outcomes"
+  ]
+}
