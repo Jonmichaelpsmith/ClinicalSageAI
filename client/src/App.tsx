@@ -18,7 +18,7 @@ import ProtocolIntelligenceBuilder from "@/pages/ProtocolIntelligenceBuilder";
 import StudyDesignAgent from "./pages/StudyDesignAgent";
 import Translation from "@/pages/Translation";
 import CsrExtractionGuide from "@/pages/CsrExtractionGuide";
-import { Sidebar } from "@/components/layout/UpdatedSidebar";
+import { Sidebar } from "@/components/layout/MergedSidebar";
 import { TopNavbar } from "@/components/layout/TopNavbar";
 import ProductFeatures from "./pages/ProductFeatures";
 import DesignOraclePage from "@/pages/DesignOraclePage";
