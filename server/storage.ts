@@ -112,24 +112,24 @@ export class DatabaseStorage implements IStorage {
     try {
       const { csrDetails } = await import('./sage-plus-service');
       
-      // Using a safer approach with only the columns we know exist
-      const result = await db.execute(`
-        SELECT 
-          id, report_id as "reportId", 
-          study_design as "studyDesign", 
-          primary_objective as "primaryObjective", 
-          study_description as "studyDescription",
-          inclusion_criteria as "inclusionCriteria", 
-          exclusion_criteria as "exclusionCriteria",
-          endpoints, 
-          treatment_arms as "treatmentArms", 
-          processed
-        FROM csr_details 
-        WHERE report_id = $1
-      `, [reportId]);
+      // Using proper parameterized query with placeholders
+      const result = await db.query.csrDetails.findFirst({
+        where: (fields, { eq }) => eq(fields.reportId, reportId)
+      });
       
-      if (result.length > 0) {
-        return result[0];
+      if (result) {
+        return {
+          id: result.id,
+          reportId: result.reportId,
+          studyDesign: result.studyDesign,
+          primaryObjective: result.primaryObjective,
+          studyDescription: result.studyDescription,
+          inclusionCriteria: result.inclusionCriteria,
+          exclusionCriteria: result.exclusionCriteria,
+          endpoints: result.endpoints,
+          treatmentArms: result.treatmentArms,
+          processed: result.processed
+        };
       }
       return null;
     } catch (error) {
