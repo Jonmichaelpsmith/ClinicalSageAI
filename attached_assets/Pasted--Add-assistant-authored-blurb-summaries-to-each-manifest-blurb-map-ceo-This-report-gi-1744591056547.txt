@@ -1,0 +1,25 @@
+# Add assistant-authored blurb summaries to each manifest
+blurb_map = {
+    "ceo": "This report gives biotech CEOs a complete, investor-ready protocol overview—forecasting success, identifying risk, and justifying every design choice using real-world CSRs.",
+    "biostats": "Designed for biostatisticians, this report provides power and sample size modeling, dropout forecasting, and CSR-based SAP drafting support.",
+    "ops": "This operational package forecasts screen fail rates, enrollment delays, and dropout risk to help Clinical Ops leads run smarter, faster trials.",
+    "planner": "For clinical development teams, this report offers molecule-informed design scaffolds, endpoint optimization, and protocol structure validation.",
+    "writer": "Medical writers get IND modules, track-changed protocol suggestions, and CSR-aligned language ready to insert into submission packets.",
+    "regulatory": "Regulatory strategists can validate every section of their protocol with precedent, wisdom trace, and IND-ready compliance scorecards.",
+    "investor": "Built to impress boards and backers, this bundle distills risk, ROI, success probability, and strategic justification into a pitch-grade packet.",
+    "pi": "Designed for academic principal investigators, this report delivers IRB-ready protocols, ethical justification, and publishability insights.",
+    "intelligence": "This analyst dashboard aggregates all KPI outputs, decision rationale, and assistant insights into one strategic report.",
+    "cxo": "Executive teams receive a cross-role strategy brief showing risk, readiness, and alignment across regulatory, clinical, and investor lenses."
+}
+
+# Apply to each manifest
+for persona, blurb in blurb_map.items():
+    manifest_path = f"/mnt/data/lumen_reports_backend/static/example_reports/{persona}/manifest.json"
+    if os.path.exists(manifest_path):
+        with open(manifest_path, "r") as f:
+            data = json.load(f)
+        data["blurb"] = blurb
+        with open(manifest_path, "w") as f:
+            json.dump(data, f, indent=2)
+
+"Blurb summaries injected into all report manifests."
