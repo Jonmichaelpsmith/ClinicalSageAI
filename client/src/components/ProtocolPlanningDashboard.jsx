@@ -144,22 +144,31 @@ ${endpoints.length > 0 ? `- Original endpoints: ${endpoints.join(', ')}` : ''}
         description: "This may take a minute as we analyze your protocol.",
       });
       
+      // Enhanced payload with detailed CSR context for better AI-driven output
+      const enhancedContext = csrContext ? {
+        id: csrContext.id,
+        title: csrContext.title,
+        sponsor: csrContext.sponsor,
+        indication,
+        phase,
+        drugName: molecule,
+        endpoints: endpoints,
+        // Include advanced semantic fields for context-aware generation
+        design_rationale: csrContext.semantic?.design_rationale,
+        moa: csrContext.pharmacology?.moa_explained,
+        primary_model: csrContext.stats_traceability?.primary_model,
+        primary_endpoint: csrContext.efficacy?.primary?.[0],
+        control_arm: csrContext.design?.control
+      } : null;
+      
       const response = await fetch("/api/planner/generate-ind", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           protocol,
           sessionId,
-          // Include source CSR context for traceability
-          csrContext: csrContext ? {
-            id: csrContext.id,
-            title: csrContext.title,
-            sponsor: csrContext.sponsor,
-            indication,
-            phase,
-            drugName: molecule,
-            endpoints: endpoints
-          } : null
+          // Pass enhanced CSR context for traceability and AI-guidance
+          csrContext: enhancedContext
         })
       });
       
@@ -197,22 +206,31 @@ ${endpoints.length > 0 ? `- Original endpoints: ${endpoints.join(', ')}` : ''}
         description: "This may take a minute as we analyze your protocol.",
       });
       
+      // Enhanced payload with detailed CSR context for better AI-driven output
+      const enhancedContext = csrContext ? {
+        id: csrContext.id,
+        title: csrContext.title,
+        sponsor: csrContext.sponsor,
+        indication,
+        phase,
+        drugName: molecule,
+        endpoints: endpoints,
+        // Include advanced semantic fields for context-aware generation
+        design_rationale: csrContext.semantic?.design_rationale,
+        moa: csrContext.pharmacology?.moa_explained,
+        primary_model: csrContext.stats_traceability?.primary_model,
+        primary_endpoint: csrContext.efficacy?.primary?.[0],
+        control_arm: csrContext.design?.control
+      } : null;
+      
       const response = await fetch("/api/planner/generate-summary", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           protocol,
           sessionId,
-          // Include source CSR context for traceability
-          csrContext: csrContext ? {
-            id: csrContext.id,
-            title: csrContext.title,
-            sponsor: csrContext.sponsor,
-            indication,
-            phase,
-            drugName: molecule,
-            endpoints: endpoints
-          } : null
+          // Pass enhanced CSR context for traceability and AI-guidance
+          csrContext: enhancedContext
         })
       });
       
@@ -297,86 +315,120 @@ ${endpoints.length > 0 ? `- Original endpoints: ${endpoints.join(', ')}` : ''}
   const renderCsrContextBanner = () => {
     if (!csrContext) return null;
     
+    // Check for advanced semantic fields from enhanced CSR extraction
+    const hasSuggestions = csrContext?.efficacy?.primary?.length > 0 || 
+                           csrContext?.design?.control || 
+                           csrContext?.semantic?.design_rationale;
+    
     return (
-      <Card className="mb-4 border-blue-200 bg-blue-50">
-        <CardContent className="p-4">
-          <div className="flex flex-wrap items-start gap-2">
-            <div className="flex-1">
-              <h3 className="text-sm font-medium flex items-center gap-1 text-blue-800">
-                <FileText className="h-4 w-4" /> Source CSR Context
-              </h3>
-              <p className="text-xs text-blue-700 mt-1">
-                This planning session is linked to CSR #{studyId}
-              </p>
-              
-              {/* CSR metadata grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mt-3">
-                {molecule && (
-                  <div className="flex flex-col">
-                    <span className="text-xs text-blue-600">Study Drug</span>
-                    <span className="text-sm font-medium flex items-center">
-                      <Beaker className="h-3 w-3 mr-1 text-blue-500" /> {molecule}
-                    </span>
-                  </div>
-                )}
+      <>
+        <Card className="mb-4 border-blue-200 bg-blue-50">
+          <CardContent className="p-4">
+            <div className="flex flex-wrap items-start gap-2">
+              <div className="flex-1">
+                <h3 className="text-sm font-medium flex items-center gap-1 text-blue-800">
+                  <FileText className="h-4 w-4" /> Source CSR Context
+                </h3>
+                <p className="text-xs text-blue-700 mt-1">
+                  This planning session is linked to CSR #{studyId}
+                </p>
                 
-                {indication && (
-                  <div className="flex flex-col">
-                    <span className="text-xs text-blue-600">Indication</span>
-                    <span className="text-sm font-medium flex items-center">
-                      <Target className="h-3 w-3 mr-1 text-blue-500" /> {indication}
-                    </span>
-                  </div>
-                )}
-                
-                {phase && (
-                  <div className="flex flex-col">
-                    <span className="text-xs text-blue-600">Phase</span>
-                    <span className="text-sm font-medium">
-                      <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-200">
-                        {phase}
-                      </Badge>
-                    </span>
-                  </div>
-                )}
-                
-                {csrContext.sponsor && (
-                  <div className="flex flex-col">
-                    <span className="text-xs text-blue-600">Sponsor</span>
-                    <span className="text-sm font-medium">{csrContext.sponsor}</span>
-                  </div>
-                )}
-              </div>
-              
-              {/* Endpoints section */}
-              {endpoints.length > 0 && (
-                <div className="mt-3">
-                  <span className="text-xs text-blue-600">Endpoints</span>
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {endpoints.map((endpoint, index) => (
-                      <Badge 
-                        key={index} 
-                        variant="outline" 
-                        className="bg-blue-100 text-blue-700 border-blue-200 text-xs"
-                      >
-                        {endpoint}
-                      </Badge>
-                    ))}
-                  </div>
+                {/* CSR metadata grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mt-3">
+                  {molecule && (
+                    <div className="flex flex-col">
+                      <span className="text-xs text-blue-600">Study Drug</span>
+                      <span className="text-sm font-medium flex items-center">
+                        <Beaker className="h-3 w-3 mr-1 text-blue-500" /> {molecule}
+                      </span>
+                    </div>
+                  )}
+                  
+                  {indication && (
+                    <div className="flex flex-col">
+                      <span className="text-xs text-blue-600">Indication</span>
+                      <span className="text-sm font-medium flex items-center">
+                        <Target className="h-3 w-3 mr-1 text-blue-500" /> {indication}
+                      </span>
+                    </div>
+                  )}
+                  
+                  {phase && (
+                    <div className="flex flex-col">
+                      <span className="text-xs text-blue-600">Phase</span>
+                      <span className="text-sm font-medium">
+                        <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-200">
+                          {phase}
+                        </Badge>
+                      </span>
+                    </div>
+                  )}
+                  
+                  {csrContext.sponsor && (
+                    <div className="flex flex-col">
+                      <span className="text-xs text-blue-600">Sponsor</span>
+                      <span className="text-sm font-medium">{csrContext.sponsor}</span>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-            
-            <div className="flex flex-col items-end gap-2">
-              <span className="text-xs text-blue-600">Traceability</span>
-              <div className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-green-500" />
-                <span className="text-xs text-green-700">All outputs will reference source CSR</span>
+                
+                {/* Endpoints section */}
+                {endpoints.length > 0 && (
+                  <div className="mt-3">
+                    <span className="text-xs text-blue-600">Endpoints</span>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {endpoints.map((endpoint, index) => (
+                        <Badge 
+                          key={index} 
+                          variant="outline" 
+                          className="bg-blue-100 text-blue-700 border-blue-200 text-xs"
+                        >
+                          {endpoint}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex flex-col items-end gap-2">
+                <span className="text-xs text-blue-600">Traceability</span>
+                <div className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-green-500" />
+                  <span className="text-xs text-green-700">All outputs will reference source CSR</span>
+                </div>
               </div>
             </div>
+          </CardContent>
+        </Card>
+        
+        {/* AI Suggestions Banner from CSR Context */}
+        {hasSuggestions && (
+          <div className="border-l-4 border-blue-400 bg-blue-50 p-4 mb-6 rounded-md">
+            <h3 className="text-sm font-semibold text-blue-900 mb-1 flex items-center">
+              <Lightbulb className="h-4 w-4 mr-1 text-blue-700" />
+              📌 AI Suggestions from CSR Context
+            </h3>
+            <ul className="text-sm text-blue-800 list-disc pl-5 space-y-1">
+              {csrContext?.efficacy?.primary?.length > 0 && (
+                <li><strong>Primary Endpoint:</strong> {csrContext.efficacy.primary[0]}</li>
+              )}
+              {csrContext?.design?.control && (
+                <li><strong>Control Arm:</strong> {csrContext.design.control}</li>
+              )}
+              {csrContext?.semantic?.design_rationale && (
+                <li><strong>Design Rationale:</strong> {csrContext.semantic.design_rationale}</li>
+              )}
+              {csrContext?.stats_traceability?.primary_model && (
+                <li><strong>Statistical Approach:</strong> {csrContext.stats_traceability.primary_model}</li>
+              )}
+              {csrContext?.pharmacology?.moa_explained && (
+                <li><strong>Mechanism of Action:</strong> {csrContext.pharmacology.moa_explained}</li>
+              )}
+            </ul>
           </div>
-        </CardContent>
-      </Card>
+        )}
+      </>
     );
   };
 
