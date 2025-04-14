@@ -6,62 +6,182 @@
     "indication": "",
     "molecule": "",
     "moa": "",
-    "submission_date": ""
+    "submission_date": "",
+    "regulatory_submission_type": "",
+    "marketing_authorization_status": "",
+    "ctis_submission_date": ""
   },
   "summary": {
     "objectives": "",
     "design": "",
     "endpoints": [],
-    "results": ""
+    "results": "",
+    "synopsis_key_findings": "",
+    "conclusion": ""
   },
   "design": {
     "arms": 0,
     "duration_weeks": 0,
     "randomization": "",
     "blinding": "",
-    "flow_diagram": ""
+    "flow_diagram": "",
+    "control_type": "",
+    "allocation_ratio": "",
+    "stratification_factors": []
   },
   "population": {
     "total_enrolled": 0,
     "screen_fail": 0,
     "discontinued": 0,
     "inclusion_criteria": [],
-    "exclusion_criteria": []
+    "exclusion_criteria": [],
+    "demographics": {
+      "age_range": "",
+      "age_mean": 0,
+      "age_median": 0,
+      "gender_distribution": {},
+      "race_distribution": {},
+      "baseline_characteristics": []
+    },
+    "disposition": {
+      "completion_rate": 0,
+      "withdrawal_reasons": [],
+      "protocol_deviations": {
+        "major": 0,
+        "minor": 0,
+        "types": []
+      }
+    }
   },
   "efficacy": {
     "primary": [],
     "secondary": [],
     "exploratory": [],
-    "analysis_methods": ""
+    "analysis_methods": "",
+    "time_points": [],
+    "subgroup_analyses": [],
+    "response_definitions": {}
   },
   "safety": {
     "teae_summary": "",
     "sae_summary": "",
     "lab_flags": [],
-    "discontinuations": []
+    "discontinuations": [],
+    "deaths": 0,
+    "adverse_events_by_severity": {},
+    "adverse_events_by_causality": {},
+    "serious_adverse_events": [],
+    "laboratory_abnormalities": [],
+    "vital_signs_findings": "",
+    "ecg_findings": "",
+    "special_safety_assessments": []
+  },
+  "pharmacology": {
+    "moa_explained": "",
+    "dose_selection_justification": "",
+    "formulation_details": "",
+    "bioavailability_finding": "",
+    "pharmacokinetic_profiles": [],
+    "pk_parameters": {},
+    "pk_population": {},
+    "drug_interactions": [],
+    "exposure_response": "",
+    "metabolite_profiles": []
   },
   "stats": {
     "method": "",
     "sample_size_calc": "",
     "adjustments": "",
-    "population_sets": []
+    "population_sets": [],
+    "alpha_level": 0,
+    "power": 0,
+    "hypothesis": "",
+    "multiplicity_adjustments": "",
+    "interim_analyses": [],
+    "sensitivity_analyses": []
+  },
+  "stats_traceability": {
+    "primary_model": "",
+    "multiplicity_adjustment_method": "",
+    "interim_analysis_details": "",
+    "power_analysis_basis": "",
+    "data_sources": [],
+    "stratification_factors": [],
+    "modeling_approach": "",
+    "handling_of_missing_data": "",
+    "censoring_rules": ""
   },
   "results": {
     "primary_outcome": "",
     "secondary": "",
     "subgroups": "",
     "charts": [],
-    "p_values": {}
+    "p_values": {},
+    "effect_sizes": {},
+    "confidence_intervals": {},
+    "treatment_differences": {},
+    "time_to_event_analyses": {},
+    "forest_plots": []
   },
   "regulatory": {
     "findings": "",
     "irb_notes": "",
-    "audit_flags": []
+    "audit_flags": [],
+    "regulatory_questions": [],
+    "marketing_authorization_decision": "",
+    "label_implications": "",
+    "post_marketing_requirements": []
+  },
+  "semantic": {
+    "design_rationale": "",
+    "regulatory_classification": "",
+    "study_type": "",
+    "statistical_principles": [],
+    "deviation_handling_method": "",
+    "adjustment_for_covariates": "",
+    "dropout_handling": "",
+    "safety_monitoring_strategy": "",
+    "subgroup_analysis_approach": "",
+    "patient_reported_outcomes_approach": "",
+    "biomarker_strategy": "",
+    "study_limitations": [],
+    "data_quality_assurance": "",
+    "protocol_amendments": []
+  },
+  "ethics": {
+    "irb_approvals": [],
+    "informed_consent_process": "",
+    "ethical_considerations": [],
+    "vulnerable_populations": "",
+    "data_monitoring_committee": "",
+    "early_termination_criteria": []
+  },
+  "investigational_plan": {
+    "treatments_administered": "",
+    "dose_modification_rules": "",
+    "treatment_compliance": "",
+    "concomitant_medications": {
+      "allowed": [],
+      "prohibited": []
+    },
+    "rescue_medications": []
+  },
+  "efficacy_evaluation": {
+    "datasets_analyzed": [],
+    "primary_efficacy_variable": {
+      "definition": "",
+      "justification": "",
+      "measurement_timepoints": []
+    },
+    "covariates": [],
+    "multicenter_handling": ""
   },
   "refs": {
     "protocol": "",
     "sap": "",
     "crf": "",
-    "literature": []
+    "literature": [],
+    "regulatory_guidance_documents": [],
+    "previous_regulatory_interactions": []
   }
 }
