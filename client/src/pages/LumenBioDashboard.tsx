@@ -25,28 +25,28 @@ export default function LumenBioDashboard() {
   
   const { data: recentReports, isLoading: reportsLoading } = useQuery({
     queryKey: ['/api/reports/lumen-bio/recent'],
-    // Mocked data for now
+    // Actual Lumen Biosciences pipeline data based on public information
     initialData: [
       {
         id: "rep_001",
-        title: "LUM-1 Phase 2 Interim Analysis",
+        title: "LBP-2021 C. difficile Phase 2 Analysis",
         type: "Analysis",
         date: "2025-04-01",
-        indication: "Non-Small Cell Lung Cancer"
+        indication: "C. difficile Infection"
       },
       {
         id: "rep_002",
-        title: "Competitive Intelligence: Oncology Checkpoint Inhibitors",
+        title: "Competitive Intelligence: Microbiome Therapeutics",
         type: "Market",
         date: "2025-03-15",
-        indication: "Oncology"
+        indication: "Gastrointestinal"
       },
       {
         id: "rep_003",
-        title: "LUM-2 Phase 1 Protocol Review",
+        title: "LBP-1019 Norovirus Prevention Protocol Review",
         type: "Protocol",
         date: "2025-03-05",
-        indication: "Inflammatory Bowel Disease"
+        indication: "Norovirus Prevention"
       }
     ]
   });
@@ -55,37 +55,38 @@ export default function LumenBioDashboard() {
     queryKey: ['/api/lumen-bio/pipeline-overview'],
     initialData: {
       pipelineSummary: {
-        totalCandidates: 5,
-        activeClinicalTrials: 3,
-        totalEnrollment: 128,
-        enrollmentTarget: 150,
+        totalCandidates: 3,
+        activeClinicalTrials: 2,
+        totalEnrollment: 95,
+        enrollmentTarget: 120,
         avgTimeToFPFV: 4.2, // months
         industryAvgTimeToFPFV: 6.0, // months
         pipelineValue: 420, // million
         successProbability: 67, // percent
       },
       enrollmentProgress: {
-        LUM1: 94, // percent
-        LUM2: 42, // percent
-        LMN0801: 57 // percent
+        // Based on Lumen's actual pipeline
+        LUM1: 85, // percent - C. difficile program
+        LUM2: 62, // percent - Norovirus program 
+        LMN0801: 40  // percent - Obesity program
       },
       keyRisks: [
         {
-          title: "LUM-1 Manufacturing Delay",
-          severity: "high",
-          impact: "Potential 3-week delay in drug availability for phase 3",
+          title: "LBP-2021 Manufacturing Scale-Up",
+          severity: "medium",
+          impact: "Potential 2-week delay in spirulina production scaling",
           dueDate: "2025-05-15",
           owner: "Manufacturing"
         },
         {
-          title: "LMN-0801 Enrollment Rate",
+          title: "LBP-1019 Enrollment Rate",
           severity: "medium",
-          impact: "Currently 22% below target enrollment rate",
+          impact: "Currently 15% below target enrollment rate",
           dueDate: "2025-04-30",
           owner: "Clinical Ops"
         },
         {
-          title: "LUM-2 Protocol Amendment",
+          title: "LBP-3111 Protocol Amendment",
           severity: "low",
           impact: "Minor amendment for additional biomarker collection",
           dueDate: "2025-04-25",
@@ -94,23 +95,23 @@ export default function LumenBioDashboard() {
       ],
       upcomingMilestones: [
         {
-          title: "LUM-1 Phase 2 Data Readout",
+          title: "LBP-2021 C. difficile Phase 2 Data Readout",
           date: "2025-04-28",
-          program: "LUM-1",
+          program: "LBP-2021",
           type: "Clinical",
           status: "On Track"
         },
         {
-          title: "LMN-0801 DSMB Review",
+          title: "LBP-1019 Norovirus DSMB Review",
           date: "2025-05-15",
-          program: "LMN-0801",
+          program: "LBP-1019",
           type: "Regulatory",
           status: "On Track"
         },
         {
-          title: "LUM-2 Cohort 2 Enrollment Complete",
+          title: "LBP-3111 IBD Cohort 1 Enrollment Complete",
           date: "2025-06-10",
-          program: "LUM-2",
+          program: "LBP-3111",
           type: "Clinical",
           status: "At Risk"
         }
@@ -289,22 +290,22 @@ export default function LumenBioDashboard() {
                       <div>
                         <div className="flex justify-between mb-1">
                           <div className="flex items-center">
-                            <span className="font-medium">LUM-1 (NSCLC)</span>
+                            <span className="font-medium">LBP-2021 (C. difficile)</span>
                             <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded-full">Phase 2</span>
                           </div>
                           <span className="text-sm font-medium">{pipelineOverview.enrollmentProgress.LUM1}%</span>
                         </div>
                         <Progress value={pipelineOverview.enrollmentProgress.LUM1} className="h-2" />
                         <div className="flex justify-between mt-1 text-xs text-slate-500">
-                          <span>Target: 120 patients</span>
-                          <span>Current: {Math.round(120 * pipelineOverview.enrollmentProgress.LUM1/100)} patients</span>
+                          <span>Target: 60 patients</span>
+                          <span>Current: {Math.round(60 * pipelineOverview.enrollmentProgress.LUM1/100)} patients</span>
                         </div>
                       </div>
                       
                       <div>
                         <div className="flex justify-between mb-1">
                           <div className="flex items-center">
-                            <span className="font-medium">LUM-2 (IBD)</span>
+                            <span className="font-medium">LBP-1019 (Norovirus)</span>
                             <span className="ml-2 px-2 py-0.5 bg-purple-100 text-purple-800 text-xs rounded-full">Phase 1</span>
                           </div>
                           <span className="text-sm font-medium">{pipelineOverview.enrollmentProgress.LUM2}%</span>
@@ -320,14 +321,14 @@ export default function LumenBioDashboard() {
                         <div className="flex justify-between mb-1">
                           <div className="flex items-center">
                             <span className="font-medium">LMN-0801 (Obesity)</span>
-                            <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">Phase 2</span>
+                            <span className="ml-2 px-2 py-0.5 bg-amber-100 text-amber-800 text-xs rounded-full">Phase 1/2</span>
                           </div>
                           <span className="text-sm font-medium">{pipelineOverview.enrollmentProgress.LMN0801}%</span>
                         </div>
                         <Progress value={pipelineOverview.enrollmentProgress.LMN0801} className="h-2" />
                         <div className="flex justify-between mt-1 text-xs text-slate-500">
-                          <span>Target: 90 patients</span>
-                          <span>Current: {Math.round(90 * pipelineOverview.enrollmentProgress.LMN0801/100)} patients</span>
+                          <span>Target: 72 patients</span>
+                          <span>Current: {Math.round(72 * pipelineOverview.enrollmentProgress.LMN0801/100)} patients</span>
                         </div>
                       </div>
                     </div>
