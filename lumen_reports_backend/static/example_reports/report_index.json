@@ -1,124 +1,115 @@
 {
   "personas": [
     {
-      "id": "cxo",
-      "name": "Executive Team Suite",
-      "title": "Executive Intelligence Suite",
-      "description": "Comprehensive strategic intelligence for C-Suite executives focused on trial success metrics, competitive landscape analysis, and resource optimization.",
-      "icon": "crown",
-      "primary_color": "#3E64FF",
-      "highlight_color": "#5D7DF5",
-      "target_role": "Chief Medical Officers, Chief Scientific Officers, CEOs",
-      "value_proposition": "Make critical go/no-go decisions based on competitive intelligence and success probability",
-      "available": true
-    },
-    {
-      "id": "planner",
-      "name": "Study Planning Suite",
-      "title": "Study Planning Intelligence Suite",
-      "description": "Evidence-based study design and protocol optimization tools for clinical operations managers and study planners.",
-      "icon": "compass",
-      "primary_color": "#4CAF50",
-      "highlight_color": "#66BB6A",
-      "target_role": "Clinical Trial Planners, Protocol Designers, Project Managers",
-      "value_proposition": "Design optimized protocols with higher success probabilities and lower development costs",
-      "available": true
-    },
-    {
-      "id": "biostat",
-      "name": "Biostatistics Suite",
-      "title": "Biostatistics Intelligence Suite",
-      "description": "Advanced statistical tools and historical outcome analysis for optimizing study power and statistical approach selection.",
-      "icon": "bar-chart",
-      "primary_color": "#FF9800",
-      "highlight_color": "#FFA726",
-      "target_role": "Biostatisticians, Data Scientists, Statistical Programmers",
-      "value_proposition": "Optimize statistical approaches with evidence-based sample size and endpoint selection",
-      "available": true
+      "id": "clinical",
+      "name": "Clinical Development",
+      "description": "Intelligence for protocol optimization and clinical study success",
+      "icon": "flask",
+      "color": "blue",
+      "featured": true
     },
     {
       "id": "regulatory",
-      "name": "Regulatory Affairs Suite",
-      "title": "Regulatory Intelligence Suite",
-      "description": "Regulatory alignment analysis and submission-ready documentation for expediting approvals and reducing regulatory risk.",
-      "icon": "shield",
-      "primary_color": "#795548",
-      "highlight_color": "#8D6E63",
-      "target_role": "Regulatory Affairs Managers, Submissions Specialists, Quality Assurance Teams",
-      "value_proposition": "Accelerate regulatory submissions with automatically validated protocols and precedent analysis",
-      "available": true
+      "name": "Regulatory Affairs",
+      "description": "Streamlined preparation for regulatory submissions and meetings",
+      "icon": "file-check",
+      "color": "green"
     },
     {
-      "id": "med_writer",
-      "name": "Medical Writing Suite",
-      "title": "Medical Writing Intelligence Suite",
-      "description": "Protocol writing assistance and standardized clinical documentation with real-world example templates from successful studies.",
-      "icon": "edit",
-      "primary_color": "#9C27B0",
-      "highlight_color": "#AB47BC",
-      "target_role": "Medical Writers, Clinical Document Specialists, Scientific Communications",
-      "value_proposition": "Create publication-ready protocols and study documentation with evidence-based templates",
-      "available": true
+      "id": "statistical",
+      "name": "Biostatistics",
+      "description": "Advanced statistical modeling and endpoint optimization",
+      "icon": "bar-chart",
+      "color": "purple"
     },
     {
-      "id": "clin_ops",
-      "name": "Clinical Operations Suite",
-      "title": "Clinical Operations Intelligence Suite",
-      "description": "Practical implementation guidance including site selection recommendations, recruitment projections, and operational benchmarks.",
-      "icon": "users",
-      "primary_color": "#2196F3",
-      "highlight_color": "#42A5F5",
-      "target_role": "Clinical Operations Managers, CRAs, Study Coordinators",
-      "value_proposition": "Optimize trial execution with evidence-based recruitment, site selection, and operational benchmarks",
-      "available": true
+      "id": "medical",
+      "name": "Medical Affairs",
+      "description": "Evidence synthesis and strategic scientific communications",
+      "icon": "stethoscope",
+      "color": "teal"
     },
     {
       "id": "investor",
-      "name": "Investor Relations Suite",
-      "title": "Investor Relations Intelligence Suite",
-      "description": "Financial and strategic analysis of clinical development programs with market positioning and investment valuation models.",
-      "icon": "dollar-sign",
-      "primary_color": "#607D8B",
-      "highlight_color": "#78909C",
-      "target_role": "Investors, Business Development, Portfolio Managers",
-      "value_proposition": "Make informed investment decisions with predictive success modeling and competitive benchmarking",
-      "available": true
+      "name": "Biotech Investor",
+      "description": "Decision-grade intelligence for investment in clinical-stage companies",
+      "icon": "trending-up",
+      "color": "amber",
+      "featured": true,
+      "new": true
     },
     {
-      "id": "pi",
-      "name": "Principal Investigator Suite",
-      "title": "Principal Investigator Intelligence Suite",
-      "description": "Practical guidance for site operations, inclusion/exclusion criteria optimization, and patient recruitment acceleration.",
-      "icon": "microscope",
-      "primary_color": "#E91E63",
-      "highlight_color": "#EC407A",
-      "target_role": "Principal Investigators, Site Directors, Academic Researchers",
-      "value_proposition": "Design more efficient and effective clinical investigations with evidence-based study elements",
-      "available": true
+      "id": "executive",
+      "name": "Executive Suite",
+      "description": "Strategic decision support for portfolio management",
+      "icon": "briefcase",
+      "color": "indigo"
+    }
+  ],
+  "reportTypes": [
+    {
+      "id": "success-prediction",
+      "name": "Trial Success Prediction",
+      "description": "AI-powered probability models for trial outcomes",
+      "icon": "percent"
     },
     {
-      "id": "data_sci",
-      "name": "Data Science Suite",
-      "title": "Data Science Intelligence Suite",
-      "description": "Advanced analytics and machine learning tools for predictive modeling, adaptive trial design, and real-world evidence analysis.",
-      "icon": "database",
-      "primary_color": "#673AB7",
-      "highlight_color": "#7E57C2",
-      "target_role": "Data Scientists, Machine Learning Engineers, Computational Biologists",
-      "value_proposition": "Build predictive models and adaptive designs based on real-world clinical evidence",
-      "available": true
+      "id": "protocol-optimization",
+      "name": "Protocol Design Optimization",
+      "description": "Evidence-based protocol enhancement recommendations",
+      "icon": "file-edit"
     },
     {
-      "id": "comm",
-      "name": "Commercial Strategy Suite",
-      "title": "Commercial Intelligence Suite",
-      "description": "Market landscape analysis, differentiation strategies, and evidence generation planning for successful product commercialization.",
-      "icon": "shopping-cart",
-      "primary_color": "#F44336",
-      "highlight_color": "#EF5350",
-      "target_role": "Commercial Teams, Product Managers, Market Access Specialists",
-      "value_proposition": "Align clinical development with commercial strategy for maximum market impact",
-      "available": true
+      "id": "endpoint-selection",
+      "name": "Endpoint Intelligence",
+      "description": "Optimal endpoint selection with statistical power analysis",
+      "icon": "target"
+    },
+    {
+      "id": "regulatory-package",
+      "name": "Regulatory Bundle",
+      "description": "Complete documentation package for regulatory submissions",
+      "icon": "folder"
+    },
+    {
+      "id": "investment-analysis",
+      "name": "Investment Analysis",
+      "description": "Risk-adjusted valuation models for biotech assets",
+      "icon": "line-chart",
+      "new": true
+    },
+    {
+      "id": "competitive-intelligence",
+      "name": "Competitive Intelligence",
+      "description": "Landscape analysis with differentiation scoring",
+      "icon": "users"
+    }
+  ],
+  "featuredReports": [
+    {
+      "id": "clinical-protocol-optimizer",
+      "name": "Protocol Optimizer Suite",
+      "description": "Comprehensive optimization of trial design with success prediction",
+      "persona": "clinical",
+      "type": "protocol-optimization",
+      "thumbnail": "/images/reports/protocol-optimizer.png"
+    },
+    {
+      "id": "investor-portfolio-overview",
+      "name": "Biotech Portfolio Analysis",
+      "description": "Investment-grade intelligence for clinical asset evaluation",
+      "persona": "investor",
+      "type": "investment-analysis",
+      "thumbnail": "/images/reports/investor-portfolio.png",
+      "new": true
+    },
+    {
+      "id": "regulatory-submission-bundle",
+      "name": "IND Submission Bundle",
+      "description": "Complete package for FDA IND submissions with intelligent validation",
+      "persona": "regulatory",
+      "type": "regulatory-package",
+      "thumbnail": "/images/reports/ind-bundle.png"
     }
   ]
 }
