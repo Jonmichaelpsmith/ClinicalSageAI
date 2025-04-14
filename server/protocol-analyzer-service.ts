@@ -59,11 +59,35 @@ export class ProtocolAnalyzerService {
       
       const phase = phaseMatch ? this.normalizePhase(phaseMatch[1]) : "Phase 2";
       
-      // Extract indication
-      const indicationMatch = normalizedText.match(/(?:indication|condition|disease):\s*([^\n\.]+)/i) ||
-                              normalizedText.match(/(?:investigating|studying|trial for|treatment of)\s+([^\n\.]+)/i);
+      // Extract indication - look for obesity, metabolic disorder, or other common indications first
+      let indication = "Unknown";
       
-      const indication = indicationMatch ? indicationMatch[1].trim() : "Oncology";
+      // Check for specific therapeutic areas by keywords
+      if (normalizedText.includes('obesity') || normalizedText.includes('weight loss') || 
+          normalizedText.includes('bmi') || normalizedText.includes('overweight')) {
+        indication = "Obesity";
+      } 
+      else if (normalizedText.includes('diabetes') || normalizedText.includes('glycemic') || 
+               normalizedText.includes('insulin')) {
+        indication = "Diabetes";
+      }
+      else if (normalizedText.includes('oncology') || normalizedText.includes('cancer') || 
+               normalizedText.includes('tumor') || normalizedText.includes('carcinoma')) {
+        indication = "Oncology";
+      }
+      else if (normalizedText.includes('cardio') || normalizedText.includes('heart') || 
+               normalizedText.includes('hypertension')) {
+        indication = "Cardiovascular";
+      }
+      else {
+        // Fall back to regex pattern matching if no keywords found
+        const indicationMatch = normalizedText.match(/(?:indication|condition|disease):\s*([^\n\.]+)/i) ||
+                                normalizedText.match(/(?:investigating|studying|trial for|treatment of)\s+([^\n\.]+)/i);
+        
+        if (indicationMatch) {
+          indication = indicationMatch[1].trim();
+        }
+      }
       
       // Extract sample size
       const sampleSizeMatch = normalizedText.match(/(?:sample size|n\s*=|participants|subjects|patients):\s*(\d+)/i) ||
