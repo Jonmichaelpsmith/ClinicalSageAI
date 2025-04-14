@@ -226,7 +226,7 @@ export default function ReportsAnalytics() {
                       : "Unknown"}
                   </div>
                 </div>
-                <Link href={`/report/${report.id}`}>
+                <Link href={`/reports/${report.id}`}>
                   <Button variant="default" size="sm" className="w-full">
                     View Report
                     <ChevronRight className="h-4 w-4 ml-1" />
