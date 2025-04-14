@@ -112,11 +112,23 @@ export class DatabaseStorage implements IStorage {
     try {
       const { csrDetails } = await import('./sage-plus-service');
       
-      const [details] = await db.select()
-        .from(csrDetails)
-        .where(eq(csrDetails.reportId, reportId));
+      // Using a raw SQL query to handle field name differences
+      const result = await db.execute(`
+        SELECT 
+          id, report_id as "reportId", 
+          file_path as "filePath", study_design as "studyDesign", 
+          primary_objective as "primaryObjective", study_description as "studyDescription",
+          inclusion_criteria as "inclusionCriteria", exclusion_criteria as "exclusionCriteria",
+          endpoints, treatment_arms as "treatmentArms", 
+          processed, processing_status as "processingStatus" 
+        FROM csr_details 
+        WHERE report_id = $1
+      `, [reportId]);
       
-      return details;
+      if (result.length > 0) {
+        return result[0];
+      }
+      return null;
     } catch (error) {
       console.error(`Error fetching CSR details for report ID ${reportId}:`, error);
       return null;
