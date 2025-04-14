@@ -34,8 +34,8 @@ export async function startPythonService() {
 
     console.log('Starting Python FastAPI service...');
     
-    // Get the absolute path to the Python script
-    const pythonScriptPath = path.join(process.cwd(), 'server', 'assistant_context_api.py');
+    // Get the absolute path to the Python script - now using our new combined API
+    const pythonScriptPath = path.join(process.cwd(), 'start_intelligence_api.py');
     
     // Make the script executable
     fs.chmodSync(pythonScriptPath, '755');
@@ -63,7 +63,7 @@ export async function startPythonService() {
     });
     
     // Wait for service to be ready
-    let maxWaitMs = 10000; // 10 seconds
+    let maxWaitMs = 30000; // 30 seconds - increased timeout for startup
     const intervalMs = 100;
     
     return new Promise<void>((resolve, reject) => {
@@ -180,6 +180,31 @@ export function registerPythonRoutes(app: express.Express) {
         message: error.message || 'Failed to export IND summary as DOCX'
       });
     }
+  });
+  
+  // Proxy for /api/session/intelligence-indicators/:session_id
+  app.get('/api/session/intelligence-indicators/:session_id', async (req, res) => {
+    try {
+      if (!serviceReady) {
+        // Fall back to the Node.js implementation in smart-protocol-routes.ts
+        // The next middleware in the chain will handle this
+        console.log('Python service not ready, falling back to Node.js implementation for intelligence indicators');
+        return 'next';
+      }
+      
+      const { session_id } = req.params;
+      console.log(`Proxying intelligence indicators request for session ${session_id} to Python service`);
+      const response = await axios.get(`${PYTHON_ENDPOINT}/api/session/intelligence-indicators/${session_id}`);
+      res.json(response.data);
+    } catch (error) {
+      console.error('Error proxying to Python intelligence indicators service:', error);
+      // Instead of returning an error, let the request continue to the next middleware 
+      // (our Node.js implementation in smart-protocol-routes.ts)
+      return 'next';
+    }
+  }, (req, res, next) => {
+    // This middleware only runs if the previous one returns 'next'
+    next();
   });
   
   console.log('Registered Python FastAPI routes');
