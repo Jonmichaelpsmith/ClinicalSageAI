@@ -1,17 +1,1 @@
-{
-  "persona": "intelligence",
-  "title": "Study Intelligence Suite",
-  "description": "Comprehensive analytics and intelligence tools for clinical research",
-  "files": [
-    "trial_trend_analysis.pdf",
-    "competitive_intelligence_report.pdf",
-    "success_factor_analysis.pdf",
-    "indication_landscape_assessment.pdf",
-    "design_element_impact_analysis.pdf"
-  ],
-  "blurbs": [
-    "Comprehensive trial landscape analysis with success patterns",
-    "Competitive intelligence with strategic positioning recommendations",
-    "Advanced trial design insights with success factor analysis"
-  ]
-}
+{"reports": []}

@@ -49,6 +49,11 @@
       "persona": "cxo",
       "title": "Executive Team Bundle",
       "path": "/static/example_reports/cxo/manifest.json"
+    },
+    {
+      "persona": "clinical",
+      "title": "Clinical Development Suite",
+      "path": "/static/example_reports/clinical/manifest.json"
     }
   ]
 }

@@ -1,17 +1,31 @@
 {
-  "persona": "clinical",
-  "title": "Clinical Research Suite",
-  "description": "Clinical research tools and insights for medical professionals and researchers",
+  "description": "Clinical Development Reports for trial planning and success prediction",
   "files": [
     "trial_success_prediction.pdf",
-    "protocol_assessment.pdf",
-    "endpoint_selection_guide.pdf",
-    "inclusion_exclusion_optimization.pdf",
-    "therapeutic_area_insights.pdf"
+    "protocol_optimization.pdf",
+    "endpoint_selection.pdf"
   ],
-  "blurbs": [
-    "Protocol analysis with evidence-based recommendations",
-    "Trial success prediction with actionable optimization insights",
-    "Comprehensive endpoint selection support with historical context"
+  "reports": [
+    {
+      "id": "clinical-001",
+      "name": "Trial Success Prediction Report",
+      "description": "AI-powered prediction for clinical trial success with detailed risk analysis",
+      "file": "trial_success_prediction.pdf",
+      "type": "success-prediction"
+    },
+    {
+      "id": "clinical-002",
+      "name": "Protocol Optimization Report",
+      "description": "Comprehensive analysis and optimization of trial protocols",
+      "file": "protocol_optimization.pdf",
+      "type": "protocol-optimization"
+    },
+    {
+      "id": "clinical-003",
+      "name": "Endpoint Selection Analysis",
+      "description": "Data-driven endpoint selection for maximum trial efficacy",
+      "file": "endpoint_selection.pdf",
+      "type": "endpoint-selection"
+    }
   ]
 }

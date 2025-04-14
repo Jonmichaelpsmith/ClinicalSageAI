@@ -1,17 +1,31 @@
 {
-  "persona": "ceo",
-  "title": "CEO Strategy Suite",
-  "description": "Strategic insights and recommendations tailored for executive decision-making",
+  "description": "Executive-level strategic intelligence reports for leadership decision-making",
   "files": [
-    "exec_summary_q1_2025.pdf",
-    "strategic_roadmap_2025.pdf",
-    "portfolio_performance_analysis.pdf",
-    "market_trends_report.pdf",
-    "competitive_landscape_2025.pdf"
+    "strategic_portfolio_analysis.pdf",
+    "competitive_landscape.pdf",
+    "investment_risk_report.pdf"
   ],
-  "blurbs": [
-    "Comprehensive executive intelligence focused on clinical development strategy",
-    "AI-powered market analysis with strategic recommendations",
-    "Detailed portfolio risk-adjusted ROI projections"
+  "reports": [
+    {
+      "id": "ceo-001",
+      "name": "Strategic Portfolio Analysis",
+      "description": "Comprehensive analysis of your clinical pipeline with strategic recommendations",
+      "file": "strategic_portfolio_analysis.pdf",
+      "type": "investment-analysis"
+    },
+    {
+      "id": "ceo-002",
+      "name": "Competitive Landscape Report",
+      "description": "Detailed market intelligence on competitor activity and positioning",
+      "file": "competitive_landscape.pdf",
+      "type": "competitive-intelligence"
+    },
+    {
+      "id": "ceo-003",
+      "name": "Investment Risk Assessment",
+      "description": "AI-powered risk analysis across the research portfolio",
+      "file": "investment_risk_report.pdf",
+      "type": "investment-analysis"
+    }
   ]
 }

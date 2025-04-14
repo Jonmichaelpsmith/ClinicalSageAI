@@ -1,17 +1,1 @@
-{
-  "persona": "writer",
-  "title": "Medical Writing Suite",
-  "description": "Tools and templates for efficient medical writing and document preparation",
-  "files": [
-    "csr_template_with_guidance.pdf",
-    "protocol_writing_assistant.pdf",
-    "publication_planning.pdf",
-    "regulatory_narrative_templates.pdf",
-    "lay_summary_generator.pdf"
-  ],
-  "blurbs": [
-    "AI-assisted CSR generation with regulatory compliance",
-    "Protocol writing templates with optimization suggestions",
-    "Publication planning and manuscript development support"
-  ]
-}
+{"reports": []}

@@ -11,7 +11,7 @@ const LAUNCH_CONFIG_PATH = 'attached_assets/launch_config.json';
  */
 reportsManifestRoutes.get('/personas(\\.json)?', async (_req: Request, res: Response) => {
   try {
-    const indexPath = path.join(REPORTS_ROOT_DIR, 'report_index.json');
+    const indexPath = path.join('attached_assets', 'report_index.json');
     
     if (!fs.existsSync(indexPath)) {
       return res.status(404).json({
@@ -36,10 +36,15 @@ reportsManifestRoutes.get('/personas(\\.json)?', async (_req: Request, res: Resp
  */
 reportsManifestRoutes.get('/persona/:personaId(\\.json)?', async (req: Request, res: Response) => {
   try {
-    const { personaId } = req.params;
+    let { personaId } = req.params;
+    
+    // Remove the .json suffix if present
+    personaId = personaId.replace(/\.json$/, '');
+    
     const manifestPath = path.join(REPORTS_ROOT_DIR, personaId, 'manifest.json');
     
     if (!fs.existsSync(manifestPath)) {
+      console.error(`Manifest for ${personaId} not found at path: ${manifestPath}`);
       return res.status(404).json({
         success: false,
         message: `Manifest for ${personaId} not found`
@@ -60,7 +65,7 @@ reportsManifestRoutes.get('/persona/:personaId(\\.json)?', async (req: Request, 
 /**
  * Get launch configuration for example reports
  */
-reportsManifestRoutes.get('/launch-config', async (_req: Request, res: Response) => {
+reportsManifestRoutes.get('/launch-config(\\.json)?', async (_req: Request, res: Response) => {
   try {
     const configPath = path.join(process.cwd(), LAUNCH_CONFIG_PATH);
     
