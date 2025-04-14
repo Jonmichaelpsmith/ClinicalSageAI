@@ -358,83 +358,46 @@ ${endpoints.length > 0 ? `- Original endpoints: ${endpoints.join(', ')}` : ''}
     }
   };
 
-  // Check if the auto-generated IND document exists
-  const checkIndDocxAvailability = async () => {
-    if (!csrContext || !sessionId) return;
-    
-    try {
-      // Check if the ind_module_with_context.docx file exists by looking at the session archive
-      const response = await fetch(`/api/files/check-session-file`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          session_id: sessionId,
-          file_name: 'ind_module_with_context.docx'
-        })
-      });
+  // INDConfirmationBanner Component for CSR-Enhanced IND Document
+  function INDConfirmationBanner({ sessionId }) {
+    const [exists, setExists] = useState(false);
+
+    useEffect(() => {
+      const check = async () => {
+        try {
+          const res = await fetch(`/static/lumen_reports_backend/sessions/${sessionId}/ind_module_with_context.docx`);
+          setExists(res.ok);
+          if (res.ok) {
+            setDocxExportReady(true);
+          }
+        } catch (error) {
+          console.warn("Error checking IND document existence:", error);
+        }
+      };
       
-      const result = await response.json();
-      if (result.exists) {
-        setDocxExportReady(true);
+      if (sessionId) {
+        check();
       }
-    } catch (error) {
-      console.warn('Error checking IND DOCX availability:', error);
-    }
-  };
-  
-  // Call this function when component mounts if CSR context is available
-  useEffect(() => {
-    if (csrContext && csrContext.id) {
-      checkIndDocxAvailability();
-    }
-  }, [csrContext, sessionId]);
-  
-  // Download the auto-generated IND document
-  const downloadIndDocx = async () => {
-    if (!csrContext || !sessionId) return;
-    
-    try {
-      toast({
-        title: "Downloading IND document...",
-        description: "Preparing the CSR-enhanced IND document for download.",
-      });
-      
-      // Fetch the IND docx file
-      const response = await fetch(`/api/export/ind-docx-with-context`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          session_id: sessionId,
-          csr_id: csrContext.id
-        })
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Failed to download IND document: ${response.status}`);
-      }
-      
-      // Create a blob from the response
-      const blob = await response.blob();
-      // Create a link element, use it to download the blob and remove it
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = `ind_module_with_context_${sessionId}.docx`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      toast({
-        title: "Download Complete",
-        description: "Your CSR-enhanced IND document has been downloaded.",
-      });
-    } catch (error) {
-      toast({
-        title: "Error Downloading IND Document",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
+    }, [sessionId]);
+
+    if (!exists) return null;
+
+    return (
+      <div className="bg-green-50 border border-green-300 rounded p-4 mb-4">
+        <p className="text-sm text-green-900 flex items-center gap-1">
+          <Check className="h-4 w-4" /> An IND Module 2.5 summary has been auto-generated based on your linked CSR context.
+        </p>
+        <a
+          href={`/static/lumen_reports_backend/sessions/${sessionId}/ind_module_with_context.docx`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-700 underline text-sm mt-2 flex items-center gap-1"
+        >
+          <Download className="h-4 w-4" /> Download IND Summary
+        </a>
+      </div>
+    );
+  }
 
   // Display CSR context banner if available
   const renderCsrContextBanner = () => {
@@ -526,7 +489,7 @@ ${endpoints.length > 0 ? `- Original endpoints: ${endpoints.join(', ')}` : ''}
                       variant="outline" 
                       size="sm"
                       className="h-8 bg-blue-100 border-blue-200 text-blue-700 hover:bg-blue-200"
-                      onClick={downloadIndDocx}
+                      onClick={() => window.open(`/static/lumen_reports_backend/sessions/${sessionId}/ind_module_with_context.docx`, '_blank')}
                       disabled={!docxExportReady}
                     >
                       <Download className="h-3 w-3 mr-2" />
@@ -589,6 +552,9 @@ ${endpoints.length > 0 ? `- Original endpoints: ${endpoints.join(', ')}` : ''}
       
       {/* CSR Context Banner */}
       {renderCsrContextBanner()}
+      
+      {/* CSR-Enhanced IND Document Banner */}
+      {sessionId && <INDConfirmationBanner sessionId={sessionId} />}
       
       {/* CSR Semantic Alignment Panel */}
       {csrContext && <CSRAlignmentPanel sessionId={sessionId} />}

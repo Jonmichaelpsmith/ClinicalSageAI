@@ -379,6 +379,38 @@ import alignmentRoutes from './routes/alignment-routes';
 import sessionRoutes from './routes/session_routes';
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Check if a file exists in a session archive
+  app.post('/api/files/check-session-file', async (req: Request, res: Response) => {
+    try {
+      const { session_id, file_name } = req.body;
+      
+      if (!session_id || !file_name) {
+        return res.status(400).json({
+          success: false,
+          message: 'Missing required parameters: session_id and file_name'
+        });
+      }
+      
+      // Path to the session archive
+      const sessionDir = path.join(process.cwd(), 'lumen_reports_backend', 'sessions', session_id);
+      const filePath = path.join(sessionDir, file_name);
+      
+      // Check if the file exists
+      const exists = fs.existsSync(filePath);
+      
+      res.json({
+        success: true,
+        exists,
+        file_path: exists ? filePath : null
+      });
+    } catch (error) {
+      console.error('Error checking session file:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to check if session file exists'
+      });
+    }
+  });
   // Start and register Python FastAPI service for enhanced CSR context and TA classification
   try {
     await startPythonService();
