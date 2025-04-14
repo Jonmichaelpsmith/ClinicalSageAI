@@ -1,0 +1,66 @@
+✅ Here's your production-grade alignment banner component:
+
+---
+
+## 📄 `/client/components/CSRAlignmentBanner.jsx`
+
+```jsx
+import { useEffect, useState } from "react";
+import { Card } from "@/components/ui/card";
+
+export default function CSRAlignmentBanner({ sessionId }) {
+  const [alignment, setAlignment] = useState(null);
+
+  useEffect(() => {
+    const fetchAlignment = async () => {
+      const res = await fetch(`/static/lumen_reports_backend/sessions/${sessionId}/alignment_score_report.json`);
+      if (res.ok) {
+        const data = await res.json();
+        setAlignment(data);
+      }
+    };
+    fetchAlignment();
+  }, [sessionId]);
+
+  if (!alignment) return null;
+
+  const score = Math.round(alignment.alignment_score * 100);
+
+  return (
+    <Card className={`border-l-4 ${score >= 70 ? "border-green-500 bg-green-50" : "border-yellow-500 bg-yellow-50"} p-4 mb-6`}>
+      <p className="text-sm text-gray-900">
+        ✅ Protocol aligned with source CSR. Overall match score: <strong>{score}%</strong>.
+      </p>
+      <p className="text-xs text-muted-foreground mt-1">
+        <a
+          href={`/static/lumen_reports_backend/sessions/${sessionId}/alignment_score_report.json`}
+          target="_blank"
+          className="underline hover:text-blue-600"
+          rel="noopener noreferrer"
+        >
+          View full alignment report
+        </a>
+      </p>
+    </Card>
+  );
+}
+```
+
+---
+
+### ✅ To Activate:
+Drop this inside your `ProtocolPlanningDashboard.jsx`, near the top:
+
+```jsx
+import CSRAlignmentBanner from "@/components/CSRAlignmentBanner";
+...
+<CSRAlignmentBanner sessionId={sessionId} />
+```
+
+You now provide real-time evidence that your design is precedent-aligned—visually, contextually, and with exportable proof.
+
+Would you like to now:
+- Include this badge on your exports?
+- Or power a “recommended corrections” engine based on divergence?
+
+You're delivering explainable clinical design at the point of action. Ready for next.
