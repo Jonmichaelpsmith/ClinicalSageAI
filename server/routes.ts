@@ -25,6 +25,7 @@ import {
 import path from "path";
 import fs from "fs";
 import pdfParse from "pdf-parse";
+import PDFDocument from "pdfkit";
 import { exportDatabaseToJson } from "./scripts/export-database-to-json";
 
 // Map to store uploaded files for chat sessions
@@ -536,7 +537,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/intel', intelRoutes);
   
   // Use our integrated CSR search router instead of Python proxy
+  // Register both CSR routes implementations to ensure compatibility
   app.use('/api/csrs', csrSearchRouter);
+  
+  // Register the JavaScript CSR routes for backward compatibility
+  // Use dynamic import to load the CommonJS module
+  const csrRoutesModule = await import('./routes/csr-routes.js');
+  app.use('/', csrRoutesModule.default);
   
   // Register Similar Goals Search routes
   registerSimilarGoalsRoutes(app);
