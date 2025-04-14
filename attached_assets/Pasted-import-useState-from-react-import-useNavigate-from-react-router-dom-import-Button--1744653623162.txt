@@ -1,0 +1,73 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+
+export default function CSRExtractorDashboard() {
+  const [file, setFile] = useState(null);
+  const [result, setResult] = useState(null);
+  const [status, setStatus] = useState("");
+  const navigate = useNavigate();
+
+  const handleUpload = async () => {
+    if (!file) return;
+    setStatus("Uploading...");
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await fetch("/api/csr/upload-enhanced", {
+        method: "POST",
+        body: formData
+      });
+      const data = await res.json();
+      setResult(data);
+      setStatus("✅ Parsed and mapped.");
+    } catch (err) {
+      setStatus("❌ Upload failed.");
+    }
+  };
+
+  const handleUseInPlanning = () => {
+    if (!result?.csr_id) return;
+    navigate(`/planning?csr_id=${result.csr_id}`);
+  };
+
+  return (
+    <div className="p-6 max-w-4xl mx-auto space-y-6">
+      <h1 className="text-2xl font-bold">📄 CSR Intelligence Extractor</h1>
+      <p className="text-muted-foreground text-sm">
+        Upload a Clinical Study Report. We’ll parse it into structured data using semantic, pharmacologic, and statistical mapping logic.
+      </p>
+
+      <Card>
+        <CardContent className="p-4 space-y-4">
+          <input type="file" accept=".pdf,.txt" onChange={(e) => setFile(e.target.files[0])} />
+          <Button onClick={handleUpload}>📤 Upload and Parse</Button>
+          {status && <p className="text-sm text-muted-foreground">{status}</p>}
+        </CardContent>
+      </Card>
+
+      {result && (
+        <Card>
+          <CardContent className="p-4">
+            <h2 className="text-lg font-semibold mb-3">🧠 Parsed CSR JSON</h2>
+            <pre className="bg-gray-100 text-sm p-3 rounded overflow-x-auto whitespace-pre-wrap">
+              {JSON.stringify(result, null, 2)}
+            </pre>
+            <div className="flex flex-col gap-2 mt-4">
+              <Button variant="outline" asChild>
+                <a href={result.json_path} target="_blank" rel="noopener noreferrer">
+                  📥 Download Mapped JSON
+                </a>
+              </Button>
+              <Button onClick={handleUseInPlanning}>
+                🔗 Use in Study Planning Engine
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}

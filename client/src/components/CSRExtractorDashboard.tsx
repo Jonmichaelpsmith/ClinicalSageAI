@@ -16,13 +16,13 @@ export default function CSRExtractorDashboard() {
     formData.append("file", file);
 
     try {
-      const res = await fetch("/api/csr/upload", {
+      const res = await fetch("/api/csr/upload-enhanced", {
         method: "POST",
         body: formData
       });
       const data = await res.json();
       setResult(data);
-      setStatus("✅ Upload complete.");
+      setStatus("✅ Parsed and mapped.");
     } catch (err) {
       setStatus("❌ Upload failed.");
     }
