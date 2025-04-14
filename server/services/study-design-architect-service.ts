@@ -1,6 +1,7 @@
 import { db } from '../db';
 import { eq, and, like, inArray } from 'drizzle-orm';
 import { csrReports, csrDetails } from '@shared/schema';
+import { classifyTherapeuticArea } from '../../shared/utils/therapeutic-area-classifier';
 
 /**
  * Study Design Architect Service
@@ -372,24 +373,35 @@ export class StudyDesignArchitectService {
     };
     
     // Find the most relevant therapeutic area
-    let bestMatch = null;
-    let bestScore = 0;
+    // Use the centralized therapeutic area classifier instead of simple substring matching
+    // Import the classifier to ensure consistent therapeutic area classification across services
+    import { classifyTherapeuticArea } from '../../shared/utils/therapeutic-area-classifier';
     
-    for (const [area, details] of Object.entries(therapeuticAreas)) {
-      // Simple matching algorithm - can be improved with NLP
-      if (indication.toLowerCase().includes(area.toLowerCase())) {
-        const score = area.length; // Longer matches are more specific
-        if (score > bestScore) {
-          bestScore = score;
-          bestMatch = { area, details };
-        }
-      }
+    // Get the therapeutic area classification with confidence score
+    const classificationResult = classifyTherapeuticArea(indication, {
+      confidenceThreshold: 0.3, // Lower threshold to capture more matches
+      enableLogging: true
+    });
+    
+    const therapeuticArea = classificationResult.area.toLowerCase();
+    
+    // If we have a match in our therapeutic areas dictionary, return it
+    if (therapeuticAreas[therapeuticArea]) {
+      return {
+        therapeuticArea: therapeuticArea.charAt(0).toUpperCase() + therapeuticArea.slice(1), // Capitalize
+        ...therapeuticAreas[therapeuticArea],
+        confidenceScore: classificationResult.confidence,
+        matchedKeywords: classificationResult.matchedKeywords
+      };
     }
     
-    return bestMatch ? { 
-      therapeuticArea: bestMatch.area,
-      ...bestMatch.details
-    } : [];
+    // Log if we got a classification but don't have specific guidance for it
+    if (classificationResult.area !== 'Unknown' && classificationResult.confidence > 0.5) {
+      console.log(`StudyDesignArchitect: Classified as "${classificationResult.area}" but no specific considerations available`);
+    }
+    
+    // Return empty array if no match
+    return [];
   }
 
   /**
