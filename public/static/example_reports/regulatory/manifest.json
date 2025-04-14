@@ -1,0 +1,18 @@
+{
+  "title": "Regulatory Intelligence Package",
+  "description": "FDA/EMA submission-ready documentation with compliance validation and verification.",
+  "version": "2025.1",
+  "last_updated": "2025-04-12",
+  "includes": [
+    "IND Module 2.5 clinical pharmacology section",
+    "IND Module 2.7 clinical summary",
+    "Statistical Analysis Plan (SAP) document",
+    "Regulatory compliance verification (94% score)",
+    "Export log and audit trail"
+  ],
+  "files": [
+    "ind_summary.pdf",
+    "regulatory_bundle.zip",
+    "compliance_report.json"
+  ]
+}
