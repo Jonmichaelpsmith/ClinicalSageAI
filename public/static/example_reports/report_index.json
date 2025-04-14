@@ -14,6 +14,16 @@
       "persona": "lumen",
       "title": "Lumen Biosciences Protocol Analysis",
       "path": "/static/example_reports/lumen/manifest.json"
+    },
+    {
+      "persona": "biostats",
+      "title": "Biostatistics Analysis Package",
+      "path": "/static/example_reports/biostats/manifest.json"
+    },
+    {
+      "persona": "clinops",
+      "title": "Clinical Operations Timeline",
+      "path": "/static/example_reports/clinops/manifest.json"
     }
   ]
 }
