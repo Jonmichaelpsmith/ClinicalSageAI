@@ -10,6 +10,7 @@ import ProtocolEmailer from "@/components/ProtocolEmailer";
 import SummaryPacketGenerator from "@/components/SummaryPacketGenerator";
 import SummaryPacketArchive from "@/components/SummaryPacketArchive";
 import SessionSummaryPanel from "@/components/SessionSummaryPanel";
+import ExportLogPanel from "@/components/ExportLogPanel";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookmarkPlus, Download, FileArchive, FilePlus2, FileSpreadsheet, Mail, Send } from "lucide-react";
@@ -509,6 +510,9 @@ export default function ProtocolPlanningDashboard({ initialProtocol = "", sessio
       {/* Session Summary Panel at the top of the component tree */}
       <SessionSummaryPanel sessionId={sessionId} />
       
+      {/* Export Log Panel showing recent export activity */}
+      <ExportLogPanel sessionId={sessionId} autoRefresh={true} />
+      
       <Card className="bg-gradient-to-r from-slate-50 to-blue-50 border-blue-100">
         <CardHeader className="pb-2">
           <CardTitle className="text-xl font-bold">🧠 {persona.toUpperCase()} Intelligence Dashboard</CardTitle>
@@ -685,8 +689,8 @@ export default function ProtocolPlanningDashboard({ initialProtocol = "", sessio
 
       <section className="space-y-4">
         <h2 className="text-xl font-bold">📦 Final Intelligence Outputs</h2>
-        {/* Session Status Summary Panel */}
-        <SessionSummaryPanel sessionId={sessionId} />
+        {/* Export Log Panel showing recent export activity */}
+        <ExportLogPanel sessionId={sessionId} autoRefresh={false} />
         
         <SummaryPacketGenerator
           sessionId={sessionId}

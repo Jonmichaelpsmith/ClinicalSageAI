@@ -1,0 +1,85 @@
+// /client/components/HomepageShowcaseSection.jsx
+import { useEffect, useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+
+export default function HomepageShowcaseSection() {
+  const [reportIndex, setReportIndex] = useState([]);
+  const [reportManifests, setReportManifests] = useState({});
+  const [launchConfig, setLaunchConfig] = useState({});
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const indexRes = await axios.get("/static/example_reports/report_index.json");
+      setReportIndex(indexRes.data.available_subscriptions || []);
+
+      const launchRes = await axios.get("/launch_config.json");
+      setLaunchConfig(launchRes.data || {});
+
+      for (const sub of indexRes.data.available_subscriptions) {
+        try {
+          const manifestRes = await axios.get(sub.path);
+          setReportManifests(prev => ({ ...prev, [sub.persona]: manifestRes.data }));
+        } catch (err) {
+          console.error("Failed to load manifest:", err);
+        }
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const handleLaunch = (persona) => {
+    const config = launchConfig[persona];
+    if (config) navigate(`${config.route}&study_id=${config.study_id}`);
+    else alert("Missing launch config.");
+  };
+
+  return (
+    <div className="py-10 px-6 bg-gray-50">
+      <h2 className="text-3xl font-bold mb-4 text-center">🔍 Explore LumenTrialGuide.AI in Action</h2>
+      <p className="text-center text-sm text-muted-foreground max-w-2xl mx-auto mb-8">
+        These are real outputs generated from our live intelligence system. Click to preview what a CEO, Regulatory Lead, or Biostat would see—and generate one like it for your trial in minutes.
+      </p>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {reportIndex.map(({ persona, title }) => {
+          const manifest = reportManifests[persona];
+          if (!manifest) return null;
+
+          return (
+            <Card key={persona} className="bg-white shadow-md border hover:shadow-lg transition">
+              <CardContent className="p-5 space-y-4">
+                <h3 className="text-xl font-semibold">{title}</h3>
+                <p className="text-sm text-muted-foreground">{manifest.description}</p>
+                <ul className="text-sm list-disc pl-5 space-y-1">
+                  {manifest.includes.slice(0, 3).map((item, idx) => (
+                    <li key={idx}>{item}</li>
+                  ))}
+                  {manifest.includes.length > 3 && <li>+ more in the full report</li>}
+                </ul>
+                <div className="flex flex-col gap-2">
+                  <Button variant="outline" asChild>
+                    <a
+                      href={`/static/example_reports/${persona}/${manifest.files[0]}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      📂 Preview Report
+                    </a>
+                  </Button>
+                  <Button variant="default" onClick={() => handleLaunch(persona)}>
+                    ⚙️ Generate Your Own
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
