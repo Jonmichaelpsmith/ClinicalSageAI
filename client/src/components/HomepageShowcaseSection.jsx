@@ -593,6 +593,6 @@ const HomepageShowcaseSection = () => {
       </div>
     </section>
   );
-};
+}
 
 export default HomepageShowcaseSection;
