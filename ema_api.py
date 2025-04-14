@@ -27,6 +27,53 @@ API_SCOPE = "api://euema.onmicrosoft.com/upd-apim-secured/.default"
 CSR_DATABASE = "ema_csr_database.db"
 BASE_API_URL = "https://spor-prod-bk.azure-api.net/upd/api/v3"
 
+def init_database():
+    """Initialize the CSR reports database with the necessary tables"""
+    conn = None
+    try:
+        conn = sqlite3.connect(CSR_DATABASE)
+        cursor = conn.cursor()
+        
+        # Create the CSR reports table if it doesn't exist
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS csr_reports (
+            report_id TEXT PRIMARY KEY,
+            title TEXT,
+            procedure_number TEXT,
+            scientific_name TEXT,
+            therapeutic_area TEXT,
+            publication_date TEXT,
+            document_type TEXT,
+            download_url TEXT,
+            file_path TEXT,
+            downloaded INTEGER DEFAULT 0,
+            download_date TEXT,
+            metadata TEXT,
+            processed INTEGER DEFAULT 0,
+            processed_date TEXT,
+            embedding_id TEXT
+        )
+        """)
+        
+        # Create an index on the therapeutic area for faster filtering
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_therapeutic_area ON csr_reports(therapeutic_area)")
+        
+        # Create an index on the downloaded flag for faster filtering
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_downloaded ON csr_reports(downloaded)")
+        
+        # Create an index on the processed flag for faster filtering
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_processed ON csr_reports(processed)")
+        
+        conn.commit()
+        logger.info(f"Database initialized at {CSR_DATABASE}")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to initialize database: {str(e)}")
+        raise
+    finally:
+        if conn:
+            conn.close()
+
 # Client credentials from environment variables or directly from screenshots
 CLIENT_ID = os.environ.get("EMA_CLIENT_ID", "e1f0c100-17f0-445d-8989-3e43cdc6e741")
 CLIENT_SECRET = os.environ.get("EMA_CLIENT_SECRET", "AyX8Q~KS0HRcGDoAFw~6PnK3us5WUS8eWxLF8cav")

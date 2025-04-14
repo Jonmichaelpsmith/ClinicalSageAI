@@ -7,80 +7,182 @@ with support for pagination, retries, and resumption of interrupted downloads.
 """
 
 import os
+import sys
 import json
 import time
 import logging
-import argparse
-import sqlite3
-from datetime import datetime
-from typing import List, Dict, Any, Optional, Tuple
-import concurrent.futures
 import requests
-from tqdm import tqdm
-import sys
-
-# Import the EMA API client
-from ema_api import EmaApiClient, CSR_DATABASE
+import sqlite3
+import argparse
+from typing import Dict, List, Optional, Any, Tuple
+from datetime import datetime, timedelta
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # Set up logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler("bulk_download.log"),
-        logging.StreamHandler(sys.stdout)
+        logging.StreamHandler(sys.stdout),
+        logging.FileHandler('bulk_download.log')
     ]
 )
-logger = logging.getLogger('bulk_downloader')
+
+logger = logging.getLogger("bulk-downloader")
 
 # Constants
+DOWNLOAD_DIR = "downloaded_csrs"
+PROGRESS_FILE = "csr_download_progress.json"
 DEFAULT_BATCH_SIZE = 50
-MAX_WORKERS = 5  # Number of parallel downloads
+MAX_WORKERS = 5
 RETRY_ATTEMPTS = 3
 RETRY_DELAY = 5  # seconds
-PROGRESS_FILE = "download_progress.json"
-DOWNLOAD_DIR = "downloaded_csrs"
+
+# Authentication info
+TOKEN_ENDPOINT = "https://login.microsoftonline.com/bc9dc15c-61bc-4f03-b60b-e5b6d8922839/oauth2/v2.0/token"
+API_SCOPE = "api://euema.onmicrosoft.com/upd-apim-secured/.default"
+# The API URL in the email mentions spor-dev-bk.azure-api.net but also shows a production URL format
+# Let's try both formats
+BASE_API_URL = "https://spor-dev-bk.azure-api.net/upd/api/v3"
+CSR_DATABASE = "ema_csr_database.db"
+
+# Always use hardcoded values from update_ema_credentials.py
+CLIENT_ID = "e1f0c100-17f0-445d-8989-3e43cdc6e741"
+CLIENT_SECRET = "AyX8Q~KS0HRcGDoAFw~6PnK3us5WUS8eWxLF8cav"
 
 class BulkDownloader:
     """Handles bulk downloading of CSRs with progress tracking and resumption."""
     
     def __init__(self, target_dir: str = DOWNLOAD_DIR, progress_file: str = PROGRESS_FILE):
-        self.client = EmaApiClient()
         self.target_dir = target_dir
         self.progress_file = progress_file
-        self.progress = self._load_progress()
+        self.access_token = None
+        self.token_expires_at = None
         
-        # Ensure target directory exists
+        # Ensure download directory exists
         os.makedirs(target_dir, exist_ok=True)
+        
+        # Initialize database
+        self._init_database()
+        
+        # Load previous progress if available
+        self.progress = self._load_progress()
+    
+    def _init_database(self):
+        """Initialize the SQLite database to store CSR metadata."""
+        conn = sqlite3.connect(CSR_DATABASE)
+        cursor = conn.cursor()
+        
+        # Create tables if they don't exist
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS csr_reports (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            report_id TEXT UNIQUE,
+            title TEXT,
+            procedure_number TEXT,
+            scientific_name TEXT,
+            therapeutic_area TEXT,
+            publication_date TEXT,
+            document_type TEXT,
+            download_url TEXT,
+            file_path TEXT,
+            downloaded BOOLEAN DEFAULT 0,
+            download_date TEXT,
+            metadata TEXT,
+            processed BOOLEAN DEFAULT 0,
+            processed_date TEXT,
+            extracted_text TEXT,
+            embedding_id TEXT
+        )
+        ''')
+        
+        # Create indexes for faster queries
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_report_id ON csr_reports(report_id)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_therapeutic_area ON csr_reports(therapeutic_area)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_downloaded ON csr_reports(downloaded)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_processed ON csr_reports(processed)")
+        
+        conn.commit()
+        conn.close()
+        logger.info(f"Database initialized at {CSR_DATABASE}")
     
     def _load_progress(self) -> Dict[str, Any]:
         """Load saved download progress if available."""
         if os.path.exists(self.progress_file):
             try:
                 with open(self.progress_file, 'r') as f:
-                    return json.load(f)
-            except (json.JSONDecodeError, IOError) as e:
-                logger.error(f"Failed to load progress file: {str(e)}")
+                    progress = json.load(f)
+                    logger.info(f"Loaded previous download progress: {len(progress.get('downloaded', [])) if progress else 0} reports already downloaded")
+                    return progress
+            except Exception as e:
+                logger.warning(f"Error loading progress file: {str(e)}")
         
-        # Default progress structure
+        # Return default empty progress
         return {
+            "started_at": datetime.now().isoformat(),
+            "last_updated": datetime.now().isoformat(),
             "total_found": 0,
-            "total_downloaded": 0,
-            "last_page": 0,
-            "completed_ids": [],
-            "failed_ids": [],
-            "start_time": datetime.now().isoformat(),
-            "last_updated": datetime.now().isoformat()
+            "downloaded": [],
+            "failed": {},
+            "current_page": 1,
+            "therapeutic_area": None
         }
     
     def _save_progress(self):
         """Save the current download progress."""
         self.progress["last_updated"] = datetime.now().isoformat()
+        
         try:
             with open(self.progress_file, 'w') as f:
                 json.dump(self.progress, f, indent=2)
-        except IOError as e:
-            logger.error(f"Failed to save progress file: {str(e)}")
+        except Exception as e:
+            logger.error(f"Error saving progress: {str(e)}")
+    
+    def get_token(self) -> str:
+        """Get a valid access token, requesting a new one if necessary."""
+        # Check if we have a valid token
+        if self.access_token and self.token_expires_at and datetime.now() < self.token_expires_at:
+            return self.access_token
+        
+        # Otherwise, request a new token
+        logger.info("Requesting new API access token")
+        logger.info(f"Using CLIENT_ID: {CLIENT_ID}")
+        logger.info(f"Using CLIENT_SECRET: {CLIENT_SECRET[:5]}...{CLIENT_SECRET[-5:] if CLIENT_SECRET else ''}")
+        logger.info(f"Using TOKEN_ENDPOINT: {TOKEN_ENDPOINT}")
+        logger.info(f"Using API_SCOPE: {API_SCOPE}")
+        
+        data = {
+            'client_id': CLIENT_ID,
+            'client_secret': CLIENT_SECRET,
+            'grant_type': 'client_credentials',
+            'scope': API_SCOPE
+        }
+        
+        response = requests.post(TOKEN_ENDPOINT, data=data)
+        
+        if response.status_code != 200:
+            error_msg = f"Token request failed: {response.status_code} - {response.text}"
+            logger.error(error_msg)
+            raise Exception(error_msg)
+        
+        token_data = response.json()
+        self.access_token = token_data['access_token']
+        
+        # Set expiration time (subtract 5 minutes for safety margin)
+        expires_in = int(token_data.get('expires_in', 3599))  # Default to ~1 hour if not provided
+        self.token_expires_at = datetime.now() + timedelta(seconds=expires_in - 300)
+        
+        logger.info(f"New token obtained, expires at {self.token_expires_at}")
+        return self.access_token
+    
+    def get_headers(self) -> Dict[str, str]:
+        """Get authorization headers for API requests."""
+        token = self.get_token()
+        return {
+            'Authorization': f'Bearer {token}',
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        }
     
     def search_all_pages(self, 
                        therapeutic_area: Optional[str] = None,
@@ -95,77 +197,71 @@ class BulkDownloader:
         Returns:
             List of all report metadata
         """
-        all_reports = []
-        page = self.progress["last_page"] + 1 if self.progress["last_page"] > 0 else 1
-        more_pages = True
+        all_items = []
+        page = self.progress.get("current_page", 1)
+        total_items = 0
         
-        while more_pages:
+        logger.info(f"Starting search from page {page}")
+        
+        while True:
             try:
-                logger.info(f"Searching page {page} with batch size {batch_size}")
+                # Build query parameters
+                params = {
+                    'page': page,
+                    'pageSize': batch_size
+                }
                 
-                # Search for reports
-                search_results = self.client.search_csr_reports(
-                    therapeutic_area=therapeutic_area,
-                    page=page,
-                    page_size=batch_size
-                )
+                if therapeutic_area:
+                    params['therapeuticArea'] = therapeutic_area
                 
-                reports = search_results.get('items', [])
-                total_items = search_results.get('totalItems', 0)
+                # Make the API request
+                search_url = f"{BASE_API_URL}/clinical-reports"
+                response = requests.get(search_url, headers=self.get_headers(), params=params)
                 
-                if not reports:
-                    logger.info("No more reports found")
-                    more_pages = False
+                if response.status_code == 401:
+                    # Token might be expired despite our safety margin
+                    logger.warning("Unauthorized, refreshing token...")
+                    self.access_token = None
+                    self.token_expires_at = None
+                    response = requests.get(search_url, headers=self.get_headers(), params=params)
+                
+                if response.status_code != 200:
+                    logger.error(f"Search failed on page {page}: {response.status_code} - {response.text}")
                     break
                 
-                logger.info(f"Found {len(reports)} reports on page {page}")
-                all_reports.extend(reports)
+                data = response.json()
+                items = data.get('items', [])
+                
+                if not items:
+                    logger.info(f"No more items found (page {page})")
+                    break
+                
+                all_items.extend(items)
+                total_items = data.get('total', len(all_items))
+                
+                logger.info(f"Found {len(items)} items on page {page} (total found: {len(all_items)}/{total_items})")
                 
                 # Update progress
+                self.progress["current_page"] = page + 1
                 self.progress["total_found"] = total_items
-                self.progress["last_page"] = page
+                self.progress["therapeutic_area"] = therapeutic_area
                 self._save_progress()
                 
-                # If we've reached the end (got fewer items than requested)
-                if len(reports) < batch_size:
-                    more_pages = False
-                else:
-                    page += 1
-                    
-                # Brief pause to avoid overwhelming the API
+                # Break if we've got all items or reached the end of results
+                if len(all_items) >= total_items or len(items) < batch_size:
+                    logger.info("Completed search of all pages")
+                    break
+                
+                page += 1
+                
+                # Add a small delay to avoid overwhelming the API
                 time.sleep(1)
                 
             except Exception as e:
-                logger.error(f"Error searching page {page}: {str(e)}")
-                # Retry logic
-                retry_count = 0
-                while retry_count < RETRY_ATTEMPTS:
-                    retry_count += 1
-                    logger.info(f"Retrying page {page} (attempt {retry_count}/{RETRY_ATTEMPTS})")
-                    time.sleep(RETRY_DELAY * retry_count)  # Exponential backoff
-                    
-                    try:
-                        search_results = self.client.search_csr_reports(
-                            therapeutic_area=therapeutic_area,
-                            page=page,
-                            page_size=batch_size
-                        )
-                        
-                        reports = search_results.get('items', [])
-                        if reports:
-                            logger.info(f"Retry successful, found {len(reports)} reports")
-                            all_reports.extend(reports)
-                            page += 1
-                            break
-                    except Exception as retry_e:
-                        logger.error(f"Retry failed: {str(retry_e)}")
-                
-                if retry_count == RETRY_ATTEMPTS:
-                    logger.error(f"Failed to retrieve page {page} after {RETRY_ATTEMPTS} attempts")
-                    more_pages = False
+                logger.error(f"Error during search on page {page}: {str(e)}")
+                break
         
-        logger.info(f"Found a total of {len(all_reports)} reports across all pages")
-        return all_reports
+        return all_items
     
     def _download_single_report(self, report: Dict[str, Any]) -> Tuple[str, bool, str]:
         """
@@ -178,35 +274,131 @@ class BulkDownloader:
             Tuple of (report_id, success_flag, file_path_or_error_message)
         """
         report_id = report.get('id')
+        title = report.get('title', 'Untitled')
+        
         if not report_id:
-            return ('unknown', False, 'Missing report ID')
+            return ("unknown", False, "Missing report ID")
         
-        # Skip if already downloaded
-        if report_id in self.progress["completed_ids"]:
-            return (report_id, True, 'Already downloaded')
+        # Check if already downloaded
+        conn = sqlite3.connect(CSR_DATABASE)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        cursor.execute("SELECT file_path, downloaded FROM csr_reports WHERE report_id = ?", (report_id,))
+        result = cursor.fetchone()
         
-        # Try to download the report
-        retry_count = 0
-        while retry_count <= RETRY_ATTEMPTS:
+        if result and result['downloaded'] and os.path.exists(result['file_path']):
+            conn.close()
+            return (report_id, True, result['file_path'])
+        
+        # First get report details
+        report_url = f"{BASE_API_URL}/clinical-reports/{report_id}"
+        
+        for attempt in range(RETRY_ATTEMPTS):
             try:
-                if retry_count > 0:
-                    logger.info(f"Retry {retry_count}/{RETRY_ATTEMPTS} for report {report_id}")
+                # Get report details
+                response = requests.get(report_url, headers=self.get_headers())
                 
-                file_path = self.client.download_csr_report(report_id, self.target_dir)
+                if response.status_code == 401:
+                    # Token might be expired, refresh it
+                    self.access_token = None
+                    self.token_expires_at = None
+                    response = requests.get(report_url, headers=self.get_headers())
+                
+                if response.status_code != 200:
+                    error_msg = f"Failed to get report details (attempt {attempt+1}/{RETRY_ATTEMPTS}): {response.status_code} - {response.text}"
+                    logger.error(error_msg)
+                    if attempt < RETRY_ATTEMPTS - 1:
+                        time.sleep(RETRY_DELAY)
+                        continue
+                    else:
+                        conn.close()
+                        return (report_id, False, error_msg)
+                
+                # Extract download URL
+                report_details = response.json()
+                download_url = report_details.get('downloadUrl')
+                
+                if not download_url:
+                    error_msg = f"No download URL found for report {report_id}"
+                    logger.error(error_msg)
+                    conn.close()
+                    return (report_id, False, error_msg)
+                
+                # Create a safe filename
+                file_name = f"{report_id}.pdf"  # Default name
+                if 'title' in report_details:
+                    # Create a safer filename from the title
+                    safe_title = "".join([c if c.isalnum() or c in ' -_.' else '_' for c in report_details['title']])
+                    file_name = f"{safe_title[:100]}_{report_id}.pdf"
+                
+                file_path = os.path.join(self.target_dir, file_name)
+                
+                # Download the file
+                download_response = requests.get(download_url, headers=self.get_headers(), stream=True)
+                
+                if download_response.status_code != 200:
+                    error_msg = f"Failed to download file (attempt {attempt+1}/{RETRY_ATTEMPTS}): {download_response.status_code} - {download_response.text}"
+                    logger.error(error_msg)
+                    if attempt < RETRY_ATTEMPTS - 1:
+                        time.sleep(RETRY_DELAY)
+                        continue
+                    else:
+                        conn.close()
+                        return (report_id, False, error_msg)
+                
+                # If content-disposition header exists, use it to get filename
+                if 'content-disposition' in download_response.headers:
+                    content_disp = download_response.headers['content-disposition']
+                    if 'filename=' in content_disp:
+                        suggested_filename = content_disp.split('filename=')[1].strip('"\'')
+                        if suggested_filename:
+                            file_path = os.path.join(self.target_dir, suggested_filename)
+                
+                # Write the file
+                with open(file_path, 'wb') as f:
+                    for chunk in download_response.iter_content(chunk_size=8192):
+                        f.write(chunk)
+                
+                # Update database
+                cursor.execute(
+                    """
+                    INSERT OR REPLACE INTO csr_reports 
+                    (report_id, title, procedure_number, scientific_name, therapeutic_area, 
+                    publication_date, document_type, download_url, file_path, downloaded, download_date, metadata)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)
+                    """,
+                    (
+                        report_id,
+                        report_details.get('title'),
+                        report_details.get('procedureNumber'),
+                        report_details.get('scientificName'),
+                        report_details.get('therapeuticArea'),
+                        report_details.get('publicationDate'),
+                        report_details.get('documentType'),
+                        download_url,
+                        file_path,
+                        datetime.now().isoformat(),
+                        json.dumps(report_details)
+                    )
+                )
+                conn.commit()
+                
+                logger.info(f"Successfully downloaded {report_id} to {file_path}")
+                conn.close()
                 return (report_id, True, file_path)
                 
             except Exception as e:
-                error_msg = str(e)
-                logger.error(f"Failed to download report {report_id}: {error_msg}")
-                retry_count += 1
-                
-                if retry_count <= RETRY_ATTEMPTS:
-                    # Exponential backoff
-                    sleep_time = RETRY_DELAY * (2 ** (retry_count - 1))
-                    time.sleep(sleep_time)
+                error_msg = f"Error downloading report {report_id} (attempt {attempt+1}/{RETRY_ATTEMPTS}): {str(e)}"
+                logger.error(error_msg)
+                if attempt < RETRY_ATTEMPTS - 1:
+                    time.sleep(RETRY_DELAY)
+                else:
+                    conn.close()
+                    return (report_id, False, error_msg)
         
-        # If we get here, all retries failed
-        return (report_id, False, error_msg)
+        # This should never be reached due to returns in the loop
+        conn.close()
+        return (report_id, False, "Max retries reached")
     
     def bulk_download(self, 
                     therapeutic_area: Optional[str] = None,
@@ -225,80 +417,73 @@ class BulkDownloader:
         Returns:
             Dict with download statistics
         """
-        # First, search for all available reports
-        start_time = time.time()
-        logger.info(f"Starting bulk download with batch_size={batch_size}, max_workers={max_workers}")
-        
+        # First perform search to get all matching reports
         all_reports = self.search_all_pages(therapeutic_area, batch_size)
         
-        # Apply limit if specified
-        if limit is not None:
-            all_reports = all_reports[:limit]
-            logger.info(f"Limited to {limit} reports out of {len(all_reports)} found")
+        if not all_reports:
+            logger.warning("No reports found matching criteria")
+            return {
+                "total_found": 0,
+                "downloaded": 0,
+                "failed": 0,
+                "skipped": 0
+            }
         
         # Filter out already downloaded reports
-        pending_reports = [r for r in all_reports if r.get('id') not in self.progress["completed_ids"]]
-        logger.info(f"Downloading {len(pending_reports)} reports (skipping {len(all_reports) - len(pending_reports)} already downloaded)")
+        already_downloaded = set(self.progress.get("downloaded", []))
+        to_download = []
         
-        # Use ThreadPoolExecutor for parallel downloads
-        success_count = 0
-        failure_count = 0
+        for report in all_reports:
+            report_id = report.get('id')
+            if report_id and report_id not in already_downloaded:
+                to_download.append(report)
         
-        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-            # Submit all downloads
-            future_to_report = {
-                executor.submit(self._download_single_report, report): report
-                for report in pending_reports
-            }
-            
-            # Process results as they complete
-            for future in tqdm(concurrent.futures.as_completed(future_to_report), 
-                            total=len(future_to_report),
-                            desc="Downloading reports"):
-                report = future_to_report[future]
-                try:
-                    report_id, success, result = future.result()
-                    
-                    if success:
-                        success_count += 1
-                        if report_id not in self.progress["completed_ids"]:
-                            self.progress["completed_ids"].append(report_id)
-                    else:
-                        failure_count += 1
-                        if report_id not in self.progress["failed_ids"]:
-                            self.progress["failed_ids"].append(report_id)
-                        logger.error(f"Download failed for report {report_id}: {result}")
-                    
-                    # Update progress periodically
-                    self.progress["total_downloaded"] = len(self.progress["completed_ids"])
-                    if (success_count + failure_count) % 10 == 0:
-                        self._save_progress()
+        if limit is not None:
+            to_download = to_download[:limit]
+        
+        logger.info(f"Found {len(all_reports)} total reports, {len(to_download)} to download")
+        
+        # Download reports in parallel
+        successful = 0
+        failed = 0
+        skipped = len(all_reports) - len(to_download)
+        
+        if to_download:
+            with ThreadPoolExecutor(max_workers=max_workers) as executor:
+                futures = {executor.submit(self._download_single_report, report): report.get('id') for report in to_download}
+                
+                for future in as_completed(futures):
+                    report_id = futures[future]
+                    try:
+                        result_id, success, file_path = future.result()
                         
-                except Exception as e:
-                    logger.error(f"Error processing download result: {str(e)}")
+                        if success:
+                            self.progress["downloaded"].append(result_id)
+                            successful += 1
+                            
+                            # Save progress periodically
+                            if successful % 5 == 0:
+                                self._save_progress()
+                                
+                        else:
+                            self.progress["failed"][result_id] = file_path
+                            failed += 1
+                            
+                    except Exception as e:
+                        logger.error(f"Error processing future for report {report_id}: {str(e)}")
+                        self.progress["failed"][report_id] = str(e)
+                        failed += 1
         
-        # Final progress update
-        self.progress["total_downloaded"] = len(self.progress["completed_ids"])
+        # Final save of progress
         self._save_progress()
         
-        elapsed_time = time.time() - start_time
-        
-        # Prepare result summary
-        result = {
+        # Return statistics
+        return {
             "total_found": len(all_reports),
-            "successful": success_count,
-            "failed": failure_count,
-            "skipped": len(all_reports) - len(pending_reports),
-            "elapsed_time": elapsed_time,
-            "average_time_per_report": elapsed_time / max(1, success_count),
-            "completed_ids": self.progress["completed_ids"],
-            "failed_ids": self.progress["failed_ids"]
+            "downloaded": successful,
+            "failed": failed,
+            "skipped": skipped
         }
-        
-        logger.info(f"Bulk download completed: {success_count} successful, {failure_count} failed, {result['skipped']} skipped")
-        logger.info(f"Total elapsed time: {elapsed_time:.1f} seconds")
-        
-        return result
     
     def retry_failed(self, max_workers: int = MAX_WORKERS) -> Dict[str, Any]:
         """
@@ -310,186 +495,211 @@ class BulkDownloader:
         Returns:
             Dict with retry statistics
         """
-        failed_ids = self.progress["failed_ids"].copy()
-        if not failed_ids:
-            logger.info("No failed downloads to retry")
-            return {"retried": 0, "successful": 0, "still_failing": 0}
+        failed_reports = self.progress.get("failed", {})
         
-        logger.info(f"Retrying {len(failed_ids)} previously failed downloads")
+        if not failed_reports:
+            logger.info("No failed reports to retry")
+            return {
+                "total_retry": 0,
+                "successful": 0,
+                "still_failed": 0
+            }
         
-        # Clear the failed_ids list before retrying
-        self.progress["failed_ids"] = []
-        self._save_progress()
+        logger.info(f"Retrying {len(failed_reports)} failed reports")
         
-        success_count = 0
-        failure_count = 0
+        # Convert to list of tuples for easier handling
+        reports_to_retry = [(report_id, error_msg) for report_id, error_msg in failed_reports.items()]
         
-        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-            futures = []
+        # Retry in parallel
+        successful = 0
+        still_failed = 0
+        
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            # For each failed report, we need to get its details first
+            futures = {}
             
-            for report_id in failed_ids:
-                # Create a dummy report object with just the ID
-                report = {"id": report_id}
-                futures.append(executor.submit(self._download_single_report, report))
+            for report_id, _ in reports_to_retry:
+                # Create a minimal report dict with just the ID
+                report = {'id': report_id}
+                futures[executor.submit(self._download_single_report, report)] = report_id
             
-            for future in tqdm(concurrent.futures.as_completed(futures), 
-                            total=len(futures),
-                            desc="Retrying failed downloads"):
+            for future in as_completed(futures):
+                report_id = futures[future]
                 try:
-                    report_id, success, result = future.result()
+                    result_id, success, file_path = future.result()
                     
                     if success:
-                        success_count += 1
-                        if report_id not in self.progress["completed_ids"]:
-                            self.progress["completed_ids"].append(report_id)
+                        # Remove from failed list
+                        if report_id in self.progress["failed"]:
+                            del self.progress["failed"][report_id]
+                        
+                        # Add to downloaded list
+                        if report_id not in self.progress["downloaded"]:
+                            self.progress["downloaded"].append(report_id)
+                        
+                        successful += 1
+                        
+                        # Save progress periodically
+                        if successful % 5 == 0:
+                            self._save_progress()
                     else:
-                        failure_count += 1
-                        if report_id not in self.progress["failed_ids"]:
-                            self.progress["failed_ids"].append(report_id)
-                    
-                    # Update progress periodically
-                    self.progress["total_downloaded"] = len(self.progress["completed_ids"])
-                    if (success_count + failure_count) % 5 == 0:
-                        self._save_progress()
+                        # Update error message
+                        self.progress["failed"][report_id] = file_path
+                        still_failed += 1
                         
                 except Exception as e:
-                    logger.error(f"Error processing retry result: {str(e)}")
+                    logger.error(f"Error retrying report {report_id}: {str(e)}")
+                    self.progress["failed"][report_id] = str(e)
+                    still_failed += 1
         
-        # Final progress update
-        self.progress["total_downloaded"] = len(self.progress["completed_ids"])
+        # Final save of progress
         self._save_progress()
         
-        result = {
-            "retried": len(failed_ids),
-            "successful": success_count,
-            "still_failing": failure_count
-        }
-        
-        logger.info(f"Retry completed: {success_count} successful, {failure_count} still failing")
-        return result
-    
-    def get_progress_summary(self) -> Dict[str, Any]:
-        """Get a summary of the current download progress."""
-        if self.progress["total_found"] > 0:
-            progress_percentage = (self.progress["total_downloaded"] / self.progress["total_found"]) * 100
-        else:
-            progress_percentage = 0
-        
-        # Calculate elapsed time
-        start_time = datetime.fromisoformat(self.progress["start_time"])
-        elapsed_seconds = (datetime.now() - start_time).total_seconds()
-        
-        # Calculate ETA if we have enough data
-        eta_seconds = None
-        if progress_percentage > 0:
-            rate = self.progress["total_downloaded"] / elapsed_seconds  # downloads per second
-            remaining = self.progress["total_found"] - self.progress["total_downloaded"]
-            if rate > 0:
-                eta_seconds = remaining / rate
-        
-        # Format time values
-        def format_time(seconds):
-            if seconds is None:
-                return "Unknown"
-            
-            hours, remainder = divmod(int(seconds), 3600)
-            minutes, seconds = divmod(remainder, 60)
-            if hours > 0:
-                return f"{hours}h {minutes}m {seconds}s"
-            elif minutes > 0:
-                return f"{minutes}m {seconds}s"
-            else:
-                return f"{seconds}s"
-        
+        # Return statistics
         return {
-            "total_found": self.progress["total_found"],
-            "downloaded": self.progress["total_downloaded"],
-            "failed": len(self.progress["failed_ids"]),
-            "progress_percentage": progress_percentage,
-            "elapsed_time": format_time(elapsed_seconds),
-            "estimated_time_remaining": format_time(eta_seconds),
-            "last_page_processed": self.progress["last_page"],
-            "start_time": self.progress["start_time"],
-            "last_updated": self.progress["last_updated"]
+            "total_retry": len(reports_to_retry),
+            "successful": successful,
+            "still_failed": still_failed
         }
     
-    def reset_progress(self):
-        """Reset the download progress tracking."""
-        confirm = input("This will reset all download progress tracking. Type 'yes' to confirm: ")
-        if confirm.lower() != 'yes':
-            print("Reset canceled.")
-            return
+    def get_download_stats(self) -> Dict[str, Any]:
+        """Get statistics about downloaded reports."""
+        conn = sqlite3.connect(CSR_DATABASE)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
         
-        self.progress = {
-            "total_found": 0,
-            "total_downloaded": 0,
-            "last_page": 0,
-            "completed_ids": [],
-            "failed_ids": [],
-            "start_time": datetime.now().isoformat(),
-            "last_updated": datetime.now().isoformat()
+        stats = {
+            "total_in_database": 0,
+            "downloaded": 0,
+            "not_downloaded": 0,
+            "therapeutic_areas": {},
+            "document_types": {},
+            "by_year": {}
         }
-        self._save_progress()
-        logger.info("Download progress has been reset")
+        
+        # Total reports
+        cursor.execute("SELECT COUNT(*) as count FROM csr_reports")
+        result = cursor.fetchone()
+        stats["total_in_database"] = result['count'] if result else 0
+        
+        # Downloaded vs not downloaded
+        cursor.execute("SELECT COUNT(*) as count FROM csr_reports WHERE downloaded = 1")
+        result = cursor.fetchone()
+        stats["downloaded"] = result['count'] if result else 0
+        
+        cursor.execute("SELECT COUNT(*) as count FROM csr_reports WHERE downloaded = 0")
+        result = cursor.fetchone()
+        stats["not_downloaded"] = result['count'] if result else 0
+        
+        # By therapeutic area
+        cursor.execute("""
+            SELECT therapeutic_area, COUNT(*) as count 
+            FROM csr_reports 
+            WHERE therapeutic_area IS NOT NULL
+            GROUP BY therapeutic_area
+            ORDER BY count DESC
+        """)
+        for row in cursor.fetchall():
+            stats["therapeutic_areas"][row['therapeutic_area']] = row['count']
+        
+        # By document type
+        cursor.execute("""
+            SELECT document_type, COUNT(*) as count 
+            FROM csr_reports 
+            WHERE document_type IS NOT NULL
+            GROUP BY document_type
+            ORDER BY count DESC
+        """)
+        for row in cursor.fetchall():
+            stats["document_types"][row['document_type']] = row['count']
+        
+        # By year (extract year from publication_date)
+        cursor.execute("""
+            SELECT substr(publication_date, 1, 4) as year, COUNT(*) as count 
+            FROM csr_reports 
+            WHERE publication_date IS NOT NULL
+            GROUP BY year
+            ORDER BY year DESC
+        """)
+        for row in cursor.fetchall():
+            stats["by_year"][row['year']] = row['count']
+        
+        conn.close()
+        return stats
 
 
-# CLI functionality
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Bulk CSR Downloader for EMA API")
-    subparsers = parser.add_subparsers(dest="command", help="Command to execute")
-    
-    # Download command
-    download_parser = subparsers.add_parser("download", help="Start or resume bulk download")
-    download_parser.add_argument("--therapeutic-area", help="Filter by therapeutic area")
-    download_parser.add_argument("--limit", type=int, help="Maximum number of reports to download")
-    download_parser.add_argument("--batch-size", type=int, default=DEFAULT_BATCH_SIZE, help="Number of results per page")
-    download_parser.add_argument("--workers", type=int, default=MAX_WORKERS, help="Maximum number of parallel downloads")
-    download_parser.add_argument("--target-dir", default=DOWNLOAD_DIR, help="Directory to save the files")
-    
-    # Retry command
-    retry_parser = subparsers.add_parser("retry", help="Retry failed downloads")
-    retry_parser.add_argument("--workers", type=int, default=MAX_WORKERS, help="Maximum number of parallel downloads")
-    retry_parser.add_argument("--target-dir", default=DOWNLOAD_DIR, help="Directory to save the files")
-    
-    # Status command
-    status_parser = subparsers.add_parser("status", help="Show download progress")
-    
-    # Reset command
-    reset_parser = subparsers.add_parser("reset", help="Reset download progress tracking")
+def main():
+    parser = argparse.ArgumentParser(description="Bulk download CSRs from EMA API")
+    parser.add_argument("--target-dir", default=DOWNLOAD_DIR, help=f"Directory to save downloaded files (default: {DOWNLOAD_DIR})")
+    parser.add_argument("--therapeutic-area", help="Filter by therapeutic area")
+    parser.add_argument("--limit", type=int, help="Maximum number of reports to download (default: all)")
+    parser.add_argument("--batch-size", type=int, default=DEFAULT_BATCH_SIZE, help=f"Number of results per API search page (default: {DEFAULT_BATCH_SIZE})")
+    parser.add_argument("--workers", type=int, default=MAX_WORKERS, help=f"Maximum number of parallel downloads (default: {MAX_WORKERS})")
+    parser.add_argument("--retry", action="store_true", help="Retry previously failed downloads")
+    parser.add_argument("--stats", action="store_true", help="Show download statistics")
+    parser.add_argument("--test-auth", action="store_true", help="Test authentication only")
     
     args = parser.parse_args()
     
-    if args.command == "download":
-        downloader = BulkDownloader(target_dir=args.target_dir)
-        result = downloader.bulk_download(
-            therapeutic_area=args.therapeutic_area,
-            limit=args.limit,
-            batch_size=args.batch_size,
-            max_workers=args.workers
-        )
-        print(json.dumps(result, indent=2))
+    # Check if required environment variables are set
+    if not CLIENT_ID or not CLIENT_SECRET:
+        logger.error("EMA_CLIENT_ID and EMA_CLIENT_SECRET environment variables must be set")
+        sys.exit(1)
     
-    elif args.command == "retry":
-        downloader = BulkDownloader(target_dir=args.target_dir)
-        result = downloader.retry_failed(max_workers=args.workers)
-        print(json.dumps(result, indent=2))
+    # Create downloader
+    downloader = BulkDownloader(target_dir=args.target_dir)
     
-    elif args.command == "status":
-        downloader = BulkDownloader()
-        summary = downloader.get_progress_summary()
-        print("Download Progress Summary:")
-        print(f"Total CSRs found: {summary['total_found']}")
-        print(f"Downloaded: {summary['downloaded']} ({summary['progress_percentage']:.1f}%)")
-        print(f"Failed: {summary['failed']}")
-        print(f"Elapsed time: {summary['elapsed_time']}")
-        print(f"Estimated time remaining: {summary['estimated_time_remaining']}")
-        print(f"Last page processed: {summary['last_page_processed']}")
-        print(f"Started: {summary['start_time']}")
-        print(f"Last updated: {summary['last_updated']}")
+    # Test authentication if requested
+    if args.test_auth:
+        try:
+            token = downloader.get_token()
+            token_preview = token[:15] + "..." if token else "None"
+            logger.info(f"Authentication successful. Token: {token_preview}")
+            return
+        except Exception as e:
+            logger.error(f"Authentication failed: {str(e)}")
+            sys.exit(1)
     
-    elif args.command == "reset":
-        downloader = BulkDownloader()
-        downloader.reset_progress()
+    # Show stats if requested
+    if args.stats:
+        stats = downloader.get_download_stats()
+        logger.info("CSR Download Statistics:")
+        logger.info(f"Total reports in database: {stats['total_in_database']}")
+        logger.info(f"Downloaded: {stats['downloaded']}")
+        logger.info(f"Not downloaded: {stats['not_downloaded']}")
+        
+        logger.info("\nTop therapeutic areas:")
+        for area, count in list(stats['therapeutic_areas'].items())[:5]:
+            logger.info(f"  {area}: {count}")
+        
+        logger.info("\nDocument types:")
+        for doc_type, count in stats['document_types'].items():
+            logger.info(f"  {doc_type}: {count}")
+        
+        logger.info("\nReports by year:")
+        for year, count in stats['by_year'].items():
+            logger.info(f"  {year}: {count}")
+        
+        return
     
-    else:
-        parser.print_help()
+    # Retry failed downloads if requested
+    if args.retry:
+        logger.info("Retrying failed downloads...")
+        stats = downloader.retry_failed(max_workers=args.workers)
+        logger.info(f"Retry complete: {stats['successful']} successful, {stats['still_failed']} still failed (out of {stats['total_retry']} retried)")
+        return
+    
+    # Otherwise, perform regular download
+    logger.info(f"Starting bulk download (therapeutic area: {args.therapeutic_area or 'All'}, limit: {args.limit or 'All'})")
+    stats = downloader.bulk_download(
+        therapeutic_area=args.therapeutic_area,
+        limit=args.limit,
+        batch_size=args.batch_size,
+        max_workers=args.workers
+    )
+    
+    logger.info(f"Download complete: {stats['downloaded']} new downloads, {stats['failed']} failed, {stats['skipped']} skipped (total found: {stats['total_found']})")
+
+
+if __name__ == "__main__":
+    main()
