@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'wouter';
 import { 
   Card, 
@@ -11,6 +11,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   FileText, 
   PieChart, 
@@ -64,9 +67,47 @@ const Calculator = () => (
  * - Detailed value proposition for each role
  * - Better visual hierarchy and navigation
  * - More accessible examples and demonstrations
+ * - Live CSR report integration
  */
 const EnhancedShowcaseSection = () => {
   const [activeTab, setActiveTab] = useState('personas');
+  const [recentReports, setRecentReports] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const { toast } = useToast();
+  
+  // Fetch recent reports from the API
+  useEffect(() => {
+    const fetchReports = async () => {
+      if (activeTab === 'examples') {
+        setIsLoading(true);
+        setError(null);
+        
+        try {
+          const response = await fetch('/api/reports/recent?limit=4');
+          
+          if (!response.ok) {
+            throw new Error(`Failed to fetch reports: ${response.status}`);
+          }
+          
+          const data = await response.json();
+          setRecentReports(data);
+        } catch (err) {
+          console.error('Error fetching reports:', err);
+          setError('Failed to load recent reports. Please try again later.');
+          toast({
+            title: "Error loading reports",
+            description: "We couldn't fetch the latest reports. Please try again later.",
+            variant: "destructive"
+          });
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+    
+    fetchReports();
+  }, [activeTab, toast]);
   
   // Detailed role-based personas with specific challenges and solutions
   const personas = [
