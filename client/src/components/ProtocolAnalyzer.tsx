@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { AlertCircle, BarChart, BookOpen, CheckCircle, Download, FileText, Upload } from 'lucide-react';
+import { AlertCircle, BarChart, BookOpen, CheckCircle, Download, ExternalLink, FileText, GanttChart, Upload } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -253,12 +253,13 @@ export default function ProtocolAnalyzer() {
           </CardHeader>
           <CardContent>
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid grid-cols-5 w-full">
+              <TabsList className="grid grid-cols-6 w-full">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
                 <TabsTrigger value="detailed">Detailed Analysis</TabsTrigger>
                 <TabsTrigger value="recommendations">Recommendations</TabsTrigger>
                 <TabsTrigger value="methodology">Methodology</TabsTrigger>
                 <TabsTrigger value="regulatory">Regulatory</TabsTrigger>
+                <TabsTrigger value="literature">Literature</TabsTrigger>
               </TabsList>
 
               {/* Overview Tab */}
@@ -452,16 +453,109 @@ export default function ProtocolAnalyzer() {
               <TabsContent value="regulatory" className="mt-4">
                 <ScrollArea className="h-[60vh]">
                   <div className="space-y-4">
+                    <div className="bg-slate-50 p-4 rounded-lg mb-6">
+                      <h3 className="text-lg font-semibold mb-2 flex items-center">
+                        <GanttChart className="h-5 w-5 mr-2 text-primary" />
+                        Global Regulatory Guidance
+                      </h3>
+                      <p className="text-sm text-slate-600 mb-3">
+                        This analysis incorporates guidance from major global regulatory agencies, ensuring protocol compliance with international standards.
+                      </p>
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        <Badge variant="secondary">FDA</Badge>
+                        <Badge variant="secondary">EMA</Badge>
+                        <Badge variant="secondary">ICH</Badge>
+                        <Badge variant="secondary">TGA</Badge>
+                        <Badge variant="secondary">PMDA</Badge>
+                        <Badge variant="secondary">NMPA</Badge>
+                        <Badge variant="secondary">Health Canada</Badge>
+                      </div>
+                    </div>
+                    
                     {currentAnalysis.assessment.regulatoryConsiderations.map((reg, idx) => (
                       <Card key={idx}>
                         <CardHeader className="pb-2">
                           <CardTitle className="text-md flex items-center">
-                            <Badge variant="outline" className="mr-2">{reg.agency}</Badge>
+                            <Badge variant="outline" className="mr-2 font-bold">{reg.agency}</Badge>
                             {reg.relevantGuidance}
                           </CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <p className="text-sm">{reg.consideration}</p>
+                          <div className="bg-blue-50 p-3 rounded-md border border-blue-100">
+                            <p className="text-sm">{reg.consideration}</p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </TabsContent>
+              
+              {/* Literature Tab */}
+              <TabsContent value="literature" className="mt-4">
+                <ScrollArea className="h-[60vh]">
+                  <div className="space-y-4">
+                    <div className="bg-slate-50 p-4 rounded-lg mb-6">
+                      <h3 className="text-lg font-semibold mb-2 flex items-center">
+                        <BookOpen className="h-5 w-5 mr-2 text-primary" />
+                        Academic Literature Analysis
+                      </h3>
+                      <p className="text-sm text-slate-600 mb-1">
+                        Evidence-based recommendations supported by relevant scientific literature focused on clinical trial design and execution.
+                      </p>
+                    </div>
+                    
+                    {currentAnalysis.assessment.academicLiterature?.map((citation, idx) => (
+                      <Card key={idx} className="overflow-hidden">
+                        <CardHeader className="pb-2 bg-gradient-to-r from-slate-50 to-white">
+                          <div className="flex justify-between items-start">
+                            <CardTitle className="text-md font-medium">
+                              {citation.title}
+                            </CardTitle>
+                            <div className="flex items-center gap-2">
+                              <Badge variant="outline" className="text-xs">
+                                {citation.year}
+                              </Badge>
+                              {citation.relevance_score && (
+                                <Badge variant="secondary" className="text-xs">
+                                  Relevance: {Math.round(citation.relevance_score * 100)}%
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                          <CardDescription>
+                            {citation.authors} • {citation.journal} • Vol {citation.volume}, pp {citation.pages}
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          {citation.abstract && (
+                            <div className="bg-white border border-slate-100 rounded-md p-3 mb-3">
+                              <h4 className="text-sm font-medium mb-1">Abstract</h4>
+                              <p className="text-xs text-slate-700 leading-relaxed">
+                                {citation.abstract}
+                              </p>
+                            </div>
+                          )}
+                          <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-2">
+                              {citation.citation_count && (
+                                <span className="text-xs text-slate-500 flex items-center">
+                                  <FileText className="h-3 w-3 mr-1" />
+                                  {citation.citation_count} citations
+                                </span>
+                              )}
+                            </div>
+                            {citation.doi && (
+                              <a 
+                                href={`https://doi.org/${citation.doi}`} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-xs text-primary hover:underline flex items-center"
+                              >
+                                View Publication <ExternalLink className="h-3 w-3 ml-1" />
+                              </a>
+                            )}
+                          </div>
                         </CardContent>
                       </Card>
                     ))}
