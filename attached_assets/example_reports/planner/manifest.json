@@ -1,0 +1,17 @@
+{
+  "persona": "planner",
+  "title": "Study Planning Suite",
+  "description": "Comprehensive tools for protocol design and study planning",
+  "files": [
+    "protocol_optimization_report.pdf",
+    "trial_success_prediction.pdf",
+    "inclusion_exclusion_recommendations.pdf",
+    "endpoint_selection_guidance.pdf",
+    "study_design_recommendations.pdf"
+  ],
+  "blurbs": [
+    "AI-powered protocol optimization with success probability",
+    "Data-driven endpoint selection with historical validation",
+    "Comprehensive inclusion/exclusion criteria recommendations"
+  ]
+}
