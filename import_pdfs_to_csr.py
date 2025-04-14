@@ -1,386 +1,603 @@
 #!/usr/bin/env python3
 """
-Import PDFs to CSR Database
----------------------------
-This script imports PDFs from attached_assets folder into the CSR database system.
-It extracts text from PDFs, creates structured CSR objects, and adds them to the database.
+PDF to CSR Import
+----------------
+This script imports PDF files containing Clinical Study Reports (CSRs)
+into the TrialSage database.
+
+It handles:
+1. Extracting text and metadata from PDFs
+2. Creating CSR entries in the database
+3. Generating structured CSR data
 """
 
 import os
 import sys
+import time
+import argparse
+import logging
 import json
+import re
 import sqlite3
 from datetime import datetime
-import logging
-import uuid
-import glob
-import time
-from typing import List, Dict, Any, Optional
+import random
+from typing import Dict, List, Any, Optional, Tuple
+import PyPDF2
+
+# Constants
+LOG_FILE = "pdf_importer.log"
+DB_FILE = "csr_database.db"
 
 # Set up logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[logging.StreamHandler(sys.stdout)]
+    handlers=[
+        logging.StreamHandler(sys.stdout),
+        logging.FileHandler(LOG_FILE)
+    ]
 )
-logger = logging.getLogger("csr-importer")
+logger = logging.getLogger("pdf-importer")
 
-# Constants
-PDF_SOURCE_DIR = "attached_assets"
-PROCESSED_CSR_DIR = "data/processed_csrs"
-DATA_DIR = "data"
-DB_PATH = os.path.join("data/vector_store", "csr_metadata.db")
-
-# Ensure directories exist
-os.makedirs(PROCESSED_CSR_DIR, exist_ok=True)
-os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-os.makedirs(DATA_DIR, exist_ok=True)
-
-# Attempt to use pdfminer.six for PDF extraction
+# Try to import pdfminer.high_level if available
 try:
-    from pdfminer.high_level import extract_text
-    logger.info("Using pdfminer.six for PDF extraction")
+    from pdfminer.high_level import extract_text as pdfminer_extract_text
+    HAVE_PDFMINER = True
 except ImportError:
-    logger.warning("pdfminer.six not available, will attempt to install later")
+    HAVE_PDFMINER = False
+    logger.warning("pdfminer.high_level not available, using PyPDF2 for text extraction")
 
-def extract_text_from_pdf(pdf_path: str) -> str:
-    """Extract text from a PDF file using pdfminer.six"""
+def extract_text_with_pdfminer(pdf_path: str) -> str:
+    """Extract text from PDF using pdfminer"""
+    if not HAVE_PDFMINER:
+        raise ImportError("pdfminer.high_level not available")
+    
     try:
-        return extract_text(pdf_path)
+        text = pdfminer_extract_text(pdf_path)
+        return text
     except Exception as e:
-        logger.error(f"Error extracting text from {pdf_path}: {e}")
+        logger.error(f"Error extracting text with pdfminer: {e}")
         return ""
 
-def extract_metadata_from_text(text: str, pdf_path: str) -> Dict[str, Any]:
-    """Extract CSR metadata from text using simple heuristics and match existing CSR format"""
-    # Generate a unique ID with "PDF-" prefix to distinguish from existing CSRs
-    unique_id = f"PDF-{str(uuid.uuid4())[:8]}"
+def extract_text_with_pypdf2(pdf_path: str) -> str:
+    """Extract text from PDF using PyPDF2"""
+    text = ""
     
-    # Initialize with standard fields found in CSRs
-    metadata = {
-        "nctrialId": unique_id,
-        "csr_id": unique_id,
-        "title": "",
-        "officialTitle": "",
-        "sponsor": "Unknown",
-        "indication": "",
-        "phase": "",
-        "fileName": os.path.basename(pdf_path),
-        "fileSize": os.path.getsize(pdf_path),
-        "date": datetime.now().strftime("%Y-%m-%d"),
-        "completionDate": "",
-        "drugName": "",
-        "source": "Attached PDF Assets",
-        "studyType": "Interventional",
-        "status": "Completed",
-        "description": "",
-        "eligibilityCriteria": ""
-    }
-
-    # Extract title (assume it's in the first few lines)
-    lines = text.split('\n')
-    title_candidates = [line.strip() for line in lines[:10] if len(line.strip()) > 20 and len(line.strip()) < 200]
-    if title_candidates:
-        metadata["title"] = title_candidates[0]
-        metadata["officialTitle"] = title_candidates[0]
-
-    # Try to identify phase
-    phase_keywords = {
-        "Phase 1": "Phase 1",
-        "Phase I": "Phase 1",
-        "Phase 2": "Phase 2",
-        "Phase II": "Phase 2",
-        "Phase 3": "Phase 3",
-        "Phase III": "Phase 3",
-        "Phase 4": "Phase 4",
-        "Phase IV": "Phase 4"
-    }
-    
-    for keyword, phase in phase_keywords.items():
-        if keyword in text:
-            metadata["phase"] = phase
-            break
-
-    # Try to extract indication
-    common_indications = [
-        "arthritis", "asthma", "cancer", "diabetes", "hypertension", 
-        "depression", "anxiety", "schizophrenia", "alzheimer", "parkinson",
-        "multiple sclerosis", "epilepsy", "hiv", "hepatitis", "influenza",
-        "covid", "obesity", "copd", "heart failure", "stroke"
-    ]
-    
-    for indication in common_indications:
-        if indication.lower() in text.lower():
-            metadata["indication"] = indication.title()
-            break
-
-    # Try to identify sponsor/company
-    sponsor_patterns = [
-        "sponsored by", "Sponsor:", "Sponsor :", 
-        "conducted by", "prepared by", "developed by"
-    ]
-    
-    for pattern in sponsor_patterns:
-        idx = text.lower().find(pattern.lower())
-        if idx != -1:
-            # Extract text after the pattern
-            sponsor_text = text[idx + len(pattern):idx + len(pattern) + 100]
-            # Find the first line break or period
-            end_idx = min(
-                sponsor_text.find("\n") if sponsor_text.find("\n") != -1 else 100,
-                sponsor_text.find(".") if sponsor_text.find(".") != -1 else 100
-            )
-            if end_idx > 0:
-                sponsor = sponsor_text[:end_idx].strip()
-                if sponsor and len(sponsor) < 100:
-                    metadata["sponsor"] = sponsor
-                    break
-
-    # Extract drug name if present
-    drug_name_patterns = [
-        "study drug", "investigational product", "drug name", "test drug", 
-        "active substance", "drug product", "medication"
-    ]
-    
-    for pattern in drug_name_patterns:
-        idx = text.lower().find(pattern.lower())
-        if idx != -1:
-            # Extract text after the pattern
-            drug_text = text[idx + len(pattern):idx + len(pattern) + 100]
-            # Find potential drug name (often in quotes or after a colon)
-            import re
-            drug_matches = re.search(r'[:"]([^:"]{3,50})[:"]*', drug_text)
-            if drug_matches:
-                drug_name = drug_matches.group(1).strip()
-                if drug_name and len(drug_name) < 50:
-                    metadata["drugName"] = drug_name
-                    break
-
-    # Try to extract eligibility criteria
-    inclusion_idx = text.lower().find("inclusion criteria")
-    exclusion_idx = text.lower().find("exclusion criteria")
-    
-    if inclusion_idx != -1 or exclusion_idx != -1:
-        criteria_text = ""
+    try:
+        with open(pdf_path, 'rb') as file:
+            reader = PyPDF2.PdfReader(file)
+            
+            # First, try to get metadata
+            metadata = reader.metadata
+            if metadata:
+                for key, value in metadata.items():
+                    if value:
+                        text += f"{key}: {value}\n"
+                text += "\n\n"
+            
+            # Then extract text from pages
+            for page_num, page in enumerate(reader.pages):
+                if page_num < 50:  # Limit to first 50 pages for speed
+                    page_text = page.extract_text()
+                    if page_text:
+                        text += page_text + "\n\n"
+                else:
+                    # Sample some pages from later in the document
+                    if page_num % 20 == 0:  # Sample every 20th page
+                        page_text = page.extract_text()
+                        if page_text:
+                            text += page_text + "\n\n"
         
-        if inclusion_idx != -1:
-            # Extract 500 chars after inclusion criteria
-            inclusion_text = text[inclusion_idx:inclusion_idx + 500]
-            criteria_text += f"\nInclusion Criteria:\n{inclusion_text}\n"
-            
-        if exclusion_idx != -1:
-            # Extract 500 chars after exclusion criteria
-            exclusion_text = text[exclusion_idx:exclusion_idx + 500]
-            criteria_text += f"\nExclusion Criteria:\n{exclusion_text}"
-            
-        metadata["eligibilityCriteria"] = criteria_text.strip()
+        return text
+    except Exception as e:
+        logger.error(f"Error extracting text with PyPDF2: {e}")
+        return ""
 
-    # Create a description from the first 200-300 characters of meaningful text
-    valid_lines = [line for line in lines if len(line.strip()) > 20]
-    if valid_lines:
-        description_text = " ".join(valid_lines[:5])
-        metadata["description"] = description_text[:300] + "..." if len(description_text) > 300 else description_text
+def extract_text_from_pdf(pdf_path: str) -> str:
+    """Extract text from PDF, trying multiple methods"""
+    # Try pdfminer first, if available (better quality)
+    if HAVE_PDFMINER:
+        try:
+            text = extract_text_with_pdfminer(pdf_path)
+            if text and len(text) > 100:  # Ensure we got meaningful text
+                return text
+        except Exception as e:
+            logger.warning(f"pdfminer extraction failed: {e}")
+    
+    # Fall back to PyPDF2
+    try:
+        text = extract_text_with_pypdf2(pdf_path)
+        if text:
+            return text
+    except Exception as e:
+        logger.error(f"PyPDF2 extraction failed: {e}")
+    
+    return ""
 
+def extract_csr_metadata(text: str, file_path: str) -> Dict[str, Any]:
+    """Extract metadata from CSR text"""
+    # Initialize metadata with defaults
+    metadata = {
+        'title': os.path.basename(file_path),
+        'sponsor': None,
+        'indication': None,
+        'phase': None,
+        'study_id': None,
+        'drug_name': None,
+        'protocol_number': None,
+        'therapeutic_area': None,
+        'source': 'imported',
+        'file_path': file_path,
+        'file_size': os.path.getsize(file_path) if os.path.exists(file_path) else 0,
+        'summary': None
+    }
+    
+    # Extract title (use filename if can't extract)
+    title_match = re.search(r'(?:title|study title)[:\s]+(.*?)(?:\n|$)', text, re.IGNORECASE)
+    if title_match:
+        metadata['title'] = title_match.group(1).strip()
+    
+    # Extract sponsor
+    sponsor_match = re.search(r'(?:sponsor|company|corporation)[:\s]+(.*?)(?:\n|$)', text, re.IGNORECASE)
+    if sponsor_match:
+        metadata['sponsor'] = sponsor_match.group(1).strip()
+    
+    # Extract indication
+    indication_match = re.search(r'(?:indication|disease|condition)[:\s]+(.*?)(?:\n|$)', text, re.IGNORECASE)
+    if indication_match:
+        metadata['indication'] = indication_match.group(1).strip()
+    
+    # Extract phase
+    phase_match = re.search(r'(?:phase|study phase)[:\s]+(?:phase\s*)?(I{1,3}V?|[1-4])', text, re.IGNORECASE)
+    if phase_match:
+        phase = phase_match.group(1).strip().upper()
+        # Convert Roman numerals to numbers if needed
+        if phase in ['I', '1']:
+            metadata['phase'] = 'Phase 1'
+        elif phase in ['II', '2']:
+            metadata['phase'] = 'Phase 2'
+        elif phase in ['III', '3']:
+            metadata['phase'] = 'Phase 3'
+        elif phase in ['IV', '4']:
+            metadata['phase'] = 'Phase 4'
+        else:
+            metadata['phase'] = f"Phase {phase}"
+    
+    # Extract study ID or protocol number
+    id_match = re.search(r'(?:study id|protocol number|protocol id)[:\s]+([\w\d\-\.]+)', text, re.IGNORECASE)
+    if id_match:
+        study_id = id_match.group(1).strip()
+        metadata['study_id'] = study_id
+        metadata['protocol_number'] = study_id
+    
+    # Extract drug name
+    drug_match = re.search(r'(?:drug name|investigational product|study drug)[:\s]+([\w\d\-\.]+)', text, re.IGNORECASE)
+    if drug_match:
+        metadata['drug_name'] = drug_match.group(1).strip()
+    
+    # Try to determine therapeutic area from indication
+    if metadata['indication']:
+        indication = metadata['indication'].lower()
+        if any(term in indication for term in ['cancer', 'tumor', 'oncology', 'carcinoma', 'lymphoma', 'leukemia']):
+            metadata['therapeutic_area'] = 'Oncology'
+        elif any(term in indication for term in ['cardiac', 'heart', 'cardiovascular', 'hypertension']):
+            metadata['therapeutic_area'] = 'Cardiovascular'
+        elif any(term in indication for term in ['diabetes', 'glucose', 'insulin']):
+            metadata['therapeutic_area'] = 'Endocrinology'
+        elif any(term in indication for term in ['liver', 'hepatic', 'gastro']):
+            metadata['therapeutic_area'] = 'Gastroenterology'
+        elif any(term in indication for term in ['neuro', 'brain', 'alzheimer', 'parkinson']):
+            metadata['therapeutic_area'] = 'Neurology'
+        elif any(term in indication for term in ['lung', 'pulmonary', 'respiratory', 'asthma', 'copd']):
+            metadata['therapeutic_area'] = 'Respiratory'
+        elif any(term in indication for term in ['skin', 'derma', 'psoriasis', 'eczema']):
+            metadata['therapeutic_area'] = 'Dermatology'
+        elif any(term in indication for term in ['kidney', 'renal']):
+            metadata['therapeutic_area'] = 'Nephrology'
+        elif any(term in indication for term in ['immune', 'arthritis', 'lupus']):
+            metadata['therapeutic_area'] = 'Immunology'
+        elif any(term in indication for term in ['infect', 'virus', 'bacteria']):
+            metadata['therapeutic_area'] = 'Infectious Disease'
+        else:
+            metadata['therapeutic_area'] = 'Other'
+    
+    # Generate a summary
+    summary_paragraphs = []
+    
+    # Look for abstract or summary section
+    abstract_match = re.search(r'(?:abstract|summary|synopsis).*?(?:\n{2,}|$)(.*?)(?:\n{2,}|$)', text, re.IGNORECASE | re.DOTALL)
+    if abstract_match and len(abstract_match.group(1).strip()) > 50:
+        summary_paragraphs.append(abstract_match.group(1).strip())
+    
+    # Look for results section
+    results_match = re.search(r'(?:results|outcome).*?(?:\n{2,}|$)(.*?)(?:\n{2,}|$)', text, re.IGNORECASE | re.DOTALL)
+    if results_match and len(results_match.group(1).strip()) > 50:
+        summary_paragraphs.append(results_match.group(1).strip())
+    
+    # Look for conclusion section
+    conclusion_match = re.search(r'(?:conclusion).*?(?:\n{2,}|$)(.*?)(?:\n{2,}|$)', text, re.IGNORECASE | re.DOTALL)
+    if conclusion_match and len(conclusion_match.group(1).strip()) > 50:
+        summary_paragraphs.append(conclusion_match.group(1).strip())
+    
+    if summary_paragraphs:
+        # Combine paragraphs and limit length
+        metadata['summary'] = ' '.join(summary_paragraphs)[:1000]
+    else:
+        # Use first 500 characters as summary if nothing else found
+        metadata['summary'] = text[:500].replace('\n', ' ').strip()
+    
     return metadata
 
-def setup_database():
-    """Ensure the SQLite database exists and has the correct schema"""
-    conn = sqlite3.connect(DB_PATH)
+def extract_csr_details(text: str, metadata: Dict[str, Any]) -> Dict[str, Any]:
+    """Extract detailed CSR information"""
+    # Initialize details
+    details = {
+        'studyDesign': None,
+        'primaryObjective': None,
+        'secondaryObjectives': None,
+        'studyDescription': None,
+        'inclusionCriteria': None,
+        'exclusionCriteria': None,
+        'endpoints': [],
+        'treatmentArms': [],
+        'population': None,
+        'results': None,
+        'safety': None,
+        'limitations': None,
+        'conclusions': None
+    }
+    
+    # Extract study design
+    design_match = re.search(r'(?:study design|design).*?(?:\n{2,}|:)(.*?)(?:\n{2,}|$)', text, re.IGNORECASE | re.DOTALL)
+    if design_match:
+        details['studyDesign'] = design_match.group(1).strip()
+    
+    # Extract primary objective
+    objective_match = re.search(r'(?:primary objective|objective).*?(?:\n{2,}|:)(.*?)(?:\n{2,}|$)', text, re.IGNORECASE | re.DOTALL)
+    if objective_match:
+        details['primaryObjective'] = objective_match.group(1).strip()
+    
+    # Extract secondary objectives
+    secondary_match = re.search(r'(?:secondary objective).*?(?:\n{2,}|:)(.*?)(?:\n{2,}|$)', text, re.IGNORECASE | re.DOTALL)
+    if secondary_match:
+        details['secondaryObjectives'] = secondary_match.group(1).strip()
+    
+    # Extract study description
+    description_match = re.search(r'(?:study description|description).*?(?:\n{2,}|:)(.*?)(?:\n{2,}|$)', text, re.IGNORECASE | re.DOTALL)
+    if description_match:
+        details['studyDescription'] = description_match.group(1).strip()
+    
+    # Extract inclusion criteria
+    inclusion_match = re.search(r'(?:inclusion criteria).*?(?:\n{2,}|:)(.*?)(?:exclusion criteria|\n{4,}|$)', text, re.IGNORECASE | re.DOTALL)
+    if inclusion_match:
+        details['inclusionCriteria'] = inclusion_match.group(1).strip()
+    
+    # Extract exclusion criteria
+    exclusion_match = re.search(r'(?:exclusion criteria).*?(?:\n{2,}|:)(.*?)(?:\n{4,}|$)', text, re.IGNORECASE | re.DOTALL)
+    if exclusion_match:
+        details['exclusionCriteria'] = exclusion_match.group(1).strip()
+    
+    # Extract endpoints
+    endpoint_section = re.search(r'(?:endpoints|outcome measures).*?(?:\n{2,}|:)(.*?)(?:\n{4,}|$)', text, re.IGNORECASE | re.DOTALL)
+    if endpoint_section:
+        endpoint_text = endpoint_section.group(1)
+        # Look for numbered or bulleted endpoints
+        endpoint_items = re.findall(r'(?:^|\n)(?:\d+\.\s*|\*\s*|-\s*)(.*?)(?:\n|$)', endpoint_text)
+        if endpoint_items:
+            details['endpoints'] = [item.strip() for item in endpoint_items if len(item.strip()) > 5]
+        else:
+            # Split by sentences if no clear formatting
+            sentences = re.split(r'\.(?:\s+|\n)', endpoint_text)
+            details['endpoints'] = [s.strip() + '.' for s in sentences if len(s.strip()) > 5]
+    
+    # Extract treatment arms
+    arms_section = re.search(r'(?:treatment arms|treatment groups|study arms).*?(?:\n{2,}|:)(.*?)(?:\n{4,}|$)', text, re.IGNORECASE | re.DOTALL)
+    if arms_section:
+        arms_text = arms_section.group(1)
+        # Look for numbered or bulleted arms
+        arm_items = re.findall(r'(?:^|\n)(?:\d+\.\s*|\*\s*|-\s*)(.*?)(?:\n|$)', arms_text)
+        if arm_items:
+            details['treatmentArms'] = [item.strip() for item in arm_items if len(item.strip()) > 5]
+        else:
+            # Split by sentences if no clear formatting
+            sentences = re.split(r'\.(?:\s+|\n)', arms_text)
+            details['treatmentArms'] = [s.strip() + '.' for s in sentences if len(s.strip()) > 5]
+    
+    # Extract population
+    population_match = re.search(r'(?:population|study population|subjects).*?(?:\n{2,}|:)(.*?)(?:\n{4,}|$)', text, re.IGNORECASE | re.DOTALL)
+    if population_match:
+        details['population'] = population_match.group(1).strip()
+    
+    # Extract results
+    results_match = re.search(r'(?:results|efficacy results).*?(?:\n{2,}|:)(.*?)(?:conclusion|safety|adverse|\n{4,}|$)', text, re.IGNORECASE | re.DOTALL)
+    if results_match:
+        details['results'] = results_match.group(1).strip()
+    
+    # Extract safety data
+    safety_match = re.search(r'(?:safety|adverse events|adverse reactions).*?(?:\n{2,}|:)(.*?)(?:conclusion|\n{4,}|$)', text, re.IGNORECASE | re.DOTALL)
+    if safety_match:
+        details['safety'] = safety_match.group(1).strip()
+    
+    # Extract limitations
+    limitations_match = re.search(r'(?:limitations|study limitations).*?(?:\n{2,}|:)(.*?)(?:conclusion|\n{4,}|$)', text, re.IGNORECASE | re.DOTALL)
+    if limitations_match:
+        details['limitations'] = limitations_match.group(1).strip()
+    
+    # Extract conclusions
+    conclusions_match = re.search(r'(?:conclusion|conclusions).*?(?:\n{2,}|:)(.*?)(?:\n{4,}|$)', text, re.IGNORECASE | re.DOTALL)
+    if conclusions_match:
+        details['conclusions'] = conclusions_match.group(1).strip()
+    
+    return details
+
+def init_database() -> sqlite3.Connection:
+    """Initialize the database"""
+    conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
     
-    # Create tables if they don't exist
+    # Create csr_reports table if it doesn't exist
     cursor.execute('''
-    CREATE TABLE IF NOT EXISTS csr_metadata (
-        csr_id TEXT PRIMARY KEY,
+    CREATE TABLE IF NOT EXISTS csr_reports (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT,
+        sponsor TEXT,
         indication TEXT,
         phase TEXT,
-        sample_size INTEGER,
-        outcome TEXT,
-        file_name TEXT,
-        file_size INTEGER,
-        import_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        summary TEXT,
-        
-        nctrialId TEXT,
-        drugName TEXT,
+        study_id TEXT,
+        drug_name TEXT,
+        protocol_number TEXT,
+        therapeutic_area TEXT,
         source TEXT,
-        status TEXT,
-        description TEXT,
-        eligibilityCriteria TEXT,
-        file_path TEXT
+        file_path TEXT,
+        file_size INTEGER,
+        upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        summary TEXT,
+        processed BOOLEAN DEFAULT FALSE
     )
     ''')
     
-    # Create indices for common search fields
-    cursor.execute('CREATE INDEX IF NOT EXISTS idx_indication ON csr_metadata(indication)')
-    cursor.execute('CREATE INDEX IF NOT EXISTS idx_phase ON csr_metadata(phase)')
+    # Create csr_details table if it doesn't exist
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS csr_details (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        report_id INTEGER,
+        study_design TEXT,
+        primary_objective TEXT,
+        secondary_objectives TEXT,
+        study_description TEXT,
+        inclusion_criteria TEXT,
+        exclusion_criteria TEXT,
+        endpoints TEXT,
+        treatment_arms TEXT,
+        population TEXT,
+        results TEXT,
+        safety TEXT,
+        limitations TEXT,
+        conclusions TEXT,
+        processed BOOLEAN DEFAULT FALSE,
+        FOREIGN KEY (report_id) REFERENCES csr_reports (id)
+    )
+    ''')
     
     conn.commit()
-    conn.close()
-    logger.info(f"Database initialized at {DB_PATH}")
+    return conn
 
-def save_csr_to_database(metadata: Dict[str, Any]) -> bool:
-    """Save CSR metadata to SQLite database"""
+def import_pdf_to_csr(pdf_path: str) -> bool:
+    """Import a PDF file to the CSR database"""
+    # Check if file exists
+    if not os.path.exists(pdf_path):
+        logger.error(f"File does not exist: {pdf_path}")
+        return False
+    
+    # Check if it's a PDF
+    if not pdf_path.lower().endswith('.pdf'):
+        logger.error(f"File is not a PDF: {pdf_path}")
+        return False
+    
     try:
-        conn = sqlite3.connect(DB_PATH)
+        # Extract text from PDF
+        logger.info(f"Extracting text from {pdf_path}")
+        
+        text = extract_text_from_pdf(pdf_path)
+        
+        if not text:
+            logger.error(f"Failed to extract text from {pdf_path}")
+            return False
+        
+        # Extract metadata
+        logger.info(f"Extracting metadata from text ({len(text)} characters)")
+        metadata = extract_csr_metadata(text, pdf_path)
+        
+        # Extract details
+        logger.info("Extracting detailed CSR information")
+        details = extract_csr_details(text, metadata)
+        
+        # Initialize database
+        conn = init_database()
         cursor = conn.cursor()
         
-        # We've already defined all columns in setup_database
-        # Let's directly insert the data
-        cursor.execute('''
-        INSERT OR REPLACE INTO csr_metadata
-        (csr_id, nctrialId, title, indication, phase, file_path, file_name, file_size, import_date, 
-        drugName, source, status, description, eligibilityCriteria, sample_size)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (
-            metadata.get('csr_id'),
-            metadata.get('nctrialId'),
-            metadata.get('title', ''),
-            metadata.get('indication', ''),
-            metadata.get('phase', ''),
-            metadata.get('file_path', os.path.abspath(metadata.get('fileName', ''))),
-            metadata.get('fileName', ''),
-            metadata.get('fileSize', 0),
-            datetime.now().isoformat(),
-            metadata.get('drugName', ''),
-            metadata.get('source', ''),
-            metadata.get('status', ''),
-            metadata.get('description', ''),
-            metadata.get('eligibilityCriteria', ''),
-            metadata.get('sampleSize', 0)
-        ))
+        # Check if this file has already been imported
+        cursor.execute("SELECT id FROM csr_reports WHERE file_path = ?", (pdf_path,))
+        existing = cursor.fetchone()
+        
+        if existing:
+            logger.info(f"File already imported with ID {existing[0]}")
+            
+            # Update the existing record
+            cursor.execute('''
+            UPDATE csr_reports SET
+                title = ?,
+                sponsor = ?,
+                indication = ?,
+                phase = ?,
+                study_id = ?,
+                drug_name = ?,
+                protocol_number = ?,
+                therapeutic_area = ?,
+                source = ?,
+                file_size = ?,
+                summary = ?
+            WHERE id = ?
+            ''', (
+                metadata['title'],
+                metadata['sponsor'],
+                metadata['indication'],
+                metadata['phase'],
+                metadata['study_id'],
+                metadata['drug_name'],
+                metadata['protocol_number'],
+                metadata['therapeutic_area'],
+                metadata['source'],
+                metadata['file_size'],
+                metadata['summary'],
+                existing[0]
+            ))
+            
+            # Update details
+            cursor.execute('''
+            UPDATE csr_details SET
+                study_design = ?,
+                primary_objective = ?,
+                secondary_objectives = ?,
+                study_description = ?,
+                inclusion_criteria = ?,
+                exclusion_criteria = ?,
+                endpoints = ?,
+                treatment_arms = ?,
+                population = ?,
+                results = ?,
+                safety = ?,
+                limitations = ?,
+                conclusions = ?
+            WHERE report_id = ?
+            ''', (
+                details['studyDesign'],
+                details['primaryObjective'],
+                details['secondaryObjectives'],
+                details['studyDescription'],
+                details['inclusionCriteria'],
+                details['exclusionCriteria'],
+                json.dumps(details['endpoints']),
+                json.dumps(details['treatmentArms']),
+                details['population'],
+                details['results'],
+                details['safety'],
+                details['limitations'],
+                details['conclusions'],
+                existing[0]
+            ))
+            
+            report_id = existing[0]
+        else:
+            # Insert new record
+            cursor.execute('''
+            INSERT INTO csr_reports (
+                title, sponsor, indication, phase, study_id, drug_name,
+                protocol_number, therapeutic_area, source, file_path, file_size, summary
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                metadata['title'],
+                metadata['sponsor'],
+                metadata['indication'],
+                metadata['phase'],
+                metadata['study_id'],
+                metadata['drug_name'],
+                metadata['protocol_number'],
+                metadata['therapeutic_area'],
+                metadata['source'],
+                pdf_path,
+                metadata['file_size'],
+                metadata['summary']
+            ))
+            
+            report_id = cursor.lastrowid
+            
+            # Insert details
+            cursor.execute('''
+            INSERT INTO csr_details (
+                report_id, study_design, primary_objective, secondary_objectives,
+                study_description, inclusion_criteria, exclusion_criteria,
+                endpoints, treatment_arms, population, results, safety, limitations, conclusions
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                report_id,
+                details['studyDesign'],
+                details['primaryObjective'],
+                details['secondaryObjectives'],
+                details['studyDescription'],
+                details['inclusionCriteria'],
+                details['exclusionCriteria'],
+                json.dumps(details['endpoints']),
+                json.dumps(details['treatmentArms']),
+                details['population'],
+                details['results'],
+                details['safety'],
+                details['limitations'],
+                details['conclusions']
+            ))
         
         conn.commit()
         conn.close()
-        return True
         
+        logger.info(f"Successfully imported CSR with ID {report_id}")
+        return True
     except Exception as e:
-        logger.error(f"Error saving CSR to database: {e}")
+        logger.error(f"Error importing PDF: {e}")
         return False
 
-def save_csr_to_file(metadata: Dict[str, Any]) -> bool:
-    """Save CSR metadata to JSON file"""
-    try:
-        csr_id = metadata.get('csr_id')
-        file_path = os.path.join(PROCESSED_CSR_DIR, f"{csr_id}.json")
-        
-        with open(file_path, 'w') as f:
-            json.dump(metadata, f, indent=2)
-            
-        return True
-        
-    except Exception as e:
-        logger.error(f"Error saving CSR to file: {e}")
-        return False
-
-def process_pdf(pdf_path: str) -> Optional[Dict[str, Any]]:
-    """Process a single PDF file and return the extracted CSR data"""
-    logger.info(f"Processing {pdf_path}")
+def process_directory(directory: str) -> Dict[str, Any]:
+    """Process all PDF files in a directory"""
+    if not os.path.isdir(directory):
+        logger.error(f"Directory does not exist: {directory}")
+        return {"status": "error", "message": f"Directory does not exist: {directory}"}
     
-    # Extract text
-    text = extract_text_from_pdf(pdf_path)
-    if not text:
-        logger.warning(f"No text extracted from {pdf_path}")
-        return None
-        
-    # Extract metadata
-    metadata = extract_metadata_from_text(text, pdf_path)
+    # Get all PDF files in the directory
+    pdf_files = [os.path.join(directory, f) for f in os.listdir(directory) 
+                if f.lower().endswith('.pdf') and os.path.isfile(os.path.join(directory, f))]
     
-    # Add full text
-    metadata["full_text"] = text
+    if not pdf_files:
+        logger.warning(f"No PDF files found in {directory}")
+        return {"status": "complete", "processed": 0, "success": 0, "failed": 0}
     
-    # Generate file path information
-    file_path = os.path.abspath(pdf_path)
-    metadata["file_path"] = file_path
-    
-    # Additional fields to match existing CSR format
-    metadata["sampleSize"] = 0  # Initialize with 0 instead of None
-    metadata["randomization"] = "Unknown"
-    metadata["studyDesign"] = "Unknown"
-    metadata["interventionalModel"] = "Unknown"
-    metadata["primaryPurpose"] = "Unknown"
-    metadata["maskingInfo"] = "Unknown"
-    metadata["officialTitle"] = metadata.get("title", "")
-    
-    # Provide structured eligibility criteria if not already present
-    if not metadata.get("eligibilityCriteria"):
-        metadata["eligibilityCriteria"] = "No eligibility criteria extracted from document."
-    
-    # Ensure completionDate is present
-    if not metadata.get("completionDate"):
-        metadata["completionDate"] = metadata.get("date", datetime.now().strftime("%Y-%m-%d"))
-    
-    # Add source tracking
-    metadata["source"] = f"PDF Document: {os.path.basename(pdf_path)}"
-    
-    return metadata
-
-def import_pdfs(directory: str = PDF_SOURCE_DIR, limit: int = 0, offset: int = 0) -> int:
-    """Import PDFs from directory into CSR database"""
-    setup_database()
-    
-    # Get all PDF files
-    pdf_files = glob.glob(os.path.join(directory, "*.pdf"))
     logger.info(f"Found {len(pdf_files)} PDF files in {directory}")
     
-    # Apply offset and limit
-    if offset > 0:
-        pdf_files = pdf_files[offset:]
-        logger.info(f"Starting from PDF #{offset}")
+    # Process each file
+    total = len(pdf_files)
+    success = 0
+    failed = 0
+    
+    for pdf_file in pdf_files:
+        logger.info(f"Processing {pdf_file}")
         
-    if limit:
-        pdf_files = pdf_files[:limit]
-        logger.info(f"Processing {limit} PDFs (files {offset} to {offset+limit})")
+        if import_pdf_to_csr(pdf_file):
+            success += 1
+        else:
+            failed += 1
     
-    # Process each PDF
-    successful = 0
-    for pdf_path in pdf_files:
-        try:
-            # Process PDF
-            metadata = process_pdf(pdf_path)
-            if not metadata:
-                continue
-                
-            # Save to database
-            db_success = save_csr_to_database(metadata)
-            
-            # Save to file
-            file_success = save_csr_to_file(metadata)
-            
-            if db_success and file_success:
-                logger.info(f"Successfully imported {pdf_path}")
-                successful += 1
-                
-        except Exception as e:
-            logger.error(f"Error processing {pdf_path}: {e}")
-            
-        # Add a small delay to avoid overloading the system
-        time.sleep(0.1)
-    
-    logger.info(f"Imported {successful} out of {len(pdf_files)} PDFs")
-    return successful
+    return {
+        "status": "complete",
+        "processed": total,
+        "success": success,
+        "failed": failed
+    }
 
 def main():
     """Main entry point"""
-    import argparse
-    
-    parser = argparse.ArgumentParser(description="Import PDFs to CSR database")
-    parser.add_argument("--dir", default=PDF_SOURCE_DIR, help="Directory containing PDFs")
-    parser.add_argument("--limit", type=int, help="Limit the number of PDFs to process")
-    parser.add_argument("--offset", type=int, default=0, help="Skip the first N PDFs")
-    
+    parser = argparse.ArgumentParser(description="Import PDF files to CSR database")
+    parser.add_argument("pdf_path", help="Path to PDF file or directory")
     args = parser.parse_args()
     
-    # Make sure we can extract text from PDFs
-    try:
-        from pdfminer.high_level import extract_text
-    except ImportError:
-        logger.error("pdfminer.six is not installed. Please install it.")
-        sys.exit(1)
+    if os.path.isdir(args.pdf_path):
+        result = process_directory(args.pdf_path)
+        print("\nDirectory Processing Summary:")
+        print("===========================")
+        for key, value in result.items():
+            print(f"{key}: {value}")
+    else:
+        success = import_pdf_to_csr(args.pdf_path)
+        print(f"\nImport {'successful' if success else 'failed'}")
     
-    # Import PDFs
-    import_pdfs(args.dir, args.limit, args.offset)
+    return 0
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
