@@ -1,0 +1,30 @@
+{
+  "clinical": {
+    "route": "/planning?persona=planner",
+    "study_id": "EXAMPLE_CLINICAL_ID"
+  },
+  "regulatory": {
+    "route": "/planning?persona=regulatory",
+    "study_id": "EXAMPLE_REGULATORY_ID"
+  },
+  "lumen": {
+    "route": "/planning?persona=planner",
+    "study_id": "EXAMPLE_LUMEN_ID" 
+  },
+  "planner": {
+    "route": "/planning?persona=planner",
+    "study_id": "EXAMPLE_PLANNER_ID"
+  },
+  "ceo": {
+    "route": "/planning?persona=ceo",
+    "study_id": "EXAMPLE_CEO_ID"
+  },
+  "biostats": {
+    "route": "/planning?persona=biostats",
+    "study_id": "EXAMPLE_BIOSTATS_ID"
+  },
+  "clinops": {
+    "route": "/planning?persona=clinops",
+    "study_id": "EXAMPLE_CLINOPS_ID"
+  }
+}

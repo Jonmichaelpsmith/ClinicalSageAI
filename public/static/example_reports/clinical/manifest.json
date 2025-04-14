@@ -1,0 +1,18 @@
+{
+  "title": "Clinical Team Intelligence Suite",
+  "description": "Comprehensive intelligence for clinical trial design and protocol optimization with CSR-backed evidence.",
+  "version": "2025.1",
+  "last_updated": "2025-04-10",
+  "includes": [
+    "Protocol design recommendations based on 779+ CSRs",
+    "Dropout risk forecast with mitigation strategies",
+    "Trial success probability analysis",
+    "Statistical sample size calculator",
+    "Regulatory compliance checklist"
+  ],
+  "files": [
+    "summary_packet.pdf",
+    "dropout_forecast.json",
+    "success_prediction.json"
+  ]
+}
