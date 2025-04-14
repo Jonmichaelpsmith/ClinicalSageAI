@@ -13,6 +13,7 @@ import Navbar from "@/components/navbar";
 import HomeFeatures from "@/components/features/HomeFeatures";
 import UseCaseGallery from "@/components/UseCaseGallery";
 import KnowledgeBasePanel from "@/components/KnowledgeBasePanel";
+import EnhancedShowcaseSection from "@/components/homepage/EnhancedShowcaseSection";
 
 export default function Home() {
   return (
@@ -197,6 +198,10 @@ export default function Home() {
           </div>
         </div>
       </ContentSection>
+      
+      {/* Enhanced Showcase Section - Example Reports and Interactive Demos */}
+      <EnhancedShowcaseSection />
+      
       {/* Subscription Modules Section */}
       <ContentSection className="bg-gradient-to-b from-primary/5 via-slate-50 to-white dark:from-primary/10 dark:via-gray-900 dark:to-gray-950 py-16">
         <div className="container px-4 md:px-6">
