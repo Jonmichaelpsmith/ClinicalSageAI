@@ -394,7 +394,26 @@ export default function ExampleReportsPage() {
                   <CardHeader className="pb-2">
                     <CardTitle className="text-xl">{title}</CardTitle>
                     {manifest && (
-                      <CardDescription>{manifest.description}</CardDescription>
+                      <>
+                        <CardDescription>{manifest.description}</CardDescription>
+                        {manifest.blurb && (
+                          <div className="mt-2 p-3 bg-blue-50 rounded-md border border-blue-100">
+                            <p className="text-sm text-blue-800">{manifest.blurb}</p>
+                          </div>
+                        )}
+                        {manifest.insights && manifest.insights.length > 0 && (
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {manifest.insights.map((insight, idx) => (
+                              <span 
+                                key={idx} 
+                                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800"
+                              >
+                                {insight}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </>
                     )}
                   </CardHeader>
                   <CardContent className="pb-3">

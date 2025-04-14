@@ -3,6 +3,12 @@
   "description": "Customized intelligence for Lumen's unique biotherapeutic platform with microalgae-specific insights.",
   "version": "2025.1",
   "last_updated": "2025-04-14",
+  "blurb": "This analyst dashboard aggregates all KPI outputs, decision rationale, and assistant insights into one strategic report tailored for novel biotherapeutic platforms.",
+  "insights": [
+    "Platform-specific design insights",
+    "Manufacturing integration",
+    "Novel therapeutic benchmarking"
+  ],
   "includes": [
     "Microalgae-specific clinical trial design recommendations",
     "Biomanufacturing process integration with clinical protocol",

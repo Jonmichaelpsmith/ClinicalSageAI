@@ -3,6 +3,12 @@
   "description": "Comprehensive intelligence for clinical trial design and protocol optimization with CSR-backed evidence.",
   "version": "2025.1",
   "last_updated": "2025-04-10",
+  "blurb": "For clinical development teams, this report offers molecule-informed design scaffolds, endpoint optimization, and protocol structure validation.",
+  "insights": [
+    "Protocol design optimization",
+    "Study success prediction",
+    "Dropout risk forecasting"
+  ],
   "includes": [
     "Protocol design recommendations based on 779+ CSRs",
     "Dropout risk forecast with mitigation strategies",
