@@ -219,16 +219,19 @@ async function getRelevantLiterature(indication: string, phase: string | undefin
 // Function to fetch relevant regulatory guidance
 async function getRegulatoryGuidance(indication: string, phase: string | undefined) {
   try {
-    const guidances = await db.query(`
+    // Using Drizzle ORM with SQL tag for safe query generation
+    const indicationParam = `%${indication}%`;
+    
+    const guidances = await db.execute(sql`
       SELECT agency, document_title, year, link, summary 
       FROM regulatory_guidance 
-      WHERE therapeutic_area LIKE '%${indication}%' 
+      WHERE therapeutic_area LIKE ${indicationParam} 
       OR general_application = true
       ORDER BY year DESC
       LIMIT 12
     `);
     
-    return guidances.rows;
+    return guidances;
   } catch (error) {
     console.error('Error fetching regulatory guidance:', error);
     
@@ -297,28 +300,33 @@ async function getRegulatoryGuidance(indication: string, phase: string | undefin
 // Function to find similar protocols in CSR database
 async function findSimilarProtocols(indication: string, phase: string | undefined) {
   try {
-    let phaseCondition = '';
+    const indicationParam = `%${indication}%`;
+    let phaseCondition = sql``;
+    
     if (phase) {
       // Handle different phase formats
       if (phase.includes('/')) {
         const phases = phase.split('/');
-        phaseCondition = `AND (phase LIKE '%${phases[0]}%' OR phase LIKE '%${phases[1]}%')`;
+        const phase1 = `%${phases[0]}%`;
+        const phase2 = `%${phases[1]}%`;
+        phaseCondition = sql`AND (phase LIKE ${phase1} OR phase LIKE ${phase2})`;
       } else {
-        phaseCondition = `AND phase LIKE '%${phase}%'`;
+        const phaseParam = `%${phase}%`;
+        phaseCondition = sql`AND phase LIKE ${phaseParam}`;
       }
     }
     
-    const similarTrials = await db.query(`
+    const similarTrials = await db.execute(sql`
       SELECT id, title, sponsor, indication, phase, primary_endpoint, 
              sample_size, duration_weeks, success
       FROM csr_reports
-      WHERE indication LIKE '%${indication}%'
+      WHERE indication LIKE ${indicationParam}
       ${phaseCondition}
       ORDER BY uploadDate DESC
       LIMIT 5
     `);
     
-    return similarTrials.rows.map(trial => ({
+    return similarTrials.map(trial => ({
       ...trial,
       similarity: Math.random() * 30 + 70 // Placeholder for actual similarity score
     }));
@@ -331,28 +339,33 @@ async function findSimilarProtocols(indication: string, phase: string | undefine
 // Function to extract common statistical approaches
 async function extractStatisticalApproaches(indication: string, phase: string | undefined) {
   try {
-    let phaseCondition = '';
+    const indicationParam = `%${indication}%`;
+    let phaseCondition = sql``;
+    
     if (phase) {
       // Handle different phase formats
       if (phase.includes('/')) {
         const phases = phase.split('/');
-        phaseCondition = `AND (phase LIKE '%${phases[0]}%' OR phase LIKE '%${phases[1]}%')`;
+        const phase1 = `%${phases[0]}%`;
+        const phase2 = `%${phases[1]}%`;
+        phaseCondition = sql`AND (phase LIKE ${phase1} OR phase LIKE ${phase2})`;
       } else {
-        phaseCondition = `AND phase LIKE '%${phase}%'`;
+        const phaseParam = `%${phase}%`;
+        phaseCondition = sql`AND phase LIKE ${phaseParam}`;
       }
     }
     
-    const statisticalData = await db.query(`
+    const statisticalData = await db.execute(sql`
       SELECT statistical_method, COUNT(*) as frequency
       FROM csr_reports
-      WHERE indication LIKE '%${indication}%'
+      WHERE indication LIKE ${indicationParam}
       ${phaseCondition}
       GROUP BY statistical_method
       ORDER BY frequency DESC
       LIMIT 5
     `);
     
-    return statisticalData.rows;
+    return statisticalData;
   } catch (error) {
     console.error('Error extracting statistical approaches:', error);
     return [
@@ -366,17 +379,19 @@ async function extractStatisticalApproaches(indication: string, phase: string | 
 // Function to analyze endpoint selection
 async function analyzeEndpoints(primaryEndpoints: string[], secondaryEndpoints: string[] = [], indication: string) {
   try {
-    // Query for common endpoints in this indication
-    const endpointData = await db.query(`
+    const indicationParam = `%${indication}%`;
+    
+    // Query for common endpoints in this indication using Drizzle ORM
+    const endpointData = await db.execute(sql`
       SELECT endpoint_name, COUNT(*) as frequency, AVG(effect_size) as avg_effect_size
       FROM csr_endpoints
-      WHERE indication LIKE '%${indication}%'
+      WHERE indication LIKE ${indicationParam}
       GROUP BY endpoint_name
       ORDER BY frequency DESC
       LIMIT 20
     `);
     
-    const commonEndpoints = endpointData.rows;
+    const commonEndpoints = endpointData;
     
     // Analyze primary endpoints
     const primaryEndpointAnalysis = primaryEndpoints.map(endpoint => {
@@ -447,30 +462,35 @@ async function analyzeEndpoints(primaryEndpoints: string[], secondaryEndpoints: 
 // Function to get sample size recommendations
 async function getSampleSizeRecommendations(indication: string, phase: string | undefined) {
   try {
-    let phaseCondition = '';
+    const indicationParam = `%${indication}%`;
+    let phaseCondition = sql``;
+    
     if (phase) {
       if (phase.includes('/')) {
         const phases = phase.split('/');
-        phaseCondition = `AND (phase LIKE '%${phases[0]}%' OR phase LIKE '%${phases[1]}%')`;
+        const phase1 = `%${phases[0]}%`;
+        const phase2 = `%${phases[1]}%`;
+        phaseCondition = sql`AND (phase LIKE ${phase1} OR phase LIKE ${phase2})`;
       } else {
-        phaseCondition = `AND phase LIKE '%${phase}%'`;
+        const phaseParam = `%${phase}%`;
+        phaseCondition = sql`AND phase LIKE ${phaseParam}`;
       }
     }
     
-    const sampleSizeData = await db.query(`
+    const sampleSizeData = await db.execute(sql`
       SELECT AVG(sample_size) as avg_sample_size,
              PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY sample_size) as q1_sample_size,
              PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY sample_size) as median_sample_size,
              PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY sample_size) as q3_sample_size,
              AVG(duration_weeks) as avg_duration
       FROM csr_reports
-      WHERE indication LIKE '%${indication}%'
+      WHERE indication LIKE ${indicationParam}
       ${phaseCondition}
       AND success = true
     `);
     
-    if (sampleSizeData.rows.length > 0) {
-      const data = sampleSizeData.rows[0];
+    if (sampleSizeData.length > 0) {
+      const data = sampleSizeData[0];
       return {
         averageSampleSize: Math.round(data.avg_sample_size || 0),
         medianSampleSize: Math.round(data.median_sample_size || 0),
