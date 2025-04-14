@@ -57,7 +57,7 @@ import PlanningPage from "@/pages/PlanningPage";
 import InsightMemoryEngine from "@/pages/InsightMemoryEngine";
 import WisdomTrace from "@/pages/WisdomTrace";
 import SubscriptionsPage from "@/pages/SubscriptionsPage";
-import ExampleReportsPage from "@/pages/example-reports";
+import ExampleReportsPage from "@/pages/ExampleReportsPage";
 import { applyCompactStyling } from "./lib/ui-utils"; // Added import
 
 
