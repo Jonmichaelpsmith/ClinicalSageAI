@@ -68,10 +68,18 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     applyCompactStyling(); // Apply compact styling on mount
+    
+    // Apply gradient headings for a more modern look
+    try {
+      const { applyGradientHeadings } = require('./lib/ui-utils');
+      applyGradientHeadings();
+    } catch (e) {
+      console.log('Gradient headings utility not available');
+    }
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
       <div className="lg:pl-64 min-h-screen flex flex-col">
@@ -81,23 +89,23 @@ function AppLayout({ children }: { children: React.ReactNode }) {
           setSearchQuery={setSearchQuery} 
         />
 
-        <main className="flex-1 py-4 px-2 sm:px-4 lg:px-6 max-w-7xl mx-auto w-full"> {/*Reduced padding*/}
+        <main className="flex-1 py-4 px-3 sm:px-4 lg:px-6 max-w-7xl mx-auto w-full animate-fade-in">
           {children}
         </main>
 
-        <footer className="py-4 px-2 sm:px-4 lg:px-6 border-t border-gray-200 dark:border-gray-800 mt-auto"> {/*Reduced padding*/}
+        <footer className="py-4 px-3 sm:px-4 lg:px-6 border-t border-gray-200/70 dark:border-gray-800/50 mt-auto backdrop-blur-sm bg-white/60 dark:bg-slate-900/60">
           <div className="max-w-7xl mx-auto w-full">
             <div className="flex flex-col md:flex-row justify-between items-center">
               <div className="text-sm text-slate-500 dark:text-slate-400">
                 © {new Date().getFullYear()} LumenTrialGuide.AI. All rights reserved.
               </div>
-              <div className="mt-2 md:mt-0 flex space-x-4"> {/*Reduced spacing*/}
-                <a href="#" className="text-sm text-slate-500 hover:text-primary dark:text-slate-400">Terms</a>
-                <a href="#" className="text-sm text-slate-500 hover:text-primary dark:text-slate-400">Privacy</a>
-                <a href="#" className="text-sm text-slate-500 hover:text-primary dark:text-slate-400">Support</a>
-                <a href="/product-features" className="text-sm text-slate-500 hover:text-primary dark:text-slate-400">Product Features</a>
-                <a href="/use-case-library" className="text-sm text-slate-500 hover:text-primary dark:text-slate-400">Use Cases</a>
-                <a href="/api-documentation" className="text-sm text-slate-500 hover:text-primary dark:text-slate-400">API</a>
+              <div className="mt-2 md:mt-0 flex space-x-5 flex-wrap justify-center">
+                <a href="#" className="text-sm text-slate-500 hover:text-primary transition-colors dark:text-slate-400">Terms</a>
+                <a href="#" className="text-sm text-slate-500 hover:text-primary transition-colors dark:text-slate-400">Privacy</a>
+                <a href="#" className="text-sm text-slate-500 hover:text-primary transition-colors dark:text-slate-400">Support</a>
+                <a href="/product-features" className="text-sm text-slate-500 hover:text-primary transition-colors dark:text-slate-400">Product Features</a>
+                <a href="/use-case-library" className="text-sm text-slate-500 hover:text-primary transition-colors dark:text-slate-400">Use Cases</a>
+                <a href="/api-documentation" className="text-sm text-slate-500 hover:text-primary transition-colors dark:text-slate-400">API</a>
               </div>
             </div>
           </div>
