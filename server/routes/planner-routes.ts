@@ -1,10 +1,16 @@
-import { Router, Request, Response } from "express";
-import { generateIndSection, buildINDModuleDraft } from "../../agents/openai/trialsage_assistant";
-import path from "path";
-import fs from "fs";
-import { v4 as uuidv4 } from "uuid";
+import { Router, Request, Response } from 'express';
+import path from 'path';
+import fs from 'fs';
+import { analyzeText } from "../openai-service";
+import PDFDocument from 'pdfkit';
 
 const router = Router();
+
+// Create exports directory if it doesn't exist
+const EXPORTS_DIR = path.join(process.cwd(), 'exports');
+if (!fs.existsSync(EXPORTS_DIR)) {
+  fs.mkdirSync(EXPORTS_DIR, { recursive: true });
+}
 
 /**
  * Generate an IND summary based on protocol
@@ -16,86 +22,62 @@ router.post("/api/planner/generate-ind", async (req: Request, res: Response) => 
     if (!protocol) {
       return res.status(400).json({
         success: false,
-        message: "Protocol text is required"
+        error: "Protocol text is required"
       });
     }
     
-    // Use CSR context for enhanced generation if available
-    let enhancedContent = "";
+    // Extract key information from CSR context for enhanced generation
+    const molecule = csrContext?.drugName || csrContext?.molecule || "the investigational product";
+    const moa = csrContext?.moa || csrContext?.semantic?.moa || "its mechanism of action";
+    const primaryEndpoint = csrContext?.primary_endpoint || 
+                           csrContext?.endpoints?.[0] || 
+                           csrContext?.efficacy?.primary?.[0] || 
+                           "the primary endpoint";
+    const designRationale = csrContext?.design_rationale || 
+                           csrContext?.semantic?.design_rationale || 
+                           "the study design rationale";
+    const statisticalModel = csrContext?.primary_model || 
+                            csrContext?.stats_traceability?.primary_model || 
+                            "the statistical approach";
     
+    // Create prompt for generating IND summary with CSR context if available
+    let prompt = `You are an expert clinical regulatory writer with experience drafting Investigational New Drug (IND) application summaries. 
+Based on the following protocol information, generate a comprehensive IND summary that follows regulatory expectations and includes:
+
+1. Introduction and objectives
+2. Investigational product overview
+3. Preclinical summary (extrapolated from the protocol)
+4. Clinical trial design and methodology
+5. Patient population
+6. Dosing regimen and administration
+7. Safety monitoring and reporting
+8. Statistical considerations
+9. Risk-benefit assessment
+10. References
+
+Protocol Information:
+${protocol}`;
+
+    // Add CSR context for enhanced, precedent-based generation if available
     if (csrContext) {
-      // Extract key information from CSR context for template
-      const molecule = csrContext.drugName || "";
-      const moa = csrContext.moa || "";
-      const primaryEndpoint = csrContext.primary_endpoint || "";
-      const designRationale = csrContext.design_rationale || "";
-      const statisticalModel = csrContext.primary_model || "";
-      
-      // Build enhanced IND content using CSR precedent
-      enhancedContent = `This trial protocol was developed based on CSR precedent involving ${molecule}, a ${moa}. `;
-      
-      if (primaryEndpoint) {
-        enhancedContent += `The primary endpoint utilized is ${primaryEndpoint}, which aligns with regulatory precedent. `;
-      }
-      
-      if (designRationale) {
-        enhancedContent += `The design rationale includes: ${designRationale}. `;
-      }
-      
-      if (statisticalModel) {
-        enhancedContent += `Statistical modeling is based on ${statisticalModel}.`;
-      }
+      prompt += `\n\nThis trial protocol was developed based on CSR precedent involving ${molecule}, a ${moa}. The primary endpoint utilized is ${primaryEndpoint}, which aligns with regulatory precedent. The design rationale includes: ${designRationale}. Statistical modeling is based on ${statisticalModel}.`;
     }
+
+    // Generate summary using OpenAI
+    const systemPrompt = "You are an expert IND regulatory document writer. Create a comprehensive and well-structured IND summary based on protocol information.";
+    const content = await analyzeText(prompt, systemPrompt);
+
+    // Return the generated content
+    return res.json({
+      success: true,
+      content
+    });
     
-    // Get the IND content using built-in functions
-    let indContent;
-    try {
-      // First try using the csrContext's indication if available
-      if (csrContext && csrContext.indication) {
-        const response = await buildINDModuleDraft(
-          "Clinical Protocol", 
-          csrContext.indication,
-          csrContext?.moa || "",
-          []
-        );
-        indContent = response.content;
-      } else {
-        // Fall back to direct protocol analysis
-        const response = await generateIndSection(
-          sessionId || "adhoc",
-          "Clinical Protocol",
-          protocol
-        );
-        indContent = response.content;
-      }
-      
-      // Prepend enhanced content from CSR if available
-      if (enhancedContent) {
-        indContent = enhancedContent + "\n\n" + indContent;
-      }
-      
-      return res.json({
-        success: true,
-        content: indContent
-      });
-    } catch (error) {
-      console.error("Error generating IND summary:", error);
-      
-      // Simple fallback if all AI methods fail
-      return res.json({
-        success: true,
-        content: "## Investigational New Drug (IND) Summary\n\n" +
-                "This document summarizes the key elements of the protocol for regulatory submission as part of an IND application.\n\n" +
-                "### Protocol Overview\n\n" + 
-                (protocol.substring(0, 500) + "...") +
-                "\n\n(Error generating complete IND summary. Please try again later.)"
-      });
-    }
-  } catch (error) {
-    console.error("Error in generate-ind endpoint:", error);
+  } catch (error: any) {
+    console.error("Error generating IND summary:", error);
     return res.status(500).json({
       success: false,
-      message: error instanceof Error ? error.message : "An unexpected error occurred"
+      error: error.message || "An error occurred during IND summary generation"
     });
   }
 });
@@ -110,40 +92,54 @@ router.post("/api/planner/generate-sap", async (req: Request, res: Response) => 
     if (!protocol) {
       return res.status(400).json({
         success: false,
-        message: "Protocol text is required"
+        error: "Protocol text is required"
       });
     }
     
-    // Use the generateIndSection function with SAP-specific prompt
-    try {
-      const response = await generateIndSection(
-        sessionId || "adhoc",
-        "Statistical Analysis Plan",
-        `Protocol: ${protocol}\n${csrContext ? `CSR context: ${JSON.stringify(csrContext)}` : ""}`
-      );
+    // Create prompt for generating SAP
+    let prompt = `You are an expert biostatistician with experience drafting Statistical Analysis Plans (SAPs) for clinical trials. 
+Based on the following protocol information, generate a comprehensive SAP that includes:
+
+1. Introduction and objectives
+2. Study design overview
+3. Study endpoints (primary, secondary, exploratory)
+4. Statistical methodology
+   - Sample size calculation and power
+   - Analysis populations
+   - Statistical tests for primary and secondary endpoints
+   - Handling of missing data
+   - Interim analyses (if applicable)
+5. Data presentation
+6. Safety analysis approach
+7. References
+
+Protocol Information:
+${protocol}`;
+
+    // Add CSR context for enhanced generation if available
+    if (csrContext) {
+      const endpoints = csrContext.endpoints ? 
+        (Array.isArray(csrContext.endpoints) ? csrContext.endpoints.join(", ") : csrContext.endpoints) : 
+        "the specified endpoints";
       
-      return res.json({
-        success: true,
-        content: response.content
-      });
-    } catch (error) {
-      console.error("Error generating SAP:", error);
-      
-      // Simple fallback if AI method fails
-      return res.json({
-        success: true,
-        content: "# Statistical Analysis Plan\n\n" +
-                "This document outlines the statistical methods for analyzing the data collected in the clinical trial.\n\n" +
-                "## Overview\n\n" + 
-                (protocol.substring(0, 300) + "...") +
-                "\n\n(Error generating complete SAP. Please try again later.)"
-      });
+      prompt += `\n\nNote that this analysis plan should align with precedent from similar trials for ${csrContext.indication || "this indication"} in ${csrContext.phase || "this phase"}, particularly regarding statistical approaches for ${endpoints}.`;
     }
-  } catch (error) {
-    console.error("Error in generate-sap endpoint:", error);
+
+    // Generate SAP using OpenAI
+    const systemPrompt = "You are an expert biostatistician specializing in clinical trial statistical analysis plans. Create a comprehensive and technically sound SAP based on protocol information.";
+    const content = await analyzeText(prompt, systemPrompt);
+
+    // Return the generated content
+    return res.json({
+      success: true,
+      content
+    });
+    
+  } catch (error: any) {
+    console.error("Error generating SAP:", error);
     return res.status(500).json({
       success: false,
-      message: error instanceof Error ? error.message : "An unexpected error occurred"
+      error: error.message || "An error occurred during SAP generation"
     });
   }
 });
@@ -158,40 +154,47 @@ router.post("/api/planner/generate-summary", async (req: Request, res: Response)
     if (!protocol) {
       return res.status(400).json({
         success: false,
-        message: "Protocol text is required"
+        error: "Protocol text is required"
       });
     }
     
-    // Use the generateIndSection function with summary-specific prompt
-    try {
-      const response = await generateIndSection(
-        sessionId || "adhoc",
-        "Protocol Summary",
-        `Protocol: ${protocol}\n${csrContext ? `CSR context: ${JSON.stringify(csrContext)}` : ""}`
-      );
-      
-      return res.json({
-        success: true,
-        content: response.content
-      });
-    } catch (error) {
-      console.error("Error generating protocol summary:", error);
-      
-      // Simple fallback if AI method fails
-      return res.json({
-        success: true,
-        content: "# Protocol Summary\n\n" +
-                "This document provides a high-level overview of the clinical trial protocol.\n\n" +
-                "## Overview\n\n" + 
-                (protocol.substring(0, 300) + "...") +
-                "\n\n(Error generating complete summary. Please try again later.)"
-      });
+    // Create prompt for generating protocol summary
+    let prompt = `You are an expert clinical researcher with experience creating protocol summaries. 
+Based on the following protocol information, generate a concise but comprehensive summary that includes:
+
+1. Study title and identifier
+2. Objectives and rationale
+3. Study design and methodology
+4. Patient population and key inclusion/exclusion criteria
+5. Treatment regimen and dosing
+6. Primary and secondary endpoints
+7. Statistical considerations
+8. Safety monitoring approach
+9. Conclusions
+
+Protocol Information:
+${protocol}`;
+
+    // Add CSR context for enhanced generation if available
+    if (csrContext) {
+      prompt += `\n\nThis summary should reflect key learnings from similar trials for ${csrContext.indication || "this indication"} in ${csrContext.phase || "this phase"}, particularly regarding endpoint selection and statistical approaches.`;
     }
-  } catch (error) {
-    console.error("Error in generate-summary endpoint:", error);
+
+    // Generate summary using OpenAI
+    const systemPrompt = "You are an expert clinical researcher specializing in protocol development and review. Create a comprehensive and well-structured protocol summary.";
+    const content = await analyzeText(prompt, systemPrompt);
+
+    // Return the generated content
+    return res.json({
+      success: true,
+      content
+    });
+    
+  } catch (error: any) {
+    console.error("Error generating protocol summary:", error);
     return res.status(500).json({
       success: false,
-      message: error instanceof Error ? error.message : "An unexpected error occurred"
+      error: error.message || "An error occurred during protocol summary generation"
     });
   }
 });
@@ -200,15 +203,15 @@ router.post("/api/planner/generate-summary", async (req: Request, res: Response)
  * Export generated document to PDF
  */
 router.post("/api/planner/export-sap", async (req: Request, res: Response) => {
-  exportToPDF(req, res, "SAP");
+  await exportToPDF(req, res, "SAP");
 });
 
 router.post("/api/planner/export-ind", async (req: Request, res: Response) => {
-  exportToPDF(req, res, "IND");
+  await exportToPDF(req, res, "IND");
 });
 
 router.post("/api/planner/export-summary", async (req: Request, res: Response) => {
-  exportToPDF(req, res, "Summary");
+  await exportToPDF(req, res, "Protocol-Summary");
 });
 
 /**
@@ -221,32 +224,119 @@ async function exportToPDF(req: Request, res: Response, type: string) {
     if (!content) {
       return res.status(400).json({
         success: false,
-        message: "Content is required"
+        error: "Content is required for PDF export"
       });
     }
     
-    // Create a text file as a simple fallback
-    // In a real implementation, this would use a PDF generation library
-    const exportsDir = path.join(process.cwd(), 'data/exports');
-    if (!fs.existsSync(exportsDir)) {
-      fs.mkdirSync(exportsDir, { recursive: true });
+    // Create filename with timestamp
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const filename = `${type.toLowerCase()}_${sessionId || 'export'}_${timestamp}.pdf`;
+    const filePath = path.join(EXPORTS_DIR, filename);
+    
+    // Create PDF document
+    const doc = new PDFDocument({
+      margins: { top: 72, bottom: 72, left: 72, right: 72 },
+      info: {
+        Title: `${type} - ${sessionId}`,
+        Author: 'TrialSage',
+        Subject: `${type} for Clinical Trial Protocol`,
+        Keywords: 'clinical trial, protocol, SAP, IND, summary',
+        CreationDate: new Date()
+      }
+    });
+    
+    // Create write stream
+    const stream = fs.createWriteStream(filePath);
+    doc.pipe(stream);
+    
+    // Add header
+    doc.fontSize(24).font('Helvetica-Bold').text(`${type}`, { align: 'center' });
+    doc.moveDown();
+    
+    // Add metadata if available
+    if (metadata) {
+      doc.fontSize(12).font('Helvetica-Bold').text('Document Information:', { underline: true });
+      doc.fontSize(10).font('Helvetica');
+      
+      if (metadata.title) doc.text(`Study Title: ${metadata.title}`);
+      if (metadata.sponsor) doc.text(`Sponsor: ${metadata.sponsor}`);
+      if (metadata.indication) doc.text(`Indication: ${metadata.indication}`);
+      if (metadata.phase) doc.text(`Phase: ${metadata.phase}`);
+      if (metadata.molecule) doc.text(`Study Drug: ${metadata.molecule}`);
+      if (metadata.csrId) doc.text(`Source CSR ID: ${metadata.csrId}`);
+      
+      doc.text(`Generated: ${new Date().toISOString().split('T')[0]}`);
+      doc.moveDown(2);
     }
     
-    const outputFileName = `${type.toLowerCase()}_${sessionId || uuidv4()}.txt`;
-    const outputPath = path.join(exportsDir, outputFileName);
+    // Add content
+    doc.fontSize(12).font('Helvetica');
     
-    // Write content to file
-    const metadataString = metadata ? 
-      `\n\nMetadata: ${JSON.stringify(metadata, null, 2)}` : "";
-    fs.writeFileSync(outputPath, content + metadataString);
+    // Handle content formatting - split by newlines and process paragraphs
+    const paragraphs = content.split('\n\n');
+    for (const paragraph of paragraphs) {
+      // Check if this is a header (starts with #)
+      if (paragraph.trimStart().startsWith('#')) {
+        const level = paragraph.trimStart().match(/^(#+)/)[0].length;
+        const text = paragraph.replace(/^#+ /, '');
+        
+        // Style based on header level
+        if (level === 1) {
+          doc.moveDown().fontSize(18).font('Helvetica-Bold').text(text);
+        } else if (level === 2) {
+          doc.moveDown().fontSize(16).font('Helvetica-Bold').text(text);
+        } else if (level === 3) {
+          doc.moveDown().fontSize(14).font('Helvetica-Bold').text(text);
+        } else {
+          doc.moveDown().fontSize(12).font('Helvetica-Bold').text(text);
+        }
+        
+        doc.fontSize(12).font('Helvetica');
+      } 
+      // Check if this is a list item
+      else if (paragraph.trimStart().startsWith('- ') || 
+               paragraph.trimStart().startsWith('* ') ||
+               paragraph.trimStart().match(/^\d+\./)) {
+        // Keep list items close together
+        doc.moveDown(0.5).text(paragraph);
+      }
+      // Regular paragraph
+      else {
+        doc.moveDown().text(paragraph);
+      }
+    }
     
-    // Send the file as the response
-    res.sendFile(outputPath);
-  } catch (error) {
+    // Add page numbers
+    const pageCount = doc.bufferedPageRange().count;
+    for (let i = 0; i < pageCount; i++) {
+      doc.switchToPage(i);
+      doc.fontSize(8).text(
+        `Page ${i + 1} of ${pageCount}`,
+        doc.page.margins.left,
+        doc.page.height - 50,
+        { align: 'center' }
+      );
+    }
+    
+    // Finalize PDF
+    doc.end();
+    
+    // Wait for stream to finish
+    stream.on('finish', () => {
+      // Set response headers for PDF download
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      
+      // Return file
+      const fileStream = fs.createReadStream(filePath);
+      fileStream.pipe(res);
+    });
+    
+  } catch (error: any) {
     console.error(`Error exporting ${type} to PDF:`, error);
     return res.status(500).json({
       success: false,
-      message: error instanceof Error ? error.message : "An unexpected error occurred"
+      error: error.message || `An error occurred during ${type} PDF export`
     });
   }
 }

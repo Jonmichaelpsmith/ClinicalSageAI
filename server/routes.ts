@@ -15,6 +15,7 @@ import { generateProtocolTemplate, getStatisticalApproaches } from "./protocol-s
 import { exportService } from "./services/export-service";
 import academicProtocolAssessment from './routes/academic_protocol_assessment';
 import correctionRoutes from './routes/correction-routes';
+import plannerRoutes from './routes/planner-routes';
 // Legacy Hugging Face service has been replaced with OpenAI-based services
 // Migration notice: The HuggingFace service has been completely replaced with OpenAI-based services.
 import { 
