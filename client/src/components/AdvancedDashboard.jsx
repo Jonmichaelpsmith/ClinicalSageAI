@@ -6,7 +6,9 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { BarChart3, LineChart, PieChart, TrendingUp, ChevronRight, AlertCircle, ListFilter } from 'lucide-react';
+import { BarChart3, LineChart as LineChartIcon, PieChart, TrendingUp, ChevronRight, AlertCircle, ListFilter } from 'lucide-react';
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { apiRequest } from "@/lib/queryClient";
 
 export default function AdvancedDashboard({ ndcCodes, token }) {
   const [comparativeData, setComparativeData] = useState(null);
@@ -19,14 +21,10 @@ export default function AdvancedDashboard({ ndcCodes, token }) {
   const fetchComparativeData = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/cer/compare', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': token ? `Bearer ${token}` : ''
-        },
-        body: JSON.stringify({ ndc_codes: ndcCodes }),
+      const response = await apiRequest('POST', '/api/cer/compare', { 
+        ndc_codes: ndcCodes 
       });
+      
       if (!response.ok) {
         throw new Error('Failed to fetch analytics data.');
       }
@@ -264,22 +262,38 @@ export default function AdvancedDashboard({ ndcCodes, token }) {
                       <h3 className="text-lg font-semibold">Event Summary for NDC {firstNdc}</h3>
                     </div>
                     
-                    {/* Calculate the maximum count for proper scaling */}
-                    {(() => {
-                      const maxCount = Math.max(...counts);
-                      return events.map((event, index) => (
-                        <div key={index} className="space-y-1">
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm font-medium">{event}</span>
-                            <span className="text-sm">{counts[index]}</span>
-                          </div>
-                          <Progress 
-                            value={(counts[index] / maxCount) * 100} 
-                            className="h-2 bg-slate-100" 
+                    {/* Use Recharts for event visualization */}
+                    <div className="h-[350px]">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                          data={events.map((event, index) => ({ 
+                            name: event,
+                            count: counts[index]
+                          }))}
+                          layout="vertical"
+                          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis type="number" />
+                          <YAxis 
+                            dataKey="name" 
+                            type="category" 
+                            width={150}
+                            tick={{ fontSize: 12 }}
                           />
-                        </div>
-                      ));
-                    })()}
+                          <Tooltip
+                            formatter={(value) => [`${value}`, 'Count']}
+                          />
+                          <Legend />
+                          <Bar 
+                            dataKey="count" 
+                            name="Event Count"
+                            fill="#8884d8" 
+                            barSize={20}
+                          />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
                   </div>
                 )}
               </div>
@@ -346,24 +360,31 @@ export default function AdvancedDashboard({ ndcCodes, token }) {
                       ))}
                     </div>
                     
-                    <div className="relative h-[150px] mt-8 border-b border-slate-200">
-                      <div className="absolute inset-0 flex items-end justify-around h-full p-4">
-                        {selectedForecast.map((item, index) => {
-                          const maxVal = Math.max(...selectedForecast.map(f => f.count));
-                          const height = maxVal > 0 ? (item.count / maxVal) * 100 : 0;
-                          return (
-                            <div key={index} className="flex flex-col items-center">
-                              <div className="relative w-12">
-                                <div 
-                                  className="absolute bottom-0 w-full bg-primary rounded-t-sm transition-all duration-500"
-                                  style={{ height: `${Math.max(height, 5)}%` }}
-                                ></div>
-                              </div>
-                              <span className="text-xs mt-2">{item.quarter}</span>
-                            </div>
-                          );
-                        })}
-                      </div>
+                    <div className="h-[250px] mt-8">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={selectedForecast} margin={{ top: 20, right: 30, left: 20, bottom: 10 }}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="quarter" />
+                          <YAxis />
+                          <Tooltip 
+                            contentStyle={{ 
+                              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                              border: '1px solid #ccc' 
+                            }}
+                            formatter={(value) => [`${value}`, 'Events']}
+                            labelFormatter={(label) => `Quarter: ${label}`}
+                          />
+                          <Legend />
+                          <Line 
+                            type="monotone" 
+                            dataKey="count" 
+                            name="Event Count" 
+                            stroke="#8884d8" 
+                            strokeWidth={2}
+                            activeDot={{ r: 8 }}
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
                     </div>
                   </div>
                 )}
