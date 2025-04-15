@@ -1,0 +1,232 @@
+Below is the next step—integrating the advanced interactive frontend. This step will add React components for an interactive dashboard (using Plotly) and an NLP query interface. This will let you display advanced analytics (from our backend endpoints) and enable users to filter data using natural language.
+
+Please add the following files to your Replit project.
+
+---
+
+## 1. Advanced Dashboard Component
+
+Create a file called **AdvancedDashboard.jsx**. This component fetches comparative analytics from the backend (using the `/api/cer/compare` endpoint) and visualizes it using Plotly.
+
+```jsx
+// AdvancedDashboard.jsx
+import React, { useState, useEffect } from 'react';
+import Plot from 'react-plotly.js';
+
+export default function AdvancedDashboard({ ndcCodes }) {
+  const [comparativeData, setComparativeData] = useState(null);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [error, setError] = useState('');
+
+  // Fetch comparative analytics from the backend
+  const fetchComparativeData = async () => {
+    try {
+      const response = await fetch('/api/cer/compare', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ndc_codes: ndcCodes }),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch analytics data.');
+      }
+      const data = await response.json();
+      setComparativeData(data.comparative_data);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  useEffect(() => {
+    if (ndcCodes && ndcCodes.length > 0) {
+      fetchComparativeData();
+    }
+  }, [ndcCodes]);
+
+  if (error) return <div>Error: {error}</div>;
+  if (!comparativeData) return <div>Loading analytics...</div>;
+
+  // For demonstration, use data from the first NDC code in the list.
+  const firstNdc = ndcCodes[0];
+  const ndcData = comparativeData[firstNdc];
+  if (!ndcData) return <div>No data available for {firstNdc}</div>;
+
+  const events = Object.keys(ndcData.event_summary);
+  const counts = events.map(event => ndcData.event_summary[event]);
+
+  // Prepare forecast data if an event is selected
+  const selectedForecast =
+    selectedEvent && ndcData.forecasts[selectedEvent]
+      ? Object.values(ndcData.forecasts[selectedEvent])
+      : [];
+
+  return (
+    <div>
+      <h2>Advanced Comparative Analytics Dashboard</h2>
+      {/* Bar chart for event summary */}
+      <Plot
+        data={[
+          {
+            x: events,
+            y: counts,
+            type: 'bar',
+            name: 'Adverse Event Counts',
+          },
+        ]}
+        layout={{
+          title: `Event Summary for NDC ${firstNdc}`,
+          xaxis: { title: 'Adverse Event' },
+          yaxis: { title: 'Count' },
+        }}
+      />
+      <div style={{ marginTop: '20px' }}>
+        <label>Select an event for forecasting details: </label>
+        <select onChange={(e) => setSelectedEvent(e.target.value)} defaultValue="">
+          <option value="" disabled>
+            -- Choose an event --
+          </option>
+          {events.map((event) => (
+            <option key={event} value={event}>
+              {event}
+            </option>
+          ))}
+        </select>
+      </div>
+      {selectedEvent && selectedForecast.length > 0 && (
+        <Plot
+          data={[
+            {
+              x: Object.keys(ndcData.forecasts[selectedEvent]),
+              y: selectedForecast,
+              type: 'line',
+              name: `Forecast for ${selectedEvent}`,
+            },
+          ]}
+          layout={{
+            title: `Forecast for ${selectedEvent}`,
+            xaxis: { title: 'Time' },
+            yaxis: { title: 'Predicted Count' },
+          }}
+        />
+      )}
+    </div>
+  );
+}
+```
+
+---
+
+## 2. NLP-Powered Query Component
+
+Create a file called **NLPQuery.jsx**. This component provides a text input for users to submit natural language questions. The query is sent to a backend endpoint (which you'll implement later) to filter or adjust the analytics. For now, assume it returns filtered data that you can pass back to a parent component.
+
+```jsx
+// NLPQuery.jsx
+import React, { useState } from 'react';
+
+export default function NLPQuery({ onFilter }) {
+  const [query, setQuery] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const submitQuery = async () => {
+    setLoading(true);
+    try {
+      // Assume you have an endpoint /api/cer/nlp-query that processes natural language queries
+      const response = await fetch('/api/cer/nlp-query', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query }),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to process the query.');
+      }
+      const data = await response.json();
+      onFilter(data); // Return filtered data to parent
+    } catch (error) {
+      console.error('NLP query error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div style={{ margin: '20px 0' }}>
+      <input
+        type="text"
+        placeholder="Ask a question, e.g., 'Show trends for patients over 60'"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        style={{ padding: '10px', width: '400px' }}
+      />
+      <button onClick={submitQuery} style={{ padding: '10px 20px', marginLeft: '10px' }}>
+        {loading ? 'Processing...' : 'Submit Query'}
+      </button>
+    </div>
+  );
+}
+```
+
+---
+
+## 3. Update Your Main App Component
+
+Next, update your main React application (typically **App.jsx**) to include the new components. This integrates the basic CER generator (if you already have it), the advanced dashboard, and the NLP query interface into one cohesive UI.
+
+```jsx
+// App.jsx
+import React, { useState } from 'react';
+import CERGenerator from './CERGenerator'; // Your existing CER generator component
+import AdvancedDashboard from './AdvancedDashboard';
+import NLPQuery from './NLPQuery';
+
+function App() {
+  const [ndcCodes] = useState(["1234567890", "0987654321"]); // Replace with real sample NDC codes
+  const [filteredData, setFilteredData] = useState(null);
+
+  const handleFilterUpdate = (data) => {
+    setFilteredData(data);
+  };
+
+  return (
+    <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
+      <h1>LumenTrialGuide.AI</h1>
+      {/* Existing CER generator component */}
+      <CERGenerator />
+      {/* NLP query interface */}
+      <NLPQuery onFilter={handleFilterUpdate} />
+      {/* Advanced analytics dashboard */}
+      <AdvancedDashboard ndcCodes={ndcCodes} />
+      {filteredData && (
+        <div>
+          <h2>Filtered Analytics</h2>
+          <pre>{JSON.stringify(filteredData, null, 2)}</pre>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default App;
+```
+
+---
+
+## Next Steps
+
+1. **Install Dependencies:**  
+   In your React project, ensure you install Plotly by running:
+   ```bash
+   npm install react-plotly.js plotly.js
+   ```
+   (You can add further dependencies later as needed.)
+
+2. **Test the UI:**  
+   Start your frontend development server and test the following:  
+   - The AdvancedDashboard should fetch comparative analytics and display a bar chart for adverse events.
+   - The NLPQuery component should be ready to send queries (the backend `/api/cer/nlp-query` endpoint is assumed and can be implemented later).
+
+3. **Backend for NLP Queries:**  
+   Later, you can build an endpoint (e.g., in **main.py**) that uses GPT-4 or custom logic to interpret natural language queries and return filtered analytics data.
+
+Once these components are integrated, you can test end-to-end functionality, refine the UI interactions, and polish the experience based on user feedback.
+
+Let me know when you're ready to move on to further enhancements or need adjustments to this step.
