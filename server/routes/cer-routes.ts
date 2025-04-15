@@ -332,10 +332,7 @@ router.put('/:cerId', async (req, res) => {
     // Update the CER
     const [updated] = await db
       .update(clinicalEvaluationReports)
-      .set({
-        ...validatedData,
-        updated_at: new Date()
-      })
+      .set(validatedData)
       .where(eq(clinicalEvaluationReports.cer_id, cerId))
       .returning();
     
@@ -421,7 +418,7 @@ router.get('/statistics/complaints', async (req, res) => {
       .from(clinicalEvaluationReports)
       .where(
         and(
-          isNull(clinicalEvaluationReports.deletedAt),
+          isNull(clinicalEvaluationReports.deleted_at),
           eq(clinicalEvaluationReports.status, 'Active')
         )
       );
@@ -529,7 +526,7 @@ router.get('/statistics/safety-issues', async (req, res) => {
       .from(clinicalEvaluationReports)
       .where(
         and(
-          isNull(clinicalEvaluationReports.deletedAt),
+          isNull(clinicalEvaluationReports.deleted_at),
           eq(clinicalEvaluationReports.status, 'Active')
         )
       );
