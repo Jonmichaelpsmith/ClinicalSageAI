@@ -1,6 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import path from "path";
 import { scheduleDataUpdates, findLatestDataFile, importTrialsFromJson } from "./data-importer";
 
 // Create a simplified Express app for faster startup
@@ -58,6 +59,26 @@ app.use((req, res, next) => {
       // Storing a flag to indicate this should be handled by Vite
       req.url = '/';
       next();
+    });
+    
+    // Direct access to CSR Platform
+    app.get('/csr-platform.html', (req, res) => {
+      const csrPlatformPath = path.join(process.cwd(), '/public/csr-platform.html');
+      res.sendFile(csrPlatformPath);
+    });
+    
+    // Direct route to CSR Platform with proper content type
+    app.get('/csr-platform', (req, res) => {
+      const csrPlatformPath = path.join(process.cwd(), '/public/csr-platform.html');
+      res.setHeader('Content-Type', 'text/html');
+      res.sendFile(csrPlatformPath);
+    });
+    
+    // Direct root access to CSR Platform
+    app.get('/', (req, res) => {
+      const csrPlatformPath = path.join(process.cwd(), '/public/csr-platform.html');
+      res.setHeader('Content-Type', 'text/html');
+      res.sendFile(csrPlatformPath);
     });
     
     // Direct implementation of SPRA health route to bypass router issues
