@@ -1,496 +1,705 @@
-import { storage } from '../storage';
-import { huggingFaceService, HFModel } from '../huggingface-service';
-import { semanticSearchService } from './semantic-search-service';
+import { db } from '../db';
+import { clinicalEvaluationReports } from '../../shared/schema';
+import { and, eq, isNull } from 'drizzle-orm';
+import { generateEmbeddings, generateStructuredResponse, isApiKeyAvailable } from '../openai-service';
+import { SQL } from 'drizzle-orm/sql';
 
-interface ClinicalInsight {
-  text: string;
-  source: string;
+interface SemanticVariable {
+  name: string;
+  category: string;
+  description: string;
+  data_type: string;
+  value_range?: string;
+  related_variables: string[];
+  importance_score: number;
+  source_documents: string[];
+}
+
+interface SemanticConnection {
+  source_variable: string;
+  target_variable: string;
+  relationship_type: string;
+  strength: number;
+  evidence: string[];
   confidence: number;
 }
 
-interface EndpointRecommendation {
-  endpoint: string;
-  rationale: string;
-  supportingEvidence: string;
-  confidence: number;
-}
-
-interface SampleSizeRecommendation {
-  recommendation: number;
-  rationale: string;
-  confidenceInterval: [number, number];
-  powerAnalysis: string;
-}
-
-interface StudyDesignRecommendation {
-  designType: string;
-  rationale: string;
-  limitations: string[];
-  alternatives: string[];
-}
-
-interface ClinicalIntelligenceResponse {
-  query: string;
-  insights: ClinicalInsight[];
-  endpointRecommendations?: EndpointRecommendation[];
-  sampleSizeRecommendation?: SampleSizeRecommendation;
-  studyDesignRecommendation?: StudyDesignRecommendation;
-  relevantReports: {
-    id: number;
-    title: string;
-    relevance: number;
+interface SemanticAnalysisResult {
+  variables: SemanticVariable[];
+  connections: SemanticConnection[];
+  clusters: {
+    name: string;
+    variables: string[];
+    description: string;
   }[];
-  competitiveIntelligence?: string;
-  regulatoryConsiderations?: string;
+  causal_paths: {
+    path: string[];
+    description: string;
+    confidence: number;
+  }[];
 }
 
 /**
- * Service that provides clinical trial intelligence based on CSR analysis
+ * Clinical Intelligence Service
+ * 
+ * This service provides deep semantic analysis of CSR and CER data,
+ * identifying patterns, correlations, and causal relationships between
+ * variables across documents.
  */
-export class ClinicalIntelligenceService {
-  private isInitialized: boolean = false;
-  private indexingInProgress: boolean = false;
-  private totalIndexedDocuments: number = 0;
-  
-  /**
-   * Initialize the semantic search index with CSR data
-   */
-  async initializeSearchIndex(): Promise<void> {
-    if (this.isInitialized || this.indexingInProgress) {
-      return;
+class ClinicalIntelligenceService {
+  private static instance: ClinicalIntelligenceService;
+  private semanticVariableCache: Map<string, SemanticVariable> = new Map();
+  private semanticConnectionCache: Map<string, SemanticConnection[]> = new Map();
+
+  private constructor() {
+    // Initialize service
+  }
+
+  public static getInstance(): ClinicalIntelligenceService {
+    if (!ClinicalIntelligenceService.instance) {
+      ClinicalIntelligenceService.instance = new ClinicalIntelligenceService();
     }
-    
-    this.indexingInProgress = true;
-    console.log('Initializing clinical intelligence semantic search index...');
-    
+    return ClinicalIntelligenceService.instance;
+  }
+
+  /**
+   * Generate embeddings for semantic search across CSR and CER data
+   */
+  public async generateDocumentEmbeddings(documentId: string, documentType: 'CSR' | 'CER'): Promise<boolean> {
     try {
-      // Get all CSR reports from the database
-      const reports = await storage.getAllCsrReports();
-      console.log(`Found ${reports.length} reports to index`);
+      if (!isApiKeyAvailable()) {
+        console.error('OpenAI API key not available');
+        return false;
+      }
+
+      let documentText: string;
       
-      // Process each report
-      let indexedCount = 0;
-      for (const report of reports) {
-        try {
-          // Skip reports without a summary
-          if (!report.summary || report.summary.trim().length < 50) {
-            continue;
-          }
-          
-          // Create a more comprehensive document by fetching details
-          let documentText = `Title: ${report.title}\n`;
-          documentText += `Sponsor: ${report.sponsor}\n`;
-          documentText += `Indication: ${report.indication}\n`;
-          documentText += `Phase: ${report.phase}\n`;
-          documentText += `Summary: ${report.summary}\n\n`;
-          
-          // Try to get more detailed information
-          const details = await storage.getCsrDetails(report.id);
-          if (details) {
-            if (details.studyDesign) documentText += `Study Design: ${details.studyDesign}\n`;
-            if (details.primaryObjective) documentText += `Primary Objective: ${details.primaryObjective}\n`;
-            if (details.sampleSize) documentText += `Sample Size: ${details.sampleSize}\n`;
-            // Add other fields as needed
-          }
-          
-          // Add to semantic search index
-          await semanticSearchService.addDocument(report.id, documentText, {
-            id: report.id,
-            title: report.title,
-            sponsor: report.sponsor,
-            indication: report.indication,
-            phase: report.phase
-          });
-          
-          indexedCount++;
-          
-          // Log progress every 10 documents
-          if (indexedCount % 10 === 0) {
-            console.log(`Indexed ${indexedCount}/${reports.length} documents`);
-          }
-        } catch (error) {
-          console.error(`Error indexing report ${report.id}:`, error);
-          // Continue with next report
+      if (documentType === 'CER') {
+        const [cer] = await db
+          .select({ content: clinicalEvaluationReports.content_text })
+          .from(clinicalEvaluationReports)
+          .where(eq(clinicalEvaluationReports.cer_id, documentId));
+        
+        if (!cer) {
+          console.error(`CER ${documentId} not found`);
+          return false;
         }
+        
+        documentText = cer.content;
+      } else {
+        // Replace with CSR retrieval logic
+        const [csr] = await db.execute(
+          'SELECT content_text FROM csr_reports WHERE report_id = $1',
+          [documentId]
+        );
+        
+        if (!csr) {
+          console.error(`CSR ${documentId} not found`);
+          return false;
+        }
+        
+        documentText = csr.content_text;
       }
       
-      this.totalIndexedDocuments = indexedCount;
-      this.isInitialized = true;
-      console.log(`Completed indexing ${indexedCount} documents for clinical intelligence`);
+      // Generate embeddings
+      const embeddings = await generateEmbeddings(documentText);
+      
+      if (!embeddings) {
+        console.error(`Failed to generate embeddings for ${documentType} ${documentId}`);
+        return false;
+      }
+      
+      // Store embeddings
+      if (documentType === 'CER') {
+        await db
+          .update(clinicalEvaluationReports)
+          .set({ content_vector: JSON.stringify(embeddings) })
+          .where(eq(clinicalEvaluationReports.cer_id, documentId));
+      } else {
+        // Replace with CSR update logic
+        await db.execute(
+          'UPDATE csr_reports SET content_vector = $1 WHERE report_id = $2',
+          [JSON.stringify(embeddings), documentId]
+        );
+      }
+      
+      return true;
     } catch (error) {
-      console.error('Error initializing clinical intelligence index:', error);
-    } finally {
-      this.indexingInProgress = false;
+      console.error(`Error generating document embeddings: ${error.message}`);
+      return false;
     }
   }
-  
+
   /**
-   * Get clinical insights based on a query
+   * Extract semantic variables from a document
    */
-  async getInsights(
-    query: string,
-    indication: string = '',
-    phase: string = ''
-  ): Promise<ClinicalIntelligenceResponse> {
-    // Ensure the index is initialized
-    if (!this.isInitialized && !this.indexingInProgress) {
-      await this.initializeSearchIndex();
-    }
-    
-    // Create a more comprehensive query if indication/phase provided
-    let enhancedQuery = query;
-    if (indication) enhancedQuery += ` for ${indication}`;
-    if (phase) enhancedQuery += ` in Phase ${phase} trials`;
-    
-    // Retrieve relevant reports through semantic search
-    const searchResults = await semanticSearchService.search(enhancedQuery, 10);
-    
-    // Extract relevant context for the AI
-    const relevantText = await semanticSearchService.retrieveRelevantContext(enhancedQuery, 6000);
-    
-    // Create a context prompt for the AI
-    const prompt = `
-You are a Clinical Trial Intelligence Specialist with decades of experience in clinical trial design and execution.
-Analyze the following clinical trial reports and provide insights for the query.
-
-QUERY: ${query}
-${indication ? `Indication: ${indication}` : ''}
-${phase ? `Phase: ${phase}` : ''}
-
-RELEVANT CLINICAL TRIAL REPORTS:
-${relevantText}
-
-Based on the above clinical trial reports and your expertise, please provide:
-1. Key insights relevant to the query
-2. Evidence-based recommendations
-3. Limitations and potential challenges
-4. Alternative approaches if applicable
-
-Provide your analysis in a structured, concise, and professional manner.
-`;
-
-    // Get AI-generated insights using HuggingFace
-    const aiResponse = await huggingFaceService.queryHuggingFace(
-      prompt,
-      HFModel.MISTRAL_LATEST,
-      1500,
-      0.4
-    );
-    
-    // Extract insights from the AI response
-    const insights: ClinicalInsight[] = [
-      {
-        text: aiResponse,
-        source: 'AI Analysis of Clinical Study Reports',
-        confidence: 0.85
+  public async extractSemanticVariables(documentId: string, documentType: 'CSR' | 'CER'): Promise<SemanticVariable[]> {
+    try {
+      if (!isApiKeyAvailable()) {
+        console.error('OpenAI API key not available');
+        return [];
       }
-    ];
-    
-    // Prepare the response
-    const response: ClinicalIntelligenceResponse = {
-      query,
-      insights,
-      relevantReports: searchResults.map(result => ({
-        id: result.document.id,
-        title: result.document.metadata?.title || `Report #${result.document.id}`,
-        relevance: result.score
-      }))
-    };
-    
-    // Generate endpoint recommendations if query is about endpoints
-    if (query.toLowerCase().includes('endpoint') || query.toLowerCase().includes('outcome measure')) {
-      response.endpointRecommendations = await this.generateEndpointRecommendations(query, indication, phase);
-    }
-    
-    // Generate sample size recommendation if query is about sample size
-    if (query.toLowerCase().includes('sample size') || query.toLowerCase().includes('participants') || query.toLowerCase().includes('subjects')) {
-      response.sampleSizeRecommendation = await this.generateSampleSizeRecommendation(query, indication, phase);
-    }
-    
-    // Generate study design recommendation if query is about study design
-    if (query.toLowerCase().includes('study design') || query.toLowerCase().includes('trial design')) {
-      response.studyDesignRecommendation = await this.generateStudyDesignRecommendation(query, indication, phase);
-    }
-    
-    return response;
-  }
-  
-  /**
-   * Generate endpoint recommendations
-   */
-  private async generateEndpointRecommendations(
-    query: string,
-    indication: string,
-    phase: string
-  ): Promise<EndpointRecommendation[]> {
-    // Get relevant reports
-    const reports = await storage.getAllCsrReports();
-    const filteredReports = reports.filter(report => {
-      let match = true;
-      if (indication) match = match && report.indication.toLowerCase().includes(indication.toLowerCase());
-      if (phase) match = match && report.phase === phase;
-      return match;
-    });
-    
-    // Get the top 5 reports
-    const topReports = filteredReports.slice(0, 5);
-    
-    // Prepare detailed endpoint information
-    let endpointContext = '';
-    for (const report of topReports) {
-      try {
-        const details = await storage.getCsrDetails(report.id);
-        if (details && details.primaryObjective) {
-          endpointContext += `Report: ${report.title}\n`;
-          endpointContext += `Indication: ${report.indication}\n`;
-          endpointContext += `Phase: ${report.phase}\n`;
-          endpointContext += `Primary Objective: ${details.primaryObjective}\n\n`;
+
+      let documentText: string;
+      let documentMeta: any = {};
+      
+      if (documentType === 'CER') {
+        const [cer] = await db
+          .select()
+          .from(clinicalEvaluationReports)
+          .where(eq(clinicalEvaluationReports.cer_id, documentId));
+        
+        if (!cer) {
+          console.error(`CER ${documentId} not found`);
+          return [];
         }
-      } catch (error) {
-        console.error(`Error getting details for report ${report.id}:`, error);
+        
+        documentText = cer.content_text;
+        documentMeta = {
+          title: cer.title,
+          device_name: cer.device_name,
+          manufacturer: cer.manufacturer,
+          indication: cer.indication
+        };
+      } else {
+        // Replace with CSR retrieval logic
+        const [csr] = await db.execute(
+          'SELECT * FROM csr_reports WHERE report_id = $1',
+          [documentId]
+        );
+        
+        if (!csr) {
+          console.error(`CSR ${documentId} not found`);
+          return [];
+        }
+        
+        documentText = csr.content_text;
+        documentMeta = {
+          title: csr.title,
+          indication: csr.indication,
+          phase: csr.phase,
+          sponsor: csr.sponsor
+        };
       }
+      
+      // Analyze document content to extract variables
+      const prompt = `
+        As an expert in clinical study reports and clinical evaluation reports, analyze the following ${documentType} document and extract all important semantic variables.
+        
+        Document Information:
+        Title: ${documentMeta.title}
+        ${documentType === 'CER' ? `Device: ${documentMeta.device_name}
+        Manufacturer: ${documentMeta.manufacturer}` : `Phase: ${documentMeta.phase}
+        Sponsor: ${documentMeta.sponsor}`}
+        Indication: ${documentMeta.indication}
+        
+        For each variable, provide:
+        1. name: The name of the variable
+        2. category: The category (e.g., efficacy, safety, demographic, etc.)
+        3. description: A clear description of what the variable represents
+        4. data_type: The data type (continuous, categorical, binary, etc.)
+        5. value_range: The possible range of values (if applicable)
+        6. related_variables: Names of other variables that are related to this one
+        7. importance_score: A score from 1-10 indicating the variable's importance
+        8. source_documents: Set this to ["${documentId}"]
+        
+        Document Text (excerpt):
+        ${documentText.substring(0, 10000)}
+        
+        Return a JSON array of semantic variables.
+      `;
+      
+      const response = await generateStructuredResponse(prompt);
+      
+      if (!response) {
+        console.error(`Failed to extract semantic variables for ${documentType} ${documentId}`);
+        return [];
+      }
+      
+      // Parse the response
+      let variables: SemanticVariable[] = [];
+      try {
+        variables = JSON.parse(response);
+        
+        // Cache the variables
+        variables.forEach(variable => {
+          this.semanticVariableCache.set(`${variable.name}_${documentId}`, variable);
+        });
+        
+        return variables;
+      } catch (error) {
+        console.error(`Error parsing variables response: ${error.message}`);
+        return [];
+      }
+    } catch (error) {
+      console.error(`Error extracting semantic variables: ${error.message}`);
+      return [];
     }
-    
-    // Get AI recommendations
-    const prompt = `
-Based on the following clinical trial information, recommend 3 appropriate primary endpoints for a ${phase || ''} trial in ${indication || 'the given indication'}.
+  }
 
-CLINICAL TRIAL INFORMATION:
-${endpointContext}
-
-For each endpoint, provide:
-1. The endpoint definition
-2. Rationale for selecting this endpoint
-3. Supporting evidence from similar trials
-4. Confidence level (high, medium, or low)
-
-Format your response as a structured list of 3 endpoint recommendations.
-`;
-
-    const aiResponse = await huggingFaceService.queryHuggingFace(
-      prompt,
-      HFModel.MISTRAL_LATEST,
-      1200,
-      0.3
-    );
-    
-    // Parse the AI response into structured recommendations
-    // This is a simplified parsing, could be made more robust
-    const sections = aiResponse.split(/\d+\./g).slice(1);
-    
-    return sections.map((section, index) => {
-      const lines = section.split('\n').filter(line => line.trim());
+  /**
+   * Analyze connections between semantic variables across documents
+   */
+  public async analyzeSemanticConnections(
+    variables: SemanticVariable[], 
+    documentId: string
+  ): Promise<SemanticConnection[]> {
+    try {
+      if (!isApiKeyAvailable() || variables.length === 0) {
+        return [];
+      }
       
-      // Extract information with simple heuristics
-      const endpoint = lines[0]?.trim() || `Endpoint ${index + 1}`;
-      const rationale = lines.find(line => line.includes('Rationale')) || '';
-      const evidence = lines.find(line => line.includes('Evidence') || line.includes('Supporting')) || '';
-      const confidenceText = lines.find(line => line.includes('Confidence')) || 'medium';
+      // Get cached connections if available
+      if (this.semanticConnectionCache.has(documentId)) {
+        return this.semanticConnectionCache.get(documentId);
+      }
       
-      // Map confidence text to number
-      let confidence = 0.7;
-      if (confidenceText.toLowerCase().includes('high')) confidence = 0.9;
-      if (confidenceText.toLowerCase().includes('low')) confidence = 0.5;
+      // Prepare variables for analysis
+      const variableNames = variables.map(v => v.name).join(', ');
+      const variableSummaries = variables.map(v => `${v.name}: ${v.description} (${v.category})`).join('\n');
+      
+      const prompt = `
+        As an expert in clinical data analysis, analyze the relationships between the following variables from ${documentId}:
+        
+        ${variableSummaries}
+        
+        For each meaningful relationship between variables, provide:
+        1. source_variable: The name of the source variable
+        2. target_variable: The name of the target variable
+        3. relationship_type: The type of relationship (correlation, causation, dependency, etc.)
+        4. strength: A value between 0-1 indicating the strength of the relationship
+        5. evidence: Brief evidence points supporting this relationship
+        6. confidence: A value between 0-1 indicating your confidence in this relationship
+        
+        Focus only on the most significant and well-supported relationships. 
+        Return a JSON array of semantic connections.
+      `;
+      
+      const response = await generateStructuredResponse(prompt);
+      
+      if (!response) {
+        console.error(`Failed to analyze semantic connections for ${documentId}`);
+        return [];
+      }
+      
+      // Parse the response
+      let connections: SemanticConnection[] = [];
+      try {
+        connections = JSON.parse(response);
+        
+        // Cache the connections
+        this.semanticConnectionCache.set(documentId, connections);
+        
+        return connections;
+      } catch (error) {
+        console.error(`Error parsing connections response: ${error.message}`);
+        return [];
+      }
+    } catch (error) {
+      console.error(`Error analyzing semantic connections: ${error.message}`);
+      return [];
+    }
+  }
+
+  /**
+   * Perform a complete semantic analysis of a document
+   */
+  public async performSemanticAnalysis(documentId: string, documentType: 'CSR' | 'CER'): Promise<SemanticAnalysisResult> {
+    try {
+      // Extract variables
+      const variables = await this.extractSemanticVariables(documentId, documentType);
+      
+      // Analyze connections
+      const connections = await this.analyzeSemanticConnections(variables, documentId);
+      
+      // Identify variable clusters
+      const clusters = await this.identifyVariableClusters(variables, connections);
+      
+      // Analyze causal pathways
+      const causalPaths = await this.analyzeCausalPathways(connections);
       
       return {
-        endpoint,
-        rationale,
-        supportingEvidence: evidence,
-        confidence
+        variables,
+        connections,
+        clusters,
+        causal_paths: causalPaths
       };
-    });
+    } catch (error) {
+      console.error(`Error performing semantic analysis: ${error.message}`);
+      return {
+        variables: [],
+        connections: [],
+        clusters: [],
+        causal_paths: []
+      };
+    }
   }
-  
+
   /**
-   * Generate sample size recommendation
+   * Identify clusters of related variables
    */
-  private async generateSampleSizeRecommendation(
-    query: string,
-    indication: string,
-    phase: string
-  ): Promise<SampleSizeRecommendation> {
-    // Fetch average sample sizes for similar trials
-    const reports = await storage.getAllCsrReports();
-    const filteredReports = reports.filter(report => {
-      let match = true;
-      if (indication) match = match && report.indication.toLowerCase().includes(indication.toLowerCase());
-      if (phase) match = match && report.phase === phase;
-      return match;
-    });
-    
-    // Get report details with sample sizes
-    const detailedReports = [];
-    for (const report of filteredReports.slice(0, 10)) {
-      try {
-        const details = await storage.getCsrDetails(report.id);
-        if (details && details.sampleSize) {
-          detailedReports.push({
-            ...report,
-            sampleSize: details.sampleSize
-          });
-        }
-      } catch (error) {
-        console.error(`Error getting details for report ${report.id}:`, error);
-      }
+  private async identifyVariableClusters(
+    variables: SemanticVariable[],
+    connections: SemanticConnection[]
+  ): Promise<{ name: string; variables: string[]; description: string }[]> {
+    if (variables.length === 0 || connections.length === 0) {
+      return [];
     }
     
-    // Calculate average sample size if available
-    let averageSampleSize = 0;
-    if (detailedReports.length > 0) {
-      const sampleSizes = detailedReports
-        .map(r => typeof r.sampleSize === 'number' ? r.sampleSize : parseInt(r.sampleSize as string))
-        .filter(size => !isNaN(size));
+    try {
+      // Build an adjacency map for variable connections
+      const adjacencyMap = new Map<string, Set<string>>();
       
-      if (sampleSizes.length > 0) {
-        averageSampleSize = sampleSizes.reduce((sum, size) => sum + size, 0) / sampleSizes.length;
+      variables.forEach(variable => {
+        adjacencyMap.set(variable.name, new Set<string>());
+      });
+      
+      connections.forEach(connection => {
+        const { source_variable, target_variable } = connection;
+        
+        if (adjacencyMap.has(source_variable)) {
+          adjacencyMap.get(source_variable)?.add(target_variable);
+        }
+        
+        if (adjacencyMap.has(target_variable)) {
+          adjacencyMap.get(target_variable)?.add(source_variable);
+        }
+      });
+      
+      // Prepare data for the clustering prompt
+      const variableSummaries = variables.map(v => `${v.name}: ${v.description} (${v.category})`).join('\n');
+      const connectionSummaries = connections.map(c => 
+        `${c.source_variable} -> ${c.target_variable} (${c.relationship_type}, strength: ${c.strength})`
+      ).join('\n');
+      
+      const prompt = `
+        As an expert in clinical data analysis, identify meaningful clusters of related variables from the following data:
+        
+        Variables:
+        ${variableSummaries}
+        
+        Connections:
+        ${connectionSummaries}
+        
+        For each cluster, provide:
+        1. name: A descriptive name for the cluster
+        2. variables: Array of variable names in this cluster
+        3. description: A brief description of what this cluster represents
+        
+        Identify 3-7 clusters that best represent the natural groupings in this data.
+        Return a JSON array of clusters.
+      `;
+      
+      const response = await generateStructuredResponse(prompt);
+      
+      if (!response) {
+        console.error('Failed to identify variable clusters');
+        return [];
       }
+      
+      // Parse the response
+      return JSON.parse(response);
+    } catch (error) {
+      console.error(`Error identifying variable clusters: ${error.message}`);
+      return [];
+    }
+  }
+
+  /**
+   * Analyze causal pathways between variables
+   */
+  private async analyzeCausalPathways(
+    connections: SemanticConnection[]
+  ): Promise<{ path: string[]; description: string; confidence: number }[]> {
+    if (connections.length === 0) {
+      return [];
     }
     
-    // Create context for AI
-    let sampleSizeContext = `Average sample size for ${indication || 'similar'} trials in Phase ${phase || 'various'}: ${Math.round(averageSampleSize) || 'Unknown'}\n\n`;
-    
-    detailedReports.forEach((report, index) => {
-      sampleSizeContext += `Trial ${index + 1}: ${report.title}\n`;
-      sampleSizeContext += `Indication: ${report.indication}\n`;
-      sampleSizeContext += `Phase: ${report.phase}\n`;
-      sampleSizeContext += `Sample Size: ${report.sampleSize}\n\n`;
-    });
-    
-    // Get AI recommendation
-    const prompt = `
-As a clinical trial statistician, recommend an appropriate sample size for a ${phase || ''} clinical trial in ${indication || 'the given indication'}.
-
-SIMILAR TRIAL INFORMATION:
-${sampleSizeContext}
-
-Based on the above information and statistical best practices, provide:
-1. A specific sample size recommendation (as a number)
-2. Rationale for this recommendation
-3. A confidence interval for the sample size
-4. A brief power analysis explanation
-
-Format your response in a structured way that can be easily parsed.
-`;
-
-    const aiResponse = await huggingFaceService.queryHuggingFace(
-      prompt,
-      HFModel.MISTRAL_LATEST,
-      800,
-      0.3
-    );
-    
-    // Parse the response to extract the recommendation
-    const recommendationMatch = aiResponse.match(/recommendation:?\s*(\d+)/i);
-    const recommendation = recommendationMatch ? parseInt(recommendationMatch[1]) : Math.round(averageSampleSize);
-    
-    // Extract confidence interval with regex
-    const ciMatch = aiResponse.match(/confidence interval:?\s*\[?(\d+)[^\d]+(\d+)\]?/i);
-    const confidenceInterval: [number, number] = ciMatch 
-      ? [parseInt(ciMatch[1]), parseInt(ciMatch[2])]
-      : [Math.round(recommendation * 0.8), Math.round(recommendation * 1.2)];
-    
-    return {
-      recommendation,
-      rationale: aiResponse,
-      confidenceInterval,
-      powerAnalysis: aiResponse.includes('power analysis') 
-        ? aiResponse.split('power analysis')[1] || 'Based on typical effect sizes in similar trials'
-        : 'Based on typical effect sizes in similar trials'
-    };
+    try {
+      // Filter for causal connections
+      const causalConnections = connections.filter(c => 
+        c.relationship_type.toLowerCase().includes('caus') && c.strength > 0.5
+      );
+      
+      if (causalConnections.length === 0) {
+        return [];
+      }
+      
+      // Prepare data for the causal analysis prompt
+      const connectionSummaries = causalConnections.map(c => 
+        `${c.source_variable} -> ${c.target_variable} (${c.relationship_type}, strength: ${c.strength}, confidence: ${c.confidence})`
+      ).join('\n');
+      
+      const prompt = `
+        As an expert in clinical causal analysis, identify meaningful causal pathways from the following connections:
+        
+        Causal Connections:
+        ${connectionSummaries}
+        
+        For each causal pathway, provide:
+        1. path: An array of variable names representing the causal chain
+        2. description: A clear description of the causal mechanism
+        3. confidence: A value between 0-1 indicating your confidence in this pathway
+        
+        Focus on pathways with strong evidence and clinical relevance.
+        Return a JSON array of causal pathways.
+      `;
+      
+      const response = await generateStructuredResponse(prompt);
+      
+      if (!response) {
+        console.error('Failed to analyze causal pathways');
+        return [];
+      }
+      
+      // Parse the response
+      return JSON.parse(response);
+    } catch (error) {
+      console.error(`Error analyzing causal pathways: ${error.message}`);
+      return [];
+    }
   }
-  
+
   /**
-   * Generate study design recommendation
+   * Perform a cross-document semantic analysis to find patterns across multiple documents
    */
-  private async generateStudyDesignRecommendation(
-    query: string,
+  public async performCrossDocumentAnalysis(
+    documentIds: string[],
+    documentTypes: ('CSR' | 'CER')[]
+  ): Promise<{
+    common_variables: SemanticVariable[];
+    cross_document_connections: SemanticConnection[];
+    key_insights: string[];
+  }> {
+    try {
+      if (documentIds.length === 0 || documentIds.length !== documentTypes.length) {
+        throw new Error('Invalid document inputs for cross-document analysis');
+      }
+      
+      // Extract variables from all documents
+      const allVariablesPromises = documentIds.map((id, index) => 
+        this.extractSemanticVariables(id, documentTypes[index])
+      );
+      
+      const allVariablesArrays = await Promise.all(allVariablesPromises);
+      
+      // Flatten variables and group by name
+      const variablesByName = new Map<string, SemanticVariable[]>();
+      
+      allVariablesArrays.forEach((variables, docIndex) => {
+        variables.forEach(variable => {
+          if (!variablesByName.has(variable.name)) {
+            variablesByName.set(variable.name, []);
+          }
+          variablesByName.get(variable.name)?.push({
+            ...variable,
+            source_documents: [documentIds[docIndex]]
+          });
+        });
+      });
+      
+      // Identify common variables (present in at least 2 documents)
+      const commonVariables: SemanticVariable[] = [];
+      
+      variablesByName.forEach((variables, name) => {
+        if (variables.length >= 2) {
+          // Merge variable definitions
+          const mergedVariable: SemanticVariable = {
+            name,
+            category: variables[0].category,
+            description: variables[0].description,
+            data_type: variables[0].data_type,
+            value_range: variables[0].value_range,
+            related_variables: Array.from(new Set(variables.flatMap(v => v.related_variables))),
+            importance_score: Math.max(...variables.map(v => v.importance_score)),
+            source_documents: Array.from(new Set(variables.flatMap(v => v.source_documents)))
+          };
+          
+          commonVariables.push(mergedVariable);
+        }
+      });
+      
+      // If no common variables, return early
+      if (commonVariables.length === 0) {
+        return {
+          common_variables: [],
+          cross_document_connections: [],
+          key_insights: ['No common variables found across documents']
+        };
+      }
+      
+      // Analyze connections across documents
+      const documentDescriptions = documentIds.map((id, i) => 
+        `${documentTypes[i]} ${id}`
+      ).join(', ');
+      
+      const commonVarSummaries = commonVariables.map(v => 
+        `${v.name}: ${v.description} (${v.category}, appears in: ${v.source_documents.join(', ')})`
+      ).join('\n');
+      
+      const prompt = `
+        As an expert in clinical data analysis, identify meaningful cross-document relationships between these common variables found across ${documentDescriptions}:
+        
+        Common Variables:
+        ${commonVarSummaries}
+        
+        For each relationship between variables, provide:
+        1. source_variable: The name of the source variable
+        2. target_variable: The name of the target variable
+        3. relationship_type: The type of relationship (correlation, causation, dependency, etc.)
+        4. strength: A value between 0-1 indicating the strength of the relationship
+        5. evidence: Brief evidence points supporting this relationship
+        6. confidence: A value between 0-1 indicating your confidence in this relationship
+        
+        Also provide a list of key insights gained from this cross-document analysis.
+        
+        Return a JSON object with "cross_document_connections" array and "key_insights" array.
+      `;
+      
+      const response = await generateStructuredResponse(prompt);
+      
+      if (!response) {
+        console.error('Failed to perform cross-document analysis');
+        return {
+          common_variables: commonVariables,
+          cross_document_connections: [],
+          key_insights: ['Analysis failed to generate results']
+        };
+      }
+      
+      // Parse the response
+      const analysisResult = JSON.parse(response);
+      
+      return {
+        common_variables: commonVariables,
+        cross_document_connections: analysisResult.cross_document_connections || [],
+        key_insights: analysisResult.key_insights || []
+      };
+    } catch (error) {
+      console.error(`Error in cross-document analysis: ${error.message}`);
+      return {
+        common_variables: [],
+        cross_document_connections: [],
+        key_insights: [`Error: ${error.message}`]
+      };
+    }
+  }
+
+  /**
+   * Generate intelligence insights for clinical trial planning
+   */
+  public async generateClinicalTrialInsights(
     indication: string,
     phase: string
-  ): Promise<StudyDesignRecommendation> {
-    // Retrieve top study designs from reports
-    const reports = await storage.getAllCsrReports();
-    const filteredReports = reports.filter(report => {
-      let match = true;
-      if (indication) match = match && report.indication.toLowerCase().includes(indication.toLowerCase());
-      if (phase) match = match && report.phase === phase;
-      return match;
-    });
-    
-    // Get study design details
-    let designContext = '';
-    for (const report of filteredReports.slice(0, 5)) {
-      try {
-        const details = await storage.getCsrDetails(report.id);
-        if (details && details.studyDesign) {
-          designContext += `Report: ${report.title}\n`;
-          designContext += `Indication: ${report.indication}\n`;
-          designContext += `Phase: ${report.phase}\n`;
-          designContext += `Study Design: ${details.studyDesign}\n\n`;
-        }
-      } catch (error) {
-        console.error(`Error getting details for report ${report.id}:`, error);
+  ): Promise<{
+    key_variables: { name: string; importance: number; description: string }[];
+    risk_factors: { factor: string; impact: string; mitigation: string }[];
+    endpoint_recommendations: { endpoint: string; justification: string; precedent_sources: string[] }[];
+    design_considerations: string[];
+  }> {
+    try {
+      // Find relevant CSRs and CERs for this indication and phase
+      const relevantCSRs = await db.execute(
+        'SELECT report_id FROM csr_reports WHERE indication ILIKE $1 AND phase = $2 AND "deletedAt" IS NULL LIMIT 10',
+        [`%${indication}%`, phase]
+      );
+      
+      const relevantCERs = await db
+        .select({ cer_id: clinicalEvaluationReports.cer_id })
+        .from(clinicalEvaluationReports)
+        .where(
+          and(
+            like(clinicalEvaluationReports.indication, `%${indication}%`),
+            isNull(clinicalEvaluationReports.deletedAt)
+          )
+        )
+        .limit(10);
+      
+      // Combine document IDs
+      const csrIds = relevantCSRs.map(csr => csr.report_id);
+      const cerIds = relevantCERs.map(cer => cer.cer_id);
+      
+      const documentIds = [...csrIds, ...cerIds];
+      const documentTypes = [...csrIds.map(() => 'CSR' as const), ...cerIds.map(() => 'CER' as const)];
+      
+      if (documentIds.length === 0) {
+        return {
+          key_variables: [],
+          risk_factors: [],
+          endpoint_recommendations: [],
+          design_considerations: [
+            'Insufficient data for the specified indication and phase'
+          ]
+        };
       }
+      
+      // Perform cross-document analysis
+      const crossDocAnalysis = await this.performCrossDocumentAnalysis(
+        documentIds,
+        documentTypes
+      );
+      
+      // Extract key variables (sorted by importance)
+      const keyVariables = crossDocAnalysis.common_variables
+        .sort((a, b) => b.importance_score - a.importance_score)
+        .slice(0, 10)
+        .map(v => ({
+          name: v.name,
+          importance: v.importance_score,
+          description: v.description
+        }));
+      
+      // Generate clinical trial insights prompt
+      const prompt = `
+        As an expert in clinical trial design, generate insights for planning a Phase ${phase} clinical trial for ${indication}, based on the following intelligence:
+        
+        Key Variables:
+        ${keyVariables.map(v => `${v.name}: ${v.description} (Importance: ${v.importance})`).join('\n')}
+        
+        Cross-Document Insights:
+        ${crossDocAnalysis.key_insights.join('\n')}
+        
+        Provide:
+        1. risk_factors: Array of objects with "factor", "impact", and "mitigation" fields
+        2. endpoint_recommendations: Array of objects with "endpoint", "justification", and "precedent_sources" fields
+        3. design_considerations: Array of strings with important design considerations
+        
+        Focus on practical, evidence-based recommendations drawn from the provided intelligence.
+        Return a JSON object with the above fields.
+      `;
+      
+      const response = await generateStructuredResponse(prompt);
+      
+      if (!response) {
+        console.error('Failed to generate clinical trial insights');
+        return {
+          key_variables: keyVariables,
+          risk_factors: [],
+          endpoint_recommendations: [],
+          design_considerations: ['Analysis failed to generate results']
+        };
+      }
+      
+      // Parse the response
+      const insightsResult = JSON.parse(response);
+      
+      return {
+        key_variables: keyVariables,
+        risk_factors: insightsResult.risk_factors || [],
+        endpoint_recommendations: insightsResult.endpoint_recommendations || [],
+        design_considerations: insightsResult.design_considerations || []
+      };
+    } catch (error) {
+      console.error(`Error generating clinical trial insights: ${error.message}`);
+      return {
+        key_variables: [],
+        risk_factors: [],
+        endpoint_recommendations: [],
+        design_considerations: [`Error: ${error.message}`]
+      };
     }
-    
-    // Get AI recommendation
-    const prompt = `
-As a clinical trial design expert, recommend an optimal study design for a ${phase || ''} clinical trial in ${indication || 'the given indication'}.
-
-SIMILAR TRIAL DESIGNS:
-${designContext}
-
-Based on the above information and clinical trial best practices, provide:
-1. A specific study design recommendation
-2. Rationale for selecting this design
-3. Limitations of this design (at least 2)
-4. Alternative designs to consider (at least 2)
-
-Format your response in a structured way that can be easily parsed.
-`;
-
-    const aiResponse = await huggingFaceService.queryHuggingFace(
-      prompt,
-      HFModel.MISTRAL_LATEST,
-      1000,
-      0.3
-    );
-    
-    // Parse the limitations using regex
-    const limitationsMatch = aiResponse.match(/limitations?:([^\n]*(?:\n[^\n]*)*?)(?:\n\n|\n[a-z]+:)/i);
-    const limitationsText = limitationsMatch ? limitationsMatch[1] : '';
-    const limitations = limitationsText
-      .split(/\n-|\n\d+\./)
-      .map(l => l.trim())
-      .filter(l => l.length > 0);
-    
-    // Parse the alternatives using regex
-    const alternativesMatch = aiResponse.match(/alternatives?:([^\n]*(?:\n[^\n]*)*?)(?:\n\n|$)/i);
-    const alternativesText = alternativesMatch ? alternativesMatch[1] : '';
-    const alternatives = alternativesText
-      .split(/\n-|\n\d+\./)
-      .map(l => l.trim())
-      .filter(l => l.length > 0);
-    
-    return {
-      designType: aiResponse.split('\n')[0] || 'Randomized, controlled trial',
-      rationale: aiResponse,
-      limitations: limitations.length > 0 ? limitations : ['Sample size limitations', 'Potential for selection bias'],
-      alternatives: alternatives.length > 0 ? alternatives : ['Single-arm open-label design', 'Adaptive design']
-    };
-  }
-  
-  /**
-   * Get statistics about indexed clinical data
-   */
-  getIndexStats() {
-    return {
-      isInitialized: this.isInitialized,
-      indexingInProgress: this.indexingInProgress,
-      totalIndexedDocuments: this.totalIndexedDocuments,
-      searchAvailable: this.isInitialized && this.totalIndexedDocuments > 0
-    };
   }
 }
 
-// Export a singleton instance for convenience
-export const clinicalIntelligenceService = new ClinicalIntelligenceService();
+// Export the singleton instance
+export const clinicalIntelligenceService = ClinicalIntelligenceService.getInstance();

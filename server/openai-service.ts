@@ -135,9 +135,18 @@ export async function analyzeProtocolSections(
  * @param pdfBuffer PDF file buffer
  * @returns Extracted text content
  */
-export async function extractTextFromPdf(pdfBuffer: Buffer): Promise<string> {
+export async function extractTextFromPdf(pdfPathOrBuffer: string | Buffer): Promise<string> {
   try {
-    const data = await pdfParse(pdfBuffer);
+    let buffer: Buffer;
+    
+    if (typeof pdfPathOrBuffer === 'string') {
+      const fs = require('fs');
+      buffer = fs.readFileSync(pdfPathOrBuffer);
+    } else {
+      buffer = pdfPathOrBuffer;
+    }
+    
+    const data = await pdfParse(buffer);
     return data.text;
   } catch (error) {
     console.error('Error extracting text from PDF:', error);
@@ -256,12 +265,118 @@ export async function generateCsrSummary(text: string): Promise<string> {
   }
 }
 
+/**
+ * Analyze CER (Clinical Evaluation Report) content to extract structured data
+ * @param text The CER text content to analyze
+ * @returns Structured analysis results
+ */
+export async function analyzeCerContent(
+  text: string
+): Promise<any> {
+  const systemPrompt = `
+    You are a clinical evaluation report (CER) analysis expert. Analyze the provided CER text and extract
+    structured information about the medical device, complaints, safety issues, and performance evaluation.
+    Format your response as a structured JSON object.
+  `;
+
+  try {
+    const response = await analyzeText(
+      `Extract structured information from the following Clinical Evaluation Report (CER) text. Include the device name, 
+      manufacturer, indication, safety issues, complaint rates, adverse events, performance evaluation, and any other key elements.
+      
+      CER TEXT:
+      ${text.substring(0, 8000)}`, // Limit text size to avoid token limits
+      systemPrompt,
+      0.2,
+      4000
+    );
+
+    try {
+      // Try to parse the response as JSON
+      const jsonResponse = JSON.parse(response);
+      return {
+        title: jsonResponse.title || null,
+        device_name: jsonResponse.device_name || jsonResponse.deviceName || null,
+        manufacturer: jsonResponse.manufacturer || null,
+        indication: jsonResponse.indication || null,
+        report_date: jsonResponse.report_date || jsonResponse.reportDate || null,
+        report_period_start: jsonResponse.report_period_start || jsonResponse.reportPeriodStart || null,
+        report_period_end: jsonResponse.report_period_end || jsonResponse.reportPeriodEnd || null,
+        version: jsonResponse.version || null,
+        complaint_summary: jsonResponse.complaint_summary || jsonResponse.complaintSummary || null,
+        safety_issues: jsonResponse.safety_issues || jsonResponse.safetyIssues || [],
+        complaint_rates: jsonResponse.complaint_rates || jsonResponse.complaintRates || {},
+        adverse_events: jsonResponse.adverse_events || jsonResponse.adverseEvents || {},
+        performance_evaluation: jsonResponse.performance_evaluation || jsonResponse.performanceEvaluation || null,
+        clinical_data: jsonResponse.clinical_data || jsonResponse.clinicalData || {},
+        risk_analysis: jsonResponse.risk_analysis || jsonResponse.riskAnalysis || null,
+      };
+    } catch (parseError) {
+      console.error("Failed to parse OpenAI response as JSON:", parseError);
+      // Return an empty result object with default structure
+      return {
+        title: null,
+        device_name: null,
+        manufacturer: null,
+        indication: null,
+        report_date: null,
+        report_period_start: null,
+        report_period_end: null,
+        version: null,
+        complaint_summary: null,
+        safety_issues: [],
+        complaint_rates: {},
+        adverse_events: {},
+        performance_evaluation: null,
+        clinical_data: {},
+        risk_analysis: null,
+      };
+    }
+  } catch (error) {
+    console.error("Error in analyzeCerContent:", error);
+    throw error;
+  }
+}
+
+/**
+ * Generate a concise summary of a CER document
+ * @param text The CER text content to summarize
+ * @returns A summary of the CER
+ */
+export async function generateCerSummary(text: string): Promise<string> {
+  const systemPrompt = `
+    You are a clinical evaluation report (CER) summarization expert. Create a concise yet comprehensive 
+    summary of the provided CER text focusing on the key aspects of the device performance, 
+    safety issues, complaint rates, and overall evaluation.
+  `;
+
+  try {
+    const response = await analyzeText(
+      `Generate a concise summary (about 250-500 words) of the following clinical evaluation report. 
+      Focus on the device performance, safety issues, complaint rates, and key findings.
+      
+      CER TEXT:
+      ${text.substring(0, 8000)}`, // Limit text size to avoid token limits
+      systemPrompt,
+      0.5,
+      1000
+    );
+
+    return response;
+  } catch (error) {
+    console.error("Error in generateCerSummary:", error);
+    throw error;
+  }
+}
+
 export default {
   analyzeText,
   analyzeProtocolSections,
   extractTextFromPdf,
   analyzeCsrContent,
+  analyzeCerContent,
   generateCsrSummary,
+  generateCerSummary,
   isApiKeyAvailable,
   generateEmbeddings,
   generateStructuredResponse
