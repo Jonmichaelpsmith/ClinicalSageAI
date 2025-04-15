@@ -1,256 +1,238 @@
+#!/usr/bin/env python3
 """
-FDA FAERS Data Client
+FAERS Client
 
-This module provides functions to retrieve adverse event data from the FDA FAERS API.
+This script retrieves and processes data from the FDA Adverse Event Reporting System (FAERS)
+based on a given NDC code (National Drug Code).
 """
 
-import requests
+import sys
 import json
-from typing import Dict, Any, List
+import random
+from datetime import datetime, timedelta
+import urllib.request
+import urllib.parse
 
-FAERS_API_URL = "https://api.fda.gov/drug/event.json"
+# Constants for API access
+FAERS_BASE_URL = "https://api.fda.gov/drug/event.json"
+DEFAULT_LIMIT = 100
 
-def clean_ndc_code(ndc_code: str) -> str:
+def check_api_key():
+    """Check if an API key is available for FDA API (optional)"""
+    # FDA API can be used without a key but has rate limits
+    return True
+
+def fetch_faers_data(ndc_code, limit=DEFAULT_LIMIT):
     """
-    Clean and standardize NDC code format by removing hyphens.
+    Fetch adverse event data from FAERS for a specific NDC code
     
     Args:
-        ndc_code: National Drug Code in various formats
+        ndc_code: The National Drug Code to search for
+        limit: Maximum number of records to return
         
     Returns:
-        Standardized NDC code without hyphens
-    """
-    return ndc_code.replace("-", "")
-
-def get_faers_data(ndc_code: str, limit: int = 100) -> Dict[str, Any]:
-    """
-    Retrieve adverse event reports for a specific drug by NDC code.
-    
-    Args:
-        ndc_code: National Drug Code for the drug
-        limit: Maximum number of records to retrieve (default 100)
-        
-    Returns:
-        Dictionary containing FAERS data for the specified drug
+        Dictionary with processed FAERS data
     """
     try:
-        # Standardize NDC code format
-        clean_code = clean_ndc_code(ndc_code)
+        # Format NDC code search query
+        query = f'patient.drug.openfda.product_ndc:"{ndc_code}"'
         
-        # Make request to FDA FAERS API
-        response = requests.get(
-            f'{FAERS_API_URL}?search=openfda.product_ndc:"{clean_code}"&limit={limit}'
-        )
-        response.raise_for_status()
-        data = response.json()
-        
-        # Process and restructure the response
-        meta = {
-            "disclaimer": data.get("meta", {}).get("disclaimer", ""),
-            "license": data.get("meta", {}).get("license", ""),
-            "last_updated": data.get("meta", {}).get("last_updated", ""),
-            "results": {
-                "total": data.get("meta", {}).get("results", {}).get("total", 0),
-                "limit": limit
-            }
+        # Build URL with query parameters
+        params = {
+            'search': query,
+            'limit': limit
         }
         
-        # Extract drug info from first result if available
-        drug_info = {}
-        if data.get("results") and len(data["results"]) > 0:
-            openfda = data["results"][0].get("patient", {}).get("drug", [{}])[0].get("openfda", {})
-            drug_info = {
-                "brand_name": ", ".join(openfda.get("brand_name", [])) if openfda.get("brand_name") else "",
-                "generic_name": ", ".join(openfda.get("generic_name", [])) if openfda.get("generic_name") else "",
-                "manufacturer": ", ".join(openfda.get("manufacturer_name", [])) if openfda.get("manufacturer_name") else "",
-                "substance_name": ", ".join(openfda.get("substance_name", [])) if openfda.get("substance_name") else "",
-                "product_type": ", ".join(openfda.get("product_type", [])) if openfda.get("product_type") else ""
-            }
+        url = f"{FAERS_BASE_URL}?{urllib.parse.urlencode(params)}"
         
-        # Process each report
-        results = []
-        for report in data.get("results", []):
-            processed_report = {
-                "report_id": report.get("safetyreportid", ""),
-                "report_date": report.get("receiptdate", ""),
-                "seriousness": extract_seriousness(report),
-                "patient": extract_patient_data(report.get("patient", {})),
-                "reactions": extract_reactions(report.get("patient", {})),
-                "drug_role": extract_drug_role(report, ndc_code)
-            }
-            results.append(processed_report)
+        # Make request to FDA API
+        with urllib.request.urlopen(url) as response:
+            data = json.loads(response.read().decode('utf-8'))
+            
+        # Process the raw data
+        processed_data = process_faers_response(data, ndc_code)
         
+        return processed_data
+        
+    except urllib.error.HTTPError as e:
+        if e.code == 404:
+            # No data found for this NDC code
+            return {
+                "error": "No adverse event data found for this NDC code.",
+                "drug_info": {
+                    "ndc_code": ndc_code
+                },
+                "results": []
+            }
+        else:
+            # Other HTTP error
+            return {
+                "error": f"FDA API error: {e.code} - {e.reason}",
+                "drug_info": {
+                    "ndc_code": ndc_code
+                },
+                "results": []
+            }
+    except Exception as e:
+        # General error
         return {
+            "error": f"Error fetching FAERS data: {str(e)}",
+            "drug_info": {
+                "ndc_code": ndc_code
+            },
+            "results": []
+        }
+
+def process_faers_response(raw_data, ndc_code):
+    """
+    Process the raw FAERS API response into a more usable format
+    
+    Args:
+        raw_data: Raw JSON response from FAERS API
+        ndc_code: The NDC code that was searched
+        
+    Returns:
+        Dictionary with structured FAERS data
+    """
+    # Initialize result structure
+    result = {
+        "drug_info": {
             "ndc_code": ndc_code,
-            "meta": meta,
-            "drug_info": drug_info,
-            "results": results
+            "brand_name": None,
+            "generic_name": None,
+            "manufacturer": None
+        },
+        "results": [],
+        "meta": {
+            "total": raw_data.get("meta", {}).get("results", {}).get("total", 0),
+            "limit": raw_data.get("meta", {}).get("results", {}).get("limit", 0)
         }
-    
-    except requests.exceptions.RequestException as e:
-        return {
-            "error": f"Error retrieving FAERS data: {str(e)}",
-            "ndc_code": ndc_code
-        }
-
-def extract_drug_info(data: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Extract drug information from FAERS data.
-    
-    Args:
-        data: Raw FAERS data
-        
-    Returns:
-        Dictionary with drug information
-    """
-    drug_info = {}
-    
-    if data.get("results") and len(data["results"]) > 0:
-        openfda = data["results"][0].get("patient", {}).get("drug", [{}])[0].get("openfda", {})
-        drug_info = {
-            "brand_name": ", ".join(openfda.get("brand_name", [])) if openfda.get("brand_name") else "",
-            "generic_name": ", ".join(openfda.get("generic_name", [])) if openfda.get("generic_name") else "",
-            "manufacturer": ", ".join(openfda.get("manufacturer_name", [])) if openfda.get("manufacturer_name") else "",
-            "substance_name": ", ".join(openfda.get("substance_name", [])) if openfda.get("substance_name") else "",
-            "product_type": ", ".join(openfda.get("product_type", [])) if openfda.get("product_type") else ""
-        }
-    
-    return drug_info
-
-def extract_patient_data(patient_data: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Extract patient demographic information.
-    
-    Args:
-        patient_data: Patient section of FAERS report
-        
-    Returns:
-        Dictionary with patient demographics
-    """
-    # Get age information
-    age = None
-    age_unit = None
-    
-    if "patientonsetage" in patient_data:
-        age = patient_data["patientonsetage"]
-        age_unit = patient_data.get("patientonsetageunit", "")
-    
-    # Get weight information
-    weight = None
-    weight_unit = None
-    
-    if "patientweight" in patient_data:
-        weight = patient_data["patientweight"]
-        weight_unit = "kg"  # FAERS uses kg for weight
-    
-    # Get sex information
-    sex_mapping = {
-        "1": "Male",
-        "2": "Female",
-        "0": "Unknown"
     }
-    sex = sex_mapping.get(patient_data.get("patientsex", "0"), "Unknown")
     
-    return {
-        "age": age,
-        "age_unit": age_unit,
-        "weight": weight,
-        "weight_unit": weight_unit,
-        "sex": sex
-    }
-
-def extract_reactions(patient_data: Dict[str, Any]) -> List[Dict[str, Any]]:
-    """
-    Extract adverse reaction information.
+    # Extract and process each report
+    reports = raw_data.get("results", [])
     
-    Args:
-        patient_data: Patient section of FAERS report
+    for report in reports:
+        # Try to extract drug info if not already set
+        if not result["drug_info"]["brand_name"] or not result["drug_info"]["generic_name"]:
+            for drug in report.get("patient", {}).get("drug", []):
+                if "openfda" in drug and "product_ndc" in drug["openfda"]:
+                    if ndc_code in drug["openfda"]["product_ndc"]:
+                        # Found our drug, extract information
+                        result["drug_info"]["brand_name"] = drug.get("medicinalproduct") or \
+                                                           (drug.get("openfda", {}).get("brand_name", [None])[0])
+                        result["drug_info"]["generic_name"] = drug.get("openfda", {}).get("generic_name", [None])[0]
+                        result["drug_info"]["manufacturer"] = drug.get("openfda", {}).get("manufacturer_name", [None])[0]
+                        break
         
-    Returns:
-        List of reactions with details
-    """
-    reactions = []
-    
-    for reaction in patient_data.get("reaction", []):
-        reactions.append({
-            "term": reaction.get("reactionmeddrapt", "Unknown"),
-            "outcome": reaction.get("reactionoutcome", "")
-        })
-    
-    return reactions
-
-def extract_drug_role(report: Dict[str, Any], target_ndc: str) -> str:
-    """
-    Determine if the drug of interest was a suspect drug or concomitant.
-    
-    Args:
-        report: FAERS report data
-        target_ndc: NDC code of the drug of interest
+        # Extract report information
+        report_info = {
+            "report_id": report.get("safetyreportid"),
+            "report_date": report.get("receivedate"),
+            "serious": report.get("serious") == "1",
+            "patient": {
+                "age": extract_patient_age(report),
+                "gender": extract_patient_gender(report),
+                "weight": extract_patient_weight(report)
+            },
+            "reactions": extract_reactions(report),
+            "outcome": extract_outcome(report)
+        }
         
-    Returns:
-        String indicating drug role (Suspect, Concomitant, or Unknown)
-    """
-    clean_target_ndc = clean_ndc_code(target_ndc)
+        result["results"].append(report_info)
     
-    for drug in report.get("patient", {}).get("drug", []):
-        if drug.get("openfda", {}).get("product_ndc", []):
-            for ndc in drug.get("openfda", {}).get("product_ndc", []):
-                if clean_ndc_code(ndc) == clean_target_ndc:
-                    role_code = drug.get("drugcharacterization", "")
-                    if role_code == "1":
-                        return "Suspect"
-                    elif role_code == "2":
-                        return "Concomitant"
+    return result
+
+def extract_patient_age(report):
+    """Extract patient age from report"""
+    patient = report.get("patient", {})
+    
+    # Try to get age in years
+    if "patientonsetage" in patient and "patientonsetageunit" in patient:
+        age = patient["patientonsetage"]
+        unit = patient["patientonsetageunit"]
+        
+        # Convert to years if needed
+        if unit == "801": # Months
+            return round(float(age) / 12, 1)
+        elif unit == "802": # Weeks
+            return round(float(age) / 52, 1)
+        elif unit == "803": # Days
+            return round(float(age) / 365, 1)
+        elif unit == "800": # Years
+            return float(age)
+    
+    return None
+
+def extract_patient_gender(report):
+    """Extract patient gender from report"""
+    gender_code = report.get("patient", {}).get("patientsex")
+    
+    if gender_code == "1":
+        return "Male"
+    elif gender_code == "2":
+        return "Female"
     
     return "Unknown"
 
-def extract_seriousness(report: Dict[str, Any]) -> Dict[str, bool]:
-    """
-    Extract serious adverse event flags.
+def extract_patient_weight(report):
+    """Extract patient weight from report"""
+    weight = report.get("patient", {}).get("patientweight")
     
-    Args:
-        report: FAERS report data
-        
-    Returns:
-        Dictionary with seriousness indicators
-    """
-    seriousness = {
-        "death": False,
-        "life_threatening": False,
-        "hospitalization": False,
-        "disability": False,
-        "congenital_anomaly": False,
-        "other_serious": False
-    }
+    if weight:
+        return float(weight)
     
-    if report.get("seriousnessdeath") == "1":
-        seriousness["death"] = True
+    return None
+
+def extract_reactions(report):
+    """Extract adverse reactions from report"""
+    reactions = []
     
-    if report.get("seriousnesslifethreatening") == "1":
-        seriousness["life_threatening"] = True
+    for reaction in report.get("patient", {}).get("reaction", []):
+        if "reactionmeddrapt" in reaction:
+            reactions.append(reaction["reactionmeddrapt"])
     
-    if report.get("seriousnesshospitalization") == "1":
-        seriousness["hospitalization"] = True
+    return reactions
+
+def extract_outcome(report):
+    """Extract patient outcome from report"""
+    outcome_code = report.get("patient", {}).get("patientdeath", {}).get("patientdeathdateformat")
     
-    if report.get("seriousnessdisabling") == "1":
-        seriousness["disability"] = True
+    if outcome_code:
+        return "Death"
     
-    if report.get("seriousnesscongenitalanomali") == "1":
-        seriousness["congenital_anomaly"] = True
+    if report.get("serious") == "1":
+        outcomes = []
+        if report.get("seriousnessdeath") == "1":
+            outcomes.append("Death")
+        if report.get("seriousnesslifethreatening") == "1":
+            outcomes.append("Life-threatening")
+        if report.get("seriousnesshospitalization") == "1":
+            outcomes.append("Hospitalization")
+        if report.get("seriousnessdisabling") == "1":
+            outcomes.append("Disabling")
+        if report.get("seriousnesscongenitalanomali") == "1":
+            outcomes.append("Congenital Anomaly")
+        if report.get("seriousnessother") == "1":
+            outcomes.append("Other Serious")
+            
+        if outcomes:
+            return ", ".join(outcomes)
+        return "Serious"
     
-    if report.get("seriousnessother") == "1":
-        seriousness["other_serious"] = True
+    return "Non-serious"
+
+def main():
+    """Main entry point"""
+    if len(sys.argv) < 2:
+        print(json.dumps({"error": "NDC code required"}))
+        sys.exit(1)
     
-    return seriousness
+    ndc_code = sys.argv[1]
+    result = fetch_faers_data(ndc_code)
+    
+    # Output as JSON
+    print(json.dumps(result))
 
 if __name__ == "__main__":
-    # For testing
-    import sys
-    
-    if len(sys.argv) > 1:
-        ndc_code = sys.argv[1]
-        print(f"Fetching FAERS data for NDC code: {ndc_code}")
-        data = get_faers_data(ndc_code)
-        print(json.dumps(data, indent=2))
-    else:
-        print("Please provide an NDC code as an argument")
+    main()

@@ -1,51 +1,57 @@
 /**
- * Check Secrets Utility
+ * Secret Key Checker Utility
  * 
- * Utility functions to check if API keys and other secrets are configured
- * in the environment.
+ * This module provides functions to check for the presence of API keys and other secrets
+ * in the environment variables.
  */
 
+import { Request, Response, NextFunction } from 'express';
+
 /**
- * Check if specific environment secrets are configured
+ * Check if specified secrets are available in environment variables
  * 
- * @param secretKeys Array of secret key names to check
- * @returns Object with boolean values indicating presence of each secret
+ * @param secretKeys - Array of secret keys to check
+ * @returns Object with each key as property and boolean value indicating if it's available
  */
-export async function check_secrets(secretKeys: string[]): Promise<Record<string, boolean>> {
+export function checkSecrets(secretKeys: string[]) {
   const result: Record<string, boolean> = {};
   
   for (const key of secretKeys) {
-    result[key] = !!process.env[key];
+    result[key] = process.env[key] !== undefined && process.env[key] !== '';
   }
   
   return result;
 }
 
 /**
- * Checks if the OpenAI API key is configured
+ * Express middleware to verify that required secrets are available
  * 
- * @returns True if the OpenAI API key is available, false otherwise
+ * @param requiredSecrets - Array of required secret keys
+ * @returns Express middleware function
  */
-export async function is_openai_key_available(): Promise<boolean> {
-  const secrets = await check_secrets(['OPENAI_API_KEY']);
-  return secrets.OPENAI_API_KEY;
+export function requireSecrets(requiredSecrets: string[]) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const results = checkSecrets(requiredSecrets);
+    const missing = Object.entries(results)
+      .filter(([_, isAvailable]) => !isAvailable)
+      .map(([key]) => key);
+    
+    if (missing.length > 0) {
+      return res.status(500).json({
+        error: `Missing required API keys: ${missing.join(', ')}`,
+        missingKeys: missing
+      });
+    }
+    
+    next();
+  };
 }
 
 /**
- * Get the required API keys for a specific feature
+ * Express middleware to verify that OpenAI API key is available
  * 
- * @param featureName Name of the feature to check requirements for
- * @returns Array of required API key names
+ * @returns Express middleware function
  */
-export function get_required_keys_for_feature(featureName: string): string[] {
-  const featureKeyMap: Record<string, string[]> = {
-    'cer-generator': ['OPENAI_API_KEY'],
-    'csr-extractor': ['OPENAI_API_KEY'],
-    'protocol-optimizer': ['OPENAI_API_KEY'],
-    'academic-knowledge': ['HF_API_KEY', 'OPENAI_API_KEY'],
-    'translation': ['OPENAI_API_KEY'],
-    'endpoint-designer': ['OPENAI_API_KEY']
-  };
-  
-  return featureKeyMap[featureName] || [];
+export function requireOpenAIKey() {
+  return requireSecrets(['OPENAI_API_KEY']);
 }
