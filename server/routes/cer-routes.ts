@@ -163,8 +163,13 @@ router.post('/upload', upload.single('cerFile'), async (req, res) => {
     const validatedData = insertClinicalEvaluationReportSchema.parse(cerData);
     const [result] = await db.insert(clinicalEvaluationReports).values(validatedData).returning();
 
+    // Add to semantic processing queue to ensure this document goes through the framework
+    const intelligenceService = ClinicalIntelligenceService.getInstance();
+    intelligenceService.addToProcessingQueue(result.cer_id, 'CER');
+    console.log(`Added CER ${result.cer_id} to semantic processing queue`);
+
     res.status(201).json({
-      message: 'CER successfully uploaded and processed',
+      message: 'CER successfully uploaded and processing started',
       cer_id: result.cer_id,
       id: result.id
     });
