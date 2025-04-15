@@ -81,6 +81,27 @@ app.use((req, res, next) => {
       res.sendFile(csrPlatformPath);
     });
     
+    // Direct access to CSR Search interface
+    app.get('/api/csr/search', (req, res) => {
+      const searchPath = path.join(process.cwd(), '/public/csr-search.html');
+      res.setHeader('Content-Type', 'text/html');
+      res.sendFile(searchPath);
+    });
+    
+    // Direct access to CSR Analytics interface
+    app.get('/api/csr/analytics', (req, res) => {
+      const analyticsPath = path.join(process.cwd(), '/public/csr-analytics.html');
+      res.setHeader('Content-Type', 'text/html');
+      res.sendFile(analyticsPath);
+    });
+    
+    // Direct access to API Documentation
+    app.get('/api/doc', (req, res) => {
+      const docPath = path.join(process.cwd(), '/public/api-documentation.html');
+      res.setHeader('Content-Type', 'text/html');
+      res.sendFile(docPath);
+    });
+    
     // Direct implementation of SPRA health route to bypass router issues
     app.get('/api/spra/direct-health', (_req, res) => {
       console.log('[SPRA] Direct health check endpoint called');
