@@ -253,7 +253,7 @@
       console.log("CSR Analytics Dashboard loaded successfully");
       
       // Fetch summary data
-      fetch('/api/direct/analytics/summary')
+      fetch('/api/analytics/summary')
         .then(response => response.json())
         .then(data => {
           document.getElementById('totalReports').textContent = data.totalReports.toLocaleString();
@@ -300,7 +300,7 @@
         });
       
       // Fetch phase distribution data
-      fetch('/api/direct/analytics/phases')
+      fetch('/api/analytics/phases')
         .then(response => response.json())
         .then(data => {
           const labels = data.map(item => item.phase);
@@ -340,7 +340,7 @@
         });
       
       // Fetch therapeutic area distribution data
-      fetch('/api/direct/analytics/therapeutic-areas')
+      fetch('/api/analytics/therapeutic-areas')
         .then(response => response.json())
         .then(data => {
           // Sort by count in descending order
@@ -397,7 +397,7 @@
       
       // Fetch upload trends data (default: monthly)
       function fetchUploadTrends(timeframe = 'monthly') {
-        fetch(`/api/direct/analytics/upload-trends?timeframe=${timeframe}`)
+        fetch(`/api/analytics/upload-trends?timeframe=${timeframe}`)
           .then(response => response.json())
           .then(data => {
             const labels = data.map(item => item.period);
@@ -472,7 +472,7 @@
       });
       
       // Fetch endpoints data
-      fetch('/api/direct/analytics/endpoints')
+      fetch('/api/analytics/endpoints')
         .then(response => response.json())
         .then(data => {
           const endpointsTable = document.getElementById('endpointsTable');
@@ -517,7 +517,7 @@
         });
       
       // Fetch sponsors data
-      fetch('/api/direct/analytics/sponsors')
+      fetch('/api/analytics/sponsors')
         .then(response => response.json())
         .then(data => {
           // Sort by count in descending order
