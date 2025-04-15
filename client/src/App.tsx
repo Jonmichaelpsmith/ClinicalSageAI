@@ -58,6 +58,7 @@ import InsightMemoryEngine from "@/pages/InsightMemoryEngine";
 import WisdomTrace from "@/pages/WisdomTrace";
 import SubscriptionsPage from "@/pages/SubscriptionsPage";
 import ExampleReportsPage from "@/pages/ExampleReportsPage";
+import ProtocolIntelligencePage from "@/pages/protocol-intelligence-page";
 import { applyCompactStyling } from "./lib/ui-utils"; // Added import
 
 
@@ -153,7 +154,7 @@ function Router() {
       <Route path="/use-case-gallery">{() => renderWithLayout(UseCasesPage)}</Route>
       <Route path="/protocol-generator">{() => renderWithLayout(ProtocolGenerator)}</Route>
       <Route path="/protocol-designer">{() => renderWithLayout(ProtocolGenerator)}</Route>
-      <Route path="/protocol-intelligence">{() => renderWithLayout(ProtocolIntelligenceBuilder)}</Route>
+      <Route path="/protocol-intelligence">{() => renderWithLayout(ProtocolIntelligencePage)}</Route>
       <Route path="/study-design-agent">{() => renderWithLayout(StudyDesignAgent)}</Route>
       <Route path="/translation">{() => renderWithLayout(Translation)}</Route>
       <Route path="/csr-extraction-guide">{() => renderWithLayout(CsrExtractionGuide)}</Route>
@@ -195,11 +196,11 @@ function Router() {
       <Route path="/academic-regulatory">{() => renderWithLayout(AcademicRegulatoryPage)}</Route>
       <Route path="/advanced-biostatistics">{() => renderWithLayout(AdvancedBiostatistics)}</Route>
       <Route path="/csr-insights">{() => renderWithLayout(CSRInsightPage)}</Route>
-      <Route path="/csr-extractor">{() => renderWithLayout(CSRExtractorPage)}</Route>
       <Route path="/planning">{() => renderWithLayout(PlanningPage)}</Route>
       <Route path="/insight-engine">{() => renderWithLayout(InsightMemoryEngine)}</Route>
       <Route path="/wisdom-trace">{() => renderWithLayout(WisdomTrace)}</Route>
       <Route path="/design-oracle">{() => renderWithLayout(DesignOraclePage)}</Route>
+      <Route path="/spra">{() => renderWithLayout(ProtocolIntelligencePage)}</Route>
       <Route path="/admin">{() => renderWithLayout(AdminPage)}</Route>
 
       {/* Fallback to 404 */}
