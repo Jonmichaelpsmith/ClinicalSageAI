@@ -1,12 +1,73 @@
 import { Router } from 'express';
 import { db } from '../db';
-import { clinicalEvaluationReports, insertClinicalEvaluationReportSchema } from '../../shared/schema';
-import { eq, like, and, isNull, desc, sql } from 'drizzle-orm';
+import { desc, eq, like, and, isNull, sql } from 'drizzle-orm';
+import { pgTable, serial, text, date, jsonb, timestamp } from "drizzle-orm/pg-core";
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import { extractTextFromPdf, generateEmbeddings, analyzeCerContent } from '../openai-service';
+import { z } from 'zod';
+
+// Define the CER table directly to match our database schema
+export const clinicalEvaluationReports = pgTable('clinical_evaluation_reports', {
+  id: serial('id').primaryKey(),
+  cer_id: text('cer_id'), // Add cer_id field
+  title: text('title').notNull(),
+  device_name: text('device_name').notNull(),
+  manufacturer: text('manufacturer').notNull(),
+  report_date: date('report_date'),
+  report_version: text('report_version'),
+  device_classification: text('device_classification'),
+  intended_use: text('intended_use'),
+  indication: text('indication'), // Add indication field
+  clinical_data: jsonb('clinical_data').$default(() => ({})),
+  safety_issues: text('safety_issues').array(),
+  complaint_rates: jsonb('complaint_rates').$default(() => ({})),
+  risk_assessment: jsonb('risk_assessment').$default(() => ({})),
+  post_market_data: jsonb('post_market_data').$default(() => ({})),
+  literature_references: jsonb('literature_references').$default(() => []),
+  content_text: text('content_text'), // Add content_text field for stored document text
+  content_vector: text('content_vector'), // Add content_vector field for embeddings
+  conclusion: text('conclusion'),
+  associated_protocol_id: serial('associated_protocol_id'),
+  status: text('status').default('Draft'),
+  uploaded_at: timestamp('uploaded_at').defaultNow(),
+  pdf_path: text('pdf_path'), // Add pdf_path field
+  metadata: jsonb('metadata').$default(() => ({})), // Add metadata field
+  project_id: text('project_id'), // Add project_id field
+  session_id: text('session_id'), // Add session_id field
+  user_id: text('user_id'),
+  deleted_at: timestamp('deleted_at')
+});
+
+// Create a Zod validation schema for CER data
+export const insertClinicalEvaluationReportSchema = z.object({
+  cer_id: z.string().optional(),
+  title: z.string(),
+  device_name: z.string(),
+  manufacturer: z.string(),
+  report_date: z.date().optional(),
+  report_version: z.string().optional(),
+  device_classification: z.string().optional(),
+  intended_use: z.string().optional(),
+  indication: z.string().optional(),
+  clinical_data: z.record(z.any()).optional(),
+  safety_issues: z.array(z.string()).optional(),
+  complaint_rates: z.record(z.any()).optional(),
+  risk_assessment: z.record(z.any()).optional(),
+  post_market_data: z.record(z.any()).optional(),
+  literature_references: z.array(z.any()).optional(),
+  content_text: z.string().optional(),
+  content_vector: z.string().optional(),
+  conclusion: z.string().optional(),
+  status: z.string().optional(),
+  pdf_path: z.string().optional(),
+  metadata: z.record(z.any()).optional(),
+  project_id: z.string().nullable().optional(),
+  session_id: z.string().nullable().optional(),
+  user_id: z.string().optional(),
+});
 
 const router = Router();
 
@@ -142,7 +203,7 @@ router.get('/', async (req, res) => {
     }
     
     // Default condition to exclude deleted records
-    conditions.push(isNull(clinicalEvaluationReports.deletedAt));
+    conditions.push(isNull(clinicalEvaluationReports.deleted_at));
     
     // Execute query with conditions
     const query = conditions.length > 0 
@@ -157,11 +218,11 @@ router.get('/', async (req, res) => {
       .limit(limit)
       .offset(offset);
     
-    // Get total count for pagination
-    const [{ count }] = await db
-      .select({ count: db.fn.count() })
-      .from(clinicalEvaluationReports)
-      .where(query);
+    // Get total count for pagination using raw SQL count
+    const countResult = await db.execute(
+      `SELECT COUNT(*) FROM clinical_evaluation_reports WHERE deleted_at IS NULL`
+    );
+    const count = parseInt(countResult.rows[0].count) || 0;
     
     res.json({
       data: cers,
