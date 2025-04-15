@@ -65,18 +65,15 @@ router.post("/analyze", async (req, res) => {
     }
 
     // Get therapeutic area count from database for insights
-    const therapeuticAreaCounts = await db.select({
-      count: db.fn.count(),
-    })
-    .from(csrReports)
-    .where(
-      and(
-        like(csrReports.indication, `%${therapeutic_area}%`),
-        eq(csrReports.phase, phase)
-      )
+    // Use SQL count function directly instead of db.fn which might not be available
+    const therapeuticAreaCounts = await db.execute(
+      `SELECT COUNT(*) as count FROM csr_reports 
+       WHERE indication LIKE $1 AND phase = $2`,
+      [`%${therapeutic_area}%`, phase]
     );
 
-    const totalTrials = therapeuticAreaCounts[0]?.count || 0;
+    const totalTrials = therapeuticAreaCounts.rows[0]?.count ? 
+      Number(therapeuticAreaCounts.rows[0].count) : 0;
 
     // Calculate success probability based on protocol parameters
     // Using a formula based on CSR report analysis
