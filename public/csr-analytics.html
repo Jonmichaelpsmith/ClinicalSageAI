@@ -253,7 +253,7 @@
       console.log("CSR Analytics Dashboard loaded successfully");
       
       // Fetch summary data
-      fetch('/api/analytics/summary')
+      fetch('/api/direct/analytics/summary')
         .then(response => response.json())
         .then(data => {
           document.getElementById('totalReports').textContent = data.totalReports.toLocaleString();
@@ -300,7 +300,7 @@
         });
       
       // Fetch phase distribution data
-      fetch('/api/analytics/phases')
+      fetch('/api/direct/analytics/phases')
         .then(response => response.json())
         .then(data => {
           const labels = data.map(item => item.phase);
@@ -340,7 +340,7 @@
         });
       
       // Fetch therapeutic area distribution data
-      fetch('/api/analytics/therapeutic-areas')
+      fetch('/api/direct/analytics/therapeutic-areas')
         .then(response => response.json())
         .then(data => {
           // Sort by count in descending order
