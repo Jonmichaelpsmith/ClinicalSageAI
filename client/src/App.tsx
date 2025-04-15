@@ -59,6 +59,7 @@ import InsightMemoryEngine from "@/pages/InsightMemoryEngine";
 import WisdomTrace from "@/pages/WisdomTrace";
 import SubscriptionsPage from "@/pages/SubscriptionsPage";
 import ExampleReportsPage from "@/pages/ExampleReportsPage";
+import CERGeneratorPage from "@/pages/CERGeneratorPage";
 import { applyCompactStyling } from "./lib/ui-utils"; // Added import
 
 
@@ -202,6 +203,7 @@ function Router() {
       <Route path="/wisdom-trace">{() => renderWithLayout(WisdomTrace)}</Route>
       <Route path="/design-oracle">{() => renderWithLayout(DesignOraclePage)}</Route>
       <Route path="/admin">{() => renderWithLayout(AdminPage)}</Route>
+      <Route path="/cer-generator">{() => renderWithLayout(CERGeneratorPage)}</Route>
 
       {/* Fallback to 404 */}
       <Route>{() => renderWithLayout(NotFound)}</Route>
