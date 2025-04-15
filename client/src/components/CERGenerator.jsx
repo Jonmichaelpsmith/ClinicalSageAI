@@ -1,20 +1,26 @@
 import React, { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Loader2, Save, FileDown, AlertTriangle } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 const CERGenerator = () => {
   const [ndcCode, setNdcCode] = useState('');
   const [productName, setProductName] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [results, setResults] = useState(null);
-  const [saveStatus, setSaveStatus] = useState({ saving: false, saved: false });
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [faersData, setFaersData] = useState(null);
+  const [report, setReport] = useState(null);
+  const [reportTitle, setReportTitle] = useState('');
+  const [activeSection, setActiveSection] = useState('generator');
+  
   const { toast } = useToast();
 
-  const handleNdcChange = (e) => {
+  const handleNdcCodeChange = (e) => {
     setNdcCode(e.target.value);
   };
 
@@ -22,214 +28,374 @@ const CERGenerator = () => {
     setProductName(e.target.value);
   };
 
-  const validateNdc = (code) => {
-    // NDC codes can be in 10-digit or 11-digit format
-    // Common formats: XXXX-XXXX-XX or XXXXX-XXX-XX or without hyphens
-    const ndc10Pattern = /^\d{4}-\d{4}-\d{2}$|^\d{5}-\d{3}-\d{2}$|^\d{5}-\d{4}-\d{1}$|^\d{10}$/;
-    const ndc11Pattern = /^\d{5}-\d{4}-\d{2}$|^\d{5}-\d{3}-\d{3}$|^\d{11}$/;
-    
-    return ndc10Pattern.test(code) || ndc11Pattern.test(code);
+  const handleReportTitleChange = (e) => {
+    setReportTitle(e.target.value);
   };
 
-  const handleGenerateCER = async () => {
-    if (!ndcCode) {
+  const validateNdcCode = (code) => {
+    // Basic NDC validation - should be numbers and hyphens
+    return /^[0-9-]+$/.test(code);
+  };
+
+  const fetchFaersData = async () => {
+    if (!validateNdcCode(ndcCode)) {
       toast({
-        title: "Missing NDC Code",
-        description: "Please enter an NDC code to generate a CER report.",
+        title: "Invalid NDC Code",
+        description: "Please enter a valid NDC code containing only numbers and hyphens.",
         variant: "destructive",
       });
       return;
     }
 
-    if (!validateNdc(ndcCode)) {
-      toast({
-        title: "Invalid NDC Format",
-        description: "Please enter a valid NDC code (e.g., 0074-3797-13 or 00743797-13).",
-        variant: "destructive",
-      });
-      return;
-    }
+    setIsLoading(true);
+    setFaersData(null);
+    setReport(null);
 
-    setLoading(true);
-    setResults(null);
-    
     try {
-      const params = new URLSearchParams();
-      if (productName) {
-        params.append('product_name', productName);
-      }
-      
-      const response = await apiRequest(
-        'GET', 
-        `/api/cer/faers/${ndcCode}?${params.toString()}`
-      );
+      const response = await apiRequest('POST', '/api/faers/data', {
+        ndcCode: ndcCode
+      });
       
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to generate CER report');
+        throw new Error(`Error fetching FAERS data: ${response.statusText}`);
       }
       
       const data = await response.json();
-      setResults(data);
+      
+      if (data.error) {
+        throw new Error(data.error);
+      }
+      
+      if (!data.results || data.results.length === 0) {
+        toast({
+          title: "No Data Found",
+          description: "No adverse event data was found for the provided NDC code. Please verify the code and try again.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+      
+      setFaersData(data);
+      toast({
+        title: "FAERS Data Retrieved",
+        description: `Successfully retrieved ${data.results.length} adverse event reports.`,
+      });
+      
+      // Automatically generate report once FAERS data is fetched
+      generateReport(data);
+      
+    } catch (error) {
+      console.error('Error fetching FAERS data:', error);
+      toast({
+        title: "Error Retrieving Data",
+        description: error.message || "An error occurred while retrieving FAERS data.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+    }
+  };
+  
+  const generateReport = async (data) => {
+    try {
+      const response = await apiRequest('POST', '/api/faers/generate-narrative', {
+        faersData: data,
+        productName: productName || undefined
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error generating report: ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+      
+      if (result.error) {
+        throw new Error(result.error);
+      }
+      
+      setReport(result.narrative);
+      
+      // Set default report title if not already set
+      if (!reportTitle) {
+        const productDisplayName = productName || 
+          data.drug_info?.brand_name || 
+          data.drug_info?.generic_name || 
+          `NDC ${ndcCode}`;
+        setReportTitle(`Clinical Evaluation Report - ${productDisplayName}`);
+      }
       
       toast({
-        title: "CER Generated Successfully",
-        description: `Generated CER report for NDC ${ndcCode}`,
+        title: "Report Generated",
+        description: "Successfully generated Clinical Evaluation Report based on FAERS data.",
       });
+      
+      // Switch to the report view
+      setActiveSection('report');
+      
     } catch (error) {
-      console.error('Error generating CER:', error);
+      console.error('Error generating report:', error);
       toast({
-        title: "CER Generation Failed",
-        description: error.message || "An error occurred while generating the CER report.",
+        title: "Error Generating Report",
+        description: error.message || "An error occurred while generating the report.",
         variant: "destructive",
       });
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
-
-  const handleSaveCER = async () => {
-    if (!results) {
+  
+  const saveReport = async () => {
+    if (!report) {
       toast({
-        title: "No CER to Save",
-        description: "Please generate a CER report first before saving.",
+        title: "No Report to Save",
+        description: "Please generate a report first.",
         variant: "destructive",
       });
       return;
     }
-
-    setSaveStatus({ saving: true, saved: false });
+    
+    if (!reportTitle) {
+      toast({
+        title: "Report Title Required",
+        description: "Please provide a title for this report.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsSaving(true);
     
     try {
-      const response = await apiRequest('POST', '/api/cer/faers/save', {
-        title: `${productName || 'Product'} CER from FAERS Data`,
-        device_name: productName || 'FDA Product',
-        manufacturer: 'Generated from FDA FAERS',
-        content_text: results.cer_report,
+      const response = await apiRequest('POST', '/api/faers/save-report', {
+        title: reportTitle,
+        content: report,
+        ndcCode: ndcCode,
+        productName: productName || faersData?.drug_info?.brand_name || faersData?.drug_info?.generic_name,
+        manufacturer: faersData?.drug_info?.manufacturer || 'Unknown',
         metadata: {
-          ndc_code: ndcCode,
-          total_records: results.total_records,
-          generated_date: new Date().toISOString(),
-          source: 'FAERS'
+          faersRecordCount: faersData?.results?.length || 0,
+          generatedAt: new Date().toISOString()
         }
       });
       
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to save CER report');
+        throw new Error(`Error saving report: ${response.statusText}`);
       }
       
-      const data = await response.json();
-      setSaveStatus({ saving: false, saved: true });
+      const result = await response.json();
       
       toast({
-        title: "CER Saved Successfully",
-        description: `Saved as CER #${data.cer_id}`,
+        title: "Report Saved",
+        description: "Successfully saved the Clinical Evaluation Report to the system.",
       });
+      
     } catch (error) {
-      console.error('Error saving CER:', error);
+      console.error('Error saving report:', error);
       toast({
-        title: "Save Failed",
-        description: error.message || "An error occurred while saving the CER report.",
+        title: "Error Saving Report",
+        description: error.message || "An error occurred while saving the report.",
         variant: "destructive",
       });
-      setSaveStatus({ saving: false, saved: false });
+    } finally {
+      setIsSaving(false);
     }
+  };
+  
+  const downloadReport = () => {
+    if (!report) {
+      toast({
+        title: "No Report to Download",
+        description: "Please generate a report first.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const filename = (reportTitle || 'Clinical-Evaluation-Report').replace(/\s+/g, '-') + '.txt';
+    const blob = new Blob([report], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    toast({
+      title: "Report Downloaded",
+      description: `Saved as ${filename}`,
+    });
   };
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardContent className="pt-6">
-          <div className="space-y-4">
-            <div>
-              <label className="font-medium block mb-1" htmlFor="ndc-code">
-                NDC Code <span className="text-red-500">*</span>
-              </label>
-              <Input
-                id="ndc-code"
-                placeholder="Enter NDC code (e.g., 0074-3797-13)"
-                value={ndcCode}
-                onChange={handleNdcChange}
-                className="w-full"
-              />
-              <p className="text-sm text-muted-foreground mt-1">
-                The FDA's National Drug Code identifier for the product
-              </p>
-            </div>
-            
-            <div>
-              <label className="font-medium block mb-1" htmlFor="product-name">
-                Product Name (Optional)
-              </label>
-              <Input
-                id="product-name"
-                placeholder="Enter product name"
-                value={productName}
-                onChange={handleProductNameChange}
-                className="w-full"
-              />
-              <p className="text-sm text-muted-foreground mt-1">
-                If provided, this will help personalize the CER content
-              </p>
-            </div>
-            
-            <div className="flex space-x-2 pt-2">
-              <Button 
-                className="w-full"
-                onClick={handleGenerateCER}
-                disabled={loading}
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Generating CER...
-                  </>
-                ) : "Generate CER"}
-              </Button>
+    <div className="space-y-8">
+      <Tabs defaultValue="generator" value={activeSection} onValueChange={setActiveSection}>
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="generator">Generator</TabsTrigger>
+          <TabsTrigger value="report" disabled={!report}>Report</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="generator" className="space-y-6">
+          <Card>
+            <CardContent className="pt-6 space-y-4">
+              <div className="space-y-2">
+                <label htmlFor="ndc-code" className="text-sm font-medium">
+                  NDC Code <span className="text-destructive">*</span>
+                </label>
+                <div className="flex gap-2">
+                  <Input
+                    id="ndc-code"
+                    placeholder="Enter NDC code (e.g., 0310-0790)"
+                    value={ndcCode}
+                    onChange={handleNdcCodeChange}
+                    className="flex-1"
+                    disabled={isLoading}
+                  />
+                  <Button onClick={fetchFaersData} disabled={!ndcCode || isLoading}>
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Loading...
+                      </>
+                    ) : (
+                      "Fetch Data"
+                    )}
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Enter the National Drug Code to retrieve data from the FDA FAERS database.
+                </p>
+              </div>
               
-              {results && (
+              <div className="space-y-2">
+                <label htmlFor="product-name" className="text-sm font-medium">
+                  Product Name (Optional)
+                </label>
+                <Input
+                  id="product-name"
+                  placeholder="Override product name"
+                  value={productName}
+                  onChange={handleProductNameChange}
+                  disabled={isLoading}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Optionally specify a product name to use in the report instead of the one retrieved from FAERS.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+          
+          {faersData && (
+            <Card>
+              <CardContent className="pt-6">
+                <h3 className="text-lg font-medium mb-4">FAERS Data Summary</h3>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <h4 className="text-sm font-medium mb-1">Product</h4>
+                      <p>
+                        {productName || 
+                         faersData.drug_info?.brand_name || 
+                         faersData.drug_info?.generic_name || 
+                         `NDC ${ndcCode}`}
+                      </p>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-medium mb-1">Manufacturer</h4>
+                      <p>{faersData.drug_info?.manufacturer || 'Unknown'}</p>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-medium mb-1">Reports Count</h4>
+                      <p>{faersData.results?.length || 0}</p>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-medium mb-1">Generic Name</h4>
+                      <p>{faersData.drug_info?.generic_name || 'Not available'}</p>
+                    </div>
+                  </div>
+                  
+                  {isLoading && (
+                    <div className="flex items-center justify-center py-4">
+                      <div className="flex flex-col items-center">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                        <p className="mt-2 text-sm text-muted-foreground">Generating CER narrative...</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+        
+        <TabsContent value="report" className="space-y-6">
+          <Card>
+            <CardContent className="pt-6 space-y-4">
+              <div className="space-y-2">
+                <label htmlFor="report-title" className="text-sm font-medium">
+                  Report Title <span className="text-destructive">*</span>
+                </label>
+                <Input
+                  id="report-title"
+                  placeholder="Enter report title"
+                  value={reportTitle}
+                  onChange={handleReportTitleChange}
+                  className="w-full"
+                />
+              </div>
+              
+              <div className="flex gap-2">
                 <Button 
-                  className="w-1/3"
-                  onClick={handleSaveCER}
-                  disabled={saveStatus.saving || saveStatus.saved}
-                  variant={saveStatus.saved ? "outline" : "default"}
+                  onClick={saveReport} 
+                  className="flex-1"
+                  disabled={isSaving || !report || !reportTitle}
                 >
-                  {saveStatus.saving ? (
+                  {isSaving ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Saving...
                     </>
-                  ) : saveStatus.saved ? "Saved ✓" : "Save CER"}
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      Save Report
+                    </>
+                  )}
                 </Button>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-      
-      {results && (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <h3 className="text-xl font-semibold">
-                  CER Report for {productName || `NDC: ${ndcCode}`}
-                </h3>
-                <span className="text-sm text-muted-foreground">
-                  Based on {results.total_records} FAERS records
-                </span>
+                
+                <Button 
+                  onClick={downloadReport} 
+                  variant="outline"
+                  disabled={!report}
+                >
+                  <FileDown className="mr-2 h-4 w-4" />
+                  Download
+                </Button>
               </div>
-              
-              <div className="max-h-[600px] overflow-y-auto p-4 border rounded-md bg-slate-50 dark:bg-slate-900/50">
-                <div className="whitespace-pre-wrap font-serif text-sm">
-                  {results.cer_report}
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="pt-6">
+              <h3 className="text-lg font-medium mb-4">Report Content</h3>
+              {report ? (
+                <Textarea 
+                  value={report}
+                  readOnly
+                  className="min-h-[500px] font-mono text-sm"
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center border border-dashed rounded-md p-8 text-muted-foreground">
+                  <AlertTriangle className="h-12 w-12 mb-2" />
+                  <p>No report content available. Please generate a report first.</p>
                 </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

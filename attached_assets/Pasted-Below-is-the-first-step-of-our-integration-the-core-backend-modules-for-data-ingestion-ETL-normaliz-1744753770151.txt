@@ -1,0 +1,206 @@
+Below is the first step of our integration—the core backend modules for data ingestion, ETL normalization, basic CER narrative generation, and preliminary predictive endpoints. This code is designed to let you verify that we can fetch FAERS data, process it, and produce output from our predictive modules.
+
+You can paste the following files into your Replit project and run them (using your Replit run command for a FastAPI project, e.g., via uvicorn). Once these modules are working, you’ll be ready to extend with more advanced analytics and a richer frontend.
+
+---
+
+### 1. Create a Data Ingestion & Normalization Module  
+**File:** `data_pipeline.py`
+
+```python
+import requests
+import pandas as pd
+
+FAERS_API_URL = "https://api.fda.gov/drug/event.json"
+
+def fetch_faers_data(ndc_code, limit=1000):
+    """Fetches raw FAERS data for a given NDC."""
+    response = requests.get(
+        f'{FAERS_API_URL}?search=openfda.product_ndc:"{ndc_code}"&limit={limit}'
+    )
+    response.raise_for_status()
+    return response.json()
+
+def normalize_faers_data(raw_data):
+    """Extracts and transforms key metrics (event, count, demographics, timestamp)."""
+    records = []
+    if "results" in raw_data:
+        for rec in raw_data["results"]:
+            records.append({
+                "event": rec.get("event", "Unknown"),
+                "count": rec.get("count", 1),
+                # Extend with real demographic fields as needed, e.g., age, gender.
+                "timestamp": rec.get("receiptdate", None)
+            })
+    return pd.DataFrame(records)
+```
+
+---
+
+### 2. Create a Predictive Analytics Module  
+**File:** `predictive_analytics.py`
+
+```python
+import pandas as pd
+from statsmodels.tsa.arima.model import ARIMA
+
+def forecast_adverse_events(df: pd.DataFrame, event: str, periods: int = 12):
+    """
+    Forecast adverse event counts for a specific event.
+    Assumes 'timestamp' is convertible to datetime and 'count' is numeric.
+    """
+    # Filter for the specific event
+    df_event = df[df["event"] == event].copy()
+    df_event["timestamp"] = pd.to_datetime(df_event["timestamp"], errors='coerce')
+    df_event = df_event.dropna(subset=["timestamp"])
+    df_event.set_index("timestamp", inplace=True)
+    monthly = df_event["count"].resample("M").sum().fillna(0)
+    
+    # Fit ARIMA model (parameters may require tuning)
+    model = ARIMA(monthly, order=(1, 1, 1))
+    model_fit = model.fit()
+    forecast = model_fit.forecast(steps=periods)
+    return forecast.to_dict()
+
+def detect_anomalies(df: pd.DataFrame, threshold: float = 1.5):
+    """
+    Detect anomalies by comparing monthly counts against a rolling average.
+    Flags any month exceeding the rolling average by the given threshold.
+    """
+    df["timestamp"] = pd.to_datetime(df["timestamp"], errors='coerce')
+    df = df.dropna(subset=["timestamp"])
+    df.set_index("timestamp", inplace=True)
+    monthly = df["count"].resample("M").sum().fillna(0)
+    rolling_avg = monthly.rolling(3, min_periods=1).mean()
+    anomalies = monthly[monthly > (rolling_avg * threshold)]
+    return anomalies.to_dict()
+```
+
+---
+
+### 3. Create the CER Narrative Module (Using OpenAI)  
+**File:** `cer_narrative.py`
+
+Ensure your Replit secrets include your OpenAI API key under `OPENAI_API_KEY`.
+
+```python
+import os
+import openai
+
+# Set API key from environment variable
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
+def generate_cer_narrative(raw_data):
+    prompt = f"""
+    Generate a regulatory-compliant Clinical Evaluation Report (CER) narrative based on the following FAERS data:
+    {raw_data}
+
+    Please include a summary of key adverse events, their frequencies, and any notable trends.
+    """
+    response = openai.ChatCompletion.create(
+        model="gpt-4-turbo",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.2
+    )
+    return response.choices[0].message.content
+```
+
+---
+
+### 4. Create the Core FastAPI Application  
+**File:** `main.py`
+
+This file exposes several endpoints for our core functionality:
+- Generating a CER narrative for a given NDC code.
+- Viewing normalized FAERS data.
+- Forecasting adverse events for a specified event.
+- Detecting anomalies in the data.
+
+```python
+from fastapi import FastAPI, HTTPException, APIRouter
+import requests
+
+from data_pipeline import fetch_faers_data, normalize_faers_data
+from predictive_analytics import forecast_adverse_events, detect_anomalies
+from cer_narrative import generate_cer_narrative
+
+app = FastAPI()
+router = APIRouter()
+
+@router.get("/api/cer/{ndc_code}")
+async def create_cer(ndc_code: str):
+    try:
+        raw_data = fetch_faers_data(ndc_code)
+        narrative = generate_cer_narrative(raw_data)
+        return {"cer_report": narrative}
+    except requests.exceptions.HTTPError as e:
+        raise HTTPException(status_code=e.response.status_code, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/api/cer/normalize/{ndc_code}")
+async def normalize_data(ndc_code: str):
+    try:
+        raw_data = fetch_faers_data(ndc_code)
+        df = normalize_faers_data(raw_data)
+        return {"normalized_data": df.to_dict(orient="records")}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/api/cer/forecast/{ndc_code}/{event}")
+async def forecast_event(ndc_code: str, event: str):
+    try:
+        raw_data = fetch_faers_data(ndc_code)
+        df = normalize_faers_data(raw_data)
+        forecast = forecast_adverse_events(df, event)
+        return {"forecast": forecast}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/api/cer/anomalies/{ndc_code}")
+async def anomalies_event(ndc_code: str):
+    try:
+        raw_data = fetch_faers_data(ndc_code)
+        df = normalize_faers_data(raw_data)
+        anomalies = detect_anomalies(df)
+        return {"anomalies": anomalies}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+app.include_router(router)
+```
+
+---
+
+### Next Steps
+
+1. **Set Up Environment Variables:**  
+   In your Replit secrets, add:
+   - `OPENAI_API_KEY` with your actual OpenAI API key.
+
+2. **Install Dependencies:**  
+   Ensure your `requirements.txt` includes at least:
+   ```
+   fastapi
+   uvicorn
+   requests
+   openai
+   pandas
+   statsmodels
+   reportlab
+   ```
+   (You can add more as needed later.)
+
+3. **Run the Server:**  
+   Update your Replit run command (for example, in your `.replit` file):
+   ```ini
+   run = "uvicorn main:app --host=0.0.0.0 --port=3000 --reload"
+   ```
+
+4. **Test Endpoints:**  
+   - **CER Generation:** Open `https://<your-replit-url>/api/cer/<sample_ndc_code>`  
+   - **Data Normalization:** `https://<your-replit-url>/api/cer/normalize/<sample_ndc_code>`  
+   - **Forecasting:** `https://<your-replit-url>/api/cer/forecast/<sample_ndc_code>/<event>`  
+   - **Anomaly Detection:** `https://<your-replit-url>/api/cer/anomalies/<sample_ndc_code>`
+
+Please paste these modules into your Replit project and let me know how the testing goes. Once we're confident that the core functionality is stable, we can move on to enhancing and expanding the advanced analytics features.

@@ -1,90 +1,125 @@
+"""
+CER Narrative Generator
+
+This module generates structured Clinical Evaluation Report (CER) narratives
+using OpenAI's API based on FAERS data.
+"""
+
 import os
-import json
-from openai import OpenAI
+import openai
+from typing import Dict, Any
 
-def format_faers_data(faers_data):
-    """
-    Format FAERS data into a more structured and readable format for the model
-    
-    Args:
-        faers_data (dict): Raw FAERS API response
-        
-    Returns:
-        str: Formatted FAERS data as a string
-    """
-    try:
-        # Extract the relevant information from the FAERS data
-        formatted_data = {
-            "total_reports": faers_data.get("meta", {}).get("results", {}).get("total", 0),
-            "adverse_events": []
-        }
-        
-        # Extract adverse events from results
-        for result in faers_data.get("results", []):
-            event = {
-                "reaction": result.get("patient", {}).get("reaction", []),
-                "drug_info": result.get("patient", {}).get("drug", []),
-                "patient_age": result.get("patient", {}).get("patientonsetage"),
-                "patient_sex": result.get("patient", {}).get("patientsex"),
-                "outcome": result.get("patient", {}).get("reaction", [{}])[0].get("reactionoutcome")
-            }
-            formatted_data["adverse_events"].append(event)
-            
-        return json.dumps(formatted_data, indent=2)
-    except Exception as e:
-        print(f"Error formatting FAERS data: {e}")
-        return json.dumps(faers_data)
+# Set API key from environment variable
+def check_api_key():
+    """Verify that the OpenAI API key is available"""
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        raise ValueError("OPENAI_API_KEY environment variable is not set")
+    return api_key
 
-def generate_cer_narrative(faers_data, product_name=None):
+def generate_cer_narrative(faers_data: Dict[str, Any], product_name: str = None) -> str:
     """
-    Generate a CER narrative using OpenAI's GPT-4-turbo model
-    
+    Generate a structured CER narrative from FAERS data.
+
     Args:
-        faers_data (dict): FAERS API response with adverse event data
-        product_name (str, optional): Name of the product to include in the prompt
-        
+        faers_data: Processed data from the FDA FAERS database
+        product_name: Optional product name to use in the report
+
     Returns:
-        str: Generated CER narrative text
+        Structured CER narrative text
     """
-    if not os.environ.get("OPENAI_API_KEY"):
-        return "Error: OpenAI API key is required to generate CER narratives. Please set the OPENAI_API_KEY environment variable."
+    api_key = check_api_key()
+    openai.api_key = api_key
     
-    client = OpenAI()
+    # Extract key information for the prompt
+    drug_info = faers_data.get("drug_info", {})
+    meta = faers_data.get("meta", {})
+    results = faers_data.get("results", [])
     
-    # Format the FAERS data for better readability
-    formatted_data = format_faers_data(faers_data)
+    # Use provided product name or extract from data
+    product = product_name or drug_info.get("brand_name") or drug_info.get("generic_name") or f"NDC {faers_data.get('ndc_code')}"
     
-    # Include the product name in the prompt if provided
-    product_context = f" for {product_name}" if product_name else ""
+    # Calculate basic statistics
+    report_count = len(results)
+    serious_cases = sum(1 for r in results if any(r.get("seriousness", {}).values()))
+    death_cases = sum(1 for r in results if r.get("seriousness", {}).get("death", False))
     
+    # Collect all reaction terms
+    all_reactions = []
+    for report in results:
+        for reaction in report.get("reactions", []):
+            all_reactions.append(reaction.get("term"))
+    
+    # Count frequencies
+    from collections import Counter
+    reaction_counts = Counter(all_reactions)
+    top_reactions = reaction_counts.most_common(10)
+    
+    # Demographic analysis
+    ages = [r.get("patient", {}).get("age") for r in results if r.get("patient", {}).get("age")]
+    avg_age = sum(ages) / len(ages) if ages else "Unknown"
+    
+    males = sum(1 for r in results if r.get("patient", {}).get("sex") == "Male")
+    females = sum(1 for r in results if r.get("patient", {}).get("sex") == "Female")
+    
+    # Construct the prompt
     prompt = f"""
-    Generate a regulatory-compliant Clinical Evaluation Report (CER) narrative{product_context} using this FDA FAERS (FDA Adverse Event Reporting System) data:
-    
-    {formatted_data}
-    
-    The CER should follow MEDDEV 2.7/1 Rev. 4 guidelines and include these sections:
-    
-    1. Executive Summary
-    2. Scope (device identification and classification)
-    3. Adverse Events Analysis
-       - Frequency and severity assessment
-       - Patient demographic patterns
-       - Notable signals and trends
-    4. Clinical Significance Evaluation
-    5. Benefit-Risk Analysis
-    6. Comparative Safety Analysis (compared to similar products)
-    7. Recommendations for Post-Market Surveillance
-    
-    Use a formal, objective tone suitable for regulatory submission. Include quantitative summaries where possible.
-    """
+    Generate a detailed Clinical Evaluation Report (CER) narrative following the MEDDEV 2.7/1 Rev 4 structure for the following product based on FDA FAERS data:
 
+    PRODUCT: {product}
+    MANUFACTURER: {drug_info.get("manufacturer", "Unknown")}
+    TOTAL REPORTS: {report_count}
+    SERIOUS CASES: {serious_cases}
+    DEATHS: {death_cases}
+    AVERAGE AGE: {avg_age}
+    GENDER DISTRIBUTION: {males} males, {females} females
+    
+    TOP ADVERSE EVENTS:
+    {", ".join(f"{term} ({count})" for term, count in top_reactions)}
+    
+    Please structure the CER narrative with the following sections:
+    1. Executive Summary
+    2. Introduction and Device Description
+    3. Scope of the Clinical Evaluation
+    4. Safety Analysis
+       4.1 Overall Adverse Events Profile
+       4.2 Serious Adverse Events
+       4.3 Demographics Analysis
+    5. Risk-Benefit Analysis
+    6. Conclusions
+    7. Recommendations
+
+    The report should be well-structured, formal in tone, and focus on objective analysis of the data.
+    """
+    
     try:
-        response = client.chat.completions.create(
-            model="gpt-4-turbo",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.2
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "You are a regulatory medical writer specialized in creating Clinical Evaluation Reports."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.3,
+            max_tokens=2000
         )
-        return response.choices[0].message.content
+        
+        # Extract the generated narrative
+        narrative = response.choices[0].message['content'].strip()
+        return narrative
+        
     except Exception as e:
-        print(f"Error generating CER narrative: {e}")
-        return f"Error generating CER narrative: {str(e)}"
+        raise Exception(f"Error generating CER narrative: {str(e)}")
+
+if __name__ == "__main__":
+    # For testing
+    import sys
+    import json
+    
+    if len(sys.argv) > 1:
+        with open(sys.argv[1], 'r') as f:
+            data = json.load(f)
+        
+        narrative = generate_cer_narrative(data)
+        print(narrative)
+    else:
+        print("Please provide a JSON file with FAERS data as an argument")
