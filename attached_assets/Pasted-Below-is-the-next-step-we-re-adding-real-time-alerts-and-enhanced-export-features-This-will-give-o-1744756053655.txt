@@ -1,0 +1,209 @@
+Below is the next step: we’re adding real‐time alerts and enhanced export features. This will give our users immediate feedback when anomalies are detected in the FAERS data—and it will also allow users to download detailed reports (with embedded charts) that incorporate our analytics insights.
+
+---
+
+## 1. Real-Time Alerts Endpoint
+
+We’ll add a new endpoint in your FastAPI backend that checks for anomalies (using our earlier anomaly detection logic) and returns alert data. Paste this into your **main.py** file along with your other endpoints.
+
+```python
+# main.py (additional alerts endpoint)
+@router.get("/api/cer/alerts/{ndc_code}")
+async def get_alerts(ndc_code: str):
+    try:
+        raw_data = fetch_faers_data(ndc_code)
+        df = normalize_faers_data(raw_data)
+        anomalies = detect_anomalies(df)
+        # Build a list of alerts if any anomaly count is present
+        alerts = [{"event": event, "anomaly": count} for event, count in anomalies.items() if count > 0]
+        return {"alerts": alerts}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+```
+
+### How It Works:
+- **Data Fetching & Normalization:**  
+  We call `fetch_faers_data` and then transform it with `normalize_faers_data`.
+- **Anomaly Detection:**  
+  The `detect_anomalies` function checks monthly counts against a rolling average and flags spikes.
+- **Response:**  
+  A list of alerts (each including the event and its anomaly value) is returned in JSON format.
+
+---
+
+## 2. Enhanced PDF Export with Embedded Charts
+
+Next, we’ll produce a more sophisticated PDF export that not only includes the CER narrative but also embeds a simple chart (for example, a bar chart of adverse events).
+
+Add or update the following in your **main.py**—this endpoint uses ReportLab plus a small snippet to draw a basic bar chart.
+
+> **Note:** In production, you might integrate a proper charting library or generate charts as images and embed them into the PDF. For demonstration, we’ll include a simple static representation.
+
+```python
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter, landscape
+from reportlab.lib.units import inch
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet
+
+@router.get("/api/cer/{ndc_code}/enhanced-pdf")
+async def download_enhanced_pdf(ndc_code: str):
+    try:
+        raw_data = fetch_faers_data(ndc_code)
+        cer_text = generate_cer_narrative(raw_data)
+        df = normalize_faers_data(raw_data)
+        # Build a simple data summary table (for demonstration)
+        summary = df.groupby("event")["count"].sum().reset_index()
+        table_data = [["Adverse Event", "Total Count"]]
+        for index, row in summary.iterrows():
+            table_data.append([row["event"], row["count"]])
+        
+        buffer = io.BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=landscape(letter))
+        styles = getSampleStyleSheet()
+        elements = []
+        
+        elements.append(Paragraph("Enhanced CER Report", styles['Title']))
+        elements.append(Spacer(1, 0.2*inch))
+        elements.append(Paragraph("CER Narrative:", styles['Heading2']))
+        elements.append(Paragraph(cer_text, styles['BodyText']))
+        elements.append(Spacer(1, 0.3*inch))
+        elements.append(Paragraph("Adverse Event Summary:", styles['Heading2']))
+        
+        t = Table(table_data)
+        t.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), colors.grey),
+            ('TEXTCOLOR',(0,0),(-1,0),colors.whitesmoke),
+            ('ALIGN',(0,0),(-1,-1),'CENTER'),
+            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+            ('BOTTOMPADDING', (0,0), (-1,0), 12),
+            ('BACKGROUND',(0,1),(-1,-1),colors.beige),
+        ]))
+        elements.append(t)
+        doc.build(elements)
+        buffer.seek(0)
+        return StreamingResponse(
+            buffer, 
+            media_type='application/pdf', 
+            headers={"Content-Disposition": f"attachment; filename=enhanced_cer_{ndc_code}.pdf"}
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+```
+
+### How This Works:
+- We first generate the CER narrative as before.
+- We use our data normalization to create a summary table of adverse events.
+- Using ReportLab’s `SimpleDocTemplate` and `Table`, we build a PDF report that includes both the narrative and a summary table (acting as a proxy for embedded charts).
+- The resulting PDF is streamed as a downloadable file.
+
+---
+
+## 3. Frontend Component for Alerts
+
+Create a new React component (e.g., **AlertsDashboard.jsx**) that fetches and displays these real-time alerts.
+
+```jsx
+// AlertsDashboard.jsx
+import React, { useState, useEffect } from 'react';
+
+export default function AlertsDashboard({ ndcCode }) {
+  const [alerts, setAlerts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const fetchAlerts = async () => {
+    try {
+      const response = await fetch(`/api/cer/alerts/${ndcCode}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch alerts.');
+      }
+      const data = await response.json();
+      setAlerts(data.alerts || []);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (ndcCode) {
+      fetchAlerts();
+    }
+  }, [ndcCode]);
+
+  if (loading) return <div>Loading alerts...</div>;
+  if (error) return <div>Error: {error}</div>;
+  if (alerts.length === 0) return <div>No alerts at this time.</div>;
+
+  return (
+    <div>
+      <h2>Real-Time Alerts</h2>
+      <ul>
+        {alerts.map((alert, idx) => (
+          <li key={idx}>
+            <strong>{alert.event}</strong>: {alert.anomaly}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+```
+
+### Integrate Alerts in Your Main App
+
+Update your main **App.jsx** to include the new AlertsDashboard component.
+
+```jsx
+// App.jsx (additional import)
+import AlertsDashboard from './AlertsDashboard';
+
+function App() {
+  const [ndcCodes] = useState(["1234567890", "0987654321"]);
+  const [filteredData, setFilteredData] = useState(null);
+
+  const handleFilterUpdate = (data) => {
+    setFilteredData(data);
+  };
+
+  return (
+    <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
+      <h1>LumenTrialGuide.AI</h1>
+      <CERGenerator />
+      <NLPQuery onFilter={handleFilterUpdate} />
+      <AdvancedDashboard ndcCodes={ndcCodes} />
+      {/* New Alerts Dashboard */}
+      <AlertsDashboard ndcCode={ndcCodes[0]} />
+      {filteredData && (
+        <div>
+          <h2>Filtered Analytics</h2>
+          <pre>{JSON.stringify(filteredData, null, 2)}</pre>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default App;
+```
+
+---
+
+## Next Steps
+
+1. **Test the Enhanced Endpoints:**  
+   - Visit `/api/cer/alerts/<sample_ndc_code>` in your browser or via CURL to see if alerts are returned correctly.
+   - Download an enhanced PDF via `/api/cer/<sample_ndc_code>/enhanced-pdf` and review its contents.
+
+2. **Test Frontend Alerts:**  
+   - Run your React app and verify the AlertsDashboard component correctly shows real-time alerts.
+
+3. **Gather User Feedback and Refine:**  
+   - Use these enhancements to gather user feedback.
+   - Iterate on the dashboard styling, alert criteria, and PDF export formatting as needed.
+
+These enhancements build on our core functionality, providing a more comprehensive, interactive experience that delivers on our promise of advanced analytics and actionable insights.
+
+Let me know if you need any further adjustments or when you're ready to move on to the next phase!

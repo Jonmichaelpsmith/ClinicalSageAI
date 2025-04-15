@@ -1,0 +1,138 @@
+Below is the next enhancement: we'll integrate email notifications for background tasks. With this feature, when a user schedules a long-running task (for example, generating an enhanced PDF report), the system will automatically send an email notification when the task is complete. This helps close the loop on asynchronous processing by informing users that their report is ready to view or download.
+
+---
+
+## 1. Create an Email Notification Module
+
+Create a new file called **notification.py**. This module defines a simple function to send an email using Python’s built‑in SMTP libraries. (In production, you may use a more robust service, but this provides a solid starting point.)
+
+```python
+# notification.py
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+import os
+
+def send_email_notification(to_email: str, subject: str, message: str):
+    """
+    Sends an email notification using SMTP.
+    Expects the following environment variables to be set in your Replit Secrets:
+       - SMTP_SERVER: e.g., "smtp.gmail.com"
+       - SMTP_PORT: e.g., "587" (as string)
+       - SMTP_USERNAME: your email address used for sending
+       - SMTP_PASSWORD: the corresponding password or app password
+    """
+    smtp_server = os.getenv("SMTP_SERVER")
+    smtp_port = int(os.getenv("SMTP_PORT", 587))
+    smtp_username = os.getenv("SMTP_USERNAME")
+    smtp_password = os.getenv("SMTP_PASSWORD")
+
+    if not all([smtp_server, smtp_username, smtp_password]):
+        raise Exception("SMTP configuration is incomplete. Please set SMTP_SERVER, SMTP_USERNAME, and SMTP_PASSWORD.")
+
+    msg = MIMEMultipart()
+    msg["From"] = smtp_username
+    msg["To"] = to_email
+    msg["Subject"] = subject
+    msg.attach(MIMEText(message, "plain"))
+
+    try:
+        with smtplib.SMTP(smtp_server, smtp_port) as server:
+            server.starttls()
+            server.login(smtp_username, smtp_password)
+            server.send_message(msg)
+    except Exception as e:
+        # In production, consider more robust error handling/logging here.
+        print(f"Error sending email: {e}")
+```
+
+> **Notes:**
+>
+> - Ensure you add the following to your Replit Secrets:
+>   - `SMTP_SERVER` (e.g., `"smtp.gmail.com"`)
+>   - `SMTP_PORT` (e.g., `"587"`)
+>   - `SMTP_USERNAME` (your sender email address)
+>   - `SMTP_PASSWORD` (your email password or app-specific password)
+>
+> - You may also set a recipient email (for testing) via another environment variable (e.g., `USER_EMAIL`), or pass the recipient address when calling the function.
+
+---
+
+## 2. Update the Background Task for Enhanced PDF Generation
+
+Now modify the background task for PDF generation in **main.py** so that after the PDF is generated, the system sends an email notification to the user.
+
+Find the background task code for the enhanced PDF task (the endpoint `/api/cer/{ndc_code}/enhanced-pdf-task`) and update it as follows:
+
+```python
+# main.py (update the background task from the previous step)
+from fastapi import BackgroundTasks
+from notification import send_email_notification  # Import your new notification function
+
+@router.post("/api/cer/{ndc_code}/enhanced-pdf-task")
+async def schedule_pdf_generation(ndc_code: str, background_tasks: BackgroundTasks, current_user: str = Depends(get_current_user)):
+    """
+    Schedules the enhanced PDF generation as a background task.
+    Immediately returns a message that the PDF is being generated.
+    Once complete, an email notification is sent to the user.
+    """
+    # Retrieve the user's email; for demonstration, we assume the current_user is the email.
+    # In production, you may store the email in the user record.
+    user_email = current_user  # or retrieve from your user database
+
+    def task():
+        # Generate the PDF report
+        pdf_bytes = generate_enhanced_pdf(ndc_code)
+        logger.info(f"Background PDF generation complete for NDC: {ndc_code}. PDF size: {len(pdf_bytes)} bytes.")
+        
+        # Construct a simple notification message
+        subject = f"CER Report Ready for NDC {ndc_code}"
+        message = f"Your enhanced CER report for NDC {ndc_code} has been generated. Please log in to your account to download the report."
+        
+        try:
+            send_email_notification(user_email, subject, message)
+            logger.info(f"Notification email successfully sent to {user_email}")
+        except Exception as e:
+            logger.error(f"Failed to send notification email to {user_email}: {e}")
+
+    background_tasks.add_task(task)
+    return {"message": "PDF generation started in background. You will receive an email when it's ready."}
+```
+
+### Explanation:
+- **Task Function Update:**  
+  After generating the PDF (and logging its completion), the task function calls `send_email_notification()` to send an email to the user.
+  
+- **User Email Handling:**  
+  For simplicity, we assume `current_user` (obtained from the JWT and dependency injection) contains the user's email address. In your production system, ensure that you properly retrieve the user's email from your database.
+
+- **Immediate Response:**  
+  The endpoint immediately returns a response, while the background task handles PDF generation and notification.
+
+---
+
+## 3. Test the Email Notification Integration
+
+### Steps:
+1. **Set Up Environment Variables:**  
+   Make sure your Replit Secrets include values for `SMTP_SERVER`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, and (optionally) a test `USER_EMAIL`.
+
+2. **Deploy and Schedule a PDF Generation Task:**  
+   Use your frontend or an API testing tool (like Postman) to POST to `/api/cer/{ndc_code}/enhanced-pdf-task` with a valid NDC code and authentication.
+
+3. **Verify Notifications:**  
+   - Check the Replit console logs to verify that the background task runs and logs the PDF generation.
+   - Confirm that an email is received at the specified recipient address with the expected subject and message.
+
+---
+
+## Next Steps
+
+1. **Iterate on the Notification Content:**  
+   Adjust the email message and subject line as needed to better match your platform's branding and requirements.
+2. **Integrate Additional Channels:**  
+   In future enhancements, you could extend notifications to include in-app alerts or integration with push notification services.
+3. **User Interface Updates:**  
+   Consider adding UI elements that indicate to the user that a background task has been scheduled and that a notification is pending.
+
+This completes the integration of email notifications for asynchronous background tasks. Let me know if you'd like to proceed with further enhancements or adjustments!

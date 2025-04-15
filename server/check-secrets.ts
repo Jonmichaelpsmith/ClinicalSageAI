@@ -1,57 +1,76 @@
 /**
- * Secret Key Checker Utility
- * 
- * This module provides functions to check for the presence of API keys and other secrets
- * in the environment variables.
+ * Utility module for checking availability of API secrets
+ * Used for verifying OpenAI API key and other credentials before making API calls
  */
 
 import { Request, Response, NextFunction } from 'express';
 
-/**
- * Check if specified secrets are available in environment variables
- * 
- * @param secretKeys - Array of secret keys to check
- * @returns Object with each key as property and boolean value indicating if it's available
- */
-export function checkSecrets(secretKeys: string[]) {
-  const result: Record<string, boolean> = {};
-  
-  for (const key of secretKeys) {
-    result[key] = process.env[key] !== undefined && process.env[key] !== '';
-  }
-  
-  return result;
+export interface SecretCheckResult {
+  available: boolean;
+  missingSecrets: string[];
 }
 
 /**
- * Express middleware to verify that required secrets are available
- * 
- * @param requiredSecrets - Array of required secret keys
- * @returns Express middleware function
+ * Middleware to require OpenAI API key for routes that depend on it
+ * Will return a 503 Service Unavailable response if the key is not configured
  */
-export function requireSecrets(requiredSecrets: string[]) {
+export function requireOpenAIKey() {
   return (req: Request, res: Response, next: NextFunction) => {
-    const results = checkSecrets(requiredSecrets);
-    const missing = Object.entries(results)
-      .filter(([_, isAvailable]) => !isAvailable)
-      .map(([key]) => key);
-    
-    if (missing.length > 0) {
-      return res.status(500).json({
-        error: `Missing required API keys: ${missing.join(', ')}`,
-        missingKeys: missing
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(503).json({
+        error: 'OpenAI API key not configured',
+        message: 'This feature requires an OpenAI API key to be configured in the server environment.'
       });
     }
-    
     next();
   };
 }
 
 /**
- * Express middleware to verify that OpenAI API key is available
- * 
- * @returns Express middleware function
+ * Check if specified secrets are available in environment
+ * Returns object with result for each secret
  */
-export function requireOpenAIKey() {
-  return requireSecrets(['OPENAI_API_KEY']);
+export async function checkSecrets(secretKeys: string[]): Promise<Record<string, boolean>> {
+  const results: Record<string, boolean> = {};
+
+  secretKeys.forEach(key => {
+    results[key] = !!process.env[key];
+  });
+
+  return results;
+}
+
+/**
+ * API endpoint handler to check for availability of secrets
+ */
+export function handleCheckSecrets(req: Request, res: Response) {
+  const { secretKeys } = req.body;
+
+  if (!secretKeys || !Array.isArray(secretKeys) || secretKeys.length === 0) {
+    return res.status(400).json({
+      error: 'Invalid request',
+      message: 'Please provide an array of secret keys to check'
+    });
+  }
+
+  // Only allow checking for specific API keys, not all environment variables
+  const allowedSecrets = [
+    'OPENAI_API_KEY',
+    'HF_API_KEY',
+    'ANTHROPIC_API_KEY'
+  ];
+
+  const validSecrets = secretKeys.filter(key => allowedSecrets.includes(key));
+
+  checkSecrets(validSecrets)
+    .then(results => {
+      res.json(results);
+    })
+    .catch(error => {
+      console.error('Error checking secrets:', error);
+      res.status(500).json({
+        error: 'Internal server error',
+        message: 'Failed to check secret availability'
+      });
+    });
 }
