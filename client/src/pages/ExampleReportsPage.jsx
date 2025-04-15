@@ -1,791 +1,393 @@
-import { useState, useEffect } from "react";
-import { useLocation, Link } from "wouter";
+import React, { useState } from "react";
 import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardFooter, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { 
-  FileText, 
+  FileBarChart2, 
   Download, 
+  FileText, 
   Filter, 
-  Eye, 
-  ArrowRight, 
-  TrendingUp, 
-  LineChart,
-  BarChartHorizontal,
-  TestTube,
-  FileCheck,
-  Briefcase,
-  ChevronRight,
-  CheckCircle,
-  Presentation,
-  Lightbulb,
-  Target,
-  CalendarRange,
-  Users,
-  Percent
+  Search,
+  SlidersHorizontal,
+  AlertCircle,
+  Calendar,
+  Tag,
+  ChevronDown,
+  ArrowLeft,
+  ExternalLink
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Progress } from "@/components/ui/progress";
-import { apiRequest } from "@/lib/queryClient";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Link } from "wouter";
 
-export default function ExampleReportsPage() {
-  const [reportIndex, setReportIndex] = useState({ personas: [], reportTypes: [], featuredReports: [] });
-  const [reportManifests, setReportManifests] = useState({});
-  const [selectedPersona, setSelectedPersona] = useState("all");
-  const [selectedReportType, setSelectedReportType] = useState("all");
-  const [activeTab, setActiveTab] = useState("featured");
-  const [isLoading, setIsLoading] = useState(true);
-  const [pdfPreviewUrl, setPdfPreviewUrl] = useState("");
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const [currentReport, setCurrentReport] = useState(null);
-  const { toast } = useToast();
-  const [, navigate] = useLocation();
-
-  // Fetch report index data
-  useEffect(() => {
-    const fetchReportIndex = async () => {
-      setIsLoading(true);
-      try {
-        const response = await apiRequest("GET", "/api/reports/index.json");
-        if (!response.ok) {
-          throw new Error("Failed to fetch report index");
-        }
-        const data = await response.json();
-        setReportIndex(data);
-        
-        // Pre-fetch manifests for all personas
-        const manifestPromises = data.personas.map(async (persona) => {
-          try {
-            const manifestResponse = await apiRequest("GET", `/api/reports/persona/${persona.id}.json`);
-            if (manifestResponse.ok) {
-              const manifestData = await manifestResponse.json();
-              return { persona: persona.id, data: manifestData };
-            }
-            return { persona: persona.id, data: null };
-          } catch (error) {
-            console.error(`Error fetching manifest for ${persona.id}:`, error);
-            return { persona: persona.id, data: null };
-          }
-        });
-        
-        const manifests = await Promise.all(manifestPromises);
-        const manifestMap = {};
-        manifests.forEach((manifest) => {
-          if (manifest.data) {
-            manifestMap[manifest.persona] = manifest.data;
-          }
-        });
-        
-        setReportManifests(manifestMap);
-      } catch (error) {
-        console.error("Error fetching reports:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load report examples. Please try again.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    fetchReportIndex();
-  }, [toast]);
-
-  // Handle persona selection
-  const handlePersonaChange = (value) => {
-    setSelectedPersona(value);
-    if (value !== "all") {
-      setActiveTab("persona");
-    }
-  };
-
-  // Handle report type selection
-  const handleReportTypeChange = (value) => {
-    setSelectedReportType(value);
-    if (value !== "all") {
-      setActiveTab("type");
-    }
-  };
-
-  // Filter reports by selected criteria
-  const getFilteredReports = () => {
-    const { featuredReports = [] } = reportIndex;
-    
-    return featuredReports.filter((report) => {
-      const personaMatch = selectedPersona === "all" || report.persona === selectedPersona;
-      const typeMatch = selectedReportType === "all" || report.type === selectedReportType;
-      return personaMatch && typeMatch;
-    });
-  };
-
-  // Get reports for a specific persona
-  const getPersonaReports = (personaId) => {
-    const manifest = reportManifests[personaId];
-    if (!manifest || !manifest.files) {
-      return [];
-    }
-    
-    // Map files to report objects
-    return manifest.files.map((file, index) => ({
-      id: `${personaId}-${index}`,
-      name: file.replace('.pdf', '').replace(/_/g, ' ').replace(/-/g, ' '),
-      description: manifest.description || "Example report",
-      file: file,
-      persona: personaId,
-      type: getReportTypeFromFileName(file),
-    }));
-  };
-
-  // Helper to determine report type from filename
-  const getReportTypeFromFileName = (filename) => {
-    const lowerFilename = filename.toLowerCase();
-    if (lowerFilename.includes('success') || lowerFilename.includes('prediction')) {
-      return 'success-prediction';
-    } else if (lowerFilename.includes('protocol') || lowerFilename.includes('optimization')) {
-      return 'protocol-optimization';
-    } else if (lowerFilename.includes('endpoint')) {
-      return 'endpoint-selection';
-    } else if (lowerFilename.includes('regul') || lowerFilename.includes('bundle')) {
-      return 'regulatory-package';
-    } else if (lowerFilename.includes('invest') || lowerFilename.includes('portfolio')) {
-      return 'investment-analysis';
-    } else if (lowerFilename.includes('compet') || lowerFilename.includes('market')) {
-      return 'competitive-intelligence';
-    }
-    return 'other';
-  };
-
-  // Get all reports across all personas
-  const getAllReports = () => {
-    return Object.keys(reportManifests).flatMap(getPersonaReports);
-  };
-
-  // Preview a report (simplified version - would display PDF in real app)
-  const previewReport = async (report) => {
-    setCurrentReport(report);
-    // In a real implementation, this would fetch the actual PDF
-    setPdfPreviewUrl(`/api/reports/persona/${report.persona}/pdf/${report.file}`);
-    setIsPreviewOpen(true);
-  };
-
-  // Download a report
-  const downloadReport = async (report) => {
-    try {
-      const response = await apiRequest("GET", `/api/reports/persona/${report.persona}/pdf/${report.file}`);
-      if (!response.ok) {
-        throw new Error("Failed to download report");
-      }
-      
-      // Create a blob from the PDF stream
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      
-      // Create a link and trigger download
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = report.file;
-      document.body.appendChild(a);
-      a.click();
-      
-      // Cleanup
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-      
-      toast({
-        title: "Download Started",
-        description: `${report.name} is being downloaded.`,
-      });
-    } catch (error) {
-      console.error("Error downloading report:", error);
-      toast({
-        title: "Download Failed",
-        description: "Failed to download report. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  // Get icon for persona
-  const getPersonaIcon = (personaId) => {
-    const iconMap = {
-      clinical: <TestTube className="h-5 w-5" />,
-      regulatory: <FileCheck className="h-5 w-5" />,
-      statistical: <BarChartHorizontal className="h-5 w-5" />,
-      investor: <TrendingUp className="h-5 w-5" />,
-      executive: <Briefcase className="h-5 w-5" />,
-      medical: <Lightbulb className="h-5 w-5" />
-    };
-    
-    return iconMap[personaId] || <FileText className="h-5 w-5" />;
-  };
-
-  // Get icon for report type
-  const getReportTypeIcon = (typeId) => {
-    const iconMap = {
-      'success-prediction': <Percent className="h-5 w-5" />,
-      'protocol-optimization': <Target className="h-5 w-5" />,
-      'endpoint-selection': <Target className="h-5 w-5" />,
-      'regulatory-package': <FileCheck className="h-5 w-5" />,
-      'investment-analysis': <LineChart className="h-5 w-5" />,
-      'competitive-intelligence': <Users className="h-5 w-5" />
-    };
-    
-    return iconMap[typeId] || <FileText className="h-5 w-5" />;
-  };
-
-  // Get color for persona
-  const getPersonaColor = (personaId) => {
-    const persona = reportIndex.personas.find(p => p.id === personaId);
-    if (!persona) return "blue";
-    
-    const colorMap = {
-      blue: "bg-blue-100 text-blue-800",
-      green: "bg-green-100 text-green-800",
-      purple: "bg-purple-100 text-purple-800",
-      teal: "bg-teal-100 text-teal-800",
-      amber: "bg-amber-100 text-amber-800",
-      indigo: "bg-indigo-100 text-indigo-800"
-    };
-    
-    return colorMap[persona.color] || "bg-blue-100 text-blue-800";
-  };
-
-  // Render loading state
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[600px]">
-        <div className="text-center space-y-4">
-          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="text-muted-foreground">Loading example reports...</p>
-        </div>
-      </div>
-    );
+// Example report data
+const exampleReports = [
+  {
+    id: 1,
+    title: "Adalimumab Clinical Evaluation Report",
+    type: "CER",
+    date: "March 15, 2025",
+    category: "Immunology",
+    description: "Comprehensive Clinical Evaluation Report for Adalimumab with 5-year safety data analysis, literature review, and risk-benefit assessment.",
+    tags: ["FDA FAERS", "Literature Review", "Safety Analysis"],
+    featuredImage: "adalimumab",
+    badgeText: "Enhanced",
+    badgeVariant: "default",
+    downloadUrl: "#",
+    previewUrl: "#"
+  },
+  {
+    id: 2,
+    title: "Semaglutide Post-Market Surveillance Report",
+    type: "CER",
+    date: "February 28, 2025",
+    category: "Endocrinology",
+    description: "Post-market surveillance report for Semaglutide with safety signal detection, adverse event clustering, and regulatory recommendations.",
+    tags: ["Adverse Events", "Signal Detection", "Visualizations"],
+    featuredImage: "semaglutide",
+    badgeText: "AI-Generated",
+    badgeVariant: "default",
+    downloadUrl: "#",
+    previewUrl: "#"
+  },
+  {
+    id: 3,
+    title: "Pembrolizumab CER with Advanced Safety Monitoring",
+    type: "CER",
+    date: "January 10, 2025",
+    category: "Oncology",
+    description: "Enhanced Clinical Evaluation Report for Pembrolizumab featuring comprehensive adverse event monitoring across multiple indications.",
+    tags: ["Oncology", "Immuno-Oncology", "Multi-Indication"],
+    featuredImage: "pembrolizumab",
+    badgeText: "Premium",
+    badgeVariant: "default",
+    downloadUrl: "#",
+    previewUrl: "#"
+  },
+  {
+    id: 4,
+    title: "Infliximab Regulatory Compliance Report",
+    type: "CER",
+    date: "December 5, 2024",
+    category: "Immunology",
+    description: "Regulatory-focused Clinical Evaluation Report for Infliximab with detailed compliance analysis for FDA, EMA, and PMDA requirements.",
+    tags: ["Regulatory", "Global", "Compliance"],
+    featuredImage: "infliximab",
+    badgeText: "Regulatory",
+    badgeVariant: "outline",
+    downloadUrl: "#",
+    previewUrl: "#"
+  },
+  {
+    id: 5,
+    title: "Ustekinumab Annual Safety Update Report",
+    type: "CER",
+    date: "November 15, 2024",
+    category: "Dermatology",
+    description: "Annual update to Clinical Evaluation Report for Ustekinumab with focus on dermatological indications and emerging safety signals.",
+    tags: ["Annual Update", "Dermatology", "Psoriasis"],
+    featuredImage: "ustekinumab",
+    badgeText: "Annual",
+    badgeVariant: "outline",
+    downloadUrl: "#",
+    previewUrl: "#"
+  },
+  {
+    id: 6,
+    title: "Apixaban Comparative Safety Analysis",
+    type: "CER",
+    date: "October 20, 2024",
+    category: "Cardiology",
+    description: "Comparative Clinical Evaluation Report for Apixaban with head-to-head analysis against other NOACs using real-world evidence.",
+    tags: ["Comparative", "NOAC", "Real-World Evidence"],
+    featuredImage: "apixaban",
+    badgeText: "Comparative",
+    badgeVariant: "outline",
+    downloadUrl: "#",
+    previewUrl: "#"
   }
+];
 
-  const filteredReports = getFilteredReports();
-  const allReports = getAllReports();
+// Component for the gradient backgrounds
+const ReportGradient = ({ type, className = "" }) => {
+  const gradients = {
+    adalimumab: "from-sky-500 to-indigo-600",
+    semaglutide: "from-emerald-500 to-teal-600",
+    pembrolizumab: "from-purple-500 to-indigo-600",
+    infliximab: "from-amber-500 to-orange-600",
+    ustekinumab: "from-rose-500 to-pink-600",
+    apixaban: "from-blue-500 to-cyan-600",
+    default: "from-gray-700 to-gray-900"
+  };
 
+  const gradient = gradients[type] || gradients.default;
+  
   return (
-    <div className="container max-w-7xl mx-auto py-8 px-4 md:px-6">
-      <div className="space-y-6">
-        <div className="space-y-2">
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-            Example Intelligence Reports
-          </h1>
-          <p className="text-xl text-muted-foreground">
-            Browse our comprehensive collection of report templates tailored for different roles in clinical development.
-          </p>
-        </div>
-
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="w-full sm:w-1/2">
-            <Select value={selectedPersona} onValueChange={handlePersonaChange}>
-              <SelectTrigger className="w-full">
-                <div className="flex items-center gap-2">
-                  <Filter className="h-4 w-4" />
-                  <span>{selectedPersona === "all" ? "All Personas" : reportIndex.personas.find(p => p.id === selectedPersona)?.name || "All Personas"}</span>
-                </div>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Personas</SelectItem>
-                {reportIndex.personas.map((persona) => (
-                  <SelectItem key={persona.id} value={persona.id} className="flex items-center gap-2">
-                    <div className="flex items-center gap-2">
-                      {getPersonaIcon(persona.id)}
-                      <span>{persona.name}</span>
-                      {persona.new && <Badge variant="outline" className="ml-2 bg-green-100 text-green-800 hover:bg-green-100">New</Badge>}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div className="w-full sm:w-1/2">
-            <Select value={selectedReportType} onValueChange={handleReportTypeChange}>
-              <SelectTrigger className="w-full">
-                <div className="flex items-center gap-2">
-                  <Filter className="h-4 w-4" />
-                  <span>{selectedReportType === "all" ? "All Report Types" : reportIndex.reportTypes.find(t => t.id === selectedReportType)?.name || "All Report Types"}</span>
-                </div>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Report Types</SelectItem>
-                {reportIndex.reportTypes.map((type) => (
-                  <SelectItem key={type.id} value={type.id}>
-                    <div className="flex items-center gap-2">
-                      {getReportTypeIcon(type.id)}
-                      <span>{type.name}</span>
-                      {type.new && <Badge variant="outline" className="ml-2 bg-green-100 text-green-800 hover:bg-green-100">New</Badge>}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-3 mb-8">
-            <TabsTrigger value="featured">Featured Reports</TabsTrigger>
-            <TabsTrigger value="persona">By Persona</TabsTrigger>
-            <TabsTrigger value="type">By Report Type</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="featured" className="space-y-6">
-            {filteredReports.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground">No reports match your current filter selection.</p>
-                <Button variant="link" onClick={() => { setSelectedPersona("all"); setSelectedReportType("all"); }}>
-                  Clear filters
-                </Button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredReports.map((report) => {
-                  const persona = reportIndex.personas.find(p => p.id === report.persona);
-                  const reportType = reportIndex.reportTypes.find(t => t.id === report.type);
-                  
-                  return (
-                    <Card key={report.id} className="overflow-hidden border-2 hover:border-primary/50 transition-all group">
-                      <CardHeader className="pb-4">
-                        <div className="flex justify-between items-start mb-2">
-                          <Badge className={getPersonaColor(report.persona)}>
-                            <div className="flex items-center gap-1.5">
-                              {getPersonaIcon(report.persona)}
-                              <span>{persona?.name || report.persona}</span>
-                            </div>
-                          </Badge>
-                          {report.new && <Badge variant="outline" className="bg-green-100 text-green-800 hover:bg-green-100">New</Badge>}
-                        </div>
-                        <CardTitle className="text-xl group-hover:text-primary transition-colors">
-                          {report.name}
-                        </CardTitle>
-                        <CardDescription className="h-12 line-clamp-2">
-                          {report.description}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-4 pb-4">
-                        <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                          {getReportTypeIcon(report.type)}
-                          <span>{reportType?.name || report.type}</span>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 gap-2">
-                          {Array.from({ length: 3 }).map((_, i) => (
-                            <div key={i} className="flex items-center gap-2 text-sm">
-                              <CheckCircle className="h-4 w-4 text-green-600" />
-                              <span className="text-muted-foreground">{getRandomFeature(report.type, i)}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </CardContent>
-                      <CardFooter className="flex gap-2 pt-0">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="flex-1"
-                          onClick={() => previewReport({
-                            ...report,
-                            file: report.id.includes('-') ? `${report.id.split('-')[0]}_${report.id.split('-')[1]}.pdf` : `${report.id}.pdf`,
-                            persona: report.persona
-                          })}
-                        >
-                          <Eye className="h-4 w-4 mr-2" />
-                          Preview
-                        </Button>
-                        <Button size="sm" className="flex-1">
-                          <ArrowRight className="h-4 w-4 mr-2" />
-                          Full Demo
-                        </Button>
-                      </CardFooter>
-                    </Card>
-                  );
-                })}
-              </div>
-            )}
-          </TabsContent>
-          
-          <TabsContent value="persona" className="space-y-8">
-            {reportIndex.personas
-              .filter(persona => selectedPersona === "all" || persona.id === selectedPersona)
-              .map((persona) => {
-                const personaReports = getPersonaReports(persona.id);
-                
-                return (
-                  <div key={persona.id} className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <div className={`p-2 rounded-md ${getPersonaBackgroundColor(persona.color)}`}>
-                        {getPersonaIcon(persona.id)}
-                      </div>
-                      <h2 className="text-2xl font-bold">{persona.name}</h2>
-                      {persona.new && <Badge variant="outline" className="ml-2 bg-green-100 text-green-800 hover:bg-green-100">New</Badge>}
-                    </div>
-                    
-                    <p className="text-muted-foreground">{persona.description}</p>
-                    
-                    {personaReports.length === 0 ? (
-                      <div className="p-4 border rounded-md bg-muted/20">
-                        <p className="text-muted-foreground">No example reports available for this persona.</p>
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {personaReports.map((report) => (
-                          <Card key={report.id} className="hover:border-primary/50 transition-all">
-                            <CardHeader className="pb-2">
-                              <CardTitle className="text-lg">{formatReportName(report.name)}</CardTitle>
-                            </CardHeader>
-                            <CardContent className="pb-2">
-                              <div className="flex items-center gap-1.5 text-sm text-muted-foreground mb-4">
-                                {getReportTypeIcon(report.type)}
-                                <span>
-                                  {reportIndex.reportTypes.find(t => t.id === report.type)?.name || 
-                                   formatReportType(report.type)}
-                                </span>
-                              </div>
-                              
-                              <div className="text-sm text-muted-foreground">
-                                {getReportDescription(report)}
-                              </div>
-                            </CardContent>
-                            <CardFooter className="grid grid-cols-2 gap-2 pt-0">
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => previewReport(report)}
-                              >
-                                <Eye className="h-4 w-4 mr-2" />
-                                View
-                              </Button>
-                              <Button 
-                                variant="default" 
-                                size="sm"
-                                onClick={() => downloadReport(report)}
-                              >
-                                <Download className="h-4 w-4 mr-2" />
-                                Download
-                              </Button>
-                            </CardFooter>
-                          </Card>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-          </TabsContent>
-          
-          <TabsContent value="type" className="space-y-8">
-            {reportIndex.reportTypes
-              .filter(type => selectedReportType === "all" || type.id === selectedReportType)
-              .map((type) => {
-                const typeReports = allReports.filter(report => report.type === type.id);
-                
-                return (
-                  <div key={type.id} className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <div className="p-2 rounded-md bg-primary/10">
-                        {getReportTypeIcon(type.id)}
-                      </div>
-                      <h2 className="text-2xl font-bold">{type.name}</h2>
-                      {type.new && <Badge variant="outline" className="ml-2 bg-green-100 text-green-800 hover:bg-green-100">New</Badge>}
-                    </div>
-                    
-                    <p className="text-muted-foreground">{type.description}</p>
-                    
-                    {typeReports.length === 0 ? (
-                      <div className="p-4 border rounded-md bg-muted/20">
-                        <p className="text-muted-foreground">No example reports available for this type.</p>
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {typeReports.map((report) => {
-                          const persona = reportIndex.personas.find(p => p.id === report.persona);
-                          
-                          return (
-                            <Card key={report.id} className="hover:border-primary/50 transition-all">
-                              <CardHeader className="pb-2">
-                                <Badge className={`${getPersonaColor(report.persona)} mb-2 w-fit`}>
-                                  <div className="flex items-center gap-1.5">
-                                    {getPersonaIcon(report.persona)}
-                                    <span>{persona?.name || report.persona}</span>
-                                  </div>
-                                </Badge>
-                                <CardTitle className="text-lg">{formatReportName(report.name)}</CardTitle>
-                              </CardHeader>
-                              <CardContent className="pb-2">
-                                <div className="text-sm text-muted-foreground">
-                                  {getReportDescription(report)}
-                                </div>
-                              </CardContent>
-                              <CardFooter className="grid grid-cols-2 gap-2 pt-0">
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  onClick={() => previewReport(report)}
-                                >
-                                  <Eye className="h-4 w-4 mr-2" />
-                                  View
-                                </Button>
-                                <Button 
-                                  variant="default" 
-                                  size="sm"
-                                  onClick={() => downloadReport(report)}
-                                >
-                                  <Download className="h-4 w-4 mr-2" />
-                                  Download
-                                </Button>
-                              </CardFooter>
-                            </Card>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-          </TabsContent>
-        </Tabs>
-        
-        <div className="mt-8 p-6 border rounded-xl bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
-          <div className="flex flex-col md:flex-row gap-8 items-center">
-            <div className="space-y-4 flex-1">
-              <Badge className="bg-primary/10 text-primary hover:bg-primary/20 border-none mb-2">Premium Intelligence</Badge>
-              <h2 className="text-2xl lg:text-3xl font-bold">Ready to access the full suite of intelligence tools?</h2>
-              <p className="text-muted-foreground">
-                Subscribe today to access our complete suite of protocol optimization tools, success prediction models, 
-                and regulatory-ready report generators.
-              </p>
-              <div className="flex gap-4 pt-2">
-                <Button size="lg" className="gap-2">
-                  <Presentation className="h-5 w-5" />
-                  <span>Schedule Demo</span>
-                </Button>
-                <Button variant="outline" size="lg" className="gap-2">
-                  <CalendarRange className="h-5 w-5" />
-                  <span>View Pricing</span>
-                </Button>
-              </div>
-            </div>
-            <div className="flex-shrink-0 bg-gradient-to-br from-primary/10 to-primary/5 p-6 rounded-xl">
-              <div className="grid grid-cols-2 gap-4 w-full max-w-[240px]">
-                <div className="flex flex-col gap-2 items-center bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm">
-                  <TrendingUp className="h-10 w-10 text-primary" />
-                  <span className="text-sm font-medium">92%</span>
-                  <span className="text-xs text-center text-muted-foreground">Success Rate</span>
-                </div>
-                <div className="flex flex-col gap-2 items-center bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm">
-                  <Target className="h-10 w-10 text-primary" />
-                  <span className="text-sm font-medium">14.2x</span>
-                  <span className="text-xs text-center text-muted-foreground">ROI</span>
-                </div>
-                <div className="flex flex-col gap-2 items-center bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm">
-                  <LineChart className="h-10 w-10 text-primary" />
-                  <span className="text-sm font-medium">31%</span>
-                  <span className="text-xs text-center text-muted-foreground">Cost Savings</span>
-                </div>
-                <div className="flex flex-col gap-2 items-center bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm">
-                  <CheckCircle className="h-10 w-10 text-primary" />
-                  <span className="text-sm font-medium">43%</span>
-                  <span className="text-xs text-center text-muted-foreground">Time Saved</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      {/* Report Preview Dialog */}
-      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
-          <DialogHeader>
-            <DialogTitle>{currentReport ? formatReportName(currentReport.name) : "Report Preview"}</DialogTitle>
-            <DialogDescription>
-              {currentReport ? getReportDescription(currentReport) : "Preview of the selected report"}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="flex-1 overflow-hidden rounded-md border mt-4 bg-muted/20 min-h-[50vh] flex flex-col">
-            {pdfPreviewUrl ? (
-              <iframe 
-                src={pdfPreviewUrl} 
-                className="w-full h-full min-h-[50vh]"
-                title={currentReport ? formatReportName(currentReport.name) : "Report Preview"}
-              ></iframe>
-            ) : (
-              <div className="flex-1 flex flex-col items-center justify-center p-8 border-b">
-                <div className="flex flex-col items-center justify-center max-w-md mx-auto text-center">
-                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                    <FileText className="h-8 w-8 text-primary" />
-                  </div>
-                  <h3 className="text-xl font-semibold mb-2">Loading Preview</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Please wait while we load your report preview.
-                  </p>
-                  <div className="w-full space-y-4">
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Loading preview...</span>
-                        <span className="font-medium">Loading</span>
-                      </div>
-                      <Progress value={50} className="h-2" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            <div className="p-4 bg-muted/5 flex flex-col gap-3">
-              <h4 className="font-medium">Report Highlights:</h4>
-              <div className="grid grid-cols-1 gap-2 text-sm">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                    <span className="text-muted-foreground">{getRandomFeature(currentReport?.type || 'default', i)}</span>
-                  </div>
-                ))}
-              </div>
-              
-              <div className="flex justify-between items-center mt-2 pt-3 border-t">
-                <div className="flex items-center text-sm text-muted-foreground">
-                  <span>Subscribe to access complete reports</span>
-                </div>
-                <div className="flex gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setIsPreviewOpen(false)}
-                  >
-                    Close Preview
-                  </Button>
-                  <Button 
-                    size="sm"
-                    onClick={() => {
-                      setIsPreviewOpen(false);
-                      navigate("/subscriptions");
-                    }}
-                  >
-                    Unlock Full Reports
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+    <div className={`h-40 bg-gradient-to-r ${gradient} flex items-center justify-center ${className}`}>
+      <FileBarChart2 className="h-16 w-16 text-white" />
     </div>
   );
-}
+};
 
-// Helper functions
-
-// Format report name for display
-function formatReportName(name) {
-  return name
-    .replace(/_/g, ' ')
-    .replace(/-/g, ' ')
-    .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ');
-}
-
-// Format report type for display
-function formatReportType(type) {
-  return type
-    .replace(/-/g, ' ')
-    .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ');
-}
-
-// Get background color for persona
-function getPersonaBackgroundColor(color) {
-  const colorMap = {
-    blue: "bg-blue-100",
-    green: "bg-green-100",
-    purple: "bg-purple-100",
-    teal: "bg-teal-100",
-    amber: "bg-amber-100",
-    indigo: "bg-indigo-100"
-  };
+export default function ExampleReportsPage() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [typeFilter, setTypeFilter] = useState("");
   
-  return colorMap[color] || "bg-blue-100";
-}
-
-// Get a description for a report based on its type and name
-function getReportDescription(report) {
-  const typeMap = {
-    'success-prediction': "AI-powered prediction model for trial success with key risk factors identified",
-    'protocol-optimization': "Evidence-based protocol enhancement with regulatory compliance checks",
-    'endpoint-selection': "Optimal endpoint selection with statistical power analysis",
-    'regulatory-package': "Complete documentation package for regulatory submissions",
-    'investment-analysis': "Risk-adjusted valuation model with competitive positioning analysis",
-    'competitive-intelligence': "Comprehensive landscape analysis with differentiation scoring"
-  };
+  // Filter reports based on search term and filters
+  const filteredReports = exampleReports.filter(report => {
+    const matchesSearch = 
+      searchTerm === "" || 
+      report.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      report.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      report.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    const matchesCategory = categoryFilter === "" || report.category === categoryFilter;
+    const matchesType = typeFilter === "" || report.type === typeFilter;
+    
+    return matchesSearch && matchesCategory && matchesType;
+  });
   
-  if (report.description && report.description !== "Example report") {
-    return report.description;
-  }
+  // Get unique categories and types for filters
+  const categories = [...new Set(exampleReports.map(report => report.category))];
+  const types = [...new Set(exampleReports.map(report => report.type))];
   
-  return typeMap[report.type] || "Comprehensive analysis report with actionable insights";
-}
-
-// Get random features based on report type (for demo)
-function getRandomFeature(type, index) {
-  const featuresByType = {
-    'success-prediction': [
-      "Success probability with confidence interval",
-      "Risk factor identification with quantitative impact",
-      "Mitigation recommendations with success impact scores"
-    ],
-    'protocol-optimization': [
-      "Inclusion/exclusion criteria optimization",
-      "Statistical power enhancement recommendations",
-      "Study design optimization with benchmark comparisons"
-    ],
-    'endpoint-selection': [
-      "Primary endpoint selection with historical success rates",
-      "Secondary endpoint recommendations with rationale",
-      "Statistical power analysis with sample size implications"
-    ],
-    'regulatory-package': [
-      "Regulatory-ready documentation with cross-referencing",
-      "Compliance check against global regulatory standards",
-      "Automatic citations from peer-reviewed literature"
-    ],
-    'investment-analysis': [
-      "Risk-adjusted NPV with sensitivity analysis",
-      "Probability of clinical and commercial success",
-      "Competition positioning with differentiation scoring"
-    ],
-    'competitive-intelligence': [
-      "Competitive landscape mapping with positioning matrix",
-      "Feature differentiation analysis with scoring",
-      "Market opportunity assessment with gap analysis"
-    ],
-    'default': [
-      "Evidence-based recommendations with citations",
-      "Quantitative analysis with benchmark comparisons",
-      "Actionable insights with implementation guidance"
-    ]
-  };
-  
-  return (featuresByType[type] || featuresByType.default)[index % 3];
+  return (
+    <div className="container mx-auto py-6 space-y-6 max-w-7xl">
+      <div className="flex items-center gap-2 mb-2">
+        <Link href="/use-case-library">
+          <Button variant="ghost" size="sm" className="gap-1">
+            <ArrowLeft className="h-4 w-4" />
+            Back to Use Cases
+          </Button>
+        </Link>
+      </div>
+      
+      <div className="space-y-2">
+        <h1 className="text-3xl font-bold tracking-tight">Example Reports</h1>
+        <p className="text-muted-foreground max-w-3xl">
+          Browse our library of example Clinical Evaluation Reports (CERs) and other regulatory documents
+          to see how LumenTrialGuide.AI can help your organization maintain compliance and generate 
+          insights from post-market surveillance data.
+        </p>
+      </div>
+      
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex-1">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search reports..."
+              className="pl-8"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </div>
+        
+        <div className="flex gap-2">
+          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <SelectTrigger className="w-[160px]">
+              <SelectValue placeholder="All Categories" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All Categories</SelectItem>
+              {categories.map(category => (
+                <SelectItem key={category} value={category}>{category}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
+          <Select value={typeFilter} onValueChange={setTypeFilter}>
+            <SelectTrigger className="w-[140px]">
+              <SelectValue placeholder="All Types" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All Types</SelectItem>
+              {types.map(type => (
+                <SelectItem key={type} value={type}>{type}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      
+      {filteredReports.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
+          <h3 className="font-semibold text-lg">No Reports Found</h3>
+          <p className="text-muted-foreground">
+            Try adjusting your search or filters to find reports.
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredReports.map(report => (
+            <Card key={report.id} className="overflow-hidden flex flex-col h-full">
+              <ReportGradient type={report.featuredImage} />
+              <CardHeader>
+                <div className="flex justify-between items-start gap-2">
+                  <CardTitle className="text-lg">{report.title}</CardTitle>
+                  <Badge variant={report.badgeVariant}>{report.badgeText}</Badge>
+                </div>
+                <div className="flex items-center text-sm text-muted-foreground gap-3 mt-1">
+                  <div className="flex items-center gap-1">
+                    <Calendar className="h-3.5 w-3.5" />
+                    <span>{report.date}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Tag className="h-3.5 w-3.5" />
+                    <span>{report.category}</span>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="flex-1">
+                <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">
+                  {report.description}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {report.tags.map(tag => (
+                    <Badge key={tag} variant="outline">{tag}</Badge>
+                  ))}
+                </div>
+              </CardContent>
+              <CardFooter className="flex justify-between border-t p-4">
+                <Button variant="outline" size="sm" asChild>
+                  <a href={report.previewUrl} target="_blank" rel="noopener noreferrer">
+                    <FileText className="h-4 w-4 mr-1" />
+                    Preview
+                  </a>
+                </Button>
+                <Button size="sm" asChild>
+                  <a href={report.downloadUrl} download>
+                    <Download className="h-4 w-4 mr-1" />
+                    Download
+                  </a>
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      )}
+      
+      <div className="mt-12 bg-slate-50 dark:bg-slate-800/50 p-6 rounded-lg border border-slate-200 dark:border-slate-700">
+        <h2 className="text-xl font-bold mb-4">Frequently Asked Questions</h2>
+        
+        <Accordion type="single" collapsible className="w-full">
+          <AccordionItem value="item-1">
+            <AccordionTrigger>How are these example reports created?</AccordionTrigger>
+            <AccordionContent>
+              These example reports are generated using our CER Solutions platform, which combines
+              real data from FDA FAERS with AI-powered narrative generation and visualization tools.
+              Each report follows either MEDDEV 2.7/1 Rev. 4 structure (for medical devices) or 
+              similar pharmaceutical industry standards for post-market surveillance reporting.
+            </AccordionContent>
+          </AccordionItem>
+          
+          <AccordionItem value="item-2">
+            <AccordionTrigger>Can I customize these reports for my products?</AccordionTrigger>
+            <AccordionContent>
+              Yes! LumenTrialGuide.AI's CER Solutions allow you to generate custom reports for your
+              specific products using NDC codes or other product identifiers. Our platform will pull
+              the relevant data from FDA FAERS and other sources, apply AI-powered analysis, and 
+              create a comprehensive report tailored to your product's safety profile.
+            </AccordionContent>
+          </AccordionItem>
+          
+          <AccordionItem value="item-3">
+            <AccordionTrigger>How often are CERs typically updated?</AccordionTrigger>
+            <AccordionContent>
+              The frequency of CER updates depends on regulatory requirements and product risk profiles.
+              Typically, high-risk products require annual updates, while lower-risk products may update
+              every 2-5 years. With LumenTrialGuide.AI, you can set up automated monitoring to continuously
+              track safety signals and generate updates when significant changes are detected.
+            </AccordionContent>
+          </AccordionItem>
+          
+          <AccordionItem value="item-4">
+            <AccordionTrigger>Do these reports meet regulatory requirements?</AccordionTrigger>
+            <AccordionContent>
+              Yes, our reports are designed to meet the requirements of major regulatory bodies including
+              FDA, EMA, PMDA, and others. The structure and content follow established guidelines such as
+              MEDDEV 2.7/1 Rev. 4 for medical devices and similar pharmaceutical industry standards. 
+              However, final regulatory compliance is the responsibility of the manufacturer or sponsor.
+            </AccordionContent>
+          </AccordionItem>
+          
+          <AccordionItem value="item-5">
+            <AccordionTrigger>Can I integrate this with my existing systems?</AccordionTrigger>
+            <AccordionContent>
+              LumenTrialGuide.AI offers API access and integration options to connect with your existing
+              regulatory information management systems, safety databases, or document management platforms.
+              Our team can help set up custom workflows to ensure seamless integration with your current processes.
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </div>
+      
+      <div className="bg-gradient-to-r from-indigo-600 to-blue-700 text-white p-8 rounded-lg">
+        <div className="flex flex-col md:flex-row gap-8 items-center">
+          <div className="md:w-2/3">
+            <h2 className="text-2xl font-bold mb-4">Ready to Generate Your Own CERs?</h2>
+            <p className="mb-6">
+              Start creating comprehensive Clinical Evaluation Reports for your products with our 
+              automated CER Solutions platform. Access FDA FAERS data, AI-powered analysis, and 
+              regulatory-compliant reporting in one seamless workflow.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Link href="/cer-generator">
+                <Button className="bg-white text-indigo-700 hover:bg-slate-100">
+                  Try CER Generator
+                </Button>
+              </Link>
+              <Link href="/enhanced-cer-dashboard">
+                <Button variant="outline" className="border-white text-white hover:bg-indigo-700">
+                  View Dashboard
+                </Button>
+              </Link>
+            </div>
+          </div>
+          <div className="md:w-1/3 flex flex-col gap-4">
+            <div className="p-4 bg-white/10 backdrop-blur-sm rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <FileBarChart2 className="h-5 w-5 text-indigo-300" />
+                <span className="font-medium">Start with an NDC code</span>
+              </div>
+              <p className="text-sm text-indigo-100">
+                Simply enter your product's NDC code and our system will fetch all relevant adverse event data.
+              </p>
+            </div>
+            <div className="p-4 bg-white/10 backdrop-blur-sm rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <FileText className="h-5 w-5 text-indigo-300" />
+                <span className="font-medium">Receive a complete report</span>
+              </div>
+              <p className="text-sm text-indigo-100">
+                Get a comprehensive CER with all required sections, data visualizations, and regulatory narratives.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
