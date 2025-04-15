@@ -209,6 +209,31 @@ app.use((req, res, next) => {
       res.status(200).sendFile(process.cwd() + '/public/api-test-static.html');
     });
     
+    // Direct access to pages for debugging - accessible without going through the navigation
+    app.get('/direct/csr-platform', (_req, res) => {
+      console.log('[Debug] Direct CSR Platform access');
+      res.setHeader('Content-Type', 'text/html');
+      res.status(200).sendFile(process.cwd() + '/public/csr-platform.html');
+    });
+
+    app.get('/direct/csr-search', (_req, res) => {
+      console.log('[Debug] Direct CSR Search access');
+      res.setHeader('Content-Type', 'text/html');
+      res.status(200).sendFile(process.cwd() + '/public/csr-search.html');
+    });
+
+    app.get('/direct/csr-analytics', (_req, res) => {
+      console.log('[Debug] Direct CSR Analytics access');
+      res.setHeader('Content-Type', 'text/html');
+      res.status(200).sendFile(process.cwd() + '/public/csr-analytics.html');
+    });
+
+    app.get('/direct/api-docs', (_req, res) => {
+      console.log('[Debug] Direct API Docs access');
+      res.setHeader('Content-Type', 'text/html');
+      res.status(200).sendFile(process.cwd() + '/public/api-documentation.html');
+    });
+    
     // Serve our standalone SPRA application
     app.get('/spra-standalone', (_req, res) => {
       console.log('[SPRA] Standalone application requested');
