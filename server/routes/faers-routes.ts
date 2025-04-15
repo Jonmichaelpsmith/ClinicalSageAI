@@ -1,178 +1,168 @@
 /**
- * FDA FAERS Routes
+ * FAERS Routes
  * 
- * This module provides API routes for interacting with the FDA FAERS API
- * and generating CER reports using OpenAI.
+ * This module provides API endpoints for retrieving FAERS data and 
+ * generating Clinical Evaluation Reports (CER).
  */
 
-import express from 'express';
-import { exec } from 'child_process';
-import util from 'util';
-import { db } from '../db';
-import { clinicalEvaluationReports } from './cer-routes';
+import { Router, Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import { isApiKeyAvailable as isOpenAIApiKeyAvailable } from '../openai-service';
-import fs from 'fs';
-import path from 'path';
-import { check_secrets } from '../check-secrets';
+import { db } from '../db';
+import { eq } from 'drizzle-orm';
+import { clinicalEvaluationReports } from '../../shared/schema';
+import { requireOpenAIKey } from '../check-secrets';
 
-const router = express.Router();
-const execPromise = util.promisify(exec);
+import * as faersBridge from '../../faers-bridge.js';
 
-// Middleware to check if OpenAI API key is available
-router.use(async (req, res, next) => {
+const router = Router();
+
+// Endpoint to fetch FAERS data by NDC code
+router.post('/data', async (req: Request, res: Response) => {
   try {
-    // Check if OPENAI_API_KEY is in environment variables
-    const secrets = await check_secrets(['OPENAI_API_KEY']);
-    const hasOpenAIKey = secrets.OPENAI_API_KEY;
+    const { ndcCode } = req.body;
     
-    if (!hasOpenAIKey) {
-      return res.status(503).json({
-        error: 'OpenAI API key not configured',
-        message: 'The OpenAI API key is required for CER generation but is not configured. Please contact your administrator.'
-      });
+    if (!ndcCode) {
+      return res.status(400).json({ error: 'NDC code is required' });
     }
     
-    next();
+    const faersData = await faersBridge.fetchFaersData(ndcCode);
+    
+    res.json(faersData);
   } catch (error) {
-    console.error('Error checking for OpenAI API key:', error);
-    next();
+    console.error('Error fetching FAERS data:', error);
+    let errorMessage = 'Error retrieving FAERS data';
+    
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+    
+    res.status(500).json({ error: errorMessage });
   }
 });
 
-// Generate a CER from an NDC code using FAERS data
-router.get('/:ndcCode', async (req, res) => {
+// Endpoint to generate CER narrative from FAERS data
+router.post('/generate-narrative', requireOpenAIKey(), async (req: Request, res: Response) => {
   try {
-    const { ndcCode } = req.params;
-    const productName = req.query.product_name as string || '';
+    const { faersData, productName } = req.body;
     
-    console.log(`Generating CER for NDC code: ${ndcCode}`);
-    
-    // Create a temporary directory for Python script execution if it doesn't exist
-    const tempDir = path.join(process.cwd(), 'temp');
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir, { recursive: true });
+    if (!faersData) {
+      return res.status(400).json({ error: 'FAERS data is required' });
     }
     
-    // Create a temporary Python script file
-    const scriptId = uuidv4().substring(0, 8);
-    const tempScriptPath = path.join(tempDir, `faers_script_${scriptId}.py`);
+    const narrative = await faersBridge.generateCerNarrative(faersData, productName);
     
-    const scriptContent = `
-import json
-import sys
-import os
-
-# Ensure the OPENAI_API_KEY is set for the script
-os.environ["OPENAI_API_KEY"] = "${process.env.OPENAI_API_KEY}"
-
-try:
-    sys.path.append("${process.cwd()}")
-    from faers_client import get_faers_data
-    from cer_narrative import generate_cer_narrative
+    res.json({ narrative });
+  } catch (error) {
+    console.error('Error generating CER narrative:', error);
+    let errorMessage = 'Error generating CER narrative';
     
-    ndc_code = "${ndcCode}"
-    product_name = ${productName ? `"${productName}"` : 'None'}
-    
-    # Fetch FAERS data for the NDC code
-    faers_data = get_faers_data(ndc_code)
-    
-    # Generate the CER narrative
-    cer_text = generate_cer_narrative(faers_data, product_name)
-    
-    # Return results as JSON
-    result = {
-        "cer_report": cer_text,
-        "ndc_code": ndc_code,
-        "product_name": product_name,
-        "total_records": faers_data.get("meta", {}).get("results", {}).get("total", 0)
-    }
-    print(json.dumps(result))
-except Exception as e:
-    print(json.dumps({"error": str(e)}))
-    sys.exit(1)
-`;
-
-    fs.writeFileSync(tempScriptPath, scriptContent);
-    
-    // Execute the Python script
-    const { stdout, stderr } = await execPromise(`python ${tempScriptPath}`);
-    
-    // Clean up the temporary script file
-    fs.unlinkSync(tempScriptPath);
-    
-    if (stderr) {
-      console.error('Python Error:', stderr);
-      return res.status(500).json({ error: 'Error generating CER report', details: stderr });
-    }
-    
-    // Parse the JSON output from Python
+    // Try to extract error message from Python exception
     try {
-      const result = JSON.parse(stdout);
-      
-      if (result.error) {
-        return res.status(500).json({ error: result.error });
+      const parseError = JSON.parse(error.message);
+      errorMessage = parseError.error || error.message;
+    } catch {
+      if (error instanceof Error) {
+        errorMessage = error.message;
       }
-      
-      res.json(result);
-    } catch (parseError) {
-      console.error('Error parsing Python output:', parseError);
-      return res.status(500).json({ 
-        error: 'Failed to parse CER generation output',
-        details: parseError.message 
-      });
     }
-  } catch (error) {
-    console.error('Error generating CER report:', error);
-    res.status(500).json({ 
-      error: 'Failed to generate CER report',
-      message: error.message
-    });
+    
+    res.status(500).json({ error: errorMessage });
   }
 });
 
-// Save a generated CER to the database
-router.post('/save', async (req, res) => {
+// Endpoint to save generated CER report
+router.post('/save-report', async (req: Request, res: Response) => {
   try {
-    const { 
-      title, 
-      device_name, 
-      manufacturer, 
-      content_text, 
-      metadata 
-    } = req.body;
+    const { title, content, ndcCode, productName, manufacturer, metadata } = req.body;
     
-    if (!content_text) {
-      return res.status(400).json({ error: 'CER content is required' });
+    if (!title || !content) {
+      return res.status(400).json({ error: 'Title and content are required' });
     }
     
-    // Generate a unique CER ID
-    const cerId = `CER-FAERS-${uuidv4().substring(0, 8)}`;
+    // Generate unique ID for the report
+    const reportId = uuidv4();
     
-    // Prepare data for insertion
-    const cerData = {
-      cer_id: cerId,
-      title: title || 'Generated CER Report',
-      device_name: device_name || 'FDA Product',
-      manufacturer: manufacturer || 'Unknown Manufacturer',
-      indication: metadata?.indication || 'Unknown Indication',
+    // Create a new CER record
+    const reportData = {
+      cer_id: reportId,
+      title: title,
+      device_name: productName || `NDC ${ndcCode}`,
+      manufacturer: manufacturer || 'Unknown',
+      indication: 'Post-market surveillance',
       report_date: new Date(),
-      status: 'Active',
-      content_text,
+      status: 'active',
+      content_text: content,
       metadata: metadata || {}
     };
     
-    // Insert into database
-    const [result] = await db.insert(clinicalEvaluationReports).values(cerData).returning();
+    // Save to database
+    try {
+      const [insertedReport] = await db.insert(clinicalEvaluationReports).values(reportData).returning();
+      
+      res.status(201).json({
+        message: 'CER report saved successfully',
+        report: insertedReport
+      });
+    } catch (dbError) {
+      console.error('Database error saving CER report:', dbError);
+      res.status(500).json({ error: 'Database error saving CER report' });
+    }
+  } catch (error) {
+    console.error('Error saving CER report:', error);
+    res.status(500).json({ error: 'Error saving CER report' });
+  }
+});
+
+// Endpoint to get all saved CER reports (with pagination)
+router.get('/reports', async (req: Request, res: Response) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const offset = (page - 1) * limit;
     
-    res.status(201).json({
-      message: 'CER successfully saved to database',
-      cer_id: result.cer_id,
-      id: result.id
+    // Get total count for pagination
+    const totalCount = await db.select({ count: db.fn.count() }).from(clinicalEvaluationReports);
+    
+    // Get reports with pagination
+    const reports = await db
+      .select()
+      .from(clinicalEvaluationReports)
+      .orderBy(clinicalEvaluationReports.report_date)
+      .limit(limit)
+      .offset(offset);
+    
+    res.json({
+      reports,
+      pagination: {
+        total: parseInt(totalCount[0].count.toString()),
+        page,
+        limit
+      }
     });
   } catch (error) {
-    console.error('Error saving CER to database:', error);
-    res.status(500).json({ error: 'Failed to save CER to database' });
+    console.error('Error retrieving CER reports:', error);
+    res.status(500).json({ error: 'Error retrieving CER reports' });
+  }
+});
+
+// Endpoint to get a specific CER report by ID
+router.get('/reports/:id', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    
+    const [report] = await db
+      .select()
+      .from(clinicalEvaluationReports)
+      .where(eq(clinicalEvaluationReports.cer_id, id));
+    
+    if (!report) {
+      return res.status(404).json({ error: 'CER report not found' });
+    }
+    
+    res.json(report);
+  } catch (error) {
+    console.error('Error retrieving CER report:', error);
+    res.status(500).json({ error: 'Error retrieving CER report' });
   }
 });
 
