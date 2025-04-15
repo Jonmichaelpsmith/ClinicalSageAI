@@ -3,35 +3,82 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { scheduleDataUpdates, findLatestDataFile, importTrialsFromJson } from "./data-importer";
 
+// Create a logger utility for consistent formatting
+const logger = {
+  info: (message: string) => {
+    console.log(`[INFO] ${new Date().toISOString()} - ${message}`);
+  },
+  error: (message: string) => {
+    console.error(`[ERROR] ${new Date().toISOString()} - ${message}`);
+  },
+  warn: (message: string) => {
+    console.warn(`[WARN] ${new Date().toISOString()} - ${message}`);
+  },
+  debug: (message: string) => {
+    if (process.env.NODE_ENV === 'development') {
+      console.debug(`[DEBUG] ${new Date().toISOString()} - ${message}`);
+    }
+  }
+};
+
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Request logging middleware with timestamp-based IDs
 app.use((req, res, next) => {
-  const start = Date.now();
+  // Generate a timestamp-based ID with random suffix
+  const timestamp = Date.now();
+  const randomSuffix = Math.random().toString(36).substring(2, 8);
+  const requestId = `${timestamp}-${randomSuffix}`;
+  
+  const start = timestamp;
   const path = req.path;
   let capturedJsonResponse: Record<string, any> | undefined = undefined;
 
+  // Add requestId to the request object for use in other middlewares/routes
+  (req as any).requestId = requestId;
+  
+  // Log request start
+  logger.info(`Request ${requestId} - START: ${req.method} ${path} (${req.ip})`);
+
+  // Capture the response JSON for logging
   const originalResJson = res.json;
   res.json = function (bodyJson, ...args) {
     capturedJsonResponse = bodyJson;
     return originalResJson.apply(res, [bodyJson, ...args]);
   };
 
+  // Log when the response is sent
   res.on("finish", () => {
     const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
+    const statusCode = res.statusCode;
+    
+    // Determine log level based on status code
+    const logLevel = statusCode >= 500 ? 'error' : statusCode >= 400 ? 'warn' : 'info';
+    
+    let logLine = `Request ${requestId} - END: ${req.method} ${path} - Status: ${statusCode} - ${duration}ms`;
+    
+    // Only include response body for API endpoints and when appropriate
+    if (path.startsWith("/api") && capturedJsonResponse && logLevel !== 'error') {
+      // For non-error responses, limit the response logging to avoid overwhelming logs
+      const responseStr = JSON.stringify(capturedJsonResponse);
+      if (responseStr.length > 100) {
+        logLine += ` :: ${responseStr.slice(0, 100)}...`;
+      } else {
+        logLine += ` :: ${responseStr}`;
       }
-
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
-      }
-
-      log(logLine);
     }
+    
+    // For errors, log the full response
+    if (logLevel === 'error' && capturedJsonResponse) {
+      logger.error(`Response body for ${requestId}: ${JSON.stringify(capturedJsonResponse)}`);
+    }
+    
+    logger[logLevel](logLine);
+    
+    // Also log to Vite's log function for development visibility
+    log(`${req.method} ${path} ${statusCode} in ${duration}ms`);
   });
 
   next();

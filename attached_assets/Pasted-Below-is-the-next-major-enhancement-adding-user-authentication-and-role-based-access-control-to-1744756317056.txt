@@ -1,0 +1,282 @@
+Below is the next major enhancement: adding **user authentication and role-based access control** to secure your sensitive endpoints. This step helps ensure that only authorized users (e.g., regulatory or clinical personnel) can access or trigger analytics and report generation features. We’ll use JSON Web Tokens (JWT) with FastAPI’s built-in security utilities. This integration will work alongside your existing endpoints without disrupting the core functionality.
+
+---
+
+## 1. Create an Authentication Module
+
+Create a new file called **auth.py**. This module sets up password hashing, JWT creation, and user authentication routines. For simplicity, we’ll use a fake user database. In production, you’d replace this with calls to a real user store.
+
+```python
+# auth.py
+import time
+import jwt
+from passlib.context import CryptContext
+from pydantic import BaseModel
+from fastapi import Depends, HTTPException, status, APIRouter
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+
+# Security settings
+SECRET_KEY = "your_secret_key_here"  # Replace with a secure key in production
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_SECONDS = 3600  # 1 hour expiry
+
+# Password hashing
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# Fake user "database" for demonstration
+fake_users_db = {
+    "john@example.com": {
+        "username": "john@example.com",
+        "full_name": "John Doe",
+        "hashed_password": pwd_context.hash("secret"),  # Replace with your hashed password
+        "disabled": False,
+    }
+}
+
+# OAuth2 scheme for receiving the JWT token
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/token")
+
+# Pydantic models for token responses
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class User(BaseModel):
+    username: str
+    full_name: str | None = None
+    disabled: bool | None = None
+
+# Utility functions
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return pwd_context.verify(plain_password, hashed_password)
+
+def authenticate_user(username: str, password: str):
+    user = fake_users_db.get(username)
+    if not user:
+        return None
+    if not verify_password(password, user["hashed_password"]):
+        return None
+    return user
+
+def create_access_token(username: str):
+    payload = {
+        "sub": username,
+        "iat": int(time.time()),
+        "exp": int(time.time()) + ACCESS_TOKEN_EXPIRE_SECONDS,
+    }
+    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
+# Router setup for auth endpoints
+router = APIRouter()
+
+@router.post("/api/token", response_model=Token)
+async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
+    user = authenticate_user(form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token = create_access_token(user["username"])
+    return {"access_token": access_token, "token_type": "bearer"}
+```
+
+---
+
+## 2. Secure Existing Endpoints
+
+Now, update your existing **main.py** to protect sensitive endpoints by requiring a valid JWT token. Import the authentication dependencies from **auth.py** and use FastAPI’s dependency injection to secure routes. For example:
+
+```python
+# main.py (update import section)
+from fastapi import FastAPI, HTTPException, APIRouter, Depends
+from auth import oauth2_scheme  # Import our OAuth2 scheme from auth.py
+
+# Existing imports...
+from data_pipeline import fetch_faers_data, normalize_faers_data
+from cer_narrative import generate_cer_narrative
+from predictive_analytics import forecast_adverse_events, detect_anomalies
+
+app = FastAPI()
+router = APIRouter()
+
+# Secure dependency function (optional, you may expand this to check roles)
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    try:
+        payload = jwt.decode(token, "your_secret_key_here", algorithms=["HS256"])
+        username: str = payload.get("sub")
+        if username is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid authentication credentials",
+            )
+        return username
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+        )
+
+@router.get("/api/cer/{ndc_code}")
+async def create_cer(ndc_code: str, current_user: str = Depends(get_current_user)):
+    try:
+        raw_data = fetch_faers_data(ndc_code)
+        narrative = generate_cer_narrative(raw_data)
+        return {"cer_report": narrative}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# You can decorate additional endpoints similarly:
+@router.get("/api/cer/normalize/{ndc_code}")
+async def normalize_data(ndc_code: str, current_user: str = Depends(get_current_user)):
+    try:
+        raw_data = fetch_faers_data(ndc_code)
+        df = normalize_faers_data(raw_data)
+        return {"normalized_data": df.to_dict(orient="records")}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# (Repeat for forecasting, anomaly detection, alerts, etc.)
+
+app.include_router(router)
+app.include_router(auth.router)  # Include the auth router for token endpoint
+```
+
+> **Note:** Replace `"your_secret_key_here"` with the same secret key you set in **auth.py** to ensure consistency.
+
+---
+
+## 3. Frontend Integration for Authentication
+
+Now update your React frontend to support authentication. Here’s a basic outline of what you might add:
+
+### A. Create a Login Component
+
+Create a new file called **Login.jsx**:
+
+```jsx
+// Login.jsx
+import React, { useState } from 'react';
+
+export default function Login({ onLogin }) {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleLogin = async () => {
+    try {
+      const response = await fetch('/api/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          username,
+          password,
+        }),
+      });
+      if (!response.ok) {
+        throw new Error('Login failed');
+      }
+      const data = await response.json();
+      onLogin(data.access_token);
+    } catch (error) {
+      alert(error.message);
+    }
+  };
+
+  return (
+    <div style={{ margin: '20px' }}>
+      <input
+        type="text"
+        placeholder="Email"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
+        style={{ padding: '10px', marginRight: '10px' }}
+      />
+      <input
+        type="password"
+        placeholder="Password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        style={{ padding: '10px', marginRight: '10px' }}
+      />
+      <button onClick={handleLogin} style={{ padding: '10px 20px' }}>
+        Login
+      </button>
+    </div>
+  );
+}
+```
+
+### B. Update Your Main App Component
+
+Update **App.jsx** to conditionally render the login component and pass the JWT token to API calls:
+
+```jsx
+// App.jsx
+import React, { useState } from 'react';
+import Login from './Login';
+import CERGenerator from './CERGenerator';
+import AdvancedDashboard from './AdvancedDashboard';
+import NLPQuery from './NLPQuery';
+import AlertsDashboard from './AlertsDashboard';
+import RealTimeAlerts from './RealTimeAlerts';
+
+function App() {
+  const [token, setToken] = useState(null);
+  const [ndcCodes] = useState(["1234567890", "0987654321"]);
+  const [filteredData, setFilteredData] = useState(null);
+
+  const handleLogin = (accessToken) => {
+    setToken(accessToken);
+    // You can store this token (e.g., in localStorage) for persistence
+  };
+
+  // If not logged in, show the login screen
+  if (!token) {
+    return <Login onLogin={handleLogin} />;
+  }
+
+  // For API calls, include the token in the Authorization header.
+  // (Ensure your fetch calls in your components are updated accordingly.)
+
+  return (
+    <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
+      <h1>LumenTrialGuide.AI</h1>
+      <CERGenerator token={token} />
+      <NLPQuery onFilter={setFilteredData} token={token} />
+      <AdvancedDashboard ndcCodes={ndcCodes} token={token} />
+      <AlertsDashboard ndcCode={ndcCodes[0]} token={token} />
+      <RealTimeAlerts ndcCode={ndcCodes[0]} token={token} />
+      {filteredData && (
+        <div>
+          <h2>Filtered Analytics</h2>
+          <pre>{JSON.stringify(filteredData, null, 2)}</pre>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default App;
+```
+
+> **Note:** For each API call in your frontend components (e.g., CERGenerator, AdvancedDashboard, etc.), ensure you add an `Authorization: Bearer ${token}` header so that the backend recognizes the request as authenticated.
+
+---
+
+## Next Steps
+
+1. **Test Authentication:**  
+   - Run your FastAPI server and React app.
+   - Use the login screen to authenticate using a test user (e.g., username `john@example.com` with password `secret`).
+   - Verify that, after logging in, you can access the protected endpoints.
+
+2. **Validate Integration:**  
+   - Ensure that all API calls from your frontend pass the JWT token correctly.
+   - Check that secure endpoints only return data when the token is present and valid.
+
+3. **Enhance Security:**  
+   - Consider using HTTPS, more robust user management, and integrating a real database for user storage in a production environment.
+   - Add further checks for user roles if necessary.
+
+This completes the integration of user authentication and authorization into your advanced CER solution. Let me know when you're ready for the next phase or if further refinements are needed!

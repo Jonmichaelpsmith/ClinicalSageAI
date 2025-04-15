@@ -1,246 +1,381 @@
 /**
  * CER Analytics Routes
  * 
- * This module provides API endpoints for advanced analytics on Clinical Evaluation Reports,
- * including comparative analysis, forecasting, and NLP-powered queries.
+ * This file contains routes related to Clinical Evaluation Report (CER) analytics,
+ * including FAERS data analysis, natural language queries, and alerts.
  */
 
-import { Router, Request, Response } from 'express';
-import { db } from '../db';
-import { clinicalEvaluationReports } from '../../shared/schema';
-import { eq, like, and } from 'drizzle-orm';
+import express from 'express';
+import { Request, Response } from 'express';
+import { spawn } from 'child_process';
+import path from 'path';
+import fs from 'fs';
 import { requireOpenAIKey } from '../check-secrets';
-import OpenAI from 'openai';
 
-const router = Router();
+const router = express.Router();
 
-// Initialize OpenAI client
-let openai: OpenAI | null = null;
-try {
-  if (process.env.OPENAI_API_KEY) {
-    openai = new OpenAI();
-  }
-} catch (error) {
-  console.error('Error initializing OpenAI client:', error);
+// Helper function to handle Python script execution
+async function executePythonScript(scriptName: string, args: string[] = []): Promise<any> {
+  return new Promise((resolve, reject) => {
+    // Base path for Python scripts
+    const scriptPath = path.join(process.cwd(), scriptName);
+    
+    // Check if the script exists
+    if (!fs.existsSync(scriptPath)) {
+      return reject(new Error(`Python script not found: ${scriptName}`));
+    }
+    
+    // Spawn the Python process
+    const pythonProcess = spawn('python', [scriptPath, ...args]);
+    
+    let stdout = '';
+    let stderr = '';
+    
+    // Collect stdout data
+    pythonProcess.stdout.on('data', (data) => {
+      stdout += data.toString();
+    });
+    
+    // Collect stderr data
+    pythonProcess.stderr.on('data', (data) => {
+      stderr += data.toString();
+    });
+    
+    // Handle process completion
+    pythonProcess.on('close', (code) => {
+      if (code !== 0) {
+        console.error(`Python script error (${scriptName}):`, stderr);
+        return reject(new Error(`Python script exited with code ${code}: ${stderr}`));
+      }
+      
+      try {
+        // Try to parse the output as JSON
+        const jsonOutput = JSON.parse(stdout);
+        resolve(jsonOutput);
+      } catch (err) {
+        // If not valid JSON, return the raw output
+        resolve(stdout);
+      }
+    });
+    
+    // Handle process errors
+    pythonProcess.on('error', (err) => {
+      reject(err);
+    });
+  });
 }
 
 /**
- * Endpoint to compare data across multiple NDC codes
+ * @route GET /api/cer/:ndc_code
+ * @description Generate a CER narrative for a given NDC code
  */
-router.post('/compare', async (req: Request, res: Response) => {
+router.get('/:ndc_code', async (req: Request, res: Response) => {
   try {
-    const { ndc_codes } = req.body;
+    const { ndc_code } = req.params;
     
-    if (!ndc_codes || !Array.isArray(ndc_codes) || ndc_codes.length === 0) {
-      return res.status(400).json({ error: 'ndc_codes array is required' });
+    // Validate NDC code format (basic check)
+    if (!ndc_code || !/^[0-9a-zA-Z-]+$/.test(ndc_code)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid NDC code format'
+      });
     }
     
-    // Process each NDC code to gather comparative data
-    const comparative_data: any = {};
+    const result = await executePythonScript('cer_narrative.py', [ndc_code]);
     
-    for (const ndc_code of ndc_codes) {
-      // Retrieve CER reports for this NDC code
-      const reports = await db
-        .select()
-        .from(clinicalEvaluationReports)
-        .where(like(clinicalEvaluationReports.content_text, `%${ndc_code}%`));
-      
-      if (reports.length > 0) {
-        // Process report content to extract event summaries
-        // This is a simplified example - in a real implementation, this would parse the structured content
-        const eventSummary = extractEventSummary(reports);
-        const forecasts = generateForecasts(eventSummary);
-        
-        comparative_data[ndc_code] = {
-          report_count: reports.length,
-          event_summary: eventSummary,
-          forecasts: forecasts
-        };
-      } else {
-        // If no real data, provide minimal placeholder for UI development
-        comparative_data[ndc_code] = {
-          report_count: 0,
-          event_summary: {
-            'No Data': 0
-          },
-          forecasts: {}
-        };
-      }
-    }
-    
-    res.json({ comparative_data });
+    res.json({
+      success: true,
+      ndc_code,
+      narrative: result.narrative || result,
+      source: 'FAERS',
+      timestamp: new Date().toISOString()
+    });
   } catch (error) {
-    console.error('Error in comparative analytics:', error);
-    res.status(500).json({ error: 'Error processing comparative analytics' });
+    console.error('Error generating CER narrative:', error);
+    res.status(500).json({
+      success: false,
+      message: error instanceof Error ? error.message : 'Unknown error generating CER narrative'
+    });
   }
 });
 
 /**
- * Endpoint for processing natural language queries
- * Uses OpenAI to interpret and translate natural language to structured queries
+ * @route GET /api/cer/normalize/:ndc_code
+ * @description Get normalized FAERS data for a given NDC code
+ */
+router.get('/normalize/:ndc_code', async (req: Request, res: Response) => {
+  try {
+    const { ndc_code } = req.params;
+    
+    // Validate NDC code
+    if (!ndc_code || !/^[0-9a-zA-Z-]+$/.test(ndc_code)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid NDC code format'
+      });
+    }
+    
+    const result = await executePythonScript('faers_client.py', ['normalize', ndc_code]);
+    
+    res.json({
+      success: true,
+      ndc_code,
+      data: result
+    });
+  } catch (error) {
+    console.error('Error normalizing FAERS data:', error);
+    res.status(500).json({
+      success: false,
+      message: error instanceof Error ? error.message : 'Unknown error normalizing FAERS data'
+    });
+  }
+});
+
+/**
+ * @route GET /api/cer/forecast/:ndc_code/:event
+ * @description Get event forecasting for a specific NDC code and adverse event
+ */
+router.get('/forecast/:ndc_code/:event', async (req: Request, res: Response) => {
+  try {
+    const { ndc_code, event } = req.params;
+    
+    // Validate parameters
+    if (!ndc_code || !event) {
+      return res.status(400).json({
+        success: false,
+        message: 'NDC code and event name are required'
+      });
+    }
+    
+    const result = await executePythonScript('faers_client.py', ['forecast', ndc_code, event]);
+    
+    res.json({
+      success: true,
+      ndc_code,
+      event,
+      forecast: result
+    });
+  } catch (error) {
+    console.error('Error forecasting FAERS event:', error);
+    res.status(500).json({
+      success: false,
+      message: error instanceof Error ? error.message : 'Unknown error forecasting event'
+    });
+  }
+});
+
+/**
+ * @route GET /api/cer/anomalies/:ndc_code
+ * @description Get anomaly detection results for a given NDC code
+ */
+router.get('/anomalies/:ndc_code', async (req: Request, res: Response) => {
+  try {
+    const { ndc_code } = req.params;
+    
+    // Validate NDC code
+    if (!ndc_code || !/^[0-9a-zA-Z-]+$/.test(ndc_code)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid NDC code format'
+      });
+    }
+    
+    const result = await executePythonScript('faers_client.py', ['anomalies', ndc_code]);
+    
+    res.json({
+      success: true,
+      ndc_code,
+      anomalies: result
+    });
+  } catch (error) {
+    console.error('Error detecting anomalies:', error);
+    res.status(500).json({
+      success: false,
+      message: error instanceof Error ? error.message : 'Unknown error detecting anomalies'
+    });
+  }
+});
+
+/**
+ * @route GET /api/cer/alerts/:ndc_code
+ * @description Get real-time alerts for a given NDC code
+ */
+router.get('/alerts/:ndc_code', async (req: Request, res: Response) => {
+  try {
+    const { ndc_code } = req.params;
+    
+    // Validate NDC code
+    if (!ndc_code || !/^[0-9a-zA-Z-]+$/.test(ndc_code)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid NDC code format'
+      });
+    }
+    
+    const result = await executePythonScript('faers_client.py', ['alerts', ndc_code]);
+    
+    res.json({
+      success: true,
+      ndc_code,
+      alerts: result.alerts || []
+    });
+  } catch (error) {
+    console.error('Error fetching alerts:', error);
+    res.status(500).json({
+      success: false,
+      message: error instanceof Error ? error.message : 'Unknown error fetching alerts'
+    });
+  }
+});
+
+/**
+ * @route GET /api/cer/:ndc_code/enhanced-pdf
+ * @description Generate and download an enhanced PDF report with embedded charts
+ */
+router.get('/:ndc_code/enhanced-pdf', async (req: Request, res: Response) => {
+  try {
+    const { ndc_code } = req.params;
+    
+    // Validate NDC code
+    if (!ndc_code || !/^[0-9a-zA-Z-]+$/.test(ndc_code)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid NDC code format'
+      });
+    }
+    
+    // Execute the Python script to generate PDF
+    const scriptPath = path.join(process.cwd(), 'cer_narrative.py');
+    const outputFilePath = path.join(process.cwd(), 'exports', `enhanced_cer_${ndc_code}.pdf`);
+    
+    // Ensure the exports directory exists
+    const exportsDir = path.join(process.cwd(), 'exports');
+    if (!fs.existsSync(exportsDir)) {
+      fs.mkdirSync(exportsDir, { recursive: true });
+    }
+    
+    const pythonProcess = spawn('python', [scriptPath, ndc_code, '--enhanced-pdf', outputFilePath]);
+    
+    let stderr = '';
+    
+    pythonProcess.stderr.on('data', (data) => {
+      stderr += data.toString();
+    });
+    
+    pythonProcess.on('close', (code) => {
+      if (code !== 0) {
+        console.error('Error generating enhanced PDF:', stderr);
+        return res.status(500).json({
+          success: false,
+          message: `Error generating enhanced PDF: ${stderr}`
+        });
+      }
+      
+      // Check if the file was created
+      if (!fs.existsSync(outputFilePath)) {
+        return res.status(500).json({
+          success: false,
+          message: 'PDF file was not generated'
+        });
+      }
+      
+      // Stream the file to the response
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename=enhanced_cer_${ndc_code}.pdf`);
+      
+      const fileStream = fs.createReadStream(outputFilePath);
+      fileStream.pipe(res);
+      
+      // Clean up the file after sending (optional)
+      fileStream.on('end', () => {
+        // fs.unlinkSync(outputFilePath); // Uncomment to delete after sending
+      });
+    });
+    
+    pythonProcess.on('error', (err) => {
+      console.error('Error spawning Python process:', err);
+      res.status(500).json({
+        success: false,
+        message: `Error spawning Python process: ${err.message}`
+      });
+    });
+  } catch (error) {
+    console.error('Error generating enhanced PDF:', error);
+    res.status(500).json({
+      success: false,
+      message: error instanceof Error ? error.message : 'Unknown error generating enhanced PDF'
+    });
+  }
+});
+
+/**
+ * @route POST /api/cer/nlp-query
+ * @description Process a natural language query about CER data
  */
 router.post('/nlp-query', requireOpenAIKey(), async (req: Request, res: Response) => {
   try {
     const { query } = req.body;
     
-    if (!query || typeof query !== 'string') {
-      return res.status(400).json({ error: 'Query string is required' });
+    if (!query) {
+      return res.status(400).json({
+        success: false,
+        message: 'Query is required'
+      });
     }
     
-    if (!openai) {
-      return res.status(500).json({ error: 'OpenAI client not available' });
+    // Forward the query to the Python script for processing
+    const result = await executePythonScript('faers_client.py', ['nlp-query', query]);
+    
+    // If the Python script returns structured data, use it
+    if (result && typeof result === 'object') {
+      return res.json(result);
     }
     
-    // Process the query with OpenAI to extract parameters and intent
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [
-        {
-          role: "system",
-          content: `You are an AI assistant helping extract structured query parameters from natural language queries 
-                   about Clinical Evaluation Reports and FAERS data. Extract key parameters like:
-                   - product/device names or NDC codes
-                   - demographic filters (age, gender)
-                   - adverse event types
-                   - date ranges
-                   - comparison requests
-                   - trend analysis requests
-                   Output JSON with these parameters and a 'query_type' field.`
+    // Otherwise, use OpenAI to generate structured filter parameters
+    const openai = require('openai');
+    const openaiClient = new openai.OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    
+    const prompt = `
+      You are an expert analyst that converts natural language queries about clinical trial data into structured filter parameters.
+      Given this query: "${query}"
+      
+      Extract relevant filter parameters like:
+      - age (numeric)
+      - event (string, e.g., "headache", "nausea")
+      - period (string, e.g., "months", "years")
+      - view (string, e.g., "trend", "comparison")
+      
+      Return ONLY a JSON object with these fields:
+      {
+        "natural_language_query": "the original query",
+        "interpretation": "human-readable interpretation of what's being asked",
+        "filter_parameters": {
+          // extracted parameters
         },
-        {
-          role: "user",
-          content: query
-        }
+        "confidence": 0.XX // numeric confidence score between 0 and 1
+      }
+    `;
+    
+    const response = await openaiClient.chat.completions.create({
+      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      messages: [
+        { role: "system", content: "You extract structured filter parameters from natural language queries about clinical trial data." },
+        { role: "user", content: prompt }
       ],
       response_format: { type: "json_object" }
     });
     
-    // Parse the structured query parameters
-    const structuredQuery = JSON.parse(completion.choices[0].message.content);
+    // Parse the OpenAI response
+    const nlpResponse = JSON.parse(response.choices[0].message.content);
     
-    // Execute the structured query against the database
-    // This is a simplified implementation
-    const results = await executeStructuredQuery(structuredQuery);
-    
-    res.json({
-      query: query,
-      structured_parameters: structuredQuery,
-      filtered: true,
-      results: results,
-      message: `Applied filter: ${query}`,
-      count: results.length
-    });
+    res.json(nlpResponse);
   } catch (error) {
-    console.error('Error in NLP query processing:', error);
-    res.status(500).json({ 
-      error: 'Error processing natural language query',
-      message: error instanceof Error ? error.message : 'Unknown error'
+    console.error('Error processing NLP query:', error);
+    res.status(500).json({
+      success: false,
+      message: error instanceof Error ? error.message : 'Unknown error processing NLP query'
     });
   }
 });
-
-/**
- * Extract event summary from CER reports
- * This is a simplified example - real implementation would parse structured content
- */
-function extractEventSummary(reports: any[]): Record<string, number> {
-  const eventSummary: Record<string, number> = {};
-  
-  // Common adverse events to extract
-  const commonEvents = [
-    'Headache', 'Nausea', 'Dizziness', 'Fatigue', 'Rash',
-    'Vomiting', 'Diarrhea', 'Pain', 'Fever', 'Insomnia'
-  ];
-  
-  // Count mentions of common events in report content
-  for (const report of reports) {
-    const content = report.content_text || '';
-    
-    for (const event of commonEvents) {
-      const regex = new RegExp(event, 'gi');
-      const matches = content.match(regex);
-      const count = matches ? matches.length : 0;
-      
-      if (count > 0) {
-        eventSummary[event] = (eventSummary[event] || 0) + count;
-      }
-    }
-  }
-  
-  // If no events found, provide minimal data
-  if (Object.keys(eventSummary).length === 0) {
-    eventSummary['No specific events found'] = 0;
-  }
-  
-  return eventSummary;
-}
-
-/**
- * Generate simple forecasts based on event summary
- * This is a simplified example - real implementation would use statistical models
- */
-function generateForecasts(eventSummary: Record<string, number>): Record<string, Record<string, number>> {
-  const forecasts: Record<string, Record<string, number>> = {};
-  const quarters = ['Q1 2025', 'Q2 2025', 'Q3 2025', 'Q4 2025'];
-  
-  Object.keys(eventSummary).forEach(event => {
-    if (event === 'No specific events found') return;
-    
-    const baseCount = eventSummary[event];
-    forecasts[event] = {};
-    
-    // Simple model: slight decrease over time
-    quarters.forEach((quarter, index) => {
-      const reduction = 0.02 * (index + 1);
-      forecasts[event][quarter] = Math.max(1, Math.round(baseCount * (1 - reduction)));
-    });
-  });
-  
-  return forecasts;
-}
-
-/**
- * Execute a structured query against the database
- * This is a simplified implementation
- */
-async function executeStructuredQuery(structuredQuery: any): Promise<any[]> {
-  try {
-    // Extract parameters from the structured query
-    const productName = structuredQuery.product || structuredQuery.device || null;
-    const ageFilter = structuredQuery.age || null;
-    const eventType = structuredQuery.event || structuredQuery.adverse_event || null;
-    
-    // Build a basic query - in a real implementation, this would be more sophisticated
-    let query = db.select().from(clinicalEvaluationReports);
-    
-    if (productName) {
-      query = query.where(like(clinicalEvaluationReports.device_name, `%${productName}%`));
-    }
-    
-    if (eventType) {
-      query = query.where(like(clinicalEvaluationReports.content_text, `%${eventType}%`));
-    }
-    
-    // Execute the query
-    const results = await query.limit(10);
-    
-    // Apply additional filters that can't be done at the database level
-    // In a real implementation, this would be more sophisticated
-    let filteredResults = results;
-    
-    if (ageFilter) {
-      // Simplified age filtering by looking for content mentions
-      filteredResults = filteredResults.filter(report => 
-        report.content_text.includes(ageFilter) || 
-        report.content_text.toLowerCase().includes(`age ${ageFilter}`)
-      );
-    }
-    
-    return filteredResults;
-  } catch (error) {
-    console.error('Error executing structured query:', error);
-    return [];
-  }
-}
 
 export default router;

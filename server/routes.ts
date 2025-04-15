@@ -28,6 +28,7 @@ import {
 import path from "path";
 import fs from "fs";
 import pdfParse from "pdf-parse";
+import { handleCheckSecrets } from './check-secrets';
 import PDFDocument from "pdfkit";
 import { exportDatabaseToJson } from "./scripts/export-database-to-json";
 
@@ -551,6 +552,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register the CER routes for Clinical Evaluation Reports
   app.use('/api/cers', cerRoutes);
   app.use('/api/cer/faers', faersRoutes);
+  
+  // Register API secrets checking endpoint
+  app.post('/api/check-secrets', handleCheckSecrets);
+  
+  // Register CER Analytics routes when file exists
+  try {
+    const cerAnalyticsRoutes = await import('./routes/cer-analytics-routes.js');
+    app.use('/api/cer', cerAnalyticsRoutes.default);
+  } catch (err) {
+    console.warn('CER Analytics routes not available:', err.message);
+  }
 
   // Register the JavaScript CSR routes for backward compatibility
   // Use dynamic import to load the CommonJS module
@@ -5767,6 +5779,5 @@ Provide a comprehensive, evidence-based response.`;
     }
   });
 
-  const httpServer = createServer(app);
-  return httpServer;
+  return createServer(app);
 }
