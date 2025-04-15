@@ -48,6 +48,7 @@ import SmartProtocolPage from "@/pages/SmartProtocolPage";
 import TrialPredictorPage from "@/pages/TrialPredictorPage";
 import DossierViewerPage from "@/pages/DossierViewerPage";
 import LoginPage from "@/pages/LoginPage";
+import SPRADirectPage from "@/pages/spra-direct-page";
 import SignupPage from "@/pages/SignupPage";
 import ExportLogPage from "@/pages/ExportLogPage";
 import AcademicRegulatoryPage from "@/pages/AcademicRegulatoryPage";
@@ -201,6 +202,7 @@ function Router() {
       <Route path="/wisdom-trace">{() => renderWithLayout(WisdomTrace)}</Route>
       <Route path="/design-oracle">{() => renderWithLayout(DesignOraclePage)}</Route>
       <Route path="/spra">{() => renderWithLayout(ProtocolIntelligencePage)}</Route>
+      <Route path="/spra-direct">{() => renderWithLayout(SPRADirectPage)}</Route>
       <Route path="/admin">{() => renderWithLayout(AdminPage)}</Route>
 
       {/* Fallback to 404 */}
