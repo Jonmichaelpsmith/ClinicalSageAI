@@ -8,6 +8,7 @@ import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import { extractTextFromPdf, generateEmbeddings, analyzeCerContent } from '../openai-service';
 import { z } from 'zod';
+import { clinicalIntelligenceService } from '../services/clinical-intelligence-service';
 
 // Define the CER table directly to match our database schema
 export const clinicalEvaluationReports = pgTable('clinical_evaluation_reports', {
@@ -164,8 +165,7 @@ router.post('/upload', upload.single('cerFile'), async (req, res) => {
     const [result] = await db.insert(clinicalEvaluationReports).values(validatedData).returning();
 
     // Add to semantic processing queue to ensure this document goes through the framework
-    const intelligenceService = ClinicalIntelligenceService.getInstance();
-    intelligenceService.addToProcessingQueue(result.cer_id, 'CER');
+    clinicalIntelligenceService.addToProcessingQueue(result.cer_id, 'CER');
     console.log(`Added CER ${result.cer_id} to semantic processing queue`);
 
     res.status(201).json({
