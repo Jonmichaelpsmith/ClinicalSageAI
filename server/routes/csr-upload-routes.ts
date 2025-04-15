@@ -5,6 +5,7 @@ import fs from 'fs';
 import { sql } from 'drizzle-orm';
 import { db } from '../db';
 import { csrExtractorService } from '../services/csr-extractor-service';
+import { clinicalIntelligenceService } from '../services/clinical-intelligence-service';
 
 const router = Router();
 
@@ -97,6 +98,10 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     // This will happen asynchronously so the response can be sent quickly
     csrExtractorService.processCSR(reportId)
       .catch(err => console.error(`Background processing error for CSR ID ${reportId}:`, err));
+    
+    // Add to semantic processing queue to ensure this document goes through the framework
+    clinicalIntelligenceService.addToProcessingQueue(reportId.toString(), 'CSR');
+    console.log(`Added CSR ${reportId} to semantic processing queue`);
     
     // Return immediate response
     res.status(201).json({
@@ -418,6 +423,10 @@ router.post('/upload-enhanced', upload.single('file'), async (req, res) => {
     // This will use our upgraded extraction capabilities including semantic, pharmacologic, and statistical insights
     csrExtractorService.processCSR(reportId)
       .catch(err => console.error(`Enhanced processing error for CSR ID ${reportId}:`, err));
+
+    // Add to semantic processing queue to ensure this document goes through the framework
+    clinicalIntelligenceService.addToProcessingQueue(reportId.toString(), 'CSR');
+    console.log(`Added CSR ${reportId} to semantic processing queue for enhanced analysis`);
     
     // Build path for the processed JSON file (will be created by processor)
     const jsonFilename = `CSR-${reportId}.json`;
