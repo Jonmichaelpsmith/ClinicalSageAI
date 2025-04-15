@@ -53,6 +53,7 @@ import ExportLogPage from "@/pages/ExportLogPage";
 import AcademicRegulatoryPage from "@/pages/AcademicRegulatoryPage";
 import AdvancedBiostatistics from "@/pages/AdvancedBiostatistics";
 import CSRInsightPage from "@/pages/CSRInsightPage";
+import CSRExtractorPage from "@/pages/CSRExtractorPage";
 import PlanningPage from "@/pages/PlanningPage";
 import InsightMemoryEngine from "@/pages/InsightMemoryEngine";
 import WisdomTrace from "@/pages/WisdomTrace";
