@@ -274,7 +274,7 @@ router.get('/search/text', async (req, res) => {
       .from(clinicalEvaluationReports)
       .where(
         and(
-          isNull(clinicalEvaluationReports.deletedAt),
+          isNull(clinicalEvaluationReports.deleted_at),
           like(clinicalEvaluationReports.content_text, `%${query}%`)
         )
       )
@@ -308,7 +308,7 @@ router.post('/search/semantic', async (req, res) => {
       SELECT *, 
         content_vector <=> '${JSON.stringify(queryEmbeddings)}' as similarity
       FROM clinical_evaluation_reports
-      WHERE "deletedAt" IS NULL
+      WHERE deleted_at IS NULL
       ORDER BY similarity
       LIMIT ${limit}
     `);
@@ -358,11 +358,11 @@ router.delete('/:cerId', async (req, res) => {
   try {
     const { cerId } = req.params;
     
-    // Soft delete by setting deletedAt
+    // Soft delete by setting deleted_at
     const [deleted] = await db
       .update(clinicalEvaluationReports)
       .set({
-        deletedAt: new Date(),
+        deleted_at: new Date(),
         status: 'Deleted'
       })
       .where(eq(clinicalEvaluationReports.cer_id, cerId))
