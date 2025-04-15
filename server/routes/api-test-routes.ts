@@ -1,0 +1,471 @@
+import { Router } from "express";
+import { type Request, type Response } from "express";
+import path from "path";
+import fs from "fs";
+
+const router = Router();
+
+/**
+ * Provides a simple API test interface that works without relying on the React frontend
+ */
+router.get('/spra-console', (req: Request, res: Response) => {
+  console.log('[API-TEST] SPRA Console accessed');
+  
+  res.setHeader('Content-Type', 'text/html');
+  res.status(200).send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>LumenTrialGuide.AI - SPRA API Console</title>
+      <style>
+        :root {
+          --primary: #3b82f6;
+          --primary-dark: #2563eb;
+          --gray-50: #f9fafb;
+          --gray-100: #f3f4f6;
+          --gray-200: #e5e7eb;
+          --gray-300: #d1d5db;
+          --gray-600: #4b5563;
+          --gray-700: #374151;
+          --gray-800: #1f2937;
+          --gray-900: #111827;
+        }
+        
+        * {
+          box-sizing: border-box;
+          margin: 0;
+          padding: 0;
+        }
+        
+        body {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          line-height: 1.5;
+          background-color: var(--gray-50);
+          color: var(--gray-800);
+          padding: 2rem;
+        }
+        
+        .container {
+          max-width: 1200px;
+          margin: 0 auto;
+        }
+        
+        h1 {
+          font-size: 1.875rem;
+          font-weight: 700;
+          margin-bottom: 1rem;
+          color: var(--gray-900);
+          background: linear-gradient(to right, var(--primary), var(--primary-dark));
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+          font-size: 1.125rem;
+          color: var(--gray-600);
+          margin-bottom: 2rem;
+        }
+        
+        .card {
+          background-color: white;
+          border-radius: 0.5rem;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+          border: 1px solid var(--gray-200);
+          margin-bottom: 1.5rem;
+          padding: 1.5rem;
+        }
+        
+        .form-group {
+          margin-bottom: 1rem;
+        }
+        
+        label {
+          display: block;
+          font-weight: 500;
+          margin-bottom: 0.5rem;
+          color: var(--gray-700);
+        }
+        
+        input, select, textarea {
+          width: 100%;
+          padding: 0.625rem;
+          border-radius: 0.375rem;
+          border: 1px solid var(--gray-300);
+          font-size: 0.875rem;
+        }
+        
+        textarea {
+          min-height: 120px;
+          font-family: monospace;
+        }
+        
+        button {
+          padding: 0.625rem 1.25rem;
+          background-color: var(--primary);
+          color: white;
+          font-weight: 500;
+          border-radius: 0.375rem;
+          border: none;
+          cursor: pointer;
+          margin-right: 0.5rem;
+        }
+        
+        button:hover {
+          background-color: var(--primary-dark);
+        }
+        
+        .grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 1.5rem;
+        }
+        
+        @media (max-width: 768px) {
+          .grid {
+            grid-template-columns: 1fr;
+          }
+        }
+        
+        pre {
+          background-color: var(--gray-100);
+          padding: 1rem;
+          border-radius: 0.5rem;
+          overflow-x: auto;
+          font-family: monospace;
+          font-size: 0.875rem;
+          margin-top: 1rem;
+        }
+        
+        .flex {
+          display: flex;
+        }
+        
+        .flex-col {
+          flex-direction: column;
+        }
+        
+        .gap-4 {
+          gap: 1rem;
+        }
+        
+        .text-sm {
+          font-size: 0.875rem;
+        }
+        
+        .spinner {
+          display: inline-block;
+          width: 1.5rem;
+          height: 1.5rem;
+          border: 2px solid rgba(59, 130, 246, 0.2);
+          border-top-color: var(--primary);
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+          margin-right: 0.5rem;
+        }
+        
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        
+        .hidden {
+          display: none;
+        }
+        
+        .endpoints-list {
+          margin-bottom: 1rem;
+        }
+        
+        .endpoint-item {
+          padding: 0.625rem;
+          background-color: var(--gray-100);
+          border-radius: 0.375rem;
+          margin-bottom: 0.5rem;
+          cursor: pointer;
+          transition: background-color 0.15s;
+        }
+        
+        .endpoint-item:hover {
+          background-color: var(--gray-200);
+        }
+        
+        .endpoint-method {
+          display: inline-block;
+          font-weight: 600;
+          width: 60px;
+        }
+        
+        .method-get {
+          color: #0891b2;
+        }
+        
+        .method-post {
+          color: #0d9488;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <h1>LumenTrialGuide.AI API Console</h1>
+        <p class="subtitle">Test and explore Strategic Protocol Recommendations Advisor API</p>
+        
+        <div class="card">
+          <h2>Available Endpoints</h2>
+          <div class="endpoints-list">
+            <div class="endpoint-item" data-endpoint="/api/spra/direct-health" data-method="GET" data-body="">
+              <span class="endpoint-method method-get">GET</span>
+              <span class="endpoint-path">/api/spra/direct-health</span>
+            </div>
+            <div class="endpoint-item" data-endpoint="/api/spra/direct-analyze" data-method="POST" data-body='{"sample_size": 100, "duration": 52, "therapeutic_area": "Oncology", "phase": "Phase 2", "randomization": "Double-blind", "primary_endpoint": "Overall Survival"}'>
+              <span class="endpoint-method method-post">POST</span>
+              <span class="endpoint-path">/api/spra/direct-analyze</span>
+            </div>
+            <div class="endpoint-item" data-endpoint="/__health" data-method="GET" data-body="">
+              <span class="endpoint-method method-get">GET</span>
+              <span class="endpoint-path">/__health</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="grid">
+          <div class="card">
+            <h2>API Request</h2>
+            <div class="form-group">
+              <label for="endpoint">Endpoint</label>
+              <input type="text" id="endpoint" value="/api/spra/direct-health" />
+            </div>
+            
+            <div class="form-group">
+              <label for="method">Method</label>
+              <select id="method">
+                <option value="GET">GET</option>
+                <option value="POST">POST</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label for="body">Request Body (JSON)</label>
+              <textarea id="body"></textarea>
+            </div>
+            
+            <button id="send-btn">Send Request</button>
+            <button id="clear-btn">Clear Results</button>
+          </div>
+          
+          <div class="card">
+            <h2>API Response</h2>
+            <div id="loading" class="hidden">
+              <div class="spinner"></div>
+              <span>Loading...</span>
+            </div>
+            <pre id="response">// Response will appear here</pre>
+          </div>
+        </div>
+        
+        <div class="card">
+          <h2>SPRA Quick Test</h2>
+          <p>Analyze and optimize your protocol with the SPRA tool</p>
+          
+          <div class="grid" style="margin-top: 1rem;">
+            <div class="flex flex-col gap-4">
+              <div class="form-group">
+                <label for="sample-size">Sample Size</label>
+                <input type="number" id="sample-size" value="100" min="10" max="1000" />
+              </div>
+              
+              <div class="form-group">
+                <label for="duration">Study Duration (weeks)</label>
+                <input type="number" id="duration" value="52" min="4" max="520" />
+              </div>
+              
+              <div class="form-group">
+                <label for="therapeutic-area">Therapeutic Area</label>
+                <select id="therapeutic-area">
+                  <option value="Oncology">Oncology</option>
+                  <option value="Cardiology">Cardiology</option>
+                  <option value="Neurology">Neurology</option>
+                  <option value="Immunology">Immunology</option>
+                  <option value="Infectious Disease">Infectious Disease</option>
+                  <option value="Respiratory">Respiratory</option>
+                  <option value="Gastroenterology">Gastroenterology</option>
+                  <option value="Endocrinology">Endocrinology</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="flex flex-col gap-4">
+              <div class="form-group">
+                <label for="phase">Study Phase</label>
+                <select id="phase">
+                  <option value="Phase 1">Phase 1</option>
+                  <option value="Phase 1/2">Phase 1/2</option>
+                  <option value="Phase 2" selected>Phase 2</option>
+                  <option value="Phase 2/3">Phase 2/3</option>
+                  <option value="Phase 3">Phase 3</option>
+                  <option value="Phase 4">Phase 4</option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label for="randomization">Randomization</label>
+                <select id="randomization">
+                  <option value="Double-blind" selected>Double-blind</option>
+                  <option value="Single-blind">Single-blind</option>
+                  <option value="Open-label">Open-label</option>
+                  <option value="Non-randomized">Non-randomized</option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label for="primary-endpoint">Primary Endpoint (optional)</label>
+                <input type="text" id="primary-endpoint" placeholder="e.g., Overall Survival" />
+              </div>
+            </div>
+          </div>
+          
+          <button id="analyze-btn" style="margin-top: 1rem;">Analyze Protocol</button>
+          <pre id="spra-response" style="margin-top: 1rem;">// SPRA analysis will appear here</pre>
+        </div>
+      </div>
+      
+      <script>
+        // DOM Elements
+        const endpointInput = document.getElementById('endpoint');
+        const methodSelect = document.getElementById('method');
+        const bodyTextarea = document.getElementById('body');
+        const sendButton = document.getElementById('send-btn');
+        const clearButton = document.getElementById('clear-btn');
+        const loadingIndicator = document.getElementById('loading');
+        const responseOutput = document.getElementById('response');
+        const endpointItems = document.querySelectorAll('.endpoint-item');
+        
+        // SPRA Form Elements
+        const sampleSizeInput = document.getElementById('sample-size');
+        const durationInput = document.getElementById('duration');
+        const therapeuticAreaSelect = document.getElementById('therapeutic-area');
+        const phaseSelect = document.getElementById('phase');
+        const randomizationSelect = document.getElementById('randomization');
+        const primaryEndpointInput = document.getElementById('primary-endpoint');
+        const analyzeButton = document.getElementById('analyze-btn');
+        const spraResponseOutput = document.getElementById('spra-response');
+        
+        // Event Listeners
+        sendButton.addEventListener('click', sendRequest);
+        clearButton.addEventListener('click', clearResponse);
+        analyzeButton.addEventListener('click', analyzeProtocol);
+        
+        // Set up endpoint item clicks
+        endpointItems.forEach(item => {
+          item.addEventListener('click', () => {
+            const endpoint = item.getAttribute('data-endpoint');
+            const method = item.getAttribute('data-method');
+            const body = item.getAttribute('data-body');
+            
+            endpointInput.value = endpoint;
+            methodSelect.value = method;
+            bodyTextarea.value = body || '';
+            
+            // Auto-adjust textarea height
+            bodyTextarea.style.height = 'auto';
+            bodyTextarea.style.height = (bodyTextarea.scrollHeight) + 'px';
+          });
+        });
+        
+        // Send API Request
+        async function sendRequest() {
+          const endpoint = endpointInput.value.trim();
+          const method = methodSelect.value;
+          const body = bodyTextarea.value.trim();
+          
+          if (!endpoint) {
+            alert('Please enter an endpoint');
+            return;
+          }
+          
+          // Show loading indicator
+          loadingIndicator.classList.remove('hidden');
+          responseOutput.textContent = 'Sending request...';
+          
+          try {
+            const options = {
+              method,
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+              }
+            };
+            
+            if (method !== 'GET' && body) {
+              options.body = body;
+            }
+            
+            const response = await fetch(endpoint, options);
+            const contentType = response.headers.get('content-type');
+            
+            let data;
+            if (contentType && contentType.includes('application/json')) {
+              data = await response.json();
+              responseOutput.textContent = JSON.stringify(data, null, 2);
+            } else {
+              data = await response.text();
+              responseOutput.textContent = data;
+            }
+          } catch (error) {
+            responseOutput.textContent = 'Error: ' + error.message;
+          } finally {
+            loadingIndicator.classList.add('hidden');
+          }
+        }
+        
+        // Clear Response
+        function clearResponse() {
+          responseOutput.textContent = '// Response will appear here';
+        }
+        
+        // Analyze Protocol
+        async function analyzeProtocol() {
+          const sampleSize = parseInt(sampleSizeInput.value);
+          const duration = parseInt(durationInput.value);
+          const therapeuticArea = therapeuticAreaSelect.value;
+          const phase = phaseSelect.value;
+          const randomization = randomizationSelect.value;
+          const primaryEndpoint = primaryEndpointInput.value;
+          
+          if (!sampleSize || !duration) {
+            alert('Please enter valid sample size and duration');
+            return;
+          }
+          
+          spraResponseOutput.textContent = 'Analyzing protocol...';
+          
+          try {
+            const response = await fetch('/api/spra/direct-analyze', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+              },
+              body: JSON.stringify({
+                sample_size: sampleSize,
+                duration: duration, 
+                therapeutic_area: therapeuticArea,
+                phase: phase,
+                randomization: randomization,
+                primary_endpoint: primaryEndpoint
+              })
+            });
+            
+            const data = await response.json();
+            spraResponseOutput.textContent = JSON.stringify(data, null, 2);
+          } catch (error) {
+            spraResponseOutput.textContent = 'Error: ' + error.message;
+          }
+        }
+      </script>
+    </body>
+    </html>
+  `);
+});
+
+export default router;

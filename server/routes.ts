@@ -15,6 +15,7 @@ import { generateProtocolTemplate, getStatisticalApproaches } from "./protocol-s
 import { exportService } from "./services/export-service";
 import academicProtocolAssessment from './routes/academic_protocol_assessment';
 import correctionRoutes from './routes/correction-routes';
+import apiTestRoutes from './routes/api-test-routes';
 import { startPythonService, registerPythonRoutes } from './python_bridge';
 // Legacy Hugging Face service has been replaced with OpenAI-based services
 // Migration notice: The HuggingFace service has been completely replaced with OpenAI-based services.
@@ -636,6 +637,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register Strategic Protocol Recommendations Advisor routes
   app.use('/api/spra', spraRoutes);
+  
+  // API Testing Console routes
+  app.use('/api-console', apiTestRoutes);
   
   // Register Strategic Report routes
   app.use('/api/strategic-reports', strategicReportRoutes);

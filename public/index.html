@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
-  <title>LumenTrialGuide.AI - Redirecting</title>
+  <title>LumenTrialGuide.AI - CSR Intelligence Platform</title>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
@@ -19,17 +19,22 @@
     .container {
       text-align: center;
       padding: 2rem;
-      max-width: 600px;
+      max-width: 800px;
       background-color: white;
       border-radius: 12px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 10px 15px rgba(0, 0, 0, 0.03);
     }
     h1 {
-      font-size: 1.875rem;
+      font-size: 2.25rem;
       margin-bottom: 1rem;
       background: linear-gradient(to right, #3b82f6, #4f46e5);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+    }
+    h2 {
+      font-size: 1.5rem;
+      margin: 2rem 0 1rem;
+      color: #1e293b;
     }
     p {
       margin-bottom: 1.5rem;
@@ -54,29 +59,162 @@
       text-decoration: none;
       font-weight: 600;
       transition: background-color 0.2s;
+      margin: 0 0.5rem 1rem;
+    }
+    .btn-secondary {
+      background-color: #6366f1;
     }
     .btn:hover {
       background-color: #2563eb;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .card-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      justify-content: center;
+      margin: 2rem 0;
+    }
+    .card {
+      background-color: #f8fafc;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      padding: 1.5rem;
+      width: 100%;
+      max-width: 300px;
+      text-align: left;
+      transition: all 0.2s;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.05);
+      border-color: #bfdbfe;
+    }
+    .card-icon {
+      width: 40px;
+      height: 40px;
+      margin-bottom: 1rem;
+      color: #3b82f6;
+    }
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: #1e293b;
+    }
+    .card-text {
+      font-size: 0.875rem;
+      color: #64748b;
+    }
+    .divider {
+      height: 1px;
+      width: 100%;
+      background-color: #e2e8f0;
+      margin: 2rem 0;
+    }
+    .logo {
+      width: 64px;
+      height: 64px;
+      margin-bottom: 1rem;
+    }
+    .footer {
+      margin-top: 2rem;
+      font-size: 0.875rem;
+      color: #94a3b8;
+    }
+    .stats {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+    .stat {
+      background-color: #f1f5f9;
+      border-radius: 6px;
+      padding: 0.75rem 1.25rem;
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #3b82f6;
+    }
+    .stat-label {
+      font-size: 0.75rem;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
     @keyframes spin {
       to { transform: rotate(360deg); }
+    }
+    @media (max-width: 640px) {
+      .container {
+        padding: 1.5rem;
+        margin: 1rem;
+      }
+      h1 {
+        font-size: 1.75rem;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="spinner"></div>
+    <div class="logo">📊</div>
     <h1>LumenTrialGuide.AI</h1>
-    <p>Loading the AI-powered CSR Intelligence Platform...</p>
-    <p>If you're not automatically redirected, please click the button below:</p>
-    <a href="/api/spra/test" class="btn">Launch Test Page</a>
+    <p>AI-powered Clinical Study Report Intelligence Platform for Lumen Biosciences</p>
+    
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-value">3,021</div>
+        <div class="stat-label">CSRs</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">27</div>
+        <div class="stat-label">Therapeutic Areas</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">853</div>
+        <div class="stat-label">Active CSRs</div>
+      </div>
+    </div>
+    
+    <h2>Available Tools</h2>
+    
+    <div class="card-container">
+      <div class="card">
+        <svg class="card-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        </svg>
+        <div class="card-title">Strategic Protocol Recommendations Advisor</div>
+        <p class="card-text">Analyze and optimize your clinical trial protocol design with evidence-based recommendations.</p>
+      </div>
+      
+      <div class="card">
+        <svg class="card-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+        </svg>
+        <div class="card-title">CSR Intelligence Engine</div>
+        <p class="card-text">Access insights from over 3,000 clinical study reports with our ICH E3-compliant semantic model.</p>
+      </div>
+    </div>
+    
+    <div class="divider"></div>
+    
+    <h2>Access The Platform</h2>
+    <p>Access our standalone tools while the main application is being configured:</p>
+    
+    <div>
+      <a href="/spra-standalone.html" class="btn">Strategic Protocol Advisor</a>
+      <a href="/api/spra/test" class="btn btn-secondary">API Test Tools</a>
+    </div>
+    
+    <div class="footer">
+      © 2025 LumenTrialGuide.AI. All rights reserved.
+    </div>
   </div>
-
-  <script>
-    // Try to redirect to the SPRA test page after a slight delay
-    setTimeout(() => {
-      window.location.href = '/api/spra/test';
-    }, 2500);
-  </script>
 </body>
 </html>
