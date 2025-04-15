@@ -82,6 +82,7 @@ import { csrSearchRouter } from './routes/csr_search_routes';
 import { registerSimilarGoalsRoutes } from './routes/similar-goals-routes.js';
 import { registerSubscriptionsRoutes } from './routes/reports/subscriptions-routes';
 import intelRoutes from './routes/intel-routes';
+import spraRoutes from './routes/spra-routes';
 import { 
   fetchClinicalTrialData, 
   importTrialsFromCsv, 
@@ -592,6 +593,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register Similar Goals Search routes
   registerSimilarGoalsRoutes(app);
+  
+  // Register Strategic Protocol Recommendations Advisor routes
+  app.use('/api/spra', spraRoutes);
   
   // Register Strategic Report routes
   app.use('/api/strategic-reports', strategicReportRoutes);
