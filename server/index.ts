@@ -8,6 +8,20 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Add CORS headers middleware
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  
+  // Handling preflight requests
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  
+  next();
+});
+
 // Simple request logging middleware
 app.use((req, res, next) => {
   const start = Date.now();
@@ -26,6 +40,24 @@ app.use((req, res, next) => {
     // Add a quick health-check endpoint that will respond immediately
     app.get('/__health', (_req, res) => {
       res.status(200).json({ status: 'ok', message: 'LumenTrialGuide.AI server is running' });
+    });
+    
+    // Add a wildcard route to ensure the React app is served for client-side routing paths
+    app.get('*', (req, res, next) => {
+      // Skip API routes and let them be handled by their own handlers
+      if (req.path.startsWith('/api/')) {
+        return next();
+      }
+      
+      // Skip health check endpoints
+      if (req.path === '/__health' || req.path === '/__startup_check') {
+        return next();
+      }
+      
+      // This will be handled later by Vite to serve the React app
+      // Storing a flag to indicate this should be handled by Vite
+      req.url = '/';
+      next();
     });
     
     // Direct implementation of SPRA health route to bypass router issues
@@ -252,7 +284,18 @@ app.use((req, res, next) => {
         try {
           log('Continuing with full server initialization...');
           
-          // Register all API routes
+          // Setup Vite or static serving first, so it handles the root route
+          if (app.get("env") === "development") {
+            log('Setting up Vite for development...');
+            await setupVite(app, server);
+            log('Vite setup completed');
+          } else {
+            log('Setting up static file serving...');
+            serveStatic(app);
+            log('Static file serving setup completed');
+          }
+          
+          // Register all API routes after Vite setup
           await registerRoutes(app);
           log('Routes registered successfully');
           
@@ -264,17 +307,6 @@ app.use((req, res, next) => {
             log(`Error middleware triggered: ${err.message || 'Unknown error'}`);
             res.status(status).json({ message });
           });
-          
-          // Setup Vite or static serving
-          if (app.get("env") === "development") {
-            log('Setting up Vite for development...');
-            await setupVite(app, server);
-            log('Vite setup completed');
-          } else {
-            log('Setting up static file serving...');
-            serveStatic(app);
-            log('Static file serving setup completed');
-          }
           
           // Start background tasks
           log('Starting clinical trial data updater...');
