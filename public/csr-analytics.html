@@ -397,7 +397,7 @@
       
       // Fetch upload trends data (default: monthly)
       function fetchUploadTrends(timeframe = 'monthly') {
-        fetch(`/api/analytics/upload-trends?timeframe=${timeframe}`)
+        fetch(`/api/direct/analytics/upload-trends?timeframe=${timeframe}`)
           .then(response => response.json())
           .then(data => {
             const labels = data.map(item => item.period);
@@ -472,7 +472,7 @@
       });
       
       // Fetch endpoints data
-      fetch('/api/analytics/endpoints')
+      fetch('/api/direct/analytics/endpoints')
         .then(response => response.json())
         .then(data => {
           const endpointsTable = document.getElementById('endpointsTable');
@@ -517,7 +517,7 @@
         });
       
       // Fetch sponsors data
-      fetch('/api/analytics/sponsors')
+      fetch('/api/direct/analytics/sponsors')
         .then(response => response.json())
         .then(data => {
           // Sort by count in descending order
