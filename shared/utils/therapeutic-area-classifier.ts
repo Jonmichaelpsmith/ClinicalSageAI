@@ -219,21 +219,27 @@ export function classifyTherapeuticArea(
       }
     }
 
-    // Check for primary keyword matches (high confidence indicators)
-    const primaryMatches = definition.primaryKeywords.filter(keyword => 
-      normalizedText.includes(keyword.toLowerCase())
-    );
+    // Enhanced pattern matching - look for keyword boundaries using regex instead of just includes()
+    // This improves precision by avoiding partial word matches
+    const primaryMatches = definition.primaryKeywords.filter(keyword => {
+      const pattern = new RegExp(`\\b${keyword.toLowerCase()}\\b`, 'i');
+      return pattern.test(normalizedText);
+    });
     
     // Check for secondary keyword matches (supporting evidence)
-    const secondaryMatches = definition.secondaryKeywords.filter(keyword => 
-      normalizedText.includes(keyword.toLowerCase())
-    );
+    const secondaryMatches = definition.secondaryKeywords.filter(keyword => {
+      const pattern = new RegExp(`\\b${keyword.toLowerCase()}\\b`, 'i');
+      return pattern.test(normalizedText);
+    });
 
-    // Calculate confidence score based on matched keywords
-    // Primary keywords are weighted more heavily
+    // Calculate confidence score with improved weighting
+    // Primary keywords are weighted even more heavily to prioritize precise matches
     const totalKeywords = definition.primaryKeywords.length + definition.secondaryKeywords.length;
-    const weightedMatches = (primaryMatches.length * 3) + secondaryMatches.length;
+    const weightedMatches = (primaryMatches.length * 4) + secondaryMatches.length;
     const confidence = weightedMatches / (totalKeywords * 1.5);
+    
+    // Boost confidence for multiple primary matches (strong signal)
+    const primaryMatchBonus = primaryMatches.length >= 2 ? 0.2 : 0;
     
     // Additional pattern-based matching if provided
     let patternBonus = 0;
@@ -244,7 +250,7 @@ export function classifyTherapeuticArea(
       patternBonus = patternMatches.length * 0.2; // Each pattern match adds a bonus
     }
 
-    const finalConfidence = Math.min(0.99, confidence + patternBonus);
+    const finalConfidence = Math.min(0.99, confidence + patternBonus + primaryMatchBonus);
     
     // Track all matched keywords for explanation
     const allMatches = [...primaryMatches, ...secondaryMatches];

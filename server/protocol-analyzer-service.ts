@@ -6,6 +6,7 @@ import { classifyTherapeuticArea, getTherapeuticArea } from '../shared/utils/the
 export interface ProtocolData {
   phase: string;
   indication: string;
+  sponsor: string;
   sample_size: number;
   duration_weeks: number;
   primary_endpoint: string;
@@ -161,12 +162,19 @@ export class ProtocolAnalyzerService {
       
       const arms = armsMatch ? parseInt(armsMatch[1]) : 2;
       
+      // Extract sponsor information
+      const sponsorMatch = normalizedText.match(/(?:sponsor|conducted by|developed by):\s*([^\n\.]+)/i) ||
+                          normalizedText.match(/(?:sponsor|conducted by|developed by)[^:]*?(?:is|will be)\s+([^\n\.]+)/i);
+      
+      const sponsor = sponsorMatch ? sponsorMatch[1].trim() : "Lumen Biosciences";
+      
       // Generate a summary (in a real implementation, this would use an AI summarizer)
       const summary = `Protocol for a ${phase} clinical trial investigating ${indication} with ${sample_size} participants over ${duration_weeks} weeks. The primary endpoint is ${primary_endpoint}.`;
       
       return {
         phase,
         indication,
+        sponsor,
         sample_size,
         duration_weeks,
         primary_endpoint,
@@ -244,6 +252,7 @@ export class ProtocolAnalyzerService {
       return similar.map(protocol => ({
         id: protocol.id,
         title: protocol.title,
+        sponsor: protocol.sponsor || "Lumen Biosciences", // Include sponsor in similar protocols
         phase: protocol.phase, 
         indication: protocol.indication,
         similarity: Math.floor(Math.random() * 40) + 60, // Random similarity score for demo
