@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/contexts/AuthContext";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
+import LandingPage from "@/pages/LandingPage";
 import Dashboard from "@/pages/Dashboard";
 import Reports from "@/pages/Reports";
 import Upload from "@/pages/Upload";
@@ -137,7 +138,7 @@ function Router() {
   return (
     <Switch>
       {/* Landing page */}
-      <Route path="/" component={Home} />
+      <Route path="/" component={LandingPage} />
 
       {/* Auth pages */}
       <Route path="/login" component={LoginPage} />

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+  <title>LumenTrialGuide.AI - Redirecting</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      background: linear-gradient(to bottom, #f9fafb, #f1f5f9);
+      color: #1e293b;
+    }
+    .container {
+      text-align: center;
+      padding: 2rem;
+      max-width: 600px;
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 10px 15px rgba(0, 0, 0, 0.03);
+    }
+    h1 {
+      font-size: 1.875rem;
+      margin-bottom: 1rem;
+      background: linear-gradient(to right, #3b82f6, #4f46e5);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    p {
+      margin-bottom: 1.5rem;
+      color: #64748b;
+      line-height: 1.5;
+    }
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 3px solid rgba(59, 130, 246, 0.2);
+      border-top-color: #3b82f6;
+      animation: spin 1s infinite linear;
+      margin: 0 auto 1.5rem auto;
+    }
+    .btn {
+      display: inline-block;
+      background-color: #3b82f6;
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: background-color 0.2s;
+    }
+    .btn:hover {
+      background-color: #2563eb;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="spinner"></div>
+    <h1>LumenTrialGuide.AI</h1>
+    <p>Loading the AI-powered CSR Intelligence Platform...</p>
+    <p>If you're not automatically redirected, please click the button below:</p>
+    <a href="/api/spra/test" class="btn">Launch Test Page</a>
+  </div>
+
+  <script>
+    // Try to redirect to the SPRA test page after a slight delay
+    setTimeout(() => {
+      window.location.href = '/api/spra/test';
+    }, 2500);
+  </script>
+</body>
+</html>
