@@ -15,8 +15,6 @@ import { generateProtocolTemplate, getStatisticalApproaches } from "./protocol-s
 import { exportService } from "./services/export-service";
 import academicProtocolAssessment from './routes/academic_protocol_assessment';
 import correctionRoutes from './routes/correction-routes';
-import apiTestRoutes from './routes/api-test-routes';
-import { startPythonService, registerPythonRoutes } from './python_bridge';
 // Legacy Hugging Face service has been replaced with OpenAI-based services
 // Migration notice: The HuggingFace service has been completely replaced with OpenAI-based services.
 import { 
@@ -83,7 +81,6 @@ import { csrSearchRouter } from './routes/csr_search_routes';
 import { registerSimilarGoalsRoutes } from './routes/similar-goals-routes.js';
 import { registerSubscriptionsRoutes } from './routes/reports/subscriptions-routes';
 import intelRoutes from './routes/intel-routes';
-import spraRoutes from './routes/spra-routes';
 import { 
   fetchClinicalTrialData, 
   importTrialsFromCsv, 
@@ -94,7 +91,7 @@ import {
 // Import CSR tables from sage-plus-service instead of shared schema
 import { csrReports, csrSegments } from "./sage-plus-service";
 // Import database-to-JSON export function
-// Already imported on line 31, removed duplicate import
+import { exportDatabaseToJson } from "./scripts/export-database-to-json";
 // Define a schema for csrDetails since it's not in schema.ts
 import { pgTable, serial, integer, varchar, text, timestamp, json, boolean } from "drizzle-orm/pg-core";
 
@@ -381,88 +378,6 @@ import alignmentRoutes from './routes/alignment-routes';
 import sessionRoutes from './routes/session_routes';
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Health check endpoint for Replit - responds immediately to help the server start quickly
-  app.get('/__startup_check', (req, res) => {
-    res.status(200).json({ status: 'ok', message: 'LumenTrialGuide.AI server is running' });
-  });
-  
-  // Debug endpoint to list all registered routes
-  app.get('/api/debug/routes', (req, res) => {
-    const routes: any[] = [];
-    
-    app._router.stack.forEach((middleware: any) => {
-      if (middleware.route) {
-        // This is a route directly on the app
-        routes.push({
-          path: middleware.route.path,
-          method: Object.keys(middleware.route.methods)[0]
-        });
-      } else if (middleware.name === 'router') {
-        // This is a router middleware
-        middleware.handle.stack.forEach((handler: any) => {
-          if (handler.route) {
-            const routePath = handler.route.path;
-            const basePath = middleware.regexp.toString()
-              .replace('\\/?(?=\\/|$)', '')
-              .replace(/^\\\//, '')
-              .replace(/\\\//g, '/')
-              .replace(/\?\(\?=\\\/\|\$\)/, '');
-            
-            const fullPath = basePath.replace(/\\\//g, '/').replace(/\^\\/, '/').replace(/\(\?:\(\[\^\\\/\]\+\?\)\)/g, ':param');
-            
-            routes.push({
-              path: (fullPath + routePath).replace(/\\/g, ''),
-              method: Object.keys(handler.route.methods)[0]
-            });
-          }
-        });
-      }
-    });
-    
-    res.json({ routes });
-  });
-  // Check if a file exists in a session archive
-  app.post('/api/files/check-session-file', async (req: Request, res: Response) => {
-    try {
-      const { session_id, file_name } = req.body;
-      
-      if (!session_id || !file_name) {
-        return res.status(400).json({
-          success: false,
-          message: 'Missing required parameters: session_id and file_name'
-        });
-      }
-      
-      // Path to the session archive
-      const sessionDir = path.join(process.cwd(), 'lumen_reports_backend', 'sessions', session_id);
-      const filePath = path.join(sessionDir, file_name);
-      
-      // Check if the file exists
-      const exists = fs.existsSync(filePath);
-      
-      res.json({
-        success: true,
-        exists,
-        file_path: exists ? filePath : null
-      });
-    } catch (error) {
-      console.error('Error checking session file:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to check if session file exists'
-      });
-    }
-  });
-  // Start and register Python FastAPI service for enhanced CSR context and TA classification
-  try {
-    await startPythonService();
-    registerPythonRoutes(app);
-    console.log('✅ Python FastAPI service started and routes registered');
-  } catch (error) {
-    console.error('⚠️ Failed to start Python FastAPI service:', error);
-    console.log('⚠️ Enhanced CSR context features will not be available');
-  }
-  
   // Register session API routes
   app.use('/api/session', sessionRoutes);
   
@@ -635,12 +550,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register Similar Goals Search routes
   registerSimilarGoalsRoutes(app);
   
-  // Register Strategic Protocol Recommendations Advisor routes
-  app.use('/api/spra', spraRoutes);
-  
-  // API Testing Console routes
-  app.use('/api-console', apiTestRoutes);
-  
   // Register Strategic Report routes
   app.use('/api/strategic-reports', strategicReportRoutes);
   
@@ -656,129 +565,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register Export Routes
   app.use('/api/export', exportRoutes);
   
-  // Node.js fallback for planning/init when Python service is unavailable
-  app.post('/api/planning/init', async (req, res) => {
-    try {
-      console.log('Fallback planning/init endpoint called');
-      const { session_id, csr_id } = req.body;
-      
-      if (!session_id || !csr_id) {
-        console.warn('Missing required fields in planning/init request');
-        return res.status(400).json({
-          success: false,
-          message: 'Missing required fields: session_id and csr_id'
-        });
-      }
-      
-      console.log(`Initializing planning session ${session_id} with CSR ${csr_id} using Node.js fallback`);
-      
-      // Ensure the sessions directory exists
-      const sessionsDir = path.join(process.cwd(), 'lumen_reports_backend', 'sessions', session_id);
-      try {
-        fs.mkdirSync(sessionsDir, { recursive: true });
-        console.log(`Created sessions directory: ${sessionsDir}`);
-      } catch (dirError) {
-        console.error(`Failed to create sessions directory: ${dirError}`);
-        // Continue anyway since the error might be that it already exists
-      }
-      
-      // Create a placeholder file if needed (actual file will be created by Python service if available)
-      const placeholderPath = path.join(sessionsDir, 'session_initialized.json');
-      try {
-        fs.writeFileSync(placeholderPath, JSON.stringify({ 
-          session_id, 
-          csr_id,
-          initialized_at: new Date().toISOString(),
-          python_service_available: false
-        }, null, 2));
-        console.log(`Created session initialization file: ${placeholderPath}`);
-      } catch (fileError) {
-        console.error(`Failed to create session init file: ${fileError}`);
-        // This is a critical error, but we'll try to continue
-      }
-      
-      // Generate fallback IND document
-      try {
-        // Try to find the CSR data
-        const intelligenceDir = path.join(process.cwd(), 'data/intelligence_db');
-        
-        if (!fs.existsSync(intelligenceDir)) {
-          console.warn(`Intelligence directory doesn't exist: ${intelligenceDir}`);
-          fs.mkdirSync(intelligenceDir, { recursive: true });
-          console.log(`Created intelligence directory: ${intelligenceDir}`);
-        }
-        
-        const csrPath = path.join(intelligenceDir, `${csr_id}.json`);
-        
-        if (fs.existsSync(csrPath)) {
-          console.log(`Found CSR file for ${csr_id}, generating simplified IND document...`);
-          const csrData = JSON.parse(fs.readFileSync(csrPath, 'utf8'));
-          
-          // Extract basic data for placeholder document
-          const molecule = csrData.meta?.molecule || 'unspecified';
-          const moa = csrData.pharmacology?.moa_explained || csrData.meta?.moa || 'unspecified';
-          const indication = csrData.indication || 'unspecified indication';
-          const endpoint = csrData.efficacy?.primary?.[0] || '';
-          const rationale = csrData.semantic?.design_rationale || '';
-          
-          // As a temporary fallback, create a JSON document instead
-          const indData = {
-            title: "LumenTrialGuide.AI – IND Module 2.5",
-            study_id: session_id,
-            csr_source: csr_id,
-            generated_at: new Date().toISOString(),
-            molecule,
-            moa,
-            indication,
-            primary_endpoint: endpoint,
-            design_rationale: rationale,
-            note: "This is a simplified IND document generated by the Node.js fallback service."
-          };
-          
-          // Save as JSON (in real implementation, we would generate a DOCX file)
-          const indJsonPath = path.join(sessionsDir, 'ind_module_with_context.json');
-          fs.writeFileSync(indJsonPath, JSON.stringify(indData, null, 2));
-          
-          console.log(`Successfully generated fallback IND document for session ${session_id}`);
-        } else {
-          console.warn(`CSR file not found: ${csrPath}`);
-          
-          // Create a minimal fallback document anyway
-          const indData = {
-            title: "LumenTrialGuide.AI – IND Module 2.5",
-            study_id: session_id,
-            csr_source: csr_id,
-            generated_at: new Date().toISOString(),
-            note: "This is a minimal IND document generated by the Node.js fallback service."
-          };
-          
-          const indJsonPath = path.join(sessionsDir, 'ind_module_with_context.json');
-          fs.writeFileSync(indJsonPath, JSON.stringify(indData, null, 2));
-          
-          console.log(`Generated minimal fallback IND document for session ${session_id}`);
-        }
-      } catch (docError) {
-        console.error('Error generating fallback IND document:', docError);
-        // Non-critical error, continue with session initialization
-      }
-      
-      // Return success response
-      console.log(`Successfully initialized planning session ${session_id} with fallback`);
-      return res.json({
-        status: "initialized",
-        session_id,
-        csr_id,
-        message: "Session initialized with Node.js fallback (Python service unavailable)"
-      });
-    } catch (error) {
-      console.error('Error in planning init fallback:', error);
-      res.status(500).json({
-        success: false,
-        message: error instanceof Error ? error.message : 'Failed to initialize planning session'
-      });
-    }
-  });
-  
   // Register Alignment Routes
   app.use('/api', alignmentRoutes);
   
@@ -791,18 +577,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     fs.mkdirSync(EXPORTS_DIR, { recursive: true });
   }
   app.use('/exports', express.static(EXPORTS_DIR));
-  
-  // Serve session files for IND documents and other generated assets
-  try {
-    const SESSIONS_DIR = path.join(process.cwd(), 'lumen_reports_backend', 'sessions');
-    if (!fs.existsSync(SESSIONS_DIR)) {
-      fs.mkdirSync(SESSIONS_DIR, { recursive: true });
-    }
-    app.use('/static/lumen_reports_backend/sessions', express.static(SESSIONS_DIR));
-    console.log('Successfully configured static file serving for IND documents');
-  } catch (error) {
-    console.error('Error setting up static file serving for sessions directory:', error);
-  }
   
   // Register Reports Manifest Routes
   app.use('/api/reports', reportsManifestRoutes);

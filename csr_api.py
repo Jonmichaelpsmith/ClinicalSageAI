@@ -5,7 +5,7 @@ import os
 import json
 from typing import Dict, List, Optional, Any, Union
 
-from fastapi import FastAPI, HTTPException, Query, Request, APIRouter
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import uvicorn
@@ -18,14 +18,8 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
-# Create a router for CSR API endpoints that can be used by other modules
-router = APIRouter(tags=["CSR"])
-
 # Import protocol improvement API
 from server.protocol_improvement_api import router as protocol_router
-
-# Import intelligence indicators API
-from server.intelligence_indicators import register_intelligence_routes
 
 # Initialize the FastAPI app
 app = FastAPI(
@@ -45,12 +39,6 @@ app.add_middleware(
 
 # Include protocol improvement router
 app.include_router(protocol_router)
-
-# Include CSR router
-app.include_router(router)
-
-# Register the intelligence indicators routes
-register_intelligence_routes(app)
 
 # Initialize the search engine
 search_engine = CSRSearchEngine()
@@ -89,16 +77,9 @@ async def root():
             {"path": "/api/match-protocol", "method": "POST", "description": "Find similar CSRs to a draft protocol"},
             {"path": "/api/protocol/improve", "method": "POST", "description": "Generate protocol improvement recommendations"},
             {"path": "/api/protocol/save-version", "method": "POST", "description": "Save a protocol version"},
-            {"path": "/api/protocol/versions/{protocol_id}", "method": "GET", "description": "Get versions of a protocol"},
-            {"path": "/api/session/intelligence-indicators/{session_id}", "method": "GET", "description": "Check which intelligence artifacts are available for a session"}
+            {"path": "/api/protocol/versions/{protocol_id}", "method": "GET", "description": "Get versions of a protocol"}
         ]
     }
-    
-# Add the same root endpoint to the router for external modules
-@router.get("/")
-async def router_root():
-    """Root endpoint providing API information"""
-    return await root()
 
 @app.get("/api/csrs/query")
 async def query_csrs(
@@ -135,26 +116,6 @@ async def query_csrs(
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error searching CSRs: {str(e)}")
-        
-# Add the same endpoint to the router for external modules
-@router.get("/api/csrs/query")
-async def router_query_csrs(
-    query_text: Optional[str] = None,
-    indication: Optional[str] = None,
-    phase: Optional[str] = None,
-    outcome: Optional[str] = None,
-    min_sample_size: Optional[int] = None,
-    limit: int = 10
-):
-    """Search for CSRs using text query and/or field filters"""
-    return await query_csrs(
-        query_text=query_text,
-        indication=indication,
-        phase=phase,
-        outcome=outcome,
-        min_sample_size=min_sample_size,
-        limit=limit
-    )
         
 @app.get("/api/csrs/fast-query")
 async def fast_query_csrs(
@@ -206,26 +167,6 @@ async def fast_query_csrs(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error in fast search: {str(e)}")
 
-# Add the same endpoint to the router for external modules
-@router.get("/api/csrs/fast-query")
-async def router_fast_query_csrs(
-    query_text: Optional[str] = None,
-    indication: Optional[str] = None,
-    phase: Optional[str] = None,
-    outcome: Optional[str] = None,
-    min_sample_size: Optional[int] = None,
-    limit: int = 10
-):
-    """Fast in-memory search for CSRs using text query and field filters"""
-    return await fast_query_csrs(
-        query_text=query_text,
-        indication=indication,
-        phase=phase,
-        outcome=outcome,
-        min_sample_size=min_sample_size,
-        limit=limit
-    )
-
 @app.get("/api/csrs/{csr_id}")
 async def get_csr(csr_id: str):
     """Get details for a specific CSR by ID"""
@@ -240,12 +181,6 @@ async def get_csr(csr_id: str):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving CSR: {str(e)}")
-        
-# Add the same endpoint to the router for external modules
-@router.get("/api/csrs/{csr_id}")
-async def router_get_csr(csr_id: str):
-    """Get details for a specific CSR by ID"""
-    return await get_csr(csr_id)
 
 @app.get("/api/csrs/stats")
 async def get_stats():
@@ -255,12 +190,6 @@ async def get_stats():
         return stats
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving CSR stats: {str(e)}")
-        
-# Add the same endpoint to the router for external modules
-@router.get("/api/csrs/stats")
-async def router_get_stats():
-    """Get statistics about the CSR database"""
-    return await get_stats()
 
 @app.post("/api/match-protocol")
 async def match_protocol(protocol: CSRProtocol):
@@ -302,12 +231,6 @@ async def match_protocol(protocol: CSRProtocol):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error matching protocol: {str(e)}")
-
-# Add the same endpoint to the router for external modules
-@router.post("/api/match-protocol")
-async def router_match_protocol(protocol: CSRProtocol):
-    """Find CSRs similar to a draft protocol"""
-    return await match_protocol(protocol)
 
 # Main function to run the API server
 def main():

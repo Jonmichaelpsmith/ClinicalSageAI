@@ -6,7 +6,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/contexts/AuthContext";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
-import LandingPage from "@/pages/LandingPage";
 import Dashboard from "@/pages/Dashboard";
 import Reports from "@/pages/Reports";
 import Upload from "@/pages/Upload";
@@ -49,7 +48,6 @@ import SmartProtocolPage from "@/pages/SmartProtocolPage";
 import TrialPredictorPage from "@/pages/TrialPredictorPage";
 import DossierViewerPage from "@/pages/DossierViewerPage";
 import LoginPage from "@/pages/LoginPage";
-import SPRADirectPage from "@/pages/spra-direct-page";
 import SignupPage from "@/pages/SignupPage";
 import ExportLogPage from "@/pages/ExportLogPage";
 import AcademicRegulatoryPage from "@/pages/AcademicRegulatoryPage";
@@ -60,7 +58,6 @@ import InsightMemoryEngine from "@/pages/InsightMemoryEngine";
 import WisdomTrace from "@/pages/WisdomTrace";
 import SubscriptionsPage from "@/pages/SubscriptionsPage";
 import ExampleReportsPage from "@/pages/ExampleReportsPage";
-import ProtocolIntelligencePage from "@/pages/protocol-intelligence-page";
 import { applyCompactStyling } from "./lib/ui-utils"; // Added import
 
 
@@ -93,11 +90,11 @@ function AppLayout({ children }: { children: React.ReactNode }) {
           setSearchQuery={setSearchQuery} 
         />
 
-        <main className="flex-1 py-3 px-2 sm:px-3 lg:px-4 max-w-7xl mx-auto w-full animate-fade-in">
+        <main className="flex-1 py-4 px-3 sm:px-4 lg:px-6 max-w-7xl mx-auto w-full animate-fade-in">
           {children}
         </main>
 
-        <footer className="py-3 px-2 sm:px-3 lg:px-4 border-t border-gray-200/70 dark:border-gray-800/50 mt-auto backdrop-blur-sm bg-white/60 dark:bg-slate-900/60">
+        <footer className="py-4 px-3 sm:px-4 lg:px-6 border-t border-gray-200/70 dark:border-gray-800/50 mt-auto backdrop-blur-sm bg-white/60 dark:bg-slate-900/60">
           <div className="max-w-7xl mx-auto w-full">
             <div className="flex flex-col md:flex-row justify-between items-center">
               <div className="text-sm text-slate-500 dark:text-slate-400">
@@ -138,7 +135,7 @@ function Router() {
   return (
     <Switch>
       {/* Landing page */}
-      <Route path="/" component={LandingPage} />
+      <Route path="/" component={Home} />
 
       {/* Auth pages */}
       <Route path="/login" component={LoginPage} />
@@ -156,7 +153,7 @@ function Router() {
       <Route path="/use-case-gallery">{() => renderWithLayout(UseCasesPage)}</Route>
       <Route path="/protocol-generator">{() => renderWithLayout(ProtocolGenerator)}</Route>
       <Route path="/protocol-designer">{() => renderWithLayout(ProtocolGenerator)}</Route>
-      <Route path="/protocol-intelligence">{() => renderWithLayout(ProtocolIntelligencePage)}</Route>
+      <Route path="/protocol-intelligence">{() => renderWithLayout(ProtocolIntelligenceBuilder)}</Route>
       <Route path="/study-design-agent">{() => renderWithLayout(StudyDesignAgent)}</Route>
       <Route path="/translation">{() => renderWithLayout(Translation)}</Route>
       <Route path="/csr-extraction-guide">{() => renderWithLayout(CsrExtractionGuide)}</Route>
@@ -198,12 +195,11 @@ function Router() {
       <Route path="/academic-regulatory">{() => renderWithLayout(AcademicRegulatoryPage)}</Route>
       <Route path="/advanced-biostatistics">{() => renderWithLayout(AdvancedBiostatistics)}</Route>
       <Route path="/csr-insights">{() => renderWithLayout(CSRInsightPage)}</Route>
+      <Route path="/csr-extractor">{() => renderWithLayout(CSRExtractorPage)}</Route>
       <Route path="/planning">{() => renderWithLayout(PlanningPage)}</Route>
       <Route path="/insight-engine">{() => renderWithLayout(InsightMemoryEngine)}</Route>
       <Route path="/wisdom-trace">{() => renderWithLayout(WisdomTrace)}</Route>
       <Route path="/design-oracle">{() => renderWithLayout(DesignOraclePage)}</Route>
-      <Route path="/spra">{() => renderWithLayout(ProtocolIntelligencePage)}</Route>
-      <Route path="/spra-direct">{() => renderWithLayout(SPRADirectPage)}</Route>
       <Route path="/admin">{() => renderWithLayout(AdminPage)}</Route>
 
       {/* Fallback to 404 */}

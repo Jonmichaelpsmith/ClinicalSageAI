@@ -72,20 +72,18 @@ export class ProtocolAnalyzerService {
         // Extract the explicit statement and classify it
         const explicitIndication = indicationMatch[1].trim();
         const classificationResult = classifyTherapeuticArea(explicitIndication, { 
-          confidenceThreshold: 0.2, // Lowered from 0.4 to 0.2
-          enableLogging: true,
-          allowUnknown: false // Prevent "Unknown" classification
+          confidenceThreshold: 0.4,
+          enableLogging: true 
         });
         
         // If we got a high-confidence match, use the therapeutic area name
-        if (classificationResult.confidence >= 0.4) { // Lowered from 0.7 to 0.4
+        if (classificationResult.confidence >= 0.7) {
           indication = classificationResult.area;
         } else {
           // Otherwise use the explicit text but also run full-text classification
           const fullTextResult = classifyTherapeuticArea(protocolText, { 
-            confidenceThreshold: 0.2, // Lowered from 0.3 to 0.2
-            enableLogging: true,
-            allowUnknown: false // Prevent "Unknown" classification
+            confidenceThreshold: 0.3,
+            enableLogging: true 
           });
           
           // If full-text classification has higher confidence, use that
@@ -100,9 +98,8 @@ export class ProtocolAnalyzerService {
       } else {
         // No explicit indication found, use full text classification
         const classificationResult = classifyTherapeuticArea(protocolText, { 
-          confidenceThreshold: 0.2, // Lowered from 0.3 to 0.2
-          enableLogging: true,
-          allowUnknown: false // Prevent "Unknown" classification
+          confidenceThreshold: 0.3,
+          enableLogging: true 
         });
         
         indication = classificationResult.area;
