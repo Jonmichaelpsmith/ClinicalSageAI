@@ -9,10 +9,14 @@ using OpenAI's API based on FAERS data.
 import os
 import sys
 import json
+import time
 from datetime import datetime
 from typing import Dict, Any, Optional
 
 import openai
+
+# Import logging utilities
+from logging_utils import logger, timed_function, generate_request_id
 
 def check_api_key():
     """Verify that the OpenAI API key is available"""
@@ -21,6 +25,7 @@ def check_api_key():
         return False
     return True
 
+@timed_function
 def generate_cer_narrative(faers_data: Dict[str, Any], product_name: str = None) -> str:
     """
     Generate a structured CER narrative from FAERS data.
@@ -32,8 +37,16 @@ def generate_cer_narrative(faers_data: Dict[str, Any], product_name: str = None)
     Returns:
         Structured CER narrative text
     """
+    # Generate request ID for tracking this process
+    process_id = generate_request_id()
+    
+    # Extract NDC code for logging
+    ndc_code = faers_data.get("drug_info", {}).get("ndc_code", "unknown")
+    logger.info(f"CER Narrative [{process_id}] - Starting generation for NDC: {ndc_code}")
+    
     # Verify API key is available
     if not check_api_key():
+        logger.error(f"CER Narrative [{process_id}] - OpenAI API key not configured")
         raise Exception("OpenAI API key not configured")
     
     # Prepare data for the narrative
@@ -133,17 +146,30 @@ Include specific statistics from the data provided, use medical terminology appr
 
     # Generate the narrative using OpenAI's API
     client = openai.OpenAI()
-    response = client.chat.completions.create(
-        model="gpt-4-turbo-preview",  # Using the latest available model
-        messages=[
-            {"role": "system", "content": "You are a regulatory affairs specialist creating a Clinical Evaluation Report (CER)."},
-            {"role": "user", "content": prompt}
-        ],
-        temperature=0.2,  # Lower temperature for more consistent output
-        max_tokens=2000,  # Generate a detailed report
-    )
     
-    narrative = response.choices[0].message.content
+    # Start timing the OpenAI API call
+    api_call_start = time.time()
+    logger.info(f"CER Narrative [{process_id}] - Calling OpenAI API for NDC: {ndc_code}")
+    
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4-turbo-preview",  # Using the latest available model
+            messages=[
+                {"role": "system", "content": "You are a regulatory affairs specialist creating a Clinical Evaluation Report (CER)."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.2,  # Lower temperature for more consistent output
+            max_tokens=2000,  # Generate a detailed report
+        )
+        
+        api_call_duration = (time.time() - api_call_start) * 1000
+        logger.info(f"CER Narrative [{process_id}] - OpenAI API responded in {api_call_duration:.2f}ms")
+        
+        narrative = response.choices[0].message.content
+    except Exception as e:
+        api_call_duration = (time.time() - api_call_start) * 1000
+        logger.error(f"CER Narrative [{process_id}] - OpenAI API error after {api_call_duration:.2f}ms: {str(e)}")
+        raise
     
     # Add metadata header
     header = f"""# Clinical Evaluation Report
@@ -156,22 +182,39 @@ Include specific statistics from the data provided, use medical terminology appr
     
     return header + narrative
 
+@timed_function
 def main():
     """Main entry point for the script"""
+    process_id = generate_request_id()
+    logger.info(f"CER Narrative CLI [{process_id}] - Starting process")
+    
     # Check if we have an input file from stdin
     if not sys.stdin.isatty():
-        # Read input JSON from stdin
-        input_data = json.load(sys.stdin)
-        faers_data = input_data.get('faersData')
-        product_name = input_data.get('productName')
-        
-        if not faers_data:
-            print(json.dumps({"error": "FAERS data is required"}))
-            sys.exit(1)
+        try:
+            # Read input JSON from stdin
+            input_data = json.load(sys.stdin)
+            faers_data = input_data.get('faersData')
+            product_name = input_data.get('productName')
             
-        narrative = generate_cer_narrative(faers_data, product_name)
-        print(json.dumps({"narrative": narrative}))
+            # Extract NDC code for logging if available
+            ndc_code = faers_data.get("drug_info", {}).get("ndc_code", "unknown") if faers_data else "unknown"
+            logger.info(f"CER Narrative CLI [{process_id}] - Processing request for NDC: {ndc_code}")
+            
+            if not faers_data:
+                logger.error(f"CER Narrative CLI [{process_id}] - FAERS data is required but not provided")
+                print(json.dumps({"error": "FAERS data is required"}))
+                sys.exit(1)
+                
+            narrative = generate_cer_narrative(faers_data, product_name)
+            narrative_length = len(narrative)
+            logger.info(f"CER Narrative CLI [{process_id}] - Successfully generated narrative of {narrative_length} characters")
+            print(json.dumps({"narrative": narrative}))
+        except Exception as e:
+            logger.error(f"CER Narrative CLI [{process_id}] - Error processing input: {str(e)}")
+            print(json.dumps({"error": f"Error processing input: {str(e)}"}))
+            sys.exit(1)
     else:
+        logger.error(f"CER Narrative CLI [{process_id}] - No input data provided")
         print(json.dumps({"error": "No input data provided"}))
         sys.exit(1)
 

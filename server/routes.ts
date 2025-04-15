@@ -553,6 +553,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/cers', cerRoutes);
   app.use('/api/cer/faers', faersRoutes);
   
+  // PDF task routes
+  // Note: Dynamic imports not supported here, using require instead or move to top-level imports
+  try {
+    const pdfTaskRouter = require('./routes/pdf-task-routes').default;
+    app.use('/api/pdf-tasks', pdfTaskRouter);
+  } catch (err) {
+    console.error('Error loading PDF task routes:', err);
+  }
+  
   // Register API secrets checking endpoint
   app.post('/api/check-secrets', handleCheckSecrets);
   

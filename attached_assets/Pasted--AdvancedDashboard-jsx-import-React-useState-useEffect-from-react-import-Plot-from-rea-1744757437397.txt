@@ -1,0 +1,112 @@
+// AdvancedDashboard.jsx
+import React, { useState, useEffect } from 'react';
+import Plot from 'react-plotly.js';
+import FilterPanel from './FilterPanel';
+
+export default function AdvancedDashboard({ ndcCodes, token }) {
+  const [comparativeData, setComparativeData] = useState(null);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [error, setError] = useState('');
+  const [filters, setFilters] = useState({ event: '', minCount: 0 });
+
+  const fetchComparativeData = async () => {
+    try {
+      const response = await fetch('/api/cer/compare', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ ndc_codes: ndcCodes }),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch analytics data.');
+      }
+      const data = await response.json();
+      setComparativeData(data.comparative_data);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  useEffect(() => {
+    if (ndcCodes && ndcCodes.length > 0) {
+      fetchComparativeData();
+    }
+  }, [ndcCodes]);
+
+  if (error) return <div>Error: {error}</div>;
+  if (!comparativeData) return <div>Loading analytics...</div>;
+
+  // For simplicity, use data from the first NDC code.
+  const firstNdc = ndcCodes[0];
+  let ndcData = comparativeData[firstNdc];
+  if (!ndcData) return <div>No data available for {firstNdc}</div>;
+
+  // Apply filters (e.g., filter by event name and min count)
+  if (filters.event) {
+    ndcData.event_summary = Object.fromEntries(
+      Object.entries(ndcData.event_summary)
+        .filter(([event, count]) => event === filters.event && count >= filters.minCount)
+    );
+  } else if (filters.minCount) {
+    ndcData.event_summary = Object.fromEntries(
+      Object.entries(ndcData.event_summary)
+        .filter(([event, count]) => count >= filters.minCount)
+    );
+  }
+
+  const events = Object.keys(ndcData.event_summary);
+  const counts = events.map(event => ndcData.event_summary[event]);
+
+  const selectedForecast =
+    selectedEvent && ndcData.forecasts[selectedEvent]
+      ? Object.values(ndcData.forecasts[selectedEvent])
+      : [];
+
+  return (
+    <div>
+      <h2>Advanced Comparative Analytics Dashboard</h2>
+      <FilterPanel filters={filters} onApplyFilters={setFilters} />
+      <Plot
+        data={[
+          {
+            x: events,
+            y: counts,
+            type: 'bar',
+            name: 'Adverse Event Counts',
+          },
+        ]}
+        layout={{
+          title: `Event Summary for NDC ${firstNdc}`,
+          xaxis: { title: 'Adverse Event' },
+          yaxis: { title: 'Count' },
+        }}
+      />
+      <div style={{ marginTop: '20px' }}>
+        <label>Select an event for forecasting details: </label>
+        <select onChange={(e) => setSelectedEvent(e.target.value)} defaultValue="">
+          <option value="" disabled>
+            -- Choose an event --
+          </option>
+          {events.map((event) => (
+            <option key={event} value={event}>
+              {event}
+            </option>
+          ))}
+        </select>
+      </div>
+      {selectedEvent && selectedForecast.length > 0 && (
+        <Plot
+          data={[
+            {
+              x: Object.keys(ndcData.forecasts[selectedEvent]),
+              y: selectedForecast,
+              type: 'line',
+              name: `Forecast for ${selectedEvent}`,
+            },
+          ]}
+          layout={{
+            title: `Forecast for ${selectedEvent}`,
+            xaxis: { title: 'Time' },
+            yaxis: { title

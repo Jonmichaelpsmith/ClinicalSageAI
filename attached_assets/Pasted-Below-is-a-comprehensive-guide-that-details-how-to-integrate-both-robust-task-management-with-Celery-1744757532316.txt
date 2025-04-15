@@ -1,0 +1,237 @@
+Below is a comprehensive guide that details how to integrate both robust task management with Celery (using Redis as both message broker and result backend) and persistent caching with Redis into your solution.
+
+This guide is broken down into two sections:
+
+- **Section 1: Robust Task Management with Celery/Redis**  
+- **Section 2: Persistent Caching with Redis**
+
+---
+
+## Section 1: Robust Task Management with Celery/Redis
+
+### A. Set Up Celery Configuration
+
+Create a new file named **celery_config.py**. This file defines your Celery application, pointing to Redis as the broker and backend.
+
+**celery_config.py**
+```python
+from celery import Celery
+
+celery_app = Celery(
+    'tasks',
+    broker='redis://localhost:6379/0',       # Ensure Redis is running on this address.
+    backend='redis://localhost:6379/0'
+)
+
+celery_app.conf.update(
+    task_serializer='json',
+    result_serializer='json',
+    accept_content=['json']
+)
+```
+
+> **Note:** Adjust the Redis connection details (host, port, database) as needed. In production, you might use environment variables.
+
+### B. Create a Celery Task
+
+Create a new file called **tasks.py**. This file defines a Celery task—for example, to generate an enhanced PDF report.
+
+**tasks.py**
+```python
+import io
+import logging
+from celery_config import celery_app
+from data_pipeline import fetch_faers_data, normalize_faers_data
+from cer_narrative import generate_cer_narrative
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter, landscape
+from reportlab.lib.units import inch
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet
+
+logger = logging.getLogger("celery_tasks")
+logger.setLevel(logging.INFO)
+
+@celery_app.task
+def generate_enhanced_pdf_task(ndc_code):
+    # Fetch and process data
+    raw_data = fetch_faers_data(ndc_code)
+    cer_text = generate_cer_narrative(raw_data)
+    df = normalize_faers_data(raw_data)
+    
+    # Create a summary table
+    summary = df.groupby("event")["count"].sum().reset_index()
+    table_data = [["Adverse Event", "Total Count"]]
+    for _, row in summary.iterrows():
+        table_data.append([row["event"], row["count"]])
+    
+    # Generate PDF using ReportLab
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=landscape(letter))
+    styles = getSampleStyleSheet()
+    elements = []
+    
+    elements.append(Paragraph("Enhanced CER Report", styles['Title']))
+    elements.append(Spacer(1, 0.2 * inch))
+    elements.append(Paragraph("CER Narrative:", styles['Heading2']))
+    elements.append(Paragraph(cer_text, styles['BodyText']))
+    elements.append(Spacer(1, 0.3 * inch))
+    elements.append(Paragraph("Adverse Event Summary:", styles['Heading2']))
+    
+    t = Table(table_data)
+    t.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.grey),
+        ('TEXTCOLOR', (0,0), (-1,0), colors.whitesmoke),
+        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+        ('BOTTOMPADDING', (0,0), (-1,0), 12),
+        ('BACKGROUND', (0,1), (-1,-1), colors.beige),
+    ]))
+    elements.append(t)
+    doc.build(elements)
+    buffer.seek(0)
+    pdf_data = buffer.getvalue()
+    logger.info(f"PDF generated for NDC {ndc_code}, size: {len(pdf_data)} bytes")
+    return pdf_data
+```
+
+### C. Add FastAPI Endpoints to Schedule and Check Tasks
+
+Update your **main.py** (or the file containing your endpoints) to add endpoints that schedule the Celery task and check task status.
+
+**In main.py:**
+```python
+from fastapi import Depends, HTTPException, APIRouter
+from tasks import generate_enhanced_pdf_task
+from celery.result import AsyncResult
+
+# Assuming you have a dependency get_current_user for authentication.
+@router.post("/api/cer/{ndc_code}/enhanced-pdf-celery")
+async def schedule_pdf_celery(ndc_code: str, current_user: str = Depends(get_current_user)):
+    try:
+        # Schedule the PDF generation as a background Celery task
+        task = generate_enhanced_pdf_task.delay(ndc_code)
+        return {"message": "PDF generation scheduled", "task_id": task.id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/api/tasks/{task_id}")
+async def get_task_status(task_id: str):
+    result = AsyncResult(task_id)
+    return {
+        "task_id": task_id,
+        "status": result.status,
+        "result": result.result if result.ready() else None
+    }
+```
+
+> **Running Celery:**  
+> In your terminal (or as a separate Replit run command), start a Celery worker with:  
+> ```bash
+> celery -A celery_config.celery_app worker --loglevel=info
+> ```
+
+---
+
+## Section 2: Persistent Caching with Redis
+
+### A. Install the Redis Python Client
+
+In your Replit shell, install the Redis client:
+```bash
+pip install redis
+```
+
+### B. Create a Redis Cache Module
+
+Create a file named **redis_cache.py** that abstracts caching operations via Redis.
+
+**redis_cache.py**
+```python
+import os
+import redis
+import json
+
+redis_host = os.getenv("REDIS_HOST", "localhost")
+redis_port = int(os.getenv("REDIS_PORT", "6379"))
+redis_db = int(os.getenv("REDIS_DB", "0"))
+
+# Create a Redis client instance.
+redis_client = redis.Redis(host=redis_host, port=redis_port, db=redis_db, decode_responses=True)
+
+def set_cache(key: str, value, ttl: int = 300):
+    redis_client.setex(key, ttl, json.dumps(value))
+
+def get_cache(key: str):
+    data = redis_client.get(key)
+    if data:
+        return json.loads(data)
+    return None
+```
+
+> **Environment Variables for Redis:**  
+> In Replit’s Secrets, set:  
+> - `REDIS_HOST` (e.g., "localhost" or your Redis host)  
+> - `REDIS_PORT` (e.g., "6379")  
+> - `REDIS_DB` (e.g., "0")
+
+### C. Update Your Data Pipeline to Use Redis Cache
+
+Modify **data_pipeline.py** to replace the in‑memory cache with the Redis‑backed cache.
+
+**data_pipeline.py**
+```python
+import requests
+import pandas as pd
+from redis_cache import get_cache, set_cache
+
+FAERS_API_URL = "https://api.fda.gov/drug/event.json"
+
+def fetch_faers_data(ndc_code, limit=1000):
+    cache_key = f"faers_{ndc_code}_{limit}"
+    cached_data = get_cache(cache_key)
+    if cached_data:
+        return cached_data
+    response = requests.get(f'{FAERS_API_URL}?search=openfda.product_ndc:"{ndc_code}"&limit={limit}')
+    response.raise_for_status()
+    data = response.json()
+    set_cache(cache_key, data, ttl=300)  # Cache for 5 minutes
+    return data
+
+def normalize_faers_data(raw_data):
+    records = []
+    if "results" in raw_data:
+        for rec in raw_data["results"]:
+            records.append({
+                "event": rec.get("event", "Unknown"),
+                "count": rec.get("count", 1),
+                "timestamp": rec.get("receiptdate", None)
+            })
+    return pd.DataFrame(records)
+```
+
+---
+
+## Final Integration and Testing
+
+1. **Celery and Redis Setup:**  
+   - Ensure Redis is running (either locally on Replit or a hosted Redis service).  
+   - Check your Redis connection details in your environment.
+   - Launch the Celery worker using the provided command.
+   
+2. **Testing the Celery Task:**  
+   - Use the FastAPI endpoint `/api/cer/{ndc_code}/enhanced-pdf-celery` to schedule a PDF generation task.  
+   - Check the task status via `/api/tasks/{task_id}` and monitor logs for confirmation.
+
+3. **Testing Persistent Caching:**  
+   - Test the endpoint `/api/cer/normalize/{ndc_code}` (or another that calls `fetch_faers_data`) multiple times with the same NDC code.  
+   - Verify (via logs or response times) that subsequent calls are served by Redis caching rather than fetching from the external API again.
+
+4. **User Interface Impact:**  
+   - If you have any UI elements that rely on these endpoints, test them end‑to‑end to ensure that authentication, caching, and task management continue to function seamlessly.
+
+---
+
+This completes the integration of robust task management with Celery/Redis and persistent caching with Redis. These enhancements will provide you with improved scalability, fault tolerance, and overall system performance while laying the groundwork for future expansion. 
+
+Let me know if you have any questions or if you'd like to proceed with further refinements!
