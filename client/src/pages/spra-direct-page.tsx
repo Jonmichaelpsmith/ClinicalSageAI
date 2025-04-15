@@ -39,12 +39,25 @@ const SPRADirectPage: React.FC = () => {
     setIsLoading(true);
     setError(null);
     
+    // For debugging
+    console.log('Submitting protocol data:', {
+      sample_size: sampleSize,
+      duration: duration,
+      therapeutic_area: therapeuticArea,
+      phase: phase,
+      randomization: randomization,
+      primary_endpoint: primaryEndpoint,
+    });
+    
     try {
-      // Try the SPRA standalone server first
+      // Log the request URL for debugging
+      console.log('Sending request to: /api/spra/direct-analyze');
+      
       const response = await fetch('/api/spra/direct-analyze', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
         body: JSON.stringify({
           sample_size: sampleSize,
@@ -56,18 +69,73 @@ const SPRADirectPage: React.FC = () => {
         }),
       });
       
+      // Log response status for debugging
+      console.log('Response status:', response.status);
+      
       if (!response.ok) {
-        throw new Error(`API request failed with status ${response.status}`);
+        // Try to get error details from response
+        let errorMsg = `API request failed with status ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorMsg += `: ${errorData.error || JSON.stringify(errorData)}`;
+        } catch (e) {
+          // If we can't parse JSON, use text content
+          try {
+            const textContent = await response.text();
+            errorMsg += ` (${textContent.substring(0, 100)}${textContent.length > 100 ? '...' : ''})`;
+          } catch (_) {
+            // If we can't get text either, just continue with the basic error
+          }
+        }
+        throw new Error(errorMsg);
       }
       
       const data = await response.json();
+      console.log('Received SPRA analysis result:', data);
       setResult(data);
     } catch (err: any) {
       console.error('Error analyzing protocol:', err);
       setError(err.message || 'Failed to analyze protocol');
       setResult(null);
+      
+      // Try a fallback approach
+      try {
+        console.log('Trying alternative approach with XMLHttpRequest');
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '/api/spra/direct-analyze', true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.onload = function() {
+          if (xhr.status === 200) {
+            console.log('XHR successful!');
+            const data = JSON.parse(xhr.responseText);
+            setResult(data);
+            setError(null);
+          } else {
+            console.error('XHR failed with status:', xhr.status);
+          }
+          setIsLoading(false);
+        };
+        xhr.onerror = function() {
+          console.error('XHR error:', xhr.statusText);
+          setIsLoading(false);
+        };
+        xhr.send(JSON.stringify({
+          sample_size: sampleSize,
+          duration: duration,
+          therapeutic_area: therapeuticArea,
+          phase: phase,
+          randomization: randomization,
+          primary_endpoint: primaryEndpoint,
+        }));
+      } catch (fallbackErr) {
+        console.error('Fallback approach also failed:', fallbackErr);
+        setIsLoading(false);
+      }
     } finally {
-      setIsLoading(false);
+      // Only set loading to false if we're not using the fallback approach
+      if (!error) {
+        setIsLoading(false);
+      }
     }
   };
   
