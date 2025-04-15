@@ -10,48 +10,6 @@ export function registerSmartProtocolRoutes(app: any) {
   if (!fs.existsSync(exportsDir)) {
     fs.mkdirSync(exportsDir, { recursive: true });
   }
-  
-  // API endpoint to check available intelligence artifacts for a session
-  app.get('/api/session/intelligence-indicators/:session_id', (req: Request, res: Response) => {
-    try {
-      const { session_id } = req.params;
-      
-      if (!session_id) {
-        return res.status(400).json({
-          success: false,
-          message: 'Missing required parameter: session_id'
-        });
-      }
-      
-      // Define the path to the session directory
-      const archiveDir = path.join(process.cwd(), 'lumen_reports_backend/sessions', session_id);
-      
-      // Helper function to check if a file exists
-      const exists = (file: string): boolean => {
-        return fs.existsSync(path.join(archiveDir, file));
-      };
-      
-      // Return status of all intelligence artifacts
-      return res.json({
-        ind_summary: exists('ind_module_with_context.docx'),
-        summary_packet: exists('summary_packet.pdf'),
-        alignment_score: exists('alignment_score_report.json'),
-        suggestions: exists('suggested_corrections.json'),
-        sap_summary: exists('sap_summary_branded.docx'),
-        strategy_slide: exists('trial_strategy_deck.pptx'),
-        risk_model: exists('dropout_forecast.json'),
-        success_model: exists('success_prediction.json'),
-        wisdom_trace: exists('wisdom_trace.json')
-      });
-    } catch (error) {
-      console.error('Error checking intelligence indicators:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Internal server error',
-        error: error.toString()
-      });
-    }
-  });
 
   // API endpoint to get CSR benchmark metrics
   app.get('/api/csr/benchmark', async (req: Request, res: Response) => {

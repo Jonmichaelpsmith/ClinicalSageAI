@@ -60,7 +60,7 @@ function NavItem({ href, icon, children, end = false }: NavItemProps) {
   return (
     <div>
       <Link href={href} className={cn(
-          "group flex items-center px-2 py-1 text-sm font-medium rounded-md transition-colors duration-150",
+          "group flex items-center px-2 py-1.5 text-sm font-medium rounded-md transition-colors duration-150",
           isActive
             ? "bg-primary/10 text-primary"
             : "text-slate-700 hover:bg-slate-100 hover:text-primary"
@@ -151,7 +151,7 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
             </div>
           )}
 
-          <nav className="px-2 py-2 space-y-0">
+          <nav className="px-2 py-3 space-y-0.5">
             <NavItem href="/dashboard" icon={<LayoutDashboard />}>
               Dashboard
             </NavItem>

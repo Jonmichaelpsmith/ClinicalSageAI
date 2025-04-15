@@ -23,8 +23,6 @@ import { useToast } from "@/hooks/use-toast";
 import { classifyTherapeuticArea } from "@shared/utils/therapeutic-area-classifier";
 import CSRAlignmentPanel from "@/components/CSRAlignmentPanel";
 import ProtocolCorrectionSuggestions from "@/components/ProtocolCorrectionSuggestions";
-import IntelligenceIndicators from "@/components/IntelligenceIndicators";
-import IntelligenceStatusBanner from "@/components/IntelligenceStatusBanner";
 
 // Create a context to share protocol state with child components
 export const ProtocolPlanningContext = createContext({
@@ -50,8 +48,6 @@ export default function ProtocolPlanningDashboard({
   const [sapReady, setSapReady] = useState(false);
   const [indReady, setIndReady] = useState(false);
   const [summaryReady, setSummaryReady] = useState(false);
-  const [taClassification, setTaClassification] = useState(null);
-  const [docxExportReady, setDocxExportReady] = useState(false);
   const { toast } = useToast();
 
   // Helper function to determine therapeutic area from indication
@@ -124,7 +120,6 @@ Source CSR Information:
 - Title: ${csrContext.title || "Not specified"}
 - Sponsor: ${csrContext.sponsor || "Not specified"}
 - Indication: ${indication}
-- Therapeutic Area: ${therapeuticArea}
 - Phase: ${phase}
 - Study drug: ${molecule}
 ${endpoints.length > 0 ? `- Original endpoints: ${endpoints.join(', ')}` : ''}
@@ -360,47 +355,6 @@ ${endpoints.length > 0 ? `- Original endpoints: ${endpoints.join(', ')}` : ''}
     }
   };
 
-  // INDConfirmationBanner Component for CSR-Enhanced IND Document
-  function INDConfirmationBanner({ sessionId }) {
-    const [exists, setExists] = useState(false);
-
-    useEffect(() => {
-      const check = async () => {
-        try {
-          const res = await fetch(`/static/lumen_reports_backend/sessions/${sessionId}/ind_module_with_context.docx`);
-          setExists(res.ok);
-          if (res.ok) {
-            setDocxExportReady(true);
-          }
-        } catch (error) {
-          console.warn("Error checking IND document existence:", error);
-        }
-      };
-      
-      if (sessionId) {
-        check();
-      }
-    }, [sessionId]);
-
-    if (!exists) return null;
-
-    return (
-      <div className="bg-green-50 border border-green-300 rounded p-4 mb-4">
-        <p className="text-sm text-green-900 flex items-center gap-1">
-          <Check className="h-4 w-4" /> An IND Module 2.5 summary has been auto-generated based on your linked CSR context.
-        </p>
-        <a
-          href={`/static/lumen_reports_backend/sessions/${sessionId}/ind_module_with_context.docx`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-700 underline text-sm mt-2 flex items-center gap-1"
-        >
-          <Download className="h-4 w-4" /> Download IND Summary
-        </a>
-      </div>
-    );
-  }
-
   // Display CSR context banner if available
   const renderCsrContextBanner = () => {
     if (!csrContext) return null;
@@ -479,32 +433,6 @@ ${endpoints.length > 0 ? `- Original endpoints: ${endpoints.join(', ')}` : ''}
                     </div>
                   </div>
                 )}
-                
-                {/* CSR-Enhanced IND Document Section */}
-                <div className="mt-4 border-t border-blue-200 pt-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-blue-600 font-medium">
-                      CSR-Enhanced Documents
-                    </span>
-                    
-                    <Button
-                      variant="outline" 
-                      size="sm"
-                      className="h-8 bg-blue-100 border-blue-200 text-blue-700 hover:bg-blue-200"
-                      onClick={() => window.open(`/static/lumen_reports_backend/sessions/${sessionId}/ind_module_with_context.docx`, '_blank')}
-                      disabled={!docxExportReady}
-                    >
-                      <Download className="h-3 w-3 mr-2" />
-                      Download IND Module
-                    </Button>
-                  </div>
-                  
-                  <p className="text-xs text-blue-700 mt-1">
-                    {docxExportReady 
-                      ? "Auto-generated IND document with CSR evidence is ready to download" 
-                      : "Auto-generating IND document with CSR evidence..."}
-                  </p>
-                </div>
               </div>
               
               <div className="flex flex-col items-end gap-2">
@@ -554,12 +482,6 @@ ${endpoints.length > 0 ? `- Original endpoints: ${endpoints.join(', ')}` : ''}
       
       {/* CSR Context Banner */}
       {renderCsrContextBanner()}
-      
-      {/* CSR-Enhanced IND Document Banner */}
-      {sessionId && <INDConfirmationBanner sessionId={sessionId} />}
-      
-      {/* Intelligence Status Banner */}
-      {sessionId && <IntelligenceStatusBanner sessionId={sessionId} />}
       
       {/* CSR Semantic Alignment Panel */}
       {csrContext && <CSRAlignmentPanel sessionId={sessionId} />}

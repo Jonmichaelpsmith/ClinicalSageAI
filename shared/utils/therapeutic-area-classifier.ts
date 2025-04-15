@@ -184,21 +184,17 @@ export function classifyTherapeuticArea(
     throw new Error('Text content is required for therapeutic area classification');
   }
 
-  // Lower the default confidence threshold to improve matching
-  const confidenceThreshold = options.confidenceThreshold || 0.2; // Changed from 0.5 to 0.2
+  const confidenceThreshold = options.confidenceThreshold || 0.5;
   const enableLogging = options.enableLogging || false;
   const allowUnknown = options.allowUnknown !== undefined ? options.allowUnknown : true;
-  
-  // Check for fallback default therapeutic area in case classification fails
-  const fallbackDefaultArea = textContent.length > 20 ? "Oncology" : "Unknown"; 
 
   // Normalize text for consistent matching
   const normalizedText = textContent.toLowerCase();
   
   // Initialize results tracking
   let bestMatch: TherapeuticAreaMatch = {
-    area: fallbackDefaultArea, // Use fallback instead of always "Unknown"
-    confidence: 0.1, // Small default confidence instead of 0 to avoid Unknown when no clear match
+    area: "Unknown",
+    confidence: 0,
     matchedKeywords: []
   };
 

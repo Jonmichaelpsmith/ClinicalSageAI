@@ -36,33 +36,12 @@ export function applyCompactStyling() {
   });
   
   // Make forms more compact
-  const formGroups = document.querySelectorAll('.form-group, .space-y-4, .space-y-6, .space-y-8');
+  const formGroups = document.querySelectorAll('.form-group, .space-y-4, .space-y-6');
   formGroups.forEach(group => {
     if (!group.classList.contains('compact-form-group')) {
       group.classList.replace('space-y-4', 'space-y-2');
       group.classList.replace('space-y-6', 'space-y-3');
-      group.classList.replace('space-y-8', 'space-y-4');
       group.classList.add('compact-form-group');
-    }
-  });
-  
-  // Reduce padding on sections and containers
-  const sections = document.querySelectorAll('section, .container, .px-4, .py-6, .py-8');
-  sections.forEach(section => {
-    if (section.classList.contains('px-4')) {
-      section.classList.replace('px-4', 'px-3');
-    }
-    if (section.classList.contains('py-6')) {
-      section.classList.replace('py-6', 'py-4');
-    }
-    if (section.classList.contains('py-8')) {
-      section.classList.replace('py-8', 'py-5');
-    }
-    if (section.classList.contains('space-y-8')) {
-      section.classList.replace('space-y-8', 'space-y-4');
-    }
-    if (section.classList.contains('space-y-6')) {
-      section.classList.replace('space-y-6', 'space-y-3');
     }
   });
   
