@@ -379,6 +379,9 @@ import alignmentRoutes from './routes/alignment-routes';
 // Import session routes for email persistence
 import sessionRoutes from './routes/session_routes';
 
+// Import CER routes for Clinical Evaluation Reports
+import cerRoutes from './routes/cer-routes';
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Register session API routes
   app.use('/api/session', sessionRoutes);
@@ -544,6 +547,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register both CSR routes implementations to ensure compatibility
   app.use('/api/csrs', csrSearchRouter);
   
+  // Register the CER routes for Clinical Evaluation Reports
+  app.use('/api/cers', cerRoutes);
+
   // Register the JavaScript CSR routes for backward compatibility
   // Use dynamic import to load the CommonJS module
   const csrRoutesModule = await import('./routes/csr-routes.js');
