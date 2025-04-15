@@ -1,0 +1,113 @@
+Below is the next step: ensuring your project is correctly configured and deployed on Replit. We'll cover:
+
+1. **Environment Configuration:**  
+   Set your OpenAI API key securely within Replit.
+
+2. **Running the Server:**  
+   Configure your Replit run command to start the FastAPI server.
+
+3. **Linking the Frontend:**  
+   Integrate the React component into your existing frontend so users can access the CER feature.
+
+---
+
+## 1. Environment Configuration
+
+### A. Set OpenAI API Key
+In Replit, open the Secrets (Environment Variables) panel and add:
+- **Key:** `OPENAI_API_KEY`
+- **Value:** *Your actual OpenAI API key*
+
+Then, update your `cer_narrative.py` to read the API key from your environment instead of hardcoding it. For example:
+
+```python
+# cer_narrative.py
+import os
+import openai
+
+# Ensure the API key is set in your Replit secrets
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
+def generate_cer_narrative(faers_data):
+    prompt = f"""
+    Generate a regulatory-compliant Clinical Evaluation Report narrative using this FDA FAERS data:
+    {faers_data}
+
+    Include sections on adverse events, clinical significance, benefit-risk analysis, and comparative effectiveness.
+    """
+    response = openai.ChatCompletion.create(
+        model="gpt-4-turbo",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.2
+    )
+    return response.choices[0].message.content
+```
+
+---
+
+## 2. Running the FastAPI Server on Replit
+
+### A. Update Your Replit Run Command
+
+Make sure your `.replit` file (or equivalent configuration) uses a command to run the FastAPI server. A common setup is using Uvicorn. For example, add/edit your `.replit` file with:
+
+```ini
+run = "uvicorn main:app --host=0.0.0.0 --port=3000 --reload"
+```
+
+This command starts your FastAPI app on the default Replit port (commonly 3000) and enables live reload.
+
+---
+
+## 3. Linking the Frontend React Component
+
+### A. Integrate `CERGenerator.jsx`
+
+In your React project folder, ensure that `CERGenerator.jsx` is imported and rendered in your application. For example, in your main App component:
+
+```jsx
+// App.jsx
+import React from 'react';
+import CERGenerator from './CERGenerator';  // Adjust the import path if necessary
+
+function App() {
+  return (
+    <div>
+      <h1>LumenTrialGuide.AI</h1>
+      {/* Other existing components */}
+      <CERGenerator />
+    </div>
+  );
+}
+
+export default App;
+```
+
+### B. Configure Proxy (if needed)
+
+If your React development server is separate from your FastAPI backend, you may need to set up a proxy to handle API calls:
+- In your React project's `package.json`, add the following line:
+  ```json
+  "proxy": "http://localhost:3000",
+  ```
+  This directs API calls (like `/api/cer/{ndc_code}`) to your FastAPI server running on port 3000.
+
+---
+
+## 4. Testing and Validation
+
+- **Local Testing:**  
+  Run the FastAPI server with the provided Replit run command and ensure your React frontend is correctly displayed.  
+- **Test an NDC Code:**  
+  Enter a known valid NDC code in the CER Generator component and click the button to generate the report.  
+- **Debugging:**  
+  Check the Replit console for any errors, and validate that the FastAPI logs show the expected API call processing.
+
+---
+
+With these changes:
+- Your OpenAI API key is securely set via Replit Secrets.
+- FastAPI is correctly deployed with Uvicorn.
+- Your React UI integrates and communicates with the backend endpoint.
+
+Your project is now ready for a full end-to-end test on Replit. Let me know if you need further modifications or run into any issues!
