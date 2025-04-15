@@ -312,6 +312,36 @@ export const protocolAssessmentFeedback = pgTable("protocol_assessment_feedback"
   created_at: timestamp("created_at").defaultNow().notNull()
 });
 
+// Clinical Evaluation Reports (CERs) table - post-market reports with complaint data
+export const clinicalEvaluationReports = pgTable("clinical_evaluation_reports", {
+  id: serial("id").primaryKey(),
+  cer_id: varchar("cer_id", { length: 255 }).notNull().unique(),
+  title: varchar("title", { length: 255 }).notNull(),
+  device_name: varchar("device_name", { length: 255 }).notNull(),
+  manufacturer: varchar("manufacturer", { length: 255 }).notNull(),
+  indication: varchar("indication", { length: 255 }).notNull(),
+  report_date: timestamp("report_date").notNull(),
+  report_period_start: timestamp("report_period_start"),
+  report_period_end: timestamp("report_period_end"),
+  version: varchar("version", { length: 50 }),
+  status: varchar("status", { length: 50 }).notNull().default("Active"),
+  complaint_summary: text("complaint_summary"),
+  safety_issues: json("safety_issues").$type<string[]>().default(sql`'[]'`),
+  complaint_rates: json("complaint_rates"), // Structured complaint rate data
+  adverse_events: json("adverse_events"), // Structured adverse event data
+  performance_evaluation: text("performance_evaluation"),
+  clinical_data: json("clinical_data"), // JSON structure for clinical data points
+  risk_analysis: text("risk_analysis"),
+  content_text: text("content_text"), // Full extracted text content
+  content_vector: text("content_vector"), // Vector embedding for semantic search
+  pdf_path: varchar("pdf_path", { length: 255 }),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  updated_at: timestamp("updated_at").defaultNow().notNull(),
+  project_id: varchar("project_id", { length: 255 }),
+  session_id: varchar("session_id", { length: 255 }),
+  metadata: json("metadata"),
+});
+
 // Schema relations
 export const protocolAssessmentsRelations = relations(protocolAssessments, ({ many }) => ({
   feedback: many(protocolAssessmentFeedback)
@@ -328,8 +358,52 @@ export const protocolAssessmentFeedbackRelations = relations(protocolAssessmentF
 export const insertProtocolAssessmentSchema = createInsertSchema(protocolAssessments);
 export const insertProtocolAssessmentFeedbackSchema = createInsertSchema(protocolAssessmentFeedback);
 
+// Add relations for CERs
+export const clinicalEvaluationReportsRelations = relations(clinicalEvaluationReports, ({ one }) => ({
+  project: one(projects, {
+    fields: [clinicalEvaluationReports.project_id],
+    references: [projects.project_id],
+  }),
+  session: one(studySessions, {
+    fields: [clinicalEvaluationReports.session_id],
+    references: [studySessions.session_id],
+  }),
+}));
+
+// Update project relations to include CERs
+export const projectsWithCERRelations = relations(projects, ({ many }) => ({
+  summaryPackets: many(summaryPackets),
+  insightMemories: many(insightMemories),
+  wisdomTraces: many(wisdomTraces),
+  studySessions: many(studySessions),
+  protocols: many(protocols),
+  strategicReports: many(strategicReports),
+  clinicalEvaluationReports: many(clinicalEvaluationReports),
+}));
+
+// Update session relations to include CERs
+export const studySessionsWithCERRelations = relations(studySessions, ({ one, many }) => ({
+  project: one(projects, {
+    fields: [studySessions.project_id],
+    references: [projects.project_id],
+  }),
+  insightMemories: many(insightMemories),
+  wisdomTraces: many(wisdomTraces),
+  protocols: many(protocols),
+  strategicReports: many(strategicReports),
+  clinicalEvaluationReports: many(clinicalEvaluationReports),
+}));
+
+// Insert schema for CERs
+export const insertClinicalEvaluationReportSchema = createInsertSchema(clinicalEvaluationReports, {
+  safety_issues: z.array(z.string()),
+})
+.omit({ id: true, created_at: true, updated_at: true, content_vector: true });
+
 // Types
 export type ProtocolAssessment = typeof protocolAssessments.$inferSelect;
 export type InsertProtocolAssessment = z.infer<typeof insertProtocolAssessmentSchema>;
 export type ProtocolAssessmentFeedback = typeof protocolAssessmentFeedback.$inferSelect;
 export type InsertProtocolAssessmentFeedback = z.infer<typeof insertProtocolAssessmentFeedbackSchema>;
+export type ClinicalEvaluationReport = typeof clinicalEvaluationReports.$inferSelect;
+export type InsertClinicalEvaluationReport = z.infer<typeof insertClinicalEvaluationReportSchema>;
