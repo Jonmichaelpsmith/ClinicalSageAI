@@ -1,365 +1,372 @@
 // AdvancedDashboard.jsx
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Loader2, TrendingUp, AlertCircle, Shield, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { BarChart3, LineChart, PieChart, TrendingUp, ChevronRight, AlertCircle, ListFilter } from 'lucide-react';
 
-export default function AdvancedDashboard({ ndcCodes = [] }) {
+export default function AdvancedDashboard({ ndcCodes, token }) {
+  const [comparativeData, setComparativeData] = useState(null);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [error, setError] = useState('');
+  const [filters, setFilters] = useState({ event: '', minCount: 0 });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [data, setData] = useState(null);
-  const [activeTab, setActiveTab] = useState("comparisons");
-  const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState('summary');
 
-  // Load comparison data for the NDC codes
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!ndcCodes || ndcCodes.length === 0) {
-        setLoading(false);
-        return;
-      }
-
+  const fetchComparativeData = async () => {
+    try {
       setLoading(true);
-      try {
-        const response = await apiRequest('POST', '/api/cer/compare', {
-          ndc_codes: ndcCodes
-        });
-        
-        if (!response.ok) {
-          throw new Error(`Failed to fetch comparison data: ${response.statusText}`);
-        }
-        
-        const result = await response.json();
-        setData(result.comparative_data);
-      } catch (err) {
-        console.error('Error fetching comparative data:', err);
-        setError(err.message);
-        toast({
-          title: "Data Loading Error",
-          description: err.message || "Could not load comparison data",
-          variant: "destructive",
-        });
-        
-        // Use simulated data for development until backend is ready
-        setData(generateSimulatedData(ndcCodes));
-      } finally {
-        setLoading(false);
+      const response = await fetch('/api/cer/compare', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
+        body: JSON.stringify({ ndc_codes: ndcCodes }),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch analytics data.');
       }
-    };
-    
-    fetchData();
-  }, [ndcCodes, toast]);
-
-  // Generate chart data for event comparisons
-  const getEventComparisonData = () => {
-    if (!data) return [];
-    
-    const events = new Set();
-    Object.values(data).forEach(productData => {
-      Object.keys(productData.event_summary || {}).forEach(event => events.add(event));
-    });
-    
-    return Array.from(events).map(event => {
-      const chartPoint = { name: event };
-      Object.entries(data).forEach(([ndc, productData]) => {
-        chartPoint[ndc] = productData.event_summary?.[event] || 0;
-      });
-      return chartPoint;
-    });
+      const data = await response.json();
+      setComparativeData(data.comparative_data);
+    } catch (err) {
+      console.error('Error fetching comparative data:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Generate forecast chart data
-  const getForecastData = () => {
-    if (!data) return [];
-    
-    // Get all quarters from all forecasts
-    const quarters = new Set();
-    Object.values(data).forEach(productData => {
-      Object.values(productData.forecasts || {}).forEach(eventForecasts => {
-        Object.keys(eventForecasts).forEach(quarter => quarters.add(quarter));
-      });
-    });
-    
-    // Create chart data for each quarter
-    return Array.from(quarters).map(quarter => {
-      const chartPoint = { name: quarter };
-      Object.entries(data).forEach(([ndc, productData]) => {
-        let total = 0;
-        Object.values(productData.forecasts || {}).forEach(eventForecasts => {
-          total += eventForecasts[quarter] || 0;
-        });
-        chartPoint[ndc] = total;
-      });
-      return chartPoint;
-    }).sort((a, b) => {
-      // Sort quarters chronologically
-      return a.name.localeCompare(b.name);
-    });
+  useEffect(() => {
+    if (ndcCodes && ndcCodes.length > 0) {
+      fetchComparativeData();
+    }
+  }, [ndcCodes]);
+
+  const applyFilters = (newFilters) => {
+    setFilters(newFilters);
   };
 
-  // Generate simulated data for development purposes
-  const generateSimulatedData = (ndcCodes) => {
-    const simulatedData = {};
-    
-    const commonEvents = [
-      'Headache', 'Nausea', 'Dizziness', 'Fatigue', 'Rash',
-      'Vomiting', 'Diarrhea', 'Pain', 'Fever', 'Insomnia'
-    ];
-    
-    const quarters = ['Q1 2025', 'Q2 2025', 'Q3 2025', 'Q4 2025'];
-    
-    ndcCodes.forEach(ndc => {
-      const eventSummary = {};
-      commonEvents.forEach(event => {
-        eventSummary[event] = Math.floor(Math.random() * 30) + 1;
-      });
-      
-      const forecasts = {};
-      commonEvents.slice(0, 5).forEach(event => {
-        forecasts[event] = {};
-        let baseValue = Math.floor(Math.random() * 10) + 5;
-        quarters.forEach((quarter, index) => {
-          // Simulate slight changes over quarters
-          const adjustment = (Math.random() - 0.3) * 3;
-          forecasts[event][quarter] = Math.max(1, Math.round(baseValue + adjustment - index * 0.5));
-        });
-      });
-      
-      simulatedData[ndc] = {
-        report_count: Math.floor(Math.random() * 5) + 1,
-        event_summary: eventSummary,
-        forecasts: forecasts
-      };
-    });
-    
-    return simulatedData;
-  };
-
-  // Prepare data views
-  const eventComparisonData = getEventComparisonData();
-  const forecastData = getForecastData();
-
-  // Define chart colors
-  const chartColors = ['#2563eb', '#16a34a', '#db2777', '#ea580c', '#9333ea'];
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
+    );
+  }
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-10 h-10 animate-spin text-primary" />
-        <span className="ml-3 text-lg">Loading comparative data...</span>
-      </div>
-    );
-  }
-
-  if (error && !data) {
-    return (
-      <div className="bg-destructive/10 text-destructive p-6 rounded-lg space-y-3">
-        <h3 className="text-xl font-medium flex items-center">
-          <AlertCircle className="mr-2" />
-          Error Loading Analytics
-        </h3>
-        <p>{error}</p>
-        <Button variant="destructive" className="mt-2" onClick={() => window.location.reload()}>
-          Retry
-        </Button>
-      </div>
-    );
-  }
-
-  if (!data || Object.keys(data).length === 0) {
-    return (
-      <div className="bg-muted p-8 rounded-lg text-center space-y-4">
-        <div className="flex justify-center">
-          <Shield className="w-16 h-16 text-muted-foreground" />
+      <div className="space-y-4">
+        <Skeleton className="h-12 w-full" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Skeleton className="h-[350px] w-full" />
+          <Skeleton className="h-[350px] w-full" />
         </div>
-        <h3 className="text-xl font-medium">No Comparative Data Available</h3>
-        <p className="text-muted-foreground max-w-md mx-auto">
-          Please select NDC codes to analyze, or check that the selected codes have available data in the system.
-        </p>
+        <Skeleton className="h-12 w-full" />
       </div>
     );
   }
+
+  if (!comparativeData) {
+    return (
+      <Alert>
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>No Data</AlertTitle>
+        <AlertDescription>No comparative data available for the selected NDC codes.</AlertDescription>
+      </Alert>
+    );
+  }
+
+  // For simplicity, use data from the first NDC code if multiple are provided
+  const firstNdc = ndcCodes[0];
+  let ndcData = comparativeData[firstNdc];
+  if (!ndcData) {
+    return (
+      <Alert>
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>No Data</AlertTitle>
+        <AlertDescription>No data available for NDC {firstNdc}</AlertDescription>
+      </Alert>
+    );
+  }
+
+  // Apply filters (e.g., filter by event name and min count)
+  const filteredEventSummary = { ...ndcData.event_summary };
+  if (filters.event) {
+    Object.keys(filteredEventSummary).forEach(event => {
+      if (event !== filters.event || filteredEventSummary[event] < filters.minCount) {
+        delete filteredEventSummary[event];
+      }
+    });
+  } else if (filters.minCount > 0) {
+    Object.keys(filteredEventSummary).forEach(event => {
+      if (filteredEventSummary[event] < filters.minCount) {
+        delete filteredEventSummary[event];
+      }
+    });
+  }
+
+  const events = Object.keys(filteredEventSummary);
+  const counts = events.map(event => filteredEventSummary[event]);
+
+  const selectedForecast = 
+    selectedEvent && ndcData.forecasts && ndcData.forecasts[selectedEvent]
+      ? Object.entries(ndcData.forecasts[selectedEvent]).map(([quarter, count]) => ({ 
+          quarter, 
+          count 
+        }))
+      : [];
 
   return (
     <div className="space-y-6">
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {Object.entries(data).map(([ndc, productData], index) => (
-          <Card key={ndc}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg flex items-center">
-                <div 
-                  className="w-3 h-3 rounded-full mr-2" 
-                  style={{ backgroundColor: chartColors[index % chartColors.length] }}
-                ></div>
-                NDC: {ndc}
-              </CardTitle>
+      <h2 className="text-2xl font-bold tracking-tight">Advanced Comparative Analytics Dashboard</h2>
+      
+      <Tabs defaultValue="summary" value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="summary">Summary</TabsTrigger>
+          <TabsTrigger value="events">Event Analysis</TabsTrigger>
+          <TabsTrigger value="forecast">Forecasting</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="summary" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Report Overview</CardTitle>
+              <CardDescription>Statistical summary of reports analyzed for NDC {firstNdc}</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-1">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Reports:</span>
-                  <span className="font-medium">{productData.report_count}</span>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="flex flex-col p-4 border rounded-lg">
+                  <span className="text-muted-foreground text-sm">Reports Analyzed</span>
+                  <span className="text-3xl font-bold">{ndcData.report_count || 0}</span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Unique Events:</span>
-                  <span className="font-medium">{Object.keys(productData.event_summary || {}).length}</span>
+                <div className="flex flex-col p-4 border rounded-lg">
+                  <span className="text-muted-foreground text-sm">Unique Events</span>
+                  <span className="text-3xl font-bold">{Object.keys(ndcData.event_summary).length}</span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Forecast Periods:</span>
-                  <span className="font-medium">
-                    {Object.values(productData.forecasts || {}).length > 0 
-                      ? Object.keys(Object.values(productData.forecasts)[0]).length 
-                      : 0}
+                <div className="flex flex-col p-4 border rounded-lg">
+                  <span className="text-muted-foreground text-sm">Data Quality</span>
+                  <span className="text-3xl font-bold">
+                    {ndcData.report_count > 10 ? 'High' : ndcData.report_count > 5 ? 'Medium' : 'Low'}
                   </span>
                 </div>
               </div>
             </CardContent>
           </Card>
-        ))}
-      </div>
-
-      {/* Charts & Analysis */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid grid-cols-2">
-          <TabsTrigger value="comparisons">Event Comparisons</TabsTrigger>
-          <TabsTrigger value="forecasts">Trend Forecasts</TabsTrigger>
-        </TabsList>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card className="h-full">
+              <CardHeader>
+                <CardTitle>Top Events</CardTitle>
+                <CardDescription>Most frequently reported events</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {events.length === 0 ? (
+                    <div className="text-center py-6 text-muted-foreground">No events found</div>
+                  ) : (
+                    events.slice(0, 5).map((event, index) => (
+                      <div key={index} className="flex items-center justify-between border-b py-2">
+                        <div className="flex items-center gap-2">
+                          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                          <span>{event}</span>
+                        </div>
+                        <Badge variant="outline">{ndcData.event_summary[event]}</Badge>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="h-full">
+              <CardHeader>
+                <CardTitle>Forecast Trends</CardTitle>
+                <CardDescription>Projected event trends over time</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {Object.keys(ndcData.forecasts || {}).length === 0 ? (
+                    <div className="text-center py-6 text-muted-foreground">No forecast data available</div>
+                  ) : (
+                    Object.keys(ndcData.forecasts).slice(0, 5).map((event, index) => (
+                      <div key={index} className="flex items-center justify-between border-b py-2">
+                        <div className="flex items-center gap-2">
+                          <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                          <span>{event}</span>
+                        </div>
+                        <Badge variant={Object.values(ndcData.forecasts[event])[3] < Object.values(ndcData.forecasts[event])[0] ? "success" : "destructive"}>
+                          {Object.values(ndcData.forecasts[event])[3] < Object.values(ndcData.forecasts[event])[0] ? "Decreasing" : "Increasing"}
+                        </Badge>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
         
-        {/* Event Comparisons Tab */}
-        <TabsContent value="comparisons">
+        <TabsContent value="events">
           <Card>
             <CardHeader>
-              <CardTitle>Adverse Event Comparison</CardTitle>
+              <CardTitle>Event Analysis</CardTitle>
+              <CardDescription>Detailed breakdown of adverse events</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="h-[400px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={eventComparisonData}
-                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    {Object.keys(data).map((ndc, index) => (
-                      <Bar 
-                        key={ndc} 
-                        dataKey={ndc} 
-                        fill={chartColors[index % chartColors.length]} 
-                      />
-                    ))}
-                  </BarChart>
-                </ResponsiveContainer>
+            <CardContent className="space-y-4">
+              <div className="flex flex-col md:flex-row gap-4 items-center justify-between p-4 border rounded-lg">
+                <div className="flex items-center gap-2">
+                  <ListFilter className="h-5 w-5 text-muted-foreground" />
+                  <span className="font-medium">Filter Events</span>
+                </div>
+                <div className="flex gap-4">
+                  <div>
+                    <label className="text-sm text-muted-foreground">Event Name:</label>
+                    <select 
+                      className="ml-2 p-1 border rounded"
+                      value={filters.event}
+                      onChange={(e) => applyFilters({ ...filters, event: e.target.value })}
+                    >
+                      <option value="">All Events</option>
+                      {Object.keys(ndcData.event_summary).map((event) => (
+                        <option key={event} value={event}>{event}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground">Min Count:</label>
+                    <input
+                      type="number"
+                      className="ml-2 p-1 border rounded w-16"
+                      value={filters.minCount}
+                      onChange={(e) => applyFilters({ ...filters, minCount: parseInt(e.target.value) || 0 })}
+                      min="0"
+                    />
+                  </div>
+                </div>
               </div>
               
-              <div className="mt-6 space-y-4">
-                <h4 className="text-lg font-medium flex items-center">
-                  <TrendingUp className="w-5 h-5 mr-2" />
-                  Key Insights
-                </h4>
-                <ul className="space-y-2">
-                  {eventComparisonData.length > 0 ? (
-                    Object.keys(data).map((ndc, index) => {
-                      // Find the highest event for this NDC
-                      const highestEvent = eventComparisonData.reduce((prev, current) => 
-                        (current[ndc] > (prev[ndc] || 0)) ? current : prev, 
-                        {}
-                      );
-                      
-                      return (
-                        <li key={`insight-${index}`} className="flex">
-                          <ChevronRight className="w-5 h-5 mr-1 flex-shrink-0 text-muted-foreground" />
-                          <span><span className="font-medium">{ndc}</span>: Most common adverse event is <span className="font-medium">{highestEvent.name}</span> with {highestEvent[ndc]} occurrences.</span>
-                        </li>
-                      );
-                    })
-                  ) : (
-                    <li className="text-muted-foreground">No significant insights available from current data.</li>
-                  )}
-                </ul>
+              <div className="h-[400px] overflow-y-auto">
+                {events.length === 0 ? (
+                  <div className="flex items-center justify-center h-full text-muted-foreground">
+                    No events match the current filters
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <BarChart3 className="h-6 w-6 text-primary" />
+                      <h3 className="text-lg font-semibold">Event Summary for NDC {firstNdc}</h3>
+                    </div>
+                    
+                    {/* Calculate the maximum count for proper scaling */}
+                    {(() => {
+                      const maxCount = Math.max(...counts);
+                      return events.map((event, index) => (
+                        <div key={index} className="space-y-1">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm font-medium">{event}</span>
+                            <span className="text-sm">{counts[index]}</span>
+                          </div>
+                          <Progress 
+                            value={(counts[index] / maxCount) * 100} 
+                            className="h-2 bg-slate-100" 
+                          />
+                        </div>
+                      ));
+                    })()}
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
         </TabsContent>
         
-        {/* Forecast Tab */}
-        <TabsContent value="forecasts">
+        <TabsContent value="forecast">
           <Card>
             <CardHeader>
-              <CardTitle>Trend Forecast (All Events)</CardTitle>
+              <CardTitle>Event Forecasting</CardTitle>
+              <CardDescription>Projected trends for adverse events</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="h-[400px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart
-                    data={forecastData}
-                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    {Object.keys(data).map((ndc, index) => (
-                      <Line 
-                        key={ndc} 
-                        type="monotone" 
-                        dataKey={ndc} 
-                        stroke={chartColors[index % chartColors.length]} 
-                        activeDot={{ r: 8 }} 
-                      />
-                    ))}
-                  </LineChart>
-                </ResponsiveContainer>
+            <CardContent className="space-y-4">
+              <div className="p-4 border rounded-lg">
+                <label className="font-medium">Select an event for forecasting details: </label>
+                <select 
+                  className="ml-2 p-2 border rounded"
+                  onChange={(e) => setSelectedEvent(e.target.value)} 
+                  value={selectedEvent || ""}
+                >
+                  <option value="" disabled>-- Choose an event --</option>
+                  {Object.keys(ndcData.forecasts || {}).map((event) => (
+                    <option key={event} value={event}>{event}</option>
+                  ))}
+                </select>
               </div>
               
-              <div className="mt-6 space-y-4">
-                <h4 className="text-lg font-medium flex items-center">
-                  <TrendingUp className="w-5 h-5 mr-2" />
-                  Forecast Analysis
-                </h4>
-                <ul className="space-y-2">
-                  {forecastData.length > 0 ? (
-                    Object.keys(data).map((ndc, index) => {
-                      // Calculate trend direction
-                      const firstValue = forecastData[0]?.[ndc] || 0;
-                      const lastValue = forecastData[forecastData.length - 1]?.[ndc] || 0;
-                      const trend = lastValue > firstValue 
-                        ? "increasing" 
-                        : lastValue < firstValue 
-                          ? "decreasing" 
-                          : "stable";
-                      const trendDesc = trend === "increasing" 
-                        ? "upward" 
-                        : trend === "decreasing" 
-                          ? "downward" 
-                          : "stable";
-                      
-                      return (
-                        <li key={`forecast-${index}`} className="flex">
-                          <ChevronRight className="w-5 h-5 mr-1 flex-shrink-0 text-muted-foreground" />
-                          <span>
-                            <span className="font-medium">{ndc}</span>: Shows a <span className="font-medium">{trendDesc}</span> trend with
-                            {trend === "increasing" 
-                              ? ` an increase of ${Math.round((lastValue / firstValue - 1) * 100)}% projected.` 
-                              : trend === "decreasing" 
-                                ? ` a decrease of ${Math.round((1 - lastValue / firstValue) * 100)}% projected.`
-                                : " no significant change projected."}
-                          </span>
-                        </li>
-                      );
-                    })
-                  ) : (
-                    <li className="text-muted-foreground">No forecast data available for trend analysis.</li>
-                  )}
-                </ul>
+              <div className="h-[400px]">
+                {!selectedEvent ? (
+                  <div className="flex items-center justify-center h-full text-muted-foreground">
+                    Select an event to view forecast data
+                  </div>
+                ) : selectedForecast.length === 0 ? (
+                  <div className="flex items-center justify-center h-full text-muted-foreground">
+                    No forecast data available for {selectedEvent}
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-2 mb-2">
+                      <LineChart className="h-6 w-6 text-primary" />
+                      <h3 className="text-lg font-semibold">Forecast for {selectedEvent}</h3>
+                    </div>
+                    
+                    <div className="grid grid-cols-4 gap-4">
+                      {selectedForecast.map((item, index) => (
+                        <Card key={index} className="text-center">
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-md">{item.quarter}</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <span className="text-2xl font-bold">{item.count}</span>
+                            {index > 0 && (
+                              <div className="mt-2">
+                                <Badge variant={item.count < selectedForecast[index - 1].count ? "success" : 
+                                  item.count > selectedForecast[index - 1].count ? "destructive" : "outline"}>
+                                  {item.count < selectedForecast[index - 1].count ? "↓" : 
+                                    item.count > selectedForecast[index - 1].count ? "↑" : "→"}
+                                </Badge>
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                    
+                    <div className="relative h-[150px] mt-8 border-b border-slate-200">
+                      <div className="absolute inset-0 flex items-end justify-around h-full p-4">
+                        {selectedForecast.map((item, index) => {
+                          const maxVal = Math.max(...selectedForecast.map(f => f.count));
+                          const height = maxVal > 0 ? (item.count / maxVal) * 100 : 0;
+                          return (
+                            <div key={index} className="flex flex-col items-center">
+                              <div className="relative w-12">
+                                <div 
+                                  className="absolute bottom-0 w-full bg-primary rounded-t-sm transition-all duration-500"
+                                  style={{ height: `${Math.max(height, 5)}%` }}
+                                ></div>
+                              </div>
+                              <span className="text-xs mt-2">{item.quarter}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
