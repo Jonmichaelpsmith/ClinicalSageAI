@@ -93,7 +93,7 @@ import {
 // Import CSR tables from sage-plus-service instead of shared schema
 import { csrReports, csrSegments } from "./sage-plus-service";
 // Import database-to-JSON export function
-import { exportDatabaseToJson } from "./scripts/export-database-to-json";
+// Already imported on line 31, removed duplicate import
 // Define a schema for csrDetails since it's not in schema.ts
 import { pgTable, serial, integer, varchar, text, timestamp, json, boolean } from "drizzle-orm/pg-core";
 
@@ -383,6 +383,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Health check endpoint for Replit - responds immediately to help the server start quickly
   app.get('/__startup_check', (req, res) => {
     res.status(200).json({ status: 'ok', message: 'LumenTrialGuide.AI server is running' });
+  });
+  
+  // Debug endpoint to list all registered routes
+  app.get('/api/debug/routes', (req, res) => {
+    const routes: any[] = [];
+    
+    app._router.stack.forEach((middleware: any) => {
+      if (middleware.route) {
+        // This is a route directly on the app
+        routes.push({
+          path: middleware.route.path,
+          method: Object.keys(middleware.route.methods)[0]
+        });
+      } else if (middleware.name === 'router') {
+        // This is a router middleware
+        middleware.handle.stack.forEach((handler: any) => {
+          if (handler.route) {
+            const routePath = handler.route.path;
+            const basePath = middleware.regexp.toString()
+              .replace('\\/?(?=\\/|$)', '')
+              .replace(/^\\\//, '')
+              .replace(/\\\//g, '/')
+              .replace(/\?\(\?=\\\/\|\$\)/, '');
+            
+            const fullPath = basePath.replace(/\\\//g, '/').replace(/\^\\/, '/').replace(/\(\?:\(\[\^\\\/\]\+\?\)\)/g, ':param');
+            
+            routes.push({
+              path: (fullPath + routePath).replace(/\\/g, ''),
+              method: Object.keys(handler.route.methods)[0]
+            });
+          }
+        });
+      }
+    });
+    
+    res.json({ routes });
   });
   // Check if a file exists in a session archive
   app.post('/api/files/check-session-file', async (req: Request, res: Response) => {

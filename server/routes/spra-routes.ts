@@ -6,17 +6,28 @@
  */
 
 import { Router } from "express";
+import { type Request, type Response } from "express";
 import { spawn } from "child_process";
 import path from "path";
 import fs from "fs";
 import { db } from "../db";
 import { csrReports, csrDetails } from "../sage-plus-service";
-import { eq, and, like } from "drizzle-orm";
+import { eq, and, like, sql } from "drizzle-orm";
 
 const router = Router();
 
 // Log when SPRA routes are being registered
 console.log("[SPRA] Initializing Strategic Protocol Recommendations Advisor routes");
+
+// Add a health check endpoint to verify the SPRA routes are loaded
+router.get('/health', (req: Request, res: Response) => {
+  console.log('[SPRA] Health check endpoint called');
+  res.status(200).json({ 
+    status: 'ok', 
+    message: 'SPRA API is operational',
+    timestamp: new Date().toISOString()
+  });
+});
 
 interface ProtocolParameters {
   sample_size: number;
