@@ -30,7 +30,7 @@ export default function CSRExtractorDashboard() {
 
   const handleUseInPlanning = () => {
     if (!result?.csr_id) return;
-    navigate(`/planning?csr_id=${result.csr_id}`);
+    setLocation(`/planning?csr_id=${result.csr_id}`);
   };
 
   return (
