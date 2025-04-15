@@ -41,6 +41,8 @@ app.use((req, res, next) => {
     // Direct implementation of SPRA analyze route to bypass router issues
     app.post('/api/spra/direct-analyze', (req: Request, res: Response) => {
       try {
+        console.log('[SPRA] Direct analyze endpoint called with body:', JSON.stringify(req.body));
+        
         // Extract parameters from request body
         const { 
           sample_size, 
@@ -53,6 +55,7 @@ app.use((req, res, next) => {
         
         // Validate required fields
         if (!sample_size || !duration || !therapeutic_area || !phase) {
+          console.log('[SPRA] Missing required parameters:', { sample_size, duration, therapeutic_area, phase });
           return res.status(400).json({ 
             error: "Missing required parameters: sample_size, duration, therapeutic_area, and phase are required" 
           });
@@ -94,8 +97,8 @@ app.use((req, res, next) => {
         // Ensure probability is between 0.1 and 0.95
         probability = Math.max(0.1, Math.min(0.95, probability));
         
-        // Return simplified result
-        res.status(200).json({
+        // Create the response object
+        const responseData = {
           prediction: probability,
           best_sample_size: Math.round(sample_size * 1.2),
           best_duration: Math.round(duration * 1.1),
@@ -106,11 +109,130 @@ app.use((req, res, next) => {
             therapeutic_area,
             phase
           }
-        });
+        };
+        
+        console.log('[SPRA] Sending response:', JSON.stringify(responseData));
+        
+        // Return simplified result
+        res.status(200).json(responseData);
       } catch (err) {
-        console.error("SPRA Direct Analysis Error:", err);
+        console.error("[SPRA] Direct Analysis Error:", err);
         res.status(500).json({ error: "Failed to analyze protocol" });
       }
+    });
+    
+    // Add a special test route to help diagnose browser issues
+    app.get('/api/spra/test', (_req, res) => {
+      console.log('[SPRA] Test route called');
+      res.setHeader('Content-Type', 'text/html');
+      res.status(200).send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>SPRA API Test</title>
+          <style>
+            body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+            button { padding: 10px; margin: 10px 0; cursor: pointer; }
+            pre { background: #f4f4f4; padding: 10px; border-radius: 4px; overflow-x: auto; }
+            .success { color: green; }
+            .error { color: red; }
+          </style>
+        </head>
+        <body>
+          <h1>SPRA API Test Page</h1>
+          <p>Use this page to test if the SPRA API endpoints are accessible from the browser.</p>
+          
+          <h2>Health Check Test</h2>
+          <button id="healthBtn">Test Health Endpoint</button>
+          <pre id="healthResult">Results will appear here...</pre>
+          
+          <h2>Analysis Test</h2>
+          <button id="analysisBtn">Test Analysis Endpoint</button>
+          <pre id="analysisResult">Results will appear here...</pre>
+
+          <h2>XMLHttpRequest Test</h2>
+          <button id="xhrBtn">Test with XMLHttpRequest</button>
+          <pre id="xhrResult">Results will appear here...</pre>
+          
+          <script>
+            // Health check test
+            document.getElementById('healthBtn').addEventListener('click', async () => {
+              const resultEl = document.getElementById('healthResult');
+              try {
+                resultEl.textContent = 'Testing health endpoint...';
+                const response = await fetch('/api/spra/direct-health');
+                const data = await response.json();
+                resultEl.innerHTML = '<span class="success">SUCCESS:</span> ' + JSON.stringify(data, null, 2);
+              } catch (err) {
+                resultEl.innerHTML = '<span class="error">ERROR:</span> ' + err.message;
+              }
+            });
+            
+            // Analysis test
+            document.getElementById('analysisBtn').addEventListener('click', async () => {
+              const resultEl = document.getElementById('analysisResult');
+              try {
+                resultEl.textContent = 'Testing analysis endpoint...';
+                const response = await fetch('/api/spra/direct-analyze', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    sample_size: 200,
+                    duration: 52,
+                    therapeutic_area: 'Oncology',
+                    phase: 'Phase 2',
+                    randomization: 'Double-blind',
+                    primary_endpoint: 'Overall Survival'
+                  })
+                });
+                const data = await response.json();
+                resultEl.innerHTML = '<span class="success">SUCCESS:</span> ' + JSON.stringify(data, null, 2);
+              } catch (err) {
+                resultEl.innerHTML = '<span class="error">ERROR:</span> ' + err.message;
+              }
+            });
+
+            // XHR test 
+            document.getElementById('xhrBtn').addEventListener('click', () => {
+              const resultEl = document.getElementById('xhrResult');
+              resultEl.textContent = 'Testing with XMLHttpRequest...';
+              
+              const xhr = new XMLHttpRequest();
+              xhr.open('POST', '/api/spra/direct-analyze', true);
+              xhr.setRequestHeader('Content-Type', 'application/json');
+              
+              xhr.onload = function() {
+                if (xhr.status === 200) {
+                  try {
+                    const data = JSON.parse(xhr.responseText);
+                    resultEl.innerHTML = '<span class="success">SUCCESS:</span> ' + JSON.stringify(data, null, 2);
+                  } catch (e) {
+                    resultEl.innerHTML = '<span class="error">ERROR:</span> Unable to parse response: ' + xhr.responseText;
+                  }
+                } else {
+                  resultEl.innerHTML = '<span class="error">ERROR:</span> Server returned status ' + xhr.status + ': ' + xhr.responseText;
+                }
+              };
+              
+              xhr.onerror = function() {
+                resultEl.innerHTML = '<span class="error">ERROR:</span> Network error occurred';
+              };
+              
+              xhr.send(JSON.stringify({
+                sample_size: 200,
+                duration: 52,
+                therapeutic_area: 'Oncology',
+                phase: 'Phase 2',
+                randomization: 'Double-blind',
+                primary_endpoint: 'Overall Survival'
+              }));
+            });
+          </script>
+        </body>
+        </html>
+      `);
     });
 
     // Create a simple HTTP server first
