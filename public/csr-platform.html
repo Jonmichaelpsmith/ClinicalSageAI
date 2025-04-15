@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LumenTrialGuide.AI - CSR Intelligence Platform</title>
+  <title>CSR Platform - LumenTrialGuide.AI</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
   <style>
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
@@ -24,6 +25,9 @@
       transform: translateY(-5px);
       box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     }
+    .feature-card {
+      min-height: 15rem;
+    }
   </style>
 </head>
 <body>
@@ -34,174 +38,274 @@
       </div>
       <nav class="flex space-x-6">
         <a href="/csr-platform" class="font-medium text-indigo-600 border-b-2 border-indigo-600 px-1 py-2">CSR Platform</a>
-        <a href="/spra-prod" class="font-medium text-gray-500 hover:text-indigo-600 px-1 py-2">SPRA Engine</a>
-        <a href="/api/csr/analytics" class="font-medium text-gray-500 hover:text-indigo-600 px-1 py-2">Analytics</a>
         <a href="/api/csr/search" class="font-medium text-gray-500 hover:text-indigo-600 px-1 py-2">Search</a>
+        <a href="/api/csr/analytics" class="font-medium text-gray-500 hover:text-indigo-600 px-1 py-2">Analytics</a>
+        <a href="/spra-prod" class="font-medium text-gray-500 hover:text-indigo-600 px-1 py-2">SPRA Engine</a>
+        <a href="/api/doc" class="font-medium text-gray-500 hover:text-indigo-600 px-1 py-2">API Docs</a>
       </nav>
     </div>
   </header>
 
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <div class="text-center mb-16">
-      <h2 class="text-4xl font-extrabold text-gray-900 sm:text-5xl sm:tracking-tight lg:text-6xl">
-        Clinical Study Report Intelligence Platform
-      </h2>
-      <p class="mt-5 max-w-3xl mx-auto text-xl text-gray-500">
-        Transform clinical trial data into structured, searchable intelligence with our AI-powered platform.
-      </p>
+  <div class="relative bg-indigo-800">
+    <div class="absolute inset-0">
+      <div class="absolute inset-0 bg-gradient-to-r from-indigo-800 to-indigo-900" aria-hidden="true"></div>
     </div>
-
-    <div class="stats bg-white rounded-lg shadow p-6 mb-12">
-      <h3 class="text-2xl font-bold text-gray-900 mb-6">Intelligence Engine Status</h3>
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div class="stat p-4 bg-blue-50 rounded-lg">
-          <p class="text-blue-600 text-sm font-medium uppercase">Total CSRs</p>
-          <p class="text-4xl font-bold text-gray-900">3,021</p>
-          <p class="text-gray-500 text-sm">Reports in database</p>
-        </div>
-        <div class="stat p-4 bg-green-50 rounded-lg">
-          <p class="text-green-600 text-sm font-medium uppercase">In Memory</p>
-          <p class="text-4xl font-bold text-gray-900">853</p>
-          <p class="text-gray-500 text-sm">CSRs loaded</p>
-        </div>
-        <div class="stat p-4 bg-purple-50 rounded-lg">
-          <p class="text-purple-600 text-sm font-medium uppercase">Source Diversity</p>
-          <p class="text-4xl font-bold text-gray-900">2</p>
-          <p class="text-gray-500 text-sm">Data sources</p>
-        </div>
-        <div class="stat p-4 bg-yellow-50 rounded-lg">
-          <p class="text-yellow-600 text-sm font-medium uppercase">Last Updated</p>
-          <p class="text-xl font-bold text-gray-900">April 15, 2025</p>
-          <p class="text-gray-500 text-sm">7:28 AM UTC</p>
-        </div>
+    <div class="relative max-w-7xl mx-auto py-24 px-4 sm:py-32 sm:px-6 lg:px-8">
+      <h1 class="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">LumenTrialGuide.AI</h1>
+      <p class="mt-6 text-xl text-indigo-100 max-w-3xl">
+        The intelligent platform that transforms clinical study reports into actionable insights for better trial design and execution.
+      </p>
+      <div class="mt-10 flex space-x-4">
+        <a href="/api/csr/search" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-indigo-700 bg-white hover:bg-indigo-50">
+          Search CSRs
+        </a>
+        <a href="/spra-prod" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 bg-opacity-60 hover:bg-opacity-70">
+          SPRA Engine
+        </a>
       </div>
     </div>
+  </div>
 
-    <div class="platform-features mb-12">
-      <h3 class="text-2xl font-bold text-gray-900 mb-6">Platform Modules</h3>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div class="card bg-white rounded-lg shadow p-6">
-          <div class="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </svg>
-          </div>
-          <h4 class="text-lg font-bold text-gray-900 mb-2">Protocol Intelligence Suite</h4>
-          <p class="text-gray-600 mb-4">Design optimized clinical trial protocols using historical data and predictive analytics.</p>
-          <a href="/spra-prod" class="text-blue-600 hover:text-blue-800 font-medium">Open SPRA Engine →</a>
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <!-- Database Stats -->
+    <section class="mb-16">
+      <h2 class="text-2xl font-bold text-gray-900 mb-8">CSR Database Statistics</h2>
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="bg-white rounded-lg shadow p-6 card">
+          <h3 class="text-lg font-semibold text-gray-700 mb-2">Total CSRs</h3>
+          <p class="text-4xl font-bold text-indigo-600">3,021</p>
+          <p class="text-gray-500 mt-2">Total clinical study reports</p>
         </div>
         
-        <div class="card bg-white rounded-lg shadow p-6">
-          <div class="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div class="bg-white rounded-lg shadow p-6 card">
+          <h3 class="text-lg font-semibold text-gray-700 mb-2">Health Canada CSRs</h3>
+          <p class="text-4xl font-bold text-indigo-600">2,820</p>
+          <p class="text-gray-500 mt-2">Reports from Health Canada</p>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6 card">
+          <h3 class="text-lg font-semibold text-gray-700 mb-2">Processed CSRs</h3>
+          <p class="text-4xl font-bold text-indigo-600">853</p>
+          <p class="text-gray-500 mt-2">Reports with structured data</p>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6 card">
+          <h3 class="text-lg font-semibold text-gray-700 mb-2">Therapeutic Areas</h3>
+          <p class="text-4xl font-bold text-indigo-600">42</p>
+          <p class="text-gray-500 mt-2">Unique therapeutic areas</p>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Charts Section -->
+    <section class="mb-16">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="bg-white rounded-lg shadow p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">Phase Distribution</h3>
+          <div class="h-64">
+            <canvas id="phaseChart"></canvas>
+          </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">Top Therapeutic Areas</h3>
+          <div class="h-64">
+            <canvas id="indicationChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Features Section -->
+    <section class="mb-16">
+      <h2 class="text-2xl font-bold text-gray-900 mb-8">Platform Features</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="bg-white rounded-lg shadow p-6 card feature-card">
+          <div class="h-12 w-12 rounded-md bg-indigo-600 flex items-center justify-center mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </div>
-          <h4 class="text-lg font-bold text-gray-900 mb-2">Discovery Engine</h4>
-          <p class="text-gray-600 mb-4">Search across all CSRs by therapeutic area, phase, endpoint, and other key metadata.</p>
-          <a href="/api/csr/search" class="text-blue-600 hover:text-blue-800 font-medium">Open Search →</a>
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">Intelligent Search</h3>
+          <p class="text-gray-500">Advanced search capabilities across all CSR content with semantic understanding of clinical concepts and terminology.</p>
+          <div class="mt-4">
+            <a href="/api/csr/search" class="text-indigo-600 hover:text-indigo-700 font-medium">Try it now &rarr;</a>
+          </div>
         </div>
         
-        <div class="card bg-white rounded-lg shadow p-6">
-          <div class="h-12 w-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        <div class="bg-white rounded-lg shadow p-6 card feature-card">
+          <div class="h-12 w-12 rounded-md bg-indigo-600 flex items-center justify-center mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
           </div>
-          <h4 class="text-lg font-bold text-gray-900 mb-2">Insights Dashboard</h4>
-          <p class="text-gray-600 mb-4">Visualize trends, patterns, and correlations across clinical study reports.</p>
-          <a href="/api/csr/analytics" class="text-blue-600 hover:text-blue-800 font-medium">View Analytics →</a>
-        </div>
-      </div>
-    </div>
-
-    <div class="recent-reports bg-white rounded-lg shadow p-6">
-      <h3 class="text-2xl font-bold text-gray-900 mb-6">Indication Distribution</h3>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div>
-          <h4 class="text-lg font-bold text-gray-700 mb-3">Top Indications</h4>
-          <div class="space-y-4">
-            <div class="flex items-center">
-              <div class="w-48 text-sm font-medium text-gray-900">Systemic Lupus Erythematosus</div>
-              <div class="w-full bg-gray-200 h-3 rounded-full overflow-hidden">
-                <div class="bg-blue-600 h-full rounded-full" style="width: 14.0%;"></div>
-              </div>
-              <div class="ml-4 text-sm font-medium text-gray-700">110</div>
-            </div>
-            <div class="flex items-center">
-              <div class="w-48 text-sm font-medium text-gray-900">COPD</div>
-              <div class="w-full bg-gray-200 h-3 rounded-full overflow-hidden">
-                <div class="bg-blue-600 h-full rounded-full" style="width: 13.0%;"></div>
-              </div>
-              <div class="ml-4 text-sm font-medium text-gray-700">103</div>
-            </div>
-            <div class="flex items-center">
-              <div class="w-48 text-sm font-medium text-gray-900">Hemophilia A</div>
-              <div class="w-full bg-gray-200 h-3 rounded-full overflow-hidden">
-                <div class="bg-blue-600 h-full rounded-full" style="width: 12.9%;"></div>
-              </div>
-              <div class="ml-4 text-sm font-medium text-gray-700">102</div>
-            </div>
-            <div class="flex items-center">
-              <div class="w-48 text-sm font-medium text-gray-900">Major Depressive Disorder</div>
-              <div class="w-full bg-gray-200 h-3 rounded-full overflow-hidden">
-                <div class="bg-blue-600 h-full rounded-full" style="width: 12.0%;"></div>
-              </div>
-              <div class="ml-4 text-sm font-medium text-gray-700">95</div>
-            </div>
-            <div class="flex items-center">
-              <div class="w-48 text-sm font-medium text-gray-900">Type 2 Diabetes</div>
-              <div class="w-full bg-gray-200 h-3 rounded-full overflow-hidden">
-                <div class="bg-blue-600 h-full rounded-full" style="width: 11.0%;"></div>
-              </div>
-              <div class="ml-4 text-sm font-medium text-gray-700">87</div>
-            </div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">Analytics Dashboard</h3>
+          <p class="text-gray-500">Comprehensive analytics and visualizations of CSR data, including trends, patterns, and insights across therapeutic areas and phases.</p>
+          <div class="mt-4">
+            <a href="/api/csr/analytics" class="text-indigo-600 hover:text-indigo-700 font-medium">View analytics &rarr;</a>
           </div>
         </div>
         
-        <div>
-          <h4 class="text-lg font-bold text-gray-700 mb-3">Phase Distribution</h4>
-          <div class="grid grid-cols-3 gap-4">
-            <div class="bg-blue-50 p-4 rounded-lg text-center">
-              <p class="text-sm font-medium text-gray-500">Phase 1</p>
-              <p class="text-2xl font-bold text-gray-900">482</p>
-            </div>
-            <div class="bg-blue-50 p-4 rounded-lg text-center">
-              <p class="text-sm font-medium text-gray-500">Phase 1/2</p>
-              <p class="text-2xl font-bold text-gray-900">454</p>
-            </div>
-            <div class="bg-blue-50 p-4 rounded-lg text-center">
-              <p class="text-sm font-medium text-gray-500">Phase 2</p>
-              <p class="text-2xl font-bold text-gray-900">456</p>
-            </div>
-            <div class="bg-blue-50 p-4 rounded-lg text-center">
-              <p class="text-sm font-medium text-gray-500">Phase 2/3</p>
-              <p class="text-2xl font-bold text-gray-900">470</p>
-            </div>
-            <div class="bg-blue-50 p-4 rounded-lg text-center">
-              <p class="text-sm font-medium text-gray-500">Phase 3</p>
-              <p class="text-2xl font-bold text-gray-900">472</p>
-            </div>
-            <div class="bg-blue-50 p-4 rounded-lg text-center">
-              <p class="text-sm font-medium text-gray-500">Phase 4</p>
-              <p class="text-2xl font-bold text-gray-900">472</p>
-            </div>
+        <div class="bg-white rounded-lg shadow p-6 card feature-card">
+          <div class="h-12 w-12 rounded-md bg-indigo-600 flex items-center justify-center mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">SPRA Engine</h3>
+          <p class="text-gray-500">Strategic Protocol Recommendations Advisor for optimizing clinical trial protocols based on historical data and predictive analytics.</p>
+          <div class="mt-4">
+            <a href="/spra-prod" class="text-indigo-600 hover:text-indigo-700 font-medium">Launch SPRA &rarr;</a>
           </div>
         </div>
       </div>
-    </div>
+    </section>
+    
+    <!-- Recent CSRs Section -->
+    <section class="mb-16">
+      <div class="flex justify-between items-center mb-8">
+        <h2 class="text-2xl font-bold text-gray-900">Recently Added CSRs</h2>
+        <a href="/api/csr/search" class="text-indigo-600 hover:text-indigo-700 font-medium">View all &rarr;</a>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white rounded-lg shadow overflow-hidden card">
+          <div class="p-6">
+            <div class="flex justify-between items-start">
+              <h3 class="text-lg font-semibold text-gray-900 mb-1">Phase 3 study of XYZ-123 in COPD patients</h3>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                Phase 3
+              </span>
+            </div>
+            <p class="text-sm text-gray-500 mb-4">Sponsor: Biotechnica</p>
+            <div class="flex items-center text-sm text-gray-500">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              Added: April 12, 2025
+            </div>
+          </div>
+          <div class="border-t border-gray-200 bg-gray-50 px-6 py-2">
+            <a href="/api/csr/1" class="text-sm font-medium text-indigo-600 hover:text-indigo-700">View details &rarr;</a>
+          </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow overflow-hidden card">
+          <div class="p-6">
+            <div class="flex justify-between items-start">
+              <h3 class="text-lg font-semibold text-gray-900 mb-1">Randomized controlled trial of ABC-456 for SLE</h3>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                Phase 2
+              </span>
+            </div>
+            <p class="text-sm text-gray-500 mb-4">Sponsor: PharmaGlobal</p>
+            <div class="flex items-center text-sm text-gray-500">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              Added: April 10, 2025
+            </div>
+          </div>
+          <div class="border-t border-gray-200 bg-gray-50 px-6 py-2">
+            <a href="/api/csr/2" class="text-sm font-medium text-indigo-600 hover:text-indigo-700">View details &rarr;</a>
+          </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow overflow-hidden card">
+          <div class="p-6">
+            <div class="flex justify-between items-start">
+              <h3 class="text-lg font-semibold text-gray-900 mb-1">Long-term safety study of DEF-789 in Hemophilia A</h3>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                Phase 4
+              </span>
+            </div>
+            <p class="text-sm text-gray-500 mb-4">Sponsor: MediNova</p>
+            <div class="flex items-center text-sm text-gray-500">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              Added: April 5, 2025
+            </div>
+          </div>
+          <div class="border-t border-gray-200 bg-gray-50 px-6 py-2">
+            <a href="/api/csr/3" class="text-sm font-medium text-indigo-600 hover:text-indigo-700">View details &rarr;</a>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- API Documentation Section -->
+    <section class="mb-16">
+      <div class="bg-indigo-50 rounded-lg shadow-sm p-8">
+        <div class="md:flex md:items-center md:justify-between">
+          <div class="md:flex-1">
+            <h2 class="text-2xl font-bold text-indigo-900 mb-4">API Integration Available</h2>
+            <p class="text-indigo-700 mb-6">
+              Access our comprehensive CSR database programmatically through our RESTful API endpoints. Seamlessly integrate clinical study report data into your applications.
+            </p>
+            <div class="space-y-4">
+              <div class="flex items-start">
+                <svg class="h-6 w-6 text-indigo-600 mt-0.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                <span class="ml-3 text-indigo-700">Secure API access with API key authentication</span>
+              </div>
+              <div class="flex items-start">
+                <svg class="h-6 w-6 text-indigo-600 mt-0.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                <span class="ml-3 text-indigo-700">Comprehensive endpoints for search, analytics, and SPRA</span>
+              </div>
+              <div class="flex items-start">
+                <svg class="h-6 w-6 text-indigo-600 mt-0.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                <span class="ml-3 text-indigo-700">Webhook support for real-time notifications</span>
+              </div>
+            </div>
+          </div>
+          <div class="mt-8 md:mt-0 md:ml-8">
+            <a href="/api/doc" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+              View API Documentation
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 
-  <footer class="bg-gray-100 mt-12">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <footer class="bg-gray-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div class="md:flex md:items-center md:justify-between">
-        <div class="flex justify-center md:justify-start space-x-6">
-          <a href="/csr-platform" class="text-gray-500 hover:text-gray-700">CSR Platform</a>
-          <a href="/spra-prod" class="text-gray-500 hover:text-gray-700">SPRA Engine</a>
-          <a href="/api/csr/search" class="text-gray-500 hover:text-gray-700">Search</a>
-          <a href="/api/csr/analytics" class="text-gray-500 hover:text-gray-700">Analytics</a>
+        <div>
+          <h3 class="text-xl font-bold gradient-text mb-4">LumenTrialGuide.AI</h3>
+          <p class="text-gray-500 max-w-md">
+            The intelligent platform that transforms clinical study reports into actionable insights for better trial design and execution.
+          </p>
         </div>
-        <p class="mt-8 text-center md:mt-0 md:text-right text-gray-500">
+        <div class="mt-8 md:mt-0">
+          <h3 class="text-sm font-semibold text-gray-700 tracking-wider uppercase mb-4">Navigation</h3>
+          <ul class="space-y-4">
+            <li>
+              <a href="/csr-platform" class="text-gray-500 hover:text-gray-700">CSR Platform</a>
+            </li>
+            <li>
+              <a href="/api/csr/search" class="text-gray-500 hover:text-gray-700">Search</a>
+            </li>
+            <li>
+              <a href="/api/csr/analytics" class="text-gray-500 hover:text-gray-700">Analytics</a>
+            </li>
+            <li>
+              <a href="/spra-prod" class="text-gray-500 hover:text-gray-700">SPRA Engine</a>
+            </li>
+            <li>
+              <a href="/api/doc" class="text-gray-500 hover:text-gray-700">API Documentation</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="mt-12 border-t border-gray-200 pt-8">
+        <p class="text-gray-400 text-sm text-center">
           &copy; 2025 LumenTrialGuide.AI. All rights reserved.
         </p>
       </div>
@@ -210,9 +314,72 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // Since this is a simple HTML page without real-time data,
-      // we would typically add API calls here to populate data dynamically.
-      console.log('CSR Platform loaded successfully');
+      console.log("CSR Platform loaded successfully");
+      
+      // Phase Distribution Chart
+      const phaseCtx = document.getElementById('phaseChart').getContext('2d');
+      const phaseChart = new Chart(phaseCtx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Phase 1', 'Phase 1/2', 'Phase 2', 'Phase 2/3', 'Phase 3', 'Phase 4'],
+          datasets: [{
+            data: [482, 454, 456, 470, 472, 472],
+            backgroundColor: [
+              '#818cf8', // indigo-400
+              '#6366f1', // indigo-500
+              '#4f46e5', // indigo-600
+              '#4338ca', // indigo-700
+              '#3730a3', // indigo-800
+              '#312e81'  // indigo-900
+            ],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+            }
+          }
+        }
+      });
+
+      // Indication Chart
+      const indicationCtx = document.getElementById('indicationChart').getContext('2d');
+      const indicationChart = new Chart(indicationCtx, {
+        type: 'bar',
+        data: {
+          labels: ['SLE', 'COPD', 'Hemophilia A', 'MDD', 'T2D'],
+          datasets: [{
+            label: 'Number of CSRs',
+            data: [110, 103, 102, 95, 87],
+            backgroundColor: '#4f46e5', // indigo-600
+            borderColor: '#4338ca',     // indigo-700
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'CSR Count'
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Therapeutic Area'
+              }
+            }
+          }
+        }
+      });
     });
   </script>
 </body>

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSR Analytics - LumenTrialGuide.AI</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      background-color: #f9fafb;
+    }
+    .gradient-text {
+      background: linear-gradient(90deg, #1a56db, #4f46e5);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      color: transparent;
+    }
+    .card {
+      transition: all 0.3s ease;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+  </style>
+</head>
+<body>
+  <header class="bg-white shadow">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex items-center justify-between">
+      <div class="flex items-center">
+        <h1 class="text-3xl font-bold gradient-text">LumenTrialGuide.AI</h1>
+      </div>
+      <nav class="flex space-x-6">
+        <a href="/csr-platform" class="font-medium text-gray-500 hover:text-indigo-600 px-1 py-2">CSR Platform</a>
+        <a href="/api/csr/search" class="font-medium text-gray-500 hover:text-indigo-600 px-1 py-2">Search</a>
+        <a href="/api/csr/analytics" class="font-medium text-indigo-600 border-b-2 border-indigo-600 px-1 py-2">Analytics</a>
+        <a href="/spra-prod" class="font-medium text-gray-500 hover:text-indigo-600 px-1 py-2">SPRA Engine</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="text-center mb-10">
+      <h2 class="text-3xl font-extrabold text-gray-900 sm:text-4xl sm:tracking-tight">
+        CSR Analytics Dashboard
+      </h2>
+      <p class="mt-3 max-w-2xl mx-auto text-xl text-gray-500">
+        Detailed insights and trends from our clinical study report database
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+      <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Total Reports</h3>
+        <div class="flex items-end space-x-2">
+          <div class="text-4xl font-bold text-indigo-600">3,021</div>
+          <div class="text-green-600 text-sm font-medium mb-1">+12% this month</div>
+        </div>
+        <p class="text-gray-500 mt-2 text-sm">CSR reports in our database</p>
+      </div>
+
+      <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Sources Coverage</h3>
+        <div class="flex items-end space-x-2">
+          <div class="text-4xl font-bold text-indigo-600">93%</div>
+          <div class="text-green-600 text-sm font-medium mb-1">+5% this month</div>
+        </div>
+        <p class="text-gray-500 mt-2 text-sm">Health Canada coverage</p>
+      </div>
+
+      <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Recent Activity</h3>
+        <div class="flex items-end space-x-2">
+          <div class="text-4xl font-bold text-indigo-600">342</div>
+          <div class="text-green-600 text-sm font-medium mb-1">+28% this month</div>
+        </div>
+        <p class="text-gray-500 mt-2 text-sm">CSR searches this week</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+      <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Phase Distribution</h3>
+        <div class="h-64">
+          <canvas id="phaseChart"></canvas>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Top Therapeutic Areas</h3>
+        <div class="h-64">
+          <canvas id="indicationChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 mb-10">
+      <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">CSR Upload Trends</h3>
+        <div class="h-64">
+          <canvas id="uploadTrends"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Most Common Endpoints</h3>
+        <ul class="divide-y divide-gray-200">
+          <li class="py-3 flex justify-between">
+            <span class="text-gray-700">Progression-Free Survival (PFS)</span>
+            <span class="font-medium text-indigo-600">187 CSRs</span>
+          </li>
+          <li class="py-3 flex justify-between">
+            <span class="text-gray-700">Overall Survival (OS)</span>
+            <span class="font-medium text-indigo-600">156 CSRs</span>
+          </li>
+          <li class="py-3 flex justify-between">
+            <span class="text-gray-700">Objective Response Rate (ORR)</span>
+            <span class="font-medium text-indigo-600">134 CSRs</span>
+          </li>
+          <li class="py-3 flex justify-between">
+            <span class="text-gray-700">Disease Control Rate (DCR)</span>
+            <span class="font-medium text-indigo-600">112 CSRs</span>
+          </li>
+          <li class="py-3 flex justify-between">
+            <span class="text-gray-700">HbA1c Change from Baseline</span>
+            <span class="font-medium text-indigo-600">89 CSRs</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Top Sponsors</h3>
+        <ul class="divide-y divide-gray-200">
+          <li class="py-3 flex justify-between">
+            <span class="text-gray-700">PharmaGlobal Therapeutics</span>
+            <span class="font-medium text-indigo-600">245 CSRs</span>
+          </li>
+          <li class="py-3 flex justify-between">
+            <span class="text-gray-700">BioInnovate Sciences</span>
+            <span class="font-medium text-indigo-600">218 CSRs</span>
+          </li>
+          <li class="py-3 flex justify-between">
+            <span class="text-gray-700">MediVector Research</span>
+            <span class="font-medium text-indigo-600">187 CSRs</span>
+          </li>
+          <li class="py-3 flex justify-between">
+            <span class="text-gray-700">NovaTech Pharmaceuticals</span>
+            <span class="font-medium text-indigo-600">165 CSRs</span>
+          </li>
+          <li class="py-3 flex justify-between">
+            <span class="text-gray-700">CellGenics Bioscience</span>
+            <span class="font-medium text-indigo-600">142 CSRs</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </main>
+
+  <footer class="bg-gray-100 mt-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="md:flex md:items-center md:justify-between">
+        <div class="flex justify-center md:justify-start space-x-6">
+          <a href="/csr-platform" class="text-gray-500 hover:text-gray-700">CSR Platform</a>
+          <a href="/api/csr/search" class="text-gray-500 hover:text-gray-700">Search</a>
+          <a href="/api/csr/analytics" class="text-gray-500 hover:text-gray-700">Analytics</a>
+          <a href="/spra-prod" class="text-gray-500 hover:text-gray-700">SPRA Engine</a>
+        </div>
+        <p class="mt-8 text-center md:mt-0 md:text-right text-gray-500">
+          &copy; 2025 LumenTrialGuide.AI. All rights reserved.
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Phase Distribution Chart
+      const phaseCtx = document.getElementById('phaseChart').getContext('2d');
+      const phaseChart = new Chart(phaseCtx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Phase 1', 'Phase 1/2', 'Phase 2', 'Phase 2/3', 'Phase 3', 'Phase 4'],
+          datasets: [{
+            data: [482, 454, 456, 470, 472, 472],
+            backgroundColor: [
+              '#818cf8', // indigo-400
+              '#6366f1', // indigo-500
+              '#4f46e5', // indigo-600
+              '#4338ca', // indigo-700
+              '#3730a3', // indigo-800
+              '#312e81'  // indigo-900
+            ],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+            }
+          }
+        }
+      });
+
+      // Indication Chart
+      const indicationCtx = document.getElementById('indicationChart').getContext('2d');
+      const indicationChart = new Chart(indicationCtx, {
+        type: 'bar',
+        data: {
+          labels: ['SLE', 'COPD', 'Hemophilia A', 'MDD', 'T2D'],
+          datasets: [{
+            label: 'Number of CSRs',
+            data: [110, 103, 102, 95, 87],
+            backgroundColor: '#4f46e5', // indigo-600
+            borderColor: '#4338ca',     // indigo-700
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'CSR Count'
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Therapeutic Area'
+              }
+            }
+          }
+        }
+      });
+
+      // Upload Trends Chart
+      const trendsCtx = document.getElementById('uploadTrends').getContext('2d');
+      const trendsChart = new Chart(trendsCtx, {
+        type: 'line',
+        data: {
+          labels: ['Oct 2024', 'Nov 2024', 'Dec 2024', 'Jan 2025', 'Feb 2025', 'Mar 2025', 'Apr 2025'],
+          datasets: [{
+            label: 'New CSRs Added',
+            data: [246, 302, 387, 421, 476, 512, 562],
+            fill: false,
+            backgroundColor: '#4f46e5', // indigo-600
+            borderColor: '#4f46e5',     // indigo-600
+            tension: 0.4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'CSRs Added'
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Month'
+              }
+            }
+          }
+        }
+      });
+    });
+  </script>
+</body>
+</html>
