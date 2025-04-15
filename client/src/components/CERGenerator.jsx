@@ -1,49 +1,86 @@
 import React, { useState } from 'react';
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Loader2, AlertCircle } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { Card, CardContent } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
+import { apiRequest } from "@/lib/queryClient";
 
-export default function CERGenerator() {
+const CERGenerator = () => {
   const [ndcCode, setNdcCode] = useState('');
-  const [cerReport, setCerReport] = useState('');
+  const [productName, setProductName] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [results, setResults] = useState(null);
+  const [saveStatus, setSaveStatus] = useState({ saving: false, saved: false });
   const { toast } = useToast();
 
-  const generateCER = async () => {
-    if (!ndcCode.trim()) {
-      setError('Please enter an NDC code');
+  const handleNdcChange = (e) => {
+    setNdcCode(e.target.value);
+  };
+
+  const handleProductNameChange = (e) => {
+    setProductName(e.target.value);
+  };
+
+  const validateNdc = (code) => {
+    // NDC codes can be in 10-digit or 11-digit format
+    // Common formats: XXXX-XXXX-XX or XXXXX-XXX-XX or without hyphens
+    const ndc10Pattern = /^\d{4}-\d{4}-\d{2}$|^\d{5}-\d{3}-\d{2}$|^\d{5}-\d{4}-\d{1}$|^\d{10}$/;
+    const ndc11Pattern = /^\d{5}-\d{4}-\d{2}$|^\d{5}-\d{3}-\d{3}$|^\d{11}$/;
+    
+    return ndc10Pattern.test(code) || ndc11Pattern.test(code);
+  };
+
+  const handleGenerateCER = async () => {
+    if (!ndcCode) {
+      toast({
+        title: "Missing NDC Code",
+        description: "Please enter an NDC code to generate a CER report.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!validateNdc(ndcCode)) {
+      toast({
+        title: "Invalid NDC Format",
+        description: "Please enter a valid NDC code (e.g., 0074-3797-13 or 00743797-13).",
+        variant: "destructive",
+      });
       return;
     }
 
     setLoading(true);
-    setError('');
-    setCerReport('');
+    setResults(null);
     
     try {
-      const res = await fetch(`/api/cer/faers/${ndcCode}`);
-      
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || 'Failed to generate CER report');
+      const params = new URLSearchParams();
+      if (productName) {
+        params.append('product_name', productName);
       }
       
-      const data = await res.json();
-      setCerReport(data.cer_report);
+      const response = await apiRequest(
+        'GET', 
+        `/api/cer/faers/${ndcCode}?${params.toString()}`
+      );
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to generate CER report');
+      }
+      
+      const data = await response.json();
+      setResults(data);
       
       toast({
-        title: "Report Generated Successfully",
-        description: "Your Clinical Evaluation Report has been generated.",
-        variant: "success",
+        title: "CER Generated Successfully",
+        description: `Generated CER report for NDC ${ndcCode}`,
       });
-    } catch (err) {
-      setError(err.message);
+    } catch (error) {
+      console.error('Error generating CER:', error);
       toast({
-        title: "Error Generating Report",
-        description: err.message || "Failed to generate CER report",
+        title: "CER Generation Failed",
+        description: error.message || "An error occurred while generating the CER report.",
         variant: "destructive",
       });
     } finally {
@@ -51,62 +88,150 @@ export default function CERGenerator() {
     }
   };
 
-  return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle>FDA FAERS CER Generator</CardTitle>
-        <CardDescription>
-          Generate Clinical Evaluation Reports from FDA FAERS data by providing an NDC code
-        </CardDescription>
-      </CardHeader>
+  const handleSaveCER = async () => {
+    if (!results) {
+      toast({
+        title: "No CER to Save",
+        description: "Please generate a CER report first before saving.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSaveStatus({ saving: true, saved: false });
+    
+    try {
+      const response = await apiRequest('POST', '/api/cer/faers/save', {
+        title: `${productName || 'Product'} CER from FAERS Data`,
+        device_name: productName || 'FDA Product',
+        manufacturer: 'Generated from FDA FAERS',
+        content_text: results.cer_report,
+        metadata: {
+          ndc_code: ndcCode,
+          total_records: results.total_records,
+          generated_date: new Date().toISOString(),
+          source: 'FAERS'
+        }
+      });
       
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="ndc-code">NDC Code <span className="text-red-500">*</span></Label>
-          <div className="flex gap-2">
-            <Input
-              id="ndc-code"
-              placeholder="Enter NDC Code (e.g. 0002-4462)"
-              value={ndcCode}
-              onChange={(e) => setNdcCode(e.target.value)}
-              required
-            />
-            <Button 
-              onClick={generateCER} 
-              disabled={loading || !ndcCode}
-              className="whitespace-nowrap"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                "Generate CER"
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to save CER report');
+      }
+      
+      const data = await response.json();
+      setSaveStatus({ saving: false, saved: true });
+      
+      toast({
+        title: "CER Saved Successfully",
+        description: `Saved as CER #${data.cer_id}`,
+      });
+    } catch (error) {
+      console.error('Error saving CER:', error);
+      toast({
+        title: "Save Failed",
+        description: error.message || "An error occurred while saving the CER report.",
+        variant: "destructive",
+      });
+      setSaveStatus({ saving: false, saved: false });
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardContent className="pt-6">
+          <div className="space-y-4">
+            <div>
+              <label className="font-medium block mb-1" htmlFor="ndc-code">
+                NDC Code <span className="text-red-500">*</span>
+              </label>
+              <Input
+                id="ndc-code"
+                placeholder="Enter NDC code (e.g., 0074-3797-13)"
+                value={ndcCode}
+                onChange={handleNdcChange}
+                className="w-full"
+              />
+              <p className="text-sm text-muted-foreground mt-1">
+                The FDA's National Drug Code identifier for the product
+              </p>
+            </div>
+            
+            <div>
+              <label className="font-medium block mb-1" htmlFor="product-name">
+                Product Name (Optional)
+              </label>
+              <Input
+                id="product-name"
+                placeholder="Enter product name"
+                value={productName}
+                onChange={handleProductNameChange}
+                className="w-full"
+              />
+              <p className="text-sm text-muted-foreground mt-1">
+                If provided, this will help personalize the CER content
+              </p>
+            </div>
+            
+            <div className="flex space-x-2 pt-2">
+              <Button 
+                className="w-full"
+                onClick={handleGenerateCER}
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Generating CER...
+                  </>
+                ) : "Generate CER"}
+              </Button>
+              
+              {results && (
+                <Button 
+                  className="w-1/3"
+                  onClick={handleSaveCER}
+                  disabled={saveStatus.saving || saveStatus.saved}
+                  variant={saveStatus.saved ? "outline" : "default"}
+                >
+                  {saveStatus.saving ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : saveStatus.saved ? "Saved ✓" : "Save CER"}
+                </Button>
               )}
-            </Button>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            National Drug Code identifier for the product
-          </p>
-        </div>
-        
-        {error && (
-          <div className="flex items-center p-3 text-sm border rounded-md border-red-200 bg-red-50 text-red-600">
-            <AlertCircle className="w-4 h-4 mr-2" />
-            {error}
-          </div>
-        )}
-        
-        {cerReport && (
-          <div className="p-4 mt-4 overflow-auto border rounded-md max-h-[400px]">
-            <h3 className="mb-2 text-lg font-medium">Generated CER Report</h3>
-            <div className="p-3 overflow-auto text-sm bg-gray-50 rounded-md whitespace-pre-wrap">
-              {cerReport}
             </div>
           </div>
-        )}
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+      
+      {results && (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h3 className="text-xl font-semibold">
+                  CER Report for {productName || `NDC: ${ndcCode}`}
+                </h3>
+                <span className="text-sm text-muted-foreground">
+                  Based on {results.total_records} FAERS records
+                </span>
+              </div>
+              
+              <div className="max-h-[600px] overflow-y-auto p-4 border rounded-md bg-slate-50 dark:bg-slate-900/50">
+                <div className="whitespace-pre-wrap font-serif text-sm">
+                  {results.cer_report}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
-}
+};
+
+export default CERGenerator;

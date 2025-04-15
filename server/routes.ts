@@ -16,6 +16,7 @@ import { exportService } from "./services/export-service";
 import academicProtocolAssessment from './routes/academic_protocol_assessment';
 import correctionRoutes from './routes/correction-routes';
 import plannerRoutes from './routes/planner-routes';
+import faersRoutes from './routes/faers-routes';
 // Legacy Hugging Face service has been replaced with OpenAI-based services
 // Migration notice: The HuggingFace service has been completely replaced with OpenAI-based services.
 import { 
@@ -549,6 +550,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register the CER routes for Clinical Evaluation Reports
   app.use('/api/cers', cerRoutes);
+  app.use('/api/cer/faers', faersRoutes);
 
   // Register the JavaScript CSR routes for backward compatibility
   // Use dynamic import to load the CommonJS module
