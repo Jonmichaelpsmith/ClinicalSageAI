@@ -1,0 +1,52 @@
+The semantic data models needed to fully understand all elements of a Clinical Study Report (CSR) and Clinical Evaluation Report (CER) involve several standardized frameworks and guidelines. Let me break these down:
+For Clinical Study Reports (CSR):
+
+ICH E3 - This is the primary international guideline for CSR structure and content. It provides a comprehensive framework for organizing and presenting clinical trial results, including:
+
+Study objectives and design
+Patient populations
+Efficacy and safety assessments
+Statistical methods and results
+Individual patient data listings
+
+
+CDISC Standards:
+
+SDTM (Study Data Tabulation Model): Organizes raw clinical trial data
+ADaM (Analysis Data Model): Structures data for statistical analysis
+SEND (Standard for Exchange of Nonclinical Data): For toxicology studies
+ODM (Operational Data Model): For clinical trial operational data
+
+
+MedDRA (Medical Dictionary for Regulatory Activities): Standardized medical terminology for adverse events and medical history
+WHO-DD (World Health Organization Drug Dictionary): For standardized medication coding
+
+For Clinical Evaluation Reports (CER):
+
+MEDDEV 2.7/1 Rev. 4: European guideline for CERs under the Medical Device Regulation (MDR)
+ISO 14155: International standard for clinical investigations of medical devices
+IMDRF MDCE WG/N56: International Medical Device Regulators Forum guidance on clinical evaluation
+PMCF (Post-Market Clinical Follow-up) data models
+PICO Framework: For structuring clinical questions (Patient/Problem, Intervention, Comparison, Outcome)
+
+Common Data Elements Across Both:
+
+Regulatory submission formats:
+
+eCTD (Electronic Common Technical Document)
+CDISC standards for dataset submissions
+
+
+Data quality and integrity models:
+
+ALCOA+ principles (Attributable, Legible, Contemporaneous, Original, Accurate, plus Complete, Consistent, Enduring, Available)
+
+
+Risk assessment frameworks:
+
+Benefit-risk assessment models
+CONSORT framework for reporting randomized trials
+
+
+
+The relationship between these various models creates a comprehensive semantic network that enables proper documentation, analysis, and regulatory reporting of clinical study findings. ICH E3 provides the overall structure for CSRs, while MEDDEV 2.7/1 guides CERs, and both rely on standardized data models like CDISC and controlled terminologies like MedDRA to ensure consistency and interoperability of clinical research data.
