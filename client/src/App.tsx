@@ -61,6 +61,7 @@ import SubscriptionsPage from "@/pages/SubscriptionsPage";
 import ExampleReportsPage from "@/pages/ExampleReportsPage";
 import CERGeneratorPage from "@/pages/CERGeneratorPage";
 import EnhancedCERDashboardPage from "@/pages/EnhancedCERDashboardPage";
+import SettingsPage from "@/pages/SettingsPage";
 import { applyCompactStyling } from "./lib/ui-utils"; // Added import
 
 
@@ -206,6 +207,7 @@ function Router() {
       <Route path="/admin">{() => renderWithLayout(AdminPage)}</Route>
       <Route path="/cer-generator">{() => renderWithLayout(CERGeneratorPage)}</Route>
       <Route path="/enhanced-cer-dashboard">{() => renderWithLayout(EnhancedCERDashboardPage)}</Route>
+      <Route path="/settings">{() => renderWithLayout(SettingsPage)}</Route>
 
       {/* Fallback to 404 */}
       <Route>{() => renderWithLayout(NotFound)}</Route>
