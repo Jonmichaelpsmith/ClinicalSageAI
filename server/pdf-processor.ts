@@ -1,7 +1,18 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { PDFDocument } from 'pdf-lib';
-import { extractTextFromPdf } from './openai-service';
+import pdfParse from 'pdf-parse';
+
+// Local implementation to avoid circular dependency with openai-service
+async function extractTextFromPdf(pdfBuffer: Buffer): Promise<string> {
+  try {
+    const data = await pdfParse(pdfBuffer);
+    return data.text;
+  } catch (error) {
+    console.error('Error extracting text from PDF:', error);
+    throw new Error(`Failed to extract text from PDF: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
 
 const UPLOAD_DIR = path.resolve('uploads');
 
@@ -52,7 +63,7 @@ export async function getPdfMetadata(buffer: Buffer): Promise<{ pageCount: numbe
 }
 
 // Process PDF file
-export async function processPdfFile(filePath: string, reportId: number): Promise<void> {
+export async function processPdfFile(filePath: string, reportId: number): Promise<string> {
   try {
     const fileBuffer = await fs.readFile(filePath);
     const extractedText = await extractTextFromPdf(fileBuffer);
