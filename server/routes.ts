@@ -80,6 +80,7 @@ import { academicRegulatoryRouter } from "./routes/academic_regulatory_routes";
 import { csrSearchRouter } from './routes/csr_search_routes';
 import { registerSimilarGoalsRoutes } from './routes/similar-goals-routes.js';
 import { registerSubscriptionsRoutes } from './routes/reports/subscriptions-routes';
+import plannerRoutes from './routes/planner-routes';
 import intelRoutes from './routes/intel-routes';
 import { 
   fetchClinicalTrialData, 
@@ -549,6 +550,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register Similar Goals Search routes
   registerSimilarGoalsRoutes(app);
+  
+  // Register Protocol Planning routes
+  app.use('/', plannerRoutes);
   
   // Register Strategic Report routes
   app.use('/api/strategic-reports', strategicReportRoutes);
