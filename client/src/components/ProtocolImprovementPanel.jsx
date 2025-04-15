@@ -1057,6 +1057,7 @@ const ProtocolImprovementPanel = ({
             </Card>
           </div>
         )}
+        </div>
         
         <DialogFooter className="sm:justify-between border-t pt-4">
           <Button 

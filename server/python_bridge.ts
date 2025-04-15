@@ -63,7 +63,7 @@ export async function startPythonService() {
     });
     
     // Wait for service to be ready
-    let maxWaitMs = 30000; // 30 seconds - increased timeout for startup
+    let maxWaitMs = 120000; // 120 seconds - extended timeout for startup
     const intervalMs = 100;
     
     return new Promise<void>((resolve, reject) => {

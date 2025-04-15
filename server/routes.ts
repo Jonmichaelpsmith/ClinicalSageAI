@@ -380,6 +380,10 @@ import alignmentRoutes from './routes/alignment-routes';
 import sessionRoutes from './routes/session_routes';
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Health check endpoint for Replit - responds immediately to help the server start quickly
+  app.get('/__startup_check', (req, res) => {
+    res.status(200).json({ status: 'ok', message: 'LumenTrialGuide.AI server is running' });
+  });
   // Check if a file exists in a session archive
   app.post('/api/files/check-session-file', async (req: Request, res: Response) => {
     try {
