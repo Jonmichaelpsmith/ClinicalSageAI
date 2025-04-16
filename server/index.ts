@@ -26,6 +26,9 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Add FastAPI proxy middleware for data ingestion routes
+app.use(fastApiBridge.createFastApiProxyMiddleware());
+
 // Request logging middleware with timestamp-based IDs
 app.use((req, res, next) => {
   // Generate a timestamp-based ID with random suffix
@@ -129,6 +132,15 @@ app.use((req, res, next) => {
     }, () => {
       log(`serving on port ${port}`);
       
+      // Start FastAPI server for data ingestion
+      fastApiBridge.startFastApiServer()
+        .then(() => {
+          log('FastAPI data ingestion server started successfully');
+        })
+        .catch(error => {
+          log(`Error starting FastAPI server: ${error.message}`);
+        });
+      
       // Start the clinical trial data updater
       const dataUpdateTimer = scheduleDataUpdates(12); // Update every 12 hours
       
@@ -147,8 +159,9 @@ app.use((req, res, next) => {
       
       // Handle server shutdown
       process.on('SIGTERM', () => {
-        log('SIGTERM signal received: closing data updater');
+        log('SIGTERM signal received: closing data updater and FastAPI server');
         clearInterval(dataUpdateTimer);
+        fastApiBridge.stopFastApiServer();
         server.close(() => {
           log('HTTP server closed');
         });

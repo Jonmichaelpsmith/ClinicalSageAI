@@ -6,93 +6,120 @@
  * and proxying requests to it.
  */
 
-import { exec, spawn } from 'child_process';
-import { promisify } from 'util';
+import { spawn } from 'child_process';
 import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import path from 'path';
+import net from 'net';
 import http from 'http';
 
-// Get directory name for ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-// Constants
-const FASTAPI_PORT = 3500; // Use a different port than Express
-const FASTAPI_SCRIPT = join(__dirname, 'ingestion_api.py');
-const FASTAPI_PREFIX = '/api/ingest';
-
-// Process handle for the FastAPI server
+// FastAPI server process
 let fastApiProcess = null;
+// FastAPI server port
+const FASTAPI_PORT = 3500;
+// Path to the FastAPI script
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const FASTAPI_SCRIPT = path.join(__dirname, 'ingestion_api.py');
 
 /**
  * Check if the port is in use
  */
 async function isPortInUse(port) {
-  const execAsync = promisify(exec);
-  try {
-    const { stdout } = await execAsync(`lsof -i:${port}`);
-    return stdout.length > 0;
-  } catch (error) {
-    return false;
-  }
+  return new Promise((resolve) => {
+    const server = net.createServer()
+      .once('error', () => {
+        // Port is in use
+        resolve(true);
+      })
+      .once('listening', () => {
+        // Port is free
+        server.close();
+        resolve(false);
+      })
+      .listen(port);
+  });
 }
 
 /**
  * Start the FastAPI server
  */
 export async function startFastApiServer() {
-  // Check if the port is already in use
-  const portInUse = await isPortInUse(FASTAPI_PORT);
-  if (portInUse) {
-    console.warn(`Port ${FASTAPI_PORT} is already in use. FastAPI server may already be running.`);
+  // Check if the server is already running
+  if (fastApiProcess !== null) {
+    console.log('FastAPI server is already running');
     return;
   }
-  
-  // Start the FastAPI server
-  console.log(`Starting FastAPI server on port ${FASTAPI_PORT}...`);
-  
-  try {
-    fastApiProcess = spawn('uvicorn', [
-      'server.ingestion_api:app',
-      '--host', '0.0.0.0',
-      '--port', FASTAPI_PORT.toString(),
-      '--reload'
-    ], {
-      stdio: ['ignore', 'pipe', 'pipe'],
-      detached: false
-    });
-    
-    fastApiProcess.stdout.on('data', (data) => {
-      console.log(`FastAPI: ${data.toString().trim()}`);
-    });
-    
-    fastApiProcess.stderr.on('data', (data) => {
-      console.error(`FastAPI error: ${data.toString().trim()}`);
-    });
-    
-    // Handle process exit
-    fastApiProcess.on('exit', (code, signal) => {
-      console.log(`FastAPI server exited with code ${code} and signal ${signal}`);
-      fastApiProcess = null;
-    });
-    
-    // Wait for the server to start
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    console.log(`FastAPI server started on port ${FASTAPI_PORT}`);
-  } catch (error) {
-    console.error('Failed to start FastAPI server:', error);
+
+  // Check if the port is in use
+  const portInUse = await isPortInUse(FASTAPI_PORT);
+  if (portInUse) {
+    console.log(`Port ${FASTAPI_PORT} is already in use. Assuming FastAPI server is running.`);
+    return;
   }
+
+  // Start the FastAPI server
+  console.log('Starting FastAPI server...');
+  fastApiProcess = spawn('python', [FASTAPI_SCRIPT], {
+    stdio: ['ignore', 'pipe', 'pipe'],
+    detached: false,
+  });
+
+  // Log output from the FastAPI server
+  fastApiProcess.stdout.on('data', (data) => {
+    console.log(`FastAPI: ${data.toString().trim()}`);
+  });
+
+  fastApiProcess.stderr.on('data', (data) => {
+    console.error(`FastAPI error: ${data.toString().trim()}`);
+  });
+
+  // Handle process exit
+  fastApiProcess.on('close', (code) => {
+    console.log(`FastAPI server exited with code ${code}`);
+    fastApiProcess = null;
+  });
+
+  // Wait for the server to start
+  return new Promise((resolve, reject) => {
+    let startupTimeout;
+    
+    const checkServer = async () => {
+      try {
+        const response = await fetch(`http://localhost:${FASTAPI_PORT}/`);
+        if (response.ok) {
+          clearTimeout(startupTimeout);
+          console.log('FastAPI server started successfully');
+          resolve();
+        } else {
+          throw new Error(`Server responded with status ${response.status}`);
+        }
+      } catch (error) {
+        // Server not yet ready, try again
+        setTimeout(checkServer, 500);
+      }
+    };
+
+    // Set a timeout to fail after 30 seconds
+    startupTimeout = setTimeout(() => {
+      reject(new Error('FastAPI server failed to start within 30 seconds'));
+    }, 30000);
+
+    // Start checking
+    checkServer();
+  });
 }
 
 /**
  * Stop the FastAPI server
  */
 export function stopFastApiServer() {
-  if (fastApiProcess) {
+  if (fastApiProcess !== null) {
     console.log('Stopping FastAPI server...');
-    fastApiProcess.kill();
+    
+    // Gracefully terminate the process
+    fastApiProcess.kill('SIGINT');
     fastApiProcess = null;
+    
+    console.log('FastAPI server stopped');
   }
 }
 
@@ -100,48 +127,63 @@ export function stopFastApiServer() {
  * Create middleware to proxy requests to the FastAPI server
  */
 export function createFastApiProxyMiddleware() {
-  return function fastApiProxy(req, res, next) {
-    // Only proxy requests to the FastAPI prefix
-    if (req.path.startsWith(FASTAPI_PREFIX)) {
-      const options = {
-        hostname: '127.0.0.1',
-        port: FASTAPI_PORT,
-        path: req.originalUrl,
-        method: req.method,
-        headers: req.headers
-      };
-      
-      // Delete host header to avoid conflicts
-      delete options.headers.host;
-      
-      const proxyReq = http.request(options, (proxyRes) => {
-        res.writeHead(proxyRes.statusCode, proxyRes.headers);
-        proxyRes.pipe(res, { end: true });
-      });
-      
-      proxyReq.on('error', (error) => {
-        console.error('Error proxying request to FastAPI:', error);
-        if (!res.headersSent) {
-          res.status(502).json({
-            error: 'Failed to proxy request to FastAPI server',
-            message: error.message
-          });
-        }
-      });
-      
-      if (['POST', 'PUT', 'PATCH'].includes(req.method)) {
-        req.pipe(proxyReq, { end: true });
-      } else {
-        proxyReq.end();
-      }
-    } else {
-      next();
+  return function(req, res, next) {
+    // Only handle '/api/ingest' routes
+    if (!req.path.startsWith('/api/ingest')) {
+      return next();
     }
+    
+    console.log(`Proxying request to FastAPI: ${req.method} ${req.path}`);
+    
+    // Options for the proxy request
+    const options = {
+      hostname: 'localhost',
+      port: FASTAPI_PORT,
+      path: req.path,
+      method: req.method,
+      headers: {
+        ...req.headers,
+        host: `localhost:${FASTAPI_PORT}`
+      }
+    };
+    
+    // Create proxy request
+    const proxyReq = http.request(options, (proxyRes) => {
+      // Copy status code
+      res.statusCode = proxyRes.statusCode;
+      
+      // Copy headers
+      Object.keys(proxyRes.headers).forEach(key => {
+        res.setHeader(key, proxyRes.headers[key]);
+      });
+      
+      // Pipe the response body
+      proxyRes.pipe(res);
+    });
+    
+    // Handle errors
+    proxyReq.on('error', (err) => {
+      console.error('Proxy error:', err);
+      if (!res.headersSent) {
+        res.status(502).json({
+          error: 'FastAPI server not available',
+          message: 'The data ingestion server is unavailable. Please try again later.'
+        });
+      }
+    });
+    
+    // Pipe request body if present
+    if (req.body) {
+      proxyReq.write(JSON.stringify(req.body));
+    }
+    
+    // End the request
+    proxyReq.end();
   };
 }
 
 export default {
   startFastApiServer,
   stopFastApiServer,
-  createFastApiProxyMiddleware
+  createFastApiProxyMiddleware,
 };

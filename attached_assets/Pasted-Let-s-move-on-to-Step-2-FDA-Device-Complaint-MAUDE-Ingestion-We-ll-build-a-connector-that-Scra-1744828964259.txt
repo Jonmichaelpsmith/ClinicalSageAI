@@ -1,0 +1,137 @@
+Let’s move on to Step 2: FDA Device Complaint (MAUDE) Ingestion. We’ll build a connector that:
+
+Scrapes the MAUDE web interface for a given device code.
+
+Handles pagination by following “Next” links until all pages are fetched.
+
+Caches the full result set for a short TTL.
+
+Exposes a FastAPI endpoint under /api/ingest/device/{device_code}.
+
+A. Connector with HTML Pagination
+Create ingestion/fda_device.py (or replace your stub) with:
+
+python
+Copy
+# ingestion/fda_device.py
+import requests
+from bs4 import BeautifulSoup
+
+BASE_URL = "https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfmaude/search.cfm"
+CACHE_TTL = 300  # seconds
+
+def fetch_all_fda_device_complaints(device_code: str):
+    """
+    Fetch all MAUDE complaints for a device_code by scraping paginated results.
+    Returns a list of dicts.
+    """
+    session = requests.Session()
+    params = {"device": device_code}
+    complaints = []
+
+    # Initial page
+    url = BASE_URL
+    while True:
+        resp = session.get(url, params=params, timeout=10)
+        resp.raise_for_status()
+        soup = BeautifulSoup(resp.text, "html.parser")
+
+        # Parse table rows
+        table = soup.find("table", {"id": "resultTable"})
+        if not table:
+            break
+
+        for row in table.find_all("tr")[1:]:
+            cols = row.find_all("td")
+            complaints.append({
+                "complaint_id": cols[0].get_text(strip=True),
+                "device_name": cols[1].get_text(strip=True),
+                "complaint_date": cols[2].get_text(strip=True),
+                "narrative": cols[3].get_text(strip=True),
+            })
+
+        # Find “Next” link
+        next_link = soup.find("a", string="Next")
+        if next_link and next_link.get("href"):
+            # The href may be relative; build absolute URL
+            url = requests.compat.urljoin(BASE_URL, next_link["href"])
+            # After the first page, clear params to follow direct href
+            params = {}
+            continue
+        break
+
+    return complaints
+B. Add Caching Layer
+Wrap it with Redis caching in ingestion/cache.py (or inline if you prefer):
+
+python
+Copy
+# ingestion/cache.py
+from redis import Redis
+import json
+
+redis_client = Redis(host="localhost", port=6379, db=0)
+
+def cache_fetch(key, fetch_fn, ttl=CACHE_TTL):
+    data = redis_client.get(key)
+    if data:
+        return json.loads(data)
+    result = fetch_fn()
+    redis_client.setex(key, ttl, json.dumps(result))
+    return result
+And update your connector call:
+
+python
+Copy
+# ingestion/fda_device.py (continued)
+from ingestion.cache import cache_fetch
+
+def get_device_complaints(device_code: str):
+    key = f"mauedev:{device_code}"
+    return cache_fetch(key, lambda: fetch_all_fda_device_complaints(device_code))
+C. Expose FastAPI Endpoint
+In main.py (or your ingestion router):
+
+python
+Copy
+from fastapi import APIRouter, HTTPException
+from ingestion.fda_device import get_device_complaints
+
+router = APIRouter(prefix="/api/ingest/device", tags=["ingestion"])
+
+@router.get("/{device_code}")
+async def ingest_device(device_code: str):
+    try:
+        complaints = get_device_complaints(device_code)
+        return {
+            "source": "FDA_Device_MAUDE",
+            "device_code": device_code,
+            "count": len(complaints),
+            "complaints": complaints
+        }
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"MAUDE ingestion failed: {e}")
+And include this router in your app:
+
+python
+Copy
+app.include_router(router)
+D. Test It
+Run your server:
+
+bash
+Copy
+uvicorn main:app --reload --port 3000
+Call in your browser/Postman:
+
+bash
+Copy
+GET http://localhost:3000/api/ingest/device/YourDeviceCode
+Verify you get back all pages of complaints, with count matching the total rows in MAUDE for that code.
+
+Once this is validated, you’ll have a robust MAUDE ingestion service—just like FAERS—and can then move on to the EU Eudamed connector or downstream ETL steps.
+
+
+
+
+
