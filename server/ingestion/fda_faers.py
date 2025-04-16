@@ -51,17 +51,18 @@ def get_generic_drug_name(ndc_code: str) -> str:
     # If all else fails, return None
     return None
 
-def fetch_all_faers(ndc_code: str, page_size: int = 1000, use_generic: bool = True):
+def fetch_all_faers(ndc_code: str, page_size: int = 100, use_generic: bool = True, max_records: int = 100):
     """
-    Fetch all FAERS entries for a given NDC code or generic drug name, handling pagination.
+    Fetch FAERS entries for a given NDC code or generic drug name, handling pagination.
     
     Args:
         ndc_code: The NDC code or drug name to query
         page_size: Number of records per page
         use_generic: If True, try to find the generic name from NDC and search by that instead
+        max_records: Maximum number of records to fetch (for demo purposes)
         
     Returns:
-        List of all records for the given NDC code or drug name
+        List of records for the given NDC code or drug name (limited to max_records)
     """
     base_url = FAERS_API_URL
     results = []
@@ -113,12 +114,13 @@ def fetch_all_faers(ndc_code: str, page_size: int = 1000, use_generic: bool = Tr
         data = response.json()
         total = data["meta"]["results"]["total"]
         
-        # Add first batch of results
+        # Add first batch of results, up to max_records
         if "results" in data:
-            results.extend(data["results"])
+            first_batch = data["results"][:max_records]
+            results.extend(first_batch)
         
-        # Fetch remaining pages
-        while len(results) < total:
+        # Fetch remaining pages, up to max_records
+        while len(results) < total and len(results) < max_records:
             skip += page_size
             params["skip"] = skip
             
@@ -131,7 +133,12 @@ def fetch_all_faers(ndc_code: str, page_size: int = 1000, use_generic: bool = Tr
                 
                 data = response.json()
                 if "results" in data:
-                    results.extend(data["results"])
+                    # Only add enough to reach max_records
+                    remaining = max_records - len(results)
+                    if remaining > 0:
+                        results.extend(data["results"][:remaining])
+                    else:
+                        break
                 else:
                     print(f"Warning: No results in page {skip//page_size + 1}")
                     break

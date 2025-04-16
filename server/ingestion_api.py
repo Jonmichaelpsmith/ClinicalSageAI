@@ -31,28 +31,32 @@ async def root():
         ]
     }
 
-@app.get("/api/ingest/drug/{ndc_code}")
-async def ingest_drug_data(ndc_code: str, limit: Optional[int] = None) -> Dict[str, Any]:
+@app.get("/api/ingest/drug/{identifier}")
+async def ingest_drug_data(identifier: str, limit: Optional[int] = None) -> Dict[str, Any]:
     """
     Fetch drug adverse event data from FDA FAERS
     
     Args:
-        ndc_code: NDC product code to search for
+        identifier: NDC product code or drug name to search for
         limit: Optional limit on number of records returned
         
     Returns:
         Dictionary containing FAERS data
     """
     try:
-        records = get_faers_cached(ndc_code)
+        records = get_faers_cached(identifier)
         
         # Apply limit if specified
-        if limit and limit > 0:
+        if limit and limit > 0 and records:
             records = records[:limit]
+        
+        # Handle case when no records are found
+        if not records:
+            records = []
             
         return {
             "source": "FDA_FAERS",
-            "ndc_code": ndc_code,
+            "drug_identifier": identifier,
             "count": len(records),
             "raw_data": {
                 "meta": {
@@ -69,22 +73,27 @@ async def ingest_drug_data(ndc_code: str, limit: Optional[int] = None) -> Dict[s
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"FAERS ingestion failed: {str(e)}")
 
-@app.get("/api/ingest/device/{device_code}")
-async def ingest_device_data(device_code: str) -> Dict[str, Any]:
+@app.get("/api/ingest/device/{device_identifier}")
+async def ingest_device_data(device_identifier: str) -> Dict[str, Any]:
     """
     Fetch device complaint data from FDA MAUDE
     
     Args:
-        device_code: Device identifier to search for
+        device_identifier: Device identifier or name to search for
         
     Returns:
         Dictionary containing MAUDE data
     """
     try:
-        complaints = get_device_complaints_cached(device_code)
+        complaints = get_device_complaints_cached(device_identifier)
+        
+        # Handle case when no complaints are found
+        if not complaints:
+            complaints = []
+            
         return {
             "source": "FDA_Device_MAUDE",
-            "device_code": device_code,
+            "device_identifier": device_identifier,
             "count": len(complaints),
             "complaints": complaints
         }
