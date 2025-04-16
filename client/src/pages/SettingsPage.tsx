@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,8 @@ import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { Bell, Lock, User, Globe, Eye, Database, Shield, Mail } from "lucide-react";
+import { Bell, Lock, User, Globe, Eye, Database, Shield, Mail, Bot, RefreshCw, Key, Copy } from "lucide-react";
+import { useResearchCompanion } from "@/hooks/use-research-companion";
 
 export default function SettingsPage() {
   const { user } = useAuth();
