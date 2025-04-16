@@ -24,6 +24,8 @@ import { TopNavbar } from "@/components/layout/TopNavbar";
 import ProductFeatures from "./pages/ProductFeatures";
 import DesignOraclePage from "@/pages/DesignOraclePage";
 import PricingPage from "@/pages/PricingPage";
+import { ResearchCompanionProvider } from "@/hooks/use-research-companion";
+import ResearchCompanion from "@/components/ResearchCompanion";
 import ApiDocumentation from "@/pages/ApiDocumentation";
 import LumenBioDashboard from "@/pages/LumenBioDashboard";
 import LumenBioReport from "@/pages/LumenBioReport";
@@ -219,8 +221,11 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Router />
-        <Toaster />
+        <ResearchCompanionProvider>
+          <Router />
+          <ResearchCompanion />
+          <Toaster />
+        </ResearchCompanionProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
