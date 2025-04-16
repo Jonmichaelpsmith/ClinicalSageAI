@@ -3,7 +3,8 @@ import { Link } from "wouter";
 import { 
   Search, FileText, Brain, Lock, Microscope, CheckCircle, 
   Database, BarChart2, PieChart, LineChart, BookOpen,
-  Rocket, ChevronRight, AreaChart, Beaker, Users, Package
+  Rocket, ChevronRight, AreaChart, Beaker, Users, Package,
+  FileCheck
 } from "lucide-react";
 
 import { PageContainer, HeaderSection, ContentSection, CardGrid, Footer } from "@/components/layout";
@@ -29,6 +30,9 @@ export default function Home() {
             <Badge variant="outline" className="font-semibold text-emerald-600 border-emerald-600 px-3 py-1">
               CER Analytics
             </Badge>
+            <Badge variant="outline" className="font-semibold text-amber-600 border-amber-600 px-3 py-1">
+              FDA FAERS Integration
+            </Badge>
           </div>
           <h1 className="text-3xl md:text-5xl font-bold tracking-tighter leading-tight bg-gradient-to-r from-primary to-blue-500 bg-clip-text text-transparent">
             LumenTrialGuide.AI
@@ -40,6 +44,26 @@ export default function Home() {
             Extract, analyze, and leverage insights from 2,800+ clinical study reports and CERs.
             Design better trials, generate comprehensive evaluation reports, and accelerate regulatory submissions.
           </p>
+          
+          <div className="mt-5 mx-auto max-w-[800px] grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 rounded-lg border border-blue-100 dark:border-blue-800">
+              <h3 className="font-semibold text-blue-700 dark:text-blue-400 flex items-center gap-2">
+                <FileText className="h-4 w-4" /> CSR Intelligence
+              </h3>
+              <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">
+                Pre-market clinical trial data intelligence from 3,000+ studies structured according to ICH E3 guidelines.
+              </p>
+            </div>
+            
+            <div className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 p-4 rounded-lg border border-emerald-100 dark:border-emerald-800">
+              <h3 className="font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-2">
+                <FileCheck className="h-4 w-4" /> CER Generator
+              </h3>
+              <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">
+                Automated Clinical Evaluation Reports with FDA FAERS data integration, MEDDEV 2.7/1 Rev. 4 compliant narratives, and submission-ready documentation.
+              </p>
+            </div>
+          </div>
           
           <div className="flex flex-col md:flex-row gap-4 mt-4">
             <Link href="/dashboard">
