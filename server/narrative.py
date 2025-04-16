@@ -798,28 +798,11 @@ async def narrative_multi_pdf(request: MultiRequest = Body(...)):
         # Validate request
         if not request.ndc_codes and not request.device_codes:
             raise ValueError("At least one NDC code or device code must be provided")
-            
-        # Build combined analysis
-        analysis_data = build_multi_analysis(
-            ndc_codes=request.ndc_codes,
-            device_codes=request.device_codes,
-            periods=request.periods
-        )
         
         # Create a deterministic identifier for caching
         ndc_str = ",".join(sorted(request.ndc_codes or []))
         device_str = ",".join(sorted(request.device_codes or []))
         identifier = f"multi:{ndc_str}:{device_str}:{request.periods}"
-        
-        # Define the generator function
-        def generate_narrative():
-            return generate_cer_narrative_from_analysis(analysis_data)
-        
-        # Generate or fetch narrative from cache
-        narrative = _fetch_or_generate('multi', identifier, generate_narrative)
-        
-        # Generate PDF
-        pdf_bytes = generate_pdf_report(narrative, analysis_data)
         
         # Create filename with product codes
         products = []
@@ -835,12 +818,42 @@ async def narrative_multi_pdf(request: MultiRequest = Body(...)):
         
         filename = f"cer_multi_{'_'.join(filename_parts)}.pdf"
         
-        # Return as streaming response
-        return StreamingResponse(
-            io.BytesIO(pdf_bytes), 
-            media_type="application/pdf", 
-            headers={"Content-Disposition": f"attachment; filename={filename}"}
-        )
+        # Check if we already have a cached narrative first to avoid redundant computation
+        cache_key = _cache_key('multi', identifier)
+        cached_narrative = redis_client.get(cache_key)
+        
+        if cached_narrative:
+            print(f"Cache hit for {cache_key}")
+            narrative = cached_narrative.decode('utf-8')
+            
+            # Build analysis data to generate PDF (less intensive than generating narrative)
+            analysis_data = build_multi_analysis(
+                ndc_codes=request.ndc_codes,
+                device_codes=request.device_codes,
+                periods=request.periods
+            )
+            
+            # Generate PDF
+            pdf_bytes = generate_pdf_report(narrative, analysis_data)
+            
+            # Return as streaming response
+            return StreamingResponse(
+                io.BytesIO(pdf_bytes), 
+                media_type="application/pdf", 
+                headers={"Content-Disposition": f"attachment; filename={filename}"}
+            )
+        
+        # If narrative is not in cache, recommend using the separate endpoints
+        # first to generate and cache the narrative, then retrieve as PDF
+        return {
+            "status": "pending",
+            "message": "For complex multi-source reports, please first call /api/narrative/multi endpoint to generate and cache the narrative, then retry this PDF endpoint.",
+            "next_steps": [
+                "POST to /api/narrative/multi with the same parameters",
+                "Wait for the narrative to be generated and cached (usually 10-15 seconds)",
+                "Then call this endpoint again to retrieve the PDF"
+            ]
+        }
     except Exception as e:
         error_type = type(e).__name__
         error_message = str(e)
