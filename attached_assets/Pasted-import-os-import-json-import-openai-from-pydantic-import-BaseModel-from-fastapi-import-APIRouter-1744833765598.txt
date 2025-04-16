@@ -1,0 +1,186 @@
+import os
+import json
+import openai
+from pydantic import BaseModel
+from fastapi import APIRouter, HTTPException, Body
+from ingestion.fda_faers import get_faers_cached
+from ingestion.normalize import normalize_faers, normalize_mauDe, normalize_eudamed
+from ingestion.fda_device import get_device_complaints
+from ingestion.eu_eudamed import fetch_eudamed_data
+from predictive_analytics import aggregate_time_series, forecast_adverse_events, detect_anomalies
+from redis import Redis
+
+# Ensure OPENAI API key
+env_key = "OPENAI_API_KEY"
+if not os.getenv(env_key):
+    raise RuntimeError(f"Environment variable {env_key} must be set")
+openai.api_key = os.getenv(env_key)
+
+# Redis cache client
+ttl_seconds = 3600  # 1 hour caching
+token = os.getenv("REDIS_URL")
+# If REDIS_URL is provided, use that, else default localhost
+token = token or "redis://localhost:6379/0"
+redis_client = Redis.from_url(token)
+
+# Utility: generate cache key
+ def _cache_key(prefix: str, identifier: str):
+     return f"cer_narrative:{prefix}:{identifier}"
+
+# Analysis builders
+def build_faers_analysis(ndc_code: str, periods: int = 3) -> dict:
+    raw = get_faers_cached(ndc_code)
+    normalized = normalize_faers(raw, ndc_code)
+    series = aggregate_time_series(normalized)
+    forecast = forecast_adverse_events(series, periods=periods)
+    anomalies = detect_anomalies(series)
+    total = sum(rec.get("count", 0) for rec in normalized)
+    return {
+        "product_code": ndc_code,
+        "source": "FAERS",
+        "total_count": total,
+        "trend": {str(idx.date()): int(val) for idx, val in series.items()},
+        "forecast": forecast,
+        "anomalies": anomalies
+    }
+
+def build_device_analysis(device_code: str, periods: int = 3) -> dict:
+    raw = get_device_complaints(device_code)
+    normalized = normalize_mauDe(raw, device_code)
+    series = aggregate_time_series(normalized)
+    forecast = forecast_adverse_events(series, periods=periods)
+    anomalies = detect_anomalies(series)
+    total = sum(rec.get("count", 0) for rec in normalized)
+    return {
+        "product_code": device_code,
+        "source": "MAUDE",
+        "total_count": total,
+        "trend": {str(idx.date()): int(val) for idx, val in series.items()},
+        "forecast": forecast,
+        "anomalies": anomalies
+    }
+
+def build_multi_analysis(ndc_codes: list[str] = None, device_codes: list[str] = None, periods: int = 3) -> dict:
+    analyses = []
+    if ndc_codes:
+        for ndc in ndc_codes:
+            analyses.append(build_faers_analysis(ndc, periods))
+    if device_codes:
+        for dev in device_codes:
+            analyses.append(build_device_analysis(dev, periods))
+    if device_codes:
+        for dev in device_codes:
+            stub = fetch_eudamed_data(dev)
+            eu_norm = normalize_eudamed(stub)
+            analyses.append({
+                "product_code": dev,
+                "source": "Eudamed",
+                "records": eu_norm
+            })
+    return {"analyses": analyses}
+
+# Narrative generator
+ def _generate_prompt(analysis_data: dict) -> str:
+     parts = []
+     for item in analysis_data.get('analyses', []):
+         source = item.get('source')
+         code = item.get('product_code')
+         if source in ["FAERS", "MAUDE"]:
+             total = item.get("total_count")
+             trend = item.get("trend")
+             forecast = item.get("forecast")
+             anomalies = item.get("anomalies")
+             parts.append(
+                 f"Source: {source}, Code: {code}, Total: {total}, Trend: {trend}, "
+                 f"Forecast: {forecast}, Anomalies: {anomalies}"
+             )
+         else:
+             parts.append(f"Source: {source}, Code: {code}, Info: {item.get('records')}")
+     return (
+         "You are a regulatory-compliant CER generator. Based on the following multi-source analysis data, "
+         "generate a cohesive Clinical Evaluation Report narrative including an executive summary, trends, forecasts, "
+         "anomaly analysis, and benefit-risk considerations.\n\n" + "\n".join(parts)
+     )
+
+def _fetch_or_generate(prefix: str, identifier: str, generator_fn) -> str:
+    key = _cache_key(prefix, identifier)
+    cached = redis_client.get(key)
+    if cached:
+        return cached.decode('utf-8')
+    narrative = generator_fn()
+    redis_client.setex(key, ttl_seconds, narrative)
+    return narrative
+
+# FastAPI router
+router = APIRouter(prefix="/api/narrative", tags=["narrative"])
+
+@router.get("/faers/{ndc_code}")
+async def narrative_faers(ndc_code: str, periods: int = 3):
+    try:
+        identifier = f"faers:{ndc_code}:{periods}"
+        def gen():
+            analysis = build_faers_analysis(ndc_code, periods)
+            prompt = _generate_prompt({"analyses": [analysis]})
+            resp = openai.ChatCompletion.create(
+                model="gpt-4-turbo",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.2,
+                max_tokens=800
+            )
+            return resp.choices[0].message.content.strip()
+        narrative = _fetch_or_generate('faers', identifier, gen)
+        return {"product_code": ndc_code, "source": "FAERS", "narrative": narrative}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"FAERS narrative failed: {e}")
+
+@router.get("/device/{device_code}")
+async def narrative_device(device_code: str, periods: int = 3):
+    try:
+        identifier = f"device:{device_code}:{periods}"
+        def gen():
+            analysis = build_device_analysis(device_code, periods)
+            prompt = _generate_prompt({"analyses": [analysis]})
+            resp = openai.ChatCompletion.create(
+                model="gpt-4-turbo",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.2,
+                max_tokens=800
+            )
+            return resp.choices[0].message.content.strip()
+        narrative = _fetch_or_generate('device', identifier, gen)
+        return {"product_code": device_code, "source": "MAUDE", "narrative": narrative}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Device narrative failed: {e}")
+
+class MultiRequest(BaseModel):
+    ndc_codes: list[str] | None = None
+    device_codes: list[str] | None = None
+    periods: int = 3
+
+@router.post("/multi")
+async def narrative_multi(request: MultiRequest = Body(...)):
+    try:
+        identifier = f"multi:{','.join(request.ndc_codes or [])}:{','.join(request.device_codes or [])}:{request.periods}"
+        def gen():
+            analysis_data = build_multi_analysis(
+                ndc_codes=request.ndc_codes,
+                device_codes=request.device_codes,
+                periods=request.periods
+            )
+            prompt = _generate_prompt(analysis_data)
+            resp = openai.ChatCompletion.create(
+                model="gpt-4-turbo",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.2,
+                max_tokens=800
+            )
+            return resp.choices[0].message.content.strip()
+        narrative = _fetch_or_generate('multi', identifier, gen)
+        analysis_data = build_multi_analysis(
+            ndc_codes=request.ndc_codes,
+            device_codes=request.device_codes,
+            periods=request.periods
+        )
+        return {"narrative": narrative, "analysis": analysis_data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Multi-source narrative failed: {e}")
