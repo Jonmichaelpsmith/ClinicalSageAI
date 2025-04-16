@@ -1,0 +1,106 @@
+Below is the next enhancement—adding a simple caching layer to improve performance and reduce redundant calls to the external FAERS API. Caching helps ensure that if the same NDC code is requested repeatedly within a certain time window (e.g., 5 minutes), your app will reuse the previously fetched data instead of querying the API again.
+
+We'll create a basic in-memory caching module (using a Python dictionary with TTL support), then modify your data ingestion function to check this cache before making external requests.
+
+---
+
+## 1. Create a Caching Module
+
+Create a new file called **cache_manager.py** and paste in the following code:
+
+```python
+# cache_manager.py
+import time
+
+# Global cache dictionary: keys map to a dict with value and expiry timestamp.
+cache = {}
+
+def set_cache(key: str, value, ttl: int = 300):
+    """
+    Stores the value in the cache with a time-to-live (TTL) in seconds.
+    Default TTL is 300 seconds (5 minutes).
+    """
+    expiry = time.time() + ttl
+    cache[key] = {"value": value, "expiry": expiry}
+
+def get_cache(key: str):
+    """
+    Retrieves the value from the cache if it exists and is not expired.
+    Returns None if the key does not exist or the value has expired.
+    """
+    if key in cache:
+        entry = cache[key]
+        if time.time() < entry["expiry"]:
+            return entry["value"]
+        else:
+            # Remove expired cache entry
+            del cache[key]
+    return None
+```
+
+---
+
+## 2. Modify the Data Ingestion Module to Use Caching
+
+Update your **data_pipeline.py** so that it checks the cache before making an external request. Make the following modifications:
+
+```python
+# data_pipeline.py
+import requests
+import pandas as pd
+from cache_manager import get_cache, set_cache
+
+FAERS_API_URL = "https://api.fda.gov/drug/event.json"
+
+def fetch_faers_data(ndc_code, limit=1000):
+    """Fetches raw FAERS data for a given NDC, with caching."""
+    cache_key = f"faers_{ndc_code}_{limit}"
+    cached_data = get_cache(cache_key)
+    if cached_data:
+        return cached_data
+    response = requests.get(
+        f'{FAERS_API_URL}?search=openfda.product_ndc:"{ndc_code}"&limit={limit}'
+    )
+    response.raise_for_status()
+    data = response.json()
+    set_cache(cache_key, data, ttl=300)  # Cache for 5 minutes
+    return data
+
+def normalize_faers_data(raw_data):
+    """Extracts and transforms key metrics (event, count, demographics, timestamp)."""
+    records = []
+    if "results" in raw_data:
+        for rec in raw_data["results"]:
+            records.append({
+                "event": rec.get("event", "Unknown"),
+                "count": rec.get("count", 1),
+                # Extend with real demographic fields as needed, e.g., age, gender.
+                "timestamp": rec.get("receiptdate", None)
+            })
+    return pd.DataFrame(records)
+```
+
+*Explanation:*  
+- The `fetch_faers_data` function now generates a cache key based on the NDC code and limit.  
+- It checks if valid (non-expired) data exists in the cache; if so, it returns that data.  
+- Otherwise, it performs the API request, saves the result in the cache with a 5‑minute TTL, and then returns the data.
+
+---
+
+## 3. Next Steps
+
+1. **Deploy and Test Caching:**
+   - Run your FastAPI server.
+   - Call the endpoint (e.g., `/api/cer/{ndc_code}`) multiple times using the same sample NDC code.
+   - Monitor the logs or include temporary debug output (if desired) to verify that repeated calls within the cache TTL are using cached data.
+
+2. **Monitor Performance:**
+   - With caching in place, observe response times to verify improved performance.
+   - Adjust the TTL as needed based on how often the underlying FAERS data changes.
+
+3. **Iterate Based on Feedback:**
+   - As your solution scales, consider more robust caching solutions (such as Redis) for distributed or persistent caching if necessary—but for now, this in-memory cache on Replit should serve your development needs.
+
+---
+
+This caching enhancement minimizes unnecessary external API calls and should noticeably improve your app’s responsiveness. Let me know when you're ready to move on to further enhancements or if you need any adjustments to this caching solution!

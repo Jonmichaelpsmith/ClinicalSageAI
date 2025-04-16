@@ -17,6 +17,7 @@ import academicProtocolAssessment from './routes/academic_protocol_assessment';
 import correctionRoutes from './routes/correction-routes';
 import plannerRoutes from './routes/planner-routes';
 import faersRoutes from './routes/faers-routes';
+import cerRoutes from './routes/cer-routes';
 // Legacy Hugging Face service has been replaced with OpenAI-based services
 // Migration notice: The HuggingFace service has been completely replaced with OpenAI-based services.
 import { 

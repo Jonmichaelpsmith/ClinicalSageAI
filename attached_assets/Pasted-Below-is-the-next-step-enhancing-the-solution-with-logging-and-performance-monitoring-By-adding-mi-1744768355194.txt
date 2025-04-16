@@ -1,0 +1,89 @@
+Below is the next step: enhancing the solution with logging and performance monitoring. By adding middleware for request logging and integrating standard Python logging into our FastAPI application, we can better trace requests, track performance, and diagnose issues in production. This will help you understand how the system is operating in real time and will be invaluable for debugging and scaling.
+
+---
+
+## 1. Add Request Logging Middleware
+
+In your **main.py**, add a middleware function that logs every incoming request, its processing time, and the response status. This middleware will use Python’s built-in logging module. You can add this near the top of your file.
+
+```python
+# main.py (at the top, after imports)
+import time
+import uuid
+import logging
+from fastapi import Request
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("cer_app")
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    # Generate a unique ID for the request to trace it through the logs
+    request_id = str(uuid.uuid4())
+    logger.info(f"Request {request_id} - START: {request.method} {request.url.path}")
+    
+    start_time = time.time()
+    response = await call_next(request)
+    process_time_ms = (time.time() - start_time) * 1000
+    
+    logger.info(
+        f"Request {request_id} - END: {request.method} {request.url.path} - "
+        f"Status: {response.status_code} - {process_time_ms:.2f}ms"
+    )
+    return response
+```
+
+### Explanation:
+- **Unique Request ID:**  
+  Each incoming request is tagged with a unique UUID so that its log entries can be traced easily.
+- **Timing and Logging:**  
+  The middleware captures the start time, then logs the request’s method and path. After processing, it logs the total processing time and the response status code.
+
+---
+
+## 2. Extend Logging in Critical Endpoints
+
+In each of your endpoints (for example, the CER generation, normalization, forecasting, etc.), you can add additional logging statements to capture key events and data. Below is an updated snippet for one endpoint as an example:
+
+```python
+@router.get("/api/cer/{ndc_code}")
+async def create_cer(ndc_code: str, current_user: str = Depends(get_current_user)):
+    logger.info(f"User {current_user} is generating CER for NDC: {ndc_code}")
+    try:
+        raw_data = fetch_faers_data(ndc_code)
+        narrative = generate_cer_narrative(raw_data)
+        logger.info(f"CER generation successful for NDC: {ndc_code}")
+        return {"cer_report": narrative}
+    except Exception as e:
+        logger.error(f"Error generating CER for NDC: {ndc_code} - {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+```
+
+### Explanation:
+- **Endpoint-Specific Logging:**  
+  Log important events such as the start of CER generation, successful completion, and error occurrences with useful context (like the NDC code and username).
+- **Error Logging:**  
+  Captures and logs errors, making it easier to diagnose issues later by reviewing log entries.
+
+---
+
+## 3. Monitor Performance Metrics (Optional Advanced Step)
+
+For deeper performance monitoring, you might eventually integrate application performance monitoring (APM) tools (like Sentry or Prometheus with Grafana) to capture more detailed metrics such as error rates, latency distributions, and system resource usage. For now, the middleware above provides a solid foundation for debugging and tracking the response times of your endpoints.
+
+---
+
+## Next Steps
+
+1. **Deploy and Test:**  
+   Run your FastAPI application on Replit. Open some endpoints (or use tools like Postman/cURL) and watch the Replit console logs to verify that requests are logged correctly.
+
+2. **Verify Response Times:**  
+   Monitor the printed log lines to ensure that the process times are reasonable and that any errors produce meaningful log messages.
+
+3. **Iterate Based on Feedback:**  
+   As you scale, you can expand the logging by integrating more sophisticated monitoring or exporting logs to an external logging service.
+
+Once you have confirmed that logging is working reliably and you have a clear view of your endpoint performance, we can move on to further integration steps—such as refining user notifications, adding a caching layer, or further integrating performance monitoring tools.
+
+Let me know when you’re ready for the next phase or if you need any changes to this logging and monitoring enhancement!

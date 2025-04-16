@@ -1,0 +1,114 @@
+Below is the next step—adding the NLP query endpoint to the backend. This endpoint will accept a natural language query from the frontend (via the NLPQuery component) and use GPT-4 to interpret the query, returning filtered or summarized analytics data. (In a real application, you’d typically structure this to integrate with your analytics modules. For now, we’ll create a basic version to demonstrate how to connect everything together.)
+
+---
+
+## 1. Add the NLP Query Endpoint to Your FastAPI Backend
+
+Edit your **main.py** file to add a new endpoint, for example, `/api/cer/nlp-query`. In this example, we use OpenAI's GPT-4 Turbo to process a received natural language query and return a JSON result. You can refine the prompt later to handle specific filtering logic based on your analytics data.
+
+```python
+# main.py (additional endpoint)
+from fastapi import Body
+import json
+import os
+
+# Ensure you import openai if not already present; we assume it's configured in cer_narrative.py
+import openai
+
+@router.post("/api/cer/nlp-query")
+async def nlp_query(query: dict = Body(...)):
+    try:
+        user_query = query.get("query")
+        if not user_query:
+            raise HTTPException(status_code=400, detail="Query is required")
+        
+        # Build a prompt that instructs GPT-4 to translate the natural language query
+        # into a JSON summary of requested analytics filters (for demonstration).
+        prompt = f"""
+        You are an analytics assistant. A user has asked the following question: "{user_query}". 
+        Based on the question, output a JSON object that describes what filters or modifications the user is requesting.
+        For example, if the query asks "Show trends for patients over 60", your output might be:
+        {{
+           "age_filter": "60+",
+           "metric": "trend"
+        }}
+        Only return a JSON object.
+        """
+        
+        response = openai.ChatCompletion.create(
+            model="gpt-4-turbo",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.2
+        )
+        answer = response.choices[0].message.content.strip()
+
+        # Optionally, validate that the output is proper JSON.
+        try:
+            parsed_answer = json.loads(answer)
+        except Exception:
+            parsed_answer = {"result": answer}  # Fallback in case parsing fails
+
+        return {"filtered_data": parsed_answer}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+```
+
+### Explanation
+
+- **Endpoint Details:**  
+  The `/api/cer/nlp-query` endpoint accepts a JSON payload with a key called `"query"` containing the user's natural language request.
+
+- **Prompt Construction:**  
+  The endpoint constructs a prompt that instructs GPT-4 to interpret the query and output a JSON object that describes the requested filters. You could later modify the prompt to reference analytics data more directly.
+
+- **JSON Parsing:**  
+  We attempt to parse the GPT-4 response as JSON. If parsing fails (for example, if GPT-4 returns a formatted string), we fall back to returning the raw answer in a `"result"` key.
+
+- **Integration:**  
+  With this endpoint in place, the NLPQuery component in your frontend will call this endpoint and display the returned filter instructions or data.
+
+---
+
+## 2. Test the NLP Query Endpoint
+
+1. **Run your FastAPI server:**  
+   Make sure your Replit project is running (using your run command such as `uvicorn main:app --host=0.0.0.0 --port=3000 --reload`).
+
+2. **Send a test request:**  
+   You can test this endpoint using your browser, Postman, or CURL. For example, using CURL:
+
+   ```bash
+   curl -X POST https://<your-replit-url>/api/cer/nlp-query \
+     -H "Content-Type: application/json" \
+     -d '{"query": "Show trends for patients over 60"}'
+   ```
+
+   You should get a JSON response like:
+
+   ```json
+   {
+     "filtered_data": {
+       "age_filter": "60+",
+       "metric": "trend"
+     }
+   }
+   ```
+
+   (The actual output depends on GPT-4’s interpretation.)
+
+---
+
+## Next Steps
+
+With the NLP query endpoint now in place, you can:
+
+- **Integrate the Endpoint with the Frontend:**  
+  Confirm that your NLPQuery component sends queries to this endpoint and displays the returned filtered or summarized data.
+  
+- **Iterate on the Prompt and Logic:**  
+  As you gather feedback, refine the prompt so it better tailors its response to your platform’s analytics (e.g., applying filters directly to your CER comparative data).
+
+- **Link with Analytics Modules:**  
+  In a later stage, you might combine the output from this endpoint with your comparative analytics endpoint to actually filter and return refined analytics data based on the natural language query.
+
+Let me know if everything is working as expected, or if you’d like to move to the next phase of enhancements!
