@@ -128,8 +128,10 @@ export function stopFastApiServer() {
  */
 export function createFastApiProxyMiddleware() {
   return function(req, res, next) {
-    // Handle both '/api/ingest' and '/api/norm' routes
-    if (!req.path.startsWith('/api/ingest') && !req.path.startsWith('/api/norm')) {
+    // Handle '/api/ingest', '/api/norm', and '/api/narrative' routes
+    if (!req.path.startsWith('/api/ingest') && 
+        !req.path.startsWith('/api/norm') && 
+        !req.path.startsWith('/api/narrative')) {
       return next();
     }
     
