@@ -36,7 +36,7 @@ def setup_directories():
     
     for directory in dirs:
         if not os.path.exists(directory):
-            os.makedirs(directory, ensure_directory=True)
+            os.makedirs(directory, exist_ok=True)
             logger.info(f"Created directory: {directory}")
 
 def save_task_status(task_id, status, message="", filepath=None):
