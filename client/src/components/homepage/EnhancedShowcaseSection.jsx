@@ -280,6 +280,18 @@ const EnhancedShowcaseSection = () => {
   // Demo reports that showcase platform capabilities
   const exampleReports = [
     {
+      title: "Clinical Evaluation Report",
+      description: "AI-generated CER with comprehensive FAERS data analysis and regulatory narratives",
+      icon: <FileCheck className="h-5 w-5" />,
+      path: "/example-reports?type=cer",
+      color: "bg-emerald-600",
+      gradient: "from-emerald-600 to-teal-700",
+      badges: ["CER", "FAERS Data", "Regulatory"],
+      persona: "Regulatory Affairs",
+      features: ["FAERS data integration", "Comprehensive safety analysis", "Ready for submission"],
+      mainCTA: "View Example CER"
+    },
+    {
       title: "Protocol Optimization Report",
       description: "AI-powered enhancement recommendations for Phase II oncology trials",
       icon: <BrainCircuit className="h-5 w-5" />,
@@ -331,6 +343,18 @@ const EnhancedShowcaseSection = () => {
   
   // Interactive demos that allow users to test platform functionality
   const interactiveDemos = [
+    {
+      title: "CER Generator",
+      description: "AI-powered Clinical Evaluation Report generation from FAERS data",
+      icon: <FileCheck className="h-5 w-5" />,
+      path: "/cer-generator",
+      color: "bg-emerald-600",
+      gradient: "from-emerald-600 to-teal-700",
+      timeEstimate: "3 min",
+      persona: "Regulatory Affairs",
+      capabilities: ["Automated CER generation", "FAERS data integration", "Evidence-based narratives"],
+      mainCTA: "Generate CER"
+    },
     {
       title: "Study Design Agent",
       description: "Interactive AI assistant for protocol design questions",
