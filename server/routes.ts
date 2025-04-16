@@ -17,7 +17,7 @@ import academicProtocolAssessment from './routes/academic_protocol_assessment';
 import correctionRoutes from './routes/correction-routes';
 import plannerRoutes from './routes/planner-routes';
 import faersRoutes from './routes/faers-routes';
-import cerRoutes from './routes/cer-routes';
+// CER routes will be dynamically imported later
 // Legacy Hugging Face service has been replaced with OpenAI-based services
 // Migration notice: The HuggingFace service has been completely replaced with OpenAI-based services.
 import { 
@@ -382,8 +382,7 @@ import alignmentRoutes from './routes/alignment-routes';
 // Import session routes for email persistence
 import sessionRoutes from './routes/session_routes';
 
-// Import CER routes for Clinical Evaluation Reports
-import cerRoutes from './routes/cer-routes';
+// Import CER routes for Clinical Evaluation Reports is done dynamically later
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Register session API routes
@@ -550,8 +549,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register both CSR routes implementations to ensure compatibility
   app.use('/api/csrs', csrSearchRouter);
   
-  // Register the CER routes for Clinical Evaluation Reports
-  app.use('/api/cers', cerRoutes);
+  // Register the FAERS routes (CER routes are loaded dynamically below)
   app.use('/api/cer/faers', faersRoutes);
   
   // PDF task routes
