@@ -1,158 +1,237 @@
 #!/usr/bin/env python
 """
-Command-line interface for CER tasks.
-This script is called by the Node.js backend to trigger PDF generation tasks.
+CER PDF Generation CLI
+
+This script is a command-line interface for generating PDF Clinical Evaluation Reports
+based on FDA Adverse Event Reporting System (FAERS) data.
 """
+import os
 import sys
 import json
-import os
 import time
 import argparse
-from typing import Dict, Any
-import threading
+import logging
 from datetime import datetime
+from uuid import uuid4
+import traceback
 
-# Import local modules - adjust paths as needed
-try:
-    from cer_narrative import generate_cer_narrative
-    from server.faers_client import get_faers_data
-except ImportError:
-    # Adjust for different directory structure if needed
-    sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-    from cer_narrative import generate_cer_narrative
-    from server.faers_client import get_faers_data
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler("data/logs/cer_tasks_cli.log"),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger("cer_tasks_cli")
 
-def get_user_email(user_id):
-    """Get user email from user ID"""
-    # This is a placeholder - in a real application, you would
-    # query your database for this information
-    return f"{user_id}@example.com"
+def setup_directories():
+    """Ensure all required directories exist"""
+    dirs = [
+        'data/logs',
+        'data/exports',
+        'data/cer_reports'
+    ]
+    
+    for directory in dirs:
+        if not os.path.exists(directory):
+            os.makedirs(directory, ensure_directory=True)
+            logger.info(f"Created directory: {directory}")
 
-def process_task(ndc_code, user_id, task_id):
-    """Process the PDF generation task in a background thread"""
+def save_task_status(task_id, status, message="", filepath=None):
+    """Save task status to a status file"""
+    status_data = {
+        'task_id': task_id,
+        'status': status,
+        'message': message,
+        'update_time': datetime.now().isoformat(),
+    }
+    
+    if filepath:
+        status_data['filepath'] = filepath
+    
+    status_file = f"data/logs/cer_task_{task_id}_status.json"
+    
+    with open(status_file, 'w') as f:
+        json.dump(status_data, f, indent=2)
+    
+    logger.info(f"Task {task_id} status updated to: {status}")
+
+def generate_enhanced_pdf(ndc_code, task_id, user_id=None):
+    """Generate an enhanced PDF report for the specified NDC code"""
     try:
-        # Create log directory if it doesn't exist
-        os.makedirs("data/logs", exist_ok=True)
+        # Import required modules
+        try:
+            from reportlab.lib.pagesizes import letter
+            from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+            from reportlab.lib.units import inch
+            from reportlab.platypus import (
+                SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, 
+                Image, PageBreak
+            )
+            from reportlab.lib import colors
+        except ImportError as e:
+            logger.error(f"Missing ReportLab dependencies: {e}")
+            raise ImportError("PDF generation requires ReportLab to be installed")
         
-        # Log start of processing
-        log_file = os.path.join("data/logs", f"cer_task_{task_id}.log")
-        with open(log_file, "a") as f:
-            f.write(f"{datetime.now().isoformat()}: Starting PDF generation for NDC {ndc_code}\n")
+        # Import our narrative generator
+        sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        from cer_narrative import generate_cer_narrative
+        from server.faers_client import get_faers_data, get_drug_details
+        
+        # Update status to processing
+        save_task_status(task_id, "processing", f"Generating CER PDF for NDC {ndc_code}")
         
         # Fetch FAERS data
-        faers_data = get_faers_data(ndc_code)
+        logger.info(f"Fetching FAERS data for NDC {ndc_code}")
+        faers_data = get_faers_data(ndc_code, limit=100)
         
-        # Generate CER narrative
-        cer_text = generate_cer_narrative(faers_data)
+        # Fetch drug details
+        drug_details = get_drug_details(ndc_code)
         
-        # Create a PDF using ReportLab
-        from reportlab.lib.pagesizes import letter
-        from reportlab.lib.styles import getSampleStyleSheet
-        from reportlab.lib.units import inch
-        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+        if not faers_data.get('results'):
+            error_msg = f"No FAERS data found for NDC {ndc_code}"
+            save_task_status(task_id, "failed", error_msg)
+            return None
         
-        # Ensure the exports directory exists
-        os.makedirs("data/exports", exist_ok=True)
+        # Generate narrative text
+        narrative = generate_cer_narrative(faers_data)
         
-        # Create filename with timestamp
-        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        # Format filename with date
+        timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
         filename = f"CER_{ndc_code}_{timestamp}.pdf"
-        filepath = os.path.join("data/exports", filename)
+        pdf_path = os.path.join("data/exports", filename)
         
-        # Generate PDF
-        doc = SimpleDocTemplate(filepath, pagesize=letter)
+        # Extract product information
+        product_name = "Unknown Pharmaceutical Product"
+        manufacturer = "Unknown Manufacturer"
+        
+        if faers_data.get('results') and len(faers_data['results']) > 0:
+            result = faers_data['results'][0]
+            if 'openfda' in result:
+                openfda = result['openfda']
+                if 'brand_name' in openfda and len(openfda['brand_name']) > 0:
+                    product_name = openfda['brand_name'][0]
+                elif 'generic_name' in openfda and len(openfda['generic_name']) > 0:
+                    product_name = openfda['generic_name'][0]
+                    
+                if 'manufacturer_name' in openfda and len(openfda['manufacturer_name']) > 0:
+                    manufacturer = openfda['manufacturer_name'][0]
+        
+        # Create PDF document
+        doc = SimpleDocTemplate(
+            pdf_path,
+            pagesize=letter,
+            rightMargin=0.75*inch,
+            leftMargin=0.75*inch,
+            topMargin=0.75*inch,
+            bottomMargin=0.75*inch
+        )
+        
+        # Create styles
         styles = getSampleStyleSheet()
+        styles.add(ParagraphStyle(
+            name='Title',
+            parent=styles['Heading1'],
+            fontSize=16,
+            alignment=1,  # Center
+            spaceAfter=12
+        ))
+        styles.add(ParagraphStyle(
+            name='Subtitle',
+            parent=styles['Heading2'],
+            fontSize=14,
+            alignment=1,  # Center
+            spaceAfter=12
+        ))
+        styles.add(ParagraphStyle(
+            name='Section',
+            parent=styles['Heading2'],
+            fontSize=12,
+            spaceBefore=12,
+            spaceAfter=6
+        ))
+        styles.add(ParagraphStyle(
+            name='Normal',
+            parent=styles['Normal'],
+            fontSize=10,
+            spaceAfter=8
+        ))
+        
+        # Build PDF content
         elements = []
         
-        # Add title
+        # Title and header information
         elements.append(Paragraph(f"Clinical Evaluation Report (CER)", styles['Title']))
-        elements.append(Spacer(1, 0.25*inch))
-        elements.append(Paragraph(f"NDC Code: {ndc_code}", styles['Heading1']))
-        elements.append(Spacer(1, 0.25*inch))
-        
-        # Add generation timestamp
-        elements.append(Paragraph(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", styles['Normal']))
+        elements.append(Paragraph(f"For {product_name}", styles['Subtitle']))
+        elements.append(Paragraph(f"NDC Code: {ndc_code}", styles['Normal']))
+        elements.append(Paragraph(f"Manufacturer: {manufacturer}", styles['Normal']))
+        elements.append(Paragraph(f"Date of Report: {datetime.now().strftime('%B %d, %Y')}", styles['Normal']))
         elements.append(Spacer(1, 0.25*inch))
         
-        # Add CER narrative
-        elements.append(Paragraph("Clinical Evaluation Report:", styles['Heading2']))
+        # Split the narrative into sections and add to document
+        sections = narrative.split('\n\n')
+        for section in sections:
+            if section.strip():
+                if any(header in section for header in ["SUMMARY OF SAFETY DATA ANALYSIS", "CONCLUSION"]):
+                    # Main headers
+                    elements.append(Paragraph(section, styles['Section']))
+                elif section.strip().startswith(tuple("1234567890")):
+                    # Section headers (numbered)
+                    elements.append(Paragraph(section, styles['Section']))
+                else:
+                    elements.append(Paragraph(section, styles['Normal']))
         
-        # Split the narrative into paragraphs and add them to the document
-        paragraphs = cer_text.split('\n\n')
-        for para in paragraphs:
-            if para.strip():
-                elements.append(Paragraph(para, styles['Normal']))
-                elements.append(Spacer(1, 0.1*inch))
-        
-        # Build the PDF
+        # Build the PDF document
         doc.build(elements)
         
-        # Log successful completion
-        with open(log_file, "a") as f:
-            f.write(f"{datetime.now().isoformat()}: PDF generated successfully as {filename}\n")
+        # Update task status to completed
+        save_task_status(
+            task_id, 
+            "completed", 
+            f"CER PDF generated successfully for NDC {ndc_code}", 
+            filepath=filename
+        )
         
-        # Write status to a status file that can be checked by the Node.js backend
-        status_file = os.path.join("data/logs", f"cer_task_{task_id}_status.json")
-        with open(status_file, "w") as f:
-            json.dump({
-                "status": "completed",
-                "task_id": task_id,
-                "ndc_code": ndc_code,
-                "filename": filename,
-                "filepath": filepath,
-                "completed_at": datetime.now().isoformat()
-            }, f)
-        
-        # In a production environment, you might also send an email notification here
-        user_email = get_user_email(user_id)
-        print(f"[INFO] PDF generated successfully. Would notify {user_email} about {filename}")
+        return pdf_path
         
     except Exception as e:
-        # Log error
-        with open(log_file, "a") as f:
-            f.write(f"{datetime.now().isoformat()}: Error generating PDF: {str(e)}\n")
+        error_msg = f"Error generating PDF: {str(e)}"
+        log_file = f"data/logs/cer_task_{task_id}_error.log"
         
-        # Update status file with error
-        status_file = os.path.join("data/logs", f"cer_task_{task_id}_status.json")
-        with open(status_file, "w") as f:
-            json.dump({
-                "status": "error",
-                "task_id": task_id,
-                "ndc_code": ndc_code,
-                "error": str(e),
-                "timestamp": datetime.now().isoformat()
-            }, f)
+        with open(log_file, "w") as f:
+            f.write(f"Error time: {datetime.now().isoformat()}\n")
+            f.write(f"Error message: {str(e)}\n")
+            f.write(f"Traceback:\n{traceback.format_exc()}")
         
-        print(f"[ERROR] Failed to generate PDF: {str(e)}")
+        save_task_status(task_id, "failed", error_msg)
+        logger.error(error_msg)
+        logger.error(traceback.format_exc())
+        return None
 
 def main():
-    """Main entry point"""
-    parser = argparse.ArgumentParser(description="Generate CER PDF as a background task")
-    parser.add_argument("--ndc-code", required=True, help="NDC code for the product")
-    parser.add_argument("--user-id", required=True, help="User ID requesting the PDF")
-    parser.add_argument("--task-id", required=True, help="Unique task identifier")
+    """Command line entry point"""
+    setup_directories()
     
+    parser = argparse.ArgumentParser(description="Generate PDF Clinical Evaluation Reports")
+    parser.add_argument("--ndc-code", required=True, help="National Drug Code (NDC)")
+    parser.add_argument("--user-id", default=None, help="User ID for tracking (optional)")
+    parser.add_argument("--task-id", default=None, help="Task ID for tracking (optional)")
     args = parser.parse_args()
     
-    # Create and start the background thread
-    thread = threading.Thread(
-        target=process_task, 
-        args=(args.ndc_code, args.user_id, args.task_id)
-    )
-    thread.daemon = True
-    thread.start()
+    # Generate a task ID if not provided
+    task_id = args.task_id or str(uuid4())
     
-    # Return immediately with task ID
-    print(json.dumps({
-        "status": "scheduled",
-        "task_id": args.task_id,
-        "ndc_code": args.ndc_code,
-        "user_id": args.user_id,
-        "scheduled_at": datetime.now().isoformat()
-    }))
+    # Generate the PDF
+    pdf_path = generate_enhanced_pdf(args.ndc_code, task_id, args.user_id)
     
-    # Keep the main process running for a moment to ensure the thread starts
-    time.sleep(1)
+    if pdf_path:
+        print(f"PDF generated successfully: {pdf_path}")
+        return 0
+    else:
+        print("PDF generation failed. See logs for details.")
+        return 1
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

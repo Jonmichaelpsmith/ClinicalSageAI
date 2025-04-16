@@ -1,177 +1,521 @@
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Loader2, FileText, Download } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import React, { useState, useEffect } from 'react';
+import { 
+  Button, 
+  Card, 
+  CardContent, 
+  CardHeader, 
+  CardTitle,
+  CardDescription,
+  CardFooter,
+  Input,
+  Label,
+  Alert,
+  AlertTitle,
+  AlertDescription
+} from '@/components/ui';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Loader2, AlertCircle, FileCheck, Download, RefreshCw, Ban } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
 
+/**
+ * Clinical Evaluation Report (CER) Generator Component
+ * 
+ * This component allows users to generate CER narratives and PDF reports
+ * based on FAERS data using a simple interface.
+ */
 const CERGenerator = () => {
   const [ndcCode, setNdcCode] = useState('');
-  const [cerReport, setCerReport] = useState('');
   const [loading, setLoading] = useState(false);
-  const [pdfLoading, setPdfLoading] = useState(false);
-  const [generationCompleted, setGenerationCompleted] = useState(false);
-  const { toast } = useToast();
+  const [generatingPdf, setGeneratingPdf] = useState(false);
+  const [cerContent, setCerContent] = useState('');
+  const [cerReportId, setCerReportId] = useState(null);
+  const [error, setError] = useState(null);
+  const [pdfTask, setPdfTask] = useState(null);
+  const [pdfList, setPdfList] = useState([]);
+  const [recentReports, setRecentReports] = useState([]);
+  const [loadingPdfList, setLoadingPdfList] = useState(false);
+  const [loadingReports, setLoadingReports] = useState(false);
+  const [activeTab, setActiveTab] = useState('generate');
 
-  const validateNdcCode = (code) => {
-    // Basic validation - could be enhanced based on NDC code format requirements
-    return code.trim().length > 0;
+  // Load PDFs and recent reports on initial mount
+  useEffect(() => {
+    fetchRecentReports();
+    fetchPdfList();
+  }, []);
+
+  // Poll for PDF task status if there's an active task
+  useEffect(() => {
+    if (pdfTask && pdfTask.status === 'scheduled' || pdfTask.status === 'processing') {
+      const interval = setInterval(() => {
+        checkPdfTaskStatus(pdfTask.task_id);
+      }, 3000); // Check every 3 seconds
+      
+      return () => clearInterval(interval);
+    }
+  }, [pdfTask]);
+
+  // Fetch the list of available PDFs
+  const fetchPdfList = async () => {
+    try {
+      setLoadingPdfList(true);
+      const response = await apiRequest('GET', '/api/cer/pdfs');
+      const data = await response.json();
+      setPdfList(data);
+    } catch (err) {
+      console.error('Error fetching PDF list:', err);
+    } finally {
+      setLoadingPdfList(false);
+    }
   };
 
+  // Fetch recent CER reports
+  const fetchRecentReports = async () => {
+    try {
+      setLoadingReports(true);
+      const response = await apiRequest('GET', '/api/cer/reports');
+      const data = await response.json();
+      setRecentReports(data);
+    } catch (err) {
+      console.error('Error fetching recent reports:', err);
+    } finally {
+      setLoadingReports(false);
+    }
+  };
+
+  // Check the status of a PDF generation task
+  const checkPdfTaskStatus = async (taskId) => {
+    try {
+      const response = await apiRequest('GET', `/api/cer/tasks/${taskId}/status`);
+      const taskStatus = await response.json();
+      
+      setPdfTask(taskStatus);
+      
+      // If the task is complete, refresh the PDF list
+      if (taskStatus.status === 'completed') {
+        fetchPdfList();
+        toast({
+          title: 'PDF Generated',
+          description: 'Your CER PDF has been successfully generated.',
+        });
+      } else if (taskStatus.status === 'failed') {
+        toast({
+          title: 'PDF Generation Failed',
+          description: taskStatus.message || 'There was an error generating the PDF.',
+          variant: 'destructive',
+        });
+      }
+    } catch (err) {
+      console.error('Error checking task status:', err);
+    }
+  };
+
+  // Generate a CER report for the specified NDC code
   const generateCER = async () => {
-    // Validate input
-    if (!validateNdcCode(ndcCode)) {
+    if (!ndcCode.trim()) {
       toast({
-        title: "Invalid NDC Code",
-        description: "Please enter a valid NDC code",
-        variant: "destructive"
+        title: 'Input Required',
+        description: 'Please enter an NDC code',
+        variant: 'destructive',
       });
       return;
     }
-
-    setLoading(true);
-    setCerReport('');
-    setGenerationCompleted(false);
-
+    
     try {
-      const response = await fetch(`/api/cer/${ndcCode}`);
+      setLoading(true);
+      setError(null);
+      setCerContent('');
+      setCerReportId(null);
       
-      if (!response.ok) {
-        throw new Error(`Error: ${response.statusText}`);
-      }
-      
+      const response = await apiRequest('GET', `/api/cer/${ndcCode.trim()}`);
       const data = await response.json();
-      setCerReport(data.cer_report);
-      setGenerationCompleted(true);
+      
+      if (response.ok) {
+        setCerContent(data.cer_report);
+        setCerReportId(data.report_id);
+        fetchRecentReports();
+        
+        toast({
+          title: 'CER Generated',
+          description: 'Clinical evaluation report has been generated successfully.',
+        });
+      } else {
+        setError(data.error || 'An error occurred while generating the CER');
+        
+        toast({
+          title: 'Generation Failed',
+          description: data.error || 'An error occurred while generating the CER',
+          variant: 'destructive',
+        });
+      }
+    } catch (err) {
+      console.error('Error generating CER:', err);
+      setError('Network error: Could not connect to the server');
       
       toast({
-        title: "CER Generated Successfully",
-        description: "Your Clinical Evaluation Report has been generated.",
-      });
-    } catch (error) {
-      console.error('Error generating CER:', error);
-      toast({
-        title: "Generation Failed",
-        description: error.message || "Failed to generate CER. Please try again.",
-        variant: "destructive"
+        title: 'Network Error',
+        description: 'Could not connect to the server',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
     }
   };
 
+  // Generate a PDF version of the CER
   const generatePDF = async () => {
-    if (!generationCompleted) {
+    if (!ndcCode.trim()) {
       toast({
-        title: "No Report Generated",
-        description: "Please generate a CER report first before creating a PDF.",
-        variant: "destructive"
+        title: 'Input Required',
+        description: 'Please enter an NDC code',
+        variant: 'destructive',
       });
       return;
     }
-
-    setPdfLoading(true);
     
     try {
-      const response = await fetch(`/api/cer/${ndcCode}/enhanced-pdf-task`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ user_id: '123' }) // In a real app, this would be the actual user ID
-      });
+      setGeneratingPdf(true);
+      setPdfTask(null);
       
-      if (!response.ok) {
-        throw new Error(`Error: ${response.statusText}`);
-      }
+      const response = await apiRequest('POST', `/api/cer/${ndcCode.trim()}/enhanced-pdf-task`, {
+        user_id: 'current_user' // Replace with actual user ID when available
+      });
       
       const data = await response.json();
       
+      if (response.ok) {
+        setPdfTask(data);
+        
+        toast({
+          title: 'PDF Generation Started',
+          description: 'Your PDF is being generated. This may take a few moments.',
+        });
+      } else {
+        toast({
+          title: 'PDF Generation Failed',
+          description: data.error || 'Failed to start PDF generation',
+          variant: 'destructive',
+        });
+      }
+    } catch (err) {
+      console.error('Error generating PDF:', err);
+      
       toast({
-        title: "PDF Generation Started",
-        description: "Your PDF is being prepared and will be available shortly.",
-      });
-    } catch (error) {
-      console.error('Error requesting PDF:', error);
-      toast({
-        title: "PDF Request Failed",
-        description: error.message || "Failed to request PDF generation. Please try again.",
-        variant: "destructive"
+        title: 'Network Error',
+        description: 'Could not connect to the server',
+        variant: 'destructive',
       });
     } finally {
-      setPdfLoading(false);
+      setGeneratingPdf(false);
     }
   };
 
-  return (
-    <div className="space-y-6">
-      <div className="flex gap-4 items-end">
-        <div className="flex-1">
-          <label htmlFor="ndc-code" className="block text-sm font-medium mb-2">
-            NDC Code
-          </label>
-          <Input
-            id="ndc-code"
-            placeholder="Enter NDC Code (e.g., 0074-3799)"
-            value={ndcCode}
-            onChange={(e) => setNdcCode(e.target.value)}
-            className="w-full"
-          />
-        </div>
-        <Button 
-          onClick={generateCER} 
-          disabled={loading}
-          className="mb-0"
-        >
-          {loading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Generating...
-            </>
-          ) : (
-            <>
-              <FileText className="mr-2 h-4 w-4" />
-              Generate CER
-            </>
-          )}
-        </Button>
+  // Handle download of a generated PDF
+  const downloadPdf = (filename) => {
+    window.open(`/api/cer/pdfs/${filename}`, '_blank');
+  };
+
+  // Load a previous report
+  const loadReport = async (reportId) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await apiRequest('GET', `/api/cer/reports/${reportId}`);
+      const data = await response.json();
+      
+      if (response.ok) {
+        setCerContent(data.content);
+        setCerReportId(data.id);
+        setNdcCode(data.ndcCode || '');
+        
+        toast({
+          title: 'Report Loaded',
+          description: 'Previous CER report has been loaded successfully.',
+        });
+      } else {
+        setError(data.error || 'An error occurred while loading the report');
+        
+        toast({
+          title: 'Loading Failed',
+          description: data.error || 'An error occurred while loading the report',
+          variant: 'destructive',
+        });
+      }
+    } catch (err) {
+      console.error('Error loading report:', err);
+      setError('Network error: Could not connect to the server');
+      
+      toast({
+        title: 'Network Error',
+        description: 'Could not connect to the server',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Format date for display
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(date);
+  };
+
+  // Render the PDF task status
+  const renderPdfTaskStatus = () => {
+    if (!pdfTask) return null;
+    
+    let icon, color, message;
+    
+    switch (pdfTask.status) {
+      case 'scheduled':
+        icon = <RefreshCw className="h-5 w-5 animate-spin" />;
+        color = "bg-blue-50 text-blue-800 border-blue-200";
+        message = "PDF generation has been scheduled and will start soon.";
+        break;
+      case 'processing':
+        icon = <Loader2 className="h-5 w-5 animate-spin" />;
+        color = "bg-yellow-50 text-yellow-800 border-yellow-200";
+        message = "Generating your PDF. This may take a moment.";
+        break;
+      case 'completed':
+        icon = <FileCheck className="h-5 w-5" />;
+        color = "bg-green-50 text-green-800 border-green-200";
+        message = "PDF generated successfully! You can download it from the PDFs tab.";
+        break;
+      case 'failed':
+        icon = <Ban className="h-5 w-5" />;
+        color = "bg-red-50 text-red-800 border-red-200";
+        message = `PDF generation failed: ${pdfTask.message || 'Unknown error'}`;
+        break;
+      default:
+        return null;
+    }
+    
+    return (
+      <div className={`flex items-center p-3 rounded-md border mt-4 ${color}`}>
+        <div className="mr-3">{icon}</div>
+        <div className="text-sm">{message}</div>
       </div>
+    );
+  };
 
-      {generationCompleted && (
-        <div className="flex justify-end">
-          <Button
-            variant="outline"
-            onClick={generatePDF}
-            disabled={pdfLoading}
-          >
-            {pdfLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Preparing PDF...
-              </>
-            ) : (
-              <>
-                <Download className="mr-2 h-4 w-4" />
-                Generate PDF
-              </>
-            )}
-          </Button>
-        </div>
-      )}
-
-      {loading && (
-        <div className="p-8 flex justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      )}
-
-      {cerReport && (
-        <div>
-          <h3 className="text-lg font-medium mb-4">Clinical Evaluation Report</h3>
-          <div className="p-6 bg-muted/50 rounded-md whitespace-pre-wrap">
-            {cerReport}
-          </div>
-        </div>
-      )}
+  return (
+    <div className="w-full">
+      <Tabs defaultValue="generate" value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="generate">Generate CER</TabsTrigger>
+          <TabsTrigger value="reports">Recent Reports</TabsTrigger>
+          <TabsTrigger value="pdfs">Generated PDFs</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="generate" className="mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Generate Clinical Evaluation Report</CardTitle>
+              <CardDescription>
+                Create a Clinical Evaluation Report based on FDA Adverse Event Reporting System data
+                for a specific drug or medical device using its National Drug Code (NDC).
+              </CardDescription>
+            </CardHeader>
+            
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="ndc-code">National Drug Code (NDC)</Label>
+                  <div className="flex gap-2 mt-1.5">
+                    <Input 
+                      id="ndc-code"
+                      placeholder="Enter NDC code (e.g., 0074-3799)"
+                      value={ndcCode}
+                      onChange={(e) => setNdcCode(e.target.value)}
+                      className="flex-1"
+                      disabled={loading || generatingPdf}
+                    />
+                    <Button 
+                      onClick={generateCER} 
+                      disabled={loading || generatingPdf || !ndcCode.trim()}
+                    >
+                      {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+                      Generate Report
+                    </Button>
+                  </div>
+                </div>
+                
+                {renderPdfTaskStatus()}
+                
+                {error && (
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Error</AlertTitle>
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
+                
+                {cerContent && (
+                  <div className="mt-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <h3 className="text-lg font-semibold">Generated Report</h3>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={generatePDF}
+                        disabled={generatingPdf || loading}
+                      >
+                        {generatingPdf ? (
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        ) : (
+                          <FileCheck className="h-4 w-4 mr-2" />
+                        )}
+                        Generate PDF
+                      </Button>
+                    </div>
+                    <div className="bg-secondary p-4 rounded-md overflow-auto max-h-[60vh] whitespace-pre-wrap font-mono text-sm">
+                      {cerContent}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="reports" className="mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent CER Reports</CardTitle>
+              <CardDescription>
+                Previously generated Clinical Evaluation Reports
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {loadingReports ? (
+                <div className="flex justify-center items-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+              ) : recentReports.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  No reports generated yet. Create your first report in the Generate tab.
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {recentReports.map(report => (
+                    <Card key={report.id} className="overflow-hidden">
+                      <div className="p-4">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h3 className="font-medium text-lg">{report.title}</h3>
+                            <p className="text-sm text-muted-foreground">
+                              NDC: {report.ndcCode || 'N/A'}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Generated on {formatDate(report.created_at)}
+                            </p>
+                          </div>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => loadReport(report.id)}
+                          >
+                            Load Report
+                          </Button>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+            <CardFooter>
+              <Button 
+                variant="outline" 
+                className="w-full" 
+                onClick={fetchRecentReports}
+                disabled={loadingReports}
+              >
+                {loadingReports ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                )}
+                Refresh List
+              </Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="pdfs" className="mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Generated PDFs</CardTitle>
+              <CardDescription>
+                PDF versions of Clinical Evaluation Reports for download
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {loadingPdfList ? (
+                <div className="flex justify-center items-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+              ) : pdfList.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  No PDFs have been generated yet. Generate a report and create a PDF from the Generate tab.
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {pdfList.map(pdf => (
+                    <Card key={pdf.filename} className="overflow-hidden">
+                      <div className="p-4">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h3 className="font-medium">{pdf.filename}</h3>
+                            <p className="text-sm text-muted-foreground">
+                              NDC: {pdf.ndcCode || 'N/A'}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Created on {formatDate(pdf.created)}
+                            </p>
+                          </div>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => downloadPdf(pdf.filename)}
+                          >
+                            <Download className="h-4 w-4 mr-2" />
+                            Download
+                          </Button>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+            <CardFooter>
+              <Button 
+                variant="outline" 
+                className="w-full" 
+                onClick={fetchPdfList}
+                disabled={loadingPdfList}
+              >
+                {loadingPdfList ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                )}
+                Refresh List
+              </Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
