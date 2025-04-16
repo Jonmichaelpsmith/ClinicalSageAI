@@ -1,0 +1,251 @@
+import React, { useState, useEffect } from 'react';
+import { Tab } from '@headlessui/react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Spinner } from '@/components/ui/spinner';
+import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from 'recharts';
+import { motion } from 'framer-motion';
+
+const tabs = ['FAERS', 'Device', 'Multi-Source'];
+
+export default function CERDashboard() {
+  const [selectedTab, setSelectedTab] = useState(0);
+
+  return (
+    <div className="p-6 max-w-6xl mx-auto">
+      <h1 className="text-3xl font-extrabold mb-6">TrialSage Clinical Evaluation Reports</h1>
+      <Tab.Group selectedIndex={selectedTab} onChange={setSelectedTab}>
+        <Tab.List className="flex space-x-4 mb-8">
+          {tabs.map((tab, idx) => (
+            <Tab
+              key={tab}
+              className={({ selected }) =>
+                `px-6 py-2 rounded-2xl text-lg font-medium transition-colors ${
+                  selected
+                    ? 'bg-primary text-white shadow-lg'
+                    : 'bg-muted text-muted-foreground hover:bg-muted/50'
+                }`
+              }
+            >
+              {tab}
+            </Tab>
+          ))}
+        </Tab.List>
+        <Tab.Panels>
+          <Tab.Panel>
+            <EndpointPanel
+              type="faers"
+              title="Drug Safety (FAERS)"
+              placeholder="Enter NDC code, e.g. 0002-8215"
+            />
+          </Tab.Panel>
+          <Tab.Panel>
+            <EndpointPanel
+              type="device"
+              title="Device Complaints (MAUDE)"
+              placeholder="Enter Device code, e.g. K123456"
+            />
+          </Tab.Panel>
+          <Tab.Panel>
+            <MultiSourcePanel />
+          </Tab.Panel>
+        </Tab.Panels>
+      </Tab.Group>
+    </div>
+  );
+}
+
+function EndpointPanel({ type, title, placeholder }) {
+  const [code, setCode] = useState('');
+  const [periods, setPeriods] = useState(6);
+  const [data, setData] = useState(null);
+  const [narrative, setNarrative] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const build = `/api/narrative/${type}/${code}`;
+  const pdfEndpoint = `/api/narrative/${type}/${code}/pdf`;
+
+  const fetchData = async () => {
+    setLoading(true);
+    setError(null);
+    setNarrative('');
+    try {
+      const res = await fetch(`${build}?periods=${periods}`);
+      if (!res.ok) throw new Error(await res.text());
+      const json = await res.json();
+      setData(json);
+      setNarrative(json.narrative);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Card className="space-y-6">
+      <CardHeader>
+        <h2 className="text-xl font-semibold">{title}</h2>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-4 gap-4 items-end">
+          <div className="col-span-2">
+            <Input
+              placeholder={placeholder}
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+            />
+          </div>
+          <div>
+            <Input
+              type="number"
+              min={1}
+              max={12}
+              value={periods}
+              onChange={(e) => setPeriods(Number(e.target.value))}
+            />
+          </div>
+          <div className="flex space-x-2">
+            <Button onClick={fetchData} disabled={!code || loading}>
+              {loading ? <Spinner /> : 'Generate'}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => window.open(pdfEndpoint + `?periods=${periods}`, '_blank')}
+              disabled={!narrative}
+            >
+              Download PDF
+            </Button>
+          </div>
+        </div>
+        {error && <p className="text-red-600">Error: {error}</p>}
+        {data && <AnalyticsChart data={data.trend} />}
+        {narrative && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mt-4"
+          >
+            <ScrollArea className="h-48 p-3 bg-white rounded-xl shadow-inner">
+              <pre className="whitespace-pre-wrap text-sm leading-relaxed">
+                {narrative}
+              </pre>
+            </ScrollArea>
+          </motion.div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function MultiSourcePanel() {
+  const [ndc, setNdc] = useState('');
+  const [device, setDevice] = useState('');
+  const [periods, setPeriods] = useState(6);
+  const [narrative, setNarrative] = useState('');
+  const [analysis, setAnalysis] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const fetchMulti = async () => {
+    setLoading(true);
+    setError(null);
+    setNarrative('');
+    try {
+      const body = { ndc_codes: ndc.split(',').map(s => s.trim()), device_codes: device.split(',').map(s => s.trim()), periods };
+      const res = await fetch('/api/narrative/multi', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const json = await res.json();
+      setAnalysis(json.analysis.analyses);
+      setNarrative(json.narrative);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Card className="space-y-6">
+      <CardHeader>
+        <h2 className="text-xl font-semibold">Multi-Source CER</h2>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-3 gap-4">
+          <Input
+            placeholder="NDC codes (comma-separated)"
+            value={ndc}
+            onChange={(e) => setNdc(e.target.value)}
+          />
+          <Input
+            placeholder="Device codes (comma-separated)"
+            value={device}
+            onChange={(e) => setDevice(e.target.value)}
+          />
+          <Input
+            type="number"
+            min={1}
+            max={12}
+            value={periods}
+            onChange={(e) => setPeriods(Number(e.target.value))}
+          />
+        </div>
+        <div className="flex space-x-2 mb-4">
+          <Button onClick={fetchMulti} disabled={loading || (!ndc && !device)}>
+            {loading ? <Spinner /> : 'Generate'}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              const win = window.open('', '_blank');
+              win.location.href = '/api/narrative/multi/pdf';
+            }}
+            disabled={!narrative}
+          >
+            Download PDF
+          </Button>
+        </div>
+        {error && <p className="text-red-600">Error: {error}</p>}
+        {analysis && analysis.map((a, i) => (
+          <Card key={i} className="mb-4">
+            <CardHeader>
+              <h3 className="font-bold">{a.source}: {a.product_code}</h3>
+            </CardHeader>
+            <CardContent>
+              <AnalyticsChart data={a.trend} />
+            </CardContent>
+          </Card>
+        ))}
+        {narrative && (
+          <motion.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+            <ScrollArea className="h-48 p-3 bg-white rounded-xl shadow-inner">
+              <pre className="whitespace-pre-wrap text-sm leading-relaxed">{narrative}</pre>
+            </ScrollArea>
+          </motion.div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function AnalyticsChart({ data }) {
+  const chartData = Object.entries(data).map(([date, value]) => ({ date, value }));
+  return (
+    <ResponsiveContainer width="100%" height={200}>
+      <LineChart data={chartData} margin={{ top: 10, right: 20, bottom: 10, left: 0 }}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="date" />
+        <YAxis />
+        <Tooltip />
+        <Line type="monotone" dataKey="value" stroke="#8884d8" strokeWidth={2} dot={{ r: 2 }} />
+      </LineChart>
+    </ResponsiveContainer>
+  );
+}
