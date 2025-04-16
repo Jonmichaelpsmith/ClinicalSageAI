@@ -13,75 +13,49 @@ import { Sun, Moon, Download, Share, Check } from 'lucide-react';
 const viewModes = ['Chart', 'Table'];
 
 // --- Auth and Theme Contexts ---
-const AuthContext = createContext({ 
-  isAuthenticated: false,
-  login: () => {},
-  logout: () => {}
-});
+const AuthContext = createContext({ isAuthenticated: false });
 const ThemeContext = createContext({ theme: 'light', toggleTheme: () => {} });
-
-function AuthProvider({ children }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return localStorage.getItem('cer_auth') === 'true';
-  });
-
-  const login = () => {
-    setIsAuthenticated(true);
-    localStorage.setItem('cer_auth', 'true');
-  };
-
-  const logout = () => {
-    setIsAuthenticated(false);
-    localStorage.setItem('cer_auth', 'false');
-  };
-
-  return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
-}
 
 function useTheme() {
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
-  
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
     localStorage.setItem('theme', theme);
   }, [theme]);
-  
   const toggleTheme = () => setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
   return { theme, toggleTheme };
 }
 
 export default function CERDashboard() {
-  const [tab, setTab] = useState(() => {
-    // Get from URL params if available, otherwise default
-    const params = new URLSearchParams(window.location.search);
-    const tabParam = params.get('tab');
-    if (tabParam && ['FAERS', 'Device', 'Multi-Source'].includes(tabParam)) return tabParam;
-    return localStorage.getItem('cer_active_tab') || 'FAERS';
+  const [tab, setTab] = useState('FAERS');
+  const themeContext = useTheme();
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return localStorage.getItem('cer_auth') === 'true';
   });
   
-  const themeContext = useTheme();
+  const login = () => {
+    setIsAuthenticated(true);
+    localStorage.setItem('cer_auth', 'true');
+  };
   
+  const logout = () => {
+    setIsAuthenticated(false);
+    localStorage.setItem('cer_auth', 'false');
+  };
+  
+  // Set from URL params if available
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tabParam = params.get('tab');
+    if (tabParam && ['FAERS', 'Device', 'Multi-Source'].includes(tabParam)) {
+      setTab(tabParam);
+    }
+  }, []);
+
   // Persist tab selection
   useEffect(() => {
     localStorage.setItem('cer_active_tab', tab);
   }, [tab]);
-
-  return (
-    <AuthProvider>
-      <ThemeContext.Provider value={themeContext}>
-        <DashboardContent tab={tab} setTab={setTab} />
-      </ThemeContext.Provider>
-    </AuthProvider>
-  );
-}
-
-function DashboardContent({ tab, setTab }) {
-  const { theme, toggleTheme } = useContext(ThemeContext);
-  const { isAuthenticated, login, logout } = useContext(AuthContext);
 
   if (!isAuthenticated) {
     return (
@@ -102,73 +76,62 @@ function DashboardContent({ tab, setTab }) {
   const tabs = ['FAERS', 'Device', 'Multi-Source'];
   
   return (
-    <div className={`p-8 max-w-7xl mx-auto transition-colors duration-200 ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>
-      <header className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-extrabold">TrialSage CER Dashboard</h1>
-        <div className="flex gap-3">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={logout} 
-            aria-label="Logout"
-          >
-            Logout
-          </Button>
-          <Button 
-            variant="outline"
-            onClick={toggleTheme}
-            aria-label="Toggle theme"
-          >
-            {theme === 'light' ? <Moon className="h-4 w-4 mr-2" /> : <Sun className="h-4 w-4 mr-2" />}
-            {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
-          </Button>
-        </div>
-      </header>
-      
-      <nav className="mb-6 flex space-x-4" aria-label="Main navigation">
-        {tabs.map(t => (
-          <Button
-            key={t}
-            variant={tab === t ? 'default' : 'outline'}
-            onClick={() => setTab(t)}
-            aria-pressed={tab === t}
-            aria-label={`Switch to ${t} tab`}
-          >
-            {t}
-          </Button>
-        ))}
-      </nav>
-      
-      <main>
-        {tab === 'FAERS' && <EndpointPanel type="faers" />}
-        {tab === 'Device' && <EndpointPanel type="device" />}
-        {tab === 'Multi-Source' && <MultiSourcePanel />}
-      </main>
-    </div>
+    <ThemeContext.Provider value={themeContext}>
+      <div className={`p-8 max-w-6xl mx-auto transition-colors duration-200 ${themeContext.theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>
+        <header className="flex justify-between items-center mb-8">
+          <h1 className="text-4xl font-extrabold">TrialSage CER Dashboard</h1>
+          <div className="flex gap-3">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={logout} 
+              aria-label="Logout"
+            >
+              Logout
+            </Button>
+            <Button 
+              variant="outline"
+              onClick={themeContext.toggleTheme}
+              aria-label="Toggle theme"
+            >
+              {themeContext.theme === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode'}
+            </Button>
+          </div>
+        </header>
+        
+        <nav className="mb-6 flex space-x-4" aria-label="Main navigation">
+          {tabs.map(t => (
+            <Button
+              key={t}
+              variant={tab === t ? 'default' : 'outline'}
+              onClick={() => setTab(t)}
+              aria-pressed={tab === t}
+              aria-label={`Switch to ${t} tab`}
+            >
+              {t}
+            </Button>
+          ))}
+        </nav>
+        
+        <main>
+          {tab === 'FAERS' && <EndpointPanel type="faers" />}
+          {tab === 'Device' && <EndpointPanel type="device" />}
+          {tab === 'Multi-Source' && <MultiSourcePanel />}
+        </main>
+      </div>
+    </ThemeContext.Provider>
   );
 }
 
 function EndpointPanel({ type, placeholder }) {
-  // Get saved preferences from localStorage
   const storageKey = `cer_${type}_prefs`;
-  const savedPrefs = useMemo(() => {
-    try {
-      return JSON.parse(localStorage.getItem(storageKey) || '{}');
-    } catch (e) {
-      console.error('Error loading preferences:', e);
-      return {};
-    }
-  }, [storageKey]);
-
-  // Initialize state with saved preferences or defaults
-  const [code, setCode] = useState(savedPrefs.code || '');
-  const [periods, setPeriods] = useState(savedPrefs.periods || 6);
-  const [startDate, setStartDate] = useState(savedPrefs.startDate || 
-    new Date(new Date().setFullYear(new Date().getFullYear() - 5)).toISOString().slice(0,10));
-  const [endDate, setEndDate] = useState(savedPrefs.endDate || 
-    new Date().toISOString().slice(0,10));
-  const [viewMode, setViewMode] = useState(savedPrefs.viewMode || viewModes[0]);
-  const [filterSeverity, setFilterSeverity] = useState(savedPrefs.filterSeverity || 'all');
+  const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
+  const [code, setCode] = useState(saved.code || '');
+  const [periods, setPeriods] = useState(saved.periods || 6);
+  const [startDate, setStartDate] = useState(saved.startDate ? new Date(saved.startDate) : new Date(new Date().setFullYear(new Date().getFullYear() - 5)));
+  const [endDate, setEndDate] = useState(saved.endDate ? new Date(saved.endDate) : new Date());
+  const [viewMode, setViewMode] = useState(saved.viewMode || 'Chart');
+  const [filterSeverity, setFilterSeverity] = useState(saved.filterSeverity || 'all');
   const [data, setData] = useState(null);
   const [narrative, setNarrative] = useState('');
   const [loading, setLoading] = useState(false);
@@ -184,8 +147,20 @@ function EndpointPanel({ type, placeholder }) {
     const params = new URLSearchParams(window.location.search);
     if (params.has('code')) setCode(params.get('code'));
     if (params.has('periods')) setPeriods(Number(params.get('periods')));
-    if (params.has('start_date')) setStartDate(params.get('start_date'));
-    if (params.has('end_date')) setEndDate(params.get('end_date'));
+    if (params.has('start_date')) {
+      try {
+        setStartDate(new Date(params.get('start_date')));
+      } catch (e) {
+        console.error('Invalid start date in URL', e);
+      }
+    }
+    if (params.has('end_date')) {
+      try {
+        setEndDate(new Date(params.get('end_date')));
+      } catch (e) {
+        console.error('Invalid end date in URL', e);
+      }
+    }
     if (params.has('severity')) setFilterSeverity(params.get('severity'));
   }, []);
 
@@ -198,17 +173,17 @@ function EndpointPanel({ type, placeholder }) {
   
   // Apply severity filter to data
   const filteredData = useMemo(() => {
-    if (!data || !data.analysis) return null;
+    if (!data || !data.trend) return null;
     
-    if (filterSeverity === 'all') return data.analysis;
+    if (filterSeverity === 'all') return data.trend;
     
     // This is a demo stub - in a real app we would filter based on severity
     // from the actual data. Here we're just showing how it would work.
-    const filtered = { ...data.analysis };
-    if (filterSeverity === 'serious' && filtered.trend) {
+    const filtered = { ...data.trend };
+    if (filterSeverity === 'serious') {
       // For demo: only show dates with higher counts (simulating serious events)
-      filtered.trend = Object.fromEntries(
-        Object.entries(filtered.trend).filter(([_, value]) => value > 3)
+      return Object.fromEntries(
+        Object.entries(filtered).filter(([_, value]) => value > 3)
       );
     }
     return filtered;
@@ -216,19 +191,19 @@ function EndpointPanel({ type, placeholder }) {
 
   // Prepare chart data from filtered data
   const chartData = useMemo(() => {
-    if (!filteredData || !filteredData.trend) return [];
-    return Object.entries(filteredData.trend).map(([date, value]) => ({ date, value }));
+    if (!filteredData) return [];
+    return Object.entries(filteredData).map(([date, value]) => ({ date, value }));
   }, [filteredData]);
 
-  const fetchData = async () => {
+  const fetchNarrative = async () => {
+    if (!code) return;
     setLoading(true);
     setError(null);
-    setNarrative('');
     try {
       const params = new URLSearchParams({ 
         periods, 
-        start_date: startDate, 
-        end_date: endDate,
+        start_date: startDate.toISOString(), 
+        end_date: endDate.toISOString(),
         severity: filterSeverity
       });
       const res = await fetch(`${apiBase}?${params}`);
@@ -246,21 +221,13 @@ function EndpointPanel({ type, placeholder }) {
   // Export data as CSV
   const exportCSV = () => {
     if (!chartData.length) return;
-    
-    // Create CSV content
-    const csvHeader = ['Date', 'Count'];
-    const csvRows = [csvHeader, ...chartData.map(row => [row.date, row.value])];
-    const csvContent = csvRows.map(row => row.join(',')).join('\n');
-    
-    // Create and download file
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const csv = ['Date,Count', ...chartData.map(r => `${r.date},${r.value}`)].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', `${type}_${code}_data.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${type}_${code}_trend.csv`;
+    a.click();
   };
 
   // Generate shareable link
@@ -270,8 +237,8 @@ function EndpointPanel({ type, placeholder }) {
       tab: type,
       code,
       periods,
-      start_date: startDate,
-      end_date: endDate,
+      start_date: startDate.toISOString(),
+      end_date: endDate.toISOString(),
       severity: filterSeverity
     });
     
@@ -334,8 +301,8 @@ function EndpointPanel({ type, placeholder }) {
             <Input
               id={`${type}-start-date`}
               type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
+              value={startDate.toISOString().split('T')[0]}
+              onChange={(e) => setStartDate(new Date(e.target.value))}
               aria-label="Start date"
             />
           </div>
@@ -346,8 +313,8 @@ function EndpointPanel({ type, placeholder }) {
             <Input
               id={`${type}-end-date`}
               type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
+              value={endDate.toISOString().split('T')[0]}
+              onChange={(e) => setEndDate(new Date(e.target.value))}
               aria-label="End date"
             />
           </div>
@@ -375,7 +342,7 @@ function EndpointPanel({ type, placeholder }) {
         {/* Action buttons */}
         <div className="flex flex-wrap gap-2 mt-5">
           <Button 
-            onClick={fetchData} 
+            onClick={fetchNarrative} 
             disabled={!code || loading} 
             className="flex items-center"
             aria-label="Generate report"
