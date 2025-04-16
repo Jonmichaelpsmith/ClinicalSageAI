@@ -18,7 +18,33 @@ from predictive_analytics import aggregate_time_series, forecast_adverse_events,
 # Redis cache setup
 ttl_seconds = 3600  # 1 hour caching
 redis_url = os.getenv("REDIS_URL", "redis://localhost:6379/0")
-redis_client = Redis.from_url(redis_url)
+
+# Try to connect to Redis, but provide a dummy implementation if it fails
+try:
+    redis_client = Redis.from_url(redis_url, socket_connect_timeout=2.0)
+    # Test the connection
+    redis_client.ping()
+    print("Redis connected successfully")
+except Exception as e:
+    print(f"Redis connection failed: {e}, using memory cache fallback")
+    # Create a simple in-memory cache as fallback
+    class MemoryCache:
+        def __init__(self):
+            self.cache = {}
+            
+        def get(self, key):
+            if key in self.cache:
+                return self.cache[key].encode('utf-8')
+            return None
+            
+        def setex(self, key, ttl, value):
+            self.cache[key] = value
+            return True
+            
+        def ping(self):
+            return True
+    
+    redis_client = MemoryCache()
 
 # Import ReportLab for PDF generation
 from reportlab.lib.pagesizes import letter, landscape
@@ -553,11 +579,15 @@ async def narrative_faers_pdf(ndc_code: str, periods: int = 3):
         analysis = build_faers_analysis(ndc_code, periods)
         
         # Handle case with no data
-        narrative = ""
         if analysis["total_count"] == 0:
             narrative = f"No adverse events found for product code {ndc_code} in FAERS database."
         else:
-            narrative = generate_cer_narrative_from_analysis(analysis)
+            # Generate or fetch narrative from cache
+            identifier = f"faers:{ndc_code}:{periods}"
+            def generate_narrative():
+                return generate_cer_narrative_from_analysis(analysis)
+            
+            narrative = _fetch_or_generate('faers', identifier, generate_narrative)
         
         # Generate PDF
         pdf_bytes = generate_pdf_report(narrative, analysis)
@@ -654,11 +684,15 @@ async def narrative_device_pdf(device_code: str, periods: int = 3):
         analysis = build_device_analysis(device_code, periods)
         
         # Handle case with no data
-        narrative = ""
         if analysis["total_count"] == 0:
             narrative = f"No device complaints found for product code {device_code} in MAUDE database."
         else:
-            narrative = generate_cer_narrative_from_analysis(analysis)
+            # Generate or fetch narrative from cache
+            identifier = f"device:{device_code}:{periods}"
+            def generate_narrative():
+                return generate_cer_narrative_from_analysis(analysis)
+            
+            narrative = _fetch_or_generate('device', identifier, generate_narrative)
         
         # Generate PDF
         pdf_bytes = generate_pdf_report(narrative, analysis)
@@ -712,8 +746,17 @@ async def narrative_multi(request: MultiRequest = Body(...)):
             periods=request.periods
         )
         
-        # Generate narrative
-        narrative = generate_cer_narrative_from_analysis(analysis_data)
+        # Create a deterministic identifier for caching
+        ndc_str = ",".join(sorted(request.ndc_codes or []))
+        device_str = ",".join(sorted(request.device_codes or []))
+        identifier = f"multi:{ndc_str}:{device_str}:{request.periods}"
+        
+        # Define the generator function
+        def generate_narrative():
+            return generate_cer_narrative_from_analysis(analysis_data)
+        
+        # Generate or fetch narrative from cache
+        narrative = _fetch_or_generate('multi', identifier, generate_narrative)
         
         # Return analysis and narrative
         return {
@@ -763,8 +806,17 @@ async def narrative_multi_pdf(request: MultiRequest = Body(...)):
             periods=request.periods
         )
         
-        # Generate narrative
-        narrative = generate_cer_narrative_from_analysis(analysis_data)
+        # Create a deterministic identifier for caching
+        ndc_str = ",".join(sorted(request.ndc_codes or []))
+        device_str = ",".join(sorted(request.device_codes or []))
+        identifier = f"multi:{ndc_str}:{device_str}:{request.periods}"
+        
+        # Define the generator function
+        def generate_narrative():
+            return generate_cer_narrative_from_analysis(analysis_data)
+        
+        # Generate or fetch narrative from cache
+        narrative = _fetch_or_generate('multi', identifier, generate_narrative)
         
         # Generate PDF
         pdf_bytes = generate_pdf_report(narrative, analysis_data)
