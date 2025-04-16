@@ -1,0 +1,149 @@
+Below is a minimal, ready‑to‑paste implementation of the Data Ingestion APIs for your CER solution. We’ve created three connector modules—one for each public data source—and exposed them via FastAPI endpoints. You can drop these into your Replit project, install the dependencies, and they’ll provide raw JSON data for your downstream pipelines.
+
+1. Install Dependencies
+Add to your requirements.txt:
+
+nginx
+Copy
+fastapi
+uvicorn
+requests
+beautifulsoup4
+Then run:
+
+bash
+Copy
+pip install -r requirements.txt
+2. Connector Modules
+A. ingestion/fda_device.py
+Scrapes the FDA Device Complaint Database for a given device code.
+
+python
+Copy
+# ingestion/fda_device.py
+import requests
+from bs4 import BeautifulSoup
+
+BASE_URL = "https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfmaude/search.cfm"
+
+def fetch_fda_device_complaints(device_code: str):
+    """
+    Scrape FDA Device Complaint Database for entries matching device_code.
+    Returns a list of dicts with keys: complaint_id, device_name, complaint_date, narrative.
+    """
+    params = {"device": device_code}
+    response = requests.get(BASE_URL, params=params, timeout=10)
+    response.raise_for_status()
+    soup = BeautifulSoup(response.text, "html.parser")
+    
+    complaints = []
+    table = soup.find("table", {"id": "resultTable"})
+    if not table:
+        return complaints
+
+    for row in table.find_all("tr")[1:]:
+        cols = row.find_all("td")
+        complaints.append({
+            "complaint_id": cols[0].get_text(strip=True),
+            "device_name": cols[1].get_text(strip=True),
+            "complaint_date": cols[2].get_text(strip=True),
+            "narrative": cols[3].get_text(strip=True),
+        })
+    return complaints
+B. ingestion/fda_faers.py
+Fetches drug adverse event data from OpenFDA’s drug event API.
+
+python
+Copy
+# ingestion/fda_faers.py
+import requests
+
+FAERS_API_URL = "https://api.fda.gov/drug/event.json"
+
+def fetch_faers_data(ndc_code: str, limit: int = 100):
+    """
+    Query FAERS (via OpenFDA) for adverse events filtered by NDC code.
+    Returns the raw JSON response.
+    """
+    query = f'openfda.product_ndc:"{ndc_code}"'
+    response = requests.get(f"{FAERS_API_URL}?search={query}&limit={limit}", timeout=10)
+    response.raise_for_status()
+    return response.json()
+C. ingestion/eu_eudamed.py
+Stub for EU Eudamed; adjust if/when an API becomes available or scrape similarly.
+
+python
+Copy
+# ingestion/eu_eudamed.py
+import requests
+
+EUDAMED_SEARCH_URL = "https://ec.europa.eu/tools/eudamed/eudamed"
+
+def fetch_eudamed_data(device_code: str):
+    """
+    Placeholder: attempts to fetch data from EU Eudamed.
+    Currently returns an informational message.
+    """
+    # If an API is provided in the future, implement here.
+    return {
+        "message": "EU Eudamed API not yet available programmatically",
+        "device_code": device_code
+    }
+3. FastAPI Ingestion Endpoints
+main.py (or your existing FastAPI app)
+Add a new router for ingestion:
+
+python
+Copy
+# main.py
+from fastapi import FastAPI, APIRouter, HTTPException
+from ingestion.fda_device import fetch_fda_device_complaints
+from ingestion.fda_faers import fetch_faers_data
+from ingestion.eu_eudamed import fetch_eudamed_data
+
+app = FastAPI()
+ingest_router = APIRouter(prefix="/api/ingest", tags=["ingestion"])
+
+@ingest_router.get("/device/{device_code}")
+async def ingest_device(device_code: str):
+    try:
+        complaints = fetch_fda_device_complaints(device_code)
+        return {"source": "FDA_Device", "device_code": device_code, "complaints": complaints}
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Failed to fetch FDA device complaints: {e}")
+
+@ingest_router.get("/drug/{ndc_code}")
+async def ingest_drug(ndc_code: str, limit: int = 100):
+    try:
+        data = fetch_faers_data(ndc_code, limit)
+        return {"source": "FDA_FAERS", "ndc_code": ndc_code, "raw_data": data}
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Failed to fetch FAERS data: {e}")
+
+@ingest_router.get("/eu/{device_code}")
+async def ingest_eu(device_code: str):
+    try:
+        data = fetch_eudamed_data(device_code)
+        return {"source": "EU_Eudamed", "device_code": device_code, "data": data}
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Failed to fetch EU Eudamed data: {e}")
+
+app.include_router(ingest_router)
+4. Testing
+Run your server:
+
+bash
+Copy
+uvicorn main:app --reload --port 3000
+Device ingestion:
+GET http://localhost:3000/api/ingest/device/YourDeviceCode
+
+Drug ingestion:
+GET http://localhost:3000/api/ingest/drug/1234567890?limit=200
+
+EU ingestion:
+GET http://localhost:3000/api/ingest/eu/YourDeviceCode
+
+Each endpoint returns raw JSON you can feed directly into your ETL and downstream pipelines.
+
+This gives you a clean, modular Data Ingestion API layer for your CER solution—ready to integrate with normalization, analytics, narrative generation, and reporting.
