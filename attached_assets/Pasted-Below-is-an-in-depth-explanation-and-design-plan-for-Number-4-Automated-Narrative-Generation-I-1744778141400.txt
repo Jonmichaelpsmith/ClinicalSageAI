@@ -1,0 +1,158 @@
+Below is an in‑depth explanation and design plan for **Number 4: Automated Narrative Generation**. In this phase, the goal is to transform the structured, quantitative results from data analysis and signal detection into a human‑readable, regulatory‑compliant narrative that forms a key section of the CER. This narrative explains the safety insights, trends, and risk assessments derived from the aggregated public data.
+
+---
+
+## 1. Overview
+
+Automated Narrative Generation is critical because it transforms dry statistical outputs and raw data into a story that:
+- Communicates key findings clearly to regulators and clinical experts.
+- Puts the quantitative results into context.
+- Supports decision‑making by highlighting trends, anomalies, and risk indicators.
+
+The process involves two main components:
+1. **Data-to-Text Conversion:** Where our structured JSON outputs (from statistical analyses, forecasting, and anomaly detection) are converted into coherent sentences.
+2. **Natural Language Generation (NLG) with Advanced AI:** Leveraging models such as GPT‑4 Turbo to generate sophisticated, well‑structured narrative text from the provided data and summary points.
+
+---
+
+## 2. Data-to-Text Conversion
+
+Before we call the AI engine, we need to prepare the data in a way that it can be easily understood. This entails:
+
+### A. Structuring the Inputs
+- **Input Data:** Our analytical components produce outputs such as:
+  - Time-series forecasts (e.g., predicted counts for adverse events).
+  - Anomaly detection results (e.g., detected spikes in complaints).
+  - Aggregated statistics (e.g., total complaints, percentage change over time).
+- **Unified JSON Format:**  
+  For instance, our analysis module might output a JSON like:
+  ```json
+  {
+    "device_code": "ABC123",
+    "total_complaints": 150,
+    "trend": {
+      "month_1": 20,
+      "month_2": 25,
+      "month_3": 30,
+      "month_4": 35,
+      "month_5": 40
+    },
+    "forecast": {
+      "month_6": 42,
+      "month_7": 45,
+      "month_8": 47
+    },
+    "anomalies": {
+      "month_3": 30
+    }
+  }
+  ```
+- **Key Points Extraction:**  
+  Identify the “headline” metrics (e.g., “a 40% increase in complaints over the last quarter”) which the narrative must convey.
+
+### B. Pre-processing for Prompting
+- **Creating a Template:**  
+  Design a template that clearly organizes the inputs. For example:
+  - Introduction: “For device ABC123, the total number of complaints in the last period was 150.”
+  - Trend Summary: “Over the past five months, monthly complaints have grown from 20 to 40.”
+  - Forecast: “It is forecast that this trend will continue, with complaints estimated to reach 47 in month 8.”
+  - Anomaly Highlight: “Notably, month 3 recorded an anomaly with 30 complaints, significantly higher than the surrounding months.”
+- **Conversion to Natural Language Prompts:**  
+  Convert the above key points into a textual summary that serves as a prompt to the AI model.
+
+---
+
+## 3. Natural Language Generation with Advanced AI
+
+### A. Using a Language Model (e.g., GPT‑4 Turbo)
+- **Prompt Engineering:**  
+  Construct a prompt that provides context and the structured data in a clear format. Here’s an example prompt:
+  ```
+  You are a clinical report generation assistant. Based on the following analysis data, generate a comprehensive Clinical Evaluation Report (CER) narrative section. The narrative should be regulatory-compliant and include an executive summary, key trends, forecast insights, and an explanation of any detected anomalies.
+  
+  Data:
+  - Device Code: ABC123
+  - Total Complaints: 150
+  - Monthly Trends: Month 1: 20, Month 2: 25, Month 3: 30, Month 4: 35, Month 5: 40
+  - Forecast: Month 6: 42, Month 7: 45, Month 8: 47
+  - Detected Anomaly: Month 3 had an unusually high number of complaints (30)
+  
+  Generate a narrative that explains these results in a professional and concise manner.
+  ```
+- **Parameters Settings:**  
+  Use low temperature (e.g., 0.2) for a more deterministic and factual response.
+
+### B. Sample Code for Narrative Generation
+
+Here is a Python function that encapsulates the narrative generation process using OpenAI’s API:
+
+```python
+import openai
+import os
+
+# Ensure your API key is set in the environment
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
+def generate_cer_narrative_from_data(analysis_data):
+    # Construct a detailed prompt from the input data
+    prompt = f"""
+    You are a clinical report generation assistant. Based on the following analysis data, generate a comprehensive Clinical Evaluation Report (CER) narrative section that is regulatory-compliant. Include:
+    - An executive summary of the overall findings.
+    - A detailed explanation of trends over the past months.
+    - Forecast insights for future complaints.
+    - An analysis of any anomalies detected.
+    
+    Data:
+    Device Code: {analysis_data.get("device_code")}
+    Total Complaints: {analysis_data.get("total_complaints")}
+    Monthly Trends: {', '.join([f'Month {i+1}: {v}' for i, v in enumerate(analysis_data.get("trend", {}).values())])}
+    Forecast: {', '.join([f'Month {i+6}: {v}' for i, v in enumerate(analysis_data.get("forecast", {}).values())])}
+    Detected Anomalies: {', '.join([f'Month {k}: {v}' for k, v in analysis_data.get("anomalies", {}).items()])}
+    
+    Generate the narrative now.
+    """
+    response = openai.ChatCompletion.create(
+        model="gpt-4-turbo",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.2,
+        max_tokens=500
+    )
+    narrative = response.choices[0].message.content.strip()
+    return narrative
+
+# Example usage:
+if __name__ == "__main__":
+    example_data = {
+        "device_code": "ABC123",
+        "total_complaints": 150,
+        "trend": {"1": 20, "2": 25, "3": 30, "4": 35, "5": 40},
+        "forecast": {"6": 42, "7": 45, "8": 47},
+        "anomalies": {"3": 30}
+    }
+    generated_narrative = generate_cer_narrative_from_data(example_data)
+    print("Generated CER Narrative:")
+    print(generated_narrative)
+```
+
+### C. Output and Post-processing
+
+- **Validation of Narrative:**  
+  Ensure the generated narrative includes all necessary sections (executive summary, trend analysis, forecasts, and anomaly explanation).  
+- **Editing and Customization:**  
+  If needed, allow users to manually adjust the generated text or provide feedback that can be iteratively used to refine the prompt.
+- **Integration with Report Assembly:**  
+  The final narrative becomes one section of the overall CER document that may also include charts, tables, and additional text, all assembled together into a single report output (e.g., PDF or web dashboard).
+
+---
+
+## 4. Summary
+
+The Automated Narrative Generation phase:
+- Takes the quantitative outputs from your data analysis modules.
+- Structures these outputs in a clear prompt format.
+- Uses a robust NLP engine (like GPT‑4 Turbo) to convert the data into coherent, regulatory‑compliant text.
+- Outputs a narrative that explains trends, forecasts, and anomalies, integrating it into the final CER.
+
+This approach ensures that the final CER is not just a collection of numbers but a well‑crafted document that supports regulatory submissions and decision‑making.
+
+Would you like further details on prompt tuning, additional customization options for the narrative style, or move on to the next phase (e.g., Report Assembly and Presentation)?
