@@ -34,6 +34,7 @@ const ProtocolDesigner = () => {
   const [generatedProtocol, setGeneratedProtocol] = useState<any>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeTab, setActiveTab] = useState("design");
+  const [showTutorialDialog, setShowTutorialDialog] = useState(false);
 
   // Protocol upload states
   const [showUploadDialog, setShowUploadDialog] = useState(false);
@@ -209,7 +210,13 @@ const ProtocolDesigner = () => {
             <Upload className="h-4 w-4 mr-2" />
             Upload Protocol
           </Button>
-          <Button variant="outline" size="sm">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => {
+              setShowTutorialDialog(true);
+            }}
+          >
             <Brain className="h-4 w-4 mr-2" />
             Study Design Tutorial
           </Button>
