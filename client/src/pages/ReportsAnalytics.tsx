@@ -42,7 +42,7 @@ import { useToast } from "@/hooks/use-toast";
 export default function ReportsAnalytics() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState("reports");
+  // Removed separate activeTab state since we're merging the tabs
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
