@@ -1,0 +1,83 @@
+import os
+import openai
+from ingestion.fda_faers import get_faers_cached
+from ingestion.normalize import normalize_faers
+from predictive_analytics import aggregate_time_series, forecast_adverse_events, detect_anomalies
+
+# Ensure your OPENAI_API_KEY is set in environment
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
+def build_faers_analysis(ndc_code: str, periods: int = 3):
+    """
+    Fetches, normalizes, and analyzes FAERS data for narrative generation.
+    Returns a dict with total_count, trend, forecast, anomalies.
+    """
+    # Step 1: Raw & normalize
+    raw = get_faers_cached(ndc_code)
+    normalized = normalize_faers(raw, ndc_code)
+    
+    # Step 2: Build time series
+    series = aggregate_time_series(normalized)
+    
+    # Step 3: Compute forecasts & anomalies
+    forecast = forecast_adverse_events(series, periods=periods)
+    anomalies = detect_anomalies(series)
+    
+    # Step 4: Total count
+    total = sum(rec.get("count", 0) for rec in normalized)
+    
+    return {
+        "product_code": ndc_code,
+        "total_count": total,
+        "trend": {str(idx.date()): int(val) for idx, val in series.items()},
+        "forecast": forecast,
+        "anomalies": anomalies
+    }
+
+
+def generate_cer_narrative(analysis_data: dict) -> str:
+    """
+    Given analysis data (with keys: product_code, total_count, trend, forecast, anomalies),
+    constructs a prompt for OpenAI and returns the generated CER narrative.
+    """
+    prompt = f"""
+You are a regulatory-compliant Clinical Evaluation Report (CER) generator.
+
+Generate a detailed CER narrative based on the following analysis data:
+
+Product Code: {analysis_data['product_code']}
+Total Reports: {analysis_data['total_count']}
+Trend (monthly counts): {', '.join([f'{date}: {count}' for date, count in analysis_data['trend'].items()])}
+Forecast (next periods): {', '.join([f'{date}: {count}' for date, count in analysis_data['forecast'].items()])}
+Anomalies detected: {', '.join([f'{date}: {count}' for date, count in analysis_data['anomalies'].items()])}
+
+Please include:
+- An executive summary
+- Description of trends
+- Forecast interpretation
+- Analysis of anomalies
+- Benefit-risk considerations
+
+Provide a cohesive, professional narrative suitable for regulatory submission.
+"""
+    response = openai.ChatCompletion.create(
+        model="gpt-4-turbo",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.2,
+        max_tokens=600
+    )
+    return response.choices[0].message.content.strip()
+
+# FastAPI Router Integration
+from fastapi import APIRouter, HTTPException
+
+router = APIRouter(prefix="/api/narrative/faers", tags=["narrative"])
+
+@router.get("/{ndc_code}")
+async def narrative_faers(ndc_code: str, periods: int = 3):
+    try:
+        analysis = build_faers_analysis(ndc_code, periods)
+        narrative = generate_cer_narrative(analysis)
+        return {"product_code": ndc_code, "narrative": narrative}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Narrative generation failed: {e}")
