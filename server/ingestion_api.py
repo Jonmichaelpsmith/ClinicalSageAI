@@ -1,47 +1,117 @@
 """
-FastAPI Ingestion Endpoints for CER data sources
+FDA Data Ingestion API
+This module provides a FastAPI interface to ingest data from various FDA sources.
 """
-from fastapi import FastAPI, APIRouter, HTTPException
-from .ingestion.fda_device import fetch_fda_device_complaints
-from .ingestion.fda_faers import fetch_faers_data
-from .ingestion.eu_eudamed import fetch_eudamed_data
 
-app = FastAPI(title="TrialSage CER Data Ingestion API", 
-              description="API endpoints to fetch regulatory data from various sources")
+from fastapi import FastAPI, HTTPException
+import uvicorn
+from typing import Optional, Dict, Any, List
 
-ingest_router = APIRouter(prefix="/api/ingest", tags=["ingestion"])
+# Import FDA data connectors
+from ingestion.fda_faers import get_faers_cached
+from ingestion.fda_device import get_device_complaints_cached
+# EU Eudamed connector would be imported here
 
-@ingest_router.get("/device/{device_code}")
-async def ingest_device(device_code: str):
+app = FastAPI(
+    title="FDA Data Ingestion API",
+    description="API for ingesting data from FDA FAERS, MAUDE, and EU EUDAMED",
+    version="1.0.0"
+)
+
+@app.get("/")
+async def root():
+    """Root endpoint returning API information"""
+    return {
+        "name": "FDA Data Ingestion API",
+        "version": "1.0.0",
+        "endpoints": [
+            "/api/ingest/drug/{ndc_code}",
+            "/api/ingest/device/{device_code}",
+            "/api/ingest/eu/{product_code}"
+        ]
+    }
+
+@app.get("/api/ingest/drug/{ndc_code}")
+async def ingest_drug_data(ndc_code: str, limit: Optional[int] = None) -> Dict[str, Any]:
     """
-    Fetch FDA device complaints data for a given device code
+    Fetch drug adverse event data from FDA FAERS
+    
+    Args:
+        ndc_code: NDC product code to search for
+        limit: Optional limit on number of records returned
+        
+    Returns:
+        Dictionary containing FAERS data
     """
     try:
-        complaints = fetch_fda_device_complaints(device_code)
-        return {"source": "FDA_Device", "device_code": device_code, "complaints": complaints}
+        records = get_faers_cached(ndc_code)
+        
+        # Apply limit if specified
+        if limit and limit > 0:
+            records = records[:limit]
+            
+        return {
+            "source": "FDA_FAERS",
+            "ndc_code": ndc_code,
+            "count": len(records),
+            "raw_data": {
+                "meta": {
+                    "disclaimer": "Data from FDA Adverse Event Reporting System (FAERS)",
+                    "results": {
+                        "skip": 0,
+                        "limit": limit if limit else len(records),
+                        "total": len(records)
+                    }
+                },
+                "results": records
+            }
+        }
     except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Failed to fetch FDA device complaints: {e}")
+        raise HTTPException(status_code=502, detail=f"FAERS ingestion failed: {str(e)}")
 
-@ingest_router.get("/drug/{ndc_code}")
-async def ingest_drug(ndc_code: str, limit: int = 100):
+@app.get("/api/ingest/device/{device_code}")
+async def ingest_device_data(device_code: str) -> Dict[str, Any]:
     """
-    Fetch FDA FAERS data for a given NDC code
+    Fetch device complaint data from FDA MAUDE
+    
+    Args:
+        device_code: Device identifier to search for
+        
+    Returns:
+        Dictionary containing MAUDE data
     """
     try:
-        data = fetch_faers_data(ndc_code, limit)
-        return {"source": "FDA_FAERS", "ndc_code": ndc_code, "raw_data": data}
+        complaints = get_device_complaints_cached(device_code)
+        return {
+            "source": "FDA_Device_MAUDE",
+            "device_code": device_code,
+            "count": len(complaints),
+            "complaints": complaints
+        }
     except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Failed to fetch FAERS data: {e}")
+        raise HTTPException(status_code=502, detail=f"MAUDE ingestion failed: {str(e)}")
 
-@ingest_router.get("/eu/{device_code}")
-async def ingest_eu(device_code: str):
+@app.get("/api/ingest/eu/{product_code}")
+async def ingest_eu_data(product_code: str) -> Dict[str, Any]:
     """
-    Fetch EU Eudamed data for a given device code
+    Fetch product data from EU EUDAMED (stub for future implementation)
+    
+    Args:
+        product_code: Product identifier to search for
+        
+    Returns:
+        Dictionary containing EUDAMED data
     """
-    try:
-        data = fetch_eudamed_data(device_code)
-        return {"source": "EU_Eudamed", "device_code": device_code, "data": data}
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Failed to fetch EU Eudamed data: {e}")
+    # This is a placeholder for future EUDAMED integration
+    # For now, return an empty result set
+    return {
+        "source": "EU_EUDAMED",
+        "product_code": product_code,
+        "count": 0,
+        "message": "EUDAMED connector in development",
+        "vigilance_reports": []
+    }
 
-app.include_router(ingest_router)
+if __name__ == "__main__":
+    # Run the API server directly for testing
+    uvicorn.run(app, host="0.0.0.0", port=3500)

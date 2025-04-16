@@ -1,0 +1,83 @@
+Now we’ll add the third ingestion connector—for EU’s Eudamed. Since there’s no public API yet, we’ll create a stub that can be fleshed out when Eudamed opens up programmatic access. You can paste this directly into your project.
+
+---
+
+### 1. EU Eudamed Connector (Stub)
+
+Create **`ingestion/eu_eudamed.py`**:
+
+```python
+# ingestion/eu_eudamed.py
+import requests
+from bs4 import BeautifulSoup
+
+BASE_URL = "https://ec.europa.eu/tools/eudamed/eudamed"
+
+def fetch_eudamed_data(device_code: str):
+    """
+    Placeholder for EU Eudamed ingestion.
+    Currently returns a notice; update this when an official API or scrape strategy is available.
+    """
+    # Example of how you *might* scrape if an HTML table existed:
+    # resp = requests.get(f"{BASE_URL}/search?device={device_code}", timeout=10)
+    # soup = BeautifulSoup(resp.text, "html.parser")
+    # ...parse tables...
+
+    return {
+        "source": "EU_Eudamed",
+        "device_code": device_code,
+        "message": (
+            "Programmatic access to Eudamed is not yet available. "
+            "This connector is a stub—implement scraping or API calls when Eudamed opens API access."
+        )
+    }
+```
+
+---
+
+### 2. Expose the FastAPI Endpoint
+
+In **`main.py`**, add to your ingestion router:
+
+```python
+from fastapi import APIRouter, HTTPException
+from ingestion.eu_eudamed import fetch_eudamed_data
+
+router = APIRouter(prefix="/api/ingest/eu", tags=["ingestion"])
+
+@router.get("/{device_code}")
+async def ingest_eu(device_code: str):
+    try:
+        data = fetch_eudamed_data(device_code)
+        return data
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Eudamed ingestion failed: {e}")
+```
+
+And include this router:
+
+```python
+app.include_router(router)
+```
+
+---
+
+### 3. Test It
+
+1. **Start** your server:
+   ```bash
+   uvicorn main:app --reload --port 3000
+   ```
+2. **Call** in your browser or Postman:
+   ```
+   GET http://localhost:3000/api/ingest/eu/YOUR_DEVICE_CODE
+   ```
+3. You should get back the stub message—once Eudamed provides an API or you reverse‑engineer the scrape, replace the stub logic in `fetch_eudamed_data` with the real parser.
+
+---
+
+With FAERS, MAUDE, and (stubbed) Eudamed ingestion in place, you now have a complete ingestion layer. Next steps:
+
+- **Build your ETL pipelines** to normalize this raw data.  
+- **Hook into your analytics** and narrative modules.  
+- **Begin testing end‑to‑end CER generation!**

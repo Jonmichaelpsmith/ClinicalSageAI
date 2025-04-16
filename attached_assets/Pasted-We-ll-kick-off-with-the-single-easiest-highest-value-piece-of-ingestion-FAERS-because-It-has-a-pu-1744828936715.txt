@@ -1,0 +1,107 @@
+We’ll kick off with the single easiest, highest‑value piece of ingestion—FAERS—because:
+
+It has a public JSON API (no brittle scraping).
+
+It already covers the majority of your drug‑safety use‑cases.
+
+Once that’s rock‑solid (with pagination, error‑handling and caching), you’ll have a template for building the other connectors (MAUDE scraping, Eudamed stubs).
+
+Step 1: Scaffold Your Ingestion Service
+Create a new FastAPI router (e.g. ingest_faers.py) under an ingestion/ folder.
+
+Install dependencies (requests, FastAPI, uvicorn, redis if you’re caching).
+
+Wire it into your main app under /api/ingest/faers/{ndc_code}.
+
+Step 2: Build FAERS Pagination Logic
+Implement a function that:
+
+Hits /drug/event.json?search=openfda.product_ndc:"{ndc}"&limit=1000&skip=0.
+
+Reads meta.results.total to know how many records exist.
+
+Loops, incrementing skip by limit until you’ve retrieved everything.
+
+Aggregates all pages into a single list/dict.
+
+python
+Copy
+def fetch_all_faers(ndc: str, page_size: int = 1000):
+    base = "https://api.fda.gov/drug/event.json"
+    results = []
+    skip = 0
+
+    # first request to get total
+    params = {"search": f'openfda.product_ndc:"{ndc}"', "limit": page_size, "skip": skip}
+    r = requests.get(base, params=params); r.raise_for_status()
+    j = r.json()
+    total = j["meta"]["results"]["total"]
+    results.extend(j.get("results", []))
+
+    # loop remaining pages
+    while len(results) < total:
+        skip += page_size
+        params["skip"] = skip
+        r = requests.get(base, params=params); r.raise_for_status()
+        j = r.json()
+        results.extend(j.get("results", []))
+
+    return results
+Step 3: Add Caching
+Wrap that with Redis (or even an in‑memory TTL cache) so repeat calls for the same NDC within, say, 5 minutes don’t re‑hit the FDA:
+
+python
+Copy
+from redis import Redis
+import json
+
+redis_client = Redis()
+
+def get_faers_cached(ndc):
+    key = f"faers:{ndc}"
+    cached = redis_client.get(key)
+    if cached:
+        return json.loads(cached)
+    data = fetch_all_faers(ndc)
+    redis_client.setex(key, 300, json.dumps(data))
+    return data
+Step 4: Expose the FastAPI Endpoint
+python
+Copy
+from fastapi import APIRouter, HTTPException
+
+router = APIRouter(prefix="/api/ingest/faers")
+
+@router.get("/{ndc_code}")
+async def ingest_faers(ndc_code: str):
+    try:
+        records = get_faers_cached(ndc_code)
+        return {"source": "FAERS", "ndc": ndc_code, "count": len(records), "records": records}
+    except Exception as e:
+        raise HTTPException(502, f"FAERS ingestion failed: {e}")
+Hook this router into your main app.
+
+Step 5: Test & Iterate
+Run uvicorn main:app --reload.
+
+Call GET /api/ingest/faers/1234567890 in Postman or your browser.
+
+Verify you get back every record for that NDC (with count matching meta.results.total).
+
+Log any errors, tune your page size or retry logic as needed.
+
+After FAERS
+Once FAERS is stable:
+
+Copy the same pattern to build MAUDE scraping (with HTML pagination).
+
+Then enhance your Eudamed connector as an optional supplement.
+
+Finally, you’ll have three robust ingestion APIs feeding your downstream ETL, analytics, narrative and reporting layers.
+
+Let’s start by writing and testing that FAERS pagination + caching connector—drop it into your Replit, verify it works end‑to‑end, and then we’ll move on to MAUDE.
+
+
+
+
+
