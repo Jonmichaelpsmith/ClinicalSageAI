@@ -515,10 +515,10 @@ function MultiSourcePanel() {
   const [ndc, setNdc] = useState(savedPrefs.ndc || '00002-3227');
   const [device, setDevice] = useState(savedPrefs.device || '');
   const [periods, setPeriods] = useState(savedPrefs.periods || 6);
-  const [startDate, setStartDate] = useState(savedPrefs.startDate || 
-    new Date(new Date().setFullYear(new Date().getFullYear() - 5)).toISOString().slice(0,10));
-  const [endDate, setEndDate] = useState(savedPrefs.endDate || 
-    new Date().toISOString().slice(0,10));
+  const [startDate, setStartDate] = useState(savedPrefs.startDate ? new Date(savedPrefs.startDate) : 
+    new Date(new Date().setFullYear(new Date().getFullYear() - 5)));
+  const [endDate, setEndDate] = useState(savedPrefs.endDate ? new Date(savedPrefs.endDate) : 
+    new Date());
   const [viewMode, setViewMode] = useState(savedPrefs.viewMode || viewModes[0]);
   const [filterSeverity, setFilterSeverity] = useState(savedPrefs.filterSeverity || 'all');
   const [dataList, setDataList] = useState([]);
@@ -544,8 +544,20 @@ function MultiSourcePanel() {
     if (params.has('ndc')) setNdc(params.get('ndc'));
     if (params.has('device')) setDevice(params.get('device'));
     if (params.has('periods')) setPeriods(Number(params.get('periods')));
-    if (params.has('start_date')) setStartDate(params.get('start_date'));
-    if (params.has('end_date')) setEndDate(params.get('end_date'));
+    if (params.has('start_date')) {
+      try {
+        setStartDate(new Date(params.get('start_date')));
+      } catch (e) {
+        console.error('Invalid start date in URL', e);
+      }
+    }
+    if (params.has('end_date')) {
+      try {
+        setEndDate(new Date(params.get('end_date')));
+      } catch (e) {
+        console.error('Invalid end date in URL', e);
+      }
+    }
     if (params.has('severity')) setFilterSeverity(params.get('severity'));
   }, []);
 
@@ -583,8 +595,8 @@ function MultiSourcePanel() {
         ndc_codes: ndcCodes, 
         device_codes: deviceCodes,
         periods,
-        start_date: startDate,
-        end_date: endDate,
+        start_date: startDate.toISOString(),
+        end_date: endDate.toISOString(),
         severity: filterSeverity
       };
       
@@ -621,8 +633,8 @@ function MultiSourcePanel() {
         ndc_codes: ndcCodes, 
         device_codes: deviceCodes, 
         periods,
-        start_date: startDate,
-        end_date: endDate
+        start_date: startDate.toISOString(),
+        end_date: endDate.toISOString()
       };
       
       // Open a new window that will receive the PDF
@@ -724,16 +736,16 @@ function MultiSourcePanel() {
             <label className="text-sm mb-1 block text-muted-foreground">Start Date</label>
             <Input
               type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
+              value={startDate.toISOString().split('T')[0]}
+              onChange={(e) => setStartDate(new Date(e.target.value))}
             />
           </div>
           <div className="col-span-3">
             <label className="text-sm mb-1 block text-muted-foreground">End Date</label>
             <Input
               type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
+              value={endDate.toISOString().split('T')[0]}
+              onChange={(e) => setEndDate(new Date(e.target.value))}
             />
           </div>
         </div>
