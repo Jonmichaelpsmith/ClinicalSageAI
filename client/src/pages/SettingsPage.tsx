@@ -11,6 +11,126 @@ import { Badge } from "@/components/ui/badge";
 import { Bell, Lock, User, Globe, Eye, Database, Shield, Mail, Bot, RefreshCw, Key, Copy } from "lucide-react";
 import { useResearchCompanion } from "@/hooks/use-research-companion";
 
+// Research Companion Settings Component
+function ResearchCompanionSettings() {
+  const { apiKey, setApiKey, clearApiKey, isEnabled } = useResearchCompanion();
+  const [inputApiKey, setInputApiKey] = useState("");
+  const [isRevealed, setIsRevealed] = useState(false);
+  const { toast } = useToast();
+  
+  const handleSaveApiKey = () => {
+    if (inputApiKey.trim()) {
+      setApiKey(inputApiKey.trim());
+      setInputApiKey("");
+    }
+  };
+  
+  const handleCopy = () => {
+    if (apiKey) {
+      navigator.clipboard.writeText(apiKey);
+      toast({
+        title: "Copied to clipboard",
+        description: "API key copied to clipboard",
+      });
+    }
+  };
+  
+  const displayApiKey = isRevealed && apiKey ? apiKey : apiKey ? "•".repeat(Math.min(apiKey.length, 30)) : "";
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="space-y-0.5">
+          <Label htmlFor="enableCompanion">Enable Research Companion</Label>
+          <p className="text-sm text-muted-foreground">
+            Get contextual AI assistance with clinical research tasks
+          </p>
+        </div>
+        <Switch 
+          id="enableCompanion" 
+          checked={isEnabled}
+          disabled={!apiKey}
+        />
+      </div>
+      
+      <div className="pt-2 space-y-2">
+        <div className="flex items-center justify-between">
+          <Label htmlFor="openaiApiKey">OpenAI API Key</Label>
+          {apiKey && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-8 px-2 text-xs"
+              onClick={clearApiKey}
+            >
+              Reset
+            </Button>
+          )}
+        </div>
+        
+        {apiKey ? (
+          <div>
+            <div className="flex gap-2">
+              <Input 
+                id="openaiApiKey" 
+                value={displayApiKey}
+                readOnly
+                className="font-mono bg-muted"
+              />
+              <Button variant="outline" size="sm" onClick={handleCopy}>
+                <Copy className="h-4 w-4" />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setIsRevealed(!isRevealed)}
+              >
+                <Eye className="h-4 w-4" />
+              </Button>
+            </div>
+            <p className="text-sm text-muted-foreground mt-2">
+              API key is stored securely in your browser's local storage.
+            </p>
+          </div>
+        ) : (
+          <div>
+            <div className="flex gap-2">
+              <Input 
+                id="openaiApiKey" 
+                value={inputApiKey}
+                onChange={(e) => setInputApiKey(e.target.value)}
+                placeholder="sk-..." 
+                className="font-mono"
+              />
+              <Button onClick={handleSaveApiKey} disabled={!inputApiKey.trim()}>
+                Save
+              </Button>
+            </div>
+            <p className="text-sm text-muted-foreground mt-2">
+              Enter your OpenAI API key to enable the Research Companion.
+            </p>
+          </div>
+        )}
+      </div>
+      
+      <div className="rounded-md bg-sky-50 border border-sky-200 p-3 dark:bg-sky-900/20 dark:border-sky-900">
+        <div className="flex gap-2">
+          <Bot className="h-5 w-5 text-sky-600 dark:text-sky-400 mt-0.5" />
+          <div>
+            <h3 className="text-sm font-medium text-sky-800 dark:text-sky-300">
+              About Research Companion
+            </h3>
+            <p className="text-xs text-sky-700 dark:text-sky-400 mt-1">
+              The Research Companion uses OpenAI's API to provide context-aware assistance with clinical
+              research tasks. It can help you understand CSRs, design protocols, and navigate regulatory requirements.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function SettingsPage() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -427,6 +547,21 @@ export default function SettingsPage() {
                   {isSaving ? "Saving..." : "Save Changes"}
                 </Button>
               </CardFooter>
+            </Card>
+            
+            <Card>
+              <CardHeader className="flex flex-row items-center gap-2">
+                <Bot className="h-5 w-5 text-primary" />
+                <div>
+                  <CardTitle>Research Companion</CardTitle>
+                  <CardDescription>
+                    Configure the AI Research Companion
+                  </CardDescription>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <ResearchCompanionSettings />
+              </CardContent>
             </Card>
           </TabsContent>
         </Tabs>

@@ -1,5 +1,6 @@
 import React from "react";
-import { Menu, Bell, User, Search, Settings, Database } from "lucide-react";
+import { Menu, Bell, User, Search, Settings, Database, Bot } from "lucide-react";
+import { useResearchCompanion } from "@/hooks/use-research-companion";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,6 +21,7 @@ interface TopNavbarProps {
 }
 
 export function TopNavbar({ toggleSidebar, searchQuery, setSearchQuery }: TopNavbarProps) {
+  const { toggleCompanion, isEnabled } = useResearchCompanion();
   return (
     <header className="sticky top-0 z-10 bg-white border-b border-slate-200 shadow-sm dark:bg-gray-900 dark:border-gray-800">
       <div className="px-4 sm:px-6 lg:px-8">
@@ -50,6 +52,18 @@ export function TopNavbar({ toggleSidebar, searchQuery, setSearchQuery }: TopNav
           </div>
 
           <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`relative rounded-full h-9 w-9 hover:bg-slate-100 dark:hover:bg-slate-800 ${
+                isEnabled ? "" : "opacity-50"
+              }`}
+              onClick={toggleCompanion}
+              title={isEnabled ? "Open Research Companion" : "Enable Research Companion in Settings"}
+            >
+              <Bot className="h-5 w-5 text-slate-600 dark:text-slate-300" />
+            </Button>
+            
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="relative rounded-full h-9 w-9 hover:bg-slate-100 dark:hover:bg-slate-800">
