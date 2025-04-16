@@ -1,18 +1,17 @@
 #!/usr/bin/env python
 """
-CER Generator Script for LumenTrialGuide.AI
+CER Generator Runner
 
-This script provides a simple command-line interface to generate Clinical Evaluation Reports
-from regulatory data sources. It's designed to be called from the web application.
+This script provides a command-line interface to the CER generator.
+It accepts input parameters and runs the generator.
 """
 
 import os
 import sys
-import json
 import argparse
 import logging
-from datetime import datetime
 import asyncio
+from datetime import datetime, timedelta
 import traceback
 
 # Configure logging
@@ -22,47 +21,47 @@ logging.basicConfig(
 )
 logger = logging.getLogger("cer_generator")
 
-# Ensure we can import modules from the server directory
-current_dir = os.path.dirname(os.path.abspath(__file__))
-if current_dir not in sys.path:
-    sys.path.append(current_dir)
-parent_dir = os.path.dirname(current_dir)
-if parent_dir not in sys.path:
-    sys.path.append(parent_dir)
-
+# Try to import from the enhanced generator, if it fails fall back to simple generator
 try:
-    # Import the enhanced CER generator functions
-    from server.enhanced_cer_generator import generate_cer
-except ImportError as e:
-    logger.error(f"Failed to import required modules: {e}")
-    logger.error(traceback.format_exc())
-    
-    # Fall back to simple CER generator if enhanced is not available
+    from enhanced_cer_generator import generate_cer
+    logger.info("Using enhanced CER generator")
+except ImportError:
     try:
-        logger.info("Falling back to simple CER generator")
-        from server.simple_cer_generator import generate_cer
-    except ImportError as fallback_error:
-        logger.error(f"Failed to import fallback modules: {fallback_error}")
-        logger.error(traceback.format_exc())
+        from simple_cer_generator import generate_cer
+        logger.info("Using simple CER generator (enhanced generator not available)")
+    except ImportError:
+        logger.error("Failed to import any CER generator")
         sys.exit(1)
 
 async def main():
-    """
-    Main entry point for the CER generator script
-    """
-    parser = argparse.ArgumentParser(description="Generate Clinical Evaluation Report")
-    parser.add_argument("--id", required=True, help="Product ID (NDC or device code)")
-    parser.add_argument("--name", required=True, help="Product name")
-    parser.add_argument("--manufacturer", help="Manufacturer name")
-    parser.add_argument("--description", help="Device description")
-    parser.add_argument("--purpose", help="Intended purpose")
-    parser.add_argument("--class", dest="classification", help="Device classification")
-    parser.add_argument("--days", type=int, default=730, help="Date range in days")
-    parser.add_argument("--format", choices=["pdf", "json"], default="pdf", help="Output format")
+    """Main entry point for the CER generator script"""
+    parser = argparse.ArgumentParser(description='Generate a Clinical Evaluation Report')
+    
+    # Required arguments
+    parser.add_argument('--id', required=True, help='Product identifier (NDC code or device code)')
+    parser.add_argument('--name', required=True, help='Product name')
+    
+    # Optional arguments
+    parser.add_argument('--manufacturer', help='Manufacturer name')
+    parser.add_argument('--description', help='Device description')
+    parser.add_argument('--purpose', help='Intended purpose')
+    parser.add_argument('--class', dest='classification', help='Device classification (e.g., Class I, II, III)')
+    parser.add_argument('--days', type=int, default=730, help='Date range in days to look back for reports')
+    parser.add_argument('--format', choices=['pdf', 'json'], default='pdf', help='Output format')
     
     args = parser.parse_args()
     
+    # Ensure output directory exists
+    output_dir = os.path.join(os.getcwd(), 'data', 'exports')
+    os.makedirs(output_dir, exist_ok=True)
+    
     try:
+        # Calculate date range
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=args.days)
+        
+        logger.info(f"Generating CER for {args.name} ({args.id})")
+        
         # Generate the CER
         result = await generate_cer(
             product_id=args.id,
@@ -75,19 +74,17 @@ async def main():
             output_format=args.format
         )
         
-        # Print result details for the calling process to parse
-        print(f"CER generated successfully:")
-        print(f"  Product: {result['product_name']} (ID: {result['product_id']})")
-        print(f"  Report date: {result['report_date']}")
-        print(f"  Format: {result['format']}")
-        print(f"  Output file: {result['path']}")
+        # Print the result
+        output_path = result.get('path', 'Unknown')
+        print(f"CER generated successfully")
+        print(f"Output file: {output_path}")
         
-        sys.exit(0)
+        # Return success
+        return 0
     except Exception as e:
-        logger.error(f"Error generating CER: {e}")
-        logger.error(traceback.format_exc())
-        print(f"Error: {str(e)}")
-        sys.exit(1)
+        logger.error(f"Error generating CER: {str(e)}")
+        logger.error(f"Traceback: {traceback.format_exc()}")
+        return 1
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    sys.exit(asyncio.run(main()))
