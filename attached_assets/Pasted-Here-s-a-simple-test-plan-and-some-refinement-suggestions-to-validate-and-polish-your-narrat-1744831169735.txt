@@ -1,0 +1,106 @@
+Here’s a simple **test plan** and some **refinement suggestions** to validate and polish your narrative + PDF endpoints:
+
+---
+
+## 1. Test Plan
+
+### A. FAERS Narrative (JSON)
+
+```bash
+curl http://localhost:3000/api/narrative/faers/0002-8215?periods=6
+```
+
+- **What to expect:**  
+  ```json
+  {
+    "product_code":"0002-8215",
+    "source":"FAERS",
+    "narrative":"<long CER narrative…>"
+  }
+  ```
+- **If you see errors:**  
+  - Check that your `OPENAI_API_KEY` is set.  
+  - Inspect server logs for HTTP 502/500 traces.
+
+### B. FAERS Narrative (PDF)
+
+```bash
+curl -o faers_report.pdf http://localhost:3000/api/narrative/faers/0002-8215/pdf?periods=6
+```
+
+- **What to expect:**  
+  - A downloadable PDF (`faers_report.pdf`) with title, narrative, and summary table.  
+- **Verify:**  
+  - Open the PDF to confirm layout and content.
+
+### C. Device Narrative (JSON)
+
+```bash
+curl http://localhost:3000/api/narrative/device/K123456?periods=6
+```
+
+- **What to expect:**  
+  ```json
+  {
+    "product_code":"K123456",
+    "source":"MAUDE",
+    "narrative":"<long CER narrative…>"
+  }
+  ```
+
+### D. Device Narrative (PDF)
+
+```bash
+curl -o device_report.pdf http://localhost:3000/api/narrative/device/K123456/pdf?periods=6
+```
+
+### E. Multi‑Source Narrative (JSON)
+
+```bash
+curl -X POST http://localhost:3000/api/narrative/multi \
+  -H "Content-Type: application/json" \
+  -d '{"ndc_codes":["0002-8215"],"device_codes":["K123456"],"periods":6}'
+```
+
+- **What to expect:**  
+  ```json
+  {
+    "narrative":"<combined CER narrative…>",
+    "analysis": { "analyses":[ … ] }
+  }
+  ```
+
+### F. Multi‑Source Narrative (PDF)
+
+```bash
+curl -X POST http://localhost:3000/api/narrative/multi/pdf \
+  -H "Content-Type: application/json" \
+  -d '{"ndc_codes":["0002-8215"],"device_codes":["K123456"],"periods":6}' \
+  -o multi_report.pdf
+```
+
+---
+
+## 2. Refinement Suggestions
+
+1. **Empty‑Data Handling**  
+   - If a code returns no records, the narrative should say “No adverse events found for…”.  
+   - We can add a guard in each `build_*_analysis` to detect zero‑length and adjust the prompt.
+
+2. **Error Transparency**  
+   - Return a more descriptive error JSON when external services (OpenFDA or OpenAI) fail.  
+   - Example: include `error_type` and truncated exception message.
+
+3. **PDF Layout Enhancements**  
+   - Embed simple trend and forecast charts (e.g., generate Matplotlib images) before the narrative.  
+   - Add page numbers and headers/footers with the product code and generation date.
+
+4. **Performance Tuning**  
+   - Cache completed narratives (keyed by code + periods) in Redis for a TTL (e.g., 1 hour) to avoid re‑calling GPT on repeat requests.
+
+5. **Front‑End Hookup**  
+   - Once the API shape is solid, we can scaffold a minimal React UI that calls these endpoints, shows loading states, and previews/downloads the PDFs.
+
+---
+
+Let me know **which** of these tests you’d like to run first, or if you hit any errors when curling the endpoints—and we’ll refine the code together!
