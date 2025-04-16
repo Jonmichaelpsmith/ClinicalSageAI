@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import {
   BarChart3,
@@ -191,7 +190,7 @@ export default function ReportsAnalytics() {
     }
 
     return (
-      <div className="space-y-4 mt-4">
+      <div className="space-y-4 p-4">
         {filteredReports.map((report) => (
           <Card key={report.id} className="overflow-hidden border border-slate-200 hover:border-primary/50 transition-colors">
             <div className="flex flex-col md:flex-row">
@@ -242,7 +241,7 @@ export default function ReportsAnalytics() {
 
   const renderReportTypes = () => {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {reportTypes.map((type) => (
           <Card key={type.id} className="overflow-hidden hover:shadow-md transition-shadow">
             <CardHeader className="p-4 pb-2 flex flex-row items-center gap-2">
@@ -274,51 +273,140 @@ export default function ReportsAnalytics() {
     );
   };
 
-  const renderAnalyticsTab = () => {
-    if (!analyticsData) {
-      return (
-        <div className="flex justify-center items-center py-20">
-          <Loader2 className="h-8 w-8 animate-spin text-primary mr-2" />
-          <span>Loading analytics data...</span>
+  return (
+    <div className="p-6 max-w-7xl mx-auto">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Reports & Analytics</h1>
+          <p className="text-slate-500 mt-1">
+            Explore clinical study reports and gain insights from analytics
+          </p>
         </div>
-      );
-    }
+        <div className="mt-4 md:mt-0 flex gap-2">
+          <Link href="/upload">
+            <Button variant="outline" className="gap-1">
+              <FolderUp className="h-4 w-4 mr-1" />
+              Upload CSR
+            </Button>
+          </Link>
+          <Button className="gap-1">
+            <Download className="h-4 w-4 mr-1" />
+            Export Data
+          </Button>
+        </div>
+      </div>
 
-    return (
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-slate-500">Total Reports</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{analyticsData.totalReports || 779}</div>
-              <p className="text-xs text-slate-500 mt-1">Across all trial phases</p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-slate-500">Therapeutic Areas</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{analyticsData.therapeuticAreas || 87}</div>
-              <p className="text-xs text-slate-500 mt-1">Unique disease areas</p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-slate-500">Average Trial Duration</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{analyticsData.avgDuration || 32} <span className="text-xl">weeks</span></div>
-              <p className="text-xs text-slate-500 mt-1">All phases combined</p>
-            </CardContent>
-          </Card>
+      {/* Analytics Overview Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-slate-500">Total Reports</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">{analyticsData?.totalReports || 779}</div>
+            <p className="text-xs text-slate-500 mt-1">Across all trial phases</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-slate-500">Therapeutic Areas</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">{analyticsData?.therapeuticAreas || 87}</div>
+            <p className="text-xs text-slate-500 mt-1">Unique disease areas</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-slate-500">Average Trial Duration</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">{analyticsData?.avgDuration || 32} <span className="text-xl">weeks</span></div>
+            <p className="text-xs text-slate-500 mt-1">All phases combined</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Search and Filters */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="md:col-span-2">
+          <Input
+            placeholder="Search reports by title, indication, or sponsor..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full"
+          />
+        </div>
+        <div>
+          <Select value={selectedPhase} onValueChange={setSelectedPhase}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select a phase" />
+            </SelectTrigger>
+            <SelectContent>
+              {phaseOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Select value={selectedIndication} onValueChange={setSelectedIndication}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select an indication" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Indications</SelectItem>
+              {availableIndications.map((indication) => (
+                <SelectItem key={indication.id} value={indication.name}>
+                  {indication.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Available Reports Section */}
+      <div className="bg-white border rounded-lg">
+        <div className="p-4 border-b">
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-semibold">Available Reports</h2>
+            <div className="flex gap-2">
+              <Button variant="ghost" size="sm" className="h-8">
+                <ArrowUpDown className="h-3.5 w-3.5 mr-1" />
+                Sort
+              </Button>
+              <Button variant="ghost" size="sm" className="h-8">
+                <Filter className="h-3.5 w-3.5 mr-1" />
+                Filter
+              </Button>
+            </div>
+          </div>
+        </div>
+        <ScrollArea className="max-h-[500px] overflow-auto">
+          {renderReportsList()}
+        </ScrollArea>
+      </div>
+
+      {/* Report Types */}
+      <div className="mt-8">
+        <h2 className="text-xl font-semibold mb-2">Report Types</h2>
+        <p className="text-slate-500 mb-4">Browse different types of reports available in the platform</p>
+        {renderReportTypes()}
+      </div>
+
+      {/* Analytics Insights */}
+      <div className="mt-10 border-t pt-8">
+        <div className="flex items-center mb-4">
+          <BarChart3 className="h-5 w-5 text-primary mr-2" />
+          <h2 className="text-xl font-semibold">Analytics & Insights</h2>
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <Card className="col-span-1">
             <CardHeader>
               <CardTitle className="text-lg">Reports by Phase</CardTitle>
@@ -329,28 +417,28 @@ export default function ReportsAnalytics() {
                 <div>
                   <div className="flex items-center justify-between">
                     <div className="text-sm font-medium">Phase I</div>
-                    <div className="text-sm text-slate-500">{analyticsData.phaseI || 189}</div>
+                    <div className="text-sm text-slate-500">{analyticsData?.phaseI || 189}</div>
                   </div>
                   <Progress value={24} className="h-2 mt-1" />
                 </div>
                 <div>
                   <div className="flex items-center justify-between">
                     <div className="text-sm font-medium">Phase II</div>
-                    <div className="text-sm text-slate-500">{analyticsData.phaseII || 245}</div>
+                    <div className="text-sm text-slate-500">{analyticsData?.phaseII || 245}</div>
                   </div>
                   <Progress value={32} className="h-2 mt-1" />
                 </div>
                 <div>
                   <div className="flex items-center justify-between">
                     <div className="text-sm font-medium">Phase III</div>
-                    <div className="text-sm text-slate-500">{analyticsData.phaseIII || 287}</div>
+                    <div className="text-sm text-slate-500">{analyticsData?.phaseIII || 287}</div>
                   </div>
                   <Progress value={37} className="h-2 mt-1" />
                 </div>
                 <div>
                   <div className="flex items-center justify-between">
                     <div className="text-sm font-medium">Phase IV</div>
-                    <div className="text-sm text-slate-500">{analyticsData.phaseIV || 58}</div>
+                    <div className="text-sm text-slate-500">{analyticsData?.phaseIV || 58}</div>
                   </div>
                   <Progress value={7} className="h-2 mt-1" />
                 </div>
@@ -405,7 +493,8 @@ export default function ReportsAnalytics() {
           </Card>
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Additional Analytics Section (Trial Success Rate) */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
           <Card className="col-span-1">
             <CardHeader>
               <div className="flex items-center">
@@ -433,48 +522,7 @@ export default function ReportsAnalytics() {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Phase IV</span>
-                  <span className="font-medium">92%</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="col-span-1">
-            <CardHeader>
-              <div className="flex items-center">
-                <BarChart3 className="h-5 w-5 text-primary mr-2" />
-                <CardTitle className="text-lg">Avg. Patient Enrollment</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm font-medium">Phase I</div>
-                    <div className="text-sm text-slate-500">42 patients</div>
-                  </div>
-                  <Progress value={10} className="h-2 mt-1" />
-                </div>
-                <div>
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm font-medium">Phase II</div>
-                    <div className="text-sm text-slate-500">187 patients</div>
-                  </div>
-                  <Progress value={25} className="h-2 mt-1" />
-                </div>
-                <div>
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm font-medium">Phase III</div>
-                    <div className="text-sm text-slate-500">742 patients</div>
-                  </div>
-                  <Progress value={75} className="h-2 mt-1" />
-                </div>
-                <div>
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm font-medium">Phase IV</div>
-                    <div className="text-sm text-slate-500">1,248 patients</div>
-                  </div>
-                  <Progress value={100} className="h-2 mt-1" />
+                  <span className="font-medium">72%</span>
                 </div>
               </div>
             </CardContent>
@@ -484,161 +532,93 @@ export default function ReportsAnalytics() {
             <CardHeader>
               <div className="flex items-center">
                 <LineChart className="h-5 w-5 text-primary mr-2" />
-                <CardTitle className="text-lg">Recent Activity</CardTitle>
+                <CardTitle className="text-lg">Enrollment Trends</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="flex gap-3">
-                  <div className="p-1.5 rounded-full bg-blue-100">
-                    <FileText className="h-4 w-4 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">New CSR Added</p>
-                    <p className="text-xs text-slate-500">Diabetes Type 2 Phase III Trial</p>
-                    <p className="text-xs text-slate-400 mt-1">Today, 9:42 AM</p>
-                  </div>
+              <div className="py-4">
+                <div className="flex justify-between items-center mb-4">
+                  <span className="text-sm font-medium">Average Enrollment</span>
+                  <span className="text-sm text-slate-500">248 participants</span>
                 </div>
-                <Separator />
-                <div className="flex gap-3">
-                  <div className="p-1.5 rounded-full bg-green-100">
-                    <Microscope className="h-4 w-4 text-green-600" />
+                <div className="space-y-3">
+                  <div>
+                    <div className="flex justify-between items-center text-sm">
+                      <span>2022</span>
+                      <span>263 pts</span>
+                    </div>
+                    <Progress value={75} className="h-2 mt-1" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium">Analysis Completed</p>
-                    <p className="text-xs text-slate-500">Oncology Meta-Analysis</p>
-                    <p className="text-xs text-slate-400 mt-1">Yesterday, 4:15 PM</p>
-                  </div>
-                </div>
-                <Separator />
-                <div className="flex gap-3">
-                  <div className="p-1.5 rounded-full bg-amber-100">
-                    <FolderUp className="h-4 w-4 text-amber-600" />
+                    <div className="flex justify-between items-center text-sm">
+                      <span>2023</span>
+                      <span>241 pts</span>
+                    </div>
+                    <Progress value={69} className="h-2 mt-1" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium">Dataset Updated</p>
-                    <p className="text-xs text-slate-500">Cardiovascular Trials</p>
-                    <p className="text-xs text-slate-400 mt-1">Apr 12, 2025</p>
+                    <div className="flex justify-between items-center text-sm">
+                      <span>2024</span>
+                      <span>276 pts</span>
+                    </div>
+                    <Progress value={79} className="h-2 mt-1" />
                   </div>
                 </div>
               </div>
             </CardContent>
           </Card>
+          
+          <Card className="col-span-1">
+            <CardHeader>
+              <div className="flex items-center">
+                <Microscope className="h-5 w-5 text-primary mr-2" />
+                <CardTitle className="text-lg">Trending Indications</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="py-2">
+                <ul className="space-y-3">
+                  <li className="flex justify-between items-center">
+                    <div className="flex items-center">
+                      <div className="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
+                      <span className="text-sm">Alzheimer's Disease</span>
+                    </div>
+                    <Badge variant="outline">+43%</Badge>
+                  </li>
+                  <li className="flex justify-between items-center">
+                    <div className="flex items-center">
+                      <div className="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
+                      <span className="text-sm">Obesity</span>
+                    </div>
+                    <Badge variant="outline">+28%</Badge>
+                  </li>
+                  <li className="flex justify-between items-center">
+                    <div className="flex items-center">
+                      <div className="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
+                      <span className="text-sm">NASH</span>
+                    </div>
+                    <Badge variant="outline">+21%</Badge>
+                  </li>
+                  <li className="flex justify-between items-center">
+                    <div className="flex items-center">
+                      <div className="w-2 h-2 rounded-full bg-red-500 mr-2"></div>
+                      <span className="text-sm">Hypertension</span>
+                    </div>
+                    <Badge variant="outline">-12%</Badge>
+                  </li>
+                  <li className="flex justify-between items-center">
+                    <div className="flex items-center">
+                      <div className="w-2 h-2 rounded-full bg-red-500 mr-2"></div>
+                      <span className="text-sm">Diabetes Type 2</span>
+                    </div>
+                    <Badge variant="outline">-8%</Badge>
+                  </li>
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
-    );
-  };
-
-  return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Reports & Analytics</h1>
-          <p className="text-slate-500 mt-1">
-            Explore clinical study reports and gain insights from analytics
-          </p>
-        </div>
-        <div className="mt-4 md:mt-0 flex gap-2">
-          <Link href="/upload">
-            <Button variant="outline" className="gap-1">
-              <FolderUp className="h-4 w-4 mr-1" />
-              Upload CSR
-            </Button>
-          </Link>
-          <Button className="gap-1">
-            <Download className="h-4 w-4 mr-1" />
-            Export Data
-          </Button>
-        </div>
-      </div>
-
-      <Tabs defaultValue="reports" className="w-full" onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-2 mb-6">
-          <TabsTrigger value="reports" className="text-sm">
-            <FileText className="h-4 w-4 mr-2" />
-            Report Library
-          </TabsTrigger>
-          <TabsTrigger value="analytics" className="text-sm">
-            <BarChart3 className="h-4 w-4 mr-2" />
-            Analytics & Insights
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="reports" className="space-y-4">
-          {activeTab === "reports" && (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="md:col-span-2">
-                  <Input
-                    placeholder="Search reports by title, indication, or sponsor..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full"
-                    prefix={<Search className="h-4 w-4 text-gray-400" />}
-                  />
-                </div>
-                <div>
-                  <Select value={selectedPhase} onValueChange={setSelectedPhase}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Phase" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {phaseOptions.map(option => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Select value={selectedIndication} onValueChange={setSelectedIndication}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Indication" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Indications</SelectItem>
-                      {availableIndications.map(indication => (
-                        <SelectItem key={indication} value={indication}>
-                          {indication}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="rounded-lg border border-slate-200 bg-white">
-                <div className="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
-                  <h2 className="font-medium">Clinical Study Reports</h2>
-                  <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="sm" className="h-8">
-                      <ArrowUpDown className="h-3.5 w-3.5 mr-1" />
-                      Sort
-                    </Button>
-                    <Button variant="ghost" size="sm" className="h-8">
-                      <Filter className="h-3.5 w-3.5 mr-1" />
-                      Filter
-                    </Button>
-                  </div>
-                </div>
-                <ScrollArea className="max-h-[600px] overflow-auto">
-                  {renderReportsList()}
-                </ScrollArea>
-              </div>
-
-              <h2 className="text-xl font-semibold mt-8 mb-2">Report Types</h2>
-              <p className="text-slate-500 mb-2">Browse different types of reports available in the platform</p>
-              
-              {renderReportTypes()}
-            </>
-          )}
-        </TabsContent>
-
-        <TabsContent value="analytics" className="space-y-4">
-          {activeTab === "analytics" && renderAnalyticsTab()}
-        </TabsContent>
-      </Tabs>
     </div>
   );
 }
