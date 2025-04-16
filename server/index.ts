@@ -104,40 +104,57 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on port 5000
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = 5000;
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`serving on port ${port}`);
+  // Try to use port 5000, but use another if it's already in use
+  // This serves both the API and the client
+  let port = 5000;
+  const MAX_PORT_ATTEMPTS = 10;
+  
+  const startServer = (attemptNumber = 0) => {
+    server.on('error', (error: any) => {
+      if (error.code === 'EADDRINUSE' && attemptNumber < MAX_PORT_ATTEMPTS) {
+        port = port + 1;
+        log(`Port ${port-1} in use, trying port ${port}...`);
+        startServer(attemptNumber + 1);
+      } else {
+        logger.error(`Server error: ${error.message}`);
+        process.exit(1);
+      }
+    });
     
-    // Start the clinical trial data updater
-    const dataUpdateTimer = scheduleDataUpdates(12); // Update every 12 hours
-    
-    // Check if we have any data already
-    const latestJsonFile = findLatestDataFile('json');
-    if (latestJsonFile) {
-      log(`Found existing data file: ${latestJsonFile}, importing...`);
-      importTrialsFromJson(latestJsonFile)
-        .then(result => {
-          log(`Data import result: ${result.message}`);
-        })
-        .catch(error => {
-          log(`Error importing data: ${error.message}`);
+    server.listen({
+      port,
+      host: "0.0.0.0",
+      reusePort: true,
+    }, () => {
+      log(`serving on port ${port}`);
+      
+      // Start the clinical trial data updater
+      const dataUpdateTimer = scheduleDataUpdates(12); // Update every 12 hours
+      
+      // Check if we have any data already
+      const latestJsonFile = findLatestDataFile('json');
+      if (latestJsonFile) {
+        log(`Found existing data file: ${latestJsonFile}, importing...`);
+        importTrialsFromJson(latestJsonFile)
+          .then(result => {
+            log(`Data import result: ${result.message}`);
+          })
+          .catch(error => {
+            log(`Error importing data: ${error.message}`);
+          });
+      }
+      
+      // Handle server shutdown
+      process.on('SIGTERM', () => {
+        log('SIGTERM signal received: closing data updater');
+        clearInterval(dataUpdateTimer);
+        server.close(() => {
+          log('HTTP server closed');
         });
-    }
-    
-    // Handle server shutdown
-    process.on('SIGTERM', () => {
-      log('SIGTERM signal received: closing data updater');
-      clearInterval(dataUpdateTimer);
-      server.close(() => {
-        log('HTTP server closed');
       });
     });
-  });
+  };
+  
+  // Start the server
+  startServer();
 })();

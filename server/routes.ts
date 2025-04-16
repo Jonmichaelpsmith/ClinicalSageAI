@@ -388,10 +388,15 @@ import sessionRoutes from './routes/session_routes';
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up CER generation routes
   try {
-    // Import dynamically using require() for CommonJS module
-    const setupCerRoutes = require('./integrate-cer-routes');
-    setupCerRoutes(app);
-    console.log('CER routes successfully loaded');
+    // Import dynamically using ES modules
+    import('./integrate-cer-routes.js')
+      .then(module => {
+        module.registerCerRoutes(app);
+        console.log('CER routes successfully loaded');
+      })
+      .catch(error => {
+        console.error('Error loading CER routes:', error);
+      });
   } catch (error) {
     console.error('Error loading CER routes:', error);
   }
