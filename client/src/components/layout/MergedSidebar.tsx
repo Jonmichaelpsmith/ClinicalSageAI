@@ -183,6 +183,9 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                 <NavItem href="/protocol-designer" icon={<ClipboardList className="text-indigo-500" />}>
                   Protocol Designer
                 </NavItem>
+                <NavItem href="/cer-generator" icon={<FileCheck className="text-indigo-500" />}>
+                  CER Generator
+                </NavItem>
                 <NavItem href="/study-design-agent" icon={<Lightbulb className="text-indigo-500" />}>
                   Study Design Agent
                 </NavItem>
@@ -315,6 +318,9 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
               <div className="space-y-1">
                 <NavItem href="/protocol-designer" icon={<ClipboardList className="text-indigo-500" />}>
                   Protocol Designer
+                </NavItem>
+                <NavItem href="/cer-generator" icon={<FileCheck className="text-indigo-500" />}>
+                  CER Generator
                 </NavItem>
                 <NavItem href="/study-design-agent" icon={<Lightbulb className="text-indigo-500" />}>
                   Study Design Agent
