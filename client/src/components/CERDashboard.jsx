@@ -4,9 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Spinner } from '@/components/ui/spinner';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from 'recharts';
 import { motion } from 'framer-motion';
 import { Sun, Moon, Download, Share, Check } from 'lucide-react';
+
+// Constants
+const viewModes = ['Chart', 'Table'];
 
 // --- Auth and Theme Contexts ---
 const AuthContext = createContext({ 
@@ -529,18 +533,73 @@ function EndpointPanel({ type, placeholder }) {
 }
 
 function MultiSourcePanel() {
-  const [ndc, setNdc] = useState('00002-3227');
-  const [device, setDevice] = useState('');
-  const [periods, setPeriods] = useState(6);
-  const [startDate, setStartDate] = useState(new Date(new Date().setFullYear(new Date().getFullYear() - 5)).toISOString().slice(0,10));
-  const [endDate, setEndDate] = useState(new Date().toISOString().slice(0,10));
-  const [viewMode, setViewMode] = useState(viewModes[0]);
+  // Get saved preferences from localStorage
+  const storageKey = 'cer_multi_prefs';
+  const savedPrefs = useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem(storageKey) || '{}');
+    } catch (e) {
+      console.error('Error loading multi-source preferences:', e);
+      return {};
+    }
+  }, []);
+
+  // Initialize state with saved preferences or defaults
+  const [ndc, setNdc] = useState(savedPrefs.ndc || '00002-3227');
+  const [device, setDevice] = useState(savedPrefs.device || '');
+  const [periods, setPeriods] = useState(savedPrefs.periods || 6);
+  const [startDate, setStartDate] = useState(savedPrefs.startDate || 
+    new Date(new Date().setFullYear(new Date().getFullYear() - 5)).toISOString().slice(0,10));
+  const [endDate, setEndDate] = useState(savedPrefs.endDate || 
+    new Date().toISOString().slice(0,10));
+  const [viewMode, setViewMode] = useState(savedPrefs.viewMode || viewModes[0]);
+  const [filterSeverity, setFilterSeverity] = useState(savedPrefs.filterSeverity || 'all');
   const [dataList, setDataList] = useState([]);
   const [narrative, setNarrative] = useState('');
   const [loading, setLoading] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [cachingStep, setCachingStep] = useState(false);
   const [error, setError] = useState(null);
+  const [copySuccess, setCopySuccess] = useState(false);
+
+  const { theme } = useContext(ThemeContext);
+
+  // Save preferences when they change
+  useEffect(() => {
+    localStorage.setItem(storageKey, JSON.stringify({
+      ndc, device, periods, startDate, endDate, filterSeverity, viewMode
+    }));
+  }, [ndc, device, periods, startDate, endDate, filterSeverity, viewMode]);
+
+  // Check URL params on initial load
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('ndc')) setNdc(params.get('ndc'));
+    if (params.has('device')) setDevice(params.get('device'));
+    if (params.has('periods')) setPeriods(Number(params.get('periods')));
+    if (params.has('start_date')) setStartDate(params.get('start_date'));
+    if (params.has('end_date')) setEndDate(params.get('end_date'));
+    if (params.has('severity')) setFilterSeverity(params.get('severity'));
+  }, []);
+
+  // Apply severity filter to data
+  const filteredDataList = useMemo(() => {
+    if (!dataList.length) return [];
+    
+    if (filterSeverity === 'all') return dataList;
+    
+    // Filter data based on severity
+    return dataList.map(item => {
+      const filtered = { ...item };
+      if (filterSeverity === 'serious' && filtered.trend) {
+        // For demo: only show dates with higher counts (simulating serious events)
+        filtered.trend = Object.fromEntries(
+          Object.entries(filtered.trend).filter(([_, value]) => value > 3)
+        );
+      }
+      return filtered;
+    });
+  }, [dataList, filterSeverity]);
 
   const fetchMulti = async () => {
     setLoading(true);
@@ -558,7 +617,8 @@ function MultiSourcePanel() {
         device_codes: deviceCodes,
         periods,
         start_date: startDate,
-        end_date: endDate
+        end_date: endDate,
+        severity: filterSeverity
       };
       
       // Step 1: Generate and cache the narrative
