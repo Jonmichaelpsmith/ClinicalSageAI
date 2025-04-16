@@ -1,8 +1,8 @@
-import { useState, useEffect, createContext, useContext } from "react";
-import { useLocation } from "wouter";
+import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
 
-// Types for our context
+// Define the context type
 type ResearchCompanionContextType = {
   isEnabled: boolean;
   isVisible: boolean;
@@ -16,50 +16,15 @@ type ResearchCompanionContextType = {
   clearApiKey: () => void;
 };
 
-// Create the context with a default value
-const ResearchCompanionContext = createContext<ResearchCompanionContextType>({
-  isEnabled: false,
-  isVisible: false,
-  showCompanion: () => {},
-  hideCompanion: () => {},
-  toggleCompanion: () => {},
-  composeMessage: () => {},
-  currentPageContext: "",
-  apiKey: null,
-  setApiKey: () => {},
-  clearApiKey: () => {},
-});
+// Create the context with default values
+const ResearchCompanionContext = createContext<ResearchCompanionContextType | undefined>(undefined);
 
-// Helper to get page title from path
-const getPageTitleFromPath = (path: string): string => {
-  const pathMap: Record<string, string> = {
-    "/": "Dashboard",
-    "/csr-upload": "CSR Upload",
-    "/csr-library": "CSR Library",
-    "/protocol-editor": "Protocol Editor",
-    "/protocol-validator": "Protocol Validator",
-    "/design-oracle": "Study Design Oracle",
-    "/enhanced-cer-dashboard": "CER Dashboard",
-    "/example-reports": "Example Reports",
-    "/settings": "Settings",
-  };
-
-  // Check for exact matches first
-  if (pathMap[path]) return pathMap[path];
-  
-  // Handle nested paths
-  if (path.startsWith("/csr/")) return "CSR Detail";
-  if (path.startsWith("/protocol/")) return "Protocol Detail";
-  if (path.startsWith("/cer/")) return "CER Detail";
-  
-  // Default fallback
-  return "Research Platform";
-};
+// Local Storage Keys
+const API_KEY_STORAGE_KEY = "research_companion_api_key";
+const ENABLED_STORAGE_KEY = "research_companion_enabled";
 
 // Provider component
-export const ResearchCompanionProvider: React.FC<{ children: React.ReactNode }> = ({ 
-  children 
-}) => {
+export const ResearchCompanionProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [isEnabled, setIsEnabled] = useState<boolean>(false);
   const [isVisible, setIsVisible] = useState<boolean>(false);
   const [apiKey, setApiKeyState] = useState<string | null>(null);
@@ -67,70 +32,66 @@ export const ResearchCompanionProvider: React.FC<{ children: React.ReactNode }> 
   const [location] = useLocation();
   const { toast } = useToast();
 
-  // Load API key from localStorage on initial render
+  // Initialize state from localStorage
   useEffect(() => {
-    const storedApiKey = localStorage.getItem("openai_api_key");
-    if (storedApiKey) {
-      setApiKeyState(storedApiKey);
-      setIsEnabled(true);
+    try {
+      const storedApiKey = localStorage.getItem(API_KEY_STORAGE_KEY);
+      const storedEnabled = localStorage.getItem(ENABLED_STORAGE_KEY);
+
+      if (storedApiKey) {
+        setApiKeyState(storedApiKey);
+        setIsEnabled(storedEnabled === "true");
+      }
+    } catch (error) {
+      console.error("Error loading Research Companion settings:", error);
     }
   }, []);
 
   // Update page context when location changes
   useEffect(() => {
-    setCurrentPageContext(getPageTitleFromPath(location));
+    const path = location.split("/").filter(Boolean);
+    let context = "Dashboard";
+
+    if (path.length > 0) {
+      // Create a more human-readable context based on the current path
+      if (path[0] === "csr-insights") {
+        context = "CSR Insights";
+      } else if (path[0] === "protocol-generator") {
+        context = "Protocol Generator";
+      } else if (path[0] === "study-design-agent") {
+        context = "Study Design Agent";
+      } else if (path[0] === "enhanced-cer-dashboard") {
+        context = "Enhanced CER Dashboard";
+      } else if (path[0] === "settings") {
+        context = "Settings";
+      } else {
+        // Convert kebab-case to Title Case
+        context = path[0]
+          .split("-")
+          .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+          .join(" ");
+      }
+    }
+
+    setCurrentPageContext(context);
   }, [location]);
 
-  // Save API key to localStorage when it changes
-  const setApiKey = (key: string) => {
-    if (key && key.startsWith("sk-")) {
-      localStorage.setItem("openai_api_key", key);
-      setApiKeyState(key);
-      setIsEnabled(true);
-      toast({
-        title: "API Key Saved",
-        description: "Research Companion is now enabled",
-      });
-    } else {
-      toast({
-        title: "Invalid API Key",
-        description: "Please enter a valid OpenAI API key starting with 'sk-'",
-        variant: "destructive",
-      });
-    }
-  };
-
-  // Clear API key from localStorage
-  const clearApiKey = () => {
-    localStorage.removeItem("openai_api_key");
-    setApiKeyState(null);
-    setIsEnabled(false);
-    setIsVisible(false);
-    toast({
-      title: "API Key Removed",
-      description: "Research Companion has been disabled",
-    });
-  };
-
-  // Show the companion
   const showCompanion = () => {
-    if (isEnabled) {
-      setIsVisible(true);
-    } else {
+    if (!isEnabled) {
       toast({
-        title: "API Key Required",
-        description: "Please add an OpenAI API key in settings to enable the Research Companion",
+        title: "Research Companion Disabled",
+        description: "Please add your API key in settings to enable the Research Companion.",
         variant: "destructive",
       });
+      return;
     }
+    setIsVisible(true);
   };
 
-  // Hide the companion
   const hideCompanion = () => {
     setIsVisible(false);
   };
 
-  // Toggle companion visibility
   const toggleCompanion = () => {
     if (isVisible) {
       hideCompanion();
@@ -139,42 +100,74 @@ export const ResearchCompanionProvider: React.FC<{ children: React.ReactNode }> 
     }
   };
 
-  // Compose a message to the companion
   const composeMessage = (message: string) => {
-    if (!isEnabled) {
+    // This is a placeholder for when we actually want to send a message
+    // to the Research Companion programmatically
+    if (isEnabled && message.trim()) {
       showCompanion();
-      return;
+      // In a real implementation, we would send the message to the companion
     }
-    
-    // Ensure companion is visible
-    setIsVisible(true);
-    
-    // In a real implementation, this would communicate with the companion component
-    // For now, we'll just log the message
-    console.log("Sending message to companion:", message);
+  };
+
+  const setApiKey = (key: string) => {
+    try {
+      localStorage.setItem(API_KEY_STORAGE_KEY, key);
+      setApiKeyState(key);
+      setIsEnabled(true);
+      localStorage.setItem(ENABLED_STORAGE_KEY, "true");
+      
+      toast({
+        title: "API Key Saved",
+        description: "Your Research Companion is now enabled.",
+      });
+    } catch (error) {
+      console.error("Error saving Research Companion API key:", error);
+      toast({
+        title: "Error Saving API Key",
+        description: "There was a problem saving your API key. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const clearApiKey = () => {
+    try {
+      localStorage.removeItem(API_KEY_STORAGE_KEY);
+      setApiKeyState(null);
+      setIsEnabled(false);
+      localStorage.setItem(ENABLED_STORAGE_KEY, "false");
+      setIsVisible(false);
+      
+      toast({
+        title: "API Key Removed",
+        description: "Research Companion has been disabled.",
+      });
+    } catch (error) {
+      console.error("Error clearing Research Companion API key:", error);
+    }
+  };
+
+  const value = {
+    isEnabled,
+    isVisible,
+    showCompanion,
+    hideCompanion,
+    toggleCompanion,
+    composeMessage,
+    currentPageContext,
+    apiKey,
+    setApiKey,
+    clearApiKey,
   };
 
   return (
-    <ResearchCompanionContext.Provider
-      value={{
-        isEnabled,
-        isVisible,
-        showCompanion,
-        hideCompanion,
-        toggleCompanion,
-        composeMessage,
-        currentPageContext,
-        apiKey,
-        setApiKey,
-        clearApiKey,
-      }}
-    >
+    <ResearchCompanionContext.Provider value={value}>
       {children}
     </ResearchCompanionContext.Provider>
   );
 };
 
-// Custom hook to use the companion context
+// Hook to use the Research Companion context
 export const useResearchCompanion = () => {
   const context = useContext(ResearchCompanionContext);
   
