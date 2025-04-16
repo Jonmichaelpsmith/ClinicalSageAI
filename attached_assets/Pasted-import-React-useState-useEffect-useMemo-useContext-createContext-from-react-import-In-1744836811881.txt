@@ -1,0 +1,146 @@
+import React, { useState, useEffect, useMemo, useContext, createContext } from 'react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Spinner } from '@/components/ui/spinner';
+import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from 'recharts';
+import { motion } from 'framer-motion';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+
+// --- Auth Context Stub ---
+const AuthContext = createContext({ isAuthenticated: false });
+
+// --- Theme Context ---
+const ThemeContext = createContext({ theme: 'light', toggleTheme: () => {} });
+
+export default function CERDashboard() {
+  const [selectedTab, setSelectedTab] = useState(0);
+  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
+  const auth = useContext(AuthContext);
+
+  useEffect(() => {
+    localStorage.setItem('theme', theme);
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+  }, [theme]);
+  const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
+
+  if (!auth.isAuthenticated) {
+    return <div className="p-8"><h2>Please log in to access CER Dashboard</h2></div>;
+  }
+
+  return (
+    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+      <div className="p-8 max-w-7xl mx-auto">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-4xl font-extrabold">TrialSage CER Dashboard</h1>
+          <Button onClick={toggleTheme} aria-label="Toggle theme">
+            {theme === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode'}
+          </Button>
+        </div>
+        <nav aria-label="Main navigation" className="mb-6 flex space-x-4">
+          {['FAERS','Device','Multi'].map((t,i)=>(
+            <Button key={t} variant={selectedTab===i?'primary':'outline'} onClick={()=>setSelectedTab(i)}>
+              {t}
+            </Button>
+          ))}
+        </nav>
+        <section aria-label="CER panels">
+          {selectedTab === 0 && <EndpointPanel type="faers" />}
+          {selectedTab === 1 && <EndpointPanel type="device" />}
+          {selectedTab === 2 && <MultiSourcePanel />}          
+        </section>
+      </div>
+    </ThemeContext.Provider>
+  );
+}
+
+function EndpointPanel({ type }) {
+  const storageKey = `cer_${type}_prefs`;
+  const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
+  const [code, setCode] = useState(saved.code || '');
+  const [periods, setPeriods] = useState(saved.periods || 6);
+  const [startDate, setStartDate] = useState(saved.startDate ? new Date(saved.startDate) : new Date(new Date().setFullYear(new Date().getFullYear()-5)));
+  const [endDate, setEndDate] = useState(saved.endDate ? new Date(saved.endDate) : new Date());
+  const [filterSeverity, setFilterSeverity] = useState(saved.filterSeverity || 'all');
+  const [viewMode, setViewMode] = useState(saved.viewMode || 'Chart');
+  const [data, setData] = useState(null);
+  const [narrative, setNarrative] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Persist preferences
+  useEffect(() => {
+    localStorage.setItem(storageKey, JSON.stringify({ code, periods, startDate, endDate, filterSeverity, viewMode }));
+  }, [code, periods, startDate, endDate, filterSeverity, viewMode]);
+
+  const fetchEndpoint = `/api/narrative/${type}/${code}`;
+  const pdfEndpoint = `/api/narrative/${type}/${code}/pdf`;
+
+  const fetchData = async () => {
+    setLoading(true); setError(null);
+    try {
+      const params = new URLSearchParams({ periods, start_date: startDate.toISOString(), end_date: endDate.toISOString() });
+      const res = await fetch(`${fetchEndpoint}?${params}`);
+      if (!res.ok) throw new Error(await res.text());
+      const json = await res.json();
+      // apply severity filter on json.trend if needed (demo stub)
+      setData(json);
+      setNarrative(json.narrative);
+    } catch (e) { setError(e.message); }
+    finally { setLoading(false); }
+  };
+
+  const chartData = useMemo(() => data?.trend ? Object.entries(data.trend).map(([d,v])=>({date:d,value:v})) : [], [data]);
+
+  const exportCSV = () => {
+    if (!data?.trend) return;
+    const rows = [['Date','Count'], ...chartData.map(r=>[r.date,r.value])];
+    const csv = rows.map(r=>r.join(',')).join('\n');
+    const blob = new Blob([csv],{type:'text/csv'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href=url; a.download=`${type}_${code}_trend.csv`; a.click();
+  };
+
+  const shareLink = () => {
+    const params = new URLSearchParams({ code, periods, start: startDate.toISOString(), end: endDate.toISOString(), severity: filterSeverity });
+    navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}?tab=${type}&${params}`);
+    alert('Link copied to clipboard');
+  };
+
+  return (
+    <Card>
+      <CardHeader><h2>{type.toUpperCase()} CER</h2></CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-6 gap-4">
+          <Input aria-label="Code input" placeholder="Enter code" value={code} onChange={e=>setCode(e.target.value)} />
+          <Input type="number" aria-label="Periods" value={periods} min={1} max={12} onChange={e=>setPeriods(+e.target.value)} />
+          <DatePicker selected={startDate} onChange={setStartDate} dateFormat="yyyy-MM-dd" aria-label="Start date" />
+          <DatePicker selected={endDate} onChange={setEndDate} dateFormat="yyyy-MM-dd" aria-label="End date" />
+          <select aria-label="Severity filter" value={filterSeverity} onChange={e=>setFilterSeverity(e.target.value)}>
+            <option value="all">All</option><option value="serious">Serious</option><option value="non-serious">Non-serious</option>
+          </select>
+          <select aria-label="View mode" value={viewMode} onChange={e=>setViewMode(e.target.value)}>
+            <option>Chart</option><option>Table</option>
+          </select>
+        </div>
+        <div className="flex space-x-3 mt-4">
+          <Button onClick={fetchData} disabled={loading||!code}>{loading?<Spinner/>:'Generate'}</Button>
+          <Button onClick={()=>window.open(`${pdfEndpoint}?periods=${periods}`, '_blank')} disabled={!narrative}>PDF</Button>
+          <Button variant="outline" onClick={exportCSV} disabled={!data}>CSV</Button>
+          <Button variant="ghost" onClick={shareLink}>Share</Button>
+        </div>
+        {error && <p className="text-red-600">{error}</p>}
+        {viewMode==='Chart' && data && <ResponsiveContainer width="100%" height={200}><LineChart data={chartData}><CartesianGrid strokeDasharray="3 3"/><XAxis dataKey="date"/><YAxis/><Tooltip/><Line dataKey="value" stroke="#4f46e5" /></LineChart></ResponsiveContainer>}
+        {viewMode==='Table' && data && <ScrollArea className="max-h-48 mt-4"><table className="w-full text-sm"><thead><tr><th>Date</th><th>Count</th></tr></thead><tbody>{chartData.map((r,i)=><tr key={i}><td>{r.date}</td><td>{r.value}</td></tr>)}</tbody></table></ScrollArea>}
+        {narrative && <motion.div initial={{opacity:0}} animate={{opacity:1}} className="mt-6"><h3>Narrative</h3><ScrollArea className="h-48 p-4"><pre>{narrative}</pre></ScrollArea></motion.div>}
+      </CardContent>
+    </Card>
+  );
+}
+
+function MultiSourcePanel() {
+  // Similar prefs, CSV, share, accessibility built like EndpointPanel
+  return <EndpointPanel type="multi" />;
+}
