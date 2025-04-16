@@ -382,9 +382,20 @@ import alignmentRoutes from './routes/alignment-routes';
 // Import session routes for email persistence
 import sessionRoutes from './routes/session_routes';
 
-// Import CER routes for Clinical Evaluation Reports is done dynamically later
+// Import CER routes for Clinical Evaluation Reports
+// We'll import this dynamically within the function
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Set up CER generation routes
+  try {
+    // Import dynamically using require() for CommonJS module
+    const setupCerRoutes = require('./integrate-cer-routes');
+    setupCerRoutes(app);
+    console.log('CER routes successfully loaded');
+  } catch (error) {
+    console.error('Error loading CER routes:', error);
+  }
+  
   // Register session API routes
   app.use('/api/session', sessionRoutes);
   
