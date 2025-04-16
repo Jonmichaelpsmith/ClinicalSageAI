@@ -52,7 +52,7 @@ const CERGenerator = () => {
     setReport(null);
 
     try {
-      const response = await apiRequest('POST', '/api/faers/data', {
+      const response = await apiRequest('POST', '/api/cer/faers/data', {
         ndcCode: ndcCode
       });
       
@@ -98,7 +98,7 @@ const CERGenerator = () => {
   
   const generateReport = async (data) => {
     try {
-      const response = await apiRequest('POST', '/api/faers/generate-narrative', {
+      const response = await apiRequest('POST', '/api/cer/faers/generate-narrative', {
         faersData: data,
         productName: productName || undefined
       });
@@ -166,7 +166,7 @@ const CERGenerator = () => {
     setIsSaving(true);
     
     try {
-      const response = await apiRequest('POST', '/api/faers/save-report', {
+      const response = await apiRequest('POST', '/api/cer/faers/save-report', {
         title: reportTitle,
         content: report,
         ndcCode: ndcCode,
