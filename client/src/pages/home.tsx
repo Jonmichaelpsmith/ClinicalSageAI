@@ -22,18 +22,23 @@ export default function Home() {
       <HeaderSection className="bg-gradient-to-b from-primary/5 to-primary/10 dark:from-gray-950 dark:to-gray-900 pb-8">
         <Navbar />
         <div className="container px-4 md:px-6 flex flex-col items-center text-center space-y-4 py-8 md:py-12">
-          <Badge variant="outline" className="font-semibold text-primary border-primary px-3 py-1">
-            CSR Intelligence Platform
-          </Badge>
+          <div className="flex gap-2 justify-center">
+            <Badge variant="outline" className="font-semibold text-primary border-primary px-3 py-1">
+              CSR Intelligence
+            </Badge>
+            <Badge variant="outline" className="font-semibold text-emerald-600 border-emerald-600 px-3 py-1">
+              CER Analytics
+            </Badge>
+          </div>
           <h1 className="text-3xl md:text-5xl font-bold tracking-tighter leading-tight bg-gradient-to-r from-primary to-blue-500 bg-clip-text text-transparent">
             LumenTrialGuide.AI
           </h1>
           <p className="text-black dark:text-white text-lg md:text-xl font-medium">
-            AI-Powered Clinical Study Report Analytics
+            Complete Clinical Evidence Intelligence Platform
           </p>
           <p className="mx-auto max-w-[700px] text-gray-600 md:text-lg dark:text-gray-300">
-            Extract, analyze, and leverage insights from 2,800+ clinical study reports.
-            Design better trials, faster, at a fraction of the cost.
+            Extract, analyze, and leverage insights from 2,800+ clinical study reports and CERs.
+            Design better trials, generate comprehensive evaluation reports, and accelerate regulatory submissions.
           </p>
           
           <div className="flex flex-col md:flex-row gap-4 mt-4">
@@ -114,12 +119,12 @@ export default function Home() {
                       </p>
                     </div>
                   </Link>
-                  <Link href="/use-cases#biomarker" className="block">
-                    <div className="rounded-lg bg-gradient-to-b from-purple-500 to-purple-700 p-8 text-white hover:shadow-lg transition-shadow">
-                      <Microscope className="mb-2 h-10 w-10" />
-                      <h3 className="text-xl font-bold">Biomarker Analysis</h3>
-                      <p className="text-purple-100">
-                        Cross-study analysis of biomarker response patterns
+                  <Link href="/enhanced-cer-dashboard" className="block">
+                    <div className="rounded-lg bg-gradient-to-b from-teal-500 to-teal-700 p-8 text-white hover:shadow-lg transition-shadow">
+                      <FileText className="mb-2 h-10 w-10" />
+                      <h3 className="text-xl font-bold">CER Generator</h3>
+                      <p className="text-teal-100">
+                        Generate intelligent Clinical Evaluation Reports from FAERS data
                       </p>
                     </div>
                   </Link>
@@ -134,12 +139,12 @@ export default function Home() {
                       </p>
                     </div>
                   </Link>
-                  <Link href="/use-cases#patient" className="block">
-                    <div className="rounded-lg bg-gradient-to-b from-amber-500 to-amber-700 p-8 text-white hover:shadow-lg transition-shadow">
-                      <Users className="mb-2 h-10 w-10" />
-                      <h3 className="text-xl font-bold">Patient Selection</h3>
-                      <p className="text-amber-100">
-                        Optimize inclusion/exclusion criteria for your study
+                  <Link href="/use-cases#biomarker" className="block">
+                    <div className="rounded-lg bg-gradient-to-b from-purple-500 to-purple-700 p-8 text-white hover:shadow-lg transition-shadow">
+                      <Microscope className="mb-2 h-10 w-10" />
+                      <h3 className="text-xl font-bold">Advanced Analytics</h3>
+                      <p className="text-purple-100">
+                        Cross-study analysis of biomarkers and CER trends
                       </p>
                     </div>
                   </Link>
