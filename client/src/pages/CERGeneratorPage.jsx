@@ -55,9 +55,10 @@ const CERGeneratorPage = () => {
           <div className="space-y-2">
             <h3 className="text-lg font-medium">How to Use the Generator</h3>
             <p className="text-muted-foreground">
-              Enter a valid National Drug Code (NDC) and click "Generate Report" to create
-              a CER based on FAERS data. You can then export the report as a PDF for documentation
-              or regulatory submission purposes. Previous reports are saved for future reference.
+              Enter a valid National Drug Code (NDC) and choose between Enhanced or Basic mode. 
+              Enhanced mode uses AI to generate a comprehensive, professionally formatted report,
+              while Basic mode provides a simpler output. You can then export the report as a PDF
+              for documentation or regulatory submission purposes. Previous reports are saved for future reference.
             </p>
           </div>
           

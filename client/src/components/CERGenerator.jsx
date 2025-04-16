@@ -111,7 +111,7 @@ const CERGenerator = () => {
   };
 
   // Generate a CER report for the specified NDC code
-  const generateCER = async () => {
+  const generateCER = async (useBasicMode = false) => {
     if (!ndcCode.trim()) {
       toast({
         title: 'Input Required',
@@ -127,7 +127,12 @@ const CERGenerator = () => {
       setCerContent('');
       setCerReportId(null);
       
-      const response = await apiRequest('GET', `/api/cer/${ndcCode.trim()}`);
+      // Add the basic parameter to disable enhanced generation if requested
+      const url = useBasicMode 
+        ? `/api/cer/${ndcCode.trim()}?basic=true` 
+        : `/api/cer/${ndcCode.trim()}`;
+        
+      const response = await apiRequest('GET', url);
       const data = await response.json();
       
       if (response.ok) {
@@ -135,9 +140,12 @@ const CERGenerator = () => {
         setCerReportId(data.report_id);
         fetchRecentReports();
         
+        // Check if the response indicates enhanced generation
+        const enhancedMode = data.enhanced === true;
+        
         toast({
           title: 'CER Generated',
-          description: 'Clinical evaluation report has been generated successfully.',
+          description: `Clinical evaluation report has been generated successfully ${enhancedMode ? 'with enhanced AI' : ''}.`,
         });
       } else {
         setError(data.error || 'An error occurred while generating the CER');
@@ -339,13 +347,26 @@ const CERGenerator = () => {
                       className="flex-1"
                       disabled={loading || generatingPdf}
                     />
-                    <Button 
-                      onClick={generateCER} 
-                      disabled={loading || generatingPdf || !ndcCode.trim()}
-                    >
-                      {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-                      Generate Report
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button 
+                        onClick={() => generateCER()} 
+                        disabled={loading || generatingPdf || !ndcCode.trim()}
+                        variant="default"
+                      >
+                        {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+                        Generate Enhanced
+                      </Button>
+                      <Button 
+                        onClick={() => generateCER(true)} 
+                        disabled={loading || generatingPdf || !ndcCode.trim()}
+                        variant="outline"
+                      >
+                        Basic Mode
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="mt-1 text-xs text-muted-foreground">
+                    Enhanced mode uses OpenAI to generate a more comprehensive and professionally formatted report.
                   </div>
                 </div>
                 
@@ -415,9 +436,16 @@ const CERGenerator = () => {
                             <p className="text-sm text-muted-foreground">
                               NDC: {report.ndcCode || 'N/A'}
                             </p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              Generated on {formatDate(report.created_at)}
-                            </p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <p className="text-xs text-muted-foreground">
+                                Generated on {formatDate(report.created_at)}
+                              </p>
+                              {report.metadata?.enhanced && (
+                                <span className="px-1.5 py-0.5 rounded-full text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
+                                  Enhanced
+                                </span>
+                              )}
+                            </div>
                           </div>
                           <Button 
                             variant="outline" 
