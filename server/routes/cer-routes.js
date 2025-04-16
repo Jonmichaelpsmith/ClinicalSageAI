@@ -24,6 +24,7 @@ const REPORTS_DIR = path.join(UPLOADS_DIR, 'cer_reports');
  */
 router.get('/:ndcCode', async (req, res) => {
   const { ndcCode } = req.params;
+  const { basic } = req.query;  // Option to disable enhanced generation
   
   if (!ndcCode || !ndcCode.trim()) {
     return res.status(400).json({ 
@@ -36,11 +37,19 @@ router.get('/:ndcCode', async (req, res) => {
     const reportId = uuidv4();
     const timestamp = new Date().toISOString();
     
-    // Execute the cer_narrative.py script
-    const pythonProcess = spawn('python', [
+    // Execute the cer_narrative.py script with appropriate options
+    const pythonArgs = [
       path.join(process.cwd(), 'cer_narrative.py'),
       '--ndc', ndcCode
-    ]);
+    ];
+    
+    // Add option to disable enhanced generation if requested
+    if (basic === 'true') {
+      pythonArgs.push('--no-enhanced');
+    }
+    
+    console.log(`Executing CER generation with args: ${pythonArgs.join(' ')}`);
+    const pythonProcess = spawn('python', pythonArgs);
     
     let cerReport = '';
     let errorOutput = '';
@@ -63,6 +72,10 @@ router.get('/:ndcCode', async (req, res) => {
         });
       }
       
+      // Extract some basic metadata from the report
+      const isMarkdown = cerReport.startsWith('#');
+      const isEnhanced = cerReport.includes('Executive Summary') || isMarkdown;
+      
       // Save the report
       const reportData = {
         id: reportId,
@@ -72,10 +85,13 @@ router.get('/:ndcCode', async (req, res) => {
         created_at: timestamp,
         metadata: {
           generatedAt: timestamp,
-          faersRecordCount: (cerReport.match(/adverse event/gi) || []).length
+          faersRecordCount: (cerReport.match(/adverse event/gi) || []).length,
+          enhanced: isEnhanced,
+          format: isMarkdown ? 'markdown' : 'text'
         }
       };
       
+      // Save to the file system
       fs.writeFileSync(
         path.join(REPORTS_DIR, `${reportId}.json`),
         JSON.stringify(reportData, null, 2)
@@ -84,7 +100,8 @@ router.get('/:ndcCode', async (req, res) => {
       res.json({
         success: true,
         report_id: reportId,
-        cer_report: cerReport
+        cer_report: cerReport,
+        enhanced: isEnhanced
       });
     });
     
