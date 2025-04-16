@@ -1,0 +1,177 @@
+Below is the next major enhancement: adding **real-time notifications** via WebSockets. This allows your platform to push alerts to the frontend instantly when anomalies are detected—instead of waiting for manual refreshes. We’ll implement this in two parts:
+
+1. **Backend – Adding a WebSocket Endpoint**  
+   We’ll create a new endpoint in your FastAPI app to periodically poll for anomalies and send updates to connected clients.
+
+2. **Frontend – Building a Real-Time Alerts React Component**  
+   We’ll build a React component that connects to the WebSocket endpoint, receives alert updates in real time, and displays them interactively.
+
+---
+
+## 1. Backend – WebSocket Endpoint for Real-Time Alerts
+
+Add this new WebSocket endpoint to your **main.py** (or a separate module you import). This endpoint will open a WebSocket, then on a regular interval (every 15 seconds, for example) it will:
+- Fetch the latest FAERS data using your existing methods,
+- Normalize the data,
+- Run anomaly detection to see if any adverse event spikes occur,
+- Send the alert data as JSON through the WebSocket.
+
+**Update your main.py to include:**
+
+```python
+from fastapi import WebSocket
+import asyncio
+
+@router.websocket("/ws/alerts/{ndc_code}")
+async def websocket_alerts(websocket: WebSocket, ndc_code: str):
+    await websocket.accept()
+    while True:
+        try:
+            raw_data = fetch_faers_data(ndc_code)
+            df = normalize_faers_data(raw_data)
+            anomalies = detect_anomalies(df)
+            # Build a list of alerts if any anomaly count is flagged
+            alerts = [{"event": event, "anomaly": count} for event, count in anomalies.items() if count > 0]
+            await websocket.send_json({"alerts": alerts})
+            await asyncio.sleep(15)  # Pause 15 seconds before checking again
+        except Exception as e:
+            # In case of error, send an error message and continue polling after a delay.
+            await websocket.send_text("Error: " + str(e))
+            await asyncio.sleep(15)
+```
+
+### Explanation:
+- The endpoint accepts a WebSocket connection at `/ws/alerts/{ndc_code}`.
+- It enters an infinite loop where it:
+  - Fetches and normalizes data for the given NDC code.
+  - Runs anomaly detection to find any spikes.
+  - Sends the detected alerts as JSON.
+  - Sleeps for 15 seconds before repeating, allowing near–real-time updates.
+- Error handling ensures that any problems are communicated and then retried.
+
+---
+
+## 2. Frontend – Real-Time Alerts React Component
+
+Next, create a new React component (e.g., **RealTimeAlerts.jsx**) that establishes a WebSocket connection to the backend endpoint. This component will listen for messages and update the UI as new alerts come in.
+
+**Create RealTimeAlerts.jsx:**
+
+```jsx
+// RealTimeAlerts.jsx
+import React, { useEffect, useState } from 'react';
+
+export default function RealTimeAlerts({ ndcCode }) {
+  const [alerts, setAlerts] = useState([]);
+  const [status, setStatus] = useState("Connecting...");
+
+  useEffect(() => {
+    const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+    const host = window.location.host;
+    const wsUrl = `${protocol}://${host}/ws/alerts/${ndcCode}`;
+    const ws = new WebSocket(wsUrl);
+
+    ws.onopen = () => {
+      setStatus("Connected");
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.alerts) {
+          setAlerts(data.alerts);
+        }
+      } catch (err) {
+        console.error("Error parsing WebSocket message:", err);
+      }
+    };
+
+    ws.onclose = () => {
+      setStatus("Disconnected");
+    };
+
+    return () => {
+      ws.close();
+    };
+  }, [ndcCode]);
+
+  return (
+    <div style={{ marginTop: '20px' }}>
+      <h2>Real-Time Alerts (WebSocket)</h2>
+      <div>Status: {status}</div>
+      {alerts.length === 0 ? (
+        <div>No alerts at this time.</div>
+      ) : (
+        <ul>
+          {alerts.map((alert, index) => (
+            <li key={index}>
+              <strong>{alert.event}</strong>: {alert.anomaly}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+```
+
+### Explanation:
+- The component uses the browser’s WebSocket API to connect to the backend endpoint.  
+- It constructs the WebSocket URL based on your current protocol (wss for HTTPS, ws for HTTP) and the host.
+- On connection, it updates its status and listens for messages, parsing JSON and updating the alerts state.
+- On unmount, it properly closes the WebSocket.
+
+---
+
+## 3. Integrate Real-Time Alerts into Your App
+
+Update your main **App.jsx** (or equivalent) to include the new RealTimeAlerts component. For example, add it below your existing components:
+
+```jsx
+// App.jsx (additional import)
+import RealTimeAlerts from './RealTimeAlerts';
+
+// Inside your App component:
+function App() {
+  const [ndcCodes] = useState(["1234567890", "0987654321"]);
+  // ... existing state and handlers
+
+  return (
+    <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
+      <h1>LumenTrialGuide.AI</h1>
+      <CERGenerator />
+      <NLPQuery onFilter={handleFilterUpdate} />
+      <AdvancedDashboard ndcCodes={ndcCodes} />
+      {/* New Real-Time Alerts Component using the first NDC code */}
+      <RealTimeAlerts ndcCode={ndcCodes[0]} />
+      {filteredData && (
+        <div>
+          <h2>Filtered Analytics</h2>
+          <pre>{JSON.stringify(filteredData, null, 2)}</pre>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default App;
+```
+
+---
+
+## Next Steps
+
+1. **Test the WebSocket Endpoint:**
+   - Run your FastAPI server and connect to `/ws/alerts/<sample_ndc_code>` manually (or via your React component) to confirm that alerts are sent.
+
+2. **Verify the Frontend:**
+   - Launch your React app and check that the **RealTimeAlerts** component shows “Connected” and updates with alerts periodically.
+   - Simulate conditions (or use realistic FAERS data) to generate alerts and see them in the UI.
+
+3. **Iterate Based on Feedback:**
+   - Tweak the polling interval or alert criteria as needed.
+   - Improve error handling in both the backend and frontend for robustness.
+
+Once this real-time notifications feature is stable, we can further refine the overall experience (e.g., integrating push notifications, enhancing the UI, or coupling alerts with email notifications).
+
+Let me know when you’re ready for the next phase or if you’d like any adjustments!

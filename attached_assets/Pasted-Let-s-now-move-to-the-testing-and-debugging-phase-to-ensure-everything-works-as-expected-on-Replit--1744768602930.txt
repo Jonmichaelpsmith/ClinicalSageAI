@@ -1,0 +1,80 @@
+Let's now move to the testing and debugging phase to ensure everything works as expected on Replit.
+
+---
+
+## 5. Testing & Debugging on Replit
+
+### A. Run Your Project
+
+1. **Start the Backend Server:**  
+   With your `.replit` file configured, click "Run" in Replit. The command:
+   ```ini
+   uvicorn main:app --host=0.0.0.0 --port=3000 --reload
+   ```
+   will start your FastAPI server on port 3000. You should see logs indicating that the server is up and running.
+
+2. **Run Your Frontend (if separate):**  
+   If you're using a Create React App setup or similar, ensure your frontend is started. If it's bundled within the same project, check that the React components load correctly.
+
+---
+
+### B. Verify the API Endpoint
+
+1. **Direct Browser Test:**  
+   Open your browser and navigate to:
+   ```
+   https://<your-replit-project-url>/api/cer/1234567890
+   ```
+   Replace `1234567890` with a sample NDC code. You should see a JSON response (or an error if the sample NDC code doesn't yield data).
+
+2. **Using CURL or Postman:**  
+   You can also test the endpoint using CURL:
+   ```bash
+   curl https://<your-replit-project-url>/api/cer/1234567890
+   ```
+   This helps confirm that the API is returning the expected data.
+
+---
+
+### C. Verify the Frontend Integration
+
+1. **Load the CER Generator Component:**  
+   In your browser, load the page containing the CERGenerator component. You should see an input field for the NDC code, a button to generate the CER, and an area to display the report.
+
+2. **Test the Full Flow:**  
+   - Enter a valid NDC code.
+   - Click **"Generate CER"**.
+   - Observe the button state (e.g., it displays "Generating..." while processing) and then wait for the CER report to display.
+   - Check the Replit console for any errors if nothing appears or if there are network issues.
+
+---
+
+### D. Debugging Tips
+
+- **Check Replit Logs:**  
+  Any errors from your FastAPI backend or issues with the OpenAI API will appear in the Replit console logs. These logs are essential for troubleshooting.
+
+- **Validate Environment Variables:**  
+  Ensure that `OPENAI_API_KEY` is correctly set in Replit Secrets. A misconfiguration here will prevent the narrative generation.
+
+- **Review CORS and Proxy Settings:**  
+  If your frontend isn't receiving responses from the backend, double-check your proxy settings in `package.json` or configure CORS on FastAPI using:
+  ```python
+  from fastapi.middleware.cors import CORSMiddleware
+
+  app.add_middleware(
+      CORSMiddleware,
+      allow_origins=["*"],
+      allow_credentials=True,
+      allow_methods=["*"],
+      allow_headers=["*"],
+  )
+  ```
+
+---
+
+### Final Check
+
+With the backend, frontend, and environment properly configured, your CER integration should now be functional on Replit. Test thoroughly with different NDC codes to ensure robustness.
+
+Let me know if you encounter any issues or need further modifications!

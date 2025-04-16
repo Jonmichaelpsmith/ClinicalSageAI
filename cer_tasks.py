@@ -4,43 +4,30 @@ CER Tasks Module
 This module handles background tasks for Clinical Evaluation Reports,
 including enhanced PDF generation and email notifications.
 """
-
+from typing import Dict, Any
+from fastapi import BackgroundTasks
+import io
 import os
 import json
-import logging
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
-from typing import Dict, Any, Optional
-import requests
+from datetime import datetime
 
-from notification import send_email_notification
-from cer_pdf_generator import generate_enhanced_pdf, save_pdf_to_file
+# Import local modules
+from cer_narrative import generate_cer_narrative
+from server.faers_client import get_faers_data
 
-# Set up logging
-logger = logging.getLogger("cer_tasks")
-router = APIRouter()
-
-# Simple function to retrieve user information
-# In a real application, this would query a database
 def get_current_user(user_id: str) -> Dict[str, Any]:
     """
     Retrieve user information.
     This is a simplified example - in a real application,
     you would query your database for user information.
     """
-    # For simplicity, we'll use an environment variable for testing
-    test_email = os.getenv("USER_EMAIL")
-    
-    # In a real application, you would query your database
-    # return db.query(User).filter(User.id == user_id).first()
-    
-    # For demonstration, we'll return a simple dict
+    # Placeholder implementation - replace with actual database query
     return {
         "id": user_id,
-        "email": test_email or f"{user_id}@example.com",
-        "name": "Test User"
+        "email": f"{user_id}@example.com",
+        "name": f"User {user_id}"
     }
 
-@router.post("/api/cer/{ndc_code}/enhanced-pdf-task")
 async def schedule_pdf_generation(
     ndc_code: str, 
     background_tasks: BackgroundTasks,
@@ -59,87 +46,134 @@ async def schedule_pdf_generation(
     Returns:
         Message indicating the task has been scheduled
     """
-    # Retrieve user information
-    user = get_current_user(user_id)
-    user_email = user.get("email")
-    
-    if not user_email:
-        raise HTTPException(
-            status_code=400,
-            detail="User email not available. Cannot send notification."
-        )
-    
+    # Define the background task function
     def task():
         try:
-            logger.info(f"Starting background PDF generation for NDC: {ndc_code}")
+            # Get user information (for notification)
+            user = get_current_user(user_id)
             
-            # Fetch FAERS data from our API
-            faers_data = None
-            try:
-                # Attempt to get FAERS data from our API
-                response = requests.post(
-                    f"http://localhost:5000/api/cer/faers/data",
-                    json={"ndcCode": ndc_code}
-                )
-                if response.status_code == 200:
-                    faers_data = response.json()
-            except Exception as e:
-                logger.error(f"Error fetching FAERS data: {e}")
+            # Generate the PDF
+            pdf_bytes = generate_enhanced_pdf(ndc_code)
             
-            # Fetch CER data from database if available
-            cer_data = None
-            try:
-                # Attempt to get CER data from our API
-                response = requests.get(
-                    f"http://localhost:5000/api/cers/{ndc_code}"
-                )
-                if response.status_code == 200:
-                    cer_data = response.json()
-            except Exception as e:
-                logger.error(f"Error fetching CER data: {e}")
+            # Save the PDF to disk
+            filename = save_pdf_to_file(pdf_bytes, ndc_code)
             
-            # Generate the enhanced PDF
-            pdf_bytes = generate_enhanced_pdf(ndc_code, faers_data, cer_data)
+            # Send notification email (placeholder - implement your email logic)
+            print(f"PDF generated successfully as {filename}. Would send email to {user['email']}.")
             
-            # Save the PDF to a file
-            filepath = save_pdf_to_file(pdf_bytes, ndc_code)
-            
-            # Construct a simple notification message
-            subject = f"CER Report Ready for NDC {ndc_code}"
-            message = f"""
-Hello {user.get('name', 'User')},
-
-Your enhanced Clinical Evaluation Report for NDC {ndc_code} has been generated and is now ready.
-
-Please log in to your LumenTrialGuide.AI account to view and download the report.
-
-Report details:
-- NDC Code: {ndc_code}
-- Generated: {os.path.basename(filepath).split('_')[-2]}_
-- File size: {len(pdf_bytes) / 1024:.1f} KB
-
-Thank you for using LumenTrialGuide.AI!
-            """
-            
-            # Send email notification
-            try:
-                email_sent = send_email_notification(user_email, subject, message)
-                if email_sent:
-                    logger.info(f"Notification email successfully sent to {user_email}")
-                else:
-                    logger.error(f"Failed to send notification email to {user_email}")
-            except Exception as e:
-                logger.error(f"Error sending notification email: {e}")
-        
+            # Log completion
+            with open("cer_generation_log.txt", "a") as log_file:
+                log_file.write(f"{datetime.now().isoformat()}: PDF for NDC {ndc_code} generated successfully\n")
+                
         except Exception as e:
-            logger.error(f"Error in background PDF generation task: {e}")
+            # Log error
+            with open("cer_generation_log.txt", "a") as log_file:
+                log_file.write(f"{datetime.now().isoformat()}: Error generating PDF for NDC {ndc_code}: {str(e)}\n")
     
-    # Add the task to background tasks
+    # Add the task to the background tasks
     background_tasks.add_task(task)
     
+    # Return immediate response
     return {
-        "message": "PDF generation started in background. You will receive an email when it's ready.",
-        "status": "scheduled",
-        "ndc_code": ndc_code,
-        "notification_email": user_email
+        "message": f"CER PDF generation for NDC {ndc_code} has been scheduled",
+        "status": "processing",
+        "user_id": user_id
     }
+
+def generate_enhanced_pdf(ndc_code: str) -> bytes:
+    """
+    Generate an enhanced PDF report for a Clinical Evaluation Report.
+    
+    Args:
+        ndc_code: The NDC code for the product
+        
+    Returns:
+        bytes: The generated PDF as bytes
+    """
+    # Fetch FAERS data
+    faers_data = get_faers_data(ndc_code)
+    
+    # Generate CER narrative
+    cer_text = generate_cer_narrative(faers_data)
+    
+    # Create a simple PDF using ReportLab
+    from reportlab.lib.pagesizes import letter
+    from reportlab.lib.styles import getSampleStyleSheet
+    from reportlab.lib.units import inch
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+    from reportlab.lib import colors
+    
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter)
+    styles = getSampleStyleSheet()
+    
+    # Create the report content
+    elements = []
+    
+    # Title
+    elements.append(Paragraph(f"Clinical Evaluation Report for NDC {ndc_code}", styles['Title']))
+    elements.append(Spacer(1, 0.25*inch))
+    
+    # Extract product name from FAERS data if available
+    product_name = "Unknown Product"
+    if "results" in faers_data and len(faers_data["results"]) > 0:
+        result = faers_data["results"][0]
+        if "openfda" in result:
+            openfda = result["openfda"]
+            if "brand_name" in openfda and len(openfda["brand_name"]) > 0:
+                product_name = openfda["brand_name"][0]
+            elif "generic_name" in openfda and len(openfda["generic_name"]) > 0:
+                product_name = openfda["generic_name"][0]
+    
+    elements.append(Paragraph(f"Product: {product_name}", styles['Heading1']))
+    elements.append(Spacer(1, 0.25*inch))
+    
+    # Add generation timestamp
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    elements.append(Paragraph(f"Generated: {timestamp}", styles['Normal']))
+    elements.append(Spacer(1, 0.25*inch))
+    
+    # CER Narrative
+    elements.append(Paragraph("Clinical Evaluation Report Narrative:", styles['Heading2']))
+    elements.append(Spacer(1, 0.1*inch))
+    
+    # Split the narrative into paragraphs and add each one
+    paragraphs = cer_text.split('\n\n')
+    for para in paragraphs:
+        if para.strip():
+            elements.append(Paragraph(para, styles['Normal']))
+            elements.append(Spacer(1, 0.1*inch))
+    
+    # Build the PDF
+    doc.build(elements)
+    
+    # Get the PDF bytes
+    pdf_bytes = buffer.getvalue()
+    buffer.close()
+    
+    return pdf_bytes
+
+def save_pdf_to_file(pdf_bytes: bytes, ndc_code: str) -> str:
+    """
+    Save a generated PDF to a file
+    
+    Args:
+        pdf_bytes: The PDF as bytes
+        ndc_code: The NDC code for the filename
+        
+    Returns:
+        str: The filename of the saved PDF
+    """
+    # Ensure the exports directory exists
+    os.makedirs("data/exports", exist_ok=True)
+    
+    # Create filename with timestamp
+    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    filename = f"CER_{ndc_code}_{timestamp}.pdf"
+    filepath = os.path.join("data/exports", filename)
+    
+    # Write the bytes to file
+    with open(filepath, "wb") as f:
+        f.write(pdf_bytes)
+    
+    return filename

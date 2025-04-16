@@ -1,0 +1,362 @@
+Below is our extended implementation plan—with code examples—to add all the new features we discussed. This will take our current CER integration and enhance it with:
+
+- **Batch Processing:** Process multiple NDC codes at once.
+- **Comparative Analysis:** Aggregate and compare adverse events across multiple codes.
+- **Visual Dashboard:** Interactive charts (using Chart.js via React) to display comparative data.
+- **PDF Export:** Ability to download a CER as a PDF document.
+
+You can drop these snippets into your Replit project (using our existing file structure), and then test each feature.
+
+---
+
+## 1. FastAPI Backend Enhancements
+
+### A. Updated `main.py`  
+This version includes:
+- The existing single-code endpoint (`/api/cer/{ndc_code}`).
+- A new batch processing endpoint (`/api/cer/batch`).
+- A comparative analysis endpoint (`/api/cer/compare`).
+- A PDF export endpoint (`/api/cer/{ndc_code}/pdf`).
+
+```python
+# main.py
+from fastapi import FastAPI, APIRouter, HTTPException
+import requests
+from faers_client import get_faers_data
+from cer_narrative import generate_cer_narrative
+
+# Basic app and router setup.
+app = FastAPI()
+router = APIRouter()
+
+@router.get("/api/cer/{ndc_code}")
+async def create_cer(ndc_code: str):
+    try:
+        faers = get_faers_data(ndc_code)
+        cer_text = generate_cer_narrative(faers)
+        return {"cer_report": cer_text}
+    except requests.exceptions.HTTPError as e:
+        raise HTTPException(status_code=e.response.status_code, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+# -------------------------------
+# Batch Processing Endpoint
+from pydantic import BaseModel
+from typing import List, Dict
+
+class BatchRequest(BaseModel):
+    ndc_codes: List[str]
+
+@router.post("/api/cer/batch")
+async def batch_cer(request: BatchRequest):
+    reports = {}
+    for ndc in request.ndc_codes:
+        try:
+            faers = get_faers_data(ndc)
+            narrative = generate_cer_narrative(faers)
+            reports[ndc] = narrative
+        except Exception as e:
+            reports[ndc] = f"Error: {str(e)}"
+    return {"reports": reports}
+
+# -------------------------------
+# Comparative Analysis Endpoint
+
+class CompareRequest(BaseModel):
+    ndc_codes: List[str]
+
+def extract_common_adverse_events(faers_reports: Dict[str, dict]) -> Dict[str, int]:
+    # Dummy merging: In a real scenario, parse your FAERS JSON to extract event names and counts.
+    event_counts = {}
+    for data in faers_reports.values():
+        if isinstance(data, dict) and 'results' in data:
+            for item in data['results']:
+                event = item.get('event', 'Unknown')
+                count = item.get('count', 0)
+                event_counts[event] = event_counts.get(event, 0) + count
+    return event_counts
+
+@router.post("/api/cer/compare")
+async def compare_cer(request: CompareRequest):
+    faers_reports = {}
+    for ndc in request.ndc_codes:
+        try:
+            faers_reports[ndc] = get_faers_data(ndc)
+        except Exception as e:
+            faers_reports[ndc] = {"error": str(e)}
+    common_events = extract_common_adverse_events(faers_reports)
+    return {"comparative_summary": common_events}
+
+# -------------------------------
+# PDF Export Endpoint
+from fastapi.responses import StreamingResponse
+import io
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+
+@router.get("/api/cer/{ndc_code}/pdf")
+async def download_cer(ndc_code: str):
+    try:
+        faers = get_faers_data(ndc_code)
+        cer_text = generate_cer_narrative(faers)
+        buffer = io.BytesIO()
+        c = canvas.Canvas(buffer, pagesize=letter)
+        textobject = c.beginText(40, 750)
+        for line in cer_text.split('\n'):
+            textobject.textLine(line)
+        c.drawText(textobject)
+        c.showPage()
+        c.save()
+        buffer.seek(0)
+        return StreamingResponse(
+            buffer, 
+            media_type='application/pdf', 
+            headers={"Content-Disposition": f"attachment; filename=cer_report_{ndc_code}.pdf"}
+        )
+    except requests.exceptions.HTTPError as e:
+        raise HTTPException(status_code=e.response.status_code, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+# Include the router in the application.
+app.include_router(router)
+```
+
+### B. Verify Dependencies  
+Make sure you have required packages installed on Replit (for example, via your `requirements.txt`):
+
+```
+fastapi
+uvicorn
+requests
+openai
+reportlab
+```
+
+---
+
+## 2. Frontend Enhancements with React
+
+### A. Update `CERGenerator.jsx`  
+This component now includes a button for PDF download.
+
+```jsx
+// CERGenerator.jsx
+import React, { useState } from 'react';
+
+export default function CERGenerator() {
+  const [ndcCode, setNdcCode] = useState('');
+  const [cerReport, setCerReport] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const generateCER = async () => {
+    setLoading(true);
+    setError('');
+    setCerReport('');
+    try {
+      const res = await fetch(`/api/cer/${ndcCode}`);
+      if (!res.ok) {
+        throw new Error('Failed to fetch the CER report from the server.');
+      }
+      const data = await res.json();
+      setCerReport(data.cer_report);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const downloadPDF = () => {
+    window.open(`/api/cer/${ndcCode}/pdf`, '_blank');
+  };
+
+  return (
+    <div style={{ margin: '20px', fontFamily: 'Arial, sans-serif' }}>
+      <h2>Clinical Evaluation Report Generator</h2>
+      <input
+        type="text"
+        placeholder="Enter NDC Code"
+        value={ndcCode}
+        onChange={(e) => setNdcCode(e.target.value)}
+        style={{
+          padding: '10px',
+          width: '300px',
+          marginRight: '10px',
+          borderRadius: '4px',
+          border: '1px solid #ccc'
+        }}
+      />
+      <button
+        onClick={generateCER}
+        style={{
+          padding: '10px 20px',
+          borderRadius: '4px',
+          border: 'none',
+          backgroundColor: '#007BFF',
+          color: 'white',
+          cursor: 'pointer'
+        }}
+      >
+        {loading ? 'Generating...' : 'Generate CER'}
+      </button>
+      <button
+        onClick={downloadPDF}
+        style={{
+          padding: '10px 20px',
+          borderRadius: '4px',
+          border: 'none',
+          backgroundColor: '#28a745',
+          color: 'white',
+          cursor: 'pointer',
+          marginLeft: '10px'
+        }}
+      >
+        Download PDF
+      </button>
+      {error && (
+        <div style={{ color: 'red', marginTop: '10px' }}>
+          {error}
+        </div>
+      )}
+      {cerReport && (
+        <div
+          style={{
+            marginTop: '20px',
+            whiteSpace: 'pre-wrap',
+            border: '1px solid #ccc',
+            padding: '10px'
+          }}
+        >
+          {cerReport}
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+### B. Dashboard for Comparative Analysis
+
+Create a new component called `Dashboard.jsx` to display comparative charts.
+
+> **Note:** You’ll need to install dependencies for Chart.js in your React project (for example, via `npm install chart.js react-chartjs-2`).
+
+```jsx
+// Dashboard.jsx
+import React, { useState, useEffect } from 'react';
+import { Bar } from 'react-chartjs-2';
+import Chart from 'chart.js/auto';
+
+const Dashboard = ({ ndcCodes }) => {
+  const [chartData, setChartData] = useState(null);
+  const [error, setError] = useState('');
+
+  const fetchComparativeData = async () => {
+    try {
+      const response = await fetch('/api/cer/compare', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ ndc_codes: ndcCodes })
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch comparative analysis data.');
+      }
+      const data = await response.json();
+      const labels = Object.keys(data.comparative_summary);
+      const counts = labels.map(label => data.comparative_summary[label]);
+      setChartData({
+        labels,
+        datasets: [
+          {
+            label: 'Adverse Event Counts',
+            data: counts,
+            backgroundColor: 'rgba(75, 192, 192, 0.4)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1,
+          },
+        ],
+      });
+    } catch (e) {
+      setError(e.message);
+    }
+  };
+
+  useEffect(() => {
+    if (ndcCodes && ndcCodes.length > 0) {
+      fetchComparativeData();
+    }
+  }, [ndcCodes]);
+
+  if (error) return <div>Error: {error}</div>;
+  if (!chartData) return <div>Loading chart data...</div>;
+
+  return (
+    <div>
+      <h2>Comparative Adverse Events Analysis</h2>
+      <Bar data={chartData} />
+    </div>
+  );
+};
+
+export default Dashboard;
+```
+
+### C. Integration into Your App
+
+In your main App component (for example, `App.jsx`), import and render the new components where appropriate:
+
+```jsx
+// App.jsx
+import React, { useState } from 'react';
+import CERGenerator from './CERGenerator';
+import Dashboard from './Dashboard';
+
+function App() {
+  // For demonstration, set an array of NDC codes for comparative analysis.
+  const [ndcCodes] = useState(["1234567890", "0987654321"]);
+
+  return (
+    <div>
+      <h1>LumenTrialGuide.AI</h1>
+      <CERGenerator />
+      <Dashboard ndcCodes={ndcCodes} />
+      {/* Add other components or navigation as needed */}
+    </div>
+  );
+}
+
+export default App;
+```
+
+---
+
+## 3. Next Steps
+
+1. **Install Dependencies:**  
+   - Ensure your Python backend has all required packages (see the `requirements.txt` snippet above).  
+   - In your React project, install Chart.js and react-chartjs-2 if not already done:
+     ```bash
+     npm install chart.js react-chartjs-2
+     ```
+
+2. **Configure Environment Variables:**  
+   - Set your `OPENAI_API_KEY` in the Replit Secrets panel.
+
+3. **Run and Test:**  
+   - Use your Replit run command (e.g., `uvicorn main:app --host=0.0.0.0 --port=3000 --reload`) to start the backend.
+   - Ensure the frontend builds correctly, then test each endpoint:
+     - Single CER generation from `CERGenerator.jsx`.
+     - Batch and comparative endpoints via API testing tools or integrating more UI controls.
+     - PDF download functionality and Dashboard visualization.
+
+4. **Gather Feedback:**  
+   - Once deployed, gather user feedback on the dashboard and comparative analysis features to refine the visualizations and analytics further.
+
+---
+
+By adding these capabilities, you’ll offer clients not only automated report generation but also powerful analytics and visualization tools, elevating the value of your LumenTrialGuide.AI platform. Let me know if you’d like to proceed further or need any additional modifications!

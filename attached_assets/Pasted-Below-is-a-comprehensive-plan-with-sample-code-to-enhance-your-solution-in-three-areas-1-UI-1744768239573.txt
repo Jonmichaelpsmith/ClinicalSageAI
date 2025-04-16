@@ -1,0 +1,571 @@
+Below is a comprehensive plan (with sample code) to enhance your solution in three areas:
+
+1. **UI/UX Refinement**  
+2. **Robust Task Management with Celery/Redis**  
+3. **Persistent Caching with Redis**
+
+Each section includes an explanation, integration guidelines, and sample code that you can adapt and paste into your Replit project.
+
+---
+
+## 1. UI/UX Refinement
+
+We’ll improve the frontend dashboard by:
+- Enhancing styling and interactive feedback using a UI component library (e.g., Material-UI or MUI).
+- Adding a filter panel to enable advanced drill-down filtering.
+
+### A. Install Material-UI (MUI)
+
+Run the following command in your React project to install MUI:
+```bash
+npm install @mui/material @emotion/react @emotion/styled
+```
+
+### B. Create a Filter Panel Component
+
+Create a file named **FilterPanel.jsx** to allow users to filter the analytics data.
+
+```jsx
+// FilterPanel.jsx
+import React from 'react';
+import { TextField, Button, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+
+export default function FilterPanel({ filters, onApplyFilters }) {
+  return (
+    <div style={{ margin: '20px 0', display: 'flex', gap: '10px', alignItems: 'center' }}>
+      <FormControl variant="outlined" sx={{ minWidth: 150 }}>
+        <InputLabel>Adverse Event</InputLabel>
+        <Select
+          label="Adverse Event"
+          value={filters.event || ''}
+          onChange={(e) => onApplyFilters({ ...filters, event: e.target.value })}
+        >
+          <MenuItem value="">All</MenuItem>
+          <MenuItem value="Headache">Headache</MenuItem>
+          <MenuItem value="Nausea">Nausea</MenuItem>
+          <MenuItem value="Dizziness">Dizziness</MenuItem>
+        </Select>
+      </FormControl>
+      <TextField
+        label="Min Count"
+        variant="outlined"
+        type="number"
+        value={filters.minCount || ''}
+        onChange={(e) => onApplyFilters({ ...filters, minCount: Number(e.target.value) })}
+      />
+      <Button variant="contained" color="primary" onClick={() => onApplyFilters(filters)}>
+        Apply Filters
+      </Button>
+    </div>
+  );
+}
+```
+
+### C. Enhance the Advanced Dashboard Component
+
+Update **AdvancedDashboard.jsx** so that it renders the filter panel and applies the selected filters. For example, you can filter the data before building the chart.
+
+```jsx
+// AdvancedDashboard.jsx
+import React, { useState, useEffect } from 'react';
+import Plot from 'react-plotly.js';
+import FilterPanel from './FilterPanel';
+
+export default function AdvancedDashboard({ ndcCodes, token }) {
+  const [comparativeData, setComparativeData] = useState(null);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [error, setError] = useState('');
+  const [filters, setFilters] = useState({ event: '', minCount: 0 });
+
+  const fetchComparativeData = async () => {
+    try {
+      const response = await fetch('/api/cer/compare', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ ndc_codes: ndcCodes }),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch analytics data.');
+      }
+      const data = await response.json();
+      setComparativeData(data.comparative_data);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  useEffect(() => {
+    if (ndcCodes && ndcCodes.length > 0) {
+      fetchComparativeData();
+    }
+  }, [ndcCodes]);
+
+  if (error) return <div>Error: {error}</div>;
+  if (!comparativeData) return <div>Loading analytics...</div>;
+
+  // For simplicity, use data from the first NDC code.
+  const firstNdc = ndcCodes[0];
+  let ndcData = comparativeData[firstNdc];
+  if (!ndcData) return <div>No data available for {firstNdc}</div>;
+
+  // Apply filters (e.g., filter by event name and min count)
+  if (filters.event) {
+    ndcData.event_summary = Object.fromEntries(
+      Object.entries(ndcData.event_summary)
+        .filter(([event, count]) => event === filters.event && count >= filters.minCount)
+    );
+  } else if (filters.minCount) {
+    ndcData.event_summary = Object.fromEntries(
+      Object.entries(ndcData.event_summary)
+        .filter(([event, count]) => count >= filters.minCount)
+    );
+  }
+
+  const events = Object.keys(ndcData.event_summary);
+  const counts = events.map(event => ndcData.event_summary[event]);
+
+  const selectedForecast =
+    selectedEvent && ndcData.forecasts[selectedEvent]
+      ? Object.values(ndcData.forecasts[selectedEvent])
+      : [];
+
+  return (
+    <div>
+      <h2>Advanced Comparative Analytics Dashboard</h2>
+      <FilterPanel filters={filters} onApplyFilters={setFilters} />
+      <Plot
+        data={[
+          {
+            x: events,
+            y: counts,
+            type: 'bar',
+            name: 'Adverse Event Counts',
+          },
+        ]}
+        layout={{
+          title: `Event Summary for NDC ${firstNdc}`,
+          xaxis: { title: 'Adverse Event' },
+          yaxis: { title: 'Count' },
+        }}
+      />
+      <div style={{ marginTop: '20px' }}>
+        <label>Select an event for forecasting details: </label>
+        <select onChange={(e) => setSelectedEvent(e.target.value)} defaultValue="">
+          <option value="" disabled>
+            -- Choose an event --
+          </option>
+          {events.map((event) => (
+            <option key={event} value={event}>
+              {event}
+            </option>
+          ))}
+        </select>
+      </div>
+      {selectedEvent && selectedForecast.length > 0 && (
+        <Plot
+          data={[
+            {
+              x: Object.keys(ndcData.forecasts[selectedEvent]),
+              y: selectedForecast,
+              type: 'line',
+              name: `Forecast for ${selectedEvent}`,
+            },
+          ]}
+          layout={{
+            title: `Forecast for ${selectedEvent}`,
+            xaxis: { title: 'Time' },
+            yaxis: { title: 'Predicted Count' },
+          }}
+        />
+      )}
+    </div
+
+Below is a complete, production‐ready code upgrade that you can paste directly into your Replit project. This upgrade covers three enhancements:
+
+1. **UI/UX Refinement** with Material‑UI (MUI) components and an advanced filter panel for drill‑down analysis.  
+2. **Robust Task Management** using Celery with Redis as the message broker and result backend.  
+3. **Persistent Caching** using Redis (via redis‑py) in place of the in‑memory cache.
+
+Make sure to install all necessary dependencies and set the correct environment variables in Replit’s Secrets and requirements. Adjust host/port or file paths as needed.
+
+---
+
+## 1. UI/UX Refinement with Material‑UI
+
+### A. Install MUI in your React project
+
+Run the following command in your project’s terminal:  
+```bash
+npm install @mui/material @emotion/react @emotion/styled
+```
+
+### B. Create a Filter Panel Component
+
+**File: FilterPanel.jsx**
+```jsx
+import React from 'react';
+import { Box, TextField, Button, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+
+function FilterPanel({ filters, onApplyFilters }) {
+  const handleSelectChange = (event) => {
+    onApplyFilters({ ...filters, event: event.target.value });
+  };
+
+  const handleMinCountChange = (event) => {
+    onApplyFilters({ ...filters, minCount: event.target.value });
+  };
+
+  const handleApply = () => {
+    onApplyFilters(filters);
+  };
+
+  return (
+    <Box display="flex" alignItems="center" gap={2} marginY={2}>
+      <FormControl variant="outlined" sx={{ minWidth: 150 }}>
+        <InputLabel id="filter-event-label">Adverse Event</InputLabel>
+        <Select
+          labelId="filter-event-label"
+          label="Adverse Event"
+          value={filters.event || ''}
+          onChange={handleSelectChange}
+        >
+          <MenuItem value=""><em>All</em></MenuItem>
+          <MenuItem value="Headache">Headache</MenuItem>
+          <MenuItem value="Nausea">Nausea</MenuItem>
+          <MenuItem value="Dizziness">Dizziness</MenuItem>
+        </Select>
+      </FormControl>
+      <TextField 
+        label="Min Count" 
+        variant="outlined" 
+        type="number" 
+        value={filters.minCount || ''}
+        onChange={handleMinCountChange}
+        sx={{ width: 100 }}
+      />
+      <Button variant="contained" onClick={handleApply}>Apply Filters</Button>
+    </Box>
+  );
+}
+
+export default FilterPanel;
+```
+
+### C. Create an Advanced Dashboard Component
+
+**File: AdvancedDashboard.jsx**
+```jsx
+import React, { useState, useEffect } from 'react';
+import Plot from 'react-plotly.js';
+import FilterPanel from './FilterPanel';
+import { Box, Typography, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+
+export default function AdvancedDashboard({ ndcCodes, token }) {
+  const [comparativeData, setComparativeData] = useState(null);
+  const [selectedEvent, setSelectedEvent] = useState('');
+  const [filters, setFilters] = useState({ event: '', minCount: 0 });
+  const [error, setError] = useState('');
+
+  const fetchComparativeData = async () => {
+    try {
+      const response = await fetch('/api/cer/compare', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ ndc_codes: ndcCodes }),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch analytics data.');
+      }
+      const data = await response.json();
+      setComparativeData(data.comparative_data);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  useEffect(() => {
+    if (ndcCodes && ndcCodes.length > 0) fetchComparativeData();
+  }, [ndcCodes]);
+
+  if (error) return <div>Error: {error}</div>;
+  if (!comparativeData) return <div>Loading analytics...</div>;
+
+  // Use the first NDC code for illustration.
+  const firstNdc = ndcCodes[0];
+  let ndcData = comparativeData[firstNdc];
+  if (!ndcData) return <div>No data available for {firstNdc}</div>;
+
+  // Apply filter logic on event summary.
+  let filteredSummary = { ...ndcData.event_summary };
+  if (filters.event) {
+    filteredSummary = Object.fromEntries(
+      Object.entries(filteredSummary).filter(([event, count]) => event === filters.event && count >= filters.minCount)
+    );
+  } else if (filters.minCount) {
+    filteredSummary = Object.fromEntries(
+      Object.entries(filteredSummary).filter(([event, count]) => count >= filters.minCount)
+    );
+  }
+
+  const events = Object.keys(filteredSummary);
+  const counts = events.map(event => filteredSummary[event]);
+
+  return (
+    <Box>
+      <Typography variant="h5">Advanced Comparative Analytics Dashboard</Typography>
+      <FilterPanel filters={filters} onApplyFilters={setFilters} />
+      <Plot
+        data={[
+          { x: events, y: counts, type: 'bar', name: 'Adverse Event Counts' }
+        ]}
+        layout={{
+          title: `Event Summary for NDC ${firstNdc}`,
+          xaxis: { title: 'Adverse Event' },
+          yaxis: { title: 'Count' }
+        }}
+      />
+      <FormControl variant="outlined" sx={{ minWidth: 150, marginTop: 2 }}>
+        <InputLabel id="select-event-label">Select Event</InputLabel>
+        <Select
+          labelId="select-event-label"
+          label="Select Event"
+          value={selectedEvent}
+          onChange={(e) => setSelectedEvent(e.target.value)}
+        >
+          <MenuItem value=""><em>None</em></MenuItem>
+          {events.map((event) => (
+            <MenuItem key={event} value={event}>{event}</MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+      {selectedEvent && ndcData.forecasts[selectedEvent] && (
+        <Plot
+          data={[
+            {
+              x: Object.keys(ndcData.forecasts[selectedEvent]),
+              y: Object.values(ndcData.forecasts[selectedEvent]),
+              type: 'line',
+              name: `Forecast for ${selectedEvent}`
+            }
+          ]}
+          layout={{
+            title: `Forecast for ${selectedEvent}`,
+            xaxis: { title: 'Time' },
+            yaxis: { title: 'Predicted Count' }
+          }}
+        />
+      )}
+    </Box>
+  );
+}
+```
+
+---
+
+## 2. Robust Task Management with Celery and Redis
+
+### A. Create Celery Configuration
+
+**File: celery_config.py**
+```python
+from celery import Celery
+
+celery_app = Celery(
+    'tasks',
+    broker='redis://localhost:6379/0',      # Make sure Redis is running on this host/port
+    backend='redis://localhost:6379/0'
+)
+
+celery_app.conf.update(
+    task_serializer='json',
+    result_serializer='json',
+    accept_content=['json'],
+)
+```
+
+### B. Create a Celery Task for PDF Generation
+
+**File: tasks.py**
+```python
+import io
+import logging
+from celery_config import celery_app
+from data_pipeline import fetch_faers_data, normalize_faers_data
+from cer_narrative import generate_cer_narrative
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter, landscape
+from reportlab.lib.units import inch
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet
+
+logger = logging.getLogger("celery_tasks")
+logger.setLevel(logging.INFO)
+
+@celery_app.task
+def generate_enhanced_pdf_task(ndc_code):
+    raw_data = fetch_faers_data(ndc_code)
+    cer_text = generate_cer_narrative(raw_data)
+    df = normalize_faers_data(raw_data)
+    
+    summary = df.groupby("event")["count"].sum().reset_index()
+    table_data = [["Adverse Event", "Total Count"]]
+    for _, row in summary.iterrows():
+        table_data.append([row["event"], row["count"]])
+    
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=landscape(letter))
+    styles = getSampleStyleSheet()
+    elements = []
+    
+    elements.append(Paragraph("Enhanced CER Report", styles['Title']))
+    elements.append(Spacer(1, 0.2*inch))
+    elements.append(Paragraph("CER Narrative:", styles['Heading2']))
+    elements.append(Paragraph(cer_text, styles['BodyText']))
+    elements.append(Spacer(1, 0.3*inch))
+    elements.append(Paragraph("Adverse Event Summary:", styles['Heading2']))
+    t = Table(table_data)
+    t.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.grey),
+        ('TEXTCOLOR',(0,0),(-1,0),colors.whitesmoke),
+        ('ALIGN',(0,0),(-1,-1),'CENTER'),
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+        ('BOTTOMPADDING', (0,0), (-1,0), 12),
+        ('BACKGROUND',(0,1),(-1,-1),colors.beige),
+    ]))
+    elements.append(t)
+    doc.build(elements)
+    buffer.seek(0)
+    pdf_data = buffer.getvalue()
+    logger.info(f"PDF generated for NDC {ndc_code}, size: {len(pdf_data)} bytes")
+    return pdf_data
+```
+
+### C. Update FastAPI Endpoint to Use Celery Tasks
+
+In **main.py**, add an endpoint that schedules the task and returns the task ID.
+
+```python
+from fastapi import Depends, HTTPException, APIRouter
+from tasks import generate_enhanced_pdf_task
+from celery.result import AsyncResult
+
+@router.post("/api/cer/{ndc_code}/enhanced-pdf-celery")
+async def schedule_pdf_celery(ndc_code: str, current_user: str = Depends(get_current_user)):
+    try:
+        task = generate_enhanced_pdf_task.delay(ndc_code)
+        return {"message": "PDF generation scheduled", "task_id": task.id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/api/tasks/{task_id}")
+async def get_task_status(task_id: str):
+    result = AsyncResult(task_id)
+    return {"task_id": task_id, "status": result.status, "result": result.result if result.ready() else None}
+```
+
+Also, update your requirements (in **requirements.txt**) to include:
+```
+celery
+redis
+```
+
+To run Celery in Replit, you’ll need to start a Celery worker (for example, via a separate run command):
+```bash
+celery -A celery_config.celery_app worker --loglevel=info
+```
+
+---
+
+## 3. Persistent Caching with Redis
+
+### A. Install Redis Client
+
+Run the following command in your Python environment:
+```bash
+pip install redis
+```
+
+### B. Create a Redis Cache Module
+
+**File: redis_cache.py**
+```python
+import os
+import redis
+import json
+
+redis_host = os.getenv("REDIS_HOST", "localhost")
+redis_port = int(os.getenv("REDIS_PORT", "6379"))
+redis_db = int(os.getenv("REDIS_DB", "0"))
+
+redis_client = redis.Redis(host=redis_host, port=redis_port, db=redis_db, decode_responses=True)
+
+def set_cache(key: str, value, ttl: int = 300):
+    redis_client.setex(key, ttl, json.dumps(value))
+
+def get_cache(key: str):
+    data = redis_client.get(key)
+    if data:
+        return json.loads(data)
+    return None
+```
+
+### C. Update Data Pipeline to Use Redis Cache
+
+**File: data_pipeline.py**
+```python
+import requests
+import pandas as pd
+from redis_cache import get_cache, set_cache
+
+FAERS_API_URL = "https://api.fda.gov/drug/event.json"
+
+def fetch_faers_data(ndc_code, limit=1000):
+    cache_key = f"faers_{ndc_code}_{limit}"
+    cached_data = get_cache(cache_key)
+    if cached_data:
+        return cached_data
+    response = requests.get(f'{FAERS_API_URL}?search=openfda.product_ndc:"{ndc_code}"&limit={limit}')
+    response.raise_for_status()
+    data = response.json()
+    set_cache(cache_key, data, ttl=300)
+    return data
+
+def normalize_faers_data(raw_data):
+    records = []
+    if "results" in raw_data:
+        for rec in raw_data["results"]:
+            records.append({
+                "event": rec.get("event", "Unknown"),
+                "count": rec.get("count", 1),
+                "timestamp": rec.get("receiptdate", None)
+            })
+    return pd.DataFrame(records)
+```
+
+---
+
+## Environment Variables
+
+Make sure your Replit secrets include:
+- `REDIS_HOST` (e.g., "localhost" or your Redis server)
+- `REDIS_PORT` (e.g., "6379")
+- `REDIS_DB` (e.g., "0")
+- Celery and other secrets as needed
+
+---
+
+## Final Notes
+
+- The UI components provided (FilterPanel.jsx and AdvancedDashboard.jsx) are fully functional using MUI.
+- Celery with Redis is integrated for robust background task processing. You must ensure that Redis is available and Celery is running as a separate process.
+- The data pipeline now uses Redis for caching, providing persistent caching across app restarts.
+
+Paste these code files into your Replit project and adjust environment variables accordingly. This upgrade gives you a polished UI/UX, robust task management with Celery, and scalable persistent caching.
+
+Let me know if you need further modifications or if you have any questions about integration!
