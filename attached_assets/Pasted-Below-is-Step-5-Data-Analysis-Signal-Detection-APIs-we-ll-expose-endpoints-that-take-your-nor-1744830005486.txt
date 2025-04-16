@@ -1,0 +1,155 @@
+Below is **Step 5: Data Analysis & Signal Detection APIs**—we’ll expose endpoints that take your normalized records and return trends, forecasts, and anomalies. Paste these into your project (e.g. in `main.py`) and be sure you have **`pandas`** and **`statsmodels`** in your `requirements.txt`.
+
+---
+
+### 1. Install Additional Dependencies
+
+Add to `requirements.txt`:
+```
+pandas
+statsmodels
+```
+Then:
+```bash
+pip install pandas statsmodels
+```
+
+---
+
+### 2. Extend `predictive_analytics.py` (if not already)
+
+```python
+# predictive_analytics.py
+import pandas as pd
+from statsmodels.tsa.arima.model import ARIMA
+
+def aggregate_time_series(records: list, date_field="event_date", count_field="count", interval="M"):
+    """
+    records: list of normalized dicts with keys date_field and count_field
+    interval: pandas offset alias (e.g. 'M' for month)
+    """
+    df = pd.DataFrame(records)
+    df[date_field] = pd.to_datetime(df[date_field], errors='coerce')
+    df = df.dropna(subset=[date_field])
+    df.set_index(date_field, inplace=True)
+    series = df[count_field].resample(interval).sum().fillna(0)
+    return series
+
+def forecast_adverse_events(series: pd.Series, periods: int = 3):
+    """
+    Fits ARIMA(1,1,1) and forecasts `periods` intervals ahead.
+    Returns a dict {period_end: forecast_value}.
+    """
+    model = ARIMA(series, order=(1, 1, 1))
+    fit = model.fit()
+    fc = fit.forecast(steps=periods)
+    return {str(idx.date()): float(val) for idx, val in fc.items()}
+
+def detect_anomalies(series: pd.Series, threshold: float = 1.5):
+    """
+    Flags any point where value > rolling_mean * threshold.
+    Returns a dict {date: value} of anomalies.
+    """
+    rolling = series.rolling(window=3, min_periods=1).mean()
+    mask = series > (rolling * threshold)
+    return {str(idx.date()): float(series[idx]) for idx in series.index[mask]}
+```
+
+---
+
+### 3. Add Analytics Endpoints in `main.py`
+
+```python
+# main.py (add these imports at top)
+import pandas as pd
+from fastapi import APIRouter, HTTPException
+from ingestion.normalize import normalize_faers, normalize_mauDe
+from ingestion.fda_faers import get_faers_cached
+from ingestion.fda_device import get_device_complaints
+from predictive_analytics import aggregate_time_series, forecast_adverse_events, detect_anomalies
+
+analytics_router = APIRouter(prefix="/api/analytics", tags=["analytics"])
+
+@analytics_router.get("/trend/faers/{ndc_code}")
+async def trend_faers(ndc_code: str, interval: str = "M"):
+    try:
+        raw = get_faers_cached(ndc_code)
+        normalized = normalize_faers(raw, ndc_code)
+        series = aggregate_time_series(normalized, interval=interval)
+        return {"ndc": ndc_code, "trend": series.to_dict()}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"FAERS trend failed: {e}")
+
+@analytics_router.get("/forecast/faers/{ndc_code}")
+async def forecast_faers(ndc_code: str, periods: int = 3, interval: str = "M"):
+    try:
+        raw = get_faers_cached(ndc_code)
+        normalized = normalize_faers(raw, ndc_code)
+        series = aggregate_time_series(normalized, interval=interval)
+        fc = forecast_adverse_events(series, periods=periods)
+        return {"ndc": ndc_code, "forecast": fc}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"FAERS forecast failed: {e}")
+
+@analytics_router.get("/anomalies/faers/{ndc_code}")
+async def anomalies_faers(ndc_code: str, threshold: float = 1.5, interval: str = "M"):
+    try:
+        raw = get_faers_cached(ndc_code)
+        normalized = normalize_faers(raw, ndc_code)
+        series = aggregate_time_series(normalized, interval=interval)
+        anomalies = detect_anomalies(series, threshold=threshold)
+        return {"ndc": ndc_code, "anomalies": anomalies}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"FAERS anomalies failed: {e}")
+
+@analytics_router.get("/trend/device/{device_code}")
+async def trend_device(device_code: str, interval: str = "M"):
+    try:
+        raw = get_device_complaints(device_code)
+        normalized = normalize_mauDe(raw, device_code)
+        series = aggregate_time_series(normalized, interval=interval)
+        return {"device": device_code, "trend": series.to_dict()}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Device trend failed: {e}")
+
+@analytics_router.get("/forecast/device/{device_code}")
+async def forecast_device(device_code: str, periods: int = 3, interval: str = "M"):
+    try:
+        raw = get_device_complaints(device_code)
+        normalized = normalize_mauDe(raw, device_code)
+        series = aggregate_time_series(normalized, interval=interval)
+        fc = forecast_adverse_events(series, periods=periods)
+        return {"device": device_code, "forecast": fc}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Device forecast failed: {e}")
+
+@analytics_router.get("/anomalies/device/{device_code}")
+async def anomalies_device(device_code: str, threshold: float = 1.5, interval: str = "M"):
+    try:
+        raw = get_device_complaints(device_code)
+        normalized = normalize_mauDe(raw, device_code)
+        series = aggregate_time_series(normalized, interval=interval)
+        anomalies = detect_anomalies(series, threshold=threshold)
+        return {"device": device_code, "anomalies": anomalies}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Device anomalies failed: {e}")
+
+app.include_router(analytics_router)
+```
+
+---
+
+### 4. Test Your Analytics
+
+Run the server:
+```bash
+uvicorn main:app --reload --port 3000
+```
+Then call:
+- `GET /api/analytics/trend/faers/1234567890`
+- `GET /api/analytics/forecast/faers/1234567890?periods=6`
+- `GET /api/analytics/anomalies/faers/1234567890?threshold=2.0`
+- `GET /api/analytics/trend/device/DEVICE_CODE`
+- And so on.
+
+Each will return a JSON with your time‑series trend, forecasted values, or anomalies—ready for your frontend dashboards and narrative modules.

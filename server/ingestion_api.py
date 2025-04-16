@@ -7,10 +7,11 @@ from fastapi import FastAPI, HTTPException
 import uvicorn
 from typing import Optional, Dict, Any, List
 
-# Import FDA data connectors
+# Import data connectors
 from ingestion.fda_faers import get_faers_cached
 from ingestion.fda_device import get_device_complaints_cached
-# EU Eudamed connector would be imported here
+from ingestion.eu_eudamed import get_eudamed_cached
+from ingestion.normalize import normalize_faers, normalize_maude, normalize_eudamed, normalize_all_sources
 
 app = FastAPI(
     title="FDA Data Ingestion API",
@@ -27,7 +28,11 @@ async def root():
         "endpoints": [
             "/api/ingest/drug/{ndc_code}",
             "/api/ingest/device/{device_code}",
-            "/api/ingest/eu/{product_code}"
+            "/api/ingest/eu/{product_code}",
+            "/api/norm/drug/{ndc_code}",
+            "/api/norm/device/{device_code}",
+            "/api/norm/eu/{product_code}",
+            "/api/norm/combined/{product_code}"
         ]
     }
 
@@ -111,15 +116,152 @@ async def ingest_eu_data(product_code: str) -> Dict[str, Any]:
     Returns:
         Dictionary containing EUDAMED data
     """
-    # This is a placeholder for future EUDAMED integration
-    # For now, return an empty result set
-    return {
-        "source": "EU_EUDAMED",
-        "product_code": product_code,
-        "count": 0,
-        "message": "EUDAMED connector in development",
-        "vigilance_reports": []
-    }
+    try:
+        # Use the cached connector stub
+        eudamed_data = get_eudamed_cached(product_code)
+        return eudamed_data
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Eudamed ingestion failed: {str(e)}")
+
+# Normalization endpoints
+@app.get("/api/norm/drug/{ndc_code}")
+async def normalize_drug_data(ndc_code: str, limit: Optional[int] = 100) -> Dict[str, Any]:
+    """
+    Fetch and normalize drug adverse event data from FDA FAERS
+    
+    Args:
+        ndc_code: NDC product code or drug name to search for
+        limit: Maximum number of raw records to process
+        
+    Returns:
+        Dictionary with normalized FAERS records
+    """
+    try:
+        # Get raw data
+        raw_data = get_faers_cached(ndc_code)
+        
+        # Apply limit if specified
+        if limit and limit > 0 and isinstance(raw_data, list) and len(raw_data) > limit:
+            raw_data = raw_data[:limit]
+        
+        # Normalize data
+        normalized = normalize_faers(raw_data, ndc_code)
+        
+        return {
+            "source": "FAERS",
+            "drug_identifier": ndc_code,
+            "count": len(normalized),
+            "records": normalized
+        }
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"FAERS normalization failed: {str(e)}")
+
+@app.get("/api/norm/device/{device_code}")
+async def normalize_device_data(device_code: str) -> Dict[str, Any]:
+    """
+    Fetch and normalize device complaint data from FDA MAUDE
+    
+    Args:
+        device_code: Device identifier or name to search for
+        
+    Returns:
+        Dictionary with normalized MAUDE records
+    """
+    try:
+        # Get raw data
+        raw_data = get_device_complaints_cached(device_code)
+        
+        # Normalize data
+        normalized = normalize_maude(raw_data, device_code)
+        
+        return {
+            "source": "MAUDE",
+            "device_identifier": device_code,
+            "count": len(normalized),
+            "records": normalized
+        }
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"MAUDE normalization failed: {str(e)}")
+
+@app.get("/api/norm/eu/{product_code}")
+async def normalize_eu_data(product_code: str) -> Dict[str, Any]:
+    """
+    Fetch and normalize product data from EU EUDAMED
+    
+    Args:
+        product_code: Product identifier to search for
+        
+    Returns:
+        Dictionary with normalized EUDAMED records
+    """
+    try:
+        # Get raw data
+        raw_data = get_eudamed_cached(product_code)
+        
+        # Normalize data
+        normalized = normalize_eudamed(raw_data, product_code)
+        
+        return {
+            "source": "Eudamed",
+            "product_code": product_code,
+            "count": len(normalized),
+            "records": normalized
+        }
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Eudamed normalization failed: {str(e)}")
+
+@app.get("/api/norm/combined/{product_code}")
+async def get_combined_data(product_code: str, limit: Optional[int] = 100) -> Dict[str, Any]:
+    """
+    Fetch and normalize data from all sources (FAERS, MAUDE, EUDAMED)
+    
+    Args:
+        product_code: Product identifier to search in all sources
+        limit: Maximum records per source
+        
+    Returns:
+        Dictionary with combined normalized records from all sources
+    """
+    try:
+        # Get data from all sources
+        faers_data = get_faers_cached(product_code)
+        if isinstance(faers_data, list) and limit:
+            faers_data = faers_data[:limit]
+            
+        maude_data = get_device_complaints_cached(product_code)
+        if isinstance(maude_data, list) and limit:
+            maude_data = maude_data[:limit]
+            
+        eudamed_data = get_eudamed_cached(product_code)
+        
+        # Normalize everything
+        normalized = normalize_all_sources(
+            faers_data=faers_data,
+            maude_data=maude_data,
+            eudamed_data=eudamed_data,
+            product_code=product_code
+        )
+        
+        # Group by source for easier consumption
+        grouped = {
+            "FAERS": [r for r in normalized if r["source"] == "FAERS"],
+            "MAUDE": [r for r in normalized if r["source"] == "MAUDE"],
+            "Eudamed": [r for r in normalized if r["source"] == "Eudamed"]
+        }
+        
+        return {
+            "product_code": product_code,
+            "total_count": len(normalized),
+            "sources": {
+                "FAERS": len(grouped["FAERS"]),
+                "MAUDE": len(grouped["MAUDE"]),
+                "Eudamed": len(grouped["Eudamed"])
+            },
+            "records": normalized,
+            "grouped_records": grouped
+        }
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Combined normalization failed: {str(e)}")
 
 if __name__ == "__main__":
     # Run the API server directly for testing
