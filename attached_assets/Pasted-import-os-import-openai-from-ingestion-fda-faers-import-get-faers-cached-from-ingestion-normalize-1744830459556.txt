@@ -1,0 +1,158 @@
+import os
+import openai
+from ingestion.fda_faers import get_faers_cached
+from ingestion.normalize import normalize_faers, normalize_mauDe, normalize_eudamed
+from predictive_analytics import aggregate_time_series, forecast_adverse_events, detect_anomalies
+from ingestion.fda_device import get_device_complaints
+from ingestion.eu_eudamed import fetch_eudamed_data
+
+# Ensure your OPENAI_API_KEY is set in the environment
+env_key = "OPENAI_API_KEY"
+if not os.getenv(env_key):
+    raise RuntimeError(f"Environment variable {env_key} must be set")
+openai.api_key = os.getenv(env_key)
+
+
+def build_faers_analysis(ndc_code: str, periods: int = 3):
+    """
+    Fetches, normalizes, and analyzes FAERS data for narrative generation.
+    Returns a dict with total_count, trend, forecast, anomalies.
+    """
+    raw = get_faers_cached(ndc_code)
+    normalized = normalize_faers(raw, ndc_code)
+    series = aggregate_time_series(normalized)
+    forecast = forecast_adverse_events(series, periods=periods)
+    anomalies = detect_anomalies(series)
+    total = sum(rec.get("count", 0) for rec in normalized)
+    return {
+        "product_code": ndc_code,
+        "source": "FAERS",
+        "total_count": total,
+        "trend": {str(idx.date()): int(val) for idx, val in series.items()},
+        "forecast": forecast,
+        "anomalies": anomalies
+    }
+
+
+def build_device_analysis(device_code: str, periods: int = 3):
+    """
+    Fetches, normalizes, and analyzes MAUDE device complaint data.
+    Returns a dict with total_count, trend, forecast, anomalies.
+    """
+    raw = get_device_complaints(device_code)
+    normalized = normalize_mauDe(raw, device_code)
+    series = aggregate_time_series(normalized)
+    forecast = forecast_adverse_events(series, periods=periods)
+    anomalies = detect_anomalies(series)
+    total = sum(rec.get("count", 0) for rec in normalized)
+    return {
+        "product_code": device_code,
+        "source": "MAUDE",
+        "total_count": total,
+        "trend": {str(idx.date()): int(val) for idx, val in series.items()},
+        "forecast": forecast,
+        "anomalies": anomalies
+    }
+
+
+def build_multi_analysis(ndc_codes: list = None, device_codes: list = None, periods: int = 3):
+    """
+    Combines analyses across FAERS (drugs) and MAUDE (devices) and Eudamed.
+    Returns combined dict of analyses.
+    """
+    analyses = []
+    if ndc_codes:
+        for ndc in ndc_codes:
+            analyses.append(build_faers_analysis(ndc, periods))
+    if device_codes:
+        for dev in device_codes:
+            analyses.append(build_device_analysis(dev, periods))
+    # Optionally include Eudamed supplemental info
+    if device_codes:
+        for dev in device_codes:
+            stub = fetch_eudamed_data(dev)
+            eu_norm = normalize_eudamed(stub)
+            analyses.append({
+                "product_code": dev,
+                "source": "Eudamed",
+                "records": eu_norm
+            })
+    return {"analyses": analyses}
+
+
+def generate_cer_narrative_from_analysis(analysis_data: dict) -> str:
+    """
+    Generates a CER narrative given analysis data dict.
+    """
+    # Build a general prompt covering multiple sources
+    prompt_parts = []
+    for item in analysis_data.get("analyses", []):
+        source = item.get("source")
+        code = item.get("product_code")
+        if source in ["FAERS", "MAUDE"]:
+            total = item.get("total_count")
+            trend = item.get("trend")
+            forecast = item.get("forecast")
+            anomalies = item.get("anomalies")
+            prompt_parts.append(
+                f"Source: {source}, Code: {code}, Total reports: {total}, "
+                f"Trend: {trend}, Forecast: {forecast}, Anomalies: {anomalies}" 
+            )
+        else:
+            # Eudamed stub or others
+            desc = item.get("records", [])
+            prompt_parts.append(f"Source: {source}, Code: {code}, Info: {desc}")
+    prompt = (
+        "You are a regulatory-compliant CER generator. "
+        "Based on the following multi-source analysis data, "
+        "generate a cohesive Clinical Evaluation Report narrative that includes an executive summary, trends, forecasts, anomaly analysis, and benefit-risk considerations.\n\n"
+        + "\n".join(prompt_parts)
+    )
+    response = openai.ChatCompletion.create(
+        model="gpt-4-turbo",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.2,
+        max_tokens=800
+    )
+    return response.choices[0].message.content.strip()
+
+# FastAPI Router Integration
+from fastapi import APIRouter, HTTPException, Body
+
+router = APIRouter(prefix="/api/narrative", tags=["narrative"])
+
+@router.get("/faers/{ndc_code}")
+async def narrative_faers(ndc_code: str, periods: int = 3):
+    try:
+        analysis = build_faers_analysis(ndc_code, periods)
+        narrative = generate_cer_narrative_from_analysis({"analyses": [analysis]})
+        return {"product_code": ndc_code, "source": "FAERS", "narrative": narrative}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"FAERS narrative failed: {e}")
+
+@router.get("/device/{device_code}")
+async def narrative_device(device_code: str, periods: int = 3):
+    try:
+        analysis = build_device_analysis(device_code, periods)
+        narrative = generate_cer_narrative_from_analysis({"analyses": [analysis]})
+        return {"product_code": device_code, "source": "MAUDE", "narrative": narrative}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Device narrative failed: {e}")
+
+class MultiRequest(BaseModel):
+    ndc_codes: list[str] | None = None
+    device_codes: list[str] | None = None
+    periods: int = 3
+
+@router.post("/multi")
+async def narrative_multi(request: MultiRequest = Body(...)):
+    try:
+        analysis_data = build_multi_analysis(
+            ndc_codes=request.ndc_codes,
+            device_codes=request.device_codes,
+            periods=request.periods
+        )
+        narrative = generate_cer_narrative_from_analysis(analysis_data)
+        return {"narrative": narrative, "analysis": analysis_data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Multi-source narrative failed: {e}")
