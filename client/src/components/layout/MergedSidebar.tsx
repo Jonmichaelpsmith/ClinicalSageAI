@@ -152,6 +152,9 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
           )}
 
           <nav className="px-2 py-3 space-y-0.5">
+            <NavItem href="/" icon={<Database />}>
+              Home
+            </NavItem>
             <NavItem href="/dashboard" icon={<LayoutDashboard />}>
               Dashboard
             </NavItem>
@@ -282,6 +285,9 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
           )}
 
           <nav className="flex-1 px-2 space-y-0.5">
+            <NavItem href="/" icon={<Database />}>
+              Home
+            </NavItem>
             <NavItem href="/dashboard" icon={<LayoutDashboard />}>
               Dashboard
             </NavItem>
