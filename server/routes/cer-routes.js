@@ -1,23 +1,33 @@
 /**
  * CER Routes
  * 
- * This module provides API routes for the Clinical Evaluation Report (CER) generator.
+ * API routes for the Clinical Evaluation Report generator
  */
 
-const express = require('express');
-const fs = require('fs');
-const path = require('path');
-const { exec } = require('child_process');
-const { promisify } = require('util');
-const execAsync = promisify(exec);
+import { Router } from 'express';
+import { exec } from 'child_process';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { promisify } from 'util';
 
-const dataIntegration = require('../data_integration');
+// Convert callbacks to Promises
+const execPromise = promisify(exec);
+const fsExists = promisify(fs.exists);
+const fsReaddir = promisify(fs.readdir);
+const fsStat = promisify(fs.stat);
+const fsReadFile = promisify(fs.readFile);
 
-const router = express.Router();
+// Get directory name for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Import data integration functionality
+import dataIntegration from '../data_integration.js';
 
 // Constants
-const EXPORTS_DIR = path.join(process.cwd(), 'data', 'exports');
-const CACHE_DIR = path.join(process.cwd(), 'data', 'cache');
+const EXPORTS_DIR = path.join(__dirname, '..', '..', 'data', 'exports');
+const CACHE_DIR = path.join(__dirname, '..', '..', 'data', 'cache');
 
 // Ensure directories exist
 [EXPORTS_DIR, CACHE_DIR].forEach(dir => {
@@ -26,8 +36,12 @@ const CACHE_DIR = path.join(process.cwd(), 'data', 'cache');
   }
 });
 
+// Create router
+const router = Router();
+
 /**
- * Generate a CER
+ * Generate a CER (Clinical Evaluation Report)
+ * 
  * POST /api/cer/generate
  */
 router.post('/generate', async (req, res) => {
@@ -39,222 +53,262 @@ router.post('/generate', async (req, res) => {
       deviceDescription,
       intendedPurpose,
       classification,
-      dateRange,
-      outputFormat
+      dateRangeDays = 730, // Default to 2 years
+      format = 'pdf' // 'pdf' or 'json'
     } = req.body;
     
     // Validate required fields
     if (!productId || !productName) {
-      return res.status(400).json({ error: 'Product ID and Product Name are required' });
+      return res.status(400).json({
+        error: 'Missing required fields',
+        message: 'Product ID and name are required'
+      });
     }
     
-    console.log(`Starting CER generation for ${productName} (${productId})`);
+    // Build parameters for the CER generator script
+    const scriptPath = path.join(__dirname, '..', 'run_cer_generator.py');
+    const args = [
+      `--id "${productId}"`,
+      `--name "${productName}"`
+    ];
     
-    // Step 1: Gather integrated data
-    const isDevice = true; // Default to device
-    const isDrug = false;
+    // Add optional parameters if provided
+    if (manufacturer) args.push(`--manufacturer "${manufacturer}"`);
+    if (deviceDescription) args.push(`--description "${deviceDescription}"`);
+    if (intendedPurpose) args.push(`--purpose "${intendedPurpose}"`);
+    if (classification) args.push(`--class "${classification}"`);
     
-    // Check if this is a drug based on NDC format
-    if (/^\d{4,5}-\d{3,4}-\d{1,2}$/.test(productId)) {
-      console.log(`Detected NDC format: ${productId}, treating as drug`);
-      isDevice = false;
-      isDrug = true;
+    // Add date range and format
+    args.push(`--days ${dateRangeDays}`);
+    args.push(`--format ${format}`);
+    
+    // Execute the CER generator script
+    const command = `python3 "${scriptPath}" ${args.join(' ')}`;
+    console.log(`Executing CER generator: ${command}`);
+    
+    const { stdout, stderr } = await execPromise(command);
+    
+    // Check for errors in stderr
+    if (stderr && stderr.includes('Error')) {
+      console.error('CER Generator Error:', stderr);
+      return res.status(500).json({
+        error: 'CER generation failed',
+        message: stderr
+      });
     }
     
-    // Gather data from all sources
+    // Extract output file path from stdout
+    const outputFilePath = stdout.match(/Output file: (.+)/)?.[1]?.trim();
+    
+    if (!outputFilePath || !(await fsExists(outputFilePath))) {
+      return res.status(500).json({
+        error: 'CER generation failed',
+        message: 'Output file not found'
+      });
+    }
+    
+    // Get file info
+    const stats = await fsStat(outputFilePath);
+    
+    // Return success response with file path
+    res.json({
+      success: true,
+      message: 'CER generated successfully',
+      filePath: outputFilePath,
+      fileName: path.basename(outputFilePath),
+      fileSize: stats.size,
+      format: format,
+      generatedAt: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error generating CER:', error);
+    res.status(500).json({
+      error: 'CER generation failed',
+      message: error.message
+    });
+  }
+});
+
+/**
+ * Get generated CER report file
+ * 
+ * GET /api/cer/report/:filename
+ */
+router.get('/report/:filename', async (req, res) => {
+  try {
+    const filename = req.params.filename;
+    
+    // Validate filename to prevent directory traversal attacks
+    if (!filename || filename.includes('..') || filename.includes('/')) {
+      return res.status(400).json({
+        error: 'Invalid filename',
+        message: 'Filename contains invalid characters'
+      });
+    }
+    
+    const filePath = path.join(EXPORTS_DIR, filename);
+    
+    // Check if file exists
+    if (!(await fsExists(filePath))) {
+      return res.status(404).json({
+        error: 'File not found',
+        message: 'The requested report file does not exist'
+      });
+    }
+    
+    // Determine content type based on file extension
+    const ext = path.extname(filename).toLowerCase();
+    let contentType;
+    
+    switch (ext) {
+      case '.pdf':
+        contentType = 'application/pdf';
+        break;
+      case '.json':
+        contentType = 'application/json';
+        break;
+      default:
+        contentType = 'application/octet-stream';
+    }
+    
+    // Set content type header
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
+    
+    // Send the file
+    const fileStream = fs.createReadStream(filePath);
+    fileStream.pipe(res);
+  } catch (error) {
+    console.error('Error serving CER report file:', error);
+    res.status(500).json({
+      error: 'Error serving file',
+      message: error.message
+    });
+  }
+});
+
+/**
+ * List all generated CER reports
+ * 
+ * GET /api/cer/reports
+ */
+router.get('/reports', async (req, res) => {
+  try {
+    // Create exports directory if it doesn't exist
+    if (!(await fsExists(EXPORTS_DIR))) {
+      await fs.promises.mkdir(EXPORTS_DIR, { recursive: true });
+      return res.json({ reports: [] }); // Return empty array if directory was just created
+    }
+    
+    // Read directory contents
+    const files = await fsReaddir(EXPORTS_DIR);
+    
+    // Filter for CER report files and gather metadata
+    const reports = await Promise.all(
+      files
+        .filter(file => file.startsWith('CER_') && (file.endsWith('.pdf') || file.endsWith('.json')))
+        .map(async file => {
+          // Get file stats
+          const filePath = path.join(EXPORTS_DIR, file);
+          const stats = await fsStat(filePath);
+          
+          // Extract product info from filename
+          // Format is typically CER_ProductName_ProductID_Timestamp
+          const parts = file.split('_');
+          const isJson = file.endsWith('.json');
+          
+          let productInfo = { name: 'Unknown', id: 'Unknown' };
+          
+          if (parts.length >= 3) {
+            // Remove 'CER' and the timestamp + extension part
+            const nameAndId = parts.slice(1, -1).join('_');
+            
+            // Try to extract product name and ID
+            const product = { 
+              name: nameAndId.split('_').slice(0, -1).join('_') || 'Unknown',
+              id: nameAndId.split('_').slice(-1)[0] || 'Unknown'
+            };
+            
+            productInfo = product;
+          }
+          
+          return {
+            filename: file,
+            url: `/api/cer/report/${file}`,
+            product: productInfo,
+            size: stats.size,
+            format: isJson ? 'json' : 'pdf',
+            created: stats.ctime
+          };
+        })
+    );
+    
+    // Sort by creation time (most recent first)
+    reports.sort((a, b) => new Date(b.created) - new Date(a.created));
+    
+    res.json({ reports });
+  } catch (error) {
+    console.error('Error listing CER reports:', error);
+    res.status(500).json({
+      error: 'Error listing reports',
+      message: error.message
+    });
+  }
+});
+
+/**
+ * Get regulatory data for a product without generating a full CER
+ * 
+ * GET /api/cer/data
+ */
+router.post('/data', async (req, res) => {
+  try {
+    const {
+      productId,
+      productName,
+      manufacturer,
+      isDevice = true,
+      isDrug = false,
+      dateRangeDays = 730 // Default to 2 years
+    } = req.body;
+    
+    // Validate required fields
+    if (!productId && !productName) {
+      return res.status(400).json({
+        error: 'Missing required fields',
+        message: 'Product ID or name is required'
+      });
+    }
+    
+    // Gather integrated data
     const integratedData = await dataIntegration.gatherIntegratedData({
       productId,
       productName,
       manufacturer,
       isDevice,
       isDrug,
-      dateRangeDays: parseInt(dateRange) || 730
+      dateRangeDays
     });
     
-    // Step 2: Save integrated data to a temporary file
-    const tempDataFile = path.join(CACHE_DIR, `cer_data_${Date.now()}.json`);
-    fs.writeFileSync(tempDataFile, JSON.stringify(integratedData, null, 2));
+    // Calculate risk level and generate recommendations
+    const riskLevel = dataIntegration.calculateRiskLevel(integratedData.integratedData);
+    const recommendations = dataIntegration.generateSafetyRecommendations(integratedData.integratedData);
     
-    // Step 3: Run the CER generator Python script
-    const scriptPath = path.join(process.cwd(), 'server', 'run_cer_generator.py');
-    
-    // Build command arguments
-    const args = [
-      `--id "${productId}"`,
-      `--name "${productName}"`,
-    ];
-    
-    if (manufacturer) args.push(`--manufacturer "${manufacturer}"`);
-    if (deviceDescription) args.push(`--description "${deviceDescription}"`);
-    if (intendedPurpose) args.push(`--purpose "${intendedPurpose}"`);
-    if (classification) args.push(`--class "${classification}"`);
-    if (dateRange) args.push(`--days ${parseInt(dateRange)}`);
-    args.push(`--format ${outputFormat || 'pdf'}`);
-    
-    // Execute the Python script
-    const command = `python3 "${scriptPath}" ${args.join(' ')}`;
-    console.log(`Executing command: ${command}`);
-    
-    const { stdout, stderr } = await execAsync(command);
-    
-    if (stderr) {
-      console.warn('CER Generator Warning:', stderr);
-    }
-    
-    console.log('CER Generator Output:', stdout);
-    
-    // Step 4: Parse output to get the file path
-    const outputFilePath = stdout.match(/Output file: (.+)/)?.[1]?.trim();
-    
-    if (!outputFilePath || !fs.existsSync(outputFilePath)) {
-      throw new Error('CER generation failed: output file not found');
-    }
-    
-    // Step 5: Create response with file URL
-    const fileName = path.basename(outputFilePath);
-    const fileUrl = `/api/cer/download/${fileName}`;
-    
-    // Get file size
-    const stats = fs.statSync(outputFilePath);
-    const fileSizeInBytes = stats.size;
-    const fileSizeInKb = fileSizeInBytes / 1024;
-    
-    // Response
-    res.status(201).json({
-      success: true,
-      message: 'CER generated successfully',
-      file: {
-        name: fileName,
-        size: fileSizeInBytes,
-        sizeFormatted: `${fileSizeInKb.toFixed(2)} KB`,
-        url: fileUrl,
-        format: outputFormat || 'pdf'
-      },
-      product: {
-        id: productId,
-        name: productName,
-        manufacturer: manufacturer || 'Unknown',
-        classification: classification || 'Unspecified'
-      },
-      generatedAt: new Date().toISOString()
-    });
-  } catch (error) {
-    console.error('Error generating CER:', error);
-    res.status(500).json({
-      error: 'Failed to generate CER',
-      details: error.message
-    });
-  }
-});
-
-/**
- * Download a CER file
- * GET /api/cer/download/:filename
- */
-router.get('/download/:filename', (req, res) => {
-  try {
-    const { filename } = req.params;
-    
-    // Security check - prevent path traversal
-    const sanitizedFilename = path.basename(filename);
-    const filePath = path.join(EXPORTS_DIR, sanitizedFilename);
-    
-    if (!fs.existsSync(filePath)) {
-      return res.status(404).json({ error: 'File not found' });
-    }
-    
-    // Determine content type based on file extension
-    const ext = path.extname(filePath).toLowerCase();
-    let contentType = 'application/octet-stream';
-    
-    if (ext === '.pdf') {
-      contentType = 'application/pdf';
-    } else if (ext === '.json') {
-      contentType = 'application/json';
-    }
-    
-    // Set headers
-    res.setHeader('Content-Type', contentType);
-    res.setHeader('Content-Disposition', `attachment; filename="${sanitizedFilename}"`);
-    
-    // Stream the file
-    const fileStream = fs.createReadStream(filePath);
-    fileStream.pipe(res);
-  } catch (error) {
-    console.error('Error downloading CER:', error);
-    res.status(500).json({
-      error: 'Failed to download CER',
-      details: error.message
-    });
-  }
-});
-
-/**
- * List all generated CER files
- * GET /api/cer/list
- */
-router.get('/list', (req, res) => {
-  try {
-    if (!fs.existsSync(EXPORTS_DIR)) {
-      return res.json({ files: [] });
-    }
-    
-    const files = fs.readdirSync(EXPORTS_DIR)
-      .filter(file => file.endsWith('.pdf') || file.endsWith('.json'))
-      .map(file => {
-        const filePath = path.join(EXPORTS_DIR, file);
-        const stats = fs.statSync(filePath);
-        
-        return {
-          name: file,
-          size: stats.size,
-          created: stats.mtime,
-          url: `/api/cer/download/${file}`
-        };
-      })
-      .sort((a, b) => new Date(b.created) - new Date(a.created));
-    
-    res.json({ files });
-  } catch (error) {
-    console.error('Error listing CER files:', error);
-    res.status(500).json({
-      error: 'Failed to list CER files',
-      details: error.message
-    });
-  }
-});
-
-/**
- * Delete a CER file
- * DELETE /api/cer/delete/:filename
- */
-router.delete('/delete/:filename', (req, res) => {
-  try {
-    const { filename } = req.params;
-    
-    // Security check - prevent path traversal
-    const sanitizedFilename = path.basename(filename);
-    const filePath = path.join(EXPORTS_DIR, sanitizedFilename);
-    
-    if (!fs.existsSync(filePath)) {
-      return res.status(404).json({ error: 'File not found' });
-    }
-    
-    // Delete the file
-    fs.unlinkSync(filePath);
-    
+    // Return the data
     res.json({
       success: true,
-      message: 'CER file deleted successfully',
-      filename: sanitizedFilename
+      data: integratedData,
+      riskLevel,
+      recommendations,
+      queriedAt: new Date().toISOString()
     });
   } catch (error) {
-    console.error('Error deleting CER file:', error);
+    console.error('Error gathering regulatory data:', error);
     res.status(500).json({
-      error: 'Failed to delete CER file',
-      details: error.message
+      error: 'Error gathering regulatory data',
+      message: error.message
     });
   }
 });
 
-module.exports = router;
+export default router;

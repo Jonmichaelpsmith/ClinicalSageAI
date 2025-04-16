@@ -1,273 +1,378 @@
 /**
- * Data Integration Service
+ * Data Integration Module for LumenTrialGuide.AI
  * 
- * This module integrates data from multiple regulatory databases (FDA MAUDE, FDA FAERS, EU EUDAMED)
- * and provides a unified data model for generating Clinical Evaluation Reports (CERs).
+ * This module integrates data from multiple regulatory sources:
+ * - FDA MAUDE (device adverse events)
+ * - FDA FAERS (drug adverse events)
+ * - EU EUDAMED (European device database)
+ * 
+ * The integrated data is used to generate Clinical Evaluation Reports (CERs).
  */
 
-const fs = require('fs');
-const path = require('path');
-const { createCache } = require('./cache_manager');
-const maudeClient = require('./fda_maude_client');
-const faersClient = require('./fda_faers_client');
-const eudamedClient = require('./eudamed_client');
-
-// Create cache manager for integrated data
-const cacheManager = createCache('integrated_data');
+import { searchDeviceReports, analyzeMaudeData } from './fda_maude_client.js';
+import { searchAdverseEvents, analyzeFaersData } from './fda_faers_client.js';
+import { searchEudamedReports, analyzeEudamedData } from './eudamed_client.js';
 
 /**
- * Gather integrated data from all applicable regulatory databases
+ * Convert a JavaScript Date to YYYY-MM-DD format
  * 
- * @param {Object} params Data gathering parameters
- * @param {string} params.productId Product identifier (NDC for drugs, product code for devices)
- * @param {string} params.productName Name of the product
- * @param {string} params.manufacturer Manufacturer name
- * @param {boolean} params.isDevice Whether the product is a medical device
- * @param {boolean} params.isDrug Whether the product is a drug
- * @param {number} params.dateRangeDays Number of days to look back for reports
- * @returns {Promise<Object>} Dictionary containing integrated data
+ * @param {Date} date 
+ * @returns {string} Formatted date string
  */
-async function gatherIntegratedData({
+function formatDateYYYYMMDD(date) {
+  return date.toISOString().split('T')[0];
+}
+
+/**
+ * Gather integrated data from all regulatory sources
+ * 
+ * @param {Object} params Query parameters
+ * @param {string} params.productId Product identifier (NDC or device code)
+ * @param {string} params.productName Product name
+ * @param {string} params.manufacturer Manufacturer name
+ * @param {boolean} params.isDevice Whether the product is a device
+ * @param {boolean} params.isDrug Whether the product is a drug
+ * @param {number} params.dateRangeDays Number of days to look back for data
+ * @returns {Promise<Object>} Integrated data from all sources
+ */
+export async function gatherIntegratedData({
   productId,
   productName,
   manufacturer,
   isDevice = true,
   isDrug = false,
-  dateRangeDays = 730
-}) {
-  try {
-    // Generate a cache key
-    const cacheKey = `integrated_${productId}_${productName}_${isDevice}_${isDrug}_${dateRangeDays}`.replace(/\s+/g, '_');
-    
-    // Check if we have cached results
-    const cachedData = await cacheManager.getCachedData(cacheKey);
-    if (cachedData && cachedData.data) {
-      console.log(`Retrieved integrated data from cache for ${productId || productName}`);
-      return cachedData.data;
-    }
-    
-    // Calculate date range
-    const endDate = new Date();
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - dateRangeDays);
-    
-    const dateFrom = startDate.toISOString().split('T')[0];
-    const dateTo = endDate.toISOString().split('T')[0];
-    
-    console.log(`Gathering data for ${productName} (${productId}) from ${dateFrom} to ${dateTo}`);
-    
-    // Initialize data sources
-    const dataSources = [];
-    const tasks = [];
-    const results = {};
-    
-    // Start device data collection if applicable
-    if (isDevice) {
-      // Get MAUDE data
-      dataSources.push('FDA MAUDE');
-      tasks.push(
-        maudeClient.searchDeviceReports({
-          deviceName: productName,
-          productCode: productId,
-          manufacturer: manufacturer,
-          dateFrom: formatDateForMaude(dateFrom),
-          dateTo: formatDateForMaude(dateTo)
-        })
-      );
-      
-      // Get EUDAMED data
-      dataSources.push('EU EUDAMED');
-      tasks.push(
-        eudamedClient.searchVigilanceData({
-          deviceName: productName,
-          udiCode: productId,
-          manufacturer: manufacturer,
-          dateFrom: dateFrom,
-          dateTo: dateTo
-        })
-      );
-    }
-    
-    // Start drug data collection if applicable
-    if (isDrug) {
-      dataSources.push('FDA FAERS');
-      tasks.push(
-        faersClient.searchAdverseEvents({
-          productNdc: productId,
-          productName: productName,
-          manufacturer: manufacturer,
-          dateFrom: dateFrom,
-          dateTo: dateTo
-        })
-      );
-    }
-    
-    // Wait for all tasks to complete
-    const responses = await Promise.all(tasks);
-    
-    // Process results
-    let resultIndex = 0;
-    
-    if (isDevice) {
-      // MAUDE data
-      results.maudeData = responses[resultIndex++];
-      
-      // EUDAMED data
-      results.eudamedData = responses[resultIndex++];
-    }
-    
-    if (isDrug) {
-      // FAERS data
-      results.faersData = responses[resultIndex++];
-    }
-    
-    // Create integrated data structure
-    const integratedData = {
-      productId: productId,
-      productName: productName,
-      manufacturer: manufacturer || "Unknown Manufacturer",
-      retrievalDate: new Date().toISOString(),
-      dateRange: {
-        from: dateFrom,
-        to: dateTo,
-        days: dateRangeDays
-      },
-      isDevice: isDevice,
-      isDrug: isDrug,
-      sources: dataSources,
-      integratedData: {
-        maudeData: results.maudeData || null,
-        faersData: results.faersData || null,
-        eudamedData: results.eudamedData || null,
-        summary: {}
-      }
-    };
-    
-    // Generate summary from the integrated data
-    integratedData.integratedData.summary = generateIntegratedSummary(integratedData);
-    
-    // Cache the results
-    await cacheManager.saveToCacheWithExpiry(cacheKey, integratedData, 24*60*60); // 24 hours
-    
-    console.log(`Successfully gathered data from ${dataSources.length} sources`);
-    return integratedData;
-  } catch (error) {
-    console.error('Error gathering integrated data:', error.message);
-    throw error;
+  dateRangeDays = 730 // Default to 2 years
+} = {}) {
+  console.log(`Gathering integrated data for ${productName} (${productId})...`);
+  
+  // Calculate date range
+  const endDate = new Date();
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() - dateRangeDays);
+  
+  // Format dates for API calls
+  const dateFrom = formatDateYYYYMMDD(startDate);
+  const dateTo = formatDateYYYYMMDD(endDate);
+  
+  // Array to track which sources were used
+  const sourcesUsed = [];
+  const promises = [];
+  let maudeData = null;
+  let faersData = null;
+  let eudamedData = null;
+  
+  // Query FDA MAUDE if product is a device
+  if (isDevice) {
+    console.log(`Querying FDA MAUDE for device ${productId}...`);
+    promises.push(
+      searchDeviceReports({
+        productCode: productId,
+        deviceName: productName,
+        manufacturer: manufacturer,
+        dateFrom: dateFrom, 
+        dateTo: dateTo
+      })
+      .then(data => {
+        maudeData = data;
+        if (data && data.length > 0) {
+          sourcesUsed.push('FDA MAUDE');
+        }
+        return data;
+      })
+      .catch(error => {
+        console.error('Error fetching FDA MAUDE data:', error.message);
+        return null;
+      })
+    );
   }
-}
-
-/**
- * Format date for MAUDE API
- * 
- * @param {string} dateStr ISO format date string (YYYY-MM-DD)
- * @returns {string} MAUDE format date string (MM/DD/YYYY)
- */
-function formatDateForMaude(dateStr) {
-  if (!dateStr) return '';
   
-  const parts = dateStr.split('-');
-  if (parts.length !== 3) return dateStr;
+  // Query FDA FAERS if product is a drug
+  if (isDrug) {
+    console.log(`Querying FDA FAERS for drug ${productId}...`);
+    promises.push(
+      searchAdverseEvents({
+        productNdc: productId,
+        productName: productName,
+        manufacturer: manufacturer,
+        dateFrom: dateFrom,
+        dateTo: dateTo
+      })
+      .then(data => {
+        faersData = data;
+        if (data && data.results && data.results.adverse_events && data.results.adverse_events.length > 0) {
+          sourcesUsed.push('FDA FAERS');
+        }
+        return data;
+      })
+      .catch(error => {
+        console.error('Error fetching FDA FAERS data:', error.message);
+        return null;
+      })
+    );
+  }
   
-  return `${parts[1]}/${parts[2]}/${parts[0]}`;
-}
-
-/**
- * Generate a comprehensive summary from all integrated data sources
- * 
- * @param {Object} integratedData Dictionary containing data from all sources
- * @returns {Object} Summary dictionary
- */
-function generateIntegratedSummary(integratedData) {
-  const sources = integratedData.sources || [];
-  const data = integratedData.integratedData || {};
+  // Query EU EUDAMED for European data (device only)
+  if (isDevice) {
+    console.log(`Querying EU EUDAMED for device ${productId}...`);
+    promises.push(
+      searchEudamedReports({
+        deviceId: productId,
+        deviceName: productName,
+        manufacturer: manufacturer,
+        dateFrom: dateFrom,
+        dateTo: dateTo
+      })
+      .then(data => {
+        eudamedData = data;
+        if (data && data.incidents && data.incidents.length > 0) {
+          sourcesUsed.push('EU EUDAMED');
+        }
+        return data;
+      })
+      .catch(error => {
+        console.error('Error fetching EUDAMED data:', error.message);
+        return null;
+      })
+    );
+  }
   
-  // Initialize summary
-  const summary = {
-    sourcesRepresented: sources,
-    totalEvents: 0,
-    seriousEvents: 0,
-    eventBySource: {},
-    topEvents: [],
-    sourceAnalysis: {}
+  // Wait for all queries to complete
+  await Promise.all(promises);
+  
+  // Process the collected data
+  const integratedData = processIntegratedData(maudeData, faersData, eudamedData, {
+    productId,
+    productName,
+    manufacturer,
+    dateFrom,
+    dateTo
+  });
+  
+  return {
+    sources: sourcesUsed,
+    dateRange: {
+      from: dateFrom,
+      to: dateTo
+    },
+    integratedData
   };
+}
+
+/**
+ * Process and integrate data from all sources
+ * 
+ * @param {Object} maudeData FDA MAUDE data
+ * @param {Object} faersData FDA FAERS data
+ * @param {Object} eudamedData EU EUDAMED data
+ * @param {Object} metadata Product and query metadata
+ * @returns {Object} Integrated data and analysis
+ */
+function processIntegratedData(maudeData, faersData, eudamedData, metadata) {
+  const { productId, productName, manufacturer, dateFrom, dateTo } = metadata;
   
-  // Analyze each source
-  if (sources.includes('FDA MAUDE') && data.maudeData) {
-    const maudeAnalysis = maudeClient.analyzeMaudeData(data.maudeData);
-    summary.sourceAnalysis.maude = maudeAnalysis;
-    summary.totalEvents += maudeAnalysis.total_reports || 0;
-    summary.seriousEvents += maudeAnalysis.serious_events || 0;
-    summary.eventBySource['FDA MAUDE'] = maudeAnalysis.total_reports || 0;
+  // Analyze data from each source
+  const maudeAnalysis = maudeData ? analyzeMaudeData(maudeData) : null;
+  const faersAnalysis = faersData ? analyzeFaersData(faersData) : null;
+  const eudamedAnalysis = eudamedData ? analyzeEudamedData(eudamedData) : null;
+  
+  // Get total event counts from each source
+  const maudeEvents = maudeAnalysis ? maudeAnalysis.total_reports : 0;
+  const faersEvents = faersAnalysis ? faersAnalysis.total_reports : 0;
+  const eudamedEvents = eudamedAnalysis ? eudamedAnalysis.total_incidents : 0;
+  
+  // Get serious event counts from each source
+  const maudeSerious = maudeAnalysis ? maudeAnalysis.serious_events : 0;
+  const faersSerious = faersAnalysis ? faersAnalysis.serious_reports : 0;
+  const eudamedSerious = eudamedAnalysis ? eudamedAnalysis.serious_incidents : 0;
+  
+  // Combine event counts
+  const totalEvents = maudeEvents + faersEvents + eudamedEvents;
+  const seriousEvents = maudeSerious + faersSerious + eudamedSerious;
+  
+  // Identify top events across sources (simplified)
+  const topEvents = [];
+  
+  // Add top MAUDE events
+  if (maudeData && Array.isArray(maudeData)) {
+    const eventTypes = {};
+    maudeData.forEach(report => {
+      const type = report.event_type || 'Unknown';
+      eventTypes[type] = (eventTypes[type] || 0) + 1;
+    });
     
-    // Add top events
-    if (maudeAnalysis.most_common_event_types && maudeAnalysis.most_common_event_types.length > 0) {
-      maudeAnalysis.most_common_event_types.slice(0, 3).forEach(([eventType, count]) => {
-        summary.topEvents.push({
-          name: eventType,
+    Object.entries(eventTypes)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .forEach(([type, count]) => {
+        topEvents.push({
+          term: type,
           count: count,
           source: 'FDA MAUDE'
         });
       });
-    }
   }
   
-  if (sources.includes('FDA FAERS') && data.faersData) {
-    const faersAnalysis = faersClient.analyzeFaersData(data.faersData);
-    summary.sourceAnalysis.faers = faersAnalysis;
-    summary.totalEvents += faersAnalysis.total_reports || 0;
-    summary.seriousEvents += faersAnalysis.serious_reports || 0;
-    summary.eventBySource['FDA FAERS'] = faersAnalysis.total_reports || 0;
-    
-    // Add top events
-    if (faersAnalysis.top_adverse_events && faersAnalysis.top_adverse_events.length > 0) {
-      faersAnalysis.top_adverse_events.slice(0, 3).forEach(event => {
-        summary.topEvents.push({
-          name: event.term,
+  // Add top FAERS events
+  if (faersData && faersData.results && faersData.results.adverse_events) {
+    faersData.results.adverse_events
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5)
+      .forEach(event => {
+        topEvents.push({
+          term: event.term,
           count: event.count,
           source: 'FDA FAERS'
         });
       });
-    }
   }
   
-  if (sources.includes('EU EUDAMED') && data.eudamedData) {
-    const eudamedAnalysis = eudamedClient.analyzeEudamedData(data.eudamedData);
-    summary.sourceAnalysis.eudamed = eudamedAnalysis;
+  // Add top EUDAMED events
+  if (eudamedData && eudamedData.incidents) {
+    const incidentTypes = {};
+    eudamedData.incidents.forEach(incident => {
+      const type = incident.type || 'Unknown';
+      incidentTypes[type] = (incidentTypes[type] || 0) + 1;
+    });
     
-    // Add FSCA and incidents to total events
-    const fscaCount = eudamedAnalysis.total_fsca || 0;
-    const incidentCount = eudamedAnalysis.total_incidents || 0;
-    
-    summary.totalEvents += fscaCount + incidentCount;
-    summary.seriousEvents += eudamedAnalysis.high_severity_incidents || 0;
-    summary.eventBySource['EU EUDAMED'] = fscaCount + incidentCount;
-    
-    // Add FSCAs and high severity incidents to top events
-    if (fscaCount > 0) {
-      summary.topEvents.push({
-        name: 'Field Safety Corrective Actions',
-        count: fscaCount,
-        source: 'EU EUDAMED'
+    Object.entries(incidentTypes)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .forEach(([type, count]) => {
+        topEvents.push({
+          term: type,
+          count: count,
+          source: 'EU EUDAMED'
+        });
       });
-    }
-    
-    const highSeverity = eudamedAnalysis.high_severity_incidents || 0;
-    if (highSeverity > 0) {
-      summary.topEvents.push({
-        name: 'High Severity Incidents',
-        count: highSeverity,
-        source: 'EU EUDAMED'
-      });
-    }
   }
   
   // Sort top events by count
-  summary.topEvents.sort((a, b) => b.count - a.count);
+  topEvents.sort((a, b) => b.count - a.count);
   
-  return summary;
+  // Combine trend data (dates truncated to month for simplicity)
+  const trends = {
+    bySource: {
+      maude: maudeAnalysis && maudeAnalysis.monthly_trends ? maudeAnalysis.monthly_trends : {},
+      faers: {}, // FAERS trend data would be extracted here
+      eudamed: {} // EUDAMED trend data would be extracted here
+    },
+    combined: {} // Combined trend data would be calculated here
+  };
+  
+  // Create integrated result
+  return {
+    product: {
+      id: productId,
+      name: productName,
+      manufacturer: manufacturer
+    },
+    timeframe: {
+      from: dateFrom,
+      to: dateTo
+    },
+    summary: {
+      totalEvents,
+      seriousEvents,
+      nonSeriousEvents: totalEvents - seriousEvents,
+      bySource: {
+        maude: {
+          total: maudeEvents,
+          serious: maudeSerious
+        },
+        faers: {
+          total: faersEvents,
+          serious: faersSerious
+        },
+        eudamed: {
+          total: eudamedEvents,
+          serious: eudamedSerious
+        }
+      },
+      topEvents
+    },
+    trends,
+    sourceData: {
+      maude: maudeData,
+      faers: faersData,
+      eudamed: eudamedData
+    },
+    analysis: {
+      maude: maudeAnalysis,
+      faers: faersAnalysis,
+      eudamed: eudamedAnalysis
+    }
+  };
 }
 
-module.exports = {
-  gatherIntegratedData
+/**
+ * Calculate risk level based on event counts and trends
+ * 
+ * @param {Object} integratedData Integrated data from all sources
+ * @returns {string} Risk level assessment
+ */
+export function calculateRiskLevel(integratedData) {
+  const { summary } = integratedData;
+  const { totalEvents, seriousEvents } = summary;
+  
+  if (totalEvents === 0) {
+    return 'Insufficient Data';
+  }
+  
+  // Calculate serious event percentage
+  const seriousPercentage = (seriousEvents / totalEvents) * 100;
+  
+  // Determine risk level based on percentage and absolute counts
+  if (seriousEvents > 100 || seriousPercentage > 20) {
+    return 'High';
+  } else if (seriousEvents > 10 || seriousPercentage > 5) {
+    return 'Medium';
+  } else {
+    return 'Low';
+  }
+}
+
+/**
+ * Generate safety recommendations based on integrated data
+ * 
+ * @param {Object} integratedData Integrated data from all sources
+ * @returns {Array<string>} List of safety recommendations
+ */
+export function generateSafetyRecommendations(integratedData) {
+  const { summary } = integratedData;
+  const { totalEvents, seriousEvents, topEvents } = summary;
+  
+  const recommendations = [];
+  
+  // Basic recommendations based on event counts
+  if (totalEvents === 0) {
+    recommendations.push('Implement standard post-market surveillance to monitor for adverse events.');
+    return recommendations;
+  }
+  
+  // Add recommendation based on serious event percentage
+  const seriousPercentage = (seriousEvents / totalEvents) * 100;
+  
+  if (seriousPercentage > 15) {
+    recommendations.push('Urgently review product safety profile and consider risk mitigation measures.');
+    recommendations.push('Consider additional clinical investigations to better characterize identified risks.');
+  } else if (seriousPercentage > 5) {
+    recommendations.push('Monitor serious adverse events closely and review trend data quarterly.');
+    recommendations.push('Evaluate current risk controls for adequacy and update if needed.');
+  } else {
+    recommendations.push('Continue routine post-market surveillance and periodic safety reporting.');
+  }
+  
+  // Add recommendations based on top events
+  if (topEvents && topEvents.length > 0) {
+    const topEvent = topEvents[0];
+    recommendations.push(`Investigate root causes of the most common event type: "${topEvent.term}".`);
+  }
+  
+  return recommendations;
+}
+
+export default {
+  gatherIntegratedData,
+  calculateRiskLevel,
+  generateSafetyRecommendations
 };

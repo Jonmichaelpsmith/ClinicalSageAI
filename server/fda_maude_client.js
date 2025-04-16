@@ -1,313 +1,325 @@
 /**
  * FDA MAUDE Client
  * 
- * This module provides direct access to the FDA MAUDE (Manufacturer and User Facility Device Experience) database
- * which contains reports of adverse events involving medical devices.
- * 
- * API Source: https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfmaude/search.cfm
+ * This module provides access to the FDA MAUDE (Manufacturer and User Facility Device Experience)
+ * database, which contains reports of adverse events involving medical devices.
  */
 
-const https = require('https');
-const querystring = require('querystring');
-const { createCache } = require('./cache_manager');
+import https from 'https';
+import querystring from 'querystring';
+import { createCache } from './cache_manager.js';
 
-// Create cache manager for FDA MAUDE data
+// Create cache manager for MAUDE data
 const cacheManager = createCache('fda_maude');
 
-// Constants
-const FDA_MAUDE_BASE_URL = "https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfmaude/search.cfm";
-const FDA_MAUDE_RESULTS_URL = "https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfmaude/results.cfm";
+// API endpoints
+const FDA_MAUDE_API_BASE = 'https://api.fda.gov/device/event.json';
 
 /**
- * Make an HTTP request
+ * Make an HTTP request to the FDA MAUDE API
  * 
- * @param {string} url URL to request
- * @param {string} method HTTP method (GET or POST)
- * @param {object} headers HTTP headers
- * @param {string} data Request body for POST requests
- * @returns {Promise<string>} Response body
+ * @param {string} endpoint API endpoint
+ * @param {Object} params Query parameters
+ * @returns {Promise<Object>} Promise resolving to API response
  */
-function makeRequest(url, method = 'GET', headers = {}, data = null) {
+function makeRequest(endpoint, params = {}) {
   return new Promise((resolve, reject) => {
+    // Add query parameters
+    const queryString = querystring.stringify(params);
+    const url = queryString ? `${endpoint}?${queryString}` : endpoint;
+    
     const urlObj = new URL(url);
     const options = {
       hostname: urlObj.hostname,
       path: urlObj.pathname + urlObj.search,
-      method: method,
+      method: 'GET',
       headers: {
-        'User-Agent': 'LumenTrialGuide.AI CER Generator/1.0',
-        ...headers
+        'User-Agent': 'LumenTrialGuide.AI CER Generator/1.0'
       }
     };
     
     const req = https.request(options, (res) => {
-      let responseBody = '';
-      
-      // Handle redirects
-      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-        return makeRequest(res.headers.location, method, headers, data)
-          .then(resolve)
-          .catch(reject);
-      }
+      let data = '';
       
       res.on('data', (chunk) => {
-        responseBody += chunk;
+        data += chunk;
       });
       
       res.on('end', () => {
         if (res.statusCode >= 200 && res.statusCode < 300) {
-          resolve(responseBody);
+          try {
+            const jsonData = JSON.parse(data);
+            resolve(jsonData);
+          } catch (error) {
+            reject(new Error(`Failed to parse response: ${error.message}`));
+          }
         } else {
-          reject(new Error(`HTTP Error: ${res.statusCode} ${res.statusMessage}`));
+          try {
+            const errorData = JSON.parse(data);
+            reject(new Error(errorData.error?.message || `HTTP Error: ${res.statusCode}`));
+          } catch (error) {
+            reject(new Error(`HTTP Error: ${res.statusCode} ${res.statusMessage || ''}`));
+          }
         }
       });
     });
     
-    req.on('error', (err) => {
-      reject(err);
+    req.on('error', (error) => {
+      reject(error);
     });
-    
-    if (data) {
-      req.write(data);
-    }
     
     req.end();
   });
 }
 
 /**
- * Extract data from HTML using simple regex patterns
- * (Basic parsing without cheerio)
- * 
- * @param {string} html HTML content
- * @param {string} pattern Regex pattern
- * @param {number} groupIndex Capture group index
- * @param {boolean} global Whether to match globally
- * @returns {string|string[]} Extracted data
- */
-function extractFromHtml(html, pattern, groupIndex = 1, global = false) {
-  if (global) {
-    const results = [];
-    const regex = new RegExp(pattern, 'g');
-    let match;
-    
-    while ((match = regex.exec(html)) !== null) {
-      if (match[groupIndex]) {
-        results.push(match[groupIndex].trim());
-      }
-    }
-    
-    return results;
-  } else {
-    const match = html.match(new RegExp(pattern));
-    return match ? match[groupIndex].trim() : '';
-  }
-}
-
-/**
- * Search for medical device reports in the FDA MAUDE database
+ * Search for device reports in the FDA MAUDE database
  * 
  * @param {Object} params Search parameters
- * @param {string} params.deviceName Device name to search for
  * @param {string} params.productCode FDA product code
+ * @param {string} params.deviceName Device name
  * @param {string} params.manufacturer Manufacturer name
- * @param {string} params.dateFrom Start date in MM/DD/YYYY format
- * @param {string} params.dateTo End date in MM/DD/YYYY format
- * @param {number} params.maxResults Maximum number of results to return
- * @returns {Promise<Object[]>} Promise resolving to array of device reports
+ * @param {string} params.dateFrom Start date in YYYY-MM-DD format
+ * @param {string} params.dateTo End date in YYYY-MM-DD format
+ * @param {number} params.limit Maximum number of results
+ * @returns {Promise<Array>} Promise resolving to array of device reports
  */
-async function searchDeviceReports({
-  deviceName = '',
+export async function searchDeviceReports({
   productCode = '',
+  deviceName = '',
   manufacturer = '',
   dateFrom = '',
   dateTo = '',
-  maxResults = 100
+  limit = 100
 } = {}) {
   try {
+    console.log(`Searching FDA MAUDE for reports on device: ${productCode || deviceName}`);
+    
     // Generate a cache key based on search parameters
-    const cacheKey = `maude_search_${productCode}_${deviceName}_${manufacturer}_${dateFrom}_${dateTo}`.replace(/\s+/g, '_');
+    const cacheKey = `maude_search_${productCode}_${deviceName}_${manufacturer}_${dateFrom}_${dateTo}_${limit}`.replace(/\s+/g, '_');
     
     // Check if we have cached results
     const cachedData = await cacheManager.getCachedData(cacheKey);
     if (cachedData && cachedData.data) {
-      console.log(`Retrieved MAUDE data from cache for ${productCode || deviceName}`);
+      console.log(`Retrieved FDA MAUDE data from cache for ${productCode || deviceName}`);
       return cachedData.data;
     }
     
-    console.log(`Fetching MAUDE reports for ${productCode || deviceName}...`);
+    // Build search query for FDA MAUDE API
+    let searchQuery = '';
     
-    // For this implementation, we'll provide the structure but the real implementation
-    // would require parsing complex HTML responses from the FDA website
-    
-    // Simulate a collection of reports
-    const currentDate = new Date();
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - 365);
-    
-    // Convert to MM/DD/YYYY format
-    const formatDate = (date) => {
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      const year = date.getFullYear();
-      return `${month}/${day}/${year}`;
-    };
-    
-    // Generate deterministic but randomized set of reports based on input
-    const seed = Buffer.from(productCode || deviceName || manufacturer || 'default').reduce(
-      (a, b) => a + b, 0
-    );
-    const pseudoRandom = (max) => {
-      const x = Math.sin(seed + max) * 10000;
-      return Math.floor((x - Math.floor(x)) * max);
-    };
-    
-    const reports = [];
-    const eventTypes = ['Malfunction', 'Injury', 'Death', 'Other'];
-    const eventDescriptions = [
-      'Device failed to operate as intended',
-      'Device displayed incorrect readings',
-      'Battery depleted prematurely',
-      'Device shut down unexpectedly',
-      'Patient experienced adverse reaction',
-      'Device component broke during use',
-      'Software error occurred during operation',
-      'Device overheated during normal use',
-      'Mechanical failure of device component',
-      'Electrical short circuit in device'
-    ];
-    
-    // Generate a variable number of reports based on deterministic factors
-    const reportCount = Math.min(pseudoRandom(150) + 10, maxResults);
-    
-    for (let i = 0; i < reportCount; i++) {
-      // Generate a random date within the range
-      const daysOffset = pseudoRandom(365);
-      const reportDate = new Date(startDate);
-      reportDate.setDate(reportDate.getDate() + daysOffset);
-      
-      // Select event type and description based on deterministic randomness
-      const eventTypeIndex = pseudoRandom(100) < 70 ? 0 : (pseudoRandom(100) < 80 ? 1 : (pseudoRandom(100) < 50 ? 2 : 3));
-      const eventType = eventTypes[eventTypeIndex];
-      const eventDesc = eventDescriptions[pseudoRandom(eventDescriptions.length)];
-      
-      // Create the report
-      reports.push({
-        report_id: `MDR${seed % 10000}${i.toString().padStart(4, '0')}`,
-        event_date: formatDate(reportDate),
-        report_date: formatDate(reportDate),
-        device_name: deviceName || `Medical Device ${productCode || ''}`,
-        manufacturer: manufacturer || 'Unknown Manufacturer',
-        product_code: productCode || 'Unknown',
-        event_type: eventType,
-        event_description: eventDesc,
-        patient_outcome: eventType === 'Malfunction' ? 'Unknown' : 
-                         (pseudoRandom(100) > 30 ? 'Resolved' : 'Ongoing'),
-        source: 'FDA MAUDE'
-      });
+    if (productCode) {
+      searchQuery += `device.product_code:"${productCode}"`;
     }
     
-    // Sort by date
-    reports.sort((a, b) => {
-      const dateA = new Date(a.report_date.split('/').reverse().join('-'));
-      const dateB = new Date(b.report_date.split('/').reverse().join('-'));
-      return dateB - dateA;
-    });
+    if (deviceName) {
+      if (searchQuery) searchQuery += ' AND ';
+      // Use partial match to increase chance of finding relevant results
+      searchQuery += `device.generic_name:${deviceName}`;
+    }
+    
+    if (manufacturer) {
+      if (searchQuery) searchQuery += ' AND ';
+      searchQuery += `device.manufacturer_d_name:${manufacturer}`;
+    }
+    
+    if (dateFrom || dateTo) {
+      if (searchQuery) searchQuery += ' AND ';
+      
+      if (dateFrom && dateTo) {
+        searchQuery += `date_received:[${dateFrom} TO ${dateTo}]`;
+      } else if (dateFrom) {
+        searchQuery += `date_received:[${dateFrom} TO 3000-01-01]`;
+      } else if (dateTo) {
+        searchQuery += `date_received:[1900-01-01 TO ${dateTo}]`;
+      }
+    }
+    
+    // Ensure we have a valid search query, or use a catch-all query
+    if (!searchQuery) {
+      if (productCode || deviceName || manufacturer) {
+        // Use a wildcard search if we have some terms but couldn't build a proper query
+        searchQuery = '_exists_:device';
+      } else {
+        // No search criteria provided, return empty result to avoid excessive API usage
+        console.log('No search criteria provided for FDA MAUDE search');
+        return [];
+      }
+    }
+    
+    const params = {
+      search: searchQuery,
+      limit: limit,
+      sort: 'date_received:desc'
+    };
+    
+    // Make the API request
+    console.log(`FDA MAUDE API query: ${searchQuery}`);
+    const response = await makeRequest(FDA_MAUDE_API_BASE, params);
+    
+    // Process and transform the results
+    const results = transformMaudeResults(response, { productCode, deviceName, manufacturer });
     
     // Cache the results
-    await cacheManager.saveToCacheWithExpiry(cacheKey, reports, 24*60*60); // 24 hours
+    await cacheManager.saveToCacheWithExpiry(cacheKey, results, 24 * 60 * 60);
     
-    console.log(`Retrieved ${reports.length} MAUDE reports`);
-    return reports;
+    return results;
   } catch (error) {
-    console.error('Error fetching FDA MAUDE data:', error.message);
+    console.error('Error searching FDA MAUDE:', error.message);
     
-    // Return empty array in case of errors
+    // Return an empty array with error information
     return [];
   }
 }
 
 /**
- * Analyze MAUDE data for trends and insights
+ * Transform FDA MAUDE API response into a simpler format
  * 
- * @param {Object[]} reports MAUDE reports
+ * @param {Object} apiResponse Raw API response from FDA MAUDE
+ * @param {Object} searchParams Original search parameters
+ * @returns {Array} Transformed array of device reports
+ */
+function transformMaudeResults(apiResponse, searchParams) {
+  if (!apiResponse || !apiResponse.results) {
+    return [];
+  }
+  
+  try {
+    return apiResponse.results.map(result => {
+      // Extract device information
+      const deviceInfo = (result.device && result.device.length > 0) 
+        ? result.device[0] 
+        : {};
+      
+      // Extract patient information
+      const patientInfo = result.patient || {};
+      
+      // Determine event type from MDR text if available
+      let eventType = 'Unknown';
+      if (result.mdr_text && result.mdr_text.length > 0) {
+        const mdrText = result.mdr_text.find(t => t.text_type_code === 'Description of Event or Problem');
+        if (mdrText && mdrText.text) {
+          // Extract a short event description from the first part of the MDR text
+          const text = mdrText.text.toLowerCase();
+          if (text.includes('malfunction')) {
+            eventType = 'Malfunction';
+          } else if (text.includes('death')) {
+            eventType = 'Death';
+          } else if (text.includes('injury') || text.includes('serious')) {
+            eventType = 'Injury';
+          } else if (text.includes('failure')) {
+            eventType = 'Device Failure';
+          }
+        }
+      }
+      
+      return {
+        report_number: result.report_number || '',
+        date_received: result.date_received || '',
+        date_of_event: result.date_of_event || '',
+        event_type: eventType,
+        device_name: deviceInfo.generic_name || deviceInfo.brand_name || searchParams.deviceName || 'Unknown',
+        manufacturer: deviceInfo.manufacturer_d_name || searchParams.manufacturer || 'Unknown',
+        product_code: deviceInfo.product_code || searchParams.productCode || '',
+        device_class: deviceInfo.device_class || '',
+        patient_outcome: patientInfo.sequence_number_outcome ? 
+          patientInfo.sequence_number_outcome.map(o => o.patient_outcome_text).join(', ') : 
+          '',
+        is_serious: patientInfo.sequence_number_outcome ? 
+          patientInfo.sequence_number_outcome.some(o => 
+            ['Death', 'Life Threatening', 'Hospitalization', 'Disability'].includes(o.patient_outcome_text)
+          ) : 
+          false
+      };
+    });
+  } catch (error) {
+    console.error('Error transforming FDA MAUDE results:', error);
+    return [];
+  }
+}
+
+/**
+ * Analyze MAUDE data to identify key patterns and statistics
+ * 
+ * @param {Array} maudeData Array of MAUDE reports
  * @returns {Object} Analysis results
  */
-function analyzeMaudeData(reports) {
+export function analyzeMaudeData(maudeData) {
+  if (!maudeData || !Array.isArray(maudeData) || maudeData.length === 0) {
+    return {
+      total_reports: 0,
+      serious_events: 0,
+      event_types: {},
+      date_range: { earliest: null, latest: null },
+      summary: "No FDA MAUDE data found for this device."
+    };
+  }
+  
   try {
-    if (!reports || reports.length === 0) {
-      return {
-        total_reports: 0,
-        summary: "No MAUDE reports found."
-      };
-    }
+    // Count total reports
+    const totalReports = maudeData.length;
     
-    // Count reports by event type
-    const eventTypeCounts = {};
-    reports.forEach(report => {
-      const eventType = report.event_type || "Unknown";
-      eventTypeCounts[eventType] = (eventTypeCounts[eventType] || 0) + 1;
+    // Count serious events
+    const seriousEvents = maudeData.filter(report => report.is_serious).length;
+    
+    // Count event types
+    const eventTypes = {};
+    maudeData.forEach(report => {
+      const type = report.event_type || 'Unknown';
+      eventTypes[type] = (eventTypes[type] || 0) + 1;
     });
     
-    // Sort by frequency
-    const sortedEventTypes = Object.entries(eventTypeCounts)
-      .sort((a, b) => b[1] - a[1]);
+    // Determine date range
+    const dates = maudeData
+      .map(report => report.date_received)
+      .filter(date => date)
+      .map(date => new Date(date));
     
-    // Count serious events (Death or Injury)
-    const seriousEvents = reports.filter(r => 
-      r.event_type === 'Death' || r.event_type === 'Injury'
-    ).length;
+    const earliestDate = dates.length > 0 ? new Date(Math.min(...dates)) : null;
+    const latestDate = dates.length > 0 ? new Date(Math.max(...dates)) : null;
     
-    // Generate report dates distribution
-    const reportDates = {};
-    reports.forEach(report => {
-      const reportDate = report.report_date;
-      reportDates[reportDate] = (reportDates[reportDate] || 0) + 1;
-    });
-    
-    // Generate time trends (last 12 months)
-    const currentDate = new Date();
+    // Calculate monthly trends
     const monthlyTrends = {};
-    
-    for (let i = 0; i < 12; i++) {
-      const monthDate = new Date(currentDate);
-      monthDate.setMonth(monthDate.getMonth() - i);
-      const monthKey = `${monthDate.getFullYear()}-${String(monthDate.getMonth() + 1).padStart(2, '0')}`;
-      monthlyTrends[monthKey] = 0;
-    }
-    
-    reports.forEach(report => {
-      const dateParts = report.report_date.split('/');
-      if (dateParts.length === 3) {
-        const reportDate = new Date(`${dateParts[2]}-${dateParts[0]}-${dateParts[1]}`);
-        const monthKey = `${reportDate.getFullYear()}-${String(reportDate.getMonth() + 1).padStart(2, '0')}`;
-        
-        if (monthlyTrends[monthKey] !== undefined) {
-          monthlyTrends[monthKey]++;
-        }
+    maudeData.forEach(report => {
+      if (report.date_received) {
+        const date = new Date(report.date_received);
+        const yearMonth = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+        monthlyTrends[yearMonth] = (monthlyTrends[yearMonth] || 0) + 1;
       }
     });
     
-    // Create summary
+    // Format dates for output
+    const formatDate = (date) => {
+      return date ? date.toISOString().split('T')[0] : null;
+    };
+    
+    // Get top event types
+    const sortedEventTypes = Object.entries(eventTypes)
+      .sort(([, a], [, b]) => b - a)
+      .map(([type, count]) => ({ type, count }));
+    
     return {
-      total_reports: reports.length,
+      total_reports: totalReports,
       serious_events: seriousEvents,
-      event_type_distribution: eventTypeCounts,
-      most_common_event_types: sortedEventTypes,
-      report_dates: reportDates,
+      event_types: eventTypes,
+      top_event_types: sortedEventTypes.slice(0, 3),
+      date_range: {
+        earliest: formatDate(earliestDate),
+        latest: formatDate(latestDate)
+      },
       monthly_trends: monthlyTrends,
-      summary: `Analysis of ${reports.length} MAUDE reports found ${seriousEvents} serious events.`
+      summary: `Analysis of ${totalReports} FDA MAUDE reports from ${formatDate(earliestDate) || 'unknown'} to ${formatDate(latestDate) || 'unknown'} found ${seriousEvents} serious events.`
     };
   } catch (error) {
-    console.error('Error analyzing MAUDE data:', error.message);
+    console.error('Error analyzing MAUDE data:', error);
     return {
-      total_reports: reports ? reports.length : 0,
-      error: error.message
+      error: error.message,
+      total_reports: maudeData.length
     };
   }
 }
 
-module.exports = {
+export default {
   searchDeviceReports,
   analyzeMaudeData
 };
