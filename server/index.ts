@@ -2,6 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { scheduleDataUpdates, findLatestDataFile, importTrialsFromJson } from "./data-importer";
+import fastApiBridge from "./fastapi_bridge.js";
 
 // Create a logger utility for consistent formatting
 const logger = {
