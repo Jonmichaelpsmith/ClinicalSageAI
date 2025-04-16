@@ -1,0 +1,196 @@
+import os
+import io
+import openai
+from pydantic import BaseModel
+from fastapi import APIRouter, HTTPException, Body
+from fastapi.responses import StreamingResponse
+from ingestion.fda_faers import get_faers_cached
+from ingestion.normalize import normalize_faers, normalize_mauDe, normalize_eudamed
+from predictive_analytics import aggregate_time_series, forecast_adverse_events, detect_anomalies
+from ingestion.fda_device import get_device_complaints
+from ingestion.eu_eudamed import fetch_eudamed_data
+from reportlab.lib.pagesizes import letter, landscape
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib import colors
+
+# Ensure your OPENAI_API_KEY is set in the environment
+env_key = "OPENAI_API_KEY"
+if not os.getenv(env_key):
+    raise RuntimeError(f"Environment variable {env_key} must be set")
+openai.api_key = os.getenv(env_key)
+
+# --- Analysis Builders ---
+
+def build_faers_analysis(ndc_code: str, periods: int = 3) -> dict:
+    raw = get_faers_cached(ndc_code)
+    normalized = normalize_faers(raw, ndc_code)
+    series = aggregate_time_series(normalized)
+    forecast = forecast_adverse_events(series, periods=periods)
+    anomalies = detect_anomalies(series)
+    total = sum(rec.get("count", 0) for rec in normalized)
+    return {"product_code": ndc_code, "source": "FAERS", "total_count": total,
+            "trend": {str(idx.date()): int(val) for idx, val in series.items()},
+            "forecast": forecast, "anomalies": anomalies}
+
+
+def build_device_analysis(device_code: str, periods: int = 3) -> dict:
+    raw = get_device_complaints(device_code)
+    normalized = normalize_mauDe(raw, device_code)
+    series = aggregate_time_series(normalized)
+    forecast = forecast_adverse_events(series, periods=periods)
+    anomalies = detect_anomalies(series)
+    total = sum(rec.get("count", 0) for rec in normalized)
+    return {"product_code": device_code, "source": "MAUDE", "total_count": total,
+            "trend": {str(idx.date()): int(val) for idx, val in series.items()},
+            "forecast": forecast, "anomalies": anomalies}
+
+
+def build_multi_analysis(ndc_codes: list[str] = None,
+                         device_codes: list[str] = None,
+                         periods: int = 3) -> dict:
+    analyses = []
+    if ndc_codes:
+        for ndc in ndc_codes:
+            analyses.append(build_faers_analysis(ndc, periods))
+    if device_codes:
+        for dev in device_codes:
+            analyses.append(build_device_analysis(dev, periods))
+            stub = fetch_eudamed_data(dev)
+            eu_norm = normalize_eudamed(stub)
+            analyses.append({"product_code": dev, "source": "Eudamed", "records": eu_norm})
+    return {"analyses": analyses}
+
+# --- Narrative Generation ---
+
+def generate_cer_narrative_from_analysis(analysis_data: dict) -> str:
+    prompt_lines = []
+    for item in analysis_data.get('analyses', []):
+        parts = [f"Source: {item.get('source')}", f"Code: {item.get('product_code')}" ]
+        if item.get('total_count') is not None:
+            parts.append(f"Total: {item.get('total_count')}")
+        if item.get('trend'):
+            parts.append(f"Trend: {item.get('trend')}")
+        if item.get('forecast'):
+            parts.append(f"Forecast: {item.get('forecast')}")
+        if item.get('anomalies'):
+            parts.append(f"Anomalies: {item.get('anomalies')}")
+        if item.get('records'):
+            parts.append(f"Info: {item.get('records')}")
+        prompt_lines.append(", ".join(parts))
+    prompt = (
+        "You are a regulatory-compliant CER generator. "
+        "Based on the following multi-source analysis data, generate a cohesive Clinical Evaluation Report narrative" 
+        " that includes an executive summary, trends, forecasts, anomaly analysis, and benefit-risk considerations.\n\n" +
+        "\n".join(prompt_lines)
+    )
+    response = openai.ChatCompletion.create(
+        model="gpt-4-turbo",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.2,
+        max_tokens=800
+    )
+    return response.choices[0].message.content.strip()
+
+# --- PDF Generation Utility ---
+
+def generate_pdf_report(narrative: str, analysis_data: dict) -> bytes:
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=landscape(letter))
+    styles = getSampleStyleSheet()
+    elements = []
+    elements.append(Paragraph("Clinical Evaluation Report", styles['Title']))
+    elements.append(Spacer(1, 12))
+    elements.append(Paragraph("Executive Narrative", styles['Heading2']))
+    elements.append(Paragraph(narrative, styles['BodyText']))
+    elements.append(Spacer(1, 12))
+    # Summary table
+    table_data = [["Source", "Code", "Total Count"]]
+    for item in analysis_data.get('analyses', []):
+        table_data.append([item.get('source'), item.get('product_code'), str(item.get('total_count', ''))])
+    table = Table(table_data)
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.grey),
+        ('TEXTCOLOR', (0,0), (-1,0), colors.whitesmoke),
+        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+        ('BOTTOMPADDING', (0,0), (-1,0), 12),
+        ('BACKGROUND', (0,1), (-1,-1), colors.beige),
+    ]))
+    elements.append(table)
+    doc.build(elements)
+    buffer.seek(0)
+    return buffer.getvalue()
+
+# --- FastAPI Router Integration ---
+router = APIRouter(prefix="/api/narrative", tags=["narrative"])
+
+@router.get("/faers/{ndc_code}")
+async def narrative_faers(ndc_code: str, periods: int = 3):
+    try:
+        analysis = build_faers_analysis(ndc_code, periods)
+        narrative = generate_cer_narrative_from_analysis({"analyses": [analysis]})
+        return {"product_code": ndc_code, "source": "FAERS", "narrative": narrative}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"FAERS narrative failed: {e}")
+
+@router.get("/faers/{ndc_code}/pdf")
+async def narrative_faers_pdf(ndc_code: str, periods: int = 3):
+    try:
+        analysis = build_faers_analysis(ndc_code, periods)
+        narrative = generate_cer_narrative_from_analysis({"analyses": [analysis]})
+        pdf_bytes = generate_pdf_report(narrative, {"analyses": [analysis]})
+        return StreamingResponse(io.BytesIO(pdf_bytes), media_type="application/pdf", headers={"Content-Disposition": f"attachment; filename=cer_faers_{ndc_code}.pdf"})
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/device/{device_code}")
+async def narrative_device(device_code: str, periods: int = 3):
+    try:
+        analysis = build_device_analysis(device_code, periods)
+        narrative = generate_cer_narrative_from_analysis({"analyses": [analysis]})
+        return {"product_code": device_code, "source": "MAUDE", "narrative": narrative}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Device narrative failed: {e}")
+
+@router.get("/device/{device_code}/pdf")
+async def narrative_device_pdf(device_code: str, periods: int = 3):
+    try:
+        analysis = build_device_analysis(device_code, periods)
+        narrative = generate_cer_narrative_from_analysis({"analyses": [analysis]})
+        pdf_bytes = generate_pdf_report(narrative, {"analyses": [analysis]})
+        return StreamingResponse(io.BytesIO(pdf_bytes), media_type="application/pdf", headers={"Content-Disposition": f"attachment; filename=cer_device_{device_code}.pdf"})
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+class MultiRequest(BaseModel):
+    ndc_codes: list[str] | None = None
+    device_codes: list[str] | None = None
+    periods: int = 3
+
+@router.post("/multi")
+async def narrative_multi(request: MultiRequest = Body(...)):
+    try:
+        analysis_data = build_multi_analysis(
+            ndc_codes=request.ndc_codes,
+            device_codes=request.device_codes,
+            periods=request.periods
+        )
+        narrative = generate_cer_narrative_from_analysis(analysis_data)
+        return {"narrative": narrative, "analysis": analysis_data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Multi-source narrative failed: {e}")
+
+@router.post("/multi/pdf")
+async def narrative_multi_pdf(request: MultiRequest = Body(...)):
+    try:
+        analysis_data = build_multi_analysis(
+            ndc_codes=request.ndc_codes,
+            device_codes=request.device_codes,
+            periods=request.periods
+        )
+        narrative = generate_cer_narrative_from_analysis(analysis_data)
+        pdf_bytes = generate_pdf_report(narrative, analysis_data)
+        return StreamingResponse(io.BytesIO(pdf_bytes), media_type="application/pdf", headers={"Content-Disposition": f"attachment; filename=cer_multi.pdf"})
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
