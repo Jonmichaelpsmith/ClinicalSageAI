@@ -1,337 +1,246 @@
 const express = require('express');
-const path = require('path');
-const fs = require('fs');
-const { spawn } = require('child_process');
-const { v4: uuidv4 } = require('uuid');
-
 const router = express.Router();
+const { spawn } = require('child_process');
+const fs = require('fs');
+const path = require('path');
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' });
 
-// Ensure directories exist
-const UPLOADS_DIR = path.join(process.cwd(), 'uploads');
-const PDF_DIR = path.join(UPLOADS_DIR, 'cer_pdfs');
-const TASKS_DIR = path.join(UPLOADS_DIR, 'cer_tasks');
-const REPORTS_DIR = path.join(UPLOADS_DIR, 'cer_reports');
-
-// Create directories if they don't exist
-[UPLOADS_DIR, PDF_DIR, TASKS_DIR, REPORTS_DIR].forEach(dir => {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-});
+// Configure paths
+const EXPORTS_DIR = path.join(process.cwd(), 'data', 'exports');
+// Ensure exports directory exists
+if (!fs.existsSync(EXPORTS_DIR)) {
+  fs.mkdirSync(EXPORTS_DIR, { recursive: true });
+}
 
 /**
- * Generate a CER report for the specified NDC code
+ * API endpoint to generate a CER from integrated data
+ * POST /api/cer/generate
  */
-router.get('/:ndcCode', async (req, res) => {
-  const { ndcCode } = req.params;
-  const { basic } = req.query;  // Option to disable enhanced generation
-  
-  if (!ndcCode || !ndcCode.trim()) {
-    return res.status(400).json({ 
-      success: false, 
-      error: 'NDC code is required' 
-    });
-  }
-
+router.post('/generate', async (req, res) => {
   try {
-    const reportId = uuidv4();
-    const timestamp = new Date().toISOString();
-    
-    // Execute the cer_narrative.py script with appropriate options
-    const pythonArgs = [
-      path.join(process.cwd(), 'cer_narrative.py'),
-      '--ndc', ndcCode
-    ];
-    
-    // Add option to disable enhanced generation if requested
-    if (basic === 'true') {
-      pythonArgs.push('--no-enhanced');
+    const { 
+      productId, 
+      productName, 
+      manufacturer, 
+      deviceDescription, 
+      intendedPurpose, 
+      classification, 
+      dateRange, 
+      outputFormat 
+    } = req.body;
+
+    // Validate required fields
+    if (!productId || !productName) {
+      return res.status(400).json({ 
+        error: 'Missing required fields: productId and productName are required' 
+      });
     }
+
+    // Prepare parameters for Python script
+    const args = [
+      'server/run_cer_generator.py',
+      '--id', productId,
+      '--name', productName
+    ];
+
+    // Add optional parameters if provided
+    if (manufacturer) args.push('--manufacturer', manufacturer);
+    if (deviceDescription) args.push('--description', deviceDescription);
+    if (intendedPurpose) args.push('--purpose', intendedPurpose);
+    if (classification) args.push('--class', classification);
+    if (dateRange) args.push('--days', dateRange.toString());
+    if (outputFormat) args.push('--format', outputFormat);
+
+    // Spawn Python process
+    const pythonProcess = spawn('python', args);
     
-    console.log(`Executing CER generation with args: ${pythonArgs.join(' ')}`);
-    const pythonProcess = spawn('python', pythonArgs);
-    
-    let cerReport = '';
-    let errorOutput = '';
-    
+    let outputData = '';
+    let errorData = '';
+
+    // Collect output data
     pythonProcess.stdout.on('data', (data) => {
-      cerReport += data.toString();
+      outputData += data.toString();
     });
-    
+
+    // Collect error data
     pythonProcess.stderr.on('data', (data) => {
-      errorOutput += data.toString();
+      errorData += data.toString();
     });
-    
+
     // Handle process completion
-    pythonProcess.on('close', async (code) => {
-      if (code !== 0 || !cerReport) {
-        console.error('Error generating CER narrative:', errorOutput || `Process exited with code ${code}`);
+    pythonProcess.on('close', (code) => {
+      if (code !== 0) {
+        console.error(`CER generation process exited with code ${code}`);
+        console.error(`Error: ${errorData}`);
         return res.status(500).json({ 
-          success: false, 
-          error: errorOutput || 'Failed to generate CER report' 
+          error: 'Failed to generate CER', 
+          details: errorData 
         });
       }
-      
-      // Extract some basic metadata from the report
-      const isMarkdown = cerReport.startsWith('#');
-      const isEnhanced = cerReport.includes('Executive Summary') || isMarkdown;
-      
-      // Save the report
-      const reportData = {
-        id: reportId,
-        ndcCode: ndcCode,
-        title: `CER Report for NDC ${ndcCode}`,
-        content: cerReport,
-        created_at: timestamp,
-        metadata: {
-          generatedAt: timestamp,
-          faersRecordCount: (cerReport.match(/adverse event/gi) || []).length,
-          enhanced: isEnhanced,
-          format: isMarkdown ? 'markdown' : 'text'
-        }
-      };
-      
-      // Save to the file system
-      fs.writeFileSync(
-        path.join(REPORTS_DIR, `${reportId}.json`),
-        JSON.stringify(reportData, null, 2)
-      );
-      
-      res.json({
-        success: true,
-        report_id: reportId,
-        cer_report: cerReport,
-        enhanced: isEnhanced
-      });
-    });
-    
-  } catch (err) {
-    console.error('Error processing CER request:', err);
-    res.status(500).json({ 
-      success: false, 
-      error: err.message || 'Internal server error' 
-    });
-  }
-});
 
-/**
- * Generate an enhanced PDF for a CER report
- */
-router.post('/:ndcCode/enhanced-pdf-task', async (req, res) => {
-  const { ndcCode } = req.params;
-  const { user_id } = req.body;
-  
-  if (!ndcCode || !ndcCode.trim()) {
-    return res.status(400).json({ 
-      success: false, 
-      error: 'NDC code is required' 
-    });
-  }
-  
-  try {
-    const taskId = uuidv4();
-    const taskFilePath = path.join(TASKS_DIR, `${taskId}.json`);
-    
-    // Create task record
-    const task = {
-      task_id: taskId,
-      status: 'scheduled',
-      ndcCode: ndcCode,
-      user_id: user_id || 'anonymous',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
-    
-    fs.writeFileSync(taskFilePath, JSON.stringify(task, null, 2));
-    
-    // Start PDF generation in background
-    const pythonProcess = spawn('python', [
-      path.join(process.cwd(), 'cer_tasks_cli.py'),
-      '--ndc', ndcCode,
-      '--task-id', taskId,
-      '--user-id', user_id || 'anonymous'
-    ]);
-    
-    // Don't wait for process completion - return task info immediately
-    res.json({
-      success: true,
-      task_id: taskId,
-      status: 'scheduled',
-      message: 'PDF generation has been scheduled'
-    });
-    
-    // Handle errors
-    pythonProcess.stderr.on('data', (data) => {
-      console.error(`PDF generation error for task ${taskId}:`, data.toString());
-      
-      // Update task status to failed
-      if (fs.existsSync(taskFilePath)) {
-        const taskData = JSON.parse(fs.readFileSync(taskFilePath));
-        taskData.status = 'failed';
-        taskData.message = data.toString();
-        taskData.updated_at = new Date().toISOString();
-        fs.writeFileSync(taskFilePath, JSON.stringify(taskData, null, 2));
+      try {
+        // Parse output to get the file path
+        const outputLines = outputData.split('\n');
+        const filePathLine = outputLines.find(line => line.includes('Output file:'));
+        
+        if (!filePathLine) {
+          return res.status(500).json({ 
+            error: 'Could not determine output file path', 
+            details: outputData 
+          });
+        }
+
+        const filePath = filePathLine.split('Output file:')[1].trim();
+        const fileName = path.basename(filePath);
+
+        // Return success response with file details
+        res.status(200).json({
+          success: true,
+          message: 'CER generated successfully',
+          file: {
+            name: fileName,
+            path: filePath,
+            url: `/api/cer/download/${fileName}`
+          }
+        });
+      } catch (error) {
+        console.error('Error parsing output:', error);
+        res.status(500).json({ 
+          error: 'Error parsing output', 
+          details: error.message 
+        });
       }
     });
-    
-  } catch (err) {
-    console.error('Error scheduling PDF generation:', err);
+  } catch (error) {
+    console.error('Error generating CER:', error);
     res.status(500).json({ 
-      success: false, 
-      error: err.message || 'Internal server error' 
+      error: 'Error generating CER', 
+      details: error.message 
     });
   }
 });
 
 /**
- * Get the status of a PDF generation task
+ * API endpoint to download a generated CER file
+ * GET /api/cer/download/:filename
  */
-router.get('/tasks/:taskId/status', (req, res) => {
-  const { taskId } = req.params;
-  const taskFilePath = path.join(TASKS_DIR, `${taskId}.json`);
-  
-  if (!fs.existsSync(taskFilePath)) {
-    return res.status(404).json({ 
-      success: false, 
-      error: 'Task not found' 
-    });
-  }
-  
+router.get('/download/:filename', (req, res) => {
   try {
-    const taskData = JSON.parse(fs.readFileSync(taskFilePath));
-    res.json(taskData);
-  } catch (err) {
-    console.error('Error reading task status:', err);
-    res.status(500).json({ 
-      success: false, 
-      error: err.message || 'Internal server error' 
-    });
-  }
-});
+    const filename = req.params.filename;
+    const filePath = path.join(EXPORTS_DIR, filename);
 
-/**
- * Get list of generated PDFs
- */
-router.get('/pdfs', (req, res) => {
-  try {
-    // Create directory if it doesn't exist yet
-    if (!fs.existsSync(PDF_DIR)) {
-      fs.mkdirSync(PDF_DIR, { recursive: true });
-      return res.json([]);
+    // Check if file exists
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'File not found' });
     }
-    
-    const files = fs.readdirSync(PDF_DIR)
-      .filter(file => file.endsWith('.pdf'))
-      .map(filename => {
-        const filePath = path.join(PDF_DIR, filename);
-        const stats = fs.statSync(filePath);
-        
-        // Extract NDC code from filename (format: cer_<ndc>_<uuid>.pdf)
-        const filenameParts = filename.split('_');
-        const ndcCode = filenameParts.length > 1 ? filenameParts[1] : 'unknown';
-        
-        return {
-          filename,
-          ndcCode,
-          created: stats.mtime,
-          size: stats.size
-        };
-      })
-      .sort((a, b) => b.created - a.created); // Sort newest first
-    
-    res.json(files);
-  } catch (err) {
-    console.error('Error retrieving PDFs:', err);
-    res.status(500).json({ 
-      success: false, 
-      error: err.message || 'Internal server error' 
-    });
-  }
-});
 
-/**
- * Serve a PDF file
- */
-router.get('/pdfs/:filename', (req, res) => {
-  const { filename } = req.params;
-  const filePath = path.join(PDF_DIR, filename);
-  
-  if (!fs.existsSync(filePath)) {
-    return res.status(404).json({ 
-      success: false, 
-      error: 'PDF not found' 
-    });
-  }
-  
-  res.sendFile(filePath);
-});
-
-/**
- * Get list of recent CER reports
- */
-router.get('/reports', (req, res) => {
-  try {
-    // Create directory if it doesn't exist yet
-    if (!fs.existsSync(REPORTS_DIR)) {
-      fs.mkdirSync(REPORTS_DIR, { recursive: true });
-      return res.json({ reports: [] });
+    // Determine content type based on file extension
+    const ext = path.extname(filename).toLowerCase();
+    let contentType = 'application/octet-stream';
+    
+    if (ext === '.pdf') {
+      contentType = 'application/pdf';
+    } else if (ext === '.json') {
+      contentType = 'application/json';
     }
-    
-    const files = fs.readdirSync(REPORTS_DIR)
-      .filter(file => file.endsWith('.json'))
-      .map(filename => {
-        try {
-          const filePath = path.join(REPORTS_DIR, filename);
-          const reportData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-          
-          // Return only metadata, not the full report content
-          return {
-            id: reportData.id,
-            title: reportData.title,
-            ndcCode: reportData.ndcCode,
-            created_at: reportData.created_at,
-            metadata: reportData.metadata
-          };
-        } catch (err) {
-          console.error(`Error parsing report ${filename}:`, err);
-          return null;
-        }
-      })
-      .filter(report => report !== null)
-      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at)); // Sort newest first
-    
-    res.json({ reports: files });
-  } catch (err) {
-    console.error('Error retrieving reports:', err);
+
+    // Set headers
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+
+    // Stream the file
+    const fileStream = fs.createReadStream(filePath);
+    fileStream.pipe(res);
+  } catch (error) {
+    console.error('Error downloading file:', error);
     res.status(500).json({ 
-      success: false, 
-      error: err.message || 'Internal server error' 
+      error: 'Error downloading file', 
+      details: error.message 
     });
   }
 });
 
 /**
- * Get a specific CER report
+ * API endpoint to list all generated CER files
+ * GET /api/cer/list
  */
-router.get('/reports/:reportId', (req, res) => {
-  const { reportId } = req.params;
-  const filePath = path.join(REPORTS_DIR, `${reportId}.json`);
-  
-  if (!fs.existsSync(filePath)) {
-    return res.status(404).json({ 
-      success: false, 
-      error: 'Report not found' 
+router.get('/list', (req, res) => {
+  try {
+    // Read exports directory
+    const files = fs.readdirSync(EXPORTS_DIR);
+
+    // Filter only CER files
+    const cerFiles = files.filter(file => 
+      file.startsWith('CER_') && 
+      (file.endsWith('.pdf') || file.endsWith('.json'))
+    );
+
+    // Get file details
+    const fileDetails = cerFiles.map(filename => {
+      const filePath = path.join(EXPORTS_DIR, filename);
+      const stats = fs.statSync(filePath);
+      
+      return {
+        name: filename,
+        size: stats.size,
+        created: stats.birthtime,
+        url: `/api/cer/download/${filename}`
+      };
+    });
+
+    // Sort by creation date (newest first)
+    fileDetails.sort((a, b) => b.created - a.created);
+
+    res.status(200).json({
+      files: fileDetails
+    });
+  } catch (error) {
+    console.error('Error listing CER files:', error);
+    res.status(500).json({ 
+      error: 'Error listing CER files', 
+      details: error.message 
     });
   }
-  
+});
+
+/**
+ * API endpoint to upload a file to be used as a data source
+ * POST /api/cer/upload
+ */
+router.post('/upload', upload.single('file'), (req, res) => {
   try {
-    const reportData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-    res.json(reportData);
-  } catch (err) {
-    console.error('Error reading report:', err);
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    // Get file details
+    const { originalname, path: tempPath, size } = req.file;
+    
+    // Create uploads directory if it doesn't exist
+    const uploadsDir = path.join(process.cwd(), 'data', 'uploads');
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+
+    // Move file to permanent location
+    const destPath = path.join(uploadsDir, originalname);
+    fs.renameSync(tempPath, destPath);
+
+    res.status(200).json({
+      success: true,
+      message: 'File uploaded successfully',
+      file: {
+        name: originalname,
+        path: destPath,
+        size: size
+      }
+    });
+  } catch (error) {
+    console.error('Error uploading file:', error);
     res.status(500).json({ 
-      success: false, 
-      error: err.message || 'Internal server error' 
+      error: 'Error uploading file', 
+      details: error.message 
     });
   }
 });
