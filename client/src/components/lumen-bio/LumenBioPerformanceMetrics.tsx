@@ -51,7 +51,8 @@ import {
   Award,
   Calendar,
   Users,
-  LogOut
+  LogOut,
+  Info
 } from "lucide-react";
 
 // Risk classification component with enhanced gradient colors
