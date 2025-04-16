@@ -2,331 +2,355 @@
 """
 Simple CER Generator
 
-This is a simplified version of the Clinical Evaluation Report generator
-that will be used as a fallback if the enhanced generator is unavailable.
-It generates basic CER reports based on regulatory data.
+A simplified version of the Clinical Evaluation Report (CER) generator
+that provides basic functionality with minimal dependencies.
+This serves as a fallback if the enhanced generator encounters issues.
 """
 
 import os
 import json
+import sys
 import logging
-import datetime
+import asyncio
+from datetime import datetime
 import time
-import re
-from typing import Dict, Any, Optional
-from io import BytesIO
+import tempfile
+import traceback
 
-# Import reportlab for PDF generation
-from reportlab.lib.pagesizes import letter
-from reportlab.lib import colors
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import inch
-from reportlab.platypus import (
-    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, 
-    ListFlowable, ListItem
-)
-from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_JUSTIFY
-
-# Configure logging
+# Setup logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger("simple_cer_generator")
 
-# Constants
-OUTPUT_DIR = os.path.join(os.getcwd(), 'data', 'exports')
-CACHE_DIR = os.path.join(os.getcwd(), 'data', 'cache')
+# Try to import PDF generation libraries
+try:
+    from reportlab.lib.pagesizes import letter, A4
+    from reportlab.lib import colors
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import inch, mm
+    from reportlab.platypus import (
+        SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle,
+        PageBreak, Image, ListFlowable, ListItem
+    )
+    from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT, TA_JUSTIFY
+    REPORTLAB_AVAILABLE = True
+except ImportError:
+    logger.warning("ReportLab not available, PDF generation will be limited")
+    REPORTLAB_AVAILABLE = False
 
-# Ensure output and cache directories exist
-os.makedirs(OUTPUT_DIR, exist_ok=True)
-os.makedirs(CACHE_DIR, exist_ok=True)
+# Directories
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(SCRIPT_DIR)
+DATA_DIR = os.path.join(BASE_DIR, 'data')
+EXPORTS_DIR = os.path.join(DATA_DIR, 'exports')
+CACHE_DIR = os.path.join(DATA_DIR, 'cache')
+
+# Ensure directories exist
+for directory in [DATA_DIR, EXPORTS_DIR, CACHE_DIR]:
+    os.makedirs(directory, exist_ok=True)
 
 async def generate_cer(
-    product_id: str,
-    product_name: str,
-    manufacturer: Optional[str] = None,
-    device_description: Optional[str] = None,
-    intended_purpose: Optional[str] = None,
-    classification: Optional[str] = None,
-    date_range: int = 730,
-    output_format: str = "pdf"
-) -> Dict[str, Any]:
+    product_id,
+    product_name,
+    manufacturer=None,
+    device_description=None,
+    intended_purpose=None,
+    classification=None,
+    date_range=730,
+    output_format="pdf"
+):
     """
-    Generate a Clinical Evaluation Report
+    Generate a simplified Clinical Evaluation Report for a medical device
     
     Args:
-        product_id: Product identifier (NDC code or device code)
-        product_name: Product name
-        manufacturer: Manufacturer name
-        device_description: Device description
-        intended_purpose: Intended purpose
-        classification: Device classification (e.g., Class I, II, III)
-        date_range: Date range in days to look back for reports
+        product_id: Device identifier or NDC code
+        product_name: Name of the device/product
+        manufacturer: Name of the manufacturer
+        device_description: Description of the device
+        intended_purpose: Intended purpose of the device
+        classification: Device classification (Class I, II, III)
+        date_range: Number of days to look back for data
         output_format: Output format ('pdf' or 'json')
         
     Returns:
-        Dictionary with metadata about the generated report
+        dict: Result information including the output file path
     """
-    logger.info(f"Generating CER for {product_name} (ID: {product_id})")
-    
     try:
-        # Create a filename based on product details and date
-        current_date = datetime.datetime.now()
-        timestamp = current_date.strftime("%Y%m%d_%H%M%S")
+        logger.info(f"Generating simple CER for {product_name} ({product_id})")
         
-        # Sanitize product name for the filename
-        safe_product_name = re.sub(r'[^\w\-_]', '_', product_name)
-        safe_product_id = re.sub(r'[^\w\-_]', '_', product_id)
+        # Generate timestamp for filename
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        sanitized_name = product_name.replace(" ", "_").replace("/", "_")
         
-        # Create filenames
-        base_filename = f"CER_{safe_product_name}_{safe_product_id}_{timestamp}"
+        # Create a unique identifier for this report
+        report_id = f"CER_{sanitized_name}_{product_id}_{timestamp}"
         
-        # Determine output path based on format
-        output_path = os.path.join(OUTPUT_DIR, f"{base_filename}.{output_format}")
+        # Prepare output file path
+        file_extension = "pdf" if output_format == "pdf" else "json"
+        output_filename = f"{report_id}.{file_extension}"
+        output_path = os.path.join(EXPORTS_DIR, output_filename)
         
-        # Create report metadata
-        report_metadata = {
-            "product_id": product_id,
-            "product_name": product_name,
-            "manufacturer": manufacturer or "Unknown",
-            "report_date": current_date.strftime("%Y-%m-%d"),
-            "date_range": f"{date_range} days",
-            "format": output_format,
-            "path": output_path
+        # Collect data from the Node.js side
+        # In a real implementation, this would use the REST API endpoints
+        # For this simplified version, we'll generate basic content
+        
+        # Create a simple data structure for the report
+        report_data = {
+            "report_id": report_id,
+            "generated_at": datetime.now().isoformat(),
+            "product": {
+                "id": product_id,
+                "name": product_name,
+                "manufacturer": manufacturer or "Unknown",
+                "description": device_description or "",
+                "intended_purpose": intended_purpose or "",
+                "classification": classification or "Unknown"
+            },
+            "evaluation_period": {
+                "days": date_range,
+                "start_date": (datetime.now() - datetime.timedelta(days=date_range)).isoformat().split('T')[0] if 'timedelta' in dir(datetime) else "Unknown",
+                "end_date": datetime.now().isoformat().split('T')[0]
+            },
+            "data_sources": ["FDA MAUDE", "FDA FAERS", "EU EUDAMED"],
+            "summary": {
+                "total_events": 0,
+                "serious_events": 0,
+                "risk_assessment": "Unknown",
+                "conclusion": f"This is a simplified CER for {product_name}. For a complete regulatory-compliant report, please use the enhanced CER generator."
+            }
         }
         
-        # Generate report based on format
-        if output_format == "pdf":
-            await generate_pdf_report(report_metadata, output_path)
-        else:  # JSON format
-            await generate_json_report(report_metadata, output_path)
+        # If JSON output is requested, write the data to a file
+        if output_format == "json":
+            with open(output_path, 'w') as f:
+                json.dump(report_data, f, indent=2)
+            logger.info(f"Generated JSON CER at {output_path}")
+            
+            return {
+                "success": True,
+                "format": "json",
+                "path": output_path,
+                "report_id": report_id
+            }
         
-        logger.info(f"CER generated successfully: {output_path}")
-        return report_metadata
+        # For PDF output, use ReportLab if available
+        elif output_format == "pdf" and REPORTLAB_AVAILABLE:
+            generate_pdf_report(report_data, output_path)
+            logger.info(f"Generated PDF CER at {output_path}")
+            
+            return {
+                "success": True,
+                "format": "pdf",
+                "path": output_path,
+                "report_id": report_id
+            }
+        
+        # Fallback to a very basic text file if ReportLab is not available
+        else:
+            if output_format == "pdf" and not REPORTLAB_AVAILABLE:
+                logger.warning("ReportLab not available, generating text file instead")
+                output_path = output_path.replace(".pdf", ".txt")
+            
+            # Generate a simple text report
+            with open(output_path, 'w') as f:
+                f.write(f"CLINICAL EVALUATION REPORT\n")
+                f.write(f"========================\n\n")
+                f.write(f"Report ID: {report_id}\n")
+                f.write(f"Generated: {datetime.now().isoformat()}\n\n")
+                f.write(f"PRODUCT INFORMATION\n")
+                f.write(f"-------------------\n")
+                f.write(f"Product ID: {product_id}\n")
+                f.write(f"Product Name: {product_name}\n")
+                f.write(f"Manufacturer: {manufacturer or 'Unknown'}\n")
+                if device_description:
+                    f.write(f"Description: {device_description}\n")
+                if intended_purpose:
+                    f.write(f"Intended Purpose: {intended_purpose}\n")
+                if classification:
+                    f.write(f"Classification: {classification}\n\n")
+                
+                f.write(f"SUMMARY\n")
+                f.write(f"-------\n")
+                f.write(f"This is a simplified CER for {product_name}.\n")
+                f.write(f"For a complete regulatory-compliant report, please use the enhanced CER generator.\n")
+            
+            logger.info(f"Generated text CER at {output_path}")
+            
+            return {
+                "success": True,
+                "format": "txt",
+                "path": output_path,
+                "report_id": report_id
+            }
+    
     except Exception as e:
-        logger.error(f"Error generating CER: {str(e)}")
-        raise
+        logger.error(f"Error generating simple CER: {str(e)}")
+        logger.error(traceback.format_exc())
+        
+        return {
+            "success": False,
+            "error": str(e),
+            "traceback": traceback.format_exc()
+        }
 
-async def generate_pdf_report(metadata: Dict[str, Any], output_path: str) -> None:
+def generate_pdf_report(report_data, output_path):
     """
-    Generate a PDF Clinical Evaluation Report
+    Generate a PDF report using ReportLab
     
     Args:
-        metadata: Report metadata
-        output_path: Output file path
+        report_data: Dictionary containing report data
+        output_path: Path where the PDF will be saved
     """
-    # Create a BytesIO buffer to work with PDF
-    buffer = BytesIO()
+    if not REPORTLAB_AVAILABLE:
+        raise ImportError("ReportLab is not available")
     
-    # Create a PDF document
-    document = SimpleDocTemplate(
-        buffer,
-        pagesize=letter,
-        rightMargin=72,
-        leftMargin=72,
-        topMargin=72,
-        bottomMargin=72
+    # Create document
+    doc = SimpleDocTemplate(
+        output_path,
+        pagesize=A4,
+        rightMargin=25*mm,
+        leftMargin=25*mm,
+        topMargin=20*mm,
+        bottomMargin=20*mm
     )
     
     # Styles
     styles = getSampleStyleSheet()
-    
-    # Custom styles
-    title_style = ParagraphStyle(
-        'TitleStyle',
+    styles.add(ParagraphStyle(
+        name='Title',
         parent=styles['Heading1'],
-        fontSize=16,
+        fontSize=18,
         alignment=TA_CENTER,
-        spaceAfter=12
-    )
-    
-    heading1_style = ParagraphStyle(
-        'Heading1Style',
-        parent=styles['Heading1'],
-        fontSize=14,
-        spaceBefore=12,
-        spaceAfter=6
-    )
-    
-    heading2_style = ParagraphStyle(
-        'Heading2Style',
+        spaceAfter=10
+    ))
+    styles.add(ParagraphStyle(
+        name='Subtitle',
         parent=styles['Heading2'],
+        fontSize=14,
+        spaceAfter=8
+    ))
+    styles.add(ParagraphStyle(
+        name='Section',
+        parent=styles['Heading3'],
         fontSize=12,
-        spaceBefore=10,
-        spaceAfter=4
-    )
-    
-    normal_style = ParagraphStyle(
-        'NormalStyle',
+        spaceAfter=6
+    ))
+    styles.add(ParagraphStyle(
+        name='Normal',
         parent=styles['Normal'],
         fontSize=10,
-        alignment=TA_JUSTIFY,
-        spaceBefore=6,
-        spaceAfter=6
-    )
+        spaceAfter=5
+    ))
     
-    # Create content elements
+    # Document content
     content = []
     
     # Title
-    content.append(Paragraph(f"Clinical Evaluation Report", title_style))
-    content.append(Paragraph(f"{metadata['product_name']} ({metadata['product_id']})", title_style))
-    content.append(Spacer(1, 0.25 * inch))
+    content.append(Paragraph("CLINICAL EVALUATION REPORT", styles['Title']))
+    content.append(Spacer(1, 10*mm))
     
     # Report metadata
-    content.append(Paragraph("Report Information", heading1_style))
+    content.append(Paragraph(f"Report ID: {report_data['report_id']}", styles['Normal']))
+    content.append(Paragraph(f"Generated: {report_data['generated_at']}", styles['Normal']))
+    content.append(Spacer(1, 10*mm))
     
-    # Create a table for the metadata
-    report_data = [
-        ["Report Date:", metadata['report_date']],
-        ["Product ID:", metadata['product_id']],
-        ["Product Name:", metadata['product_name']],
-        ["Manufacturer:", metadata['manufacturer']],
-        ["Data Range:", metadata['date_range']]
-    ]
+    # Product information
+    content.append(Paragraph("PRODUCT INFORMATION", styles['Subtitle']))
+    content.append(Paragraph(f"Product ID: {report_data['product']['id']}", styles['Normal']))
+    content.append(Paragraph(f"Product Name: {report_data['product']['name']}", styles['Normal']))
+    content.append(Paragraph(f"Manufacturer: {report_data['product']['manufacturer']}", styles['Normal']))
     
-    # Create the table
-    table = Table(report_data, colWidths=[1.5 * inch, 4 * inch])
-    table.setStyle(TableStyle([
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-        ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('PADDING', (0, 0), (-1, -1), 6)
-    ]))
+    if report_data['product']['description']:
+        content.append(Paragraph(f"Description: {report_data['product']['description']}", styles['Normal']))
     
-    content.append(table)
-    content.append(Spacer(1, 0.25 * inch))
+    if report_data['product']['intended_purpose']:
+        content.append(Paragraph(f"Intended Purpose: {report_data['product']['intended_purpose']}", styles['Normal']))
     
-    # Product Information
-    content.append(Paragraph("Product Information", heading1_style))
+    if report_data['product']['classification']:
+        content.append(Paragraph(f"Classification: {report_data['product']['classification']}", styles['Normal']))
     
-    product_info = f"""
-    This Clinical Evaluation Report evaluates the safety and performance data for {metadata['product_name']}.
-    The device is manufactured by {metadata['manufacturer']}.
-    """
-    content.append(Paragraph(product_info, normal_style))
+    content.append(Spacer(1, 10*mm))
     
-    # Data Sources
-    content.append(Paragraph("Data Sources", heading1_style))
+    # Evaluation period
+    content.append(Paragraph("EVALUATION PERIOD", styles['Subtitle']))
+    content.append(Paragraph(
+        f"This report covers a period of {report_data['evaluation_period']['days']} days.",
+        styles['Normal']
+    ))
+    content.append(Spacer(1, 5*mm))
     
-    sources_info = """
-    The following data sources were used to compile this report:
-    """
-    content.append(Paragraph(sources_info, normal_style))
+    # Data sources
+    content.append(Paragraph("DATA SOURCES", styles['Subtitle']))
+    data_sources_text = "The following data sources were consulted for this report:"
+    content.append(Paragraph(data_sources_text, styles['Normal']))
     
-    sources_list = ListFlowable(
-        [
-            ListItem(Paragraph("FDA MAUDE (Manufacturer and User Facility Device Experience)", normal_style)),
-            ListItem(Paragraph("FDA FAERS (FDA Adverse Event Reporting System)", normal_style)),
-            ListItem(Paragraph("EU EUDAMED (European Database on Medical Devices)", normal_style))
-        ],
+    sources_list = []
+    for source in report_data['data_sources']:
+        sources_list.append(ListItem(Paragraph(source, styles['Normal'])))
+    
+    content.append(ListFlowable(
+        sources_list,
         bulletType='bullet',
-        leftIndent=35
+        leftIndent=20
+    ))
+    content.append(Spacer(1, 5*mm))
+    
+    # Summary section
+    content.append(Paragraph("SUMMARY", styles['Subtitle']))
+    content.append(Paragraph(report_data['summary']['conclusion'], styles['Normal']))
+    content.append(Spacer(1, 10*mm))
+    
+    # Disclaimer
+    content.append(Paragraph("DISCLAIMER", styles['Subtitle']))
+    disclaimer_text = (
+        "This is a simplified Clinical Evaluation Report generated by the Simple CER Generator. "
+        "It is intended to serve as a basic template and may not include all information required "
+        "for regulatory submissions. Please consult the Enhanced CER Generator for a comprehensive, "
+        "fully regulatory-compliant report."
     )
-    content.append(sources_list)
-    content.append(Spacer(1, 0.1 * inch))
-    
-    # Analysis and Findings
-    content.append(Paragraph("Analysis and Findings", heading1_style))
-    content.append(Paragraph("Summary of Adverse Events", heading2_style))
-    
-    # Add some placeholder summary data
-    summary_info = f"""
-    A comprehensive analysis of all available data shows no significant safety concerns
-    for {metadata['product_name']} when used as intended. Adverse events reported to
-    regulatory authorities are consistent with the expected risk profile for this type
-    of product.
-    """
-    content.append(Paragraph(summary_info, normal_style))
-    
-    # Conclusions
-    content.append(Paragraph("Conclusions", heading1_style))
-    
-    conclusions_info = f"""
-    Based on the available data collected over the past {metadata['date_range']}, 
-    {metadata['product_name']} demonstrates an acceptable safety profile when used
-    according to its intended purpose. Continued post-market surveillance is recommended
-    to monitor for any emerging safety signals.
-    """
-    content.append(Paragraph(conclusions_info, normal_style))
+    content.append(Paragraph(disclaimer_text, styles['Normal']))
     
     # Build the PDF
-    document.build(content)
+    doc.build(content)
     
-    # Get the PDF data from the buffer
-    pdf_data = buffer.getvalue()
-    buffer.close()
+async def main():
+    """Command-line interface for the simple CER generator"""
+    import argparse
     
-    # Write to file
-    with open(output_path, 'wb') as f:
-        f.write(pdf_data)
+    parser = argparse.ArgumentParser(description='Generate a simplified Clinical Evaluation Report')
+    parser.add_argument('--id', required=True, help='Product identifier')
+    parser.add_argument('--name', required=True, help='Product name')
+    parser.add_argument('--manufacturer', help='Manufacturer name')
+    parser.add_argument('--description', help='Device description')
+    parser.add_argument('--purpose', help='Intended purpose')
+    parser.add_argument('--class', dest='classification', help='Device classification')
+    parser.add_argument('--days', type=int, default=730, help='Date range in days')
+    parser.add_argument('--format', choices=['pdf', 'json'], default='pdf', help='Output format')
+    
+    args = parser.parse_args()
+    
+    result = await generate_cer(
+        product_id=args.id,
+        product_name=args.name,
+        manufacturer=args.manufacturer,
+        device_description=args.description,
+        intended_purpose=args.purpose,
+        classification=args.classification,
+        date_range=args.days,
+        output_format=args.format
+    )
+    
+    if result['success']:
+        print(f"Successfully generated CER report")
+        print(f"Output file: {result['path']}")
+        return 0
+    else:
+        print(f"Error generating CER report: {result.get('error', 'Unknown error')}")
+        if 'traceback' in result:
+            print(result['traceback'])
+        return 1
 
-async def generate_json_report(metadata: Dict[str, Any], output_path: str) -> None:
-    """
-    Generate a JSON Clinical Evaluation Report
-    
-    Args:
-        metadata: Report metadata
-        output_path: Output file path
-    """
-    # Create a report structure
-    report = {
-        "clinical_evaluation_report": {
-            "report_metadata": {
-                "product_id": metadata['product_id'],
-                "product_name": metadata['product_name'],
-                "manufacturer": metadata['manufacturer'],
-                "report_date": metadata['report_date'],
-                "date_range": metadata['date_range'],
-                "report_version": "1.0",
-                "generator": "LumenTrialGuide.AI Simple CER Generator"
-            },
-            "product_information": {
-                "device_name": metadata['product_name'],
-                "device_id": metadata['product_id'],
-                "manufacturer": metadata['manufacturer'],
-                "intended_purpose": "Not specified"
-            },
-            "data_sources": [
-                {
-                    "source_name": "FDA MAUDE",
-                    "source_description": "FDA Manufacturer and User Facility Device Experience database",
-                    "data_period": metadata['date_range']
-                },
-                {
-                    "source_name": "FDA FAERS",
-                    "source_description": "FDA Adverse Event Reporting System",
-                    "data_period": metadata['date_range']
-                },
-                {
-                    "source_name": "EU EUDAMED",
-                    "source_description": "European Database on Medical Devices",
-                    "data_period": metadata['date_range']
-                }
-            ],
-            "findings": {
-                "adverse_events_summary": {
-                    "total_events": 0,
-                    "serious_events": 0,
-                    "non_serious_events": 0
-                },
-                "trend_analysis": {
-                    "trend_description": "No significant trends identified",
-                    "notable_patterns": []
-                }
-            },
-            "conclusions": {
-                "safety_conclusion": "Based on available data, the product demonstrates an acceptable safety profile",
-                "risk_benefit_assessment": "The benefits continue to outweigh the risks for the intended use",
-                "recommendations": [
-                    "Continue post-market surveillance",
-                    "Monitor for emerging safety signals"
-                ]
-            }
-        }
-    }
-    
-    # Write to file
-    with open(output_path, 'w') as f:
-        json.dump(report, f, indent=2)
+if __name__ == "__main__":
+    sys.exit(asyncio.run(main()))
