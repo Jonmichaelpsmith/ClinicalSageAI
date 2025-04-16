@@ -1,71 +1,220 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useContext, createContext } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Spinner } from '@/components/ui/spinner';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from 'recharts';
 import { motion } from 'framer-motion';
+import { Sun, Moon, Download, Share, Check } from 'lucide-react';
 
-const tabItems = [
-  { value: 'faers', label: 'Drug Safety (FAERS)' },
-  { value: 'device', label: 'Device Complaints (MAUDE)' },
-  { value: 'multi', label: 'Multi-Source CER' }
-];
-const viewModes = ['Chart', 'Table'];
+// --- Auth and Theme Contexts ---
+const AuthContext = createContext({ 
+  isAuthenticated: false,
+  login: () => {},
+  logout: () => {}
+});
+const ThemeContext = createContext({ theme: 'light', toggleTheme: () => {} });
 
-export default function CERDashboard() {
-  const [activeTab, setActiveTab] = useState("faers");
+function AuthProvider({ children }) {
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return localStorage.getItem('cer_auth') === 'true';
+  });
+
+  const login = () => {
+    setIsAuthenticated(true);
+    localStorage.setItem('cer_auth', 'true');
+  };
+
+  const logout = () => {
+    setIsAuthenticated(false);
+    localStorage.setItem('cer_auth', 'false');
+  };
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
-      <h1 className="text-4xl font-extrabold mb-8">TrialSage Clinical Evaluation Reports</h1>
+    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+function useTheme() {
+  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
+  
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+  
+  const toggleTheme = () => setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
+  return { theme, toggleTheme };
+}
+
+export default function CERDashboard() {
+  const [tab, setTab] = useState(() => {
+    // Get from URL params if available, otherwise default
+    const params = new URLSearchParams(window.location.search);
+    const tabParam = params.get('tab');
+    if (tabParam && ['FAERS', 'Device', 'Multi-Source'].includes(tabParam)) return tabParam;
+    return localStorage.getItem('cer_active_tab') || 'FAERS';
+  });
+  
+  const themeContext = useTheme();
+  
+  // Persist tab selection
+  useEffect(() => {
+    localStorage.setItem('cer_active_tab', tab);
+  }, [tab]);
+
+  return (
+    <AuthProvider>
+      <ThemeContext.Provider value={themeContext}>
+        <DashboardContent tab={tab} setTab={setTab} />
+      </ThemeContext.Provider>
+    </AuthProvider>
+  );
+}
+
+function DashboardContent({ tab, setTab }) {
+  const { theme, toggleTheme } = useContext(ThemeContext);
+  const { isAuthenticated, login, logout } = useContext(AuthContext);
+
+  if (!isAuthenticated) {
+    return (
+      <div className="p-8 max-w-7xl mx-auto">
+        <Card>
+          <CardHeader>
+            <h2 className="text-2xl font-bold">Authentication Required</h2>
+          </CardHeader>
+          <CardContent>
+            <p className="mb-4">Please log in to access the CER Dashboard.</p>
+            <Button onClick={login}>Login</Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const tabs = ['FAERS', 'Device', 'Multi-Source'];
+  
+  return (
+    <div className={`p-8 max-w-7xl mx-auto transition-colors duration-200 ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>
+      <header className="flex justify-between items-center mb-8">
+        <h1 className="text-4xl font-extrabold">TrialSage CER Dashboard</h1>
+        <div className="flex gap-3">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={logout} 
+            aria-label="Logout"
+          >
+            Logout
+          </Button>
+          <Button 
+            variant="outline"
+            onClick={toggleTheme}
+            aria-label="Toggle theme"
+          >
+            {theme === 'light' ? <Moon className="h-4 w-4 mr-2" /> : <Sun className="h-4 w-4 mr-2" />}
+            {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+          </Button>
+        </div>
+      </header>
       
-      <Tabs defaultValue="faers" value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mb-6">
-          {tabItems.map(tab => (
-            <TabsTrigger key={tab.value} value={tab.value} className="px-6 py-2">
-              {tab.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-        
-        <TabsContent value="faers">
-          <EndpointPanel
-            type="faers"
-            placeholder="Enter NDC code, e.g. 00002-3227"
-          />
-        </TabsContent>
-        
-        <TabsContent value="device">
-          <EndpointPanel
-            type="device"
-            placeholder="Enter Device code, e.g. DSP"
-          />
-        </TabsContent>
-        
-        <TabsContent value="multi">
-          <MultiSourcePanel />
-        </TabsContent>
-      </Tabs>
+      <nav className="mb-6 flex space-x-4" aria-label="Main navigation">
+        {tabs.map(t => (
+          <Button
+            key={t}
+            variant={tab === t ? 'default' : 'outline'}
+            onClick={() => setTab(t)}
+            aria-pressed={tab === t}
+            aria-label={`Switch to ${t} tab`}
+          >
+            {t}
+          </Button>
+        ))}
+      </nav>
+      
+      <main>
+        {tab === 'FAERS' && <EndpointPanel type="faers" />}
+        {tab === 'Device' && <EndpointPanel type="device" />}
+        {tab === 'Multi-Source' && <MultiSourcePanel />}
+      </main>
     </div>
   );
 }
 
 function EndpointPanel({ type, placeholder }) {
-  const [code, setCode] = useState('');
-  const [periods, setPeriods] = useState(6);
-  const [startDate, setStartDate] = useState(new Date(new Date().setFullYear(new Date().getFullYear() - 5)).toISOString().slice(0,10));
-  const [endDate, setEndDate] = useState(new Date().toISOString().slice(0,10));
-  const [viewMode, setViewMode] = useState(viewModes[0]);
+  // Get saved preferences from localStorage
+  const storageKey = `cer_${type}_prefs`;
+  const savedPrefs = useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem(storageKey) || '{}');
+    } catch (e) {
+      console.error('Error loading preferences:', e);
+      return {};
+    }
+  }, [storageKey]);
+
+  // Initialize state with saved preferences or defaults
+  const [code, setCode] = useState(savedPrefs.code || '');
+  const [periods, setPeriods] = useState(savedPrefs.periods || 6);
+  const [startDate, setStartDate] = useState(savedPrefs.startDate || 
+    new Date(new Date().setFullYear(new Date().getFullYear() - 5)).toISOString().slice(0,10));
+  const [endDate, setEndDate] = useState(savedPrefs.endDate || 
+    new Date().toISOString().slice(0,10));
+  const [viewMode, setViewMode] = useState(savedPrefs.viewMode || viewModes[0]);
+  const [filterSeverity, setFilterSeverity] = useState(savedPrefs.filterSeverity || 'all');
   const [data, setData] = useState(null);
   const [narrative, setNarrative] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [copySuccess, setCopySuccess] = useState(false);
 
-  const title = placeholder.split('(')[0].trim();
+  const title = placeholder ? placeholder.split('(')[0].trim() : type.toUpperCase();
   const apiBase = `/api/narrative/${type}/${code}`;
+  const { theme } = useContext(ThemeContext);
+
+  // Check URL params on initial load
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('code')) setCode(params.get('code'));
+    if (params.has('periods')) setPeriods(Number(params.get('periods')));
+    if (params.has('start_date')) setStartDate(params.get('start_date'));
+    if (params.has('end_date')) setEndDate(params.get('end_date'));
+    if (params.has('severity')) setFilterSeverity(params.get('severity'));
+  }, []);
+
+  // Save preferences when they change
+  useEffect(() => {
+    localStorage.setItem(storageKey, JSON.stringify({
+      code, periods, startDate, endDate, filterSeverity, viewMode
+    }));
+  }, [code, periods, startDate, endDate, filterSeverity, viewMode, storageKey]);
+  
+  // Apply severity filter to data
+  const filteredData = useMemo(() => {
+    if (!data || !data.analysis) return null;
+    
+    if (filterSeverity === 'all') return data.analysis;
+    
+    // This is a demo stub - in a real app we would filter based on severity
+    // from the actual data. Here we're just showing how it would work.
+    const filtered = { ...data.analysis };
+    if (filterSeverity === 'serious' && filtered.trend) {
+      // For demo: only show dates with higher counts (simulating serious events)
+      filtered.trend = Object.fromEntries(
+        Object.entries(filtered.trend).filter(([_, value]) => value > 3)
+      );
+    }
+    return filtered;
+  }, [data, filterSeverity]);
+
+  // Prepare chart data from filtered data
+  const chartData = useMemo(() => {
+    if (!filteredData || !filteredData.trend) return [];
+    return Object.entries(filteredData.trend).map(([date, value]) => ({ date, value }));
+  }, [filteredData]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -75,7 +224,8 @@ function EndpointPanel({ type, placeholder }) {
       const params = new URLSearchParams({ 
         periods, 
         start_date: startDate, 
-        end_date: endDate 
+        end_date: endDate,
+        severity: filterSeverity
       });
       const res = await fetch(`${apiBase}?${params}`);
       if (!res.ok) throw new Error(await res.text());
@@ -89,75 +239,194 @@ function EndpointPanel({ type, placeholder }) {
     }
   };
 
-  const chartData = useMemo(() => {
-    if (!data || !data.analysis || !data.analysis.trend) return [];
-    return Object.entries(data.analysis.trend).map(([date, value]) => ({ date, value }));
-  }, [data]);
+  // Export data as CSV
+  const exportCSV = () => {
+    if (!chartData.length) return;
+    
+    // Create CSV content
+    const csvHeader = ['Date', 'Count'];
+    const csvRows = [csvHeader, ...chartData.map(row => [row.date, row.value])];
+    const csvContent = csvRows.map(row => row.join(',')).join('\n');
+    
+    // Create and download file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${type}_${code}_data.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Generate shareable link
+  const shareLink = () => {
+    const baseUrl = window.location.origin + window.location.pathname;
+    const params = new URLSearchParams({
+      tab: type,
+      code,
+      periods,
+      start_date: startDate,
+      end_date: endDate,
+      severity: filterSeverity
+    });
+    
+    const fullLink = `${baseUrl}?${params.toString()}`;
+    
+    // Copy to clipboard
+    navigator.clipboard.writeText(fullLink)
+      .then(() => {
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 2000);
+      })
+      .catch(err => {
+        console.error('Failed to copy link:', err);
+        // Fallback
+        window.prompt('Copy this link:', fullLink);
+      });
+  };
 
   return (
     <Card className="space-y-6">
       <CardHeader>
-        <h2 className="text-2xl font-semibold">{title}</h2>
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-semibold">{title}</h2>
+          <span className="text-xs text-muted-foreground">{type.toUpperCase()} Dataset</span>
+        </div>
       </CardHeader>
       <CardContent>
+        {/* Main controls */}
         <div className="grid grid-cols-6 gap-4 items-end">
           <div className="col-span-2">
-            <label className="text-sm mb-1 block text-muted-foreground">Product Code</label>
+            <label htmlFor={`${type}-product-code`} className="text-sm mb-1 block text-muted-foreground">
+              Product Code
+            </label>
             <Input
+              id={`${type}-product-code`}
               placeholder={placeholder}
               value={code}
               onChange={(e) => setCode(e.target.value)}
+              aria-label="Product code"
             />
           </div>
           <div>
-            <label className="text-sm mb-1 block text-muted-foreground">Periods</label>
+            <label htmlFor={`${type}-periods`} className="text-sm mb-1 block text-muted-foreground">
+              Periods
+            </label>
             <Input
+              id={`${type}-periods`}
               type="number"
               min={1}
               max={12}
               value={periods}
               onChange={(e) => setPeriods(Number(e.target.value))}
+              aria-label="Forecast periods"
             />
           </div>
           <div>
-            <label className="text-sm mb-1 block text-muted-foreground">Start Date</label>
+            <label htmlFor={`${type}-start-date`} className="text-sm mb-1 block text-muted-foreground">
+              Start Date
+            </label>
             <Input
+              id={`${type}-start-date`}
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
+              aria-label="Start date"
             />
           </div>
           <div>
-            <label className="text-sm mb-1 block text-muted-foreground">End Date</label>
+            <label htmlFor={`${type}-end-date`} className="text-sm mb-1 block text-muted-foreground">
+              End Date
+            </label>
             <Input
+              id={`${type}-end-date`}
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
+              aria-label="End date"
             />
           </div>
-          <div className="flex space-x-2">
-            <Button onClick={fetchData} disabled={!code || loading} className="flex items-center">
-              {loading ? <Spinner className="mr-2 h-4 w-4" /> : 'Generate'}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => {
-                const params = new URLSearchParams({ periods, start_date: startDate, end_date: endDate });
-                window.open(`${apiBase}/pdf?${params}`, '_blank');
-              }}
-              disabled={!narrative}
+          <div>
+            <label htmlFor={`${type}-severity-filter`} className="text-sm mb-1 block text-muted-foreground">
+              Severity Filter
+            </label>
+            <Select 
+              value={filterSeverity} 
+              onValueChange={setFilterSeverity}
+              aria-label="Filter by severity"
             >
-              Download PDF
-            </Button>
+              <SelectTrigger id={`${type}-severity-filter`}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Events</SelectItem>
+                <SelectItem value="serious">Serious Only</SelectItem>
+                <SelectItem value="non-serious">Non-Serious Only</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
         
+        {/* Action buttons */}
+        <div className="flex flex-wrap gap-2 mt-5">
+          <Button 
+            onClick={fetchData} 
+            disabled={!code || loading} 
+            className="flex items-center"
+            aria-label="Generate report"
+          >
+            {loading ? <Spinner className="mr-2 h-4 w-4" /> : 'Generate'}
+          </Button>
+          
+          <Button
+            variant="outline"
+            onClick={() => {
+              const params = new URLSearchParams({ 
+                periods, 
+                start_date: startDate, 
+                end_date: endDate,
+                severity: filterSeverity 
+              });
+              window.open(`${apiBase}/pdf?${params}`, '_blank');
+            }}
+            disabled={!narrative}
+            aria-label="Download PDF report"
+            className="flex items-center gap-1"
+          >
+            <Download className="w-4 h-4" />
+            <span>PDF</span>
+          </Button>
+          
+          <Button
+            variant="outline"
+            onClick={exportCSV}
+            disabled={!chartData.length}
+            aria-label="Export data as CSV"
+          >
+            Export CSV
+          </Button>
+          
+          <Button
+            variant={copySuccess ? "success" : "secondary"}
+            onClick={shareLink}
+            disabled={!code}
+            aria-label="Share link to this view"
+            className="flex items-center gap-1"
+          >
+            {copySuccess ? <Check className="w-4 h-4" /> : <Share className="w-4 h-4" />}
+            <span>{copySuccess ? 'Copied!' : 'Share'}</span>
+          </Button>
+        </div>
+        
+        {/* Error display */}
         {error && (
-          <div className="mt-4 p-3 bg-red-100 border border-red-300 rounded-md text-red-800">
+          <div className="mt-4 p-3 bg-red-100 border border-red-300 rounded-md text-red-800 dark:bg-red-900/50 dark:text-red-300">
             <p>Error: {error}</p>
           </div>
         )}
         
+        {/* Chart/Table display */}
         {chartData.length > 0 && (
           <div className="mt-6">
             <div className="flex justify-between items-center mb-3">
@@ -172,6 +441,8 @@ function EndpointPanel({ type, placeholder }) {
                         ? 'bg-primary text-white'
                         : 'bg-transparent hover:bg-muted/50'
                     }`}
+                    aria-label={`Switch to ${mode} view`}
+                    aria-pressed={viewMode === mode}
                   >
                     {mode}
                   </button>
@@ -183,9 +454,20 @@ function EndpointPanel({ type, placeholder }) {
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip />
+                  <XAxis 
+                    dataKey="date" 
+                    tick={{ fill: theme === 'dark' ? '#ccc' : '#333' }}
+                  />
+                  <YAxis 
+                    tick={{ fill: theme === 'dark' ? '#ccc' : '#333' }}
+                  />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: theme === 'dark' ? '#1f2937' : '#fff',
+                      borderColor: theme === 'dark' ? '#374151' : '#e5e7eb',
+                      color: theme === 'dark' ? '#fff' : '#000'
+                    }}
+                  />
                   <Line 
                     type="monotone" 
                     dataKey="value" 
@@ -216,17 +498,25 @@ function EndpointPanel({ type, placeholder }) {
                 </table>
               </ScrollArea>
             )}
+            <div className="text-xs text-right mt-1 text-muted-foreground">
+              Showing {chartData.length} data points {filterSeverity !== 'all' && `(filtered by ${filterSeverity})`}
+            </div>
           </div>
         )}
         
+        {/* Narrative */}
         {narrative && (
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.2 }}
             className="mt-6"
           >
             <h3 className="text-lg font-medium mb-2">Generated Narrative</h3>
-            <ScrollArea className="h-96 p-4 bg-muted/30 rounded-xl border">
+            <ScrollArea 
+              className="h-96 p-4 bg-muted/30 rounded-xl border"
+              aria-label="Generated narrative text"
+            >
               <div className="whitespace-pre-wrap text-base leading-relaxed">
                 {narrative}
               </div>

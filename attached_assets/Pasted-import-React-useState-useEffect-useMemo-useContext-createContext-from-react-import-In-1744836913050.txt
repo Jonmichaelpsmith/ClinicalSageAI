@@ -1,0 +1,254 @@
+import React, { useState, useEffect, useMemo, useContext, createContext } from 'react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Spinner } from '@/components/ui/spinner';
+import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from 'recharts';
+import { motion } from 'framer-motion';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+
+// --- Auth and Theme Contexts ---
+const AuthContext = createContext({ isAuthenticated: false });
+const ThemeContext = createContext({ theme: 'light', toggleTheme: () => {} });
+
+export default function CERDashboard() {
+  const [tab, setTab] = useState('FAERS');
+  const { theme, toggleTheme } = useTheme();
+  const { isAuthenticated } = useContext(AuthContext);
+
+  if (!isAuthenticated) {
+    return <div className="p-8"><h2 className="text-xl">Please log in to access the CER Dashboard.</h2></div>;
+  }
+
+  const tabs = ['FAERS', 'Device', 'Multi-Source'];
+  return (
+    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+      <div className="p-8 max-w-6xl mx-auto">
+        <header className="flex justify-between items-center mb-8">
+          <h1 className="text-4xl font-extrabold">TrialSage CER Dashboard</h1>
+          <Button variant="outline" onClick={toggleTheme}>
+            {theme === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode'}
+          </Button>
+        </header>
+        <nav className="mb-6 flex space-x-4">
+          {tabs.map(t => (
+            <Button
+              key={t}
+              variant={tab === t ? 'primary' : 'outline'}
+              onClick={() => setTab(t)}
+            >
+              {t}
+            </Button>
+          ))}
+        </nav>
+        <main>
+          {tab === 'FAERS' && <EndpointPanel type="faers" />}
+          {tab === 'Device' && <EndpointPanel type="device" />}
+          {tab === 'Multi-Source' && <MultiSourcePanel />}
+        </main>
+      </div>
+    </ThemeContext.Provider>
+  );
+}
+
+function useTheme() {
+  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+  const toggleTheme = () => setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
+  return { theme, toggleTheme };
+}
+
+function EndpointPanel({ type }) {
+  const storageKey = `cer_${type}_prefs`;
+  const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
+  const [code, setCode] = useState(saved.code || '');
+  const [periods, setPeriods] = useState(saved.periods || 6);
+  const [startDate, setStartDate] = useState(saved.startDate ? new Date(saved.startDate) : new Date(new Date().setFullYear(new Date().getFullYear() - 5)));
+  const [endDate, setEndDate] = useState(saved.endDate ? new Date(saved.endDate) : new Date());
+  const [viewMode, setViewMode] = useState(saved.viewMode || 'Chart');
+  const [data, setData] = useState(null);
+  const [narrative, setNarrative] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    localStorage.setItem(storageKey, JSON.stringify({ code, periods, startDate, endDate, viewMode }));
+  }, [code, periods, startDate, endDate, viewMode]);
+
+  const fetchNarrative = async () => {
+    if (!code) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const params = new URLSearchParams({ periods, start_date: startDate.toISOString(), end_date: endDate.toISOString() });
+      const res = await fetch(`/api/narrative/${type}/${code}?${params}`);
+      if (!res.ok) throw new Error(await res.text());
+      const json = await res.json();
+      setData(json.trend);
+      setNarrative(json.narrative);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const chartData = useMemo(() => data ? Object.entries(data).map(([date, value]) => ({ date, value })) : [], [data]);
+
+  const exportCSV = () => {
+    if (!chartData.length) return;
+    const csv = ['Date,Count', ...chartData.map(r => `${r.date},${r.value}`)].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${type}_${code}_trend.csv`;
+    a.click();
+  };
+
+  const shareLink = () => {
+    const params = new URLSearchParams({ code, periods, start: startDate.toISOString(), end: endDate.toISOString() });
+    navigator.clipboard.writeText(`${window.location.href.split('?')[0]}?tab=${type}&${params}`);
+    alert('Link copied to clipboard');
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <h2 className="text-2xl font-semibold uppercase">{type} CER</h2>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-5 gap-4">
+          <Input placeholder="Code" value={code} onChange={e => setCode(e.target.value)} />
+          <Input type="number" min={1} max={12} value={periods} onChange={e => setPeriods(+e.target.value)} />
+          <DatePicker selected={startDate} onChange={setStartDate} dateFormat="yyyy-MM-dd" />
+          <DatePicker selected={endDate} onChange={setEndDate} dateFormat="yyyy-MM-dd" />
+          <select value={viewMode} onChange={e => setViewMode(e.target.value)}>
+            <option>Chart</option>
+            <option>Table</option>
+          </select>
+        </div>
+        <div className="flex space-x-2">
+          <Button onClick={fetchNarrative} disabled={loading || !code}>
+            {loading ? <Spinner /> : 'Generate'}
+          </Button>
+          <Button variant="outline" onClick={() => window.open(`/api/narrative/${type}/${code}/pdf?periods=${periods}`, '_blank')} disabled={!narrative}>
+            PDF
+          </Button>
+          <Button variant="outline" onClick={exportCSV} disabled={!chartData.length}>
+            CSV
+          </Button>
+          <Button variant="ghost" onClick={shareLink}>
+            Share
+          </Button>
+        </div>
+        {error && <p className="text-red-600">{error}</p>}
+        {!loading && viewMode === 'Chart' && chartData.length > 0 && (
+          <ResponsiveContainer width="100%" height={250}>
+            <LineChart data={chartData} margin={{ top: 10, right: 20, bottom: 10, left: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" />
+              <YAxis />
+              <Tooltip />
+              <Line type="monotone" dataKey="value" stroke="#4f46e5" strokeWidth={2} dot={false} />
+            </LineChart>
+          </ResponsiveContainer>
+        )}
+        {!loading && viewMode === 'Table' && chartData.length > 0 && (
+          <ScrollArea className="max-h-48">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-200">
+                <tr><th className="p-2">Date</th><th className="p-2">Count</th></tr>
+              </thead>
+              <tbody>
+                {chartData.map((r, i) => (
+                  <tr key={i} className={i % 2 ? 'bg-gray-50' : ''}>
+                    <td className="p-2">{r.date}</td><td className="p-2">{r.value}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </ScrollArea>
+        )}
+        {narrative && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <h3 className="text-lg font-semibold">Narrative</h3>
+            <ScrollArea className="h-48 p-4 bg-gray-50 rounded-lg">
+              <pre className="whitespace-pre-wrap text-sm">{narrative}</pre>
+            </ScrollArea>
+          </motion.div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function MultiSourcePanel() {
+  const [ndcCodes, setNdcCodes] = useState('');
+  const [deviceCodes, setDeviceCodes] = useState('');
+  const [periods, setPeriods] = useState(6);
+  const [panels, setPanels] = useState([]);
+  const [narrative, setNarrative] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const fetchMulti = async () => {
+    setLoading(true); setError(null); setNarrative(''); setPanels([]);
+    try {
+      const body = {
+        ndc_codes: ndcCodes.split(',').map(s => s.trim()).filter(Boolean),
+        device_codes: deviceCodes.split(',').map(s => s.trim()).filter(Boolean),
+        periods
+      };
+      const res = await fetch('/api/narrative/multi', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const json = await res.json();
+      setPanels(json.analysis.analyses);
+      setNarrative(json.narrative);
+    } catch (e) {
+      setError(e.message);
+    } finally { setLoading(false); }
+  };
+
+  return (
+    <Card>
+      <CardHeader><h2 className="text-2xl font-semibold">Multi-Source CER</h2></CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-3 gap-4">
+          <Input placeholder="NDC codes (comma-separated)" value={ndcCodes} onChange={e => setNdcCodes(e.target.value)} />
+          <Input placeholder="Device codes (comma-separated)" value={deviceCodes} onChange={e => setDeviceCodes(e.target.value)} />
+          <Input type="number" min={1} max={12} value={periods} onChange={e => setPeriods(+e.target.value)} />
+        </div>
+        <div className="flex space-x-2">
+          <Button onClick={fetchMulti} disabled={loading || (!ndcCodes && !deviceCodes)}>{loading ? <Spinner/> : 'Generate'}</Button>
+          <Button variant="outline" onClick={() => window.open('/api/narrative/multi/pdf', '_blank')} disabled={!narrative}>PDF</Button>
+          <Button variant="outline" onClick={() => {/* CSV and share logic similar to EndpointPanel */}}>CSV</Button>
+        </div>
+        {error && <p className="text-red-600">{error}</p>}
+        {panels.map((entry, idx) => (
+          <Card key={idx} className="mb-4">
+            <CardHeader><h3 className="font-bold">{entry.source}: {entry.product_code}</h3></CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={200}>
+                <LineChart data={Object.entries(entry.trend).map(([d,v])=>({date:d,value:v}))}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="value" stroke="#4f46e5" />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        ))}
+        {narrative && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>```
