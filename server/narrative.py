@@ -1,17 +1,24 @@
 import os
 import io
+import json
 import openai
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Callable
 from fastapi import APIRouter, HTTPException, Body
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from datetime import datetime
+from redis import Redis
 
 from ingestion.fda_faers import get_faers_cached
 from ingestion.fda_device import get_device_complaints_cached
 from ingestion.eu_eudamed import get_eudamed_cached
 from ingestion.normalize import normalize_faers, normalize_maude, normalize_eudamed
 from predictive_analytics import aggregate_time_series, forecast_adverse_events, detect_anomalies
+
+# Redis cache setup
+ttl_seconds = 3600  # 1 hour caching
+redis_url = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+redis_client = Redis.from_url(redis_url)
 
 # Import ReportLab for PDF generation
 from reportlab.lib.pagesizes import letter, landscape
@@ -290,6 +297,41 @@ Provide a cohesive, professional narrative suitable for regulatory submission.
         else:
             return f"Clinical Evaluation Report for {code}: Analysis of {total} adverse event reports, including {serious} serious events from {source}. Data trends and forecasting suggest continued monitoring is warranted."
 
+# Cache key generator
+def _cache_key(prefix: str, identifier: str) -> str:
+    """Generate a cache key for Redis"""
+    return f"cer_narrative:{prefix}:{identifier}"
+
+# Cache fetch or generate utility
+def _fetch_or_generate(prefix: str, identifier: str, generator_fn: Callable[[], str]) -> str:
+    """
+    Check Redis cache for the narrative, generate if not found
+    
+    Args:
+        prefix: Cache key prefix (faers, device, multi)
+        identifier: Unique identifier for this narrative
+        generator_fn: Function that generates the narrative if cache miss
+        
+    Returns:
+        The narrative text, either from cache or freshly generated
+    """
+    # Generate cache key
+    key = _cache_key(prefix, identifier)
+    
+    # Try to get from cache
+    cached = redis_client.get(key)
+    if cached:
+        print(f"Cache hit for {key}")
+        return cached.decode('utf-8')
+    
+    # Cache miss - generate new
+    print(f"Cache miss for {key}, generating...")
+    narrative = generator_fn()
+    
+    # Store in cache
+    redis_client.setex(key, ttl_seconds, narrative)
+    return narrative
+
 # PDF Generation Utility
 def generate_pdf_report(narrative: str, analysis_data: Dict[str, Any]) -> bytes:
     """
@@ -465,8 +507,12 @@ async def narrative_faers(ndc_code: str, periods: int = 3):
                 "narrative": f"No adverse events found for product code {ndc_code} in FAERS database."
             }
         
-        # Generate narrative
-        narrative = generate_cer_narrative_from_analysis(analysis)
+        # Generate or fetch narrative from cache
+        identifier = f"faers:{ndc_code}:{periods}"
+        def generate_narrative():
+            return generate_cer_narrative_from_analysis(analysis)
+        
+        narrative = _fetch_or_generate('faers', identifier, generate_narrative)
         
         # Return both the analysis data and the narrative
         return {
@@ -562,8 +608,12 @@ async def narrative_device(device_code: str, periods: int = 3):
                 "narrative": f"No device complaints found for product code {device_code} in MAUDE database."
             }
         
-        # Generate narrative
-        narrative = generate_cer_narrative_from_analysis(analysis)
+        # Generate or fetch narrative from cache
+        identifier = f"device:{device_code}:{periods}"
+        def generate_narrative():
+            return generate_cer_narrative_from_analysis(analysis)
+        
+        narrative = _fetch_or_generate('device', identifier, generate_narrative)
         
         # Return both the analysis data and the narrative
         return {
