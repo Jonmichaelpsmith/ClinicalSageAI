@@ -1,0 +1,163 @@
+On to **Step 4: ETL Normalization**—we’ll take the raw ingestion outputs for FAERS, MAUDE, and Eudamed and transform them into a **common schema** so downstream analytics and narrative modules can work against a uniform data model.
+
+---
+
+### 1. Define the Common Schema
+
+Each record will have at least:
+
+| Field            | Type    | Description                                           |
+|------------------|---------|-------------------------------------------------------|
+| `source`         | string  | “FAERS”, “MAUDE”, or “Eudamed”                        |
+| `record_id`      | string  | Unique ID from the source system                      |
+| `product_code`   | string  | NDC code (for drugs) or device code                   |
+| `event_type`     | string  | “adverse_event” or “device_complaint”                 |
+| `event_date`     | string  | ISO‑formatted date of the event/complaint             |
+| `description`    | string  | Free‑text narrative of the event                      |
+| `count`          | integer | Always 1 for individual reports, used for aggregation |
+
+---
+
+### 2. Normalization Functions
+
+Create **`ingestion/normalize.py`**:
+
+```python
+# ingestion/normalize.py
+from datetime import datetime
+
+def _to_iso(date_str):
+    """
+    Convert common date formats to ISO 8601 (YYYY-MM-DD).
+    Returns None if parsing fails.
+    """
+    for fmt in ("%m/%d/%Y", "%Y%m%d", "%Y-%m-%d"):
+        try:
+            return datetime.strptime(date_str, fmt).date().isoformat()
+        except Exception:
+            continue
+    return None
+
+def normalize_faers(raw_data: dict, ndc_code: str):
+    """
+    raw_data: JSON from fetch_all_faers (list of results under raw_data['results']).
+    """
+    results = raw_data.get("results", [])
+    normalized = []
+    for rec in results:
+        # some records have nested fields for reaction and receipt date
+        description = ""
+        reactions = rec.get("patient", {}).get("reaction", [])
+        if reactions:
+            description = reactions[0].get("reactionmeddrapt", "")
+        rec_id = rec.get("safetyreportid")
+        date_raw = rec.get("receiptdate")
+        normalized.append({
+            "source": "FAERS",
+            "record_id": str(rec_id),
+            "product_code": ndc_code,
+            "event_type": "adverse_event",
+            "event_date": _to_iso(date_raw),
+            "description": description,
+            "count": int(rec.get("count", 1))
+        })
+    return normalized
+
+def normalize_mauDe(raw_complaints: list, device_code: str):
+    """
+    raw_complaints: list of dicts from get_device_complaints()
+    """
+    normalized = []
+    for rec in raw_complaints:
+        rec_id = rec.get("complaint_id")
+        date_raw = rec.get("complaint_date")
+        description = rec.get("narrative", "")
+        normalized.append({
+            "source": "MAUDE",
+            "record_id": str(rec_id),
+            "product_code": device_code,
+            "event_type": "device_complaint",
+            "event_date": _to_iso(date_raw),
+            "description": description,
+            "count": 1
+        })
+    return normalized
+
+def normalize_eudamed(raw_stub: dict):
+    """
+    raw_stub from fetch_eudamed_data(); we pass back minimal info.
+    """
+    # since stub contains only message, we return it as a single record
+    return [{
+        "source": "Eudamed",
+        "record_id": None,
+        "product_code": raw_stub.get("device_code"),
+        "event_type": "eudamed_info",
+        "event_date": None,
+        "description": raw_stub.get("message", ""),
+        "count": 0
+    }]
+```
+
+---
+
+### 3. Expose Normalization API Endpoints
+
+In your FastAPI app (e.g. **`main.py`**), add:
+
+```python
+from fastapi import APIRouter, HTTPException
+from ingestion.fda_faers import get_faers_cached
+from ingestion.fda_device import get_device_complaints
+from ingestion.eu_eudamed import fetch_eudamed_data
+from ingestion.normalize import normalize_faers, normalize_mauDe, normalize_eudamed
+
+norm_router = APIRouter(prefix="/api/norm", tags=["normalization"])
+
+@norm_router.get("/faers/{ndc_code}")
+async def norm_faers(ndc_code: str):
+    try:
+        raw = get_faers_cached(ndc_code)
+        records = normalize_faers(raw, ndc_code)
+        return {"source": "FAERS", "count": len(records), "records": records}
+    except Exception as e:
+        raise HTTPException(502, f"FAERS normalization failed: {e}")
+
+@norm_router.get("/device/{device_code}")
+async def norm_device(device_code: str):
+    try:
+        raw = get_device_complaints(device_code)
+        records = normalize_mauDe(raw, device_code)
+        return {"source": "MAUDE", "count": len(records), "records": records}
+    except Exception as e:
+        raise HTTPException(502, f"MAUDE normalization failed: {e}")
+
+@norm_router.get("/eu/{device_code}")
+async def norm_eu(device_code: str):
+    try:
+        raw = fetch_eudamed_data(device_code)
+        records = normalize_eudamed(raw)
+        return {"source": "Eudamed", "count": len(records), "records": records}
+    except Exception as e:
+        raise HTTPException(502, f"Eudamed normalization failed: {e}")
+
+app.include_router(norm_router)
+```
+
+---
+
+### 4. Testing
+
+1. **Restart** your server:
+   ```bash
+   uvicorn main:app --reload --port 3000
+   ```
+2. **Call**:
+   - `GET /api/norm/faers/1234567890`
+   - `GET /api/norm/device/YourDeviceCode`
+   - `GET /api/norm/eu/YourDeviceCode`
+3. **Verify** each returns a `count` and a list of normalized records matching the common schema.
+
+---
+
+This completes your **ETL Normalization** layer. Next up: hooking these normalized records into your analytics and narrative modules—or let me know if you’d like to adjust the schema or normalization logic first!
