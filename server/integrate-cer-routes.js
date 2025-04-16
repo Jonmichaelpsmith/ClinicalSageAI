@@ -1,40 +1,36 @@
 /**
- * Integration file for CER routes
+ * CER Routes Integration
  * 
- * This file adds the CER routes to the Express application
- * and ensures directories needed for CER generation are set up.
+ * This module integrates the Clinical Evaluation Report (CER) routes with the main Express application.
  */
 
+const cerRoutes = require('./routes/cer-routes');
 const fs = require('fs');
 const path = require('path');
-const cerRoutes = require('./routes/cer-routes');
 
-// Ensure required directories exist
-const REQUIRED_DIRS = [
-  path.join(process.cwd(), 'data'),
-  path.join(process.cwd(), 'data', 'exports'),
-  path.join(process.cwd(), 'data', 'uploads'),
-  path.join(process.cwd(), 'uploads')
-];
-
-function ensureDirectories() {
-  REQUIRED_DIRS.forEach(dir => {
+/**
+ * Set up CER routes and ensure that the required directories exist
+ * 
+ * @param {Express} app Express application
+ */
+function setupCerRoutes(app) {
+  // Ensure required directories exist
+  const requiredDirs = [
+    path.join(process.cwd(), 'data'),
+    path.join(process.cwd(), 'data', 'exports'),
+    path.join(process.cwd(), 'data', 'cache')
+  ];
+  
+  for (const dir of requiredDirs) {
     if (!fs.existsSync(dir)) {
-      console.log(`Creating directory: ${dir}`);
       fs.mkdirSync(dir, { recursive: true });
     }
-  });
-}
-
-function setupCerRoutes(app) {
-  // Create necessary directories
-  ensureDirectories();
+  }
   
-  // Add CER routes to the Express app
+  // Register the CER routes with the prefix /api/cer
   app.use('/api/cer', cerRoutes);
   
-  console.log('CER routes integrated successfully');
+  console.log('Clinical Evaluation Report (CER) routes integrated successfully');
 }
 
-// Export using CommonJS module.exports
 module.exports = setupCerRoutes;

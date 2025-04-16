@@ -31,12 +31,20 @@ if parent_dir not in sys.path:
     sys.path.append(parent_dir)
 
 try:
-    # Import the CER generator functions
-    from server.simple_cer_generator import generate_cer
+    # Import the enhanced CER generator functions
+    from server.enhanced_cer_generator import generate_cer
 except ImportError as e:
     logger.error(f"Failed to import required modules: {e}")
     logger.error(traceback.format_exc())
-    sys.exit(1)
+    
+    # Fall back to simple CER generator if enhanced is not available
+    try:
+        logger.info("Falling back to simple CER generator")
+        from server.simple_cer_generator import generate_cer
+    except ImportError as fallback_error:
+        logger.error(f"Failed to import fallback modules: {fallback_error}")
+        logger.error(traceback.format_exc())
+        sys.exit(1)
 
 async def main():
     """
