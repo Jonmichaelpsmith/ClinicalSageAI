@@ -369,20 +369,53 @@ function EndpointPanel({ type, placeholder }) {
           <Button
             variant="outline"
             onClick={() => {
-              const params = new URLSearchParams({ 
+              // Use the FastAPI endpoint for enhanced PDF generation
+              // Format: /api/narrative/faers/{code}/pdf or /api/narrative/device/{code}/pdf
+              const apiType = type === 'faers' ? 'faers' : 'device';
+              const fastApiUrl = `/api/narrative/${apiType}/${code}/pdf?periods=${periods}`;
+              
+              // Legacy URL fallback with all parameters
+              const legacyParams = new URLSearchParams({ 
                 periods, 
                 start_date: startDate.toISOString(), 
                 end_date: endDate.toISOString(),
                 severity: filterSeverity 
               });
-              window.open(`${apiBase}/pdf?${params}`, '_blank');
+              
+              // First try the FastAPI enhanced PDF endpoint
+              fetch(fastApiUrl)
+                .then(response => {
+                  if (!response.ok) {
+                    // Fall back to the Express implementation if FastAPI fails
+                    console.log("Enhanced PDF generation failed, falling back to basic PDF");
+                    window.open(`${apiBase}/pdf?${legacyParams}`, '_blank');
+                    return null;
+                  }
+                  return response.blob();
+                })
+                .then(blob => {
+                  if (blob) {
+                    // Create a download link for the PDF blob
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${type.toUpperCase()}_${code}_Report.pdf`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  }
+                })
+                .catch(error => {
+                  console.error("Error generating PDF:", error);
+                  // Fall back to the Express implementation if FastAPI fails
+                  window.open(`${apiBase}/pdf?${legacyParams}`, '_blank');
+                });
             }}
             disabled={!narrative}
             aria-label="Download PDF report"
             className="flex items-center gap-1"
           >
             <Download className="w-4 h-4" />
-            <span>PDF</span>
+            <span>Enhanced PDF</span>
           </Button>
           
           <Button

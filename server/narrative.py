@@ -864,3 +864,58 @@ async def narrative_multi_pdf(request: MultiRequest = Body(...)):
                 "message": f"Multi-source PDF generation failed: {error_message}"
             }
         )
+
+# Command-line entrypoint for standalone usage
+if __name__ == "__main__":
+    import argparse
+    import sys
+    import json
+    
+    parser = argparse.ArgumentParser(description="CER Narrative and PDF Generator")
+    parser.add_argument("--mode", choices=["narrative", "pdf"], default="pdf",
+                      help="Mode of operation: generate narrative or PDF")
+    parser.add_argument("--input", type=str, help="Input file path (for existing narrative)")
+    parser.add_argument("--data", type=str, help="Data JSON file path (for analysis data)")
+    parser.add_argument("--output", type=str, help="Output file path (PDF or text)")
+    parser.add_argument("--product", type=str, help="Product code/name")
+    parser.add_argument("--source", choices=["faers", "maude", "eudamed", "multi"], default="faers",
+                      help="Data source type")
+    
+    args = parser.parse_args()
+    
+    # PDF Generation Mode - takes a narrative file and generates PDF
+    if args.mode == "pdf" and args.input and args.output:
+        try:
+            print(f"Generating enhanced PDF from {args.input} to {args.output}")
+            # Load narrative text
+            with open(args.input, 'r') as f:
+                narrative_text = f.read()
+                
+            # Load analysis data if provided
+            analysis_data = {}
+            if args.data:
+                try:
+                    with open(args.data, 'r') as f:
+                        analysis_data = json.load(f)
+                    print(f"Loaded analysis data from {args.data}")
+                except Exception as e:
+                    print(f"Error loading analysis data: {e}", file=sys.stderr)
+            
+            # Generate PDF
+            pdf_buffer = generate_pdf_report(narrative_text, analysis_data)
+            
+            # Write PDF to file
+            with open(args.output, 'wb') as f:
+                f.write(pdf_buffer.getvalue())
+                
+            print(f"Successfully generated PDF at {args.output}")
+            sys.exit(0)
+        except Exception as e:
+            print(f"Error generating PDF: {e}", file=sys.stderr)
+            sys.exit(1)
+    
+    # Invalid arguments
+    else:
+        print("Error: For PDF generation, --input, --output, and --mode=pdf parameters are required")
+        print("Example: python narrative.py --mode=pdf --input=narrative.txt --data=analysis.json --output=report.pdf")
+        sys.exit(1)
