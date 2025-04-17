@@ -371,8 +371,8 @@ function EndpointPanel({ type, placeholder }) {
             onClick={() => {
               const params = new URLSearchParams({ 
                 periods, 
-                start_date: startDate, 
-                end_date: endDate,
+                start_date: startDate.toISOString(), 
+                end_date: endDate.toISOString(),
                 severity: filterSeverity 
               });
               window.open(`${apiBase}/pdf?${params}`, '_blank');
@@ -650,7 +650,8 @@ function MultiSourcePanel() {
         device_codes: deviceCodes, 
         periods,
         start_date: startDate.toISOString(),
-        end_date: endDate.toISOString()
+        end_date: endDate.toISOString(),
+        severity: filterSeverity
       };
       
       // Open a new window that will receive the PDF
