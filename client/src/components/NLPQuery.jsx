@@ -1,174 +1,144 @@
-// NLPQuery.jsx
 import React, { useState } from 'react';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Loader2, Search, MessageSquare } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import axios from 'axios';
 
-export default function NLPQuery({ onFilter }) {
+const NLPQuery = ({ onFilterResults }) => {
   const [query, setQuery] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [lastQuery, setLastQuery] = useState('');
-
-  const submitQuery = async () => {
-    if (!query.trim()) {
-      setError('Please enter a query');
-      return;
-    }
-
-    setLoading(true);
-    setError('');
-    setLastQuery(query);
-    
-    try {
-      // Call the natural language query endpoint
-      const response = await fetch('/api/cer/nlp-query', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query }),
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to process your query. Please try again.');
-      }
-      
-      const data = await response.json();
-      
-      if (!data.success) {
-        throw new Error(data.message || 'Error processing your natural language query');
-      }
-      
-      // Pass the filtered data to parent component
-      onFilter(data.results);
-    } catch (err) {
-      console.error('Error processing NLP query:', err);
-      setError(err.message || 'An error occurred');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Handle Enter key press
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      submitQuery();
-    }
-  };
-
+  const [isLoading, setIsLoading] = useState(false);
+  const [interpretation, setInterpretation] = useState(null);
+  const { toast } = useToast();
+  
+  // Example queries that users might want to try
   const exampleQueries = [
-    'Show me adverse events for elderly patients',
-    'Compare serious adverse events across products',
-    'Find trends for cardiac-related events',
-    'Show me data for female patients only',
-    'Display events by frequency'
+    "Show me all serious adverse events in elderly patients",
+    "Which adverse events are most common in female patients?",
+    "Compare headache and nausea events across all products",
+    "Show adverse events reported in the last 6 months",
+    "Which drugs have the highest rate of gastrointestinal side effects?"
   ];
 
+  const handleSearch = async () => {
+    if (!query.trim()) {
+      toast({
+        title: "Query required",
+        description: "Please enter a search query",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsLoading(true);
+    try {
+      const response = await axios.post('/api/cer/nlp-query', { query });
+      
+      if (response.data.success) {
+        setInterpretation(response.data.results.interpretation);
+        onFilterResults(response.data.results);
+        
+        toast({
+          title: "Query processed",
+          description: `Found ${response.data.results.filtered_data?.events?.length || 0} matching events`,
+        });
+      } else {
+        toast({
+          title: "Error processing query",
+          description: response.data.message || "An error occurred",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error processing NLP query:', error);
+      toast({
+        title: "Error",
+        description: "Failed to process your query. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const tryExampleQuery = (example) => {
+    setQuery(example);
+    // Don't auto-execute to give users a chance to modify
+  };
+
   return (
-    <div style={{ 
-      margin: '20px 0', 
-      padding: '20px', 
-      backgroundColor: 'white', 
-      borderRadius: '8px', 
-      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-    }}>
-      <h2 style={{ marginTop: 0, borderBottom: '2px solid #3498db', paddingBottom: '10px', color: '#2c3e50' }}>
-        Natural Language Query
-      </h2>
-      
-      <p style={{ marginBottom: '15px', color: '#555' }}>
-        Ask questions about your data in plain English. Our AI will interpret your question and display relevant insights.
-      </p>
-      
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
-        <input
-          type="text"
-          placeholder="Ask a question about your data..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyPress={handleKeyPress}
-          style={{ 
-            padding: '12px 15px', 
-            borderRadius: '4px', 
-            border: '1px solid #ddd', 
-            flex: 1,
-            fontSize: '16px'
-          }}
-        />
-        <button 
-          onClick={submitQuery}
-          disabled={loading}
-          style={{
-            padding: '12px 20px',
-            backgroundColor: loading ? '#cccccc' : '#3498db',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: loading ? 'not-allowed' : 'pointer',
-            fontWeight: 'bold',
-            minWidth: '120px'
-          }}
-        >
-          {loading ? 'Processing...' : 'Ask Question'}
-        </button>
-      </div>
-      
-      {/* Example queries */}
-      <div style={{ marginBottom: '15px' }}>
-        <p style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '8px', color: '#666' }}>Example queries:</p>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-          {exampleQueries.map((example, index) => (
-            <button
-              key={index}
-              onClick={() => setQuery(example)}
-              style={{
-                padding: '8px 12px',
-                background: 'none',
-                border: '1px solid #ddd',
-                borderRadius: '20px',
-                fontSize: '14px',
-                cursor: 'pointer',
-                color: '#555',
-                transition: 'all 0.2s ease'
-              }}
-              onMouseOver={(e) => {
-                e.target.style.backgroundColor = '#f8f9fa';
-                e.target.style.borderColor = '#3498db';
-              }}
-              onMouseOut={(e) => {
-                e.target.style.backgroundColor = 'transparent';
-                e.target.style.borderColor = '#ddd';
-              }}
-            >
-              {example}
-            </button>
-          ))}
+    <Card className="w-full mb-6">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <MessageSquare className="h-5 w-5" />
+          Natural Language Query
+        </CardTitle>
+        <CardDescription>
+          Ask questions about adverse events in plain English
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="flex flex-col space-y-4">
+          <div className="flex space-x-2">
+            <Input
+              placeholder="e.g., Show serious adverse events in female patients over 65"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              className="flex-1"
+            />
+            <Button onClick={handleSearch} disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Processing
+                </>
+              ) : (
+                <>
+                  <Search className="mr-2 h-4 w-4" />
+                  Search
+                </>
+              )}
+            </Button>
+          </div>
+          
+          {interpretation && (
+            <div className="bg-muted p-3 rounded-md">
+              <h4 className="font-medium mb-1">Query Interpretation</h4>
+              <div className="text-sm">
+                <p><strong>Intent:</strong> {interpretation.intent}</p>
+                <p><strong>Filters:</strong> {interpretation.filters?.map(f => 
+                  `${f.type}: ${f.value}`
+                ).join(', ') || 'None'}</p>
+                {interpretation.group_by && (
+                  <p><strong>Grouping:</strong> {interpretation.group_by}</p>
+                )}
+              </div>
+            </div>
+          )}
+          
+          <div>
+            <p className="text-sm text-muted-foreground mb-2">Try these examples:</p>
+            <div className="flex flex-wrap gap-2">
+              {exampleQueries.map((example, i) => (
+                <button
+                  key={i}
+                  onClick={() => tryExampleQuery(example)}
+                  className="text-xs px-2 py-1 bg-secondary text-secondary-foreground rounded hover:bg-secondary/80"
+                >
+                  {example}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
-      
-      {/* Error message */}
-      {error && (
-        <div style={{ 
-          padding: '12px', 
-          backgroundColor: '#f8d7da', 
-          color: '#721c24', 
-          borderRadius: '4px', 
-          marginTop: '10px',
-          fontSize: '14px'
-        }}>
-          <strong>Error:</strong> {error}
-        </div>
-      )}
-      
-      {/* Last query processed */}
-      {lastQuery && !loading && !error && (
-        <div style={{ 
-          padding: '12px', 
-          backgroundColor: '#d4edda', 
-          color: '#155724', 
-          borderRadius: '4px', 
-          marginTop: '10px',
-          fontSize: '14px' 
-        }}>
-          <strong>Last query:</strong> "{lastQuery}" was processed successfully.
-        </div>
-      )}
-    </div>
+      </CardContent>
+      <CardFooter className="text-xs text-muted-foreground">
+        Powered by GPT-4o • Results are based on FDA FAERS data analysis
+      </CardFooter>
+    </Card>
   );
-}
+};
+
+export default NLPQuery;

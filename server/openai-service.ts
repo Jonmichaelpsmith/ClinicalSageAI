@@ -369,6 +369,40 @@ export async function generateCerSummary(text: string): Promise<string> {
   }
 }
 
+/**
+ * Process a natural language query for the CER dashboard
+ * @param query The natural language query from the user
+ * @returns Structured filtering parameters
+ */
+export async function processCerNlpQuery(query: string): Promise<any> {
+  const systemPrompt = `
+    You are an expert in clinical evaluation reports and FDA adverse event data. 
+    Interpret the user's natural language query about adverse events and transform it into a structured 
+    filtering request. Focus on understanding queries related to patient demographics, event types,
+    severity levels, and timeframes.
+  `;
+
+  try {
+    return await generateStructuredResponse(
+      query,
+      systemPrompt
+    );
+  } catch (error) {
+    console.error("Error in processCerNlpQuery:", error);
+    // Return a basic filter structure if the advanced parsing fails
+    return {
+      filters: [{ type: "keyword", value: query }],
+      sort: "frequency",
+      limit: 50,
+      group_by: "event",
+      intent: "basic_search"
+    };
+  }
+}
+
+// Export OpenAI API client for direct usage
+export const openai = client;
+
 export default {
   analyzeText,
   analyzeProtocolSections,
@@ -379,5 +413,7 @@ export default {
   generateCerSummary,
   isApiKeyAvailable,
   generateEmbeddings,
-  generateStructuredResponse
+  generateStructuredResponse,
+  processCerNlpQuery,
+  openai
 };

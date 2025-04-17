@@ -1,33 +1,23 @@
 /**
  * CER Routes Integration
  * 
- * This module integrates the CER generator API routes with the Express server.
+ * This file integrates the Clinical Evaluation Report (CER) routes into the Express application.
  */
 
-import cerRoutes from './routes/cer-routes.js';
+const cerRoutes = require('./routes/cer-routes');
 
 /**
  * Register CER routes with the Express application
- * 
- * @param {Express} app The Express application instance
+ * @param {import('express').Express} app - The Express application
  */
-export function registerCerRoutes(app) {
-  // Mount CER routes under /api/cer
+function registerCerRoutes(app) {
+  // Mount the CER routes under the /api/cer prefix
   app.use('/api/cer', cerRoutes);
   
-  console.log('CER API routes registered');
-  
-  // Add a health check endpoint for the CER API
-  app.get('/api/cer/health', (req, res) => {
-    res.json({
-      status: 'ok',
-      service: 'LumenTrialGuide.AI CER Generator',
-      version: '1.0.0',
-      timestamp: new Date().toISOString()
-    });
-  });
+  // Log successful registration
+  console.log('CER routes registered successfully');
 }
 
-export default {
+module.exports = {
   registerCerRoutes
 };
