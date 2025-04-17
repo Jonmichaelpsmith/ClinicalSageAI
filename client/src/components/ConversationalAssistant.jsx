@@ -22,20 +22,7 @@ export default function ConversationalAssistant({ initialPrompt }) {
       setMessages([
         {
           role: "assistant",
-          content: `👋 Hello! I'm the TrialSage assistant specializing in clinical trial design and analysis.
-          
-I can help with:
-• Analyzing protocols and comparing to similar trials in our CSR library
-• Identifying potential risks based on historical trial data
-• Recommending design improvements based on similar successful studies
-• Analyzing adverse event patterns across related drugs or devices
-
-To get the most out of our CSR database, try queries like:
-• "How does this protocol compare to similar Phase 2 obesity trials?"
-• "What are common dropout reasons in trials similar to mine?"
-• "Based on the CSR library, what endpoints work best for this indication?"
-
-Upload a protocol document to get tailored recommendations.`
+          content: "👋 Hello! I'm the TrialSage assistant specializing in clinical trial design and analysis. How can I help you today?"
         }
       ]);
     }
@@ -86,27 +73,14 @@ Upload a protocol document to get tailored recommendations.`
       
       // Then send the message
       console.log("Sending chat message to /api/chat/send-message");
-      
-      // If a file was uploaded, enhance the message with a request to use the CSR database
-      let enhancedMessage = input;
-      if (fileId) {
-        // Append CSR library analysis instructions to the input 
-        if (!enhancedMessage.toLowerCase().includes('csr') && 
-            !enhancedMessage.toLowerCase().includes('library')) {
-          enhancedMessage += "\n\nPlease analyze this protocol in comparison to similar studies in the CSR library. Include specific recommendations based on similar trials.";
-        }
-      }
-      
       const res = await fetch("/api/chat/send-message", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          message: enhancedMessage,
+          message: input,
           thread_id: threadId,
           file_id: fileId,
           system_prompt: initialPrompt, // Pass the initialPrompt as a system prompt
-          use_csr_library: true, // Flag to indicate CSR library should be used
-          content_type: fileId ? "protocol" : "query", // Indicate the content type
         }),
       });
       
@@ -118,26 +92,11 @@ Upload a protocol document to get tailored recommendations.`
       console.log("Received response:", data);
       setThreadId(data.thread_id);
 
-      // Format CSR evidence more comprehensively
-      const formattedCitations = data.citations && data.citations.length > 0
-        ? `\n\n📎 CSR Evidence:\n${data.citations.map(cite => `• ${cite}`).join("\n")}`
-        : "\n\n📎 No specific CSR evidence found for this query.";
-      
-      // Format any design recommendations if available
-      const designRecs = data.recommended_design
-        ? `\n\n📋 Design Recommendations:\n${data.recommended_design.protocol || "No specific recommendations available."}`
-        : "";
-      
-      // Format risk analysis if available
-      const riskAnalysis = data.risk_flags && data.risk_flags.length > 0
-        ? `\n\n⚠️ Risk Considerations:\n${data.risk_flags.map(risk => `• ${risk}`).join("\n")}`
-        : "";
-      
       setMessages((prev) => [
         ...prev,
         {
           role: "assistant",
-          content: `🧠 ${data.answer}${formattedCitations}${designRecs}${riskAnalysis}`,
+          content: data.answer
         },
       ]);
     } catch (error) {
