@@ -57,16 +57,32 @@ export default function CERDashboard() {
     localStorage.setItem('cer_active_tab', tab);
   }, [tab]);
 
+  // Check authentication status
   if (!isAuthenticated) {
     return (
       <div className="p-8 max-w-7xl mx-auto">
-        <Card>
-          <CardHeader>
+        <Card className="shadow-lg border-2 border-primary/20">
+          <CardHeader className="bg-muted/30">
             <h2 className="text-2xl font-bold">Authentication Required</h2>
+            <p className="text-sm text-muted-foreground">Please log in to access the CER Dashboard</p>
           </CardHeader>
-          <CardContent>
-            <p className="mb-4">Please log in to access the CER Dashboard.</p>
-            <Button onClick={login}>Login</Button>
+          <CardContent className="p-6 flex flex-col items-center">
+            <div className="mb-6 text-center max-w-md">
+              <p className="mb-4">You need to be authenticated to view the Enhanced CER Dashboard and its features.</p>
+              <ul className="text-sm text-left list-disc pl-5 mb-4 space-y-1">
+                <li>Access to FAERS data analysis</li>
+                <li>Device analytics integration</li>
+                <li>Multi-source regulatory reporting</li>
+                <li>PDF report generation</li>
+              </ul>
+            </div>
+            <Button 
+              size="lg" 
+              onClick={login} 
+              className="px-8 py-2 font-medium"
+            >
+              Login to Dashboard
+            </Button>
           </CardContent>
         </Card>
       </div>
