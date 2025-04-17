@@ -1,0 +1,104 @@
+Advanced Interactive Frontend (React)
+For a richer frontend experience, we’ll build interactive dashboards using Plotly and add an NLP query component. Make sure you install dependencies:
+
+bash
+Copy
+npm install react-plotly.js plotly.js
+A. Advanced CER Dashboard Component
+Create a new component called AdvancedDashboard.jsx that allows filtering and drill-down analytics:
+
+jsx
+Copy
+// AdvancedDashboard.jsx
+import React, { useState, useEffect } from 'react';
+import Plot from 'react-plotly.js';
+
+export default function AdvancedDashboard({ ndcCodes }) {
+  const [comparativeData, setComparativeData] = useState(null);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [error, setError] = useState('');
+
+  const fetchComparativeData = async () => {
+    try {
+      const response = await fetch('/api/cer/compare', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ndc_codes: ndcCodes }),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch analytics data.');
+      }
+      const data = await response.json();
+      setComparativeData(data.comparative_data);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  useEffect(() => {
+    if (ndcCodes && ndcCodes.length > 0) {
+      fetchComparativeData();
+    }
+  }, [ndcCodes]);
+
+  if (error) return <div>Error: {error}</div>;
+  if (!comparativeData) return <div>Loading analytics...</div>;
+
+  // Prepare plot data for a selected NDC code; for simplicity, use the first NDC's data.
+  const firstNdc = ndcCodes[0];
+  const ndcData = comparativeData[firstNdc];
+  if (!ndcData) return <div>No data available for {firstNdc}</div>;
+
+  const events = Object.keys(ndcData.event_summary);
+  const counts = events.map(event => ndcData.event_summary[event]);
+
+  // Example: Create an interactive bar chart with forecasting lines for one event (if selected)
+  const selectedForecast =
+    selectedEvent && ndcData.forecasts[selectedEvent]
+      ? Object.values(ndcData.forecasts[selectedEvent])
+      : [];
+
+  return (
+    <div>
+      <h2>Advanced Comparative Analytics Dashboard</h2>
+      {/* Simple bar chart for event summary */}
+      <Plot
+        data={[
+          {
+            x: events,
+            y: counts,
+            type: 'bar',
+            name: 'Adverse Event Counts',
+          },
+        ]}
+        layout={{ title: `Event Summary for NDC ${firstNdc}`, xaxis: { title: 'Event' }, yaxis: { title: 'Count' } }}
+      />
+      <div style={{ marginTop: '20px' }}>
+        <label>Select an event for forecasting details: </label>
+        <select onChange={(e) => setSelectedEvent(e.target.value)} defaultValue="">
+          <option value="" disabled>
+            -- Choose an event --
+          </option>
+          {events.map(event => (
+            <option key={event} value={event}>
+              {event}
+            </option>
+          ))}
+        </select>
+      </div>
+      {selectedEvent && selectedForecast.length > 0 && (
+        <Plot
+          data={[
+            {
+              x: Object.keys(ndcData.forecasts[selectedEvent]),
+              y: selectedForecast,
+              type: 'line',
+              name: `Forecast for ${selectedEvent}`,
+            },
+          ]}
+          layout={{ title: `Forecast for ${selectedEvent}`, xaxis: { title: 'Time' }, yaxis: { title: 'Predicted Count' } }}
+        />
+      )}
+    </div>
+  );
+}
