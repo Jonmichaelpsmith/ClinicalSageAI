@@ -599,6 +599,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register API secrets checking endpoint
   app.post('/api/check-secrets', handleCheckSecrets);
   
+  // Register Narrative routes for CER dashboard
+  try {
+    const narrativeRoutes = await import('./routes/narrative-routes.js');
+    app.use('/api/narrative', narrativeRoutes.default);
+    console.log('Narrative routes registered successfully');
+  } catch (err) {
+    console.error('Error loading narrative routes:', err);
+  }
+  
   // Register CER Analytics routes when file exists
   try {
     const cerAnalyticsRoutes = await import('./routes/cer-analytics-routes.js');
