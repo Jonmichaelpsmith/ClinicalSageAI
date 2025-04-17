@@ -27,9 +27,11 @@ export default function Home() {
             <Badge variant="outline" className="font-semibold text-primary border-primary px-3 py-1">
               CSR Intelligence
             </Badge>
-            <Badge variant="outline" className="font-semibold text-emerald-600 border-emerald-600 px-3 py-1">
-              CER Analytics
-            </Badge>
+            <Link href="/enhanced-cer-dashboard">
+              <Badge variant="outline" className="font-semibold text-emerald-600 border-emerald-600 px-3 py-1 cursor-pointer hover:bg-emerald-50 dark:hover:bg-emerald-900/20">
+                CER Analytics
+              </Badge>
+            </Link>
             <Badge variant="outline" className="font-semibold text-amber-600 border-amber-600 px-3 py-1">
               FDA FAERS Integration
             </Badge>
@@ -149,7 +151,10 @@ export default function Home() {
                     </div>
                   </Link>
                   <Link href="/enhanced-cer-dashboard" className="block">
-                    <div className="rounded-lg bg-gradient-to-b from-teal-500 to-teal-700 p-8 text-white hover:shadow-lg transition-shadow">
+                    <div className="rounded-lg bg-gradient-to-b from-teal-500 to-teal-700 p-8 text-white hover:shadow-lg transition-shadow relative">
+                      <div className="absolute top-2 right-2 bg-white text-teal-600 text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">
+                        Try Now
+                      </div>
                       <FileText className="mb-2 h-10 w-10" />
                       <h3 className="text-xl font-bold">CER Generator</h3>
                       <p className="text-teal-100">
