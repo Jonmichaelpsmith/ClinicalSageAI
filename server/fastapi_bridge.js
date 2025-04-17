@@ -16,9 +16,10 @@ import http from 'http';
 let fastApiProcess = null;
 // FastAPI server port
 const FASTAPI_PORT = 3500;
-// Path to the FastAPI script
+// Path to the FastAPI scripts
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FASTAPI_SCRIPT = path.join(__dirname, 'ingestion_api.py');
+const CER_FASTAPI_SCRIPT = path.join(__dirname, 'cer_fastapi.py');
 
 /**
  * Check if the port is in use
@@ -56,11 +57,32 @@ export async function startFastApiServer() {
     return;
   }
 
-  // Start the FastAPI server
+  // Start the FastAPI ingestion server
   console.log('Starting FastAPI server...');
   fastApiProcess = spawn('python', [FASTAPI_SCRIPT], {
     stdio: ['ignore', 'pipe', 'pipe'],
     detached: false,
+  });
+  
+  // Also start the FastAPI CER server
+  console.log('Starting CER API server...');
+  const cerFastApiProcess = spawn('python', [CER_FASTAPI_SCRIPT], {
+    stdio: ['ignore', 'pipe', 'pipe'],
+    detached: false,
+  });
+  
+  // Log output from the CER FastAPI server
+  cerFastApiProcess.stdout.on('data', (data) => {
+    console.log(`CER API: ${data.toString().trim()}`);
+  });
+
+  cerFastApiProcess.stderr.on('data', (data) => {
+    console.error(`CER API error: ${data.toString().trim()}`);
+  });
+
+  // Handle CER server process exit
+  cerFastApiProcess.on('close', (code) => {
+    console.log(`CER API server exited with code ${code}`);
   });
 
   // Log output from the FastAPI server
@@ -128,10 +150,11 @@ export function stopFastApiServer() {
  */
 export function createFastApiProxyMiddleware() {
   return function(req, res, next) {
-    // Handle '/api/ingest', '/api/norm', and '/api/narrative' routes
+    // Handle '/api/ingest', '/api/norm', '/api/narrative', and '/api/cer' routes
     if (!req.path.startsWith('/api/ingest') && 
         !req.path.startsWith('/api/norm') && 
-        !req.path.startsWith('/api/narrative')) {
+        !req.path.startsWith('/api/narrative') &&
+        !req.path.startsWith('/api/cer')) {
       return next();
     }
     

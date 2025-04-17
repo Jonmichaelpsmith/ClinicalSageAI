@@ -1,0 +1,102 @@
+# main.py
+from fastapi import FastAPI, APIRouter, HTTPException
+import requests
+from faers_client import get_faers_data
+from cer_narrative import generate_cer_narrative
+
+# Basic app and router setup.
+app = FastAPI()
+router = APIRouter()
+
+@router.get("/api/cer/{ndc_code}")
+async def create_cer(ndc_code: str):
+    try:
+        faers = get_faers_data(ndc_code)
+        cer_text = generate_cer_narrative(faers)
+        return {"cer_report": cer_text}
+    except requests.exceptions.HTTPError as e:
+        raise HTTPException(status_code=e.response.status_code, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+# -------------------------------
+# Batch Processing Endpoint
+from pydantic import BaseModel
+from typing import List, Dict
+
+class BatchRequest(BaseModel):
+    ndc_codes: List[str]
+
+@router.post("/api/cer/batch")
+async def batch_cer(request: BatchRequest):
+    reports = {}
+    for ndc in request.ndc_codes:
+        try:
+            faers = get_faers_data(ndc)
+            narrative = generate_cer_narrative(faers)
+            reports[ndc] = narrative
+        except Exception as e:
+            reports[ndc] = f"Error: {str(e)}"
+    return {"reports": reports}
+
+# -------------------------------
+# Comparative Analysis Endpoint
+
+class CompareRequest(BaseModel):
+    ndc_codes: List[str]
+
+def extract_common_adverse_events(faers_reports: Dict[str, dict]) -> Dict[str, int]:
+    # Dummy merging: In a real scenario, parse your FAERS JSON to extract event names and counts.
+    event_counts = {}
+    for data in faers_reports.values():
+        if isinstance(data, dict) and 'results' in data:
+            for item in data['results']:
+                event = item.get('event', 'Unknown')
+                count = item.get('count', 0)
+                event_counts[event] = event_counts.get(event, 0) + count
+    return event_counts
+
+@router.post("/api/cer/compare")
+async def compare_cer(request: CompareRequest):
+    faers_reports = {}
+    for ndc in request.ndc_codes:
+        try:
+            faers_reports[ndc] = get_faers_data(ndc)
+        except Exception as e:
+            faers_reports[ndc] = {"error": str(e)}
+    common_events = extract_common_adverse_events(faers_reports)
+    return {"comparative_summary": common_events}
+
+# -------------------------------
+# PDF Export Endpoint
+from fastapi.responses import StreamingResponse
+import io
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+
+@router.get("/api/cer/{ndc_code}/pdf")
+async def download_cer(ndc_code: str):
+    try:
+        faers = get_faers_data(ndc_code)
+        cer_text = generate_cer_narrative(faers)
+        buffer = io.BytesIO()
+        c = canvas.Canvas(buffer, pagesize=letter)
+        textobject = c.beginText(40, 750)
+        for line in cer_text.split('\n'):
+            textobject.textLine(line)
+        c.drawText(textobject)
+        c.showPage()
+        c.save()
+        buffer.seek(0)
+        return StreamingResponse(
+            buffer, 
+            media_type='application/pdf', 
+            headers={"Content-Disposition": f"attachment; filename=cer_report_{ndc_code}.pdf"}
+        )
+    except requests.exceptions.HTTPError as e:
+        raise HTTPException(status_code=e.response.status_code, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+# Include the router in the application.
+app.include_router(router)
