@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import AdvancedDashboard from '../components/AdvancedDashboard';
 import NLPQuery from '../components/NLPQuery';
+import CERAPIDemo from '../components/CERAPIDemo';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -291,6 +292,9 @@ const EnhancedCERDashboardPage: React.FC = () => {
           )}
         </CardContent>
       </Card>
+      
+      {/* Add the CERAPIDemo component before NLPQuery */}
+      <CERAPIDemo />
       
       {selectedNdcCodes.length > 0 && (
         <>
