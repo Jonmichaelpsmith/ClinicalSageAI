@@ -1,0 +1,94 @@
+// CERGenerator.jsx
+import React, { useState } from 'react';
+
+export default function CERGenerator() {
+  const [ndcCode, setNdcCode] = useState('');
+  const [cerReport, setCerReport] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const generateCER = async () => {
+    setLoading(true);
+    setError('');
+    setCerReport('');
+    try {
+      const res = await fetch(`/api/cer/${ndcCode}`);
+      if (!res.ok) {
+        throw new Error('Failed to fetch the CER report from the server.');
+      }
+      const data = await res.json();
+      setCerReport(data.cer_report);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const downloadPDF = () => {
+    window.open(`/api/cer/${ndcCode}/pdf`, '_blank');
+  };
+
+  return (
+    <div style={{ margin: '20px', fontFamily: 'Arial, sans-serif' }}>
+      <h2>Clinical Evaluation Report Generator</h2>
+      <input
+        type="text"
+        placeholder="Enter NDC Code"
+        value={ndcCode}
+        onChange={(e) => setNdcCode(e.target.value)}
+        style={{
+          padding: '10px',
+          width: '300px',
+          marginRight: '10px',
+          borderRadius: '4px',
+          border: '1px solid #ccc'
+        }}
+      />
+      <button
+        onClick={generateCER}
+        style={{
+          padding: '10px 20px',
+          borderRadius: '4px',
+          border: 'none',
+          backgroundColor: '#007BFF',
+          color: 'white',
+          cursor: 'pointer'
+        }}
+      >
+        {loading ? 'Generating...' : 'Generate CER'}
+      </button>
+      <button
+        onClick={downloadPDF}
+        style={{
+          padding: '10px 20px',
+          borderRadius: '4px',
+          border: 'none',
+          backgroundColor: '#28a745',
+          color: 'white',
+          cursor: 'pointer',
+          marginLeft: '10px'
+        }}
+      >
+        Download PDF
+      </button>
+      {error && (
+        <div style={{ color: 'red', marginTop: '10px' }}>
+          {error}
+        </div>
+      )}
+      {cerReport && (
+        <div
+          style={{
+            marginTop: '20px',
+            whiteSpace: 'pre-wrap',
+            border: '1px solid #ccc',
+            padding: '10px'
+          }}
+        >
+          {cerReport}
+        </div>
+      )}
+    </div>
+  );
+}
