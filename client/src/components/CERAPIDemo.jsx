@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -6,7 +6,47 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Download, FileText, AlertTriangle, Loader2 } from 'lucide-react';
+import { Download, FileText, AlertTriangle, Loader2, TrendingUp, BarChart } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
+
+// Mock data for visualizations
+const MOCK_ADVERSE_EVENTS = [
+  { name: 'Headache', count: 87 },
+  { name: 'Nausea', count: 76 },
+  { name: 'Fatigue', count: 59 },
+  { name: 'Dizziness', count: 47 },
+  { name: 'Rash', count: 33 }
+];
+
+const MOCK_MONTHLY_DATA = [
+  { month: 'Jan', events: 42 },
+  { month: 'Feb', events: 38 },
+  { month: 'Mar', events: 47 },
+  { month: 'Apr', events: 62 },
+  { month: 'May', events: 55 },
+  { month: 'Jun', events: 43 }
+];
+
+// Animation variants for Framer Motion
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: { 
+    opacity: 1,
+    transition: { 
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: { 
+    y: 0, 
+    opacity: 1,
+    transition: { type: 'spring', stiffness: 300, damping: 24 }
+  }
+};
 
 export default function CERAPIDemo() {
   const [activeTab, setActiveTab] = useState('faers');
@@ -17,7 +57,16 @@ export default function CERAPIDemo() {
   const [loading, setLoading] = useState(false);
   const [downloadReady, setDownloadReady] = useState(false);
   const [responseData, setResponseData] = useState(null);
+  const [visualizationData, setVisualizationData] = useState(null);
   const { toast } = useToast();
+
+  // Initialize visualization data on component mount
+  useEffect(() => {
+    setVisualizationData({
+      adverseEvents: MOCK_ADVERSE_EVENTS,
+      monthlyTrends: MOCK_MONTHLY_DATA
+    });
+  }, []);
 
   const handleFetchData = async () => {
     setLoading(true);
@@ -76,6 +125,19 @@ export default function CERAPIDemo() {
       const data = await response.json();
       setResponseData(data);
       setDownloadReady(true);
+      
+      // In a real implementation, we would extract visualization data from the API response
+      // For now, we'll use our mock data with a slight randomization
+      setVisualizationData({
+        adverseEvents: MOCK_ADVERSE_EVENTS.map(item => ({
+          ...item,
+          count: item.count + Math.floor(Math.random() * 10 - 5)
+        })),
+        monthlyTrends: MOCK_MONTHLY_DATA.map(item => ({
+          ...item,
+          events: item.events + Math.floor(Math.random() * 10 - 5)
+        }))
+      });
       
       toast({
         title: "Success",
@@ -298,16 +360,79 @@ export default function CERAPIDemo() {
         </div>
       </CardContent>
       
-      {responseData && (
+      {(responseData || visualizationData) && (
         <CardFooter className="flex flex-col">
-          <div className="w-full space-y-2">
-            <label className="text-sm font-medium">API Response:</label>
-            <div className="bg-muted/50 p-4 rounded-md overflow-auto max-h-80">
-              <pre className="text-xs whitespace-pre-wrap">
-                {JSON.stringify(responseData, null, 2)}
-              </pre>
-            </div>
-          </div>
+          <AnimatePresence>
+            {visualizationData && (
+              <motion.div 
+                initial="hidden"
+                animate="visible"
+                exit="hidden"
+                variants={containerVariants}
+                className="w-full mb-6"
+              >
+                <motion.h3 variants={itemVariants} className="text-lg font-medium mb-4">
+                  Visualization
+                </motion.h3>
+                
+                <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">Adverse Events Distribution</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-[250px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <RechartsBarChart data={visualizationData.adverseEvents} margin={{ top: 10, right: 10, left: 10, bottom: 30 }}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                            <XAxis dataKey="name" angle={-45} textAnchor="end" height={60} />
+                            <YAxis />
+                            <Tooltip />
+                            <Bar dataKey="count" fill="#8884d8" />
+                          </RechartsBarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">Monthly Trend Analysis</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-[250px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart data={visualizationData.monthlyTrends} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                            <XAxis dataKey="month" />
+                            <YAxis />
+                            <Tooltip />
+                            <Line type="monotone" dataKey="events" stroke="#8884d8" activeDot={{ r: 8 }} />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              </motion.div>
+            )}
+            
+            {responseData && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="w-full space-y-2"
+              >
+                <label className="text-sm font-medium">API Response:</label>
+                <div className="bg-muted/50 p-4 rounded-md overflow-auto max-h-80">
+                  <pre className="text-xs whitespace-pre-wrap">
+                    {JSON.stringify(responseData, null, 2)}
+                  </pre>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </CardFooter>
       )}
     </Card>
