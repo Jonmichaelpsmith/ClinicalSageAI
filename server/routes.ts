@@ -404,6 +404,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register session API routes
   app.use('/api/session', sessionRoutes);
   
+  // Add recent reports endpoint
+  app.get('/api/reports/recent', (req, res) => {
+    // Return an empty successful response to prevent errors in the frontend
+    res.json({
+      success: true,
+      reports: []
+    });
+  });
+  
   // Export trial success prediction to PDF
   app.post("/api/export/success-summary", async (req: Request, res: Response) => {
     try {
