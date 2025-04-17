@@ -4458,11 +4458,11 @@ Provide a comprehensive, evidence-based response.`;
     }
   });
   
-  // Send message to AI assistant
-  app.post('/api/chat/send-message', async (req: Request, res: Response) => {
+  // Send message to AI assistant - ENDPOINT MOVED TO LINE ~2674 TO AVOID DUPLICATION
+  app.post('/api/chat/custom-message', async (req: Request, res: Response) => {
     try {
       const { message, thread_id } = req.body;
-      console.log('Received chat message:', message, 'thread_id:', thread_id);
+      console.log('Received custom chat message:', message, 'thread_id:', thread_id);
       
       // Check if OpenAI API key is available
       if (!isOpenAIApiKeyAvailable()) {
