@@ -45,6 +45,16 @@ class MultiNdcRequest(BaseModel):
     
 # --- API Endpoints ---
 
+@app.get("/health")
+async def health_check():
+    """Health check endpoint to verify the server is running."""
+    return {
+        "status": "ok",
+        "service": "CER Generation API",
+        "version": "1.0.0",
+        "timestamp": datetime.now().isoformat()
+    }
+
 @app.post("/cer/generate")
 async def generate_cer(request: NdcRequest):
     """
