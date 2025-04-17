@@ -211,6 +211,7 @@ function Router() {
       <Route path="/admin">{() => renderWithLayout(AdminPage)}</Route>
       <Route path="/cer-generator">{() => renderWithLayout(CERGeneratorPage)}</Route>
       <Route path="/enhanced-cer-dashboard">{() => renderWithLayout(EnhancedCERDashboardPage)}</Route>
+      <Route path="/cer-dashboard">{() => renderWithLayout(CERDashboardPage)}</Route>
       <Route path="/settings">{() => renderWithLayout(SettingsPage)}</Route>
       <Route path="/csr-chat">{() => renderWithLayout(ChatAssistant)}</Route>
       <Route path="/chat">{() => renderWithLayout(ChatAssistant)}</Route>
@@ -228,18 +229,31 @@ function App() {
         <ResearchCompanionProvider>
           <Router />
           <ResearchCompanion />
-          {/* Add conditional rendering for CER Dashboard Access Button */}
-          {window.location.pathname !== '/enhanced-cer-dashboard' && (
-            <a href="/enhanced-cer-dashboard" className="fixed bottom-5 right-5 z-50">
-              <button 
-                className="flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md shadow-lg"
-              >
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
-                CER Dashboard
-              </button>
-            </a>
+          {/* Add conditional rendering for CER Dashboard Access Buttons */}
+          {window.location.pathname !== '/enhanced-cer-dashboard' && 
+           window.location.pathname !== '/cer-dashboard' && (
+            <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2">
+              <a href="/cer-dashboard" className="transition-transform hover:scale-105">
+                <button 
+                  className="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md shadow-lg"
+                >
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                  </svg>
+                  New CER Dashboard
+                </button>
+              </a>
+              <a href="/enhanced-cer-dashboard" className="transition-transform hover:scale-105">
+                <button 
+                  className="flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md shadow-lg"
+                >
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
+                  Enhanced Dashboard
+                </button>
+              </a>
+            </div>
           )}
           <Toaster />
         </ResearchCompanionProvider>
