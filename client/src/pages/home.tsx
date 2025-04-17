@@ -71,6 +71,11 @@ export default function Home() {
                 View Demo Dashboard <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
+            <Link href="/csr-chat">
+              <Button size="lg" className="h-11 px-6 bg-gradient-to-r from-blue-600 to-blue-800">
+                Try CSR Chat Assistant <Brain className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
             <Link href="/features">
               <Button size="lg" variant="outline" className="h-11 px-6">
                 Explore Features
