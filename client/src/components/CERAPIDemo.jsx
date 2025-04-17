@@ -48,6 +48,149 @@ const itemVariants = {
   }
 };
 
+// ViewToggle component for switching between chart and table views
+const ViewToggle = React.memo(({ viewMode, onViewModeChange }) => {
+  return (
+    <div className="flex items-center space-x-2 mb-4">
+      <Button 
+        size="sm" 
+        variant={viewMode === 'chart' ? 'default' : 'outline'}
+        onClick={() => onViewModeChange('chart')}
+        className="flex items-center"
+      >
+        <BarChart className="mr-2 h-4 w-4" />
+        Chart
+      </Button>
+      <Button 
+        size="sm" 
+        variant={viewMode === 'table' ? 'default' : 'outline'}
+        onClick={() => onViewModeChange('table')}
+        className="flex items-center"
+      >
+        <FileText className="mr-2 h-4 w-4" />
+        Table
+      </Button>
+    </div>
+  );
+});
+
+ViewToggle.displayName = 'ViewToggle';
+
+// TrendTable component for displaying raw data in table format
+const TrendTable = React.memo(({ data, title, keyField, valueField }) => {
+  return (
+    <div className="rounded-md border overflow-hidden">
+      <div className="bg-muted px-4 py-2 font-medium text-sm">{title}</div>
+      <div className="overflow-auto max-h-[300px]">
+        <table className="min-w-full divide-y divide-border">
+          <thead className="bg-muted/50">
+            <tr>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                {keyField === 'name' ? 'Event Type' : 'Time Period'}
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Count
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Percentage
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-card divide-y divide-border">
+            {data.map((item, idx) => {
+              const total = data.reduce((sum, i) => sum + i[valueField], 0);
+              const percentage = ((item[valueField] / total) * 100).toFixed(1);
+              
+              return (
+                <tr key={idx} className={idx % 2 === 0 ? '' : 'bg-muted/20'}>
+                  <td className="px-6 py-2 whitespace-nowrap text-sm">{item[keyField]}</td>
+                  <td className="px-6 py-2 whitespace-nowrap text-sm">{item[valueField]}</td>
+                  <td className="px-6 py-2 whitespace-nowrap text-sm">{percentage}%</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+});
+
+TrendTable.displayName = 'TrendTable';
+
+// DateRangePicker component for selecting custom date ranges
+const DateRangePicker = React.memo(({ startDate, endDate, onRangeChange }) => {
+  const handleStartChange = (e) => {
+    onRangeChange(e.target.value, endDate);
+  };
+  
+  const handleEndChange = (e) => {
+    onRangeChange(startDate, e.target.value);
+  };
+  
+  const presetRanges = [
+    { label: '3 Months', value: '3' },
+    { label: '6 Months', value: '6' },
+    { label: '1 Year', value: '12' },
+    { label: '2 Years', value: '24' }
+  ];
+  
+  const handlePresetClick = (months) => {
+    const today = new Date();
+    const pastDate = new Date();
+    pastDate.setMonth(today.getMonth() - parseInt(months));
+    
+    onRangeChange(
+      pastDate.toISOString().split('T')[0],
+      today.toISOString().split('T')[0]
+    );
+  };
+  
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-3 mb-4"
+    >
+      <div className="flex flex-wrap gap-2">
+        {presetRanges.map((range) => (
+          <Button 
+            key={range.value} 
+            variant="outline" 
+            size="sm" 
+            onClick={() => handlePresetClick(range.value)}
+          >
+            {range.label}
+          </Button>
+        ))}
+      </div>
+      
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-1">
+          <label htmlFor="startDate" className="text-xs font-medium">Start Date</label>
+          <Input 
+            id="startDate"
+            type="date" 
+            value={startDate} 
+            onChange={handleStartChange}
+          />
+        </div>
+        <div className="space-y-1">
+          <label htmlFor="endDate" className="text-xs font-medium">End Date</label>
+          <Input 
+            id="endDate"
+            type="date" 
+            value={endDate} 
+            onChange={handleEndChange}
+          />
+        </div>
+      </div>
+    </motion.div>
+  );
+});
+
+DateRangePicker.displayName = 'DateRangePicker';
+
 export default function CERAPIDemo() {
   const [activeTab, setActiveTab] = useState('faers');
   const [ndcCode, setNdcCode] = useState('');
@@ -58,6 +201,18 @@ export default function CERAPIDemo() {
   const [downloadReady, setDownloadReady] = useState(false);
   const [responseData, setResponseData] = useState(null);
   const [visualizationData, setVisualizationData] = useState(null);
+  const [viewMode, setViewMode] = useState('chart');
+  const [error, setError] = useState(null);
+  const [showDateRange, setShowDateRange] = useState(false);
+  
+  // Date range state
+  const today = new Date();
+  const threeMonthsAgo = new Date();
+  threeMonthsAgo.setMonth(today.getMonth() - 3);
+  
+  const [startDate, setStartDate] = useState(threeMonthsAgo.toISOString().split('T')[0]);
+  const [endDate, setEndDate] = useState(today.toISOString().split('T')[0]);
+  
   const { toast } = useToast();
 
   // Initialize visualization data on component mount
@@ -68,10 +223,55 @@ export default function CERAPIDemo() {
     });
   }, []);
 
+  // Handle date range changes
+  const handleDateRangeChange = (start, end) => {
+    setStartDate(start);
+    setEndDate(end);
+    
+    // Calculate period in months from the date range
+    const startObj = new Date(start);
+    const endObj = new Date(end);
+    
+    const diffMonths = (endObj.getFullYear() - startObj.getFullYear()) * 12 + 
+                      (endObj.getMonth() - startObj.getMonth());
+    
+    setPeriod(diffMonths.toString());
+  };
+  
+  // Handle view mode changes
+  const handleViewModeChange = (mode) => {
+    // Add smooth animation for view mode change
+    setViewMode(mode);
+  };
+  
+  // Toggle date range picker visibility
+  const toggleDateRangePicker = () => {
+    setShowDateRange(prev => !prev);
+  };
+
+  // Extract KPI metrics from response data
+  const getKPIMetrics = React.useMemo(() => {
+    if (!responseData) return null;
+    
+    try {
+      // In a real implementation, these would be extracted from the actual response
+      return {
+        totalReports: responseData?.total_reports || 125,
+        seriousEvents: responseData?.serious_events || 43,
+        trendChange: responseData?.trend_change || '+12%',
+        timeframe: `${period || '12'} months`
+      };
+    } catch (err) {
+      console.error('Error extracting KPI metrics:', err);
+      return null;
+    }
+  }, [responseData, period]);
+
   const handleFetchData = async () => {
     setLoading(true);
     setDownloadReady(false);
     setResponseData(null);
+    setError(null);
     
     try {
       let endpoint;
@@ -83,7 +283,12 @@ export default function CERAPIDemo() {
             throw new Error('Please enter a valid NDC code');
           }
           endpoint = '/api/cer/generate';
-          payload = { ndc_code: ndcCode, period: period || undefined };
+          payload = { 
+            ndc_code: ndcCode, 
+            period: period || undefined,
+            start_date: startDate,
+            end_date: endDate 
+          };
           break;
           
         case 'device':
@@ -91,7 +296,12 @@ export default function CERAPIDemo() {
             throw new Error('Please enter a valid device code');
           }
           endpoint = '/api/cer/device';
-          payload = { device_code: deviceCode, period: period || undefined };
+          payload = { 
+            device_code: deviceCode, 
+            period: period || undefined,
+            start_date: startDate,
+            end_date: endDate 
+          };
           break;
           
         case 'multi':
@@ -104,7 +314,9 @@ export default function CERAPIDemo() {
           payload = { 
             ndc_codes: codes.filter(code => code.includes('-')), 
             device_codes: codes.filter(code => !code.includes('-')),
-            period: period || undefined
+            period: period || undefined,
+            start_date: startDate,
+            end_date: endDate 
           };
           break;
       }
@@ -320,6 +532,29 @@ export default function CERAPIDemo() {
           </TabsContent>
         </Tabs>
         
+        {/* Date range picker toggle */}
+        <div className="flex justify-between items-center mt-4 mb-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={toggleDateRangePicker}
+            className="flex items-center"
+          >
+            {showDateRange ? 'Hide Date Range' : 'Custom Date Range'}
+          </Button>
+        </div>
+        
+        {/* Date range picker */}
+        <AnimatePresence>
+          {showDateRange && (
+            <DateRangePicker 
+              startDate={startDate}
+              endDate={endDate}
+              onRangeChange={handleDateRangeChange}
+            />
+          )}
+        </AnimatePresence>
+        
         <div className="flex space-x-2 mt-6">
           <Button 
             onClick={handleFetchData} 
@@ -358,11 +593,67 @@ export default function CERAPIDemo() {
             )}
           </Button>
         </div>
+        
+        {/* Error state */}
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="mt-4"
+          >
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          </motion.div>
+        )}
       </CardContent>
       
       {(responseData || visualizationData) && (
         <CardFooter className="flex flex-col">
           <AnimatePresence>
+            {/* KPI Metrics */}
+            {getKPIMetrics && (
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="w-full mb-6"
+              >
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <Card className="bg-muted/30">
+                    <CardContent className="p-4 flex flex-col items-center justify-center">
+                      <h4 className="text-xs font-medium text-muted-foreground mb-1">Total Reports</h4>
+                      <p className="text-2xl font-bold">{getKPIMetrics.totalReports}</p>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="bg-muted/30">
+                    <CardContent className="p-4 flex flex-col items-center justify-center">
+                      <h4 className="text-xs font-medium text-muted-foreground mb-1">Serious Events</h4>
+                      <p className="text-2xl font-bold">{getKPIMetrics.seriousEvents}</p>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="bg-muted/30">
+                    <CardContent className="p-4 flex flex-col items-center justify-center">
+                      <h4 className="text-xs font-medium text-muted-foreground mb-1">Trend Change</h4>
+                      <p className="text-2xl font-bold">{getKPIMetrics.trendChange}</p>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="bg-muted/30">
+                    <CardContent className="p-4 flex flex-col items-center justify-center">
+                      <h4 className="text-xs font-medium text-muted-foreground mb-1">Time Period</h4>
+                      <p className="text-2xl font-bold">{getKPIMetrics.timeframe}</p>
+                    </CardContent>
+                  </Card>
+                </div>
+              </motion.div>
+            )}
+            
             {visualizationData && (
               <motion.div 
                 initial="hidden"
@@ -371,49 +662,91 @@ export default function CERAPIDemo() {
                 variants={containerVariants}
                 className="w-full mb-6"
               >
-                <motion.h3 variants={itemVariants} className="text-lg font-medium mb-4">
-                  Visualization
-                </motion.h3>
-                
-                <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium">Adverse Events Distribution</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="h-[250px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <RechartsBarChart data={visualizationData.adverseEvents} margin={{ top: 10, right: 10, left: 10, bottom: 30 }}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                            <XAxis dataKey="name" angle={-45} textAnchor="end" height={60} />
-                            <YAxis />
-                            <Tooltip />
-                            <Bar dataKey="count" fill="#8884d8" />
-                          </RechartsBarChart>
-                        </ResponsiveContainer>
-                      </div>
-                    </CardContent>
-                  </Card>
+                <div className="flex justify-between items-center mb-4">
+                  <motion.h3 variants={itemVariants} className="text-lg font-medium">
+                    Analysis
+                  </motion.h3>
                   
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium">Monthly Trend Analysis</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="h-[250px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <LineChart data={visualizationData.monthlyTrends} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                            <XAxis dataKey="month" />
-                            <YAxis />
-                            <Tooltip />
-                            <Line type="monotone" dataKey="events" stroke="#8884d8" activeDot={{ r: 8 }} />
-                          </LineChart>
-                        </ResponsiveContainer>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
+                  <ViewToggle 
+                    viewMode={viewMode} 
+                    onViewModeChange={handleViewModeChange} 
+                  />
+                </div>
+                
+                <AnimatePresence mode="wait">
+                  {viewMode === 'chart' ? (
+                    <motion.div 
+                      key="chart-view"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      variants={itemVariants} 
+                      className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6"
+                    >
+                      <Card>
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-sm font-medium">Adverse Events Distribution</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="h-[250px]">
+                            <ResponsiveContainer width="100%" height="100%">
+                              <RechartsBarChart data={visualizationData.adverseEvents} margin={{ top: 10, right: 10, left: 10, bottom: 30 }}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                <XAxis dataKey="name" angle={-45} textAnchor="end" height={60} />
+                                <YAxis />
+                                <Tooltip />
+                                <Bar dataKey="count" fill="#8884d8" />
+                              </RechartsBarChart>
+                            </ResponsiveContainer>
+                          </div>
+                        </CardContent>
+                      </Card>
+                      
+                      <Card>
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-sm font-medium">Monthly Trend Analysis</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="h-[250px]">
+                            <ResponsiveContainer width="100%" height="100%">
+                              <LineChart data={visualizationData.monthlyTrends} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                <XAxis dataKey="month" />
+                                <YAxis />
+                                <Tooltip />
+                                <Line type="monotone" dataKey="events" stroke="#8884d8" activeDot={{ r: 8 }} />
+                              </LineChart>
+                            </ResponsiveContainer>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="table-view"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="space-y-6 mb-6"
+                    >
+                      <TrendTable 
+                        data={visualizationData.adverseEvents}
+                        title="Adverse Events Distribution" 
+                        keyField="name" 
+                        valueField="count"
+                      />
+                      
+                      <TrendTable 
+                        data={visualizationData.monthlyTrends}
+                        title="Monthly Trend Analysis" 
+                        keyField="month" 
+                        valueField="events"
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </motion.div>
             )}
             
