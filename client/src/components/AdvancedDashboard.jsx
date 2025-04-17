@@ -1,398 +1,336 @@
 // AdvancedDashboard.jsx
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { BarChart3, LineChart as LineChartIcon, PieChart, TrendingUp, ChevronRight, AlertCircle, ListFilter } from 'lucide-react';
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { apiRequest } from "@/lib/queryClient";
 
-export default function AdvancedDashboard({ ndcCodes, token }) {
+export default function AdvancedDashboard({ ndcCodes }) {
   const [comparativeData, setComparativeData] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [error, setError] = useState('');
-  const [filters, setFilters] = useState({ event: '', minCount: 0 });
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('summary');
+  const [loading, setLoading] = useState(false);
 
   const fetchComparativeData = async () => {
+    if (!ndcCodes || ndcCodes.length === 0) return;
+    
+    setLoading(true);
+    setError('');
+    
     try {
-      setLoading(true);
-      const response = await apiRequest('POST', '/api/cer/compare', { 
-        ndc_codes: ndcCodes 
+      const response = await fetch('/api/cer/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ndc_codes: ndcCodes }),
       });
       
       if (!response.ok) {
         throw new Error('Failed to fetch analytics data.');
       }
+      
       const data = await response.json();
-      setComparativeData(data.comparative_data);
+      
+      if (!data.success) {
+        throw new Error(data.message || 'Error retrieving comparative data');
+      }
+      
+      setComparativeData(data.visualization_data);
     } catch (err) {
       console.error('Error fetching comparative data:', err);
-      setError(err.message);
+      setError(err.message || 'An error occurred');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (ndcCodes && ndcCodes.length > 0) {
-      fetchComparativeData();
-    }
+    fetchComparativeData();
   }, [ndcCodes]);
-
-  const applyFilters = (newFilters) => {
-    setFilters(newFilters);
-  };
-
-  if (error) {
-    return (
-      <Alert variant="destructive">
-        <AlertCircle className="h-4 w-4" />
-        <AlertTitle>Error</AlertTitle>
-        <AlertDescription>{error}</AlertDescription>
-      </Alert>
-    );
-  }
 
   if (loading) {
     return (
-      <div className="space-y-4">
-        <Skeleton className="h-12 w-full" />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Skeleton className="h-[350px] w-full" />
-          <Skeleton className="h-[350px] w-full" />
-        </div>
-        <Skeleton className="h-12 w-full" />
+      <div style={{ padding: '30px', textAlign: 'center' }}>
+        <div style={{ fontSize: '18px', marginBottom: '15px' }}>Loading advanced analytics...</div>
+        <div 
+          style={{ 
+            width: '50px', 
+            height: '50px', 
+            margin: 'auto', 
+            border: '5px solid #f3f3f3',
+            borderTop: '5px solid #3498db', 
+            borderRadius: '50%',
+            animation: 'spin 2s linear infinite'
+          }}
+        ></div>
+        <style>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
       </div>
     );
   }
 
-  if (!comparativeData) {
+  if (error) {
     return (
-      <Alert>
-        <AlertCircle className="h-4 w-4" />
-        <AlertTitle>No Data</AlertTitle>
-        <AlertDescription>No comparative data available for the selected NDC codes.</AlertDescription>
-      </Alert>
+      <div style={{ 
+        padding: '20px', 
+        backgroundColor: '#f8d7da', 
+        color: '#721c24',
+        borderRadius: '8px',
+        marginBottom: '20px'
+      }}>
+        <h3 style={{ marginTop: 0 }}>Error Loading Data</h3>
+        <p>{error}</p>
+        <button 
+          onClick={fetchComparativeData}
+          style={{
+            padding: '8px 16px',
+            backgroundColor: '#dc3545',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          Retry
+        </button>
+      </div>
     );
   }
 
-  // For simplicity, use data from the first NDC code if multiple are provided
-  const firstNdc = ndcCodes[0];
-  let ndcData = comparativeData[firstNdc];
-  if (!ndcData) {
+  if (!comparativeData || !comparativeData.event_labels || comparativeData.event_labels.length === 0) {
     return (
-      <Alert>
-        <AlertCircle className="h-4 w-4" />
-        <AlertTitle>No Data</AlertTitle>
-        <AlertDescription>No data available for NDC {firstNdc}</AlertDescription>
-      </Alert>
+      <div style={{ 
+        padding: '20px', 
+        backgroundColor: '#e2e3e5', 
+        color: '#383d41',
+        borderRadius: '8px',
+        marginBottom: '20px',
+        textAlign: 'center'
+      }}>
+        <h3 style={{ marginTop: 0 }}>No Comparative Data Available</h3>
+        <p>There is no data available for the selected NDC codes. Please try different codes or ensure the API is functioning correctly.</p>
+      </div>
     );
   }
 
-  // Apply filters (e.g., filter by event name and min count)
-  const filteredEventSummary = { ...ndcData.event_summary };
-  if (filters.event) {
-    Object.keys(filteredEventSummary).forEach(event => {
-      if (event !== filters.event || filteredEventSummary[event] < filters.minCount) {
-        delete filteredEventSummary[event];
-      }
-    });
-  } else if (filters.minCount > 0) {
-    Object.keys(filteredEventSummary).forEach(event => {
-      if (filteredEventSummary[event] < filters.minCount) {
-        delete filteredEventSummary[event];
-      }
-    });
-  }
+  // Prepare data for visualization 
+  const eventLabels = comparativeData.event_labels || [];
+  const productData = comparativeData.products || {};
+  
+  // Find the max value to scale the chart appropriately
+  const maxValue = Object.values(productData).reduce((max, data) => {
+    const localMax = Math.max(...data);
+    return localMax > max ? localMax : max;
+  }, 0);
 
-  const events = Object.keys(filteredEventSummary);
-  const counts = events.map(event => filteredEventSummary[event]);
+  // Select an event for detailed view
+  const handleEventSelect = (event) => {
+    setSelectedEvent(event);
+  };
 
-  const selectedForecast = 
-    selectedEvent && ndcData.forecasts && ndcData.forecasts[selectedEvent]
-      ? Object.entries(ndcData.forecasts[selectedEvent]).map(([quarter, count]) => ({ 
-          quarter, 
-          count 
-        }))
-      : [];
+  // For event details, show a focused view of one event across products
+  const renderEventDetails = () => {
+    if (!selectedEvent) return null;
+    
+    const eventIndex = eventLabels.indexOf(selectedEvent);
+    if (eventIndex === -1) return null;
+    
+    const eventData = Object.entries(productData).map(([ndc, data]) => ({
+      ndc,
+      value: data[eventIndex] || 0
+    }));
+    
+    return (
+      <div style={{ 
+        marginTop: '30px', 
+        padding: '20px',
+        border: '1px solid #ddd',
+        borderRadius: '8px',
+        backgroundColor: '#f8f9fa'
+      }}>
+        <h3>Detailed View: {selectedEvent}</h3>
+        <div style={{ display: 'flex', height: '250px', alignItems: 'flex-end', marginTop: '20px' }}>
+          {eventData.map((item, index) => (
+            <div key={index} style={{ flex: 1, textAlign: 'center', padding: '0 10px' }}>
+              <div 
+                style={{ 
+                  height: `${(item.value / maxValue) * 200}px`, 
+                  backgroundColor: `hsl(${index * 60}, 70%, 60%)`,
+                  minHeight: '10px',
+                  margin: '0 auto',
+                  width: '40px',
+                  borderTopLeftRadius: '4px',
+                  borderTopRightRadius: '4px',
+                  transition: 'height 0.5s ease'
+                }}
+              ></div>
+              <div style={{ marginTop: '8px', fontSize: '14px', fontWeight: 'bold' }}>{item.ndc}</div>
+              <div style={{ marginTop: '4px', fontSize: '12px', color: '#666' }}>{item.value} events</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold tracking-tight">Advanced Comparative Analytics Dashboard</h2>
+    <div style={{ padding: '20px', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+      <h2 style={{ marginTop: 0, borderBottom: '2px solid #3498db', paddingBottom: '10px', color: '#2c3e50' }}>
+        Advanced Comparative Analytics Dashboard
+      </h2>
       
-      <Tabs defaultValue="summary" value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="summary">Summary</TabsTrigger>
-          <TabsTrigger value="events">Event Analysis</TabsTrigger>
-          <TabsTrigger value="forecast">Forecasting</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="summary" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Report Overview</CardTitle>
-              <CardDescription>Statistical summary of reports analyzed for NDC {firstNdc}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="flex flex-col p-4 border rounded-lg">
-                  <span className="text-muted-foreground text-sm">Reports Analyzed</span>
-                  <span className="text-3xl font-bold">{ndcData.report_count || 0}</span>
-                </div>
-                <div className="flex flex-col p-4 border rounded-lg">
-                  <span className="text-muted-foreground text-sm">Unique Events</span>
-                  <span className="text-3xl font-bold">{Object.keys(ndcData.event_summary).length}</span>
-                </div>
-                <div className="flex flex-col p-4 border rounded-lg">
-                  <span className="text-muted-foreground text-sm">Data Quality</span>
-                  <span className="text-3xl font-bold">
-                    {ndcData.report_count > 10 ? 'High' : ndcData.report_count > 5 ? 'Medium' : 'Low'}
-                  </span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card className="h-full">
-              <CardHeader>
-                <CardTitle>Top Events</CardTitle>
-                <CardDescription>Most frequently reported events</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {events.length === 0 ? (
-                    <div className="text-center py-6 text-muted-foreground">No events found</div>
-                  ) : (
-                    events.slice(0, 5).map((event, index) => (
-                      <div key={index} className="flex items-center justify-between border-b py-2">
-                        <div className="flex items-center gap-2">
-                          <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                          <span>{event}</span>
-                        </div>
-                        <Badge variant="outline">{ndcData.event_summary[event]}</Badge>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="h-full">
-              <CardHeader>
-                <CardTitle>Forecast Trends</CardTitle>
-                <CardDescription>Projected event trends over time</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {Object.keys(ndcData.forecasts || {}).length === 0 ? (
-                    <div className="text-center py-6 text-muted-foreground">No forecast data available</div>
-                  ) : (
-                    Object.keys(ndcData.forecasts).slice(0, 5).map((event, index) => (
-                      <div key={index} className="flex items-center justify-between border-b py-2">
-                        <div className="flex items-center gap-2">
-                          <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                          <span>{event}</span>
-                        </div>
-                        <Badge variant={Object.values(ndcData.forecasts[event])[3] < Object.values(ndcData.forecasts[event])[0] ? "success" : "destructive"}>
-                          {Object.values(ndcData.forecasts[event])[3] < Object.values(ndcData.forecasts[event])[0] ? "Decreasing" : "Increasing"}
-                        </Badge>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="events">
-          <Card>
-            <CardHeader>
-              <CardTitle>Event Analysis</CardTitle>
-              <CardDescription>Detailed breakdown of adverse events</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex flex-col md:flex-row gap-4 items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-center gap-2">
-                  <ListFilter className="h-5 w-5 text-muted-foreground" />
-                  <span className="font-medium">Filter Events</span>
-                </div>
-                <div className="flex gap-4">
-                  <div>
-                    <label className="text-sm text-muted-foreground">Event Name:</label>
-                    <select 
-                      className="ml-2 p-1 border rounded"
-                      value={filters.event}
-                      onChange={(e) => applyFilters({ ...filters, event: e.target.value })}
+      <div style={{ marginBottom: '20px' }}>
+        <h3 style={{ color: '#34495e' }}>Comparing {ndcCodes.length} Products:</h3>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+          {ndcCodes.map((code, index) => (
+            <div 
+              key={index}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '20px',
+                backgroundColor: `hsl(${index * 60}, 70%, 90%)`,
+                border: `1px solid hsl(${index * 60}, 70%, 60%)`,
+                fontWeight: 'bold',
+                fontSize: '14px'
+              }}
+            >
+              {code}
+            </div>
+          ))}
+        </div>
+      </div>
+      
+      {/* Events selection for detailed view */}
+      <div style={{ marginBottom: '30px' }}>
+        <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '8px' }}>
+          Select an event for detailed comparison:
+        </label>
+        <select 
+          onChange={(e) => handleEventSelect(e.target.value)}
+          value={selectedEvent || ''}
+          style={{
+            padding: '10px',
+            borderRadius: '4px',
+            border: '1px solid #ddd',
+            width: '100%',
+            maxWidth: '400px',
+            fontSize: '16px'
+          }}
+        >
+          <option value="">-- Select an adverse event --</option>
+          {eventLabels.map((event, index) => (
+            <option key={index} value={event}>{event}</option>
+          ))}
+        </select>
+      </div>
+      
+      {/* Basic bar chart visualization for all events */}
+      <div style={{ marginTop: '20px' }}>
+        <h3 style={{ color: '#34495e' }}>Comparative Event Analysis</h3>
+        <div style={{ overflowX: 'auto', marginTop: '15px' }}>
+          <div style={{ display: 'flex', minWidth: eventLabels.length * 80, height: '300px' }}>
+            {/* Render bars for each event */}
+            {eventLabels.map((event, eventIndex) => (
+              <div 
+                key={eventIndex} 
+                style={{ 
+                  flex: 1, 
+                  display: 'flex', 
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  cursor: 'pointer',
+                  padding: '0 5px',
+                  borderLeft: selectedEvent === event ? '2px solid #3498db' : 'none',
+                  backgroundColor: selectedEvent === event ? 'rgba(52, 152, 219, 0.1)' : 'transparent'
+                }}
+                onClick={() => handleEventSelect(event)}
+              >
+                <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', width: '100%' }}>
+                  {Object.entries(productData).map(([ndc, data], ndcIndex) => (
+                    <div 
+                      key={ndcIndex}
+                      style={{ 
+                        flex: 1,
+                        height: `${(data[eventIndex] / maxValue) * 100}%`,
+                        backgroundColor: `hsl(${ndcIndex * 60}, 70%, 60%)`,
+                        margin: '0 2px',
+                        minHeight: '1px',
+                        transition: 'height 0.5s ease',
+                        position: 'relative'
+                      }}
+                      title={`${ndc}: ${data[eventIndex]} events`}
                     >
-                      <option value="">All Events</option>
-                      {Object.keys(ndcData.event_summary).map((event) => (
-                        <option key={event} value={event}>{event}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground">Min Count:</label>
-                    <input
-                      type="number"
-                      className="ml-2 p-1 border rounded w-16"
-                      value={filters.minCount}
-                      onChange={(e) => applyFilters({ ...filters, minCount: parseInt(e.target.value) || 0 })}
-                      min="0"
-                    />
-                  </div>
+                      <div 
+                        style={{ 
+                          position: 'absolute', 
+                          top: '-25px', 
+                          left: '50%', 
+                          transform: 'translateX(-50%)',
+                          fontSize: '12px',
+                          fontWeight: 'bold',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        {data[eventIndex]}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div 
+                  style={{ 
+                    padding: '5px 0',
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                    textAlign: 'center',
+                    height: '40px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    wordBreak: 'break-word',
+                    transform: 'rotate(-45deg)',
+                    transformOrigin: 'top left',
+                    width: '100px',
+                    marginTop: '25px',
+                    marginLeft: '20px'
+                  }}
+                >
+                  {event}
                 </div>
               </div>
-              
-              <div className="h-[400px] overflow-y-auto">
-                {events.length === 0 ? (
-                  <div className="flex items-center justify-center h-full text-muted-foreground">
-                    No events match the current filters
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <BarChart3 className="h-6 w-6 text-primary" />
-                      <h3 className="text-lg font-semibold">Event Summary for NDC {firstNdc}</h3>
-                    </div>
-                    
-                    {/* Use Recharts for event visualization */}
-                    <div className="h-[350px]">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart
-                          data={events.map((event, index) => ({ 
-                            name: event,
-                            count: counts[index]
-                          }))}
-                          layout="vertical"
-                          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                        >
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis type="number" />
-                          <YAxis 
-                            dataKey="name" 
-                            type="category" 
-                            width={150}
-                            tick={{ fontSize: 12 }}
-                          />
-                          <Tooltip
-                            formatter={(value) => [`${value}`, 'Count']}
-                          />
-                          <Legend />
-                          <Bar 
-                            dataKey="count" 
-                            name="Event Count"
-                            fill="#8884d8" 
-                            barSize={20}
-                          />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+            ))}
+          </div>
+        </div>
         
-        <TabsContent value="forecast">
-          <Card>
-            <CardHeader>
-              <CardTitle>Event Forecasting</CardTitle>
-              <CardDescription>Projected trends for adverse events</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="p-4 border rounded-lg">
-                <label className="font-medium">Select an event for forecasting details: </label>
-                <select 
-                  className="ml-2 p-2 border rounded"
-                  onChange={(e) => setSelectedEvent(e.target.value)} 
-                  value={selectedEvent || ""}
-                >
-                  <option value="" disabled>-- Choose an event --</option>
-                  {Object.keys(ndcData.forecasts || {}).map((event) => (
-                    <option key={event} value={event}>{event}</option>
-                  ))}
-                </select>
-              </div>
-              
-              <div className="h-[400px]">
-                {!selectedEvent ? (
-                  <div className="flex items-center justify-center h-full text-muted-foreground">
-                    Select an event to view forecast data
-                  </div>
-                ) : selectedForecast.length === 0 ? (
-                  <div className="flex items-center justify-center h-full text-muted-foreground">
-                    No forecast data available for {selectedEvent}
-                  </div>
-                ) : (
-                  <div className="space-y-6">
-                    <div className="flex items-center gap-2 mb-2">
-                      <LineChart className="h-6 w-6 text-primary" />
-                      <h3 className="text-lg font-semibold">Forecast for {selectedEvent}</h3>
-                    </div>
-                    
-                    <div className="grid grid-cols-4 gap-4">
-                      {selectedForecast.map((item, index) => (
-                        <Card key={index} className="text-center">
-                          <CardHeader className="pb-2">
-                            <CardTitle className="text-md">{item.quarter}</CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <span className="text-2xl font-bold">{item.count}</span>
-                            {index > 0 && (
-                              <div className="mt-2">
-                                <Badge variant={item.count < selectedForecast[index - 1].count ? "success" : 
-                                  item.count > selectedForecast[index - 1].count ? "destructive" : "outline"}>
-                                  {item.count < selectedForecast[index - 1].count ? "↓" : 
-                                    item.count > selectedForecast[index - 1].count ? "↑" : "→"}
-                                </Badge>
-                              </div>
-                            )}
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                    
-                    <div className="h-[250px] mt-8">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={selectedForecast} margin={{ top: 20, right: 30, left: 20, bottom: 10 }}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="quarter" />
-                          <YAxis />
-                          <Tooltip 
-                            contentStyle={{ 
-                              backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                              border: '1px solid #ccc' 
-                            }}
-                            formatter={(value) => [`${value}`, 'Events']}
-                            labelFormatter={(label) => `Quarter: ${label}`}
-                          />
-                          <Legend />
-                          <Line 
-                            type="monotone" 
-                            dataKey="count" 
-                            name="Event Count" 
-                            stroke="#8884d8" 
-                            strokeWidth={2}
-                            activeDot={{ r: 8 }}
-                          />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+        {/* Legend */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '30px', justifyContent: 'center' }}>
+          {Object.keys(productData).map((ndc, index) => (
+            <div key={index} style={{ display: 'flex', alignItems: 'center' }}>
+              <div 
+                style={{ 
+                  width: '20px', 
+                  height: '20px', 
+                  backgroundColor: `hsl(${index * 60}, 70%, 60%)`,
+                  marginRight: '5px',
+                  borderRadius: '3px'
+                }}
+              ></div>
+              <span>{ndc}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      
+      {/* Render detailed event view if selected */}
+      {renderEventDetails()}
+      
+      <div style={{ 
+        marginTop: '40px', 
+        padding: '15px', 
+        backgroundColor: '#e8f4f8', 
+        borderRadius: '8px',
+        fontSize: '14px'
+      }}>
+        <p style={{ margin: 0 }}><strong>Note:</strong> This visualization is a simplified version. For more advanced interactive charts, please install <code>react-plotly.js</code> and <code>plotly.js</code> packages.</p>
+      </div>
     </div>
   );
 }
