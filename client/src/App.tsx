@@ -63,6 +63,7 @@ import SubscriptionsPage from "@/pages/SubscriptionsPage";
 import ExampleReportsPage from "@/pages/ExampleReportsPage";
 import CERGeneratorPage from "@/pages/CERGeneratorPage";
 import EnhancedCERDashboardPage from "@/pages/EnhancedCERDashboardPage";
+import CERDashboardPage from "@/pages/CERDashboardPage";
 import SettingsPage from "@/pages/SettingsPage";
 import ChatAssistant from "@/pages/ChatAssistant";
 import { applyCompactStyling } from "./lib/ui-utils"; // Added import
