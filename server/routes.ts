@@ -774,6 +774,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // IND Automation routes
   app.use('/api/ind-automation', indAutomationRoutes);
   
+  // Forward requests to the IND FastAPI service endpoints
+  app.post('/api/ind/form1571', async (req: Request, res: Response) => {
+    try {
+      const document = await indAutomationService.generateForm1571(req.body);
+      res.set({
+        'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'Content-Disposition': `attachment; filename=FDA_Form_1571_${req.body.drug_name?.replace(/\s+/g, '_') || 'generated'}.docx`,
+        'Content-Length': document.length
+      });
+      res.send(document);
+    } catch (error: any) {
+      res.status(500).json({ status: 'error', message: error.message || 'Failed to generate document' });
+    }
+  });
+
+  app.post('/api/ind/form1572', async (req: Request, res: Response) => {
+    try {
+      const document = await indAutomationService.generateForm1572(req.body);
+      res.set({
+        'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'Content-Disposition': `attachment; filename=FDA_Form_1572_${(req.body.principal_investigator_name || req.body.drug_name)?.replace(/\s+/g, '_') || 'generated'}.docx`,
+        'Content-Length': document.length
+      });
+      res.send(document);
+    } catch (error: any) {
+      res.status(500).json({ status: 'error', message: error.message || 'Failed to generate document' });
+    }
+  });
+
+  app.post('/api/ind/form3674', async (req: Request, res: Response) => {
+    try {
+      const document = await indAutomationService.generateForm3674(req.body);
+      res.set({
+        'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'Content-Disposition': `attachment; filename=FDA_Form_3674_${req.body.drug_name?.replace(/\s+/g, '_') || 'generated'}.docx`,
+        'Content-Length': document.length
+      });
+      res.send(document);
+    } catch (error: any) {
+      res.status(500).json({ status: 'error', message: error.message || 'Failed to generate document' });
+    }
+  });
+
+  app.post('/api/ind/cover-letter', async (req: Request, res: Response) => {
+    try {
+      const document = await indAutomationService.generateCoverLetter(req.body);
+      res.set({
+        'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'Content-Disposition': `attachment; filename=Cover_Letter_${req.body.drug_name?.replace(/\s+/g, '_') || 'generated'}.docx`,
+        'Content-Length': document.length
+      });
+      res.send(document);
+    } catch (error: any) {
+      res.status(500).json({ status: 'error', message: error.message || 'Failed to generate document' });
+    }
+  });
+  
   // Route mapper for protocol-analyses -> protocol-assessment (needed for ProtocolAnalyzer component)
   app.use('/api/protocol-analyses', (req, res, next) => {
     // URL rewriting for upload endpoint

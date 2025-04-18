@@ -115,19 +115,19 @@ export default function FDAFormsPanel() {
     // Determine endpoint and filename based on the active form
     switch (activeForm) {
       case 'form1571':
-        endpoint = '/api/ind-automation/generate/form1571';
+        endpoint = '/api/ind/form1571';
         filename = `FDA_Form_1571_${data.drug_name.replace(/\s+/g, '_')}.docx`;
         break;
       case 'form1572':
-        endpoint = '/api/ind-automation/generate/form1572';
+        endpoint = '/api/ind/form1572';
         filename = `FDA_Form_1572_${data.principal_investigator_name || data.drug_name.replace(/\s+/g, '_')}.docx`;
         break;
       case 'form3674':
-        endpoint = '/api/ind-automation/generate/form3674';
+        endpoint = '/api/ind/form3674';
         filename = `FDA_Form_3674_${data.drug_name.replace(/\s+/g, '_')}.docx`;
         break;
       case 'cover-letter':
-        endpoint = '/api/ind-automation/generate/cover-letter';
+        endpoint = '/api/ind/cover-letter';
         filename = `Cover_Letter_${data.drug_name.replace(/\s+/g, '_')}.docx`;
         break;
       default:
