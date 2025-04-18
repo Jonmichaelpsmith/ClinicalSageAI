@@ -201,6 +201,110 @@ export async function analyzeProtocolSections(
 }
 
 /**
+ * Generates highly tailored protocol optimization recommendations
+ * @param protocolText The protocol text content
+ * @param protocolMeta The protocol metadata (indication, phase, etc.)
+ * @param matchedCsrs List of similar CSRs with the same therapeutic area and phase
+ * @param academicReferences List of relevant academic references
+ * @returns Detailed, specific recommendations tailored to the protocol
+ */
+export async function generateTailoredProtocolRecommendations(
+  protocolText: string,
+  protocolMeta: {
+    indication: string;
+    phase: string;
+    studyType: string;
+    title?: string;
+  },
+  matchedCsrs: any[] = [],
+  academicReferences: any[] = []
+): Promise<string> {
+  // Create a system prompt that instructs the model to be specific to this protocol
+  const systemPrompt = `
+    You are the world's foremost expert on clinical study design and protocol optimization.
+    
+    Your task is to analyze a clinical trial protocol and provide HIGHLY SPECIFIC recommendations
+    that are directly relevant to this exact protocol. Focus exclusively on the submitted protocol
+    for a ${protocolMeta.indication} study in ${protocolMeta.phase.replace('phase', 'Phase ')}.
+    
+    Important instructions:
+    1. Make every recommendation SPECIFICALLY about this ${protocolMeta.indication} protocol
+    2. Reference specific elements from the protocol in your suggestions
+    3. Cite successful approaches from similar CSRs in the same therapeutic area
+    4. Focus on what makes THIS protocol unique - avoid generic advice
+    5. Structure your response with clear headings using markdown ** formatting
+    6. For each recommendation, include subsections that cite:
+       - Specific CSR Examples from similar studies
+       - Academic Literature relevant to this indication
+       - Regulatory Guidelines that apply to this specific protocol
+       - Best Practices that address the unique challenges of this study
+  `;
+  
+  // Prepare CSR context information
+  const csrContext = matchedCsrs.length > 0 
+    ? `
+      Relevant Clinical Study Reports (CSRs):
+      ${matchedCsrs.map((csr, index) => `
+        CSR ${index + 1}: ${csr.title || 'Untitled'}
+        - Phase: ${csr.phase || 'Unknown'}
+        - Indication: ${csr.indication || 'Unknown'}
+        - Key findings: ${csr.insight || 'No specific insights available'}
+        ${csr.suggestions && csr.suggestions.length > 0 
+          ? `- Relevant learnings: ${csr.suggestions.join('; ')}` 
+          : ''}
+      `).join('\n')}
+    `
+    : "No specific matching CSRs available.";
+  
+  // Prepare academic reference context
+  const academicContext = academicReferences.length > 0
+    ? `
+      Relevant Academic References:
+      ${academicReferences.map((ref, index) => `
+        Reference ${index + 1}: ${ref.title || 'Untitled'}
+        - Author: ${ref.author || 'Unknown'}
+        - Publication: ${ref.publication || 'Unknown'}
+        - Year: ${ref.year || 'Unknown'}
+        - Relevance: ${ref.relevance || 'Unknown'}
+      `).join('\n')}
+    `
+    : "No specific academic references available.";
+  
+  // Construct the user prompt
+  const userPrompt = `
+    Please analyze this clinical trial protocol for a ${protocolMeta.indication} study (${protocolMeta.phase.replace('phase', 'Phase ')}) 
+    and provide HIGHLY SPECIFIC recommendations tailored to this exact protocol.
+    
+    PROTOCOL TEXT:
+    ${protocolText.substring(0, 4000)} // Limit to first 4000 chars to avoid token limits
+    
+    PROTOCOL METADATA:
+    - Title: ${protocolMeta.title || `${protocolMeta.indication} Clinical Trial`}
+    - Indication/Disease: ${protocolMeta.indication}
+    - Phase: ${protocolMeta.phase.replace('phase', 'Phase ')}
+    - Study Type: ${protocolMeta.studyType === 'rct' ? 'Randomized Controlled Trial' : protocolMeta.studyType}
+    
+    ${csrContext}
+    
+    ${academicContext}
+    
+    IMPORTANT: Provide 4-6 major recommendation categories. Each recommendation must be:
+    1. HIGHLY SPECIFIC to this ${protocolMeta.indication} protocol
+    2. Reference EXACT elements from this protocol
+    3. Cite SPECIFIC approaches from similar CSRs in the same therapeutic area (${protocolMeta.indication})
+    4. Address the UNIQUE challenges of this study
+  `;
+  
+  try {
+    const response = await analyzeText(userPrompt, systemPrompt, 0.5, 3000);
+    return response;
+  } catch (error: any) {
+    console.error("Error generating tailored protocol recommendations:", error);
+    throw new Error(`Failed to generate tailored recommendations: ${error.message}`);
+  }
+}
+
+/**
  * Extract text from a PDF file
  * @param pdfBuffer PDF file buffer
  * @returns Extracted text content
