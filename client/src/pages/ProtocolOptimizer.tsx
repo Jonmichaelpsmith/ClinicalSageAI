@@ -6,6 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
@@ -35,6 +37,11 @@ export default function ProtocolOptimizer() {
   const [protocolFile, setProtocolFile] = useState<File | null>(null);
   const [uploadedFileName, setUploadedFileName] = useState<string>('');
   
+  // New state variables for enhanced protocol analysis
+  const [useGlobalAcademicGuidance, setUseGlobalAcademicGuidance] = useState<boolean>(true);
+  const [useCsrLibraryLearnings, setUseCsrLibraryLearnings] = useState<boolean>(true);
+  const [analysisDepth, setAnalysisDepth] = useState<string>('comprehensive'); // 'basic', 'standard', 'comprehensive'
+  
   const [analyzeLoading, setAnalyzeLoading] = useState<boolean>(false);
   const [generatedContent, setGeneratedContent] = useState<{
     recommendation: string;
@@ -43,6 +50,69 @@ export default function ProtocolOptimizer() {
     matchedCsrInsights: any[];
     suggestedEndpoints: string[];
     suggestedArms: string[];
+    // New structure for section-by-section protocol analysis
+    sectionAnalysis?: {
+      studyDesign?: {
+        current: string;
+        suggestions: string[];
+        alignment: number;
+        academicGuidance?: string;
+        csrLearnings?: string[];
+      };
+      eligibilityCriteria?: {
+        current: string;
+        suggestions: string[];
+        alignment: number;
+        academicGuidance?: string;
+        csrLearnings?: string[];
+      };
+      endpoints?: {
+        current: string;
+        suggestions: string[];
+        alignment: number;
+        academicGuidance?: string;
+        csrLearnings?: string[];
+      };
+      statisticalAnalysis?: {
+        current: string;
+        suggestions: string[];
+        alignment: number;
+        academicGuidance?: string;
+        csrLearnings?: string[];
+      };
+      safetyMonitoring?: {
+        current: string;
+        suggestions: string[];
+        alignment: number;
+        academicGuidance?: string;
+        csrLearnings?: string[];
+      };
+      studyProcedures?: {
+        current: string;
+        suggestions: string[];
+        alignment: number;
+        academicGuidance?: string;
+        csrLearnings?: string[];
+      };
+      ethicalConsiderations?: {
+        current: string;
+        suggestions: string[];
+        alignment: number;
+        academicGuidance?: string;
+        csrLearnings?: string[];
+      };
+    };
+    academicReferences?: {
+      title: string;
+      author: string;
+      publication: string;
+      year: string;
+      relevance: string;
+    }[];
+    regulatoryAlignmentScore?: number;
+    csrAlignmentScore?: number;
+    academicAlignmentScore?: number;
+    overallQualityScore?: number;
   } | null>(null);
   
   const [saveLoading, setSaveLoading] = useState<boolean>(false);
@@ -77,7 +147,16 @@ export default function ProtocolOptimizer() {
         phase,
         findAllSimilarCSRs: true, // New flag to find all similar CSRs
         compareTherapeuticArea: true, // Match by therapeutic area
-        compareTrialPhase: true // Match by trial phase
+        compareTrialPhase: true, // Match by trial phase
+        // Enhanced protocol analysis parameters
+        useGlobalAcademicGuidance,
+        useCsrLibraryLearnings,
+        analysisDepth,
+        // Request comprehensive section-by-section analysis
+        sectionBySection: true,
+        includeAcademicReferences: true,
+        includeRegulatoryAlignment: true,
+        includeCsrAlignment: true
       };
       
       let response;
@@ -115,7 +194,14 @@ export default function ProtocolOptimizer() {
           riskFactors: response.riskFactors || [],
           matchedCsrInsights: response.matchedCsrInsights || [],
           suggestedEndpoints: response.suggestedEndpoints || [],
-          suggestedArms: response.suggestedArms || []
+          suggestedArms: response.suggestedArms || [],
+          // Handle new section-by-section analysis structure
+          sectionAnalysis: response.sectionAnalysis || {},
+          academicReferences: response.academicReferences || [],
+          regulatoryAlignmentScore: response.regulatoryAlignmentScore,
+          csrAlignmentScore: response.csrAlignmentScore,
+          academicAlignmentScore: response.academicAlignmentScore,
+          overallQualityScore: response.overallQualityScore
         });
         
         // If we received file content but no summary was manually entered, update the summary field
@@ -389,22 +475,63 @@ export default function ProtocolOptimizer() {
               />
             </div>
             
-            <div className="flex items-center space-x-2">
-              <Checkbox 
-                id="includeReferences" 
-                checked={includeReferences}
-                onCheckedChange={(checked) => setIncludeReferences(checked as boolean)}
-              />
-              <Label htmlFor="includeReferences">Include references to regulatory guidelines</Label>
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <Checkbox 
-                id="useSimilarTrials" 
-                checked={useSimilarTrials}
-                onCheckedChange={(checked) => setUseSimilarTrials(checked as boolean)}
-              />
-              <Label htmlFor="useSimilarTrials">Find and use similar trials</Label>
+            <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 mb-3">
+              <h3 className="text-sm font-medium text-blue-800 mb-2">Expert Analysis Options</h3>
+              
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="includeReferences" 
+                    checked={includeReferences}
+                    onCheckedChange={(checked) => setIncludeReferences(checked as boolean)}
+                  />
+                  <Label htmlFor="includeReferences">Include references to regulatory guidelines</Label>
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="useSimilarTrials" 
+                    checked={useSimilarTrials}
+                    onCheckedChange={(checked) => setUseSimilarTrials(checked as boolean)}
+                  />
+                  <Label htmlFor="useSimilarTrials">Find and use similar trials</Label>
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="useGlobalAcademicGuidance" 
+                    checked={useGlobalAcademicGuidance}
+                    onCheckedChange={(checked) => setUseGlobalAcademicGuidance(checked as boolean)}
+                  />
+                  <Label htmlFor="useGlobalAcademicGuidance">Include global academic guidance</Label>
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="useCsrLibraryLearnings" 
+                    checked={useCsrLibraryLearnings}
+                    onCheckedChange={(checked) => setUseCsrLibraryLearnings(checked as boolean)}
+                  />
+                  <Label htmlFor="useCsrLibraryLearnings">Apply CSR library learnings</Label>
+                </div>
+                
+                <div className="space-y-2 pt-1">
+                  <Label htmlFor="analysisDepth" className="text-sm">Analysis Depth</Label>
+                  <Select value={analysisDepth} onValueChange={setAnalysisDepth}>
+                    <SelectTrigger className="bg-white">
+                      <SelectValue placeholder="Select depth" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="basic">Basic - High-level suggestions</SelectItem>
+                      <SelectItem value="standard">Standard - Detailed recommendations</SelectItem>
+                      <SelectItem value="comprehensive">Comprehensive - Expert-level analysis</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-blue-600 italic mt-1">
+                    Comprehensive analysis examines every protocol section and provides academic-backed recommendations
+                  </p>
+                </div>
+              </div>
             </div>
             
             <Button 
@@ -484,7 +611,11 @@ export default function ProtocolOptimizer() {
                       <TabsList className="mb-4 bg-slate-100 p-1 rounded-lg">
                         <TabsTrigger value="recommendations" className="data-[state=active]:bg-white data-[state=active]:text-blue-700 rounded-md">Recommendations</TabsTrigger>
                         <TabsTrigger value="key-points" className="data-[state=active]:bg-white data-[state=active]:text-blue-700 rounded-md">Key Points</TabsTrigger>
+                        <TabsTrigger value="section-analysis" className="data-[state=active]:bg-white data-[state=active]:text-blue-700 rounded-md">Section Analysis</TabsTrigger>
                         <TabsTrigger value="references" className="data-[state=active]:bg-white data-[state=active]:text-blue-700 rounded-md">Similar Trials</TabsTrigger>
+                        {generatedContent.academicReferences && generatedContent.academicReferences.length > 0 && (
+                          <TabsTrigger value="academic" className="data-[state=active]:bg-white data-[state=active]:text-blue-700 rounded-md">Academic Insights</TabsTrigger>
+                        )}
                       </TabsList>
                       
                       <TabsContent value="recommendations" className="space-y-4">
@@ -558,7 +689,222 @@ export default function ProtocolOptimizer() {
                               ))}
                             </ul>
                           </div>
+                          
+                          {/* Quality Assessment Scores */}
+                          {(generatedContent.regulatoryAlignmentScore || 
+                             generatedContent.csrAlignmentScore || 
+                             generatedContent.academicAlignmentScore || 
+                             generatedContent.overallQualityScore) && (
+                            <div className="col-span-1 md:col-span-2 bg-gray-50 p-5 rounded-xl border border-gray-200">
+                              <h3 className="text-md font-semibold mb-4 text-gray-800">Protocol Quality Assessment</h3>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                                {generatedContent.regulatoryAlignmentScore && (
+                                  <div className="bg-white p-3 rounded-lg border border-blue-100">
+                                    <div className="text-3xl font-bold text-blue-700 mb-1">
+                                      {generatedContent.regulatoryAlignmentScore}%
+                                    </div>
+                                    <div className="text-sm text-gray-600">Regulatory Alignment</div>
+                                  </div>
+                                )}
+                                
+                                {generatedContent.csrAlignmentScore && (
+                                  <div className="bg-white p-3 rounded-lg border border-indigo-100">
+                                    <div className="text-3xl font-bold text-indigo-700 mb-1">
+                                      {generatedContent.csrAlignmentScore}%
+                                    </div>
+                                    <div className="text-sm text-gray-600">CSR Library Alignment</div>
+                                  </div>
+                                )}
+                                
+                                {generatedContent.academicAlignmentScore && (
+                                  <div className="bg-white p-3 rounded-lg border border-emerald-100">
+                                    <div className="text-3xl font-bold text-emerald-700 mb-1">
+                                      {generatedContent.academicAlignmentScore}%
+                                    </div>
+                                    <div className="text-sm text-gray-600">Academic Alignment</div>
+                                  </div>
+                                )}
+                                
+                                {generatedContent.overallQualityScore && (
+                                  <div className="bg-white p-3 rounded-lg border border-amber-100">
+                                    <div className="text-3xl font-bold text-amber-700 mb-1">
+                                      {generatedContent.overallQualityScore}%
+                                    </div>
+                                    <div className="text-sm text-gray-600">Overall Quality Score</div>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
                         </div>
+                      </TabsContent>
+                      
+                      {/* New Section Analysis Tab */}
+                      <TabsContent value="section-analysis" className="space-y-6">
+                        {generatedContent.sectionAnalysis ? (
+                          <>
+                            <div className="mb-4 p-4 bg-blue-50 border border-blue-100 rounded-xl">
+                              <h3 className="text-md font-semibold mb-2 text-blue-800 flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                                  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                                  <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                                </svg>
+                                Comprehensive Protocol Section Analysis
+                              </h3>
+                              <p className="text-sm text-blue-700">
+                                Expert-level analysis of each protocol section with recommendations from global academic guidance and CSR library learnings
+                              </p>
+                            </div>
+                            
+                            {/* Accordion for each section */}
+                            <Accordion type="single" collapsible className="w-full">
+                              {/* Study Design Section */}
+                              {generatedContent.sectionAnalysis.studyDesign && (
+                                <AccordionItem value="design" className="border rounded-xl mb-3 overflow-hidden">
+                                  <AccordionTrigger className="px-5 py-4 hover:bg-blue-50/50 [&[data-state=open]]:bg-blue-50">
+                                    <div className="flex items-center">
+                                      <span className="font-medium text-blue-800">Study Design</span>
+                                      {generatedContent.sectionAnalysis.studyDesign.alignment && (
+                                        <span className={`ml-3 text-xs font-medium px-2 py-1 rounded-full ${
+                                          generatedContent.sectionAnalysis.studyDesign.alignment >= 80 
+                                            ? 'bg-green-100 text-green-800' 
+                                            : generatedContent.sectionAnalysis.studyDesign.alignment >= 60 
+                                            ? 'bg-yellow-100 text-yellow-800'
+                                            : 'bg-red-100 text-red-800'
+                                        }`}>
+                                          {generatedContent.sectionAnalysis.studyDesign.alignment}% Alignment
+                                        </span>
+                                      )}
+                                    </div>
+                                  </AccordionTrigger>
+                                  <AccordionContent className="px-5 py-4 border-t bg-white">
+                                    <div className="space-y-4">
+                                      {generatedContent.sectionAnalysis.studyDesign.current && (
+                                        <div>
+                                          <h4 className="text-sm font-medium text-gray-700">Current Design:</h4>
+                                          <p className="mt-1 text-sm text-gray-600">{generatedContent.sectionAnalysis.studyDesign.current}</p>
+                                        </div>
+                                      )}
+                                      
+                                      {generatedContent.sectionAnalysis.studyDesign.suggestions && generatedContent.sectionAnalysis.studyDesign.suggestions.length > 0 && (
+                                        <div>
+                                          <h4 className="text-sm font-medium text-blue-700">Expert Recommendations:</h4>
+                                          <ul className="mt-2 space-y-2">
+                                            {generatedContent.sectionAnalysis.studyDesign.suggestions.map((suggestion, idx) => (
+                                              <li key={idx} className="text-sm flex">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 flex-shrink-0 text-blue-500 mt-0.5">
+                                                  <path d="m9 12 2 2 4-4"/>
+                                                  <path d="M12 3c-1.2 0-2.4.6-3 1.7A3.6 3.6 0 0 0 4.6 9c-1 .6-1.7 1.8-1.7 3s.7 2.4 1.7 3c-.3 1.2 0 2.5 1 3.4.8.8 2.1 1.1 3.3.8.6 1 1.8 1.7 3 1.7s2.4-.6 3-1.7c1.2.3 2.5 0 3.4-1 .8-.8 1.1-2.1.8-3.3 1-.6 1.7-1.8 1.7-3s-.7-2.4-1.7-3c.3-1.2 0-2.5-1-3.4-.8-.8-2.1-1.1-3.3-.8A3.6 3.6 0 0 0 12 3z"/>
+                                                </svg>
+                                                <span className="text-gray-700">{suggestion}</span>
+                                              </li>
+                                            ))}
+                                          </ul>
+                                        </div>
+                                      )}
+                                      
+                                      {generatedContent.sectionAnalysis.studyDesign.academicGuidance && (
+                                        <div className="p-3 bg-indigo-50 rounded-md">
+                                          <h4 className="text-sm font-medium text-indigo-700">Academic Guidance:</h4>
+                                          <p className="mt-1 text-sm text-indigo-900">{generatedContent.sectionAnalysis.studyDesign.academicGuidance}</p>
+                                        </div>
+                                      )}
+                                      
+                                      {generatedContent.sectionAnalysis.studyDesign.csrLearnings && generatedContent.sectionAnalysis.studyDesign.csrLearnings.length > 0 && (
+                                        <div className="p-3 bg-emerald-50 rounded-md">
+                                          <h4 className="text-sm font-medium text-emerald-700">CSR Library Learnings:</h4>
+                                          <ul className="mt-1 space-y-1">
+                                            {generatedContent.sectionAnalysis.studyDesign.csrLearnings.map((learning, idx) => (
+                                              <li key={idx} className="text-sm text-emerald-900">{learning}</li>
+                                            ))}
+                                          </ul>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </AccordionContent>
+                                </AccordionItem>
+                              )}
+                              
+                              {/* Eligibility Criteria Section */}
+                              {generatedContent.sectionAnalysis.eligibilityCriteria && (
+                                <AccordionItem value="eligibility" className="border rounded-xl mb-3 overflow-hidden">
+                                  <AccordionTrigger className="px-5 py-4 hover:bg-blue-50/50 [&[data-state=open]]:bg-blue-50">
+                                    <div className="flex items-center">
+                                      <span className="font-medium text-blue-800">Eligibility Criteria</span>
+                                      {generatedContent.sectionAnalysis.eligibilityCriteria.alignment && (
+                                        <span className={`ml-3 text-xs font-medium px-2 py-1 rounded-full ${
+                                          generatedContent.sectionAnalysis.eligibilityCriteria.alignment >= 80 
+                                            ? 'bg-green-100 text-green-800' 
+                                            : generatedContent.sectionAnalysis.eligibilityCriteria.alignment >= 60 
+                                            ? 'bg-yellow-100 text-yellow-800'
+                                            : 'bg-red-100 text-red-800'
+                                        }`}>
+                                          {generatedContent.sectionAnalysis.eligibilityCriteria.alignment}% Alignment
+                                        </span>
+                                      )}
+                                    </div>
+                                  </AccordionTrigger>
+                                  <AccordionContent className="px-5 py-4 border-t bg-white">
+                                    <div className="space-y-4">
+                                      {generatedContent.sectionAnalysis.eligibilityCriteria.current && (
+                                        <div>
+                                          <h4 className="text-sm font-medium text-gray-700">Current Criteria:</h4>
+                                          <p className="mt-1 text-sm text-gray-600">{generatedContent.sectionAnalysis.eligibilityCriteria.current}</p>
+                                        </div>
+                                      )}
+                                      
+                                      {generatedContent.sectionAnalysis.eligibilityCriteria.suggestions && generatedContent.sectionAnalysis.eligibilityCriteria.suggestions.length > 0 && (
+                                        <div>
+                                          <h4 className="text-sm font-medium text-blue-700">Expert Recommendations:</h4>
+                                          <ul className="mt-2 space-y-2">
+                                            {generatedContent.sectionAnalysis.eligibilityCriteria.suggestions.map((suggestion, idx) => (
+                                              <li key={idx} className="text-sm flex">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 flex-shrink-0 text-blue-500 mt-0.5">
+                                                  <path d="m9 12 2 2 4-4"/>
+                                                  <path d="M12 3c-1.2 0-2.4.6-3 1.7A3.6 3.6 0 0 0 4.6 9c-1 .6-1.7 1.8-1.7 3s.7 2.4 1.7 3c-.3 1.2 0 2.5 1 3.4.8.8 2.1 1.1 3.3.8.6 1 1.8 1.7 3 1.7s2.4-.6 3-1.7c1.2.3 2.5 0 3.4-1 .8-.8 1.1-2.1.8-3.3 1-.6 1.7-1.8 1.7-3s-.7-2.4-1.7-3c.3-1.2 0-2.5-1-3.4-.8-.8-2.1-1.1-3.3-.8A3.6 3.6 0 0 0 12 3z"/>
+                                                </svg>
+                                                <span className="text-gray-700">{suggestion}</span>
+                                              </li>
+                                            ))}
+                                          </ul>
+                                        </div>
+                                      )}
+                                      
+                                      {generatedContent.sectionAnalysis.eligibilityCriteria.academicGuidance && (
+                                        <div className="p-3 bg-indigo-50 rounded-md">
+                                          <h4 className="text-sm font-medium text-indigo-700">Academic Guidance:</h4>
+                                          <p className="mt-1 text-sm text-indigo-900">{generatedContent.sectionAnalysis.eligibilityCriteria.academicGuidance}</p>
+                                        </div>
+                                      )}
+                                      
+                                      {generatedContent.sectionAnalysis.eligibilityCriteria.csrLearnings && generatedContent.sectionAnalysis.eligibilityCriteria.csrLearnings.length > 0 && (
+                                        <div className="p-3 bg-emerald-50 rounded-md">
+                                          <h4 className="text-sm font-medium text-emerald-700">CSR Library Learnings:</h4>
+                                          <ul className="mt-1 space-y-1">
+                                            {generatedContent.sectionAnalysis.eligibilityCriteria.csrLearnings.map((learning, idx) => (
+                                              <li key={idx} className="text-sm text-emerald-900">{learning}</li>
+                                            ))}
+                                          </ul>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </AccordionContent>
+                                </AccordionItem>
+                              )}
+                              
+                              {/* Add similar accordion items for other sections like endpoints, statisticalAnalysis, etc. */}
+                            </Accordion>
+                          </>
+                        ) : (
+                          <div className="text-center py-12 text-gray-500 italic bg-slate-50 rounded-xl border border-slate-200">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="mx-auto mb-3 text-slate-300">
+                              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                            </svg>
+                            <p>No section-by-section analysis available</p>
+                            <p className="text-sm mt-2">Enable "Comprehensive" analysis depth for detailed section analysis</p>
+                          </div>
+                        )}
                       </TabsContent>
                       
                       <TabsContent value="references" className="space-y-4">
