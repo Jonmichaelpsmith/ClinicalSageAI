@@ -1,0 +1,100 @@
+You’ll save yourself a lot of head‑scratching if you tackle this in two clear steps:
+
+---
+
+## 1. Lock Down the FastAPI Service First
+
+Before even worrying about Node.js talking to Python, make absolutely sure your FastAPI app is rock‑solid on port 8001:
+
+1. **Add a Health Check**  
+   ```python
+   # in ind_automation/main.py
+   @app.get("/health")
+   async def health():
+       return {"status": "ok"}
+   ```
+2. **Restart FastAPI** with your exact command:  
+   ```bash
+   uvicorn ind_automation.main:app --host 0.0.0.0 --port 8001
+   ```
+3. **Smoke‑test from the shell** in Replit:  
+   ```bash
+   curl http://localhost:8001/health
+   ```  
+   You should see `{"status":"ok"}`. If you don’t, fix that before moving on—check your imports, path to `main.py`, and that nothing else is already bound to 8001.
+
+4. **Try your form endpoint directly**:  
+   ```bash
+   curl http://localhost:8001/api/ind/demo/forms/1571 --output test1571.docx
+   ```  
+   If that works, you’ve proven FastAPI is serving exactly what you expect.
+
+---
+
+## 2. Wire Up Your Node.js Front End
+
+Once FastAPI is unquestionably up and returning your endpoints:
+
+1. **Configure the Proxy**  
+   - In `package.json`:  
+     ```json
+     "proxy": "http://localhost:8001"
+     ```
+   - Or, if you use `axios`, set  
+     ```js
+     axios.defaults.baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8001';
+     ```
+   - Define that env var in Replit’s Secrets panel.
+
+2. **Re‑start React**  
+   ```bash
+   npm start
+   ```
+   then open DevTools → Network and click “Download Form 1571.” You should see a request to `localhost:8001`.
+
+3. **CORS (if needed)**  
+   If you see CORS errors instead of 404s, add to FastAPI early in `main.py`:  
+   ```python
+   from fastapi.middleware.cors import CORSMiddleware
+
+   app.add_middleware(
+       CORSMiddleware,
+       allow_origins=["*"],            # tighten this in production
+       allow_methods=["*"],
+       allow_headers=["*"],
+   )
+   ```
+
+---
+
+## 3. Streamline Your Workflow
+
+When both services are independently validated:
+
+- **Install `concurrently`** in your Node project:  
+  ```bash
+  npm install --save-dev concurrently
+  ```
+- **Update `package.json` scripts**:  
+  ```json
+  "scripts": {
+    "start:python": "uvicorn ind_automation.main:app --host 0.0.0.0 --port 8001",
+    "start:react": "react-scripts start",
+    "start": "concurrently \"npm run start:python\" \"npm run start:react\""
+  }
+  ```
+- **Then just**  
+  ```bash
+  npm start
+  ```  
+  All in one window, no juggling terminals.
+
+---
+
+### TL;DR
+
+1. **First**, verify FastAPI on 8001 is up and healthy (add `/health`, `curl` it).  
+2. **Next**, configure your React/Node layer to point at that port (proxy or axios baseURL), then test.  
+3. **Finally**, bring both up together with a single `npm start` using `concurrently`.
+
+That sequence will eliminate “works over here but not there” confusion and give you a repeatable, robust dev workflow.
