@@ -1,0 +1,210 @@
+Below is a shell script you can paste into your Replit console to create **all** of the Phase 2 code files and directories in one go. It will:
+
+1. Make the directory structure  
+2. Write out every Python module we’ve discussed (benchling stub, template renderers, FastAPI endpoints)  
+3. Stub placeholders for your `.docx.j2` templates, with instructions to upload the real forms  
+
+After running this, you’ll have every file in place and can just drop your actual Word/Jinja templates into `templates/forms/`.
+
+---
+
+**In your Replit Shell**, paste and run:
+
+```bash
+#!/usr/bin/env bash
+set -e
+
+# 1) Create directories
+mkdir -p ingestion
+mkdir -p ind_automation
+mkdir -p templates/forms
+
+# 2) ingestion/benchling_connector.py
+cat > ingestion/benchling_connector.py << 'EOF'
+from typing import Dict
+
+def fetch_benchling_cmc(project_id: str) -> Dict:
+    """
+    Stub: Fetch CMC data for a given project_id from Benchling.
+    Returns a dict with keys matching Module 3 fields.
+    """
+    # TODO: replace stub with real Benchling API calls
+    return {
+        "drug_name": "TestDrug",
+        "manufacturing_site": "Site A",
+        "batch_number": "BATCH123",
+        "specifications": [
+            {"parameter": "Assay (%)", "limit": "95–105", "result": "98.2"},
+            {"parameter": "Purity (%)", "limit": "> 99.0", "result": "99.5"},
+        ],
+        "stability_data": [
+            {"timepoint": "0 months", "result": "98.2"},
+            {"timepoint": "3 months", "result": "97.8"},
+        ],
+    }
+EOF
+
+# 3) ind_automation/templates.py
+cat > ind_automation/templates.py << 'EOF'
+import io
+from docxtpl import DocxTemplate
+
+TEMPLATE_DIR = "templates/forms"
+
+def render_form1571(data: dict) -> io.BytesIO:
+    tpl = DocxTemplate(f"{TEMPLATE_DIR}/form1571.docx.j2")
+    tpl.render(data)
+    buf = io.BytesIO(); tpl.save(buf); buf.seek(0)
+    return buf
+
+def render_form1572(data: dict) -> io.BytesIO:
+    tpl = DocxTemplate(f"{TEMPLATE_DIR}/form1572.docx.j2")
+    tpl.render(data)
+    buf = io.BytesIO(); tpl.save(buf); buf.seek(0)
+    return buf
+
+def render_form3674(data: dict) -> io.BytesIO:
+    tpl = DocxTemplate(f"{TEMPLATE_DIR}/form3674.docx.j2")
+    tpl.render(data)
+    buf = io.BytesIO(); tpl.save(buf); buf.seek(0)
+    return buf
+EOF
+
+# 4) ind_automation/main.py (overwrite or create)
+cat > ind_automation/main.py << 'EOF'
+import io
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
+
+from ingestion.benchling_connector import fetch_benchling_cmc
+from ind_automation.templates import render_form1571, render_form1572, render_form3674
+
+app = FastAPI(title="IND Automation Service")
+
+class INDProject(BaseModel):
+    project_id: str
+    sponsor: str
+    ind_number: str = None
+    drug_name: str
+    protocol: str
+    submission_date: str
+    pi_name: str
+    pi_address: str
+    nct_number: str = None
+    registration_status: str = "Registered"
+
+# --- Health check ---
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
+
+# --- Module 3 (CMC) endpoint ---
+@app.get("/api/ind/{project_id}/module3")
+async def generate_module3(project_id: str):
+    data = fetch_benchling_cmc(project_id)
+    if not data:
+        raise HTTPException(status_code=404, detail="Project not found or no CMC data")
+    # render with docxtpl ...
+    # (assume existing Module3 renderer here)
+    return {"detail": "Module3 endpoint stub"}
+
+# --- Project metadata stub ---
+def fetch_project_metadata(proj: str) -> INDProject:
+    # TODO: wire this to your real DB
+    return INDProject(
+        project_id=proj,
+        sponsor="Acme Biotech, Inc.",
+        ind_number="0000",
+        drug_name="TestDrug",
+        protocol="PROTO-123",
+        submission_date="2025-04-22",
+        pi_name="Dr. Jane Doe",
+        pi_address="123 Lab St, Science City, CA",
+        nct_number="NCT01234567",
+        registration_status="Registered"
+    )
+
+# --- Form 1571 ---
+@app.get("/api/ind/{proj}/forms/1571")
+async def get_form1571(proj: str):
+    meta = fetch_project_metadata(proj)
+    buf = render_form1571({
+        "sponsor_name": meta.sponsor,
+        "IND_number": meta.ind_number or "Pending",
+        "drug_name": meta.drug_name,
+        "protocol_number": meta.protocol,
+        "submission_date": meta.submission_date,
+    })
+    return StreamingResponse(
+        buf,
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        headers={"Content-Disposition": f"attachment; filename=Form1571_{proj}.docx"}
+    )
+
+# --- Form 1572 ---
+@app.get("/api/ind/{proj}/forms/1572")
+async def get_form1572(proj: str):
+    meta = fetch_project_metadata(proj)
+    buf = render_form1572({
+        "principal_investigator_name": meta.pi_name,
+        "investigator_address": meta.pi_address,
+    })
+    return StreamingResponse(
+        buf,
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        headers={"Content-Disposition": f"attachment; filename=Form1572_{proj}.docx"}
+    )
+
+# --- Form 3674 ---
+@app.get("/api/ind/{proj}/forms/3674")
+async def get_form3674(proj: str):
+    meta = fetch_project_metadata(proj)
+    buf = render_form3674({
+        "nct_number": meta.nct_number or "",
+        "study_registration_statement": meta.registration_status,
+    })
+    return StreamingResponse(
+        buf,
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        headers={"Content-Disposition": f"attachment; filename=Form3674_{proj}.docx"}
+    )
+EOF
+
+# 5) Placeholder Jinja form templates
+for form in form1571 form1572 form3674; do
+  cat > templates/forms/${form}.docx.j2 << 'EOF'
+# Please upload the actual Word .docx version of FDA ${form^^}.  
+# Rename to ${form}.docx.j2 and replace these comments with Jinja placeholders 
+# matching the data keys in ind_automation/main.py:
+#
+#   {{ sponsor_name }}, {{ IND_number }}, {{ drug_name }}, etc.
+EOF
+done
+
+echo "🎉 Scaffold complete!  
+– Place your real .docx.j2 templates in templates/forms/  
+– Update fetch_project_metadata() to hook into your DB  
+– Run FastAPI on 8001 and try: curl http://localhost:8001/health"
+```
+
+---
+
+### After running:
+
+1. **Upload your actual `.docx.j2`** templates into `templates/forms/` (Form1571, Form1572, Form3674).  
+2. **Install dependencies** if you haven’t already:
+   ```bash
+   pip install fastapi uvicorn python-docx-template pydantic
+   ```
+3. **Start FastAPI**:
+   ```bash
+   uvicorn ind_automation.main:app --host 0.0.0.0 --port 8001
+   ```
+4. **Verify**:
+   ```bash
+   curl http://localhost:8001/health
+   curl http://localhost:8001/api/ind/demo/forms/1571 --output test1571.docx
+   ```
+
+This single script sets up **everything**. From here you can move on to real data wiring or adding UI buttons.
