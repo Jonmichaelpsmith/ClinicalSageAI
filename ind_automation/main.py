@@ -8,6 +8,7 @@ from typing import List
 from ind_automation.templates import render_form1571, render_form1572, render_form3674
 from ind_automation import db
 from ind_automation import module3
+from ind_automation.db import append_history, get_history
 
 app = FastAPI(title="IND Automation Service v2")
 
@@ -97,12 +98,24 @@ async def get_3674(pid: str):
 async def new_sequence(pid: str):
     m = _get_meta(pid)
     m.serial_number += 1
+    
+    # save history entry
+    append_history(pid, {
+        "serial": f"{m.serial_number:04d}",
+        "timestamp": datetime.datetime.utcnow().isoformat()
+    })
+    
     db.save(pid, m.dict())
     return {"serial_number": f"{m.serial_number:04d}"}
 
 # ---------- Health ----------
 @app.get("/health")
 async def health(): return {"status": "ok"}
+
+# ---------- History endpoint ----------
+@app.get("/api/ind/{pid}/history")
+async def get_history_endpoint(pid: str):
+    return get_history(pid)
 
 # ------------ Backward Compatibility -------------
 

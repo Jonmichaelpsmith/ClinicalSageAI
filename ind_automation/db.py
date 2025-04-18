@@ -20,3 +20,13 @@ def list_projects() -> list[dict]:
         if fn.endswith(".json"):
             with open(f"{DATA_DIR}/{fn}") as f: out.append(json.load(f))
     return out
+
+# ---------- History helpers ----------
+def append_history(pid: str, entry: dict):
+    rec = load(pid) or {}
+    rec.setdefault("history", []).append(entry)
+    save(pid, rec)
+    
+def get_history(pid: str):
+    rec = load(pid) or {}
+    return rec.get("history", [])
