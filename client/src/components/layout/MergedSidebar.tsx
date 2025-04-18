@@ -201,6 +201,9 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                 <NavItem href="/trial-predictor" icon={<BarChart className="text-indigo-500" />}>
                   Trial Success Predictor
                 </NavItem>
+                <NavItem href="/ind-automation" icon={<Beaker className="text-indigo-500" />}>
+                  IND Automation
+                </NavItem>
               </div>
             </div>
 
@@ -336,6 +339,9 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                 </NavItem>
                 <NavItem href="/trial-predictor" icon={<BarChart className="text-indigo-500" />}>
                   Trial Success Predictor
+                </NavItem>
+                <NavItem href="/ind-automation" icon={<Beaker className="text-indigo-500" />}>
+                  IND Automation
                 </NavItem>
               </div>
             </div>
