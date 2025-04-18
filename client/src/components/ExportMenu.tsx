@@ -7,8 +7,19 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuGroup
 } from "@/components/ui/dropdown-menu";
-import { Download, FileText, FileSpreadsheet, FileBadge, FileCode } from "lucide-react";
+import { 
+  Download, 
+  FileText, 
+  FileSpreadsheet, 
+  FileBadge, 
+  FileCode, 
+  FileStack, 
+  FileJson, 
+  FileType, 
+  FilePlus 
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import axios from "axios";
 
@@ -235,7 +246,10 @@ const ExportMenu = ({
       }
       
       const response = await axios.post('/api/export/bibtex', {
-        academicReferences
+        academicReferences,
+        title: title || `Protocol Recommendations for ${indication} Study (${phase})`,
+        indication,
+        phase
       }, {
         responseType: 'blob',
       });
@@ -244,7 +258,7 @@ const ExportMenu = ({
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', 'references.bib');
+      link.setAttribute('download', 'protocol_references.bib');
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -264,6 +278,95 @@ const ExportMenu = ({
       setIsExporting(false);
     }
   };
+  
+  const exportToRIS = async () => {
+    try {
+      setIsExporting(true);
+      
+      if (!academicReferences || academicReferences.length === 0) {
+        toast({
+          title: "No references available",
+          description: "There are no academic references available to export.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      const response = await axios.post('/api/export/ris', {
+        academicReferences,
+        title: title || `Protocol Recommendations for ${indication} Study (${phase})`,
+        indication,
+        phase
+      }, {
+        responseType: 'blob',
+      });
+      
+      // Create a URL for the blob and trigger a download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'protocol_references.ris');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast({
+        title: "RIS exported successfully",
+        description: "Your academic references have been exported to RIS format for EndNote/Zotero.",
+      });
+    } catch (error) {
+      console.error('Error exporting to RIS:', error);
+      toast({
+        title: "Export failed",
+        description: "Failed to export to RIS format. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+  
+  const exportToMarkdown = async () => {
+    try {
+      setIsExporting(true);
+      
+      const exportData = {
+        title: title || `Protocol Recommendations for ${indication} Study (${phase})`,
+        content: recommendations,
+        indication,
+        phase,
+        csrInsights,
+        academicReferences
+      };
+      
+      const response = await axios.post('/api/export/markdown', exportData, {
+        responseType: 'blob',
+      });
+      
+      // Create a URL for the blob and trigger a download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${exportData.title.replace(/[^a-zA-Z0-9 ]/g, '')}.md`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast({
+        title: "Markdown exported successfully",
+        description: "Your protocol recommendations have been exported to Markdown format.",
+      });
+    } catch (error) {
+      console.error('Error exporting to Markdown:', error);
+      toast({
+        title: "Export failed",
+        description: "Failed to export to Markdown format. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   return (
     <DropdownMenu>
@@ -273,25 +376,55 @@ const ExportMenu = ({
           Export
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel>Export Format</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={exportToPDF} disabled={isExporting}>
-          <FileText className="mr-2 h-4 w-4" />
-          PDF Document
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={exportToWord} disabled={isExporting}>
-          <FileBadge className="mr-2 h-4 w-4" />
-          Word Document
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={exportToCSV} disabled={isExporting || csrInsights.length === 0}>
-          <FileSpreadsheet className="mr-2 h-4 w-4" />
-          CSV (CSR Data)
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={exportToBibTeX} disabled={isExporting || !academicReferences || academicReferences.length === 0}>
-          <FileCode className="mr-2 h-4 w-4" />
-          BibTeX (References)
-        </DropdownMenuItem>
+        
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="text-xs text-gray-500 font-normal px-2 py-1.5">
+            Document Formats
+          </DropdownMenuLabel>
+          <DropdownMenuItem onClick={exportToPDF} disabled={isExporting}>
+            <FileText className="mr-2 h-4 w-4" />
+            PDF Document
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={exportToWord} disabled={isExporting}>
+            <FileBadge className="mr-2 h-4 w-4" />
+            Word Document
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={exportToMarkdown} disabled={isExporting}>
+            <FileType className="mr-2 h-4 w-4" />
+            Markdown
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+        
+        <DropdownMenuSeparator />
+        
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="text-xs text-gray-500 font-normal px-2 py-1.5">
+            Data Formats
+          </DropdownMenuLabel>
+          <DropdownMenuItem onClick={exportToCSV} disabled={isExporting || csrInsights.length === 0}>
+            <FileSpreadsheet className="mr-2 h-4 w-4" />
+            CSV (CSR Data)
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+        
+        <DropdownMenuSeparator />
+        
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="text-xs text-gray-500 font-normal px-2 py-1.5">
+            Academic Citation Formats
+          </DropdownMenuLabel>
+          <DropdownMenuItem onClick={exportToBibTeX} disabled={isExporting || !academicReferences || academicReferences.length === 0}>
+            <FileCode className="mr-2 h-4 w-4" />
+            BibTeX (LaTeX)
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={exportToRIS} disabled={isExporting || !academicReferences || academicReferences.length === 0}>
+            <FileStack className="mr-2 h-4 w-4" />
+            RIS (EndNote/Zotero)
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   );
