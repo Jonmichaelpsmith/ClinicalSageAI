@@ -1,9 +1,10 @@
 // CSR Search Service
-// This service replaces the Python FastAPI backend for CSR search
+// This service connects to the deep semantic layer for intelligent CSR search
 
 import fs from 'fs';
 import path from 'path';
 import { huggingFaceService } from '../huggingface-service';
+import { performDeepCsrSearch, isOpenAIApiKeyAvailable } from '../deep-csr-analyzer';
 
 // Constants
 const PROCESSED_CSR_DIR = path.join(process.cwd(), 'data/processed_csrs');
@@ -23,7 +24,7 @@ interface CSRData {
   [key: string]: any;
 }
 
-// In-memory storage for embeddings 
+// In-memory storage for embeddings and data
 let embeddingStore: CSRData[] = [];
 let isInitialized = false;
 
@@ -35,7 +36,7 @@ export class CSRSearchService {
   async initialize() {
     if (isInitialized) return;
     
-    console.log('🔍 Initializing CSR Search Service...');
+    console.log('🔍 Initializing CSR Search Service with Deep Semantic Integration...');
     
     // Create directory if it doesn't exist
     if (!fs.existsSync(PROCESSED_CSR_DIR)) {
@@ -48,6 +49,14 @@ export class CSRSearchService {
     
     isInitialized = true;
     console.log(`✅ CSR Search Service initialized with ${embeddingStore.length} CSRs`);
+    
+    // Log availability of semantic search capabilities
+    const semanticSearchAvailable = isOpenAIApiKeyAvailable();
+    if (semanticSearchAvailable) {
+      console.log('✅ Deep semantic search capabilities are available');
+    } else {
+      console.warn('⚠️ Deep semantic search is NOT available (missing OPENAI_API_KEY)');
+    }
   }
   
   /**
@@ -118,6 +127,7 @@ export class CSRSearchService {
   
   /**
    * Search for CSRs by query text and/or filters
+   * This now integrates with the deep semantic layer when a query is provided
    */
   async searchCSRs(params: {
     query_text?: string;
@@ -137,6 +147,67 @@ export class CSRSearchService {
     
     // Default limit
     const limit = params.limit || 10;
+    
+    // Use deep semantic search if a query is provided and API key is available
+    if (params.query_text && params.query_text.trim() && isOpenAIApiKeyAvailable()) {
+      try {
+        console.log('Using deep semantic search for query:', params.query_text);
+        
+        // Construct search options
+        const searchOptions = {
+          topK: limit,
+          searchType: 'csr', // Default to CSR search type
+        };
+        
+        // Call deep semantic search
+        const semanticResults = await performDeepCsrSearch(params.query_text, searchOptions);
+        
+        if (semanticResults.error) {
+          console.error('Semantic search error:', semanticResults.error);
+          // Fall back to basic search
+        } else {
+          // Process and filter semantic results
+          let csrs = semanticResults.results || [];
+          
+          // Apply filters to semantic results
+          if (params.indication && params.indication !== 'Any') {
+            csrs = csrs.filter(csr => 
+              csr.indication && csr.indication.toLowerCase().includes(params.indication!.toLowerCase())
+            );
+          }
+          
+          if (params.phase && params.phase !== 'Any') {
+            csrs = csrs.filter(csr => 
+              csr.phase && csr.phase.toLowerCase().includes(params.phase!.toLowerCase())
+            );
+          }
+          
+          if (params.outcome) {
+            csrs = csrs.filter(csr => 
+              csr.outcome && csr.outcome.toLowerCase().includes(params.outcome!.toLowerCase())
+            );
+          }
+          
+          if (params.min_sample_size) {
+            csrs = csrs.filter(csr => 
+              csr.sample_size && csr.sample_size >= params.min_sample_size!
+            );
+          }
+          
+          return {
+            csrs: csrs.slice(0, limit),
+            results_count: csrs.length
+          };
+        }
+      } catch (error) {
+        console.error('Error in semantic search:', error);
+        // Fall back to basic search
+      }
+    }
+    
+    // If we get here, either semantic search failed, is unavailable, or no query was provided
+    // Fall back to basic embedding-based search
+    console.log('Using basic vector search with filters');
     
     // Start with all CSRs in memory
     let results = [...embeddingStore];
@@ -169,7 +240,7 @@ export class CSRSearchService {
     // Calculate similarity scores if query text is provided
     if (params.query_text && params.query_text.trim()) {
       try {
-        // Get embedding for query text using Hugging Face
+        // Get embedding for query text using OpenAI
         const queryEmbedding = await huggingFaceService.generateEmbeddings(params.query_text);
         
         // Calculate similarity for each CSR
@@ -213,8 +284,24 @@ export class CSRSearchService {
       await this.initialize();
     }
     
+    // First check in-memory store
     const csr = embeddingStore.find(c => c.csr_id === id);
-    return csr || null;
+    
+    // If not found in memory, try to load from file
+    if (!csr) {
+      const filePath = path.join(PROCESSED_CSR_DIR, `${id}.json`);
+      if (fs.existsSync(filePath)) {
+        try {
+          const content = fs.readFileSync(filePath, 'utf8');
+          return JSON.parse(content);
+        } catch (error) {
+          console.error(`Error loading CSR file ${filePath}:`, error);
+        }
+      }
+      return null;
+    }
+    
+    return csr;
   }
   
   /**
@@ -225,6 +312,7 @@ export class CSRSearchService {
     indications: Record<string, number>;
     phases: Record<string, number>;
     outcomes: Record<string, number>;
+    semantic_search_available: boolean;
   }> {
     // Initialize if not already done
     if (!isInitialized) {
@@ -259,7 +347,8 @@ export class CSRSearchService {
       total_csrs: embeddingStore.length,
       indications,
       phases,
-      outcomes
+      outcomes,
+      semantic_search_available: isOpenAIApiKeyAvailable()
     };
   }
 }
