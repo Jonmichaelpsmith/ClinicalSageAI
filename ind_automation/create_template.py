@@ -53,11 +53,7 @@ class TemplateGenerator:
             subtitle = doc.add_paragraph("Investigational New Drug Application")
             subtitle.alignment = WD_ALIGN_PARAGRAPH.CENTER
             
-            # Add date and batch info
-            date_para = doc.add_paragraph()
-            date_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            date_para.add_run(f"Date: {data.get('manufacture_date', 'N/A')}")
-            
+            # Add batch info
             batch_para = doc.add_paragraph()
             batch_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
             batch_para.add_run(f"Batch Number: {data.get('batch_number', 'N/A')}")
@@ -67,39 +63,22 @@ class TemplateGenerator:
             # Section 1: Drug Substance
             doc.add_heading("1. DRUG SUBSTANCE", level=1)
             
-            # Nomenclature
-            doc.add_heading("1.1 Nomenclature", level=2)
-            nomenclature = data.get('nomenclature', {})
-            doc.add_paragraph(f"Chemical Name: {nomenclature.get('chemical_name', 'N/A')}")
-            doc.add_paragraph(f"CAS Registry Number: {nomenclature.get('cas_number', 'N/A')}")
-            doc.add_paragraph(f"Molecular Formula: {nomenclature.get('molecular_formula', 'N/A')}")
-            
-            # Physical and Chemical Properties
-            doc.add_heading("1.2 Physical and Chemical Properties", level=2)
-            drug_substance = data.get('drug_substance', {})
-            doc.add_paragraph(f"Appearance: {drug_substance.get('appearance', 'N/A')}")
-            doc.add_paragraph(f"Solubility: {drug_substance.get('solubility', 'N/A')}")
-            doc.add_paragraph(f"Polymorphism: {drug_substance.get('polymorphism', 'N/A')}")
-            
             # Manufacturing Process
-            doc.add_heading("1.3 Manufacturing Process", level=2)
-            doc.add_paragraph(f"Synthesis Route: {drug_substance.get('synthesis_route', 'N/A')}")
+            doc.add_heading("1.1 Manufacturing Information", level=2)
             doc.add_paragraph(f"Manufacturing Site: {data.get('manufacturing_site', 'N/A')}")
-            doc.add_paragraph(f"Facility Address: {data.get('facility_address', 'N/A')}")
             
             # Section 2: Specifications and Analytical Methods
             doc.add_heading("2. SPECIFICATIONS AND ANALYTICAL METHODS", level=1)
             
             # Create specifications table
-            table = doc.add_table(rows=1, cols=4)
+            table = doc.add_table(rows=1, cols=3)
             table.style = 'Table Grid'
             
             # Add header row
             header_cells = table.rows[0].cells
             header_cells[0].text = "Parameter"
-            header_cells[1].text = "Method"
-            header_cells[2].text = "Acceptance Criteria"
-            header_cells[3].text = "Results"
+            header_cells[1].text = "Limit"
+            header_cells[2].text = "Results"
             
             # Make header row bold
             for cell in header_cells:
@@ -112,12 +91,11 @@ class TemplateGenerator:
             for spec in data.get('specifications', []):
                 row_cells = table.add_row().cells
                 row_cells[0].text = spec.get('parameter', 'N/A')
-                row_cells[1].text = spec.get('method', 'N/A')
-                row_cells[2].text = spec.get('acceptance_criteria', 'N/A')
-                row_cells[3].text = spec.get('result', 'N/A')
+                row_cells[1].text = spec.get('limit', 'N/A')
+                row_cells[2].text = spec.get('result', 'N/A')
                 
                 # Center content
-                for i in range(1, 4):  # Center the last three columns
+                for i in range(1, 3):  # Center the last two columns
                     for paragraph in row_cells[i].paragraphs:
                         paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
             
@@ -125,16 +103,13 @@ class TemplateGenerator:
             doc.add_heading("3. STABILITY DATA", level=1)
             
             # Create stability table
-            stab_table = doc.add_table(rows=1, cols=5)
+            stab_table = doc.add_table(rows=1, cols=2)
             stab_table.style = 'Table Grid'
             
             # Add header row
             stab_header = stab_table.rows[0].cells
             stab_header[0].text = "Time Point"
-            stab_header[1].text = "Assay"
-            stab_header[2].text = "Purity"
-            stab_header[3].text = "Water Content"
-            stab_header[4].text = "Appearance"
+            stab_header[1].text = "Result"
             
             # Make header row bold
             for cell in stab_header:
@@ -147,23 +122,12 @@ class TemplateGenerator:
             for stab_data in data.get('stability_data', []):
                 row_cells = stab_table.add_row().cells
                 row_cells[0].text = stab_data.get('timepoint', 'N/A')
-                row_cells[1].text = stab_data.get('assay', 'N/A')
-                row_cells[2].text = stab_data.get('purity', 'N/A')
-                row_cells[3].text = stab_data.get('water_content', 'N/A')
-                row_cells[4].text = stab_data.get('appearance', 'N/A')
+                row_cells[1].text = stab_data.get('result', 'N/A')
                 
                 # Center all cells
                 for cell in row_cells:
                     for paragraph in cell.paragraphs:
                         paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            
-            # Section 4: Container Closure System
-            doc.add_heading("4. CONTAINER CLOSURE SYSTEM", level=1)
-            doc.add_paragraph(data.get('container_closure', 'N/A'))
-            
-            # Section 5: Storage Conditions
-            doc.add_heading("5. STORAGE CONDITIONS", level=1)
-            doc.add_paragraph(data.get('storage_conditions', 'N/A'))
             
             # Save document to bytes
             output = io.BytesIO()
