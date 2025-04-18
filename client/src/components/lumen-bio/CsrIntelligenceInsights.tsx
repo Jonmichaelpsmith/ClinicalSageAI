@@ -91,7 +91,8 @@ import {
   Loader2,
   UploadCloud,
   Info,
-  File
+  File,
+  Lock
 } from "lucide-react";
 import {
   HoverCard,
@@ -261,6 +262,332 @@ const InsightCard = ({
         </Button>
       </CardFooter>
     </Card>
+  );
+};
+
+// Document Upload Form Component
+const DocumentUploadForm = () => {
+  const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [currentStep, setCurrentStep] = useState(1);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [analysisStarted, setAnalysisStarted] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
+  
+  // Form schema with Zod validation
+  const formSchema = z.object({
+    projectName: z.string().min(2, "Project name is required"),
+    documentType: z.string().min(1, "Document type is required"),
+    therapeuticArea: z.string().min(1, "Therapeutic area is required"),
+    phase: z.string().optional(),
+    description: z.string().optional(),
+  });
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      projectName: "",
+      documentType: "",
+      therapeuticArea: "",
+      phase: "",
+      description: "",
+    },
+  });
+
+  // Simulate a file upload with progress
+  const simulateUpload = () => {
+    if (fileInputRef.current?.files?.length === 0) {
+      toast({
+        title: "No file selected",
+        description: "Please select a file to upload",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUploading(true);
+    setProgress(0);
+    
+    // Simulate progress updates
+    const interval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          setUploading(false);
+          setUploadSuccess(true);
+          return 100;
+        }
+        return prev + 5;
+      });
+    }, 200);
+  };
+
+  // Handle form submission
+  const onSubmit = (values: z.infer<typeof formSchema>) => {
+    console.log("Form values:", values);
+    setCurrentStep(2);
+  };
+
+  // Simulate starting the analysis
+  const startAnalysis = () => {
+    setAnalysisStarted(true);
+    toast({
+      title: "Analysis Started",
+      description: "Your document is being analyzed. You'll be notified when it's complete.",
+    });
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Step 1: Document Information */}
+      {currentStep === 1 && (
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="projectName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Project Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter project name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="documentType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Document Type</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select document type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="protocol">Protocol</SelectItem>
+                        <SelectItem value="csr">Clinical Study Report</SelectItem>
+                        <SelectItem value="ind">IND</SelectItem>
+                        <SelectItem value="regulatory">Regulatory Submission</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="therapeuticArea"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Therapeutic Area</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select therapeutic area" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="microbiome">Microbiome</SelectItem>
+                        <SelectItem value="obesity">Obesity</SelectItem>
+                        <SelectItem value="infection">Infectious Disease</SelectItem>
+                        <SelectItem value="gi">Gastrointestinal</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            
+            <FormField
+              control={form.control}
+              name="phase"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Study Phase (Optional)</FormLabel>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select study phase (if applicable)" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="phase1">Phase 1</SelectItem>
+                      <SelectItem value="phase2">Phase 2</SelectItem>
+                      <SelectItem value="phase3">Phase 3</SelectItem>
+                      <SelectItem value="phase4">Phase 4</SelectItem>
+                      <SelectItem value="na">Not Applicable</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description (Optional)</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Brief description of the document or specific analysis needs" 
+                      className="resize-none" 
+                      rows={3}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <div className="flex justify-end pt-2">
+              <Button type="submit">
+                Continue
+              </Button>
+            </div>
+          </form>
+        </Form>
+      )}
+      
+      {/* Step 2: Document Upload */}
+      {currentStep === 2 && (
+        <div className="space-y-6">
+          <div className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center bg-slate-50">
+            <input
+              ref={fileInputRef}
+              type="file"
+              className="hidden"
+              accept=".pdf,.doc,.docx,.xlsx,.ppt,.pptx"
+              onChange={(e) => {
+                if (e.target.files && e.target.files.length > 0) {
+                  // Handle file selection logic here
+                  console.log(e.target.files[0].name);
+                }
+              }}
+            />
+            
+            {!uploadSuccess ? (
+              <div className="space-y-4">
+                <div className="mx-auto w-16 h-16 flex items-center justify-center rounded-full bg-blue-50 text-blue-600">
+                  <UploadCloud className="h-8 w-8" />
+                </div>
+                <h3 className="text-lg font-medium">Upload Your Document</h3>
+                <p className="text-sm text-slate-500 max-w-md mx-auto">
+                  Support for PDF, Word, Excel, and PowerPoint files. Maximum file size: 50MB.
+                </p>
+                
+                <div>
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="relative"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                  >
+                    <FileUp className="h-4 w-4 mr-2" />
+                    Select File
+                  </Button>
+                </div>
+                
+                {uploading && (
+                  <div className="max-w-md mx-auto mt-4">
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>Uploading...</span>
+                      <span>{progress}%</span>
+                    </div>
+                    <Progress value={progress} className="h-2" />
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="mx-auto w-16 h-16 flex items-center justify-center rounded-full bg-green-50 text-green-600">
+                  <CheckCircle className="h-8 w-8" />
+                </div>
+                <h3 className="text-lg font-medium">Upload Complete</h3>
+                <p className="text-sm text-slate-500 max-w-md mx-auto">
+                  Your document has been successfully uploaded. Click below to start the AI analysis.
+                </p>
+                
+                <div>
+                  <Button
+                    variant="default"
+                    size="lg"
+                    onClick={startAnalysis}
+                    disabled={analysisStarted}
+                  >
+                    {analysisStarted ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Analyzing...
+                      </>
+                    ) : (
+                      <>
+                        <Brain className="h-4 w-4 mr-2" />
+                        Start Analysis
+                      </>
+                    )}
+                  </Button>
+                </div>
+                
+                {analysisStarted && (
+                  <div className="max-w-md mx-auto mt-4 text-sm text-slate-500">
+                    <p>This may take several minutes depending on document size and complexity.</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          
+          {!uploadSuccess && (
+            <div className="flex justify-between">
+              <Button 
+                variant="ghost" 
+                onClick={() => setCurrentStep(1)}
+              >
+                Back to Details
+              </Button>
+              <Button 
+                onClick={simulateUpload} 
+                disabled={uploading}
+              >
+                {uploading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Uploading...
+                  </>
+                ) : (
+                  "Upload Document"
+                )}
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 };
 
@@ -636,7 +963,7 @@ const CsrIntelligenceInsights = () => {
       </div>
       
       <Tabs defaultValue="insights" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="insights" className="flex items-center gap-1">
             <Lightbulb className="h-4 w-4" />
             Key Insights
@@ -648,6 +975,10 @@ const CsrIntelligenceInsights = () => {
           <TabsTrigger value="recommendations" className="flex items-center gap-1">
             <CheckCircle className="h-4 w-4" />
             Recommendations
+          </TabsTrigger>
+          <TabsTrigger value="document-upload" className="flex items-center gap-1">
+            <UploadCloud className="h-4 w-4" />
+            Document Analysis
           </TabsTrigger>
         </TabsList>
         
@@ -762,6 +1093,199 @@ const CsrIntelligenceInsights = () => {
           </div>
         </TabsContent>
         
+        <TabsContent value="document-upload" className="mt-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-4">
+              <Card>
+                <CardHeader className="pb-2">
+                  <div className="flex justify-between">
+                    <div>
+                      <CardTitle className="text-lg">Upload Documents for Analysis</CardTitle>
+                      <CardDescription>
+                        Upload your clinical documents to analyze against our CSR intelligence database
+                      </CardDescription>
+                    </div>
+                    <div className="bg-blue-50 p-2 rounded-full">
+                      <UploadCloud className="h-5 w-5 text-blue-600" />
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <DocumentUploadForm />
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-indigo-50 to-blue-50 border border-blue-200">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Info className="h-5 w-5 text-blue-600" />
+                    How Document Analysis Works
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <div className="bg-white p-3 rounded-lg border border-blue-100 shadow-sm">
+                      <div className="flex items-start gap-3">
+                        <div className="bg-blue-100 rounded-full p-2 mt-1">
+                          <span className="text-blue-700 font-semibold">1</span>
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-blue-900">Upload Your Documents</h4>
+                          <p className="text-sm text-slate-600 mt-1">
+                            Upload your protocol, IND, or other clinical documents in PDF or Word format
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white p-3 rounded-lg border border-blue-100 shadow-sm">
+                      <div className="flex items-start gap-3">
+                        <div className="bg-blue-100 rounded-full p-2 mt-1">
+                          <span className="text-blue-700 font-semibold">2</span>
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-blue-900">AI-Powered Analysis</h4>
+                          <p className="text-sm text-slate-600 mt-1">
+                            Our AI engine analyzes your documents against 779+ CSRs in our database
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white p-3 rounded-lg border border-blue-100 shadow-sm">
+                      <div className="flex items-start gap-3">
+                        <div className="bg-blue-100 rounded-full p-2 mt-1">
+                          <span className="text-blue-700 font-semibold">3</span>
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-blue-900">Receive Actionable Insights</h4>
+                          <p className="text-sm text-slate-600 mt-1">
+                            Get detailed success factors, risks, and optimization recommendations specific to your program
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center pt-2">
+                    <span className="text-sm text-slate-500 flex gap-2 items-center">
+                      <span className="text-slate-400"><Lock className="h-4 w-4" /></span>
+                      Your documents are processed securely and remain confidential
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="space-y-4">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <FileCheck className="h-5 w-5 text-primary" />
+                    Recent Analyses
+                  </CardTitle>
+                  <CardDescription>
+                    Your recently analyzed documents
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="divide-y">
+                    <div className="p-3 hover:bg-slate-50 cursor-pointer">
+                      <div className="flex items-center gap-2">
+                        <div className="bg-blue-100 p-1.5 rounded">
+                          <FileText className="h-4 w-4 text-blue-700" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm">LBP-2021_Protocol_v3.2.pdf</p>
+                          <p className="text-xs text-slate-500">Analyzed Apr 16, 2025</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center mt-2">
+                        <Badge variant="outline" className="text-xs bg-blue-50">
+                          <CheckCircle className="h-3 w-3 mr-1 text-green-600" />
+                          87% Match Score
+                        </Badge>
+                      </div>
+                    </div>
+                    
+                    <div className="p-3 hover:bg-slate-50 cursor-pointer">
+                      <div className="flex items-center gap-2">
+                        <div className="bg-green-100 p-1.5 rounded">
+                          <FileText className="h-4 w-4 text-green-700" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm">LMN-0801_Phase1_Report.pdf</p>
+                          <p className="text-xs text-slate-500">Analyzed Apr 12, 2025</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center mt-2">
+                        <Badge variant="outline" className="text-xs bg-blue-50">
+                          <CheckCircle className="h-3 w-3 mr-1 text-green-600" />
+                          93% Match Score
+                        </Badge>
+                      </div>
+                    </div>
+                    
+                    <div className="p-3 hover:bg-slate-50 cursor-pointer">
+                      <div className="flex items-center gap-2">
+                        <div className="bg-purple-100 p-1.5 rounded">
+                          <FileText className="h-4 w-4 text-purple-700" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm">Regulatory_Strategy_2025.docx</p>
+                          <p className="text-xs text-slate-500">Analyzed Apr 5, 2025</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center mt-2">
+                        <Badge variant="outline" className="text-xs bg-blue-50">
+                          <CheckCircle className="h-3 w-3 mr-1 text-green-600" />
+                          76% Match Score
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter className="border-t p-3">
+                  <Button variant="ghost" size="sm" className="w-full">
+                    View All Analyzed Documents
+                  </Button>
+                </CardFooter>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Brain className="h-5 w-5 text-primary" />
+                    AI Processing Credits
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>Available Credits</span>
+                        <span className="font-semibold">23 / 30</span>
+                      </div>
+                      <Progress value={76} className="h-2" />
+                    </div>
+                    
+                    <div className="bg-blue-50 p-3 rounded border border-blue-200 text-sm">
+                      <p className="text-slate-700">
+                        Each document analysis uses 1 credit. Your plan renews on <span className="font-medium">May 15, 2025</span>.
+                      </p>
+                    </div>
+                    
+                    <Button variant="outline" size="sm" className="w-full">
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Upgrade Plan
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </TabsContent>
+
         <TabsContent value="recommendations" className="mt-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-4">
