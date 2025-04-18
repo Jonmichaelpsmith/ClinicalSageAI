@@ -1,11 +1,9 @@
-# Package initialization for the IND Automation module
+# IND Automation Module
 """
-IND Automation Package
+IND Automation package for LumenTrialGuide.AI platform.
 
-This package provides tools for automatically generating FDA Investigational New Drug (IND) application documents
-based on data from Benchling or other sources.
-
-Current capabilities:
-- Module 3 (Chemistry, Manufacturing, and Controls) document generation
-- Batch processing for multiple projects
+This package provides utilities for automating the generation of
+FDA Investigational New Drug (IND) application forms and related documents.
 """
+
+__version__ = "2.0.0"
