@@ -8,7 +8,7 @@ from typing import List, Dict, Optional
 
 from ind_automation.templates import render_form1571, render_form1572, render_form3674
 from ind_automation import db
-from ind_automation import module3, ai_narratives, ectd_ga
+from ind_automation import module3, ai_narratives, ectd_ga, auth, users
 from ind_automation.db import append_history, get_history
 from ind_automation import esg_credentials_api
 
@@ -132,6 +132,19 @@ app.include_router(ai_narratives.router)
 
 # Include ESG credentials API
 app.include_router(esg_credentials_api.router)
+
+# ---------- Auth routes ----------
+from fastapi import Depends
+@app.post("/api/auth/register")
+async def register(body: dict):
+    users.create(body["username"], body["password"], role=body.get("role","user"))
+    return {"status":"created"}
+@app.post("/api/auth/login")
+async def login(body: dict):
+    if users.verify(body["username"], body["password"]):
+        token = auth.create_token(body["username"])
+        return {"token": token}
+    raise HTTPException(401, "Bad credentials")
 
 # For compatibility with existing API calls
 @app.get("/projects")
