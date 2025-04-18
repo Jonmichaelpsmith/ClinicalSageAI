@@ -1,234 +1,252 @@
 import React from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { 
-  BarChart, 
-  ArrowUpCircle, 
-  Clock, 
-  Users, 
-  PercentCircle,
-  CheckCircle, 
-  AlertTriangle 
-} from 'lucide-react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
 
 /**
- * EnhancedProtocolIntelligencePanel component
+ * Enhanced Protocol Intelligence Panel
  * 
- * Provides detailed strategic insights for protocol optimization including:
- * - Therapeutic area-specific success probability
- * - Historical success rates with detailed explanations
- * - Competitive landscape with real company names
- * - Key success factors based on actual precedent
+ * This component showcases the AI-powered protocol intelligence capabilities,
+ * highlighting the CSR library matching, historic success rates, and
+ * detailed protocol improvement recommendations.
  */
-const EnhancedProtocolIntelligencePanel = ({ 
-  protocolData, 
-  therapeuticArea = "Gastroenterology",
-  phase = "Phase 2", 
-  historicalSuccessRate = 34,
-  precedentCount = 29,
-  keySuccessFactors = [
-    {
-      factor: "Increasing sample size by 20-30% over minimum powering requirements improves success probability by 17%",
-      source: "Analysis of 47 completed Phase 2 gastroenterology trials (2019-2023)"
-    },
-    {
-      factor: "Including quality of life secondary endpoints increases regulatory approval rates by 23% in gastroenterology studies",
-      source: "FDA approvals database analysis for inflammatory bowel disease indications"
-    },
-    {
-      factor: "Patient-reported outcomes have been included in 87% of successful Phase 2 gastroenterology trials since 2022",
-      source: "EMA & FDA combined precedent analysis"
-    }
-  ],
-  competitiveLandscape = [
-    {
-      sponsor: "Takeda Pharmaceuticals",
-      phase: "Phase 2",
-      sampleSize: 420,
-      duration: "48 weeks",
-      outcome: "Success",
-      completion: "2023-08-15",
-      studyDesign: "Randomized, double-blind, placebo-controlled"
-    },
-    {
-      sponsor: "AbbVie Inc.",
-      phase: "Phase 2",
-      sampleSize: 380,
-      duration: "52 weeks",
-      outcome: "Success",
-      completion: "2022-11-03",
-      studyDesign: "Randomized, double-blind, active-controlled"
-    },
-    {
-      sponsor: "Pfizer, Inc.",
-      phase: "Phase 2",
-      sampleSize: 310,
-      duration: "42 weeks",
-      outcome: "Failure",
-      completion: "2023-02-22",
-      studyDesign: "Randomized, double-blind, placebo-controlled"
-    }
-  ]
-}) => {
+const EnhancedProtocolIntelligencePanel = ({ protocolData, analysisResults, matchedCsrs }) => {
+  // Calculate the historic success rate based on matched CSRs
+  const calculateHistoricSuccessRate = () => {
+    if (!matchedCsrs || matchedCsrs.length === 0) return 0;
+    
+    const successfulTrials = matchedCsrs.filter(csr => 
+      csr.outcome && csr.outcome.toLowerCase().includes('success')
+    ).length;
+    
+    return Math.round((successfulTrials / matchedCsrs.length) * 100);
+  };
+
+  const historicSuccessRate = calculateHistoricSuccessRate();
+  
+  // Group CSRs by sponsor company for the competitive landscape
+  const groupCsrsByCompany = () => {
+    if (!matchedCsrs || matchedCsrs.length === 0) return [];
+    
+    const companies = {};
+    matchedCsrs.forEach(csr => {
+      const sponsor = csr.sponsor || 'Unknown';
+      if (!companies[sponsor]) {
+        companies[sponsor] = { name: sponsor, count: 0, trials: [] };
+      }
+      companies[sponsor].count += 1;
+      companies[sponsor].trials.push(csr);
+    });
+    
+    return Object.values(companies).sort((a, b) => b.count - a.count);
+  };
+  
+  const competitiveLandscape = groupCsrsByCompany();
+  
+  // Extract therapeutic areas from matched CSRs
+  const getTherapeuticAreas = () => {
+    if (!matchedCsrs || matchedCsrs.length === 0) return [];
+    
+    const areas = {};
+    matchedCsrs.forEach(csr => {
+      const area = csr.therapeuticArea || csr.indication || 'Unknown';
+      if (!areas[area]) {
+        areas[area] = { name: area, count: 0, trials: [] };
+      }
+      areas[area].count += 1;
+      areas[area].trials.push(csr);
+    });
+    
+    return Object.values(areas).sort((a, b) => b.count - a.count);
+  };
+  
+  const therapeuticAreas = getTherapeuticAreas();
+  
   return (
-    <Card className="shadow-md">
-      <CardHeader>
-        <CardTitle className="text-lg font-bold flex items-center gap-2">
-          <BarChart className="h-5 w-5 text-blue-600" />
-          Protocol Intelligence Panel
-        </CardTitle>
-        <CardDescription>
-          Strategic insights from CSR analysis, competitive landscape, and historical precedent.
-        </CardDescription>
-      </CardHeader>
-      
-      <CardContent>
-        <div className="space-y-6">
-          {/* Success Probability Assessment */}
-          <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
-            <div className="flex justify-between items-center">
-              <h3 className="text-md font-semibold text-blue-800">Success Probability Assessment</h3>
-              <div className="rounded-full bg-blue-100 h-16 w-16 flex items-center justify-center">
-                <span className="text-xl font-bold text-blue-800">65%</span>
-              </div>
-            </div>
-            <p className="text-sm text-blue-700 mt-1">
-              Based on historical precedent in {therapeuticArea} trials
+    <div className="space-y-6">
+      <Card className="border-blue-100">
+        <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 pb-3">
+          <CardTitle className="text-xl text-blue-800 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 12c0 5.5-4.5 10-10 10S2 17.5 2 12 6.5 2 12 2s10 4.5 10 10z"/>
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M12 19v-2"/>
+              <path d="M12 7V5"/>
+              <path d="M19 12h-2"/>
+              <path d="M7 12H5"/>
+              <path d="m16.95 7.05-.7.7"/>
+              <path d="m7.75 16.25-.7.7"/>
+              <path d="m16.95 16.95-.7-.7"/>
+              <path d="m7.75 7.75-.7-.7"/>
+            </svg>
+            Enhanced Protocol Intelligence
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-4">
+          <div className="mb-6">
+            <p className="text-gray-700 mb-3">
+              Our advanced AI has analyzed your protocol against our comprehensive CSR intelligence library to identify patterns, insights, and opportunities for optimization.
             </p>
             
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-              <div className="bg-white rounded p-3 shadow-sm">
-                <h4 className="text-xs font-semibold text-gray-500 uppercase">THERAPEUTIC AREA</h4>
-                <p className="font-medium mt-1">{therapeuticArea}</p>
-              </div>
-              
-              <div className="bg-white rounded p-3 shadow-sm">
-                <h4 className="text-xs font-semibold text-gray-500 uppercase">PHASE</h4>
-                <p className="font-medium mt-1">{phase}</p>
-              </div>
-              
-              <div className="bg-white rounded p-3 shadow-sm">
-                <h4 className="text-xs font-semibold text-gray-500 uppercase">HISTORICAL SUCCESS RATE</h4>
-                <p className="font-medium mt-1">{historicalSuccessRate}%</p>
-                <p className="text-xs text-gray-500">Based on completed trials in this therapeutic area</p>
-              </div>
-              
-              <div className="bg-white rounded p-3 shadow-sm">
-                <h4 className="text-xs font-semibold text-gray-500 uppercase">PRECEDENT COUNT</h4>
-                <p className="font-medium mt-1">{precedentCount}</p>
-                <p className="text-xs text-gray-500">Similar trials analyzed</p>
-              </div>
-            </div>
+            <Alert className="bg-blue-50 border-blue-200 text-blue-800 mb-4">
+              <AlertDescription>
+                <span className="font-semibold">Protocol Analysis:</span> We found {matchedCsrs.length} similar clinical trials in our database matching your therapeutic area ({protocolData.indication}) and phase ({protocolData.phase.replace('phase', 'Phase ')}).
+              </AlertDescription>
+            </Alert>
           </div>
           
-          {/* Key Success Factors */}
-          <div>
-            <h3 className="text-md font-semibold mb-3 text-gray-800">KEY SUCCESS FACTORS</h3>
-            <div className="space-y-3">
-              {keySuccessFactors.map((item, index) => (
-                <div key={index} className="flex gap-3 items-start">
-                  <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm">{item.factor}</p>
-                    <p className="text-xs text-gray-500 mt-1">Source: {item.source}</p>
+          <Tabs defaultValue="success-metrics">
+            <TabsList className="mb-4 bg-slate-100 p-1 rounded-lg">
+              <TabsTrigger value="success-metrics" className="data-[state=active]:bg-white data-[state=active]:text-blue-700 rounded-md">Success Metrics</TabsTrigger>
+              <TabsTrigger value="therapeutic-areas" className="data-[state=active]:bg-white data-[state=active]:text-blue-700 rounded-md">Therapeutic Areas</TabsTrigger>
+              <TabsTrigger value="competitive" className="data-[state=active]:bg-white data-[state=active]:text-blue-700 rounded-md">Competitive Landscape</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="success-metrics" className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-white p-5 rounded-xl border border-blue-100 shadow-sm">
+                  <h3 className="text-md font-semibold mb-2 text-blue-800">Historic Success Rate</h3>
+                  <div className="flex items-center justify-center py-4">
+                    <div className="relative w-32 h-32">
+                      <svg viewBox="0 0 100 100" className="w-full h-full">
+                        <circle cx="50" cy="50" r="45" fill="#EFF6FF" />
+                        <circle 
+                          cx="50" 
+                          cy="50" 
+                          r="45" 
+                          fill="transparent"
+                          stroke="#DBEAFE"
+                          strokeWidth="10"
+                          strokeDasharray="283"
+                          strokeDashoffset="0"
+                          transform="rotate(-90 50 50)"
+                        />
+                        <circle 
+                          cx="50" 
+                          cy="50" 
+                          r="45" 
+                          fill="transparent"
+                          stroke="#3B82F6"
+                          strokeWidth="10"
+                          strokeDasharray="283"
+                          strokeDashoffset={283 - (283 * historicSuccessRate / 100)}
+                          strokeLinecap="round"
+                          transform="rotate(-90 50 50)"
+                        />
+                        <text x="50" y="50" textAnchor="middle" dominantBaseline="middle" fontSize="24" fontWeight="bold" fill="#1E40AF">
+                          {historicSuccessRate}%
+                        </text>
+                      </svg>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-600 text-center">
+                    Based on {matchedCsrs.length} similar trials in our CSR library with the same therapeutic area and phase.
+                  </p>
+                </div>
+                
+                <div className="bg-white p-5 rounded-xl border border-indigo-100 shadow-sm">
+                  <h3 className="text-md font-semibold mb-2 text-indigo-800">Protocol Quality Score</h3>
+                  <div className="mt-6 space-y-4">
+                    <div>
+                      <div className="flex justify-between mb-1">
+                        <span className="text-sm font-medium text-gray-700">Regulatory Alignment</span>
+                        <span className="text-sm font-medium text-blue-700">{analysisResults?.regulatoryAlignmentScore || 0}%</span>
+                      </div>
+                      <Progress value={analysisResults?.regulatoryAlignmentScore || 0} className="h-2 bg-blue-100" indicatorClassName="bg-blue-500" />
+                    </div>
+                    
+                    <div>
+                      <div className="flex justify-between mb-1">
+                        <span className="text-sm font-medium text-gray-700">CSR Library Alignment</span>
+                        <span className="text-sm font-medium text-indigo-700">{analysisResults?.csrAlignmentScore || 0}%</span>
+                      </div>
+                      <Progress value={analysisResults?.csrAlignmentScore || 0} className="h-2 bg-indigo-100" indicatorClassName="bg-indigo-500" />
+                    </div>
+                    
+                    <div>
+                      <div className="flex justify-between mb-1">
+                        <span className="text-sm font-medium text-gray-700">Academic Alignment</span>
+                        <span className="text-sm font-medium text-emerald-700">{analysisResults?.academicAlignmentScore || 0}%</span>
+                      </div>
+                      <Progress value={analysisResults?.academicAlignmentScore || 0} className="h-2 bg-emerald-100" indicatorClassName="bg-emerald-500" />
+                    </div>
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-          
-          {/* Competitive Landscape */}
-          <div>
-            <h3 className="text-md font-semibold mb-3 text-gray-800 flex items-center">
-              <Clock className="h-4 w-4 mr-2 text-purple-600" />
-              Competitive Landscape Assessment
-            </h3>
-            <p className="text-sm text-gray-600 mb-4">
-              Analysis of similar trials in {therapeuticArea} therapeutic area
-            </p>
-            
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>SPONSOR</TableHead>
-                    <TableHead>PHASE</TableHead>
-                    <TableHead>SAMPLE SIZE</TableHead>
-                    <TableHead>DURATION</TableHead>
-                    <TableHead>OUTCOME</TableHead>
-                    <TableHead>COMPLETION</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {competitiveLandscape.map((trial, index) => (
-                    <TableRow key={index}>
-                      <TableCell className="font-medium">{trial.sponsor}</TableCell>
-                      <TableCell>{trial.phase}</TableCell>
-                      <TableCell>{trial.sampleSize}</TableCell>
-                      <TableCell>{trial.duration}</TableCell>
-                      <TableCell>
-                        {trial.outcome === "Success" ? (
-                          <span className="inline-flex items-center bg-green-100 text-green-800 text-xs px-2.5 py-0.5 rounded-full">
-                            <CheckCircle className="h-3 w-3 mr-1" />
-                            Success
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center bg-red-100 text-red-800 text-xs px-2.5 py-0.5 rounded-full">
-                            <AlertTriangle className="h-3 w-3 mr-1" />
-                            Failure
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell>{trial.completion}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </div>
-          
-          {/* Additional Protocol Insights */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg p-4 border border-amber-200">
-              <h3 className="text-sm font-semibold text-amber-800 mb-2 flex items-center">
-                <Users className="h-4 w-4 mr-2" />
-                Optimal Design Recommendation
-              </h3>
-              <p className="text-sm text-amber-700">
-                Based on {precedentCount} precedent trials, consider:
-              </p>
-              <ul className="list-disc text-sm text-amber-700 pl-5 mt-2 space-y-1">
-                <li>Increase your sample size by 15-20% (150+ participants)</li>
-                <li>Include patient-reported outcome measures</li>
-                <li>Consider 52-week duration with interim analysis at week 12</li>
-              </ul>
-            </div>
-            
-            <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
-              <h3 className="text-sm font-semibold text-blue-800 mb-2 flex items-center">
-                <ArrowUpCircle className="h-4 w-4 mr-2" />
-                Protocol Alignment Score
-              </h3>
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="text-sm text-blue-700">
-                    Your protocol compared to successful precedents:
-                  </p>
-                  <ul className="list-disc text-sm text-blue-700 pl-5 mt-2 space-y-1">
-                    <li>Regulatory Alignment: 75%</li>
-                    <li>CSR Precedent Alignment: 80%</li>
-                    <li>Academic Standard Alignment: 85%</li>
+                
+                <div className="bg-white p-5 rounded-xl border border-emerald-100 shadow-sm">
+                  <h3 className="text-md font-semibold mb-2 text-emerald-800">Key Success Factors</h3>
+                  <ul className="mt-2 space-y-2">
+                    {analysisResults?.keySuggestions?.slice(0, 5).map((item, i) => (
+                      <li key={i} className="flex items-start">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-500 mr-2 mt-1 flex-shrink-0">
+                          <path d="m9 12 2 2 4-4"/>
+                          <path d="M12 3c-1.2 0-2.4.6-3 1.7A3.6 3.6 0 0 0 4.6 9c-1 .6-1.7 1.8-1.7 3s.7 2.4 1.7 3c-.3 1.2 0 2.5 1 3.4.8.8 2.1 1.1 3.3.8.6 1 1.8 1.7 3 1.7s2.4-.6 3-1.7c1.2.3 2.5 0 3.4-1 .8-.8 1.1-2.1.8-3.3 1-.6 1.7-1.8 1.7-3s-.7-2.4-1.7-3c.3-1.2 0-2.5-1-3.4-.8-.8-2.1-1.1-3.3-.8A3.6 3.6 0 0 0 12 3z"/>
+                        </svg>
+                        <span className="text-sm text-gray-700">{item}</span>
+                      </li>
+                    ))}
                   </ul>
                 </div>
-                <div className="rounded-full bg-white h-16 w-16 flex items-center justify-center border-2 border-blue-300">
-                  <span className="text-lg font-bold text-blue-800">78%</span>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="therapeutic-areas" className="space-y-4">
+              <div className="bg-white p-5 rounded-xl border border-blue-100 shadow-sm">
+                <h3 className="text-md font-semibold mb-4 text-blue-800">Relevant Therapeutic Areas</h3>
+                
+                <div className="space-y-3">
+                  {therapeuticAreas.map((area, index) => (
+                    <div key={index} className="border-b border-gray-100 pb-3 last:border-0 last:pb-0">
+                      <div className="flex justify-between mb-1">
+                        <span className="text-sm font-medium text-gray-700">{area.name}</span>
+                        <span className="text-sm font-medium text-blue-700">{area.count} trials</span>
+                      </div>
+                      <Progress value={(area.count / matchedCsrs.length) * 100} className="h-2 bg-blue-100" indicatorClassName="bg-blue-500" />
+                      <p className="text-xs text-gray-500 mt-1">
+                        {area.trials[0]?.title?.substring(0, 60)}...
+                      </p>
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+            </TabsContent>
+            
+            <TabsContent value="competitive" className="space-y-4">
+              <div className="bg-white p-5 rounded-xl border border-indigo-100 shadow-sm">
+                <h3 className="text-md font-semibold mb-4 text-indigo-800">Competitive Sponsor Landscape</h3>
+                
+                <div className="space-y-4">
+                  {competitiveLandscape.map((company, index) => (
+                    <div key={index} className="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
+                      <div className="flex justify-between mb-1">
+                        <span className="text-sm font-medium text-gray-700">{company.name}</span>
+                        <span className="text-sm font-medium text-indigo-700">{company.count} trials</span>
+                      </div>
+                      <Progress value={(company.count / matchedCsrs.length) * 100} className="h-2 bg-indigo-100" indicatorClassName="bg-indigo-500" />
+                      
+                      <div className="mt-2 space-y-1">
+                        {company.trials.slice(0, 2).map((trial, idx) => (
+                          <div key={idx} className="text-xs text-gray-600 flex gap-2">
+                            <span className="text-indigo-500">•</span>
+                            <span>{trial.title?.substring(0, 60)}...</span>
+                          </div>
+                        ))}
+                        {company.trials.length > 2 && (
+                          <div className="text-xs text-indigo-600 font-medium">
+                            +{company.trials.length - 2} more trials
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
