@@ -609,15 +609,14 @@ export default function ProtocolOptimizer() {
                   )}
                   
                   <div ref={outputRef} className="mt-2">
-                    <Tabs defaultValue="recommendations">
+                    <Tabs defaultValue="protocol-intelligence">
                       <TabsList className="mb-4 bg-slate-100 p-1 rounded-lg">
+                        <TabsTrigger value="protocol-intelligence" className="data-[state=active]:bg-white data-[state=active]:text-blue-700 rounded-md">Protocol Intelligence</TabsTrigger>
+                        <TabsTrigger value="academic-insights" className="data-[state=active]:bg-white data-[state=active]:text-blue-700 rounded-md">Academic Insights</TabsTrigger>
                         <TabsTrigger value="recommendations" className="data-[state=active]:bg-white data-[state=active]:text-blue-700 rounded-md">Recommendations</TabsTrigger>
                         <TabsTrigger value="key-points" className="data-[state=active]:bg-white data-[state=active]:text-blue-700 rounded-md">Key Points</TabsTrigger>
                         <TabsTrigger value="section-analysis" className="data-[state=active]:bg-white data-[state=active]:text-blue-700 rounded-md">Section Analysis</TabsTrigger>
                         <TabsTrigger value="references" className="data-[state=active]:bg-white data-[state=active]:text-blue-700 rounded-md">Similar Trials</TabsTrigger>
-                        {generatedContent.academicReferences && generatedContent.academicReferences.length > 0 && (
-                          <TabsTrigger value="academic" className="data-[state=active]:bg-white data-[state=active]:text-blue-700 rounded-md">Academic Insights</TabsTrigger>
-                        )}
                       </TabsList>
                       
                       <TabsContent value="recommendations" className="space-y-4">
