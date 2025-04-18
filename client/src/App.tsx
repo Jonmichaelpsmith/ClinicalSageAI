@@ -186,6 +186,7 @@ function Router() {
       <Route path="/csr-search">{() => renderWithLayout(CSRSearch)}</Route>
       <Route path="/reports/:csrId">{() => renderWithLayout(CSRDetail)}</Route>
       <Route path="/protocol-optimizer">{() => renderWithLayout(ProtocolOptimizer)}</Route>
+      <Route path="/protocol/optimizer">{() => renderWithLayout(ProtocolOptimizer)}</Route>
       <Route path="/protocol/upload">{() => renderWithLayout(ProtocolUploadPage)}</Route>
       <Route path="/protocol/analysis/:protocolId">{() => renderWithLayout(ProtocolAnalysisPage)}</Route>
       <Route path="/agent-logs">{() => renderWithLayout(AgentLogDashboard)}</Route>
