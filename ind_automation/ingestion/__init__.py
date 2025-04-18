@@ -1,1 +1,1 @@
-# init file for ingestion module
+# Package initialization for the ingestion module
