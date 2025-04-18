@@ -1,0 +1,221 @@
+#!/usr/bin/env bash
+set -e
+
+################################################################################
+# Production‑ready ESG integration                                              #
+# 1. Installs paramiko, celery, redis                                           #
+# 2. Adds esg_client.py (upload + ack poll)                                     #
+# 3. Configures Celery worker (redis broker)                                    #
+# 4. Adds FastAPI routes + history logging                                      #
+# 5. React ESG tab with live polling                                            #
+################################################################################
+
+pip install -q paramiko celery redis
+
+cd "$REPL_HOME"
+
+# -----------------------------------------------------------------------------
+# 1) esg_client.py – handles SFTP upload & ack polling
+cat > ind_automation/esg_client.py << 'PY'
+import os, paramiko, time, logging, datetime
+from pathlib import Path
+
+ESG_HOST = os.getenv("ESG_HOST") or "gatewaytest.fda.gov"
+ESG_PORT = int(os.getenv("ESG_PORT") or 10022)
+ESG_USER = os.getenv("ESG_USER") or "YOUR_FDA_ESG_USERNAME"
+ESG_KEY  = os.getenv("ESG_KEY")  # private key string or file path
+REMOTE_IN  = "/EDESubmit/"
+REMOTE_ACK = "/prdone/"
+
+log = logging.getLogger("esg")
+
+_def_keyfile = "esg_key.pem"
+if ESG_KEY and ESG_KEY.startswith("-----BEGIN"):
+    Path(_def_keyfile).write_text(ESG_KEY)
+    ESG_KEY = _def_keyfile
+
+
+def _connect():
+    key = paramiko.RSAKey.from_private_key_file(ESG_KEY)
+    client = paramiko.Transport((ESG_HOST, ESG_PORT))
+    client.connect(username=ESG_USER, pkey=key)
+    sftp = paramiko.SFTPClient.from_transport(client)
+    return client, sftp
+
+
+def upload(zip_path: Path, serial: str):
+    client, sftp = _connect()
+    remote_name = f"IND_{serial}.zip"
+    log.info("Uploading %s to FDA ESG…", remote_name)
+    sftp.put(str(zip_path), REMOTE_IN + remote_name)
+    sftp.close(); client.close()
+    return remote_name
+
+
+def poll_ack(remote_name: str, timeout=900, interval=60):
+    client, sftp = _connect()
+    start = time.time()
+    while time.time() - start < timeout:
+        try:
+            files = sftp.listdir(REMOTE_ACK)
+            if any(remote_name in f for f in files):
+                sftp.close(); client.close()
+                return "ACK_RECEIVED"
+        except Exception as e:
+            log.warning("ESG poll error: %s", e)
+        time.sleep(interval)
+    sftp.close(); client.close()
+    return "TIMEOUT"
+PY
+
+# -----------------------------------------------------------------------------
+# 2) celery_app.py – central Celery instance
+cat > ind_automation/celery_app.py << 'PY'
+from celery import Celery
+import os
+celery_app = Celery(
+    "ind_esg",
+    broker=os.getenv("REDIS_URL", "redis://localhost:6379/0"),
+    backend=os.getenv("REDIS_URL", "redis://localhost:6379/0"),
+)
+PY
+
+# -----------------------------------------------------------------------------
+# 3) tasks.py – Celery task for ESG submission
+cat > ind_automation/tasks.py << 'PY'
+import datetime, pathlib, os, logging
+from ind_automation.celery_app import celery_app
+from ind_automation import esg_client, db
+
+log = logging.getLogger("tasks")
+
+@celery_app.task(bind=True, max_retries=3, default_retry_delay=300)
+def submit_to_esg(self, pid: str, serial: str):
+    try:
+        zip_path = pathlib.Path(f"ectd/{pid}/{serial}/ectd_{pid}_{serial}.zip")
+        if not zip_path.exists():
+            raise FileNotFoundError(zip_path)
+        remote_name = esg_client.upload(zip_path, serial)
+        status = esg_client.poll_ack(remote_name)
+        db.append_history(pid, {
+            "type": "esg_submission",
+            "serial": serial,
+            "timestamp": datetime.datetime.utcnow().isoformat(),
+            "status": status,
+        })
+        return status
+    except Exception as exc:
+        log.error("ESG submission failed: %s", exc)
+        raise self.retry(exc=exc)
+PY
+
+# -----------------------------------------------------------------------------
+# 4) Patch FastAPI main.py – ESG endpoints
+python - << 'PY'
+import pathlib, textwrap
+main = pathlib.Path("ind_automation/main.py"); code = main.read_text()
+if "esg_submission" not in code:
+    code = code.replace(
+        "import ectd_ga",
+        "import ectd_ga, tasks")
+    code += textwrap.dedent("""
+    @app.post("/api/ind/{pid}/esg/submit")
+    async def esg_submit(pid: str):
+        m = db.load(pid)
+        if not m:
+            raise HTTPException(404, "Project not found")
+        # increment sequence first
+        seq = await new_sequence(pid)  # reuse existing route
+        serial = seq["serial_number"]
+        # build eCTD GA zip if not yet
+        zip_path = f"ectd/{pid}/{serial}/ectd_{pid}_{serial}.zip"
+        if not Path(zip_path).exists():
+            ectd_ga.build_sequence(pid, serial)
+        job = tasks.submit_to_esg.delay(pid, serial)
+        return {"task_id": job.id, "serial": serial}
+
+    @app.get("/api/ind/{pid}/esg/status/{serial}")
+    async def esg_status(pid: str, serial: str):
+        hist = db.get_history(pid)
+        for h in hist[::-1]:
+            if h.get("serial") == serial and h.get("type") == "esg_submission":
+                return h
+        raise HTTPException(404, "No ESG record")
+    """)
+    main.write_text(code)
+PY
+
+# -----------------------------------------------------------------------------
+# 5) React ESGSubmit.jsx + UI integration
+mkdir -p client/src/components
+cat > client/src/components/EsgSubmit.jsx << 'JSX'
+import React, { useState, useEffect } from "react";
+import api from "../services/api";
+
+export default function EsgSubmit({ project }) {
+  const [task, setTask] = useState(null);
+  const [status, setStatus] = useState(null);
+
+  const submit = async () => {
+    const { data } = await api.post(`/api/ind/${project.project_id}/esg/submit`);
+    setTask(data);
+  };
+
+  useEffect(() => {
+    if (!task) return;
+    const iv = setInterval(() => {
+      api.get(`/api/ind/${project.project_id}/esg/status/${task.serial}`)
+        .then(({ data }) => {
+          setStatus(data.status);
+          if (data.status.startsWith("ACK")) clearInterval(iv);
+        })
+        .catch(() => {});
+    }, 30000);
+    return () => clearInterval(iv);
+  }, [task]);
+
+  return (
+    <div className="space-y-2">
+      <button
+        onClick={submit}
+        disabled={!project || task}
+        className="bg-green-700 text-white px-3 py-1 rounded"
+      >
+        {task ? "Submitting…" : "Submit to FDA ESG"}
+      </button>
+      {status && <p className="text-sm">Current status: {status}</p>}
+    </div>
+  );
+}
+JSX
+
+# patch page – add ESG tab
+python - << 'PY'
+import pathlib, re, textwrap
+page = pathlib.Path("client/src/pages/IndAutomationPage.jsx"); code = page.read_text()
+if "ESG" not in code:
+    code = code.replace(
+        '"eCTD GA", "History"',
+        '"eCTD GA", "ESG", "History"'
+    )
+    code = code.replace(
+        'import EctdBuilder',
+        'import EctdBuilder from "../components/EctdBuilder";\nimport EsgSubmit from "../components/EsgSubmit"'
+    )
+    pane = textwrap.dedent("""
+      {tab === "ESG" && selected && <EsgSubmit project={selected} />}
+    """)
+    code = code.replace('{tab === "History"', pane + '\n{tab === "History"', 1)
+    page.write_text(code)
+PY
+
+# -----------------------------------------------------------------------------
+# 6) Redis local start (replit workaround) – optional helper
+if ! pgrep -f "redis-server" > /dev/null; then
+  redis-server --daemonize yes
+fi
+
+# -----------------------------------------------------------------------------
+
+echo "✅ ESG submission pipeline installed. Start Celery worker in a new shell:"
+echo "   celery -A ind_automation.tasks.celery_app worker --loglevel=INFO"
