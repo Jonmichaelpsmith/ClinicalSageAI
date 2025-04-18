@@ -40,9 +40,20 @@ def create_templates_if_needed():
     """Create templates if they don't exist"""
     if not check_templates_exist():
         logger.info("Creating FDA form templates...")
-        from create_form_templates import main as create_templates
-        create_templates()
-        return check_templates_exist()
+        try:
+            from create_form_templates import main as create_templates
+            create_templates()
+            result = check_templates_exist()
+            if result:
+                logger.info("Templates successfully created")
+            else:
+                logger.error("Failed to create all required templates")
+            return result
+        except Exception as e:
+            logger.error(f"Error creating templates: {str(e)}", exc_info=True)
+            # Create templates directory if it doesn't exist
+            os.makedirs(TEMPLATE_DIR, exist_ok=True)
+            return False
     return True
 
 def _replace_placeholders(doc, data):

@@ -112,11 +112,23 @@ class ProjectMetadata(BaseModel):
 @app.get("/")
 async def root():
     """Root endpoint - service information"""
+    # Initialize templates if needed
+    from templates import check_templates_exist, create_templates_if_needed
+    
+    templates_ready = create_templates_if_needed()
+    available_templates = []
+    
+    if templates_ready:
+        templates_dir = os.path.join(os.path.dirname(__file__), 'templates', 'forms')
+        available_templates = [f for f in os.listdir(templates_dir) if f.endswith('.docx')]
+    
     return {
         "name": "IND Automation API",
-        "version": "0.1.0",
+        "version": "0.2.0",
         "status": "operational",
         "modules_supported": ["module1_forms", "module3_cmc"],
+        "templates_ready": templates_ready,
+        "available_templates": available_templates,
         "endpoints": [
             {"path": "/", "method": "GET", "description": "API information"},
             {"path": "/status", "method": "GET", "description": "Service status check"},
