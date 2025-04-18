@@ -98,6 +98,76 @@ export async function analyzeText(
 }
 
 /**
+ * Generate a concise context summary for search results
+ * Explains why a search result matched the query and highlights key information
+ * 
+ * @param searchQuery The original search query
+ * @param csrData CSR data containing the study details
+ * @param maxLength Maximum summary length in characters (default: 150)
+ * @returns A concise summary explaining the relevance
+ */
+export async function generateSearchContextSummary(
+  searchQuery: string,
+  csrData: any,
+  maxLength: number = 150
+): Promise<string> {
+  try {
+    if (!isApiKeyAvailable()) {
+      return ""; // Return empty if OpenAI isn't available
+    }
+    
+    // Extract key CSR information for the summary
+    const csrInfo = {
+      title: csrData.title || "Untitled CSR",
+      phase: csrData.phase || "Unknown phase",
+      indication: csrData.indication || "Unknown indication",
+      sample_size: csrData.sample_size || "Unspecified sample size",
+      outcome: csrData.outcome || "Unknown outcome",
+      sponsor: csrData.sponsor || "Unknown sponsor",
+    };
+    
+    // Format the prompt
+    const prompt = `
+      I'm searching for clinical studies with this query: "${searchQuery}"
+      
+      I found this study in the database:
+      Title: ${csrInfo.title}
+      Phase: ${csrInfo.phase}
+      Indication: ${csrInfo.indication}
+      Sample Size: ${csrInfo.sample_size}
+      Outcome: ${csrInfo.outcome}
+      Sponsor: ${csrInfo.sponsor}
+      
+      In 150 characters or less, explain why this study is relevant to my search and highlight the most important aspects that match my query.
+    `;
+    
+    const systemPrompt = "You are a clinical research expert. Provide extremely concise, focused summaries that highlight the most relevant aspects of clinical studies based on search queries.";
+    
+    const response = await client.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: prompt }
+      ],
+      temperature: 0.3, // Lower temperature for more focused responses
+      max_tokens: 100,  // Ensure we get a very concise response
+    });
+    
+    const summary = response.choices[0].message.content || "";
+    
+    // Truncate if needed and add ellipsis
+    if (summary.length > maxLength) {
+      return summary.substring(0, maxLength - 3) + "...";
+    }
+    
+    return summary;
+  } catch (error) {
+    console.error("Error generating search context summary:", error);
+    return ""; // Return empty string on error
+  }
+}
+
+/**
  * Analyzes multiple sections of a protocol using OpenAI's API
  * @param sections Map of section names to their content
  * @param systemPrompt Optional system prompt to guide the analysis
