@@ -10,6 +10,31 @@ import { dirname } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+// Type definitions for the API
+export interface SpecificationData {
+  parameter: string;
+  limit: string;
+  result: string;
+}
+
+export interface StabilityData {
+  timepoint: string;
+  result: string;
+}
+
+export interface Module3Data {
+  drug_name: string;
+  manufacturing_site: string;
+  batch_number: string;
+  specifications: SpecificationData[];
+  stability_data: StabilityData[];
+}
+
+export interface ProjectInfo {
+  id: string;
+  name: string;
+}
+
 /**
  * Service for interfacing with the IND Automation Python microservice
  */
@@ -117,6 +142,25 @@ export class INDAutomationService {
   }
 
   /**
+   * Get available projects from Benchling
+   */
+  async listProjects(): Promise<ProjectInfo[]> {
+    try {
+      // Make sure the service is running
+      const serviceRunning = await this.isServiceRunning();
+      if (!serviceRunning) {
+        await this.startService();
+      }
+
+      const response = await axios.get(`${this.serviceUrl}/projects`);
+      return response.data.projects;
+    } catch (error) {
+      logger.error(`Error listing projects: ${error.message}`);
+      throw new Error(`Failed to list projects: ${error.message}`);
+    }
+  }
+
+  /**
    * Generate Module 3 document for a project
    * @param projectId The ID of the project
    * @returns The URL to download the generated document
@@ -134,6 +178,58 @@ export class INDAutomationService {
     } catch (error) {
       logger.error(`Error generating Module 3 document: ${error.message}`);
       throw new Error(`Failed to generate Module 3 document: ${error.message}`);
+    }
+  }
+
+  /**
+   * Generate Module 3 document from provided data
+   * @param data The Module 3 data
+   * @returns Buffer containing the generated document
+   */
+  async generateModule3FromData(data: Module3Data): Promise<Buffer> {
+    try {
+      // Make sure the service is running
+      const serviceRunning = await this.isServiceRunning();
+      if (!serviceRunning) {
+        await this.startService();
+      }
+
+      const response = await axios.post(
+        `${this.serviceUrl}/generate/module3`,
+        data,
+        {
+          responseType: 'arraybuffer'
+        }
+      );
+
+      return Buffer.from(response.data);
+    } catch (error) {
+      logger.error(`Error generating Module 3 document from data: ${error.message}`);
+      throw new Error(`Failed to generate Module 3 document: ${error.message}`);
+    }
+  }
+
+  /**
+   * Generate multiple Module 3 documents in batch mode
+   * @param projectIds Array of project IDs
+   * @returns Batch processing results
+   */
+  async batchGenerateModule3(projectIds: string[]): Promise<any> {
+    try {
+      // Make sure the service is running
+      const serviceRunning = await this.isServiceRunning();
+      if (!serviceRunning) {
+        await this.startService();
+      }
+
+      const response = await axios.post(`${this.serviceUrl}/batch/module3`, {
+        project_ids: projectIds
+      });
+
+      return response.data;
+    } catch (error) {
+      logger.error(`Error in batch generation: ${error.message}`);
+      throw new Error(`Failed to generate batch documents: ${error.message}`);
     }
   }
 
