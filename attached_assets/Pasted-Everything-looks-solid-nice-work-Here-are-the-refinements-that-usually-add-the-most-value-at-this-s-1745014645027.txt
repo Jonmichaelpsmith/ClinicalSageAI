@@ -1,0 +1,23 @@
+Everything looks solid—nice work. Here are the refinements that usually add the most value at this stage, plus what they involve. Pick whichever you’d like to tackle first (or tell me to dive into all of them):
+
+| Area | Why it matters | What we’d add |
+|------|----------------|---------------|
+| **1. History table (Phase 2‑C finish)** | Lets users audit past sequences, re‑download docs, and confirm serial‑number continuity | • Backend: `GET /api/ind/{pid}/history` returning array of `{serial, timestamp, files}`<br>• On each `/sequence` call we log doc URLs<br>• React `<HistoryTable>` with sortable rows & download links |
+| **2. Metadata edit‑in‑place** | Users won’t want to delete/recreate a project when a sponsor address changes | • `PUT /api/projects/{pid}` is done; add an “✏️ Edit” dialog that PATCHes fields<br>• Optimistic UI update |
+| **3. Validation & toasts** | Better UX: flag empty required fields, show success/fail notifications | • Frontend form validators (e.g. `drug_name` required)<br>• Toast on successful doc download (react‑toastify or similar) |
+| **4. Upload real Word/Jinja templates  programmatically** | Avoid manual file‐manager uploads for each new form version | • Simple `/api/templates/upload` POST that saves files to `templates/forms/`<br>• Front‑end drag‑and‑drop zone visible to admins |
+| **5. Benchling real‑data hookup** | Stub now—real API gives instant value | • Add Benchling API key in Replit secrets<br>• Map fields → CMC schema<br>• Graceful fallback if a project has no Benchling records |
+| **6. eCTD stub (Phase 3 start)** | Early proof you can package XML & folder tree | • Python `build_ectd(pid, serial)` that:<br>&nbsp;&nbsp;– creates `ectd/0001/m1/…` etc.<br>&nbsp;&nbsp;– writes minimal `index.xml`<br>• Endpoint `/api/ind/{pid}/ectd/{serial}` zip‑streams the package |
+
+---
+
+### Suggested next move
+
+Most teams find **History Table** the quickest win—it’s small, obvious to users, and proves the sequence tracking works. We’d:
+
+1. Extend the DB record to append a new history entry every time you hit `/sequence`.
+2. Add `GET  /api/ind/{pid}/history`.
+3. Front‑end `<HistoryTable>` inside the project pane.
+
+If that sounds good, say **“Let’s build the history table”** and I’ll drop a single shell script that creates the backend route and React component just like before.  
+Prefer a different item? Let me know which number and I’ll generate that bundle instead.

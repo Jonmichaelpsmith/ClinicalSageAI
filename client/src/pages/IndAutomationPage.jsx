@@ -4,6 +4,7 @@ import ProjectList from "../components/ProjectList";
 import Module1Forms from "../components/Module1Forms";
 import Module3Benchling from "../components/Module3Benchling";
 import Module3Manual from "../components/Module3Manual";
+import HistoryTable from "../components/HistoryTable";
 
 export default function IndAutomationPage() {
   const [tab, setTab] = useState("Module1");
