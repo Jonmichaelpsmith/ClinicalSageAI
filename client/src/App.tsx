@@ -67,6 +67,7 @@ import EnhancedCERDashboardPage from "@/pages/EnhancedCERDashboardPage";
 import CERDashboardPage from "@/pages/CERDashboardPage";
 import SettingsPage from "@/pages/SettingsPage";
 import ChatAssistant from "@/pages/ChatAssistant";
+import INDAutomationPage from "@/pages/INDAutomationPage";
 import { applyCompactStyling } from "./lib/ui-utils"; // Added import
 
 
@@ -218,6 +219,7 @@ function Router() {
       <Route path="/settings">{() => renderWithLayout(SettingsPage)}</Route>
       <Route path="/csr-chat">{() => renderWithLayout(ChatAssistant)}</Route>
       <Route path="/chat">{() => renderWithLayout(ChatAssistant)}</Route>
+      <Route path="/ind-automation">{() => renderWithLayout(INDAutomationPage)}</Route>
 
       {/* Fallback to 404 */}
       <Route>{() => renderWithLayout(NotFound)}</Route>
