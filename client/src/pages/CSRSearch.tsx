@@ -286,6 +286,30 @@ export default function CSRSearch() {
           <h2 className="text-2xl font-bold tracking-tight">Results</h2>
         </div>
         
+        {query && results.length > 0 && (
+          <div className="text-sm text-muted-foreground bg-slate-50 p-3 rounded-md border border-slate-200">
+            <div className="flex gap-2 items-center">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 text-slate-500"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <p>
+                <span className="font-medium">Context Insights:</span> Each result now includes an explanation of why it matches your search query. 
+                Look for the blue highlight box under each result to understand its relevance.
+              </p>
+            </div>
+          </div>
+        )}
+        
         {results.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             {loading ? 'Searching...' : 'No results found. Try a different search query or filters.'}
@@ -353,6 +377,31 @@ export default function CSRSearch() {
                           </p>
                         )}
                       </div>
+                      
+                      {result.context_summary && (
+                        <div className="mt-2 bg-blue-50 border-l-4 border-blue-500 px-3 py-2 rounded">
+                          <div className="flex items-start space-x-2">
+                            <svg 
+                              xmlns="http://www.w3.org/2000/svg" 
+                              className="h-5 w-5 text-blue-500 mt-0.5" 
+                              viewBox="0 0 24 24" 
+                              fill="none" 
+                              stroke="currentColor" 
+                              strokeWidth="2" 
+                              strokeLinecap="round" 
+                              strokeLinejoin="round"
+                            >
+                              <circle cx="12" cy="12" r="10"></circle>
+                              <path d="M12 16v-4"></path>
+                              <path d="M12 8h.01"></path>
+                            </svg>
+                            <div>
+                              <p className="text-sm font-medium text-blue-800">Why this matches your search:</p>
+                              <p className="text-sm text-blue-800">{result.context_summary}</p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
 
                       <div className="pt-2 flex gap-2">
                         <Button 
