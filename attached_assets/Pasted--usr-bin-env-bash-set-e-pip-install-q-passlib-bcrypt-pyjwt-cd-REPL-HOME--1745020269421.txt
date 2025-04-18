@@ -1,0 +1,162 @@
+#!/usr/bin/env bash
+set -e
+pip install -q passlib[bcrypt] pyjwt
+cd "$REPL_HOME"
+
+# ---------------- users.py ----------------
+cat > ind_automation/users.py << 'PY'
+import json, os, datetime
+from pathlib import Path
+from passlib.hash import bcrypt
+USERS_FILE = Path("data/users.json")
+USERS_FILE.parent.mkdir(parents=True, exist_ok=True)
+
+def _load():
+    if USERS_FILE.exists(): return json.loads(USERS_FILE.read_text())
+    return {}
+
+def _save(data): USERS_FILE.write_text(json.dumps(data, indent=2))
+
+def create(username, password, role="user"):
+    data = _load()
+    if username in data: raise ValueError("exists")
+    data[username] = {"pw": bcrypt.hash(password), "role": role, "created": str(datetime.date.today())}
+    _save(data)
+
+def verify(username, password):
+    d = _load().get(username)
+    return d and bcrypt.verify(password, d["pw"])
+
+def get_role(username):
+    d = _load().get(username); return d and d.get("role")
+PY
+
+# ---------------- auth.py ----------------
+cat > ind_automation/auth.py << 'PY'
+import os, time, jwt, datetime
+from fastapi import Depends, HTTPException, Header
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from ind_automation import users
+
+SECRET = os.getenv("ACCESS_TOKEN_SECRET")
+if not SECRET:
+    raise RuntimeError("Set ACCESS_TOKEN_SECRET in Secrets")
+
+bearer_scheme = HTTPBearer()
+
+def create_token(username):
+    payload = {
+        "sub": username,
+        "iat": int(time.time()),
+        "exp": int(time.time()) + 8*3600,
+    }
+    return jwt.encode(payload, SECRET, algorithm="HS256")
+
+def get_current_user(token: HTTPAuthorizationCredentials = Depends(bearer_scheme)):
+    try:
+        payload = jwt.decode(token.credentials, SECRET, algorithms=["HS256"])
+        return payload["sub"]
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(401, "Token expired")
+    except Exception:
+        raise HTTPException(401, "Invalid token")
+
+def admin_required(user: str = Depends(get_current_user)):
+    if users.get_role(user) != "admin":
+        raise HTTPException(403, "Admin only")
+    return user
+PY
+
+# ---------------- patch main.py ----------------
+python - << 'PY'
+import pathlib, textwrap
+main = pathlib.Path("ind_automation/main.py"); code = main.read_text()
+if "from ind_automation import auth" not in code:
+    code = code.replace("from ind_automation import ectd_ga, tasks, credentials",
+                        "from ind_automation import ectd_ga, tasks, credentials, auth, users")
+
+    code += textwrap.dedent("""
+    # ---------- Auth routes ----------
+    from fastapi import Depends
+    @app.post("/api/auth/register")
+    async def register(body: dict):
+        users.create(body["username"], body["password"], role=body.get("role","user"))
+        return {"status":"created"}
+    @app.post("/api/auth/login")
+    async def login(body: dict):
+        if users.verify(body["username"], body["password"]):
+            token = auth.create_token(body["username"])
+            return {"token": token}
+        raise HTTPException(401, "Bad credentials")
+    """)
+
+    # secure ESG creds routes
+    code = code.replace("async def save_creds", "async def save_creds", 1)
+    code = code.replace("async def save_creds(org: str, body: dict):",
+                        "async def save_creds(org: str, body: dict, user:str = Depends(auth.admin_required)):")
+    code = code.replace("async def get_creds(org: str):",
+                        "async def get_creds(org: str, user:str = Depends(auth.admin_required)):")
+    code = code.replace("async def delete_creds(org: str):",
+                        "async def delete_creds(org: str, user:str = Depends(auth.admin_required)):")
+    main.write_text(code)
+PY
+
+# ---------------- React Login + RouteGuard ----------------
+mkdir -p client/src/components
+cat > client/src/components/Login.jsx << 'JSX'
+import React, { useState } from "react";
+import api from "../services/api";
+export default function Login({ onAuth }) {
+  const [u, setU] = useState("");
+  const [p, setP] = useState("");
+  const submit = async () => {
+    try {
+      const { data } = await api.post("/api/auth/login", { username: u, password: p });
+      localStorage.setItem("jwt", data.token);
+      onAuth(true);
+    } catch {
+      alert("Login failed");
+    }
+  };
+  return (
+    <div className="p-6 max-w-sm mx-auto space-y-2">
+      <h2 className="text-xl font-bold">Login</h2>
+      <input className="border p-1 w-full" placeholder="User" value={u} onChange={e=>setU(e.target.value)} />
+      <input className="border p-1 w-full" type="password" placeholder="Pass" value={p} onChange={e=>setP(e.target.value)} />
+      <button className="bg-blue-600 text-white px-3 py-1 rounded" onClick={submit}>Login</button>
+    </div>
+  );
+}
+JSX
+
+# Axios interceptor to attach JWT
+python - << 'PY'
+import pathlib, textwrap
+svc = pathlib.Path("client/src/services/api.js"); code = svc.read_text()
+if "axios.interceptors" not in code:
+    code += textwrap.dedent("""
+    api.interceptors.request.use(config => {
+      const t = localStorage.getItem("jwt");
+      if (t) config.headers.Authorization = `Bearer ${t}`;
+      return config;
+    });
+    """)
+    svc.write_text(code)
+PY
+
+# Simple RouteGuard in App.jsx
+python - << 'PY'
+import pathlib, re, textwrap
+app = pathlib.Path("client/src/App.jsx"); code = app.read_text()
+if "Login" not in code:
+    code = code.replace("import { BrowserRouter", "import Login from './components/Login';\nimport { BrowserRouter")
+    guard = textwrap.dedent("""
+      const [auth, setAuth] = React.useState(!!localStorage.getItem('jwt'));
+      if (!auth) return <Login onAuth={setAuth} />;
+    """)
+    code = code.replace("function App() {", "function App() {\n  " + guard)
+    app.write_text(code)
+PY
+
+# ---------------------------------------------------------------------------
+echo "✅ Auth & RBAC installed – set ACCESS_TOKEN_SECRET, create admin via /api/auth/register, restart servers."

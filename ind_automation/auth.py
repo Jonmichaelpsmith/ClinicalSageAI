@@ -1,106 +1,32 @@
-"""
-Authentication Module for IND Automation APIs
-
-This module provides authentication and authorization functionality
-for securing IND Automation API endpoints.
-"""
-
-from fastapi import Depends, HTTPException, status
+import os, time, jwt, datetime
+from fastapi import Depends, HTTPException, Header
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-import logging
-import os
-import jwt
-from datetime import datetime, timedelta
-from typing import Dict, Optional
+from ind_automation import users
 
-# Configure logging
-logger = logging.getLogger(__name__)
+SECRET = os.getenv("ACCESS_TOKEN_SECRET")
+if not SECRET:
+    raise RuntimeError("Set ACCESS_TOKEN_SECRET in Secrets")
 
-# Security scheme for Swagger docs
-security = HTTPBearer()
+bearer_scheme = HTTPBearer()
 
-# JWT settings
-JWT_SECRET = os.getenv("JWT_SECRET_KEY", "development_secret_key")
-JWT_ALGORITHM = "HS256"
-TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 hours
+def create_token(username):
+    payload = {
+        "sub": username,
+        "iat": int(time.time()),
+        "exp": int(time.time()) + 8*3600,
+    }
+    return jwt.encode(payload, SECRET, algorithm="HS256")
 
-# --- User Authentication ---
-
-async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    """
-    Validate JWT token and return the user
-    
-    This is a dependency that can be used in FastAPI route functions
-    """
+def get_current_user(token: HTTPAuthorizationCredentials = Depends(bearer_scheme)):
     try:
-        token = credentials.credentials
-        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
-        
-        # Check if token has expired
-        if datetime.fromtimestamp(payload.get("exp", 0)) < datetime.now():
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Token has expired",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-            
-        # Return user from payload
-        return {
-            "user_id": payload.get("sub"),
-            "username": payload.get("username"),
-            "roles": payload.get("roles", []),
-        }
-    except jwt.PyJWTError as e:
-        logger.error(f"JWT validation error: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    except Exception as e:
-        logger.error(f"Authentication error: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authentication error",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        payload = jwt.decode(token.credentials, SECRET, algorithms=["HS256"])
+        return payload["sub"]
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(401, "Token expired")
+    except Exception:
+        raise HTTPException(401, "Invalid token")
 
-async def get_current_admin_user(user: Dict = Depends(get_current_user)):
-    """
-    Check if current user has admin privileges
-    
-    This is a dependency that can be used in FastAPI route functions
-    that require admin access
-    """
-    if "admin" not in user.get("roles", []):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Admin privileges required",
-        )
+def admin_required(user: str = Depends(get_current_user)):
+    if users.get_role(user) != "admin":
+        raise HTTPException(403, "Admin only")
     return user
-
-# --- Token Generation ---
-
-def create_token(data: Dict, expires_delta: Optional[timedelta] = None):
-    """
-    Create a new JWT token
-    
-    Args:
-        data: Dictionary containing token data (sub, username, etc.)
-        expires_delta: Optional expiration time delta
-        
-    Returns:
-        Encoded JWT token
-    """
-    to_encode = data.copy()
-    
-    # Set expiration time
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(minutes=TOKEN_EXPIRE_MINUTES)
-        
-    to_encode.update({"exp": expire})
-    
-    # Encode and return token
-    return jwt.encode(to_encode, JWT_SECRET, algorithm=JWT_ALGORITHM)
