@@ -1,0 +1,165 @@
+#!/usr/bin/env bash
+set -e
+echo "▶︎ Phase 2 scaffold starting…"
+
+# ------------------------------------------------------------------
+# 0) Move into the project root
+cd "$REPL_HOME"
+
+# ------------------------------------------------------------------
+# 1) Directories
+mkdir -p ingestion
+mkdir -p ind_automation
+mkdir -p templates/forms
+
+# ------------------------------------------------------------------
+# 2) Python requirements
+REQ=requirements.txt
+grep -qxF "fastapi"               $REQ || echo "fastapi" >> $REQ
+grep -qxF "uvicorn"               $REQ || echo "uvicorn" >> $REQ
+grep -qxF "python-docx-template"  $REQ || echo "python-docx-template" >> $REQ
+grep -qxF "pydantic"              $REQ || echo "pydantic" >> $REQ
+
+pip install -q -r $REQ
+
+# ------------------------------------------------------------------
+# 3) ingestion/benchling_connector.py
+cat > ingestion/benchling_connector.py << 'PY'
+from typing import Dict
+
+def fetch_benchling_cmc(project_id: str) -> Dict:
+    """
+    Stub: return dummy CMC data.
+    Replace with real Benchling API calls in Phase 3.
+    """
+    return {
+        "drug_name": "TestDrug",
+        "manufacturing_site": "Site A",
+        "batch_number": "BATCH123",
+        "specifications": [
+            {"parameter": "Assay (%)",  "limit": "95–105", "result": "98.2"},
+            {"parameter": "Purity (%)", "limit": "> 99.0", "result": "99.5"},
+        ],
+        "stability_data": [
+            {"timepoint": "0 months", "result": "98.2"},
+            {"timepoint": "3 months", "result": "97.8"},
+        ],
+    }
+PY
+
+# ------------------------------------------------------------------
+# 4) ind_automation/templates.py
+cat > ind_automation/templates.py << 'PY'
+import io
+from docxtpl import DocxTemplate
+TEMPLATE_DIR = "templates/forms"
+
+def _render(path: str, context: dict) -> io.BytesIO:
+    tpl = DocxTemplate(path)
+    tpl.render(context)
+    buf = io.BytesIO(); tpl.save(buf); buf.seek(0)
+    return buf
+
+def render_form1571(ctx): return _render(f"{TEMPLATE_DIR}/form1571.docx.j2", ctx)
+def render_form1572(ctx): return _render(f"{TEMPLATE_DIR}/form1572.docx.j2", ctx)
+def render_form3674(ctx): return _render(f"{TEMPLATE_DIR}/form3674.docx.j2", ctx)
+PY
+
+# ------------------------------------------------------------------
+# 5) ind_automation/main.py
+cat > ind_automation/main.py << 'PY'
+import io, datetime
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+
+from ingestion.benchling_connector import fetch_benchling_cmc
+from ind_automation.templates import render_form1571, render_form1572, render_form3674
+
+app = FastAPI(title="IND Automation Service")
+
+# CORS for browser calls (tighten origins in prod)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# ------------------ Health ------------------
+@app.get("/health")
+async def health():
+    return {"status": "ok", "timestamp": datetime.datetime.utcnow().isoformat()}
+
+# ------------------ Project Metadata Model ------------------
+class INDProject(BaseModel):
+    project_id: str
+    sponsor: str = "Acme Biotech, Inc."
+    ind_number: str | None = "0000"
+    drug_name: str = "TestDrug"
+    protocol: str = "PROTO‑123"
+    submission_date: str = datetime.date.today().isoformat()
+    pi_name: str = "Dr Jane Doe"
+    pi_address: str = "123 Lab St, Science City CA"
+    nct_number: str | None = "NCT01234567"
+    registration_status: str = "Registered"
+
+# Demo in‑memory store
+_demo_store: dict[str, INDProject] = {}
+
+def fetch_project_metadata(pid: str) -> INDProject:
+    if pid not in _demo_store:
+        _demo_store[pid] = INDProject(project_id=pid)
+    return _demo_store[pid]
+
+# ------------------ Form Endpoints ------------------
+def _doc_response(buf: io.BytesIO, fname: str):
+    return StreamingResponse(
+        buf,
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        headers={"Content-Disposition": f'attachment; filename=\"{fname}\"'}
+    )
+
+@app.get("/api/ind/{pid}/forms/1571")
+async def get_1571(pid: str):
+    meta = fetch_project_metadata(pid)
+    buf = render_form1571(meta.dict())
+    return _doc_response(buf, f"Form1571_{pid}.docx")
+
+@app.get("/api/ind/{pid}/forms/1572")
+async def get_1572(pid: str):
+    meta = fetch_project_metadata(pid)
+    buf = render_form1572(meta.dict())
+    return _doc_response(buf, f"Form1572_{pid}.docx")
+
+@app.get("/api/ind/{pid}/forms/3674")
+async def get_3674(pid: str):
+    meta = fetch_project_metadata(pid)
+    buf = render_form3674(meta.dict())
+    return _doc_response(buf, f"Form3674_{pid}.docx")
+PY
+
+# ------------------------------------------------------------------
+# 6) Placeholder Jinja templates
+for f in form1571 form1572 form3674; do
+  cat > templates/forms/${f}.docx.j2 << 'TXT'
+PLACEHOLDER TEMPLATE  
+Upload your real FDA form as a Word .docx, rename to the same filename,  
+and insert Jinja placeholders like {{ sponsor_name }} etc.
+TXT
+done
+
+echo "✅  Files and folders created."
+echo "---------------------------------------------"
+echo "▶ Run the server:"
+echo "   uvicorn ind_automation.main:app --host 0.0.0.0 --port 8001"
+echo
+echo "▶ Test it:"
+echo "   curl http://localhost:8001/health"
+echo "   curl http://localhost:8001/api/ind/demo/forms/1571 --output F1571.docx"
+echo
+echo "▶ Next:"
+echo "  1) Upload real .docx.j2 templates into templates/forms/"
+echo "  2) Hook your React UI buttons to /api/ind/<project>/forms/<id>"
+echo "---------------------------------------------"
