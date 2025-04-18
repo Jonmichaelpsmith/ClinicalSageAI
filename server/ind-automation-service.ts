@@ -101,16 +101,17 @@ export class INDAutomationService {
       }
 
       // Make sure Python is installed and the required packages are available
-      if (!fs.existsSync(path.join(this.servicePath, 'main.py'))) {
+      const startScriptPath = path.join(__dirname, '..', 'start_ind_automation_api.py');
+      if (!fs.existsSync(startScriptPath) || !fs.existsSync(path.join(this.servicePath, 'main.py'))) {
         logger.error('IND Automation service files not found');
         return false;
       }
 
-      // Start the Python service
+      // Start the Python service using the starter script
       this.pythonServiceProcess = spawn('python3', [
-        path.join(this.servicePath, 'main.py')
+        path.join(__dirname, '..', 'start_ind_automation_api.py')
       ], {
-        cwd: this.servicePath,
+        cwd: path.join(__dirname, '..'),
         stdio: 'pipe'
       });
 
@@ -133,8 +134,8 @@ export class INDAutomationService {
       while (retries > 0) {
         try {
           await new Promise(resolve => setTimeout(resolve, 1000));
-          const response = await axios.get(`${this.serviceUrl}/status`);
-          if (response.status === 200) {
+          const response = await axios.get(`${this.serviceUrl}/health`);
+          if (response.status === 200 && response.data.status === 'healthy') {
             logger.info('IND Automation service started successfully');
             return true;
           }
@@ -170,8 +171,8 @@ export class INDAutomationService {
    */
   async isServiceRunning(): Promise<boolean> {
     try {
-      const response = await axios.get(`${this.serviceUrl}/status`);
-      return response.status === 200;
+      const response = await axios.get(`${this.serviceUrl}/health`);
+      return response.status === 200 && response.data.status === 'healthy';
     } catch (error) {
       return false;
     }

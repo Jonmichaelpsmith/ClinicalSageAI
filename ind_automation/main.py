@@ -1,241 +1,266 @@
+#!/usr/bin/env python3
 """
-FDA IND Forms Automation FastAPI Service
+IND Automation FastAPI Service
 
-This service provides endpoints for generating various FDA forms required for
-Investigational New Drug (IND) applications, including:
-- Form 1571 (IND Application)
-- Form 1572 (Statement of Investigator)
-- Form 3674 (ClinicalTrials.gov Certification)
-- Cover Letter for IND submission
-
-The service also includes functions for importing data from Benchling LIMS.
+This module provides a FastAPI service for generating FDA Investigational New Drug (IND)
+application forms and related documents.
 """
 
 import os
-import io
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import StreamingResponse
+import sys
+import json
+import uuid
+from datetime import datetime
+from typing import Dict, List, Optional, Any, Union
+from io import BytesIO
+
+# FastAPI imports
+from fastapi import FastAPI, HTTPException, UploadFile, File, Body, Query
+from fastapi.responses import StreamingResponse, FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from typing import Optional, List, Dict, Any
-import logging
+from pydantic import BaseModel, Field
 
-# Import template renderer functions
-from templates import render_form1571, render_form1572, render_form3674, render_cover_letter
+# Local imports
+from .templates import (
+    generate_form_1571,
+    generate_form_1572,
+    generate_form_3674,
+    generate_cover_letter
+)
 
-# Setup logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+# Define data models
+class SpecificationData(BaseModel):
+    parameter: str
+    limit: str
+    result: str
+
+class StabilityData(BaseModel):
+    timepoint: str
+    result: str
+
+class Module3Data(BaseModel):
+    drug_name: str
+    manufacturing_site: str
+    batch_number: str
+    specifications: List[SpecificationData]
+    stability_data: List[StabilityData]
+
+class ProjectInfo(BaseModel):
+    id: str
+    name: str
+
+class ProjectMetadata(BaseModel):
+    sponsor_name: Optional[str] = None
+    sponsor_address: Optional[str] = None
+    sponsor_phone: Optional[str] = None
+    ind_number: Optional[str] = None
+    drug_name: Optional[str] = None
+    indication: Optional[str] = None
+    protocol_number: Optional[str] = None
+    protocol_title: Optional[str] = None
+    phase: Optional[str] = None
+    submission_date: Optional[str] = None
+    nct_number: Optional[str] = None
+    principal_investigator_name: Optional[str] = None
+    investigator_address: Optional[str] = None
+    investigator_phone: Optional[str] = None
+    irb_name: Optional[str] = None
+    irb_address: Optional[str] = None
+    clinical_lab_name: Optional[str] = None
+    clinical_lab_address: Optional[str] = None
+    research_facility_name: Optional[str] = None
+    research_facility_address: Optional[str] = None
+    subinvestigators: Optional[str] = None
+    contact_name: Optional[str] = None
+    contact_email: Optional[str] = None
+    contact_phone: Optional[str] = None
+    authorizer_name: Optional[str] = None
+    authorizer_title: Optional[str] = None
+    certifier_name: Optional[str] = None
+    certifier_title: Optional[str] = None
+    certifier_address: Optional[str] = None
+    certifier_email: Optional[str] = None
+    certifier_phone: Optional[str] = None
+    certifier_fax: Optional[str] = None
+    serial_number: Optional[str] = None
 
 # Create FastAPI app
 app = FastAPI(
-    title="FDA IND Forms Automation API",
-    description="API for generating FDA IND submission forms",
+    title="IND Automation API",
+    description="API for generating FDA IND application forms and related documents",
     version="2.0.0"
 )
 
-# Enable CORS
+# Configure CORS to allow requests from the main application
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, replace with specific frontend origin
+    allow_origins=["*"],  # In production, this should be restricted
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Define data models for form generation
-class Form1571Data(BaseModel):
-    sponsor_name: str
-    IND_number: Optional[str] = "Pending"
-    drug_name: str
-    phase1_checked: Optional[str] = "☐"
-    phase2_checked: Optional[str] = "☐"
-    phase3_checked: Optional[str] = "☐"
-    other_phase_checked: Optional[str] = "☐"
-    other_phase_text: Optional[str] = ""
-    protocol_number: str
-    submission_date: str
-
-class Form1572Data(BaseModel):
-    principal_investigator_name: str
-    investigator_address: str
-    protocol_number: str
-    drug_name: str
-    phase: str
-    submission_date: str
-
-class Form3674Data(BaseModel):
-    sponsor_name: str
-    drug_name: str
-    nct_number: str
-    study_registration_statement: str
-    certifier_name: str
-    submission_date: str
-
-class CoverLetterData(BaseModel):
-    sponsor_name: str
-    sponsor_address: str
-    submission_date: str
-    IND_number: Optional[str] = "Pending"
-    drug_name: str
-    indication: str
-    serial_number: Optional[str] = "0001"
-    contact_name: str
-    contact_phone: str
-    contact_email: str
-
-# API endpoints for health check
-@app.get("/health")
-async def health_check():
-    """Health check endpoint for service monitoring"""
-    return {"status": "healthy", "service": "ind-automation-api"}
-
-# API endpoints for form generation
-@app.post("/generate/form1571")
-async def generate_form1571(data: Form1571Data):
-    """Generate FDA Form 1571 (IND Application)"""
-    try:
-        logger.info(f"Generating Form 1571 for {data.drug_name}")
-        
-        # Convert data model to dict
-        data_dict = data.dict()
-        
-        # Generate the document
-        docx_bytes = render_form1571(data_dict)
-        
-        if not docx_bytes:
-            raise HTTPException(status_code=500, detail="Failed to generate Form 1571")
-        
-        # Return the document as a downloadable file
-        return StreamingResponse(
-            docx_bytes,
-            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            headers={"Content-Disposition": f"attachment; filename=FDA_Form_1571_{data.drug_name.replace(' ', '_')}.docx"}
-        )
-    except Exception as e:
-        logger.error(f"Error generating Form 1571: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to generate Form 1571: {str(e)}")
-
-@app.post("/generate/form1572")
-async def generate_form1572(data: Form1572Data):
-    """Generate FDA Form 1572 (Statement of Investigator)"""
-    try:
-        logger.info(f"Generating Form 1572 for {data.principal_investigator_name}")
-        
-        # Convert data model to dict
-        data_dict = data.dict()
-        
-        # Generate the document
-        docx_bytes = render_form1572(data_dict)
-        
-        if not docx_bytes:
-            raise HTTPException(status_code=500, detail="Failed to generate Form 1572")
-        
-        # Return the document as a downloadable file
-        return StreamingResponse(
-            docx_bytes,
-            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            headers={"Content-Disposition": f"attachment; filename=FDA_Form_1572_{data.principal_investigator_name.replace(' ', '_')}.docx"}
-        )
-    except Exception as e:
-        logger.error(f"Error generating Form 1572: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to generate Form 1572: {str(e)}")
-
-@app.post("/generate/form3674")
-async def generate_form3674(data: Form3674Data):
-    """Generate FDA Form 3674 (ClinicalTrials.gov Certification)"""
-    try:
-        logger.info(f"Generating Form 3674 for {data.drug_name}")
-        
-        # Convert data model to dict
-        data_dict = data.dict()
-        
-        # Generate the document
-        docx_bytes = render_form3674(data_dict)
-        
-        if not docx_bytes:
-            raise HTTPException(status_code=500, detail="Failed to generate Form 3674")
-        
-        # Return the document as a downloadable file
-        return StreamingResponse(
-            docx_bytes,
-            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            headers={"Content-Disposition": f"attachment; filename=FDA_Form_3674_{data.drug_name.replace(' ', '_')}.docx"}
-        )
-    except Exception as e:
-        logger.error(f"Error generating Form 3674: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to generate Form 3674: {str(e)}")
-
-@app.post("/generate/cover-letter")
-async def generate_cover_letter(data: CoverLetterData):
-    """Generate IND Cover Letter"""
-    try:
-        logger.info(f"Generating Cover Letter for {data.drug_name}")
-        
-        # Convert data model to dict
-        data_dict = data.dict()
-        
-        # Generate the document
-        docx_bytes = render_cover_letter(data_dict)
-        
-        if not docx_bytes:
-            raise HTTPException(status_code=500, detail="Failed to generate Cover Letter")
-        
-        # Return the document as a downloadable file
-        return StreamingResponse(
-            docx_bytes,
-            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            headers={"Content-Disposition": f"attachment; filename=IND_Cover_Letter_{data.drug_name.replace(' ', '_')}.docx"}
-        )
-    except Exception as e:
-        logger.error(f"Error generating Cover Letter: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to generate Cover Letter: {str(e)}")
-
-@app.post("/generate/all-forms")
-async def generate_all_forms(
-    form1571: Form1571Data,
-    form1572: Form1572Data,
-    form3674: Form3674Data,
-    cover_letter: CoverLetterData
-):
-    """
-    Generate all four IND submission forms as a batch
-    (This endpoint would typically need to return a zip file with all documents.
-    For simplicity, this is left as a stub that can be implemented as needed.)
-    """
+# Root endpoint
+@app.get("/")
+def read_root():
+    """Root endpoint providing service information"""
     return {
-        "status": "success",
-        "message": "Batch form generation endpoint placeholder. Individual form endpoints are available."
+        "service": "IND Automation API",
+        "version": "2.0.0",
+        "status": "running",
+        "endpoints": {
+            "/health": "Health check endpoint",
+            "/projects": "List available projects",
+            "/generate/form1571": "Generate FDA Form 1571",
+            "/generate/form1572": "Generate FDA Form 1572",
+            "/generate/form3674": "Generate FDA Form 3674",
+            "/generate/cover-letter": "Generate Cover Letter",
+            "/generate/module3": "Generate Module 3 document"
+        }
     }
 
-# Benchling data integration endpoint stub
-class BenchlingCredentials(BaseModel):
-    api_key: str
-    tenant_id: str
+# Health check endpoint
+@app.get("/health")
+def health_check():
+    """Health check endpoint"""
+    return {"status": "healthy", "timestamp": datetime.now().isoformat()}
 
-@app.post("/import/benchling-data")
-async def import_benchling_data(credentials: BenchlingCredentials):
-    """
-    Import data from Benchling LIMS
-    This is a stub that would be implemented to pull real data from Benchling
-    """
+# List projects endpoint (stub for now)
+@app.get("/projects")
+def list_projects():
+    """List available projects from Benchling (stub)"""
+    # In the future, this will connect to Benchling API
+    sample_projects = [
+        {"id": "PRJ001", "name": "Oncology Drug X Phase I"},
+        {"id": "PRJ002", "name": "Cardiovascular Drug Y Phase II"},
+        {"id": "PRJ003", "name": "Immunotherapy Z Phase I/II"}
+    ]
+    return {"projects": sample_projects}
+
+# Generate Form 1571
+@app.post("/generate/form1571")
+def generate_1571(data: ProjectMetadata):
+    """Generate FDA Form 1571 (Investigational New Drug Application)"""
     try:
-        # This would typically call a real Benchling API client
-        return {
-            "status": "success",
-            "message": "Benchling data import placeholder. This would connect to Benchling API.",
-            "data": {
-                "compounds": [
-                    {"id": "placeholder-1", "name": "Test Compound 1"},
-                    {"id": "placeholder-2", "name": "Test Compound 2"}
-                ]
-            }
-        }
+        # Generate the document using the template
+        document_buffer = generate_form_1571(data.dict(exclude_none=True))
+        
+        # Return the document as a file download
+        return StreamingResponse(
+            document_buffer,
+            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            headers={"Content-Disposition": f"attachment; filename=Form1571_{datetime.now().strftime('%Y%m%d')}.docx"}
+        )
     except Exception as e:
-        logger.error(f"Error importing Benchling data: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to import Benchling data: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error generating Form 1571: {str(e)}")
 
-# Run the app with Uvicorn when executed directly
+# Generate Form 1572
+@app.post("/generate/form1572")
+def generate_1572(data: ProjectMetadata):
+    """Generate FDA Form 1572 (Statement of Investigator)"""
+    try:
+        # Generate the document using the template
+        document_buffer = generate_form_1572(data.dict(exclude_none=True))
+        
+        # Return the document as a file download
+        return StreamingResponse(
+            document_buffer,
+            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            headers={"Content-Disposition": f"attachment; filename=Form1572_{datetime.now().strftime('%Y%m%d')}.docx"}
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error generating Form 1572: {str(e)}")
+
+# Generate Form 3674
+@app.post("/generate/form3674")
+def generate_3674(data: ProjectMetadata):
+    """Generate FDA Form 3674 (Certification of Compliance with ClinicalTrials.gov)"""
+    try:
+        # Generate the document using the template
+        document_buffer = generate_form_3674(data.dict(exclude_none=True))
+        
+        # Return the document as a file download
+        return StreamingResponse(
+            document_buffer,
+            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            headers={"Content-Disposition": f"attachment; filename=Form3674_{datetime.now().strftime('%Y%m%d')}.docx"}
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error generating Form 3674: {str(e)}")
+
+# Generate Cover Letter
+@app.post("/generate/cover-letter")
+def generate_letter(data: ProjectMetadata):
+    """Generate a cover letter for IND submission"""
+    try:
+        # Generate the document using the template
+        document_buffer = generate_cover_letter(data.dict(exclude_none=True))
+        
+        # Return the document as a file download
+        return StreamingResponse(
+            document_buffer,
+            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            headers={"Content-Disposition": f"attachment; filename=CoverLetter_{datetime.now().strftime('%Y%m%d')}.docx"}
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error generating cover letter: {str(e)}")
+
+# Generate Module 3 document
+@app.post("/generate/module3")
+def generate_module3(data: Module3Data):
+    """Generate Module 3 (Chemistry, Manufacturing, and Controls) document"""
+    try:
+        # This is a stub for now - will be implemented later
+        # Create a simple Word document as a placeholder
+        from docx import Document
+        doc = Document()
+        doc.add_heading('Module 3: Chemistry, Manufacturing, and Controls', 0)
+        doc.add_heading('Drug Substance Information', level=1)
+        doc.add_paragraph(f'Drug Name: {data.drug_name}')
+        doc.add_paragraph(f'Manufacturing Site: {data.manufacturing_site}')
+        doc.add_paragraph(f'Batch Number: {data.batch_number}')
+        
+        doc.add_heading('Specifications', level=2)
+        table = doc.add_table(rows=1, cols=3)
+        table.style = 'Table Grid'
+        hdr_cells = table.rows[0].cells
+        hdr_cells[0].text = 'Parameter'
+        hdr_cells[1].text = 'Limit'
+        hdr_cells[2].text = 'Result'
+        
+        for spec in data.specifications:
+            row_cells = table.add_row().cells
+            row_cells[0].text = spec.parameter
+            row_cells[1].text = spec.limit
+            row_cells[2].text = spec.result
+        
+        doc.add_heading('Stability Data', level=2)
+        table = doc.add_table(rows=1, cols=2)
+        table.style = 'Table Grid'
+        hdr_cells = table.rows[0].cells
+        hdr_cells[0].text = 'Timepoint'
+        hdr_cells[1].text = 'Result'
+        
+        for stability in data.stability_data:
+            row_cells = table.add_row().cells
+            row_cells[0].text = stability.timepoint
+            row_cells[1].text = stability.result
+        
+        # Save the document to a BytesIO object
+        document_buffer = BytesIO()
+        doc.save(document_buffer)
+        document_buffer.seek(0)
+        
+        # Return the document as a file download
+        return StreamingResponse(
+            document_buffer,
+            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            headers={"Content-Disposition": f"attachment; filename=Module3_{datetime.now().strftime('%Y%m%d')}.docx"}
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error generating Module 3 document: {str(e)}")
+
+# Direct run for debugging
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8001, reload=True)
+    uvicorn.run(app, host="0.0.0.0", port=8001)
