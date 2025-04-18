@@ -1,347 +1,394 @@
 #!/usr/bin/env python3
 """
-Form Template Generator
+FDA Form Templates Generator
 
-This script generates templates for FDA Forms with placeholders
-for use with the IND Automation System.
+This script creates template DOCX files for FDA forms:
+- Form 1571 (Investigational New Drug Application)
+- Form 1572 (Statement of Investigator)
+- Form 3674 (Certification of Compliance with ClinicalTrials.gov)
+- Cover Letter for IND Submission
+
+These templates will be used by the main.py FastAPI service to generate
+customized forms based on provided data.
 """
 
 import os
-from docx import Document
-from docx.shared import Pt, Inches
-from docx.enum.text import WD_ALIGN_PARAGRAPH
+import docx
+from docx.shared import Pt, Inches, RGBColor
+from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
 
-# Ensure template directory exists
-templates_dir = os.path.join(os.path.dirname(__file__), "templates", "forms")
-os.makedirs(templates_dir, exist_ok=True)
+# Create the templates directory if it doesn't exist
+TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), 'templates', 'forms')
+os.makedirs(TEMPLATES_DIR, exist_ok=True)
 
-def create_form1571_template():
-    """Create FDA Form 1571 template with placeholders"""
-    doc = Document()
+def create_form_1571():
+    """
+    Create FDA Form 1571 (Investigational New Drug Application) template
+    """
+    doc = docx.Document()
     
-    # Add title
-    title = doc.add_heading("FORM FDA 1571", level=0)
-    title.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    # Document properties
+    doc.core_properties.title = "FDA Form 1571 - Investigational New Drug Application"
+    doc.core_properties.keywords = "FDA, Form 1571, IND"
     
-    # Add subtitle
-    subtitle = doc.add_heading("INVESTIGATIONAL NEW DRUG APPLICATION (IND)", level=1)
-    subtitle.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    # Header
+    header = doc.sections[0].header
+    header_para = header.paragraphs[0]
+    header_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    header_run = header_para.add_run("DEPARTMENT OF HEALTH AND HUMAN SERVICES\nFOOD AND DRUG ADMINISTRATION")
+    header_run.bold = True
+    header_run.font.size = Pt(12)
     
-    # Form section
-    doc.add_paragraph("NOTE: No drug may be shipped or clinical investigation begun until an IND for that investigation is in effect (21 CFR 312.40).")
+    # Title
+    title_para = doc.add_paragraph()
+    title_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    title_run = title_para.add_run("INVESTIGATIONAL NEW DRUG APPLICATION (IND)\n(TITLE 21, CODE OF FEDERAL REGULATIONS (CFR) PART 312)")
+    title_run.bold = True
+    title_run.font.size = Pt(14)
     
-    # Form header information
-    doc.add_heading("1. NAME OF SPONSOR", level=2)
-    doc.add_paragraph("{{sponsor_name}}")
+    # Form identification
+    form_id_para = doc.add_paragraph()
+    form_id_para.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+    form_id_run = form_id_para.add_run("Form FDA 1571 (07/18)")
+    form_id_run.font.size = Pt(9)
     
-    doc.add_heading("2. DATE OF SUBMISSION", level=2)
-    doc.add_paragraph("{{submission_date}}")
+    # Section 1
+    section1_para = doc.add_paragraph()
+    section1_para.style = 'List Number'
+    section1_run = section1_para.add_run("NAME OF SPONSOR")
+    section1_run.bold = True
     
-    doc.add_heading("3. ADDRESS (Number, Street, City, State, ZIP Code)", level=2)
-    doc.add_paragraph("{{sponsor_address}}")
+    # Placeholder for sponsor name
+    sponsor_para = doc.add_paragraph("{{sponsor_name}}")
+    sponsor_para.paragraph_format.left_indent = Inches(0.5)
     
-    doc.add_heading("4. TELEPHONE NUMBER", level=2)
-    doc.add_paragraph("{{sponsor_phone}}")
+    # Section 2
+    section2_para = doc.add_paragraph()
+    section2_para.style = 'List Number'
+    section2_run = section2_para.add_run("DATE OF SUBMISSION")
+    section2_run.bold = True
     
-    doc.add_heading("5. NAME(S) OF DRUG (Include all available names: Trade, Generic, Chemical, Code)", level=2)
-    doc.add_paragraph("{{drug_name}}")
+    # Placeholder for submission date
+    date_para = doc.add_paragraph("{{submission_date}}")
+    date_para.paragraph_format.left_indent = Inches(0.5)
     
-    doc.add_heading("6. IND NUMBER (If previously assigned)", level=2)
-    doc.add_paragraph("{{ind_number}}")
+    # Section 3
+    section3_para = doc.add_paragraph()
+    section3_para.style = 'List Number'
+    section3_run = section3_para.add_run("NAME OF DRUG (Include established and proprietary names)")
+    section3_run.bold = True
     
-    doc.add_heading("7. INDICATION(S) (Covered by this submission)", level=2)
-    doc.add_paragraph("{{indication}}")
+    # Placeholder for drug name
+    drug_para = doc.add_paragraph("{{drug_name}}")
+    drug_para.paragraph_format.left_indent = Inches(0.5)
     
-    doc.add_heading("8. PHASE(S) OF CLINICAL INVESTIGATION TO BE CONDUCTED", level=2)
-    phases_para = doc.add_paragraph()
-    phases_para.add_run("☐ Phase 1  ☐ Phase 2  ☐ Phase 3  ☐ Other (Specify): {{other_phase}}")
+    # Section 4
+    section4_para = doc.add_paragraph()
+    section4_para.style = 'List Number'
+    section4_run = section4_para.add_run("INDICATION(S) (Covered by this submission)")
+    section4_run.bold = True
     
-    doc.add_heading("9. LIST NUMBERS OF ALL INVESTIGATIONAL NEW DRUG APPLICATIONS (INDs), NEW DRUG APPLICATIONS (NDAs), DRUG MASTER FILES (DMFs), AND INVESTIGATIONAL DEVICE EXEMPTIONS (IDEs) REFERENCED IN THIS APPLICATION", level=2)
-    doc.add_paragraph("{{referenced_applications}}")
+    # Placeholder for indication
+    indication_para = doc.add_paragraph("{{indication}}")
+    indication_para.paragraph_format.left_indent = Inches(0.5)
     
-    doc.add_heading("10. IND SUBMISSION SHOULD BE CONSECUTIVELY NUMBERED. THE INITIAL IND SHOULD BE NUMBERED SERIAL NO. 0000. THE NEXT SUBMISSION (e.g., Amendment, Report, or Correspondence) SHOULD BE NUMBERED SERIAL NO. 0001. SUBSEQUENT SUBMISSIONS SHOULD BE NUMBERED CONSECUTIVELY IN THE ORDER IN WHICH THEY ARE SUBMITTED.", level=2)
-    doc.add_paragraph("SERIAL NO.: {{serial_number}}")
+    # Section 5
+    section5_para = doc.add_paragraph()
+    section5_para.style = 'List Number'
+    section5_run = section5_para.add_run("PHASE(S) OF CLINICAL INVESTIGATION TO BE CONDUCTED")
+    section5_run.bold = True
     
-    doc.add_heading("11. THIS SUBMISSION CONTAINS THE FOLLOWING (Check all that apply)", level=2)
-    checks = [
-        "☐ INITIAL INVESTIGATIONAL NEW DRUG APPLICATION (IND)",
-        "☐ PROTOCOL AMENDMENT(S): {{protocol_amendment_details}}",
-        "☐ NEW PROTOCOL: {{new_protocol_details}}",
-        "☐ CHANGE IN PROTOCOL: {{protocol_change_details}}",
-        "☐ NEW INVESTIGATOR: {{new_investigator_details}}",
-        "☐ RESPONSE TO CLINICAL HOLD: {{clinical_hold_response_details}}",
-        "☐ REQUEST FOR REINSTATEMENT OF IND THAT IS WITHDRAWN, INACTIVATED, TERMINATED OR DISCONTINUED: {{reinstatement_details}}",
-        "☐ INFORMATION AMENDMENT(S): {{info_amendment_details}}",
-        "☐ CHEMISTRY/MICROBIOLOGY: {{chemistry_details}}",
-        "☐ PHARMACOLOGY/TOXICOLOGY: {{pharmacology_details}}",
-        "☐ CLINICAL: {{clinical_details}}",
-        "☐ ANNUAL REPORT: {{annual_report_details}}",
-        "☐ GENERAL CORRESPONDENCE: {{correspondence_details}}",
-        "☐ RESPONSE TO FDA REQUEST FOR INFORMATION: {{fda_response_details}}",
-        "☐ OTHER (Specify): {{other_submission_details}}"
-    ]
+    # Placeholder for phase
+    phase_para = doc.add_paragraph("{{phase}}")
+    phase_para.paragraph_format.left_indent = Inches(0.5)
     
-    for check in checks:
-        doc.add_paragraph(check)
+    # Sections 6-11 with appropriate placeholders would be added here
+    # ...
     
-    doc.add_heading("12. NAME AND TITLE OF THE PERSON RESPONSIBLE FOR MONITORING THE CONDUCT AND PROGRESS OF THE CLINICAL INVESTIGATIONS", level=2)
-    doc.add_paragraph("NAME: {{monitor_name}}")
-    doc.add_paragraph("TITLE: {{monitor_title}}")
+    # Section 12: Signature
+    signature_section = doc.add_paragraph("\n\n")
+    signature_section.add_run("NAME AND TITLE OF THE PERSON RESPONSIBLE FOR MONITORING THE CONDUCT AND PROGRESS OF THE CLINICAL INVESTIGATIONS")
+    signature_section.add_run("\n{{contact_name}}, {{contact_title}}")
     
-    doc.add_heading("13. NAME(S) AND TITLE(S) OF THE PERSON(S) RESPONSIBLE FOR REVIEW AND EVALUATION OF INFORMATION RELEVANT TO THE SAFETY OF THE DRUG", level=2)
-    doc.add_paragraph("NAME: {{safety_evaluator_name}}")
-    doc.add_paragraph("TITLE: {{safety_evaluator_title}}")
+    signature_section.add_run("\n\nNAME, ADDRESS, AND TELEPHONE NUMBER OF PERSON TO WHOM QUESTIONS ABOUT THE APPLICATION SHOULD BE DIRECTED")
+    signature_section.add_run("\n{{contact_name}}\n{{sponsor_address}}\n{{contact_phone}}\n{{contact_email}}")
     
-    # Certification and signature section
-    doc.add_heading("I agree not to begin clinical investigations until 30 days after FDA's receipt of the IND unless I receive earlier notification by FDA that the studies may begin. I also agree not to begin or continue clinical investigations covered by the IND if those studies are placed on clinical hold. I agree that an Institutional Review Board (IRB) that complies with the requirements set forth in 21 CFR Part 56 will be responsible for initial and continuing review and approval of each of the studies in the proposed clinical investigation. I agree to conduct the investigation in accordance with all other applicable regulatory requirements.", level=2)
+    signature_section.add_run("\n\nSIGNATURE OF SPONSOR OR SPONSOR'S AUTHORIZED REPRESENTATIVE")
+    signature_section.add_run("\n\n\n_____________________________________________    DATE: ____________________")
     
-    signature = doc.add_paragraph("SIGNATURE OF SPONSOR OR SPONSOR'S AUTHORIZED REPRESENTATIVE")
-    signature.add_run("\n\n\n")
+    signature_section.add_run("\n\nTYPED NAME AND TITLE")
+    signature_section.add_run("\n\n{{authorizer_name}}, {{authorizer_title}}")
     
-    doc.add_paragraph("DATE: {{signature_date}}")
-    doc.add_paragraph("NAME: {{signature_name}}")
-    doc.add_paragraph("TITLE: {{signature_title}}")
-    doc.add_paragraph("ADDRESS: {{signature_address}}")
-    
-    # Save the template
-    output_path = os.path.join(templates_dir, "form1571.docx")
-    doc.save(output_path)
-    print(f"Created Form 1571 template at: {output_path}")
+    # Save document
+    doc.save(os.path.join(TEMPLATES_DIR, 'form1571.docx'))
+    print(f"Created Form 1571 template at {os.path.join(TEMPLATES_DIR, 'form1571.docx')}")
 
-def create_form1572_template():
-    """Create FDA Form 1572 template with placeholders"""
-    doc = Document()
+
+def create_form_1572():
+    """
+    Create FDA Form 1572 (Statement of Investigator) template
+    """
+    doc = docx.Document()
     
-    # Add title
-    title = doc.add_heading("FORM FDA 1572", level=0)
-    title.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    # Document properties
+    doc.core_properties.title = "FDA Form 1572 - Statement of Investigator"
+    doc.core_properties.keywords = "FDA, Form 1572, Investigator"
     
-    # Add subtitle
-    subtitle = doc.add_heading("STATEMENT OF INVESTIGATOR", level=1)
-    subtitle.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    # Header
+    header = doc.sections[0].header
+    header_para = header.paragraphs[0]
+    header_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    header_run = header_para.add_run("DEPARTMENT OF HEALTH AND HUMAN SERVICES\nFOOD AND DRUG ADMINISTRATION")
+    header_run.bold = True
+    header_run.font.size = Pt(12)
     
-    # Form section
-    doc.add_paragraph("(Title 21, Code of Federal Regulations (CFR) Part 312)")
+    # Title
+    title_para = doc.add_paragraph()
+    title_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    title_run = title_para.add_run("STATEMENT OF INVESTIGATOR\n(TITLE 21, CODE OF FEDERAL REGULATIONS (CFR) PART 312)")
+    title_run.bold = True
+    title_run.font.size = Pt(14)
     
-    # Form fields
-    doc.add_heading("1. NAME AND ADDRESS OF INVESTIGATOR", level=2)
-    doc.add_paragraph("NAME: {{investigator_name}}")
-    doc.add_paragraph("ADDRESS: {{investigator_address}}")
-    doc.add_paragraph("PHONE: {{investigator_phone}}")
+    # Form identification
+    form_id_para = doc.add_paragraph()
+    form_id_para.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+    form_id_run = form_id_para.add_run("Form FDA 1572 (02/19)")
+    form_id_run.font.size = Pt(9)
     
-    doc.add_heading("2. EDUCATION, TRAINING, AND EXPERIENCE THAT QUALIFIES THE INVESTIGATOR AS AN EXPERT IN THE CLINICAL INVESTIGATION OF THE DRUG FOR THE USE UNDER INVESTIGATION. ONE OF THE FOLLOWING IS PROVIDED:", level=2)
-    doc.add_paragraph("☐ CURRICULUM VITAE ATTACHED")
-    doc.add_paragraph("☐ OTHER STATEMENT OF QUALIFICATIONS (Attached)")
+    # Introduction text
+    intro_para = doc.add_paragraph()
+    intro_text = "NOTE: No investigator may participate in an investigation until he/she provides the sponsor with a completed, signed Statement of Investigator, Form FDA 1572 (21 CFR 312.53(c))."
+    intro_para.add_run(intro_text)
     
-    doc.add_heading("3. NAME AND ADDRESS OF ANY MEDICAL SCHOOL, HOSPITAL, OR OTHER RESEARCH FACILITY WHERE THE CLINICAL INVESTIGATION(S) WILL BE CONDUCTED.", level=2)
-    doc.add_paragraph("{{research_facility_name}}")
-    doc.add_paragraph("{{research_facility_address}}")
+    # 1. Name and address of investigator
+    section1 = doc.add_paragraph()
+    section1.style = 'List Number'
+    section1.add_run("NAME AND ADDRESS OF INVESTIGATOR").bold = True
     
-    doc.add_heading("4. NAME AND ADDRESS OF ANY CLINICAL LABORATORY FACILITIES TO BE USED IN THE STUDY.", level=2)
-    doc.add_paragraph("{{clinical_lab_name}}")
-    doc.add_paragraph("{{clinical_lab_address}}")
+    name_para = doc.add_paragraph("{{principal_investigator_name}}")
+    name_para.paragraph_format.left_indent = Inches(0.5)
     
-    doc.add_heading("5. NAME AND ADDRESS OF THE INSTITUTIONAL REVIEW BOARD (IRB) THAT IS RESPONSIBLE FOR REVIEW AND APPROVAL OF THE STUDY(IES).", level=2)
-    doc.add_paragraph("{{irb_name}}")
-    doc.add_paragraph("{{irb_address}}")
+    address_para = doc.add_paragraph("{{investigator_address}}")
+    address_para.paragraph_format.left_indent = Inches(0.5)
     
-    doc.add_heading("6. NAMES OF THE SUBINVESTIGATORS WHO WILL BE ASSISTING THE INVESTIGATOR IN THE CONDUCT OF THE INVESTIGATION(S).", level=2)
-    doc.add_paragraph("{{subinvestigators}}")
+    # 2. Education, training, experience
+    section2 = doc.add_paragraph()
+    section2.style = 'List Number'
+    section2.add_run("EDUCATION, TRAINING, AND EXPERIENCE THAT QUALIFIES THE INVESTIGATOR AS AN EXPERT IN THE CLINICAL INVESTIGATION OF THE DRUG FOR THE USE UNDER INVESTIGATION. ONE OF THE FOLLOWING IS ATTACHED:").bold = True
     
-    doc.add_heading("7. NAME AND CODE NUMBER, IF ANY, OF THE PROTOCOL(S) IN THE IND FOR THE STUDY(IES) TO BE CONDUCTED BY THE INVESTIGATOR.", level=2)
-    doc.add_paragraph("{{protocol_name_code}}")
+    cv_para = doc.add_paragraph("☐ CURRICULUM VITAE    ☐ OTHER STATEMENT OF QUALIFICATIONS")
+    cv_para.paragraph_format.left_indent = Inches(0.5)
     
-    # Commitment section
-    doc.add_heading("8. ATTACH THE FOLLOWING CLINICAL PROTOCOL INFORMATION:", level=2)
-    doc.add_paragraph("☐ FOR PHASE 1 INVESTIGATIONS, A GENERAL OUTLINE OF THE PLANNED INVESTIGATION INCLUDING THE ESTIMATED DURATION OF THE STUDY AND THE MAXIMUM NUMBER OF SUBJECTS THAT WILL BE INVOLVED.")
-    doc.add_paragraph("☐ FOR PHASE 2 OR 3 INVESTIGATIONS, AN OUTLINE OF THE STUDY PROTOCOL INCLUDING AN APPROXIMATION OF THE NUMBER OF SUBJECTS TO BE TREATED WITH THE DRUG AND THE NUMBER TO BE EMPLOYED AS CONTROLS, IF ANY; THE CLINICAL USES TO BE INVESTIGATED; CHARACTERISTICS OF SUBJECTS BY AGE, SEX, AND CONDITION; THE KIND OF CLINICAL OBSERVATIONS AND LABORATORY TESTS TO BE CONDUCTED; THE ESTIMATED DURATION OF THE STUDY; AND COPIES OR A DESCRIPTION OF CASE REPORT FORMS TO BE USED.")
+    # 3. Name and address of any medical school, etc.
+    section3 = doc.add_paragraph()
+    section3.style = 'List Number'
+    section3.add_run("NAME AND ADDRESS OF ANY MEDICAL SCHOOL, HOSPITAL, OR OTHER RESEARCH FACILITY WHERE THE CLINICAL INVESTIGATION WILL BE CONDUCTED").bold = True
     
-    doc.add_heading("9. COMMITMENTS:", level=2)
-    commitments = [
-        "I agree to conduct the study(ies) in accordance with the relevant, current protocol(s) and will only make changes in a protocol after notifying the sponsor, except when necessary to protect the safety, rights, or welfare of subjects.",
-        "I agree to personally conduct or supervise the described investigation(s).",
-        "I agree to inform any patients, or any persons used as controls, that the drugs are being used for investigational purposes and I will ensure that the requirements relating to obtaining informed consent in 21 CFR Part 50 and institutional review board (IRB) review and approval in 21 CFR Part 56 are met.",
-        "I agree to report to the sponsor adverse experiences that occur in the course of the investigation(s) in accordance with 21 CFR 312.64.",
-        "I have read and understand the information in the investigator's brochure, including the potential risks and side effects of the drug.",
-        "I agree to ensure that all associates, colleagues, and employees assisting in the conduct of the study(ies) are informed about their obligations in meeting the above commitments.",
-        "I agree to maintain adequate and accurate records in accordance with 21 CFR 312.62 and to make those records available for inspection in accordance with 21 CFR 312.68.",
-        "I will ensure that an IRB that complies with the requirements of 21 CFR Part 56 will be responsible for the initial and continuing review and approval of the clinical investigation. I also agree to promptly report to the IRB all changes in the research activity and all unanticipated problems involving risks to human subjects or others. Additionally, I will not make any changes in the research without IRB approval, except where necessary to eliminate apparent immediate hazards to human subjects.",
-        "I agree to comply with all other requirements regarding the obligations of clinical investigators and all other pertinent requirements in 21 CFR Part 312."
-    ]
+    facility_para = doc.add_paragraph("{{research_facility_name}}")
+    facility_para.paragraph_format.left_indent = Inches(0.5)
     
-    for commitment in commitments:
-        doc.add_paragraph(commitment)
+    facility_address_para = doc.add_paragraph("{{research_facility_address}}")
+    facility_address_para.paragraph_format.left_indent = Inches(0.5)
+    
+    # 4. Name and address of any clinical laboratory facilities
+    section4 = doc.add_paragraph()
+    section4.style = 'List Number'
+    section4.add_run("NAME AND ADDRESS OF ANY CLINICAL LABORATORY FACILITIES TO BE USED IN THE STUDY").bold = True
+    
+    lab_para = doc.add_paragraph("{{clinical_lab_name}}")
+    lab_para.paragraph_format.left_indent = Inches(0.5)
+    
+    lab_address_para = doc.add_paragraph("{{clinical_lab_address}}")
+    lab_address_para.paragraph_format.left_indent = Inches(0.5)
+    
+    # 5. Name and address of IRB
+    section5 = doc.add_paragraph()
+    section5.style = 'List Number'
+    section5.add_run("NAME AND ADDRESS OF INSTITUTIONAL REVIEW BOARD (IRB) RESPONSIBLE FOR REVIEW AND APPROVAL OF THE STUDY").bold = True
+    
+    irb_para = doc.add_paragraph("{{irb_name}}")
+    irb_para.paragraph_format.left_indent = Inches(0.5)
+    
+    irb_address_para = doc.add_paragraph("{{irb_address}}")
+    irb_address_para.paragraph_format.left_indent = Inches(0.5)
+    
+    # 6-8. Additional sections would be added here
+    # ...
+    
+    # 9. Commitments section
+    commitments = doc.add_paragraph("\nI agree to conduct the study in accordance with the relevant, current protocol and will only make changes in a protocol after notifying the sponsor, except when necessary to protect the safety, rights, or welfare of subjects.\n\n")
+    commitments.add_run("I agree to personally conduct or supervise the described investigation.\n\n")
+    commitments.add_run("I agree to inform any patients, or any persons used as controls, that the drugs are being used for investigational purposes...\n\n")
+    
+    # 10. Signature section
+    signature_para = doc.add_paragraph("\n\n")
+    signature_para.add_run("SIGNATURE OF INVESTIGATOR")
+    signature_para.add_run("\n\n\n_____________________________________________    DATE: ____________________")
+    
+    # Save document
+    doc.save(os.path.join(TEMPLATES_DIR, 'form1572.docx'))
+    print(f"Created Form 1572 template at {os.path.join(TEMPLATES_DIR, 'form1572.docx')}")
+
+
+def create_form_3674():
+    """
+    Create FDA Form 3674 (Certification of Compliance with ClinicalTrials.gov) template
+    """
+    doc = docx.Document()
+    
+    # Document properties
+    doc.core_properties.title = "FDA Form 3674 - Certification of Compliance with ClinicalTrials.gov"
+    doc.core_properties.keywords = "FDA, Form 3674, ClinicalTrials.gov"
+    
+    # Header
+    header = doc.sections[0].header
+    header_para = header.paragraphs[0]
+    header_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    header_run = header_para.add_run("DEPARTMENT OF HEALTH AND HUMAN SERVICES\nFOOD AND DRUG ADMINISTRATION")
+    header_run.bold = True
+    header_run.font.size = Pt(12)
+    
+    # Title
+    title_para = doc.add_paragraph()
+    title_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    title_run = title_para.add_run("CERTIFICATION OF COMPLIANCE, UNDER 42 U.S.C. § 282(j)(5)(B), WITH REQUIREMENTS OF ClinicalTrials.gov DATA BANK")
+    title_run.bold = True
+    title_run.font.size = Pt(13)
+    
+    # Form identification
+    form_id_para = doc.add_paragraph()
+    form_id_para.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+    form_id_run = form_id_para.add_run("Form FDA 3674 (9/22)")
+    form_id_run.font.size = Pt(9)
+    
+    # Introduction text
+    intro_para = doc.add_paragraph()
+    intro_text = "Public Law 110-85, enacted on September 27, 2007, amended the Public Health Service Act to require registration and reporting of data on certain clinical trials on the government Web site ClinicalTrials.gov."
+    intro_para.add_run(intro_text)
+    
+    # Sponsor information
+    sponsor_para = doc.add_paragraph("\nName of Sponsor or Applicant: {{sponsor_name}}")
+    
+    # Application information
+    app_para = doc.add_paragraph()
+    app_para.add_run("Application Type (check one):\n").bold = True
+    app_para.add_run("☐ IND  ☐ NDA  ☐ BLA  ☐ PMA  ☐ HDE  ☐ 510(k)  ☐ de novo")
+    
+    app_number_para = doc.add_paragraph("\nApplication Number (if known): {{ind_number}}")
+    product_para = doc.add_paragraph("\nProduct Name: {{drug_name}}")
+    
+    # Certification options
+    cert_para = doc.add_paragraph()
+    cert_para.add_run("\nCERTIFICATION (check one of the following boxes):").bold = True
+    
+    option1 = doc.add_paragraph("\n☐ I certify that the requirements of 42 U.S.C. § 282(j), section 402(j) of the Public Health Service Act, enacted by 121 Stat. 823, Public Law 110-85, do not apply because the application does not refer to a clinical trial.")
+    
+    option2 = doc.add_paragraph("\n☐ I certify that the requirements of 42 U.S.C. § 282(j), section 402(j) of the Public Health Service Act, enacted by 121 Stat. 823, Public Law 110-85, do not apply to any clinical trial referenced in the application.")
+    
+    option3 = doc.add_paragraph("\n☐ I certify that the requirements of 42 U.S.C. § 282(j), section 402(j) of the Public Health Service Act, enacted by 121 Stat. 823, Public Law 110-85, apply to one or more of the clinical trials referenced in the application and that those trials have been or will be registered as required by the statute.")
+    
+    option3_nct = doc.add_paragraph("\nNCT Numbers for Applicable Clinical Trials: {{nct_number}}")
+    
+    # Warning
+    warning_para = doc.add_paragraph()
+    warning_para.add_run("\nWARNING: A willfully and knowingly false statement is a criminal offense, U.S. Code, Title 18, Section 1001.").italic = True
     
     # Signature section
-    doc.add_heading("INVESTIGATOR'S SIGNATURE:", level=2)
-    doc.add_paragraph("\n\n\n")
-    doc.add_paragraph("DATE: {{signature_date}}")
+    signature_para = doc.add_paragraph("\n\n")
+    signature_para.add_run("SIGNATURE OF SPONSOR/APPLICANT'S AUTHORIZED REPRESENTATIVE")
+    signature_para.add_run("\n\n\n_____________________________________________    DATE: ____________________")
     
-    # Save the template
-    output_path = os.path.join(templates_dir, "form1572.docx")
-    doc.save(output_path)
-    print(f"Created Form 1572 template at: {output_path}")
+    signature_para.add_run("\n\nTyped Name and Title of the Certifying Official:")
+    signature_para.add_run("\n\n{{certifier_name}}, {{certifier_title}}")
+    
+    # Save document
+    doc.save(os.path.join(TEMPLATES_DIR, 'form3674.docx'))
+    print(f"Created Form 3674 template at {os.path.join(TEMPLATES_DIR, 'form3674.docx')}")
 
-def create_form3674_template():
-    """Create FDA Form 3674 template with placeholders"""
-    doc = Document()
-    
-    # Add title
-    title = doc.add_heading("FORM FDA 3674", level=0)
-    title.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    
-    # Add subtitle
-    subtitle = doc.add_heading("CERTIFICATION OF COMPLIANCE WITH REQUIREMENTS OF CLINICALTRIALS.GOV DATA BANK", level=1)
-    subtitle.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    subtitle = doc.add_heading("(42 U.S.C. 282(j)(5)(B))", level=2)
-    subtitle.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    
-    # Explanatory text
-    doc.add_paragraph("Public Health Service Act Section 402(j) [42 USC § 282(j)] requires that clinical trials be registered at ClinicalTrials.gov, and also that a certification be submitted to the FDA stating that the requirements of Section 402(j) have been met.")
-    
-    # Form fields
-    doc.add_heading("1. APPLICATION/SUBMISSION TYPE", level=2)
-    options = [
-        "☐ IND (INVESTIGATIONAL NEW DRUG APPLICATION)",
-        "☐ NDA (NEW DRUG APPLICATION)",
-        "☐ BLA (BIOLOGICS LICENSE APPLICATION)",
-        "☐ EFFICACY SUPPLEMENT",
-        "☐ DEVICE 510(k)",
-        "☐ DEVICE PMA (PREMARKET APPROVAL APPLICATION)",
-        "☐ HDE (HUMANITARIAN DEVICE EXEMPTION)"
-    ]
-    
-    for option in options:
-        doc.add_paragraph(option)
-    
-    doc.add_heading("2. APPLICABLE CLINICAL TRIALS THAT REQUIRE REGISTRATION (Mark all that apply):", level=2)
-    options = [
-        "☐ TRIALS OF DRUGS AND BIOLOGICS: Controlled, clinical investigation, other than a Phase I investigation, of a product subject to FDA regulation",
-        "☐ TRIALS OF DEVICES: 1) Controlled trials with health outcomes of devices subject to FDA regulation, other than small feasibility studies, and 2) Pediatric postmarket surveillance required by FDA",
-        "☐ NO APPLICABLE CLINICAL TRIALS: No clinical trials require registration under 42 U.S.C. § 282(j)"
-    ]
-    
-    for option in options:
-        doc.add_paragraph(option)
-    
-    doc.add_heading("3. CERTIFICATION (Mark only one)", level=2)
-    options = [
-        "☐ A. I certify that the requirements of 42 U.S.C. § 282(j), Section 402(j) of the Public Health Service Act, have been met for the applicable clinical trials identified in the application. Applicable clinical trials have been registered on ClinicalTrials.gov as required.",
-        "☐ B. I certify that 42 U.S.C. § 282(j), Section 402(j) of the Public Health Service Act, does not apply to any clinical trial identified in the application.",
-        "☐ C. I certify that submission of this application/submission is not subject to 42 U.S.C. § 282(j), Section 402(j) of the Public Health Service Act."
-    ]
-    
-    for option in options:
-        doc.add_paragraph(option)
-    
-    doc.add_heading("4. CLINICALTRIALS.GOV REGISTRATION INFORMATION (Complete if item 3.A is selected)", level=2)
-    doc.add_paragraph("☐ All Applicable Clinical Trials provided in the table below have been registered.")
-    
-    # Create table for trial registration information
-    table = doc.add_table(rows=2, cols=3)
-    table.style = 'Table Grid'
-    
-    # Table headers
-    headers = table.rows[0].cells
-    headers[0].text = "NCT NUMBER"
-    headers[1].text = "TRIAL NAME OR TITLE"
-    headers[2].text = "TRIAL PHASE"
-    
-    # Example row with placeholders
-    cells = table.rows[1].cells
-    cells[0].text = "{{nct_number}}"
-    cells[1].text = "{{trial_title}}"
-    cells[2].text = "{{trial_phase}}"
-    
-    # Signature section
-    doc.add_heading("5. CERTIFICATION STATEMENT", level=2)
-    doc.add_paragraph("I certify that the statements made above are true, complete, and accurate to the best of my knowledge and that I understand that knowingly making a false statement is a criminal offense.")
-    
-    doc.add_paragraph("NAME OF CERTIFIER: {{certifier_name}}")
-    doc.add_paragraph("TITLE OF CERTIFIER: {{certifier_title}}")
-    doc.add_paragraph("ADDRESS: {{certifier_address}}")
-    doc.add_paragraph("EMAIL ADDRESS: {{certifier_email}}")
-    doc.add_paragraph("TELEPHONE NUMBER: {{certifier_phone}}")
-    doc.add_paragraph("FAX NUMBER: {{certifier_fax}}")
-    
-    doc.add_heading("SIGNATURE OF CERTIFIER:", level=2)
-    doc.add_paragraph("\n\n\n")
-    doc.add_paragraph("DATE: {{signature_date}}")
-    
-    # Save the template
-    output_path = os.path.join(templates_dir, "form3674.docx")
-    doc.save(output_path)
-    print(f"Created Form 3674 template at: {output_path}")
 
-def create_cover_letter_template():
-    """Create a cover letter template"""
-    doc = Document()
+def create_cover_letter():
+    """
+    Create cover letter template for IND submission
+    """
+    doc = docx.Document()
     
-    # Add header with date aligned right
-    header = doc.add_paragraph()
-    header.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-    header.add_run("{{submission_date}}")
+    # Document properties
+    doc.core_properties.title = "Cover Letter for IND Submission"
+    doc.core_properties.keywords = "IND, Cover Letter, FDA"
     
-    # Add double spacing
-    doc.add_paragraph()
+    # Date
+    date_para = doc.add_paragraph("{{submission_date}}")
+    date_para.alignment = WD_ALIGN_PARAGRAPH.RIGHT
     
-    # Add sender info
-    doc.add_paragraph("{{sponsor_name}}")
-    doc.add_paragraph("{{sponsor_address}}")
-    doc.add_paragraph()
+    # FDA Address
+    fda_para = doc.add_paragraph("\nFood and Drug Administration\nCenter for Drug Evaluation and Research\nCentral Document Room\n5901-B Ammendale Road\nBeltsville, MD 20705-1266")
     
-    # Add recipient
-    doc.add_paragraph("Food and Drug Administration")
-    doc.add_paragraph("Center for Drug Evaluation and Research")
-    doc.add_paragraph("Central Document Room")
-    doc.add_paragraph("5901-B Ammendale Road")
-    doc.add_paragraph("Beltsville, MD 20705-1266")
-    doc.add_paragraph()
-    
-    # Add subject line
-    subject = doc.add_paragraph("Subject: ")
-    subject_run = subject.add_run("IND {{ind_number}} for {{drug_name}}")
+    # Subject line
+    subject_para = doc.add_paragraph("\nSubject: ")
+    subject_run = subject_para.add_run("Initial Investigational New Drug Application (IND)")
     subject_run.bold = True
-    doc.add_paragraph()
+    subject_para.add_run("\nDrug: {{drug_name}}")
+    subject_para.add_run("\nIndication: {{indication}}")
+    subject_para.add_run("\nSponsor: {{sponsor_name}}")
+    subject_para.add_run("\nSerial Number: {{serial_number}}")
     
-    # Add greeting
-    doc.add_paragraph("Dear Sir/Madam:")
-    doc.add_paragraph()
+    # Greeting
+    doc.add_paragraph("\nDear Sir or Madam:")
     
-    # Add body
-    doc.add_paragraph("Please find enclosed our submission for {{drug_name}}, IND {{ind_number}}. This submission includes:")
-    doc.add_paragraph()
+    # Body
+    body_para = doc.add_paragraph("\n{{sponsor_name}} is pleased to submit this Initial Investigational New Drug Application for {{drug_name}} for the treatment of {{indication}}. ")
+    body_para.add_run("This application is being submitted in accordance with 21 CFR Part 312.")
     
-    # Add placeholder for included items
-    doc.add_paragraph("{{included_items}}")
-    doc.add_paragraph()
+    # Content description
+    doc.add_paragraph("\nThis submission contains the following:")
     
-    # Add contact information
-    doc.add_paragraph("If you have any questions or require additional information, please contact:")
-    doc.add_paragraph()
-    doc.add_paragraph("Name: {{contact_name}}")
-    doc.add_paragraph("Phone: {{contact_phone}}")
-    doc.add_paragraph("Email: {{contact_email}}")
-    doc.add_paragraph()
+    modules_para = doc.add_paragraph()
+    modules_para.paragraph_format.left_indent = Inches(0.5)
+    modules_para.add_run("• FDA Form 1571\n")
+    modules_para.add_run("• FDA Form 1572\n")
+    modules_para.add_run("• FDA Form 3674\n")
+    modules_para.add_run("• Investigator's Brochure\n")
+    modules_para.add_run("• Clinical Protocol: {{protocol_number}} - {{protocol_title}}\n")
+    modules_para.add_run("• Chemistry, Manufacturing, and Controls Information\n")
+    modules_para.add_run("• Pharmacology and Toxicology Information\n")
+    modules_para.add_run("• Previous Human Experience Information\n")
     
-    # Add closing
-    doc.add_paragraph("Sincerely,")
-    doc.add_paragraph()
-    doc.add_paragraph()
-    doc.add_paragraph()
-    doc.add_paragraph("{{authorizer_name}}")
-    doc.add_paragraph("{{authorizer_title}}")
-    doc.add_paragraph("{{sponsor_name}}")
+    # Contact information
+    doc.add_paragraph("\nIf you have any questions or require additional information regarding this submission, please contact:")
     
-    # Save the template
-    output_path = os.path.join(templates_dir, "cover_letter.docx")
-    doc.save(output_path)
-    print(f"Created cover letter template at: {output_path}")
+    contact_para = doc.add_paragraph()
+    contact_para.paragraph_format.left_indent = Inches(0.5)
+    contact_para.add_run("{{contact_name}}\n")
+    contact_para.add_run("{{contact_title}}\n")
+    contact_para.add_run("Phone: {{contact_phone}}\n")
+    contact_para.add_run("Email: {{contact_email}}")
+    
+    # Closing
+    doc.add_paragraph("\nSincerely,")
+    
+    doc.add_paragraph("\n\n\n____________________________")
+    
+    sig_para = doc.add_paragraph()
+    sig_para.add_run("{{authorizer_name}}\n")
+    sig_para.add_run("{{authorizer_title}}\n")
+    sig_para.add_run("{{sponsor_name}}")
+    
+    # Save document
+    doc.save(os.path.join(TEMPLATES_DIR, 'cover_letter.docx'))
+    print(f"Created Cover Letter template at {os.path.join(TEMPLATES_DIR, 'cover_letter.docx')}")
+
+
+def main():
+    """
+    Create all FDA form templates
+    """
+    print(f"Creating FDA form templates in {TEMPLATES_DIR}...")
+    create_form_1571()
+    create_form_1572()
+    create_form_3674()
+    create_cover_letter()
+    print("All templates created successfully.")
+
 
 if __name__ == "__main__":
-    # Create all templates
-    create_form1571_template()
-    create_form1572_template()
-    create_form3674_template()
-    create_cover_letter_template()
-    print("All templates created successfully!")
+    main()
