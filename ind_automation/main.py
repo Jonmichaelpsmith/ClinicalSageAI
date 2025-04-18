@@ -7,7 +7,7 @@ from typing import List
 
 from ind_automation.templates import render_form1571, render_form1572, render_form3674
 from ind_automation import db
-from ind_automation import module3, ai_narratives
+from ind_automation import module3, ai_narratives, ectd_ga
 from ind_automation.db import append_history, get_history
 
 app = FastAPI(title="IND Automation Service v2")
@@ -143,3 +143,18 @@ async def legacy_projects():
         ]
     
     return {"projects": projects}
+@app.get("/api/ind/{pid}/ectd/{serial}")
+async def build_ectd_ga(pid: str, serial: str):
+    meta = db.load(pid)
+    if not meta:
+        raise HTTPException(404, "Project not found")
+    zip_buf = ectd_ga.build_sequence(pid, serial)
+    db.append_history(pid, {
+        "type": "ectd_ga",
+        "serial": serial,
+        "timestamp": datetime.datetime.utcnow().isoformat(),
+        "zip": f"ectd_{pid}_{serial}.zip"
+    })
+    return StreamingResponse(zip_buf,
+        media_type="application/zip",
+        headers={"Content-Disposition": f"attachment; filename=ectd_{pid}_{serial}.zip"})

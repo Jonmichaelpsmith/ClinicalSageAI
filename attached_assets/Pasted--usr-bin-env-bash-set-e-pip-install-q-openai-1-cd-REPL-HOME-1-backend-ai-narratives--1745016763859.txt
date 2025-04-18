@@ -1,0 +1,152 @@
+#!/usr/bin/env bash
+set -e
+
+pip install -q openai==1.*
+
+cd "$REPL_HOME"
+
+# 1) backend ai_narratives.py
+cat > ind_automation/ai_narratives.py << 'PY'
+import io, os, datetime
+from fastapi import APIRouter, HTTPException
+from fastapi.responses import StreamingResponse
+from docxtpl import DocxTemplate
+from openai import OpenAI
+from ind_automation.db import load as load_meta, append_history
+
+OPENAI_KEY = os.getenv("OPENAI_API_KEY")
+if not OPENAI_KEY:
+    raise RuntimeError("Set OPENAI_API_KEY env var in Replit Secrets")
+
+client = OpenAI(api_key=OPENAI_KEY)
+router = APIRouter(prefix="/api/ind")
+TEMPLATE = "templates/module2_summary.docx.j2"  # single generic template
+
+PROMPTS = {
+    "quality": "You are an FDA regulatory writer. Draft a CTD Module 2.3 Quality Overall Summary for {{drug_name}} using this CMC data: {{cmc}}.",
+    "nonclinical": "Draft the Module 2.4 Nonclinical Overview for {{drug_name}}. Key findings: {{nonclinical}}.",
+    "clinical": "Draft the Module 2.5 Clinical Overview for {{drug_name}}. Include study rationale and protocol {{protocol}}.",
+}
+
+def _render(doc_context, pid, section):
+    tpl = DocxTemplate(TEMPLATE)
+    tpl.render(doc_context)
+    buf = io.BytesIO(); tpl.save(buf); buf.seek(0)
+    append_history(pid, {
+        "serial": doc_context.get("serial", "n/a"),
+        "module2_section": section,
+        "timestamp": datetime.datetime.utcnow().isoformat()
+    })
+    return StreamingResponse(buf,
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        headers={"Content-Disposition": f"attachment; filename=Module2_{section}_{pid}.docx"})
+
+@router.post("/{pid}/module2/{section}")
+async def generate_narrative(pid: str, section: str):
+    if section not in PROMPTS:
+        raise HTTPException(400, "section must be quality, nonclinical, or clinical")
+    meta = load_meta(pid) or {}
+    if not meta:
+        raise HTTPException(404, "Project not found")
+
+    # Build minimal context
+    prompt = PROMPTS[section].replace("{{drug_name}}", meta["drug_name"])
+    prompt = prompt.replace("{{protocol}}", meta.get("protocol", ""))
+    prompt = prompt.replace("{{cmc}}", "Batch: " + (meta.get("batch_number") or "N/A"))
+    prompt = prompt.replace("{{nonclinical}}", "(data TBD)")
+
+    completion = client.chat.completions.create(
+        model="gpt-4o-mini",  # adjust if needed
+        messages=[{"role":"user","content": prompt}],
+        temperature=0.2,
+    )
+    narrative = completion.choices[0].message.content
+
+    return _render({"narrative": narrative, **meta}, pid, section)
+PY
+
+# 2) patch main.py to include router
+python - << 'PY'
+import pathlib, re, textwrap
+main = pathlib.Path("ind_automation/main.py")
+code = main.read_text()
+if "ai_narratives" not in code:
+    code = code.replace(
+        "from ind_automation import module3",
+        "from ind_automation import module3, ai_narratives")
+    code += "\napp.include_router(ai_narratives.router)\n"
+    main.write_text(code)
+PY
+
+# 3) generic Jinja template for module2_summary.docx.j2 placeholder
+mkdir -p templates
+if [ ! -f templates/module2_summary.docx.j2 ]; then
+  echo "Upload a Word doc template with {{ narrative }} placeholder" > templates/module2_summary.docx.j2
+fi
+
+# 4) React component & integration
+mkdir -p client/src/components
+cat > client/src/components/Module2Narratives.jsx << 'JSX'
+import React, { useState } from "react";
+import api from "../services/api";
+
+export default function Module2Narratives({ project }) {
+  const [busy, setBusy] = useState("");
+  const sections = ["quality", "nonclinical", "clinical"];
+  const nice = {
+    quality: "Quality Overall",
+    nonclinical: "Nonclinical Overview",
+    clinical: "Clinical Overview",
+  };
+  const run = (s) => {
+    setBusy(s);
+    api.post(`/api/ind/${project.project_id}/module2/${s}`)
+      .then(({ data }) => {
+        window.open(`/api/ind/${project.project_id}/module2/${s}`);
+      })
+      .catch((e) => alert(e.response?.data?.detail || e.message))
+      .finally(() => setBusy(""););
+  };
+  return (
+    <div className="space-x-2">
+      {sections.map((s) => (
+        <button
+          key={s}
+          onClick={() => run(s)}
+          disabled={!project}
+          className="bg-indigo-600 text-white px-2 py-1 rounded"
+        >
+          {busy === s ? "Generating…" : `Generate ${nice[s]}`}
+        </button>
+      ))}
+    </div>
+  );
+}
+JSX
+
+# 5) patch IndAutomationPage.jsx to add Module2 tab
+python - << 'PY'
+import pathlib, textwrap, re
+page = pathlib.Path("client/src/pages/IndAutomationPage.jsx")
+code = page.read_text()
+if "Module2Narratives" not in code:
+    code = code.replace(
+        "import HistoryTable",
+        "import HistoryTable from \"../components/HistoryTable\";\nimport Module2Narratives from \"../components/Module2Narratives\";"
+    )
+
+# add Module2 to tab nav
+    code = re.sub(r'\["Module1",\s*"Module3",\s*"History"\]',
+        '["Module1", "Module2", "Module3", "History"]', code)
+
+# add render pane
+    pane = textwrap.dedent("""
+      {tab === "Module2" && selected && (
+        <Module2Narratives project={selected} />
+      )}
+    """)
+    code = code.replace("{tab === \"Module3\"", pane + "\n{tab === \"Module3\"", 1)
+    page.write_text(code)
+PY
+
+echo "✅ AI Narrative endpoints + React UI added."
