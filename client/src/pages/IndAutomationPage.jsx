@@ -46,6 +46,12 @@ export default function IndAutomationPage() {
             <Module1Forms project={selected} />
           )}
           
+          {tab === "Module2" && (
+            <div className="space-y-2">
+              <Module2Narratives project={selected} />
+            </div>
+          )}
+          
           {tab === "Module3" && (
             <div className="space-y-2">
               <Module3Benchling project={selected} />
