@@ -193,12 +193,12 @@ function stopFastApiServer() {
 }
 
 /**
- * Create Express middleware to proxy requests to FastAPI
+ * Create Express middleware to proxy requests to FastAPI and IND Automation
  * @returns {Function} Express middleware function
  */
 function createFastApiProxyMiddleware() {
   return function(req, res, next) {
-    // Only intercept API routes for CER endpoints
+    // Proxy CER endpoints to the CER FastAPI service
     if (req.path.startsWith('/api/cer/')) {
       callFastApi(req.path.replace('/api/cer', '/cer'), req.method.toLowerCase(), req.body, {
         params: req.query
@@ -213,8 +213,57 @@ function createFastApiProxyMiddleware() {
             message: error.message || 'Failed to process request'
           });
         });
+    } 
+    // Proxy IND Automation endpoints to the IND Automation service
+    else if (req.path.startsWith('/api/ind') || req.path === '/api/projects') {
+      // Configure to proxy to IND Automation service
+      const IND_AUTOMATION_SERVER = process.env.IND_AUTOMATION_SERVER || 'http://localhost:8001';
+      
+      // Forward the request
+      const method = req.method.toLowerCase();
+      const url = `${IND_AUTOMATION_SERVER}${req.path}`;
+      
+      console.log(`Proxying request to IND Automation: ${method.toUpperCase()} ${url}`);
+      
+      // Make request to IND Automation
+      axios({
+        method,
+        url,
+        data: req.body,
+        params: req.query,
+        responseType: req.headers.accept === 'application/zip' ? 'arraybuffer' : 'json'
+      })
+        .then(response => {
+          // Set response headers
+          Object.keys(response.headers).forEach(key => {
+            res.setHeader(key, response.headers[key]);
+          });
+          
+          // Send response
+          if (response.headers['content-type'] && response.headers['content-type'].includes('application/zip')) {
+            res.send(response.data);
+          } else {
+            res.json(response.data);
+          }
+        })
+        .catch(error => {
+          console.error(`Error proxying to IND Automation (${req.path}):`, error.message);
+          
+          // Forward error status and response if available
+          if (error.response) {
+            res.status(error.response.status).json(error.response.data || { 
+              success: false, 
+              message: error.message || 'IND Automation service error'
+            });
+          } else {
+            res.status(500).json({ 
+              success: false, 
+              message: error.message || 'Failed to connect to IND Automation service'
+            });
+          }
+        });
     } else {
-      // Pass through for non-CER endpoints
+      // Pass through for other endpoints
       next();
     }
   };
