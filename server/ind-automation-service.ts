@@ -76,7 +76,7 @@ export interface ProjectMetadata {
  */
 export class INDAutomationService {
   private pythonServiceProcess: any = null;
-  private serviceUrl: string = 'http://localhost:8001';
+  private serviceUrl: string = 'http://localhost:8000';
   private servicePath: string = path.join(__dirname, '..', 'ind_automation');
   
   constructor() {
