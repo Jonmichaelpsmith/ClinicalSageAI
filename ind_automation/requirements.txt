@@ -1,6 +1,7 @@
-fastapi
-uvicorn
-python-docx-template
-pydantic
-python-dotenv
-requests
+fastapi==0.95.0
+uvicorn==0.21.1
+python-docx==0.8.11
+docxtpl==0.16.7
+pydantic==1.10.7
+requests==2.28.2
+python-multipart==0.0.6
