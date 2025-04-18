@@ -5,6 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import { huggingFaceService } from '../huggingface-service';
 import { performDeepCsrSearch, isOpenAIApiKeyAvailable } from '../deep-csr-analyzer';
+import { generateSearchContextSummary } from '../openai-service';
 
 // Constants
 const PROCESSED_CSR_DIR = path.join(process.cwd(), 'data/processed_csrs');
@@ -194,8 +195,30 @@ export class CSRSearchService {
             );
           }
           
+          // Get the limited results
+          const limitedResults = csrs.slice(0, limit);
+          
+          // Generate context summaries for each result if OpenAI is available
+          if (isOpenAIApiKeyAvailable()) {
+            // Process summaries in parallel
+            await Promise.all(
+              limitedResults.map(async (csr) => {
+                try {
+                  // Generate a context summary explaining why this result matches
+                  csr.context_summary = await generateSearchContextSummary(
+                    params.query_text || "",
+                    csr
+                  );
+                } catch (error) {
+                  console.error('Error generating context summary:', error);
+                  csr.context_summary = ''; // Set empty summary on error
+                }
+              })
+            );
+          }
+          
           return {
-            csrs: csrs.slice(0, limit),
+            csrs: limitedResults,
             results_count: csrs.length
           };
         }
@@ -268,6 +291,25 @@ export class CSRSearchService {
     
     // Limit results
     const limitedResults = results.slice(0, limit);
+    
+    // Generate context summaries for each result if OpenAI is available and a query was provided
+    if (isOpenAIApiKeyAvailable() && params.query_text && params.query_text.trim()) {
+      // Process summaries in parallel
+      await Promise.all(
+        limitedResults.map(async (csr) => {
+          try {
+            // Generate a context summary explaining why this result matches
+            csr.context_summary = await generateSearchContextSummary(
+              params.query_text || "",
+              csr
+            );
+          } catch (error) {
+            console.error('Error generating context summary:', error);
+            csr.context_summary = ''; // Set empty summary on error
+          }
+        })
+      );
+    }
     
     return {
       csrs: limitedResults,
