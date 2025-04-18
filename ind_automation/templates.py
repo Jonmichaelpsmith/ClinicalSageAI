@@ -20,7 +20,7 @@ def _get_template_path(template_name: str) -> str:
     base_dir = os.path.dirname(os.path.abspath(__file__))
     return os.path.join(base_dir, "templates", "forms", template_name)
 
-def generate_form_1571(data: Dict[str, Any]) -> BytesIO:
+def render_form1571(data: Dict[str, Any]) -> BytesIO:
     """
     Generate FDA Form 1571 (Investigational New Drug Application)
     

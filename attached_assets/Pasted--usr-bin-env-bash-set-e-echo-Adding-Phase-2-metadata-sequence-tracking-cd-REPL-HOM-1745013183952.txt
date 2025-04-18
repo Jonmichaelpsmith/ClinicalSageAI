@@ -1,3 +1,40 @@
+#!/usr/bin/env bash
+set -e
+echo "▶︎ Adding Phase 2 metadata + sequence tracking…"
+
+cd "$REPL_HOME"
+
+# 1) data dir for JSON project records
+mkdir -p data/projects
+
+# 2) ind_automation/db.py  ----------------------------------------
+cat > ind_automation/db.py << 'PY'
+import json, os
+DATA_DIR = "data/projects"
+
+def _path(pid: str): return f"{DATA_DIR}/{pid}.json"
+
+def load(pid: str) -> dict | None:
+    try:
+        with open(_path(pid)) as f: return json.load(f)
+    except FileNotFoundError:
+        return None
+
+def save(pid: str, record: dict):
+    os.makedirs(DATA_DIR, exist_ok=True)
+    with open(_path(pid), "w") as f: json.dump(record, f, indent=2)
+
+def list_projects() -> list[dict]:
+    os.makedirs(DATA_DIR, exist_ok=True)
+    out=[]
+    for fn in os.listdir(DATA_DIR):
+        if fn.endswith(".json"):
+            with open(f"{DATA_DIR}/{fn}") as f: out.append(json.load(f))
+    return out
+PY
+
+# 3) Patch ind_automation/main.py  --------------------------------
+cat > ind_automation/main.py << 'PY'
 import io, datetime, uuid
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
@@ -103,3 +140,17 @@ async def new_sequence(pid: str):
 # ---------- Health ----------
 @app.get("/health")
 async def health(): return {"status": "ok"}
+PY
+
+echo "✅  Metadata CRUD + sequence tracking added!"
+echo "-------------------------------------------"
+echo "▶ Restart server:"
+echo "  uvicorn ind_automation.main:app --host 0.0.0.0 --port 8001"
+echo
+echo "▶ Quick test:"
+echo "  curl -X POST http://localhost:8001/api/projects -H 'Content-Type: application/json' \\"
+echo "       -d '{\"project_id\":\"demo\",\"sponsor\":\"Acme\",\"drug_name\":\"TestDrug\",\"protocol\":\"PROTO-123\",\"pi_name\":\"Dr Doe\",\"pi_address\":\"123 Lab\"}'"
+echo
+echo "  curl http://localhost:8001/api/ind/demo/forms/1571 --output demo1571.docx"
+echo "  curl -X POST http://localhost:8001/api/ind/demo/sequence"
+echo "-------------------------------------------"
