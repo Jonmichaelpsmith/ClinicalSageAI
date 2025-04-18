@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Ban, CheckCircle2, Loader2, FileDown } from 'lucide-react';
+import { Ban, CheckCircle2, Loader2, FileDown, Database, FileEdit } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import ManualDataForm from './ManualDataForm';
 
 /**
  * INDAutomationPanel Component
@@ -21,6 +23,31 @@ export function INDAutomationPanel() {
     message: string;
   }>({ type: null, message: '' });
   const [documentUrl, setDocumentUrl] = useState<string | null>(null);
+  const [projects, setProjects] = useState<Array<{ id: string, name: string }>>([]);
+  const [isLoadingProjects, setIsLoadingProjects] = useState(false);
+
+  // Load projects when component mounts
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  // Function to fetch available projects
+  const fetchProjects = async () => {
+    setIsLoadingProjects(true);
+    try {
+      const response = await fetch('/api/ind-automation/projects');
+      if (response.ok) {
+        const data = await response.json();
+        setProjects(data.projects || []);
+      } else {
+        console.error('Failed to fetch projects');
+      }
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+    } finally {
+      setIsLoadingProjects(false);
+    }
+  };
 
   // Function to check if the IND service is available
   const checkServiceStatus = async () => {
@@ -33,6 +60,9 @@ export function INDAutomationPanel() {
           type: 'success',
           message: 'IND Automation service is connected and ready'
         });
+        
+        // Refresh projects list when service is available
+        fetchProjects();
       } else {
         setStatusMessage({
           type: 'error',
@@ -52,7 +82,7 @@ export function INDAutomationPanel() {
     if (!projectId.trim()) {
       setStatusMessage({
         type: 'error',
-        message: 'Please enter a Project ID'
+        message: 'Please enter or select a Project ID'
       });
       return;
     }
@@ -110,51 +140,100 @@ export function INDAutomationPanel() {
             </Alert>
           )}
 
-          <div className="space-y-2">
-            <Label htmlFor="project-id">Project ID</Label>
-            <Input
-              id="project-id"
-              placeholder="Enter project identifier"
-              value={projectId}
-              onChange={(e) => setProjectId(e.target.value)}
-              disabled={isGenerating}
-            />
-          </div>
-
-          <Separator />
-
-          <div className="space-y-2">
-            <h3 className="text-lg font-medium">Module 3: Chemistry, Manufacturing, and Controls</h3>
-            <p className="text-sm text-muted-foreground">
-              Generate a Module 3 document containing CMC information for your IND application.
-            </p>
+          <Tabs defaultValue="benchling" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="benchling">
+                <Database className="h-4 w-4 mr-2" />
+                From Benchling
+              </TabsTrigger>
+              <TabsTrigger value="manual">
+                <FileEdit className="h-4 w-4 mr-2" />
+                Manual Data
+              </TabsTrigger>
+            </TabsList>
             
-            <div className="flex gap-2 mt-4">
-              <Button 
-                onClick={generateModule3}
-                disabled={isGenerating || !projectId.trim()}
-              >
-                {isGenerating ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Generating...
-                  </>
-                ) : (
-                  <>Generate Module 3</>
-                )}
-              </Button>
-              
-              {documentUrl && (
-                <Button 
-                  variant="outline"
-                  onClick={() => window.open(documentUrl, '_blank')}
-                >
-                  <FileDown className="mr-2 h-4 w-4" />
-                  Download Again
-                </Button>
-              )}
-            </div>
-          </div>
+            <TabsContent value="benchling" className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="project-id">Project ID</Label>
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    {projects.length > 0 ? (
+                      <select
+                        id="project-id"
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        value={projectId}
+                        onChange={(e) => setProjectId(e.target.value)}
+                        disabled={isGenerating}
+                      >
+                        <option value="">Select a project</option>
+                        {projects.map((project) => (
+                          <option key={project.id} value={project.id}>
+                            {project.name} ({project.id})
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <Input
+                        id="project-id"
+                        placeholder={isLoadingProjects ? "Loading projects..." : "Enter project identifier"}
+                        value={projectId}
+                        onChange={(e) => setProjectId(e.target.value)}
+                        disabled={isGenerating || isLoadingProjects}
+                      />
+                    )}
+                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={fetchProjects}
+                    disabled={isLoadingProjects}
+                  >
+                    {isLoadingProjects ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      "Refresh"
+                    )}
+                  </Button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <h3 className="text-lg font-medium">Module 3: Chemistry, Manufacturing, and Controls</h3>
+                <p className="text-sm text-muted-foreground">
+                  Generate a Module 3 document containing CMC information from Benchling for your IND application.
+                </p>
+                
+                <div className="flex gap-2 mt-4">
+                  <Button 
+                    onClick={generateModule3}
+                    disabled={isGenerating || !projectId.trim()}
+                  >
+                    {isGenerating ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>Generate Module 3</>
+                    )}
+                  </Button>
+                  
+                  {documentUrl && (
+                    <Button 
+                      variant="outline"
+                      onClick={() => window.open(documentUrl, '_blank')}
+                    >
+                      <FileDown className="mr-2 h-4 w-4" />
+                      Download Again
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="manual">
+              <ManualDataForm />
+            </TabsContent>
+          </Tabs>
         </div>
       </CardContent>
 
