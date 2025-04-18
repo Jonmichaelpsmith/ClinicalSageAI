@@ -390,9 +390,9 @@ const CERGenerator: React.FC = () => {
               <FileBarChart className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
               <div>
                 <p className="font-semibold mb-1">Need more detailed analysis?</p>
-                <p>Visit the <a href="/enhanced-cer-dashboard" className="text-blue-600 dark:text-blue-400 hover:underline">Enhanced CER Dashboard</a> to compare multiple products, view interactive visualizations, and get AI-powered insights.</p>
+                <p>Visit the <a href="/enhanced-cer-dashboard" className="text-blue-600 dark:text-blue-400 hover:underline">Advanced CER Analysis</a> to compare multiple products, view interactive visualizations, and get AI-powered insights.</p>
                 <a href="/enhanced-cer-dashboard" className="mt-2 inline-flex items-center text-blue-600 dark:text-blue-400 hover:underline">
-                  Go to Enhanced Dashboard
+                  View Advanced Analysis
                   <ArrowRight className="ml-1 h-4 w-4" />
                 </a>
               </div>
