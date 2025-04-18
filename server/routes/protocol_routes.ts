@@ -13,52 +13,92 @@ const router = express.Router();
  */
 async function getSimilarCsrs(db: any, indication: string, phase: string) {
   try {
-    // In a real implementation, this would query a database
-    // For now, we're returning simulated data
-    return [
-      {
-        id: 1,
-        title: `Efficacy and Safety Study of Investigational Treatment for ${indication}`,
-        indication: indication,
-        phase: phase.replace('phase', 'Phase '),
-        therapeutic_area: getTherapeuticArea(indication),
-        sponsor: 'PharmaCorp',
-        year: 2023,
-        design: 'Randomized, Double-Blind, Placebo-Controlled',
-        sample_size: 240,
-        duration_weeks: 24,
-        primary_endpoint: 'Change from baseline in disease severity score at Week 24',
-        insight: `This large ${phase.replace('phase', 'Phase ')} study demonstrated significant efficacy in ${indication} patients with a good safety profile. The study design was well received by regulatory agencies.`
-      },
-      {
-        id: 2,
-        title: `${phase.replace('phase', 'Phase ')} Clinical Evaluation of Novel Therapy for ${indication}`,
-        indication: indication,
-        phase: phase.replace('phase', 'Phase '),
-        therapeutic_area: getTherapeuticArea(indication),
-        sponsor: 'BioInnovate Inc.',
-        year: 2022,
-        design: 'Multicenter, Randomized, Active-Controlled',
-        sample_size: 320,
-        duration_weeks: 36,
-        primary_endpoint: 'Time to clinical improvement as measured by standardized assessment',
-        insight: `This study used a novel composite endpoint that was well received by regulators for ${indication}. The study duration of 36 weeks was important for demonstrating sustained efficacy.`
-      },
-      {
-        id: 3,
-        title: `Extended Evaluation of Treatment Options for ${indication}`,
-        indication: indication,
-        phase: phase.replace('phase', 'Phase '),
-        therapeutic_area: getTherapeuticArea(indication),
-        sponsor: 'Global Health Labs',
-        year: 2021,
-        design: 'Adaptive, Multicenter, Double-Blind',
-        sample_size: 180,
-        duration_weeks: 48,
-        primary_endpoint: 'Composite of clinical outcomes at 12 months',
-        insight: `This longer-term study provided valuable insights on durability of response for ${indication} therapies. The adaptive design allowed for sample size re-estimation.`
+    const therapeuticArea = getTherapeuticArea(indication);
+    
+    // Check if we have a real database connection
+    if (db && db.query) {
+      console.log(`Searching for CSRs with therapeutic area: ${therapeuticArea} and phase: ${phase}`);
+      
+      // Query the actual CSR database
+      const query = `
+        SELECT * FROM reports 
+        WHERE 
+          (
+            LOWER(therapeutic_area) LIKE $1 
+            OR LOWER(indication) LIKE $2
+          )
+          AND LOWER(phase) LIKE $3
+        ORDER BY year DESC, id DESC
+        LIMIT 10
+      `;
+      
+      // Parameters for the query with fuzzy matching
+      const params = [
+        `%${therapeuticArea.toLowerCase()}%`,
+        `%${indication.toLowerCase()}%`,
+        `%${phase.replace('phase', '').trim().toLowerCase()}%`
+      ];
+
+      // Execute the query
+      const result = await db.query(query, params);
+      
+      if (result && result.rows && result.rows.length > 0) {
+        console.log(`Found ${result.rows.length} matching CSRs`);
+        
+        // Transform the data to the format we need
+        return result.rows.map((row: any) => ({
+          id: row.id,
+          title: row.title,
+          indication: row.indication,
+          phase: row.phase,
+          therapeutic_area: row.therapeutic_area,
+          sponsor: row.sponsor,
+          year: row.year,
+          design: row.design,
+          sample_size: row.sample_size,
+          duration_weeks: row.duration_weeks,
+          primary_endpoint: row.primary_endpoint,
+          outcome: row.outcome,
+          efficacy_data: row.efficacy_data,
+          safety_data: row.safety_data,
+          insight: row.key_findings
+        }));
       }
-    ];
+    }
+    
+    // If no database results or database connection failed, try the reports API
+    console.log('No database results, using reports API');
+    
+    // Use the reports API as a fallback
+    const apiResponse = await fetch('/api/reports', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (apiResponse.ok) {
+      const reports = await apiResponse.json();
+      
+      // Filter reports that match our criteria
+      const filteredReports = reports.filter((report: any) => {
+        const reportIndication = report.indication ? report.indication.toLowerCase() : '';
+        const reportPhase = report.phase ? report.phase.toLowerCase() : '';
+        
+        return (reportIndication.includes(indication.toLowerCase()) || 
+                (report.therapeutic_area && report.therapeutic_area.toLowerCase().includes(therapeuticArea.toLowerCase()))) && 
+                reportPhase.includes(phase.replace('phase', '').trim().toLowerCase());
+      });
+      
+      if (filteredReports.length > 0) {
+        console.log(`Found ${filteredReports.length} matching reports from API`);
+        return filteredReports.slice(0, 5); // Limit to 5 reports
+      }
+    }
+    
+    // If no results from either approach, return empty array
+    console.log('No matching CSR data found');
+    return [];
   } catch (error) {
     console.error('Error fetching similar CSRs:', error);
     return [];
@@ -346,37 +386,58 @@ function generateSectionAnalysis(indication: string, phase: string, protocolSumm
 /**
  * Generates simulated academic references
  */
-function generateAcademicReferences(indication: string, phase: string) {
-  return [
-    {
-      title: `Optimal Clinical Trial Design for ${indication} Studies: A Systematic Review`,
-      author: "Rodriguez et al.",
-      publication: "Journal of Clinical Research",
-      year: "2023",
-      relevance: `Comprehensive review of trial designs for ${indication}, with specific recommendations for ${phase.replace('phase', 'Phase ')} studies`
-    },
-    {
-      title: `Regulatory Considerations for ${indication} Clinical Development Programs`,
-      author: "Chen and Williams",
-      publication: "Regulatory Science and Medicine",
-      year: "2022",
-      relevance: `Overview of FDA and EMA expectations for ${indication} programs with case studies of successful approvals`
-    },
-    {
-      title: `Endpoint Selection and Validation in ${indication} Clinical Trials`,
-      author: "Smith et al.",
-      publication: "Therapeutic Innovation & Regulatory Science",
-      year: "2023",
-      relevance: `Analysis of endpoint selection strategies with regulatory pathway implications for ${indication} studies`
-    },
-    {
-      title: `Statistical Powering Considerations for ${phase.replace('phase', 'Phase ')} ${indication} Trials`,
-      author: "Patel and Johnson",
-      publication: "Statistics in Medicine",
-      year: "2021",
-      relevance: `Mathematical models for sample size calculation specific to ${indication} efficacy measures`
+/**
+ * Retrieves academic references from the academic knowledge system
+ */
+async function generateAcademicReferences(indication: string, phase: string) {
+  try {
+    // Try to fetch from Academic Knowledge Service
+    const academicServiceResponse = await fetch(`/api/academic-knowledge/search?query=${encodeURIComponent(`${indication} clinical trial ${phase}`)}&limit=10`);
+    
+    if (academicServiceResponse.ok) {
+      const academicData = await academicServiceResponse.json();
+      console.log(`Found ${academicData.length || 0} academic references from Academic Knowledge Service`);
+      
+      if (academicData && academicData.length > 0) {
+        return academicData.map((ref: any) => ({
+          id: ref.id,
+          title: ref.title,
+          author: ref.authors || ref.author,
+          publication: ref.journal || ref.publication,
+          year: ref.year,
+          relevance: ref.key_finding || ref.abstract || ref.relevance
+        }));
+      }
     }
-  ];
+
+    // If Academic Knowledge Service failed, try Protocol Knowledge Service
+    const protocolKnowledgeResponse = await fetch('/api/protocol-knowledge', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        indication,
+        phase: phase.replace('phase', '').trim(),
+        count: 10
+      })
+    });
+    
+    if (protocolKnowledgeResponse.ok) {
+      const protocolKnowledge = await protocolKnowledgeResponse.json();
+      
+      if (protocolKnowledge && protocolKnowledge.academic_sources && protocolKnowledge.academic_sources.length > 0) {
+        console.log(`Found ${protocolKnowledge.academic_sources.length} academic sources from Protocol Knowledge Service`);
+        return protocolKnowledge.academic_sources;
+      }
+    }
+    
+    console.log('No academic references found from knowledge services');
+    return [];
+  } catch (error) {
+    console.error('Error retrieving academic references:', error);
+    return [];
+  }
 }
 
 /**
@@ -623,8 +684,8 @@ router.post('/optimize', express.json(), async (req, res) => {
       };
     });
     
-    // Generate sample academic references (in a real app, these would come from a database)
-    const academicReferences = generateAcademicReferences(indication, phase);
+    // Get academic references from the knowledge services
+    const academicReferences = await generateAcademicReferences(indication, phase);
 
     return res.json({ 
       success: true,
