@@ -1072,3 +1072,194 @@ router.post('/markdown', async (req, res) => {
     });
   }
 });
+
+// Export to XML format for data exchange
+router.post('/xml', async (req, res) => {
+  try {
+    const { 
+      title, 
+      author = 'LumenTrialGuide.AI', 
+      content,
+      indication, 
+      phase,
+      csrInsights = [],
+      academicReferences = []
+    } = req.body;
+
+    if (!content) {
+      return res.status(400).json({ success: false, message: 'Content is required' });
+    }
+
+    // Generate XML header and root element
+    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+    xml += '<ProtocolRecommendations xmlns="https://lumen.ai/protocol/recommendations/1.0">\n';
+    
+    // Add metadata section
+    xml += '  <Metadata>\n';
+    xml += `    <Title>${title || `Protocol Recommendations for ${indication} Study (${phase})`}</Title>\n`;
+    xml += `    <Author>${author}</Author>\n`;
+    xml += `    <GenerationDate>${getFormattedDate()}</GenerationDate>\n`;
+    if (indication) xml += `    <Indication>${indication}</Indication>\n`;
+    if (phase) xml += `    <Phase>${phase}</Phase>\n`;
+    xml += '  </Metadata>\n';
+    
+    // Add recommendations section
+    xml += '  <Recommendations>\n';
+    
+    if (typeof content === 'string') {
+      xml += '    <Summary>\n';
+      xml += `      <Text>${stripHtml(content).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</Text>\n`;
+      xml += '    </Summary>\n';
+    } else if (typeof content === 'object') {
+      if (content.recommendation) {
+        xml += '    <Summary>\n';
+        xml += `      <Text>${stripHtml(content.recommendation).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</Text>\n`;
+        xml += '    </Summary>\n';
+      }
+      
+      // Key Suggestions
+      if (content.keySuggestions && content.keySuggestions.length > 0) {
+        xml += '    <KeySuggestions>\n';
+        
+        for (const suggestion of content.keySuggestions) {
+          xml += `      <Suggestion>${suggestion.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</Suggestion>\n`;
+        }
+        
+        xml += '    </KeySuggestions>\n';
+      }
+      
+      // Suggested Endpoints
+      if (content.suggestedEndpoints && content.suggestedEndpoints.length > 0) {
+        xml += '    <Endpoints>\n';
+        
+        for (const endpoint of content.suggestedEndpoints) {
+          xml += `      <Endpoint>${endpoint.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</Endpoint>\n`;
+        }
+        
+        xml += '    </Endpoints>\n';
+      }
+      
+      // Risk Factors
+      if (content.riskFactors && content.riskFactors.length > 0) {
+        xml += '    <RiskFactors>\n';
+        
+        for (const risk of content.riskFactors) {
+          xml += `      <Risk>${risk.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</Risk>\n`;
+        }
+        
+        xml += '    </RiskFactors>\n';
+      }
+      
+      // Section Analysis if available
+      if (content.sectionAnalysis) {
+        xml += '    <SectionAnalysis>\n';
+        
+        for (const [section, analysis] of Object.entries(content.sectionAnalysis)) {
+          if (!analysis) continue;
+          
+          xml += `      <Section id="${section.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}">\n`;
+          
+          if (analysis.current) {
+            xml += `        <CurrentStatus>${analysis.current.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</CurrentStatus>\n`;
+          }
+          
+          if (analysis.alignment) {
+            xml += `        <AlignmentScore>${analysis.alignment}</AlignmentScore>\n`;
+          }
+          
+          if (analysis.suggestions && analysis.suggestions.length > 0) {
+            xml += '        <Suggestions>\n';
+            
+            for (const suggestion of analysis.suggestions) {
+              xml += `          <Suggestion>${suggestion.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</Suggestion>\n`;
+            }
+            
+            xml += '        </Suggestions>\n';
+          }
+          
+          if (analysis.academicGuidance) {
+            xml += `        <AcademicGuidance>${analysis.academicGuidance.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</AcademicGuidance>\n`;
+          }
+          
+          xml += '      </Section>\n';
+        }
+        
+        xml += '    </SectionAnalysis>\n';
+      }
+    }
+    
+    xml += '  </Recommendations>\n';
+    
+    // Add CSR Insights
+    if (csrInsights && csrInsights.length > 0) {
+      xml += '  <ClinicalStudyReports>\n';
+      
+      for (const csr of csrInsights) {
+        xml += '    <ClinicalStudyReport>\n';
+        xml += `      <Title>${(csr.title || 'Untitled Study').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</Title>\n`;
+        
+        if (csr.id) xml += `      <ID>${csr.id}</ID>\n`;
+        if (csr.indication) xml += `      <Indication>${csr.indication.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</Indication>\n`;
+        if (csr.phase) xml += `      <Phase>${csr.phase.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</Phase>\n`;
+        if (csr.sample_size) xml += `      <SampleSize>${csr.sample_size}</SampleSize>\n`;
+        if (csr.sponsor) xml += `      <Sponsor>${csr.sponsor.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</Sponsor>\n`;
+        
+        // Add key learnings
+        if (csr.key_learnings) {
+          xml += '      <KeyLearnings>\n';
+          
+          const learnings = Array.isArray(csr.key_learnings) ? csr.key_learnings : [csr.key_learnings];
+          
+          for (const learning of learnings) {
+            xml += `        <Learning>${learning.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</Learning>\n`;
+          }
+          
+          xml += '      </KeyLearnings>\n';
+        }
+        
+        xml += '    </ClinicalStudyReport>\n';
+      }
+      
+      xml += '  </ClinicalStudyReports>\n';
+    }
+    
+    // Add Academic References
+    if (academicReferences && academicReferences.length > 0) {
+      xml += '  <AcademicReferences>\n';
+      
+      for (const ref of academicReferences) {
+        xml += '    <Reference>\n';
+        
+        if (ref.author) xml += `      <Author>${ref.author.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</Author>\n`;
+        if (ref.year) xml += `      <Year>${ref.year}</Year>\n`;
+        if (ref.title) xml += `      <Title>${ref.title.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</Title>\n`;
+        if (ref.publication) xml += `      <Publication>${ref.publication.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</Publication>\n`;
+        if (ref.volume) xml += `      <Volume>${ref.volume}</Volume>\n`;
+        if (ref.number) xml += `      <Number>${ref.number}</Number>\n`;
+        if (ref.pages) xml += `      <Pages>${ref.pages}</Pages>\n`;
+        if (ref.doi) xml += `      <DOI>${ref.doi}</DOI>\n`;
+        if (ref.relevance) xml += `      <Relevance>${ref.relevance.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</Relevance>\n`;
+        
+        xml += '    </Reference>\n';
+      }
+      
+      xml += '  </AcademicReferences>\n';
+    }
+    
+    // Close the root element
+    xml += '</ProtocolRecommendations>';
+    
+    // Set response headers
+    res.setHeader('Content-Type', 'application/xml');
+    res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(title || 'protocol-recommendations').replace(/%20/g, '_')}.xml"`);
+    
+    // Send the XML content
+    res.send(xml);
+  } catch (error: any) {
+    console.error('Error generating XML:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: `Failed to generate XML: ${error.message}` 
+    });
+  }
+});
