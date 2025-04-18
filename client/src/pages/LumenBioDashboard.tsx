@@ -6,6 +6,7 @@ import { LumenBioReport } from "@/components/reports/LumenBioReport";
 import ObesityStudyProtocol from "@/components/lumen-bio/ObesityStudyProtocol";
 import LumenBioPerformanceMetrics from "@/components/lumen-bio/LumenBioPerformanceMetrics";
 import SuccessFailureFactors from "@/components/lumen-bio/SuccessFailureFactors";
+import CsrIntelligenceInsights from "@/components/lumen-bio/CsrIntelligenceInsights";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -17,7 +18,8 @@ import {
   BookOpen, Download, Share, AlertCircle, Beaker, Target,
   Weight, ChevronRight, ArrowUpRight, Clock, Users,
   TrendingUp, Layers, Loader2, CheckCircle, XCircle, FileCheck,
-  ExternalLink, LineChart, BellDot, Sparkles, Award, Activity, Database
+  ExternalLink, LineChart, BellDot, Sparkles, Award, Activity, Database,
+  Brain, ArrowDownRight, Lightbulb, Dna
 } from "lucide-react";
 
 export default function LumenBioDashboard() {
@@ -540,28 +542,7 @@ export default function LumenBioDashboard() {
 
           {/* CSR Intelligence Tab */}
           <TabsContent value="csr-insights" className="space-y-6 mt-6">
-            <Card>
-              <CardHeader className="pb-2">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <CardTitle className="flex items-center">
-                      <Database className="h-5 w-5 text-indigo-600 mr-2" />
-                      CSR-Driven Performance Intelligence
-                    </CardTitle>
-                    <CardDescription>
-                      Actionable insights derived from 693 analyzed clinical study reports
-                    </CardDescription>
-                  </div>
-                  <Button variant="outline" size="sm" className="flex items-center gap-2">
-                    <ExternalLink className="h-4 w-4" />
-                    Export Insights
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <LumenBioPerformanceMetrics />
-              </CardContent>
-            </Card>
+            <CsrIntelligenceInsights />
           </TabsContent>
 
           {/* Success Factors Tab */}
