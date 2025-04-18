@@ -1,157 +1,243 @@
-# ind_automation/templates.py
-import io
+#!/usr/bin/env python3
+"""
+FDA Forms Template Engine
+
+This module handles the templating logic for FDA form generation.
+It uses the python-docx library to fill in templates with provided data.
+"""
+
+import docx
+from docx.shared import Pt, Inches
+from docx.enum.text import WD_ALIGN_PARAGRAPH
 import os
 import logging
-from typing import Dict, Any, Optional
-from docx import Document
-from docx.shared import Pt
-from docx.enum.text import WD_ALIGN_PARAGRAPH
+import io
+from datetime import datetime
 
+# Setup logging
 logger = logging.getLogger(__name__)
 
-TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), "templates", "forms")
+# Template directory
+TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'templates', 'forms')
 
-# Ensure template directory exists
-os.makedirs(TEMPLATE_DIR, exist_ok=True)
-
-def populate_field(document, key, value):
-    """
-    Find placeholder text {{key}} in document and replace with value
-    """
-    for paragraph in document.paragraphs:
-        if f"{{{{{key}}}}}" in paragraph.text:
-            paragraph.text = paragraph.text.replace(f"{{{{{key}}}}}", str(value or ""))
+def check_templates_exist():
+    """Check if all required templates exist"""
+    templates = ['form1571.docx', 'form1572.docx', 'form3674.docx', 'cover_letter.docx']
+    missing = []
     
-    # Also check tables
-    for table in document.tables:
+    for template in templates:
+        template_path = os.path.join(TEMPLATE_DIR, template)
+        if not os.path.exists(template_path):
+            missing.append(template)
+    
+    if missing:
+        logger.warning(f"Missing templates: {', '.join(missing)}")
+        return False
+    
+    return True
+
+def create_templates_if_needed():
+    """Create templates if they don't exist"""
+    if not check_templates_exist():
+        logger.info("Creating FDA form templates...")
+        from create_form_templates import main as create_templates
+        create_templates()
+        return check_templates_exist()
+    return True
+
+def _replace_placeholders(doc, data):
+    """
+    Replace placeholders in document with provided data
+    
+    Args:
+        doc: Document object
+        data: Dictionary containing replacement values
+    """
+    # Search for placeholders in paragraphs
+    for paragraph in doc.paragraphs:
+        if '{{' in paragraph.text and '}}' in paragraph.text:
+            inline = paragraph.runs
+            # Loop through each run in paragraph
+            for i, run in enumerate(inline):
+                for key, value in data.items():
+                    placeholder = f"{{{{{key}}}}}"
+                    if placeholder in run.text:
+                        text = run.text.replace(placeholder, str(value) if value is not None else "")
+                        run.text = text
+
+    # Also search in tables, if any
+    for table in doc.tables:
         for row in table.rows:
             for cell in row.cells:
                 for paragraph in cell.paragraphs:
-                    if f"{{{{{key}}}}}" in paragraph.text:
-                        paragraph.text = paragraph.text.replace(f"{{{{{key}}}}}", str(value or ""))
+                    if '{{' in paragraph.text and '}}' in paragraph.text:
+                        inline = paragraph.runs
+                        for i, run in enumerate(inline):
+                            for key, value in data.items():
+                                placeholder = f"{{{{{key}}}}}"
+                                if placeholder in run.text:
+                                    text = run.text.replace(placeholder, str(value) if value is not None else "")
+                                    run.text = text
 
-def render_form_template(template_path: str, data: Dict[str, Any]) -> Optional[bytes]:
+def render_form1571(data):
     """
-    Render a document template with the provided data
+    Fill Form 1571 template with provided data
     
     Args:
-        template_path: Path to the template file
-        data: Dictionary of key-value pairs to populate in the template
+        data: Dictionary containing form data
         
     Returns:
-        Document as bytes or None if generation fails
+        BytesIO object containing the filled document
     """
-    try:
-        if not os.path.exists(template_path):
-            logger.error(f"Template file not found: {template_path}")
-            return None
-            
-        doc = Document(template_path)
-        
-        # Populate all placeholders in the document
-        for key, value in data.items():
-            populate_field(doc, key, value)
-        
-        # Save document to bytes
-        output = io.BytesIO()
-        doc.save(output)
-        output.seek(0)
-        
-        return output.getvalue()
-        
-    except Exception as e:
-        logger.error(f"Error rendering template: {str(e)}", exc_info=True)
-        return None
+    # Ensure templates exist
+    if not create_templates_if_needed():
+        raise ValueError("Could not create form templates")
+    
+    template_path = os.path.join(TEMPLATE_DIR, 'form1571.docx')
+    doc = docx.Document(template_path)
+    
+    # Fill in defaults for missing fields
+    defaults = {
+        'submission_date': datetime.now().strftime('%m/%d/%Y'),
+        'sponsor_address': '',
+        'contact_title': 'Regulatory Affairs Manager',
+        'contact_email': '',
+        'contact_phone': '',
+        'authorizer_title': 'Chief Executive Officer',
+    }
+    
+    # Combine with provided data
+    form_data = {**defaults, **data}
+    
+    # Replace placeholders
+    _replace_placeholders(doc, form_data)
+    
+    # Save to memory stream
+    output = io.BytesIO()
+    doc.save(output)
+    output.seek(0)
+    return output
 
-def render_form1571(data: Dict[str, Any]) -> Optional[bytes]:
+def render_form1572(data):
     """
-    Render FDA Form 1571 with the provided data
+    Fill Form 1572 template with provided data
+    
+    Args:
+        data: Dictionary containing form data
+        
+    Returns:
+        BytesIO object containing the filled document
     """
-    template_path = os.path.join(TEMPLATE_DIR, "form1571.docx")
-    return render_form_template(template_path, data)
+    # Ensure templates exist
+    if not create_templates_if_needed():
+        raise ValueError("Could not create form templates")
+    
+    template_path = os.path.join(TEMPLATE_DIR, 'form1572.docx')
+    doc = docx.Document(template_path)
+    
+    # Fill in defaults for missing fields
+    defaults = {
+        'submission_date': datetime.now().strftime('%m/%d/%Y'),
+        'investigator_address': '',
+        'research_facility_name': '',
+        'research_facility_address': '',
+        'clinical_lab_name': '',
+        'clinical_lab_address': '',
+        'irb_name': '',
+        'irb_address': '',
+    }
+    
+    # Combine with provided data
+    form_data = {**defaults, **data}
+    
+    # Replace placeholders
+    _replace_placeholders(doc, form_data)
+    
+    # Save to memory stream
+    output = io.BytesIO()
+    doc.save(output)
+    output.seek(0)
+    return output
 
-def render_form1572(data: Dict[str, Any]) -> Optional[bytes]:
+def render_form3674(data):
     """
-    Render FDA Form 1572 with the provided data
+    Fill Form 3674 template with provided data
+    
+    Args:
+        data: Dictionary containing form data
+        
+    Returns:
+        BytesIO object containing the filled document
     """
-    template_path = os.path.join(TEMPLATE_DIR, "form1572.docx")
-    return render_form_template(template_path, data)
+    # Ensure templates exist
+    if not create_templates_if_needed():
+        raise ValueError("Could not create form templates")
+    
+    template_path = os.path.join(TEMPLATE_DIR, 'form3674.docx')
+    doc = docx.Document(template_path)
+    
+    # Fill in defaults for missing fields
+    defaults = {
+        'submission_date': datetime.now().strftime('%m/%d/%Y'),
+        'ind_number': '',
+        'nct_number': '',
+        'certifier_name': data.get('authorizer_name', ''),
+        'certifier_title': data.get('authorizer_title', 'Chief Medical Officer'),
+        'certifier_address': data.get('sponsor_address', ''),
+        'certifier_email': data.get('contact_email', ''),
+        'certifier_phone': data.get('contact_phone', ''),
+        'certifier_fax': '',
+    }
+    
+    # Combine with provided data
+    form_data = {**defaults, **data}
+    
+    # Replace placeholders
+    _replace_placeholders(doc, form_data)
+    
+    # Save to memory stream
+    output = io.BytesIO()
+    doc.save(output)
+    output.seek(0)
+    return output
 
-def render_form3674(data: Dict[str, Any]) -> Optional[bytes]:
+def create_cover_letter(data):
     """
-    Render FDA Form 3674 with the provided data
+    Fill cover letter template with provided data
+    
+    Args:
+        data: Dictionary containing form data
+        
+    Returns:
+        BytesIO object containing the filled document
     """
-    template_path = os.path.join(TEMPLATE_DIR, "form3674.docx")
-    return render_form_template(template_path, data)
-
-def create_cover_letter(data: Dict[str, Any]) -> Optional[bytes]:
-    """
-    Create a cover letter document for IND submission
-    """
-    try:
-        # Create a new document
-        doc = Document()
-        
-        # Add header
-        header = doc.add_paragraph()
-        header.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-        header_run = header.add_run(data.get("submission_date", ""))
-        
-        # Add addresses
-        doc.add_paragraph(data.get("sponsor_name", ""))
-        doc.add_paragraph(data.get("sponsor_address", ""))
-        doc.add_paragraph()
-        doc.add_paragraph("Food and Drug Administration")
-        doc.add_paragraph("Center for Drug Evaluation and Research")
-        doc.add_paragraph("Central Document Room")
-        doc.add_paragraph("5901-B Ammendale Road")
-        doc.add_paragraph("Beltsville, MD 20705-1266")
-        doc.add_paragraph()
-        
-        # Add subject line
-        subject = doc.add_paragraph("Subject: ")
-        subject_run = subject.add_run(f"IND {data.get('ind_number', 'PENDING')} for {data.get('drug_name', '')}")
-        subject_run.bold = True
-        doc.add_paragraph()
-        
-        # Add greeting
-        doc.add_paragraph("Dear Sir/Madam:")
-        doc.add_paragraph()
-        
-        # Add body
-        doc.add_paragraph(f"Please find enclosed our submission for {data.get('drug_name', '')}, IND {data.get('ind_number', 'PENDING')}. This submission includes:")
-        doc.add_paragraph()
-        
-        # Add bullet points for included items
-        for item in data.get("included_items", ["FDA Form 1571", "FDA Form 1572", "FDA Form 3674", "Module 3: Chemistry, Manufacturing, and Controls"]):
-            p = doc.add_paragraph()
-            p.style = 'List Bullet'
-            p.add_run(item)
-        
-        doc.add_paragraph()
-        doc.add_paragraph("If you have any questions or require additional information, please contact:")
-        doc.add_paragraph()
-        doc.add_paragraph(f"Name: {data.get('contact_name', '')}")
-        doc.add_paragraph(f"Phone: {data.get('contact_phone', '')}")
-        doc.add_paragraph(f"Email: {data.get('contact_email', '')}")
-        doc.add_paragraph()
-        
-        # Add closing
-        doc.add_paragraph("Sincerely,")
-        doc.add_paragraph()
-        doc.add_paragraph()
-        doc.add_paragraph()
-        doc.add_paragraph(f"{data.get('authorizer_name', '')}")
-        doc.add_paragraph(f"{data.get('authorizer_title', '')}")
-        doc.add_paragraph(f"{data.get('sponsor_name', '')}")
-        
-        # Save document to bytes
-        output = io.BytesIO()
-        doc.save(output)
-        output.seek(0)
-        
-        return output.getvalue()
-        
-    except Exception as e:
-        logger.error(f"Error creating cover letter: {str(e)}", exc_info=True)
-        return None
+    # Ensure templates exist
+    if not create_templates_if_needed():
+        raise ValueError("Could not create form templates")
+    
+    template_path = os.path.join(TEMPLATE_DIR, 'cover_letter.docx')
+    doc = docx.Document(template_path)
+    
+    # Fill in defaults for missing fields
+    defaults = {
+        'submission_date': datetime.now().strftime('%B %d, %Y'),
+        'serial_number': '0000',
+        'protocol_number': '',
+        'protocol_title': '',
+        'contact_title': 'Regulatory Affairs Manager',
+        'contact_email': '',
+        'contact_phone': '',
+        'authorizer_title': 'Chief Executive Officer',
+    }
+    
+    # Combine with provided data
+    form_data = {**defaults, **data}
+    
+    # Replace placeholders
+    _replace_placeholders(doc, form_data)
+    
+    # Save to memory stream
+    output = io.BytesIO()
+    doc.save(output)
+    output.seek(0)
+    return output

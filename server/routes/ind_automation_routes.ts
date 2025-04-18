@@ -1,5 +1,5 @@
 import express from 'express';
-import { indAutomationService, Module3Data } from '../ind-automation-service';
+import { indAutomationService, Module3Data, ProjectMetadata } from '../ind-automation-service';
 import { logger } from '../utils/logger';
 import axios from 'axios';
 import http from 'http';
@@ -165,6 +165,146 @@ router.post('/batch/module3', async (req, res) => {
   } catch (error) {
     logger.error(`Error processing batch request: ${error.message}`);
     res.status(500).json({ status: 'error', message: `Failed to process batch: ${error.message}` });
+  }
+});
+
+/**
+ * POST /api/ind-automation/generate/form1571
+ * Generate FDA Form 1571 (Investigational New Drug Application)
+ */
+router.post('/generate/form1571', async (req, res) => {
+  try {
+    const data = req.body as ProjectMetadata;
+    
+    if (!data.sponsor_name || !data.drug_name || !data.phase) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Missing required fields. Please provide at minimum sponsor_name, drug_name, and phase.'
+      });
+    }
+    
+    logger.info(`Generating FDA Form 1571 for drug ${data.drug_name}`);
+    
+    // Generate the document
+    const documentBytes = await indAutomationService.generateForm1571(data);
+    
+    // Set headers and send response
+    const filename = data.drug_name.replace(/\s+/g, '_');
+    res.set({
+      'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'Content-Disposition': `attachment; filename="FDA_Form_1571_${filename}.docx"`,
+      'Content-Length': documentBytes.length
+    });
+    
+    res.send(documentBytes);
+  } catch (error) {
+    logger.error(`Error generating FDA Form 1571: ${error.message}`);
+    res.status(500).json({ status: 'error', message: `Failed to generate Form 1571: ${error.message}` });
+  }
+});
+
+/**
+ * POST /api/ind-automation/generate/form1572
+ * Generate FDA Form 1572 (Statement of Investigator)
+ */
+router.post('/generate/form1572', async (req, res) => {
+  try {
+    const data = req.body as ProjectMetadata;
+    
+    if (!data.principal_investigator_name || !data.drug_name || !data.protocol_number) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Missing required fields. Please provide at minimum principal_investigator_name, drug_name, and protocol_number.'
+      });
+    }
+    
+    logger.info(`Generating FDA Form 1572 for investigator ${data.principal_investigator_name}`);
+    
+    // Generate the document
+    const documentBytes = await indAutomationService.generateForm1572(data);
+    
+    // Set headers and send response
+    const filename = (data.principal_investigator_name || data.drug_name).replace(/\s+/g, '_');
+    res.set({
+      'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'Content-Disposition': `attachment; filename="FDA_Form_1572_${filename}.docx"`,
+      'Content-Length': documentBytes.length
+    });
+    
+    res.send(documentBytes);
+  } catch (error) {
+    logger.error(`Error generating FDA Form 1572: ${error.message}`);
+    res.status(500).json({ status: 'error', message: `Failed to generate Form 1572: ${error.message}` });
+  }
+});
+
+/**
+ * POST /api/ind-automation/generate/form3674
+ * Generate FDA Form 3674 (Certification of Compliance with ClinicalTrials.gov)
+ */
+router.post('/generate/form3674', async (req, res) => {
+  try {
+    const data = req.body as ProjectMetadata;
+    
+    if (!data.drug_name || !data.sponsor_name) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Missing required fields. Please provide at minimum drug_name and sponsor_name.'
+      });
+    }
+    
+    logger.info(`Generating FDA Form 3674 for drug ${data.drug_name}`);
+    
+    // Generate the document
+    const documentBytes = await indAutomationService.generateForm3674(data);
+    
+    // Set headers and send response
+    const filename = data.drug_name.replace(/\s+/g, '_');
+    res.set({
+      'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'Content-Disposition': `attachment; filename="FDA_Form_3674_${filename}.docx"`,
+      'Content-Length': documentBytes.length
+    });
+    
+    res.send(documentBytes);
+  } catch (error) {
+    logger.error(`Error generating FDA Form 3674: ${error.message}`);
+    res.status(500).json({ status: 'error', message: `Failed to generate Form 3674: ${error.message}` });
+  }
+});
+
+/**
+ * POST /api/ind-automation/generate/cover-letter
+ * Generate a cover letter for IND submission
+ */
+router.post('/generate/cover-letter', async (req, res) => {
+  try {
+    const data = req.body as ProjectMetadata;
+    
+    if (!data.sponsor_name || !data.drug_name) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Missing required fields. Please provide at minimum sponsor_name and drug_name.'
+      });
+    }
+    
+    logger.info(`Generating cover letter for drug ${data.drug_name}`);
+    
+    // Generate the document
+    const documentBytes = await indAutomationService.generateCoverLetter(data);
+    
+    // Set headers and send response
+    const filename = data.drug_name.replace(/\s+/g, '_');
+    res.set({
+      'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'Content-Disposition': `attachment; filename="Cover_Letter_${filename}.docx"`,
+      'Content-Length': documentBytes.length
+    });
+    
+    res.send(documentBytes);
+  } catch (error) {
+    logger.error(`Error generating cover letter: ${error.message}`);
+    res.status(500).json({ status: 'error', message: `Failed to generate cover letter: ${error.message}` });
   }
 });
 
