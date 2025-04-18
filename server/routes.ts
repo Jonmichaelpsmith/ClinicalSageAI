@@ -17,6 +17,7 @@ import academicProtocolAssessment from './routes/academic_protocol_assessment';
 import correctionRoutes from './routes/correction-routes';
 import plannerRoutes from './routes/planner-routes';
 import faersRoutes from './routes/faers-routes';
+import indAutomationRoutes from './routes/ind_automation_routes';
 // CER routes will be dynamically imported later
 // Legacy Hugging Face service has been replaced with OpenAI-based services
 // Migration notice: The HuggingFace service has been completely replaced with OpenAI-based services.
@@ -769,6 +770,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register academic-style protocol assessment routes
   app.use('/api/protocol-assessment', academicProtocolAssessment);
+  
+  // IND Automation routes
+  app.use('/api/ind-automation', indAutomationRoutes);
   
   // Route mapper for protocol-analyses -> protocol-assessment (needed for ProtocolAnalyzer component)
   app.use('/api/protocol-analyses', (req, res, next) => {
