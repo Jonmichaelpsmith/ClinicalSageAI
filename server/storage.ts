@@ -110,8 +110,6 @@ export class DatabaseStorage implements IStorage {
   
   async getCsrDetails(reportId: number) {
     try {
-      const { csrDetails } = await import('./sage-plus-service');
-      
       // Using proper parameterized query with placeholders
       const result = await db.query.csrDetails.findFirst({
         where: (fields, { eq }) => eq(fields.reportId, reportId)

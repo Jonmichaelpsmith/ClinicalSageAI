@@ -360,6 +360,69 @@ export const insertProtocolAssessmentSchema = createInsertSchema(protocolAssessm
 export const insertProtocolAssessmentFeedbackSchema = createInsertSchema(protocolAssessmentFeedback);
 
 // Add relations for CERs
+// CSR Details table
+export const csrDetails = pgTable("csr_details", {
+  id: serial("id").primaryKey(),
+  reportId: integer("report_id").notNull(),
+  studyDesign: text("study_design"),
+  primaryObjective: text("primary_objective"),
+  studyDescription: text("study_description"),
+  inclusionCriteria: text("inclusion_criteria"),
+  exclusionCriteria: text("exclusion_criteria"),
+  treatmentArms: json("treatment_arms"),
+  studyDuration: text("study_duration"),
+  endpoints: json("endpoints"),
+  results: json("results"),
+  safety: json("safety"),
+  processingStatus: varchar("processing_status", { length: 50 }).default("pending"),
+  processed: boolean("processed").default(false),
+  extractionDate: timestamp("extraction_date").defaultNow(),
+  sampleSize: integer("sample_size"),
+  ageRange: varchar("age_range", { length: 100 }),
+  genderDistribution: json("gender_distribution"),
+  statisticalMethods: json("statistical_methods"),
+  adverseEvents: json("adverse_events"),
+  efficacyResults: json("efficacy_results"),
+  saeCount: integer("sae_count"),
+  teaeCount: integer("teae_count"),
+  completionRate: doublePrecision("completion_rate"),
+  lastUpdated: timestamp("last_updated").defaultNow()
+});
+
+// CSR Reports table (simplified version, you can expand as needed)
+export const csrReports = pgTable("csr_reports", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  sponsor: varchar("sponsor", { length: 255 }).notNull(),
+  indication: varchar("indication", { length: 255 }).notNull(),
+  phase: varchar("phase", { length: 50 }).notNull(),
+  status: varchar("status", { length: 50 }).default("Processing").notNull(),
+  date: timestamp("date"),
+  uploadDate: timestamp("upload_date").defaultNow().notNull(),
+  summary: text("summary"),
+  fileName: varchar("file_name", { length: 255 }).notNull(),
+  fileSize: integer("file_size").notNull(),
+  filePath: text("file_path"),
+  nctrialId: varchar("nctrial_id", { length: 50 }),
+  studyId: varchar("study_id", { length: 100 }),
+  drugName: varchar("drug_name", { length: 255 }),
+  region: varchar("region", { length: 100 }),
+  lastUpdated: timestamp("last_updated").defaultNow(),
+  deletedAt: timestamp("deleted_at")
+});
+
+// Relations between CSR Details and CSR Reports
+export const csrDetailsRelations = relations(csrDetails, ({ one }) => ({
+  report: one(csrReports, {
+    fields: [csrDetails.reportId],
+    references: [csrReports.id]
+  })
+}));
+
+export const csrReportsRelations = relations(csrReports, ({ many }) => ({
+  details: many(csrDetails)
+}));
+
 export const clinicalEvaluationReportsRelations = relations(clinicalEvaluationReports, ({ one }) => ({
   project: one(projects, {
     fields: [clinicalEvaluationReports.project_id],
@@ -401,6 +464,13 @@ export const insertClinicalEvaluationReportSchema = createInsertSchema(clinicalE
 })
 .omit({ id: true, created_at: true, updated_at: true, content_vector: true });
 
+// Insert schemas for CSR
+export const insertCsrDetailsSchema = createInsertSchema(csrDetails)
+  .omit({ id: true, extractionDate: true, lastUpdated: true });
+  
+export const insertCsrReportsSchema = createInsertSchema(csrReports)
+  .omit({ id: true, uploadDate: true, lastUpdated: true });
+
 // Types
 export type ProtocolAssessment = typeof protocolAssessments.$inferSelect;
 export type InsertProtocolAssessment = z.infer<typeof insertProtocolAssessmentSchema>;
@@ -408,3 +478,7 @@ export type ProtocolAssessmentFeedback = typeof protocolAssessmentFeedback.$infe
 export type InsertProtocolAssessmentFeedback = z.infer<typeof insertProtocolAssessmentFeedbackSchema>;
 export type ClinicalEvaluationReport = typeof clinicalEvaluationReports.$inferSelect;
 export type InsertClinicalEvaluationReport = z.infer<typeof insertClinicalEvaluationReportSchema>;
+export type CsrDetails = typeof csrDetails.$inferSelect;
+export type InsertCsrDetails = z.infer<typeof insertCsrDetailsSchema>;
+export type CsrReport = typeof csrReports.$inferSelect;
+export type InsertCsrReport = z.infer<typeof insertCsrReportsSchema>;
