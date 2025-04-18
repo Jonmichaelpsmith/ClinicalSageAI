@@ -639,8 +639,8 @@ if __name__ == "__main__":
         from templates import create_templates_if_needed
         create_templates_if_needed()
         
-        # Start the server
-        uvicorn.run(app, host="0.0.0.0", port=8000)
+        # Start the server on port 8001 to avoid conflicts
+        uvicorn.run(app, host="0.0.0.0", port=8001)
     except Exception as e:
         logger.error(f"Failed to start IND Automation service: {str(e)}", exc_info=True)
         sys.exit(1)
