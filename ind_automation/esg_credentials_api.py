@@ -11,7 +11,7 @@ from typing import Dict, Optional
 import logging
 
 from ind_automation import credentials
-from ind_automation.auth import get_current_admin_user
+from ind_automation.auth import get_current_user, admin_required
 from ind_automation.database import append_history
 
 # Configure logging
@@ -46,7 +46,7 @@ class MaskedESGCredentials(BaseModel):
 async def save_esg_credentials(
     project_id: str,
     creds: ESGCredentials,
-    user = Depends(get_current_admin_user)
+    user: str = Depends(admin_required)
 ):
     """
     Save ESG credentials for a project
@@ -61,7 +61,7 @@ async def save_esg_credentials(
         append_history(project_id, {
             "type": "esg_creds",
             "action": "update",
-            "by": user["username"],
+            "by": user,  # user is the username string from admin_required
             "fingerprint": fingerprint,
             "timestamp": None  # will be filled automatically
         })
@@ -77,7 +77,7 @@ async def save_esg_credentials(
 @router.get("/{project_id}/esg/creds")
 async def get_esg_credentials(
     project_id: str,
-    user = Depends(get_current_admin_user)
+    user: str = Depends(admin_required)
 ):
     """
     Get masked ESG credentials for a project
@@ -105,7 +105,7 @@ async def get_esg_credentials(
 @router.delete("/{project_id}/esg/creds")
 async def delete_esg_credentials(
     project_id: str,
-    user = Depends(get_current_admin_user)
+    user: str = Depends(admin_required)
 ):
     """
     Delete ESG credentials for a project
@@ -128,7 +128,7 @@ async def delete_esg_credentials(
         append_history(project_id, {
             "type": "esg_creds",
             "action": "delete",
-            "by": user["username"],
+            "by": user,  # user is the username string from admin_required
             "fingerprint": fingerprint,
             "timestamp": None  # will be filled automatically
         })
@@ -144,7 +144,7 @@ async def delete_esg_credentials(
 @router.post("/{project_id}/esg/creds/verify")
 async def verify_esg_credentials(
     project_id: str,
-    user = Depends(get_current_admin_user)
+    user: str = Depends(admin_required)
 ):
     """
     Verify ESG credentials by attempting a test connection
