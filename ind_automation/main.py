@@ -7,6 +7,7 @@ from typing import List
 
 from ind_automation.templates import render_form1571, render_form1572, render_form3674
 from ind_automation import db
+from ind_automation import module3
 
 app = FastAPI(title="IND Automation Service v2")
 
@@ -104,6 +105,9 @@ async def new_sequence(pid: str):
 async def health(): return {"status": "ok"}
 
 # ------------ Backward Compatibility -------------
+
+# Include Module 3 router
+app.include_router(module3.router)
 
 # For compatibility with existing API calls
 @app.get("/projects")

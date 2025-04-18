@@ -1,0 +1,291 @@
+Below is one cut‑and‑paste shell script that completes Phase 2‑C in a single shot:
+
+Backend
+
+Adds endpoints
+
+GET /api/ind/{pid}/module3?src=benchling – pull live Benchling data
+
+POST /api/ind/{pid}/module3/manual – accept JSON payload
+
+Renders templates/module3_cmc.docx.j2 for either source
+
+Frontend
+
+Creates Module3Benchling.jsx and Module3Manual.jsx
+
+Adds a Module 3 tab to IndAutomationPage with download buttons and a manual form
+
+How to use
+
+Copy everything from #!/usr/bin/env bash to the last echo ✅
+
+Open Replit’s Shell → paste → Enter
+
+Upload/ensure a valid templates/module3_cmc.docx.j2 exists
+
+Restart React (npm start) and FastAPI (uvicorn … --port 8001)
+
+Create/select a project → Module 3 tab → generate docs
+
+bash
+Copy
+Edit
+#!/usr/bin/env bash
+set -e
+echo "▶︎ Phase 2‑C: Module 3 endpoints + React UI"
+
+cd "$REPL_HOME"
+
+# -------------------------------------------------------------
+# 1) Backend additions
+# -------------------------------------------------------------
+cat > ind_automation/module3.py << 'PY'
+import io
+from fastapi import APIRouter, HTTPException
+from fastapi.responses import StreamingResponse
+from typing import Dict
+from docxtpl import DocxTemplate
+
+from ingestion.benchling_connector import fetch_benchling_cmc
+from ind_automation.db import load as load_meta
+
+TEMPLATE_PATH = "templates/module3_cmc.docx.j2"
+router = APIRouter(prefix="/api/ind")
+
+def _render(data: Dict, project_id: str):
+    tpl = DocxTemplate(TEMPLATE_PATH)
+    tpl.render(data)
+    buf = io.BytesIO(); tpl.save(buf); buf.seek(0)
+    return StreamingResponse(
+        buf,
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        headers={"Content-Disposition": f'attachment; filename=Module3_{project_id}.docx'}
+    )
+
+@router.get("/{pid}/module3")
+async def module3_benchling(pid: str, src: str = "benchling"):
+    if src != "benchling":
+        raise HTTPException(400, "src must be 'benchling'")
+
+    meta = load_meta(pid) or {}
+    bench = fetch_benchling_cmc(pid)
+    if not bench:
+        raise HTTPException(404, "Benchling data not found")
+
+    bench.update(meta)  # merge sponsor/drug if needed
+    return _render(bench, pid)
+
+@router.post("/{pid}/module3/manual")
+async def module3_manual(pid: str, payload: Dict):
+    if not payload.get("drug_name"):
+        raise HTTPException(400, "drug_name required")
+    return _render(payload, pid)
+PY
+
+# Patch main.py to include new router
+python - << 'PY'
+import fileinput, re, sys, pathlib
+main = pathlib.Path("ind_automation/main.py")
+txt = main.read_text()
+if "include_router(router_module3)" not in txt:
+    txt = re.sub(
+        r"app = FastAPI[^\n]+\n",
+        lambda m: m.group(0) + "from ind_automation import module3\n",
+        txt,
+        1
+    )
+    txt += "\napp.include_router(module3.router)\n"
+    main.write_text(txt)
+PY
+
+# -------------------------------------------------------------
+# 2) Frontend components
+# -------------------------------------------------------------
+mkdir -p client/src/components
+
+# services/api.js already exists – ensure put method helper
+python - << 'PY'
+import pathlib, textwrap, re
+p = pathlib.Path("client/src/services/api.js")
+if p.exists():
+    code = p.read_text()
+    if "export const postJson" not in code:
+        code += textwrap.dedent("""
+        export const postJson = (url, data) =>
+          api.post(url, data, { headers: { 'Content-Type': 'application/json' }});
+        """)
+        p.write_text(code)
+PY
+
+# Module3Benchling.jsx
+cat > client/src/components/Module3Benchling.jsx << 'JSX'
+import React, { useState } from "react";
+import api from "../services/api";
+
+export default function Module3Benchling({ project }) {
+  const [busy, setBusy] = useState(false);
+
+  const download = async () => {
+    setBusy(true);
+    window.open(`/api/ind/${project.project_id}/module3?src=benchling`, "_blank");
+    setTimeout(() => setBusy(false), 1000);
+  };
+
+  return (
+    <button
+      className="bg-purple-600 text-white px-3 py-1 rounded disabled:opacity-50"
+      disabled={!project || busy}
+      onClick={download}
+    >
+      {busy ? "Generating…" : "Download Module 3 (Benchling)"}
+    </button>
+  );
+}
+JSX
+
+# Module3Manual.jsx
+cat > client/src/components/Module3Manual.jsx << 'JSX'
+import React, { useState } from "react";
+import api from "../services/api";
+import { postJson } from "../services/api";
+
+export default function Module3Manual({ project }) {
+  const blank = {
+    drug_name: "",
+    manufacturing_site: "",
+    batch_number: "",
+    specifications: "",
+    stability_data: "",
+  };
+  const [form, setForm] = useState(blank);
+  const [busy, setBusy] = useState(false);
+
+  const handle = (e) =>
+    setForm({ ...form, [e.target.name]: e.target.value });
+
+  const submit = async () => {
+    setBusy(true);
+    try {
+      await postJson(`/api/ind/${project.project_id}/module3/manual`, form);
+      window.open(`/api/ind/${project.project_id}/module3/manual`, "_blank");
+      setForm(blank);
+    } catch (e) {
+      alert(e.response?.data?.detail || e.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="space-y-1 border p-3 rounded">
+      <h4 className="font-semibold text-sm mb-1">Manual CMC Entry</h4>
+      {["drug_name", "manufacturing_site", "batch_number"].map((f) => (
+        <input
+          key={f}
+          name={f}
+          placeholder={f.replaceAll("_", " ")}
+          className="border p-1 w-full text-sm mb-1"
+          value={form[f]}
+          onChange={handle}
+        />
+      ))}
+      <button
+        className="bg-blue-600 text-white px-2 py-1 rounded text-sm"
+        disabled={busy}
+        onClick={submit}
+      >
+        {busy ? "Generating…" : "Generate Module 3"}
+      </button>
+    </div>
+  );
+}
+JSX
+
+# -------------------------------------------------------------
+# 3) Patch IndAutomationPage.jsx
+# -------------------------------------------------------------
+python - << 'PY'
+import pathlib, re, textwrap, sys, json, os, io, itertools
+page = pathlib.Path("client/src/pages/IndAutomationPage.jsx")
+code = page.read_text()
+
+if "Module3Benchling" not in code:
+    code = code.replace(
+        "import Module1Forms from",
+        "import Module1Forms from"
+        " \"../components/Module1Forms\";\n"
+        "import Module3Benchling from \"../components/Module3Benchling\";\n"
+        "import Module3Manual from \"../components/Module3Manual\";"
+    )
+    # add tab buttons
+    if "const [tab" not in code:
+        code = code.replace(
+            "const [selected, setSelected]",
+            "const [tab, setTab] = useState(\"Module1\");\n  const [selected, setSelected]"
+        )
+    # insert tab nav markup
+    if "<h2 className=\"text-xl font-semibold\">" in code:
+        nav = textwrap.dedent("""
+        <div className="space-x-2 mb-4">
+          {["Module1", "Module3"].map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={t===tab ? "underline font-bold" : ""}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+        """)
+        code = code.replace("<h2 className=\"text-xl font-semibold\">", nav + "<h2 className=\"text-xl font-semibold\">")
+
+    # render panes
+    pane_insert = textwrap.dedent("""
+      {tab === "Module3" && selected && (
+        <div className="space-y-2">
+          <Module3Benchling project={selected} />
+          <Module3Manual   project={selected} />
+        </div>
+      )}
+    """)
+    code = code.replace("</Routes>", pane_insert + "\n</Routes>")
+    page.write_text(code)
+PY
+
+echo "✅  Backend endpoints + React Module 3 UI added."
+echo "------------------------------------------------"
+echo "▶ Restart backend:"
+echo "  uvicorn ind_automation.main:app --host 0.0.0.0 --port 8001"
+echo "▶ Restart React:"
+echo "  npm start"
+echo "------------------------------------------------"
+echo "Create/select a project → Module3 tab → generate docs!"
+What this script does
+ind_automation/module3.py
+
+GET /api/ind/{pid}/module3?src=benchling
+
+POST /api/ind/{pid}/module3/manual
+
+main.py auto‑includes the new router.
+
+React
+
+Adds Module 3 tab with Benchling and Manual generators.
+
+After running:
+
+Restart both servers (npm start will fire React + FastAPI if you use concurrently).
+
+In the UI, create/select a project → switch to Module 3 → click
+Download Module 3 (Benchling) or fill Manual form → Generate Module 3 → Word doc downloads.
+
+Phase 2‑C finished! Next: history table or eCTD builder in Phase 3.
+
+
+
+
+
+
