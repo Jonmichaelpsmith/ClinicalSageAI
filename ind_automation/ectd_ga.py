@@ -26,9 +26,24 @@ def _md5(path: Path):
     return h.hexdigest()
 
 def _leaf(parent, rel_path, title, checksum, operation):
+    # Set the xlink namespace at the root level
+    if parent.tag == "ectd" and "{http://www.w3.org/1999/xlink}" not in parent.nsmap:
+        # Fix namespace handling in lxml
+        nsmap = {"xlink": "http://www.w3.org/1999/xlink"}
+        root_with_ns = etree.Element("ectd", nsmap=nsmap)
+        # Copy existing children
+        for child in parent:
+            root_with_ns.append(child)
+        # Replace original content
+        parent.clear()
+        for k, v in root_with_ns.attrib.items():
+            parent.set(k, v)
+        # Copy namespace
+        parent.nsmap.update(nsmap)
+    
+    # Create leaf with proper attributes
     leaf = etree.SubElement(parent, "leaf", {
-        "xmlns:xlink": "http://www.w3.org/1999/xlink",
-        "xlink:href": rel_path,
+        "href": rel_path,
         "operation": operation,
         "checksum": checksum,
         "checksumType": "md5",
