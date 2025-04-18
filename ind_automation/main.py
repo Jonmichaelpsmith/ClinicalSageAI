@@ -626,5 +626,21 @@ async def generate_cover_letter(data: ProjectMetadata):
         )
 
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    logger.info("Starting IND Automation service")
+    try:
+        import uvicorn
+        # Create templates directory if it doesn't exist
+        templates_dir = os.path.join(os.path.dirname(__file__), "templates")
+        os.makedirs(templates_dir, exist_ok=True)
+        forms_dir = os.path.join(templates_dir, "forms")
+        os.makedirs(forms_dir, exist_ok=True)
+        
+        # Initialize templates if needed
+        from templates import create_templates_if_needed
+        create_templates_if_needed()
+        
+        # Start the server
+        uvicorn.run(app, host="0.0.0.0", port=8000)
+    except Exception as e:
+        logger.error(f"Failed to start IND Automation service: {str(e)}", exc_info=True)
+        sys.exit(1)
