@@ -1,7 +1,10 @@
 # ingestion/benchling_connector.py
-from typing import Dict, List
+from typing import Dict, Optional
+import logging
 
-def fetch_benchling_cmc(project_id: str) -> Dict:
+logger = logging.getLogger(__name__)
+
+def fetch_benchling_cmc(project_id: str) -> Optional[Dict]:
     """
     Stub: Fetch CMC data for a given project_id from Benchling.
     Returns a dict with keys matching Module 3 fields.
@@ -9,10 +12,20 @@ def fetch_benchling_cmc(project_id: str) -> Dict:
     In a production implementation, this would connect to the Benchling API
     and retrieve real CMC data for the specified project.
     """
+    logger.info(f"Fetching CMC data for project: {project_id}")
+    
     # This is a stub that returns structured data
     # In production, we would use the Benchling API client to fetch real data
+    
+    # For demo purposes, let's add conditional behavior based on project_id 
+    # to simulate different scenarios
+    if project_id == "invalid":
+        logger.warning(f"Project {project_id} not found")
+        return None
+    
+    # Default data for demo purposes
     return {
-        "drug_name": "LumenTrial-101",
+        "drug_name": f"LumenTrial-{project_id}",
         "nomenclature": {
             "chemical_name": "4-(4-{3-[4-chloro-3-(trifluoromethyl)phenyl]ureido}phenoxy)-N-methylpyridine-2-carboxamide",
             "cas_number": "1123581321-01",
@@ -20,7 +33,7 @@ def fetch_benchling_cmc(project_id: str) -> Dict:
         },
         "manufacturing_site": "LumenBio Manufacturing Facility",
         "facility_address": "123 Innovation Way, Cambridge, MA 02142",
-        "batch_number": "LT101-B042",
+        "batch_number": f"LT{project_id}-B042",
         "manufacture_date": "2025-01-15",
         "drug_substance": {
             "appearance": "White to off-white crystalline powder",

@@ -1,0 +1,1 @@
+# init file for ind_automation package
