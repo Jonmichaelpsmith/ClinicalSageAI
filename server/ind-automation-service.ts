@@ -35,6 +35,42 @@ export interface ProjectInfo {
   name: string;
 }
 
+export interface ProjectMetadata {
+  sponsor_name?: string;
+  sponsor_address?: string;
+  sponsor_phone?: string;
+  ind_number?: string;
+  drug_name?: string;
+  indication?: string;
+  protocol_number?: string;
+  protocol_title?: string;
+  phase?: string;
+  submission_date?: string;
+  nct_number?: string;
+  principal_investigator_name?: string;
+  investigator_address?: string;
+  investigator_phone?: string;
+  irb_name?: string;
+  irb_address?: string;
+  clinical_lab_name?: string;
+  clinical_lab_address?: string;
+  research_facility_name?: string;
+  research_facility_address?: string;
+  subinvestigators?: string;
+  contact_name?: string;
+  contact_email?: string;
+  contact_phone?: string;
+  authorizer_name?: string;
+  authorizer_title?: string;
+  certifier_name?: string;
+  certifier_title?: string;
+  certifier_address?: string;
+  certifier_email?: string;
+  certifier_phone?: string;
+  certifier_fax?: string;
+  serial_number?: string;
+}
+
 /**
  * Service for interfacing with the IND Automation Python microservice
  */
@@ -249,6 +285,118 @@ export class INDAutomationService {
     } catch (error) {
       logger.error(`Error getting service info: ${error.message}`);
       throw new Error(`Failed to get service info: ${error.message}`);
+    }
+  }
+
+  /**
+   * Generate FDA Form 1571 (Investigational New Drug Application)
+   * @param data The form data
+   * @returns Buffer containing the generated document
+   */
+  async generateForm1571(data: ProjectMetadata): Promise<Buffer> {
+    try {
+      // Make sure the service is running
+      const serviceRunning = await this.isServiceRunning();
+      if (!serviceRunning) {
+        await this.startService();
+      }
+
+      const response = await axios.post(
+        `${this.serviceUrl}/generate/form1571`,
+        data,
+        {
+          responseType: 'arraybuffer'
+        }
+      );
+
+      return Buffer.from(response.data);
+    } catch (error) {
+      logger.error(`Error generating Form 1571: ${error.message}`);
+      throw new Error(`Failed to generate Form 1571: ${error.message}`);
+    }
+  }
+
+  /**
+   * Generate FDA Form 1572 (Statement of Investigator)
+   * @param data The form data
+   * @returns Buffer containing the generated document
+   */
+  async generateForm1572(data: ProjectMetadata): Promise<Buffer> {
+    try {
+      // Make sure the service is running
+      const serviceRunning = await this.isServiceRunning();
+      if (!serviceRunning) {
+        await this.startService();
+      }
+
+      const response = await axios.post(
+        `${this.serviceUrl}/generate/form1572`,
+        data,
+        {
+          responseType: 'arraybuffer'
+        }
+      );
+
+      return Buffer.from(response.data);
+    } catch (error) {
+      logger.error(`Error generating Form 1572: ${error.message}`);
+      throw new Error(`Failed to generate Form 1572: ${error.message}`);
+    }
+  }
+
+  /**
+   * Generate FDA Form 3674 (Certification of Compliance with ClinicalTrials.gov)
+   * @param data The form data
+   * @returns Buffer containing the generated document
+   */
+  async generateForm3674(data: ProjectMetadata): Promise<Buffer> {
+    try {
+      // Make sure the service is running
+      const serviceRunning = await this.isServiceRunning();
+      if (!serviceRunning) {
+        await this.startService();
+      }
+
+      const response = await axios.post(
+        `${this.serviceUrl}/generate/form3674`,
+        data,
+        {
+          responseType: 'arraybuffer'
+        }
+      );
+
+      return Buffer.from(response.data);
+    } catch (error) {
+      logger.error(`Error generating Form 3674: ${error.message}`);
+      throw new Error(`Failed to generate Form 3674: ${error.message}`);
+    }
+  }
+
+  /**
+   * Generate a cover letter for IND submission
+   * @param data The cover letter data
+   * @returns Buffer containing the generated document
+   */
+  async generateCoverLetter(data: ProjectMetadata): Promise<Buffer> {
+    try {
+      // Make sure the service is running
+      const serviceRunning = await this.isServiceRunning();
+      if (!serviceRunning) {
+        await this.startService();
+      }
+
+      const response = await axios.post(
+        `${this.serviceUrl}/generate/cover-letter`,
+        data,
+        {
+          responseType: 'arraybuffer'
+        }
+      );
+
+      return Buffer.from(response.data);
+    } catch (error) {
+      logger.error(`Error generating cover letter: ${error.message}`);
+      throw new Error(`Failed to generate cover letter: ${error.message}`);
     }
   }
 }

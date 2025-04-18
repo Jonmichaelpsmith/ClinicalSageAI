@@ -5,9 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Ban, CheckCircle2, Loader2, FileDown, Database, FileEdit } from 'lucide-react';
+import { Ban, CheckCircle2, Loader2, FileDown, Database, FileEdit, FileText } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ManualDataForm from './ManualDataForm';
+import FDAFormsPanel from './FDAFormsPanel';
 
 /**
  * INDAutomationPanel Component
@@ -141,14 +142,18 @@ export function INDAutomationPanel() {
           )}
 
           <Tabs defaultValue="benchling" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="benchling">
                 <Database className="h-4 w-4 mr-2" />
                 From Benchling
               </TabsTrigger>
               <TabsTrigger value="manual">
                 <FileEdit className="h-4 w-4 mr-2" />
-                Manual Data
+                Manual CMC Data
+              </TabsTrigger>
+              <TabsTrigger value="fda-forms">
+                <FileText className="h-4 w-4 mr-2" />
+                FDA Forms
               </TabsTrigger>
             </TabsList>
             
@@ -232,6 +237,10 @@ export function INDAutomationPanel() {
             
             <TabsContent value="manual">
               <ManualDataForm />
+            </TabsContent>
+            
+            <TabsContent value="fda-forms">
+              <FDAFormsPanel />
             </TabsContent>
           </Tabs>
         </div>
