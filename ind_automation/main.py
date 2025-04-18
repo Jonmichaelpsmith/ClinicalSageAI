@@ -1,81 +1,133 @@
-# main.py
-import io
-import os
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import StreamingResponse
+#!/usr/bin/env python3
+"""IND Automation FastAPI Microservice"""
+
+import fastapi
+from fastapi.responses import StreamingResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from docxtpl import DocxTemplate
-from ingestion.benchling_connector import fetch_benchling_cmc
 import logging
+import os
+import sys
+from typing import Dict, Any, Optional
 
-# Set up logging
-logging.basicConfig(level=logging.INFO, 
-                   format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+# Setup logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout)
+    ]
+)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="IND Automation API")
+# Import our modules
+from ingestion.benchling_connector import fetch_benchling_cmc
+from create_template import TemplateGenerator
 
-# Add CORS middleware to allow requests from the main Node.js app
+# Create FastAPI app
+app = fastapi.FastAPI(
+    title="IND Automation API",
+    description="Microservice for generating FDA Investigational New Drug (IND) application documents",
+    version="0.1.0"
+)
+
+# Allow CORS for frontend integration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, limit this to your specific domain
+    allow_origins=["*"],  # In production, restrict to specific origins
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-class INDProject(BaseModel):
+# Initialize template generator
+template_generator = TemplateGenerator()
+
+class ProjectRequest(BaseModel):
+    """Project request model"""
     project_id: str
 
 @app.get("/")
 async def root():
-    return {"message": "IND Automation API is running"}
+    """Root endpoint - service information"""
+    return {
+        "name": "IND Automation API",
+        "version": "0.1.0",
+        "status": "operational",
+        "modules_supported": ["module3_cmc"]
+    }
 
-@app.get("/api/ind/{project_id}/module3")
+@app.get("/status")
+async def status():
+    """Service status check"""
+    try:
+        # Check if template directory exists and is accessible
+        templates_dir = os.path.join(os.path.dirname(__file__), "templates")
+        if not os.path.exists(templates_dir):
+            return JSONResponse(
+                status_code=500,
+                content={"status": "error", "message": "Templates directory not found"}
+            )
+        
+        return {
+            "status": "operational",
+            "message": "IND Automation service is running properly"
+        }
+    except Exception as e:
+        logger.error(f"Status check failed: {str(e)}", exc_info=True)
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "message": f"Service error: {str(e)}"}
+        )
+
+@app.get("/{project_id}/module3")
 async def generate_module3(project_id: str):
     """
-    Generate Module 3 (CMC) document for an IND submission
-    """
-    logger.info(f"Generating Module 3 for project: {project_id}")
+    Generate Module 3 (Chemistry, Manufacturing, and Controls) document
     
+    Args:
+        project_id: The project identifier to fetch data for
+        
+    Returns:
+        DOCX file as attachment
+    """
     try:
-        # 1) Fetch data from Benchling (or stub)
-        data = fetch_benchling_cmc(project_id)
-        if not data:
-            raise HTTPException(status_code=404, detail="Project not found or no CMC data available")
+        logger.info(f"Received request to generate Module 3 for project {project_id}")
         
-        # 2) Render template
-        template_path = os.path.join(os.path.dirname(__file__), "templates", "module3_cmc.docx.j2")
+        # Fetch CMC data from Benchling (or our stub for now)
+        cmc_data = fetch_benchling_cmc(project_id)
         
-        if not os.path.exists(template_path):
-            logger.error(f"Template not found at {template_path}")
-            raise HTTPException(status_code=500, 
-                              detail="Module 3 template not found. Please run create_template.py first.")
+        if not cmc_data:
+            return JSONResponse(
+                status_code=404,
+                content={"status": "error", "message": f"No data found for project {project_id}"}
+            )
         
-        tpl = DocxTemplate(template_path)
-        tpl.render(data)
+        # Generate the document
+        document_bytes = template_generator.generate_module3(cmc_data)
         
-        # 3) Stream back as bytes
-        buf = io.BytesIO()
-        tpl.save(buf)
-        buf.seek(0)
+        if not document_bytes:
+            return JSONResponse(
+                status_code=500,
+                content={"status": "error", "message": "Failed to generate document"}
+            )
         
-        filename = f"Module3_CMC_{project_id}.docx"
-        
-        logger.info(f"Successfully generated Module 3 document: {filename}")
-        
+        # Return as downloadable file
         return StreamingResponse(
-            buf, 
-            media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            headers={'Content-Disposition': f'attachment; filename={filename}'}
+            iter([document_bytes]),
+            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            headers={
+                "Content-Disposition": f'attachment; filename="Module3_CMC_{project_id}.docx"'
+            }
         )
-        
+    
     except Exception as e:
-        logger.error(f"Error generating Module 3: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error generating Module 3: {str(e)}")
+        logger.error(f"Error generating Module 3 document: {str(e)}", exc_info=True)
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "message": f"Error: {str(e)}"}
+        )
 
 if __name__ == "__main__":
     import uvicorn
-    # Run the FastAPI app with uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
