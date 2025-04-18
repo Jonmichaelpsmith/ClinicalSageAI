@@ -5,6 +5,7 @@ import Module1Forms from "../components/Module1Forms";
 import Module3Benchling from "../components/Module3Benchling";
 import Module3Manual from "../components/Module3Manual";
 import HistoryTable from "../components/HistoryTable";
+import Module2Narratives from "../components/Module2Narratives";
 
 export default function IndAutomationPage() {
   const [tab, setTab] = useState("Module1");
@@ -26,7 +27,7 @@ export default function IndAutomationPage() {
       {selected && (
         <div className="border-t pt-4">
           <div className="space-x-2 mb-4">
-            {["Module1", "Module3", "History"].map((t) => (
+            {["Module1", "Module2", "Module3", "History"].map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}

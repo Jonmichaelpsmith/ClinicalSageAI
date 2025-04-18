@@ -7,7 +7,7 @@ from typing import List
 
 from ind_automation.templates import render_form1571, render_form1572, render_form3674
 from ind_automation import db
-from ind_automation import module3
+from ind_automation import module3, ai_narratives
 from ind_automation.db import append_history, get_history
 
 app = FastAPI(title="IND Automation Service v2")
@@ -121,6 +121,9 @@ async def get_history_endpoint(pid: str):
 
 # Include Module 3 router
 app.include_router(module3.router)
+
+# Include AI narratives router
+app.include_router(ai_narratives.router)
 
 # For compatibility with existing API calls
 @app.get("/projects")
