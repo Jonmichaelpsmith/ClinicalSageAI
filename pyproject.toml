@@ -7,6 +7,7 @@ dependencies = [
     "aiohttp>=3.11.16",
     "beautifulsoup4>=4.13.4",
     "celery>=5.5.1",
+    "cryptography==42.*",
     "docx2pdf>=0.1.8",
     "docxtpl>=0.19.1",
     "fastapi>=0.115.12",
