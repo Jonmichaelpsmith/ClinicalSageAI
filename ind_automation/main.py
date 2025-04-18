@@ -1,16 +1,21 @@
 import io, datetime, uuid
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
-from typing import List
+from typing import List, Dict, Optional
 
 from ind_automation.templates import render_form1571, render_form1572, render_form3674
 from ind_automation import db
 from ind_automation import module3, ai_narratives, ectd_ga
 from ind_automation.db import append_history, get_history
+from ind_automation import esg_credentials_api
 
 app = FastAPI(title="IND Automation Service v2")
+
+# Security
+security = HTTPBearer()
 
 # CORS (relax during dev)
 app.add_middleware(
@@ -124,6 +129,9 @@ app.include_router(module3.router)
 
 # Include AI narratives router
 app.include_router(ai_narratives.router)
+
+# Include ESG credentials API
+app.include_router(esg_credentials_api.router)
 
 # For compatibility with existing API calls
 @app.get("/projects")
