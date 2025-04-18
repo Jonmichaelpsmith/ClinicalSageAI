@@ -15,7 +15,7 @@ import uvicorn
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # Create necessary directories if they don't exist
-os.makedirs('ind_automation/templates/forms', exist_ok=True)
+os.makedirs('templates/forms', exist_ok=True)
 
 # Start the FastAPI service
 if __name__ == "__main__":
