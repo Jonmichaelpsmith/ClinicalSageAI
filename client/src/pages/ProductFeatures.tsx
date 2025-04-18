@@ -127,7 +127,7 @@ export default function ProductFeatures() {
                     </CardFooter>
                   </Card>
                 </Link>
-                <Link href="/protocol-optimizer" className="block">
+                <Link href="/protocol/optimizer" className="block">
                   <Card className="border-2 border-transparent hover:border-primary/30 transition-all h-full">
                     <CardHeader className="pb-3">
                       <Clipboard className="h-8 w-8 text-primary mb-2" />
