@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import WorkflowProgress from "./WorkflowProgress";
+import AnimatedWorkflow from "./AnimatedWorkflow";
 import { getJson, postJson } from "../../services/api";
 
 /**
@@ -23,6 +24,7 @@ const WorkflowDashboard = ({ project }) => {
   const [esgStatus, setEsgStatus] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [activeDisplay, setActiveDisplay] = useState("progress"); // "progress" or "animated"
 
   // Fetch project history
   useEffect(() => {
@@ -113,6 +115,18 @@ const WorkflowDashboard = ({ project }) => {
     if (stats.ack.completed) return "acknowledgment";
     return "esg";
   };
+  
+  // Determine the completed stages
+  const determineCompletedStages = () => {
+    const completed = [];
+    if (stats.forms.completed) completed.push("forms");
+    if (stats.module2.completed) completed.push("module2");
+    if (stats.module3.completed) completed.push("module3");
+    if (stats.ectd.completed) completed.push("ectd");
+    if (stats.esg.completed) completed.push("esg");
+    if (stats.ack.completed) completed.push("acknowledgment");
+    return completed;
+  };
 
   // Submit to ESG
   const submitToEsg = async () => {
@@ -147,11 +161,45 @@ const WorkflowDashboard = ({ project }) => {
 
   return (
     <div className="space-y-6">
-      {/* Animated workflow progress visualization */}
-      <WorkflowProgress 
-        project={{ history }} 
-        currentStage={determineActiveStage()} 
-      />
+      {/* Visualization toggle */}
+      <div className="flex justify-end">
+        <div className="inline-flex rounded-md shadow-sm" role="group">
+          <button
+            type="button"
+            className={`px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-l-lg ${activeDisplay === 'progress' ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-100'}`}
+            onClick={() => setActiveDisplay('progress')}
+          >
+            Progress Bar
+          </button>
+          <button
+            type="button"
+            className={`px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-r-lg ${activeDisplay === 'animated' ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-100'}`}
+            onClick={() => setActiveDisplay('animated')}
+          >
+            Animated Flow
+          </button>
+        </div>
+      </div>
+      
+      {/* Animated workflow visualizations */}
+      <motion.div
+        key={activeDisplay}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        {activeDisplay === 'progress' ? (
+          <WorkflowProgress 
+            project={{ history }} 
+            currentStage={determineActiveStage()} 
+          />
+        ) : (
+          <AnimatedWorkflow
+            currentStage={determineActiveStage()}
+            completedStages={determineCompletedStages()}
+          />
+        )}
+      </motion.div>
       
       {/* Action panel */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
