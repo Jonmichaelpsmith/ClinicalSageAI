@@ -1,5 +1,6 @@
 import { ProtocolData } from './protocol-analyzer-service';
 import { huggingFaceService } from './huggingface-service';
+import { isApiKeyAvailable, generateTailoredProtocolRecommendations } from './openai-service';
 
 export interface OptimizationResult {
   original: ProtocolData;
@@ -17,6 +18,58 @@ export interface Recommendation {
 }
 
 export class ProtocolOptimizerService {
+  /**
+   * Generates tailored recommendations based on the exact protocol submitted
+   * with specific references to similar CSRs and academic literature
+   */
+  async generateTailoredRecommendations(
+    protocolText: string,
+    protocolMeta: {
+      indication: string;
+      phase: string;
+      studyType: string;
+      title?: string;
+    },
+    matchedCsrs: any[] = [],
+    academicReferences: any[] = []
+  ): Promise<string> {
+    try {
+      // If OpenAI API is available, use that for more tailored recommendations
+      if (isApiKeyAvailable()) {
+        return await generateTailoredProtocolRecommendations(
+          protocolText,
+          protocolMeta,
+          matchedCsrs,
+          academicReferences
+        );
+      } else {
+        // Fallback to simpler template-based approach if OpenAI is not available
+        return `## Protocol Optimization Recommendations for ${protocolMeta.indication} Study
+
+Based on our analysis of your ${protocolMeta.phase.replace('phase', 'Phase ')} ${protocolMeta.indication} protocol, we recommend the following optimizations:
+
+1. **Consider industry standard endpoints for ${protocolMeta.indication} studies**
+   - Ensure alignment with regulatory expectations
+   - Include patient-reported outcomes
+
+2. **Optimize sample size for statistical power**
+   - Based on similar studies in ${protocolMeta.indication}
+   - Account for expected effect size and dropout rate
+
+3. **Enhance inclusion/exclusion criteria**
+   - Target appropriate patient population
+   - Balance enrollment feasibility with population specificity
+
+4. **Review safety monitoring procedures**
+   - Implement standard safety assessments for ${protocolMeta.indication} studies
+   - Include appropriate stopping rules`;
+      }
+    } catch (error) {
+      console.error("Error generating tailored recommendations:", error);
+      return "Unable to generate tailored recommendations. Please try again.";
+    }
+  }
+
   /**
    * Generates optimization recommendations for a protocol
    */
