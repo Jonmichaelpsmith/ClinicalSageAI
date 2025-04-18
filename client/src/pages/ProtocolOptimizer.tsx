@@ -18,6 +18,7 @@ import {
   Save, 
   Loader2,
   PlusCircle,
+  Upload,
   BookCopy
 } from 'lucide-react';
 
@@ -31,6 +32,8 @@ export default function ProtocolOptimizer() {
   const [useSimilarTrials, setUseSimilarTrials] = useState<boolean>(true);
   const [indication, setIndication] = useState<string>('');
   const [phase, setPhase] = useState<string>('phase3');
+  const [protocolFile, setProtocolFile] = useState<File | null>(null);
+  const [uploadedFileName, setUploadedFileName] = useState<string>('');
   
   const [analyzeLoading, setAnalyzeLoading] = useState<boolean>(false);
   const [generatedContent, setGeneratedContent] = useState<{
@@ -51,10 +54,10 @@ export default function ProtocolOptimizer() {
 
   // Generate protocol optimization recommendation
   const analyzeProtocol = async () => {
-    if (!protocolSummary.trim()) {
+    if (!protocolSummary.trim() && !protocolFile) {
       toast({
         title: "Empty Protocol",
-        description: "Please enter a protocol summary or description.",
+        description: "Please enter a protocol summary or upload a protocol file.",
         variant: "destructive"
       });
       return;
@@ -64,14 +67,46 @@ export default function ProtocolOptimizer() {
     setGeneratedContent(null);
     
     try {
-      const response = await apiRequest('POST', '/api/protocol/optimize', {
+      // Create a FormData object if a file is uploaded
+      let payload: any = {
         protocolSummary,
         studyType,
         includeReferences,
-        useSimilarTrials,
+        useSimilarTrials: true, // Always set to true to ensure we get all relevant CSRs
         indication,
-        phase
-      }) as ProtocolOptimizationResponse;
+        phase,
+        findAllSimilarCSRs: true, // New flag to find all similar CSRs
+        compareTherapeuticArea: true, // Match by therapeutic area
+        compareTrialPhase: true // Match by trial phase
+      };
+      
+      let response;
+      
+      if (protocolFile) {
+        // If there's a file, we need to use FormData for multipart/form-data
+        const formData = new FormData();
+        formData.append('file', protocolFile);
+        
+        // Add all other parameters to the FormData
+        Object.keys(payload).forEach(key => {
+          formData.append(key, payload[key]?.toString() || '');
+        });
+        
+        // Use fetch directly for file upload
+        const uploadResponse = await fetch('/api/protocol/upload-and-optimize', {
+          method: 'POST',
+          body: formData,
+        });
+        
+        if (!uploadResponse.ok) {
+          throw new Error(`File upload failed: ${uploadResponse.statusText}`);
+        }
+        
+        response = await uploadResponse.json();
+      } else {
+        // Standard JSON request when no file is uploaded
+        response = await apiRequest('POST', '/api/protocol/optimize', payload) as ProtocolOptimizationResponse;
+      }
       
       if (response.success) {
         setGeneratedContent({
@@ -81,6 +116,16 @@ export default function ProtocolOptimizer() {
           matchedCsrInsights: response.matchedCsrInsights || [],
           suggestedEndpoints: response.suggestedEndpoints || [],
           suggestedArms: response.suggestedArms || []
+        });
+        
+        // If we received file content but no summary was manually entered, update the summary field
+        if (protocolFile && !protocolSummary.trim() && response.extractedSummary) {
+          setProtocolSummary(response.extractedSummary);
+        }
+        
+        toast({
+          title: "Analysis Complete",
+          description: `Successfully analyzed protocol ${protocolFile ? 'file' : 'summary'} and found ${response.matchedCsrInsights?.length || 0} similar CSRs.`,
         });
       } else {
         toast({
@@ -235,6 +280,70 @@ export default function ProtocolOptimizer() {
                 value={indication}
                 onChange={(e) => setIndication(e.target.value)}
               />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="protocolFile">Upload Draft Protocol (PDF or DOCX)</Label>
+              <div 
+                className={`border-2 border-dashed ${uploadedFileName ? 'border-green-200 bg-green-50/50' : 'border-blue-200'} rounded-lg p-6 transition-colors hover:${uploadedFileName ? 'border-green-300' : 'border-blue-300'} hover:${uploadedFileName ? 'bg-green-50/70' : 'bg-blue-50/50'} cursor-pointer`}
+                onClick={() => document.getElementById('protocolFile')?.click()}
+              >
+                <div className="flex flex-col items-center justify-center gap-2 text-center">
+                  {uploadedFileName ? (
+                    <>
+                      <div className="h-10 w-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M20 6L9 17l-5-5"/>
+                        </svg>
+                      </div>
+                      <p className="text-sm font-medium text-green-700">
+                        {uploadedFileName}
+                      </p>
+                      <p className="text-xs text-green-600">
+                        File selected. Click to change.
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="h-10 w-10 text-blue-500" />
+                      <p className="text-sm font-medium text-blue-700">
+                        Drag and drop your protocol file, or click to browse
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        Upload a PDF or DOCX file of your draft protocol for AI analysis
+                      </p>
+                    </>
+                  )}
+                  <input 
+                    type="file" 
+                    id="protocolFile" 
+                    className="hidden" 
+                    accept=".pdf,.docx,.doc"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setProtocolFile(file);
+                        setUploadedFileName(file.name);
+                        toast({
+                          title: "File Selected",
+                          description: `${file.name} ready for analysis`,
+                        });
+                      }
+                    }}
+                  />
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="mt-2 border-blue-200 text-blue-700"
+                    onClick={() => document.getElementById('protocolFile')?.click()}
+                  >
+                    Select File
+                  </Button>
+                </div>
+              </div>
+              <p className="text-xs text-slate-500 mt-1">
+                The AI will extract key details from your protocol and provide optimization suggestions
+              </p>
             </div>
             
             <div className="grid grid-cols-2 gap-4">
@@ -453,16 +562,58 @@ export default function ProtocolOptimizer() {
                       </TabsContent>
                       
                       <TabsContent value="references" className="space-y-4">
+                        <div className="mb-4 p-4 bg-blue-50 border border-blue-100 rounded-xl">
+                          <h3 className="text-md font-semibold mb-2 text-blue-800 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                              <circle cx="11" cy="11" r="8"></circle>
+                              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                            Similar CSRs by Therapeutic Area and Phase
+                          </h3>
+                          <p className="text-sm text-blue-700">
+                            The following CSRs match your protocol's therapeutic area ({indication}) and trial phase ({phase.replace('phase', 'Phase ')})
+                          </p>
+                        </div>
+
                         <div className="grid grid-cols-1 gap-4">
                           {generatedContent.matchedCsrInsights?.length > 0 ? (
                             generatedContent.matchedCsrInsights.map((csr, i) => (
                               <div key={i} className="p-5 border border-slate-200 rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow">
                                 <h3 className="font-medium text-blue-800">{csr.title}</h3>
-                                <div className="flex items-center mt-2 mb-3">
-                                  <span className="text-xs font-medium px-2 py-1 bg-blue-100 text-blue-800 rounded-full mr-2">Phase: {csr.phase}</span>
-                                  <span className="text-xs font-medium px-2 py-1 bg-indigo-100 text-indigo-800 rounded-full">Indication: {csr.indication}</span>
+                                <div className="flex flex-wrap items-center gap-2 mt-2 mb-3">
+                                  <span className="text-xs font-medium px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
+                                    Phase: {csr.phase}
+                                  </span>
+                                  <span className="text-xs font-medium px-2 py-1 bg-indigo-100 text-indigo-800 rounded-full">
+                                    Indication: {csr.indication}
+                                  </span>
+                                  {csr.therapeutic_area && (
+                                    <span className="text-xs font-medium px-2 py-1 bg-emerald-100 text-emerald-800 rounded-full">
+                                      Therapeutic Area: {csr.therapeutic_area}
+                                    </span>
+                                  )}
+                                  {csr.match_score && (
+                                    <span className="text-xs font-medium px-2 py-1 bg-amber-100 text-amber-800 rounded-full">
+                                      Match Score: {csr.match_score}%
+                                    </span>
+                                  )}
                                 </div>
-                                <p className="text-sm text-slate-600 mt-2">{csr.insight || 'No specific insights available'}</p>
+                                
+                                <div className="mt-3 border-t border-gray-100 pt-3">
+                                  <h4 className="text-sm font-medium text-gray-700 mb-1">Key Findings:</h4>
+                                  <p className="text-sm text-slate-600">{csr.insight || 'No specific insights available'}</p>
+                                </div>
+                                
+                                {csr.suggestions && csr.suggestions.length > 0 && (
+                                  <div className="mt-3 pt-3 border-t border-gray-100">
+                                    <h4 className="text-sm font-medium text-gray-700 mb-1">Recommendations:</h4>
+                                    <ul className="list-disc list-inside text-sm text-slate-600 space-y-1">
+                                      {csr.suggestions.map((suggestion, idx) => (
+                                        <li key={idx}>{suggestion}</li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
                               </div>
                             ))
                           ) : (
