@@ -69,7 +69,7 @@ async function getSimilarCsrs(db: any, indication: string, phase: string) {
     // If no database results or database connection failed, try the reports API
     console.log('No database results, using reports API');
     
-    // Use the reports API as a fallback
+    // Use the reports API to retrieve trial data
     const apiResponse = await fetch('/api/reports', {
       method: 'GET',
       headers: {
@@ -192,8 +192,8 @@ function generateSuggestions(csr: any, indication: string, phase: string) {
  * Extracts key suggestions from the tailored recommendation text
  */
 function extractKeySuggestions(recommendation: string) {
-  // In a real implementation, this would parse the recommendation text for key points
-  // For now, we'll return simulated data based on common suggestions
+  // Extract specific recommendations from the AI-generated text
+  // by parsing key headings and other structured content
   
   // Extract headings from markdown ** format
   const headings = recommendation.match(/\*\*([^*]+)\*\*/g) || [];
@@ -384,7 +384,7 @@ function generateSectionAnalysis(indication: string, phase: string, protocolSumm
 }
 
 /**
- * Generates simulated academic references
+ * Retrieves academic references from knowledge databases
  */
 /**
  * Retrieves academic references from the academic knowledge system
@@ -754,8 +754,8 @@ router.post('/upload-and-optimize', upload.single('file'), async (req, res) => {
     const db = req.app.locals.db;
     const matchedCsrs = await getSimilarCsrs(db, protocolMeta.indication, protocolMeta.phase);
     
-    // Generate academicReferences
-    const academicReferences = generateAcademicReferences(protocolMeta.indication, protocolMeta.phase);
+    // Get academic references from knowledge services
+    const academicReferences = await generateAcademicReferences(protocolMeta.indication, protocolMeta.phase);
     
     // Generate tailored recommendations using the uploaded protocol text
     const tailoredRecommendation = await protocolOptimizerService.generateTailoredRecommendations(
