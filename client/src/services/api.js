@@ -22,6 +22,13 @@ api.interceptors.request.use(function (config) {
   if (process.env.NODE_ENV !== 'production') {
     console.log(`API Request: ${config.method.toUpperCase()} ${config.url}`);
   }
+  
+  // Add authentication token to requests if available
+  const token = localStorage.getItem('jwt');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  
   return config;
 }, function (error) {
   return Promise.reject(error);
