@@ -1,7 +1,6 @@
 // Dashboard.jsx
 import React, { useState, useEffect } from 'react';
-import { Bar } from 'react-chartjs-2';
-import Chart from 'chart.js/auto'; // This import is required for react-chartjs-2 to work
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const Dashboard = ({ ndcCodes }) => {
   const [chartData, setChartData] = useState(null);
@@ -32,11 +31,15 @@ const Dashboard = ({ ndcCodes }) => {
         throw new Error(data.message || 'Failed to analyze data');
       }
       
-      // Format data for Chart.js
-      setChartData({
-        labels: data.visualization_data.event_labels,
-        datasets: data.visualization_data.comparative_data
+      // Format data for Recharts
+      const formattedData = data.visualization_data.event_labels.map((label, index) => {
+        const dataPoint = { name: label };
+        data.visualization_data.comparative_data.forEach(dataset => {
+          dataPoint[dataset.label] = dataset.data[index];
+        });
+        return dataPoint;
       });
+      setChartData(formattedData);
     } catch (e) {
       console.error('Error fetching comparative data:', e);
       setError(e.message);
@@ -73,7 +76,7 @@ const Dashboard = ({ ndcCodes }) => {
     );
   }
 
-  if (!chartData || !chartData.datasets || chartData.datasets.length === 0) {
+  if (!chartData || !Array.isArray(chartData) || chartData.length === 0) {
     return (
       <div style={{ margin: '20px', padding: '15px', border: '1px solid #bee5eb', borderRadius: '4px', backgroundColor: '#d1ecf1', color: '#0c5460' }}>
         <h3>No Data Available</h3>
@@ -82,44 +85,8 @@ const Dashboard = ({ ndcCodes }) => {
     );
   }
 
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      y: {
-        beginAtZero: true,
-        title: {
-          display: true,
-          text: 'Adverse Event Count'
-        }
-      },
-      x: {
-        title: {
-          display: true,
-          text: 'Adverse Events'
-        }
-      }
-    },
-    plugins: {
-      legend: {
-        position: 'top',
-      },
-      title: {
-        display: true,
-        text: 'Comparative Adverse Event Analysis'
-      },
-      tooltip: {
-        callbacks: {
-          title: function(tooltipItems) {
-            return tooltipItems[0].label;
-          },
-          label: function(context) {
-            return `${context.dataset.label}: ${context.parsed.y} events`;
-          }
-        }
-      }
-    },
-  };
+  // Fixed color palette for bars
+  const colors = ['#3498db', '#2ecc71', '#e74c3c', '#f39c12', '#9b59b6', '#1abc9c', '#d35400', '#34495e'];
 
   return (
     <div style={{ margin: '20px', padding: '20px', border: '1px solid #ddd', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
@@ -145,7 +112,26 @@ const Dashboard = ({ ndcCodes }) => {
       </div>
       
       <div style={{ height: '400px', marginBottom: '20px' }}>
-        <Bar data={chartData} options={options} />
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="name" />
+            <YAxis label={{ value: 'Adverse Event Count', angle: -90, position: 'insideLeft' }} />
+            <Tooltip />
+            <Legend />
+            {/* Dynamically add bars based on the first data point's keys excluding 'name' */}
+            {Object.keys(chartData[0] || {})
+              .filter(key => key !== 'name')
+              .map((key, index) => (
+                <Bar 
+                  key={index} 
+                  dataKey={key} 
+                  fill={colors[index % colors.length]} 
+                />
+              ))
+            }
+          </BarChart>
+        </ResponsiveContainer>
       </div>
       
       <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center' }}>
