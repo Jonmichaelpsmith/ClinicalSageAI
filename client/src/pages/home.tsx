@@ -24,17 +24,21 @@ export default function Home() {
         <Navbar />
         <div className="container px-4 md:px-6 flex flex-col items-center text-center space-y-4 py-8 md:py-12">
           <div className="flex gap-2 justify-center">
-            <Badge variant="outline" className="font-semibold text-primary border-primary px-3 py-1">
-              CSR Intelligence
-            </Badge>
+            <Link href="/csr-insights">
+              <Badge variant="outline" className="font-semibold text-primary border-primary px-3 py-1 cursor-pointer hover:bg-primary/10">
+                CSR Intelligence
+              </Badge>
+            </Link>
             <Link href="/enhanced-cer-dashboard">
               <Badge variant="outline" className="font-semibold text-emerald-600 border-emerald-600 px-3 py-1 cursor-pointer hover:bg-emerald-50 dark:hover:bg-emerald-900/20">
                 CER Analytics
               </Badge>
             </Link>
-            <Badge variant="outline" className="font-semibold text-amber-600 border-amber-600 px-3 py-1">
-              FDA FAERS Integration
-            </Badge>
+            <Link href="/cer-dashboard">
+              <Badge variant="outline" className="font-semibold text-amber-600 border-amber-600 px-3 py-1 cursor-pointer hover:bg-amber-50 dark:hover:bg-amber-900/20">
+                FDA FAERS Integration
+              </Badge>
+            </Link>
           </div>
           <h1 className="text-3xl md:text-5xl font-bold tracking-tighter leading-tight bg-gradient-to-r from-primary to-blue-500 bg-clip-text text-transparent">
             LumenTrialGuide.AI
