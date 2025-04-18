@@ -13,6 +13,8 @@ import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { useLocation } from 'wouter';
 import html2pdf from 'html2pdf.js';
+import EnhancedProtocolIntelligencePanel from '@/components/EnhancedProtocolIntelligencePanel';
+import AcademicInsightsPanel from '@/components/AcademicInsightsPanel';
 import { 
   ArrowRight, 
   FileDown, 
