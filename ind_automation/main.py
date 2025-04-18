@@ -9,6 +9,7 @@ import logging
 import os
 import sys
 import json
+from datetime import datetime
 from typing import Dict, Any, Optional, List
 
 # Setup logging
@@ -24,6 +25,7 @@ logger = logging.getLogger(__name__)
 # Import our modules
 from ingestion.benchling_connector import fetch_benchling_cmc
 from create_template import TemplateGenerator
+from templates import render_form1571, render_form1572, render_form3674, create_cover_letter
 
 # Create FastAPI app
 app = fastapi.FastAPI(
@@ -70,6 +72,42 @@ class Module3Request(BaseModel):
     batch_number: str
     specifications: List[SpecificationData]
     stability_data: List[StabilityData]
+    
+class ProjectMetadata(BaseModel):
+    """Project metadata for FDA forms"""
+    sponsor_name: Optional[str] = None
+    sponsor_address: Optional[str] = None
+    sponsor_phone: Optional[str] = None
+    ind_number: Optional[str] = None
+    drug_name: Optional[str] = None
+    indication: Optional[str] = None
+    protocol_number: Optional[str] = None
+    protocol_title: Optional[str] = None
+    phase: Optional[str] = "Phase 1"
+    submission_date: Optional[str] = None
+    nct_number: Optional[str] = None
+    principal_investigator_name: Optional[str] = None
+    investigator_address: Optional[str] = None
+    investigator_phone: Optional[str] = None
+    irb_name: Optional[str] = None
+    irb_address: Optional[str] = None
+    clinical_lab_name: Optional[str] = None
+    clinical_lab_address: Optional[str] = None
+    research_facility_name: Optional[str] = None 
+    research_facility_address: Optional[str] = None
+    subinvestigators: Optional[str] = None
+    contact_name: Optional[str] = None
+    contact_email: Optional[str] = None
+    contact_phone: Optional[str] = None
+    authorizer_name: Optional[str] = None
+    authorizer_title: Optional[str] = None
+    certifier_name: Optional[str] = None
+    certifier_title: Optional[str] = None
+    certifier_address: Optional[str] = None
+    certifier_email: Optional[str] = None
+    certifier_phone: Optional[str] = None
+    certifier_fax: Optional[str] = None
+    serial_number: Optional[str] = "0000"
 
 @app.get("/")
 async def root():
@@ -78,14 +116,18 @@ async def root():
         "name": "IND Automation API",
         "version": "0.1.0",
         "status": "operational",
-        "modules_supported": ["module3_cmc"],
+        "modules_supported": ["module1_forms", "module3_cmc"],
         "endpoints": [
             {"path": "/", "method": "GET", "description": "API information"},
             {"path": "/status", "method": "GET", "description": "Service status check"},
             {"path": "/projects", "method": "GET", "description": "List available Benchling projects"},
             {"path": "/{project_id}/module3", "method": "GET", "description": "Generate Module 3 document from Benchling data"},
             {"path": "/generate/module3", "method": "POST", "description": "Generate Module 3 document from provided data"},
-            {"path": "/batch/module3", "method": "POST", "description": "Generate multiple Module 3 documents"}
+            {"path": "/batch/module3", "method": "POST", "description": "Generate multiple Module 3 documents"},
+            {"path": "/generate/form1571", "method": "POST", "description": "Generate FDA Form 1571"},
+            {"path": "/generate/form1572", "method": "POST", "description": "Generate FDA Form 1572"},
+            {"path": "/generate/form3674", "method": "POST", "description": "Generate FDA Form 3674"},
+            {"path": "/generate/cover-letter", "method": "POST", "description": "Generate cover letter for IND submission"}
         ]
     }
 
@@ -109,10 +151,23 @@ async def status():
                 content={"status": "error", "message": "Module 3 template not found"}
             )
         
+        # Check for form templates
+        forms_dir = os.path.join(templates_dir, "forms")
+        available_templates = ["module3_cmc.xml"]
+        
+        if os.path.exists(forms_dir):
+            form_templates = []
+            for template in ["form1571.docx", "form1572.docx", "form3674.docx", "cover_letter.docx"]:
+                if os.path.exists(os.path.join(forms_dir, template)):
+                    form_templates.append(template)
+            
+            if form_templates:
+                available_templates.extend(form_templates)
+        
         return {
             "status": "operational",
             "message": "IND Automation service is running properly",
-            "templates_available": ["module3_cmc.xml"]
+            "templates_available": available_templates
         }
     except Exception as e:
         logger.error(f"Status check failed: {str(e)}", exc_info=True)
@@ -303,6 +358,256 @@ async def batch_generate_module3(request: BatchProjectRequest):
     
     except Exception as e:
         logger.error(f"Error in batch processing: {str(e)}", exc_info=True)
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "message": f"Error: {str(e)}"}
+        )
+
+@app.post("/generate/form1571")
+async def generate_form1571(data: ProjectMetadata):
+    """
+    Generate FDA Form 1571 (Investigational New Drug Application)
+    
+    Args:
+        data: ProjectMetadata containing form data
+        
+    Returns:
+        DOCX file as attachment
+    """
+    try:
+        logger.info(f"Generating Form 1571 for project: {data.drug_name}")
+        
+        # Convert pydantic model to dict
+        form_data = data.dict()
+        
+        # Set phase checkbox based on provided phase
+        if data.phase:
+            phase_lower = data.phase.lower()
+            if "1" in phase_lower:
+                form_data["phase1_checked"] = "☒"
+            else:
+                form_data["phase1_checked"] = "☐"
+                
+            if "2" in phase_lower:
+                form_data["phase2_checked"] = "☒"
+            else:
+                form_data["phase2_checked"] = "☐"
+                
+            if "3" in phase_lower:
+                form_data["phase3_checked"] = "☒"
+            else:
+                form_data["phase3_checked"] = "☐"
+                
+            if "other" in phase_lower:
+                form_data["other_phase_checked"] = "☒"
+            else:
+                form_data["other_phase_checked"] = "☐"
+        
+        # Set submission date if not provided
+        if not form_data.get("submission_date"):
+            form_data["submission_date"] = datetime.now().strftime("%m/%d/%Y")
+            
+        # Set signature date if not provided  
+        if not form_data.get("signature_date"):
+            form_data["signature_date"] = datetime.now().strftime("%m/%d/%Y")
+            
+        # Generate the document
+        document_bytes = render_form1571(form_data)
+        
+        if not document_bytes:
+            return JSONResponse(
+                status_code=500,
+                content={"status": "error", "message": "Failed to generate Form 1571"}
+            )
+        
+        # Return as downloadable file
+        safe_name = data.drug_name.replace(" ", "_") if data.drug_name else "form1571"
+        return StreamingResponse(
+            iter([document_bytes]),
+            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            headers={
+                "Content-Disposition": f'attachment; filename="FDA_Form_1571_{safe_name}.docx"'
+            }
+        )
+        
+    except Exception as e:
+        logger.error(f"Error generating Form 1571: {str(e)}", exc_info=True)
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "message": f"Error: {str(e)}"}
+        )
+
+@app.post("/generate/form1572")
+async def generate_form1572(data: ProjectMetadata):
+    """
+    Generate FDA Form 1572 (Statement of Investigator)
+    
+    Args:
+        data: ProjectMetadata containing form data
+        
+    Returns:
+        DOCX file as attachment
+    """
+    try:
+        logger.info(f"Generating Form 1572 for investigator: {data.principal_investigator_name}")
+        
+        # Convert pydantic model to dict
+        form_data = data.dict()
+        
+        # Set default investigator name from principal investigator if not provided
+        if not form_data.get("investigator_name") and form_data.get("principal_investigator_name"):
+            form_data["investigator_name"] = form_data["principal_investigator_name"]
+            
+        # Set submission date if not provided
+        if not form_data.get("signature_date"):
+            form_data["signature_date"] = datetime.now().strftime("%m/%d/%Y")
+            
+        # Generate the document
+        document_bytes = render_form1572(form_data)
+        
+        if not document_bytes:
+            return JSONResponse(
+                status_code=500,
+                content={"status": "error", "message": "Failed to generate Form 1572"}
+            )
+        
+        # Return as downloadable file
+        safe_name = ""
+        if data.principal_investigator_name:
+            safe_name = data.principal_investigator_name.replace(" ", "_")
+        elif data.drug_name:
+            safe_name = data.drug_name.replace(" ", "_")
+        else:
+            safe_name = "form1572"
+            
+        return StreamingResponse(
+            iter([document_bytes]),
+            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            headers={
+                "Content-Disposition": f'attachment; filename="FDA_Form_1572_{safe_name}.docx"'
+            }
+        )
+        
+    except Exception as e:
+        logger.error(f"Error generating Form 1572: {str(e)}", exc_info=True)
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "message": f"Error: {str(e)}"}
+        )
+
+@app.post("/generate/form3674")
+async def generate_form3674(data: ProjectMetadata):
+    """
+    Generate FDA Form 3674 (Certification of Compliance with ClinicalTrials.gov)
+    
+    Args:
+        data: ProjectMetadata containing form data
+        
+    Returns:
+        DOCX file as attachment
+    """
+    try:
+        logger.info(f"Generating Form 3674 for project: {data.drug_name}")
+        
+        # Convert pydantic model to dict
+        form_data = data.dict()
+        
+        # Set default values
+        if not form_data.get("trial_title") and form_data.get("protocol_title"):
+            form_data["trial_title"] = form_data["protocol_title"]
+            
+        # Set trial phase from phase if not provided
+        if not form_data.get("trial_phase") and form_data.get("phase"):
+            form_data["trial_phase"] = form_data["phase"]
+            
+        # Set submission date if not provided
+        if not form_data.get("signature_date"):
+            form_data["signature_date"] = datetime.now().strftime("%m/%d/%Y")
+            
+        # Generate the document
+        document_bytes = render_form3674(form_data)
+        
+        if not document_bytes:
+            return JSONResponse(
+                status_code=500,
+                content={"status": "error", "message": "Failed to generate Form 3674"}
+            )
+        
+        # Return as downloadable file
+        safe_name = data.drug_name.replace(" ", "_") if data.drug_name else "form3674"
+        return StreamingResponse(
+            iter([document_bytes]),
+            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            headers={
+                "Content-Disposition": f'attachment; filename="FDA_Form_3674_{safe_name}.docx"'
+            }
+        )
+        
+    except Exception as e:
+        logger.error(f"Error generating Form 3674: {str(e)}", exc_info=True)
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "message": f"Error: {str(e)}"}
+        )
+
+@app.post("/generate/cover-letter")
+async def generate_cover_letter(data: ProjectMetadata):
+    """
+    Generate a cover letter for IND submission
+    
+    Args:
+        data: ProjectMetadata containing cover letter data
+        
+    Returns:
+        DOCX file as attachment
+    """
+    try:
+        logger.info(f"Generating cover letter for project: {data.drug_name}")
+        
+        # Convert pydantic model to dict
+        letter_data = data.dict()
+        
+        # Set default included items if not provided
+        if not letter_data.get("included_items"):
+            letter_data["included_items"] = [
+                "FDA Form 1571",
+                "FDA Form 1572",
+                "FDA Form 3674",
+                "Module 3: Chemistry, Manufacturing, and Controls"
+            ]
+            
+        # Format the included items as bullet points
+        if isinstance(letter_data["included_items"], list):
+            formatted_items = ""
+            for item in letter_data["included_items"]:
+                formatted_items += f"• {item}\n"
+            letter_data["included_items"] = formatted_items
+            
+        # Set submission date if not provided
+        if not letter_data.get("submission_date"):
+            letter_data["submission_date"] = datetime.now().strftime("%B %d, %Y")
+            
+        # Generate the document
+        document_bytes = create_cover_letter(letter_data)
+        
+        if not document_bytes:
+            return JSONResponse(
+                status_code=500,
+                content={"status": "error", "message": "Failed to generate cover letter"}
+            )
+        
+        # Return as downloadable file
+        safe_name = data.drug_name.replace(" ", "_") if data.drug_name else "ind_submission"
+        return StreamingResponse(
+            iter([document_bytes]),
+            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            headers={
+                "Content-Disposition": f'attachment; filename="Cover_Letter_{safe_name}.docx"'
+            }
+        )
+        
+    except Exception as e:
+        logger.error(f"Error generating cover letter: {str(e)}", exc_info=True)
         return JSONResponse(
             status_code=500,
             content={"status": "error", "message": f"Error: {str(e)}"}
