@@ -1,25 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+  Module 3 (Chemistry, Manufacturing, and Controls) XML Template
+  This is a simplified template for the IND Automation System. 
+-->
 <module3>
   <header>
-    <drug_name>{{ drug_name }}</drug_name>
-    <batch_number>{{ batch_number }}</batch_number>
-    <manufacturing_site>{{ manufacturing_site }}</manufacturing_site>
+    <title>MODULE 3: CHEMISTRY, MANUFACTURING, AND CONTROLS</title>
+    <drug_name>{{drug_name}}</drug_name>
+    <batch_number>{{batch_number}}</batch_number>
+    <manufacturing_site>{{manufacturing_site}}</manufacturing_site>
   </header>
-  <specifications>
-    {% for spec in specifications %}
-    <specification>
-      <parameter>{{ spec.parameter }}</parameter>
-      <limit>{{ spec.limit }}</limit>
-      <result>{{ spec.result }}</result>
-    </specification>
-    {% endfor %}
-  </specifications>
-  <stability_data>
-    {% for data_point in stability_data %}
-    <timepoint>
-      <time>{{ data_point.timepoint }}</time>
-      <result>{{ data_point.result }}</result>
-    </timepoint>
-    {% endfor %}
-  </stability_data>
+  
+  <section1>
+    <title>1. DRUG SUBSTANCE</title>
+    <subsection1_1>
+      <title>1.1 Manufacturing Information</title>
+      <manufacturing_site>{{manufacturing_site}}</manufacturing_site>
+    </subsection1_1>
+  </section1>
+  
+  <section2>
+    <title>2. SPECIFICATIONS AND ANALYTICAL METHODS</title>
+    <specifications>
+      <!-- Specifications will be dynamically generated -->
+    </specifications>
+  </section2>
+  
+  <section3>
+    <title>3. STABILITY DATA</title>
+    <stability_data>
+      <!-- Stability data will be dynamically generated -->
+    </stability_data>
+  </section3>
 </module3>

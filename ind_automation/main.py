@@ -130,14 +130,9 @@ async def list_projects():
         List of projects with IDs and names
     """
     try:
-        # In a real implementation, this would query the Benchling API
-        # For now, return sample data
-        projects = [
-            {"id": "PRJ001", "name": "Cancer Therapeutic A"},
-            {"id": "PRJ002", "name": "Diabetes Type 2 Compound"},
-            {"id": "PRJ003", "name": "Neurological Disorder Treatment"},
-            {"id": "TEST123", "name": "Test Project"}
-        ]
+        # Get projects from Benchling connector
+        from ingestion.benchling_connector import get_project_list
+        projects = get_project_list()
         
         return {"projects": projects}
     except Exception as e:

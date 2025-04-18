@@ -1,5 +1,4 @@
 import os
-import docxtpl
 from docx import Document
 from docx.shared import Inches, Pt
 from docx.enum.text import WD_ALIGN_PARAGRAPH
@@ -16,6 +15,12 @@ class TemplateGenerator:
     
     def __init__(self):
         self.templates_dir = os.path.join(os.path.dirname(__file__), "templates")
+        self.output_dir = os.path.join(os.path.dirname(__file__), "output")
+        
+        # Ensure output directory exists
+        if not os.path.exists(self.output_dir):
+            os.makedirs(self.output_dir)
+            
         logger.info(f"Initialized TemplateGenerator with templates dir: {self.templates_dir}")
     
     def generate_module3(self, data: Dict[str, Any]) -> Optional[bytes]:
@@ -29,13 +34,14 @@ class TemplateGenerator:
             Document as bytes or None if generation fails
         """
         try:
-            logger.info(f"Generating Module 3 document for drug: {data.get('drug_name', 'Unknown')}")
+            drug_name = data.get('drug_name', 'Unknown')
+            logger.info(f"Generating Module 3 document for drug: {drug_name}")
             
             # Creating a blank document to ensure proper formatting
             doc = Document()
             
             # Set up document properties
-            doc.core_properties.title = f"Module 3 - CMC - {data.get('drug_name', 'Unknown')}"
+            doc.core_properties.title = f"Module 3 - CMC - {drug_name}"
             doc.core_properties.subject = "Chemistry, Manufacturing, and Controls"
             
             # Add title
@@ -45,7 +51,7 @@ class TemplateGenerator:
             # Add drug name
             drug_name_paragraph = doc.add_paragraph()
             drug_name_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            drug_name_run = drug_name_paragraph.add_run(data.get('drug_name', 'Unknown'))
+            drug_name_run = drug_name_paragraph.add_run(drug_name)
             drug_name_run.font.size = Pt(18)
             drug_name_run.bold = True
             
@@ -134,9 +140,76 @@ class TemplateGenerator:
             doc.save(output)
             output.seek(0)
             
-            logger.info(f"Successfully generated Module 3 document")
+            # Also save a copy to the output directory for reference
+            filename = f"Module3_CMC_{drug_name.replace(' ', '_')}.docx"
+            filepath = os.path.join(self.output_dir, filename)
+            doc.save(filepath)
+            logger.info(f"Successfully saved Module 3 document to {filepath}")
+            
             return output.getvalue()
             
         except Exception as e:
             logger.error(f"Error generating Module 3 document: {str(e)}", exc_info=True)
             return None
+            
+    def save_module3_to_file(self, data: Dict[str, Any]) -> Optional[str]:
+        """
+        Generate Module 3 document and save it to a file
+        
+        Args:
+            data: Dictionary containing CMC data
+            
+        Returns:
+            Path to the saved file or None if generation fails
+        """
+        try:
+            doc_bytes = self.generate_module3(data)
+            if not doc_bytes:
+                return None
+                
+            drug_name = data.get('drug_name', 'Unknown')
+            filename = f"Module3_CMC_{drug_name.replace(' ', '_')}.docx"
+            filepath = os.path.join(self.output_dir, filename)
+            
+            with open(filepath, 'wb') as f:
+                f.write(doc_bytes)
+                
+            logger.info(f"Successfully saved Module 3 document to {filepath}")
+            return filepath
+        except Exception as e:
+            logger.error(f"Error saving Module 3 document: {str(e)}", exc_info=True)
+            return None
+            
+    def batch_generate(self, batch_data: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
+        """
+        Generate multiple Module 3 documents in batch mode
+        
+        Args:
+            batch_data: Dictionary mapping project IDs to their data
+            
+        Returns:
+            Dictionary with status for each project ID
+        """
+        results = {}
+        
+        for project_id, data in batch_data.items():
+            try:
+                filepath = self.save_module3_to_file(data)
+                if filepath:
+                    results[project_id] = {
+                        "status": "success",
+                        "filepath": filepath,
+                        "filename": os.path.basename(filepath)
+                    }
+                else:
+                    results[project_id] = {
+                        "status": "error",
+                        "message": "Failed to generate document"
+                    }
+            except Exception as e:
+                results[project_id] = {
+                    "status": "error",
+                    "message": str(e)
+                }
+                
+        return results
