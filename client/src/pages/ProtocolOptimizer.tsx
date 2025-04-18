@@ -16,6 +16,7 @@ import html2pdf from 'html2pdf.js';
 import EnhancedProtocolIntelligencePanel from '@/components/EnhancedProtocolIntelligencePanel';
 import AcademicInsightsPanel from '@/components/AcademicInsightsPanel';
 import FormattedProtocolRecommendations from '@/components/FormattedProtocolRecommendations';
+import ExportMenu from '@/components/ExportMenu';
 import { 
   ArrowRight, 
   FileDown, 
@@ -565,15 +566,15 @@ export default function ProtocolOptimizer() {
                   <div className="flex justify-between items-center">
                     <CardTitle className="text-blue-800">Optimization Results</CardTitle>
                     <div className="flex gap-3">
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={exportPDF}
+                      <ExportMenu
+                        title={`Protocol Recommendations for ${indication} Study (${phase.replace('phase', 'Phase ')})`}
+                        recommendations={generatedContent}
+                        csrInsights={generatedContent?.matchedCsrInsights || []}
+                        academicReferences={generatedContent?.academicReferences || []}
+                        indication={indication}
+                        phase={phase}
                         className="bg-white hover:bg-blue-50 transition-colors border-blue-200 text-blue-700 hover:text-blue-800 font-medium"
-                      >
-                        <FileDown className="h-4 w-4 mr-2" />
-                        Export PDF
-                      </Button>
+                      />
                       
                       {dossierId && (
                         <Button 
