@@ -36,6 +36,7 @@ import FailMap from "@/pages/FailMap";
 import CSRSearch from "@/pages/CSRSearch";
 import CSRDetail from "@/pages/CSRDetail";
 import ProtocolOptimizer from "@/pages/ProtocolOptimizer";
+import ProtocolOptimizerLanding from "@/pages/ProtocolOptimizerLanding";
 import ProtocolUploadPage from "@/pages/ProtocolUploadPage";
 import ProtocolAnalysisPage from "@/pages/ProtocolAnalysisPage";
 import AgentLogDashboard from "@/pages/AgentLogDashboard";
@@ -185,8 +186,9 @@ function Router() {
       <Route path="/fail-map">{() => renderWithLayout(FailMap)}</Route>
       <Route path="/csr-search">{() => renderWithLayout(CSRSearch)}</Route>
       <Route path="/reports/:csrId">{() => renderWithLayout(CSRDetail)}</Route>
-      <Route path="/protocol-optimizer">{() => renderWithLayout(ProtocolOptimizer)}</Route>
+      <Route path="/protocol-optimizer">{() => renderWithLayout(ProtocolOptimizerLanding)}</Route>
       <Route path="/protocol/optimizer">{() => renderWithLayout(ProtocolOptimizer)}</Route>
+      <Route path="/protocol-optimizer-landing">{() => renderWithLayout(ProtocolOptimizerLanding)}</Route>
       <Route path="/protocol/upload">{() => renderWithLayout(ProtocolUploadPage)}</Route>
       <Route path="/protocol/analysis/:protocolId">{() => renderWithLayout(ProtocolAnalysisPage)}</Route>
       <Route path="/agent-logs">{() => renderWithLayout(AgentLogDashboard)}</Route>
