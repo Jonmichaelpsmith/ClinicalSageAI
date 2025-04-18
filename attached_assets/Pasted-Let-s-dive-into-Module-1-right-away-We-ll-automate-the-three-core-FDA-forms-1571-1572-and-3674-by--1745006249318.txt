@@ -1,0 +1,143 @@
+Let’s dive into Module 1 right away. We’ll automate the three core FDA forms—1571, 1572 and 3674—by:
+
+---
+
+### 1. Prepare Word Templates
+
+1. **Download Blank Forms**  
+   - Get the latest PDF or Word versions of Form 1571, 1572 and 3674 from FDA’s site.  
+2. **Convert to DOCX**  
+   - If you have only PDFs, open each in Word (or Google Docs) and “Save As” a DOCX.  
+3. **Add Jinja Placeholders**  
+   - Rename them to `form1571.docx.j2`, `form1572.docx.j2`, `form3674.docx.j2` and place in `templates/forms/`.  
+   - In each form, replace each fillable field with a Jinja tag.  
+     ```jinja
+     {{ sponsor_name }}
+     {{ IND_number }}
+     {{ drug_name }}
+     {{ principal_investigator_name }}
+     {{ investigator_address }}
+     {{ protocol_number }}
+     {{ nct_number }}
+     {{ submission_date }}
+     ```
+   - Match the exact label for each field so you can pass in the right data keys later.
+
+---
+
+### 2. Template‑Rendering Code
+
+Create a new module: `ind_automation/templates.py`
+
+```python
+# ind_automation/templates.py
+import io
+from docxtpl import DocxTemplate
+from fastapi import HTTPException
+
+TEMPLATE_DIR = "templates/forms"
+
+def render_form1571(data: dict) -> io.BytesIO:
+    tpl = DocxTemplate(f"{TEMPLATE_DIR}/form1571.docx.j2")
+    tpl.render(data)
+    buf = io.BytesIO(); tpl.save(buf); buf.seek(0)
+    return buf
+
+def render_form1572(data: dict) -> io.BytesIO:
+    tpl = DocxTemplate(f"{TEMPLATE_DIR}/form1572.docx.j2")
+    tpl.render(data)
+    buf = io.BytesIO(); tpl.save(buf); buf.seek(0)
+    return buf
+
+def render_form3674(data: dict) -> io.BytesIO:
+    tpl = DocxTemplate(f"{TEMPLATE_DIR}/form3674.docx.j2")
+    tpl.render(data)
+    buf = io.BytesIO(); tpl.save(buf); buf.seek(0)
+    return buf
+```
+
+---
+
+### 3. FastAPI Endpoints
+
+In `ind_automation/main.py`, add:
+
+```python
+from fastapi.responses import StreamingResponse
+from ind_automation.templates import render_form1571, render_form1572, render_form3674
+
+@app.get("/api/ind/{proj}/forms/1571")
+async def get_form1571(proj: str):
+    # Pull project metadata from your DB or config
+    meta = fetch_project_metadata(proj)  # you’ll implement this
+    buf = render_form1571({
+        "sponsor_name": meta.sponsor,
+        "IND_number": meta.ind_number or "Pending",
+        "drug_name": meta.drug_name,
+        "protocol_number": meta.protocol,
+        "submission_date": meta.submission_date,
+        # etc…
+    })
+    return StreamingResponse(buf,
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        headers={"Content-Disposition":f"attachment; filename=Form1571_{proj}.docx"}
+    )
+
+# Repeat similarly for 1572 and 3674
+@app.get("/api/ind/{proj}/forms/1572")
+async def get_form1572(proj: str):
+    meta = fetch_project_metadata(proj)
+    buf = render_form1572({
+        "principal_investigator_name": meta.pi_name,
+        "investigator_address": meta.pi_address,
+        #…
+    })
+    return StreamingResponse(buf, …)
+
+@app.get("/api/ind/{proj}/forms/3674")
+async def get_form3674(proj: str):
+    meta = fetch_project_metadata(proj)
+    buf = render_form3674({
+        "nct_number": meta.nct_number or "",
+        "study_registration_statement": meta.registration_status,
+        #…
+    })
+    return StreamingResponse(buf, …)
+```
+
+You’ll need to implement `fetch_project_metadata(proj: str)` to pull fields (sponsor, IND #, drug name, PI info, protocol #, NCT #, submission date, etc.) from your existing project data store or a new metadata table.
+
+---
+
+### 4. UI Integration
+
+In your React `INDAutomationPanel`:
+
+1. **Add a “Module 1” tab** alongside “Module 3” and “Manual Data.”
+2. **Under Module 1**, present three buttons:
+   ```jsx
+   <Button onClick={() => downloadForm("1571")}>Download Form 1571</Button>
+   <Button onClick={() => downloadForm("1572")}>Download Form 1572</Button>
+   <Button onClick={() => downloadForm("3674")}>Download Form 3674</Button>
+   ```
+3. **downloadForm** helper:
+   ```js
+   function downloadForm(formId) {
+     const url = `/api/ind/${selectedProject}/forms/${formId}`;
+     window.open(url, '_blank');
+   }
+   ```
+
+4. **Metadata Form**  
+   - If you don’t yet have all metadata stored, add input fields for any missing values (e.g. sponsor name, PI name, NCT), save them via an API (e.g. `POST /api/ind/{proj}/metadata`), then call the download endpoints.
+
+---
+
+#### Let’s Start
+
+1. **Create the `templates/forms/` directory** in Replit and add your three `.docx.j2` templates.  
+2. **Copy the rendering code** into `ind_automation/templates.py`.  
+3. **Wire up the new endpoints** in `main.py`, and stub out `fetch_project_metadata`.  
+4. **Update the React UI** with the Module 1 tab and download buttons.
+
+Once you’ve got Form 1571 downloading with real project data, we’ll refine Form 1572/3674 and then move on to Module 2 templates. Let me know when you’re ready for the first snippet!

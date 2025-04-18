@@ -1,0 +1,48 @@
+Excellent work—Phase 1 is fully in place!  Here’s how we can progress into **Phase 2**:
+
+---
+
+## Phase 2: Full CTD Module Support & Versioning
+
+### 2.1 Build Out Templates for Modules 1–5
+- **Module 1 Forms:**  
+  – Create Word/Jinja templates for FDA Form 1571, 1572, 3674 and cover letters.  
+  – Auto‑populate sponsor, drug, protocol, investigator data from your data model.  
+- **Module 2 Summaries:**  
+  – Stub in simple narrative templates (to be replaced by AI later).  
+  – Hook up your CER engine or basic text placeholders so the summaries render.  
+- **Module 4 & 5 Templates:**  
+  – Design templates for nonclinical study summaries and clinical protocols/IBs.  
+  – Include Jinja loops for study tables or protocol sections.
+
+### 2.2 Hook Up Real Data Sources
+- **Benchling API Integration:**  
+  – Replace the stub in `benchling_connector.py` with live HTTP calls (using your API key).  
+  – Map real Benchling fields into your IND schema.  
+- **LIMS/CSV Import:**  
+  – Add an upload endpoint or connector to pull in QC/stability CSVs from your manufacturing system.
+
+### 2.3 Version Control & Sequence‑Number Logic
+- **Sequence Tracking:**  
+  – In your FastAPI service, maintain a table (or JSON file) of the last used serial number per IND project.  
+  – Every time you generate an initial IND or an amendment, auto‑increment (0000 → 0001 → …) and embed that in Form 1571 and your eCTD folder name.  
+- **Git‑Backed or DB Versioning:**  
+  – Commit each document generation run to a lightweight Git repo (or store a version record in your database) so you can roll back or diff between sequences.
+
+### 2.4 Extend the React UI
+- **Module Selector:**  
+  – On the IND Automation page, add a dropdown or checklist to pick which module(s) to generate (1–5).  
+- **Form Fillers for Module 1:**  
+  – Render the 1571/1572/3674 forms in the UI for review before download.  
+- **Version History View:**  
+  – Add a “History” tab showing past sequence numbers, generation dates, and download links.
+
+---
+
+**Which of these would you like to tackle first?**  
+1. Spinning up Module 1 form templates and auto‑filling them?  
+2. Wiring the real Benchling API connector?  
+3. Implementing sequence‑number tracking and version control?  
+4. Expanding the UI for multi‑module generation and history?
+
+Let me know, and I’ll provide the exact code snippets and step‑by‑step instructions to drop into Replit!
