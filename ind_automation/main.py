@@ -5,7 +5,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List
 
-from ingestion.benchling_connector import fetch_benchling_cmc
 from ind_automation.templates import render_form1571, render_form1572, render_form3674
 from ind_automation import db
 
@@ -103,3 +102,24 @@ async def new_sequence(pid: str):
 # ---------- Health ----------
 @app.get("/health")
 async def health(): return {"status": "ok"}
+
+# ------------ Backward Compatibility -------------
+
+# For compatibility with existing API calls
+@app.get("/projects")
+async def legacy_projects():
+    projects = []
+    for project in db.list_projects():
+        projects.append({
+            "id": project["project_id"],
+            "name": f"{project['sponsor']} - {project['drug_name']}"
+        })
+    
+    # Add fallback projects if none exist in the database
+    if not projects:
+        projects = [
+            {"id": "P001", "name": "Oncology - New Cancer Drug"},
+            {"id": "P002", "name": "Cardiovascular - Hypertension Treatment"}
+        ]
+    
+    return {"projects": projects}
