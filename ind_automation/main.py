@@ -423,7 +423,7 @@ async def generate_form1571(data: ProjectMetadata):
         # Return as downloadable file
         safe_name = data.drug_name.replace(" ", "_") if data.drug_name else "form1571"
         return StreamingResponse(
-            iter([document_bytes]),
+            iter([document_bytes.getvalue()]),
             media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             headers={
                 "Content-Disposition": f'attachment; filename="FDA_Form_1571_{safe_name}.docx"'
@@ -481,7 +481,7 @@ async def generate_form1572(data: ProjectMetadata):
             safe_name = "form1572"
             
         return StreamingResponse(
-            iter([document_bytes]),
+            iter([document_bytes.getvalue()]),
             media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             headers={
                 "Content-Disposition": f'attachment; filename="FDA_Form_1572_{safe_name}.docx"'
@@ -536,7 +536,7 @@ async def generate_form3674(data: ProjectMetadata):
         # Return as downloadable file
         safe_name = data.drug_name.replace(" ", "_") if data.drug_name else "form3674"
         return StreamingResponse(
-            iter([document_bytes]),
+            iter([document_bytes.getvalue()]),
             media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             headers={
                 "Content-Disposition": f'attachment; filename="FDA_Form_3674_{safe_name}.docx"'
@@ -599,7 +599,7 @@ async def generate_cover_letter(data: ProjectMetadata):
         # Return as downloadable file
         safe_name = data.drug_name.replace(" ", "_") if data.drug_name else "ind_submission"
         return StreamingResponse(
-            iter([document_bytes]),
+            iter([document_bytes.getvalue()]),
             media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             headers={
                 "Content-Disposition": f'attachment; filename="Cover_Letter_{safe_name}.docx"'
