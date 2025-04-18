@@ -62,21 +62,37 @@ export default function CSRSearch() {
         params.append('min_sample_size', minSampleSize.toString());
       }
       
-      // Get results from FastAPI backend
-      // Using proxy to forward the request to the FastAPI backend running on port 8000
+      // Get stats first to check if semantic search is available
+      const statsResponse = await axios.get('/api/csrs/stats/overview');
+      const semanticSearchAvailable = statsResponse.data?.semantic_search_available;
+      
+      // Execute the search query
       const response = await axios.get(`${endpoint}?${params.toString()}`);
       
       setResults(response.data.csrs || []);
       
-      toast({
-        title: `Found ${response.data.results_count || 0} results`,
-        description: searchType === 'fast' ? "Using fast in-memory search" : "Using standard search",
-      });
+      // Show appropriate toast message
+      if (query.trim() && semanticSearchAvailable) {
+        toast({
+          title: `Found ${response.data.results_count || 0} results`,
+          description: "Using deep semantic search with intelligent matching",
+        });
+      } else if (query.trim()) {
+        toast({
+          title: `Found ${response.data.results_count || 0} results`,
+          description: "Using basic keyword-based search (Deep semantic search unavailable)",
+        });
+      } else {
+        toast({
+          title: `Found ${response.data.results_count || 0} results`,
+          description: "Using filter-based search"
+        });
+      }
     } catch (error) {
       console.error('Search error:', error);
       toast({
         title: "Search failed",
-        description: "Could not connect to the search API. Make sure the FastAPI server is running on port 8000.",
+        description: "Could not connect to the search API. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -91,6 +107,32 @@ export default function CSRSearch() {
         <p className="text-muted-foreground">
           Search and compare CSR-backed designs. Export directly into your protocol dossier.
         </p>
+      </div>
+      
+      <div className="bg-blue-50 border border-blue-200 rounded-md p-4 text-blue-800">
+        <div className="flex items-start">
+          <svg 
+            xmlns="http://www.w3.org/2000/svg" 
+            className="h-5 w-5 mr-2 mt-0.5" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke="currentColor" 
+            strokeWidth="2" 
+            strokeLinecap="round" 
+            strokeLinejoin="round"
+          >
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          <div>
+            <h3 className="font-semibold text-base">Deep Semantic CSR Intelligence</h3>
+            <p className="text-sm mt-1">
+              This search is connected to our deep semantic layer and can understand natural language queries.
+              Try searching for concepts, outcomes, or specific protocol designs to find semantically similar studies.
+            </p>
+          </div>
+        </div>
       </div>
 
       <div className="grid gap-4">
