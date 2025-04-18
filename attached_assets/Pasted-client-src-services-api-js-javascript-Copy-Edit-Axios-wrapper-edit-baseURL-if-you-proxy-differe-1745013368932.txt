@@ -1,0 +1,223 @@
+client/src/services/api.js
+javascript
+Copy
+Edit
+// Axios wrapper – edit baseURL if you proxy differently
+import axios from "axios";
+
+const api = axios.create({
+  baseURL: process.env.REACT_APP_API_URL || "http://localhost:8001",
+});
+
+export default api;
+2  client/src/components/ProjectForm.jsx
+javascript
+Copy
+Edit
+import React, { useState } from "react";
+import api from "../services/api";
+
+export default function ProjectForm({ onCreated }) {
+  const [form, setForm] = useState({
+    project_id: "",
+    sponsor: "",
+    drug_name: "",
+    protocol: "",
+    pi_name: "",
+    pi_address: "",
+    nct_number: "",
+  });
+  const [busy, setBusy] = useState(false);
+
+  const handle = (e) =>
+    setForm({ ...form, [e.target.name]: e.target.value });
+
+  const create = async () => {
+    try {
+      setBusy(true);
+      await api.post("/api/projects", form);
+      onCreated();
+      setForm({
+        project_id: "",
+        sponsor: "",
+        drug_name: "",
+        protocol: "",
+        pi_name: "",
+        pi_address: "",
+        nct_number: "",
+      });
+    } catch (err) {
+      alert(err.response?.data?.detail || err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="space-y-2 border p-4 rounded-md">
+      <h3 className="font-semibold">New IND Project</h3>
+      {[
+        ["Project ID", "project_id"],
+        ["Sponsor", "sponsor"],
+        ["Drug Name", "drug_name"],
+        ["Protocol #", "protocol"],
+        ["PI Name", "pi_name"],
+        ["PI Address", "pi_address"],
+        ["NCT #", "nct_number"],
+      ].map(([label, name]) => (
+        <div key={name}>
+          <label className="block text-sm font-medium">{label}</label>
+          <input
+            className="border p-1 w-full"
+            name={name}
+            value={form[name]}
+            onChange={handle}
+          />
+        </div>
+      ))}
+      <button
+        className="bg-blue-600 text-white px-3 py-1 rounded"
+        disabled={busy}
+        onClick={create}
+      >
+        {busy ? "Creating…" : "Create Project"}
+      </button>
+    </div>
+  );
+}
+3  client/src/components/ProjectList.jsx
+javascript
+Copy
+Edit
+import React, { useEffect, useState } from "react";
+import api from "../services/api";
+
+export default function ProjectList({ onSelect }) {
+  const [projects, setProjects] = useState([]);
+
+  const load = async () => {
+    const { data } = await api.get("/api/projects");
+    setProjects(data);
+  };
+  useEffect(() => {
+    load();
+  }, []);
+
+  return (
+    <div className="space-y-2">
+      <h3 className="font-semibold">Existing Projects</h3>
+      {projects.map((p) => (
+        <div
+          key={p.project_id}
+          className="cursor-pointer border p-2 rounded hover:bg-gray-100"
+          onClick={() => onSelect(p)}
+        >
+          <strong>{p.project_id}</strong> – {p.drug_name}
+        </div>
+      ))}
+    </div>
+  );
+}
+4  client/src/components/Module1Forms.jsx
+javascript
+Copy
+Edit
+import React, { useState } from "react";
+import api from "../services/api";
+
+export default function Module1Forms({ project }) {
+  const [loading, setLoading] = useState("");
+
+  const dl = (id) => {
+    setLoading(id);
+    window.open(`/api/ind/${project.project_id}/forms/${id}`, "_blank");
+    setTimeout(() => setLoading(""), 800); // simple reset
+  };
+
+  return (
+    <div className="space-x-2">
+      {["1571", "1572", "3674"].map((f) => (
+        <button
+          key={f}
+          className="bg-green-600 text-white px-3 py-1 rounded disabled:opacity-50"
+          disabled={!project}
+          onClick={() => dl(f)}
+        >
+          {loading === f ? "Preparing…" : `Download ${f}`}
+        </button>
+      ))}
+    </div>
+  );
+}
+5  client/src/pages/IndAutomationPage.jsx
+javascript
+Copy
+Edit
+import React, { useState } from "react";
+import ProjectForm from "../components/ProjectForm";
+import ProjectList from "../components/ProjectList";
+import Module1Forms from "../components/Module1Forms";
+
+export default function IndAutomationPage() {
+  const [selected, setSelected] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  return (
+    <div className="p-6 space-y-6">
+      <h1 className="text-3xl font-bold">IND Automation</h1>
+
+      <div className="grid grid-cols-2 gap-6">
+        <ProjectForm onCreated={() => setRefreshKey((k) => k + 1)} />
+        <ProjectList
+          key={refreshKey}
+          onSelect={(proj) => setSelected(proj)}
+        />
+      </div>
+
+      {selected && (
+        <div className="border-t pt-4">
+          <h2 className="text-xl font-semibold">
+            Module 1 Forms – {selected.project_id}
+          </h2>
+          <Module1Forms project={selected} />
+        </div>
+      )}
+    </div>
+  );
+}
+6  Add Route in App.jsx
+jsx
+Copy
+Edit
+// ...
+import IndAutomationPage from "./pages/IndAutomationPage";
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        {/* other routes */}
+        <Route path="/ind-automation" element={<IndAutomationPage />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+7  Proxy (if needed)
+In client/package.json add:
+
+json
+Copy
+Edit
+"proxy": "http://localhost:8001"
+Restart the React dev server so the proxy takes effect.
+
+Usage
+Create a project in the “New IND Project” form → it appears in Existing Projects.
+
+Click the project → Module 1 download buttons activate.
+
+Each button calls FastAPI /api/ind/{pid}/forms/{id} and streams the Word doc populated with your metadata.
+
+Everything is modular—expand with editing dialogs, sequence‑increment calls, or Module 3 UI next.
+
+Happy coding!

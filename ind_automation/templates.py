@@ -93,7 +93,7 @@ def render_form1571(data: Dict[str, Any]) -> BytesIO:
     output.seek(0)
     return output
 
-def generate_form_1572(data: Dict[str, Any]) -> BytesIO:
+def render_form1572(data: Dict[str, Any]) -> BytesIO:
     """
     Generate FDA Form 1572 (Statement of Investigator)
     
@@ -167,7 +167,7 @@ def generate_form_1572(data: Dict[str, Any]) -> BytesIO:
     output.seek(0)
     return output
 
-def generate_form_3674(data: Dict[str, Any]) -> BytesIO:
+def render_form3674(data: Dict[str, Any]) -> BytesIO:
     """
     Generate FDA Form 3674 (Certification of Compliance with ClinicalTrials.gov)
     

@@ -1,0 +1,173 @@
+# IND Automation Project Plan
+
+This project will deliver an automated IND submission system within LumenTrialGuide.AI. It’s organized into four phases. **Phase 1** is now in active implementation.
+
+| Phase | Goal | Status |
+|-------|------|--------|
+| **1. POC & Basic IND Assembly** | Scaffold POC on Replit: FastAPI, Benchling stub, Module 3 DOCX template, API endpoint | **In Progress** |
+| 2. Full CTD Module Support & Collaborative UI | Extend ingestion (Benchling, LIMS), build templates for Modules 1–5, implement React dashboard, version control, compliance checks | Pending |
+| 3. AI‑Driven Narrative & eCTD Packaging | Integrate GPT‑4 for Module 2 summaries, finalize eCTD XML builder, ESG submission integration | Pending |
+| 4. Pilot, Refinement & Scalability | Pilot with biotech partner, UX refinements, security audit, scale architecture beyond Replit | Pending |
+
+---
+
+# Phase 1: POC Environment & Basic IND Assembly
+
+In this Phase 1 you will scaffold a minimal Replit project that:
+
+1. Initializes a FastAPI service
+2. Defines a data ingestion stub for Benchling
+3. Creates a DOCX template for Module 3 (CMC) and renders it with dummy data
+4. Exposes a `/api/ind/{project_id}/module3` endpoint returning the rendered document
+
+---
+
+## 1. Replit Project Setup
+
+1. **Create a new Replit** (Python template).
+2. In the file browser, create the following directories:
+   ```
+   ingestion/
+   templates/
+   ```
+3. Create a `requirements.txt` with:
+   ```txt
+   fastapi
+   uvicorn
+   python-docx-template
+   pydantic
+   ```
+4. In the Replit shell, install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+## 2. Ingestion Stub
+
+Create `ingestion/benchling_connector.py` with a stub function:
+
+```python
+# ingestion/benchling_connector.py
+from typing import Dict
+
+def fetch_benchling_cmc(project_id: str) -> Dict:
+    """
+    Stub: Fetch CMC data for a given project_id from Benchling.
+    Returns a dict with keys matching Module 3 fields.
+    """
+    # TODO: replace stub with real Benchling API calls
+    return {
+        "drug_name": "TestDrug",
+        "manufacturing_site": "Site A",
+        "batch_number": "BATCH123",
+        "specifications": [
+            {"parameter": "Assay (%)", "limit": "95–105", "result": "98.2"},
+            {"parameter": "Purity (%)", "limit": "> 99.0", "result": "99.5"},
+        ],
+        "stability_data": [
+            {"timepoint": "0 months", "result": "98.2"},
+            {"timepoint": "3 months", "result": "97.8"},
+        ],
+    }
+```
+
+## 3. Template for Module 3
+
+Create `templates/module3_cmc.docx.j2` based on a simple Word file with Jinja placeholders. In `templates/`, upload a `.docx` file saved from Word, rename it `module3_cmc.docx` and then:
+
+1. Duplicate it as `module3_cmc.docx.j2`.
+2. In the Word document, replace:
+   - `{% raw %}{{ drug_name }}{% endraw %}` for the drug name
+   - `{% raw %}{{ manufacturing_site }}{% endraw %}` for site
+   - Add a table with rows for `specifications` and `stability_data` using Jinja loops:
+     ```jinja
+     {% for spec in specifications %}
+     | {{ spec.parameter }} | {{ spec.limit }} | {{ spec.result }} |
+     {% endfor %}
+     ```
+
+*(For now, a minimal template is fine; you can expand later.)*
+
+## 4. FastAPI Service & Render Endpoint
+
+Create `main.py`:
+
+```python
+# main.py
+import io
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from docxtpl import DocxTemplate
+from ingestion.benchling_connector import fetch_benchling_cmc
+from fastapi.responses import StreamingResponse
+
+app = FastAPI(title="IND Automation POC")
+
+class INDProject(BaseModel):
+    project_id: str
+
+@app.get("/api/ind/{project_id}/module3")
+async def generate_module3(project_id: str):
+    # 1) Fetch data
+    data = fetch_benchling_cmc(project_id)
+    if not data:
+        raise HTTPException(status_code=404, detail="Project not found or no CMC data")
+
+    # 2) Render template
+    tpl = DocxTemplate("templates/module3_cmc.docx.j2")
+    tpl.render(data)
+
+    # 3) Stream back as bytes
+    buf = io.BytesIO()
+    tpl.save(buf)
+    buf.seek(0)
+    return StreamingResponse(
+        buf,
+        media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        headers={'Content-Disposition': f'attachment; filename=module3_{project_id}.docx'}
+    )
+```
+
+## 5. Run & Test
+
+In the Replit console, start the server:
+
+```bash
+uvicorn main:app --host=0.0.0.0 --port=3000
+```
+
+Then in the browser or via `curl`, test:
+
+```bash
+curl -v http://localhost:3000/api/ind/demo_project/module3 --output module3_demo.docx
+```
+
+You should receive a Word file `module3_demo.docx` populated with stub data.
+
+---
+
+**Phase 1 Complete:**
+- Fetches CMC data (stub) from Benchling connector
+- Renders a Module 3 CMC Word document from a template
+- Exposes an API endpoint to download the document
+
+**## Phase 2‑B Front‑End Integration (Implemented)
+
+- React service wrapper (`services/api.js`)
+- ProjectForm, ProjectList, Module1Forms components
+- Route `/ind-automation` added in `App.jsx`
+
+## Phase 2‑C Module 3 UI & Sequence Trigger (**Next**)
+
+> These tasks will complete user‑side workflows for CMC document creation and sequence numbering.
+
+1. **Benchling Module 3 Generate**  
+   Button triggers `GET /api/ind/{pid}/module3?src=benchling` → downloads docx.
+2. **Manual CMC Entry Form**  
+   UI form posts JSON to `POST /api/ind/{pid}/module3/manual` → downloads docx.
+3. **Increment Sequence**  
+   UI button calls `POST /api/ind/{pid}/sequence` then regenerates forms with new serial.
+4. **History Table**  
+   Shows past serial numbers with timestamp and links to docs built in that run.
+
+Once Phase 2‑C is up, Phase 2 will be complete and we’ll proceed to Phase 3 (AI narratives + eCTD packager).
