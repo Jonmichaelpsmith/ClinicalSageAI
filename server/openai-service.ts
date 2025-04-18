@@ -1,5 +1,6 @@
 import OpenAI from 'openai';
 import pdfParse from 'pdf-parse';
+import fs from 'fs';
 
 // Initialize OpenAI client
 // NOTE: the newest OpenAI model is "gpt-4o" which was released May 13, 2024
