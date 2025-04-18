@@ -26,7 +26,7 @@ export default function IndAutomationPage() {
       {selected && (
         <div className="border-t pt-4">
           <div className="space-x-2 mb-4">
-            {["Module1", "Module3"].map((t) => (
+            {["Module1", "Module3", "History"].map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
@@ -49,6 +49,12 @@ export default function IndAutomationPage() {
             <div className="space-y-2">
               <Module3Benchling project={selected} />
               <Module3Manual project={selected} />
+            </div>
+          )}
+          
+          {tab === "History" && (
+            <div className="space-y-2">
+              <HistoryTable project={selected} />
             </div>
           )}
         </div>
