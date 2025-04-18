@@ -954,7 +954,7 @@ export default function ProtocolOptimizer() {
                                   <div className="mt-3 pt-3 border-t border-gray-100">
                                     <h4 className="text-sm font-medium text-gray-700 mb-1">Recommendations:</h4>
                                     <ul className="list-disc list-inside text-sm text-slate-600 space-y-1">
-                                      {csr.suggestions.map((suggestion, idx) => (
+                                      {csr.suggestions.map((suggestion: string, idx: number) => (
                                         <li key={idx}>{suggestion}</li>
                                       ))}
                                     </ul>
