@@ -15,6 +15,7 @@ import { useLocation } from 'wouter';
 import html2pdf from 'html2pdf.js';
 import EnhancedProtocolIntelligencePanel from '@/components/EnhancedProtocolIntelligencePanel';
 import AcademicInsightsPanel from '@/components/AcademicInsightsPanel';
+import FormattedProtocolRecommendations from '@/components/FormattedProtocolRecommendations';
 import { 
   ArrowRight, 
   FileDown, 
@@ -620,9 +621,10 @@ export default function ProtocolOptimizer() {
                       </TabsList>
                       
                       <TabsContent value="recommendations" className="space-y-4">
-                        <div className="whitespace-pre-wrap p-6 border rounded-xl bg-white shadow-sm">
-                          {generatedContent.recommendation}
-                        </div>
+                        <FormattedProtocolRecommendations 
+                          recommendation={generatedContent.recommendation}
+                          protocolTitle={protocolFile?.name || `${indication} Protocol`}
+                        />
                       </TabsContent>
                       
                       <TabsContent value="key-points" className="space-y-5">
