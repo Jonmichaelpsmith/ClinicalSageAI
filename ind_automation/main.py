@@ -105,6 +105,24 @@ async def health_check():
         "timestamp": datetime.now().isoformat()
     }
 
+# ------------------ Project Data ------------------
+@app.get("/projects")
+async def list_projects():
+    """
+    Get available projects - simulated data for demo purposes
+    In a real environment, we would connect to Benchling or another LIMS
+    """
+    # Provide sample projects for demonstration
+    sample_projects = [
+        {"id": "P001", "name": "Oncology - New Cancer Drug"},
+        {"id": "P002", "name": "Cardiovascular - Hypertension Treatment"},
+        {"id": "P003", "name": "Neurology - Alzheimer's Treatment"},
+        {"id": "P004", "name": "Immunology - Autoimmune Disorder Treatment"},
+        {"id": "P005", "name": "Infectious Disease - Novel Antibiotic"}
+    ]
+    
+    return {"projects": sample_projects}
+
 # ------------------ Form Endpoints ------------------
 @app.post("/api/ind/form1571")
 async def generate_form_1571_endpoint(data: Form1571Data):
