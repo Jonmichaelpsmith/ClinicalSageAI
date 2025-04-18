@@ -27,7 +27,8 @@ import {
   Scale,
   Database,
   BookOpen,
-  Droplet
+  Droplet,
+  Target
 } from "lucide-react";
 // Custom circular progress component instead of using react-circular-progressbar
 
