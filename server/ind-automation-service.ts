@@ -303,7 +303,7 @@ export class INDAutomationService {
       }
 
       const response = await axios.post(
-        `${this.serviceUrl}/generate/form1571`,
+        `${this.serviceUrl}/api/ind/form1571`,
         data,
         {
           responseType: 'arraybuffer'
@@ -331,7 +331,7 @@ export class INDAutomationService {
       }
 
       const response = await axios.post(
-        `${this.serviceUrl}/generate/form1572`,
+        `${this.serviceUrl}/api/ind/form1572`,
         data,
         {
           responseType: 'arraybuffer'
@@ -359,7 +359,7 @@ export class INDAutomationService {
       }
 
       const response = await axios.post(
-        `${this.serviceUrl}/generate/form3674`,
+        `${this.serviceUrl}/api/ind/form3674`,
         data,
         {
           responseType: 'arraybuffer'
@@ -387,7 +387,7 @@ export class INDAutomationService {
       }
 
       const response = await axios.post(
-        `${this.serviceUrl}/generate/cover-letter`,
+        `${this.serviceUrl}/api/ind/cover-letter`,
         data,
         {
           responseType: 'arraybuffer'
