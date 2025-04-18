@@ -18,7 +18,8 @@ import {
   FileStack, 
   FileJson, 
   FileType, 
-  FilePlus 
+  FilePlus,
+  FileSymlink
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import axios from "axios";
@@ -367,6 +368,49 @@ const ExportMenu = ({
       setIsExporting(false);
     }
   };
+  
+  const exportToXML = async () => {
+    try {
+      setIsExporting(true);
+      
+      const exportData = {
+        title: title || `Protocol Recommendations for ${indication} Study (${phase})`,
+        content: recommendations,
+        author: 'LumenTrialGuide.AI',
+        indication,
+        phase,
+        csrInsights,
+        academicReferences
+      };
+      
+      const response = await axios.post('/api/export/xml', exportData, {
+        responseType: 'blob',
+      });
+      
+      // Create a URL for the blob and trigger a download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${exportData.title.replace(/[^a-zA-Z0-9 ]/g, '')}.xml`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast({
+        title: "XML exported successfully",
+        description: "Your protocol data has been exported to XML format for data exchange.",
+      });
+    } catch (error) {
+      console.error('Error exporting to XML:', error);
+      toast({
+        title: "Export failed",
+        description: "Failed to export to XML format. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   return (
     <DropdownMenu>
@@ -407,6 +451,10 @@ const ExportMenu = ({
           <DropdownMenuItem onClick={exportToCSV} disabled={isExporting || csrInsights.length === 0}>
             <FileSpreadsheet className="mr-2 h-4 w-4" />
             CSV (CSR Data)
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={exportToXML} disabled={isExporting}>
+            <FileSymlink className="mr-2 h-4 w-4" />
+            XML (Clinical Trial Exchange)
           </DropdownMenuItem>
         </DropdownMenuGroup>
         
