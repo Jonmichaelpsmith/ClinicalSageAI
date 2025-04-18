@@ -907,6 +907,30 @@ export default function ProtocolOptimizer() {
                           </div>
                         )}
                       </TabsContent>
+                      <TabsContent value="protocol-intelligence" className="space-y-4">
+                        <EnhancedProtocolIntelligencePanel 
+                          protocolData={{
+                            indication: indication,
+                            phase: phase,
+                            studyType: studyType,
+                            summary: protocolSummary
+                          }}
+                          analysisResults={generatedContent}
+                          matchedCsrs={generatedContent.matchedCsrInsights || []}
+                        />
+                      </TabsContent>
+                      
+                      <TabsContent value="academic-insights" className="space-y-4">
+                        <AcademicInsightsPanel 
+                          protocolData={{
+                            indication: indication,
+                            phase: phase,
+                            studyType: studyType,
+                          }}
+                          academicReferences={generatedContent.academicReferences || []}
+                          therapeuticArea={indication}
+                        />
+                      </TabsContent>
                       
                       <TabsContent value="references" className="space-y-4">
                         <div className="mb-4 p-4 bg-blue-50 border border-blue-100 rounded-xl">
