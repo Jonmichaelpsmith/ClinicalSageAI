@@ -1,0 +1,121 @@
+#!/usr/bin/env bash
+set -e
+pip install -q spacy==3.7.2
+python -m spacy download en_core_web_sm
+cd "$REPL_HOME"
+
+############################################################################
+# 1) pii_filter.py
+############################################################################
+cat > ind_automation/pii_filter.py << 'PY'
+import re, spacy
+NLP=spacy.load('en_core_web_sm')
+REGEXES={
+  'CREDIT_CARD':re.compile(r'\b(?:\d[ -]*?){13,16}\b'),
+  'SSN':re.compile(r'\b\d{3}-\d{2}-\d{4}\b'),
+  'PHONE':re.compile(r'\b\(?\d{3}[)-]? *\d{3}-? *-?\d{4}\b'),
+  'EMAIL':re.compile(r'[\w.-]+@[\w.-]+'),
+}
+
+MASK='■■■■'
+
+def _regex_redact(text):
+    matches=[]
+    for name,rx in REGEXES.items():
+        for m in rx.finditer(text):
+            matches.append((name,m.group()))
+            text=text.replace(m.group(),MASK)
+    return text,matches
+
+def redact(text:str):
+    if not text: return text,[]
+    text,m=_regex_redact(text)
+    doc=NLP(text)
+    for ent in doc.ents:
+        if ent.label_ in ['PERSON','GPE','DATE']:  # basic PHI
+            m.append((ent.label_,ent.text))
+            text=text.replace(ent.text,MASK)
+    return text,m
+PY
+
+############################################################################
+# 2) FastAPI middleware to sanitize request bodies
+############################################################################
+python - << 'PY'
+import pathlib, textwrap
+main=pathlib.Path('ind_automation/main.py'); m=main.read_text()
+if 'RedactionMiddleware' not in m:
+    m=m.replace('from fastapi import', 'from fastapi import')  # keep imports
+    m+='\nfrom ind_automation import pii_filter, db, users\nfrom starlette.middleware.base import BaseHTTPMiddleware\nimport json, asyncio\nclass RedactionMiddleware(BaseHTTPMiddleware):\n    async def dispatch(self, request, call_next):\n        if request.headers.get("content-type","").startswith("application/json"):
+            body=await request.body(); data=json.loads(body or '{}');
+            redacted=False; matches=[]
+            def _clean(obj):
+                nonlocal redacted,matches
+                if isinstance(obj,str):
+                    clean,hit=pii_filter.redact(obj); matches+=hit; redacted|=bool(hit); return clean
+                if isinstance(obj,dict): return {k:_clean(v) for k,v in obj.items()}
+                if isinstance(obj,list): return [_clean(v) for v in obj]
+                return obj
+            clean=_clean(data)
+            if redacted:
+                # replace request stream
+                request._receive = lambda: {'type':'http.request','body':json.dumps(clean).encode()}
+                user=request.headers.get('x-user', 'unknown')
+                db.append_history('system',{"type":"redaction","user":user,"matches":matches,"timestamp":datetime.datetime.utcnow().isoformat()})
+            response=await call_next(request); return response
+        return await call_next(request)
+
+    app.add_middleware(RedactionMiddleware)
+    '
+    main.write_text(m)
+PY
+
+############################################################################
+# 3) Patch db.append_history to run redaction + publish alert
+############################################################################
+python - << 'PY'
+import pathlib, re, textwrap
+mdb=pathlib.Path('ind_automation/db.py'); code=mdb.read_text()
+if 'pii_filter' not in code:
+    code='import asyncio\nfrom ind_automation import pii_filter, rules_store, users\n'+code
+    code=re.sub(r'def append_history\([\s\S]+?\):',
+    'def append_history(org,record):\n    clean,match=pii_filter.redact(json.dumps(record)); record=json.loads(clean)\n    hist=_load_org(org); hist.append(record); _save_org(org,hist)\n    if match: asyncio.create_task(redis.publish("alerts",json.dumps({"msg":"Redaction applied","timestamp":record["timestamp"]})))',code,1)
+    mdb.write_text(code)
+PY
+
+############################################################################
+# 4) Redact during PDF branding
+############################################################################
+python - << 'PY'
+import pathlib, re
+bp=pathlib.Path('ind_automation/branded_pdf.py'); code=bp.read_text()
+if 'pii_filter' not in code:
+    code=code.replace('from reportlab.lib.pagesizes', 'from reportlab.lib.pagesizes')  # anchor
+    code='from ind_automation import pii_filter\n'+code
+    code=re.sub(r'writer.write\(buf\)', 'content=buf.getvalue(); clean,_=pii_filter.redact(content.decode(errors="ignore")); buf=io.BytesIO(clean.encode()); writer.write(buf)', code,1)
+    bp.write_text(code)
+PY
+
+############################################################################
+# 5) Redaction log tab in UI
+############################################################################
+mkdir -p client/src/components
+cat > client/src/components/RedactionLog.jsx << 'JSX'
+import React,{useEffect,useState} from'react';import api from'../services/api';
+export default function RedactionLog(){const[rows,set]=useState([]);useEffect(()=>{api.get('/api/org/system/history').then(r=>set(r.data.filter(x=>x.type==='redaction')))},[]);
+ return(<div className='p-4'><h3 className='font-semibold mb-2'>Redaction Log</h3><table className='text-xs w-full'><tbody>{rows.map((r,i)=>(<tr key={i}><td>{new Date(r.timestamp).toLocaleString()}</td><td>{r.matches.map(m=>m[0]).join(', ')}</td></tr>))}</tbody></table></div>);}
+JSX
+
+# integrate tab for admins
+python - << 'PY'
+import pathlib, textwrap
+page=pathlib.Path('client/src/pages/IndAutomationPage.jsx'); p=page.read_text()
+if 'Redaction Log' not in p:
+    p=p.replace('import DataPrivacy','import DataPrivacy from "../components/DataPrivacy";\nimport RedactionLog from "../components/RedactionLog"')
+    p=p.replace('"Data Privacy"','"Data Privacy","Redaction Log"')
+    pane=textwrap.dedent('{tab === "Redaction Log" && <RedactionLog/>}')
+    p=p.replace('{tab === "Data Privacy"', '{tab === "Data Privacy"'+pane+'\n',1)
+    page.write_text(p)
+PY
+
+echo '✅ PII/PHI redaction middleware, alert, and log installed – restart FastAPI & React.'
