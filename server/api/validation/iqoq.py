@@ -1,47 +1,47 @@
-"""
-IQ/OQ Validation Report Generation API
-
-This module provides endpoints for generating Installation Qualification (IQ) and
-Operational Qualification (OQ) validation reports for regulatory compliance purposes.
-"""
+# iqoq.py – API endpoint to generate and download IQ/OQ validation bundle
+from fastapi import APIRouter, BackgroundTasks, HTTPException
+from fastapi.responses import FileResponse
+from pathlib import Path
 import os
-from fastapi import APIRouter, HTTPException
-from fastapi.responses import FileResponse, JSONResponse
 from server.utils.iqoq_generator import generate_iqoq
 
 router = APIRouter(prefix="/api/validation", tags=["validation"])
 
-@router.get("/iqoq-report")
-async def generate_iqoq_report():
+@router.post("/iqoq")
+async def run_iqoq(background_tasks: BackgroundTasks):
     """
-    Generate and download an IQ/OQ validation report
-    
-    This endpoint generates a PDF report containing:
-    - System component inventory
-    - Version information
-    - Test execution results
-    - Compliance status for FDA, EMA, and PMDA requirements
+    Generate IQ/OQ validation documentation bundle as ZIP 
+    containing IQ PDF, OQ PDF, CSV test data, and SHA-256 manifest
     
     Returns:
-        FileResponse: PDF file containing the validation report
+        dict: Path to generated ZIP and timestamp
     """
     try:
-        # Generate the IQ/OQ report
-        # Use a more accessible directory for the Replit environment
-        output_dir = os.path.join(os.getcwd(), "output", "validation")
-        os.makedirs(output_dir, exist_ok=True)
-        
-        # Generate the report
-        pdf_path = generate_iqoq(output_dir)
-        
-        # Return the PDF file
-        return FileResponse(
-            path=pdf_path,
-            filename=os.path.basename(pdf_path),
-            media_type="application/pdf"
-        )
+        # Generate the IQ/OQ documentation bundle
+        result = generate_iqoq()
+        return result
     except Exception as e:
-        return JSONResponse(
-            status_code=500,
-            content={"error": f"Failed to generate validation report: {str(e)}"}
-        )
+        raise HTTPException(status_code=500, detail=f"IQ/OQ generation failed: {str(e)}")
+
+@router.get("/iqoq/download")
+async def download_iqoq(path: str):
+    """
+    Download the generated IQ/OQ ZIP bundle
+    
+    Args:
+        path: Full path to the ZIP file
+        
+    Returns:
+        FileResponse: The IQ/OQ ZIP bundle for download
+    """
+    if not os.path.exists(path):
+        raise HTTPException(status_code=404, detail=f"File not found: {path}")
+    
+    # Get file name for the content-disposition header
+    filename = os.path.basename(path)
+    
+    return FileResponse(
+        path=path,
+        filename=filename,
+        media_type='application/zip'
+    )

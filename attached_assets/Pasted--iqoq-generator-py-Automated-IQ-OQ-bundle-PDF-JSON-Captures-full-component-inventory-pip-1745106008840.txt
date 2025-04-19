@@ -1,0 +1,111 @@
+"""iqoq_generator.py – Automated IQ/OQ bundle (PDF + JSON)
+* Captures full component inventory (pip freeze) 
+* Parses latest pytest JUnit‑XML to list executed tests & statuses 
+* Embeds file checksums for traceability 
+Requires: reportlab, lxml
+"""
+import os, json, hashlib, subprocess
+from datetime import datetime
+from pathlib import Path
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from lxml import etree
+from server import __version__ as platform_version
+
+OUT_DIR = Path('/mnt/data/validation')
+OUT_DIR.mkdir(parents=True, exist_ok=True)
+
+# ------------------------------------------------------------------ helpers
+
+def md5(path: Path) -> str:
+    return hashlib.md5(path.read_bytes()).hexdigest()
+
+
+def gather_inventory() -> dict:
+    """Return dict of package→version using pip freeze."""
+    pkgs = subprocess.check_output(['pip', 'freeze'], text=True).splitlines()
+    comps = {}
+    for line in pkgs:
+        if '==' in line:
+            name, ver = line.split('==', 1)
+            comps[name] = ver
+    return comps
+
+
+def find_latest_junitxml() -> Path | None:
+    paths = list(Path('/mnt/data').rglob('junit*.xml'))
+    return max(paths, key=os.path.getmtime) if paths else None
+
+
+def parse_junit(xml_path: Path) -> list[dict]:
+    tree = etree.parse(str(xml_path))
+    cases = []
+    for tc in tree.findall('.//testcase'):
+        name = tc.get('name')
+        classname = tc.get('classname')
+        outcome = 'pass'
+        if tc.find('failure') is not None:
+            outcome = 'fail'
+        elif tc.find('skipped') is not None:
+            outcome = 'skipped'
+        cases.append({
+            'name': name,
+            'suite': classname,
+            'status': outcome
+        })
+    return cases
+
+# ------------------------------------------------------------------ main
+
+def generate_iqoq() -> dict:
+    ts = datetime.utcnow().strftime('%Y%m%dT%H%M%SZ')
+    pdf_path = OUT_DIR / f'IQOQ_{ts}.pdf'
+    json_path = OUT_DIR / f'IQOQ_{ts}.json'
+
+    inventory = gather_inventory()
+    junit = find_latest_junitxml()
+    test_results = parse_junit(junit) if junit else []
+
+    # JSON export
+    bundle = {
+        'generated': ts,
+        'platform_version': platform_version,
+        'inventory': inventory,
+        'tests': test_results,
+        'junit_file': str(junit) if junit else None,
+    }
+    json_path.write_text(json.dumps(bundle, indent=2))
+
+    # PDF report
+    c = canvas.Canvas(str(pdf_path), pagesize=letter)
+    y = 750
+    def line(txt, *a, font='Times-Roman', size=11):
+        nonlocal y
+        c.setFont(font, size)
+        c.drawString(40, y, txt.format(*a))
+        y -= 14
+    line('Installation Qualification / Operational Qualification Report')
+    line('Generated: {}', ts)
+    line('Platform Version: {}', platform_version)
+    line('')
+    line('Component Inventory (pip freeze):')
+    for k, v in sorted(inventory.items()):
+        line('  - {}: {}', k, v)
+    line('')
+    line('Executed Tests (pytest):')
+    if test_results:
+        for t in test_results:
+            status = 'PASS' if t['status']=='pass' else 'FAIL' if t['status']=='fail' else 'SKIP'
+            line('  • [{}] {}::{}', status, t['suite'], t['name'])
+    else:
+        line('  (No junit xml found)')
+    line('')
+    line('File Checksums:')
+    line('  - Report PDF: {}', md5(pdf_path))
+    line('  - Data JSON : {}', md5(json_path))
+
+    c.showPage(); c.save()
+    return {'pdf': str(pdf_path), 'json': str(json_path)}
+
+if __name__ == '__main__':
+    print(generate_iqoq())
