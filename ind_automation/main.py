@@ -8,9 +8,10 @@ from typing import List, Dict, Optional
 
 from ind_automation.templates import render_form1571, render_form1572, render_form3674
 from ind_automation import db
-from ind_automation import module3, ai_narratives, ectd_ga, auth, users
+from ind_automation import module3, ai_narratives, ectd_ga, auth, users, rbac
 from ind_automation.db import append_history, get_history
 from ind_automation import esg_credentials_api
+from ind_automation import saml_settings_api
 
 app = FastAPI(title="IND Automation Service v2")
 
@@ -133,6 +134,9 @@ app.include_router(ai_narratives.router)
 # Include ESG credentials API
 app.include_router(esg_credentials_api.router)
 
+# Include SAML settings API
+app.include_router(saml_settings_api.router)
+
 # ---------- Auth routes ----------
 from fastapi import Depends
 @app.post("/api/auth/register")
@@ -156,6 +160,29 @@ async def login(body: dict):
 async def verify_token(user: str = Depends(auth.get_current_user)):
     """Verify that the token is valid"""
     return {"username": user, "role": users.get_role(user)}
+
+@app.get("/api/ind-automation/auth/check-permissions")
+async def check_permissions(user: str = Depends(auth.get_current_user)):
+    """Get user permissions for client-side UI decisions"""
+    role = users.get_role(user)
+    permissions = []
+    
+    # Add permissions based on role
+    if role == "admin":
+        permissions.extend([
+            "saml.read", 
+            "saml.write", 
+            "saml.delete",
+            "esg.read",
+            "esg.write"
+        ])
+    elif role == "manager":
+        permissions.extend([
+            "saml.read",
+            "esg.read"
+        ])
+        
+    return {"username": user, "role": role, "permissions": permissions}
 
 # For compatibility with existing API calls
 @app.get("/projects")
