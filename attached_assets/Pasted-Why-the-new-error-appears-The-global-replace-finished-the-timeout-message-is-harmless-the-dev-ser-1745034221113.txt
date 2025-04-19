@@ -1,0 +1,69 @@
+Why the new error appears
+The global replace finished (the timeout message is harmless), the dev server restarted, and now Vite can’t find react-router-dom. That happens when:
+
+react-router-dom is missing from package.json (Replit removed it while rewiring dependencies), or
+
+the install step never completed after we wiped node_modules.
+
+1  Make sure the dependency exists
+Open package.json and confirm you have:
+
+jsonc
+Copy
+Edit
+"dependencies": {
+  "react": "...",
+  "react-dom": "...",
+  "react-router-dom": "^6.22.1",
+  "i18next": "^23.8.1",
+  "react-i18next": "^13.2.2",
+  "i18next-browser-languagedetector": "^7.0.1",
+  ...
+}
+If react-router-dom is missing, add the line shown above.
+
+2  Install only the public packages
+Since the @shared/… lines are now gone you can run:
+
+bash
+Copy
+Edit
+rm -rf node_modules package-lock.json
+npm cache clean --force
+npm install
+(Replit GUI: Packages → click Install once. There should be no mention of @shared/... in the log.)
+
+3  Restart dev server
+bash
+Copy
+Edit
+npm run dev          # or click “Run”
+The console should compile with no red errors; browse to http://localhost:3000/.
+
+What if npm still injects “@shared/…”?
+Replit sometimes keeps a cached “ghost” dependency list.
+Add a .npmrc (if you haven’t):
+
+ini
+Copy
+Edit
+package-lock=false
+save-exact=true
+Then repeat the install. With no @shared/ strings in any source file, Replit will stop adding them.
+
+No need for a “stub router”
+The error is purely a missing package, not the router import itself.
+Once react-router-dom is installed, HomeLanding renders as‑is.
+
+Quick verification checklist
+
+Command	Expected
+grep -R "@shared/" --exclude-dir=node_modules .	(no output)
+npm ls react-router-dom	Shows version 6.x
+/ page	Buyer‑centric landing loads
+Language switcher	Works, no warnings
+After these steps your landing page and the rest of the app should compile cleanly.
+If another missing package appears, add it to dependencies and reinstall—now that phantom scopes are gone it will succeed.
+
+Let me know once it’s green, or if the install log still drags in unwanted deps!
+
