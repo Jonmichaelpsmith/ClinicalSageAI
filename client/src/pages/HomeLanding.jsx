@@ -154,9 +154,10 @@ export default function HomeLanding() {
       <nav className="fixed top-0 inset-x-0 h-14 bg-white/80 dark:bg-slate-900/70 backdrop-blur flex justify-between items-center px-6 z-40 shadow-sm">
         <Link to="/" className="text-lg font-bold text-emerald-700 dark:text-emerald-400">Concepts2Cures.AI</Link>
         <div className="flex gap-3">
-          <Button to="/login" variant="ghost"><LogIn size={16}/> {t('Login')}</Button>
-          <Button to="/register" variant="ghost"><UserPlus size={16}/> {t('Register')}</Button>
-          <Button to="/demo" variant="primary"><PlayCircle size={16}/> {t('Live Demo')}</Button>
+          {/* Direct users to login which will take them to the client portal after authentication */}
+          <Button to="/login" variant="ghost"><LogIn size={16}/> {t('Login to Portal')}</Button>
+          <Button to="/demo" variant="ghost"><UserPlus size={16}/> {t('Register')}</Button>
+          <Button to="/portal" variant="primary"><PlayCircle size={16}/> {t('Client Portal')}</Button>
         </div>
       </nav>
       
@@ -179,15 +180,34 @@ export default function HomeLanding() {
         </div>
       </header>
 
-      {/* Feature banner */}
+      {/* Feature banner buttons - Interactive entry points to key features */}
       <section className="py-3 bg-emerald-600 dark:bg-emerald-700 text-white text-center">
         <div className="max-w-6xl mx-auto flex flex-wrap justify-center gap-3">
-          {featureBanner.map(f => (
-            <Link key={f.id} to={f.link} className="inline-flex items-center gap-1.5 px-4 py-1.5 hover:bg-emerald-700 dark:hover:bg-emerald-800 rounded-full transition-colors text-sm">
-              <Brain size={14} className="animate-pulse" /> 
-              <span>{f.text}</span>
-            </Link>
-          ))}
+          {/* All feature buttons now direct to portal page first, for users to access features */}
+          <Link to="/portal" className="inline-flex items-center gap-1.5 px-4 py-1.5 hover:bg-emerald-700 dark:hover:bg-emerald-800 rounded-full transition-colors text-sm">
+            <Brain size={14} className="animate-pulse" /> 
+            <span>{t('Deep-Learning CER Narratives')}</span>
+          </Link>
+          <Link to="/portal" className="inline-flex items-center gap-1.5 px-4 py-1.5 hover:bg-emerald-700 dark:hover:bg-emerald-800 rounded-full transition-colors text-sm">
+            <Brain size={14} className="animate-pulse" /> 
+            <span>{t('Full IND Builder & Validator')}</span>
+          </Link>
+          <Link to="/portal" className="inline-flex items-center gap-1.5 px-4 py-1.5 hover:bg-emerald-700 dark:hover:bg-emerald-800 rounded-full transition-colors text-sm">
+            <Brain size={14} className="animate-pulse" /> 
+            <span>{t('eCTD One-Click ESG Send')}</span>
+          </Link>
+          <Link to="/portal" className="inline-flex items-center gap-1.5 px-4 py-1.5 hover:bg-emerald-700 dark:hover:bg-emerald-800 rounded-full transition-colors text-sm">
+            <Brain size={14} className="animate-pulse" /> 
+            <span>{t('Real-Time Risk Dashboards')}</span>
+          </Link>
+          <Link to="/portal" className="inline-flex items-center gap-1.5 px-4 py-1.5 hover:bg-emerald-700 dark:hover:bg-emerald-800 rounded-full transition-colors text-sm">
+            <Brain size={14} className="animate-pulse" /> 
+            <span>{t('Benchling & FAERS Connectors')}</span>
+          </Link>
+          <Link to="/portal" className="inline-flex items-center gap-1.5 px-4 py-1.5 hover:bg-emerald-700 dark:hover:bg-emerald-800 rounded-full transition-colors text-sm">
+            <Brain size={14} className="animate-pulse" /> 
+            <span>{t('Conversational Reg-Affairs Agent')}</span>
+          </Link>
         </div>
       </section>
 
