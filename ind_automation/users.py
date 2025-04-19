@@ -1,3 +1,9 @@
+from enum import IntFlag
+class AlertChannel(IntFlag):
+    NONE = 0
+    TEAMS = 1
+    EMAIL = 2
+    BOTH = TEAMS | EMAIL
 import json, os, datetime
 from pathlib import Path
 from passlib.hash import bcrypt
@@ -27,3 +33,8 @@ def all_users():
 
 def set_permissions(username, perms):
     data=_load(); data[username]['perms']=perms; _save(data)
+
+def set_channels(username:str, chan:int):
+    d=_load(); d[username]['alert_channels']=chan; _save(d)
+def get_channels(username:str)->int:
+    return _load().get(username,{}).get('alert_channels',int(AlertChannel.TEAMS))

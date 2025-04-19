@@ -1,0 +1,129 @@
+#!/usr/bin/env bash
+set -e
+cd "$REPL_HOME"
+
+pip install -q pydantic
+
+############################################################################
+# 1) users.py – add alert_channels with Enum bitmask
+############################################################################
+python - << 'PY'
+import pathlib, textwrap
+u=pathlib.Path('ind_automation/users.py'); code=u.read_text()
+if 'AlertChannel' not in code:
+    code=textwrap.dedent("""from enum import IntFlag
+class AlertChannel(IntFlag):
+    NONE = 0
+    TEAMS = 1
+    EMAIL = 2
+    BOTH = TEAMS | EMAIL
+""")+code
+    # set default during create
+    code=code.replace('data[username] = {"perms": []', 'data[username] = {"alert_channels": int(AlertChannel.TEAMS), "perms": []', 1)
+    # helper setters/getters
+    code+=textwrap.dedent("""
+    def set_channels(username:str, chan:int):
+        d=_load(); d[username]['alert_channels']=chan; _save(d)
+    def get_channels(username:str)->int:
+        return _load().get(username,{}).get('alert_channels',int(AlertChannel.TEAMS))
+    """)
+    u.write_text(code)
+PY
+
+############################################################################
+# 2) alerter.py – strategy dispatcher
+############################################################################
+cat > ind_automation/alerter.py << 'PY'
+from __future__ import annotations
+import os, requests, smtplib, ssl
+from email.message import EmailMessage
+from enum import IntFlag
+from typing import Dict, Protocol
+from ind_automation.users import AlertChannel, get_channels
+
+SMTP_HOST=os.getenv('SMTP_HOST'); SMTP_PORT=int(os.getenv('SMTP_PORT','465'))
+SMTP_USER=os.getenv('SMTP_USER'); SMTP_PASS=os.getenv('SMTP_PASS')
+TEAMS_WEBHOOK=os.getenv('TEAMS_WEBHOOK_URL')
+
+class Dispatcher(Protocol):
+    def send(self, alert:Dict, user:str)->None: ...
+
+class TeamsDispatcher:
+    def send(self, alert:Dict, user:str)->None:
+        if not TEAMS_WEBHOOK: return
+        payload={"@type":"MessageCard","@context":"https://schema.org/extensions","summary":alert['msg'],"title":"Compliance Alert","text":alert['msg']}
+        try: requests.post(TEAMS_WEBHOOK,json=payload,timeout=5)
+        except Exception as e: print('Teams send error',e)
+class EmailDispatcher:
+    def send(self, alert:Dict, user:str)->None:
+        if not SMTP_HOST: return
+        msg=EmailMessage(); msg['Subject']='Compliance Alert'; msg['From']=SMTP_USER; msg['To']=user; msg.set_content(alert['msg'])
+        try:
+            with smtplib.SMTP_SSL(SMTP_HOST,SMTP_PORT,context=ssl.create_default_context()) as s:
+                s.login(SMTP_USER,SMTP_PASS); s.send_message(msg)
+        except Exception as e: print('Email send error',e)
+
+dispatchers={AlertChannel.TEAMS:TeamsDispatcher(), AlertChannel.EMAIL:EmailDispatcher()}
+
+def publish(alert:Dict):
+    from ind_automation import users
+    for user,meta in users.all_users().items():
+        chan=AlertChannel(meta.get('alert_channels',int(AlertChannel.TEAMS)))
+        if chan & AlertChannel.TEAMS: dispatchers[AlertChannel.TEAMS].send(alert,user)
+        if chan & AlertChannel.EMAIL: dispatchers[AlertChannel.EMAIL].send(alert,user)
+PY
+
+############################################################################
+# 3) Patch db.append_history to call alerter.publish
+############################################################################
+python - << 'PY'
+import pathlib, re
+mdb=pathlib.Path('ind_automation/db.py'); code=mdb.read_text()
+if 'alerter.publish' not in code:
+    code=code.replace('import aioredis, json','import aioredis, json\nfrom ind_automation import alerter')
+    code=re.sub(r'if record\.get\("type"\)=="alert": [^\n]+',
+                'if record.get("type")=="alert":\n        asyncio.create_task(redis.publish("alerts",json.dumps({"msg":record["msg"],"timestamp":record["timestamp"]})))\n        asyncio.create_task(asyncio.to_thread(alerter.publish,record))', code,1)
+    mdb.write_text(code)
+PY
+
+############################################################################
+# 4) FastAPI update route to set channels with validation
+############################################################################
+python - << 'PY'
+import pathlib, textwrap
+main=pathlib.Path('ind_automation/main.py'); code=main.read_text()
+if 'alert_channels' not in code:
+    code=code.replace('from ind_automation import users,', 'from ind_automation import users,')  # anchor
+    code=textwrap.dedent(code).replace('def update_user(',
+    'from pydantic import BaseModel, conint
+class UserUpdate(BaseModel):
+    role:str|None=None
+    perms:list[str]|None=None
+    alert_channels:conint(ge=0,le=3)|None=None  # bitmask
+
+def update_user(')
+    # adjust body usage
+    code=re.sub(r'body:dict', 'body:UserUpdate', code)
+    code=re.sub(r'if \'role\' in body', 'if body.role', code)
+    code=re.sub(r'if \'perms\' in body', 'if body.perms is not None', code)
+    code=re.sub(r'return \{', 'if body.alert_channels is not None: users.set_channels(username, body.alert_channels)\n    return {', code,1)
+    main.write_text(code)
+PY
+
+############################################################################
+# 5) React ChannelSelector in RoleManager
+############################################################################
+python - << 'PY'
+import pathlib, textwrap, re
+rm=pathlib.Path('client/src/components/RoleManager.jsx'); code=rm.read_text()
+if 'alert_channels' not in code:
+    code=code.replace('const PERMS=[','const CHANNELS={0:"NONE",1:"TEAMS",2:"EMAIL",3:"BOTH"};\nconst PERMS=[')
+    # add column header
+    code=re.sub(r'<th>Role</th>', '<th>Role</th><th>Alerts</th>', code)
+    # add selector cell
+    code=re.sub(r'</select></td>', '</select></td><td><select value={d.alert_channels||1} onChange={e=>api.put(`/api/org/tenant/users/${u}`,{alert_channels:+e.target.value}).then(load)}>{Object.entries(CHANNELS).map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></td>', code)
+    rm.write_text(code)
+PY
+
+
+echo '✅ Per‑user alert‑channel preferences installed – restart servers.'
