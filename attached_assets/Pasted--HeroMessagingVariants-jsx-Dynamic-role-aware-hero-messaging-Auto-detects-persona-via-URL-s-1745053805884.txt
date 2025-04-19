@@ -1,0 +1,145 @@
+// HeroMessagingVariants.jsx – Dynamic, role‑aware hero messaging
+// Auto‑detects persona via URL, session, or last‑viewed (localStorage)
+// Additional personas & polished styling
+
+import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
+
+/* —————————————————  Persona Copy Variants  ————————————————— */
+const variants = {
+  exec: {
+    headline: "From Concepts to Cures — in Half the Time",
+    subhead:
+      "TrialSage automates regulatory writing, submission assembly, and ESG delivery across FDA, EMA, PMDA, and more. Cut costs. Launch faster. Stay compliant.",
+    cta: { label: "Calculate ROI", to: "/roi" },
+  },
+  medwriter: {
+    headline: "Let the Assistant Draft Your IND While You Sleep",
+    subhead:
+      "Generate Module 2 summaries, CERs, CSRs in hours — not weeks. Track reviews, collect e‑signatures, and stay always audit‑ready.",
+    cta: { label: "Try AI Drafting", to: "/demo" },
+  },
+  ops: {
+    headline: "Faster Documents, Smoother Approvals, Fewer Vendors",
+    subhead:
+      "TrialSage centralizes protocol authoring, team reviews, and submission packaging into one platform — no hand‑offs, no delays.",
+    cta: { label: "Launch a New Study", to: "/contact" },
+  },
+  qa: {
+    headline: "Audit Trails Built for Inspectors — Not Checklists",
+    subhead:
+      "Secure, time‑stamped logs. Immutable signatures. 21 CFR Part 11 compliance by default.",
+    cta: { label: "See Validation Tools", to: "/validation" },
+  },
+  investor: {
+    headline: "AI for Biotech That Actually Moves the Needle",
+    subhead:
+      "TrialSage cuts submission timelines 78 % so capital works harder — therapies reach patients sooner.",
+    cta: { label: "Read Results", to: "/case-studies" },
+  },
+  biostats: {
+    headline: "Crunch the Numbers. Let Us Handle the Paperwork.",
+    subhead:
+      "Focus on analysis, not formatting. Auto‑generate stats sections for CSRs & INDs with traceable data links.",
+    cta: { label: "Explore Stats Toolkit", to: "/stats" },
+  },
+  sponsor: {
+    headline: "Run 3× More Trials with the Same Budget",
+    subhead:
+      "Automate submissions, streamline vendor oversight, and hit milestones early — all in one secure portal.",
+    cta: { label: "Request Sponsor Demo", to: "/demo" },
+  },
+  cro: {
+    headline: "Upgrade Your CRO Offering with White‑Label AI",
+    subhead:
+      "Embed TrialSage to cut client timelines and expand margins. Keep your brand, add our intelligence.",
+    cta: { label: "Partner Program", to: "/partners" },
+  },
+};
+const VALID = Object.keys(variants);
+
+/* Map session.user.role → persona key */
+const roleMap = {
+  RegulatoryLead: "exec",
+  Exec: "exec",
+  MedicalWriter: "medwriter",
+  ClinicalOps: "ops",
+  QA: "qa",
+  Biostatistician: "biostats",
+  Sponsor: "sponsor",
+  CRO: "cro",
+  Investor: "investor",
+};
+
+export default function HeroMessagingVariants() {
+  const location = useLocation();
+  const { session } = useAuth();
+  const stored = typeof window !== "undefined" ? localStorage.getItem("persona") : null;
+  const [persona, setPersona] = useState(stored || "exec");
+
+  /* Auto‑detect persona */
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const utm = params.get("persona");
+    if (utm && VALID.includes(utm)) {
+      setPersona(utm);
+      localStorage.setItem("persona", utm);
+      return;
+    }
+    const roleKey = roleMap[session?.user?.role];
+    if (roleKey && VALID.includes(roleKey)) {
+      setPersona(roleKey);
+      localStorage.setItem("persona", roleKey);
+    }
+  }, [location.search, session]);
+
+  const { headline, subhead, cta } = variants[persona];
+
+  /* CTA render */
+  const CTAButton = () => (
+    <a
+      href={cta.to}
+      className="inline-flex items-center gap-2 bg-emerald-600 text-white px-5 py-3 rounded-lg text-sm font-medium shadow hover:bg-emerald-700 transition"
+    >
+      {cta.label}
+    </a>
+  );
+
+  return (
+    <section className="text-center py-20 px-4 relative overflow-hidden">
+      {/* Decorative gradient blob */}
+      <div className="absolute -z-10 inset-0 flex justify-center opacity-15 blur-3xl pointer-events-none">
+        <div className="bg-emerald-400 size-[340px] rounded-full mix-blend-multiply animate-pulse"></div>
+      </div>
+
+      <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-emerald-700 dark:text-emerald-400 mb-4">
+        {headline}
+      </h1>
+      <p className="max-w-3xl mx-auto text-lg sm:text-xl text-gray-700 dark:text-gray-300 mb-8 leading-relaxed">
+        {subhead}
+      </p>
+      <CTAButton />
+
+      {/* Persona toggle (dev / exploration) */}
+      <div className="mt-8 flex flex-wrap justify-center gap-2 text-xs">
+        {VALID.map((k) => (
+          <button
+            key={k}
+            onClick={() => {
+              setPersona(k);
+              localStorage.setItem("persona", k);
+            }}
+            className={`px-3 py-1 rounded-full border ${
+              k === persona
+                ? "bg-emerald-600 text-white border-emerald-600"
+                : "border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-500 dark:text-gray-400"
+            } transition text-[10px] sm:text-xs capitalize`}
+          >
+            {k}
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+}
