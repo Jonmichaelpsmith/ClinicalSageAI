@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, Mail, MessageSquare, RefreshCw, Save, CheckCircle } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
+import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { AlertCircle, Mail, MessageSquare, AlertTriangle, Info, CheckCircle2, Loader2 } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import api from '../../services/api';
 
 type Preferences = {
@@ -22,185 +22,222 @@ export default function AlertPreferencesPanel() {
     warning_alerts: true,
     error_alerts: true
   });
+  
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isTesting, setIsTesting] = useState(false);
+  const [alertStatus, setAlertStatus] = useState<{
+    type: 'success' | 'error' | 'info' | null;
+    message: string;
+  }>({ type: null, message: '' });
 
-  const [saving, setSaving] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [success, setSuccess] = useState(false);
-  const { toast } = useToast();
-
-  // Load preferences on component mount
   useEffect(() => {
-    loadUserPreferences();
+    fetchPreferences();
   }, []);
 
-  const loadUserPreferences = async () => {
-    setLoading(true);
+  const fetchPreferences = async () => {
+    setIsLoading(true);
     try {
       const response = await api.get('/api/ind-automation/alert-preferences');
-      
-      if (response.data.success) {
-        setPreferences(response.data.preferences);
-      }
+      setPreferences(response.data);
     } catch (error) {
-      console.error('Failed to load alert preferences:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Could not load your alert preferences.'
+      console.error('Failed to fetch alert preferences:', error);
+      setAlertStatus({
+        type: 'error',
+        message: 'Failed to load your alert preferences. Please try again.'
       });
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  const saveUserPreferences = async () => {
-    setSaving(true);
-    try {
-      const response = await api.post('/api/ind-automation/alert-preferences', { 
-        preferences 
-      });
-      
-      if (response.data.success) {
-        toast({
-          title: 'Preferences Saved',
-          description: 'Your alert preferences have been updated successfully.',
-        });
-        setSuccess(true);
-        setTimeout(() => setSuccess(false), 2000);
-      }
-    } catch (error) {
-      console.error('Failed to save alert preferences:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Could not save your alert preferences.'
-      });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleChange = (key: keyof Preferences) => (value: boolean) => {
+  const handleToggleChange = (setting: keyof Preferences) => {
     setPreferences(prev => ({
       ...prev,
-      [key]: value
+      [setting]: !prev[setting]
     }));
   };
 
+  const handleSavePreferences = async () => {
+    setIsSaving(true);
+    setAlertStatus({ type: 'info', message: 'Saving your preferences...' });
+    
+    try {
+      const response = await api.post('/api/ind-automation/alert-preferences', preferences);
+      
+      if (response.data.status === 'success') {
+        setAlertStatus({
+          type: 'success',
+          message: 'Your alert preferences have been saved successfully.'
+        });
+      } else {
+        throw new Error(response.data.message || 'Failed to save preferences');
+      }
+    } catch (error) {
+      console.error('Error saving preferences:', error);
+      setAlertStatus({
+        type: 'error',
+        message: error instanceof Error ? error.message : 'An unknown error occurred'
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleTestAlert = async () => {
+    setIsTesting(true);
+    setAlertStatus({ type: 'info', message: 'Sending test alert...' });
+    
+    try {
+      const response = await api.post('/api/ind-automation/alert-test');
+      
+      if (response.data.status === 'success') {
+        setAlertStatus({
+          type: 'success',
+          message: 'Test alert sent successfully. Check your configured channels.'
+        });
+      } else {
+        throw new Error(response.data.message || 'Failed to send test alert');
+      }
+    } catch (error) {
+      console.error('Error sending test alert:', error);
+      setAlertStatus({
+        type: 'error',
+        message: error instanceof Error ? error.message : 'An unknown error occurred'
+      });
+    } finally {
+      setIsTesting(false);
+    }
+  };
+
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Bell className="h-5 w-5" />
-          Alert Channel Preferences
-        </CardTitle>
-        <CardDescription>
-          Customize how and when you receive monitoring alerts
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="space-y-4">
-          <h3 className="text-sm font-medium">Notification Channels</h3>
-          
-          <div className="flex items-center justify-between py-2">
-            <div className="flex items-center space-x-2">
-              <Mail className="h-4 w-4 text-muted-foreground" />
-              <Label htmlFor="email-alerts" className="flex-1">
-                Email Alerts
-                <p className="text-xs text-muted-foreground">
-                  Receive alerts via email
-                </p>
-              </Label>
-            </div>
-            <Switch
-              id="email-alerts"
-              checked={preferences.email}
-              onCheckedChange={handleChange('email')}
-              disabled={loading || saving}
-            />
-          </div>
-          
-          <div className="flex items-center justify-between py-2">
-            <div className="flex items-center space-x-2">
-              <MessageSquare className="h-4 w-4 text-muted-foreground" />
-              <Label htmlFor="teams-alerts" className="flex-1">
-                Microsoft Teams
-                <p className="text-xs text-muted-foreground">
-                  Receive alerts via Teams channel
-                </p>
-              </Label>
-            </div>
-            <Switch
-              id="teams-alerts"
-              checked={preferences.teams}
-              onCheckedChange={handleChange('teams')}
-              disabled={loading || saving}
-            />
-          </div>
+    <div className="space-y-6">
+      <div className="flex flex-col space-y-2">
+        <h3 className="text-lg font-medium">Alert Channel Preferences</h3>
+        <p className="text-sm text-muted-foreground">
+          Configure how you'd like to receive system alerts and notifications.
+        </p>
+      </div>
+
+      {alertStatus.type && (
+        <Alert variant={alertStatus.type === 'error' ? 'destructive' : 'default'}>
+          {alertStatus.type === 'success' && <CheckCircle2 className="h-4 w-4" />}
+          {alertStatus.type === 'error' && <AlertCircle className="h-4 w-4" />}
+          {alertStatus.type === 'info' && <Info className="h-4 w-4" />}
+          <AlertTitle>
+            {alertStatus.type === 'success' && 'Success'}
+            {alertStatus.type === 'error' && 'Error'}
+            {alertStatus.type === 'info' && 'Information'}
+          </AlertTitle>
+          <AlertDescription>{alertStatus.message}</AlertDescription>
+        </Alert>
+      )}
+
+      {isLoading ? (
+        <div className="flex justify-center items-center py-8">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
-        
-        <div className="space-y-4 pt-3">
-          <h3 className="text-sm font-medium">Alert Types</h3>
-          
-          <div className="flex items-center justify-between py-2">
-            <div>
-              <Label htmlFor="warning-alerts" className="flex-1">
-                Warning Alerts
-                <p className="text-xs text-muted-foreground">
-                  Example: Certificate expiring soon
-                </p>
-              </Label>
+      ) : (
+        <Card className="p-6">
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <h4 className="text-md font-medium mb-2">Notification Channels</h4>
+              
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Mail className="h-5 w-5 text-muted-foreground" />
+                  <Label htmlFor="email-toggle" className="font-normal">Email Notifications</Label>
+                </div>
+                <Switch 
+                  id="email-toggle" 
+                  checked={preferences.email} 
+                  onCheckedChange={() => handleToggleChange('email')}
+                />
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <MessageSquare className="h-5 w-5 text-muted-foreground" />
+                  <Label htmlFor="teams-toggle" className="font-normal">Microsoft Teams Notifications</Label>
+                </div>
+                <Switch 
+                  id="teams-toggle" 
+                  checked={preferences.teams} 
+                  onCheckedChange={() => handleToggleChange('teams')}
+                />
+              </div>
             </div>
-            <Switch
-              id="warning-alerts"
-              checked={preferences.warning_alerts}
-              onCheckedChange={handleChange('warning_alerts')}
-              disabled={loading || saving}
-            />
-          </div>
-          
-          <div className="flex items-center justify-between py-2">
-            <div>
-              <Label htmlFor="error-alerts" className="flex-1">
-                Error Alerts
-                <p className="text-xs text-muted-foreground">
-                  Example: Service down, certificate expired
-                </p>
-              </Label>
+            
+            <Separator />
+            
+            <div className="space-y-4">
+              <h4 className="text-md font-medium mb-2">Alert Types</h4>
+              
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <AlertTriangle className="h-5 w-5 text-amber-500" />
+                  <Label htmlFor="warnings-toggle" className="font-normal">Warning Alerts</Label>
+                </div>
+                <Switch 
+                  id="warnings-toggle" 
+                  checked={preferences.warning_alerts} 
+                  onCheckedChange={() => handleToggleChange('warning_alerts')}
+                />
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <AlertCircle className="h-5 w-5 text-destructive" />
+                  <Label htmlFor="errors-toggle" className="font-normal">Error Alerts</Label>
+                </div>
+                <Switch 
+                  id="errors-toggle" 
+                  checked={preferences.error_alerts} 
+                  onCheckedChange={() => handleToggleChange('error_alerts')}
+                />
+              </div>
             </div>
-            <Switch
-              id="error-alerts"
-              checked={preferences.error_alerts}
-              onCheckedChange={handleChange('error_alerts')}
-              disabled={loading || saving}
-            />
+            
+            <div className="flex flex-col space-y-2 pt-4">
+              <p className="text-sm text-muted-foreground">
+                These settings control alert notifications for Traefik health monitoring, SSL certificate expiration,
+                and other system health events. You will always receive critical system alerts regardless of these settings.
+              </p>
+            </div>
+            
+            <div className="flex justify-between pt-2">
+              <Button
+                variant="outline"
+                onClick={handleTestAlert}
+                disabled={isTesting || (!preferences.email && !preferences.teams)}
+              >
+                {isTesting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Sending Test...
+                  </>
+                ) : (
+                  'Send Test Alert'
+                )}
+              </Button>
+              
+              <Button
+                onClick={handleSavePreferences}
+                disabled={isSaving}
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  'Save Preferences'
+                )}
+              </Button>
+            </div>
           </div>
-        </div>
-      </CardContent>
-      <CardFooter className="flex justify-between">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={loadUserPreferences}
-          disabled={loading || saving}
-        >
-          <RefreshCw className={`h-4 w-4 mr-1 ${loading ? 'animate-spin' : ''}`} />
-          Refresh
-        </Button>
-        <Button 
-          onClick={saveUserPreferences}
-          disabled={loading || saving}
-        >
-          {success ? (
-            <CheckCircle className="h-4 w-4 mr-1" />
-          ) : saving ? (
-            <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
-          ) : (
-            <Save className="h-4 w-4 mr-1" />
-          )}
-          {success ? 'Saved' : saving ? 'Saving...' : 'Save Preferences'}
-        </Button>
-      </CardFooter>
-    </Card>
+        </Card>
+      )}
+    </div>
   );
 }
