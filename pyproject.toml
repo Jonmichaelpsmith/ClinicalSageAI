@@ -38,6 +38,7 @@ dependencies = [
     "scikit-learn>=1.6.1",
     "scipy>=1.15.2",
     "spacy>=3.8.5",
+    "sqlparse>=0.5.3",
     "starlette>=0.46.1",
     "statsmodels>=0.14.4",
     "tqdm>=4.67.1",
