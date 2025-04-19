@@ -8,6 +8,7 @@ import HistoryTable from "../components/HistoryTable";
 import Module2Narratives from "../components/Module2Narratives";
 import EctdBuilder from "../components/EctdBuilder";
 import EsgSubmit from "../components/EsgSubmit";
+import AuditDashboard from "../components/AuditDashboard";
 import WorkflowDashboard from "../components/ind-automation/WorkflowDashboard";
 import { getJson } from "../services/api";
 
@@ -63,7 +64,7 @@ export default function IndAutomationPage() {
       {selected && (
         <div className="border-t pt-4">
           <div className="flex flex-wrap gap-2 mb-4">
-            {["Dashboard", "Module1", "Module2", "Module3", "eCTD GA", "ESG", "History"].map((t) => (
+            {["Dashboard", "Module1", "Module2", "Module3", "eCTD GA", "ESG", "Audit", "History"].map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
@@ -112,6 +113,12 @@ export default function IndAutomationPage() {
           {tab === "ESG" && (
             <div className="space-y-4">
               <EsgSubmit project={selected} onComplete={refreshData} />
+            </div>
+          )}
+          
+          {tab === "Audit" && (
+            <div className="space-y-4">
+              <AuditDashboard org={selected.project_id} />
             </div>
           )}
           
