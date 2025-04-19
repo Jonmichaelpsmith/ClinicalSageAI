@@ -1,0 +1,164 @@
+#!/usr/bin/env bash
+set -e
+echo "▶︎ Installing History Table …"
+
+cd "$REPL_HOME"
+
+# -----------------------------------------------------------
+# 1) Patch backend: db.py add history helpers
+python - << 'PY'
+import pathlib, json, os, textwrap
+
+db = pathlib.Path("ind_automation/db.py")
+txt = db.read_text()
+if "append_history" not in txt:
+    txt += textwrap.dedent("""
+
+    # ---------- History helpers ----------
+    def append_history(pid: str, entry: dict):
+        rec = load(pid) or {}
+        rec.setdefault("history", []).append(entry)
+        save(pid, rec)
+    def get_history(pid: str):
+        rec = load(pid) or {}
+        return rec.get("history", [])
+    """)
+    db.write_text(txt)
+PY
+
+# -----------------------------------------------------------
+# 2) Patch main.py : record history + new endpoint
+python - << 'PY'
+import pathlib, re, textwrap, datetime
+main = pathlib.Path("ind_automation/main.py")
+code = main.read_text()
+
+# add import
+if "from ind_automation import db" in code and "append_history" not in code:
+    code = code.replace(
+        "from ind_automation import db",
+        "from ind_automation import db\nfrom ind_automation.db import append_history, get_history"
+    )
+
+# enhance /sequence route
+if "append_history" not in code:
+    seq_pattern = r"@app.post\(\"/api/ind/\{pid\}/sequence\"\)[\\s\\S]+?return \\{\"serial_number\""
+    def add_hist(m):
+        body = m.group(0)
+        insert = textwrap.dedent("""
+            # save history entry
+            append_history(pid, {
+                "serial": f"{m.serial_number:04d}",
+                "timestamp": datetime.datetime.utcnow().isoformat()
+            })
+        """)
+        return body.replace("db.save(", insert + "    db.save(", 1)
+    code = re.sub(seq_pattern, add_hist, code, 1, re.MULTILINE)
+
+# add GET /history route
+if "def get_history_endpoint" not in code:
+    code += textwrap.dedent("""
+    @app.get("/api/ind/{pid}/history")
+    async def get_history_endpoint(pid: str):
+        return get_history(pid)
+    """)
+main.write_text(code)
+PY
+
+# -----------------------------------------------------------
+# 3) Frontend: HistoryTable.jsx
+mkdir -p client/src/components
+cat > client/src/components/HistoryTable.jsx << 'JSX'
+import React, { useEffect, useState } from "react";
+import api from "../services/api";
+
+export default function HistoryTable({ project }) {
+  const [rows, setRows] = useState([]);
+
+  useEffect(() => {
+    if (project) {
+      api.get(`/api/ind/${project.project_id}/history`).then(({ data }) => setRows(data.reverse()));
+    }
+  }, [project]);
+
+  if (!project) return null;
+  return (
+    <div className="mt-4">
+      <h4 className="font-semibold mb-1">Submission History</h4>
+      {rows.length === 0 && <p className="text-sm text-gray-500">No sequences yet.</p>}
+      {rows.length > 0 && (
+        <table className="text-sm w-full border">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="p-1 border">Serial #</th>
+              <th className="p-1 border">Timestamp (UTC)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r, i) => (
+              <tr key={i}>
+                <td className="border p-1 text-center">{r.serial}</td>
+                <td className="border p-1">{new Date(r.timestamp).toLocaleString()}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+}
+JSX
+
+# -----------------------------------------------------------
+# 4) Patch IndAutomationPage.jsx : new tab + history pane
+python - << 'PY'
+import pathlib, textwrap, re
+page = pathlib.Path("client/src/pages/IndAutomationPage.jsx")
+code = page.read_text()
+
+if "HistoryTable" not in code:
+    code = code.replace(
+        "import Module3Manual",
+        "import Module3Manual from \"../components/Module3Manual\";\nimport HistoryTable from \"../components/HistoryTable\""
+    )
+
+# ensure tab array exists
+if "const [tab" not in code:
+    code = code.replace(
+        "const [selected, setSelected]",
+        "const [tab, setTab] = useState(\"Module1\");\n  const [selected, setSelected]"
+    )
+
+# nav tabs patch if not added yet
+if "History" not in code:
+    nav = textwrap.dedent("""
+        <div className="space-x-2 mb-4">
+          {["Module1", "Module3", "History"].map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={t===tab ? "underline font-bold" : ""}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+    """)
+    code = code.replace("<h2 className=\"text-xl font-semibold\">", nav + "<h2 className=\"text-xl font-semibold\">")
+
+# render history pane
+if "{tab === \"History\"" not in code:
+    pane = textwrap.dedent("""
+      {tab === "History" && selected && (
+        <HistoryTable project={selected} />
+      )}
+    """)
+    code = code.replace("</Routes>", pane + "\n</Routes>")
+
+page.write_text(code)
+PY
+
+echo "✅ History logging + React table installed!"
+echo "Restart backend: uvicorn ind_automation.main:app --host 0.0.0.0 --port 8001"
+echo "Restart React : npm start"
+echo "Create /sequence, then History tab will populate."
