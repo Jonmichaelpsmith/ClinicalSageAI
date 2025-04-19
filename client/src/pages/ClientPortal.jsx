@@ -63,7 +63,7 @@ export default function ClientPortal() {
       id: 'protocol',
       title: t('Protocol Optimizer'),
       icon: <Brain className="w-8 h-8 text-emerald-500" />,
-      description: t('Optimize clinical trial protocols with intelligence from 3,000+ successful studies'),
+      description: t('Optimize clinical trial protocols with intelligence from 3,021 successful studies'),
       link: '/protocol-optimization',
       category: 'core',
       actions: [
@@ -157,8 +157,8 @@ export default function ClientPortal() {
       <div className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 p-6 rounded-lg border border-emerald-100 dark:border-emerald-800">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Welcome to TrialSage</h1>
-            <p className="text-gray-600 dark:text-gray-300 mt-1">Your advanced clinical intelligence platform</p>
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Welcome to Concepts2Cures</h1>
+            <p className="text-gray-600 dark:text-gray-300 mt-1">TrialSage™ - Your advanced clinical intelligence platform</p>
           </div>
           <div className="flex items-center gap-3">
             <div className="bg-white dark:bg-slate-800 p-2 px-4 rounded-md border border-gray-200 dark:border-slate-700">
