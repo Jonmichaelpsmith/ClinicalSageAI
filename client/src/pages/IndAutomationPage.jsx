@@ -11,10 +11,10 @@ import EsgSubmit from "../components/EsgSubmit";
 import AuditDashboard from "../components/AuditDashboard";
 import RulesSettings from "../components/RulesSettings";
 import ComplianceInsights from "../components/ComplianceInsights";
-import KPIDashboard from "../components/kpi/KPIDashboard" from "../components/ComplianceInsights";
+import KPIDashboard from "../components/kpi/KPIDashboard";
 import RoleManager from "../components/RoleManager";
 import DataPrivacy from "../components/DataPrivacy";
-import RedactionLog from "../components/RedactionLog" from "../components/DataPrivacy" from "../components/RoleManager" from "../components/ComplianceInsights";
+import RedactionLog from "../components/RedactionLog";
 import WorkflowDashboard from "../components/ind-automation/WorkflowDashboard";
 import { getJson } from "../services/api";
 
@@ -122,19 +122,45 @@ export default function IndAutomationPage() {
             </div>
           )}
           
-          {tab === "Audit" && (
+          {tab === "Compliance Rules" && (
             <div className="space-y-4">
-              <AuditDashboard org={selected.project_id} />
+              <RulesSettings org={selected.project_id} />
             </div>
           )}
           
-          {tab === "Redaction Log" && <RedactionLog/>}
-{tab === "Data Privacy","Redaction Log" && <DataPrivacy/>}
-{tab === "User Management","Data Privacy","Redaction Log" && <RoleManager/>}
-{tab === "Compliance Insights"{tab === "KPI Dashboard" && selected && <KPIDashboard org={selected.project_id}/>}
-,"KPI Dashboard","User Management","Data Privacy","Redaction Log" && (
+          {tab === "Compliance Insights" && (
             <div className="space-y-4">
               <ComplianceInsights org={selected.project_id} />
+            </div>
+          )}
+          
+          {tab === "KPI Dashboard" && (
+            <div className="space-y-4">
+              <KPIDashboard org={selected.project_id} />
+            </div>
+          )}
+          
+          {tab === "User Management" && (
+            <div className="space-y-4">
+              <RoleManager org={selected.project_id} />
+            </div>
+          )}
+          
+          {tab === "Data Privacy" && (
+            <div className="space-y-4">
+              <DataPrivacy org={selected.project_id} />
+            </div>
+          )}
+          
+          {tab === "Redaction Log" && (
+            <div className="space-y-4">
+              <RedactionLog org={selected.project_id} />
+            </div>
+          )}
+          
+          {tab === "Audit" && (
+            <div className="space-y-4">
+              <AuditDashboard org={selected.project_id} />
             </div>
           )}
           

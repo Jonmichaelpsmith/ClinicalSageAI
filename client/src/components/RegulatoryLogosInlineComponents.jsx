@@ -1,50 +1,84 @@
 // RegulatoryLogosInlineComponents.jsx
-// React-compatible grayscale logo components to avoid Replit SVG upload restrictions
+// React components with optional hover color effect + CE + WHO badges
+
+const base = "h-8 transition-all duration-200 opacity-70 hover:opacity-100";
 
 export const FDA = () => (
-  <svg viewBox="0 0 120 40" className="h-8 fill-gray-500">
-    <text x="0" y="30" fontSize="30" fontFamily="Helvetica">FDA</text>
-  </svg>
+  <div className={base} title="FDA (U.S.)">
+    <svg viewBox="0 0 120 40" className="w-full h-full fill-gray-500 hover:fill-blue-600">
+      <text x="0" y="30" fontSize="30" fontFamily="Helvetica">FDA</text>
+    </svg>
+  </div>
 );
 
 export const EMA = () => (
-  <svg viewBox="0 0 160 40" className="h-8 fill-gray-500">
-    <text x="0" y="30" fontSize="30" fontFamily="Helvetica">EMA</text>
-  </svg>
+  <div className={base} title="EMA (Europe)">
+    <svg viewBox="0 0 160 40" className="w-full h-full fill-gray-500 hover:fill-blue-500">
+      <text x="0" y="30" fontSize="30" fontFamily="Helvetica">EMA</text>
+    </svg>
+  </div>
 );
 
 export const MHRA = () => (
-  <svg viewBox="0 0 160 40" className="h-8 fill-gray-500">
-    <text x="0" y="30" fontSize="30" fontFamily="Helvetica">MHRA</text>
-  </svg>
+  <div className={base} title="MHRA (UK)">
+    <svg viewBox="0 0 160 40" className="w-full h-full fill-gray-500 hover:fill-indigo-500">
+      <text x="0" y="30" fontSize="30" fontFamily="Helvetica">MHRA</text>
+    </svg>
+  </div>
 );
 
 export const PMDA = () => (
-  <svg viewBox="0 0 160 40" className="h-8 fill-gray-500">
-    <text x="0" y="30" fontSize="30" fontFamily="Helvetica">PMDA</text>
-  </svg>
+  <div className={base} title="PMDA (Japan)">
+    <svg viewBox="0 0 160 40" className="w-full h-full fill-gray-500 hover:fill-pink-600">
+      <text x="0" y="30" fontSize="30" fontFamily="Helvetica">PMDA</text>
+    </svg>
+  </div>
 );
 
 export const NMPA = () => (
-  <svg viewBox="0 0 160 40" className="h-8 fill-gray-500">
-    <text x="0" y="30" fontSize="30" fontFamily="Helvetica">NMPA</text>
-  </svg>
+  <div className={base} title="NMPA (China)">
+    <svg viewBox="0 0 160 40" className="w-full h-full fill-gray-500 hover:fill-red-600">
+      <text x="0" y="30" fontSize="30" fontFamily="Helvetica">NMPA</text>
+    </svg>
+  </div>
 );
 
 export const HealthCanada = () => (
-  <svg viewBox="0 0 180 40" className="h-8 fill-gray-500">
-    <text x="0" y="30" fontSize="20" fontFamily="Helvetica">Health Canada</text>
-  </svg>
+  <div className={base} title="Health Canada">
+    <svg viewBox="0 0 180 40" className="w-full h-full fill-gray-500 hover:fill-red-500">
+      <text x="0" y="30" fontSize="20" fontFamily="Helvetica">Health Canada</text>
+    </svg>
+  </div>
 );
 
 export const TGA = () => (
-  <svg viewBox="0 0 160 40" className="h-8 fill-gray-500">
-    <text x="0" y="30" fontSize="30" fontFamily="Helvetica">TGA</text>
-  </svg>
+  <div className={base} title="TGA (Australia)">
+    <svg viewBox="0 0 160 40" className="w-full h-full fill-gray-500 hover:fill-yellow-500">
+      <text x="0" y="30" fontSize="30" fontFamily="Helvetica">TGA</text>
+    </svg>
+  </div>
 );
 
 export const MFDS = () => (
-  <svg viewBox="0 0 160 40" className="h-8 fill-gray-500">
-    <text x="0" y="30" fontSize="30" fontFamily="Helvetica">MFDS</text>
-  </svg>
+  <div className={base} title="MFDS (Korea)">
+    <svg viewBox="0 0 160 40" className="w-full h-full fill-gray-500 hover:fill-sky-500">
+      <text x="0" y="30" fontSize="30" fontFamily="Helvetica">MFDS</text>
+    </svg>
+  </div>
+);
+
+export const CE = () => (
+  <div className={base} title="CE Mark (Europe)">
+    <svg viewBox="0 0 120 40" className="w-full h-full fill-gray-500 hover:fill-green-600">
+      <text x="0" y="30" fontSize="26" fontFamily="Helvetica">CE</text>
+    </svg>
+  </div>
+);
+
+export const WHO = () => (
+  <div className={base} title="WHO (World Health Organization)">
+    <svg viewBox="0 0 200 40" className="w-full h-full fill-gray-500 hover:fill-blue-400">
+      <text x="0" y="30" fontSize="24" fontFamily="Helvetica">WHO</text>
+    </svg>
+  </div>
 );
