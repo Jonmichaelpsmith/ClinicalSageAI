@@ -1,0 +1,68 @@
+### Quick path to a clean compile
+
+1. **Verify package dependencies**  
+   *Open `package.json` and `client/package.json`*—make sure no line includes `@shared/…`.  
+   If you see a `"postinstall"` script that pulls private modules, comment it out for now.
+
+2. **Remove cached lock + node_modules (once)**  
+   ```bash
+   rm -rf node_modules package-lock.json
+   npm cache clean --force
+   ```
+
+3. **Install only public deps**  
+   ```bash
+   npm install              # installs react, tailwind, etc. from package.json
+   npm install i18next react-i18next i18next-browser-languagedetector
+   ```
+
+   > If the Replit “packager tool” tries to re‑add private scopes, open the **Packages** sidebar and un‑check “@shared/…” so it stops injecting them.
+
+4. **Confirm imports**  
+   *client/src/App.tsx* root should now read:
+
+   ```tsx
+   import HomeLanding from './pages/HomeLanding';   // ✅ new landing
+   ...
+   <Route path="/" element={<HomeLanding />} />
+   ```
+
+5. **Run dev server**  
+   Click **Run** or `npm run dev` → browser  
+   * `/` loads new landing page  
+   * Links route to `/ind-automation`, `/cer-dashboard`, etc.
+
+6. **If TypeScript complains**  
+   Add this once to `env.d.ts`:
+
+   ```ts
+   declare module '*.json';
+   ```
+
+   This silences JSON import type errors from i18n.
+
+---
+
+#### Optional tidy‑up
+
+*Add a `.npmrc`* in project root:
+
+```
+package-lock=false
+```
+
+Stops the Replit packager from rewriting lockfiles, preventing ghost deps.
+
+---
+
+#### Final smoke test
+
+| Page                | Expected                                      |
+|---------------------|-----------------------------------------------|
+| `/`                 | Buyer‑centric landing loads, no console errors |
+| Language selector   | Strings switch to FR/DE/JA without warnings    |
+| `/ind-automation`   | FastAPI endpoints reachable (200)              |
+| `/cer-dashboard`    | Narratives fetch; charts render                |
+
+Once all four are green you’re good to merge to `main`.  
+Ping me if any install step still drags in `@shared/*` or you need help wiring the ROI calculator link!

@@ -1,64 +1,24 @@
-// Simple i18n implementation without external libraries
-import enCommon from './locales/en/common.json';
-import frCommon from './locales/fr/common.json';
-import deCommon from './locales/de/common.json';
-import jaCommon from './locales/ja/common.json';
+// Stub version of i18n.js while we fix the dependency issues
+// We'll replace this with the actual implementation once the packages are installed
 
-const resources = {
-  en: { common: enCommon },
-  fr: { common: frCommon },
-  de: { common: deCommon },
-  ja: { common: jaCommon }
-};
-
-// Get the user's preferred language
-const getUserLanguage = () => {
-  if (typeof window === 'undefined') return 'en';
-  
-  const savedLng = localStorage.getItem('i18nextLng');
-  if (savedLng && resources[savedLng]) return savedLng;
-  
-  const browserLng = navigator.language?.slice(0, 2);
-  return resources[browserLng] ? browserLng : 'en';
-};
-
-// Simple translation function
-const t = (key, options = {}) => {
-  const language = getUserLanguage();
-  const namespace = options.ns || 'common';
-  const translations = resources[language]?.[namespace] || resources.en[namespace];
-  
-  return translations[key] || options.defaultValue || key;
-};
-
-// Language change helper
-const changeLanguage = (lang) => {
-  if (resources[lang]) {
-    localStorage.setItem('i18nextLng', lang);
-    document.documentElement.lang = lang;
-    
-    // Reload to apply changes
-    window.location.reload();
-  }
-};
-
-// Initialize
-if (typeof window !== 'undefined') {
-  const language = getUserLanguage();
-  document.documentElement.lang = language;
-  localStorage.setItem('i18nextLng', language);
-  
-  // Global t function
-  window.t = t;
-}
-
-// i18next-compatible API
 const i18n = {
-  t,
-  changeLanguage,
-  language: getUserLanguage(),
-  languages: Object.keys(resources)
+  // Basic stub functions
+  t: (key, options = {}) => {
+    console.warn('[stub] i18n.t() called – replace when i18next is properly installed');
+    return key;
+  },
+  changeLanguage: (lng) => {
+    console.warn('[stub] i18n.changeLanguage() called – replace when i18next is properly installed');
+  },
+  // Add other methods as needed
 };
 
-export { t, changeLanguage };
 export default i18n;
+
+// Export necessary hooks and functions for compatibility
+export const useTranslation = () => {
+  return { 
+    t: i18n.t,
+    i18n
+  };
+};

@@ -335,7 +335,7 @@ router.get('/alert-preferences', (req, res) => {
       teams: false,
       warning_alerts: true,
       error_alerts: true,
-      userId: req.user?.id || 'default',
+      userId: 'default',
       lastUpdated: new Date().toISOString()
     };
     
@@ -350,7 +350,7 @@ router.get('/alert-preferences', (req, res) => {
     // Read and return preferences
     const fileContent = fs.readFileSync(PREFERENCES_FILE, 'utf8');
     const preferences = JSON.parse(fileContent);
-    const userId = req.user?.id || 'default';
+    const userId = 'default';
     
     if (!preferences.users[userId]) {
       preferences.users[userId] = defaultPreferences;

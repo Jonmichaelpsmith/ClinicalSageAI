@@ -1,0 +1,76 @@
+Below is a one‑shot clean‑up script that:
+
+Stubs shared/db and shared/schema locally, so any remaining import compiles without npm lookup.
+
+Adds a TypeScript path alias so server & client resolve shared/*.
+
+Prints a list of files that still import @shared/… so you can refactor at your own pace.
+
+Copy the block into the Replit Shell and run; then re‑install packages.
+
+bash
+Copy
+Edit
+#!/usr/bin/env bash
+set -e
+cd "$REPL_HOME"         # project root
+
+echo "── 1. create local stub modules ───────────────"
+mkdir -p shared
+cat > shared/db.ts <<'TS'
+/* stub for @shared/db – replace when real client ready */
+export const connect = () => {
+  console.warn('[stub] connect() called – replace with real DB client');
+};
+TS
+
+cat > shared/schema.ts <<'TS'
+/* stub for @shared/schema – replace with actual Zod/Yup schema */
+export const UserSchema = {};
+TS
+
+echo "── 2. add tsconfig path alias ────────────────"
+if ! grep -q '"paths"' tsconfig.json; then
+  npx json -I -f tsconfig.json -e \
+    'this.compilerOptions = this.compilerOptions || {};
+     this.compilerOptions.baseUrl = ".";
+     this.compilerOptions.paths = { "shared/*": ["shared/*"] };'
+fi
+
+echo "── 3. list remaining @shared/* imports ───────"
+grep -R "@shared/" --exclude=node_modules || true
+
+echo "── 4. clean & reinstall deps ─────────────────"
+rm -rf node_modules package-lock.json
+npm cache clean --force
+npm install
+npm install i18next react-i18next i18next-browser-languagedetector
+
+echo '✅ Phantom deps neutralised; run "npm run dev" to verify.'
+What this does
+Stops the npm loop immediately – Replit no longer tries to fetch nonexistent scopes.
+
+Keeps your code compiling – All @shared/... imports now resolve to the local shared/* stubs.
+
+Gives you breathing room – The grep list shows where to migrate to real Prisma/Zod modules later.
+
+Run npm run dev afterward; the buyer‑centric landing page and other routes should load without “module not found” errors.
+
+Ping me if any file still fails to compile or when you’re ready to swap the stubs for real DB / schema code!
+
+
+
+
+
+
+
+
+
+
+Search
+
+Deep research
+
+
+
+ChatGPT can m

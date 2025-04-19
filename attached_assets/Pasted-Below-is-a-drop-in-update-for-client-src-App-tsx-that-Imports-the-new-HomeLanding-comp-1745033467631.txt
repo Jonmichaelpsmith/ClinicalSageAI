@@ -1,0 +1,58 @@
+Below is a **drop‑in update for `client/src/App.tsx`** that:
+
+* Imports the new `HomeLanding` component that’s in the canvas  
+* Removes the old `Home` import (to avoid the “not defined” error)  
+* Leaves all your existing routes untouched
+
+```tsx
+// App.tsx – routing update to use buyer‑centric HomeLanding
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+
+// NEW ⟶ import the landing page we added to the canvas
+import HomeLanding from './pages/HomeLanding';
+
+// keep your existing imports
+import CERDashboard from './pages/CERDashboard';
+import IndAutomationPage from './pages/IndAutomationPage';
+import CSRLibrary from './pages/CSRLibrary';
+import DemoPage from './pages/Demo';
+import ROICalculator from './pages/ROI';
+import NotFound from './pages/NotFound';
+
+export default function App() {
+  return (
+    <Router>
+      <Routes>
+        {/* === updated root route === */}
+        <Route path="/" element={<HomeLanding />} />
+
+        {/* === existing routes === */}
+        <Route path="/cer-dashboard" element={<CERDashboard />} />
+        <Route path="/ind-automation" element={<IndAutomationPage />} />
+        <Route path="/csr-library" element={<CSRLibrary />} />
+        <Route path="/demo" element={<DemoPage />} />
+        <Route path="/roi" element={<ROICalculator />} />
+
+        {/* 404 fallback */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Router>
+  );
+}
+```
+
+### What to do in Replit
+
+1. Open **client/src/App.tsx**.  
+2. Replace the top `import Home from './pages/Home';` line with  
+   ```ts
+   import HomeLanding from './pages/HomeLanding';
+   ```  
+   …and remove the old `Home` import (if present).  
+3. Update the root route’s `element` prop as shown above.  
+4. Save → Replit should hot‑reload; browse to `http://localhost:3000/` and you’ll see the new landing page.
+
+If you use **HashRouter** instead of **BrowserRouter**, keep your existing `Router` import; just swap the component in the root path.
+
+Let me know if TypeScript complains about missing props or if any route still 404s!
