@@ -30,12 +30,12 @@ TRAEFIK_URL = os.getenv('TRAEFIK_API', 'http://traefik:8080/api/health')
 def setup_periodic_tasks(sender, **kwargs):
     """Set up periodic tasks to run automatically"""
     # Traefik health check every 5 minutes
-    sender.add_periodic_task(300, traefik_health.s(), name='traefik health')
+    sender.add_periodic_task(300, traefik_health.signature(), name='traefik health')
     
     # Cert expiry check once per day
     sender.add_periodic_task(
         86400,  # 24 hours
-        cert_expiry_check.s(),
+        cert_expiry_check.signature(),
         name='certificate expiry check'
     )
 
