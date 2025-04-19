@@ -1,0 +1,81 @@
+// SubmissionBuilder.tsx – full drag‑drop builder with live QC websocket
+import React, { useEffect, useState, useRef } from 'react';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import { DndProvider } from 'react-dnd';
+import { Tree, NodeModel } from '@minoru/react-dnd-treeview';
+import { CheckCircle, XCircle } from 'lucide-react';
+import { toast } from 'react-toastify';
+import update from 'immutability-helper';
+
+const REGION_FOLDERS: Record<string, string[]> = {
+  FDA: ['m1', 'm2', 'm3', 'm4', 'm5'],
+  EMA: ['m1', 'm2', 'm3', 'm4', 'm5'],
+  PMDA: ['m1', 'm2', 'm3', 'm4', 'm5', 'jp‑annex'],
+};
+
+type Doc = { id: number; title: string; module: string; qc_json?: { status: string } };
+type TreeNode = NodeModel<Doc>;
+
+export default function SubmissionBuilder({ region = 'FDA' }: { region?: string }) {
+  const [tree, setTree] = useState<TreeNode[]>([]);
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+  const wsRef = useRef<WebSocket | null>(null);
+
+  useEffect(() => {
+    loadDocs();
+    wsRef.current = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws/qc`);
+    wsRef.current.onmessage = (e) => {
+      const { id, status } = JSON.parse(e.data);
+      setTree(prev => prev.map(n => n.id === id ? { ...n, data: { ...n.data!, qc_json: { status } } } as TreeNode : n));
+    };
+    return () => wsRef.current?.close();
+  }, [region]);
+
+  const loadDocs = async () => {
+    const docs: Doc[] = await fetchJson('/api/documents?status=approved_or_qc_failed');
+    const root: TreeNode = { id: 0, parent: 0, text: 'root', droppable: true };
+    const folders = REGION_FOLDERS[region].map((m, i) => ({ id: 10000 + i, parent: 0, text: m, droppable: true }));
+    const items = docs.map(d => ({ id: d.id, parent: folders.find(f => d.module.startsWith(f.text))?.id || folders[0].id, text: d.title, droppable: false, data: d }));
+    setTree([root, ...folders, ...items]);
+  };
+
+  const saveOrder = async () => {
+    const ordered = tree.filter(n => !n.droppable && n.parent !== 0).map((n, idx) => ({ id: n.id, module: tree.find(f => f.id === n.parent)!.text, order: idx }));
+    await fetch('/api/documents/builder-order', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ docs: ordered }) });
+    toast.success('Order saved');
+  };
+
+  const toggleSelect = (id: number) => setSelected(s => { const x = new Set(s); x.has(id) ? x.delete(id) : x.add(id); return x; });
+
+  const bulkApprove = async () => {
+    await fetch('/api/documents/bulk-approve', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids: Array.from(selected) }) });
+    toast.info('Bulk approval/QC started');
+    setSelected(new Set());
+  };
+
+  const onDrop = (newTree: TreeNode[]) => setTree(newTree);
+
+  const renderNode = (node: TreeNode, { depth, isOpen, onToggle }: any) => node.droppable ? (
+    <div style={{ marginLeft: depth * 16 }} className="fw-bold py-1">{node.text}</div>
+  ) : (
+    <div style={{ marginLeft: depth * 16 }} className="d-flex align-items-center gap-2 py-1">
+      <input type="checkbox" checked={selected.has(node.id)} onChange={() => toggleSelect(node.id)} />
+      {node.data?.qc_json?.status === 'passed' ? <CheckCircle size={14} className="text-success" /> : <XCircle size={14} className="text-danger" />}
+      <span>{node.text}</span>
+    </div>
+  );
+
+  return (
+    <div className="container py-4">
+      <h2>Submission Builder <span className="badge bg-secondary ms-2">{region}</span></h2>
+      <DndProvider backend={HTML5Backend}>
+        <Tree rootId={0} tree={tree} onDrop={onDrop} render={renderNode} />
+      </DndProvider>
+      <div className="d-flex gap-2 mt-3">
+        <button className="btn btn-primary" onClick={saveOrder}>Save Order</button>
+        <button className="btn btn-outline-success" disabled={!selected.size} onClick={bulkApprove}>Bulk Approve + QC</button>
+      </div>
+    </div>
+  );
+}
+async function fetchJson(u: string) { const r = await fetch(u); if (!r.ok) throw new Error('fetch'); return r.json(); }

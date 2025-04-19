@@ -1,0 +1,255 @@
+Below is a clean roadmap that brings the CER Module up to the same GA, end‑to‑end rigor we just finished for IND sequences. I’ve also dropped in the first two code assets—CERSequenceManager.jsx (front‑end planner) and cer_sequence_create.py (back‑end compiler). They reuse the same QC, XML‑builder, and submission foundations, so everything feels identical in the client portal.
+
+⸻
+
+🗺️ Roadmap — Clinical Evaluation Report (CER) Workflow
+
+Phase	Deliverable	Parallels to IND build
+1	Doc QC & Approval – PDF/A, size, bookmarks (reuse pdf_qc.py).	Completed in IND.
+2	CER Sequence Planner – drag‑drop source docs, lifecycle ops, target region selector (EU MDR / UK / FDA).	IND Sequence Planner.
+3	Narrative Generator – GPT‑4 Turbo auto‑draft + reviewer redlines.	AI Module 2 scripts.
+4	CER XML/Package Builder – generate eu-regional.xml (EUDAMED) or 510(k)/510k XML skeleton (FDA).	write_eu_regional_xml.py, write_jp_regional_xml.py.
+5	Validation – DTD + BSI / NB eValidator profile.	FDA & EU eValidator.
+6	Submission Gateway – SFTP to EUDAMED API (or RPS for FDA pre‑sub).	ESG submitter.
+7	ACK Polling & Dashboard – ingest NB assessment results, show live badges.	ESG ACK poller & UI badges.
+
+
+
+⸻
+
+1️⃣ Front‑end CERSequenceManager.jsx
+
+Lives in client/src/pages/CERSequenceManager.jsx
+
+// CERSequenceManager.jsx – plan & build CER submission sequence
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { FileText, AlertTriangle, Globe, ArrowRight } from "lucide-react";
+
+const REGIONS = ["EU", "UK", "FDA"];
+
+export default function CERSequenceManager() {
+  const [docs, setDocs] = useState([]);
+  const [plan, setPlan] = useState([]);
+  const [errors, setErrors] = useState([]);
+  const [region, setRegion] = useState("EU");
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    fetch("/api/cer/documents?status=approved_or_qc_failed")
+      .then(r => r.json())
+      .then(res => {
+        const p = res.map(analyzeDoc);
+        setPlan(p);
+        setErrors(p.filter(d => d.errors.length));
+      });
+  }, []);
+
+  const analyzeDoc = (d) => {
+    const errs = [];
+    if (!d.qc_json || d.qc_json.status !== "passed") errs.push("QC not passed");
+    if (!d.module_slot) errs.push("Missing section");
+    return { ...d, errors: errs };
+  };
+
+  const createSequence = () => {
+    fetch("/api/cer/sequence/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ region, plan })
+    })
+      .then(r => r.json())
+      .then(({ sequence }) => navigate(`/portal/cer/${sequence}`));
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto py-10">
+      <h1 className="text-2xl font-bold mb-4">CER Sequence Planner</h1>
+
+      <div className="flex gap-3 items-center mb-6">
+        <Globe size={16} /> <span>Region</span>
+        <select value={region} onChange={e => setRegion(e.target.value)}
+          className="border rounded px-2 py-1 text-sm">
+          {REGIONS.map(r => <option key={r}>{r}</option>)}
+        </select>
+      </div>
+
+      {errors.length > 0 && (
+        <div className="bg-red-100 p-3 rounded mb-4 text-sm text-red-700">
+          <AlertTriangle size={14} className="inline me-2" />
+          {errors.length} document(s) need attention.
+        </div>
+      )}
+
+      <div className="divide-y border rounded">
+        {plan.map(p => (
+          <div key={p.id} className="flex p-2 text-sm">
+            <FileText size={14} className="me-2 text-gray-500"/>
+            <span className="flex-1 truncate">{p.title}</span>
+            {p.errors.length > 0 &&
+              <span className="text-red-500 text-xs">{p.errors[0]}</span>}
+          </div>
+        ))}
+      </div>
+
+      <button
+        disabled={errors.length > 0}
+        onClick={createSequence}
+        className="mt-5 bg-indigo-600 text-white px-5 py-2 rounded flex gap-2 items-center disabled:opacity-50">
+        Build {region} CER Package <ArrowRight size={16}/>
+      </button>
+    </div>
+  );
+}
+
+
+
+⸻
+
+2️⃣ Back‑end cer_sequence_create.py
+
+Put under api/cer/sequence_create.py
+
+from fastapi import APIRouter, HTTPException, Depends
+from pydantic import BaseModel, conlist
+from datetime import datetime
+import os, shutil
+from sqlalchemy.orm import Session
+
+from server.db import SessionLocal
+from server.models.cer_sequence import CERSequence, CERSequenceDoc, Document
+from utils.write_eu_regional_xml import write_eu_regional_xml
+from utils.write_ectd_xml import write_ectd_xml  # reuse common builder
+
+router = APIRouter(prefix="/api/cer", tags=["cer"])
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+class DocSlot(BaseModel):
+    id: int
+    module: str
+
+class SequenceBody(BaseModel):
+    region: str
+    plan: conlist(DocSlot, min_items=1)
+
+@router.post("/sequence/create")
+def create_cer_sequence(body: SequenceBody, db: Session = Depends(get_db)):
+    seq = CERSequence(region=body.region, created=datetime.utcnow())
+    db.add(seq); db.flush()
+
+    seq_path = f"/mnt/data/cer/{seq.id:04d}"
+    os.makedirs(seq_path, exist_ok=True)
+    doc_models = []
+    for slot in body.plan:
+        doc = db.query(Document).get(slot.id)
+        if not doc or doc.status != "approved":
+            raise HTTPException(400, f"Doc {slot.id} not approved")
+        dst = os.path.join(seq_path, *slot.module.split("."), f"{doc.slug}.pdf")
+        os.makedirs(os.path.dirname(dst), exist_ok=True)
+        shutil.copyfile(doc.path, dst)
+        rec = CERSequenceDoc(sequence_id=seq.id, doc_id=doc.id,
+                             module=slot.module, file_path=dst)
+        db.add(rec)
+        doc_models.append(rec)
+
+    # Common index.xml
+    write_ectd_xml(f"{seq.id:04d}", doc_models)
+
+    # EU regional
+    if body.region == "EU":
+        write_eu_regional_xml(f"{seq.id:04d}", doc_models,
+                              meta={"applicant": "Acme‑Med", "procedure_type": "NB"})
+
+    db.commit()
+    return {"sequence": f"{seq.id:04d}", "region": body.region}
+
+(Create CERSequence / CERSequenceDoc models mirroring IND ones.)
+
+⸻
+
+3️⃣ Bulk Approve / QC Endpoint
+
+api/documents/bulk_approve.py
+
+from fastapi import APIRouter, Depends
+from pydantic import BaseModel, conlist
+from sqlalchemy.orm import Session
+from server.db import SessionLocal
+from server.models.document import Document
+from utils.pdf_qc import qc_pdf
+from utils.event_bus import publish
+
+router = APIRouter(prefix="/api/documents", tags=["documents"])
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+class Body(BaseModel):
+    ids: conlist(int, min_items=1)
+
+@router.post("/bulk-approve")
+def bulk_approve(body: Body, db: Session = Depends(get_db)):
+    for doc_id in body.ids:
+        doc: Document = db.query(Document).get(doc_id)
+        if not doc: continue
+        rep = qc_pdf(doc.path)
+        if rep["status"] == "passed":
+            doc.status = "approved"
+        else:
+            doc.status = "qc_failed"
+        doc.qc_json = rep
+        db.add(doc)
+        publish("qc", {"id": doc_id, "status": doc.status})
+    db.commit()
+    return {"processed": len(body.ids)}
+
+
+
+⸻
+
+🔌 Wire Up
+	1.	Add routes in main.py:
+
+from api.cer.sequence_create import router as cer_seq_router
+from api.documents.approve import router as doc_approve_router
+from api.documents.bulk_approve import router as bulk_router
+app.include_router(cer_seq_router)
+app.include_router(doc_approve_router)
+app.include_router(bulk_router)
+
+	2.	Add menu link:
+
+<Route path="/portal/cer/plan" element={<CERSequenceManager />} />
+
+	3.	Install missing UI libs:
+
+npm install @minoru/react-dnd-treeview react-dnd react-dnd-html5-backend react-toastify immutability-helper
+
+
+
+⸻
+
+🎉 What you now have
+   •   Unified QC, drag‑drop, region‑aware planner for CERs
+   •   Backend compiles CER package (EU XML today, FDA/UK placeholders)
+   •   Bulk QC approval with real‑time Socket badge updates
+   •   Same user experience as the IND builder
+
+⸻
+
+Next (choose):
+	1.	UK / FDA Device XML builders
+	2.	Integrated Notified‑Body (NB) validator profile
+	3.	EUDAMED API uploader + ACK badges
+
+Let me know which path to code next!

@@ -1,0 +1,93 @@
+// SubmissionBuilder.tsx – drag‑drop builder with live QC badges & bulk approve
+import React, { useEffect, useState } from 'react';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import { Tree, NodeModel } from '@minoru/react-dnd-treeview';
+import update from 'immutability-helper';
+import { CheckCircle, XCircle } from 'lucide-react';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+type Doc = { id: number; title: string; module: string; qc_json?: { status: string } };
+type Node = NodeModel<Doc>;
+
+const REGION_FOLDERS: Record<string, string[]> = {
+  FDA: ['m1', 'm2', 'm3', 'm4', 'm5'],
+  EMA: ['m1', 'm2', 'm3', 'm4', 'm5'],
+  PMDA: ['m1', 'm2', 'm3', 'm4', 'm5', 'jp‑annex'],
+};
+
+const WS_URL = `${window.location.origin.replace('http', 'ws')}/ws/qc`;
+const fetchJson = (u: string, opts?: any) => fetch(u, opts).then(r => {
+  if (!r.ok) throw new Error(r.statusText); return r.json();
+});
+
+export default function SubmissionBuilder({ region = 'FDA' }: { region?: string }) {
+  const [tree, setTree] = useState<Node[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+
+  // initial load
+  useEffect(() => { loadDocs(); }, [region]);
+  // websocket live QC
+  useEffect(() => {
+    const ws = new WebSocket(WS_URL);
+    ws.onmessage = evt => {
+      const m = JSON.parse(evt.data);
+      setTree(t => t.map(n => n.id === m.id ? { ...n, data: { ...n.data!, qc_json: { status: m.status } } } : n));
+    };
+    return () => ws.close();
+  }, []);
+
+  const loadDocs = async () => {
+    const docs: Doc[] = await fetchJson('/api/documents?status=approved_or_qc_failed');
+    const root: Node = { id: 0, parent: 0, text: 'root', droppable: true };
+    const folders = REGION_FOLDERS[region].map((m, i) => ({ id: 10_000+i, parent: 0, text: m, droppable: true }));
+    const items = docs.map(d => ({
+      id: d.id, parent: folders.find(f => d.module?.startsWith(f.text))?.id || folders[0].id,
+      text: d.title, droppable: false, data: d
+    }));
+    setTree([root, ...folders, ...items]); setLoading(false);
+  };
+
+  const handleDrop = (newTree: Node[]) => setTree(newTree);
+  const toggle = (id: number) => setSelected(s => s.has(id)? new Set([...s].filter(x=>x!==id)): new Set(s).add(id));
+
+  const bulkApprove = async () => {
+    await fetchJson('/api/documents/bulk-approve', {method:'POST',headers:{'Content-Type':'application/json'}, body:JSON.stringify({ ids:[...selected] })});
+    toast.info('Bulk QC started'); setSelected(new Set());
+  };
+
+  const saveOrder = async () => {
+    const ordered = tree.filter(n=>!n.droppable&&n.parent!==0).map((n,i)=>({id:n.id,module:tree.find(f=>f.id===n.parent)!.text,order:i}));
+    await fetchJson('/api/documents/builder-order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({docs:ordered})});
+    toast.success('Order saved');
+  };
+
+  const renderNode = (n: Node, { depth, isOpen, onToggle }: any) => n.droppable ? (
+    <div style={{marginLeft:depth*16}} className="d-flex align-items-center gap-1 py-1">
+      <button onClick={onToggle} className="btn btn-sm btn-link p-0">{isOpen?'▾':'▸'}</button><strong>{n.text}</strong>
+    </div>
+  ) : (
+    <div style={{marginLeft:depth*16}} className="d-flex align-items-center gap-2 py-1">
+      <input type="checkbox" checked={selected.has(n.id)} onChange={()=>toggle(n.id)} />
+      {n.data?.qc_json?.status==='passed'?<CheckCircle size={14} className="text-success"/>:<XCircle size={14} className="text-danger"/>}
+      <span>{n.text}</span>
+    </div>
+  );
+
+  if (loading) return <p className="text-center mt-4">Loading…</p>;
+
+  return (
+    <div className="container py-4">
+      <h2>Submission Builder <span className="badge bg-secondary ms-2">{region}</span></h2>
+      <DndProvider backend={HTML5Backend}>
+        <Tree tree={tree} rootId={0} render={renderNode} onDrop={handleDrop}/>
+      </DndProvider>
+      <div className="d-flex gap-3 mt-3">
+        <button className="btn btn-primary" onClick={saveOrder}>Save Order</button>
+        <button className="btn btn-outline-success" disabled={!selected.size} onClick={bulkApprove}>Bulk Approve + QC</button>
+      </div>
+    </div>
+  );
+}

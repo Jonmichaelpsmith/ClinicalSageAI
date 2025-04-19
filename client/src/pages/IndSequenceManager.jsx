@@ -1,14 +1,18 @@
-// IndSequenceManager.jsx – robust, audit-ready sequence planner with lifecycle intelligence
+// IndSequenceManager.jsx – sequence planner with QC gating + region selection
 // Features: document diffing, module rules, audit capture, validation preview before submission lock
+// Multi-region profile support for FDA, EMA, PMDA, and Health Canada
 
 import React, { useEffect, useState } from "react";
 import { useLocation } from "wouter";
-import { FileText, AlertTriangle, ArrowRight, Package, CheckCircle, XCircle, Clock, Calendar, ChevronRight } from "lucide-react";
+import { FileText, AlertTriangle, ArrowRight, Package, CheckCircle, XCircle, Clock, ChevronRight, Globe } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+const REGIONS = ['FDA', 'EMA', 'PMDA'];
 
 export default function IndSequenceManager() {
   const [docs, setDocs] = useState([]);
@@ -17,6 +21,7 @@ export default function IndSequenceManager() {
   const [errors, setErrors] = useState([]);
   const [existingSequences, setExistingSequences] = useState([]);
   const [loadingSequences, setLoadingSequences] = useState(true);
+  const [region, setRegion] = useState('FDA');
   const [, setLocation] = useLocation();
 
   useEffect(() => {
@@ -72,10 +77,10 @@ export default function IndSequenceManager() {
   };
 
   const submitPlan = () => {
-    fetch("/api/ind/sequence/create", {
+    fetch("/api/ind/sequence/create-region", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ base: lastSeq, plan }),
+      body: JSON.stringify({ base: lastSeq, region, plan }),
     })
       .then((r) => r.json())
       .then((res) => setLocation(`/portal/ind/${res.sequence}`));
@@ -195,6 +200,22 @@ export default function IndSequenceManager() {
                   <AlertTriangle className="inline mr-2" size={16}/> Validation failed for {errors.length} document(s). Fix before continuing.
                 </div>
               )}
+              
+              {/* Region Selector */}
+              <div className="flex items-center gap-3 mb-6">
+                <Globe size={16} className="text-gray-500" />
+                <label htmlFor="region" className="text-sm">Target Region</label>
+                <Select value={region} onValueChange={setRegion} disabled={errors.length > 0}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue placeholder="Select Region" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {REGIONS.map(r => (
+                      <SelectItem key={r} value={r}>{r}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
               <div className="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-gray-700 divide-y">
                 {plan.map((p) => (

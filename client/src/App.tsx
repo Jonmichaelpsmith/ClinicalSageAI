@@ -8,6 +8,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { Loader2, Beaker } from 'lucide-react';
 import DashboardLayout from "@/components/DashboardLayout";
 import { AuthProvider } from '@/hooks/use-auth';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 // Import page components
 import CsrIntelligence from './pages/CsrIntelligence';
@@ -434,6 +436,7 @@ const ROICalculator = () => <div>ROI Calculator</div>;
 export default function App() {
   return (
     <AuthProvider>
+      <ToastContainer position="top-right" autoClose={3000} />
       <Suspense fallback={<LoadingFallback />}>
         <Switch>
           {/* === Public routes === */}

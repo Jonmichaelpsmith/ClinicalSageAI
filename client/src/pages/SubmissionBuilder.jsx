@@ -1,161 +1,138 @@
-// SubmissionBuilder.jsx – eCTD builder with drag‑drop, validation & sequence tracker
-// Requires dependencies: react-dnd, react-dnd-html5-backend, recharts, @tanstack/react-query
+// SubmissionBuilder.jsx – full drag‑drop builder with live QC websocket
+import React, { useEffect, useState, useRef } from 'react';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import { DndProvider } from 'react-dnd';
+import { Tree, NodeModel } from '@minoru/react-dnd-treeview';
+import { CheckCircle, XCircle } from 'lucide-react';
+import { toast } from 'react-toastify';
+import update from 'immutability-helper';
 
-import React, { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { DndProvider, useDrag, useDrop } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
-import { CheckCircle, AlertTriangle, File, Loader, Package } from "lucide-react";
+const REGION_FOLDERS = {
+  FDA: ['m1', 'm2', 'm3', 'm4', 'm5'],
+  EMA: ['m1', 'm2', 'm3', 'm4', 'm5'],
+  PMDA: ['m1', 'm2', 'm3', 'm4', 'm5', 'jp‑annex'],
+};
 
-const MODULES = [
-  { id: "m1", label: "Module 1 – Regional", slots: ["Cover Letter", "1571", "1572", "3674"] },
-  { id: "m2", label: "Module 2 – Summaries", slots: ["2.3 QOS", "2.4 Nonclinical Overview", "2.5 Clinical Overview"] },
-  { id: "m3", label: "Module 3 – CMC", slots: ["3.2.S Drug Substance", "3.2.P Drug Product"] },
-  { id: "m4", label: "Module 4 – Nonclinical", slots: ["Pharm/Tox Reports"] },
-  { id: "m5", label: "Module 5 – Clinical", slots: ["Clinical Study Reports"] },
-];
+export default function SubmissionBuilder({ region = 'FDA' }) {
+  const [tree, setTree] = useState([]);
+  const [selected, setSelected] = useState(new Set());
+  const wsRef = useRef(null);
 
-/* DnD item type */
-const ItemTypes = { DOC: "doc" };
-
-function DraggableDoc({ doc }) {
-  const [, drag] = useDrag({ type: ItemTypes.DOC, item: { doc } });
-  return (
-    <div ref={drag} className="flex items-center gap-2 px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-slate-700 cursor-grab">
-      <File size={16} /> {doc.title}
-    </div>
-  );
-}
-
-function Slot({ slot, current, onDrop }) {
-  const [{ isOver }, drop] = useDrop({
-    accept: ItemTypes.DOC,
-    drop: (item) => onDrop(slot, item.doc),
-    collect: monitor => ({ isOver: monitor.isOver() }),
-  });
-  return (
-    <div ref={drop} className={`border rounded-lg p-3 h-20 flex items-center justify-center text-xs text-center ${
-      isOver ? 'bg-emerald-50 dark:bg-slate-700/50' : 'bg-gray-50 dark:bg-slate-800'}`}
-    >
-      {current ? <span className="text-emerald-700 dark:text-emerald-300 flex items-center gap-1"><File size={14}/> {current.title}</span> : slot}
-    </div>
-  );
-}
-
-export default function SubmissionBuilder() {
-  // Mock document data until API is available
-  const docs = [
-    { id: 1, title: "Cover Letter Draft" },
-    { id: 2, title: "Protocol" },
-    { id: 3, title: "Form 1571" },
-    { id: 4, title: "Form 1572" },
-    { id: 5, title: "Form 3674" },
-    { id: 6, title: "Clinical Overview" },
-    { id: 7, title: "CSR 001" },
-    { id: 8, title: "CSR 002" },
-    { id: 9, title: "Quality Summary" },
-  ];
-
-  /* Local state for assignments */
-  const [mapping, setMapping] = useState({}); // key: slot -> doc
-  const [validationResults, setValidationResults] = useState(null);
-  const [isValidating, setIsValidating] = useState(false);
-  const [isCompiling, setIsCompiling] = useState(false);
-
-  const onDrop = (slot, doc) => setMapping({ ...mapping, [slot]: doc });
-
-  /* Validation */
-  const validate = () => {
-    setIsValidating(true);
-    // Simulate validation process
-    setTimeout(() => {
-      const errors = [];
-      // Check for required documents
-      if (!mapping["Cover Letter"]) {
-        errors.push("Cover Letter is required");
-      }
-      if (!mapping["1571"]) {
-        errors.push("Form 1571 is required");
-      }
-      // Check for other issues
-      if (Object.keys(mapping).length < 3) {
-        errors.push("Submission requires at least 3 documents");
-      }
+  useEffect(() => {
+    loadDocs();
+    
+    // Socket connection with auto-reconnect
+    const connectWebSocket = () => {
+      const ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws/qc`);
       
-      setValidationResults({ errors });
-      setIsValidating(false);
-    }, 800);
+      ws.onopen = () => {
+        console.log('QC WebSocket connected');
+        // Reset reconnect attempts on successful connection
+        reconnectAttempts.current = 0;
+      };
+      
+      ws.onmessage = (e) => {
+        try {
+          const { id, status } = JSON.parse(e.data);
+          // Update the corresponding document's QC status in the tree
+          setTree(prev => prev.map(n => n.id === id ? { ...n, data: { ...n.data, qc_json: { status } } } : n));
+        } catch (error) {
+          console.error('Error parsing WebSocket message:', error);
+        }
+      };
+      
+      ws.onclose = (e) => {
+        console.log('QC WebSocket disconnected, attempting reconnect in 2s...');
+        
+        // Clear any existing reconnect timeout
+        if (reconnectTimeoutRef.current) {
+          clearTimeout(reconnectTimeoutRef.current);
+        }
+        
+        // Attempt to reconnect after delay (with exponential backoff)
+        const delay = Math.min(2000 * Math.pow(1.5, reconnectAttempts.current), 30000);
+        reconnectTimeoutRef.current = setTimeout(() => {
+          reconnectAttempts.current += 1;
+          wsRef.current = connectWebSocket();
+        }, delay);
+      };
+      
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+        ws.close(); // This will trigger the onclose handler for reconnection
+      };
+      
+      return ws;
+    };
+    
+    // Track reconnection state
+    const reconnectAttempts = useRef(0);
+    const reconnectTimeoutRef = useRef(null);
+    
+    // Initial connection
+    wsRef.current = connectWebSocket();
+    
+    // Cleanup function
+    return () => {
+      if (wsRef.current) {
+        wsRef.current.close();
+      }
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+      }
+    };
+  }, [region]);
+
+  const loadDocs = async () => {
+    const docs = await fetchJson('/api/documents?status=approved_or_qc_failed');
+    const root = { id: 0, parent: 0, text: 'root', droppable: true };
+    const folders = REGION_FOLDERS[region].map((m, i) => ({ id: 10000 + i, parent: 0, text: m, droppable: true }));
+    const items = docs.map(d => ({ id: d.id, parent: folders.find(f => d.module.startsWith(f.text))?.id || folders[0].id, text: d.title, droppable: false, data: d }));
+    setTree([root, ...folders, ...items]);
   };
 
-  /* Compile sequence */
-  const compile = () => {
-    setIsCompiling(true);
-    // Simulate compilation process
-    setTimeout(() => {
-      alert("Compilation started – track in Submissions list");
-      setIsCompiling(false);
-    }, 1000);
+  const saveOrder = async () => {
+    const ordered = tree.filter(n => !n.droppable && n.parent !== 0).map((n, idx) => ({ id: n.id, module: tree.find(f => f.id === n.parent)?.text, order: idx }));
+    await fetch('/api/documents/builder-order', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ docs: ordered }) });
+    toast.success('Order saved');
   };
+
+  const toggleSelect = (id) => setSelected(s => { const x = new Set(s); x.has(id) ? x.delete(id) : x.add(id); return x; });
+
+  const bulkApprove = async () => {
+    await fetch('/api/documents/bulk-approve', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids: Array.from(selected) }) });
+    toast.info('Bulk approval/QC started');
+    setSelected(new Set());
+  };
+
+  const onDrop = (newTree) => setTree(newTree);
+
+  const renderNode = (node, { depth, isOpen, onToggle }) => node.droppable ? (
+    <div style={{ marginLeft: depth * 16 }} className="fw-bold py-1">{node.text}</div>
+  ) : (
+    <div style={{ marginLeft: depth * 16 }} className="d-flex align-items-center gap-2 py-1">
+      <input type="checkbox" checked={selected.has(node.id)} onChange={() => toggleSelect(node.id)} />
+      {node.data?.qc_json?.status === 'passed' ? <CheckCircle size={14} className="text-success" /> : <XCircle size={14} className="text-danger" />}
+      <span>{node.text}</span>
+    </div>
+  );
 
   return (
-    <DndProvider backend={HTML5Backend}>
-      <div className="grid grid-cols-4 gap-4 h-full p-4">
-        {/* Docs list */}
-        <aside className="col-span-1 border-r pr-2 space-y-2 overflow-y-auto">
-          <h3 className="font-semibold text-sm mb-2">Documents</h3>
-          {docs.map(d => <DraggableDoc key={d.id} doc={d} />)}
-        </aside>
-
-        {/* Module builder */}
-        <div className="col-span-2 overflow-y-auto space-y-6">
-          {MODULES.map(mod => (
-            <div key={mod.id} className="border rounded-lg p-4 bg-white dark:bg-slate-800">
-              <h4 className="font-semibold mb-3 text-emerald-700 dark:text-emerald-300">{mod.label}</h4>
-              <div className="grid sm:grid-cols-2 gap-3">
-                {mod.slots.map(slot => (
-                  <Slot key={slot} slot={slot} current={mapping[slot]} onDrop={onDrop} />
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Validation & compile panel */}
-        <aside className="col-span-1 flex flex-col">
-          <div className="flex-1 overflow-y-auto">
-            <h3 className="font-semibold text-sm mb-2 flex items-center gap-1"><CheckCircle size={16}/> Validation</h3>
-            {validationResults ? (
-              validationResults.errors.length ? (
-                <ul className="space-y-2 text-xs">
-                  {validationResults.errors.map((e,i)=>(<li key={i} className="flex gap-1 items-start"><AlertTriangle size={12} className="text-red-500"/> {e}</li>))}
-                </ul>
-              ) : (
-                <p className="text-emerald-600 text-sm">All checks passed ✨</p>
-              )
-            ) : (
-              <p className="text-xs opacity-60">Run validation to see results.</p>
-            )}
-          </div>
-
-          <button
-            onClick={validate}
-            className="bg-emerald-600 text-white px-4 py-2 rounded mb-3 hover:bg-emerald-700 text-sm flex items-center gap-2 justify-center disabled:opacity-60"
-            disabled={isValidating}
-          >
-            {isValidating ? <Loader className="animate-spin" size={16}/> : <CheckCircle size={16}/>}
-            Validate
-          </button>
-
-          <button
-            onClick={compile}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm flex items-center gap-2 justify-center disabled:opacity-60"
-            disabled={isCompiling || (validationResults && validationResults.errors.length > 0)}
-          >
-            {isCompiling ? <Loader className="animate-spin" size={16}/> : <Package size={16}/>} 
-            Compile Sequence
-          </button>
-        </aside>
+    <div className="container py-4">
+      <h2>Submission Builder <span className="badge bg-secondary ms-2">{region}</span></h2>
+      <DndProvider backend={HTML5Backend}>
+        <Tree rootId={0} tree={tree} onDrop={onDrop} render={renderNode} />
+      </DndProvider>
+      <div className="d-flex gap-2 mt-3">
+        <button className="btn btn-primary" onClick={saveOrder}>Save Order</button>
+        <button className="btn btn-outline-success" disabled={!selected.size} onClick={bulkApprove}>Bulk Approve + QC</button>
       </div>
-    </DndProvider>
+    </div>
   );
+}
+
+async function fetchJson(u) { 
+  const r = await fetch(u); 
+  if (!r.ok) throw new Error('fetch'); 
+  return r.json(); 
 }

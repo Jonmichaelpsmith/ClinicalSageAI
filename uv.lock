@@ -1701,6 +1701,19 @@ wheels = [
 ]
 
 [[package]]
+name = "pdfminer-six"
+version = "20250416"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "charset-normalizer" },
+    { name = "cryptography" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/a8/27/1a99ce4cfce829bb91040f82a53f33b33fec4e070d2b9c1b45f6796cd8dc/pdfminer_six-20250416.tar.gz", hash = "sha256:30956a85f9d0add806a4e460ed0d67c2b6a48b53323c7ac87de23174596d3acd", size = 7384630 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/77/32/89749ba23e5020e89fb584c1b39d7da6d7c56a9048307de8a88eec79e2d3/pdfminer_six-20250416-py3-none-any.whl", hash = "sha256:dd2a9ad7bc7dd6b62d009aaa9c101ac9d069a47937724569c375a6a9078da303", size = 5619271 },
+]
+
+[[package]]
 name = "pgvector"
 version = "0.4.0"
 source = { registry = "https://pypi.org/simple" }
@@ -2274,6 +2287,7 @@ dependencies = [
     { name = "openai" },
     { name = "pandas" },
     { name = "passlib", extra = ["bcrypt"] },
+    { name = "pdfminer-six" },
     { name = "pgvector" },
     { name = "playwright" },
     { name = "pydantic" },
@@ -2320,6 +2334,7 @@ requires-dist = [
     { name = "openai", specifier = ">=1.74.0" },
     { name = "pandas", specifier = ">=2.2.3" },
     { name = "passlib", extras = ["bcrypt"], specifier = ">=1.7.4" },
+    { name = "pdfminer-six", specifier = ">=20250416" },
     { name = "pgvector", specifier = ">=0.4.0" },
     { name = "playwright", specifier = "==1.43" },
     { name = "pydantic", specifier = ">=2.11.3" },
