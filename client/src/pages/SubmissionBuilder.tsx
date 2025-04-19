@@ -137,13 +137,16 @@ export default function SubmissionBuilder({ region = 'FDA' }: { region?: 'FDA'|'
     setQcInProgress(true);
     
     try {
-      console.log(`Starting bulk approval for ${docIds.length} documents...`);
+      console.log(`Starting bulk approval for ${docIds.length} documents with ${region} validation rules...`);
       
-      // Call the bulk approve endpoint
+      // Call the bulk approve endpoint with region information
       const response = await fetch('/api/documents/bulk-approve', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids: docIds })
+        body: JSON.stringify({ 
+          ids: docIds,
+          region: region // Pass the current region for proper validation
+        })
       });
       
       if (!response.ok) {
@@ -154,7 +157,7 @@ export default function SubmissionBuilder({ region = 'FDA' }: { region?: 'FDA'|'
       
       // Show summary alert
       console.log('Bulk approval initiated:', result);
-      alert(`Bulk approval initiated for ${docIds.length} documents. Status updates will appear in real-time.`);
+      alert(`Bulk approval initiated for ${docIds.length} documents using ${region} validation rules. Status updates will appear in real-time.`);
       
       // Individual status updates will come through the WebSocket
       // No need to set qcInProgress to false as the updates are asynchronous
