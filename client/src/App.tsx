@@ -1,7 +1,7 @@
 // App.tsx – fully connected routing system with dashboard layout
 import React, { lazy, Suspense, useState, useEffect } from 'react';
-// Using stub instead of react-router-dom until dependencies are fixed
-import { BrowserRouter as Router, Routes, Route } from './stub-router-dom';
+// Using wouter for routing
+import { Route, Switch, Link, useLocation } from 'wouter';
 
 // Import layouts and core components
 import { Toaster } from "@/components/ui/toaster";
@@ -502,183 +502,227 @@ const AuthProvider = ({ children }) => {
 export default function App() {
   return (
     <AuthProvider>
-      <Router>
-        <Suspense fallback={<LoadingFallback />}>
-          <Routes>
-            {/* === Public routes === */}
-            <Route path="/" element={<HomeLanding />} />
-            <Route path="/demo" element={<DemoPage />} />
-            <Route path="/roi" element={<ROICalculator />} />
-            <Route path="/login" element={<LoginPage />} />
+      <Suspense fallback={<LoadingFallback />}>
+        <Switch>
+          {/* === Public routes === */}
+          <Route path="/" component={HomeLanding} />
+          <Route path="/demo" component={DemoPage} />
+          <Route path="/roi" component={ROICalculator} />
+          <Route path="/login" component={LoginPage} />
 
-            {/* === Client portal (main entry point after login) === */}
-            <Route path="/portal" element={
+          {/* === Client portal (main entry point after login) === */}
+          <Route path="/portal">
+            {() => (
               <DashboardLayout>
                 <ClientPortal />
               </DashboardLayout>
-            } />
+            )}
+          </Route>
 
-            {/* === Dashboard layout routes === */}
-            {/* Main dashboard */}
-            <Route path="/dashboard" element={
+          {/* === Dashboard layout routes === */}
+          {/* Main dashboard */}
+          <Route path="/dashboard">
+            {() => (
               <DashboardLayout>
                 <Dashboard />
               </DashboardLayout>
-            } />
+            )}
+          </Route>
 
-            {/* CSR Library */}
-            <Route path="/csr-library" element={
+          {/* CSR Library */}
+          <Route path="/csr-library">
+            {() => (
               <DashboardLayout>
                 <CsrLibrary />
               </DashboardLayout>
-            } />
-            <Route path="/csr-library/*" element={
+            )}
+          </Route>
+          <Route path="/csr-library/:id">
+            {() => (
               <DashboardLayout>
                 <CsrLibrary />
               </DashboardLayout>
-            } />
+            )}
+          </Route>
 
-            {/* Protocol Optimizer */}
-            <Route path="/protocol-optimization" element={
+          {/* Protocol Optimizer */}
+          <Route path="/protocol-optimization">
+            {() => (
               <DashboardLayout>
                 <ProtocolOptimizer />
               </DashboardLayout>
-            } />
-            <Route path="/protocol-optimization/*" element={
+            )}
+          </Route>
+          <Route path="/protocol-optimization/:id">
+            {() => (
               <DashboardLayout>
                 <ProtocolOptimizer />
               </DashboardLayout>
-            } />
+            )}
+          </Route>
 
-            {/* CER Generator */}
-            <Route path="/cer-dashboard" element={
+          {/* CER Generator */}
+          <Route path="/cer-dashboard">
+            {() => (
               <DashboardLayout>
                 <CerDashboard />
               </DashboardLayout>
-            } />
-            <Route path="/cer-dashboard/*" element={
+            )}
+          </Route>
+          <Route path="/cer-dashboard/:id">
+            {() => (
               <DashboardLayout>
                 <CerDashboard />
               </DashboardLayout>
-            } />
+            )}
+          </Route>
 
-            {/* IND Automation */}
-            <Route path="/ind-automation" element={
+          {/* IND Automation */}
+          <Route path="/ind-automation">
+            {() => (
               <DashboardLayout>
                 <IndAutomation />
               </DashboardLayout>
-            } />
-            <Route path="/ind-automation/*" element={
+            )}
+          </Route>
+          <Route path="/ind-automation/:id">
+            {() => (
               <DashboardLayout>
                 <IndAutomation />
               </DashboardLayout>
-            } />
+            )}
+          </Route>
 
-            {/* Assistant */}
-            <Route path="/assistant" element={
+          {/* Assistant */}
+          <Route path="/assistant">
+            {() => (
               <DashboardLayout>
                 <TrialSageAssistant />
               </DashboardLayout>
-            } />
-            <Route path="/chat-assistant" element={
+            )}
+          </Route>
+          <Route path="/chat-assistant">
+            {() => (
               <DashboardLayout>
                 <TrialSageAssistant />
               </DashboardLayout>
-            } />
+            )}
+          </Route>
 
-            {/* KPI Analytics */}
-            <Route path="/kpi" element={
+          {/* KPI Analytics */}
+          <Route path="/kpi">
+            {() => (
               <DashboardLayout>
                 <KpiAnalytics />
               </DashboardLayout>
-            } />
-            <Route path="/kpi/*" element={
+            )}
+          </Route>
+          <Route path="/kpi/:section">
+            {() => (
               <DashboardLayout>
                 <KpiAnalytics />
               </DashboardLayout>
-            } />
+            )}
+          </Route>
 
-            {/* Other dashboard routes */}
-            <Route path="/ectd-send" element={
+          {/* Other dashboard routes */}
+          <Route path="/ectd-send">
+            {() => (
               <DashboardLayout>
                 <div className="space-y-6">
                   <h1 className="text-2xl font-bold">eCTD One-Click ESG Send</h1>
                   <p className="text-gray-700 dark:text-gray-300">Submit eCTD packages directly to FDA gateway</p>
                 </div>
               </DashboardLayout>
-            } />
-            
-            <Route path="/risk-dashboards" element={
+            )}
+          </Route>
+          
+          <Route path="/risk-dashboards">
+            {() => (
               <DashboardLayout>
                 <div className="space-y-6">
                   <h1 className="text-2xl font-bold">Real-Time Risk Dashboards</h1>
                   <p className="text-gray-700 dark:text-gray-300">Monitor clinical trial risks and safety signals</p>
                 </div>
               </DashboardLayout>
-            } />
-            
-            <Route path="/integrations" element={
+            )}
+          </Route>
+          
+          <Route path="/integrations">
+            {() => (
               <DashboardLayout>
                 <div className="space-y-6">
                   <h1 className="text-2xl font-bold">Benchling & FAERS Connectors</h1>
                   <p className="text-gray-700 dark:text-gray-300">Integrate with third-party data sources</p>
                 </div>
               </DashboardLayout>
-            } />
+            )}
+          </Route>
 
-            {/* All persona-specific routes */}
-            <Route path="/solutions/*" element={
+          {/* All persona-specific routes */}
+          <Route path="/solutions/:role">
+            {() => (
               <DashboardLayout>
                 <div className="space-y-6">
                   <h1 className="text-2xl font-bold">Role-Specific Solutions</h1>
                   <p className="text-gray-700 dark:text-gray-300">Tailored intelligence for your specific needs</p>
                 </div>
               </DashboardLayout>
-            } />
+            )}
+          </Route>
 
-            {/* All sub-routes */}
-            <Route path="/success-rate-analytics" element={
+          {/* All sub-routes */}
+          <Route path="/success-rate-analytics">
+            {() => (
               <DashboardLayout>
                 <div className="space-y-6">
                   <h1 className="text-2xl font-bold">Success Rate Analytics</h1>
                   <p className="text-gray-700 dark:text-gray-300">Historical success rates by indication, phase, and company</p>
                 </div>
               </DashboardLayout>
-            } />
-            
-            <Route path="/protocol-quality-score" element={
+            )}
+          </Route>
+          
+          <Route path="/protocol-quality-score">
+            {() => (
               <DashboardLayout>
                 <div className="space-y-6">
                   <h1 className="text-2xl font-bold">Protocol Quality Score</h1>
                   <p className="text-gray-700 dark:text-gray-300">AI assessment of protocol with success prediction</p>
                 </div>
               </DashboardLayout>
-            } />
-            
-            <Route path="/evidence-builder" element={
+            )}
+          </Route>
+          
+          <Route path="/evidence-builder">
+            {() => (
               <DashboardLayout>
                 <div className="space-y-6">
                   <h1 className="text-2xl font-bold">Evidence Builder</h1>
                   <p className="text-gray-700 dark:text-gray-300">Generate evidence-backed narratives</p>
                 </div>
               </DashboardLayout>
-            } />
-            
-            <Route path="/faers-monitor" element={
+            )}
+          </Route>
+          
+          <Route path="/faers-monitor">
+            {() => (
               <DashboardLayout>
                 <div className="space-y-6">
                   <h1 className="text-2xl font-bold">FAERS Monitor</h1>
                   <p className="text-gray-700 dark:text-gray-300">Track adverse events and safety signals</p>
                 </div>
               </DashboardLayout>
-            } />
+            )}
+          </Route>
 
-            {/* 404 fallback */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Suspense>
+          {/* 404 fallback */}
+          <Route path="*">
+            {() => <NotFound />}
+          </Route>
+        </Switch>
         <Toaster />
-      </Router>
+      </Suspense>
     </AuthProvider>
   );
 }

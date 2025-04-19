@@ -2,7 +2,7 @@
 // Tailwind + i18n + dark‑mode ready
 
 import React, { useState } from "react";
-import { Link } from "../stub-router-dom";
+import { Link } from "wouter";
 import { PlayCircle, ArrowRight, LogIn, UserPlus, BarChart2, Brain, User, Users, Microscope, FileText, Beaker, TrendingUp, Building2, LineChart, Briefcase } from "lucide-react";
 import { useTranslation } from "../i18n";
 // Import i18n to initialize it

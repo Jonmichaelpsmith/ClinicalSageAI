@@ -1,27 +1,32 @@
-// Stub implementation of react-router-dom for compatibility
-// This will be replaced when react-router-dom is properly installed
+// Stub implementation forwarding to wouter
+// Instead of using this file, please import from "wouter" directly
 
 import React from 'react';
+import { Link as WouterLink, Route as WouterRoute, Switch, useLocation as wouterUseLocation, useRoute } from 'wouter';
 
-// Stub components
+// Forward to wouter
+export const Link = WouterLink;
+export const Route = WouterRoute;
+export const Switch = Switch;
+export const useLocation = wouterUseLocation;
+
+// For compatibility with any code still using react-router-dom
 export const BrowserRouter = ({ children }: { children: React.ReactNode }) => <>{children}</>;
-export const Routes = ({ children }: { children: React.ReactNode }) => <>{children}</>;
-export const Route = ({ path, element }: { path: string, element: React.ReactNode }) => <>{element}</>;
-export const Link = ({ to, children }: { to: string, children: React.ReactNode }) => 
-  <a href={to}>{children}</a>;
-export const Outlet = () => <div>Outlet placeholder</div>;
-export const Navigate = ({ to }: { to: string }) => <div>Navigate to {to}</div>;
+export const Routes = ({ children }: { children: React.ReactNode }) => <Switch>{children}</Switch>;
+export const Outlet = () => <div>Please update to use wouter components</div>;
+export const Navigate = ({ to }: { to: string }) => {
+  window.location.href = to;
+  return null;
+};
 
-// Stub hooks
+// Compatibility hooks
 export const useNavigate = () => (path: string) => {
-  console.warn(`[stub] useNavigate() called with path ${path} – replace when react-router-dom is installed`);
+  console.warn(`[compatibility] useNavigate() called - please update to use wouter hooks`);
   window.location.href = path;
 };
 
-export const useLocation = () => ({ 
-  pathname: window.location.pathname,
-  search: window.location.search,
-  hash: window.location.hash
-});
-
-export const useParams = () => ({});
+export const useParams = () => {
+  console.warn(`[compatibility] useParams() called - please update to use useRoute from wouter`);
+  const [, params] = useRoute("*");
+  return params || {};
+};
