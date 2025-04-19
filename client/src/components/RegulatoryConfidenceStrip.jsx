@@ -16,7 +16,7 @@ export default function RegulatoryConfidenceStrip() {
     <div className="bg-gray-50 dark:bg-slate-800 py-6 overflow-hidden border-t border-gray-200 dark:border-slate-700">
       <div className="max-w-6xl mx-auto">
         <div className="text-center text-xs text-gray-500 dark:text-gray-400 mb-4">
-          Trusted by regulators worldwide
+          Mastering global regulatory standards across every jurisdiction
         </div>
         <div className="flex items-center gap-12 animate-scroll-slow whitespace-nowrap px-6">
           {[...agencies, ...agencies].map((agency, i) => (
