@@ -1,6 +1,7 @@
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
+import "./i18n";
 
 // Set the page title
 document.title = "TrialSage - AI-Powered CSR Intelligence Platform";

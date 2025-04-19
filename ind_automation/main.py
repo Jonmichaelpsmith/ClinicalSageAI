@@ -1,3 +1,4 @@
+import babel.dates as bdates
 import io, datetime, uuid
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.responses import StreamingResponse
@@ -260,3 +261,23 @@ class RedactionMiddleware(BaseHTTPMiddleware):
         return await call_next(request)
 
 app.add_middleware(RedactionMiddleware)
+
+@app.middleware('http')
+async def locale_middleware(request, call_next):
+    response = await call_next(request)
+    lang=request.headers.get('accept-language','en')[:2]
+    if response.media_type=='application/json' and isinstance(response.body,bytes):
+        import json, datetime
+        data=json.loads(response.body)
+        def _local(d):
+            if isinstance(d,dict):
+                if 'timestamp' in d and 'timestamp_local' not in d:
+                    try:
+                        d['timestamp_local']=bdates.format_datetime(datetime.datetime.fromisoformat(d['timestamp']),locale=lang)
+                    except: pass
+                for v in d.values(): _local(v)
+            if isinstance(d,list):
+                for v in d: _local(v)
+        _local(data)
+        response.body=json.dumps(data).encode()
+    return response
