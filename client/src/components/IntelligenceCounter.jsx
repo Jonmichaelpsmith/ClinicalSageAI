@@ -45,25 +45,12 @@ const IntelligenceCounter = () => {
   });
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      let allDone = true;
-      const newCounts = { ...displayCounts };
-      
-      Object.keys(counts).forEach(key => {
-        if (newCounts[key] < counts[key]) {
-          // Calculate increment based on total value
-          const increment = Math.max(1, Math.floor(counts[key] / 20));
-          newCounts[key] = Math.min(counts[key], newCounts[key] + increment);
-          allDone = false;
-        }
-      });
-      
-      setDisplayCounts(newCounts);
-      if (allDone) clearInterval(interval);
-    }, 100);
+    // Initialize the animation with the actual counts
+    setDisplayCounts(counts);
     
-    return () => clearInterval(interval);
-  }, []);
+    // No animation needed - just display the real numbers immediately
+    // This ensures we always show the correct data
+  }, [counts]);
 
   return (
     <div className="bg-gradient-to-r from-emerald-50 to-sky-50 dark:from-slate-800/80 dark:to-slate-900/80 py-4 shadow-sm rounded-lg border border-gray-100 dark:border-slate-700">
