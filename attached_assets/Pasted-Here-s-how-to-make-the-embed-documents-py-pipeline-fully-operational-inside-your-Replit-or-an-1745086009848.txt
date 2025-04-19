@@ -1,0 +1,105 @@
+Here’s how to make the **`embed_documents.py`** pipeline fully operational inside your Replit (or any Python / FastAPI) environment.
+
+---
+
+## 1 ▸ Ensure the schema exists
+
+```python
+# server/models/doc_chunk.py
+from sqlalchemy import Column, Integer, String, ForeignKey
+from pgvector.sqlalchemy import Vector
+from server.db import Base
+
+class DocChunk(Base):
+    __tablename__ = "doc_chunks"
+    id        = Column(Integer, primary_key=True)
+    doc_id    = Column(Integer, ForeignKey("csrs.id", ondelete="CASCADE"))
+    content   = Column(String, nullable=False)
+    embedding = Column(Vector(1536), index=True)
+```
+
+> **DB migration:**  
+> If you use Alembic, create a revision that adds the `doc_chunks` table and also installs the pgvector extension:
+> ```sql
+> CREATE EXTENSION IF NOT EXISTS pgvector;
+> ```
+
+---
+
+## 2 ▸ Install requirements
+
+```bash
+pip install pgvector~=0.2 openai sqlalchemy tqdm
+```
+
+(If you already have SQLAlchemy and OpenAI, just add `pgvector` & `tqdm`.)
+
+---
+
+## 3 ▸ Environment vars
+
+Make sure `OPENAI_API_KEY` is set in Replit Secrets or your shell; the **OpenAI** client will auto‑pick it up.
+
+---
+
+## 4 ▸ Run the script
+
+```bash
+python -m scripts.embed_documents
+```
+
+*Every approved CSR (or CER/IND if you extend the query) will be chunked and embedded.*
+
+---
+
+### Best‑practice tweaks
+
+| Area | Improvement |
+|------|-------------|
+| **Rate‑limiting / batching** | Use `client.embeddings.create_batch` (beta) or throttling (e.g., sleep 60 K tokens/min) to avoid rate limits. |
+| **Chunk size** | 800 tokens ≈ ~600 words.  For large CSRs you might prefer 400 – 500 tokens for finer recall. |
+| **Metadata** | Add `section` or `page` fields to `DocChunk` so you can open the PDF at the exact citation. |
+| **Re‑embedding trigger** | Only re‑embed when content version changes; store `content_hash` so you can skip unchanged docs. |
+| **Retry logic** | Wrap the OpenAI call with exponential backoff in case of transient errors. |
+
+---
+
+## 5 ▸ Verify retrieval
+
+A quick SQL sanity check:
+
+```sql
+SELECT COUNT(*) FROM doc_chunks;
+SELECT doc_id, COUNT(*) FROM doc_chunks GROUP BY doc_id LIMIT 5;
+```
+
+Then test the RAG endpoint:
+
+```bash
+curl -X POST http://localhost:8000/api/assistant/retrieve \
+     -H "Content-Type: application/json" \
+     -d '{"query":"median enrollment time"}'
+```
+
+You should get top‑6 chunks with distances.
+
+---
+
+## 6 ▸ Hook to approval workflow
+
+Whenever a document status flips to `"approved"` (or is updated):
+
+```python
+from subprocess import Popen
+Popen(["python", "-m", "scripts.embed_documents"])
+```
+
+—or queue that task via Celery/RQ so it runs asynchronously.
+
+---
+
+With these steps your **CSR Deep‑Intelligence** library is now searchable and the assistant will cite real passages to end users — delivering immediate, verifiable value. Let me know if you'd like:
+
+* delta‑update embedding logic (instead of full re‑embed),  
+* extra metadata (e.g., page numbers),  
+* or PDF page deep‑linking from citation footnotes.

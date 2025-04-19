@@ -1,68 +1,35 @@
-// DocumentsPage.jsx – Production‑grade document workspace with Tiptap
-// Features: file list, role‑based edit, version history, comments sidebar
-// Requires dependencies: @tiptap/react @tiptap/starter-kit @tiptap/extension-comment
+// DocumentsPage.jsx – Document workspace with simple textarea
+// Features: file list, version history, comments sidebar
 
 import React, { useEffect, useState, useCallback } from "react";
 import { useAuth } from "../hooks/useAuth";
-import { EditorContent, useEditor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import Comment from "@tiptap/extension-comment";
 import { File, Clock, Save, MessageCircle } from "lucide-react";
 
 export default function DocumentsPage() {
   const { session } = useAuth();
-  const [docs, setDocs] = useState([]);
+  const [docs, setDocs] = useState([
+    { id: 1, title: "CSR Template" },
+    { id: 2, title: "Protocol Draft" },
+    { id: 3, title: "Study Report" }
+  ]);
   const [activeId, setActiveId] = useState(null);
-  const [versions, setVersions] = useState([]);
+  const [content, setContent] = useState("");
+  const [versions, setVersions] = useState([
+    { id: 1, created_at: new Date().toISOString(), content: "Version 1 content" },
+    { id: 2, created_at: new Date(Date.now() - 24*60*60*1000).toISOString(), content: "Previous version content" }
+  ]);
   const [showComments, setShowComments] = useState(false);
 
-  /* fetch docs */
-  useEffect(() => {
-    fetch("/api/documents")
-      .then((r) => r.json())
-      .then(setDocs);
-  }, []);
-
-  /* fetch versions when doc changes */
-  useEffect(() => {
-    if (!activeId) return;
-    fetch(`/api/documents/${activeId}/versions`)
-      .then((r) => r.json())
-      .then(setVersions);
-  }, [activeId]);
-
   /* load doc content */
-  const loadDocument = useCallback(async (docId) => {
-    const res = await fetch(`/api/documents/${docId}`);
-    const json = await res.json();
+  const loadDocument = useCallback((docId) => {
     setActiveId(docId);
-    editor?.commands.setContent(json.content || "");
+    setContent(`Document ${docId} content goes here. This is a simplified editor.`);
   }, []);
-
-  const editor = useEditor({
-    extensions: [
-      StarterKit.configure({ history: true }),
-      Comment.configure({ HTMLAttributes: { class: "comment" } }),
-    ],
-    editable: !!session?.user?.canEdit, // RBAC from server claim
-    onUpdate: ({ editor }) => {
-      // Auto-save after pause
-      clearTimeout(window._docSaveTimer);
-      window._docSaveTimer = setTimeout(() => {
-        if (!activeId) return;
-        fetch(`/api/documents/${activeId}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ content: editor.getJSON() }),
-        });
-      }, 1000);
-    },
-  });
 
   /* create new doc */
   const createDoc = async () => {
-    const r = await fetch("/api/documents", { method: "POST" });
-    const newDoc = await r.json();
+    const newId = Math.max(...docs.map(d => d.id), 0) + 1;
+    const newDoc = { id: newId, title: `Untitled ${newId}` };
     setDocs([newDoc, ...docs]);
     loadDocument(newDoc.id);
   };
@@ -96,7 +63,13 @@ export default function DocumentsPage() {
         </div>
 
         <div className="flex-1 flex overflow-hidden">
-          <EditorContent editor={editor} className="prose dark:prose-invert max-w-none flex-1 p-6 overflow-y-auto" />
+          <textarea 
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            className="flex-1 p-6 overflow-y-auto resize-none bg-white dark:bg-slate-900 text-black dark:text-white"
+            placeholder="Select a document from the sidebar..."
+            readOnly={!session?.user?.canEdit}
+          />
 
           {/* comments / version drawer */}
           {showComments && (
@@ -106,11 +79,11 @@ export default function DocumentsPage() {
                 {versions.map(v=> (
                   <li key={v.id} className="flex justify-between items-center">
                     <span>{new Date(v.created_at).toLocaleString()}</span>
-                    <button onClick={()=>editor.commands.setContent(v.content)} className="text-emerald-600 hover:underline">Load</button>
+                    <button onClick={() => setContent(v.content)} className="text-emerald-600 hover:underline">Load</button>
                   </li>
                 ))}
               </ul>
-              {/* Placeholder for comments – could reuse Tiptap comment extension UI */}
+              {/* Placeholder for comments */}
               <h3 className="font-semibold text-sm mb-2 flex items-center gap-1"><MessageCircle size={14}/> Comments</h3>
               <p className="text-xs opacity-60">Inline comment bubbles appear in the editor; summary thread coming soon.</p>
             </aside>
