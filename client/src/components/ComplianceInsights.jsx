@@ -1,3 +1,4 @@
+import SidePanel from './SidePanel';
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
 import {
@@ -49,7 +50,7 @@ export default function ComplianceInsights({ org }) {
       {/* 1. Alerts Over Time */}
       <div>
         <h4 className="text-lg font-semibold mb-2">Alerts Over Time</h4>
-        <LineChart width={450} height={200} data={byDate()}>
+        <LineChart onClick={()=>setPanel({rule:"Alerts"})} width={450} height={200} data={byDate()}>
           <CartesianGrid strokeDasharray='3 3'/>
           <XAxis dataKey='date'/>
           <YAxis/>
@@ -167,3 +168,5 @@ export default function ComplianceInsights({ org }) {
     </div>
   );
 }
+function RuleDetails({org,rule}){const[data,setData]=useState([]);useEffect(()=>{api.get(`/api/org/${org}/metrics?rule=${rule}`).then(r=>setData(r.data))},[org,rule]);
+return(<div><h4 className='font-semibold mb-2'>{rule}</h4><table className='text-sm'><tbody>{data.map((r,i)=><tr key={i}><td>{r.timestamp}</td><td>{r.msg||r.type}</td></tr>)}</tbody></table></div>)}

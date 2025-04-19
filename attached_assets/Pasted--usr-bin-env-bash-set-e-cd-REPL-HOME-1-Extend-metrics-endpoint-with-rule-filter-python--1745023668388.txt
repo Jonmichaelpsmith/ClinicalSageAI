@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+set -e
+cd "$REPL_HOME"
+
+# 1) Extend metrics endpoint with ?rule filter
+python - << 'PY'
+import pathlib, textwrap, re
+main=pathlib.Path('ind_automation/main.py'); code=main.read_text()
+if '?rule=' not in code:
+    code=re.sub(r'@app.get\("/api/org/\{org\}/metrics"[\s\S]+?return metrics.load',
+    '@app.get("/api/org/{org}/metrics")\nasync def get_metrics(org:str, rule:str|None=None):\n    df=metrics.load(org)\n    if rule: df=df[df["msg"].str.contains(rule,na=False)]\n    return df.to_dict(orient="records")',code,1,flags=re.S)
+    main.write_text(code)
+PY
+
+# 2) SidePanel component
+mkdir -p client/src/components
+cat > client/src/components/SidePanel.jsx << 'JSX'
+import React from 'react';
+export default function SidePanel({open,onClose,children}){
+ if(!open) return null;
+ return(<div className='fixed inset-0 z-50 flex'>
+  <div className='flex-1 bg-black/40' onClick={onClose}/>
+  <div className='w-96 bg-white p-4 overflow-y-auto'>
+    <button className='float-right text-xl' onClick={onClose}>×</button>
+    {children}
+  </div></div>);
+}
+JSX
+
+# 3) Patch ComplianceInsights.jsx
+python - << 'PY'
+import pathlib, textwrap, re
+ci=pathlib.Path('client/src/components/ComplianceInsights.jsx'); code=ci.read_text()
+if 'SidePanel' not in code:
+    code="import SidePanel from './SidePanel';\n"+code
+    # state
+    code=code.replace('const[data,setData]','const[data,setData]=useState([]);\n const[panel,setPanel]=useState(null)')
+    # add click wrapper to first chart for example; we wrap generic helper
+    code=re.sub(r'<LineChart','<LineChart onClick={()=>setPanel({rule:"Alerts"})}',code,1)
+    # add sidepanel jsx at end
+    code=code.replace('</div>);','</div>\n<SidePanel open={!!panel} onClose={()=>setPanel(null)}>\n  {panel&& <RuleDetails org={org} rule={panel.rule}/>}\n</SidePanel>);')
+    # rule details comp
+    code+=textwrap.dedent("""
+    function RuleDetails({org,rule}){const[data,setData]=useState([]);useEffect(()=>{api.get(`/api/org/${org}/metrics?rule=${rule}`).then(r=>setData(r.data))},[org,rule]);
+    return(<div><h4 className='font-semibold mb-2'>{rule}</h4><table className='text-sm'><tbody>{data.map((r,i)=><tr key={i}><td>{r.timestamp}</td><td>{r.msg||r.type}</td></tr>)}</tbody></table></div>)}""")
+    ci.write_text(code)
+PY
+
+echo '✅ Drill‑down SidePanel installed – restart React.'
