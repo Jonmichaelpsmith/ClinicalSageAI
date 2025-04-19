@@ -105,14 +105,15 @@ async def get_3674(pid: str):
 async def new_sequence(pid: str):
     m = _get_meta(pid)
     m.serial_number += 1
-    
+
     # save history entry
     append_history(pid, {
         "serial": f"{m.serial_number:04d}",
         "timestamp": datetime.datetime.utcnow().isoformat()
     })
-    
+
     db.save(pid, m.dict())
+    if body.alert_channels is not None: users.set_channels(username, body.alert_channels)
     return {"serial_number": f"{m.serial_number:04d}"}
 
 # ---------- Health ----------
@@ -164,7 +165,7 @@ async def get_rules(org:str):
     return rules_store.load(org)
 
 @app.put('/api/org/{org}/rules', dependencies=[Depends(rbac.requires('admin.esg'))])
-async def set_rules(org:str, body:dict):
+async def set_rules(org:str, body:UserUpdate):
     rules_store.save(org, body)
     append_history(org, {"type":"rule_change", "timestamp": datetime.datetime.utcnow().isoformat()})
     return {'status':'saved'}
@@ -187,16 +188,22 @@ async def list_users(org:str):
     return users.all_users()
 
 @app.post('/api/org/{org}/users', dependencies=[Depends(rbac.requires('admin.esg'))])
-async def invite_user(org:str, body:dict):
+async def invite_user(org:str, body:UserUpdate):
     users.create(body['username'], body.get('password','changeme'), role=body.get('role','user'))
     users.set_permissions(body['username'], body.get('perms',[]))
     return {'status':'created'}
 
 @app.put('/api/org/{org}/users/{username}', dependencies=[Depends(rbac.requires('admin.esg'))])
-async def update_user(org:str, username:str, body:dict):
-    if 'role' in body: # quick role update
+async from pydantic import BaseModel, conint
+class UserUpdate(BaseModel):
+    role:str|None=None
+    perms:list[str]|None=None
+    alert_channels:conint(ge=0,le=3)|None=None  # bitmask
+
+def update_user(org:str, username:str, body:UserUpdate):
+    if body.role: # quick role update
         data=users.all_users(); data[username]['role']=body['role']; users._save(data)
-    if 'perms' in body:
+    if body.perms is not None:
         users.set_permissions(username, body['perms'])
     return {'status':'updated'}
 
@@ -230,7 +237,7 @@ class RedactionMiddleware(BaseHTTPMiddleware):
             data=json.loads(body or "{}")
             redacted=False
             matches=[]
-            
+
             def _clean(obj):
                 nonlocal redacted,matches
                 if isinstance(obj,str):
@@ -243,7 +250,7 @@ class RedactionMiddleware(BaseHTTPMiddleware):
                 if isinstance(obj,list): 
                     return [_clean(v) for v in obj]
                 return obj
-                
+
             clean=_clean(data)
             if redacted:
                 # replace request stream
