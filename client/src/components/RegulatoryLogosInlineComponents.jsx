@@ -14,6 +14,22 @@ import hipaaLogo from '../assets/logos/hipaa.svg';
 import gdprLogo from '../assets/logos/gdpr.svg';
 import isoLogo from '../assets/logos/iso.svg';
 
+// Partner logos
+import ascoLogo from '../assets/logos/partners/asco.svg';
+import nihLogo from '../assets/logos/partners/nih.svg';
+import esmoLogo from '../assets/logos/partners/esmo.svg';
+import cdcLogo from '../assets/logos/partners/cdc.svg';
+import epaLogo from '../assets/logos/partners/epa.svg';
+import hhsLogo from '../assets/logos/partners/hhs.svg';
+import ichLogo from '../assets/logos/partners/ich.svg';
+
+// Regulatory certification logos
+import fda21cfrLogo from '../assets/logos/regulatory/fda_21cfr_part11.svg';
+import fdaIchGcpLogo from '../assets/logos/regulatory/fda_ich_gcp.svg';
+import fdaComplianceLogo from '../assets/logos/regulatory/fda_compliance_simplified.svg';
+import fdaCertificationLogo from '../assets/logos/regulatory/fda_certification.svg';
+import emaFullLogo from '../assets/logos/regulatory/ema_full.svg';
+
 const base = "inline-block transition-all duration-200 opacity-70 hover:opacity-100 m-0.5";
 const logoStyle = "h-6 w-auto filter grayscale hover:grayscale-0 transition-all";
 
@@ -92,5 +108,79 @@ export const GDPR = () => (
 export const ISO = () => (
   <div className={base} title="ISO 27001 Certification">
     <img src={isoLogo} alt="ISO" className={logoStyle} />
+  </div>
+);
+
+// Partner Organization Components
+export const ASCO = () => (
+  <div className={base} title="American Society of Clinical Oncology">
+    <img src={ascoLogo} alt="ASCO" className={logoStyle} />
+  </div>
+);
+
+export const NIH = () => (
+  <div className={base} title="National Institutes of Health">
+    <img src={nihLogo} alt="NIH" className={logoStyle} />
+  </div>
+);
+
+export const ESMO = () => (
+  <div className={base} title="European Society for Medical Oncology">
+    <img src={esmoLogo} alt="ESMO" className={logoStyle} />
+  </div>
+);
+
+export const CDC = () => (
+  <div className={base} title="Centers for Disease Control and Prevention">
+    <img src={cdcLogo} alt="CDC" className={logoStyle} />
+  </div>
+);
+
+export const EPA = () => (
+  <div className={base} title="Environmental Protection Agency">
+    <img src={epaLogo} alt="EPA" className={logoStyle} />
+  </div>
+);
+
+export const HHS = () => (
+  <div className={base} title="Department of Health and Human Services">
+    <img src={hhsLogo} alt="HHS" className={logoStyle} />
+  </div>
+);
+
+export const ICH = () => (
+  <div className={base} title="International Council for Harmonisation">
+    <img src={ichLogo} alt="ICH" className={logoStyle} />
+  </div>
+);
+
+// Regulatory Certification Components
+export const FDA21CFR = () => (
+  <div className={base} title="FDA 21 CFR Part 11 Compliance">
+    <img src={fda21cfrLogo} alt="FDA 21 CFR Part 11" className={logoStyle} />
+  </div>
+);
+
+export const FDAICHGCP = () => (
+  <div className={base} title="FDA ICH GCP E6(R2) Compliance">
+    <img src={fdaIchGcpLogo} alt="FDA ICH GCP" className={logoStyle} />
+  </div>
+);
+
+export const FDACompliance = () => (
+  <div className={base} title="FDA Compliance Simplified">
+    <img src={fdaComplianceLogo} alt="FDA Compliance" className={logoStyle} />
+  </div>
+);
+
+export const FDACertification = () => (
+  <div className={base} title="FDA & CE Certified">
+    <img src={fdaCertificationLogo} alt="FDA Certification" className={logoStyle} />
+  </div>
+);
+
+export const EMAFull = () => (
+  <div className={base} title="European Medicines Agency">
+    <img src={emaFullLogo} alt="EMA Full" className={logoStyle} />
   </div>
 );
