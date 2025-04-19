@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+set -e
+pip install -q pysaml2==7.0.1
+cd "$REPL_HOME"
+
+# ---------------------------------------------------------------
+# 1) ind_automation/saml_sp_pysaml2.py
+cat > ind_automation/saml_sp_pysaml2.py << 'PY'
+from saml2 import BINDING_HTTP_REDIRECT, BINDING_HTTP_POST
+from saml2.client import Saml2Client
+from saml2.config import SPConfig
+from starlette.responses import RedirectResponse
+from fastapi import Request, HTTPException
+from ind_automation import saml_creds
+
+BASE_URL = "https://trialsage.ai"  # override via env if needed
+
+
+def _sp_config(org):
+    cfg = saml_creds.load(org)
+    if not cfg:
+        raise HTTPException(400, "SAML not configured for org")
+    saml_settings = {
+        "entityid": cfg["sp_entity_id"],
+        "service": {
+            "sp": {
+                "endpoints": {
+                    "assertion_consumer_service": [(cfg["acs_url"], BINDING_HTTP_POST)]
+                },
+                "allow_unsolicited": True,
+            }
+        },
+        "metadata": {
+            "inline": [
+                {
+                    "entityid": cfg["idp_entity_id"],
+                    "single_sign_on_service": [
+                        {"binding": BINDING_HTTP_REDIRECT, "location": cfg["idp_sso_url"]}
+                    ],
+                    "x509cert": cfg["idp_x509"],
+                }
+            ]
+        },
+        "debug": False,
+    }
+    c = SPConfig()
+    c.load(saml_settings)
+    return c
+
+
+def login_redirect(org, relay_state="/"):
+    client = Saml2Client(config=_sp_config(org))
+    reqid, info = client.prepare_for_authenticate(relay_state=relay_state)
+    for key, value in info["headers"]:
+        if key == "Location":
+            return value
+    raise HTTPException(500, "Unable to build SAML redirect")
+
+
+def acs_process(org, request: Request):
+    client = Saml2Client(config=_sp_config(org))
+    data = await request.body()
+    auth_resp = client.parse_authn_request_response(
+        data.decode(), BINDING_HTTP_POST, outstanding=None
+    )
+    if auth_resp is None or auth_resp.ava is None:
+        raise HTTPException(401, "Invalid SAML response")
+    return auth_resp.ava, auth_resp.name_id.text
+PY
+
+# ---------------------------------------------------------------
+# 2) Patch FastAPI routes to use pysaml2
+python - << 'PY'
+import pathlib, textwrap
+main = pathlib.Path('ind_automation/main.py'); m = main.read_text()
+if 'saml_sp_pysaml2' not in m:
+    m = m.replace('from ind_automation import ectd_ga, tasks, credentials, auth, users, rbac, saml, saml_creds',
+                  'from ind_automation import ectd_ga, tasks, credentials, auth, users, rbac, saml_creds, saml_sp_pysaml2')
+    # replace old /saml/login and /saml/acs routes
+    m = m.split('# ---------- Auth routes ----------')[0]  # crude trim old block (assumes earlier)
+    m += textwrap.dedent("""
+    # ---------- SAML (pySAML2) ----------
+    from fastapi.responses import RedirectResponse
+    @app.get('/saml/{org}/login')
+    async def saml_login(org: str, relay: str = '/'):
+        url = saml_sp_pysaml2.login_redirect(org, relay)
+        return RedirectResponse(url)
+
+    @app.post('/saml/{org}/acs')
+    async def saml_acs(org: str, request: Request):
+        attrs, nameid = await saml_sp_pysaml2.acs_process(org, request)
+        users.create(nameid, 'saml', role='user')
+        perms = attrs.get('trialsage-perms', [])
+        _d = users._load(); _d[nameid]['perms'] = perms; users._save(_d)
+        token = auth.create_token(nameid)
+        return RedirectResponse(f'/#/login-callback?token={token}')
+    """)
+    main.write_text(m)
+PY
+
+# ---------------------------------------------------------------
+# 3) Update React SSO button to include org param
+python - << 'PY'
+import pathlib, re
+btn = pathlib.Path('client/src/components/SSOButton.jsx'); b = btn.read_text()
+if '/saml/login' in b:
+    b = b.replace("/saml/login", "/saml/${projectId}/login")
+    btn.write_text(b)
+PY
+
+# ---------------------------------------------------------------
+echo "✅ Switched to pySAML2 implementation – restart servers and test /saml/<org>/login""
