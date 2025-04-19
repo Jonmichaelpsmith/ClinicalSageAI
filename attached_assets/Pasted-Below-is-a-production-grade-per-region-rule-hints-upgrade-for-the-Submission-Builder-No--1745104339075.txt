@@ -1,0 +1,226 @@
+Below is a **production‑grade “per‑region rule‑hints” upgrade** for the Submission Builder.  
+( No canvas calls – just copy‑paste the files/patches into Replit. )
+
+---
+
+## 1 ▸ Region rule definitions
+
+**`client/src/config/regionRules.ts`**
+
+```ts
+export interface RegionRule {
+  m1Folders: string[];
+  requiredForms: { id: string; title: string; module: string }[];
+}
+
+export const REGION_RULES: Record<"FDA" | "EMA" | "PMDA", RegionRule> = {
+  FDA: {
+    m1Folders: [
+      "m1/cover",
+      "m1/1-forms",
+      "m1/3-investigator-brochure"
+    ],
+    requiredForms: [
+      { id: "1571", title: "FDA Form 1571", module: "m1/1-forms" },
+      { id: "1572", title: "FDA Form 1572", module: "m1/1-forms" },
+      { id: "3674", title: "FDA Form 3674", module: "m1/1-forms" }
+    ]
+  },
+  EMA: {
+    m1Folders: [
+      "m1/eu-cover",
+      "m1/eu-application",
+      "m1/eu-annex"
+    ],
+    requiredForms: [
+      { id: "EUAF", title: "EU Application Form", module: "m1/eu-application" }
+    ]
+  },
+  PMDA: {
+    m1Folders: [
+      "m1/jp-cover",
+      "m1/jp-forms"
+    ],
+    requiredForms: [
+      { id: "JPCTAF", title: "JP Clinical Trial Application Form", module: "m1/jp-forms" }
+    ]
+  }
+};
+```
+
+> *Add/adjust paths to match your final folder naming conventions.*
+
+---
+
+## 2 ▸ Submission Builder enhancements
+
+### a. Auto‑create region folders & hints
+
+Patch **`SubmissionBuilder.tsx`**
+
+```diff
+-import React from 'react';
++import React, { useState, useEffect } from 'react';
+ ...
++import { REGION_RULES, RegionRule } from '../config/regionRules';
++import { Badge, Tooltip } from 'react-bootstrap';
+
+-export default function SubmissionBuilder() {
+-  const [nodes, setNodes] = React.useState<TreeNode[]>([]);
++export default function SubmissionBuilder() {
++  const [nodes, setNodes] = useState<TreeNode[]>([]);
++  const [region, setRegion] = useState<"FDA" | "EMA" | "PMDA">("FDA");
++  const rules: RegionRule = REGION_RULES[region];
+ ...
+-  React.useEffect(() => {
++  useEffect(() => {
+     fetch('/api/documents?status=approved')
+       .then(r => r.json())
+       .then((docs: Doc[]) => {
+-        const folders = Array.from(new Set(docs.map(d => d.module.split('.')[0])))
+-          .map((name, i) => ({ id: 10000 + i, text: name, parent: 0, droppable: true }));
++        /** auto‑create region M1 folders */
++        const baseFolders = rules.m1Folders.map((path, i) => ({
++          id: 9000 + i,
++          text: path,
++          parent: 0,
++          droppable: true
++        }));
++
++        const modRoots = Array.from(new Set(docs.map(d => d.module.split('.')[0])))
++          .filter(m => m !== 'm1')
++          .map((name, i) => ({ id: 10000 + i, text: name, parent: 0, droppable: true }));
++
++        const folders = [...baseFolders, ...modRoots];
+ ...
+-  const handleSave = () => {
++  const handleSave = () => {
+     const ordered: Doc[] = nodes
+       .filter(n => n.parent !== 0 && !n.droppable)
+       .map((n, idx) => ({
+         id: (n.data! as Doc).id,
+-        module: findModuleName(n.parent),
++        module: nodes.find(p => p.id === n.parent)!.text,
+         order: idx
+       }));
+     ...
+   };
+```
+
+### b. Region selector + missing‑form hints
+
+Add at top of JSX render (before `<Tree>`):
+
+```tsx
+<div className="d-flex align-items-center mb-3 gap-3">
+  <label className="form-label m-0">Target Region:</label>
+  <select
+    className="form-select form-select-sm w-auto"
+    value={region}
+    onChange={e => setRegion(e.target.value as any)}
+  >
+    <option value="FDA">FDA (US)</option>
+    <option value="EMA">EMA (EU)</option>
+    <option value="PMDA">PMDA (JP)</option>
+  </select>
+
+  {rules.requiredForms.map(f => {
+    const present = nodes.some(n => !n.droppable && (n.data as Doc)?.title?.includes(f.id));
+    return (
+      <Tooltip key={f.id} title={present ? 'Present' : 'Missing'}>
+        <Badge bg={present ? "success" : "warning"} className="ms-2">
+          {f.id}
+        </Badge>
+      </Tooltip>
+    );
+  })}
+</div>
+```
+
+*When a required form is missing for the selected region, badge turns **yellow**; when present, **green.***
+
+### c. Persist region in backend
+
+When calling `builder-order` or `sequence/create-region`, include `region`.
+
+```tsx
+fetch('/api/ind/sequence/create-region', {
+  method: 'POST',
+  headers: {'Content-Type':'application/json'},
+  body: JSON.stringify({ region, docs: orderedDocs })
+})
+```
+
+---
+
+## 3 ▸ Backend validation (region‑aware)
+
+**Update `validate_sequence` route**
+
+```py
+profile_map = {
+    "FDA": "FDA_eCTD_3.2.2",
+    "EMA": "EU_eCTD_3.2.2",
+    "PMDA": "JP_eCTD_3.2.2"
+}
+profile = profile_map.get(seq.region, "FDA_eCTD_3.2.2")
+ev_report = validate_package(seq_dir, profile=profile)
+```
+
+---
+
+## 4 ▸ Bulk approve endpoint
+
+`api/documents/bulk_approve.py`
+
+```python
+@router.post("/bulk-approve")
+def bulk_approve(body: List[int], db: Session = Depends(get_db)):
+    results = []
+    for doc_id in body:
+        doc = db.query(Document).get(doc_id)
+        if not doc: continue
+        qc = qc_pdf(doc.path)  # runs PDF QC
+        if qc["status"] == "passed":
+            doc.approved = True
+            doc.qc_status = "passed"
+        else:
+            doc.qc_status = "failed"
+        db.add(doc)
+        results.append({"id": doc_id, **qc})
+    db.commit()
+    return results
+```
+
+Call from React after selecting docs:
+
+```tsx
+await fetch('/api/documents/bulk-approve', {
+  method:'POST', headers:{'Content-Type':'application/json'},
+  body: JSON.stringify(selectedIds)
+});
+```
+
+---
+
+### You now have
+
+* **Per‑region hints** in builder (auto M1 folders + missing form badges)  
+* **Module slot persistence** and order save  
+* **Bulk approve + QC**  
+* **Region‑aware eValidator profile selection**
+
+Restart dev + worker processes, then:
+
+1. Select region “EMA” → EU folders appear; badge shows if EU Application Form missing.  
+2. Drag docs, bulk‐approve, save order.  
+3. Create sequence → EU `eu-regional.xml` generates automatically.  
+4. Validate → runs EU profile.
+
+Next tasks (optional):
+
+* Real‑time socket push for QC finish  
+* Full JP regional builder & validation  
+* Publish Step‑by‑Step operator SOP / CSV docs
+
+Just tell me the next priority!

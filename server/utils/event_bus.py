@@ -1,109 +1,57 @@
 """
-Event Bus for WebSocket communication.
+Event Bus for Real-time Updates
 
-This module provides a simple event pub/sub system for WebSocket communication.
-In a production environment, this would use Redis or another messaging system.
+This module provides a lightweight event bus implementation for publishing
+and subscribing to events within the application. This enables WebSocket
+real-time updates to be triggered from anywhere in the codebase.
 """
+import json
 import asyncio
-import logging
-from typing import Dict, Set, Callable, Any, Awaitable
+from typing import Dict, List, Callable, Any
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+# Store for event subscribers
+# Dict mapping event_name -> list of subscriber functions
+subscribers: Dict[str, List[Callable]] = {}
 
-# In-memory subscribers dictionary
-# Format: {channel: {callback_id: callback_func}}
-_subscribers: Dict[str, Dict[str, Callable[[Dict[str, Any]], Awaitable[None]]]] = {}
-
-# Event history for new subscribers
-# Format: {channel: [event1, event2, ...]}
-_event_history: Dict[str, Any] = {}
-
-# Maximum number of events to keep in history
-MAX_HISTORY_EVENTS = 100
-
-async def subscribe(channel: str, callback_id: str, callback: Callable[[Dict[str, Any]], Awaitable[None]]) -> None:
+def publish(event_name: str, data: Any) -> None:
     """
-    Subscribe to a channel.
+    Publish an event to all subscribers
     
     Args:
-        channel: Channel name
-        callback_id: Unique identifier for the callback
-        callback: Async function to call when an event is published to the channel
+        event_name: Name of the event
+        data: Event data (will be JSON-serialized)
     """
-    if channel not in _subscribers:
-        _subscribers[channel] = {}
-        logger.info(f"Created new channel: {channel}")
+    # Serialize data to JSON string
+    if not isinstance(data, str):
+        data = json.dumps(data)
     
-    _subscribers[channel][callback_id] = callback
-    logger.info(f"Subscribed to channel {channel} with ID {callback_id}")
-    
-    # Send recent events to new subscriber
-    if channel in _event_history:
-        for event in _event_history[channel]:
-            await callback(event)
-
-async def unsubscribe(channel: str, callback_id: str) -> None:
-    """
-    Unsubscribe from a channel.
-    
-    Args:
-        channel: Channel name
-        callback_id: Callback identifier to remove
-    """
-    if channel in _subscribers and callback_id in _subscribers[channel]:
-        del _subscribers[channel][callback_id]
-        logger.info(f"Unsubscribed from channel {channel} with ID {callback_id}")
-        
-        # Clean up empty channels
-        if not _subscribers[channel]:
-            del _subscribers[channel]
-            logger.info(f"Removed empty channel: {channel}")
-
-async def publish_event(channel: str, event: Dict[str, Any]) -> None:
-    """
-    Publish an event to a channel.
-    
-    Args:
-        channel: Channel name
-        event: Event data to publish
-    """
-    logger.info(f"Publishing event to channel {channel}: {event}")
-    
-    # Store event in history
-    if channel not in _event_history:
-        _event_history[channel] = []
-    
-    _event_history[channel].append(event)
-    
-    # Trim history if needed
-    if len(_event_history[channel]) > MAX_HISTORY_EVENTS:
-        _event_history[channel] = _event_history[channel][-MAX_HISTORY_EVENTS:]
-    
-    # No subscribers for this channel
-    if channel not in _subscribers:
-        logger.info(f"No subscribers for channel {channel}")
-        return
-    
-    # Call all subscriber callbacks
-    for callback_id, callback in list(_subscribers[channel].items()):
+    # Notify subscribers
+    for callback in subscribers.get(event_name, []):
         try:
-            await callback(event)
+            callback(data)
         except Exception as e:
-            logger.error(f"Error in subscriber callback {callback_id}: {e}")
+            print(f"Error in {event_name} event subscriber: {str(e)}")
 
-def get_subscriber_count(channel: str) -> int:
+def subscribe(event_name: str, callback: Callable) -> None:
     """
-    Get the number of subscribers for a channel.
+    Subscribe to an event
     
     Args:
-        channel: Channel name
-        
-    Returns:
-        Number of subscribers
+        event_name: Name of the event to subscribe to
+        callback: Function to call when event is published
     """
-    if channel not in _subscribers:
-        return 0
+    if event_name not in subscribers:
+        subscribers[event_name] = []
     
-    return len(_subscribers[channel])
+    subscribers[event_name].append(callback)
+
+def unsubscribe(event_name: str, callback: Callable) -> None:
+    """
+    Unsubscribe from an event
+    
+    Args:
+        event_name: Name of the event to unsubscribe from
+        callback: Function to remove from subscribers
+    """
+    if event_name in subscribers and callback in subscribers[event_name]:
+        subscribers[event_name].remove(callback)
