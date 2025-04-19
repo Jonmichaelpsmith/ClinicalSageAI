@@ -4,8 +4,21 @@ import { logger } from '../utils/logger';
 import axios from 'axios';
 import http from 'http';
 import https from 'https';
+import path from 'path';
+import fs from 'fs';
 
 const router = express.Router();
+
+// User preferences file path
+const PREFERENCES_DIR = path.join(process.cwd(), 'data');
+const PREFERENCES_FILE = path.join(PREFERENCES_DIR, 'alert_preferences.json');
+
+// Helper function to ensure data directory exists
+const ensureDataDirectory = () => {
+  if (!fs.existsSync(PREFERENCES_DIR)) {
+    fs.mkdirSync(PREFERENCES_DIR, { recursive: true });
+  }
+};
 
 // Create HTTP clients with longer timeout
 const httpClient = axios.create({
@@ -305,6 +318,153 @@ router.post('/generate/cover-letter', async (req, res) => {
   } catch (error) {
     logger.error(`Error generating cover letter: ${error.message}`);
     res.status(500).json({ status: 'error', message: `Failed to generate cover letter: ${error.message}` });
+  }
+});
+
+/**
+ * GET /api/ind-automation/alert-preferences
+ * Get alert preferences for the current user
+ */
+router.get('/alert-preferences', (req, res) => {
+  try {
+    ensureDataDirectory();
+    
+    // Default preferences if file doesn't exist
+    const defaultPreferences = {
+      email: true,
+      teams: false,
+      warning_alerts: true,
+      error_alerts: true,
+      userId: req.user?.id || 'default',
+      lastUpdated: new Date().toISOString()
+    };
+    
+    // Check if preferences file exists
+    if (!fs.existsSync(PREFERENCES_FILE)) {
+      fs.writeFileSync(PREFERENCES_FILE, JSON.stringify({
+        users: { default: defaultPreferences }
+      }, null, 2));
+      return res.json(defaultPreferences);
+    }
+    
+    // Read and return preferences
+    const fileContent = fs.readFileSync(PREFERENCES_FILE, 'utf8');
+    const preferences = JSON.parse(fileContent);
+    const userId = req.user?.id || 'default';
+    
+    if (!preferences.users[userId]) {
+      preferences.users[userId] = defaultPreferences;
+      fs.writeFileSync(PREFERENCES_FILE, JSON.stringify(preferences, null, 2));
+    }
+    
+    res.json(preferences.users[userId]);
+  } catch (error) {
+    logger.error(`Error retrieving alert preferences: ${error.message}`);
+    res.status(500).json({ status: 'error', message: 'Failed to retrieve alert preferences' });
+  }
+});
+
+/**
+ * POST /api/ind-automation/alert-preferences
+ * Update alert preferences for the current user
+ */
+router.post('/alert-preferences', (req, res) => {
+  try {
+    ensureDataDirectory();
+    
+    const { email, teams, warning_alerts, error_alerts } = req.body;
+    const userId = req.user?.id || 'default';
+    
+    // Validate input
+    if (typeof email !== 'boolean' || typeof teams !== 'boolean' || 
+        typeof warning_alerts !== 'boolean' || typeof error_alerts !== 'boolean') {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Invalid preferences format. All fields must be boolean values.'
+      });
+    }
+    
+    // Create or update preferences
+    let preferences = { users: {} };
+    
+    if (fs.existsSync(PREFERENCES_FILE)) {
+      const fileContent = fs.readFileSync(PREFERENCES_FILE, 'utf8');
+      preferences = JSON.parse(fileContent);
+    }
+    
+    preferences.users[userId] = {
+      email,
+      teams,
+      warning_alerts,
+      error_alerts,
+      userId,
+      lastUpdated: new Date().toISOString()
+    };
+    
+    fs.writeFileSync(PREFERENCES_FILE, JSON.stringify(preferences, null, 2));
+    
+    // Send updated preferences to Python service for real-time updates
+    try {
+      httpClient.post('/api/alerter/update-preferences', preferences.users[userId]);
+      logger.info(`Alert preferences updated for user ${userId}`);
+    } catch (apiError) {
+      logger.warn(`Failed to sync preferences with Python service: ${apiError.message}`);
+      // Continue anyway - file-based preferences are primary
+    }
+    
+    res.json({
+      status: 'success',
+      message: 'Alert preferences updated successfully',
+      preferences: preferences.users[userId]
+    });
+  } catch (error) {
+    logger.error(`Error updating alert preferences: ${error.message}`);
+    res.status(500).json({ status: 'error', message: 'Failed to update alert preferences' });
+  }
+});
+
+/**
+ * POST /api/ind-automation/alert-test
+ * Send a test alert to verify alert channels
+ */
+router.post('/alert-test', async (req, res) => {
+  try {
+    const userId = req.user?.id || 'default';
+    logger.info(`Sending test alert for user ${userId}`);
+    
+    // Read preferences
+    let preferences = { email: true, teams: false };
+    
+    if (fs.existsSync(PREFERENCES_FILE)) {
+      const fileContent = fs.readFileSync(PREFERENCES_FILE, 'utf8');
+      const preferencesData = JSON.parse(fileContent);
+      if (preferencesData.users && preferencesData.users[userId]) {
+        preferences = preferencesData.users[userId];
+      }
+    }
+    
+    // Send test alert
+    try {
+      await httpClient.post('/api/alerter/send-test', {
+        userId,
+        message: "This is a test alert from LumenTrialGuide.AI",
+        preferences
+      });
+      
+      res.json({
+        status: 'success',
+        message: 'Test alert sent successfully'
+      });
+    } catch (apiError) {
+      logger.error(`Failed to send test alert: ${apiError.message}`);
+      res.status(500).json({ 
+        status: 'error', 
+        message: `Failed to send test alert: ${apiError.response?.data?.message || apiError.message}` 
+      });
+    }
+  } catch (error) {
+    logger.error(`Error in alert test: ${error.message}`);
+    res.status(500).json({ status: 'error', message: 'Failed to send test alert' });
   }
 });
 
