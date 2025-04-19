@@ -135,6 +135,11 @@ export default function HomeLanding() {
           <Button to="/demo" variant="primary"><PlayCircle size={16}/> {t('Live Demo')}</Button>
         </div>
       </nav>
+      
+      {/* Regulatory Confidence Strip - adds scrolling agency logos */}
+      <div className="pt-14">
+        <RegulatoryConfidenceStrip />
+      </div>
 
       {/* Hero */}
       <header className="pt-24 pb-14 bg-gradient-to-b from-emerald-50 via-white to-white dark:from-slate-900 dark:via-slate-800 dark:to-slate-800 text-center relative">
@@ -265,9 +270,6 @@ export default function HomeLanding() {
           </table>
         </div>
       </section>
-
-      {/* Regulatory Confidence Strip - adds scrolling agency logos */}
-      <RegulatoryConfidenceStrip />
 
       {/* Footer */}
       <footer className="py-6 bg-gray-50 dark:bg-slate-900 text-center text-sm text-gray-500 dark:text-gray-400">
