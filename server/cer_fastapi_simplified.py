@@ -35,6 +35,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Import validation routers
+try:
+    from server.api.validation.profiles import router as validation_profiles_router
+    from server.api.validation.submission import router as validation_submission_router
+    
+    # Include validation routers
+    app.include_router(validation_profiles_router)
+    app.include_router(validation_submission_router)
+except ImportError as e:
+    print(f"Warning: Unable to import validation routers: {str(e)}")
+
 # --- Input Models ---
 
 class NdcRequest(BaseModel):
@@ -334,5 +345,9 @@ This report was generated on {datetime.now().strftime("%Y-%m-%d")} and reflects 
 # Run the FastAPI server if executed directly
 if __name__ == "__main__":
     import uvicorn
-    # Use port 8080 to avoid conflict with any other service
-    uvicorn.run(app, host="0.0.0.0", port=8080)
+    import os
+    
+    # Use environment variable for port or default to 8083 to avoid conflicts
+    port = int(os.environ.get("FASTAPI_PORT", 8083))
+    print(f"Starting FastAPI server on port {port}")
+    uvicorn.run(app, host="0.0.0.0", port=port)

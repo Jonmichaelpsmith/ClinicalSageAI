@@ -1,0 +1,108 @@
+// SubmissionBuilder.tsx – region‑aware tree with EU / JP sub‑folders
+// Adds automatic Module 1 sub‑structure when region is EMA (EU) or PMDA (JP)
+import React, { useEffect, useState } from 'react';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import { DndProvider } from 'react-dnd';
+import { Tree, NodeModel } from '@minoru/react-dnd-treeview';
+import { toast } from 'react-toastify';
+import { CheckCircle, XCircle } from 'lucide-react';
+import update from 'immutability-helper';
+
+export type Doc = { id: number; title: string; module: string; qc_json?: { status: string } };
+export type Node = NodeModel<Doc>;
+
+const MODULE_MAP: Record<string, string[]> = {
+  FDA: ['m1', 'm2', 'm3', 'm4', 'm5'],
+  EMA: ['m1', 'm1\u00a0admin', 'm1\u00a0cover', 'm2', 'm3', 'm4', 'm5'],
+  PMDA: ['m1', 'm1-annex', 'm2', 'm3', 'm4', 'm5', 'jp-annex'],
+};
+
+export default function SubmissionBuilder({ region = 'FDA' }: { region?: 'FDA'|'EMA'|'PMDA' }) {
+  const [tree, setTree] = useState<Node[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    buildTree();
+  }, [region]);
+
+  const buildTree = async () => {
+    setLoading(true);
+    const docs: Doc[] = await fetchJson('/api/documents?status=approved_or_qc_failed');
+    const root: Node = { id: 0, parent: 0, text: 'root', droppable: true };
+    // Create hierarchical folders based on MODULE_MAP
+    let idCounter = 10_000;
+    const folderNodes: Node[] = MODULE_MAP[region].map(label => {
+      const depth = label.includes(' ') || label.includes('-') ? 2 : 1; // crude depth based on naming
+      const parentId = depth === 1 ? 0 : 10_000 + MODULE_MAP[region].findIndex(l => l === label.split(/\s|-/)[0]);
+      return { id: ++idCounter, parent: parentId, text: label, droppable: true };
+    });
+    const itemNodes: Node[] = docs.map(d => {
+      const parentFolder = folderNodes.find(f => d.module.startsWith(f.text.split(' ')[0]));
+      return {
+        id: d.id,
+        parent: parentFolder ? parentFolder.id : 0,
+        text: d.title,
+        droppable: false,
+        data: d,
+      } as Node;
+    });
+    setTree([root, ...folderNodes, ...itemNodes]);
+    setLoading(false);
+  };
+
+  const renderNode = (node: Node, { depth, isOpen, onToggle }: any) => {
+    const style = { marginLeft: depth * 16 };
+    if (node.droppable) {
+      return (
+        <div style={style} className="d-flex align-items-center">
+          <button onClick={onToggle} className="btn btn-sm btn-link p-0">{isOpen ? '▾' : '▸'}</button>
+          <strong>{node.text}</strong>
+        </div>
+      );
+    }
+    const qc = node.data?.qc_json?.status === 'passed';
+    return (
+      <div style={style} className="d-flex align-items-center gap-2 py-1">
+        {qc ? <CheckCircle size={14} className="text-success"/> : <XCircle size={14} className="text-danger"/>}
+        <span>{node.text}</span>
+      </div>
+    );
+  };
+
+  const onDrop = (newTree: Node[]) => setTree(newTree);
+
+  const saveOrder = async () => {
+    const orderedDocs = tree.filter(n => !n.droppable && n.parent !== 0).map((n, idx) => {
+      const folder = tree.find(f => f.id === n.parent)!;
+      return { id: n.id, module: folder.text.split('\u00a0')[0], order: idx };
+    });
+    await fetch('/api/documents/builder-order', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ docs: orderedDocs })
+    });
+    toast.success('Order saved');
+  };
+
+  if (loading) return <p className="text-center mt-4">Loading…</p>;
+
+  return (
+    <div className="container py-4">
+      <h3>Submission Builder <span className="badge bg-secondary ms-2">{region}</span></h3>
+      <DndProvider backend={HTML5Backend}>
+        <Tree
+          tree={tree}
+          rootId={0}
+          render={renderNode}
+          onDrop={onDrop}
+        />
+      </DndProvider>
+      <button className="btn btn-primary mt-3" onClick={saveOrder}>Save Order</button>
+    </div>
+  );
+}
+
+async function fetchJson(url: string) {
+  const r = await fetch(url);
+  if (!r.ok) throw new Error('fetch failed');
+  return r.json();
+}

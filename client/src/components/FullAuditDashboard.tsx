@@ -210,6 +210,12 @@ export const FullAuditDashboard: React.FC<FullAuditDashboardProps> = ({
     setUserFilter(undefined);
     setPage(1);
   };
+  
+  // Handle applying the filters and resetting the page
+  const applyFilters = () => {
+    setPage(1);
+    refetch();
+  };
 
   const getSeverityBadge = (severity: string) => {
     switch (severity) {
@@ -351,6 +357,11 @@ export const FullAuditDashboard: React.FC<FullAuditDashboardProps> = ({
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
+
+              <Button variant="default" onClick={applyFilters} className="bg-primary text-white">
+                <Filter className="mr-2 h-4 w-4" />
+                Apply Filters
+              </Button>
 
               <Button variant="outline" onClick={handleRefresh}>
                 <RefreshCw className="mr-2 h-4 w-4" />
