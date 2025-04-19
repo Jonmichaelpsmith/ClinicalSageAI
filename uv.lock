@@ -257,7 +257,7 @@ wheels = [
 
 [[package]]
 name = "celery"
-version = "5.5.1"
+version = "5.3.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "billiard" },
@@ -267,11 +267,12 @@ dependencies = [
     { name = "click-repl" },
     { name = "kombu" },
     { name = "python-dateutil" },
+    { name = "tzdata" },
     { name = "vine" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/4c/7e/a252cc4d003bd98ec350a27f2add5c995862e042a64648b22d4c13ed73cf/celery-5.5.1.tar.gz", hash = "sha256:2af9109a10fe28155044f4c387ce0e5e7f1fc89f9584cfb4b0df94f99a5fedc7", size = 1666151 }
+sdist = { url = "https://files.pythonhosted.org/packages/cc/2d/006ba66a8ee1bf1aef841d7a8a3d44733e9d4d45d7acdc7a675b06a8de22/celery-5.3.4.tar.gz", hash = "sha256:9023df6a8962da79eb30c0c84d5f4863d9793a466354cc931d7f72423996de28", size = 1540385 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/75/e4/9bc19817230cb88d35ff4dd4415dbb0666cca525875b4c577af47aaf59e9/celery-5.5.1-py3-none-any.whl", hash = "sha256:9f4f9e57e36000c097c1b6f7a8ab29814b82771e5439836f83915823809729c8", size = 438525 },
+    { url = "https://files.pythonhosted.org/packages/98/e9/023b8f75128d747d4aee79da84e4ac58eff63bb21f1c0aa7c452a353d207/celery-5.3.4-py3-none-any.whl", hash = "sha256:1e6ed40af72695464ce98ca2c201ad0ef8fd192246f6c9eac8bba343b980ad34", size = 421351 },
 ]
 
 [[package]]
@@ -1956,6 +1957,7 @@ dependencies = [
     { name = "python-dateutil" },
     { name = "python-docx" },
     { name = "python-dotenv" },
+    { name = "pytz" },
     { name = "redis" },
     { name = "reportlab" },
     { name = "requests" },
@@ -1971,7 +1973,7 @@ dependencies = [
 requires-dist = [
     { name = "aiohttp", specifier = ">=3.11.16" },
     { name = "beautifulsoup4", specifier = ">=4.13.4" },
-    { name = "celery", specifier = ">=5.5.1" },
+    { name = "celery", specifier = "==5.3.4" },
     { name = "cryptography", specifier = "==42.*" },
     { name = "docx2pdf", specifier = ">=0.1.8" },
     { name = "docxtpl", specifier = ">=0.19.1" },
@@ -1993,6 +1995,7 @@ requires-dist = [
     { name = "python-dateutil", specifier = ">=2.9.0.post0" },
     { name = "python-docx", specifier = ">=1.1.2" },
     { name = "python-dotenv", specifier = ">=1.1.0" },
+    { name = "pytz", specifier = ">=2025.2" },
     { name = "redis", specifier = ">=5.2.1" },
     { name = "reportlab", specifier = ">=4.3.1" },
     { name = "requests", specifier = ">=2.32.3" },

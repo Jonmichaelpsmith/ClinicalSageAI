@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+set -e
+cd "$REPL_HOME"
+
+# 1) Extend rules_store.py
+python - << 'PY'
+import pathlib, json, textwrap
+rs=pathlib.Path('ind_automation/rules_store.py'); code=rs.read_text()
+if 'THRESH_DEFAULTS' not in code:
+    code=code.replace('DEFAULTS = {', 'DEFAULTS = {')  # anchor
+    code=textwrap.dedent("""THRESH_DEFAULTS = {
+  'ACK_MISSING_H':24,'MODULE3_STALE_D':180,'MODULE1_STALE_D':90,
+  'ESG_WARN_D':330,'ESG_CRIT_D':365,'SAML_EXPIRE_D':30
+}
+DEFAULTS = {**{
+""")+code.split('DEFAULTS = {',1)[1]
+    # Save must merge thresholds
+    code=code.replace('def save(', 'def save(')  # anchor
+    if 'THRESH_DEFAULTS' not in code:
+        code=code.replace('STORE.mkdir','THRESH_DEFAULTS.update(DEFAULTS)
+STORE.mkdir')
+    rs.write_text(code)
+PY
+
+# 2) Update audit.py to load threshold per org
+python - << 'PY'
+import pathlib, re
+au=pathlib.Path('ind_automation/audit.py'); txt=au.read_text()
+if 'rules_store.load(org).get' not in txt:  # basic check
+    txt=txt.replace('THRESH = {', '# THRESH removed (now per org)')
+    txt=re.sub(r'THRESH\[\'ack_missing_h\'\]', 'rules_store.load(org).get("ACK_MISSING_H",24)', txt)
+    txt=re.sub(r'THRESH\[\'module3_stale_d\'\]', 'rules_store.load(org).get("MODULE3_STALE_D",180)', txt)
+    txt=re.sub(r'THRESH\[\'module1_stale_d\'\]', 'rules_store.load(org).get("MODULE1_STALE_D",90)', txt)
+    txt=re.sub(r'THRESH\[\'esg_warn_d\'\]', 'rules_store.load(org).get("ESG_WARN_D",330)', txt)
+    txt=re.sub(r'THRESH\[\'esg_crit_d\'\]', 'rules_store.load(org).get("ESG_CRIT_D",365)', txt)
+    au.write_text(txt)
+PY
+
+# 3) Extend RulesSettings.jsx UI
+python - << 'PY'
+import pathlib, textwrap
+js=pathlib.Path('client/src/components/RulesSettings.jsx'); code=js.read_text()
+if 'ACK_MISSING_H' not in code:
+    fields=textwrap.dedent("""
+      <h4 className='font-semibold mt-4'>Thresholds</h4>
+      {Object.entries({
+        ACK_MISSING_H:'ACK missing (hours)',
+        MODULE3_STALE_D:'Module3 stale (days)',
+        MODULE1_STALE_D:'Module1 stale (days)',
+        ESG_WARN_D:'ESG warn (days)',
+        ESG_CRIT_D:'ESG crit (days)',
+        SAML_EXPIRE_D:'SAML cert expire (days)'
+      }).map(([k,l])=>(
+        <div key={k} className='flex items-center mb-1'>
+          <label className='w-56 text-sm'>{l}</label>
+          <input type='number' name={k} className='border p-1 w-24 text-sm'
+            value={form[k]||''} onChange={e=>setForm({...form,[k]:+e.target.value})}/>
+        </div>
+      ))}
+    """)
+    code=code.replace('</div>);',fields+'\n</div>);')
+    js.write_text(code)
+PY
+
+echo '✅ Per‑rule threshold editing enabled – restart servers, edit values in Compliance Rules tab.'
