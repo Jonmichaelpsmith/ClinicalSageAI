@@ -1,0 +1,179 @@
+// HomeLanding.jsx – buyer‑empathetic, CRO‑centric landing page (Polished Final)
+// Tailwind + i18n + dark‑mode friendly. Complete file.
+
+import React from "react";
+import { Link } from "react-router-dom";
+import { ArrowRight, PlayCircle, Check, BarChart2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
+
+export default function HomeLanding() {
+  const { t } = useTranslation();
+  const year = new Date().getFullYear();
+
+  const Button = ({ to, children, variant = "primary" }) => {
+    const base =
+      "px-6 py-3 rounded-lg inline-flex items-center gap-2 text-lg transition font-medium focus:outline-none";
+    const variants = {
+      primary:
+        "bg-blue-600 hover:bg-blue-700 text-white shadow-lg focus:ring-2 focus:ring-blue-400",
+      ghost:
+        "bg-white dark:bg-slate-900/30 border border-blue-600 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-slate-900/50",
+    };
+    return (
+      <Link to={to} className={`${base} ${variants[variant]}`}> {children} </Link>
+    );
+  };
+
+  return (
+    <main className="font-sans text-gray-800 dark:text-gray-100 w-full overflow-x-hidden">
+      {/* ================= HERO ================= */}
+      <header className="pt-28 pb-24 bg-gradient-to-b from-blue-50 via-white to-white dark:from-slate-900 dark:via-slate-800 dark:to-slate-800 text-center relative overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(59,130,246,0.15),transparent_70%)] dark:bg-[radial-gradient(circle_at_50%_0%,rgba(96,165,250,0.25),transparent_70%)]"></div>
+        <h1 className="relative text-5xl sm:text-6xl font-extrabold tracking-tight text-blue-700 dark:text-blue-400 drop-shadow-sm">
+          {t("Move Concepts → Cures Faster")}
+        </h1>
+        <p className="relative mt-6 max-w-3xl mx-auto text-xl sm:text-2xl leading-relaxed text-gray-700 dark:text-gray-300">
+          {t(
+            "Ingest evidence, auto‑draft CERs & IND modules, and e‑submit via FDA ESG—cutting CRO billables up to 40%."
+          )}
+        </p>
+        <div className="relative mt-10 flex flex-col sm:flex-row gap-4 justify-center">
+          <Button to="/demo" variant="primary">
+            <PlayCircle size={20} /> {t("Watch 2‑min Demo")}
+          </Button>
+          <Button to="/roi" variant="ghost">
+            <BarChart2 size={18} /> {t("Estimate ROI")}
+          </Button>
+        </div>
+        <p className="relative mt-8 text-xs text-gray-500 dark:text-gray-400">
+          {t("Trusted by regulatory teams at venture‑backed biotechs and global CROs")}
+        </p>
+      </header>
+
+      {/* ================= VALUE PROP ================= */}
+      <section className="max-w-6xl mx-auto px-6 py-20 grid md:grid-cols-3 gap-10">
+        {[
+          {
+            icon: "⏱️",
+            title: t("Save Months"),
+            desc: t("Automate 70% of narrative writing & eCTD packaging time."),
+          },
+          {
+            icon: "💸",
+            title: t("Slash Costs"),
+            desc: t("Reduce external medical‑writing spend by $120k per program."),
+          },
+          {
+            icon: "📈",
+            title: t("Scale Studies"),
+            desc: t("Run 3× more trials per FTE—without compromising compliance."),
+          },
+        ].map((b) => (
+          <article
+            key={b.title}
+            className="bg-white dark:bg-slate-900 shadow rounded-lg p-6 text-center flex flex-col items-center"
+          >
+            <span className="text-4xl mb-2">{b.icon}</span>
+            <h3 className="font-semibold text-xl mb-1">{b.title}</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">{b.desc}</p>
+          </article>
+        ))}
+      </section>
+
+      {/* ================= PIPELINE ================= */}
+      <section className="bg-gray-50 dark:bg-slate-900/40 py-20">
+        <div className="max-w-5xl mx-auto px-6">
+          <h2 className="text-2xl font-bold text-center mb-12">
+            {t("From Raw Evidence to Regulatory‑Ready in Four Steps")}
+          </h2>
+          <ol className="relative border-l-2 border-blue-600 dark:border-blue-400">
+            {[
+              [
+                t("Unified Ingestion"),
+                t("Benchling, FAERS, MAUDE & 3 000+ CSRs harmonised into a knowledge graph."),
+              ],
+              [
+                t("AI Narrative Factory"),
+                t("GPT‑4 Turbo drafts Module 2, MEDDEV 2/7‑1 CER, and KPI insights."),
+              ],
+              [
+                t("eCTD Validation"),
+                t("Forms, hyperlinks, bookmarks—instantly QC‑checked for FDA standards."),
+              ],
+              [
+                t("ESG Submission & Dashboards"),
+                t("Secure SFTP push, auto‑tracking of sequence numbers, live compliance KPIs."),
+              ],
+            ].map(([title, body], i) => (
+              <li key={title} className="mb-10 ml-6">
+                <span className="absolute -left-3 flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 dark:bg-blue-400 text-white text-xs font-bold">
+                  {i + 1}
+                </span>
+                <h3 className="font-semibold text-lg mb-1">{title}</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">{body}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      {/* ================= MODULE CARDS ================= */}
+      <section className="max-w-6xl mx-auto px-6 py-24 grid gap-10 md:grid-cols-2">
+        {[
+          {
+            color: "blue",
+            title: t("CSR Intelligence"),
+            desc: t(
+              "AI‑read study reports unlock comparator benchmarks, dropout trends, endpoint insights."
+            ),
+            link: "/csr-library",
+          },
+          {
+            color: "emerald",
+            title: t("CER Generator"),
+            desc: t(
+              "Automated EU MDR CERs with FAERS trends, anomaly detection, and Word/PDF export."
+            ),
+            link: "/cer-dashboard",
+          },
+          {
+            color: "violet",
+            title: t("IND Automation"),
+            desc: t(
+              "Module 1 forms, GPT‑4 Module 2, Benchling‑powered Module 3, eCTD packaging, ESG push."
+            ),
+            link: "/ind-automation",
+          },
+          {
+            color: "teal",
+            title: t("KPI Analytics & Alerts"),
+            desc: t(
+              "Custom dashboards, SQL widgets, dark‑mode charts, Teams/email alerts & PDF exports."
+            ),
+            link: "/dashboard#kpi",
+          },
+        ].map((c) => (
+          <article
+            key={c.title}
+            className={`relative p-6 rounded-lg shadow bg-white dark:bg-slate-900 border-t-4 border-${c.color}-600 dark:border-${c.color}-400 flex flex-col`}
+          >
+            <h3 className={`text-${c.color}-700 dark:text-${c.color}-300 text-xl font-semibold mb-2`}>{c.title}</h3>
+            <p className="text-gray-600 dark:text-gray-400 flex-grow leading-relaxed">
+              {c.desc}
+            </p>
+            <Link
+              to={c.link}
+              className={`mt-3 font-medium text-${c.color}-700 dark:text-${c.color}-300 hover:underline`}
+            >
+              {t("Learn more")} →
+            </Link>
+          </article>
+        ))}
+      </section>
+
+      {/* ================= ROI BANNER ================= */}
+      <section className="bg-blue-600 dark:bg-blue-700 text-white py-14 text-center px-6">
+        <h2 className="text-3xl font-bold mb-3">
+          {t("Cut CRO spend • Deliver more studies • File earlier")}
+        </h2>
+        <p className="mb-6 opacity-90 max

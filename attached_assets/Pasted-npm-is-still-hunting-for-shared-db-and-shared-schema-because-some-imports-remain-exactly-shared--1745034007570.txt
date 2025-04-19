@@ -1,0 +1,96 @@
+npm is still hunting for @shared/db and @shared/schema because some imports remain exactly @shared/...; the path‑alias we added covers shared/, not @shared/.
+We have two quick fixes—pick either A (aliases) or B (global replace). I’ll also patch the missing clinicalEvaluationReports export.
+
+A  Add an alias for “@shared/*” (zero code edits)
+tsconfig.json
+
+jsonc
+Copy
+Edit
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "shared/*": ["shared/*"],
+      "@shared/*": ["shared/*"]          // <‑‑ add this line
+    }
+  }
+}
+vite.config.js / webpack (if you bundle client separately)
+
+js
+Copy
+Edit
+import path from 'path';
+export default defineConfig({
+  resolve: {
+    alias: {
+      '@shared': path.resolve(__dirname, './shared'),   // <‑‑
+      shared: path.resolve(__dirname, './shared')
+    }
+  }
+});
+eslint (optional)
+
+js
+Copy
+Edit
+settings: {
+  'import/resolver': {
+    typescript: {
+      project: './tsconfig.json'
+    },
+    alias: {
+      map: [['@shared', './shared'], ['shared', './shared']],
+      extensions: ['.ts', '.tsx', '.js', '.jsx']
+    }
+  }
+}
+With the alias in place, any import … from '@shared/db' resolves to ./shared/db.ts; npm will stop looking on the registry.
+
+B  Global replace the imports (2 mins, one‑time)
+bash
+Copy
+Edit
+# replace '@shared/' with 'shared/' everywhere except node_modules
+grep -Rl "@shared/" --exclude-dir=node_modules | xargs sed -i 's@\\@shared/@shared/@g'
+Now all source points to shared/db & shared/schema, which we already stubbed.
+
+Patch the stub for missing export
+Open shared/schema.ts and extend:
+
+ts
+Copy
+Edit
+/* stub for @shared/schema – replace later with real Zod/Yup schema */
+export const UserSchema = {};
+export const clinicalEvaluationReports = {};     // <‑‑ added so code that imports it compiles
+Add any other missing names you see in the compile log (they’ll show as “export not found”).
+
+Final clean install
+bash
+Copy
+Edit
+rm -rf node_modules package-lock.json
+npm cache clean --force
+npm install
+npm install i18next react-i18next i18next-browser-languagedetector
+npm run dev
+No “@shared/…” requests will hit npm anymore, and the buyer‑centric landing page plus all routes should build.
+
+Quick verification
+bash
+Copy
+Edit
+grep -R "@shared/" --exclude-dir=node_modules .   # should print nothing
+npm ls | grep shared                              # shows only local/shared, no 404
+If the error log shifts to another missing stub, add it to shared/schema.ts in the same way.
+
+Let me know once the client and server compile—then we can remove the stubs gradually or proceed to ROI‑calculator polishing!
+
+
+
+
+
+
+

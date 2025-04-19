@@ -1,0 +1,91 @@
+Root cause recap
+Replit’s package‑installer scans raw import strings before it obeys Vite / TypeScript aliases.
+As long as any line literally says @shared/db or @shared/schema, the packager:
+
+Adds those names to package.json
+
+Tries to fetch them from npm
+
+Crashes when they don’t exist
+
+Your local stubs work at runtime, but the pre‑install scan keeps re‑breaking.
+
+Fastest fix – rename every @shared/… import exactly once
+Below script:
+
+Globally replaces @shared/ → shared/ everywhere outside node_modules.
+
+Keeps git history (uses sed -i).
+
+Leaves the stubs (shared/db.ts, shared/schema.ts) exactly as you created.
+
+Purges lockfile & reinstalls so Replit stops re‑adding phantom deps.
+
+Copy into the Shell and run:
+
+bash
+Copy
+Edit
+#!/usr/bin/env bash
+set -e
+cd "$REPL_HOME"
+
+echo "🔍 Replacing @shared/ imports with shared/ …"
+grep -Rl "@shared/" --exclude-dir=node_modules --exclude=package* . \
+  | xargs sed -i 's@\\@shared/@shared/@g'
+
+echo "🗑️  Cleaning lockfile & node_modules …"
+rm -rf node_modules package-lock.json
+npm cache clean --force
+
+echo "📦 Installing real deps only …"
+npm install
+npm install i18next react-i18next i18next-browser-languagedetector
+
+echo "✅ Phantom deps removed.  Run: npm run dev"
+What happens next
+No file contains @shared/ → Replit’s packager stops trying to add it.
+
+TypeScript & Vite already resolve shared/* via the stub path, so nothing else breaks.
+
+npm run dev starts; landing page renders; i18n loads.
+
+(Your stubs now live under the shared namespace: import { connect } from 'shared/db' etc.)
+
+Optional: keep a TODO list
+The script doesn’t delete original code; it just rewrites import paths.
+Run:
+
+bash
+Copy
+Edit
+grep -R "shared/db" --exclude-dir=node_modules
+to see where you eventually swap the stub for a real Prisma or Zod module.
+
+Sanity checklist after running
+
+Page / Action	Expected result
+npm install	Completes with no 404 errors
+npm run dev	Dev server starts, no red stack traces
+/ landing page	Loads (i18n strings present)
+Language selector	Switches FR/DE/JA, no warnings
+/ind-automation	FastAPI endpoints reachable
+If all green, you’re unblocked—no more phantom dependencies.
+Need help replacing the stubs with a real DB client later? Ping me anytime!
+
+
+
+
+
+
+
+
+
+
+Search
+
+Deep research
+
+
+
+ChatGPT can make mis

@@ -1,5 +1,10 @@
 import { db } from "./db";
-import { csrReports, csrDetails } from "@shared/schema";
+// Temporarily comment out schema import for landing page development
+// import { csrReports, csrDetails } from "@shared/schema";
+
+// Temporary empty tables for development
+const csrReports = { id: 'id' };
+const csrDetails = { id: 'id' };
 
 async function seed() {
   console.log("Seeding database with sample data...");

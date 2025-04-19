@@ -1,0 +1,133 @@
+Why the install still fails
+server/db.ts (and probably a couple of other server files) import from @shared/db or @shared/schema.
+
+When Replit’s package manager sees those scoped names in any .ts/.js file, it tries to add them to package.json.
+
+They don’t exist on npm → install loop → i18next never resolves.
+
+The fix is simply to rename or stub those imports once.
+
+1  Search & replace the phantom imports
+bash
+Copy
+Edit
+# show every file that still imports @shared/…
+grep -R "@shared/" --exclude=node_modules --exclude=package* .
+You’ll likely see:
+
+bash
+Copy
+Edit
+server/db.ts
+server/schema/*.ts
+client/someOldUtil.ts
+Option A  — convert to local relative paths (recommended)
+If @shared/db is just a local util file, change e.g.
+
+ts
+Copy
+Edit
+import { connect } from '@shared/db';
+to
+
+ts
+Copy
+Edit
+import { connect } from '../shared/db';          // adjust relative path
+Do the same for @shared/schema.
+
+Option B  — create stub modules (quickest)
+If you’re not ready to refactor, add tiny stubs so the bundler stops looking on npm.
+
+arduino
+Copy
+Edit
+project‑root/
+└─ shared/
+   ├─ db.ts       // export empty helpers
+   └─ schema.ts
+Example stub:
+
+ts
+Copy
+Edit
+// shared/db.ts
+export const connect = () => {
+  console.warn('[stub] connect() called – replace @shared/db import');
+};
+Then change imports to:
+
+ts
+Copy
+Edit
+import { connect } from 'shared/db';  // path maps to ./shared/db.ts
+Add this to tsconfig.json so TypeScript resolves it:
+
+jsonc
+Copy
+Edit
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "shared/*": ["shared/*"]
+    }
+  }
+}
+2  Clean and reinstall
+bash
+Copy
+Edit
+rm -rf node_modules package-lock.json
+npm cache clean --force
+
+npm install       # installs react, tailwind, etc.
+npm install i18next react-i18next i18next-browser-languagedetector
+No @shared/… lines in any source file ⇒ packager will stop injecting them.
+
+3  Run & verify
+Run (or npm run dev):
+
+i18next now resolves, landing page loads.
+
+Console shows no red “module not found”.
+
+Navigate to /, /ind-automation, /cer-dashboard—all compile.
+
+Quick sanity script
+bash
+Copy
+Edit
+grep -R "@shared/" --exclude=node_modules .
+# should output nothing
+npm ls | grep shared   # should output nothing
+If both checks are clean, the dependency loop is gone.
+
+Need help replacing the DB helper?
+If @shared/db was actually your Prisma / Knex client, create a proper server/db.ts:
+
+ts
+Copy
+Edit
+import { PrismaClient } from '@prisma/client';
+export const db = new PrismaClient();
+Then replace the old import lines accordingly.
+
+Let me know once the install is clean—then we can polish the ROI calculator or add more landing‑page translations!
+
+
+
+
+
+
+
+
+
+
+Search
+
+Deep research
+
+
+
+ChatGPT can make mistakes. Check im
