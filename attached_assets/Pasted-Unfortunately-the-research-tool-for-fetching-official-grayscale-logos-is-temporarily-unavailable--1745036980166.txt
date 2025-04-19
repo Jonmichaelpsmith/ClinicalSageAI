@@ -1,0 +1,59 @@
+Unfortunately, the research tool for fetching official grayscale logos is temporarily unavailable.
+
+But I can still guide you to the best source locations and how to convert each logo properly:
+
+---
+
+### ✅ Where to get official logos
+
+| Agency | Source |
+|--------|--------|
+| **FDA (US)** | [Wikipedia FDA logo (SVG)](https://en.wikipedia.org/wiki/File:US-FDA-Logo.svg) — public domain  
+| **EMA (Europe)** | [EMA Official logo page](https://www.ema.europa.eu/en/about-us/contact/logo-use) — approval required for commercial use  
+| **MHRA (UK)** | [Wikimedia Commons - MHRA Logo (CC BY-SA)](https://commons.wikimedia.org/wiki/File:MHRA_logo.svg)  
+| **PMDA (Japan)** | [Press release on new logo](https://www.pmda.go.jp/english/about-pmda/0003.html) — download from official page or [SeekLogo PMDA](https://seeklogo.com/vector-logo/432972/pmda)  
+| **NMPA (China)** | [Wikipedia - CFDA/NMPA info](https://en.wikipedia.org/wiki/National_Medical_Products_Administration) — logo not directly hosted but use wordmark or emblem style  
+| **Health Canada** | [Canada wordmark (black & white)](https://www.canada.ca/en/treasury-board-secretariat/services/government-communications/federal-identity-program/official-symbols.html)  
+| **TGA (Australia)** | Use the Department of Health + TGA wordmark — available via [Australian Government branding](https://www.health.gov.au/)  
+| **MFDS (Korea)** | [MFDS Logo (PNG)](https://www.mfds.go.kr/eng/index.do) or Korean press kits
+
+---
+
+### ✅ How to convert to grayscale safely
+
+1. **Use SVGs when possible**
+   - Open in a vector editor (Inkscape or Figma)
+   - Desaturate colors or replace fills with `#888888`
+   - Save as `*.svg` or export to transparent `*.png`
+
+2. **Use CSS grayscale filter** if logos are in color:
+   ```html
+   <img src="/logos/pmda.svg" className="grayscale opacity-70 hover:opacity-90" />
+   ```
+
+3. **Uniform sizing rule** in CSS/JSX:
+   ```css
+   .reg-logo { max-height: 36px; opacity: 0.7; transition: opacity 0.2s; }
+   ```
+
+---
+
+### ✅ Recommended file placement
+
+Create this directory in your project:
+
+```
+/public/logos/
+├── fda.svg
+├── ema.svg
+├── mhra.svg
+├── pmda.svg
+├── nmpa.svg
+├── healthcanada.svg
+├── tga.svg
+├── mfds.svg
+```
+
+I can generate CSS/JSX scaffolding for this exact list, styled as a slow auto-scroll strip.
+
+Would you like me to do that next while you gather or upload the official logo files?

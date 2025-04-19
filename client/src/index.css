@@ -13,13 +13,9 @@
   }
 }
 
-@keyframes scroll {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
+@keyframes scroll-slow {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
 }
 
 .animate-fadeIn {
@@ -27,7 +23,21 @@
 }
 
 .animate-scroll-slow {
-  animation: scroll 30s linear infinite;
+  animation: scroll-slow 60s linear infinite;
+}
+
+.grayscale {
+  filter: grayscale(100%);
+}
+
+.reg-logo {
+  max-height: 36px;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.reg-logo:hover {
+  opacity: 0.9;
 }
 
 :root {
