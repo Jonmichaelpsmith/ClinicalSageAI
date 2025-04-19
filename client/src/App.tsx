@@ -14,6 +14,7 @@ import CsrIntelligence from './pages/CsrIntelligence';
 import DocumentsPage from './pages/DocumentsPage';
 import SubmissionBuilder from './pages/SubmissionBuilder';
 import AssistantPage from './pages/AssistantPage';
+import IndSequenceManager from './pages/IndSequenceManager';
 import AdminPage from './pages/AdminPage';
 
 // Fixed the missing Flask icon issue by using Beaker instead
@@ -529,6 +530,15 @@ export default function App() {
             {() => (
               <DashboardLayout>
                 <CerDashboard />
+              </DashboardLayout>
+            )}
+          </Route>
+          
+          {/* IND Sequence Manager */}
+          <Route path="/ind-sequence-manager">
+            {() => (
+              <DashboardLayout>
+                <IndSequenceManager />
               </DashboardLayout>
             )}
           </Route>
