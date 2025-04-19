@@ -5,11 +5,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Ban, CheckCircle2, Loader2, FileDown, Database, FileEdit, FileText, ShieldCheck } from 'lucide-react';
+import { Ban, CheckCircle2, Loader2, FileDown, Database, FileEdit, FileText, ShieldCheck, Bell } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ManualDataForm from './ManualDataForm';
 import FDAFormsPanel from './FDAFormsPanel';
 import SAMLSettingsPanel from './SAMLSettingsPanel';
+import AlertPreferencesPanel from './AlertPreferencesPanel';
 
 /**
  * INDAutomationPanel Component
@@ -143,7 +144,7 @@ export function INDAutomationPanel() {
           )}
 
           <Tabs defaultValue="benchling" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="benchling">
                 <Database className="h-4 w-4 mr-2" />
                 From Benchling
@@ -159,6 +160,10 @@ export function INDAutomationPanel() {
               <TabsTrigger value="saml-settings">
                 <ShieldCheck className="h-4 w-4 mr-2" />
                 SAML Settings
+              </TabsTrigger>
+              <TabsTrigger value="alert-preferences">
+                <Bell className="h-4 w-4 mr-2" />
+                Alert Preferences
               </TabsTrigger>
             </TabsList>
             
@@ -250,6 +255,10 @@ export function INDAutomationPanel() {
 
             <TabsContent value="saml-settings">
               <SAMLSettingsPanel />
+            </TabsContent>
+            
+            <TabsContent value="alert-preferences">
+              <AlertPreferencesPanel />
             </TabsContent>
           </Tabs>
         </div>

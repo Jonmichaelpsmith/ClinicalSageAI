@@ -1,8 +1,11 @@
 """
-IND Automation Package
+LumenTrialGuide.AI IND Automation Package
 
-This package provides tools for generating FDA Investigational New Drug (IND)
-application forms and related documents.
+This package provides IND automation and monitoring capabilities, including:
+- Traefik health monitoring
+- SSL certificate expiration monitoring
+- Alert management for multiple channels (email, Teams)
+- User preference management for alerting
 """
 
-__version__ = "2.0.0"
+__version__ = "1.0.0"
