@@ -3,7 +3,7 @@
 
 import React, { useState } from "react";
 import { Link } from "../stub-router-dom";
-import { PlayCircle, ArrowRight, LogIn, UserPlus, BarChart2, Brain, User, Users, Microscope, FileText, Beaker } from "lucide-react";
+import { PlayCircle, ArrowRight, LogIn, UserPlus, BarChart2, Brain, User, Users, Microscope, FileText, Beaker, TrendingUp, Building2, LineChart, Briefcase } from "lucide-react";
 import { useTranslation } from "../i18n";
 // Import i18n to initialize it
 import "../i18n";
@@ -49,6 +49,30 @@ export default function HomeLanding() {
   ];
   
   const personas = [
+    { 
+      id: 'ceo',
+      title: t('Biotech CEOs'),
+      icon: <Building2 size={24} />,
+      description: t('Drive strategic decision-making with comprehensive intelligence and visibility into your clinical development pipeline.'),
+      features: [
+        t('Executive dashboards with milestone tracking'),
+        t('Competitive landscape intelligence by indication'),
+        t('Protocol optimization for faster time-to-market')
+      ],
+      link: '/solutions/biotech-ceo'
+    },
+    { 
+      id: 'investor',
+      title: t('Biotech Investors'),
+      icon: <TrendingUp size={24} />,
+      description: t('Get deep intelligence on pipeline progress, clinical trial success rates, and competitive positioning for smarter investments.'),
+      features: [
+        t('Historical success rate analytics by indication'),
+        t('Protocol quality scoring and benchmarking'),
+        t('Therapeutic area trend tracking')
+      ],
+      link: '/solutions/biotech-investor'
+    },
     { 
       id: 'cro',
       title: t('CRO Leaders'),
