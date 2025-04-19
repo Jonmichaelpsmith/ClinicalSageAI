@@ -177,3 +177,6 @@ async def get_metrics(org:str):
 @app.get('/api/org/{org}/insights/pdf')
 async def insights_pdf(org:str):
     return insights_pdf.insights_pdf_endpoint(org)
+
+from fastapi.staticfiles import StaticFiles
+app.mount('/files', StaticFiles(directory='public'), name='files')
