@@ -1,5 +1,5 @@
 
-function useDebounce(value,delay){const[d,setD]=React.useState(value);React.useEffect(()=>{const t=setTimeout(()=>setD(value),delay);return()=>clearTimeout(t)},[value,delay]);return d;}
+function useDebounce(value,delay){const[d,setD]=React.useState(value);React.useEffect(()=>{const t=setTimeout(()=>setD(value),delay);return(<div className={hc?"contrast":theme==="dark"?"dark":""}>)=>clearTimeout(t)},[value,delay]);return d;}
 
 function useTheme(){const[t,setT]=React.useState(localStorage.getItem('chartTheme')||'light');React.useEffect(()=>{localStorage.setItem('chartTheme',t)},[t]);return[t,()=>setT(p=>p==='light'?'dark':'light')];}
 import SidePanel from './SidePanel';
@@ -51,7 +51,7 @@ export default function ComplianceInsights({ org }) {
   };
   
   return (
-    <div className="grid gap-6 p-4 max-w-6xl mx-auto sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+    <div role="region" aria-label="Compliance Insights Dashboard" className="grid gap-6 p-4 max-w-6xl mx-auto sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
       {/* 1. Alerts Over Time */}
       <div>
         <h4 className="text-lg font-semibold mb-2">Alerts Over Time</h4>
@@ -180,7 +180,7 @@ function RuleDetails({org,rule}){
   const[q,setQ]=React.useState('');const dq=useDebounce(q,500);
   React.useEffect(()=>{setRows([]);setPage(0)},[org,rule,dq]);
   React.useEffect(()=>{api.get(`/api/org/${org}/metrics?rule=${rule}&limit=100&offset=${page*100}&search=${dq}`).then(r=>setRows(prev=>[...prev,...r.data]))},[org,rule,page,dq]);
-  return(<div style={{maxHeight:'calc(100vh-120px)',overflowY:'auto'}} onScroll={e=>{if(e.target.scrollHeight-e.target.scrollTop-e.target.clientHeight<40) setPage(p=>p+1);}}>
+  return(<div className={hc?"contrast":theme==="dark"?"dark":""}><div style={{maxHeight:'calc(100vh-120px)',overflowY:'auto'}} onScroll={e=>{if(e.target.scrollHeight-e.target.scrollTop-e.target.clientHeight<40) setPage(p=>p+1);}}>
     <input placeholder='Search' className='border p-1 w-full text-xs mb-1' value={q} onChange={e=>setQ(e.target.value)}/>
     <table className='text-xs w-full'><tbody>
       {rows.map((r,i)=><tr key={i}><td className='pr-1'>{new Date(r.timestamp).toLocaleString()}</td><td>{r.msg||r.type}</td></tr>)}
