@@ -146,7 +146,7 @@ def _saml_fingerprint_changes():
     return alerts
 
 from dateutil import parser
-from ind_automation import db, saml_creds
+from ind_automation import db, saml_creds, metrics
 from ind_automation.credentials import load as load_esg
 from ind_automation.tasks import celery_app
 
@@ -238,6 +238,7 @@ def nightly_audit():
                         alerts.append((org,'SAML certificate expires <30 days'))
     for org,msg in alerts:
         db.append_history(org,{"type":"alert","msg":msg,"timestamp":now.isoformat()})
+        metrics.compute(org)  # refresh metrics cache
     # Filter alerts based on customer's enabled rules
     filtered_alerts = []
     for org, msg in alerts:
