@@ -4,9 +4,10 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { DndProvider } from 'react-dnd';
 import { Tree, NodeModel } from '@minoru/react-dnd-treeview';
 import update from 'immutability-helper';
-import { CheckCircle, XCircle, Info } from 'lucide-react';
+import { CheckCircle, XCircle, Info, FileText, History } from 'lucide-react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import DocumentDiffDialog from '../components/DocumentDiffDialog';
 
 interface Doc { id: number; title: string; module: string; qc_json?: { status: string } }
 interface Node extends NodeModel<Doc> {}
@@ -46,6 +47,11 @@ export default function SubmissionBuilder({ region = 'FDA' }: { region?: string 
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const wsRef = useRef<WebSocket | null>(null);
   const [wsConnected, setWsConnected] = useState(false);
+  
+  // Document diff dialog state
+  const [isDiffDialogOpen, setIsDiffDialogOpen] = useState(false);
+  const [selectedDocumentId, setSelectedDocumentId] = useState<number | null>(null);
+  const [selectedDocumentTitle, setSelectedDocumentTitle] = useState<string | null>(null);
 
   // -------- fetch initial docs
   useEffect(() => {
@@ -56,48 +62,115 @@ export default function SubmissionBuilder({ region = 'FDA' }: { region?: string 
     })();
   }, [region]);
 
-  // -------- WebSocket for live QC updates
+  // -------- WebSocket for live QC updates with reconnect logic
   useEffect(() => {
     const wsUrl = `${window.location.origin.replace('http', 'ws')}/ws/qc`;
-    console.log(`Connecting to WebSocket: ${wsUrl}`);
+    let reconnectAttempts = 0;
+    let reconnectTimer: NodeJS.Timeout | null = null;
+    const maxReconnectDelay = 30000; // Maximum reconnect delay in ms (30 seconds)
     
-    wsRef.current = new WebSocket(wsUrl);
-    
-    wsRef.current.onopen = () => {
-      console.log('WebSocket connection established');
-      setWsConnected(true);
-    };
-    
-    wsRef.current.onclose = () => {
-      console.log('WebSocket connection closed');
-      setWsConnected(false);
-    };
-    
-    wsRef.current.onerror = (error) => {
-      console.error('WebSocket error:', error);
-      setWsConnected(false);
-    };
-    
-    wsRef.current.onmessage = (ev) => {
-      try {
-        const evt = JSON.parse(ev.data);
-        console.log('WebSocket message received:', evt);
-        
-        if (evt.type === 'qc_status') {
-          setTree(prev => prev.map(n => 
-            n.id === evt.documentId ? 
-            { ...n, data: { ...n.data!, qc_json: { status: evt.status } } } : 
-            n
-          ));
-        }
-      } catch (error) {
-        console.error('Error processing WebSocket message:', error);
-      }
-    };
-    
-    return () => {
+    // Function to create and setup WebSocket connection
+    const connectWebSocket = () => {
+      console.log(`Connecting to WebSocket: ${wsUrl}`);
+      
+      // Clear any existing connection
       if (wsRef.current) {
         wsRef.current.close();
+      }
+      
+      wsRef.current = new WebSocket(wsUrl);
+      
+      wsRef.current.onopen = () => {
+        console.log('WebSocket connection established');
+        setWsConnected(true);
+        reconnectAttempts = 0; // Reset reconnect counter on successful connection
+        
+        // Send subscription message if needed
+        wsRef.current?.send(JSON.stringify({
+          type: 'subscribe',
+          client: 'submission-builder'
+        }));
+      };
+      
+      wsRef.current.onclose = (event) => {
+        // Don't attempt to reconnect if this was a clean close (e.g., component unmounting)
+        if (event.wasClean) {
+          console.log(`WebSocket closed cleanly, code=${event.code}, reason=${event.reason}`);
+          setWsConnected(false);
+          return;
+        }
+        
+        console.log('WebSocket connection closed unexpectedly, scheduling reconnect...');
+        setWsConnected(false);
+        
+        // Implement exponential backoff
+        reconnectAttempts++;
+        const delay = Math.min(
+          1000 * Math.pow(2, reconnectAttempts), // Exponential backoff: 2, 4, 8, 16... seconds
+          maxReconnectDelay // Cap at max delay
+        );
+        
+        console.log(`WebSocket reconnect attempt ${reconnectAttempts} scheduled in ${delay}ms`);
+        
+        // Schedule reconnect
+        reconnectTimer = setTimeout(connectWebSocket, delay);
+      };
+      
+      wsRef.current.onerror = (error) => {
+        console.error('WebSocket error:', error);
+        setWsConnected(false);
+        // No need to manually reconnect - onclose will fire after an error
+      };
+      
+      wsRef.current.onmessage = (ev) => {
+        try {
+          const evt = JSON.parse(ev.data);
+          
+          if (evt.type === 'heartbeat') {
+            // Respond to heartbeat to keep connection alive
+            wsRef.current?.send(JSON.stringify({ type: 'heartbeat_ack' }));
+            return;
+          }
+          
+          console.log('WebSocket message received:', evt);
+          
+          if (evt.type === 'qc_status') {
+            setTree(prev => prev.map(n => 
+              n.id === evt.documentId ? 
+              { ...n, data: { ...n.data!, qc_json: { status: evt.status } } } : 
+              n
+            ));
+            
+            // Show a toast notification for the QC update
+            if (evt.status === 'passed') {
+              toast.success(`Document QC passed: ${evt.documentId}`);
+            } else if (evt.status === 'failed') {
+              toast.error(`Document QC failed: ${evt.documentId}`);
+            }
+          }
+          
+          // Handle connection status updates
+          if (evt.type === 'connection_status') {
+            setWsConnected(evt.status === 'connected');
+          }
+        } catch (error) {
+          console.error('Error processing WebSocket message:', error);
+        }
+      };
+    };
+    
+    // Initial connection
+    connectWebSocket();
+    
+    // Cleanup function
+    return () => {
+      if (reconnectTimer) {
+        clearTimeout(reconnectTimer);
+      }
+      
+      if (wsRef.current) {
+        // Set a flag to indicate this is a clean close
+        wsRef.current.close(1000, 'Component unmounting');
       }
     };
   }, []);
@@ -194,6 +267,20 @@ export default function SubmissionBuilder({ region = 'FDA' }: { region?: string 
     }
   };
 
+  // Handle opening the document diff viewer
+  const openDiffViewer = (documentId: number, documentTitle: string) => {
+    setSelectedDocumentId(documentId);
+    setSelectedDocumentTitle(documentTitle);
+    setIsDiffDialogOpen(true);
+  };
+
+  // Handle closing the document diff viewer
+  const closeDiffViewer = () => {
+    setIsDiffDialogOpen(false);
+    setSelectedDocumentId(null);
+    setSelectedDocumentTitle(null);
+  };
+  
   const renderNode = (node: Node, { depth, isOpen, onToggle }: any) => {
     if (node.droppable) {
       return (
@@ -215,11 +302,35 @@ export default function SubmissionBuilder({ region = 'FDA' }: { region?: string 
           onChange={() => toggleSelect(node.id as number)} 
           disabled={isPlaceholder}
         />
+        
         {qcStatus === 'passed' ? 
           <CheckCircle size={14} className="text-success"/> : 
           <XCircle size={14} className={`text-${isPlaceholder ? 'warning' : 'danger'}`}/>
         }
+        
         <span>{node.text}</span>
+        
+        {!isPlaceholder && (
+          <div className="ms-auto">
+            <button 
+              className="btn btn-sm btn-outline-secondary"
+              title="View Version History"
+              onClick={() => openDiffViewer(node.id as number, node.text as string)}
+            >
+              <History size={14} />
+            </button>
+            
+            <a 
+              href={`/api/documents/${node.id}/view`} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="btn btn-sm btn-outline-primary ms-1"
+              title="View Document"
+            >
+              <FileText size={14} />
+            </a>
+          </div>
+        )}
       </div>
     );
   };
@@ -265,6 +376,16 @@ export default function SubmissionBuilder({ region = 'FDA' }: { region?: string 
           Bulk Approve + QC ({selected.size})
         </button>
       </div>
+
+      {/* Document Diff Dialog */}
+      {selectedDocumentId && (
+        <DocumentDiffDialog
+          documentId={selectedDocumentId}
+          isOpen={isDiffDialogOpen}
+          onClose={closeDiffViewer}
+          documentTitle={selectedDocumentTitle || ''}
+        />
+      )}
     </div>
   );
 }

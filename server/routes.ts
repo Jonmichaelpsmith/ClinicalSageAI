@@ -98,6 +98,18 @@ export async function registerRoutes(app: Application) {
     console.error('Failed to register document bulk approve routes:', error);
   }
   
+  // Register audit logs routes
+  try {
+    import('./routes/audit_logs.js').then((auditLogsRoutes) => {
+      app.use('/api/audit', auditLogsRoutes.default);
+      console.log('Audit logs routes registered successfully');
+    }).catch(err => {
+      console.error('Failed to import audit logs routes:', err);
+    });
+  } catch (error) {
+    console.error('Failed to register audit logs routes:', error);
+  }
+  
   // Register FastAPI endpoints (region rules, etc.)
   try {
     app.get('/api/ind/region-rules', async (req, res) => {
