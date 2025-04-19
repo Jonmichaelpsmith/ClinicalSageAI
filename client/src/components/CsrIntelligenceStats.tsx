@@ -3,7 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { Database, FileText, BookOpen, Activity, BrainCircuit } from 'lucide-react';
 import { trialsageApi } from '@/lib/api-connector';
 import StatCard from './StatCard';
-import BenchmarkDetailsModal from './BenchmarkDetailsModal';
+import BenchmarksModal from './BenchmarksModal';
+import InsightsModal from './InsightsModal';
 
 interface CsrIntelligenceStatsProps {
   className?: string;
