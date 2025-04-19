@@ -59,21 +59,21 @@ export default function HomeLanding() {
       </nav>
 
       {/* Hero */}
-      <header className="pt-32 pb-24 bg-gradient-to-b from-emerald-50 via-white to-white dark:from-slate-900 dark:via-slate-800 dark:to-slate-800 text-center relative">
-        <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight text-emerald-700 dark:text-emerald-400 mb-3">
+      <header className="pt-24 pb-14 bg-gradient-to-b from-emerald-50 via-white to-white dark:from-slate-900 dark:via-slate-800 dark:to-slate-800 text-center relative">
+        <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight text-emerald-700 dark:text-emerald-400 mb-2">
           {t('TrialSage® Platform')}
         </h1>
         <p className="text-xl sm:text-2xl max-w-3xl mx-auto text-gray-700 dark:text-gray-300">
           {t('Accelerate every regulatory milestone—from CSR insights to FDA submission—with enterprise‑grade AI agents.')}
         </p>
-        <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+        <div className="mt-6 flex flex-col sm:flex-row gap-4 justify-center">
           <Button to="/roi" variant="primary"><BarChart2 size={18}/> {t('Instant ROI Estimate')}</Button>
           <Button to="/contact" variant="ghost"><ArrowRight size={16}/> {t('Speak to an Expert')}</Button>
         </div>
       </header>
 
       {/* Feature banner */}
-      <section className="py-5 bg-emerald-600 dark:bg-emerald-700 text-white text-center text-xs sm:text-sm">
+      <section className="py-3 bg-emerald-600 dark:bg-emerald-700 text-white text-center text-xs sm:text-sm">
         <div className="max-w-6xl mx-auto flex flex-wrap justify-center gap-4 animate-marquee whitespace-nowrap">
           {featureBanner.map(f=> (
             <span key={f} className="inline-flex items-center gap-1 px-2"><Brain size={12}/> {f}</span>
@@ -82,46 +82,46 @@ export default function HomeLanding() {
       </section>
 
       {/* Product Cards */}
-      <section className="max-w-6xl mx-auto px-6 py-24 grid gap-10 md:grid-cols-2">
+      <section className="max-w-6xl mx-auto px-6 py-16 grid gap-6 md:grid-cols-2">
         {products.map(p=> (
-          <article key={p.title} className={`p-6 rounded-lg shadow bg-white dark:bg-slate-900 border-t-4 border-${p.color}-600 dark:border-${p.color}-400 flex flex-col`}>
+          <article key={p.title} className={`p-5 rounded-lg shadow bg-white dark:bg-slate-900 border-t-4 border-${p.color}-600 dark:border-${p.color}-400 flex flex-col`}>
             <span className="uppercase text-xs tracking-wide text-gray-400 mb-1">{p.tag}</span>
             <h3 className={`text-${p.color}-700 dark:text-${p.color}-300 text-xl font-semibold mb-2`}>{p.title}</h3>
-            <p className="flex-grow text-gray-600 dark:text-gray-400 leading-relaxed mb-4">{p.desc}</p>
+            <p className="flex-grow text-gray-600 dark:text-gray-400 leading-relaxed mb-3">{p.desc}</p>
             <Link to={p.link} className={`text-${p.color}-700 dark:text-${p.color}-300 font-medium hover:underline`}>{t('Learn more')}</Link>
           </article>
         ))}
       </section>
 
       {/* Deep Intelligence Engine */}
-      <section className="py-20 bg-gradient-to-r from-sky-50 to-emerald-50 dark:from-slate-800 dark:to-slate-700 text-center px-6">
-        <h2 className="text-3xl font-bold mb-4 flex items-center justify-center gap-2"><Brain/> {t('Deep Intelligence Engine')}</h2>
-        <p className="max-w-3xl mx-auto text-gray-700 dark:text-gray-300 text-lg mb-6">
+      <section className="py-12 bg-gradient-to-r from-sky-50 to-emerald-50 dark:from-slate-800 dark:to-slate-700 text-center px-6">
+        <h2 className="text-3xl font-bold mb-3 flex items-center justify-center gap-2"><Brain/> {t('Deep Intelligence Engine')}</h2>
+        <p className="max-w-3xl mx-auto text-gray-700 dark:text-gray-300 text-lg mb-5">
           {t('Conversational agent combines biostats, medical writing, and global reg‑affairs expertise—available 24/7 to design protocols, validate endpoints, and predict study outcomes.')}
         </p>
         <Button variant="primary" to="/assistant">{t('Try the CSR Assistant')} <ArrowRight size={16}/></Button>
       </section>
 
       {/* Competitor Table */}
-      <section className="max-w-5xl mx-auto px-6 py-24">
-        <h2 className="text-2xl font-bold mb-6 text-center">{t('Why innovators choose TrialSage')}</h2>
+      <section className="max-w-5xl mx-auto px-6 py-12">
+        <h2 className="text-2xl font-bold mb-4 text-center">{t('Why innovators choose TrialSage')}</h2>
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm border divide-y divide-gray-200 dark:divide-slate-600">
             <thead className="bg-gray-100 dark:bg-slate-800 text-left">
               <tr>
-                <th className="py-2 px-3 font-semibold">{t('Platform')}</th>
-                <th className="py-2 px-3">{t('AI Narratives')}</th>
-                <th className="py-2 px-3">{t('eCTD End‑to‑End')}</th>
-                <th className="py-2 px-3">{t('ESG Send')}</th>
-                <th className="py-2 px-3">{t('Traceability')}</th>
-                <th className="py-2 px-3">{t('Pricing')}</th>
+                <th className="py-1.5 px-3 font-semibold">{t('Platform')}</th>
+                <th className="py-1.5 px-3">{t('AI Narratives')}</th>
+                <th className="py-1.5 px-3">{t('eCTD End‑to‑End')}</th>
+                <th className="py-1.5 px-3">{t('ESG Send')}</th>
+                <th className="py-1.5 px-3">{t('Traceability')}</th>
+                <th className="py-1.5 px-3">{t('Pricing')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
               {competitorRows.map((row, i) => (
                 <tr key={i} className={i === 0 ? "bg-emerald-50 dark:bg-emerald-900/20" : ""}>
                   {row.map((cell, j) => (
-                    <td key={j} className="py-2 px-3">{cell}</td>
+                    <td key={j} className="py-1.5 px-3">{cell}</td>
                   ))}
                 </tr>
               ))}
@@ -131,7 +131,7 @@ export default function HomeLanding() {
       </section>
 
       {/* Footer */}
-      <footer className="py-10 bg-gray-50 dark:bg-slate-900 text-center text-sm text-gray-500 dark:text-gray-400">
+      <footer className="py-6 bg-gray-50 dark:bg-slate-900 text-center text-sm text-gray-500 dark:text-gray-400">
         <div className="max-w-6xl mx-auto px-6">
           <p>© {year} Concepts2Cures.AI • {t('All rights reserved')}</p>
           <p className="mt-1 text-xs">{t('TrialSage is a registered trademark')}</p>
