@@ -11,6 +11,7 @@ import IntelligenceCounter from "../components/IntelligenceCounter";
 import CustomerValidation from "../components/CustomerValidation";
 import UseCaseLibrary from "../components/UseCaseLibrary";
 import CompetitorComparison from "../components/CompetitorComparison";
+import HeroWithPersonas from "../components/HeroWithPersonas";
 
 export default function HomeLanding() {
   const { t } = useTranslation();

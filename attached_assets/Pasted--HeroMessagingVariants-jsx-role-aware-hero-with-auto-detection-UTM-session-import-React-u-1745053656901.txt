@@ -1,0 +1,106 @@
+// HeroMessagingVariants.jsx – role‑aware hero with auto‑detection (UTM / session)
+import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth"; // assumes a context providing session.user.role
+
+const variants = {
+  exec: {
+    headline: "From Concepts to Cures — in Half the Time",
+    subhead:
+      "TrialSage automates regulatory writing, submission assembly, and ESG delivery across FDA, EMA, PMDA, and more. Cut costs. Launch faster. Stay compliant.",
+    cta: "Calculate Your ROI",
+  },
+  medwriter: {
+    headline: "Let the Assistant Draft Your IND While You Sleep",
+    subhead:
+      "Generate Module 2 summaries, CERs, and CSRs in hours — not weeks. Track reviews, collect e-signatures, and stay always audit‑ready.",
+    cta: "Try AI‑Powered Drafting",
+  },
+  ops: {
+    headline: "Faster Documents, Smoother Approvals, Fewer Vendors",
+    subhead:
+      "TrialSage centralizes protocol authoring, team reviews, and submission packaging into one platform — no handoffs, no delays.",
+    cta: "Launch a New Study",
+  },
+  qa: {
+    headline: "Audit Trails Built for Inspectors. Not Just Checklists.",
+    subhead:
+      "Secure, time‑stamped logs. Immutable signatures. GxP‑ready workflows. 21 CFR Part 11 compliance — built in from day one.",
+    cta: "Explore Validation Tools",
+  },
+  investor: {
+    headline: "AI for Biotech That Actually Moves the Needle",
+    subhead:
+      "TrialSage automates the painful parts of development — INDs, CERs, CSRs — so your pipeline gets to patients sooner.",
+    cta: "Read the Results",
+  },
+};
+
+const validKeys = Object.keys(variants);
+
+// helper to resolve persona from session role
+const roleMap = {
+  RegulatoryLead: "exec",
+  Exec: "exec",
+  MedicalWriter: "medwriter",
+  ClinicalOps: "ops",
+  QA: "qa",
+  Investor: "investor",
+};
+
+export default function HeroMessagingVariants() {
+  const location = useLocation();
+  const { session } = useAuth();
+  const [audience, setAudience] = useState("exec");
+
+  // detect on first render
+  useEffect(() => {
+    // 1️⃣ UTM param ?persona=medwriter
+    const params = new URLSearchParams(location.search);
+    const utm = params.get("persona");
+    if (utm && validKeys.includes(utm)) {
+      setAudience(utm);
+      return;
+    }
+    // 2️⃣ role from session
+    const roleKey = roleMap[session?.user?.role];
+    if (roleKey) {
+      setAudience(roleKey);
+      return;
+    }
+    // default remains "exec"
+  }, [location.search, session]);
+
+  const { headline, subhead, cta } = variants[audience];
+
+  return (
+    <div className="text-center py-20">
+      <h1 className="text-4xl sm:text-5xl font-bold text-emerald-700 dark:text-emerald-400 mb-4">
+        {headline}
+      </h1>
+      <p className="max-w-3xl mx-auto text-lg text-gray-700 dark:text-gray-300 mb-6">
+        {subhead}
+      </p>
+      <button className="bg-emerald-600 text-white px-5 py-2 rounded hover:bg-emerald-700 text-sm">
+        {cta}
+      </button>
+
+      {/* manual toggle for exploration */}
+      <div className="mt-6 flex flex-wrap justify-center gap-2 text-xs text-gray-400">
+        {validKeys.map((k) => (
+          <button
+            key={k}
+            onClick={() => setAudience(k)}
+            className={`px-3 py-1 rounded border transition ${
+              k === audience
+                ? "bg-emerald-600 text-white border-emerald-600"
+                : "border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-slate-700"
+            }`}
+          >
+            {k}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
