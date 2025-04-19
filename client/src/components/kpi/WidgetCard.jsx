@@ -2,6 +2,24 @@ import React, { useEffect, useState, useRef } from 'react';
 import api from '../../services/api';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
+// R4: Widget Export - Stub functions until we can install actual dependencies
+const html2canvas = (element) => {
+  console.log('html2canvas called for', element);
+  return Promise.resolve({
+    toBlob: (callback) => callback(new Blob(['PNG data would be here'], { type: 'image/png' }))
+  });
+};
+
+const saveAs = (blob, filename) => {
+  console.log(`Saving ${filename}`, blob);
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
 export default function WidgetCard({ widget }) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
