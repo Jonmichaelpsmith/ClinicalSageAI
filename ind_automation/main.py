@@ -173,3 +173,7 @@ async def set_rules(org:str, body:dict):
 @app.get('/api/org/{org}/metrics')
 async def get_metrics(org:str):
     return metrics.load(org).to_dict(orient='records')
+
+@app.get('/api/org/{org}/insights/pdf')
+async def insights_pdf(org:str):
+    return insights_pdf.insights_pdf_endpoint(org)
