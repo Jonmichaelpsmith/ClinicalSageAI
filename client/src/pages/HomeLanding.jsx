@@ -658,6 +658,240 @@ export default function HomeLanding() {
         </div>
       </section>
 
+      {/* Customer Validation Section */}
+      <section className="py-20 bg-white dark:bg-slate-900">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">{t('Trusted by Industry Leaders')}</h2>
+            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+              {t('TrialSage is the trusted clinical intelligence platform for pharmaceutical companies, biotechs, and CROs worldwide.')}
+            </p>
+          </div>
+          
+          {/* Logos */}
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8 items-center justify-items-center mb-16 opacity-70">
+            {Array(6).fill(0).map((_, i) => (
+              <div key={i} className="h-12 flex items-center">
+                <div className="w-32 h-8 bg-gray-200 dark:bg-slate-700 rounded animate-pulse"></div>
+              </div>
+            ))}
+          </div>
+          
+          {/* Testimonials */}
+          <div className="grid md:grid-cols-3 gap-8 mt-12">
+            <div className="bg-gray-50 dark:bg-slate-800 p-6 rounded-xl shadow-sm">
+              <div className="flex mb-6 text-emerald-500">
+                {Array(5).fill(0).map((_, i) => (
+                  <svg key={i} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="mr-1">
+                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                  </svg>
+                ))}
+              </div>
+              <p className="text-gray-700 dark:text-gray-300 mb-6">
+                "{t('TrialSage has transformed how we approach regulatory submissions. The AI-driven IND module saved us 6 weeks on our last submission, and the CSR intelligence gives us insights we never had before.')}"
+              </p>
+              <div className="flex items-center">
+                <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-700 dark:text-emerald-400">
+                  <User size={20} />
+                </div>
+                <div className="ml-3">
+                  <div className="font-medium">Sarah Johnson</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">VP Regulatory Affairs, BioAdvance</div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-gray-50 dark:bg-slate-800 p-6 rounded-xl shadow-sm">
+              <div className="flex mb-6 text-emerald-500">
+                {Array(5).fill(0).map((_, i) => (
+                  <svg key={i} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="mr-1">
+                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                  </svg>
+                ))}
+              </div>
+              <p className="text-gray-700 dark:text-gray-300 mb-6">
+                "{t('As a CRO managing hundreds of trials, the TrialSage platform helps us deliver superior value to sponsors. Their AI-powered CSR analytics has become our secret weapon for designing better protocols.')}"
+              </p>
+              <div className="flex items-center">
+                <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-700 dark:text-emerald-400">
+                  <User size={20} />
+                </div>
+                <div className="ml-3">
+                  <div className="font-medium">Michael Chen</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">Clinical Operations Director, GlobalTrials</div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-gray-50 dark:bg-slate-800 p-6 rounded-xl shadow-sm">
+              <div className="flex mb-6 text-emerald-500">
+                {Array(5).fill(0).map((_, i) => (
+                  <svg key={i} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="mr-1">
+                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                  </svg>
+                ))}
+              </div>
+              <p className="text-gray-700 dark:text-gray-300 mb-6">
+                "{t('The CER Generator has completely transformed our MDR compliance workflow. What used to take 3-4 weeks now takes days, and the reports are more comprehensive than our manually created ones.')}"
+              </p>
+              <div className="flex items-center">
+                <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-700 dark:text-emerald-400">
+                  <User size={20} />
+                </div>
+                <div className="ml-3">
+                  <div className="font-medium">Elena Rodriguez</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">Medical Director, EuroMed Devices</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Validation Metrics */}
+          <div className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 text-center">
+            <div className="bg-gray-50 dark:bg-slate-800 p-6 rounded-xl shadow-sm">
+              <div className="text-4xl font-bold text-emerald-600 dark:text-emerald-400 mb-2">38%</div>
+              <div className="text-lg font-medium mb-2">{t('Faster Submissions')}</div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {t('Average time savings on regulatory submissions with our AI-assisted workflows.')}
+              </p>
+            </div>
+            
+            <div className="bg-gray-50 dark:bg-slate-800 p-6 rounded-xl shadow-sm">
+              <div className="text-4xl font-bold text-emerald-600 dark:text-emerald-400 mb-2">98.7%</div>
+              <div className="text-lg font-medium mb-2">{t('Document Accuracy')}</div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {t('Validated document processing accuracy across thousands of clinical documents.')}
+              </p>
+            </div>
+            
+            <div className="bg-gray-50 dark:bg-slate-800 p-6 rounded-xl shadow-sm">
+              <div className="text-4xl font-bold text-emerald-600 dark:text-emerald-400 mb-2">3,250+</div>
+              <div className="text-lg font-medium mb-2">{t('Clinical Documents')}</div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {t('Structured CSRs and clinical documents in our intelligence platform.')}
+              </p>
+            </div>
+            
+            <div className="bg-gray-50 dark:bg-slate-800 p-6 rounded-xl shadow-sm">
+              <div className="text-4xl font-bold text-emerald-600 dark:text-emerald-400 mb-2">42%</div>
+              <div className="text-lg font-medium mb-2">{t('ROI Improvement')}</div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {t('Average return on investment improvement reported by enterprise customers.')}
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      {/* Use Case Library */}
+      <section className="py-20 bg-gray-50 dark:bg-slate-800/30">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">{t('Use Case Library')}</h2>
+            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+              {t('Explore how pharmaceutical companies, biotechs, and medical device manufacturers leverage TrialSage in their workflows.')}
+            </p>
+          </div>
+          
+          {/* Use Case Categories */}
+          <div className="flex flex-wrap justify-center gap-3 mb-12">
+            <button className="px-4 py-2 bg-emerald-600 text-white rounded-full font-medium">
+              {t('All Use Cases')}
+            </button>
+            <button className="px-4 py-2 bg-white dark:bg-slate-800 rounded-full font-medium text-gray-700 dark:text-gray-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/20">
+              {t('Regulatory Affairs')}
+            </button>
+            <button className="px-4 py-2 bg-white dark:bg-slate-800 rounded-full font-medium text-gray-700 dark:text-gray-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/20">
+              {t('Clinical Development')}
+            </button>
+            <button className="px-4 py-2 bg-white dark:bg-slate-800 rounded-full font-medium text-gray-700 dark:text-gray-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/20">
+              {t('Medical Affairs')}
+            </button>
+            <button className="px-4 py-2 bg-white dark:bg-slate-800 rounded-full font-medium text-gray-700 dark:text-gray-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/20">
+              {t('CRO Solutions')}
+            </button>
+          </div>
+          
+          {/* Use Case Cards */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="bg-white dark:bg-slate-800 rounded-xl overflow-hidden shadow-sm">
+              <div className="h-48 bg-emerald-100 dark:bg-emerald-900/20 flex items-center justify-center">
+                <FileText size={48} className="text-emerald-500" />
+              </div>
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <span className="px-3 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 rounded-full text-xs font-medium">
+                    {t('Regulatory Affairs')}
+                  </span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                    {t('Phase 3 • Oncology')}
+                  </span>
+                </div>
+                <h3 className="text-xl font-bold mb-2">{t('Accelerating IND Submissions')}</h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                  {t('How a mid-size biotech automated their IND submission process and cut preparation time by 40%.')}
+                </p>
+                <Link to="/cases/ind-automation" className="text-emerald-600 dark:text-emerald-400 font-medium hover:underline flex items-center gap-1">
+                  {t('Read Case Study')} <ArrowRight size={16} />
+                </Link>
+              </div>
+            </div>
+            
+            <div className="bg-white dark:bg-slate-800 rounded-xl overflow-hidden shadow-sm">
+              <div className="h-48 bg-sky-100 dark:bg-sky-900/20 flex items-center justify-center">
+                <Brain size={48} className="text-sky-500" />
+              </div>
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <span className="px-3 py-1 bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 rounded-full text-xs font-medium">
+                    {t('Medical Affairs')}
+                  </span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                    {t('Medical Devices • EU')}
+                  </span>
+                </div>
+                <h3 className="text-xl font-bold mb-2">{t('Streamlining EU MDR Compliance')}</h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                  {t('How a medical device company automated CER generation for 12 product lines and achieved 100% MDR compliance.')}
+                </p>
+                <Link to="/cases/mdr-compliance" className="text-sky-600 dark:text-sky-400 font-medium hover:underline flex items-center gap-1">
+                  {t('Read Case Study')} <ArrowRight size={16} />
+                </Link>
+              </div>
+            </div>
+            
+            <div className="bg-white dark:bg-slate-800 rounded-xl overflow-hidden shadow-sm">
+              <div className="h-48 bg-purple-100 dark:bg-purple-900/20 flex items-center justify-center">
+                <Beaker size={48} className="text-purple-500" />
+              </div>
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <span className="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 rounded-full text-xs font-medium">
+                    {t('Clinical Development')}
+                  </span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                    {t('Phase 2 • CNS')}
+                  </span>
+                </div>
+                <h3 className="text-xl font-bold mb-2">{t('Optimizing Protocol Design')}</h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                  {t('How a CNS-focused biotech leveraged CSR intelligence to optimize their Phase 2 trial design and improve endpoint selection.')}
+                </p>
+                <Link to="/cases/protocol-optimization" className="text-purple-600 dark:text-purple-400 font-medium hover:underline flex items-center gap-1">
+                  {t('Read Case Study')} <ArrowRight size={16} />
+                </Link>
+              </div>
+            </div>
+          </div>
+          
+          <div className="mt-10 text-center">
+            <Link to="/use-cases" className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium transition-colors">
+              {t('View All Use Cases')} <ArrowRight size={18} />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="py-6 bg-gray-50 dark:bg-slate-900 text-center text-sm text-gray-500 dark:text-gray-400">
         <div className="max-w-6xl mx-auto px-6">
