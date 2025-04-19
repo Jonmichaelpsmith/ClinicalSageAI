@@ -1,65 +1,19 @@
 // App.tsx – fully connected routing system with dashboard layout
 import React, { lazy, Suspense, useState, useEffect } from 'react';
 // Using wouter for routing
-import { Route, Switch, Link, useLocation } from 'wouter';
+import { Route, Switch } from 'wouter';
 
 // Import layouts and core components
 import { Toaster } from "@/components/ui/toaster";
-import { Loader2 } from 'lucide-react';
+import { Loader2, Beaker } from 'lucide-react';
+import DashboardLayout from "@/components/DashboardLayout";
+import { AuthProvider } from '@/hooks/use-auth';
 
-// Auth context for the app
-const AuthContext = React.createContext<any>(null);
+// Import page components
+import CsrIntelligence from './pages/CsrIntelligence';
 
-// Simple DashboardLayout instead of importing the one with missing hooks
-function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  
-  return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-slate-900">
-      {/* Sidebar - collapsible */}
-      <div className={`fixed inset-y-0 left-0 z-40 transition-all duration-300 
-        ${sidebarCollapsed ? 'w-16' : 'w-64'} 
-        bg-white dark:bg-slate-800 border-r border-gray-200 dark:border-slate-700`}>
-        {/* Sidebar header */}
-        <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200 dark:border-slate-700">
-          <div className="flex items-center">
-            {!sidebarCollapsed && <span className="font-bold text-emerald-700 dark:text-emerald-400">TrialSage</span>}
-            {sidebarCollapsed && <span className="font-bold text-emerald-700 dark:text-emerald-400">TS</span>}
-          </div>
-          <button
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-          >
-            {sidebarCollapsed ? '→' : '←'}
-          </button>
-        </div>
-        
-        {/* Sidebar content - Navigation would go here in a real component */}
-        <div className="overflow-y-auto h-[calc(100vh-4rem)]">
-          {/* Navigation links would go here */}
-        </div>
-      </div>
-
-      {/* Main content area */}
-      <div className={`flex-1 transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-64'}`}>
-        {/* Top navbar */}
-        <div className="h-16 bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between px-6">
-          <div>
-            <h1 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Dashboard</h1>
-          </div>
-          <div className="flex items-center gap-4">
-            {/* User dropdown and notifications would go here */}
-          </div>
-        </div>
-        
-        {/* Page content */}
-        <main className="p-6">
-          {children}
-        </main>
-      </div>
-    </div>
-  );
-}
+// Fixed the missing Flask icon issue by using Beaker instead
+// Note: If you need a Flask icon, make sure to import it correctly
 
 // Public pages
 import HomeLanding from './pages/HomeLanding';
@@ -470,35 +424,6 @@ const LoginPage = () => {
 const DemoPage = () => <div>Demo Page</div>;
 const ROICalculator = () => <div>ROI Calculator</div>;
 
-// AuthProvider component - would manage authentication state in real app
-const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  // Simulate checking if user is logged in
-  useEffect(() => {
-    // In a real app, would check if user is logged in via API
-    // For demo, just simulate a logged in user
-    setTimeout(() => {
-      setUser({ username: 'demouser', role: 'admin' });
-      setLoading(false);
-    }, 500);
-  }, []);
-
-  const value = {
-    user,
-    loading,
-    login: () => {},
-    logout: () => {}
-  };
-
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
-};
-
 export default function App() {
   return (
     <AuthProvider>
@@ -541,6 +466,15 @@ export default function App() {
             {() => (
               <DashboardLayout>
                 <CsrLibrary />
+              </DashboardLayout>
+            )}
+          </Route>
+          
+          {/* CSR Intelligence */}
+          <Route path="/csr-intelligence">
+            {() => (
+              <DashboardLayout>
+                <CsrIntelligence />
               </DashboardLayout>
             )}
           </Route>
