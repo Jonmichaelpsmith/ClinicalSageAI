@@ -8,6 +8,10 @@ class CSR(Base):
     therapeutic = Column(String)          # e.g. 'Oncology'
     protocol_id = Column(Integer)         # FK to protocols
     created_at  = Column(Date)
+    content     = Column(Text)            # Document content
+    pdf_path    = Column(String)          # Path to PDF file
+    status      = Column(String)          # Document status (e.g., 'approved', 'draft')
+    hash        = Column(String)          # SHA256 hash of content for delta embedding
 
 class Benchmark(Base):
     __tablename__ = "csr_benchmarks"

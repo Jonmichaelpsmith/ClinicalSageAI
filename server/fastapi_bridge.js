@@ -198,8 +198,70 @@ function stopFastApiServer() {
  */
 function createFastApiProxyMiddleware() {
   return function(req, res, next) {
+    // Handle streaming endpoints
+    if (req.path === '/api/assistant/stream' || req.path === '/api/assistant/stream_with_context') {
+      const method = req.method.toLowerCase();
+      const url = `${FASTAPI_SERVER}${req.path}`;
+      
+      // Ensure server is running before proxying
+      ensureFastApiServer().then(serverReady => {
+        if (!serverReady) {
+          return res.status(500).json({ 
+            success: false, 
+            message: 'FastAPI server not available' 
+          });
+        }
+        
+        // Special handling for streaming responses
+        req.pipe(
+          axios({
+            method,
+            url,
+            data: req.body,
+            responseType: 'stream',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }).then(response => {
+            // Set headers and pipe the stream
+            res.set(response.headers);
+            response.data.pipe(res);
+          }).catch(error => {
+            console.error(`Error proxying to FastAPI streaming endpoint (${req.path}):`, error.message);
+            res.status(500).json({ 
+              success: false, 
+              message: error.message || 'Failed to process streaming request'
+            });
+          })
+        );
+        
+        return;
+      }).catch(error => {
+        console.error(`Error ensuring FastAPI server for streaming (${req.path}):`, error.message);
+        res.status(500).json({ 
+          success: false, 
+          message: 'Failed to start FastAPI server'
+        });
+      });
+    }
+    // Proxy assistant retrieval endpoints
+    else if (req.path === '/api/assistant/retrieve') {
+      callFastApi(req.path, req.method.toLowerCase(), req.body, {
+        params: req.query
+      })
+        .then(result => {
+          res.json({ success: true, ...result });
+        })
+        .catch(error => {
+          console.error(`Error proxying to FastAPI (${req.path}):`, error.message);
+          res.status(500).json({ 
+            success: false, 
+            message: error.message || 'Failed to process request'
+          });
+        });
+    } 
     // Proxy CER endpoints to the CER FastAPI service
-    if (req.path.startsWith('/api/cer/')) {
+    else if (req.path.startsWith('/api/cer/')) {
       callFastApi(req.path.replace('/api/cer', '/cer'), req.method.toLowerCase(), req.body, {
         params: req.query
       })

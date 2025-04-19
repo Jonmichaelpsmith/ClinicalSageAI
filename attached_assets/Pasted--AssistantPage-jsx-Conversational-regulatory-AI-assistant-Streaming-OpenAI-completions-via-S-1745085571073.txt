@@ -1,0 +1,85 @@
+// AssistantPage.jsx – Conversational regulatory AI assistant
+// Streaming OpenAI completions via SSE endpoint /api/assistant/stream
+// Dependencies: @tanstack/react-query, react-markdown, uuid
+
+import React, { useState, useRef, useEffect } from "react";
+import { useMutation } from "@tanstack/react-query";
+import ReactMarkdown from "react-markdown";
+import { v4 as uuid } from "uuid";
+import { Send, Loader } from "lucide-react";
+
+export default function AssistantPage() {
+  const [messages, setMessages] = useState([]); // {id, role, content}
+  const [input, setInput] = useState("");
+  const containerRef = useRef(null);
+
+  /* scroll to bottom */
+  useEffect(() => {
+    containerRef.current?.scrollTo({ top: containerRef.current.scrollHeight, behavior: "smooth" });
+  }, [messages]);
+
+  /* streaming mutation */
+  const chatMutation = useMutation({
+    mutationFn: async (body) => {
+      const res = await fetch("/api/assistant/stream", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) throw new Error("Stream error");
+      return res.body; // ReadableStream
+    },
+    onSuccess: async (stream) => {
+      const reader = stream.getReader();
+      let botMsg = { id: uuid(), role: "assistant", content: "" };
+      setMessages((prev) => [...prev, botMsg]);
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = new TextDecoder().decode(value);
+        botMsg = { ...botMsg, content: botMsg.content + chunk };
+        setMessages((prev) => prev.map((m) => (m.id === botMsg.id ? botMsg : m)));
+      }
+    },
+  });
+
+  const send = () => {
+    if (!input.trim()) return;
+    const userMsg = { id: uuid(), role: "user", content: input.trim() };
+    setMessages([...messages, userMsg]);
+    chatMutation.mutate({ messages: [...messages, userMsg].slice(-15) }); // send last 15 for context
+    setInput("");
+  };
+
+  return (
+    <div className="h-full flex flex-col">
+      <div ref={containerRef} className="flex-1 overflow-y-auto bg-gray-50 dark:bg-slate-900/40 p-6 space-y-4">
+        {messages.map((m) => (
+          <div
+            key={m.id}
+            className={`max-w-prose px-4 py-2 rounded-lg ${
+              m.role === "assistant" ? "bg-white dark:bg-slate-800" : "bg-emerald-600 text-white self-end"}`}
+          >
+            <ReactMarkdown className="prose dark:prose-invert text-sm leading-relaxed">{m.content || "…"}</ReactMarkdown>
+          </div>
+        ))}
+        {chatMutation.isLoading && <Loader className="animate-spin text-emerald-600" />}
+      </div>
+      <div className="border-t border-gray-200 dark:border-slate-700 p-4 flex gap-3 bg-white dark:bg-slate-800">
+        <textarea
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Ask about IND templates, CER strategy, biostats…"
+          className="flex-1 resize-none h-12 border rounded px-3 py-2 text-sm focus:outline-emerald-600 bg-gray-50 dark:bg-slate-700 dark:border-slate-600"
+        />
+        <button
+          onClick={send}
+          disabled={chatMutation.isLoading}
+          className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded flex items-center gap-1 text-sm disabled:opacity-50"
+        >
+          <Send size={16}/> Send
+        </button>
+      </div>
+    </div>
+  );
+}

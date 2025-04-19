@@ -11,6 +11,10 @@ import { AuthProvider } from '@/hooks/use-auth';
 
 // Import page components
 import CsrIntelligence from './pages/CsrIntelligence';
+import DocumentsPage from './pages/DocumentsPage';
+import SubmissionBuilder from './pages/SubmissionBuilder';
+import AssistantPage from './pages/AssistantPage';
+import AdminPage from './pages/AdminPage';
 
 // Fixed the missing Flask icon issue by using Beaker instead
 // Note: If you need a Flask icon, make sure to import it correctly
@@ -443,6 +447,24 @@ export default function App() {
               </DashboardLayout>
             )}
           </Route>
+          
+          {/* === Submission Builder === */}
+          <Route path="/portal/submissions">
+            {() => (
+              <DashboardLayout>
+                <SubmissionBuilder />
+              </DashboardLayout>
+            )}
+          </Route>
+          
+          {/* === AI Assistant === */}
+          <Route path="/portal/assistant">
+            {() => (
+              <DashboardLayout>
+                <AssistantPage />
+              </DashboardLayout>
+            )}
+          </Route>
 
           {/* === Dashboard layout routes === */}
           {/* Main dashboard */}
@@ -526,12 +548,30 @@ export default function App() {
               </DashboardLayout>
             )}
           </Route>
+          
+          {/* Documents Workspace */}
+          <Route path="/documents">
+            {() => (
+              <DashboardLayout>
+                <DocumentsPage />
+              </DashboardLayout>
+            )}
+          </Route>
 
           {/* Assistant */}
           <Route path="/assistant">
             {() => (
               <DashboardLayout>
                 <TrialSageAssistant />
+              </DashboardLayout>
+            )}
+          </Route>
+          
+          {/* Admin */}
+          <Route path="/admin">
+            {() => (
+              <DashboardLayout>
+                <AdminPage />
               </DashboardLayout>
             )}
           </Route>

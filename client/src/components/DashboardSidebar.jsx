@@ -20,7 +20,10 @@ import {
   Microscope,
   Users,
   BookOpen,
-  ArrowUpRight
+  ArrowUpRight,
+  Files,
+  MessageSquare,
+  Shield
 } from 'lucide-react';
 
 // Import translation function (replace with i18next when properly installed)
@@ -93,6 +96,28 @@ export default function DashboardSidebar({ collapsed, setCollapsed }) {
       ]
     },
     { 
+      title: t('Submissions'), 
+      icon: <Package size={20} />, 
+      link: '/portal/submissions',
+      notification: null
+    },
+    { 
+      title: t('Context Assistant'), 
+      icon: <MessageSquare size={20} />, 
+      link: '/portal/assistant',
+      notification: null
+    },
+    { 
+      title: t('Documents'), 
+      icon: <Files size={20} />, 
+      link: '/documents',
+      notification: null,
+      subItems: [
+        { title: t('My Documents'), icon: <FileText size={18} />, link: '/documents' },
+        { title: t('Shared With Me'), icon: <MessageSquare size={18} />, link: '/documents/shared' }
+      ]
+    },
+    { 
       title: t('TrialSage Assistant'), 
       icon: <Coffee size={20} />, 
       link: '/assistant',
@@ -114,6 +139,12 @@ export default function DashboardSidebar({ collapsed, setCollapsed }) {
       icon: <BookOpen size={20} />, 
       link: '/academic',
       notification: 3
+    },
+    { 
+      title: t('Admin'), 
+      icon: <Shield size={20} />, 
+      link: '/admin',
+      notification: null
     }
   ];
 

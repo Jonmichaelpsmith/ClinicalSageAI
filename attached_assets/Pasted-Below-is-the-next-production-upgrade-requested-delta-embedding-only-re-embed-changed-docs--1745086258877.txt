@@ -1,0 +1,129 @@
+Below is the **next production upgrade** requested: **delta‑embedding** (only re‑embed changed docs) + **page‑level PDF deep‑links** so citations jump to the exact page.
+
+---
+
+## 1 ▸ Database tweaks
+
+```python
+# ALTER TABLE doc_chunks ADD COLUMN page   INTEGER;
+# ALTER TABLE csrs        ADD COLUMN hash  VARCHAR;
+CREATE EXTENSION IF NOT EXISTS pgcrypto;   -- needed for digest()
+```
+
+---
+
+## 2 ▸ Delta‑aware Embed Pipeline  
+*(replaces previous bulk script)*
+
+```python
+# scripts/embed_delta.py
+"""
+Re‑embeds only docs whose SHA256(content) changed.
+Adds page index & live PDF coordinates if available.
+"""
+import hashlib, re, fitz  # PyMuPDF
+from tqdm import tqdm
+from sqlalchemy.orm import Session
+from openai import OpenAI
+from server.db import SessionLocal
+from server.models.csr import CSR
+from server.models.doc_chunk import DocChunk
+
+EMBED_MODEL = "text-embedding-3-small"
+TOKENS = 500
+STRIP = re.compile(r"\\s+")
+client = OpenAI()
+
+def hash_text(t: str) -> str:
+    return hashlib.sha256(t.encode()).hexdigest()
+
+def chunk_with_pages(path, words_per= TOKENS):
+    doc = fitz.open(path)
+    for page_num, page in enumerate(doc, 1):
+        text = page.get_text()
+        words = text.split()
+        for i in range(0, len(words), words_per):
+            chunk = " ".join(words[i:i+words_per])
+            if chunk.strip():
+                yield chunk, page_num
+
+def main():
+    db: Session = SessionLocal()
+    for d in tqdm(db.query(CSR).filter(CSR.status=="approved"), desc="Delta‑embed"):
+        h = hash_text(d.content or "")
+        if h == d.hash:
+            continue  # no update
+        db.query(DocChunk).filter(DocChunk.doc_id==d.id).delete()
+        # assume PDF path stored on CSR
+        for chunk, pg in chunk_with_pages(d.pdf_path):
+            emb = client.embeddings.create(input=chunk, model=EMBED_MODEL).data[0].embedding
+            db.add(DocChunk(doc_id=d.id, content=chunk, page=pg, embedding=emb))
+        d.hash = h
+        db.commit()
+    db.close()
+
+if __name__ == "__main__":
+    main()
+```
+
+*Install `PyMuPDF`*:
+
+```bash
+pip install pymupdf
+```
+
+Schedule this script nightly or trigger on document approval.
+
+---
+
+## 3 ▸ Backend – citation now returns page
+
+```python
+# assistant_retrieval.py modify payload
+payload = [
+   {"idx":i+1,"doc_id":r.doc_id,"page":r.page,"snippet":r.content[:200]}
+   for i,r in enumerate(rows)
+]
+```
+
+Add endpoint to serve PDF page as image:
+
+```python
+@router.get("/documents/{doc_id}/page/{pg}.png")
+def page_png(doc_id:int, pg:int):
+    doc = fitz.open(get_pdf_path(doc_id))
+    pix = doc[pg-1].get_pixmap(matrix=fitz.Matrix(2,2))
+    png = pix.tobytes("png")
+    return Response(content=png, media_type="image/png")
+```
+
+---
+
+## 4 ▸ DocumentViewerModal – show PDF page thumbnail
+
+Enhance modal footer:
+
+```jsx
+<img src={`/api/documents/${docId}/page/${page}.png`} alt="" className="w-full mb-4 rounded"/>
+```
+
+Highlight snippet overlay via JS scroll as before.
+
+---
+
+## 5 ▸ AssistantPage.jsx – citation link opens PDF page
+
+```jsx
+<button onClick={() => setViewDoc({doc_id:c.doc_id, snippet:c.snippet, page:c.page})}>
+```
+
+Pass `page` to modal.
+
+---
+
+### Result
+
+* Re‑embedding is instant for new/changed docs (saves OpenAI tokens).  
+* Citation footnotes now open the precise PDF page with highlighted text, giving reviewers immediate context.  
+
+Copy new/modified files and run migrations; your clients now have **page‑level, verifiable AI answers** and an efficient embedding pipeline. Let me know when you’re ready to tackle submission status polling or enterprise SSO!
