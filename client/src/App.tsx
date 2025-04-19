@@ -5,7 +5,7 @@ import { Route, Switch } from 'wouter';
 
 // Import layouts and core components
 import { Toaster } from "@/components/ui/toaster";
-import { Loader2, Beaker } from 'lucide-react';
+import { Loader2, Beaker, MessageSquare } from 'lucide-react';
 import DashboardLayout from "@/components/DashboardLayout";
 import { AuthProvider } from '@/hooks/use-auth';
 import { ToastContainer } from 'react-toastify';
@@ -27,6 +27,7 @@ import AdminPage from './pages/AdminPage';
 // Public pages
 import HomeLanding from './pages/HomeLanding';
 import ChatAssistant from './pages/ChatAssistant';
+import CopilotDrawer from './pages/CopilotDrawer';
 
 // Create a loading component for lazy-loaded routes
 const LoadingFallback = () => (
@@ -434,9 +435,26 @@ const DemoPage = () => <div>Demo Page</div>;
 const ROICalculator = () => <div>ROI Calculator</div>;
 
 export default function App() {
+  const [copilotOpen, setCopilotOpen] = useState(false);
+
+  const toggleCopilot = () => {
+    setCopilotOpen(prev => !prev);
+  };
+
   return (
     <AuthProvider>
       <ToastContainer position="top-right" autoClose={3000} />
+      {/* Copilot drawer available on all pages */}
+      <CopilotDrawer isOpen={copilotOpen} onClose={() => setCopilotOpen(false)} />
+      
+      {/* Fixed button to open Copilot */}
+      <button 
+        className="fixed bottom-4 right-4 bg-emerald-600 text-white p-3 rounded-full shadow-lg z-50 hover:bg-emerald-700 transition-colors"
+        onClick={toggleCopilot}
+      >
+        <MessageSquare size={20} />
+      </button>
+      
       <Suspense fallback={<LoadingFallback />}>
         <Switch>
           {/* === Public routes === */}

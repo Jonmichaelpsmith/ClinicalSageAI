@@ -1,46 +1,41 @@
-"""
-CER Sequence Models
-
-This module defines SQLAlchemy models for CER (Clinical Evaluation Report) sequences
-and related documents.
-"""
-
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, JSON
+"""CERSequence model for Clinical Evaluation Report sequences"""
+from sqlalchemy import Column, Integer, String, Text, DateTime, JSON, Boolean
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
+
 from server.db import Base
-from server.models.document import Document as BaseDocument
 
 class CERSequence(Base):
     """
-    Clinical Evaluation Report sequence model.
+    CER Sequence model
     
-    Represents a compiled sequence of documents for CER submission.
+    Represents a group of documents within a specific Clinical Evaluation Report sequence.
+    Each sequence corresponds to a regulatory submission package.
     """
     __tablename__ = "cer_sequences"
-
-    id = Column(Integer, primary_key=True)
-    region = Column(String, nullable=False)
-    created = Column(DateTime, nullable=False)
-    status = Column(String, default="draft")
-    exported_path = Column(String, nullable=True)
+    
+    id = Column(Integer, primary_key=True, index=True)
+    sequence_number = Column(String(50), index=True)  # e.g., "0001", "0002"
+    title = Column(String(255), nullable=False)
+    description = Column(Text)
+    
+    # Metadata
+    region = Column(String(50), index=True)  # FDA, EMA, PMDA, etc.
+    status = Column(String(50), index=True, default="draft")  # draft, submitted, approved, etc.
+    metadata = Column(JSON)
+    is_valid = Column(Boolean, default=False)
+    
+    # Timestamps
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    submitted_at = Column(DateTime)
+    
+    # XML generation
+    has_eu_regional = Column(Boolean, default=False)
+    has_ectd_index = Column(Boolean, default=False)
     
     # Relationships
-    documents = relationship("CERSequenceDoc", back_populates="sequence", cascade="all, delete-orphan")
-
-class CERSequenceDoc(Base):
-    """
-    Document within a CER sequence.
+    documents = relationship("Document", back_populates="sequence")
     
-    Links a document to a specific module within a CER sequence.
-    """
-    __tablename__ = "cer_sequence_docs"
-
-    id = Column(Integer, primary_key=True)
-    sequence_id = Column(Integer, ForeignKey("cer_sequences.id", ondelete="CASCADE"), nullable=False)
-    doc_id = Column(Integer, ForeignKey("documents.id"), nullable=False)
-    module = Column(String, nullable=False)
-    file_path = Column(String, nullable=True)
-    
-    # Relationships
-    sequence = relationship("CERSequence", back_populates="documents")
-    document = relationship("BaseDocument")
+    def __repr__(self):
+        return f"<CERSequence id={self.id} number='{self.sequence_number}' region='{self.region}'>"
