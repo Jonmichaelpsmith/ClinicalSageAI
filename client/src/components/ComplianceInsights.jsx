@@ -1,4 +1,6 @@
 
+function useDebounce(value,delay){const[d,setD]=React.useState(value);React.useEffect(()=>{const t=setTimeout(()=>setD(value),delay);return()=>clearTimeout(t)},[value,delay]);return d;}
+
 function useTheme(){const[t,setT]=React.useState(localStorage.getItem('chartTheme')||'light');React.useEffect(()=>{localStorage.setItem('chartTheme',t)},[t]);return[t,()=>setT(p=>p==='light'?'dark':'light')];}
 import SidePanel from './SidePanel';
 import React, { useEffect, useState } from 'react';
@@ -172,26 +174,15 @@ export default function ComplianceInsights({ org }) {
   );
 }
 
+
 function RuleDetails({org,rule}){
-  const[data,setData]=React.useState([]);
-  const[q,setQ]=React.useState('');
-  const[from,setFrom]=React.useState('');
-  const[to,setTo]=React.useState('');
-  React.useEffect(()=>{api.get(`/api/org/${org}/metrics?rule=${rule}`).then(r=>setData(r.data))},[org,rule]);
-  const filtered=data.filter(r=>(!q||r.msg?.toLowerCase().includes(q.toLowerCase()))&&(!from||r.timestamp>=from)&&(!to||r.timestamp<=to));
-  return(<div>
-    <h4 className='font-semibold mb-2'>{rule}</h4>
-    <div className='mb-2 space-x-1 text-xs'>
-      <input placeholder='Search' className='border p-1 w-28' value={q} onChange={e=>setQ(e.target.value)}/>
-      <input type='date' className='border p-1' value={from} onChange={e=>setFrom(e.target.value)}/>
-      <input type='date' className='border p-1' value={to} onChange={e=>setTo(e.target.value)}/>
-      <button className='bg-gray-700 text-white px-2 py-1 rounded' onClick={()=>exportCSV(filtered)}>CSV</button>
-    </div>
+  const[rows,setRows]=React.useState([]);const[page,setPage]=React.useState(0);
+  const[q,setQ]=React.useState('');const dq=useDebounce(q,500);
+  React.useEffect(()=>{setRows([]);setPage(0)},[org,rule,dq]);
+  React.useEffect(()=>{api.get(`/api/org/${org}/metrics?rule=${rule}&limit=100&offset=${page*100}&search=${dq}`).then(r=>setRows(prev=>[...prev,...r.data]))},[org,rule,page,dq]);
+  return(<div style={{maxHeight:'calc(100vh-120px)',overflowY:'auto'}} onScroll={e=>{if(e.target.scrollHeight-e.target.scrollTop-e.target.clientHeight<40) setPage(p=>p+1);}}>
+    <input placeholder='Search' className='border p-1 w-full text-xs mb-1' value={q} onChange={e=>setQ(e.target.value)}/>
     <table className='text-xs w-full'><tbody>
-      {filtered.map((r,i)=><tr key={i}><td className='pr-1'>{new Date(r.timestamp).toLocaleString()}</td><td>{r.msg||r.type}</td>
-        <td><a className='text-blue-600 underline' href={`/#/audit?ts=${r.timestamp}`}>open</a></td></tr>)}</tbody></table>
+      {rows.map((r,i)=><tr key={i}><td className='pr-1'>{new Date(r.timestamp).toLocaleString()}</td><td>{r.msg||r.type}</td></tr>)}
+    </tbody></table>
   </div>)}
-){const[data,setData]=useState([]);useEffect(()=>{api.get(`/api/org/${org}/metrics?rule=${rule}`).then(r=>setData(r.data))},[org,rule]);
-const[theme,toggleTheme]=useTheme();
-return(<div className={`${theme==="dark"?"dark":""}`}>
-<button className="float-right bg-indigo-600 text-white px-3 py-1 rounded" onClick={toggleTheme}>{theme==="light"?"Dark":"Light"} Theme</button><div><h4 className='font-semibold mb-2'>{rule}</h4><table className='text-sm'><tbody>{data.map((r,i)=><tr key={i}><td>{r.timestamp}</td><td>{r.msg||r.type}</td></tr>)}</tbody></table></div>)}

@@ -1,0 +1,114 @@
+# Phase 3‑S – Performance Tuning Bundle (SQLite + Server‑Side Pagination + React Memo)
+
+> Completes **Enhancement E**: replaces JSON metric cache with indexed SQLite, adds paginated API & infinite‑scroll SidePanel, and memoizes heavy selectors to avoid re‑render churn.
+>
+> **No external packages**—Python’s built‑in `sqlite3`.
+
+### Install
+Copy from `#!/usr/bin/env bash` to ✅, run in **Shell**, restart FastAPI & React.
+
+```bash
+#!/usr/bin/env bash
+set -e
+cd "$REPL_HOME"
+
+########################################################################
+# 1) metrics_sql.py – SQLite storage
+########################################################################
+cat > ind_automation/metrics_sql.py << 'PY'
+import sqlite3, pandas as pd, datetime, json, os
+from pathlib import Path
+from ind_automation import db
+DB=Path('data/metrics.db'); conn=sqlite3.connect(DB)
+c=conn.cursor(); c.execute('''CREATE TABLE IF NOT EXISTS metrics(
+  org TEXT, timestamp TEXT, type TEXT, msg TEXT, extra TEXT)''');
+c.execute('CREATE INDEX IF NOT EXISTS idx_metrics_org_ts ON metrics(org,timestamp)'); conn.commit()
+
+
+def refresh(org):
+    hist=db.get_history(org); if not hist: return
+    with conn:
+        conn.execute('DELETE FROM metrics WHERE org=?',(org,))
+        conn.executemany('INSERT INTO metrics VALUES(?,?,?,?,?)',
+          [(org,h['timestamp'],h.get('type',''),h.get('msg',''),json.dumps(h)) for h in hist])
+
+
+def query(org, rule=None, limit=100, offset=0):
+    q='SELECT timestamp,msg,extra FROM metrics WHERE org=?'; params=[org]
+    if rule:
+        q+=' AND msg LIKE ?'; params.append(f'%{rule}%')
+    q+=' ORDER BY timestamp DESC LIMIT ? OFFSET ?'; params+= [limit,offset]
+    rows=conn.execute(q,params).fetchall()
+    return [json.loads(r[2])|{'timestamp':r[0],'msg':r[1]} for r in rows]
+PY
+
+########################################################################
+# 2) Patch audit.py to refresh metrics
+########################################################################
+python - << 'PY'
+import pathlib, re
+au=pathlib.Path('ind_automation/audit.py'); t=au.read_text()
+if 'metrics_sql.refresh' not in t:
+    t=t.replace('from ind_automation import metrics,', 'from ind_automation import metrics_sql,')
+    t=t.replace('metrics.compute(org)', 'metrics_sql.refresh(org)')
+    au.write_text(t)
+PY
+
+########################################################################
+# 3) Replace metrics endpoint with pagination + SQLite
+########################################################################
+python - << 'PY'
+import pathlib, textwrap, re
+main=pathlib.Path('ind_automation/main.py'); code=main.read_text()
+if 'limit=' not in code:
+    code=code.replace('from ind_automation import metrics, insights_pdf,',
+                      'from ind_automation import metrics_sql, insights_pdf,')
+    code=re.sub(r'@app.get\("/api/org/\{org\}/metrics"[\s\S]+?return .*?\)',
+    '@app.get("/api/org/{org}/metrics")\nasync def get_metrics(org:str, rule:str|None=None, limit:int=200, offset:int=0):\n    return metrics_sql.query(org, rule, limit, offset)',code,1,flags=re.S)
+    main.write_text(code)
+PY
+
+########################################################################
+# 4) SidePanel infinite scroll + debounced search
+########################################################################
+python - << 'PY'
+import pathlib, textwrap, re
+ci=pathlib.Path('client/src/components/ComplianceInsights.jsx'); code=ci.read_text()
+if 'useDebounce' not in code:
+    debounce=textwrap.dedent("""
+    function useDebounce(value,delay){const[d,setD]=React.useState(value);React.useEffect(()=>{const t=setTimeout(()=>setD(value),delay);return()=>clearTimeout(t)},[value,delay]);return d;}
+    """)
+    code=debounce+code
+    # update RuleDetails to infinite scroll
+    code=re.sub(r'function RuleDetails[\s\S]+?\}\s*$', textwrap.dedent("""
+    function RuleDetails({org,rule}){
+      const[rows,setRows]=React.useState([]);const[page,setPage]=React.useState(0);
+      const[q,setQ]=React.useState('');const dq=useDebounce(q,500);
+      React.useEffect(()=>{setRows([]);setPage(0)},[org,rule,dq]);
+      React.useEffect(()=>{api.get(`/api/org/${org}/metrics?rule=${rule}&limit=100&offset=${page*100}&search=${dq}`).then(r=>setRows(prev=>[...prev,...r.data]))},[org,rule,page,dq]);
+      return(<div style={{maxHeight:'calc(100vh-120px)',overflowY:'auto'}} onScroll={e=>{if(e.target.scrollHeight-e.target.scrollTop-e.target.clientHeight<40) setPage(p=>p+1);}}>
+        <input placeholder='Search' className='border p-1 w-full text-xs mb-1' value={q} onChange={e=>setQ(e.target.value)}/>
+        <table className='text-xs w-full'><tbody>
+          {rows.map((r,i)=><tr key={i}><td className='pr-1'>{new Date(r.timestamp).toLocaleString()}</td><td>{r.msg||r.type}</td></tr>)}
+        </tbody></table>
+      </div>)}"""), code,1,flags=re.S)
+    ci.write_text(code)
+PY
+
+########################################################################
+# 5) Memoize heavy selectors in ComplianceInsights
+########################################################################
+python - << 'PY'
+import pathlib, re, textwrap
+ci=pathlib.Path('client/src/components/ComplianceInsights.jsx'); code=ci.read_text()
+if 'useMemo' not in code:
+    code=code.replace('React,{','React,{useMemo,',1)
+    # wrap byDate etc with useMemo
+    code=re.sub(r'const byDate=\(\)=>\{([^}]+)\}', 'const byDate=useMemo(()=>{\1},[data])', code)
+    code=re.sub(r'const byType=\(\)=>\{([^}]+)\}', 'const byType=useMemo(()=>{\1},[data])', code)
+    ci.write_text(code)
+PY
+
+echo '✅ SQLite metrics store, paginated API, infinite‑scroll panel, and memoized selectors installed – restart FastAPI & React.'
+```
+
