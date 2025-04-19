@@ -39,10 +39,14 @@ app.add_middleware(
 try:
     from server.api.validation.profiles import router as validation_profiles_router
     from server.api.validation.submission import router as validation_submission_router
+    from server.api.ws.qc import router as qc_ws_router
     
     # Include validation routers
     app.include_router(validation_profiles_router)
     app.include_router(validation_submission_router)
+    app.include_router(qc_ws_router)
+    
+    print("Successfully loaded API routers including WebSocket QC router")
 except ImportError as e:
     print(f"Warning: Unable to import validation routers: {str(e)}")
 

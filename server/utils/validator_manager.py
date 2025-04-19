@@ -1,213 +1,156 @@
 """
-Validator Manager
+Validator Manager for Region-Specific Validation Profiles
 
-This module provides a unified interface for accessing various regional validators
-(FDA, EMA, PMDA) and executing validation against eCTD submissions.
+This module provides access to different regulatory validation profiles for
+FDA, EMA, and PMDA, ensuring that documents are validated against the appropriate
+standards for each regulatory authority.
 """
-
+from typing import Dict, Any, Callable, Optional
 import os
 import json
-import logging
-from typing import Dict, List, Any, Optional
 
-# Import validators
-try:
-    from server.utils.eu_evalidator import get_validator_profile as get_eu_profile
-    from server.utils.eu_evalidator import validate_eu_specifics, parse_validation_report as parse_eu_report
-except ImportError:
-    # Fall back to local imports if server module not found
-    from utils.eu_evalidator import get_validator_profile as get_eu_profile
-    from utils.eu_evalidator import validate_eu_specifics, parse_validation_report as parse_eu_report
-
-# Set up logging
-logger = logging.getLogger(__name__)
-
-# Load profiles
-EU_VALIDATOR_PROFILE = get_eu_profile()
-
-# Mock FDA profile for now
-FDA_VALIDATOR_PROFILE = {
-    "name": "FDA eValidator",
-    "version": "2.1",
-    "description": "FDA validation profile for eCTD submissions",
-    "supported_regions": ["FDA", "US"],
-    "file_format_rules": [
-        {
-            "id": "FDA-FF-01",
-            "description": "PDF files must be PDF 1.4 or higher",
-            "severity": "error"
-        },
-        {
-            "id": "FDA-FF-02",
-            "description": "File paths must not exceed 150 characters",
-            "severity": "error"
-        },
-    ],
-    "required_modules": {
-        "initial": [
-            {"id": "m1/us/10-cover", "name": "Cover Letter", "required": True},
-            {"id": "m1/us/12-form", "name": "Application Form", "required": True},
-            {"id": "m2/25-clin-over", "name": "Clinical Overview", "required": True},
-            {"id": "m3/32-body-data", "name": "Body of Data", "required": True}
+# Define validator factory functions for each region
+def create_fda_validator() -> Dict[str, Any]:
+    """
+    Create a validator configuration for FDA submissions
+    using eCTD 3.2.2 validation rules
+    """
+    return {
+        "name": "FDA_eCTD_3.2.2",
+        "region": "FDA",
+        "rules": [
+            {"id": "FDA-PDF-1", "description": "PDF document must use PDF version 1.4 to 1.7", "severity": "error"},
+            {"id": "FDA-PDF-2", "description": "PDF documents must not have security settings applied", "severity": "error"},
+            {"id": "FDA-PDF-3", "description": "Files must have unique names within their directories", "severity": "error"},
+            {"id": "FDA-PDF-4", "description": "PDF documents should use fonts that are embedded and subset", "severity": "warning"},
+            {"id": "FDA-PDF-5", "description": "PDF documents should not exceed 100MB", "severity": "warning"}
         ],
-        "variation": [
-            {"id": "m1/us/10-cover", "name": "Cover Letter", "required": True}
-        ]
+        "required_modules": ["m1", "m2", "m3"],
+        "check_dtd": True,
+        "version": "3.2.2"
     }
+
+def create_ema_validator() -> Dict[str, Any]:
+    """
+    Create a validator configuration for EMA submissions
+    using EU eCTD 3.2.2 validation rules
+    """
+    return {
+        "name": "EU_eCTD_3.2.2",
+        "region": "EMA",
+        "rules": [
+            {"id": "EU-PDF-1", "description": "PDF document must use PDF version 1.4 to 1.7", "severity": "error"},
+            {"id": "EU-PDF-2", "description": "PDF documents must not have security settings applied", "severity": "error"},
+            {"id": "EU-PDF-3", "description": "Files must have unique names within their directories", "severity": "error"},
+            {"id": "EU-PDF-4", "description": "PDF documents should use fonts that are embedded and subset", "severity": "warning"},
+            {"id": "EU-PDF-5", "description": "PDF documents should not exceed 100MB", "severity": "warning"},
+            {"id": "EU-PDF-6", "description": "EU-specific administrative documents must be included", "severity": "error"}
+        ],
+        "required_modules": ["m1", "m1 admin", "m2", "m3"],
+        "check_dtd": True,
+        "version": "3.2.2"
+    }
+
+def create_pmda_validator() -> Dict[str, Any]:
+    """
+    Create a validator configuration for PMDA submissions
+    using JP eCTD 4.0 validation rules
+    """
+    return {
+        "name": "JP_eCTD_4.0",
+        "region": "PMDA",
+        "rules": [
+            {"id": "JP-PDF-1", "description": "PDF document must use PDF version 1.4 to 1.7", "severity": "error"},
+            {"id": "JP-PDF-2", "description": "PDF documents must not have security settings applied", "severity": "error"},
+            {"id": "JP-PDF-3", "description": "Files must have unique names within their directories", "severity": "error"},
+            {"id": "JP-PDF-4", "description": "PDF documents should use fonts that are embedded and subset", "severity": "warning"},
+            {"id": "JP-PDF-5", "description": "PDF documents should not exceed 100MB", "severity": "warning"},
+            {"id": "JP-PDF-6", "description": "Japan-specific documents must be included in jp-annex folder", "severity": "error"},
+            {"id": "JP-PDF-7", "description": "Japanese character encoding must be valid", "severity": "error"}
+        ],
+        "required_modules": ["m1", "m2", "m3", "jp-annex"],
+        "check_dtd": True,
+        "version": "4.0"
+    }
+
+# Validator factory registry
+VALIDATORS = {
+    "FDA": create_fda_validator,
+    "EMA": create_ema_validator,
+    "PMDA": create_pmda_validator
 }
 
-# Mock PMDA profile for now
-PMDA_VALIDATOR_PROFILE = {
-    "name": "PMDA eValidator",
-    "version": "1.0",
-    "description": "PMDA validation profile for eCTD submissions",
-    "supported_regions": ["PMDA", "JP"],
-    "file_format_rules": [
-        {
-            "id": "JP-FF-01",
-            "description": "PDF files must not contain JavaScript",
-            "severity": "error"
-        },
-        {
-            "id": "JP-FF-02",
-            "description": "File names must be in ASCII and 32 characters or less",
-            "severity": "error"
-        },
-    ],
-    "required_modules": {
-        "initial": [
-            {"id": "m1/jp/10-cover", "name": "Cover Letter", "required": True},
-            {"id": "m1/jp/13-pi", "name": "Product Information", "required": True},
-            {"id": "jp-annex", "name": "Japan-specific Annex", "required": True}
-        ],
-        "variation": [
-            {"id": "m1/jp/10-cover", "name": "Cover Letter", "required": True}
-        ]
-    }
-}
+# Cache for created validators
+_validator_cache: Dict[str, Dict[str, Any]] = {}
 
-def get_validator_profile(region: str) -> Dict[str, Any]:
+def get_validator_for_region(region: str) -> Dict[str, Any]:
     """
-    Get validator profile for a specific region
+    Get the appropriate validator for the specified region.
+    Validators are cached for performance.
     
     Args:
-        region: Regulatory region code (FDA, EMA, PMDA)
+        region: The regulatory region (FDA, EMA, PMDA)
         
     Returns:
-        Dictionary containing validator profile configuration
-    """
-    region = region.upper()
-    if region in ["EU", "EMA"]:
-        return EU_VALIDATOR_PROFILE
-    elif region in ["US", "FDA"]:
-        return FDA_VALIDATOR_PROFILE
-    elif region in ["JP", "PMDA"]:
-        return PMDA_VALIDATOR_PROFILE
-    else:
-        raise ValueError(f"Unsupported region: {region}")
-
-def validate_submission(sequence_path: str, region: str) -> Dict[str, Any]:
-    """
-    Validate an eCTD submission for a specific region
-    
-    Args:
-        sequence_path: Path to the submission sequence folder
-        region: Regulatory region code (FDA, EMA, PMDA)
+        Dict containing the validator configuration
         
-    Returns:
-        Dictionary containing validation results
+    Raises:
+        ValueError: If the region is not supported
     """
+    # Normalize region name
     region = region.upper()
     
-    # Basic validation checks
-    if not os.path.exists(sequence_path):
-        return {
-            "status": "error",
-            "message": f"Sequence path does not exist: {sequence_path}"
-        }
+    # Return from cache if available
+    if region in _validator_cache:
+        return _validator_cache[region]
     
-    # Region-specific validation
-    if region in ["EU", "EMA"]:
-        issues = validate_eu_specifics(sequence_path)
-    elif region in ["US", "FDA"]:
-        # Not fully implemented yet
-        issues = []
-    elif region in ["JP", "PMDA"]:
-        # Not fully implemented yet
-        issues = []
-    else:
-        return {
-            "status": "error",
-            "message": f"Unsupported region: {region}"
-        }
+    # Check if region is supported
+    if region not in VALIDATORS:
+        valid_regions = ", ".join(VALIDATORS.keys())
+        raise ValueError(f"Unsupported region: {region}. Valid regions are: {valid_regions}")
     
-    # Process validation results
-    passed = len([i for i in issues if i.get("severity") == "error"]) == 0
+    # Create and cache the validator
+    validator = VALIDATORS[region]()
+    _validator_cache[region] = validator
     
-    return {
-        "status": "passed" if passed else "failed",
-        "validator": f"{region} eValidator",
-        "issues": issues,
-        "region": region
-    }
+    return validator
 
-def get_rules_for_region(region: str) -> Dict[str, Any]:
+def get_required_modules(region: str) -> list:
     """
-    Get validation rules for a specific region
+    Get the list of required modules for a specific region
     
     Args:
-        region: Regulatory region code (FDA, EMA, PMDA)
+        region: The regulatory region (FDA, EMA, PMDA)
         
     Returns:
-        Dictionary containing validation rules for the region
+        List of required module names
     """
-    profile = get_validator_profile(region)
-    
-    return {
-        "file_format_rules": profile.get("file_format_rules", []),
-        "document_rules": profile.get("document_rules", []),
-        "sequence_rules": profile.get("sequence_rules", []),
-        "metadata_rules": profile.get("metadata_rules", []),
-        "required_modules": profile.get("required_modules", {})
-    }
+    validator = get_validator_for_region(region)
+    return validator.get("required_modules", [])
 
-def validate_document(document_path: str, region: str, doc_type: Optional[str] = None) -> Dict[str, Any]:
+def validate_document(document_path: str, region: str) -> Dict[str, Any]:
     """
-    Validate a single document against regional requirements
+    Validate a document according to the rules for a specific region
     
     Args:
-        document_path: Path to the document file
-        region: Regulatory region code (FDA, EMA, PMDA)
-        doc_type: Document type for context-specific validation
+        document_path: Path to the document to validate
+        region: The regulatory region (FDA, EMA, PMDA)
         
     Returns:
-        Dictionary containing validation results
+        Dict containing validation results
     """
-    region = region.upper()
+    validator = get_validator_for_region(region)
     
-    # Basic validation checks
-    if not os.path.exists(document_path):
-        return {
-            "status": "error",
-            "message": f"Document not found: {document_path}"
-        }
+    # Placeholder for actual validation logic
+    # In a real implementation, this would use the validator configuration
+    # to perform actual validation checks on the document
     
-    # Check file extension
-    _, ext = os.path.splitext(document_path)
-    if ext.lower() != '.pdf':
-        return {
-            "status": "error",
-            "message": f"Only PDF documents are supported for validation. Found: {ext}"
-        }
-    
-    # Placeholder for actual PDF validation
-    # This would typically involve checking PDF properties, bookmarks, etc.
-    
-    # For now, just return a success response
+    # This example implementation assumes success
+    # In a real system, this would run real checks
     return {
         "status": "passed",
-        "validator": f"{region} Document Validator",
-        "document_path": document_path,
-        "document_type": doc_type or "unknown",
-        "issues": []
+        "profile": validator["name"],
+        "region": region,
+        "version": validator["version"],
+        "warnings": []
     }

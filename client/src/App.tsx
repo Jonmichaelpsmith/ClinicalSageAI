@@ -9,6 +9,10 @@ import { Loader2, Beaker, MessageSquare } from 'lucide-react';
 import DashboardLayout from "@/components/DashboardLayout";
 import { AuthProvider } from '@/hooks/use-auth';
 
+// Import ToastContainer from react-toastify
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 // Import page components
 import CsrIntelligence from './pages/CsrIntelligence';
 import DocumentsPage from './pages/DocumentsPage';
@@ -766,6 +770,18 @@ export default function App() {
           </Route>
         </Switch>
         <Toaster />
+        <ToastContainer 
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop={true}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+        />
       </Suspense>
     </AuthProvider>
   );

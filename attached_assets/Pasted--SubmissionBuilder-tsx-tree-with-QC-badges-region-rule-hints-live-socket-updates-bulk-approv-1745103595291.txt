@@ -1,0 +1,117 @@
+// SubmissionBuilder.tsx – tree with QC badges, region rule hints, live socket updates & bulk approve
+import React, { useEffect, useState } from 'react';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import { DndProvider } from 'react-dnd';
+import { Tree, NodeModel } from '@minoru/react-dnd-treeview';
+import { CheckCircle, XCircle } from 'lucide-react';
+import { toast } from 'react-toastify';
+import update from 'immutability-helper';
+
+const REGION_FOLDERS: Record<string, string[]> = {
+  FDA: ['m1', 'm2', 'm3', 'm4', 'm5'],
+  EMA: ['m1', 'm2', 'm3', 'm4', 'm5'],
+  PMDA: ['m1', 'm2', 'm3', 'm4', 'm5', 'jp-annex'],
+};
+
+interface Doc { id: number; title: string; module: string; qc_json?: { status: string }; }
+type TreeNode = NodeModel<Doc>;
+
+export default function SubmissionBuilder({ region = 'FDA' }: { region?: string }) {
+  const [tree, setTree] = useState<TreeNode[]>([]);
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+
+  /* --- WebSocket live QC updates --- */
+  useEffect(() => {
+    const ws = new WebSocket(`${location.protocol.replace('http','ws')}//${location.host}/ws/qc`);
+    ws.onmessage = (ev) => {
+      const msg = JSON.parse(ev.data);
+      setTree(prev => prev.map(n => n.id === msg.id ? ({ ...n, data: { ...n.data!, qc_json: { status: msg.status } } }): n));
+    };
+    return () => ws.close();
+  }, []);
+
+  /* --- Load docs --- */
+  useEffect(() => {
+    (async () => {
+      const docs: Doc[] = await fetchJson('/api/documents?status=approved_or_qc_failed');
+      const nodes = buildTree(region, docs);
+      setTree(nodes);
+    })();
+  }, [region]);
+
+  const buildTree = (region: string, docs: Doc[]): TreeNode[] => {
+    const root: TreeNode = { id: 0, parent: 0, text: 'root', droppable: true };
+    const folders = REGION_FOLDERS[region].map((m, i) => ({ id: 10000 + i, parent: 0, text: m, droppable: true }));
+    const items = docs.map(d => ({
+      id: d.id,
+      text: d.title,
+      parent: folders.find(f => d.module.startsWith(f.text))?.id || folders[0].id,
+      droppable: false,
+      data: d,
+    }));
+    return [root, ...folders, ...items];
+  };
+
+  const handleDrop = (newTree: TreeNode[]) => setTree(newTree);
+
+  const saveOrder = async () => {
+    const ordered = tree.filter(n => !n.droppable && n.parent!==0).map((n, idx) => ({
+      id: n.id,
+      module: tree.find(f => f.id === n.parent)!.text,
+      order: idx
+    }));
+    await fetch('/api/documents/builder-order', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ docs: ordered })
+    });
+    toast.success('Order saved');
+  };
+
+  const toggle = (id: number) => setSelected(prev => {
+    const s = new Set(prev); s.has(id)?s.delete(id):s.add(id); return s;
+  });
+
+  const bulkApprove = async () => {
+    await fetch('/api/documents/bulk-approve', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids: Array.from(selected) })
+    });
+    setSelected(new Set());
+    toast.info('Bulk approval started');
+  };
+
+  const renderNode = (node: TreeNode, { depth, isOpen, onToggle }: any) => {
+    if (node.droppable) {
+      const hint = (region==='PMDA' && node.text==='jp-annex')? ' (JP Annex docs)' : '';
+      return (
+        <div style={{ marginLeft: depth*16 }} className="d-flex align-items-center gap-1 py-1">
+          <button onClick={onToggle} className="btn btn-sm btn-link p-0">{isOpen?'▾':'▸'}</button>
+          <strong>{node.text}{hint}</strong>
+        </div>
+      );
+    }
+    const qc = node.data?.qc_json?.status;
+    return (
+      <div style={{ marginLeft: depth*16 }} className="d-flex align-items-center gap-2 py-1">
+        <input type="checkbox" checked={selected.has(node.id)} onChange={()=>toggle(node.id)} />
+        {qc==='passed'?<CheckCircle size={14} className="text-success"/>:<XCircle size={14} className="text-danger"/>}
+        <span>{node.text}</span>
+      </div>
+    );
+  };
+
+  return (
+    <div className="container py-4">
+      <h2>Submission Builder <span className="badge bg-secondary ms-2">{region}</span></h2>
+      <DndProvider backend={HTML5Backend}>
+        <Tree tree={tree} rootId={0} render={renderNode} onDrop={handleDrop} />
+      </DndProvider>
+      <div className="d-flex gap-3 mt-3">
+        <button className="btn btn-primary" onClick={saveOrder}>Save Order</button>
+        <button className="btn btn-outline-success" disabled={selected.size===0} onClick={bulkApprove}>Bulk Approve + QC</button>
+      </div>
+    </div>
+  );
+}
+
+async function fetchJson(url: string){ const r=await fetch(url); if(!r.ok)throw new Error('http'); return r.json(); }
