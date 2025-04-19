@@ -137,14 +137,25 @@ app.include_router(esg_credentials_api.router)
 from fastapi import Depends
 @app.post("/api/auth/register")
 async def register(body: dict):
-    users.create(body["username"], body["password"], role=body.get("role","user"))
-    return {"status":"created"}
+    try:
+        users.create(body["username"], body["password"], role=body.get("role","user"))
+        return {"status":"created"}
+    except ValueError as e:
+        if str(e) == "exists":
+            raise HTTPException(400, "Username already exists")
+        raise HTTPException(400, str(e))
+
 @app.post("/api/auth/login")
 async def login(body: dict):
     if users.verify(body["username"], body["password"]):
         token = auth.create_token(body["username"])
-        return {"token": token}
+        return {"token": token, "username": body["username"], "role": users.get_role(body["username"])}
     raise HTTPException(401, "Bad credentials")
+
+@app.get("/api/auth/verify")
+async def verify_token(user: str = Depends(auth.get_current_user)):
+    """Verify that the token is valid"""
+    return {"username": user, "role": users.get_role(user)}
 
 # For compatibility with existing API calls
 @app.get("/projects")

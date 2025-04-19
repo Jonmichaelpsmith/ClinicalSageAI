@@ -1,0 +1,125 @@
+#!/usr/bin/env bash
+set -e
+pip install -q cryptography
+cd "$REPL_HOME"
+
+# -----------------------------------------------------------------
+# 1) saml_creds.py – encrypted store
+cat > ind_automation/saml_creds.py << 'PY'
+import os, json
+from pathlib import Path
+from cryptography.fernet import Fernet
+
+ENC_KEY = os.getenv("SAML_ENC_KEY")
+if not ENC_KEY:
+    raise RuntimeError("Set SAML_ENC_KEY in Secrets (32‑byte base64)")
+fernet = Fernet(ENC_KEY)
+STORE = Path("data/saml_creds"); STORE.mkdir(parents=True, exist_ok=True)
+
+
+def _file(org): return STORE / f"{org}.json"
+
+def save(org: str, data: dict):
+    token = fernet.encrypt(json.dumps(data).encode())
+    _file(org).write_bytes(token)
+
+def load(org: str) -> dict | None:
+    try:
+        return json.loads(fernet.decrypt(_file(org).read_bytes()))
+    except Exception: return None
+
+def delete(org: str):
+    try: _file(org).unlink()
+    except FileNotFoundError: pass
+PY
+
+# -----------------------------------------------------------------
+# 2) patch saml.sp to read per‑org settings
+python - << 'PY'
+import pathlib, textwrap
+sp = pathlib.Path('ind_automation/saml/sp.py'); code = sp.read_text()
+if 'load(org)' not in code:
+    code = code.replace('settings = json.loads(settings_raw)',
+                        'from ind_automation import saml_creds\nsettings = json.loads(settings_raw)')
+    code = textwrap.dedent("""def load(org):\n    custom = saml_creds.load(org)\n    if not custom: return _saml_settings\n    cfg = json.loads(settings_raw)\n    cfg['sp']['entityId']        = custom['sp_entity_id']\n    cfg['sp']['assertionConsumerService']['url'] = custom['acs_url']\n    cfg['idp']['entityId']       = custom['idp_entity_id']\n    cfg['idp']['singleSignOnService']['url'] = custom['idp_sso_url']\n    cfg['idp']['x509cert']       = custom['idp_x509']\n    return OneLogin_Saml2_Settings(cfg, validate_cert=False)\n""") + code
+    sp.write_text(code)
+PY
+
+# -----------------------------------------------------------------
+# 3) FastAPI CRUD routes (admin‑only)
+python - << 'PY'
+import pathlib, textwrap
+main = pathlib.Path('ind_automation/main.py'); m = main.read_text()
+if '/saml/creds' not in m:
+    m = m.replace('from ind_automation import ectd_ga, tasks, credentials, auth, users, rbac, saml',
+                  'from ind_automation import ectd_ga, tasks, credentials, auth, users, rbac, saml, saml_creds')
+    m += textwrap.dedent("""
+    # ---------- SAML creds CRUD ----------
+    @app.post('/api/org/{org}/saml', dependencies=[Depends(rbac.requires('admin.esg'))])
+    async def save_saml(org: str, body: dict):
+        required = {'sp_entity_id','acs_url','idp_entity_id','idp_sso_url','idp_x509'}
+        if not required.issubset(body):
+            raise HTTPException(400,'missing fields')
+        saml_creds.save(org, body)
+        return {'status':'saved'}
+
+    @app.get('/api/org/{org}/saml', dependencies=[Depends(rbac.requires('admin.esg'))])
+    async def get_saml(org: str):
+        data = saml_creds.load(org)
+        if not data: raise HTTPException(404,'no creds')
+        masked = {**data, 'idp_x509': '***'}
+        return masked
+
+    @app.delete('/api/org/{org}/saml', dependencies=[Depends(rbac.requires('admin.esg'))])
+    async def del_saml(org: str):
+        saml_creds.delete(org); return {'status':'deleted'}
+    """)
+    main.write_text(m)
+PY
+
+# -----------------------------------------------------------------
+# 4) React SamlSettings.jsx
+mkdir -p client/src/components
+cat > client/src/components/SamlSettings.jsx << 'JSX'
+import React, { useEffect, useState } from 'react';
+import api from '../services/api';
+
+export default function SamlSettings({ org }) {
+  const blank = { sp_entity_id:'', acs_url:'', idp_entity_id:'', idp_sso_url:'', idp_x509:'' };
+  const [form,setForm] = useState(blank);
+  const load=()=> api.get(`/api/org/${org}/saml`).then(r=>setForm({...blank,...r.data})).catch(()=>{});
+  useEffect(load,[org]);
+  const save = ()=> api.post(`/api/org/${org}/saml`,form).then(load);
+  const del  = ()=> api.delete(`/api/org/${org}/saml`).then(()=>setForm(blank));
+  const h=e=>setForm({...form,[e.target.name]:e.target.value});
+  return(
+  <div className="space-y-2 border p-4 rounded">
+    <h3 className="font-semibold">SAML Settings</h3>
+    {Object.entries({sp_entity_id:'SP Entity ID',acs_url:'ACS URL',idp_entity_id:'IdP Entity ID',idp_sso_url:'IdP SSO URL'}).map(([k,l])=>
+      <div key={k}><label className="text-sm">{l}</label><input name={k} className="border p-1 w-full" value={form[k]} onChange={h}/></div>)}
+    <label className="text-sm">IdP x509 Certificate</label>
+    <textarea name="idp_x509" className="border p-1 w-full text-xs h-24" value={form.idp_x509} onChange={h}/>
+    <button className="bg-blue-600 text-white px-3 py-1 mr-2 rounded" onClick={save}>Save</button>
+    <button className="bg-red-600 text-white px-3 py-1 rounded" onClick={del}>Delete</button>
+  </div>);
+}
+JSX
+
+# integrate tab
+python - << 'PY'
+import pathlib, textwrap
+page = pathlib.Path('client/src/pages/IndAutomationPage.jsx'); p = page.read_text()
+if 'SAML Settings' not in p:
+    p = p.replace('import EsgSettings','import EsgSettings from "../components/EsgSettings";\nimport SamlSettings from "../components/SamlSettings"')
+    p = p.replace('["Module1", "Module2", "Module3", "eCTD GA", "ESG Settings", "History"]',
+                  '["Module1", "Module2", "Module3", "eCTD GA", "ESG", "SAML Settings", "ESG Settings", "History"]')
+    pane = textwrap.dedent("""
+      {tab === "SAML Settings" && <SamlSettings org={selected.project_id} />}
+    """)
+    p = p.replace('{tab === "ESG Settings"', pane + '\n{tab === "ESG Settings"',1)
+    page.write_text(p)
+PY
+
+# -----------------------------------------------------------------
+
+echo "✅ Tenant SAML settings management installed – set SAML_ENC_KEY secret, restart servers."
