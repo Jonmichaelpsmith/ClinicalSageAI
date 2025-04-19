@@ -131,6 +131,10 @@ export default function AdminPanel() {
                 <Database className="mr-2 h-4 w-4" />
                 Database Management
               </TabsTrigger>
+              <TabsTrigger value="audit" onClick={() => window.location.href = '/admin/audit-dashboard'}>
+                <FileJson className="mr-2 h-4 w-4" />
+                Audit Dashboard
+              </TabsTrigger>
               {/* Add more tabs here as needed */}
             </TabsList>
             

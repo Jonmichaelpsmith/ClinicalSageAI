@@ -21,6 +21,7 @@ import IndSequenceManager from './pages/IndSequenceManager';
 import SequenceDetail from './pages/SequenceDetail';
 import IndSequenceDetail from './pages/IndSequenceDetail';
 import AdminPage from './pages/AdminPage';
+import FullAuditDashboardPage from './pages/FullAuditDashboardPage';
 
 // Fixed the missing Flask icon issue by using Beaker instead
 // Note: If you need a Flask icon, make sure to import it correctly
@@ -624,6 +625,15 @@ export default function App() {
             {() => (
               <DashboardLayout>
                 <AdminPage />
+              </DashboardLayout>
+            )}
+          </Route>
+          
+          {/* Full Audit Dashboard */}
+          <Route path="/admin/audit-dashboard">
+            {() => (
+              <DashboardLayout>
+                <FullAuditDashboardPage />
               </DashboardLayout>
             )}
           </Route>
