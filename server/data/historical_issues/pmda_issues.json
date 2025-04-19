@@ -1,0 +1,107 @@
+[
+  {
+    "reason": "Missing Japanese translations",
+    "frequency": "high",
+    "description": "Required documents not provided in Japanese language",
+    "common_modules_affected": ["m1", "m2"],
+    "keywords": ["translation", "Japanese", "language", "localization"]
+  },
+  {
+    "reason": "Incomplete Module 1 regional information",
+    "frequency": "high",
+    "description": "Missing Japan-specific administrative documents in Module 1",
+    "common_modules_affected": ["m1.2", "m1.13"],
+    "keywords": ["regional", "Japan", "application form", "Yakujihou"]
+  },
+  {
+    "reason": "Missing jp-annex documents",
+    "frequency": "high",
+    "description": "Required Japan-specific supplementary documents not included in jp-annex",
+    "common_modules_affected": ["jp-annex"],
+    "keywords": ["jp-annex", "appendix", "attachment", "supplementary"]
+  },
+  {
+    "reason": "Non-compliance with PMDA formatting requirements",
+    "frequency": "high",
+    "description": "Documents do not follow PMDA-specific formatting guidelines",
+    "common_modules_affected": ["all"],
+    "keywords": ["format", "page", "margin", "font", "header"]
+  },
+  {
+    "reason": "Insufficient bridging study information",
+    "frequency": "high",
+    "description": "Inadequate data bridging foreign clinical data to Japanese population",
+    "common_modules_affected": ["m5.3.5", "m2.7.3"],
+    "keywords": ["bridging", "ethnic factors", "Japanese patients", "ICH E5"]
+  },
+  {
+    "reason": "Inconsistent quality control information",
+    "frequency": "medium",
+    "description": "Quality control test methods or specifications not meeting Japanese requirements",
+    "common_modules_affected": ["m3.2"],
+    "keywords": ["quality control", "Japanese Pharmacopoeia", "JP", "specifications"]
+  },
+  {
+    "reason": "Improper compliance with Japanese GMP",
+    "frequency": "high",
+    "description": "Manufacturing process not compliant with Japanese GMP standards",
+    "common_modules_affected": ["m3.2.P.3", "m3.2.R"],
+    "keywords": ["GMP", "manufacturing", "process validation", "quality management"]
+  },
+  {
+    "reason": "Non-compliance with data integrity requirements",
+    "frequency": "medium",
+    "description": "Failure to meet PMDA's strict data integrity requirements",
+    "common_modules_affected": ["m5.3.7"],
+    "keywords": ["data integrity", "ALCOA", "raw data", "audit trail"]
+  },
+  {
+    "reason": "Missing or inadequate Japanese PK/PD studies",
+    "frequency": "high",
+    "description": "Insufficient pharmacokinetic/pharmacodynamic studies in Japanese subjects",
+    "common_modules_affected": ["m5.3.3", "m5.3.4"],
+    "keywords": ["pharmacokinetic", "PK", "Japanese subjects", "bioequivalence"]
+  },
+  {
+    "reason": "Inconsistent English-Japanese translation",
+    "frequency": "medium",
+    "description": "Discrepancies between original documents and Japanese translations",
+    "common_modules_affected": ["all"],
+    "keywords": ["translation", "consistency", "discrepancy", "Japanese language"]
+  },
+  {
+    "reason": "Inadequate risk management plan for Japan",
+    "frequency": "high",
+    "description": "Risk management plan not adapted to Japanese healthcare system",
+    "common_modules_affected": ["m1.11"],
+    "keywords": ["risk management", "RMP", "Japanese healthcare", "pharmacovigilance"]
+  },
+  {
+    "reason": "Improper CTD structure",
+    "frequency": "high",
+    "description": "Documents placed in incorrect locations within the CTD structure per PMDA requirements",
+    "common_modules_affected": ["all"],
+    "keywords": ["CTD", "structure", "organization", "placement"]
+  },
+  {
+    "reason": "Missing post-marketing surveillance plan",
+    "frequency": "medium",
+    "description": "Inadequate plan for post-marketing surveillance specific to Japan",
+    "common_modules_affected": ["m1.11", "m5.3.6"],
+    "keywords": ["post-marketing", "surveillance", "GPSP", "EPPV"]
+  },
+  {
+    "reason": "Incomplete clinical data package",
+    "frequency": "high",
+    "description": "Clinical data package does not satisfy PMDA requirements for approval",
+    "common_modules_affected": ["m5"],
+    "keywords": ["clinical data", "Japanese patients", "efficacy", "safety"]
+  },
+  {
+    "reason": "Missing or incomplete Japanese clinical practice context",
+    "frequency": "medium",
+    "description": "Failure to account for differences in Japanese clinical practice and standard of care",
+    "common_modules_affected": ["m2.5", "m2.7.3"],
+    "keywords": ["clinical practice", "standard of care", "Japanese healthcare", "medical environment"]
+  }
+]

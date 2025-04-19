@@ -1,0 +1,72 @@
+[
+  {
+    "reason": "eCTD structure errors",
+    "frequency": "high",
+    "description": "Documents placed in incorrect locations within the eCTD structure",
+    "common_modules_affected": ["all"],
+    "keywords": ["eCTD", "structure", "placement", "folder"]
+  },
+  {
+    "reason": "PDF readability issues",
+    "frequency": "high",
+    "description": "Text in PDFs is not machine-readable, bookmarks missing, hyperlinks broken",
+    "common_modules_affected": ["all"],
+    "keywords": ["PDF", "readable", "text recognition", "bookmark", "hyperlink"]
+  },
+  {
+    "reason": "Missing or incomplete required forms",
+    "frequency": "high",
+    "description": "Required administrative forms not included or incomplete",
+    "common_modules_affected": ["m1"],
+    "keywords": ["form", "application", "administrative", "regulatory"]
+  },
+  {
+    "reason": "Inconsistent application components",
+    "frequency": "high",
+    "description": "Information in different parts of the application is inconsistent or contradictory",
+    "common_modules_affected": ["all"],
+    "keywords": ["inconsistent", "contradictory", "discrepancy"]
+  },
+  {
+    "reason": "Inadequate CMC characterization",
+    "frequency": "high",
+    "description": "Inadequate characterization of the drug substance or drug product",
+    "common_modules_affected": ["m3.2"],
+    "keywords": ["characterization", "specifications", "analytical procedures", "validation"]
+  },
+  {
+    "reason": "Insufficient stability data",
+    "frequency": "high",
+    "description": "Lack of adequate stability data to support proposed shelf life",
+    "common_modules_affected": ["m3.2.P.8"],
+    "keywords": ["stability", "shelf life", "storage conditions", "expiration"]
+  },
+  {
+    "reason": "Missing toxicology studies",
+    "frequency": "medium",
+    "description": "Key toxicology studies required for the specific drug class or indication are missing",
+    "common_modules_affected": ["m4.2.3"],
+    "keywords": ["toxicology", "carcinogenicity", "genotoxicity", "reproductive toxicology"]
+  },
+  {
+    "reason": "Study design concerns",
+    "frequency": "high",
+    "description": "Proposed or completed clinical studies with design flaws that prevent adequate assessment of safety or efficacy",
+    "common_modules_affected": ["m5.3.5"],
+    "keywords": ["study design", "endpoints", "sample size", "statistical methods"]
+  },
+  {
+    "reason": "Protocol deficiencies",
+    "frequency": "medium",
+    "description": "Significant problems with the clinical protocol that may impact data integrity or patient safety",
+    "common_modules_affected": ["m5.3"],
+    "keywords": ["protocol", "inclusion criteria", "exclusion criteria", "procedures"]
+  },
+  {
+    "reason": "Incomplete data sets",
+    "frequency": "high",
+    "description": "Required data sets are missing or incomplete",
+    "common_modules_affected": ["m5"],
+    "keywords": ["data set", "SDTM", "ADaM", "case report form"]
+  }
+]
