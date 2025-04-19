@@ -1,5 +1,5 @@
 import { academicKnowledgeTracker } from './academic-knowledge-tracker';
-import { AcademicDocument } from '@shared/schema';
+import { AcademicDocument } from 'shared/schema';
 import * as fs from 'fs';
 import * as path from 'path';
 

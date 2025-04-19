@@ -10,7 +10,7 @@ import {
   insertInsightMemorySchema,
   insertWisdomTraceSchema,
   insertStudySessionSchema
-} from "@shared/schema";
+} from "shared/schema";
 import { eq, desc, and, or, isNull, sql } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
 import * as expressSession from "express-session";

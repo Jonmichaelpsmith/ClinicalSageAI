@@ -8,7 +8,7 @@ import {
   getAssistantResponse
 } from "../../agents/openai/trialsage_assistant";
 import { db } from "../db";
-import { protocols } from "@shared/schema";
+import { protocols } from "shared/schema";
 import { eq, sql, count, avg } from "drizzle-orm";
 
 const router = Router();

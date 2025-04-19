@@ -1,6 +1,6 @@
 import { db } from './db';
 import { eq, like, desc } from 'drizzle-orm';
-import { csrReports, csrDetails } from '@shared/schema';
+import { csrReports, csrDetails } from 'shared/schema';
 import { huggingFaceService } from './huggingface-service';
 
 interface StrategyAnalysisParams {

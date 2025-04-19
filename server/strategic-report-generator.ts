@@ -3,7 +3,7 @@ import { promisify } from 'util';
 import path from 'path';
 import fs from 'fs';
 import { db } from './db';
-import { strategicReports, protocols, type InsertStrategicReport } from '@shared/schema';
+import { strategicReports, protocols, type InsertStrategicReport } from 'shared/schema';
 import { StatisticsService } from './statistics-service';
 
 // Create an instance of the statistics service

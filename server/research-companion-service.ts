@@ -1,4 +1,4 @@
-import { summaryPackets, projects, insightMemories, wisdomTraces, studySessions } from "@shared/schema";
+import { summaryPackets, projects, insightMemories, wisdomTraces, studySessions } from "shared/schema";
 import { db } from "./db";
 import { eq, and, like, or, desc } from "drizzle-orm";
 import { huggingFaceService, HFModel } from "./huggingface-service";

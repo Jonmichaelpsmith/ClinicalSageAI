@@ -1,7 +1,7 @@
 import { db } from '../db';
-import { trials, csrReports, csrDetails, csrSegments } from '@shared/schema';
+import { trials, csrReports, csrDetails, csrSegments } from 'shared/schema';
 import { eq, and, like, desc } from 'drizzle-orm';
-import type { CsrSegment, InsertCsrSegment } from '@shared/schema';
+import type { CsrSegment, InsertCsrSegment } from 'shared/schema';
 import path from 'path';
 import fs from 'fs';
 

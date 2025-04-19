@@ -1,6 +1,6 @@
 import { db } from "./db";
 // Temporarily comment out schema import for landing page development
-// import { csrReports, csrDetails } from "@shared/schema";
+// import { csrReports, csrDetails } from "shared/schema";
 
 // Temporary empty tables for development
 const csrReports = { id: 'id' };

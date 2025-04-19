@@ -1,7 +1,7 @@
-// This is a stub file to prevent import errors from @shared/utils/therapeutic-area-classifier
+// This is a stub file to prevent import errors from shared/utils/therapeutic-area-classifier
 
 export function classifyTherapeuticArea(indicationText: string): string {
-  console.warn('[stub] classifyTherapeuticArea() called – replace @shared/utils/therapeutic-area-classifier import');
+  console.warn('[stub] classifyTherapeuticArea() called – replace shared/utils/therapeutic-area-classifier import');
   
   // Basic fallback classification based on keywords
   const indicationLower = indicationText.toLowerCase();

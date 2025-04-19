@@ -3,8 +3,9 @@ import React from 'react';
 // Using stub instead of react-router-dom until dependencies are fixed
 import { BrowserRouter as Router, Routes, Route } from './stub-router-dom';
 
-// Import the landing page
+// Import pages
 import HomeLanding from './pages/HomeLanding';
+import ChatAssistant from './pages/ChatAssistant';
 
 // Toaster component for notifications
 import { Toaster } from "@/components/ui/toaster";
@@ -28,6 +29,7 @@ export default function App() {
         <Route path="/cer-dashboard" element={<CERDashboard />} />
         <Route path="/ind-automation" element={<IndAutomationPage />} />
         <Route path="/csr-library" element={<CSRLibrary />} />
+        <Route path="/chat-assistant" element={<ChatAssistant />} />
         <Route path="/demo" element={<DemoPage />} />
         <Route path="/roi" element={<ROICalculator />} />
 

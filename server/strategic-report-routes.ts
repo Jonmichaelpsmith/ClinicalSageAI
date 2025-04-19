@@ -1,6 +1,6 @@
 import { Request, Response, Router } from 'express';
 import { db } from './db';
-import { strategicReports, protocols } from '@shared/schema';
+import { strategicReports, protocols } from 'shared/schema';
 import { eq } from 'drizzle-orm';
 import { strategicReportGenerator } from './strategic-report-generator';
 

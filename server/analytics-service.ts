@@ -1,4 +1,4 @@
-import { CsrReport, CsrDetails } from '@shared/schema';
+import { CsrReport, CsrDetails } from 'shared/schema';
 import { storage } from './storage';
 import * as math from 'mathjs';
 import { StatisticsService } from './statistics-service';

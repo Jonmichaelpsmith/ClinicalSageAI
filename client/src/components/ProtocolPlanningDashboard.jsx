@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 // Temporarily commented out for landing page development
-// import { classifyTherapeuticArea } from "@shared/utils/therapeutic-area-classifier";
+// import { classifyTherapeuticArea } from "shared/utils/therapeutic-area-classifier";
 import CSRAlignmentPanel from "@/components/CSRAlignmentPanel";
 import ProtocolCorrectionSuggestions from "@/components/ProtocolCorrectionSuggestions";
 

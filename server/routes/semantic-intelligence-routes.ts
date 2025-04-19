@@ -14,7 +14,7 @@ import { spawn } from 'child_process';
 import path from 'path';
 import fs from 'fs';
 import { db } from '../db';
-import { csrReports, csrDetails } from '@shared/schema';
+import { csrReports, csrDetails } from 'shared/schema';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 
