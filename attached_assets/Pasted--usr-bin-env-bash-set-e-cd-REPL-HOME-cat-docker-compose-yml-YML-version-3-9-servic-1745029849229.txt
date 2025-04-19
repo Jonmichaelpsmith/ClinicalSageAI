@@ -1,3 +1,8 @@
+#!/usr/bin/env bash
+set -e
+cd "$REPL_HOME"
+
+cat > docker-compose.yml << 'YML'
 version: "3.9"
 
 services:
@@ -21,7 +26,7 @@ services:
     build: .
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.backend.rule=Host(`{{DOMAIN}}`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.backend.rule=Host(`{{DOMAIN}}`) && PathPrefix(`/api`)
       - "traefik.http.routers.backend.entrypoints=websecure"
       - "traefik.http.routers.backend.tls.certresolver=le"
     env_file: .env
@@ -43,7 +48,7 @@ services:
     build: ./client
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.front.rule=Host(`{{DOMAIN}}`)"
+      - "traefik.http.routers.front.rule=Host(`{{DOMAIN}`)"
       - "traefik.http.routers.front.entrypoints=websecure"
       - "traefik.http.routers.front.tls.certresolver=le"
 
@@ -61,3 +66,20 @@ volumes:
   pgdata: {}
   redis: {}
   letsencrypt: {}
+YML
+
+# setup wizard prompts for DOMAIN and patches compose file
+cat > setup.sh << 'SH'
+#!/usr/bin/env bash
+set -e
+cp env.sample .env
+read -rp "FQDN for SaaS (e.g., trialsage.acme.com): " DOMAIN
+sed -i "s/{{DOMAIN}}/$DOMAIN/g" docker-compose.yml
+sed -i "s/^BASE_URL=.*/BASE_URL=https:\/\/$DOMAIN/" .env
+docker-compose pull
+docker-compose build
+printf '\nRun: docker-compose up -d\n'
+SH
+chmod +x setup.sh
+
+echo "✅ TLS‑ready on‑prem stack generated.  Copy env.sample → .env, run ./setup.sh, then docker-compose up -d."

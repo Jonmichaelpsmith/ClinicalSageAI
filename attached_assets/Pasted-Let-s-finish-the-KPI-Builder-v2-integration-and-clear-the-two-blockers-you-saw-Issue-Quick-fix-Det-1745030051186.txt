@@ -1,0 +1,103 @@
+Let’s finish the KPI Builder v2 integration and clear the two blockers you saw:
+
+Issue	Quick fix	Details
+1  Port conflict (FastAPI already running)	Change the dev server to an unused port (e.g. 8002) or kill the stale process.	Replit: open the “Shell” tab and run
+`lsof -ti:8000
+2  @shared/ install errors*	You’ve already installed all public packages (react‑grid-layout, monaco-editor, sql.js, recharts, react-use-measure). Remove any phantom “@shared/…” lines from package.json and run npm install again.	Those scoped names came from an internal monorepo and aren’t needed for our widgets.
+Final wiring checklist for KPI Builder v2
+Packages
+
+bash
+Copy
+Edit
+npm install react-grid-layout react-monaco-editor monaco-editor sql.js recharts react-use-measure
+Global in‑browser metrics DB
+The widget card expects window.metricsDb to contain a SQLite .db blob. Add once at app bootstrap:
+
+javascript
+Copy
+Edit
+// client/src/metricsBootstrap.js
+import { loadMetrics } from './metricsLoader';
+
+fetch('/files/metrics.db')           // expose metrics.db via StaticFiles
+  .then(r => r.arrayBuffer())
+  .then(loadMetrics)
+  .then(db => { window.metricsDb = db; });
+And import it in main.jsx before React renders:
+
+javascript
+Copy
+Edit
+import './metricsBootstrap';
+FastAPI static route (if not added):
+
+python
+Copy
+Edit
+from fastapi.staticfiles import StaticFiles
+app.mount('/files', StaticFiles(directory='public'), name='files')
+# copy a recent metrics.db snapshot to public/metrics.db
+Rebuild the front‑end
+
+bash
+Copy
+Edit
+npm run dev          # or click “Run” in Replit
+You should now see KPI Dashboard → “+ Add Widget”.
+
+Try SELECT date, count FROM alerts_over_time; with type = bar – you’ll get a live bar chart.
+
+Drag & resize; click ✏️ to edit. Layout persists.
+
+On‑prem TLS stack
+cp env.sample .env → fill secrets.
+
+./setup.sh → enter your FQDN → script patches docker-compose.yml and .env.
+
+docker-compose up -d – Traefik will fetch certificates automatically from Let’s Encrypt.
+
+(If you’re running behind a corporate proxy that blocks ACME HTTP‑01, switch Traefik to TLS‑ALPN or use a self‑signed cert—happy to supply the snippet.)
+
+When to ping me
+The dev server restarts cleanly on the new port and the KPI Dashboard renders charts.
+
+Or any new error pops up (e.g. Monaco fails to load, SQL.js 404).
+
+Let me know and we’ll refine further or move on to the next enhancement (e.g. widget‑level RBAC or Grafana export).
+
+
+
+
+
+
+You said:
+is is this all one file i can copy from here and past ro replit
+
+
+ChatGPT said:
+Yes —each bundle is already packaged as a single copy‑pasteable script.
+
+In the canvas you’ll see two fenced blocks:
+
+bash #!/usr/bin/env bash … → KPI Builder v2
+
+bash #!/usr/bin/env bash … → On‑Prem TLS stack
+
+Copy one entire block at a time—from the first #!/usr/bin/env bash line down to the final green ✓ message—and paste it into Replit’s Shell. Press Enter and the script will run to completion.
+
+If you want to keep everything in a single file locally, just concatenate those two blocks into one .sh file and run it, but executing them one‑by‑one is cleaner (KPI Builder first, TLS stack second).
+
+After the script finishes, restart the Replit server (or run npm run dev / uvicorn …) and verify:
+
+KPI Dashboard tab shows live SQL widgets.
+
+On‑prem setup.sh prompts for your domain, then docker‑compose up -d brings the TLS stack up.
+
+Let me know if any line‑breaks get mangled in copy‑paste or if something still throws an error!
+
+
+
+
+
+
