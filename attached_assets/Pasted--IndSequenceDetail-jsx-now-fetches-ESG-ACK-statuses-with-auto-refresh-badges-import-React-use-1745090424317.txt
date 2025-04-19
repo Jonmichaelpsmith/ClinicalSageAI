@@ -1,0 +1,134 @@
+// IndSequenceDetail.jsx – now fetches ESG ACK statuses with auto‑refresh badges
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { Spinner } from 'reactstrap';
+import { FileText, UploadCloud, ShieldCheck, ShieldOff, CheckCircle, Clock } from 'lucide-react';
+
+const POLL_MS = 30000; // poll ACKs every 30 sec until ACK3
+
+export default function IndSequenceDetail() {
+  const { sequenceId } = useParams();
+  const [sequence, setSequence] = useState(null);
+  const [docs, setDocs] = useState([]);
+  const [acks, setAcks] = useState(null); // {ack1, ack2, ack3, status}
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [validating, setValidating] = useState(false);
+  const [validation, setValidation] = useState(null);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const seq = await fetchJson(`/api/ind/sequence/${sequenceId}`);
+        const d   = await fetchJson(`/api/ind/sequence/${sequenceId}/docs`);
+        setSequence(seq);
+        setDocs(d);
+        loadAcks();
+      } catch (e) {
+        setError(e.message);
+      } finally {
+        setLoading(false);
+      }
+    })();
+    // poll for ACKs until ACK3 present
+    const intv = setInterval(() => {
+      if (!acks || !acks.ack3) loadAcks();
+    }, POLL_MS);
+    return () => clearInterval(intv);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sequenceId]);
+
+  const loadAcks = async () => {
+    try {
+      const data = await fetchJson(`/api/ind/sequence/${sequenceId}/acks`);
+      setAcks(data);
+      if (sequence) setSequence({ ...sequence, status: data.status });
+    } catch(e){ /* ignore until first ACK exists */ }
+  };
+
+  const runValidate = async () => {
+    setValidating(true); setError('');
+    try {
+      setValidation(await fetchJson(`/api/ind/sequence/${sequenceId}/validate`));
+    } catch(e){ setError(e.message); } finally { setValidating(false); }
+  };
+
+  const handleSubmit = async () => {
+    setSubmitting(true); setError('');
+    try {
+      const res = await fetchJson(`/api/ind/sequence/${sequenceId}/submit`, { method:'POST' });
+      setSequence({ ...sequence, status: res.status, submitted_at: new Date().toISOString() });
+    } catch(e){ setError(e.message); } finally { setSubmitting(false); }
+  };
+
+  if (loading) return <div className="text-center mt-5"><Spinner /></div>;
+  if (error)   return <div className="alert alert-danger mt-3">{error}</div>;
+
+  const AckBadge = ({label, ok}) => ok
+    ? <span className="badge bg-success d-flex align-items-center gap-1"><CheckCircle size={12}/> {label}</span>
+    : <span className="badge bg-secondary d-flex align-items-center gap-1"><Clock size={12}/> {label}</span>;
+
+  return (
+    <div className="container py-4">
+      <div className="d-flex align-items-center gap-2 mb-3 flex-wrap">
+        <FileText size={24}/> <h2 className="mb-0">Sequence {sequence.sequence}</h2>
+        <span className={"badge " + (sequence.status?.includes('Success')||sequence.status==='Centre Receipt'?'bg-success':'bg-secondary')}>{sequence.status}</span>
+        {validation && (validation.status==='passed'
+          ? <span className="badge bg-success d-flex align-items-center gap-1"><ShieldCheck size={14}/> XML Valid</span>
+          : <span className="badge bg-danger d-flex align-items-center gap-1"><ShieldOff size={14}/> XML Errors</span>
+        )}
+        {acks && (
+          <div className="d-flex gap-1">
+            <AckBadge label="ACK1" ok={Boolean(acks.ack1)} />
+            <AckBadge label="ACK2" ok={Boolean(acks.ack2)} />
+            <AckBadge label="ACK3" ok={Boolean(acks.ack3)} />
+          </div>
+        )}
+      </div>
+
+      <p><strong>Created:</strong> {new Date(sequence.created).toLocaleString()}</p>
+      {sequence.submitted_at && <p><strong>Submitted:</strong> {new Date(sequence.submitted_at).toLocaleString()}</p>}
+
+      <h4 className="mt-4">Documents ({docs.length})</h4>
+      <ul className="list-group mb-4">
+        {docs.map(d => (
+          <li key={d.id} className="list-group-item d-flex justify-content-between align-items-center">
+            {d.title}
+            <span className="badge bg-info text-dark">{d.module}</span>
+          </li>
+        ))}
+      </ul>
+
+      <h5>XML Backbone</h5>
+      <ul>
+        <li><a href={`/mnt/data/ectd/${sequence.sequence}/index.xml`} target="_blank" rel="noopener noreferrer">index.xml</a></li>
+        <li><a href={`/mnt/data/ectd/${sequence.sequence}/us-regional.xml`} target="_blank" rel="noopener noreferrer">us-regional.xml</a></li>
+      </ul>
+
+      {validation && validation.status === 'failed' && (
+        <div className="alert alert-warning mt-3">
+          <h6 className="mb-2">Validation Errors:</h6>
+          {Object.entries(validation.errors).map(([file, errs]) => errs.length>0 && (
+            <div key={file}><strong>{file}</strong><ul>{errs.map((e,i)=><li key={i}>{e}</li>)}</ul></div>
+          ))}
+        </div>
+      )}
+
+      <div className="d-flex gap-3 mt-4">
+        <button className="btn btn-outline-secondary" onClick={runValidate} disabled={validating}>
+          {validating ? <Spinner size="sm" /> : 'Validate XML'}
+        </button>
+        <button className="btn btn-primary" onClick={handleSubmit} disabled={submitting || (validation && validation.status!=='passed') || sequence.status==='Submitted'}>
+          {submitting ? <Spinner size="sm" /> : <><UploadCloud size={16}/> Submit to FDA</>}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+async function fetchJson(url, opts) {
+  const res = await fetch(url, opts);
+  if (!res.ok) throw new Error((await res.json()).detail || res.statusText);
+  return res.json();
+}

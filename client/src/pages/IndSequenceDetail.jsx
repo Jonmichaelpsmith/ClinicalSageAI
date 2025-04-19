@@ -1,3 +1,4 @@
+// IndSequenceDetail.jsx – detail view with XML validation & ESG submit
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'wouter';
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -10,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { CheckCircle, Calendar, Clock, Download, AlertTriangle, FileText, Send } from 'lucide-react';
+import { CheckCircle, Calendar, Clock, Download, AlertTriangle, FileText, Send, Check, AlertCircle, FileWarning, ShieldCheck, ShieldOff, UploadCloud } from 'lucide-react';
 
 export default function IndSequenceDetail() {
   const { id } = useParams();
@@ -18,11 +19,28 @@ export default function IndSequenceDetail() {
   const [indSerial, setIndSerial] = useState('');
   const [sponsorName, setSponsorName] = useState('');
   const [submitDialogOpen, setSubmitDialogOpen] = useState(false);
+  const [validationResults, setValidationResults] = useState(null);
+  const [isValidating, setIsValidating] = useState(false);
   
   // Fetch sequence details
   const sequenceQuery = useQuery({
     queryKey: ['/api/ind/sequence', id],
     enabled: !!id
+  });
+  
+  // Query for ACK status
+  const ackQuery = useQuery({
+    queryKey: ['/api/ind/sequence', id, 'acks'],
+    queryFn: async () => {
+      const response = await fetch(`/api/ind/sequence/${id}/acks`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch acknowledgment status');
+      }
+      return response.json();
+    },
+    enabled: !!id && !!sequence?.submission_status && 
+      ['submitted', 'submitted_in_progress', 'ESG ACK1 Received', 'ESG ACK2 Success', 'ESG ACK2 Error', 'Centre Receipt'].includes(sequence.submission_status),
+    refetchInterval: 60000 // Refresh every minute to check for new ACKs
   });
   
   const sequence = sequenceQuery.data;
@@ -86,9 +104,17 @@ export default function IndSequenceDetail() {
       case 'submitted_in_progress':
         return <Badge variant="outline" className="bg-blue-100 text-blue-700">Submission in Progress</Badge>;
       case 'submitted':
-        return <Badge variant="outline" className="bg-green-100 text-green-700">Submitted to FDA</Badge>;
+        return <Badge variant="outline" className="bg-blue-100 text-blue-700">Submitted to FDA</Badge>;
       case 'invalid':
         return <Badge variant="outline" className="bg-red-100 text-red-700">Invalid</Badge>;
+      case 'ESG ACK1 Received':
+        return <Badge variant="outline" className="bg-purple-100 text-purple-700">Receipt Acknowledged</Badge>;
+      case 'ESG ACK2 Success':
+        return <Badge variant="outline" className="bg-green-100 text-green-700">FDA Processing Success</Badge>;
+      case 'ESG ACK2 Error':
+        return <Badge variant="outline" className="bg-red-100 text-red-700">FDA Processing Error</Badge>;
+      case 'Centre Receipt':
+        return <Badge variant="outline" className="bg-emerald-100 text-emerald-700">FDA Centre Received</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -115,6 +141,48 @@ export default function IndSequenceDetail() {
   const handleSubmit = (e) => {
     e.preventDefault();
     submitMutation.mutate();
+  };
+  
+  // Function to run XML validation
+  const runValidate = async () => {
+    setIsValidating(true);
+    setValidationResults(null);
+    
+    try {
+      const response = await fetch(`/api/ind/sequence/${id}/validate`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to validate XML files');
+      }
+      
+      const data = await response.json();
+      setValidationResults(data);
+      
+      // Show toast notification based on validation result
+      if (data.validation.valid) {
+        toast({
+          title: 'Validation Successful',
+          description: 'XML files are valid and conform to FDA DTD requirements.',
+          duration: 5000
+        });
+      } else {
+        toast({
+          title: 'Validation Failed',
+          description: 'XML files contain errors. Please review and fix before submission.',
+          variant: 'destructive',
+          duration: 5000
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Validation Error',
+        description: error.message || 'Unable to validate XML files.',
+        variant: 'destructive',
+        duration: 5000
+      });
+    } finally {
+      setIsValidating(false);
+    }
   };
   
   if (sequenceQuery.isLoading) {
@@ -185,6 +253,16 @@ export default function IndSequenceDetail() {
             </Link>
           </Button>
           
+          <Button 
+            variant="outline" 
+            className="flex items-center"
+            onClick={runValidate}
+            disabled={isValidating}
+          >
+            <FileWarning className="mr-2" size={16} />
+            {isValidating ? 'Validating...' : 'Validate XML'}
+          </Button>
+          
           {!isSubmitted && !isInProgress && (
             <Dialog open={submitDialogOpen} onOpenChange={setSubmitDialogOpen}>
               <DialogTrigger asChild>
@@ -253,6 +331,120 @@ export default function IndSequenceDetail() {
         </div>
       </div>
       
+      {/* FDA ESG Acknowledgments Status */}
+      {(sequence.submission_status === 'submitted' || 
+        sequence.submission_status === 'submitted_in_progress' ||
+        sequence.submission_status === 'ESG ACK1 Received' ||
+        sequence.submission_status === 'ESG ACK2 Success' ||
+        sequence.submission_status === 'ESG ACK2 Error' ||
+        sequence.submission_status === 'Centre Receipt') && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <ShieldCheck className="mr-2" size={20} />
+              FDA ESG Acknowledgment Status
+            </CardTitle>
+            <CardDescription>
+              FDA Electronic Submissions Gateway acknowledgment status
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {ackQuery.isLoading ? (
+              <div className="space-y-3">
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+            ) : ackQuery.isError ? (
+              <div className="p-4 border border-red-200 rounded-md bg-red-50 text-red-700">
+                <p>{ackQuery.error.message || 'Failed to load acknowledgment status. Please try again later.'}</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* ACK1 - Receipt */}
+                  <div className={`p-4 rounded-md border ${ackQuery.data.acknowledgments.ack1.received ? 'border-green-200 bg-green-50' : 'border-gray-200 bg-gray-50'}`}>
+                    <div className="flex items-center mb-2">
+                      {ackQuery.data.acknowledgments.ack1.received ? (
+                        <CheckCircle className="mr-2 text-green-500" size={18} />
+                      ) : (
+                        <Clock className="mr-2 text-gray-400" size={18} />
+                      )}
+                      <span className="font-medium">
+                        {ackQuery.data.acknowledgments.ack1.received ? 'Receipt Acknowledged' : 'Awaiting Receipt'}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600">
+                      {ackQuery.data.acknowledgments.ack1.received 
+                        ? 'FDA ESG has received your submission package' 
+                        : 'Waiting for FDA ESG to acknowledge receipt of your submission'}
+                    </p>
+                  </div>
+                  
+                  {/* ACK2 - Processing */}
+                  <div className={`p-4 rounded-md border ${
+                    !ackQuery.data.acknowledgments.ack2.received 
+                      ? 'border-gray-200 bg-gray-50' 
+                      : ackQuery.data.acknowledgments.ack2.success 
+                        ? 'border-green-200 bg-green-50'
+                        : 'border-red-200 bg-red-50'
+                  }`}>
+                    <div className="flex items-center mb-2">
+                      {!ackQuery.data.acknowledgments.ack2.received ? (
+                        <Clock className="mr-2 text-gray-400" size={18} />
+                      ) : ackQuery.data.acknowledgments.ack2.success ? (
+                        <CheckCircle className="mr-2 text-green-500" size={18} />
+                      ) : (
+                        <AlertTriangle className="mr-2 text-red-500" size={18} />
+                      )}
+                      <span className="font-medium">
+                        {!ackQuery.data.acknowledgments.ack2.received 
+                          ? 'Processing Pending' 
+                          : ackQuery.data.acknowledgments.ack2.success
+                            ? 'Processing Successful'
+                            : 'Processing Failed'}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600">
+                      {!ackQuery.data.acknowledgments.ack2.received 
+                        ? 'Waiting for FDA ESG to process your submission package' 
+                        : ackQuery.data.acknowledgments.ack2.success
+                          ? 'FDA ESG has successfully processed your submission'
+                          : 'FDA ESG encountered errors processing your submission'}
+                    </p>
+                  </div>
+                  
+                  {/* ACK3 - Centre Receipt */}
+                  <div className={`p-4 rounded-md border ${ackQuery.data.acknowledgments.ack3.received ? 'border-green-200 bg-green-50' : 'border-gray-200 bg-gray-50'}`}>
+                    <div className="flex items-center mb-2">
+                      {ackQuery.data.acknowledgments.ack3.received ? (
+                        <CheckCircle className="mr-2 text-green-500" size={18} />
+                      ) : (
+                        <Clock className="mr-2 text-gray-400" size={18} />
+                      )}
+                      <span className="font-medium">
+                        {ackQuery.data.acknowledgments.ack3.received ? 'Centre Received' : 'Awaiting Centre Receipt'}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600">
+                      {ackQuery.data.acknowledgments.ack3.received 
+                        ? 'FDA Centre has received your submission' 
+                        : 'Waiting for FDA Centre to acknowledge receipt of your submission'}
+                    </p>
+                  </div>
+                </div>
+                
+                {ackQuery.data.last_updated && (
+                  <div className="text-xs text-gray-500 text-right">
+                    Last updated: {formatDate(ackQuery.data.last_updated)}
+                  </div>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+      
       {/* Display submissions history if available */}
       {sequence.submissions && sequence.submissions.length > 0 && (
         <Card className="mb-6">
@@ -292,6 +484,58 @@ export default function IndSequenceDetail() {
                 </div>
               ))}
             </div>
+          </CardContent>
+        </Card>
+      )}
+      
+      {/* XML Validation Results */}
+      {validationResults && (
+        <Card className={`mb-6 ${validationResults.validation.valid ? 'border-green-200' : 'border-red-200'}`}>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              {validationResults.validation.valid ? (
+                <Check className="mr-2 text-green-500" size={20} />
+              ) : (
+                <AlertCircle className="mr-2 text-red-500" size={20} />
+              )}
+              XML Validation Results
+            </CardTitle>
+            <CardDescription>
+              {validationResults.validation.valid
+                ? "XML files are valid and conform to FDA eCTD DTD requirements"
+                : "XML files contain errors that must be fixed before submission"}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {!validationResults.validation.valid && (
+              <div className="space-y-4">
+                {validationResults.validation.index.length > 0 && (
+                  <div className="p-4 border border-red-200 rounded-md bg-red-50">
+                    <h3 className="font-semibold text-red-700 mb-2">index.xml Errors</h3>
+                    <ul className="list-disc pl-5 space-y-1">
+                      {validationResults.validation.index.map((error, idx) => (
+                        <li key={idx} className="text-sm text-red-700">{error}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {validationResults.validation.regional.length > 0 && (
+                  <div className="p-4 border border-red-200 rounded-md bg-red-50">
+                    <h3 className="font-semibold text-red-700 mb-2">us-regional.xml Errors</h3>
+                    <ul className="list-disc pl-5 space-y-1">
+                      {validationResults.validation.regional.map((error, idx) => (
+                        <li key={idx} className="text-sm text-red-700">{error}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+            {validationResults.validation.valid && (
+              <div className="p-4 border border-green-200 rounded-md bg-green-50 text-green-700">
+                <p>All XML files have been validated against FDA eCTD DTD specifications and are ready for submission.</p>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
