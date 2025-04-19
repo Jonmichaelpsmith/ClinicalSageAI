@@ -1,0 +1,115 @@
+// HomeLanding.jsx – Concepts2Cures.AI rebrand (TrialSage platform)
+// Tailwind + i18n + dark‑mode ready
+
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { PlayCircle, ArrowRight, LogIn, UserPlus, BarChart2, Brain } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+
+export default function HomeLanding() {
+  const { t } = useTranslation();
+  const year = new Date().getFullYear();
+
+  const Button = ({ to, children, variant = 'primary', external = false }) => {
+    const base = 'px-5 py-2.5 rounded-lg inline-flex items-center gap-2 text-sm sm:text-base font-medium transition focus:outline-none';
+    const classes = {
+      primary: 'bg-emerald-600 hover:bg-emerald-700 text-white shadow focus:ring-2 focus:ring-emerald-400',
+      ghost: 'bg-white dark:bg-slate-900/20 border border-emerald-600 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-slate-900/50',
+    }[variant];
+    if (external) return <a href={to} className={`${base} ${classes}`} target="_blank" rel="noreferrer noopener">{children}</a>;
+    return <Link to={to} className={`${base} ${classes}`}>{children}</Link>;
+  };
+
+  /* ——————————————————— Data */
+  const featureBanner = [
+    t('Deep‑Learning CER Narratives'),
+    t('Full IND Builder & Validator'),
+    t('eCTD One‑Click ESG Send'),
+    t('Real‑Time Risk Dashboards'),
+    t('Benchling & FAERS Connectors'),
+    t('Conversational Reg‑Affairs Agent'),
+  ];
+
+  const products = [
+    { color:'sky',   tag:'CSR Deep‑Intel', title:t('CSR Intelligence'), desc:t('3 000+ machine‑read CSRs with comparator & endpoint analytics.'), link:'/csr-library' },
+    { color:'emerald',tag:'CER AI',         title:t('CER Generator'),   desc:t('EU MDR 2/7‑1 Word/PDF with auto FAERS trend graphs.'), link:'/cer-dashboard' },
+    { color:'violet', tag:'IND Suite',      title:t('IND Automation'),  desc:t('Module 1–5 builder, GPT‑4 Module 2, eCTD packaging, ESG push.'), link:'/ind-automation' },
+    { color:'teal',   tag:'Ops IQ',         title:t('KPI Analytics'),   desc:t('Drag‑and‑drop SQL widgets, alert routing, weekly PDFs.'), link:'/dashboard#kpi' },
+  ];
+
+  const competitorRows = [
+    ['TrialSage',          '✅', '✅', '✅', 'Auto',     '$'],
+    ['Cortellis / Cortera','⚠️ manual', '✅', '—',    '—',       '$$$$'],
+    ['Phlexglobal',        '⚠️ add‑on', '✅', '—',    '—',       '$$$'],
+    ['Traditional CRO',    '—', '—', '—', '—', '$$$$$'],
+  ];
+
+  return (
+    <main className="font-sans text-gray-800 dark:text-gray-100 w-full overflow-x-hidden">
+      {/* Top Nav */}
+      <nav className="fixed top-0 inset-x-0 h-14 bg-white/80 dark:bg-slate-900/70 backdrop-blur flex justify-between items-center px-6 z-40 shadow-sm">
+        <Link to="/" className="text-lg font-bold text-emerald-700 dark:text-emerald-400">Concepts2Cures.AI</Link>
+        <div className="flex gap-3">
+          <Button to="/login" variant="ghost"><LogIn size={16}/> {t('Login')}</Button>
+          <Button to="/register" variant="ghost"><UserPlus size={16}/> {t('Register')}</Button>
+          <Button to="/demo" variant="primary"><PlayCircle size={16}/> {t('Live Demo')}</Button>
+        </div>
+      </nav>
+
+      {/* Hero */}
+      <header className="pt-32 pb-24 bg-gradient-to-b from-emerald-50 via-white to-white dark:from-slate-900 dark:via-slate-800 dark:to-slate-800 text-center relative">
+        <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight text-emerald-700 dark:text-emerald-400 mb-3">
+          {t('TrialSage® Platform')}
+        </h1>
+        <p className="text-xl sm:text-2xl max-w-3xl mx-auto text-gray-700 dark:text-gray-300">
+          {t('Accelerate every regulatory milestone—from CSR insights to FDA submission—with enterprise‑grade AI agents.')}
+        </p>
+        <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+          <Button to="/roi" variant="primary"><BarChart2 size={18}/> {t('Instant ROI Estimate')}</Button>
+          <Button to="/contact" variant="ghost"><ArrowRight size={16}/> {t('Speak to an Expert')}</Button>
+        </div>
+      </header>
+
+      {/* Feature banner */}
+      <section className="py-5 bg-emerald-600 dark:bg-emerald-700 text-white text-center text-xs sm:text-sm">
+        <div className="max-w-6xl mx-auto flex flex-wrap justify-center gap-4 animate-marquee whitespace-nowrap">
+          {featureBanner.map(f=> (
+            <span key={f} className="inline-flex items-center gap-1 px-2"><Brain size={12}/> {f}</span>
+          ))}
+        </div>
+      </section>
+
+      {/* Product Cards */}
+      <section className="max-w-6xl mx-auto px-6 py-24 grid gap-10 md:grid-cols-2">
+        {products.map(p=> (
+          <article key={p.title} className={`p-6 rounded-lg shadow bg-white dark:bg-slate-900 border-t-4 border-${p.color}-600 dark:border-${p.color}-400 flex flex-col`}>
+            <span className="uppercase text-xs tracking-wide text-gray-400 mb-1">{p.tag}</span>
+            <h3 className={`text-${p.color}-700 dark:text-${p.color}-300 text-xl font-semibold mb-2`}>{p.title}</h3>
+            <p className="flex-grow text-gray-600 dark:text-gray-400 leading-relaxed mb-4">{p.desc}</p>
+            <Link to={p.link} className={`text-${p.color}-700 dark:text-${p.color}-300 font-medium hover:underline`}>{t('Learn more')}</Link>
+          </article>
+        ))}
+      </section>
+
+      {/* Deep Intelligence Engine */}
+      <section className="py-20 bg-gradient-to-r from-sky-50 to-emerald-50 dark:from-slate-800 dark:to-slate-700 text-center px-6">
+        <h2 className="text-3xl font-bold mb-4 flex items-center justify-center gap-2"><Brain/> {t('Deep Intelligence Engine')}</h2>
+        <p className="max-w-3xl mx-auto text-gray-700 dark:text-gray-300 text-lg mb-6">
+          {t('Conversational agent combines biostats, medical writing, and global reg‑affairs expertise—available 24/7 to design protocols, validate endpoints, and predict study outcomes.')}
+        </p>
+        <Button variant="primary" to="/assistant">{t('Try the CSR Assistant')} <ArrowRight size={16}/></Button>
+      </section>
+
+      {/* Competitor Table */}
+      <section className="max-w-5xl mx-auto px-6 py-24">
+        <h2 className="text-2xl font-bold mb-6 text-center">{t('Why innovators choose TrialSage')}</h2>
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-sm border divide-y divide-gray-200 dark:divide-slate-600">
+            <thead className="bg-gray-100 dark:bg-slate-800 text-left">
+              <tr>
+                <th className="py-2 px-3 font-semibold">{t('Platform')}</th>
+                <th className="py-2 px-3">{t('AI Narratives')}</th>
+                <th className="py-2 px-3">{t('eCTD End‑to‑End')}</th>
+                <th className="py-2 px-3">{t('ESG Send')}</th>
+                <th className="py-2 px-3">{t('Traceability')}</th>
+                <th className="py-2 px-3">{t

@@ -1,9 +1,9 @@
-// HomeLanding.jsx – buyer‑centric landing w/ Solutions, Use‑cases, Deep Intelligence Engine
-// Tailwind + i18n + dark‑mode. Fully self‑contained file.
+// HomeLanding.jsx – Concepts2Cures.AI rebrand (TrialSage platform)
+// Tailwind + i18n + dark‑mode ready
 
 import React from "react";
 import { Link } from "../stub-router-dom";
-import { PlayCircle, ArrowRight, BarChart2, Brain } from "lucide-react";
+import { PlayCircle, ArrowRight, LogIn, UserPlus, BarChart2, Brain } from "lucide-react";
 import { useTranslation } from "../i18n";
 // Import i18n to initialize it
 import "../i18n";
@@ -12,139 +12,130 @@ export default function HomeLanding() {
   const { t } = useTranslation();
   const year = new Date().getFullYear();
 
-  const Button = ({ to, children, variant = "primary" }) => {
-    const base =
-      "px-6 py-3 rounded-lg inline-flex items-center gap-2 text-lg transition font-medium focus:outline-none";
-    const variants = {
-      primary:
-        "bg-blue-600 hover:bg-blue-700 text-white shadow-lg focus:ring-2 focus:ring-blue-400",
-      ghost:
-        "bg-white dark:bg-slate-900/30 border border-blue-600 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-slate-900/50",
-    };
-    return (
-      <Link to={to} className={`${base} ${variants[variant]}`}>{children}</Link>
-    );
+  const Button = ({ to, children, variant = "primary", external = false }) => {
+    const base = "px-5 py-2.5 rounded-lg inline-flex items-center gap-2 text-sm sm:text-base font-medium transition focus:outline-none";
+    const classes = {
+      primary: "bg-emerald-600 hover:bg-emerald-700 text-white shadow focus:ring-2 focus:ring-emerald-400",
+      ghost: "bg-white dark:bg-slate-900/20 border border-emerald-600 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-slate-900/50",
+    }[variant];
+    if (external) return <a href={to} className={`${base} ${classes}`} target="_blank" rel="noreferrer noopener">{children}</a>;
+    return <Link to={to} className={`${base} ${classes}`}>{children}</Link>;
   };
 
-  /* ───────────────────────── Basic data */
-  const valueBullets = [
-    ["⏱️", t("Save Months"), t("Automate 70% of narrative writing & eCTD packaging time.")],
-    ["💸", t("Slash Costs"), t("Reduce external medical‑writing spend by $120k per program.")],
-    ["📈", t("Scale Studies"), t("Run 3× more trials per FTE—without compromising compliance.")],
+  /* ——————————————————— Data */
+  const featureBanner = [
+    t('Deep‑Learning CER Narratives'),
+    t('Full IND Builder & Validator'),
+    t('eCTD One‑Click ESG Send'),
+    t('Real‑Time Risk Dashboards'),
+    t('Benchling & FAERS Connectors'),
+    t('Conversational Reg‑Affairs Agent'),
   ];
 
-  const solutions = [
-    {
-      color: "blue",
-      title: t("CSR Intelligence"),
-      desc: t("Comparator benchmarks, dropout trends, endpoint insights from 3 000+ tagged CSRs."),
-      link: "/csr-library",
-    },
-    {
-      color: "emerald",
-      title: t("CER Generator"),
-      desc: t("EU MDR Word/PDF with FAERS anomaly detection and Rev 2/7‑1 traceability matrix."),
-      link: "/cer-dashboard",
-    },
-    {
-      color: "violet",
-      title: t("IND Automation"),
-      desc: t("Module 1–5 creator, GPT‑4 Turbo summaries, eCTD packaging, ESG push + sequence tracking."),
-      link: "/ind-automation",
-    },
-    {
-      color: "teal",
-      title: t("KPI Analytics & Alerts"),
-      desc: t("Drag‑and‑drop charts, server‑SQL, Teams/email alerts, PNG/CSV export."),
-      link: "/dashboard#kpi",
-    },
+  const products = [
+    { color:'sky',   tag:'CSR Deep‑Intel', title:t('CSR Intelligence'), desc:t('3 000+ machine‑read CSRs with comparator & endpoint analytics.'), link:'/csr-library' },
+    { color:'emerald',tag:'CER AI',         title:t('CER Generator'),   desc:t('EU MDR 2/7‑1 Word/PDF with auto FAERS trend graphs.'), link:'/cer-dashboard' },
+    { color:'violet', tag:'IND Suite',      title:t('IND Automation'),  desc:t('Module 1–5 builder, GPT‑4 Module 2, eCTD packaging, ESG push.'), link:'/ind-automation' },
+    { color:'teal',   tag:'Ops IQ',         title:t('KPI Analytics'),   desc:t('Drag‑and‑drop SQL widgets, alert routing, weekly PDFs.'), link:'/dashboard#kpi' },
   ];
 
-  const useCases = [
-    ["🚀", t("First‑in‑Human"), t("Draft Module 2 summaries and QOS in 48 hrs, compressing go‑to‑IND timelines."), "/ind-automation"],
-    ["🔄", t("Label Expansion"), t("Reuse CER evidence & CSR deltas to generate IND amendments in days."), "/cer-dashboard"],
-    ["🧬", t("Rare‑Disease Trials"), t("Benchmark comparators & endpoints when historical data is scarce."), "/csr-library"],
+  const competitorRows = [
+    ['TrialSage',          '✅', '✅', '✅', 'Auto',     '$'],
+    ['Cortellis / Cortera','⚠️ manual', '✅', '—',    '—',       '$$$$'],
+    ['Phlexglobal',        '⚠️ add‑on', '✅', '—',    '—',       '$$$'],
+    ['Traditional CRO',    '—', '—', '—', '—', '$$$$$'],
   ];
 
-  /* ───────────────────────── Component */
   return (
     <main className="font-sans text-gray-800 dark:text-gray-100 w-full overflow-x-hidden">
-      {/* HERO */}
-      <header className="pt-28 pb-24 bg-gradient-to-b from-blue-50 via-white to-white dark:from-slate-900 dark:via-slate-800 dark:to-slate-800 text-center relative">
-        <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight text-blue-700 dark:text-blue-400">
-          {t("Move Concepts → Cures Faster")}
-        </h1>
-        <p className="mt-6 max-w-3xl mx-auto text-xl sm:text-2xl leading-relaxed text-gray-700 dark:text-gray-300">
-          {t("Ingest evidence, auto‑draft CERs & IND modules, and e‑submit via FDA ESG—cutting CRO billables up to 40%.")}
-        </p>
-        <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-          <Button to="/demo">
-            <PlayCircle size={20} /> {t("Watch 2‑min Demo")}
-          </Button>
-          <Button variant="ghost" to="/roi">
-            <BarChart2 size={18} /> {t("Estimate ROI")}
-          </Button>
+      {/* Top Nav */}
+      <nav className="fixed top-0 inset-x-0 h-14 bg-white/80 dark:bg-slate-900/70 backdrop-blur flex justify-between items-center px-6 z-40 shadow-sm">
+        <Link to="/" className="text-lg font-bold text-emerald-700 dark:text-emerald-400">Concepts2Cures.AI</Link>
+        <div className="flex gap-3">
+          <Button to="/login" variant="ghost"><LogIn size={16}/> {t('Login')}</Button>
+          <Button to="/register" variant="ghost"><UserPlus size={16}/> {t('Register')}</Button>
+          <Button to="/demo" variant="primary"><PlayCircle size={16}/> {t('Live Demo')}</Button>
         </div>
-        <p className="mt-6 text-xs text-gray-500 dark:text-gray-400">
-          {t("Trusted by regulatory teams at venture‑backed biotechs and global CROs")}
+      </nav>
+
+      {/* Hero */}
+      <header className="pt-32 pb-24 bg-gradient-to-b from-emerald-50 via-white to-white dark:from-slate-900 dark:via-slate-800 dark:to-slate-800 text-center relative">
+        <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight text-emerald-700 dark:text-emerald-400 mb-3">
+          {t('TrialSage® Platform')}
+        </h1>
+        <p className="text-xl sm:text-2xl max-w-3xl mx-auto text-gray-700 dark:text-gray-300">
+          {t('Accelerate every regulatory milestone—from CSR insights to FDA submission—with enterprise‑grade AI agents.')}
         </p>
+        <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+          <Button to="/roi" variant="primary"><BarChart2 size={18}/> {t('Instant ROI Estimate')}</Button>
+          <Button to="/contact" variant="ghost"><ArrowRight size={16}/> {t('Speak to an Expert')}</Button>
+        </div>
       </header>
 
-      {/* VALUE BULLETS */}
-      <section className="max-w-6xl mx-auto px-6 py-20 grid md:grid-cols-3 gap-10">
-        {valueBullets.map(([icon, title, body]) => (
-          <article key={title} className="bg-white dark:bg-slate-900 shadow rounded-lg p-6 text-center flex flex-col items-center">
-            <span className="text-4xl mb-2">{icon}</span>
-            <h3 className="font-semibold text-xl mb-1">{title}</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">{body}</p>
+      {/* Feature banner */}
+      <section className="py-5 bg-emerald-600 dark:bg-emerald-700 text-white text-center text-xs sm:text-sm">
+        <div className="max-w-6xl mx-auto flex flex-wrap justify-center gap-4 animate-marquee whitespace-nowrap">
+          {featureBanner.map(f=> (
+            <span key={f} className="inline-flex items-center gap-1 px-2"><Brain size={12}/> {f}</span>
+          ))}
+        </div>
+      </section>
+
+      {/* Product Cards */}
+      <section className="max-w-6xl mx-auto px-6 py-24 grid gap-10 md:grid-cols-2">
+        {products.map(p=> (
+          <article key={p.title} className={`p-6 rounded-lg shadow bg-white dark:bg-slate-900 border-t-4 border-${p.color}-600 dark:border-${p.color}-400 flex flex-col`}>
+            <span className="uppercase text-xs tracking-wide text-gray-400 mb-1">{p.tag}</span>
+            <h3 className={`text-${p.color}-700 dark:text-${p.color}-300 text-xl font-semibold mb-2`}>{p.title}</h3>
+            <p className="flex-grow text-gray-600 dark:text-gray-400 leading-relaxed mb-4">{p.desc}</p>
+            <Link to={p.link} className={`text-${p.color}-700 dark:text-${p.color}-300 font-medium hover:underline`}>{t('Learn more')}</Link>
           </article>
         ))}
       </section>
 
-      {/* DEEP INTELLIGENCE ENGINE */}
-      <section className="py-20 bg-gradient-to-r from-emerald-50 to-blue-50 dark:from-slate-800 dark:to-slate-700 text-center px-6">
-        <h2 className="text-3xl font-bold mb-4 flex items-center justify-center gap-2">
-          <Brain size={28} className="text-emerald-600 dark:text-emerald-400" /> {t("Deep Intelligence Engine")}
-        </h2>
+      {/* Deep Intelligence Engine */}
+      <section className="py-20 bg-gradient-to-r from-sky-50 to-emerald-50 dark:from-slate-800 dark:to-slate-700 text-center px-6">
+        <h2 className="text-3xl font-bold mb-4 flex items-center justify-center gap-2"><Brain/> {t('Deep Intelligence Engine')}</h2>
         <p className="max-w-3xl mx-auto text-gray-700 dark:text-gray-300 text-lg mb-6">
-          {t("Our LLM‑tuned pipeline links every statement back to a verifiable data point—CSR paragraph, FAERS case, Benchling batch record—so reviewers trust every sentence.")}
+          {t('Conversational agent combines biostats, medical writing, and global reg‑affairs expertise—available 24/7 to design protocols, validate endpoints, and predict study outcomes.')}
         </p>
-        <Button variant="primary" to="/tech">
-          {t("Explore the tech stack")} <ArrowRight size={16} />
-        </Button>
+        <Button variant="primary" to="/assistant">{t('Try the CSR Assistant')} <ArrowRight size={16}/></Button>
       </section>
 
-      {/* USE CASES */}
-      <section className="max-w-6xl mx-auto px-6 py-24 grid md:grid-cols-3 gap-10">
-        {useCases.map(([icon, title, body, to]) => (
-          <article key={title} className="border rounded-lg p-6 bg-white dark:bg-slate-900 shadow-sm flex flex-col">
-            <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">
-              <span className="text-2xl">{icon}</span> {title}
-            </h3>
-            <p className="text-gray-600 dark:text-gray-400 flex-grow leading-relaxed mb-4">{body}</p>
-            <Link to={to} className="text-blue-700 dark:text-blue-300 font-medium hover:underline">
-              {t("See how")} →
-            </Link>
-          </article>
-        ))}
+      {/* Competitor Table */}
+      <section className="max-w-5xl mx-auto px-6 py-24">
+        <h2 className="text-2xl font-bold mb-6 text-center">{t('Why innovators choose TrialSage')}</h2>
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-sm border divide-y divide-gray-200 dark:divide-slate-600">
+            <thead className="bg-gray-100 dark:bg-slate-800 text-left">
+              <tr>
+                <th className="py-2 px-3 font-semibold">{t('Platform')}</th>
+                <th className="py-2 px-3">{t('AI Narratives')}</th>
+                <th className="py-2 px-3">{t('eCTD End‑to‑End')}</th>
+                <th className="py-2 px-3">{t('ESG Send')}</th>
+                <th className="py-2 px-3">{t('Traceability')}</th>
+                <th className="py-2 px-3">{t('Pricing')}</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
+              {competitorRows.map((row, i) => (
+                <tr key={i} className={i === 0 ? "bg-emerald-50 dark:bg-emerald-900/20" : ""}>
+                  {row.map((cell, j) => (
+                    <td key={j} className="py-2 px-3">{cell}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </section>
 
-      {/* SOLUTION CARDS */}
-      <section className="max-w-6xl mx-auto px-6 pb-24 grid gap-10 md:grid-cols-2">
-        {solutions.map((m) => (
-          <article key={m.title} className={`p-6 rounded-lg shadow bg-white dark:bg-slate-900 border-t-4 border-${m.color}-600 dark:border-${m.color}-400 flex flex-col`}>
-            <h3 className={`text-${m.color}-700 dark:text-${m.color}-300 text-xl font-semibold mb-2`}>{m.title}</h3>
-            <p className="text-gray-600 dark:text-gray-400 flex-grow leading-relaxed mb-4">{m.desc}</p>
-            <Link to={m.link} className={`font-medium text-${m.color}-700 dark:text-${m.color}-300 hover:underline`}>
-              {t("Learn more")}
-            </Link>
-          </article>
-        ))}
-      </section>
-
-      {/* FOOTER */}
-      <footer className="py-14 bg-gray-50 dark:bg-slate-900 text-center text-sm text-gray-500 dark:text-gray-400">
-        © {year}  TrialSage • {t("All rights reserved.")}
+      {/* Footer */}
+      <footer className="py-10 bg-gray-50 dark:bg-slate-900 text-center text-sm text-gray-500 dark:text-gray-400">
+        <div className="max-w-6xl mx-auto px-6">
+          <p>© {year} Concepts2Cures.AI • {t('All rights reserved')}</p>
+          <p className="mt-1 text-xs">{t('TrialSage is a registered trademark')}</p>
+        </div>
       </footer>
     </main>
   );
