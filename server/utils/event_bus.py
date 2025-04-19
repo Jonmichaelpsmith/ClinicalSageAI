@@ -1,153 +1,109 @@
 """
-Event Bus Utility
+Event Bus for WebSocket communication.
 
-This module provides a unified event bus for publishing events across services.
-It supports both Redis pub/sub and in-process event management with auto-fallback.
+This module provides a simple event pub/sub system for WebSocket communication.
+In a production environment, this would use Redis or another messaging system.
 """
-
-import json
+import asyncio
 import logging
-import threading
-from typing import Dict, Any, Callable, List, Optional
+from typing import Dict, Set, Callable, Any, Awaitable
 
-# Setup logging
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Try to import Redis, but provide fallback if not available
-try:
-    import redis
-    REDIS_AVAILABLE = True
-except ImportError:
-    REDIS_AVAILABLE = False
-    logger.warning("Redis not available - using in-process event bus")
+# In-memory subscribers dictionary
+# Format: {channel: {callback_id: callback_func}}
+_subscribers: Dict[str, Dict[str, Callable[[Dict[str, Any]], Awaitable[None]]]] = {}
 
-# Redis connection (if available)
-REDIS_CLIENT = None
-REDIS_PREFIX = "trialsage:events:"
+# Event history for new subscribers
+# Format: {channel: [event1, event2, ...]}
+_event_history: Dict[str, Any] = {}
 
-# In-process subscribers (fallback)
-LOCAL_SUBSCRIBERS: Dict[str, List[Callable]] = {}
+# Maximum number of events to keep in history
+MAX_HISTORY_EVENTS = 100
 
-# Thread-safety lock for local subscribers
-LOCAL_LOCK = threading.Lock()
-
-def setup_redis(host="localhost", port=6379, db=0, password=None):
-    """Set up Redis connection for event bus"""
-    global REDIS_CLIENT, REDIS_AVAILABLE
-    
-    if not REDIS_AVAILABLE:
-        logger.warning("Redis not available - skipping setup")
-        return False
-    
-    try:
-        REDIS_CLIENT = redis.Redis(
-            host=host, 
-            port=port, 
-            db=db, 
-            password=password,
-            socket_timeout=1,
-            socket_connect_timeout=1,
-            health_check_interval=5
-        )
-        REDIS_CLIENT.ping()  # Test connection
-        logger.info("Redis event bus configured successfully")
-        return True
-    except (redis.ConnectionError, redis.RedisError) as e:
-        logger.warning(f"Redis connection failed: {str(e)} - using in-process event bus")
-        REDIS_AVAILABLE = False
-        REDIS_CLIENT = None
-        return False
-
-def publish(channel: str, message: Dict[str, Any]) -> bool:
+async def subscribe(channel: str, callback_id: str, callback: Callable[[Dict[str, Any]], Awaitable[None]]) -> None:
     """
-    Publish an event to subscribers
+    Subscribe to a channel.
     
     Args:
-        channel: Event channel name
-        message: Event data (must be JSON-serializable)
-        
-    Returns:
-        Success status
+        channel: Channel name
+        callback_id: Unique identifier for the callback
+        callback: Async function to call when an event is published to the channel
     """
-    # Validate inputs
-    if not isinstance(channel, str) or not channel:
-        logger.error("Invalid channel name")
-        return False
+    if channel not in _subscribers:
+        _subscribers[channel] = {}
+        logger.info(f"Created new channel: {channel}")
     
-    # Try to publish to Redis first if available
-    redis_success = False
-    if REDIS_AVAILABLE and REDIS_CLIENT is not None:
+    _subscribers[channel][callback_id] = callback
+    logger.info(f"Subscribed to channel {channel} with ID {callback_id}")
+    
+    # Send recent events to new subscriber
+    if channel in _event_history:
+        for event in _event_history[channel]:
+            await callback(event)
+
+async def unsubscribe(channel: str, callback_id: str) -> None:
+    """
+    Unsubscribe from a channel.
+    
+    Args:
+        channel: Channel name
+        callback_id: Callback identifier to remove
+    """
+    if channel in _subscribers and callback_id in _subscribers[channel]:
+        del _subscribers[channel][callback_id]
+        logger.info(f"Unsubscribed from channel {channel} with ID {callback_id}")
+        
+        # Clean up empty channels
+        if not _subscribers[channel]:
+            del _subscribers[channel]
+            logger.info(f"Removed empty channel: {channel}")
+
+async def publish_event(channel: str, event: Dict[str, Any]) -> None:
+    """
+    Publish an event to a channel.
+    
+    Args:
+        channel: Channel name
+        event: Event data to publish
+    """
+    logger.info(f"Publishing event to channel {channel}: {event}")
+    
+    # Store event in history
+    if channel not in _event_history:
+        _event_history[channel] = []
+    
+    _event_history[channel].append(event)
+    
+    # Trim history if needed
+    if len(_event_history[channel]) > MAX_HISTORY_EVENTS:
+        _event_history[channel] = _event_history[channel][-MAX_HISTORY_EVENTS:]
+    
+    # No subscribers for this channel
+    if channel not in _subscribers:
+        logger.info(f"No subscribers for channel {channel}")
+        return
+    
+    # Call all subscriber callbacks
+    for callback_id, callback in list(_subscribers[channel].items()):
         try:
-            serialized = json.dumps(message)
-            redis_success = REDIS_CLIENT.publish(f"{REDIS_PREFIX}{channel}", serialized) > 0
+            await callback(event)
         except Exception as e:
-            logger.error(f"Redis publish error: {str(e)}")
-    
-    # Publish to local subscribers
-    local_success = False
-    with LOCAL_LOCK:
-        if channel in LOCAL_SUBSCRIBERS and LOCAL_SUBSCRIBERS[channel]:
-            for callback in LOCAL_SUBSCRIBERS[channel]:
-                try:
-                    callback(message)
-                    local_success = True
-                except Exception as e:
-                    logger.error(f"Local subscriber error: {str(e)}")
-    
-    # If published via either method, consider it a success
-    return redis_success or local_success
+            logger.error(f"Error in subscriber callback {callback_id}: {e}")
 
-def subscribe(channel: str, callback: Callable[[Dict[str, Any]], None]) -> bool:
+def get_subscriber_count(channel: str) -> int:
     """
-    Subscribe to a channel with a callback for local events
+    Get the number of subscribers for a channel.
     
     Args:
-        channel: Channel name to subscribe to
-        callback: Function to call when event is received
+        channel: Channel name
         
     Returns:
-        Success status
+        Number of subscribers
     """
-    if not callable(callback):
-        logger.error("Invalid callback function")
-        return False
+    if channel not in _subscribers:
+        return 0
     
-    with LOCAL_LOCK:
-        if channel not in LOCAL_SUBSCRIBERS:
-            LOCAL_SUBSCRIBERS[channel] = []
-        LOCAL_SUBSCRIBERS[channel].append(callback)
-    
-    logger.debug(f"Subscribed to local events on channel: {channel}")
-    return True
-
-def unsubscribe(channel: str, callback: Optional[Callable] = None) -> bool:
-    """
-    Unsubscribe from a channel
-    
-    Args:
-        channel: Channel name to unsubscribe from
-        callback: Specific callback to remove (if None, removes all)
-        
-    Returns:
-        Success status
-    """
-    with LOCAL_LOCK:
-        if channel not in LOCAL_SUBSCRIBERS:
-            return False
-        
-        if callback is None:
-            LOCAL_SUBSCRIBERS[channel] = []
-            return True
-        
-        try:
-            LOCAL_SUBSCRIBERS[channel].remove(callback)
-            return True
-        except ValueError:
-            logger.warning(f"Callback not found in channel: {channel}")
-            return False
-
-# Try to configure Redis on module import
-try:
-    setup_redis()
-except Exception as e:
-    logger.warning(f"Redis setup failed: {str(e)}")
+    return len(_subscribers[channel])

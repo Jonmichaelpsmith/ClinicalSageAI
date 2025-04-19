@@ -1,255 +1,198 @@
 """
-Risk Analyzer API
+Risk Analyzer API Endpoint
 
-This module provides API endpoints for analyzing submission risks based on QC and validator results.
+This module provides the API endpoints for analyzing submission risk.
 """
-from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
-from typing import Dict, List, Any, Optional
+import asyncio
 import logging
-import json
-from datetime import datetime
+from fastapi import APIRouter, HTTPException, Query
+from typing import Dict, Any, Optional
 
-from server.utils.risk_analyzer import (
-    evaluate_qc_results,
-    evaluate_validator_results,
-    generate_ai_risk_analysis,
-    analyze_submission_risks
-)
+from ...utils.risk_analyzer import analyze_submission_risk
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
+router = APIRouter()
 logger = logging.getLogger(__name__)
 
-# Initialize router
-router = APIRouter()
-
-@router.get("/api/risk/regions")
-async def get_supported_regions():
-    """Get a list of supported regulatory regions"""
-    return {
-        "regions": [
-            {"id": "FDA", "name": "US Food and Drug Administration", "country": "USA"},
-            {"id": "EMA", "name": "European Medicines Agency", "country": "EU"},
-            {"id": "PMDA", "name": "Pharmaceuticals and Medical Devices Agency", "country": "Japan"}
-        ]
-    }
-
-@router.post("/api/risk/analyze_qc")
-async def analyze_qc_results(data: Dict[str, Any]):
+@router.get("/api/risk/analysis/{submission_id}")
+async def get_risk_analysis(
+    submission_id: int, 
+    region: str = Query(..., description="Regulatory region (FDA, EMA, PMDA)")
+) -> Dict[str, Any]:
     """
-    Analyze QC results to identify risks
+    Analyze risk for a specific submission in a regulatory region.
     
     Args:
-        data: Dictionary containing:
-            - qc_results: List of QC result dictionaries
-            - region: Regulatory region (FDA, EMA, PMDA)
-            
+        submission_id: The ID of the submission to analyze
+        region: The regulatory region (FDA, EMA, PMDA)
+        
     Returns:
-        Dictionary with risk assessment
+        Dictionary with comprehensive risk analysis results
     """
     try:
-        qc_results = data.get("qc_results", [])
-        region = data.get("region", "FDA")
+        logger.info(f"Risk analysis requested for submission {submission_id} in region {region}")
         
-        if not qc_results:
-            return {"error": "No QC results provided", "risk_level": "LOW"}
+        # Convert region to uppercase for consistent handling
+        region = region.upper()
         
-        assessment = evaluate_qc_results(qc_results, region)
-        return assessment
-    except Exception as e:
-        logger.error(f"Error analyzing QC results: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error analyzing QC results: {str(e)}"
-        )
-
-@router.post("/api/risk/analyze_validator")
-async def analyze_validator_results(data: Dict[str, Any]):
-    """
-    Analyze eValidator results to identify risks
-    
-    Args:
-        data: Dictionary containing:
-            - validator_results: eValidator result dictionary
-            - region: Regulatory region (FDA, EMA, PMDA)
-            
-    Returns:
-        Dictionary with risk assessment
-    """
-    try:
-        validator_results = data.get("validator_results", {"categories": {}})
-        region = data.get("region", "FDA")
-        
-        assessment = evaluate_validator_results(validator_results, region)
-        return assessment
-    except Exception as e:
-        logger.error(f"Error analyzing validator results: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error analyzing validator results: {str(e)}"
-        )
-
-@router.post("/api/risk/analyze_submission")
-async def analyze_submission(data: Dict[str, Any], background_tasks: BackgroundTasks):
-    """
-    Comprehensive analysis of submission risks
-    
-    Args:
-        data: Dictionary containing:
-            - submission_id: ID of the submission
-            - qc_results: Optional QC results
-            - validator_results: Optional validator results
-            - region: Regulatory region (FDA, EMA, PMDA)
-            
-    Returns:
-        Dictionary with quick assessment and task ID for detailed analysis
-    """
-    try:
-        submission_id = data.get("submission_id")
-        if not submission_id:
+        # Validate region
+        if region not in ["FDA", "EMA", "PMDA"]:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="submission_id is required"
+                status_code=400, 
+                detail=f"Invalid region: {region}. Must be one of: FDA, EMA, PMDA"
             )
         
-        qc_results = data.get("qc_results", [])
-        validator_results = data.get("validator_results", {"categories": {}})
-        region = data.get("region", "FDA")
-        
-        # Generate quick assessment
-        qc_assessment = evaluate_qc_results(qc_results, region)
-        validator_assessment = evaluate_validator_results(validator_results, region)
-        
-        # Determine initial risk level
-        combined_risk_level = "LOW"
-        if qc_assessment["risk_level"] == "HIGH" or validator_assessment["risk_level"] == "HIGH":
-            combined_risk_level = "HIGH"
-        elif qc_assessment["risk_level"] == "MEDIUM" or validator_assessment["risk_level"] == "MEDIUM":
-            combined_risk_level = "MEDIUM"
-        
-        # Generate task ID for tracking
-        task_id = f"risk-{submission_id}-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
-        
-        # Schedule detailed analysis in background
-        background_tasks.add_task(
-            _run_detailed_analysis,
-            task_id,
-            submission_id,
-            qc_results,
-            validator_results,
-            region
-        )
-        
-        return {
-            "task_id": task_id,
-            "initial_assessment": {
-                "risk_level": combined_risk_level,
-                "qc_issues": qc_assessment["issue_counts"],
-                "validator_issues": validator_assessment["issue_counts"],
-                "region": region
-            },
-            "status": "processing"
-        }
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error initiating submission analysis: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error initiating submission analysis: {str(e)}"
-        )
-
-@router.get("/api/risk/{task_id}")
-async def get_risk_analysis(task_id: str):
-    """
-    Get risk analysis results by task ID
-    
-    Args:
-        task_id: Task ID from analyze_submission
-        
-    Returns:
-        Dictionary with risk assessment or status
-    """
-    try:
-        # TODO: Fetch from database or cache
-        result_path = f"/tmp/{task_id}.json"
-        import os
-        if not os.path.exists(result_path):
-            return {"status": "processing", "task_id": task_id}
-        
-        with open(result_path, "r") as f:
-            result = json.load(f)
+        # Perform risk analysis
+        result = await analyze_submission_risk(submission_id, region)
         
         return result
+    
     except Exception as e:
-        logger.error(f"Error fetching risk analysis: {e}")
+        logger.error(f"Error analyzing risk for submission {submission_id}: {str(e)}")
+        
+        # Return error response
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error fetching risk analysis: {str(e)}"
+            status_code=500,
+            detail=f"Error analyzing risk: {str(e)}"
         )
 
-@router.post("/api/risk/analyze_ai")
-async def analyze_with_ai(data: Dict[str, Any]):
+
+@router.get("/api/risk/history/{submission_id}")
+async def get_risk_history(
+    submission_id: int,
+    region: str = Query(..., description="Regulatory region (FDA, EMA, PMDA)"),
+    limit: Optional[int] = Query(10, description="Maximum number of results to return")
+) -> Dict[str, Any]:
     """
-    Generate AI analysis of submission risks
+    Get historical risk analyses for a submission.
+    
+    This endpoint would normally query a database for historical risk analysis results.
+    For demo purposes, it returns a simulated history.
     
     Args:
-        data: Dictionary containing:
-            - qc_assessment: QC risk assessment
-            - validator_assessment: Validator risk assessment
-            - region: Regulatory region (FDA, EMA, PMDA)
-            
+        submission_id: The ID of the submission
+        region: The regulatory region
+        limit: Maximum number of results to return
+        
     Returns:
-        Dictionary with AI risk assessment
+        Dictionary with historical risk analysis results
     """
     try:
-        qc_assessment = data.get("qc_assessment", {})
-        validator_assessment = data.get("validator_assessment", {})
-        region = data.get("region", "FDA")
+        logger.info(f"Risk history requested for submission {submission_id} in region {region}")
         
-        if not qc_assessment or not validator_assessment:
+        # Convert region to uppercase for consistent handling
+        region = region.upper()
+        
+        # Validate region
+        if region not in ["FDA", "EMA", "PMDA"]:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Both qc_assessment and validator_assessment are required"
+                status_code=400, 
+                detail=f"Invalid region: {region}. Must be one of: FDA, EMA, PMDA"
             )
         
-        ai_assessment = await generate_ai_risk_analysis(qc_assessment, validator_assessment, region)
-        return ai_assessment
-    except HTTPException:
-        raise
+        # Generate sample history
+        # In a real implementation, this would query a database
+        return {
+            "submission_id": submission_id,
+            "region": region,
+            "history": [
+                {
+                    "id": f"risk-{submission_id}-1",
+                    "timestamp": "2025-04-12T10:30:45Z",
+                    "overall_risk_level": "HIGH",
+                    "issues_count": 3
+                },
+                {
+                    "id": f"risk-{submission_id}-2",
+                    "timestamp": "2025-04-14T14:22:15Z",
+                    "overall_risk_level": "MEDIUM",
+                    "issues_count": 2
+                },
+                {
+                    "id": f"risk-{submission_id}-3",
+                    "timestamp": "2025-04-18T09:15:30Z",
+                    "overall_risk_level": "LOW",
+                    "issues_count": 0
+                }
+            ][:limit],
+            "total_count": 3
+        }
+    
     except Exception as e:
-        logger.error(f"Error generating AI risk analysis: {e}")
+        logger.error(f"Error retrieving risk history for submission {submission_id}: {str(e)}")
+        
+        # Return error response
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error generating AI risk analysis: {str(e)}"
+            status_code=500,
+            detail=f"Error retrieving risk history: {str(e)}"
         )
 
-async def _run_detailed_analysis(task_id, submission_id, qc_results, validator_results, region):
+
+@router.get("/api/risk/benchmark/{submission_id}")
+async def get_risk_benchmark(
+    submission_id: int,
+    region: str = Query(..., description="Regulatory region (FDA, EMA, PMDA)")
+) -> Dict[str, Any]:
     """
-    Background task to run detailed analysis and save results
+    Compare submission risk to industry benchmarks.
+    
+    This endpoint would normally query a database of industry benchmarks.
+    For demo purposes, it returns simulated benchmark data.
+    
+    Args:
+        submission_id: The ID of the submission
+        region: The regulatory region
+        
+    Returns:
+        Dictionary with benchmark comparison results
     """
     try:
-        # Run the comprehensive analysis
-        result = await analyze_submission_risks(
-            submission_id=submission_id,
-            qc_results=qc_results,
-            validator_results=validator_results,
-            region=region
-        )
+        logger.info(f"Risk benchmark requested for submission {submission_id} in region {region}")
         
-        # Save result to temporary storage
-        # In production, this would save to a database
-        with open(f"/tmp/{task_id}.json", "w") as f:
-            json.dump(result, f)
-            
-        logger.info(f"Completed detailed analysis for task {task_id}")
+        # Convert region to uppercase for consistent handling
+        region = region.upper()
+        
+        # Validate region
+        if region not in ["FDA", "EMA", "PMDA"]:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Invalid region: {region}. Must be one of: FDA, EMA, PMDA"
+            )
+        
+        # Get current risk analysis
+        current_risk = await analyze_submission_risk(submission_id, region)
+        
+        # Generate benchmark data
+        # In a real implementation, this would query a database of benchmarks
+        return {
+            "submission_id": submission_id,
+            "region": region,
+            "current_risk_level": current_risk["overall_risk_level"],
+            "industry_average_risk_level": "MEDIUM",
+            "percentile": 65 if current_risk["overall_risk_level"] == "LOW" else 35,
+            "benchmark_data": {
+                "industry": {
+                    "LOW": 45,
+                    "MEDIUM": 35,
+                    "HIGH": 20
+                },
+                "company": {
+                    "LOW": 55,
+                    "MEDIUM": 30,
+                    "HIGH": 15
+                }
+            },
+            "recommendations": [
+                "Ensure all required documents are included in the submission",
+                "Verify that all PDF documents meet regulatory requirements",
+                "Review validation results to address any critical issues"
+            ]
+        }
+    
     except Exception as e:
-        logger.error(f"Error in background analysis task {task_id}: {e}")
-        # Save error status
-        with open(f"/tmp/{task_id}.json", "w") as f:
-            json.dump({
-                "status": "error",
-                "task_id": task_id,
-                "error": str(e),
-                "timestamp": datetime.utcnow().isoformat()
-            }, f)
+        logger.error(f"Error retrieving risk benchmark for submission {submission_id}: {str(e)}")
+        
+        # Return error response
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error retrieving risk benchmark: {str(e)}"
+        )

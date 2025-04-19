@@ -1,10 +1,10 @@
 // SubmissionBuilder.tsx – drag‑drop tree with QC badges, bulk approve, and region‑specific rule hints
-import React, { useEffect, useState, useMemo, useRef } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { DndProvider } from 'react-dnd';
 import { Tree, NodeModel } from '@minoru/react-dnd-treeview';
 import update from 'immutability-helper';
-import { CheckCircle, XCircle, AlertTriangle, Wifi, WifiOff, Info } from 'lucide-react';
+import { CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -36,105 +36,6 @@ export default function SubmissionBuilder({ region = 'FDA' }: { region?: string 
   const [tree, setTree] = useState<Node[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Set<number>>(new Set());
-  const [wsConnected, setWsConnected] = useState(false);
-  const [latestQcUpdate, setLatestQcUpdate] = useState<{id: number, status: string} | null>(null);
-  const wsRef = useRef<WebSocket | null>(null);
-
-  // Region-specific guidance hints
-  const regionHints: Record<string, string[]> = {
-    FDA: [
-      'Module 1 sub‑folders: m1.1 (forms), m1.3 (IB/Brochure), m1.15 (Cover Letter)',
-      'File name ≤ 64 chars, no spaces; PDF/A‑1b only',
-      'Clinical protocols → m5.3.1, CSR → m5.3.5'
-    ],
-    EMA: [
-      'Use EU envelope (eu‑regional.xml) – include Application Form',
-      'Module 1.2: Overviews, 1.3: SPC/Label/Leaflet, 1.5: SmPC',
-      'Rename PDFs with "eu" suffix where required'
-    ],
-    PMDA: [
-      'JP Annex folder required for Japanese translations',
-      'Include CTD TOC PDF in m1',
-      'Yakuji‑Ho # index table mandatory'
-    ]
-  };
-
-  // Setup WebSocket connection to listen for QC updates
-  useEffect(() => {
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.host}/ws/qc`;
-    
-    const ws = new WebSocket(wsUrl);
-    wsRef.current = ws;
-    
-    ws.onopen = () => {
-      console.log('WebSocket connected');
-      setWsConnected(true);
-      toast.info('Real-time QC updates connected');
-    };
-    
-    ws.onclose = () => {
-      console.log('WebSocket disconnected');
-      setWsConnected(false);
-    };
-    
-    ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
-      toast.error('QC update connection error');
-      setWsConnected(false);
-    };
-    
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        console.log('QC update received:', data);
-        
-        if (data.type === 'qc_status' && data.documentId && data.status) {
-          setLatestQcUpdate({
-            id: parseInt(data.documentId),
-            status: data.status
-          });
-          
-          // Show toast notification for the update
-          const statusEmoji = data.status === 'passed' ? '✅' : '❌';
-          toast.info(`${statusEmoji} QC update: Document #${data.documentId} ${data.status}`);
-        }
-      } catch (error) {
-        console.error('Error processing WebSocket message:', error);
-      }
-    };
-    
-    return () => {
-      ws.close();
-    };
-  }, []);
-  
-  // Update tree when QC status changes come in via WebSocket
-  useEffect(() => {
-    if (latestQcUpdate && tree.length > 0) {
-      const { id, status } = latestQcUpdate;
-      
-      // Find and update the node with the matching ID
-      const updatedTree = tree.map(node => {
-        if (node.id === id && node.data) {
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              qc_json: { 
-                ...node.data.qc_json,
-                status 
-              }
-            }
-          };
-        }
-        return node;
-      });
-      
-      setTree(updatedTree);
-      setLatestQcUpdate(null); // Reset so we don't keep updating
-    }
-  }, [latestQcUpdate, tree]);
 
   useEffect(() => {
     (async () => {
@@ -190,30 +91,7 @@ export default function SubmissionBuilder({ region = 'FDA' }: { region?: string 
 
   return (
     <div className="container py-4">
-      <h2 className="mb-2">
-        Submission Builder <span className="badge bg-secondary ms-2">{region}</span>
-        <span className="ms-2 small">
-          {wsConnected ? 
-            <Wifi size={16} className="text-success" aria-label="QC Updates Active" /> : 
-            <WifiOff size={16} className="text-muted" aria-label="QC Updates Offline" />}
-        </span>
-      </h2>
-      
-      <div className="row mb-4">
-        <div className="col-12">
-          <div className="card bg-light">
-            <div className="card-body py-2">
-              <h6 className="card-title mb-1"><Info size={14} className="me-1" /> {region} Guidelines</h6>
-              <ul className="list-unstyled mb-0 small">
-                {regionHints[region]?.map((hint, i) => (
-                  <li key={i} className="text-muted">• {hint}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-      
+      <h2 className="mb-2">Submission Builder <span className="badge bg-secondary ms-2">{region}</span></h2>
       <div className="row">
         <div className="col-md-8">
           <DndProvider backend={HTML5Backend}>
@@ -226,9 +104,7 @@ export default function SubmissionBuilder({ region = 'FDA' }: { region?: string 
           </DndProvider>
           <div className="d-flex gap-3 mt-3">
             <button className="btn btn-primary" onClick={saveOrder}>Save Order</button>
-            <button className="btn btn-outline-success" disabled={selected.size === 0} onClick={bulkApprove}>
-              Bulk Approve + QC {selected.size > 0 && <span className="badge bg-light text-dark ms-1">{selected.size}</span>}
-            </button>
+            <button className="btn btn-outline-success" disabled={selected.size === 0} onClick={bulkApprove}>Bulk Approve + QC</button>
           </div>
         </div>
         <div className="col-md-4">
@@ -241,14 +117,6 @@ export default function SubmissionBuilder({ region = 'FDA' }: { region?: string 
               </li>
             ))}
           </ul>
-          
-          <div className="alert alert-info mt-3" role="alert">
-            <small className="d-flex align-items-center gap-2">
-              {wsConnected ? 
-                <><Wifi size={14} /> Live QC updates active</> : 
-                <><WifiOff size={14} /> Reconnecting to QC service...</>}
-            </small>
-          </div>
         </div>
       </div>
     </div>
@@ -264,11 +132,9 @@ export default function SubmissionBuilder({ region = 'FDA' }: { region?: string 
       );
     }
     const qcStatus = node.data?.qc_json?.status;
-    const nodeId = typeof node.id === 'string' ? parseInt(node.id, 10) : node.id;
-    
     return (
       <div style={{ marginLeft: depth * 16 }} className="d-flex align-items-center gap-2 py-1">
-        <input type="checkbox" checked={selected.has(nodeId)} onChange={() => toggleSelect(nodeId)} />
+        <input type="checkbox" checked={selected.has(node.id)} onChange={() => toggleSelect(node.id)} />
         {qcStatus === 'passed' ? <CheckCircle size={14} className="text-success"/> : <XCircle size={14} className="text-danger"/>}
         <span>{node.text}</span>
       </div>

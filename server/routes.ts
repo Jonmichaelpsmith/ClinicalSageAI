@@ -38,17 +38,27 @@ export async function registerRoutes(app: Application) {
   // Create HTTP server
   const httpServer = createServer(app);
   
-  // Set up WebSocket server for QC updates
+  // Set up WebSocket servers
   try {
-    // Use dynamic import for ESM compatibility
-    import('./api/ws/qc.js').then((qcModule) => {
-      qcModule.init({ server: httpServer, path: '/ws/qc' });
+    // Main WebSocket server
+    import('./api/ws/index.js').then((wsModule) => {
+      wsModule.initWebSocketServer(httpServer);
+      console.log('Main WebSocket server initialized successfully');
+    }).catch(err => {
+      console.error('Failed to import main WebSocket server module:', err);
+    });
+    
+    // QC WebSocket server for real-time updates
+    import('./api/ws/qc.js').then((qcWsModule) => {
+      const qcWss = qcWsModule.initQcWebSocketServer(httpServer);
+      // Store the WebSocket server in a global variable for access from other modules
+      global.qcWebSocketServer = qcWss;
       console.log('QC WebSocket server initialized successfully');
     }).catch(err => {
-      console.error('Failed to import QC WebSocket server:', err);
+      console.error('Failed to import QC WebSocket server module:', err);
     });
   } catch (error) {
-    console.error('Failed to setup QC WebSocket server:', error);
+    console.error('Failed to setup WebSocket servers:', error);
   }
   
   // Register document approval routes
@@ -62,6 +72,63 @@ export async function registerRoutes(app: Application) {
     });
   } catch (error) {
     console.error('Failed to register document approval routes:', error);
+  }
+  
+  // Register document builder order routes
+  try {
+    import('./api/documents/builder_order.js').then((builderOrderRoutes) => {
+      app.use(builderOrderRoutes.default);
+      console.log('Document builder order routes registered successfully');
+    }).catch(err => {
+      console.error('Failed to import document builder order routes:', err);
+    });
+  } catch (error) {
+    console.error('Failed to register document builder order routes:', error);
+  }
+  
+  // Register document bulk approve routes
+  try {
+    import('./api/documents/bulk_approve.js').then((bulkApproveRoutes) => {
+      app.use(bulkApproveRoutes.default);
+      console.log('Document bulk approve routes registered successfully');
+    }).catch(err => {
+      console.error('Failed to import document bulk approve routes:', err);
+    });
+  } catch (error) {
+    console.error('Failed to register document bulk approve routes:', error);
+  }
+  
+  // Register FastAPI endpoints (region rules, etc.)
+  try {
+    app.get('/api/ind/region-rules', async (req, res) => {
+      const region = req.query.region || 'FDA';
+      const modules = req.query.modules ? String(req.query.modules).split(',') : [];
+      
+      // Use the region_rules module directly in the route handler
+      // In production, this would be a FastAPI endpoint
+      const missingModules = [];
+      
+      const regionFolders = {
+        'FDA': ['m1', 'm2', 'm3', 'm4', 'm5'],
+        'EMA': ['m1', 'm2', 'm3', 'm4', 'm5'],
+        'PMDA': ['m1', 'm2', 'm3', 'm4', 'm5', 'jp-annex']
+      };
+      
+      const required = regionFolders[region] || [];
+      const moduleSet = new Set(modules);
+      
+      for (const mod of required) {
+        if (!moduleSet.has(mod)) {
+          missingModules.push(mod);
+        }
+      }
+      
+      res.json({ missing: missingModules });
+    });
+    
+    console.log('Region rules endpoint registered successfully');
+  } catch (error) {
+    console.error('Failed to register region rules endpoint:', error);
   }
   
   return httpServer;

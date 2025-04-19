@@ -1,96 +1,140 @@
 /**
- * Event Bus Utility
+ * Event Bus Module
  * 
- * This module provides an in-process event bus for publishing events across services.
- * Simple implementation that works well for single-instance deployments.
+ * This module provides a lightweight publish-subscribe pattern
+ * for event handling across the application.
+ * 
+ * For production deployments, this could be replaced with Redis pub/sub
+ * to support horizontal scaling across multiple instances.
  */
 
-// In-process subscribers
-const LOCAL_SUBSCRIBERS = new Map();
+// Libraries for unique ID generation
+import { randomUUID } from 'crypto';
+
+// Store for subscribers
+const subscribers = new Map();
+
+// Map of channels to their latest events (for new subscribers)
+const latestEvents = new Map();
 
 /**
- * Publish an event to subscribers
+ * Generate a unique event ID
  * 
- * @param {string} channel Event channel name
- * @param {object} message Event data (must be JSON-serializable)
- * @returns {boolean} Success status
+ * @returns {string} A unique ID
  */
-export async function publish(channel, message) {
-  if (!channel || typeof channel !== 'string') {
-    console.error('Invalid channel name');
-    return false;
-  }
-
-  // Process local subscribers
-  let success = false;
-  const subscribers = LOCAL_SUBSCRIBERS.get(channel);
-  if (subscribers && subscribers.length > 0) {
-    for (const callback of subscribers) {
-      try {
-        callback(message);
-        success = true;
-      } catch (error) {
-        console.error('Local subscriber error:', error);
-      }
-    }
-  }
-
-  return success;
+function generateEventId() {
+  return randomUUID();
 }
 
 /**
  * Subscribe to a channel
  * 
- * @param {string} channel Channel to subscribe to 
- * @param {Function} callback Function to call on events
- * @returns {boolean} Success status
+ * @param {string} channel - The channel to subscribe to
+ * @param {Function} callback - The callback to call when an event is published
+ * @returns {Function} A function to unsubscribe
  */
 export function subscribe(channel, callback) {
-  if (!channel || typeof channel !== 'string' || typeof callback !== 'function') {
-    console.error('Invalid channel or callback');
-    return false;
-  }
-
-  if (!LOCAL_SUBSCRIBERS.has(channel)) {
-    LOCAL_SUBSCRIBERS.set(channel, []);
+  const subscriberId = randomUUID();
+  
+  if (!subscribers.has(channel)) {
+    subscribers.set(channel, new Map());
   }
   
-  LOCAL_SUBSCRIBERS.get(channel).push(callback);
-  console.log(`Subscribed to local events on channel: ${channel}`);
+  subscribers.get(channel).set(subscriberId, callback);
   
-  return true;
+  // Send the latest event to the new subscriber if available
+  if (latestEvents.has(channel)) {
+    callback(latestEvents.get(channel));
+  }
+  
+  // Return unsubscribe function
+  return () => {
+    if (subscribers.has(channel)) {
+      subscribers.get(channel).delete(subscriberId);
+      
+      // Clean up empty channels
+      if (subscribers.get(channel).size === 0) {
+        subscribers.delete(channel);
+      }
+    }
+  };
 }
 
 /**
- * Unsubscribe from channel
+ * Subscribe to multiple channels at once
  * 
- * @param {string} channel Channel to unsubscribe from
- * @param {Function} callback Optional specific callback to remove (removes all if null)
- * @returns {boolean} Success status
+ * @param {string[]} channels - The channels to subscribe to
+ * @param {Function} callback - The callback to call when an event is published
+ * @returns {Function} A function to unsubscribe from all channels
  */
-export function unsubscribe(channel, callback = null) {
-  if (!LOCAL_SUBSCRIBERS.has(channel)) {
-    return false;
-  }
-
-  if (callback === null) {
-    LOCAL_SUBSCRIBERS.set(channel, []);
-    return true;
-  }
-
-  const subscribers = LOCAL_SUBSCRIBERS.get(channel);
-  const index = subscribers.indexOf(callback);
+export function subscribeToMany(channels, callback) {
+  const unsubscribers = channels.map(channel => subscribe(channel, callback));
   
-  if (index !== -1) {
-    subscribers.splice(index, 1);
-    return true;
+  // Return a function that unsubscribes from all channels
+  return () => {
+    unsubscribers.forEach(unsubscribe => unsubscribe());
+  };
+}
+
+/**
+ * Publish an event to a channel
+ * 
+ * @param {string} channel - The channel to publish to
+ * @param {any} data - The event data
+ * @returns {object} The published event
+ */
+export function publish(channel, data) {
+  const event = {
+    id: generateEventId(),
+    channel,
+    data,
+    timestamp: new Date().toISOString()
+  };
+  
+  // Store the latest event for the channel
+  latestEvents.set(channel, event);
+  
+  // Notify subscribers
+  if (subscribers.has(channel)) {
+    subscribers.get(channel).forEach(callback => {
+      try {
+        callback(event);
+      } catch (error) {
+        console.error(`Error in subscriber for channel ${channel}:`, error);
+      }
+    });
   }
   
-  return false;
+  return event;
+}
+
+/**
+ * Get the number of subscribers for a channel
+ * 
+ * @param {string} channel - The channel to check
+ * @returns {number} The number of subscribers
+ */
+export function getSubscriberCount(channel) {
+  if (!subscribers.has(channel)) {
+    return 0;
+  }
+  
+  return subscribers.get(channel).size;
+}
+
+/**
+ * Get all channels with subscribers
+ * 
+ * @returns {string[]} The active channels
+ */
+export function getActiveChannels() {
+  return Array.from(subscribers.keys());
 }
 
 export default {
-  publish,
   subscribe,
-  unsubscribe
+  subscribeToMany,
+  publish,
+  getSubscriberCount,
+  getActiveChannels
 };
