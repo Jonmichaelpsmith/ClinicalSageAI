@@ -26,12 +26,36 @@ export default function HomeLanding() {
 
   /* ——————————————————— Data */
   const featureBanner = [
-    t('Deep‑Learning CER Narratives'),
-    t('Full IND Builder & Validator'),
-    t('eCTD One‑Click ESG Send'),
-    t('Real‑Time Risk Dashboards'),
-    t('Benchling & FAERS Connectors'),
-    t('Conversational Reg‑Affairs Agent'),
+    {
+      id: 'cer',
+      text: t('Deep-Learning CER Narratives'),
+      link: '/cer-dashboard'
+    },
+    {
+      id: 'ind',
+      text: t('Full IND Builder & Validator'),
+      link: '/ind-automation'
+    },
+    {
+      id: 'ectd',
+      text: t('eCTD One-Click ESG Send'),
+      link: '/ectd-send'
+    },
+    {
+      id: 'risk',
+      text: t('Real-Time Risk Dashboards'),
+      link: '/risk-dashboards'
+    },
+    {
+      id: 'connectors',
+      text: t('Benchling & FAERS Connectors'),
+      link: '/integrations'
+    },
+    {
+      id: 'agent',
+      text: t('Conversational Reg-Affairs Agent'),
+      link: '/assistant'
+    },
   ];
 
   const products = [
@@ -156,10 +180,13 @@ export default function HomeLanding() {
       </header>
 
       {/* Feature banner */}
-      <section className="py-3 bg-emerald-600 dark:bg-emerald-700 text-white text-center text-xs sm:text-sm">
-        <div className="max-w-6xl mx-auto flex flex-wrap justify-center gap-4 animate-marquee whitespace-nowrap">
-          {featureBanner.map(f=> (
-            <span key={f} className="inline-flex items-center gap-1 px-2"><Brain size={12}/> {f}</span>
+      <section className="py-3 bg-emerald-600 dark:bg-emerald-700 text-white text-center">
+        <div className="max-w-6xl mx-auto flex flex-wrap justify-center gap-3">
+          {featureBanner.map(f => (
+            <Link key={f.id} to={f.link} className="inline-flex items-center gap-1.5 px-4 py-1.5 hover:bg-emerald-700 dark:hover:bg-emerald-800 rounded-full transition-colors text-sm">
+              <Brain size={14} className="animate-pulse" /> 
+              <span>{f.text}</span>
+            </Link>
           ))}
         </div>
       </section>
@@ -178,7 +205,7 @@ export default function HomeLanding() {
       
       {/* Buyer Persona Section */}
       <section className="max-w-6xl mx-auto px-6 py-12 bg-gray-50 dark:bg-slate-900/50 rounded-lg">
-        <h2 className="text-2xl font-bold mb-8 text-center">{t('Solutions for Your Role')}</h2>
+        <h2 className="text-2xl font-bold mb-8 text-center">{t('Intelligence Center by Role')}</h2>
         
         <div className="flex flex-wrap gap-2 justify-center mb-8">
           {personas.map(persona => (
@@ -206,21 +233,237 @@ export default function HomeLanding() {
                   <div className="p-2 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
                     {persona.icon}
                   </div>
-                  <h3 className="text-xl font-semibold">{persona.title}</h3>
+                  <h3 className="text-xl font-semibold">{persona.title} Intelligence Hub</h3>
                 </div>
-                <p className="text-gray-600 dark:text-gray-300 mb-6">{persona.description}</p>
-                <div className="mb-6">
-                  <h4 className="font-medium mb-3 text-gray-700 dark:text-gray-200">{t('Key Benefits:')}</h4>
-                  <ul className="space-y-2">
-                    {persona.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-start gap-2">
+                <p className="text-gray-600 dark:text-gray-300 mb-4">{persona.description}</p>
+                
+                {/* Interactive Feature Buttons */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  {persona.id === 'ceo' && (
+                    <>
+                      <Link to="/ceo-dashboard" className="p-4 rounded-md border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/10 dark:border-emerald-800 dark:hover:bg-emerald-900/20 transition flex flex-col">
+                        <div className="flex items-center gap-2 mb-2">
+                          <BarChart2 className="text-emerald-600 dark:text-emerald-400" size={20} />
+                          <span className="font-medium text-emerald-700 dark:text-emerald-300">Executive Dashboard</span>
+                        </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">Real-time view of all trials with milestone tracking and success predictions</p>
+                      </Link>
+                      <Link to="/competitive-intel" className="p-4 rounded-md border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/10 dark:border-emerald-800 dark:hover:bg-emerald-900/20 transition flex flex-col">
+                        <div className="flex items-center gap-2 mb-2">
+                          <TrendingUp className="text-emerald-600 dark:text-emerald-400" size={20} />
+                          <span className="font-medium text-emerald-700 dark:text-emerald-300">Competitive Intelligence</span>
+                        </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">Benchmark your trials against competitors in your therapeutic area</p>
+                      </Link>
+                    </>
+                  )}
+                  
+                  {persona.id === 'investor' && (
+                    <>
+                      <Link to="/success-rate-analytics" className="p-4 rounded-md border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/10 dark:border-emerald-800 dark:hover:bg-emerald-900/20 transition flex flex-col">
+                        <div className="flex items-center gap-2 mb-2">
+                          <TrendingUp className="text-emerald-600 dark:text-emerald-400" size={20} />
+                          <span className="font-medium text-emerald-700 dark:text-emerald-300">Success Rate Analytics</span>
+                        </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">Historical success rates by indication, phase, and company</p>
+                      </Link>
+                      <Link to="/protocol-quality-score" className="p-4 rounded-md border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/10 dark:border-emerald-800 dark:hover:bg-emerald-900/20 transition flex flex-col">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Brain className="text-emerald-600 dark:text-emerald-400" size={20} />
+                          <span className="font-medium text-emerald-700 dark:text-emerald-300">Protocol Quality Score</span>
+                        </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">AI-powered assessment of protocol quality with success prediction</p>
+                      </Link>
+                    </>
+                  )}
+                  
+                  {persona.id === 'cro' && (
+                    <>
+                      <Link to="/protocol-optimization" className="p-4 rounded-md border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/10 dark:border-emerald-800 dark:hover:bg-emerald-900/20 transition flex flex-col">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Brain className="text-emerald-600 dark:text-emerald-400" size={20} />
+                          <span className="font-medium text-emerald-700 dark:text-emerald-300">Protocol Optimizer</span>
+                        </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">Upload protocols to get AI optimization suggestions based on 3,000+ trials</p>
+                      </Link>
+                      <Link to="/white-label" className="p-4 rounded-md border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/10 dark:border-emerald-800 dark:hover:bg-emerald-900/20 transition flex flex-col">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Users className="text-emerald-600 dark:text-emerald-400" size={20} />
+                          <span className="font-medium text-emerald-700 dark:text-emerald-300">White-Label Portal</span>
+                        </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">Branded sponsor access to your TrialSage intelligence</p>
+                      </Link>
+                    </>
+                  )}
+                  
+                  {persona.id === 'medical' && (
+                    <>
+                      <Link to="/evidence-builder" className="p-4 rounded-md border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/10 dark:border-emerald-800 dark:hover:bg-emerald-900/20 transition flex flex-col">
+                        <div className="flex items-center gap-2 mb-2">
+                          <FileText className="text-emerald-600 dark:text-emerald-400" size={20} />
+                          <span className="font-medium text-emerald-700 dark:text-emerald-300">Evidence Builder</span>
+                        </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">Generate evidence-backed narratives from CSR data and FAERS trends</p>
+                      </Link>
+                      <Link to="/faers-monitor" className="p-4 rounded-md border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/10 dark:border-emerald-800 dark:hover:bg-emerald-900/20 transition flex flex-col">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Microscope className="text-emerald-600 dark:text-emerald-400" size={20} />
+                          <span className="font-medium text-emerald-700 dark:text-emerald-300">FAERS Monitor</span>
+                        </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">Proactive adverse event tracking with real-time alerts</p>
+                      </Link>
+                    </>
+                  )}
+                  
+                  {persona.id === 'regulatory' && (
+                    <>
+                      <Link to="/ind-automation" className="p-4 rounded-md border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/10 dark:border-emerald-800 dark:hover:bg-emerald-900/20 transition flex flex-col">
+                        <div className="flex items-center gap-2 mb-2">
+                          <FileText className="text-emerald-600 dark:text-emerald-400" size={20} />
+                          <span className="font-medium text-emerald-700 dark:text-emerald-300">IND Builder</span>
+                        </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">Build module 1-5 with AI-assisted Module 2 and eCTD packaging</p>
+                      </Link>
+                      <Link to="/submission-validator" className="p-4 rounded-md border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/10 dark:border-emerald-800 dark:hover:bg-emerald-900/20 transition flex flex-col">
+                        <div className="flex items-center gap-2 mb-2">
+                          <ArrowRight className="text-emerald-600 dark:text-emerald-400" size={20} />
+                          <span className="font-medium text-emerald-700 dark:text-emerald-300">Submission Validator</span>
+                        </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">Validate submissions for FDA, EMA, and Health Canada requirements</p>
+                      </Link>
+                    </>
+                  )}
+                  
+                  {persona.id === 'clinical' && (
+                    <>
+                      <Link to="/endpoint-analytics" className="p-4 rounded-md border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/10 dark:border-emerald-800 dark:hover:bg-emerald-900/20 transition flex flex-col">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Beaker className="text-emerald-600 dark:text-emerald-400" size={20} />
+                          <span className="font-medium text-emerald-700 dark:text-emerald-300">Endpoint Analytics</span>
+                        </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">Find optimal endpoints based on historical success data by indication</p>
+                      </Link>
+                      <Link to="/protocol-success" className="p-4 rounded-md border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/10 dark:border-emerald-800 dark:hover:bg-emerald-900/20 transition flex flex-col">
+                        <div className="flex items-center gap-2 mb-2">
+                          <LineChart className="text-emerald-600 dark:text-emerald-400" size={20} />
+                          <span className="font-medium text-emerald-700 dark:text-emerald-300">Success Predictor</span>
+                        </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">AI model to predict protocol success probability before execution</p>
+                      </Link>
+                    </>
+                  )}
+                </div>
+                
+                {/* Live Example Widget */}
+                <div className="mb-6 p-4 border border-gray-200 rounded-md dark:border-gray-700 bg-gray-50 dark:bg-slate-900/50">
+                  <h4 className="font-medium mb-3 text-gray-700 dark:text-gray-200 flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
+                    {t('Live Example:')}
+                  </h4>
+                  
+                  {persona.id === 'ceo' && (
+                    <div className="text-sm text-gray-600 dark:text-gray-300">
+                      <div className="font-medium mb-1">Oncology Portfolio Performance:</div>
+                      <div className="grid grid-cols-3 gap-2 mb-2">
+                        <div className="bg-white dark:bg-slate-800 p-2 rounded border border-gray-100 dark:border-slate-700">
+                          <div className="text-xs text-gray-500 dark:text-gray-400">Active Trials</div>
+                          <div className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">14</div>
+                        </div>
+                        <div className="bg-white dark:bg-slate-800 p-2 rounded border border-gray-100 dark:border-slate-700">
+                          <div className="text-xs text-gray-500 dark:text-gray-400">Success Probability</div>
+                          <div className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">68%</div>
+                        </div>
+                        <div className="bg-white dark:bg-slate-800 p-2 rounded border border-gray-100 dark:border-slate-700">
+                          <div className="text-xs text-gray-500 dark:text-gray-400">Time to Milestone</div>
+                          <div className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">-3.5m</div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {persona.id === 'investor' && (
+                    <div className="text-sm text-gray-600 dark:text-gray-300">
+                      <div className="font-medium mb-1">Phase II Alzheimer's Success Rates:</div>
+                      <div className="flex items-center mb-2">
+                        <div className="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2.5">
+                          <div className="bg-emerald-600 dark:bg-emerald-400 h-2.5 rounded-full" style={{width: '34%'}}></div>
+                        </div>
+                        <span className="ml-2 text-gray-700 dark:text-gray-300 font-medium">34%</span>
+                      </div>
+                      <div className="text-xs">Top performers: Biogen (47%), Lilly (41%), Roche (38%)</div>
+                    </div>
+                  )}
+                  
+                  {persona.id === 'cro' && (
+                    <div className="text-sm text-gray-600 dark:text-gray-300">
+                      <div className="font-medium mb-1">Protocol Optimization Opportunity:</div>
+                      <div className="flex items-center gap-2 mb-1">
                         <span className="text-emerald-600 dark:text-emerald-400">✓</span>
-                        <span className="text-gray-600 dark:text-gray-300">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
+                        <span>Inclusion criteria can be optimized (87% match to successful trials)</span>
+                      </div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-red-600 dark:text-red-400">✗</span>
+                        <span>Primary endpoint has low historical success (29% match)</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-emerald-600 dark:text-emerald-400">✓</span>
+                        <span>Sample size calculation aligned with successful CSRs</span>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {persona.id === 'medical' && (
+                    <div className="text-sm text-gray-600 dark:text-gray-300">
+                      <div className="font-medium mb-1">FAERS Trend Alert for Ozempic:</div>
+                      <div className="flex items-center mb-1">
+                        <span className="inline-block w-3 h-3 rounded-full bg-yellow-400 mr-2"></span>
+                        <span>34% increase in reported GI events over 6 months</span>
+                      </div>
+                      <div className="text-xs italic mt-2">Click "FAERS Monitor" to view full analysis and comparison to class</div>
+                    </div>
+                  )}
+                  
+                  {persona.id === 'regulatory' && (
+                    <div className="text-sm text-gray-600 dark:text-gray-300">
+                      <div className="font-medium mb-1">IND Submission Readiness Check:</div>
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                        <div className="flex items-center">
+                          <span className="text-emerald-600 dark:text-emerald-400 mr-1">✓</span>
+                          <span>Module 1: Complete</span>
+                        </div>
+                        <div className="flex items-center">
+                          <span className="text-emerald-600 dark:text-emerald-400 mr-1">✓</span>
+                          <span>Module 2: Complete</span>
+                        </div>
+                        <div className="flex items-center">
+                          <span className="text-emerald-600 dark:text-emerald-400 mr-1">✓</span>
+                          <span>Module 3: Complete</span>
+                        </div>
+                        <div className="flex items-center">
+                          <span className="text-yellow-500 dark:text-yellow-400 mr-1">⚠</span>
+                          <span>Module 4: In Progress</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {persona.id === 'clinical' && (
+                    <div className="text-sm text-gray-600 dark:text-gray-300">
+                      <div className="font-medium mb-1">Top Performing NASH Endpoints:</div>
+                      <ol className="list-decimal pl-5 space-y-1">
+                        <li>Liver fat reduction ≥ 30% (success rate: 72%)</li>
+                        <li>≥ 2-point reduction in NAS (success rate: 64%)</li>
+                        <li>Fibrosis improvement ≥ 1 stage (success rate: 51%)</li>
+                      </ol>
+                      <div className="text-xs italic mt-2">Based on analysis of 94 NASH trials in TrialSage database</div>
+                    </div>
+                  )}
                 </div>
-                <Button to={persona.link}>{t('View Solutions for')} {persona.title} <ArrowRight size={16}/></Button>
+                
+                <div className="flex gap-3 flex-wrap">
+                  <Button to={persona.link} variant="primary">{t('Enter')} {persona.title} {t('Hub')} <ArrowRight size={16}/></Button>
+                  <Button to={`/demo-${persona.id}`} variant="ghost">{t('Watch Demo')} <PlayCircle size={16}/></Button>
+                </div>
               </div>
             ))}
           </div>
@@ -229,7 +472,7 @@ export default function HomeLanding() {
         {!selectedPersona && (
           <div className="text-center p-8 text-gray-600 dark:text-gray-300">
             <User size={48} className="mx-auto mb-4 text-gray-400 dark:text-gray-500" />
-            <p className="mb-4">{t('Select your role above to see personalized solutions')}</p>
+            <p className="mb-4">{t('Select your role above to access role-specific intelligence tools')}</p>
           </div>
         )}
       </section>
