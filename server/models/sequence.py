@@ -22,12 +22,18 @@ class INDSequence(Base):
     sequence = Column(String(10), nullable=False, index=True)  # e.g., "0001"
     ind_number = Column(String(20))  # e.g., "123456"
     created = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, onupdate=datetime.utcnow)
     status = Column(String(20), default="draft")
     doc_count = Column(Integer, default=0)
     base_path = Column(Text)
     xml = Column(Text)  # Path to generated index.xml
     validation_status = Column(String(20), default="pending")
     validation_result = Column(JSON)
+    
+    # FDA ESG acknowledgment fields
+    ack1_path = Column(String)  # Path to first acknowledgment (receipt)
+    ack2_path = Column(String)  # Path to second acknowledgment (ESG processing)
+    ack3_path = Column(String)  # Path to third acknowledgment (centre receipt)
     
     # Relationship to documents in this sequence
     documents = relationship("INDSequenceDoc", back_populates="sequence_obj")

@@ -34,12 +34,16 @@ from routes.assistant_routes import router as assistant_router
 from routes.assistant_retrieval import router as assistant_retrieval_router
 from routes.document_routes import router as document_router
 from routes.embedding_routes import router as embedding_router
+from routes.ind_xml_validation import router as xml_validation_router
+from routes.acks import router as acks_router
 
 # Register route modules
 app.include_router(assistant_router)
 app.include_router(assistant_retrieval_router)
 app.include_router(document_router)
 app.include_router(embedding_router)
+app.include_router(xml_validation_router)
+app.include_router(acks_router)
 
 # Add health check endpoint
 @app.get("/health")

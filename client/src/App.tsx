@@ -470,7 +470,7 @@ export default function App() {
           </Route>
           
           {/* === Sequence Detail with FDA Submission === */}
-          <Route path="/portal/ind/:id">
+          <Route path="/portal/ind/:sequenceId">
             {() => (
               <DashboardLayout>
                 <IndSequenceDetail />
