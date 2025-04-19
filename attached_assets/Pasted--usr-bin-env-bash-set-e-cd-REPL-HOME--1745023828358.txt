@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+set -e
+cd "$REPL_HOME"
+
+###############################################################
+# 1) Patch ComplianceInsights.jsx – theming & responsive grid
+###############################################################
+python - << 'PY'
+import pathlib, textwrap, re
+ci=pathlib.Path('client/src/components/ComplianceInsights.jsx'); code=ci.read_text()
+if 'useTheme' not in code:
+    # Inject theme hook (simple toggle stored in localStorage)
+    theme_hook=textwrap.dedent("""
+    function useTheme(){const[t,setT]=React.useState(localStorage.getItem('chartTheme')||'light');React.useEffect(()=>{localStorage.setItem('chartTheme',t)},[t]);return[t,()=>setT(p=>p==='light'?'dark':'light')];}
+    """)
+    code=theme_hook+code
+    # Add theme button & responsive grid class
+    code=re.sub(r'return\(', 'const[theme,toggleTheme]=useTheme();\nreturn(<div className={`${theme==="dark"?"dark":""}`}>\n<button className="float-right bg-indigo-600 text-white px-3 py-1 rounded" onClick={toggleTheme}>{theme==="light"?"Dark":"Light"} Theme</button>', code,1)
+    code=code.replace('<div className='grid grid-cols-2 gap-6 p-4 max-w-6xl mx-auto'>',
+                      '<div className="grid gap-6 p-4 max-w-6xl mx-auto sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3">')
+    # Custom Tooltip example for first chart
+    code=re.sub(r'<Tooltip/>','<Tooltip content={({active,payload,label})=>active&&payload&&(<div className="bg-white p-2 shadow rounded text-xs"><p className="font-semibold">{label}</p><p>{payload[0].value} alerts</p></div>)}/>', code,1)
+    ci.write_text(code)
+PY
+
+###############################################################
+# 2) Enhance SidePanel – search, filters, export
+###############################################################
+python - << 'PY'
+import pathlib, textwrap
+sp=pathlib.Path('client/src/components/SidePanel.jsx'); code=sp.read_text()
+if 'exportCSV' not in code:
+    addon=textwrap.dedent("""
+    export function exportCSV(rows){const csv=['Timestamp,Message'];rows.forEach(r=>csv.push(`${r.timestamp},${r.msg||r.type}`));const blob=new Blob([csv.join('\n')],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='panel.csv';a.click();}
+    """)
+    code=code.replace('export default', addon+'\nexport default')
+    sp.write_text(code)
+PY
+
+# RuleDetails component patch
+python - << 'PY'
+import pathlib, textwrap, re
+ci=pathlib.Path('client/src/components/ComplianceInsights.jsx'); code=ci.read_text()
+if 'exportCSV' not in code:
+    code=code.replace('import api','import api from "../services/api";\nimport {exportCSV} from "./SidePanel"')
+    # modify RuleDetails
+    patch=textwrap.dedent("""
+    function RuleDetails({org,rule}){
+      const[data,setData]=React.useState([]);
+      const[q,setQ]=React.useState('');
+      const[from,setFrom]=React.useState('');
+      const[to,setTo]=React.useState('');
+      React.useEffect(()=>{api.get(`/api/org/${org}/metrics?rule=${rule}`).then(r=>setData(r.data))},[org,rule]);
+      const filtered=data.filter(r=>(!q||r.msg?.toLowerCase().includes(q.toLowerCase()))&&(!from||r.timestamp>=from)&&(!to||r.timestamp<=to));
+      return(<div>
+        <h4 className='font-semibold mb-2'>{rule}</h4>
+        <div className='mb-2 space-x-1 text-xs'>
+          <input placeholder='Search' className='border p-1 w-28' value={q} onChange={e=>setQ(e.target.value)}/>
+          <input type='date' className='border p-1' value={from} onChange={e=>setFrom(e.target.value)}/>
+          <input type='date' className='border p-1' value={to} onChange={e=>setTo(e.target.value)}/>
+          <button className='bg-gray-700 text-white px-2 py-1 rounded' onClick={()=>exportCSV(filtered)}>CSV</button>
+        </div>
+        <table className='text-xs w-full'><tbody>
+          {filtered.map((r,i)=><tr key={i}><td className='pr-1'>{new Date(r.timestamp).toLocaleString()}</td><td>{r.msg||r.type}</td>
+            <td><a className='text-blue-600 underline' href={`/#/audit?ts=${r.timestamp}`}>open</a></td></tr>)}</tbody></table>
+      </div>)}
+    """)
+    code=re.sub(r'function RuleDetails[\s\S]+?\}', patch, code,1)
+    ci.write_text(code)
+PY
+
+echo '✅ Chart theming, responsive grid, custom tooltips, search/filter export installed – restart React.'

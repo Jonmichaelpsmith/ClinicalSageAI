@@ -1,6 +1,9 @@
+
+function useTheme(){const[t,setT]=React.useState(localStorage.getItem('chartTheme')||'light');React.useEffect(()=>{localStorage.setItem('chartTheme',t)},[t]);return[t,()=>setT(p=>p==='light'?'dark':'light')];}
 import SidePanel from './SidePanel';
 import React, { useEffect, useState } from 'react';
-import api from '../services/api';
+import api from "../services/api";
+import {exportCSV} from "./SidePanel" from '../services/api';
 import {
   LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip,
   BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area,
@@ -46,7 +49,7 @@ export default function ComplianceInsights({ org }) {
   };
   
   return (
-    <div className='grid grid-cols-2 gap-6 p-4 max-w-6xl mx-auto'>
+    <div className="grid gap-6 p-4 max-w-6xl mx-auto sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
       {/* 1. Alerts Over Time */}
       <div>
         <h4 className="text-lg font-semibold mb-2">Alerts Over Time</h4>
@@ -54,7 +57,7 @@ export default function ComplianceInsights({ org }) {
           <CartesianGrid strokeDasharray='3 3'/>
           <XAxis dataKey='date'/>
           <YAxis/>
-          <Tooltip/>
+          <Tooltip content={({active,payload,label})=>active&&payload&&(<div className="bg-white p-2 shadow rounded text-xs"><p className="font-semibold">{label}</p><p>{payload[0].value} alerts</p></div>)}/>
           <Line type='monotone' dataKey='count' stroke={COLORS[0]} />
         </LineChart>
       </div>
@@ -168,5 +171,27 @@ export default function ComplianceInsights({ org }) {
     </div>
   );
 }
-function RuleDetails({org,rule}){const[data,setData]=useState([]);useEffect(()=>{api.get(`/api/org/${org}/metrics?rule=${rule}`).then(r=>setData(r.data))},[org,rule]);
-return(<div><h4 className='font-semibold mb-2'>{rule}</h4><table className='text-sm'><tbody>{data.map((r,i)=><tr key={i}><td>{r.timestamp}</td><td>{r.msg||r.type}</td></tr>)}</tbody></table></div>)}
+
+function RuleDetails({org,rule}){
+  const[data,setData]=React.useState([]);
+  const[q,setQ]=React.useState('');
+  const[from,setFrom]=React.useState('');
+  const[to,setTo]=React.useState('');
+  React.useEffect(()=>{api.get(`/api/org/${org}/metrics?rule=${rule}`).then(r=>setData(r.data))},[org,rule]);
+  const filtered=data.filter(r=>(!q||r.msg?.toLowerCase().includes(q.toLowerCase()))&&(!from||r.timestamp>=from)&&(!to||r.timestamp<=to));
+  return(<div>
+    <h4 className='font-semibold mb-2'>{rule}</h4>
+    <div className='mb-2 space-x-1 text-xs'>
+      <input placeholder='Search' className='border p-1 w-28' value={q} onChange={e=>setQ(e.target.value)}/>
+      <input type='date' className='border p-1' value={from} onChange={e=>setFrom(e.target.value)}/>
+      <input type='date' className='border p-1' value={to} onChange={e=>setTo(e.target.value)}/>
+      <button className='bg-gray-700 text-white px-2 py-1 rounded' onClick={()=>exportCSV(filtered)}>CSV</button>
+    </div>
+    <table className='text-xs w-full'><tbody>
+      {filtered.map((r,i)=><tr key={i}><td className='pr-1'>{new Date(r.timestamp).toLocaleString()}</td><td>{r.msg||r.type}</td>
+        <td><a className='text-blue-600 underline' href={`/#/audit?ts=${r.timestamp}`}>open</a></td></tr>)}</tbody></table>
+  </div>)}
+){const[data,setData]=useState([]);useEffect(()=>{api.get(`/api/org/${org}/metrics?rule=${rule}`).then(r=>setData(r.data))},[org,rule]);
+const[theme,toggleTheme]=useTheme();
+return(<div className={`${theme==="dark"?"dark":""}`}>
+<button className="float-right bg-indigo-600 text-white px-3 py-1 rounded" onClick={toggleTheme}>{theme==="light"?"Dark":"Light"} Theme</button><div><h4 className='font-semibold mb-2'>{rule}</h4><table className='text-sm'><tbody>{data.map((r,i)=><tr key={i}><td>{r.timestamp}</td><td>{r.msg||r.type}</td></tr>)}</tbody></table></div>)}
