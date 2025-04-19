@@ -8,7 +8,7 @@ from typing import List, Dict, Optional
 
 from ind_automation.templates import render_form1571, render_form1572, render_form3674
 from ind_automation import db
-from ind_automation import module3, ai_narratives, ectd_ga, auth, users, rbac
+from ind_automation import module3, ai_narratives, metrics, ectd_ga, auth, users, rbac
 from ind_automation.db import append_history, get_history
 from ind_automation import esg_credentials_api
 from ind_automation import saml_settings_api
@@ -168,3 +168,8 @@ async def set_rules(org:str, body:dict):
     rules_store.save(org, body)
     append_history(org, {"type":"rule_change", "timestamp": datetime.datetime.utcnow().isoformat()})
     return {'status':'saved'}
+
+# ---------- Compliance Metrics API ----------
+@app.get('/api/org/{org}/metrics')
+async def get_metrics(org:str):
+    return metrics.load(org).to_dict(orient='records')
