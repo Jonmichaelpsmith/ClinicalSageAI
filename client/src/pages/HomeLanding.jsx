@@ -7,7 +7,6 @@ import { PlayCircle, ArrowRight, LogIn, UserPlus, BarChart2, Brain, User, Users,
 import { useTranslation } from "../i18n";
 // Import i18n to initialize it
 import "../i18n";
-import RegulatoryConfidenceStrip from "../components/RegulatoryConfidenceStrip";
 import IntelligenceCounter from "../components/IntelligenceCounter";
 
 export default function HomeLanding() {
@@ -137,13 +136,8 @@ export default function HomeLanding() {
         </div>
       </nav>
       
-      {/* Regulatory Confidence Strip - adds scrolling agency logos */}
-      <div className="pt-14">
-        <RegulatoryConfidenceStrip />
-      </div>
-      
       {/* Intelligence Counter */}
-      <div className="mt-2 mb-5 px-6">
+      <div className="pt-14 mb-5 px-6">
         <IntelligenceCounter />
       </div>
 
