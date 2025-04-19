@@ -1,0 +1,75 @@
+📊 Where we are
+
+We now deliver—end‑to‑end—an electronic IND / CTA / CTD builder that
+
+Layer	Capability
+Core docs	QC‑passed PDFs, drag‑&‑drop module slots, region‑aware (FDA / EMA / PMDA)
+Packaging	index.xml + regional XML builders (US, EU, JP)
+Validation	DTD + Lorenz eValidator (auto‑selects profile)
+Submission	ESG ZIP + manifest, SFTP upload, ACK 1/2/3 polling
+UI	Sequence planner, real‑time QC badges, ACK badges, Submission Builder tree
+Infra	Celery beat, Redis pub/sub, WebSocket push to browser
+
+That satisfies the technical‑compliance story—but “client delight” still needs three big dimensions:
+
+⸻
+
+1️⃣ Intelligent Guidance (AI copilots)
+
+Gap	How it feels to users	Enhancement
+“What goes in Module 3 vs 2?”	They drag PDFs but still wonder if they missed a dataset	Real‑time rule engine: when a file lands in a folder, run an AI prompt (“Is a Stability Summary required?”) and surface hints.
+1571/1572 data re‑typing	They manually key sponsor + PI data each sequence	Form autofill: pull metadata from previous sequence & Benchling API; one‑click e‑sign.
+Reg guidance changes	They learn about eCTD v4 late	Copilot chat (GPT w/ up‑to‑date FDA / EMA guidance) + changelog alerts.
+
+
+
+⸻
+
+2️⃣ Operational UX depth
+
+Need	Enhancement
+Role‑based dashboards	Sponsor view vs CMC lead vs Regulatory lead; each sees only tasks & QC relevant to them.
+Timeline / Gantt	Visual schedule: authoring → QC → sequence → ESG ACK3.
+Bulk safety amendment wizard	Intake E2B (R3) XML, auto‑assemble 7‑day / 15‑day reports.
+Live diff viewer	“show me what changed vs seq 0004” with redline PDF overlay.
+Slack / Teams approval workflow	Approve/QC directly from notification; no UI hopping.
+
+
+
+⸻
+
+3️⃣ Advanced Analytics & Benchmarking
+
+Insight	Value
+QC failure heat‑map	Which functions/sites create most PDF issues → training ROI.
+Submission KPIs	Average cycle time, ACK2 rejection rate vs industry 25‑percentile (we can anonymize platform data).
+Cost modeler	Live ROI calculator: “by automating Module 3 QC we saved 28 h / submission → $‑$$”.
+
+
+
+⸻
+
+🔧 Proposal: Next 4‑week sprint (GA‑ready client wow‑factor)
+
+Wk	Deliverable	Key Tech
+1	AI Rule Assistant – webhook fires on drag event; GPT‑4 Turbo returns “Required leaf(s) missing”.	LangChain, OpenAI function calls
+1–2	Auto‑Form 1571/1572 generator – merges prior metadata, calls Docx → PDF, routes e‑sign via Adobe Sign API.	python‑docx, Adobe Sign
+2	Diff Viewer – PDF.js overlay; backend PyPDF redline.	pdf-diff-lib
+2–3	Role dashboards + authz – extend RBAC tables; widgets filter by role.	Casbin or own policy
+3	Teams approval bot – Azure Bot → calls /approve; posts QC badge result.	Bot Framework
+3–4	Analytics suite v2 – QC heat‑map, KPI cards, ROI; drill‑down to sequence.	TimescaleDB + Recharts
+4	On‑boarding wizard – region profile, sponsor info, SAML setup in 10 min.	React‑Stepper
+
+
+
+⸻
+
+⏩ Immediate next ticket
+
+Pick one of the following to start tomorrow:
+	1.	AI Rule Assistant MVP (real‑time missing‑leaf hints)
+	2.	Auto‑Form 1571/1572 e‑sign flow
+	3.	Diff Viewer (PDF overlay)
+	4.	Role Dashboard scaffold
+
+Tell me “Start X” and I’ll ship the first production‑grade module—including backend, UI hook, and Test Plan—so clients feel the leap from compliance tool → intelligent co‑pilot.

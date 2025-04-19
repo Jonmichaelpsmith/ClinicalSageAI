@@ -1,0 +1,180 @@
+What happened
+
+I attempted to patch SubmissionBuilder.tsx to add:
+	1.	A WebSocket listener for real‑time QC updates
+	2.	The new bulk‑approve endpoint wiring
+
+The automated pattern couldn’t match because the exact export line in canvas is different, so the update failed.
+
+⸻
+
+Manual next step
+
+Please replace the current component in SubmissionBuilder.tsx with the full enhanced version below (copy–paste over the existing file):
+
+// SubmissionBuilder.tsx – drag tree + QC badges + real‑time updates
+import React, { useEffect, useState } from 'react';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import { DndProvider } from 'react-dnd';
+import { Tree, NodeModel } from '@minoru/react-dnd-treeview';
+import { CheckCircle, XCircle } from 'lucide-react';
+import { toast } from 'react-toastify';
+import update from 'immutability-helper';
+import 'react-toastify/dist/ReactToastify.css';
+
+type Doc = { id: number; title: string; module: string; qc_json?: { status: string } };
+type Node = NodeModel<Doc>;
+const REGION_FOLDERS: Record<string, string[]> = {
+  FDA: ['m1', 'm2', 'm3', 'm4', 'm5'],
+  EMA: ['m1', 'm2', 'm3', 'm4', 'm5'],
+  PMDA: ['m1', 'm2', 'm3', 'm4', 'm5', 'jp‑annex']
+};
+
+export default function SubmissionBuilder({ region = 'FDA' }: { region?: string }) {
+  const [tree, setTree] = useState<Node[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+
+  /* ───────────────── WebSocket QC push ───────────────── */
+  useEffect(() => {
+    const ws = new WebSocket(`${location.origin.replace('http', 'ws')}/ws/qc`);
+    ws.onmessage = ev => {
+      const { id, status } = JSON.parse(ev.data);
+      setTree(prev =>
+        prev.map(n =>
+          n.id === id ? { ...n, data: { ...n.data!, qc_json: { status } } } : n
+        )
+      );
+    };
+    return () => ws.close();
+  }, []);
+
+  /* ───────────────── initial fetch ───────────────── */
+  useEffect(() => {
+    (async () => {
+      const docs: Doc[] = await fetchJson('/api/documents?status=approved_or_qc_failed');
+      const root: Node = { id: 0, parent: 0, text: 'root', droppable: true };
+      const folders = REGION_FOLDERS[region].map((f, i) => ({
+        id: 10_000 + i,
+        parent: 0,
+        text: f,
+        droppable: true
+      }));
+      const items = docs.map(d => ({
+        id: d.id,
+        parent: folders.find(f => d.module.startsWith(f.text))?.id || folders[0].id,
+        text: d.title,
+        droppable: false,
+        data: d
+      }));
+      setTree([root, ...folders, ...items]);
+      setLoading(false);
+    })();
+  }, [region]);
+
+  const handleDrop = (newTree: Node[]) => setTree(newTree);
+  const toggleSelect = (id: number) =>
+    setSelected(s => {
+      const n = new Set(s);
+      n.has(id) ? n.delete(id) : n.add(id);
+      return n;
+    });
+
+  const saveOrder = async () => {
+    const ordered = tree
+      .filter(n => !n.droppable && n.parent !== 0)
+      .map((n, idx) => ({
+        id: n.id,
+        module: tree.find(f => f.id === n.parent)!.text,
+        order: idx
+      }));
+    await fetch('/api/documents/builder-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ docs: ordered })
+    });
+    toast.success('Order saved');
+  };
+
+  const bulkApprove = async () => {
+    await fetch('/api/documents/bulk-approve', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids: Array.from(selected) })
+    });
+    toast.info('Bulk approve queued');
+    setSelected(new Set());
+  };
+
+  const renderNode = (node: Node, { depth, isOpen, onToggle }: any) => {
+    if (node.droppable) {
+      return (
+        <div style={{ marginLeft: depth * 16 }}>
+          <button onClick={onToggle} className="btn btn-sm btn-link p-0">
+            {isOpen ? '▾' : '▸'}
+          </button>{' '}
+          <strong>{node.text}</strong>
+        </div>
+      );
+    }
+    const qc = node.data?.qc_json?.status;
+    return (
+      <div style={{ marginLeft: depth * 16 }} className="d-flex gap-2 align-items-center">
+        <input
+          type="checkbox"
+          checked={selected.has(node.id)}
+          onChange={() => toggleSelect(node.id)}
+        />
+        {qc === 'passed' ? (
+          <CheckCircle size={14} className="text-success" />
+        ) : (
+          <XCircle size={14} className="text-danger" />
+        )}
+        <span>{node.text}</span>
+      </div>
+    );
+  };
+
+  if (loading) return <p className="text-center mt-4">Loading…</p>;
+  return (
+    <div className="container py-4">
+      <h2>
+        Submission Builder <span className="badge bg-secondary ms-2">{region}</span>
+      </h2>
+      <DndProvider backend={HTML5Backend}>
+        <Tree tree={tree} rootId={0} render={renderNode} onDrop={handleDrop} />
+      </DndProvider>
+      <div className="d-flex gap-3 mt-3">
+        <button className="btn btn-primary" onClick={saveOrder}>
+          Save Order
+        </button>
+        <button className="btn btn-outline-success" disabled={!selected.size} onClick={bulkApprove}>
+          Bulk Approve + QC
+        </button>
+      </div>
+    </div>
+  );
+}
+
+async function fetchJson(u: string) {
+  const r = await fetch(u);
+  if (!r.ok) throw new Error('fetch failed');
+  return r.json();
+}
+
+Reminder: Install Toastify once:
+
+npm install react-toastify
+
+This file adds:
+   •   WebSocket listener for QC updates
+   •   Bulk approve → /api/documents/bulk-approve
+   •   QC status icons update in real‑time
+
+After replacing the component, restart Vite (npm run dev) and you’ll see QC badges flip instantly when docs pass/fail.
+
+⸻
+
+Backend bulk endpoint (api/documents/bulk_approve.py) has already been created and just needs registering in your FastAPI app.
+
+Let me know if you need help mounting the route or next roadmap item!
