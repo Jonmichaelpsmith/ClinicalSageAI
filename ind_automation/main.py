@@ -180,3 +180,41 @@ async def insights_pdf(org:str):
 
 from fastapi.staticfiles import StaticFiles
 app.mount('/files', StaticFiles(directory='public'), name='files')
+
+# ---------- User / Permission management ----------
+@app.get('/api/org/{org}/users', dependencies=[Depends(rbac.requires('admin.esg'))])
+async def list_users(org:str):
+    return users.all_users()
+
+@app.post('/api/org/{org}/users', dependencies=[Depends(rbac.requires('admin.esg'))])
+async def invite_user(org:str, body:dict):
+    users.create(body['username'], body.get('password','changeme'), role=body.get('role','user'))
+    users.set_permissions(body['username'], body.get('perms',[]))
+    return {'status':'created'}
+
+@app.put('/api/org/{org}/users/{username}', dependencies=[Depends(rbac.requires('admin.esg'))])
+async def update_user(org:str, username:str, body:dict):
+    if 'role' in body: # quick role update
+        data=users.all_users(); data[username]['role']=body['role']; users._save(data)
+    if 'perms' in body:
+        users.set_permissions(username, body['perms'])
+    return {'status':'updated'}
+
+@app.delete('/api/org/{org}/users/{username}', dependencies=[Depends(rbac.requires('admin.esg'))])
+async def delete_user(org:str, username:str):
+    data=users.all_users(); data.pop(username, None); users._save(data)
+    return {'status':'deleted'}
+
+from ind_automation import gdpr
+from fastapi.responses import StreamingResponse
+
+@app.get('/api/user/{username}/export')
+async def user_export(username:str, user:str=Depends(auth.get_current_user)):
+    if user!=username and users.get_role(user)!="admin": raise HTTPException(403)
+    buf=gdpr.export_user(username)
+    return StreamingResponse(buf,media_type='application/zip',headers={'Content-Disposition':f'attachment; filename={username}_export.zip'})
+
+@app.post('/api/user/{username}/purge')
+async def user_purge(username:str, user:str=Depends(auth.get_current_user)):
+    if users.get_role(user)!="admin": raise HTTPException(403)
+    gdpr.purge_user(username); return {'status':'scheduled'}

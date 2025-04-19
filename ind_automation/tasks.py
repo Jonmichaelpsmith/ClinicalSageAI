@@ -91,3 +91,21 @@ def generate_all_pdfs():
     for f in pathlib.Path('data/projects').glob('*.json'):
         org = f.stem
         generate_and_notify_pdf.delay(org)
+
+import gdpr, os, datetime, sqlite3
+@celery_app.task
+def hard_delete_user(username):
+    # remove user row
+    d=users.all_users(); d.pop(username,None); users._save(d)
+    # remove metrics rows
+    conn=sqlite3.connect('data/metrics.db'); conn.execute('DELETE FROM metrics WHERE json_extract(extra,"$.user")=?',(username,));conn.commit()
+
+@celery_app.on_after_finalize.connect
+def retention_sweep(sender,**_):
+    days=int(os.getenv('RETENTION_DAYS',730))
+    sender.add_periodic_task(86400, purge_old_data.s(days), name='retention purge')
+
+@celery_app.task
+def purge_old_data(days):
+    cutoff=(datetime.datetime.utcnow()-datetime.timedelta(days=days)).isoformat()
+    conn=sqlite3.connect('data/metrics.db'); conn.execute('DELETE FROM metrics WHERE timestamp<?',(cutoff,)); conn.commit()

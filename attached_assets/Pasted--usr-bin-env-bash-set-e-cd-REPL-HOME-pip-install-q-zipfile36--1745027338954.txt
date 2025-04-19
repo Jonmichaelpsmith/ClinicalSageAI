@@ -1,0 +1,130 @@
+#!/usr/bin/env bash
+set -e
+cd "$REPL_HOME"
+
+pip install -q zipfile36
+
+############################################################################
+# 1) gdpr.py – export & purge helpers
+############################################################################
+cat > ind_automation/gdpr.py << 'PY'
+import json, os, io, shutil, datetime, asyncio, zipfile
+from pathlib import Path
+from ind_automation import db, metrics_sql
+EXPORT_DIR=Path('exports'); EXPORT_DIR.mkdir(exist_ok=True)
+RETENTION=int(os.getenv('RETENTION_DAYS',730))
+
+def export_user(username):
+    buf=io.BytesIO()
+    with zipfile.ZipFile(buf,'w',zipfile.ZIP_DEFLATED) as z:
+        # profile
+        prof=db.Path('data/users.json').read_text()
+        z.writestr('profile.json',prof)
+        # history
+        for pj in Path('data/projects').glob('*.json'):
+            h=db.load(pj.stem);
+            z.writestr(f'history/{pj.name}',json.dumps(h,indent=2))
+        # metrics DB dump (filtered)
+        # (for brevity include full db)
+        z.write('data/metrics.db','metrics.db')
+    buf.seek(0); return buf
+
+def purge_user(username):
+    data=db.Path('data/users.json'); users=json.loads(data.read_text());
+    if username in users: users[username]|={'deleted':str(datetime.date.today())};users[username]['pw']=''
+    data.write_text(json.dumps(users,indent=2))
+    # schedule hard delete
+    from ind_automation.tasks import hard_delete_user
+    hard_delete_user.apply_async(args=[username], countdown=30*24*3600)
+PY
+
+############################################################################
+# 2) FastAPI routes
+############################################################################
+python - << 'PY'
+import pathlib, textwrap
+main=pathlib.Path('ind_automation/main.py'); code=main.read_text()
+if '/export' not in code:
+    code=code.replace('from ind_automation import', 'from ind_automation import')  # anchor
+    code+=textwrap.dedent("""
+    from ind_automation import gdpr
+    from fastapi.responses import StreamingResponse
+
+    @app.get('/api/user/{username}/export')
+    async def user_export(username:str, user:str=Depends(auth.get_current_user)):
+        if user!=username and users.get_role(user)!="admin": raise HTTPException(403)
+        buf=gdpr.export_user(username)
+        return StreamingResponse(buf,media_type='application/zip',headers={'Content-Disposition':f'attachment; filename={username}_export.zip'})
+
+    @app.post('/api/user/{username}/purge')
+    async def user_purge(username:str, user:str=Depends(auth.get_current_user)):
+        if users.get_role(user)!="admin": raise HTTPException(403)
+        gdpr.purge_user(username); return {'status':'scheduled'}
+    """)
+    main.write_text(code)
+PY
+
+############################################################################
+# 3) Celery task for hard delete + nightly retention sweep
+############################################################################
+python - << 'PY'
+import pathlib, textwrap
+tasks=pathlib.Path('ind_automation/tasks.py'); code=tasks.read_text()
+if 'hard_delete_user' not in code:
+    code+=textwrap.dedent("""
+    import gdpr, os, datetime, sqlite3
+    @celery_app.task
+    def hard_delete_user(username):
+        # remove user row
+        d=users.all_users(); d.pop(username,None); users._save(d)
+        # remove metrics rows
+        conn=sqlite3.connect('data/metrics.db'); conn.execute('DELETE FROM metrics WHERE json_extract(extra,"$.user")=?',(username,));conn.commit()
+
+    @celery_app.on_after_finalize.connect
+    def retention_sweep(sender,**_):
+        days=int(os.getenv('RETENTION_DAYS',730))
+        sender.add_periodic_task(86400, purge_old_data.s(days), name='retention purge')
+
+    @celery_app.task
+    def purge_old_data(days):
+        cutoff=(datetime.datetime.utcnow()-datetime.timedelta(days=days)).isoformat()
+        conn=sqlite3.connect('data/metrics.db'); conn.execute('DELETE FROM metrics WHERE timestamp<?',(cutoff,)); conn.commit()
+    """)
+    tasks.write_text(code)
+PY
+
+############################################################################
+# 4) React DataPrivacy.jsx admin page
+############################################################################
+mkdir -p client/src/components
+cat > client/src/components/DataPrivacy.jsx << 'JSX'
+import React,{useEffect,useState} from'react';
+import api from'../services/api';
+export default function DataPrivacy(){
+ const[users,set]=useState({});const[sel,setSel]=useState('');
+ const load=()=>api.get('/api/org/tenant/users').then(r=>set(r.data));
+ useEffect(load,[]);
+ const exp=()=>window.open(`/api/user/${sel}/export`,'_blank');
+ const purge=()=>{if(window.confirm('Permanently purge user?')) api.post(`/api/user/${sel}/purge`).then(()=>alert('Scheduled'));};
+ return(<div className='p-4'>
+  <h3 className='font-semibold mb-2'>Data Privacy Tools</h3>
+  <select value={sel} onChange={e=>setSel(e.target.value)} className='border p-1'><option value=''>-- choose user --</option>{Object.keys(users).map(u=><option key={u}>{u}</option>)}</select>
+  {sel&&<div className='mt-2 space-x-2'><button className='bg-blue-600 text-white px-3 py-1 rounded' onClick={exp}>Export JSON+ZIP</button><button className='bg-red-600 text-white px-3 py-1 rounded' onClick={purge}>Purge</button></div>}
+ </div>);
+}
+JSX
+
+# integrate tab
+python - << 'PY'
+import pathlib, textwrap
+page=pathlib.Path('client/src/pages/IndAutomationPage.jsx'); p=page.read_text()
+if 'Data Privacy' not in p:
+    p=p.replace('import RoleManager','import RoleManager from "../components/RoleManager";\nimport DataPrivacy from "../components/DataPrivacy"')
+    p=p.replace('"User Management"','"User Management","Data Privacy"')
+    pane=textwrap.dedent('{tab === "Data Privacy" && <DataPrivacy/>}')
+    p=p.replace('{tab === "User Management"', '{tab === "User Management"'+pane+'\n',1)
+    page.write_text(p)
+PY
+
+############################################################################
+echo '✅ GDPR export & purge toolkit installed – restart servers.'

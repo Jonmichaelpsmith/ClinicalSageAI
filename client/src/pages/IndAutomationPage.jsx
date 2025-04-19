@@ -11,6 +11,8 @@ import EsgSubmit from "../components/EsgSubmit";
 import AuditDashboard from "../components/AuditDashboard";
 import RulesSettings from "../components/RulesSettings";
 import ComplianceInsights from "../components/ComplianceInsights";
+import RoleManager from "../components/RoleManager";
+import DataPrivacy from "../components/DataPrivacy" from "../components/RoleManager" from "../components/ComplianceInsights";
 import WorkflowDashboard from "../components/ind-automation/WorkflowDashboard";
 import { getJson } from "../services/api";
 
@@ -66,7 +68,7 @@ export default function IndAutomationPage() {
       {selected && (
         <div className="border-t pt-4">
           <div className="flex flex-wrap gap-2 mb-4">
-            {["Dashboard", "Module1", "Module2", "Module3", "eCTD GA", "ESG", "Compliance Rules", "Compliance Insights", "Audit", "History"].map((t) => (
+            {["Dashboard", "Module1", "Module2", "Module3", "eCTD GA", "ESG", "Compliance Rules", "Compliance Insights","User Management","Data Privacy", "Audit", "History"].map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
@@ -124,7 +126,9 @@ export default function IndAutomationPage() {
             </div>
           )}
           
-          {tab === "Compliance Insights" && (
+          {tab === "Data Privacy" && <DataPrivacy/>}
+{tab === "User Management","Data Privacy" && <RoleManager/>}
+{tab === "Compliance Insights","User Management","Data Privacy" && (
             <div className="space-y-4">
               <ComplianceInsights org={selected.project_id} />
             </div>

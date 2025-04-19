@@ -22,3 +22,8 @@ def verify(username, password):
 
 def get_role(username):
     d = _load().get(username); return d and d.get("role")
+def all_users():
+    return _load()
+
+def set_permissions(username, perms):
+    data=_load(); data[username]['perms']=perms; _save(data)
