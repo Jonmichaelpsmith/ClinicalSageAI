@@ -143,7 +143,7 @@ export default function HomeLanding() {
       </div>
       
       {/* Intelligence Counter */}
-      <div className="mb-2">
+      <div className="mt-2 mb-5 px-6">
         <IntelligenceCounter />
       </div>
 
