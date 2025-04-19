@@ -1,0 +1,97 @@
+# write_ectd_xml.py – FDA eCTD 3.2.2 compliant XML builder with regional metadata
+import os, hashlib, uuid
+import xml.etree.ElementTree as ET
+from server.db import SessionLocal
+from server.models.sequence import INDSequence
+
+NS = {
+  "xlink": "http://www.w3.org/1999/xlink"
+}
+ET.register_namespace("xlink", NS["xlink"])
+
+DTD_PATH = "/mnt/data/ectd/util/dtd"  # DTD files must be present here
+
+
+def md5(file_path: str) -> str:
+    """Compute MD5 checksum of a file."""
+    hasher = hashlib.md5()
+    with open(file_path, "rb") as f:
+        for chunk in iter(lambda: f.read(8192), b""):
+            hasher.update(chunk)
+    return hasher.hexdigest()
+
+
+def write_ectd_xml(sequence_id: str, docs) -> str:
+    """
+    Build index.xml and us-regional.xml for given eCTD sequence.
+    - sequence_id: four-digit string (e.g., '0001')
+    - docs: list of INDSequenceDoc records with attributes: file_path, module, op
+    Returns path to index.xml
+    """
+    base = f"/mnt/data/ectd/{sequence_id}"
+
+    # ------------------ index.xml ------------------
+    root = ET.Element("ectd", attrib={
+        "xmlns:xlink": NS["xlink"]
+    })
+    # Group docs by module (m1..m5)
+    modules = sorted(set(d.module.split(".")[0] for d in docs))
+    for mod in modules:
+        mnode = ET.SubElement(root, "module", attrib={"name": mod})
+        for d in (x for x in docs if x.module.startswith(mod)):
+            leaf = ET.SubElement(mnode, "leaf")
+            # relative href
+            href = os.path.relpath(d.file_path, base)
+            leaf.set(f"{{{NS['xlink']}}}href", href)
+            leaf.set("operation", d.op)
+            leaf.set("checksum", md5(d.file_path))
+            leaf.set("checksumType", "MD5")
+            leaf.set("title", os.path.basename(d.file_path))
+            leaf.set("ID", str(uuid.uuid4()))
+
+    ix_path = os.path.join(base, "index.xml")
+    ET.ElementTree(root).write(ix_path, encoding="utf-8", xml_declaration=True)
+
+    # ---------------- us-regional.xml ----------------
+    # Fetch IND metadata from DB
+    db = SessionLocal()
+    seq_record = db.query(INDSequence).filter(INDSequence.sequence == sequence_id).first()
+    db.close()
+    if not seq_record:
+        raise FileNotFoundError(f"Sequence record {sequence_id} not found in DB.")
+
+    # Determine submission type
+    submission_type = "Initial" if int(sequence_id) == 0 else "Amendment"
+
+    # Build regional XML
+    reg = ET.Element("us-regional", attrib={
+        "xmlns:xlink": NS["xlink"]
+    })
+    # Application metadata
+    app_meta = ET.SubElement(reg, "applicationMetaData")
+    ind_num = ET.SubElement(app_meta, "INDNumber")
+    ind_num.text = seq_record.ind_serial or ""
+    sub_type = ET.SubElement(app_meta, "SubmissionType")
+    sub_type.text = submission_type
+    creation_dt = ET.SubElement(app_meta, "CreationDate")
+    creation_dt.text = seq_record.created.strftime("%Y-%m-%dT%H:%M:%SZ")
+    # Sponsor info
+    sponsor = ET.SubElement(reg, "Sponsor")
+    sponsor_name = ET.SubElement(sponsor, "Name")
+    sponsor_name.text = seq_record.sponsor_name or ""
+
+    # Optionally list module 1 docs as leaves
+    m1 = ET.SubElement(reg, "Module1")
+    for d in [x for x in docs if x.module.startswith("m1")]:
+        leaf = ET.SubElement(m1, "leaf")
+        href = os.path.relpath(d.file_path, base)
+        leaf.set(f"{{{NS['xlink']}}}href", href)
+        leaf.set("operation", d.op)
+        leaf.set("checksum", md5(d.file_path))
+        leaf.set("checksumType", "MD5")
+        leaf.set("ID", str(uuid.uuid4()))
+
+    us_path = os.path.join(base, "us-regional.xml")
+    ET.ElementTree(reg).write(us_path, encoding="utf-8", xml_declaration=True)
+
+    return ix_path

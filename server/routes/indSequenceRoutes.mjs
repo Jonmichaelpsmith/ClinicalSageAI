@@ -1,14 +1,20 @@
-const express = require('express');
-const router = express.Router();
-const { exec } = require('child_process');
-const path = require('path');
-const fs = require('fs');
-const { promisify } = require('util');
+import express from 'express';
+import { exec } from 'child_process';
+import path from 'path';
+import fs from 'fs';
+import { promisify } from 'util';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const execAsync = promisify(exec);
 const writeFileAsync = promisify(fs.writeFile);
 const readFileAsync = promisify(fs.readFile);
 const mkdirAsync = promisify(fs.mkdir);
 const existsAsync = promisify(fs.exists);
+
+const router = express.Router();
 
 // Mock database for demo purposes
 // In production, this would use the actual database models
@@ -260,4 +266,4 @@ async function submitToEsg(sequenceId, indSerial, sponsorName) {
   }
 }
 
-module.exports = router;
+export default router;

@@ -3,14 +3,24 @@ import { createServer } from "http";
 import { storage } from "./storage";
 import { insertDocumentSchema, insertDocumentVersionSchema, insertDocumentCommentSchema } from "../shared/schema";
 import { z } from "zod";
-// Skip IND sequence routes for now until we fix module compatibility
-// We'll implement a pure TypeScript version later
+// We'll add the IND sequence routes during registration
 
 const router = express.Router();
 
 export async function registerRoutes(app: Application) {
   // Register our router with the app
   app.use(router);
+  
+  // Register IND sequence routes for FDA submission
+  try {
+    // Import the ESM-compatible IND sequence routes
+    const indSequenceRoutesPath = new URL('./routes/indSequenceRoutes.mjs', import.meta.url);
+    const indRoutes = await import(indSequenceRoutesPath.href);
+    app.use('/api/ind', indRoutes.default);
+    console.log('IND sequence routes registered successfully');
+  } catch (error) {
+    console.error('Failed to register IND sequence routes:', error);
+  }
   
   // Return an HTTP server
   return createServer(app);

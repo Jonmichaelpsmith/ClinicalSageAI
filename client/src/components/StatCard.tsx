@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'wouter';
+import { useLocation } from 'wouter';
 import { cn } from '@/lib/utils';
 
 interface StatCardProps {
@@ -21,7 +21,7 @@ const StatCard: React.FC<StatCardProps> = ({
   className,
   color = 'default'
 }) => {
-  const [, navigate] = useNavigate();
+  const [, setLocation] = useLocation();
   
   const colorClasses = {
     default: 'bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700',
@@ -45,7 +45,7 @@ const StatCard: React.FC<StatCardProps> = ({
     if (onClick) {
       onClick();
     } else if (href) {
-      navigate(href);
+      setLocation(href);
     }
   };
 
