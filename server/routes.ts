@@ -3,6 +3,8 @@ import { createServer } from "http";
 import { storage } from "./storage";
 import { insertDocumentSchema, insertDocumentVersionSchema, insertDocumentCommentSchema } from "../shared/schema";
 import { z } from "zod";
+// Skip IND sequence routes for now until we fix module compatibility
+// We'll implement a pure TypeScript version later
 
 const router = express.Router();
 
