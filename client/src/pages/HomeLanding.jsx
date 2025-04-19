@@ -1,4 +1,4 @@
-// HomeLanding.jsx – Concepts2Cures.AI rebrand (TrialSage platform)
+// HomeLanding.jsx – Concepts2Cures (TrialSage platform)
 // Tailwind + i18n + dark‑mode ready
 
 import React, { useState } from "react";
@@ -537,7 +537,7 @@ export default function HomeLanding() {
       {/* Footer */}
       <footer className="py-6 bg-gray-50 dark:bg-slate-900 text-center text-sm text-gray-500 dark:text-gray-400">
         <div className="max-w-6xl mx-auto px-6">
-          <p>© {year} Concepts2Cures.AI • {t('All rights reserved')}</p>
+          <p>© {year} Concepts2Cures • {t('All rights reserved')}</p>
           <p className="mt-1 text-xs">{t('TrialSage is a registered trademark')}</p>
         </div>
       </footer>
