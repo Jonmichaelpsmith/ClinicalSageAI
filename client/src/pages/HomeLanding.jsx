@@ -152,7 +152,7 @@ export default function HomeLanding() {
     <main className="font-sans text-gray-800 dark:text-gray-100 w-full overflow-x-hidden">
       {/* Top Nav */}
       <nav className="fixed top-0 inset-x-0 h-14 bg-white/80 dark:bg-slate-900/70 backdrop-blur flex justify-between items-center px-6 z-40 shadow-sm">
-        <Link to="/" className="text-lg font-bold text-emerald-700 dark:text-emerald-400">Concepts2Cures.AI</Link>
+        <Link to="/" className="text-lg font-bold text-emerald-700 dark:text-emerald-400">Concepts2Cures</Link>
         <div className="flex gap-3">
           {/* Direct users to login which will take them to the client portal after authentication */}
           <Button to="/login" variant="ghost"><LogIn size={16}/> {t('Login to Portal')}</Button>
