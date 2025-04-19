@@ -218,3 +218,38 @@ async def user_export(username:str, user:str=Depends(auth.get_current_user)):
 async def user_purge(username:str, user:str=Depends(auth.get_current_user)):
     if users.get_role(user)!="admin": raise HTTPException(403)
     gdpr.purge_user(username); return {'status':'scheduled'}
+
+from ind_automation import pii_filter, db, users
+from starlette.middleware.base import BaseHTTPMiddleware
+import json, asyncio
+
+class RedactionMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        if request.headers.get("content-type","").startswith("application/json"):
+            body=await request.body()
+            data=json.loads(body or "{}")
+            redacted=False
+            matches=[]
+            
+            def _clean(obj):
+                nonlocal redacted,matches
+                if isinstance(obj,str):
+                    clean,hit=pii_filter.redact(obj)
+                    matches+=hit
+                    redacted|=bool(hit)
+                    return clean
+                if isinstance(obj,dict): 
+                    return {k:_clean(v) for k,v in obj.items()}
+                if isinstance(obj,list): 
+                    return [_clean(v) for v in obj]
+                return obj
+                
+            clean=_clean(data)
+            if redacted:
+                # replace request stream
+                request._receive = lambda: {"type":"http.request","body":json.dumps(clean).encode()}
+                user=request.headers.get("x-user", "unknown")
+                db.append_history("system",{"type":"redaction","user":user,"matches":matches,"timestamp":datetime.datetime.utcnow().isoformat()})
+        return await call_next(request)
+
+app.add_middleware(RedactionMiddleware)
