@@ -1,9 +1,9 @@
 // HomeLanding.jsx – Concepts2Cures.AI rebrand (TrialSage platform)
 // Tailwind + i18n + dark‑mode ready
 
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "../stub-router-dom";
-import { PlayCircle, ArrowRight, LogIn, UserPlus, BarChart2, Brain } from "lucide-react";
+import { PlayCircle, ArrowRight, LogIn, UserPlus, BarChart2, Brain, User, Users, Microscope, FileText, Beaker } from "lucide-react";
 import { useTranslation } from "../i18n";
 // Import i18n to initialize it
 import "../i18n";
@@ -11,6 +11,7 @@ import "../i18n";
 export default function HomeLanding() {
   const { t } = useTranslation();
   const year = new Date().getFullYear();
+  const [selectedPersona, setSelectedPersona] = useState(null);
 
   const Button = ({ to, children, variant = "primary", external = false }) => {
     const base = "px-5 py-2.5 rounded-lg inline-flex items-center gap-2 text-sm sm:text-base font-medium transition focus:outline-none";
@@ -45,6 +46,57 @@ export default function HomeLanding() {
     ['Cortellis / Cortera','⚠️ manual', '✅', '—',    '—',       '$$$$'],
     ['Phlexglobal',        '⚠️ add‑on', '✅', '—',    '—',       '$$$'],
     ['Traditional CRO',    '—', '—', '—', '—', '$$$$$'],
+  ];
+  
+  const personas = [
+    { 
+      id: 'cro',
+      title: t('CRO Leaders'),
+      icon: <Users size={24} />,
+      description: t('Streamline your clinical operations and regulatory affairs with AI-powered tools that help you deliver more value to sponsors.'),
+      features: [
+        t('Predictive analytics for protocol optimization'),
+        t('Structured CSR insights from 3,000+ trials'),
+        t('White-label portal for sponsor access')
+      ],
+      link: '/solutions/cro'
+    },
+    { 
+      id: 'medical',
+      title: t('Medical Affairs'),
+      icon: <Microscope size={24} />,
+      description: t('Turn CSR intelligence into compelling clinical narratives and evidence that bridges the gap between R&D and commercial.'),
+      features: [
+        t('Evidence-backed clinical narratives'),
+        t('Automatic FAERS trend monitoring'),
+        t('Public CSR database integration')
+      ],
+      link: '/solutions/medical-affairs'
+    },
+    { 
+      id: 'regulatory',
+      title: t('Regulatory Affairs'),
+      icon: <FileText size={24} />,
+      description: t('Accelerate submissions with automated IND/CTA preparation, AI-assisted Module 2 writing, and validated eCTD packaging.'),
+      features: [
+        t('One-click eCTD packaging'),
+        t('FDA/EMA/HC submission validation'),
+        t('Full ESG integration')
+      ],
+      link: '/solutions/regulatory'
+    },
+    { 
+      id: 'clinical',
+      title: t('Clinical Development'),
+      icon: <Beaker size={24} />,
+      description: t('Design more successful protocols with AI-powered endpoints research, historical CSR insights, and competitive intelligence.'),
+      features: [
+        t('Endpoint analytics across TAs'),
+        t('Protocol success predictor'),
+        t('Comparable protocol library')
+      ],
+      link: '/solutions/clinical'
+    },
   ];
 
   return (
@@ -92,6 +144,64 @@ export default function HomeLanding() {
             <Link to={p.link} className={`text-${p.color}-700 dark:text-${p.color}-300 font-medium hover:underline`}>{t('Learn more')}</Link>
           </article>
         ))}
+      </section>
+      
+      {/* Buyer Persona Section */}
+      <section className="max-w-6xl mx-auto px-6 py-12 bg-gray-50 dark:bg-slate-900/50 rounded-lg">
+        <h2 className="text-2xl font-bold mb-8 text-center">{t('Solutions for Your Role')}</h2>
+        
+        <div className="flex flex-wrap gap-2 justify-center mb-8">
+          {personas.map(persona => (
+            <button
+              key={persona.id}
+              onClick={() => setSelectedPersona(selectedPersona === persona.id ? null : persona.id)}
+              className={`
+                px-4 py-2 rounded-full border transition flex items-center gap-2
+                ${selectedPersona === persona.id ? 
+                  'bg-emerald-100 border-emerald-600 text-emerald-800 dark:bg-emerald-900/30 dark:border-emerald-400 dark:text-emerald-300' : 
+                  'bg-white border-gray-200 hover:border-emerald-300 dark:bg-slate-800 dark:border-slate-700 dark:hover:border-emerald-800'}
+              `}
+            >
+              {persona.icon}
+              <span>{persona.title}</span>
+            </button>
+          ))}
+        </div>
+        
+        {selectedPersona && (
+          <div className="bg-white dark:bg-slate-800 rounded-lg p-6 shadow-sm border border-gray-100 dark:border-slate-700 animate-fadeIn">
+            {personas.filter(p => p.id === selectedPersona).map(persona => (
+              <div key={persona.id}>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+                    {persona.icon}
+                  </div>
+                  <h3 className="text-xl font-semibold">{persona.title}</h3>
+                </div>
+                <p className="text-gray-600 dark:text-gray-300 mb-6">{persona.description}</p>
+                <div className="mb-6">
+                  <h4 className="font-medium mb-3 text-gray-700 dark:text-gray-200">{t('Key Benefits:')}</h4>
+                  <ul className="space-y-2">
+                    {persona.features.map((feature, idx) => (
+                      <li key={idx} className="flex items-start gap-2">
+                        <span className="text-emerald-600 dark:text-emerald-400">✓</span>
+                        <span className="text-gray-600 dark:text-gray-300">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <Button to={persona.link}>{t('View Solutions for')} {persona.title} <ArrowRight size={16}/></Button>
+              </div>
+            ))}
+          </div>
+        )}
+        
+        {!selectedPersona && (
+          <div className="text-center p-8 text-gray-600 dark:text-gray-300">
+            <User size={48} className="mx-auto mb-4 text-gray-400 dark:text-gray-500" />
+            <p className="mb-4">{t('Select your role above to see personalized solutions')}</p>
+          </div>
+        )}
       </section>
 
       {/* Technology Section */}
