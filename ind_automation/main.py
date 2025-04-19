@@ -171,7 +171,7 @@ async def set_rules(org:str, body:dict):
 
 # ---------- Compliance Metrics API ----------
 @app.get('/api/org/{org}/metrics')
-async def get_metrics(org:str):
+async def get_metrics(org:str, rule:str|None=None, limit:int=200, offset:int=0, from_:str|None=None, to:str|None=None):
     return metrics.load(org).to_dict(orient='records')
 
 @app.get('/api/org/{org}/insights/pdf')

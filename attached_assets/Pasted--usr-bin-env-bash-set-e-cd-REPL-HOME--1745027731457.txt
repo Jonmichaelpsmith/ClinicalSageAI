@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+set -e
+cd "$REPL_HOME"
+
+########################################################################
+# 1) Extend metrics_sql.query with date filter
+########################################################################
+python - << 'PY'
+import pathlib, textwrap, re
+ms=pathlib.Path('ind_automation/metrics_sql.py'); code=ms.read_text()
+if 'from_=None' not in code:
+    code=re.sub(r'def query\(org, rule=None, limit=100, offset=0\):',
+    'def query(org, rule=None, limit=100, offset=0, from_=None, to=None):', code)
+    code=re.sub(r'WHERE org=\?', 'WHERE org=?', code,1)
+    code=re.sub(r'params=\[org\]', 'params=[org]', code,1)
+    code=re.sub(r'if rule:', 'if from_: q+=" AND timestamp>=?"; params.append(from_)
+    if to: q+=" AND timestamp<=?"; params.append(to)
+    if rule:', code,1)
+    ms.write_text(code)
+PY
+
+########################################################################
+# 2) Update metrics endpoint to accept from/to
+########################################################################
+python - << 'PY'
+import pathlib, re, textwrap
+main=pathlib.Path('ind_automation/main.py'); code=main.read_text()
+if 'from_:str|None=None' not in code:
+    code=re.sub(r'def get_metrics\([^)]*\):',
+    'def get_metrics(org:str, rule:str|None=None, limit:int=200, offset:int=0, from_:str|None=None, to:str|None=None):', code)
+    code=re.sub(r'return metrics_sql.query\([^)]*\)', 'return metrics_sql.query(org, rule, limit, offset, from_, to)', code,1)
+    main.write_text(code)
+PY
+
+########################################################################
+# 3) TimeScrubber component
+########################################################################
+mkdir -p client/src/components
+cat > client/src/components/TimeScrubber.jsx << 'JSX'
+import React,{useEffect,useState} from'react';import dayjs from'dayjs';
+export default function TimeScrubber({min,max,from,to,onChange}){
+  const[minVal,setMin]=useState(from||min);const[maxVal,setMax]=useState(to||max);
+  useEffect(()=>{onChange(minVal,maxVal)},[minVal,maxVal]);
+  const pct=v=>100*(dayjs(v)-dayjs(min))/(dayjs(max)-dayjs(min));
+  return(<div className='my-2'>
+    <input type='range' min={min} max={max} value={minVal} onChange={e=>setMin(e.target.value)} className='w-full'/>
+    <input type='range' min={min} max={max} value={maxVal} onChange={e=>setMax(e.target.value)} className='w-full -mt-2'/>
+    <div className='text-xs flex justify-between'><span>{minVal}</span><span>{maxVal}</span></div>
+  </div>);
+}
+JSX
+
+########################################################################
+# 4) Patch ComplianceInsights to use scrubber and URL params
+########################################################################
+python - << 'PY'
+import pathlib, textwrap, re
+ci=pathlib.Path('client/src/components/ComplianceInsights.jsx'); code=ci.read_text()
+if 'TimeScrubber' not in code:
+    code='import {useSearchParams,useNavigate} from "react-router-dom";\nimport dayjs from "dayjs";\nimport TimeScrubber from "./TimeScrubber";\n'+code
+    # add search param state
+    code=re.sub(r'const\[data,setData\]\=useState','const[params]=useSearchParams();const nav=useNavigate();\n const[from,setFrom]=useState(params.get("from")||"");const[to,setTo]=useState(params.get("to")||"");\n const[data,setData]=useState', code,1)
+    # fetch with window
+    code=re.sub(r'api.get\(`/api/org/\${org}/metrics`','api.get(`/api/org/${org}/metrics?from=${from}&to=${to}`', code,1)
+    # insert TimeScrubber before grid
+    code=re.sub(r'return\(<div','return(<><TimeScrubber min={data[data.length-1]?.date||""} max={data[0]?.date||""} from={from} to={to} onChange={(f,t)=>{setFrom(f);setTo(t);nav(`#/insights?from=${f}&to=${t}`)}}/>\n<div', code,1)
+    ci.write_text(code)
+PY
+
+
+echo '✅ Timeline playback scrubber installed – restart React.'

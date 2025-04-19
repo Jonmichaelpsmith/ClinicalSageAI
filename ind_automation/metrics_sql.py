@@ -15,8 +15,14 @@ def refresh(org):
           [(org,h['timestamp'],h.get('type',''),h.get('msg',''),json.dumps(h)) for h in hist])
 
 
-def query(org, rule=None, limit=100, offset=0):
+def query(org, rule=None, limit=100, offset=0, from_=None, to=None):
     q='SELECT timestamp,msg,extra FROM metrics WHERE org=?'; params=[org]
+    if from_: 
+        q+=" AND timestamp>=?"
+        params.append(from_)
+    if to: 
+        q+=" AND timestamp<=?"
+        params.append(to)
     if rule:
         q+=' AND msg LIKE ?'; params.append(f'%{rule}%')
     q+=' ORDER BY timestamp DESC LIMIT ? OFFSET ?'; params+= [limit,offset]
