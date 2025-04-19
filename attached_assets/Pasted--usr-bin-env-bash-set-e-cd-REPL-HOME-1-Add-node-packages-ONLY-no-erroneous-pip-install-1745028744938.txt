@@ -1,0 +1,141 @@
+#!/usr/bin/env bash
+set -e
+cd "$REPL_HOME"
+
+# ── 1. Add node packages ONLY (no erroneous pip installs) ──────────────
+npm install react-grid-layout react-monaco-editor monaco-editor sql.js
+
+# ── 2. SQLite helper for widgets ───────────────────────────────────────
+cat > ind_automation/widgets_sql.py << 'PY'
+"""Widget persistence layer (org + user scoped)."""
+import sqlite3, json, pathlib
+DB = pathlib.Path('data/widgets.db'); DB.parent.mkdir(exist_ok=True)
+conn = sqlite3.connect(DB)
+conn.row_factory = sqlite3.Row
+conn.execute('''CREATE TABLE IF NOT EXISTS widget (
+  id INTEGER PRIMARY KEY,
+  org TEXT,
+  user TEXT,
+  name TEXT,
+  sql TEXT,
+  type TEXT,
+  layout TEXT
+);'''); conn.commit()
+
+def list_widgets(org: str, user: str):
+    cur = conn.execute('SELECT * FROM widget WHERE org=? AND user=?', (org, user))
+    return [dict(r) for r in cur.fetchall()]
+
+def save_widget(org: str, user: str, wd: dict):
+    if wd.get('id'):
+        conn.execute('UPDATE widget SET name=?, sql=?, type=?, layout=? WHERE id=? AND user=?',
+                    (wd['name'], wd['sql'], wd['type'], json.dumps(wd['layout']), wd['id'], user))
+    else:
+        conn.execute('INSERT INTO widget(org,user,name,sql,type,layout) VALUES(?,?,?,?,?,?)',
+                    (org, user, wd['name'], wd['sql'], wd['type'], json.dumps(wd['layout'])))
+    conn.commit()
+PY
+
+# ── 3. FastAPI routes (typed) ──────────────────────────────────────────
+python - << 'PY'
+import pathlib, textwrap
+main = pathlib.Path('ind_automation/main.py'); code = main.read_text()
+if '/widgets' not in code:
+    code = code.replace('from ind_automation import', 'from ind_automation import widgets_sql,')
+    code += textwrap.dedent("""
+    @app.get('/api/org/{org}/widgets')
+    async def widgets(org: str, user: str = Depends(auth.get_current_user)):
+        return widgets_sql.list_widgets(org, user)
+
+    @app.post('/api/org/{org}/widgets')
+    async def save_widget(org: str, body: dict, user: str = Depends(auth.get_current_user)):
+        widgets_sql.save_widget(org, user, body)
+        return {"status": "ok"}
+    """)
+    main.write_text(code)
+PY
+
+# ── 4. React components ────────────────────────────────────────────────
+mkdir -p client/src/components/kpi
+
+cat > client/src/components/kpi/WidgetBuilder.jsx << 'JSX'
+import React, { useState } from 'react';
+import Editor from 'react-monaco-editor';
+
+export default function WidgetBuilder({ onSave }) {
+  const [data, setData] = useState({ name: '', sql: 'SELECT COUNT(*) FROM metrics', type: 'bar' });
+  return (
+    <div className="p-4 w-96">
+      <h3 className="font-semibold mb-2">Add KPI Widget</h3>
+      <input className="border p-1 w-full mb-2" placeholder="Widget name" value={data.name}
+             onChange={e => setData({ ...data, name: e.target.value })} />
+      <select className="border p-1 w-full mb-2" value={data.type}
+              onChange={e => setData({ ...data, type: e.target.value })}>
+        <option value="bar">Bar</option>
+        <option value="line">Line</option>
+        <option value="pie">Pie</option>
+      </select>
+      <Editor height="180" language="sql" value={data.sql}
+              onChange={v => setData({ ...data, sql: v })} options={{ minimap: { enabled: false } }} />
+      <button className="bg-blue-600 text-white px-3 py-1 mt-3 rounded" onClick={() => onSave(data)}>
+        Save
+      </button>
+    </div>
+  );
+}
+JSX
+
+cat > client/src/components/kpi/KPIDashboard.jsx << 'JSX'
+import React, { useEffect, useState } from 'react';
+import GridLayout from 'react-grid-layout';
+import api from '../../services/api';
+import WidgetBuilder from './WidgetBuilder';
+
+export default function KPIDashboard({ org }) {
+  const [widgets, setWidgets] = useState([]);
+  const [showBuilder, setShowBuilder] = useState(false);
+  const load = () => api.get(`/api/org/${org}/widgets`).then(r => setWidgets(r.data));
+  useEffect(load, [org]);
+  const save = (w) => api.post(`/api/org/${org}/widgets`, w).then(() => { setShowBuilder(false); load(); });
+
+  return (
+    <div className="p-4">
+      <button className="bg-green-700 text-white px-3 py-1 mb-3 rounded" onClick={() => setShowBuilder(true)}>
+        + Add Widget
+      </button>
+      <GridLayout className="layout" cols={12} rowHeight={30} width={1200}>
+        {widgets.map((w, i) => {
+          const layout = JSON.parse(w.layout || '{}') || { x: (i % 4) * 3, y: 0, w: 3, h: 4 };
+          return (
+            <div key={w.id} data-grid={layout} className="bg-white shadow rounded p-2 flex flex-col">
+              <h4 className="text-xs font-semibold mb-1">{w.name}</h4>
+              <pre className="text-xs flex-grow overflow-auto">{w.type.toUpperCase()} widget – SQL TBD</pre>
+            </div>
+          );
+        })}
+      </GridLayout>
+      {showBuilder && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
+          <div className="bg-white rounded shadow-lg">
+            <WidgetBuilder onSave={save} />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+JSX
+
+# ── 5. Add sidebar tab
+python - << 'PY'
+import pathlib, textwrap
+page = pathlib.Path('client/src/pages/IndAutomationPage.jsx'); txt = page.read_text()
+if 'KPI Dashboard' not in txt:
+    txt = txt.replace('import ComplianceInsights', 'import ComplianceInsights from "../components/ComplianceInsights";\nimport KPIDashboard from "../components/kpi/KPIDashboard"')
+    txt = txt.replace('"Compliance Insights"', '"Compliance Insights","KPI Dashboard"')
+    pane = textwrap.dedent('{tab === "KPI Dashboard" && selected && <KPIDashboard org={selected.project_id}/>}')
+    txt = txt.replace('{tab === "Compliance Insights"', '{tab === "Compliance Insights"' + pane + '\n', 1)
+    page.write_text(txt)
+PY
+
+echo "✅ KPI Builder installed — restart React to test." 

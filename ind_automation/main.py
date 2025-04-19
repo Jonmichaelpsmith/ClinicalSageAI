@@ -8,12 +8,12 @@ from pydantic import BaseModel
 from typing import List, Dict, Optional
 
 from ind_automation.templates import render_form1571, render_form1572, render_form3674
-from ind_automation import db
-from ind_automation import module3, ai_narratives, metrics, ectd_ga, auth, users, rbac
+from ind_automation import widgets_sql, db
+from ind_automation import widgets_sql, module3, ai_narratives, metrics, ectd_ga, auth, users, rbac
 from ind_automation.db import append_history, get_history
-from ind_automation import esg_credentials_api
-from ind_automation import saml_settings_api
-from ind_automation import teams_webhook_api
+from ind_automation import widgets_sql, esg_credentials_api
+from ind_automation import widgets_sql, saml_settings_api
+from ind_automation import widgets_sql, teams_webhook_api
 
 app = FastAPI(title="IND Automation Service v2")
 
@@ -213,7 +213,7 @@ async def delete_user(org:str, username:str):
     data=users.all_users(); data.pop(username, None); users._save(data)
     return {'status':'deleted'}
 
-from ind_automation import gdpr
+from ind_automation import widgets_sql, gdpr
 from fastapi.responses import StreamingResponse
 
 @app.get('/api/user/{username}/export')
@@ -227,7 +227,7 @@ async def user_purge(username:str, user:str=Depends(auth.get_current_user)):
     if users.get_role(user)!="admin": raise HTTPException(403)
     gdpr.purge_user(username); return {'status':'scheduled'}
 
-from ind_automation import pii_filter, db, users
+from ind_automation import widgets_sql, pii_filter, db, users
 from starlette.middleware.base import BaseHTTPMiddleware
 import json, asyncio
 
@@ -281,3 +281,12 @@ async def locale_middleware(request, call_next):
         _local(data)
         response.body=json.dumps(data).encode()
     return response
+
+@app.get('/api/org/{org}/widgets')
+async def widgets(org: str, user: str = Depends(auth.get_current_user)):
+    return widgets_sql.list_widgets(org, user)
+
+@app.post('/api/org/{org}/widgets')
+async def save_widget(org: str, body: dict, user: str = Depends(auth.get_current_user)):
+    widgets_sql.save_widget(org, user, body)
+    return {"status": "ok"}
