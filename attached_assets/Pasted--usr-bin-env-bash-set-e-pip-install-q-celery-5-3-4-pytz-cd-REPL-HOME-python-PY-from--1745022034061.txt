@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+set -e
+pip install -q celery==5.3.4 pytz
+cd "$REPL_HOME"
+
+python - << 'PY'
+from pathlib import Path
+import textwrap, datetime, json, hashlib, pytz
+au=Path('ind_automation/audit.py'); txt=au.read_text()
+if 'ADVANCED ALERTS' not in txt:
+    insert=textwrap.dedent("""
+    # ---------- ADVANCED ALERTS ----------
+    from celery.result import AsyncResult
+    import glob, hashlib
+
+    FAILURE_CHECK_MIN = 30
+    M2_STALE_DAYS = 90
+
+    def _esg_failures():
+        alerts=[]
+        for task_file in Path('celery_taskmeta').glob('*.json'):
+            data=json.loads(task_file.read_text())
+            if data.get('task_name')=='ind_automation.tasks.submit_to_esg' and data['status']=='FAILURE':
+                age=(now-datetime.datetime.fromisoformat(data['date_done'])).total_seconds()/60
+                if age>FAILURE_CHECK_MIN:
+                    alerts.append((data['args'][0],'ESG submission FAILURE >30min'))
+        return alerts
+
+    def _missing_module3():
+        alerts=[]
+        for p in Path('ectd').glob('*/*'):
+            project,serial=p.parts[-2],p.parts[-1]
+            m3=Path(f'output/Module3_{project}.docx')
+            if not m3.exists():
+                alerts.append((project,f'Module3 doc missing for serial {serial}'))
+        return alerts
+
+    def _stale_m2():
+        alerts=[]
+        cutoff=now-datetime.timedelta(days=M2_STALE_DAYS)
+        for m2 in Path('output').glob('Module2_*.docx'):
+            if datetime.datetime.fromtimestamp(m2.stat().st_mtime)<cutoff:
+                alerts.append((m2.stem.split('_')[-1],'Module2 narrative >90 days old'))
+        return alerts
+
+    def _saml_fingerprint_changes():
+        alerts=[]
+        for f in Path('data/saml_creds').glob('*.json'):
+            org=f.stem; cur=json.loads(fernet.decrypt(f.read_bytes()))
+            fp=hashlib.sha1(cur['idp_x509'].encode()).hexdigest()[:16]
+            last=db.load(org).get('saml_fp') if db.load(org) else None
+            if last and last!=fp:
+                alerts.append((org,'IdP certificate changed!'))
+                db.append_history(org,{"type":"alert","msg":"IdP cert changed","timestamp":now.isoformat()})
+                rec=db.load(org); rec['saml_fp']=fp; db.save(org,rec)
+        return alerts
+    """)
+    txt=txt.replace('from dateutil',insert+'\nfrom dateutil')
+    # call rules
+    txt=txt.replace('alerts=[]','alerts=[]\n    alerts+=_esg_failures()+_missing_module3()+_stale_m2()+_saml_fingerprint_changes()')
+    au.write_text(txt)
+PY
+
+echo "✅ Advanced alert rules installed – restart Celery beat/worker."
