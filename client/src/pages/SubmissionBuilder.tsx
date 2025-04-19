@@ -11,10 +11,10 @@ import SubmissionBuilderWebSocket from '../components/SubmissionBuilderWebSocket
 import { REGION_RULES as CONFIGURED_REGION_RULES, RegionRule } from '../config/regionRules';
 import { useQcSocket } from '../hooks/useQcSocket';
 
-// Legacy region-specific folder structure - will be replaced with regionRules
+// acceptable module prefixes per region with hint folders
 const REGION_FOLDERS: Record<string, string[]> = {
   FDA: ['m1', 'm2', 'm3', 'm4', 'm5'],
-  EMA: ['m1', 'm1 admin', 'm2', 'm3', 'm4', 'm5'],
+  EMA: ['m1', 'm1.0', 'm1.1', 'm1.2', 'm1.3', 'm2', 'm3', 'm4', 'm5'],
   PMDA: ['m1', 'm2', 'm3', 'm4', 'm5', 'jp-annex'],
 };
 
@@ -28,7 +28,7 @@ const REQUIRED_MODULES: Record<string, string[]> = {
 // Required modules per region (validation fails if empty)
 const REGION_REQUIRED: Record<string, string[]> = {
   FDA: ['m1', 'm2', 'm3'],
-  EMA: ['m1', 'm1 admin', 'm2', 'm3'],
+  EMA: ['m1', 'm1.0', 'm1.2', 'm2', 'm3'],
   PMDA: ['m1', 'm2', 'm3', 'jp-annex'],
 };
 
@@ -40,8 +40,11 @@ const REGION_RULES: Record<string, Record<string, string>> = {
     'm2.7': 'Clinical summary must follow FDA-specific format',
   },
   EMA: {
-    'm1': 'Must include EU Application Form (eAF)',
-    'm1 admin': 'EU administrative documents are required',
+    'm1': 'Must include EU regional administrative information',
+    'm1.0': 'Must include EU cover letter and table of contents',
+    'm1.1': 'Must include comprehensive EU ToC',
+    'm1.2': 'Must include EU Application Form (eAF)',
+    'm1.3': 'Must include product information and labeling',
     'm2': 'Must include CTD summaries following EMA guidance',
     'm3': 'Must include QOS (Quality Overall Summary) for EU',
   },
@@ -325,10 +328,18 @@ export default function SubmissionBuilder({ region = 'FDA' }: { region?: 'FDA'|'
       `;
       
       let folderHint = '';
+      // Add region-specific folder hints
       if (node.text === 'jp-annex' && region === 'PMDA') {
         folderHint = ' - Japan-specific regional documentation';
-      } else if (node.text.startsWith('m1') && node.text.includes('admin') && region === 'EMA') {
-        folderHint = ' - EU administrative documents';
+      } else if (region === 'EMA') {
+        // Enhanced EMA folder hints
+        const emaHints: Record<string, string> = {
+          'm1.0': ' - EU cover letter and table of contents',
+          'm1.1': ' - Comprehensive EU ToC',
+          'm1.2': ' - EU application form',
+          'm1.3': ' - Product information and labeling'
+        };
+        folderHint = emaHints[node.text] || '';
       }
       
       return (
@@ -498,7 +509,7 @@ export default function SubmissionBuilder({ region = 'FDA' }: { region?: 'FDA'|'
         return {
           title: 'EU eCTD 3.2.2',
           description: 'European Medicines Agency requirements',
-          modules: ['m1', 'm1 admin', 'm2', 'm3']
+          modules: ['m1', 'm1.0', 'm1.1', 'm1.2', 'm1.3', 'm2', 'm3']
         };
       case 'PMDA':
         return {
