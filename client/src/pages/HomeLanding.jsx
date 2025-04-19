@@ -33,10 +33,11 @@ export default function HomeLanding() {
   ];
 
   const products = [
-    { color:'sky',   tag:'CSR Deep‑Intel', title:t('CSR Intelligence'), desc:t('3 000+ machine‑read CSRs with comparator & endpoint analytics.'), link:'/csr-library' },
-    { color:'emerald',tag:'CER AI',         title:t('CER Generator'),   desc:t('EU MDR 2/7‑1 Word/PDF with auto FAERS trend graphs.'), link:'/cer-dashboard' },
-    { color:'violet', tag:'IND Suite',      title:t('IND Automation'),  desc:t('Module 1–5 builder, GPT‑4 Module 2, eCTD packaging, ESG push.'), link:'/ind-automation' },
-    { color:'teal',   tag:'Ops IQ',         title:t('KPI Analytics'),   desc:t('Drag‑and‑drop SQL widgets, alert routing, weekly PDFs.'), link:'/dashboard#kpi' },
+    { color:'sky',    tag:'CSR Deep‑Intel',  title:t('CSR Intelligence'), desc:t('3 000+ machine‑read CSRs with comparator & endpoint analytics.'), link:'/csr-library' },
+    { color:'emerald', tag:'CER AI',          title:t('CER Generator'),   desc:t('EU MDR 2/7‑1 Word/PDF with auto FAERS trend graphs.'), link:'/cer-dashboard' },
+    { color:'violet',  tag:'IND Suite',       title:t('IND Automation'),  desc:t('Module 1–5 builder, GPT‑4 Module 2, eCTD packaging, ESG push.'), link:'/ind-automation' },
+    { color:'purple',  tag:'AI Assistant',    title:t('TrialSage CSR Assistant'), desc:t('Conversational agent with specialized medical writing and regulatory affairs expertise.'), link:'/assistant' },
+    { color:'teal',    tag:'Ops IQ',          title:t('KPI Analytics'),   desc:t('Drag‑and‑drop SQL widgets, alert routing, weekly PDFs.'), link:'/dashboard#kpi' },
   ];
 
   const competitorRows = [
@@ -93,13 +94,13 @@ export default function HomeLanding() {
         ))}
       </section>
 
-      {/* Deep Intelligence Engine */}
+      {/* Technology Section */}
       <section className="py-12 bg-gradient-to-r from-sky-50 to-emerald-50 dark:from-slate-800 dark:to-slate-700 text-center px-6">
         <h2 className="text-3xl font-bold mb-3 flex items-center justify-center gap-2"><Brain/> {t('Deep Intelligence Engine')}</h2>
         <p className="max-w-3xl mx-auto text-gray-700 dark:text-gray-300 text-lg mb-5">
-          {t('Conversational agent combines biostats, medical writing, and global reg‑affairs expertise—available 24/7 to design protocols, validate endpoints, and predict study outcomes.')}
+          {t('Our AI pipeline links every statement to a verifiable data point—CSR paragraph, FAERS case, or Benchling record—so reviewers can trust and trace every sentence.')}
         </p>
-        <Button variant="primary" to="/assistant">{t('Try the CSR Assistant')} <ArrowRight size={16}/></Button>
+        <Button variant="primary" to="/tech">{t('Explore Technology')} <ArrowRight size={16}/></Button>
       </section>
 
       {/* Competitor Table */}
