@@ -1,4 +1,4 @@
-// Import translation files
+// Simple i18n implementation without external libraries
 import enCommon from './locales/en/common.json';
 import frCommon from './locales/fr/common.json';
 import deCommon from './locales/de/common.json';
@@ -11,17 +11,19 @@ const resources = {
   ja: { common: jaCommon }
 };
 
-// Get user's preferred language
+// Get the user's preferred language
 const getUserLanguage = () => {
-  const savedLang = localStorage.getItem('i18nextLng');
-  if (savedLang && resources[savedLang]) return savedLang;
+  if (typeof window === 'undefined') return 'en';
   
-  const browserLang = navigator.language?.slice(0, 2);
-  return resources[browserLang] ? browserLang : 'en';
+  const savedLng = localStorage.getItem('i18nextLng');
+  if (savedLng && resources[savedLng]) return savedLng;
+  
+  const browserLng = navigator.language?.slice(0, 2);
+  return resources[browserLng] ? browserLng : 'en';
 };
 
 // Simple translation function
-export const t = (key, options = {}) => {
+const t = (key, options = {}) => {
   const language = getUserLanguage();
   const namespace = options.ns || 'common';
   const translations = resources[language]?.[namespace] || resources.en[namespace];
@@ -30,7 +32,7 @@ export const t = (key, options = {}) => {
 };
 
 // Language change helper
-export const changeLanguage = (lang) => {
+const changeLanguage = (lang) => {
   if (resources[lang]) {
     localStorage.setItem('i18nextLng', lang);
     document.documentElement.lang = lang;
@@ -41,24 +43,22 @@ export const changeLanguage = (lang) => {
 };
 
 // Initialize
-const initialize = () => {
+if (typeof window !== 'undefined') {
   const language = getUserLanguage();
   document.documentElement.lang = language;
   localStorage.setItem('i18nextLng', language);
   
-  // Expose translation function globally
+  // Global t function
   window.t = t;
-};
-
-// Run initialization
-if (typeof window !== 'undefined') {
-  initialize();
 }
 
-// Export mock of i18next API for compatibility
-export default {
+// i18next-compatible API
+const i18n = {
   t,
   changeLanguage,
   language: getUserLanguage(),
   languages: Object.keys(resources)
 };
+
+export { t, changeLanguage };
+export default i18n;

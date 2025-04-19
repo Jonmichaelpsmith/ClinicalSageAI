@@ -11,6 +11,7 @@ import EsgSubmit from "../components/EsgSubmit";
 import AuditDashboard from "../components/AuditDashboard";
 import RulesSettings from "../components/RulesSettings";
 import ComplianceInsights from "../components/ComplianceInsights";
+import KPIDashboard from "../components/kpi/KPIDashboard" from "../components/ComplianceInsights";
 import RoleManager from "../components/RoleManager";
 import DataPrivacy from "../components/DataPrivacy";
 import RedactionLog from "../components/RedactionLog" from "../components/DataPrivacy" from "../components/RoleManager" from "../components/ComplianceInsights";
@@ -69,7 +70,7 @@ export default function IndAutomationPage() {
       {selected && (
         <div className="border-t pt-4">
           <div className="flex flex-wrap gap-2 mb-4">
-            {["Dashboard", "Module1", "Module2", "Module3", "eCTD GA", "ESG", "Compliance Rules", "Compliance Insights","User Management","Data Privacy","Redaction Log", "Audit", "History"].map((t) => (
+            {["Dashboard", "Module1", "Module2", "Module3", "eCTD GA", "ESG", "Compliance Rules", "Compliance Insights","KPI Dashboard","User Management","Data Privacy","Redaction Log", "Audit", "History"].map((t) => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
@@ -130,7 +131,8 @@ export default function IndAutomationPage() {
           {tab === "Redaction Log" && <RedactionLog/>}
 {tab === "Data Privacy","Redaction Log" && <DataPrivacy/>}
 {tab === "User Management","Data Privacy","Redaction Log" && <RoleManager/>}
-{tab === "Compliance Insights","User Management","Data Privacy","Redaction Log" && (
+{tab === "Compliance Insights"{tab === "KPI Dashboard" && selected && <KPIDashboard org={selected.project_id}/>}
+,"KPI Dashboard","User Management","Data Privacy","Redaction Log" && (
             <div className="space-y-4">
               <ComplianceInsights org={selected.project_id} />
             </div>
