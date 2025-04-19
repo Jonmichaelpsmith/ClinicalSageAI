@@ -21,7 +21,7 @@ import {
   Loader2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { classifyTherapeuticArea } from "@shared/utils/therapeutic-area-classifier";
+import { classifyTherapeuticArea } from "shared/utils/therapeutic-area-classifier";
 import CSRAlignmentPanel from "@/components/CSRAlignmentPanel";
 import ProtocolCorrectionSuggestions from "@/components/ProtocolCorrectionSuggestions";
 

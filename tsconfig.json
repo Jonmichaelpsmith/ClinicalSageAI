@@ -17,7 +17,11 @@
     "types": ["node", "vite/client"],
     "paths": {
       "@/*": ["./client/src/*"],
-      "@shared/*": ["./shared/*"]
+      "@shared/*": ["./shared/*"],
+      "@langchain/*": ["./shared/langchain-core"],
+      "@langchain/community/llms/hf": ["./shared/langchain-community-llms-hf"],
+      "@tensorflow/tfjs-node": ["./shared/tensorflow-stub"],
+      "@tensorflow/tfjs-core": ["./shared/tensorflow-stub"]
     }
   }
 }

@@ -8,7 +8,7 @@ import { createHash } from 'crypto';
 // Import for database access
 import { db } from '../db';
 import { eq, like, desc, sql } from 'drizzle-orm';
-import { protocolAssessments, protocolAssessmentFeedback } from '@shared/schema';
+import { protocolAssessments, protocolAssessmentFeedback } from 'shared/schema';
 
 // Import HFModel definition
 import { HFModel } from '../routes';

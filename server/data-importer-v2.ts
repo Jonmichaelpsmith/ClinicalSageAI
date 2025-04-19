@@ -5,7 +5,7 @@
  * the ClinicalTrials.gov API v2 format to our system format
  */
 
-import { InsertCsrReport, InsertCsrDetails } from '@shared/schema';
+import { InsertCsrReport, InsertCsrDetails } from 'shared/schema';
 
 /**
  * Convert a study from the ClinicalTrials.gov API v2 format to our CSR Report format

@@ -3,9 +3,9 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import axios from 'axios';
 import { Parser } from 'xml2js';
-import { db } from '@shared/db';
+import { db } from 'shared/db';
 import { eq } from 'drizzle-orm';
-import { academicSources } from '@shared/schema';
+import { academicSources } from 'shared/schema';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

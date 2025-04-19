@@ -11,7 +11,7 @@ import { spawn } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import { db } from './db';
-import { csrReports, csrDetails } from '@shared/schema';
+import { csrReports, csrDetails } from 'shared/schema';
 import { sql, eq, inArray, like } from 'drizzle-orm';
 
 export interface ClientProfile {

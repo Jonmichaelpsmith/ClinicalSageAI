@@ -1,9 +1,9 @@
-// Script to replace all @shared/ imports with shared/
+// Script to replace all shared/ imports with shared/
 const fs = require('fs');
 const { exec } = require('child_process');
 
-// Find all files with @shared/
-exec('grep -r --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" "@shared/" --exclude-dir="node_modules" .', (error, stdout, stderr) => {
+// Find all files with shared/
+exec('grep -r --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" "shared/" --exclude-dir="node_modules" .', (error, stdout, stderr) => {
   if (error) {
     console.error(`Error finding files: ${error.message}`);
     return;
@@ -16,7 +16,7 @@ exec('grep -r --include="*.ts" --include="*.tsx" --include="*.js" --include="*.j
   
   const lines = stdout.split('\n').filter(line => line.trim() !== '');
   
-  console.log(`Found ${lines.length} occurrences of @shared/ in project files`);
+  console.log(`Found ${lines.length} occurrences of shared/ in project files`);
   
   const filePathMap = new Map();
   
@@ -29,14 +29,14 @@ exec('grep -r --include="*.ts" --include="*.tsx" --include="*.js" --include="*.j
     }
   });
   
-  console.log(`Found ${filePathMap.size} files with @shared/ imports`);
+  console.log(`Found ${filePathMap.size} files with shared/ imports`);
   
   // Process each file
   filePathMap.forEach((_, filePath) => {
     try {
       let content = fs.readFileSync(filePath, 'utf8');
       
-      // Replace all @shared/ with shared/
+      // Replace all shared/ with shared/
       const newContent = content.replace(/@shared\//g, 'shared/');
       
       if (content !== newContent) {

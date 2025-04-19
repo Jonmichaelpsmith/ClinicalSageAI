@@ -1,6 +1,6 @@
 import { db } from './db';
 import { sql, eq, like, and } from 'drizzle-orm';
-import { reports, reportDetails } from '@shared/schema';
+import { reports, reportDetails } from 'shared/schema';
 import { CSRSearchEngine } from '../csr_search';
 import fs from 'fs';
 import path from 'path';

@@ -4,8 +4,8 @@ import { fileURLToPath } from 'url';
 import axios from 'axios';
 import { exec } from 'child_process';
 import util from 'util';
-import { db } from '@shared/db';
-import { csrReports } from '@shared/schema';
+import { db } from 'shared/db';
+import { csrReports } from 'shared/schema';
 import { eq, and, like, or } from 'drizzle-orm';
 
 const execPromise = util.promisify(exec);

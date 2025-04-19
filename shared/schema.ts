@@ -1,4 +1,4 @@
-/* stub for @shared/schema – replace with actual Zod/Yup schema */
+/* stub for shared/schema – replace with actual Zod/Yup schema */
 export const UserSchema = {};
 export const csrReports = {};
 export const csrDetails = {};

@@ -4958,7 +4958,7 @@ Provide a comprehensive, evidence-based response.`;
       const fs = await import('fs');
       const path = await import('path');
       const childProcess = await import('child_process');
-      const { csrReports, csrDetails } = await import('@shared/schema');
+      const { csrReports, csrDetails } = await import('shared/schema');
       const { eq } = await import('drizzle-orm');
       
       // Process the XML files in the attached_assets directory

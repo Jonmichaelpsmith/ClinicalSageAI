@@ -1,6 +1,6 @@
 import { db } from '../db';
 import { eq, and, like, inArray } from 'drizzle-orm';
-import { csrReports, csrDetails } from '@shared/schema';
+import { csrReports, csrDetails } from 'shared/schema';
 import { classifyTherapeuticArea } from '../../shared/utils/therapeutic-area-classifier';
 
 /**

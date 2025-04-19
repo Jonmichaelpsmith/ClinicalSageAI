@@ -1,7 +1,7 @@
 import { db } from '../db';
 import { eq, like, and, or, not, isNull } from 'drizzle-orm';
-import { csr_reports, csr_details } from '@shared/schema';
-import type { IntelligenceSummary, WeeklyBrief } from '@shared/types/intelligence';
+import { csr_reports, csr_details } from 'shared/schema';
+import type { IntelligenceSummary, WeeklyBrief } from 'shared/types/intelligence';
 import type { HuggingFaceService } from './huggingface-service';
 
 /**
