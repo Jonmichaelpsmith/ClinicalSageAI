@@ -1,3 +1,5 @@
+import asyncio
+from ind_automation import pii_filter, rules_store, users
 import json, os
 DATA_DIR = "data/projects"
 
@@ -22,9 +24,14 @@ def list_projects() -> list[dict]:
     return out
 
 # ---------- History helpers ----------
-def append_history(pid: str, entry: dict):
-    rec = load(pid) or {}
-    rec.setdefault("history", []).append(entry)
+def append_history(org,record):
+    clean,match=pii_filter.redact(json.dumps(record))
+    record=json.loads(clean)
+    hist=_load_org(org)
+    hist.append(record)
+    _save_org(org,hist)
+    if match: 
+        asyncio.create_task(redis.publish("alerts",json.dumps({"msg":"Redaction applied","timestamp":record["timestamp"]})))default("history", []).append(entry)
     save(pid, rec)
     
 def get_history(pid: str):

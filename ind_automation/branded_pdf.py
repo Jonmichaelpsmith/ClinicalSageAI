@@ -1,3 +1,4 @@
+from ind_automation import pii_filter
 import io, os, datetime
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
@@ -24,4 +25,7 @@ def brand_pdf(snapshot_bytes, org):
     main=PdfReader(io.BytesIO(snapshot_bytes))
     writer=PdfWriter(); writer.add_page(cover.pages[0])
     add_footer(main,writer,org)
-    buf=io.BytesIO(); writer.write(buf); buf.seek(0); return buf
+    buf=io.BytesIO(); content=buf.getvalue()
+clean,_=pii_filter.redact(content.decode(errors="ignore"))
+buf=io.BytesIO(clean.encode())
+writer.write(buf); buf.seek(0); return buf
