@@ -34,7 +34,8 @@ const SAMLSettingsPanel: React.FC = () => {
         const response = await fetch('/api/ind-automation/auth/check-permissions');
         const data = await response.json();
         setIsAdmin(data.permissions?.includes('saml.write') || false);
-      } catch (error) {
+      } catch (error: any) {
+        console.error("Error checking permissions:", error.message);
         setIsAdmin(false);
       }
     };
@@ -55,7 +56,7 @@ const SAMLSettingsPanel: React.FC = () => {
         }
         const data = await response.json();
         setSettings(data);
-      } catch (error) {
+      } catch (error: any) {
         setLoadError(error.message || 'Failed to load SAML settings');
       } finally {
         setLoading(false);
@@ -99,7 +100,7 @@ const SAMLSettingsPanel: React.FC = () => {
         title: "SAML Settings Saved",
         description: "Your SAML configuration has been saved successfully.",
       });
-    } catch (error) {
+    } catch (error: any) {
       setSaveError(error.message || 'Failed to save SAML settings');
       toast({
         title: "Failed to Save Settings",
