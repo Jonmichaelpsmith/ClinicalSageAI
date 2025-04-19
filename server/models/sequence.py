@@ -75,9 +75,15 @@ class Document(Base):
     title = Column(String(255), nullable=False)
     version = Column(String(20), nullable=False)
     path = Column(Text, nullable=False)
-    status = Column(String(20), default="draft")
+    status = Column(String(20), default="draft")  # draft, in_review, approved, rejected
     metadata = Column(JSON)
     slug = Column(String(100))
+    
+    # PDF QC fields
+    qc_status = Column(String(20), default="pending")  # pending, passed, failed
+    qc_report_path = Column(Text)  # Path to QC JSON report
+    qc_pdf_path = Column(Text)  # Path to QC-corrected PDF/A version
+    qc_timestamp = Column(DateTime)  # When QC was performed
     
     def __repr__(self):
         return f"<Document {self.id}: {self.title}>"

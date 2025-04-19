@@ -53,6 +53,13 @@ export default function IndSequenceManager() {
     const errs = [];
     if (!mod) errs.push("Missing module slot");
     if (!doc.version || !meta.dct || !meta.ctd_type) errs.push("Missing metadata");
+    
+    // PDF QC validation check
+    const isPdf = doc.path?.toLowerCase().endsWith('.pdf');
+    if (isPdf && (!doc.qc_status || doc.qc_status !== "passed")) {
+      errs.push("PDF QC not passed");
+    }
+    
     return {
       id: doc.id,
       title: doc.title,
@@ -60,6 +67,7 @@ export default function IndSequenceManager() {
       module: mod,
       operation: lifecycle,
       errors: errs,
+      qc_status: doc.qc_status || "pending"
     };
   };
 
@@ -196,6 +204,20 @@ export default function IndSequenceManager() {
                     <span className="w-24 text-xs text-gray-500">v{p.version}</span>
                     <span className="w-24 font-mono text-gray-700 dark:text-gray-300">{p.module || "—"}</span>
                     <span className="w-20 capitalize text-gray-500">{p.operation}</span>
+                    
+                    {/* QC Status Badge */}
+                    {p.qc_status && (
+                      <span className={`mr-3 text-xs px-2 py-0.5 rounded ${
+                        p.qc_status === "passed" 
+                          ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400" 
+                          : p.qc_status === "failed" 
+                            ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+                            : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400"
+                      }`}>
+                        {p.qc_status === "passed" ? "QC ✓" : p.qc_status === "failed" ? "QC ✗" : "QC ?"}
+                      </span>
+                    )}
+                    
                     {p.errors.length > 0 && <span className="text-red-500 text-xs">{p.errors[0]}</span>}
                   </div>
                 ))}
