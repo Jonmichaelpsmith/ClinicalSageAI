@@ -1,0 +1,110 @@
+#!/usr/bin/env bash
+set -e
+cd "$REPL_HOME"
+
+python - << 'PY'
+import pathlib, textwrap, re, datetime, json, hashlib, glob
+au = pathlib.Path('ind_automation/audit.py'); txt = au.read_text()
+if 'ALL‑IN ALERTS' in txt:
+    print('✔ already patched'); exit()
+
+# Insert master thresholds
+txt = txt.replace('from datetime import datetime, timedelta',
+                  'from datetime import datetime, timedelta\nimport glob, json, hashlib, os')
+insert = textwrap.dedent("""
+    ###############  ALL‑IN ALERTS  ################
+    THRESH = {
+        'ack_missing_h': 24,
+        'module3_stale_d': 180,
+        'module1_stale_d': 90,
+        'esg_warn_d': 330,
+        'esg_crit_d': 365,
+    }
+
+    def _ack_missing():
+        alerts=[]
+        for org in os.listdir('data/projects'):
+            hist=db.get_history(org.replace('.json',''))
+            for h in hist[::-1]:
+                if h.get('type')=='esg_submission' and h.get('status')!='ACK_RECEIVED':
+                    age=(now-datetime.datetime.fromisoformat(h['timestamp'])).total_seconds()/3600
+                    if age>THRESH['ack_missing_h']:
+                        alerts.append((org,'ESG ACK missing >24h'))
+                        break
+        return alerts
+
+    def _forms_missing():
+        alerts=[]
+        for p in pathlib.Path('ectd').glob('*/*'):
+            org,serial=p.parts[-2],p.parts[-1]
+            required=['m1/1571.docx','m1/1572.docx','m1/3674.docx']
+            if not all((p/f).exists() for f in required):
+                alerts.append((org,f'Missing Module1 form(s) in serial {serial}'))
+        return alerts
+
+    def _dup_serial():
+        alerts=[]
+        for orgPath in pathlib.Path('ectd').glob('*'):
+            serials=[d.name for d in orgPath.iterdir() if d.is_dir()]
+            dups=set([s for s in serials if serials.count(s)>1])
+            for d in dups:
+                alerts.append((orgPath.name,f'Duplicate serial {d}'))
+        return alerts
+
+    def _meta_incomplete():
+        alerts=[]
+        for f in pathlib.Path('data/projects').glob('*.json'):
+            org=f.stem; meta=json.loads(f.read_text())
+            for field in ['sponsor','pi_name','ind_number']:
+                if not meta.get(field):
+                    alerts.append((org,f'Project metadata missing {field}'))
+                    break
+        return alerts
+
+    def _module3_stale():
+        alerts=[]
+        cutoff=now-timedelta(days=THRESH['module3_stale_d'])
+        for m3 in pathlib.Path('output').glob('Module3_*.docx'):
+            if datetime.datetime.fromtimestamp(m3.stat().st_mtime)<cutoff:
+                alerts.append((m3.stem.split('_')[-1],'Module3 doc >180 days old'))
+        return alerts
+
+    def _module1_stale():
+        alerts=[]; cutoff=now-timedelta(days=THRESH['module1_stale_d'])
+        for f in glob.glob('output/Form{1571,1572,3674}_*.docx',recursive=True):
+            p=pathlib.Path(f)
+            if datetime.datetime.fromtimestamp(p.stat().st_mtime)<cutoff:
+                alerts.append((p.stem.split('_')[-1],'Module1 forms >90 days old'))
+        return alerts
+
+    def _esg_rotate():
+        alerts=[]
+        for org in os.listdir('data/projects'):
+            meta=db.load(org.replace('.json',''))
+            created=datetime.datetime.fromisoformat(meta.get('created','2020-01-01'))
+            age=(now-created).days
+            if age>THRESH['esg_crit_d']:
+                alerts.append((org,'ESG key older than 12 months (CRITICAL)'))
+            elif age>THRESH['esg_warn_d']:
+                alerts.append((org,'ESG key older than 11 months (WARN)'))
+        return alerts
+
+    def _idp_mismatch():
+        alerts=[]
+        for f in pathlib.Path('data/saml_creds').glob('*.json'):
+            org=f.stem; cur=json.loads(fernet.decrypt(f.read_bytes()))
+            fp=hashlib.sha1(cur['idp_x509'].encode()).hexdigest()[:16]
+            meta=db.load(org)
+            if meta and meta.get('saml_fp') and meta['saml_fp']!=fp:
+                alerts.append((org,'IdP certificate fingerprint changed!'))
+        return alerts
+    """)
+
+    txt=txt.replace('# ---------- ADVANCED ALERTS ----------',insert)
+    # replace existing alerts aggregation line
+    txt=re.sub(r'alerts\+=.*',
+               'alerts+=(_ack_missing()+_forms_missing()+_dup_serial()+_meta_incomplete()+_module3_stale()+_module1_stale()+_esg_rotate()+_idp_mismatch())',txt)
+    au.write_text(txt)
+PY
+
+echo "✅ All‑in alert rules added – restart Celery beat/worker for nightly sweep."

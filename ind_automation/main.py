@@ -12,6 +12,7 @@ from ind_automation import module3, ai_narratives, ectd_ga, auth, users, rbac
 from ind_automation.db import append_history, get_history
 from ind_automation import esg_credentials_api
 from ind_automation import saml_settings_api
+from ind_automation import teams_webhook_api
 
 app = FastAPI(title="IND Automation Service v2")
 
@@ -137,6 +138,9 @@ app.include_router(esg_credentials_api.router)
 # Include SAML settings API
 app.include_router(saml_settings_api.router)
 
+# Include Teams webhook API
+app.include_router(teams_webhook_api.router)
+
 
 # ---------- SAML (pySAML2) ----------
 from fastapi.responses import RedirectResponse
@@ -153,3 +157,14 @@ async def saml_acs(org: str, request: Request):
     _d = users._load(); _d[nameid]['perms'] = perms; users._save(_d)
     token = auth.create_token(nameid)
     return RedirectResponse(f'/#/login-callback?token={token}')
+
+# ---------- Compliance Rules Settings ----------
+@app.get('/api/org/{org}/rules', dependencies=[Depends(rbac.requires('admin.esg'))])
+async def get_rules(org:str):
+    return rules_store.load(org)
+
+@app.put('/api/org/{org}/rules', dependencies=[Depends(rbac.requires('admin.esg'))])
+async def set_rules(org:str, body:dict):
+    rules_store.save(org, body)
+    append_history(org, {"type":"rule_change", "timestamp": datetime.datetime.utcnow().isoformat()})
+    return {'status':'saved'}
