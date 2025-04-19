@@ -1,111 +1,166 @@
 """
-Tasks module for IND Automation
+Celery Tasks Module for LumenTrialGuide.AI
 
-This module defines Celery tasks for background processing, scheduling,
-and async operations for the IND Automation system.
+This module defines background tasks for automated monitoring and alerting,
+including Traefik health checks and certificate expiration warnings.
 """
-
 import os
+import json
+import datetime
+import requests
 from celery import Celery
 
-# Create Celery app
-celery_app = Celery('ind_automation')
+# Setup Celery with Redis
+redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+celery_app = Celery('ind_automation', broker=redis_url, backend=redis_url)
 
-# Configure using object
+# Configure Celery settings
 celery_app.conf.update(
-    broker_url=os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0'),
-    result_backend=os.environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0'),
     task_serializer='json',
     accept_content=['json'],
     result_serializer='json',
     timezone='UTC',
     enable_utc=True,
-    # Task settings
-    task_acks_late=True,
-    task_track_started=True,
-    # Beat settings
-    beat_schedule={
-        'nightly-audit-2am': {
-            'task': 'ind_automation.audit.nightly_audit',
-            'schedule': 86400,  # Daily (seconds)
-            'args': (),
-            'kwargs': {},
-            'options': {'expires': 3600},  # Expire after 1 hour
-        },
-    },
 )
 
-# Make sure the tasks are discovered/imported
-celery_app.autodiscover_tasks(['ind_automation'])
+# Traefik API configuration
+TRAEFIK_URL = os.getenv('TRAEFIK_API', 'http://traefik:8080/api/health')
 
-# Example task for testing
-@celery_app.task
-def test_task(x, y):
-    """Simple test task to verify Celery is working"""
-    return x + y
-import os, io, datetime, asyncio, json, requests, pytz
-from celery.schedules import crontab
-
-TEAMS_WEBHOOK_URL = os.getenv('TEAMS_WEBHOOK_URL')
-PUBLIC_DIR = pathlib.Path('public/insights_reports'); PUBLIC_DIR.mkdir(parents=True, exist_ok=True)
-BASE_URL = os.getenv('BASE_URL', 'http://localhost:3000')
-
-@celery_app.task
-def generate_and_notify_pdf(org):
-    # 1) Generate snapshot bytes
-    pdf_bytes = asyncio.run(insights_pdf.render_pdf(f"{BASE_URL}/#/insights?org={org}&print=1"))
-    branded = branded_pdf.brand_pdf(pdf_bytes, org)
-    # 2) save to public folder
-    fname = f"Insights_{org}_{datetime.date.today()}.pdf"
-    path = PUBLIC_DIR / fname; path.write_bytes(branded.read())
-    url = f"{BASE_URL}/files/insights_reports/{fname}"
-
-    # 3) log history
-    db.append_history(org, {"type": "insights_pdf", "url": url, "timestamp": datetime.datetime.utcnow().isoformat()})
-
-    # 4) Teams card
-    if TEAMS_WEBHOOK_URL:
-        payload = {
-            "@type": "MessageCard", "@context": "https://schema.org/extensions",
-            "summary": "Weekly Insights Report",
-            "themeColor": "0076D7",
-            "title": f"Weekly Compliance Insights – {org}",
-            "text": f"[Download PDF]({url}) – generated {datetime.date.today()}."
-        }
-        try:
-            requests.post(TEAMS_WEBHOOK_URL, json=payload, timeout=5)
-        except Exception as e:
-            print('Teams send error', e)
-
-# 5) schedule for each org
 @celery_app.on_after_finalize.connect
-def setup_weekly(sender, **_):
+def setup_periodic_tasks(sender, **kwargs):
+    """Set up periodic tasks to run automatically"""
+    # Traefik health check every 5 minutes
+    sender.add_periodic_task(300, traefik_health.s(), name='traefik health')
+    
+    # Cert expiry check once per day
     sender.add_periodic_task(
-        crontab(hour=15, minute=0, day_of_week='mon'),  # 15:00 UTC ≈ 08:00 PT
-        generate_all_pdfs.s(),
-        name='weekly pdf'
+        86400,  # 24 hours
+        cert_expiry_check.s(),
+        name='certificate expiry check'
     )
 
 @celery_app.task
-def generate_all_pdfs():
-    for f in pathlib.Path('data/projects').glob('*.json'):
-        org = f.stem
-        generate_and_notify_pdf.delay(org)
+def traefik_health():
+    """Check Traefik health and alert if not healthy"""
+    from ind_automation import alerter
+    
+    try:
+        response = requests.get(TRAEFIK_URL, timeout=4)
+        
+        if response.status_code == 200:
+            data = response.json()
+            if data.get('status') == 'UP':
+                return {"status": "healthy", "message": "Traefik is healthy"}
+            else:
+                # Alert on non-UP status
+                alert_data = {
+                    "msg": f"Traefik reports DOWN status: {data.get('status')}",
+                    "timestamp": datetime.datetime.utcnow().isoformat(),
+                    "type": "alert",
+                    "status": "error"
+                }
+                alerter.publish(alert_data)
+                return alert_data
+        else:
+            # Alert on non-200 response
+            alert_data = {
+                "msg": f"Traefik health check failed with HTTP {response.status_code}",
+                "timestamp": datetime.datetime.utcnow().isoformat(),
+                "type": "alert",
+                "status": "error"
+            }
+            alerter.publish(alert_data)
+            return alert_data
+    except Exception as e:
+        # Alert on connection error
+        alert_data = {
+            "msg": f"Traefik health error: {str(e)}",
+            "timestamp": datetime.datetime.utcnow().isoformat(),
+            "type": "alert",
+            "status": "error"
+        }
+        alerter.publish(alert_data)
+        return alert_data
 
-import gdpr, os, datetime, sqlite3
 @celery_app.task
-def hard_delete_user(username):
-    # remove user row
-    d=users.all_users(); d.pop(username,None); users._save(d)
-    # remove metrics rows
-    conn=sqlite3.connect('data/metrics.db'); conn.execute('DELETE FROM metrics WHERE json_extract(extra,"$.user")=?',(username,));conn.commit()
-
-@celery_app.on_after_finalize.connect
-def retention_sweep(sender,**_):
-    days=int(os.getenv('RETENTION_DAYS',730))
-    sender.add_periodic_task(86400, purge_old_data.s(days), name='retention purge')
-
-@celery_app.task
-def purge_old_data(days):
-    cutoff=(datetime.datetime.utcnow()-datetime.timedelta(days=days)).isoformat()
-    conn=sqlite3.connect('data/metrics.db'); conn.execute('DELETE FROM metrics WHERE timestamp<?',(cutoff,)); conn.commit()
+def cert_expiry_check():
+    """Check certificate expiry for domain(s)"""
+    from ind_automation import alerter
+    
+    domains = os.getenv('MONITORED_DOMAINS', '').split(',')
+    if not domains or domains[0] == '':
+        domains = [os.getenv('PRIMARY_DOMAIN', None)]
+    
+    # Default Traefik API endpoint for certs
+    traefik_url = os.getenv('TRAEFIK_API', 'http://traefik:8080')
+    acme_url = f"{traefik_url}/api/acme/account/certificates"
+    
+    results = {}
+    for domain in domains:
+        if not domain:
+            continue
+            
+        try:
+            response = requests.get(acme_url, timeout=5)
+            if response.status_code == 200:
+                certs = response.json()
+                
+                for cert in certs:
+                    cert_domains = cert.get('domains', [])
+                    
+                    if domain in cert_domains:
+                        expiry = cert.get('expiresAt')
+                        if expiry:
+                            expiry_date = datetime.datetime.fromisoformat(expiry.replace('Z', '+00:00'))
+                            now = datetime.datetime.now(datetime.timezone.utc)
+                            days_left = (expiry_date - now).days
+                            
+                            cert_status = {
+                                "domain": domain,
+                                "expires_in_days": days_left,
+                                "expiry_date": expiry,
+                                "status": "warning" if days_left <= 7 else "healthy"
+                            }
+                            
+                            # Alert if certificate expires in 7 days or less
+                            if days_left <= 7:
+                                alert_data = {
+                                    "msg": f"Certificate for {domain} expires in {days_left} days",
+                                    "timestamp": datetime.datetime.utcnow().isoformat(),
+                                    "type": "cert_expiry",
+                                    "status": "warning"
+                                }
+                                alerter.publish(alert_data)
+                            
+                            results[domain] = cert_status
+                            break
+                    
+                # No certificate found for domain
+                if domain not in results:
+                    results[domain] = {
+                        "domain": domain,
+                        "status": "error",
+                        "message": "No certificate found"
+                    }
+                    
+                    alert_data = {
+                        "msg": f"No certificate found for domain {domain}",
+                        "timestamp": datetime.datetime.utcnow().isoformat(),
+                        "type": "cert_missing",
+                        "status": "error"
+                    }
+                    alerter.publish(alert_data)
+            else:
+                results[domain] = {
+                    "domain": domain,
+                    "status": "error",
+                    "message": f"Failed to check certificate: HTTP {response.status_code}"
+                }
+        except Exception as e:
+            results[domain] = {
+                "domain": domain,
+                "status": "error",
+                "message": f"Error: {str(e)}"
+            }
+    
+    return results
