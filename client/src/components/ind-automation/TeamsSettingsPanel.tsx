@@ -48,6 +48,22 @@ export function TeamsSettingsPanel({ projectId }: { projectId: string }) {
     fetchWebhookConfig();
   }, [projectId]);
 
+  const validateWebhookUrl = (url: string): boolean => {
+    // Basic validation for webhook URL format
+    if (!url?.trim()) return false;
+    
+    try {
+      const webhookUrl = new URL(url);
+      return (
+        webhookUrl.protocol === 'https:' && 
+        (webhookUrl.hostname.includes('webhook.office.com') || 
+         webhookUrl.hostname.includes('office365.com'))
+      );
+    } catch (e) {
+      return false;
+    }
+  };
+  
   const handleSave = async () => {
     if (!projectId) {
       setStatusMessage({
@@ -56,49 +72,139 @@ export function TeamsSettingsPanel({ projectId }: { projectId: string }) {
       });
       return;
     }
+    
+    if (!validateWebhookUrl(webhookUrl)) {
+      setStatusMessage({
+        type: "error",
+        message: "Please enter a valid Microsoft Teams webhook URL. It should start with https:// and contain webhook.office.com or office365.com",
+      });
+      return;
+    }
 
     setIsSaving(true);
     setStatusMessage({ type: null, message: "" });
 
     try {
-      await api.post(`/api/ind/${projectId}/teams-webhook`, {
+      // First save the webhook URL
+      const saveResponse = await api.post(`/api/ind/${projectId}/teams-webhook`, {
         webhook_url: webhookUrl,
       });
       
+      if (!saveResponse.data || saveResponse.data.status === "error") {
+        throw new Error(saveResponse.data?.message || "Failed to save webhook URL");
+      }
+      
+      // Then send a test notification
+      let testSuccess = false;
+      try {
+        const testResponse = await api.post(`/api/ind/${projectId}/teams-webhook/test`);
+        testSuccess = testResponse.data && testResponse.data.status === "success";
+      } catch (testError) {
+        console.error("Error testing Teams webhook:", testError);
+        // We'll still show success for saving, even if the test fails
+      }
+      
       setStatusMessage({
         type: "success",
-        message: "Teams webhook URL saved successfully! Alerts will be sent to your Teams channel.",
+        message: testSuccess 
+          ? "Teams webhook URL saved and tested successfully! A test notification has been sent to your Teams channel."
+          : "Teams webhook URL saved successfully, but the test notification could not be sent. Please verify your webhook URL is correct.",
       });
-      
-      // Send a test notification
-      await api.post(`/api/ind/${projectId}/teams-webhook/test`);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving Teams webhook:", error);
+      
+      // Extract error message if available
+      const errorMessage = error.response?.data?.message || 
+                          error.message || 
+                          "Failed to save Teams webhook URL. Please try again.";
+      
       setStatusMessage({
         type: "error",
-        message: "Failed to save Teams webhook URL. Please try again.",
+        message: errorMessage,
       });
     } finally {
       setIsSaving(false);
     }
   };
 
+  const handleTest = async () => {
+    if (!projectId || !webhookUrl || isSaving) return;
+    
+    if (!validateWebhookUrl(webhookUrl)) {
+      setStatusMessage({
+        type: "error",
+        message: "Please enter a valid Microsoft Teams webhook URL before testing.",
+      });
+      return;
+    }
+    
+    setStatusMessage({ type: null, message: "" });
+    setIsSaving(true);
+    
+    try {
+      const response = await api.post(`/api/ind/${projectId}/teams-webhook/test`);
+      
+      if (response.data && response.data.status === "success") {
+        setStatusMessage({
+          type: "success",
+          message: "Test successful! A notification has been sent to your Teams channel.",
+        });
+      } else {
+        throw new Error(response.data?.message || "Test message could not be delivered");
+      }
+    } catch (error: any) {
+      console.error("Error testing Teams webhook:", error);
+      
+      const errorMessage = error.response?.data?.message || 
+                          error.message || 
+                          "Failed to send test notification. Please verify your webhook URL.";
+      
+      setStatusMessage({
+        type: "error",
+        message: errorMessage,
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+  
   const handleClear = async () => {
-    if (!projectId) return;
+    if (!projectId) {
+      setStatusMessage({
+        type: "error",
+        message: "No project selected. Please select a project first.",
+      });
+      return;
+    }
+    
+    if (!webhookUrl.trim()) {
+      // Nothing to clear
+      return;
+    }
     
     setIsSaving(true);
     try {
-      await api.delete(`/api/ind/${projectId}/teams-webhook`);
+      const response = await api.delete(`/api/ind/${projectId}/teams-webhook`);
+      
+      if (!response.data || response.data.status === "error") {
+        throw new Error(response.data?.message || "Failed to remove webhook URL");
+      }
+      
       setWebhookUrl("");
       setStatusMessage({
         type: "info",
         message: "Teams webhook URL has been removed. You will no longer receive Teams alerts.",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error removing Teams webhook:", error);
+      
+      const errorMessage = error.response?.data?.message || 
+                          error.message || 
+                          "Failed to remove Teams webhook URL. Please try again.";
+      
       setStatusMessage({
         type: "error",
-        message: "Failed to remove Teams webhook URL. Please try again.",
+        message: errorMessage,
       });
     } finally {
       setIsSaving(false);
@@ -108,9 +214,13 @@ export function TeamsSettingsPanel({ projectId }: { projectId: string }) {
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>Microsoft Teams Alerts</CardTitle>
+        <CardTitle className="flex items-center">
+          <ArrowRightCircle className="h-5 w-5 mr-2 text-primary" />
+          Microsoft Teams Alerts
+        </CardTitle>
         <CardDescription>
-          Configure Microsoft Teams webhook to receive alerts about credential expirations and security events.
+          Configure Microsoft Teams webhook to receive real-time alerts about credential expirations, 
+          security events and compliance rule violations.
         </CardDescription>
       </CardHeader>
 
@@ -139,42 +249,129 @@ export function TeamsSettingsPanel({ projectId }: { projectId: string }) {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="teams-webhook">Teams Webhook URL</Label>
+              <Label htmlFor="teams-webhook" className="flex items-center">
+                <span>Teams Webhook URL</span>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <InfoIcon className="h-4 w-4 ml-1 text-muted-foreground" />
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-sm">
+                      <p>Microsoft Teams webhooks allow TrialSage to send real-time alerts directly to your Teams channels.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </Label>
               <Input
                 id="teams-webhook"
                 placeholder="https://company.webhook.office.com/webhookb2/..."
                 value={webhookUrl}
                 onChange={(e) => setWebhookUrl(e.target.value)}
                 disabled={isSaving}
+                className={webhookUrl && !validateWebhookUrl(webhookUrl) ? "border-destructive" : ""}
               />
-              <p className="text-sm text-muted-foreground">
-                Enter the webhook URL from your Microsoft Teams channel. You can create one by going to a Teams channel, clicking "..." menu → Connectors → Incoming Webhook.
-              </p>
+              <div className="bg-muted p-3 rounded-md border text-sm mt-2">
+                <h5 className="font-semibold mb-1 flex items-center">
+                  <ArrowRightCircle className="h-4 w-4 mr-1" />
+                  How to create a Teams webhook:
+                </h5>
+                <ol className="list-decimal ml-4 space-y-1 text-muted-foreground">
+                  <li>Open Microsoft Teams and navigate to the channel where you want to receive alerts</li>
+                  <li>Click the "..." menu next to the channel name, then select "Connectors"</li>
+                  <li>Search for "Incoming Webhook" and click "Configure"</li>
+                  <li>Enter a name like "TrialSage Alerts" and upload an icon if desired</li>
+                  <li>Click "Create" to generate your webhook URL</li>
+                  <li>Copy the webhook URL and paste it here</li>
+                </ol>
+              </div>
             </div>
 
-            <div className="flex space-x-2 mt-4">
-              <Button 
-                onClick={handleSave}
-                disabled={isSaving || !webhookUrl.trim()}
-              >
-                {isSaving ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  "Save & Test"
+            <div className="space-y-4">
+              <div className="flex flex-wrap gap-2">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        onClick={handleSave}
+                        disabled={isSaving || !webhookUrl.trim() || !validateWebhookUrl(webhookUrl)}
+                      >
+                        {isSaving ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle className="mr-2 h-4 w-4" />
+                            Save Webhook
+                          </>
+                        )}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Save webhook URL and send a test notification</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                
+                {webhookUrl && validateWebhookUrl(webhookUrl) && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="secondary"
+                          onClick={handleTest}
+                          disabled={isSaving || !validateWebhookUrl(webhookUrl)}
+                        >
+                          {isSaving ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Testing...
+                            </>
+                          ) : (
+                            <>
+                              <RefreshCw className="mr-2 h-4 w-4" />
+                              Test Connection
+                            </>
+                          )}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Send a test message to verify your webhook</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 )}
-              </Button>
+                
+                {webhookUrl && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="outline"
+                          onClick={handleClear}
+                          disabled={isSaving}
+                        >
+                          <AlertCircle className="mr-2 h-4 w-4" />
+                          Remove Webhook
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Remove webhook URL and disable Teams notifications</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+              </div>
               
-              {webhookUrl && (
-                <Button 
-                  variant="outline"
-                  onClick={handleClear}
-                  disabled={isSaving}
-                >
-                  Clear Webhook
-                </Button>
+              {webhookUrl && !validateWebhookUrl(webhookUrl) && (
+                <Alert variant="destructive" className="mt-2">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Invalid webhook URL</AlertTitle>
+                  <AlertDescription>
+                    Please enter a valid Microsoft Teams webhook URL. It should start with https:// and contain webhook.office.com or office365.com
+                  </AlertDescription>
+                </Alert>
               )}
             </div>
           </div>
@@ -182,12 +379,37 @@ export function TeamsSettingsPanel({ projectId }: { projectId: string }) {
       </CardContent>
 
       <CardFooter className="flex flex-col items-start border-t pt-4">
-        <h4 className="text-sm font-semibold mb-2">What you'll receive:</h4>
-        <ul className="text-sm space-y-1 list-disc pl-4">
-          <li>ESG key expiration alerts (keys older than 12 months)</li>
-          <li>SAML certificate expiration alerts (certificates expiring in less than 30 days)</li>
-          <li>Critical security events and system notifications</li>
-        </ul>
+        <h4 className="text-sm font-semibold mb-2">Alert Types You'll Receive:</h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full">
+          <div className="space-y-2">
+            <h5 className="text-sm font-medium">Credential Alerts</h5>
+            <ul className="text-sm space-y-1 list-disc pl-4">
+              <li>ESG key expiration (keys older than 12 months)</li>
+              <li>SAML certificate expiration (less than 30 days)</li>
+              <li>IdP metadata changes detected</li>
+              <li>ESG authentication failures</li>
+            </ul>
+          </div>
+          <div className="space-y-2">
+            <h5 className="text-sm font-medium">Compliance Alerts</h5>
+            <ul className="text-sm space-y-1 list-disc pl-4">
+              <li>Missing forms in FDA submissions</li>
+              <li>Missing acknowledgments from FDA</li>
+              <li>Serial number duplication issues</li>
+              <li>Metadata validation failures</li>
+            </ul>
+          </div>
+        </div>
+        
+        <div className="w-full mt-4 pt-3 border-t">
+          <div className="flex items-center text-sm text-muted-foreground">
+            <InfoIcon className="h-4 w-4 mr-2" />
+            <p>
+              All alerts can be customized in the <strong>Compliance Rules</strong> tab
+              with tenant-specific thresholds.
+            </p>
+          </div>
+        </div>
       </CardFooter>
     </Card>
   );
