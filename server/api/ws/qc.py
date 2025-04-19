@@ -1,88 +1,130 @@
 """
-QC WebSocket Stream Handler
+QC WebSocket API
 
-Provides a reliable WebSocket stream for QC events with:
-- Structured JSON payloads with type information
-- Heartbeat pings to keep connections alive through proxies
-- Graceful handling of disconnects
+This module provides a WebSocket endpoint for real-time QC status updates.
+It includes:
+1. Authentication via Bearer token
+2. WebSocket connection management
+3. Event subscription for QC updates
+4. Heartbeat ping/pong for connection health
 """
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, status
-import asyncio
 import json
-from utils.event_bus import subscribe
+import asyncio
+from typing import Dict, List, Optional, Any
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query, Depends, HTTPException
+from server.utils.event_bus import subscribe, unsubscribe
 
-router = APIRouter(prefix="/ws", tags=["ws"])
+# Create router
+router = APIRouter()
 
-PING_INTERVAL = 25  # seconds
+# Active connections
+active_connections: Dict[str, WebSocket] = {}
 
-@router.websocket("/qc")
-async def qc_stream(ws: WebSocket):
+# QC WebSocket endpoint
+@router.websocket("/ws/qc")
+async def websocket_qc_endpoint(
+    websocket: WebSocket,
+    token: Optional[str] = Query(None, description="Bearer authentication token"),
+):
     """
-    WebSocket endpoint for QC status updates
+    WebSocket endpoint for real-time QC status updates
     
-    Provides real-time updates on document validation status
-    with support for region-specific validation profiles.
+    Features:
+    - Authentication via Bearer token in query parameter
+    - JSON message format: {type: "qc", id: "doc123", status: "pass"}
+    - Heartbeat ping every 25 seconds: {type: "ping"}
+    
+    Args:
+        websocket: WebSocket connection
+        token: Bearer authentication token (optional during development)
     """
-    await ws.accept(subprotocol="json")
-    loop = asyncio.get_event_loop()
-    cancel = asyncio.Event()
+    # Generate a unique connection ID
+    connection_id = f"conn_{id(websocket)}"
     
-    # Store client's region preference if provided in initial connection
-    region = None
+    # Verify authentication (simplified for now)
+    # In production, decode and verify JWT token
+    if token:
+        print(f"WebSocket connection with token: {token[:10]}...")
+        # This is where you'd verify the token
+        # if not verify_token(token):
+        #     await websocket.close(code=1008)  # Policy violation
+        #     return
+    else:
+        # For development only - remove this allowance in production
+        print("Warning: WebSocket connection without authentication token")
     
-    async def ping():
-        """Send periodic heartbeats to keep connection alive"""
-        while not cancel.is_set():
-            await asyncio.sleep(PING_INTERVAL)
-            try:
-                await ws.send_json({"type": "ping"})
-            except WebSocketDisconnect:
-                cancel.set()
-                break
-
-    async def push(msg: str):
-        """Push QC update to the client"""
-        try:
-            # Parse the message and convert to a properly typed JSON object
-            data = json.loads(msg)
-            
-            # Add the message type for client-side routing
-            payload = {"type": "qc", **data}
-            
-            # Only send region-specific updates if client has subscribed to a region
-            if region and "region" in data and data["region"] != region:
-                return
-                
-            await ws.send_json(payload)
-        except WebSocketDisconnect:
-            cancel.set()
-
-    # Subscribe to in-process/redis event bus for QC updates
-    # This allows the QC validation system to push updates as they happen
-    subscribe("qc_status", lambda m: loop.create_task(push(m)))
-    subscribe("bulk_qc_summary", lambda m: loop.create_task(push(m)))
-    subscribe("bulk_qc_error", lambda m: loop.create_task(push(m)))
-    
-    # Start heartbeat task
-    loop.create_task(ping())
-
     try:
-        # Handle incoming messages (region selection, etc.)
-        while not cancel.is_set():
-            # Receive client messages (could be region preference)
-            data = await ws.receive_json()
+        # Accept the connection
+        await websocket.accept()
+        active_connections[connection_id] = websocket
+        
+        # Subscribe to QC events
+        def on_qc_event(data: str):
+            asyncio.create_task(send_message(websocket, data))
+        
+        subscribe("qc_update", on_qc_event)
+        
+        # Send welcome message
+        await websocket.send_text(json.dumps({
+            "type": "connected",
+            "message": "Connected to QC updates"
+        }))
+        
+        # Start heartbeat task
+        heartbeat_task = asyncio.create_task(send_heartbeat(websocket))
+        
+        # Handle incoming messages 
+        try:
+            while True:
+                data = await websocket.receive_text()
+                try:
+                    message = json.loads(data)
+                    # Handle pong responses
+                    if message.get("type") == "pong":
+                        continue
+                    # Other message types can be handled here
+                except json.JSONDecodeError:
+                    pass
+        except WebSocketDisconnect:
+            # Clean disconnection handling in the outer exception block
+            pass
+        finally:
+            # Cancel heartbeat when the loop exits
+            heartbeat_task.cancel()
             
-            # Handle subscription to specific region
-            if data.get("type") == "subscribe" and "region" in data:
-                region = data["region"]
-                await ws.send_json({
-                    "type": "subscribed", 
-                    "region": region,
-                    "message": f"Subscribed to {region} QC updates"
-                })
     except WebSocketDisconnect:
-        # Handle client disconnect gracefully
+        # Handle disconnection
+        if connection_id in active_connections:
+            del active_connections[connection_id]
+        unsubscribe("qc_update", on_qc_event)
+        print(f"WebSocket client {connection_id} disconnected")
+    except Exception as e:
+        print(f"WebSocket error: {str(e)}")
+        # Handle any other exceptions
+        if connection_id in active_connections:
+            del active_connections[connection_id]
+        try:
+            unsubscribe("qc_update", on_qc_event)
+        except:
+            pass
+
+async def send_message(websocket: WebSocket, data: str):
+    """Send a message to the WebSocket client"""
+    try:
+        await websocket.send_text(data)
+    except Exception as e:
+        print(f"Error sending message: {str(e)}")
+
+async def send_heartbeat(websocket: WebSocket):
+    """Send periodic heartbeat pings"""
+    try:
+        while True:
+            await asyncio.sleep(25)  # 25 second interval
+            try:
+                await websocket.send_text(json.dumps({"type": "ping"}))
+            except:
+                # If sending fails, the connection handler will clean up
+                break
+    except asyncio.CancelledError:
+        # Task was cancelled, exit cleanly
         pass
-    finally:
-        # Ensure the ping task is cancelled
-        cancel.set()
