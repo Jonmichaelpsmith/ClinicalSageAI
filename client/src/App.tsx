@@ -15,6 +15,8 @@ import DocumentsPage from './pages/DocumentsPage';
 import SubmissionBuilder from './pages/SubmissionBuilder';
 import AssistantPage from './pages/AssistantPage';
 import IndSequenceManager from './pages/IndSequenceManager';
+import SequenceDetail from './pages/SequenceDetail';
+import IndSequenceDetail from './pages/IndSequenceDetail';
 import AdminPage from './pages/AdminPage';
 
 // Fixed the missing Flask icon issue by using Beaker instead
@@ -463,6 +465,15 @@ export default function App() {
             {() => (
               <DashboardLayout>
                 <AssistantPage />
+              </DashboardLayout>
+            )}
+          </Route>
+          
+          {/* === Sequence Detail with FDA Submission === */}
+          <Route path="/portal/ind/:id">
+            {() => (
+              <DashboardLayout>
+                <IndSequenceDetail />
               </DashboardLayout>
             )}
           </Route>
