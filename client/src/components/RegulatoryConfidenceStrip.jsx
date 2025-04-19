@@ -1,15 +1,9 @@
 import React from "react";
+import {
+  FDA, EMA, MHRA, PMDA, NMPA, HealthCanada, TGA, MFDS, CE, WHO
+} from './RegulatoryLogosInlineComponents';
 
-const agencies = [
-  { name: "FDA", src: "/logos/fda-gray.svg", alt: "FDA (U.S.)" },
-  { name: "EMA", src: "/logos/ema-gray.svg", alt: "EMA (Europe)" },
-  { name: "MHRA", src: "/logos/mhra-gray.svg", alt: "MHRA (UK)" },
-  { name: "PMDA", src: "/logos/pmda-gray.svg", alt: "PMDA (Japan)" },
-  { name: "NMPA", src: "/logos/nmpa-gray.svg", alt: "NMPA (China)" },
-  { name: "Health Canada", src: "/logos/healthcanada-gray.svg", alt: "Health Canada" },
-  { name: "TGA", src: "/logos/tga-gray.svg", alt: "TGA (Australia)" },
-  { name: "MFDS", src: "/logos/mfds-gray.svg", alt: "MFDS (Korea)" },
-];
+const logos = [FDA, EMA, MHRA, PMDA, NMPA, HealthCanada, TGA, MFDS, CE, WHO];
 
 export default function RegulatoryConfidenceStrip() {
   return (
@@ -19,15 +13,8 @@ export default function RegulatoryConfidenceStrip() {
           Mastering global regulatory standards across every jurisdiction
         </div>
         <div className="flex items-center gap-12 animate-scroll-slow whitespace-nowrap px-6">
-          {[...agencies, ...agencies].map((agency, i) => (
-            <img
-              key={i}
-              src={agency.src}
-              alt={agency.alt}
-              className="h-9 grayscale opacity-70 hover:opacity-90 transition-all duration-200"
-              loading="lazy"
-              draggable="false"
-            />
+          {[...logos, ...logos].map((Logo, i) => (
+            <Logo key={i} />
           ))}
         </div>
       </div>
