@@ -120,16 +120,12 @@ const CsrIntelligenceStats: React.FC<CsrIntelligenceStatsProps> = ({ className }
         </div>
       </div>
 
-      <BenchmarkDetailsModal 
-        open={showBenchmarksModal || showAiModelsModal}
-        onOpenChange={(open) => {
-          if (!open) {
-            setShowBenchmarksModal(false);
-            setShowAiModelsModal(false);
-          }
-        }}
-        type={detailsType}
-      />
+      {showBenchmarksModal && (
+        <BenchmarksModal onClose={() => setShowBenchmarksModal(false)} />
+      )}
+      {showAiModelsModal && (
+        <InsightsModal onClose={() => setShowAiModelsModal(false)} />
+      )}
     </>
   );
 };
