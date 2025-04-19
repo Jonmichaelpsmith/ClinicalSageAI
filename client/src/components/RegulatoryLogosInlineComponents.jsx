@@ -1,84 +1,83 @@
 // RegulatoryLogosInlineComponents.jsx
-// React components with optional hover color effect + CE + WHO badges
+// React components with actual SVG logos + hover effect
 
 const base = "inline-block transition-all duration-200 opacity-70 hover:opacity-100 m-0.5";
-
-const badgeStyle = "bg-gray-500 hover:bg-blue-600 text-white text-[10px] font-medium py-0.5 px-1.5 rounded-sm transition-colors";
+const logoStyle = "h-6 w-auto filter grayscale hover:grayscale-0 transition-all";
 
 export const FDA = () => (
   <div className={base} title="FDA (U.S.)">
-    <div className={badgeStyle.replace("blue-600", "blue-600")}>FDA</div>
+    <img src="/logos/fda.svg" alt="FDA" className={logoStyle + " hover:filter-none"} />
   </div>
 );
 
 export const EMA = () => (
   <div className={base} title="EMA (Europe)">
-    <div className={badgeStyle.replace("blue-600", "blue-500")}>EMA</div>
+    <img src="/logos/ema.svg" alt="EMA" className={logoStyle} />
   </div>
 );
 
 export const MHRA = () => (
   <div className={base} title="MHRA (UK)">
-    <div className={badgeStyle.replace("blue-600", "indigo-500")}>MHRA</div>
+    <img src="/logos/mhra.svg" alt="MHRA" className={logoStyle} />
   </div>
 );
 
 export const PMDA = () => (
   <div className={base} title="PMDA (Japan)">
-    <div className={badgeStyle.replace("blue-600", "pink-600")}>PMDA</div>
+    <img src="/logos/pmda.svg" alt="PMDA" className={logoStyle} />
   </div>
 );
 
 export const NMPA = () => (
   <div className={base} title="NMPA (China)">
-    <div className={badgeStyle.replace("blue-600", "red-600")}>NMPA</div>
+    <img src="/logos/nmpa.svg" alt="NMPA" className={logoStyle} />
   </div>
 );
 
 export const HealthCanada = () => (
   <div className={base} title="Health Canada">
-    <div className={badgeStyle.replace("blue-600", "red-500")}>HC</div>
+    <img src="/logos/healthcanada.svg" alt="Health Canada" className={logoStyle} />
   </div>
 );
 
 export const TGA = () => (
   <div className={base} title="TGA (Australia)">
-    <div className={badgeStyle.replace("blue-600", "yellow-500")}>TGA</div>
+    <img src="/logos/tga.svg" alt="TGA" className={logoStyle} />
   </div>
 );
 
 export const MFDS = () => (
   <div className={base} title="MFDS (Korea)">
-    <div className={badgeStyle.replace("blue-600", "sky-500")}>MFDS</div>
+    <img src="/logos/mfds.svg" alt="MFDS" className={logoStyle} />
   </div>
 );
 
 export const CE = () => (
   <div className={base} title="CE Mark (Europe)">
-    <div className={badgeStyle.replace("blue-600", "green-600")}>CE</div>
+    <img src="/logos/ce.svg" alt="CE" className={logoStyle} />
   </div>
 );
 
 export const WHO = () => (
   <div className={base} title="WHO (World Health Organization)">
-    <div className={badgeStyle.replace("blue-600", "blue-400")}>WHO</div>
+    <img src="/logos/who.svg" alt="WHO" className={logoStyle} />
   </div>
 );
 
 export const HIPAA = () => (
   <div className={base} title="HIPAA Compliance (U.S.)">
-    <div className={badgeStyle.replace("blue-600", "purple-500")}>HIPAA</div>
+    <img src="/logos/hipaa.svg" alt="HIPAA" className={logoStyle} />
   </div>
 );
 
 export const GDPR = () => (
   <div className={base} title="GDPR Compliance (EU)">
-    <div className={badgeStyle.replace("blue-600", "blue-700")}>GDPR</div>
+    <img src="/logos/gdpr.svg" alt="GDPR" className={logoStyle} />
   </div>
 );
 
 export const ISO = () => (
   <div className={base} title="ISO 27001 Certification">
-    <div className={badgeStyle.replace("blue-600", "teal-600")}>ISO</div>
+    <img src="/logos/iso.svg" alt="ISO" className={logoStyle} />
   </div>
 );
