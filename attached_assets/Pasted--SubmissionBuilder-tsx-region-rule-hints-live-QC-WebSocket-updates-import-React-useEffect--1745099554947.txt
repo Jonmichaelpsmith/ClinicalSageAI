@@ -1,0 +1,126 @@
+// SubmissionBuilder.tsx – region rule hints + live QC WebSocket updates
+import React, { useEffect, useState, useRef } from 'react';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import { DndProvider } from 'react-dnd';
+import { Tree, NodeModel } from '@minoru/react-dnd-treeview';
+import update from 'immutability-helper';
+import { CheckCircle, XCircle, Info } from 'lucide-react';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+interface Doc { id: number; title: string; module: string; qc_json?: { status: string } }
+interface Node extends NodeModel<Doc> {}
+
+const REGION_FOLDERS: Record<string, string[]> = {
+  FDA: ['m1', 'm2', 'm3', 'm4', 'm5'],
+  EMA: ['m1', 'm2', 'm3', 'm4', 'm5'],
+  PMDA: ['m1', 'm2', 'm3', 'm4', 'm5', 'jp‑annex']
+};
+
+const REGION_RULE_HINT: Record<string, string> = {
+  EMA: 'Tip: Include EU Application Form in m1 → 1.2',
+  PMDA: 'Tip: Attach Investigators Brochure to jp‑annex folder',
+};
+
+export default function SubmissionBuilder({ region = 'FDA' }: { region?: string }) {
+  const [tree, setTree] = useState<Node[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+  const wsRef = useRef<WebSocket | null>(null);
+
+  // -------- fetch initial docs
+  useEffect(() => {
+    (async () => {
+      const docs: Doc[] = await fetchJson('/api/documents?status=approved_or_qc_failed');
+      setTree(buildTree(docs));
+      setLoading(false);
+    })();
+  }, [region]);
+
+  // -------- WebSocket for live QC updates
+  useEffect(() => {
+    wsRef.current = new WebSocket(`${window.location.origin.replace('http', 'ws')}/ws/qc`);
+    wsRef.current.onmessage = (ev) => {
+      const evt = JSON.parse(ev.data);
+      setTree(prev => prev.map(n => n.id === evt.id ? { ...n, data: { ...n.data!, qc_json: { status: evt.status } } } : n));
+    };
+    return () => wsRef.current?.close();
+  }, []);
+
+  const buildTree = (docs: Doc[]): Node[] => {
+    const root: Node = { id: 0, parent: 0, text: 'root', droppable: true };
+    const folders = REGION_FOLDERS[region].map((mod, i) => ({ id: 10000 + i, parent: 0, text: mod, droppable: true }));
+    const items = docs.map(d => ({
+      id: d.id,
+      parent: folders.find(f => d.module.startsWith(f.text))?.id ?? folders[0].id,
+      text: d.title,
+      droppable: false,
+      data: d,
+    }));
+    return [root, ...folders, ...items];
+  };
+
+  const handleDrop = (newTree: Node[]) => setTree(newTree);
+  const toggleSelect = (id: number) => setSelected(prev => new Set(prev.has(id) ? [...prev].filter(x => x !== id) : [...prev, id]));
+
+  const bulkApprove = async () => {
+    await fetch('/api/documents/bulk-approve', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids: Array.from(selected) })
+    });
+    toast.info(`Queued QC for ${selected.size} docs`);
+    setSelected(new Set());
+  };
+
+  const saveOrder = async () => {
+    const docsPayload = tree.filter(n => !n.droppable && n.parent !== 0).map((n, i) => ({
+      id: n.id,
+      module: tree.find(f => f.id === n.parent)!.text,
+      order: i
+    }));
+    await fetch('/api/documents/builder-order', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ docs: docsPayload }) });
+    toast.success('Order saved');
+  };
+
+  const renderNode = (node: Node, { depth, isOpen, onToggle }: any) => {
+    if (node.droppable) {
+      return (
+        <div style={{ marginLeft: depth * 16 }} className="py-1 d-flex align-items-center gap-1">
+          <button onClick={onToggle} className="btn btn-sm btn-link p-0">{isOpen ? '▾' : '▸'}</button>
+          <strong>{node.text}</strong>
+        </div>
+      );
+    }
+    const qcStatus = node.data?.qc_json?.status;
+    return (
+      <div style={{ marginLeft: depth * 16 }} className="py-1 d-flex align-items-center gap-2">
+        <input type="checkbox" checked={selected.has(node.id)} onChange={() => toggleSelect(node.id)} />
+        {qcStatus === 'passed' ? <CheckCircle size={14} className="text-success" /> : <XCircle size={14} className="text-danger" />}
+        <span>{node.text}</span>
+      </div>
+    );
+  };
+
+  if (loading) return <p className="text-center mt-4">Loading…</p>;
+
+  return (
+    <div className="container py-4">
+      <h2>Submission Builder <span className="badge bg-secondary ms-1">{region}</span></h2>
+      {REGION_RULE_HINT[region] && (
+        <div className="alert alert-info py-1 d-flex gap-2 align-items-center"><Info size={16}/> {REGION_RULE_HINT[region]}</div>
+      )}
+      <DndProvider backend={HTML5Backend}>
+        <Tree rootId={0} tree={tree} onDrop={handleDrop} render={renderNode} />
+      </DndProvider>
+
+      <div className="d-flex gap-3 mt-3">
+        <button className="btn btn-primary" onClick={saveOrder}>Save Order</button>
+        <button className="btn btn-outline-success" disabled={selected.size === 0} onClick={bulkApprove}>Bulk Approve + QC</button>
+      </div>
+    </div>
+  );
+}
+
+async function fetchJson(url: string) {
+  const r = await fetch(url); if (!r.ok) throw new Error('fetch failed'); return r.json();
+}

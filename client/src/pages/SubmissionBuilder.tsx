@@ -1,103 +1,94 @@
-// SubmissionBuilder.tsx – drag‑drop tree with QC badges, bulk approve, and region‑specific rule hints
-import React, { useEffect, useState, useMemo, useRef } from 'react';
+// SubmissionBuilder.tsx – region rule hints + live QC WebSocket updates
+import React, { useEffect, useState, useRef } from 'react';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { DndProvider } from 'react-dnd';
 import { Tree, NodeModel } from '@minoru/react-dnd-treeview';
 import update from 'immutability-helper';
-import { CheckCircle, XCircle, AlertTriangle, Wifi, WifiOff, Info } from 'lucide-react';
+import { CheckCircle, XCircle, Info } from 'lucide-react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-/** Region rule map: module => list of regexes that must appear */
-const REGION_RULES: Record<string, Record<string, RegExp[]>> = {
-  FDA: {
-    'm1': [/1571/i, /1572/i, /3674/i],
-    'm1.3': [/brochure/i],
-  },
-  EMA: {
-    'm1': [/application form/i, /cover letter/i],
-  },
-  PMDA: {
-    'm1': [/12\-1/i],
-    'jp‑annex': [/annex/i],
-  },
-};
+interface Doc { id: number; title: string; module: string; qc_json?: { status: string } }
+interface Node extends NodeModel<Doc> {}
 
+// Folder + required leaf templates
 const REGION_FOLDERS: Record<string, string[]> = {
   FDA: ['m1', 'm2', 'm3', 'm4', 'm5'],
   EMA: ['m1', 'm2', 'm3', 'm4', 'm5'],
-  PMDA: ['m1', 'm2', 'm3', 'm4', 'm5', 'jp‑annex'],
+  PMDA: ['m1', 'm2', 'm3', 'm4', 'm5', 'jp‑annex']
 };
 
-type Doc = { id: number; title: string; module: string; qc_json?: { status: string } };
-type Node = NodeModel<Doc>;
+// Region‑specific required docs (code → title placeholder)
+const REGION_TEMPLATE: Record<string, { module: string; title: string }[]> = {
+  FDA: [
+    { module: 'm1.1', title: 'Form FDA 1571' },
+    { module: 'm1.3', title: 'Investigator Brochure' },
+    { module: 'm1.3.2', title: '1572 Investigator Statement' }
+  ],
+  EMA: [
+    { module: 'm1.2', title: 'Application Form 1' },
+    { module: 'm1.3', title: 'Product Information' }
+  ],
+  PMDA: [
+    { module: 'm1.1', title: 'JP Application Form' },
+    { module: 'jp‑annex.1', title: 'GMP Annex 1' }
+  ]
+};
+
+const REGION_RULE_HINT: Record<string, string> = {
+  EMA: 'Tip: Include EU Application Form in m1 → 1.2',
+  PMDA: 'Tip: Attach Investigators Brochure to jp‑annex folder',
+};
 
 export default function SubmissionBuilder({ region = 'FDA' }: { region?: string }) {
   const [tree, setTree] = useState<Node[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Set<number>>(new Set());
-  const [wsConnected, setWsConnected] = useState(false);
-  const [latestQcUpdate, setLatestQcUpdate] = useState<{id: number, status: string} | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
+  const [wsConnected, setWsConnected] = useState(false);
 
-  // Region-specific guidance hints
-  const regionHints: Record<string, string[]> = {
-    FDA: [
-      'Module 1 sub‑folders: m1.1 (forms), m1.3 (IB/Brochure), m1.15 (Cover Letter)',
-      'File name ≤ 64 chars, no spaces; PDF/A‑1b only',
-      'Clinical protocols → m5.3.1, CSR → m5.3.5'
-    ],
-    EMA: [
-      'Use EU envelope (eu‑regional.xml) – include Application Form',
-      'Module 1.2: Overviews, 1.3: SPC/Label/Leaflet, 1.5: SmPC',
-      'Rename PDFs with "eu" suffix where required'
-    ],
-    PMDA: [
-      'JP Annex folder required for Japanese translations',
-      'Include CTD TOC PDF in m1',
-      'Yakuji‑Ho # index table mandatory'
-    ]
-  };
-
-  // Setup WebSocket connection to listen for QC updates
+  // -------- fetch initial docs
   useEffect(() => {
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.host}/ws/qc`;
+    (async () => {
+      const docs: Doc[] = await fetchJson('/api/documents?status=approved_or_qc_failed');
+      setTree(buildTree(docs));
+      setLoading(false);
+    })();
+  }, [region]);
+
+  // -------- WebSocket for live QC updates
+  useEffect(() => {
+    const wsUrl = `${window.location.origin.replace('http', 'ws')}/ws/qc`;
+    console.log(`Connecting to WebSocket: ${wsUrl}`);
     
-    const ws = new WebSocket(wsUrl);
-    wsRef.current = ws;
+    wsRef.current = new WebSocket(wsUrl);
     
-    ws.onopen = () => {
-      console.log('WebSocket connected');
+    wsRef.current.onopen = () => {
+      console.log('WebSocket connection established');
       setWsConnected(true);
-      toast.info('Real-time QC updates connected');
     };
     
-    ws.onclose = () => {
-      console.log('WebSocket disconnected');
+    wsRef.current.onclose = () => {
+      console.log('WebSocket connection closed');
       setWsConnected(false);
     };
     
-    ws.onerror = (error) => {
+    wsRef.current.onerror = (error) => {
       console.error('WebSocket error:', error);
-      toast.error('QC update connection error');
       setWsConnected(false);
     };
     
-    ws.onmessage = (event) => {
+    wsRef.current.onmessage = (ev) => {
       try {
-        const data = JSON.parse(event.data);
-        console.log('QC update received:', data);
+        const evt = JSON.parse(ev.data);
+        console.log('WebSocket message received:', evt);
         
-        if (data.type === 'qc_status' && data.documentId && data.status) {
-          setLatestQcUpdate({
-            id: parseInt(data.documentId),
-            status: data.status
-          });
-          
-          // Show toast notification for the update
-          const statusEmoji = data.status === 'passed' ? '✅' : '❌';
-          toast.info(`${statusEmoji} QC update: Document #${data.documentId} ${data.status}`);
+        if (evt.type === 'qc_status') {
+          setTree(prev => prev.map(n => 
+            n.id === evt.documentId ? 
+            { ...n, data: { ...n.data!, qc_json: { status: evt.status } } } : 
+            n
+          ));
         }
       } catch (error) {
         console.error('Error processing WebSocket message:', error);
@@ -105,192 +96,181 @@ export default function SubmissionBuilder({ region = 'FDA' }: { region?: string 
     };
     
     return () => {
-      ws.close();
+      if (wsRef.current) {
+        wsRef.current.close();
+      }
     };
   }, []);
-  
-  // Update tree when QC status changes come in via WebSocket
-  useEffect(() => {
-    if (latestQcUpdate && tree.length > 0) {
-      const { id, status } = latestQcUpdate;
-      
-      // Find and update the node with the matching ID
-      const updatedTree = tree.map(node => {
-        if (node.id === id && node.data) {
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              qc_json: { 
-                ...node.data.qc_json,
-                status 
-              }
-            }
-          };
-        }
-        return node;
-      });
-      
-      setTree(updatedTree);
-      setLatestQcUpdate(null); // Reset so we don't keep updating
-    }
-  }, [latestQcUpdate, tree]);
 
-  useEffect(() => {
-    (async () => {
-      const docs: Doc[] = await fetchJson('/api/documents?status=approved_or_qc_failed');
-      const root: Node = { id: 0, parent: 0, text: 'root', droppable: true };
-      const folders = REGION_FOLDERS[region].map((m, idx) => ({ id: 10_000 + idx, parent: 0, text: m, droppable: true }));
-      const items = docs.map(d => ({
-        id: d.id,
-        parent: folders.find(f => d.module.startsWith(f.text))?.id || folders[0].id,
-        text: d.title,
+  const buildTree = (docs: Doc[]): Node[] => {
+    const root: Node = { id: 0, parent: 0, text: 'root', droppable: true };
+    const folders = REGION_FOLDERS[region].map((mod, i) => ({ id: 10000 + i, parent: 0, text: mod, droppable: true }));
+    
+    // Include template placeholders for missing required documents
+    const existingMods = new Set(docs.map(d => d.module));
+    const templateNodes = REGION_TEMPLATE[region]
+      .filter(t => !existingMods.has(t.module))
+      .map((t, i) => ({
+        id: 20000 + i,
+        parent: folders.find(f => t.module.startsWith(f.text))?.id || folders[0].id,
+        text: t.title + ' (required)',
         droppable: false,
-        data: d,
+        data: { id: -1, title: t.title, module: t.module, qc_json: { status: 'failed' } }
       }));
-      setTree([root, ...folders, ...items]);
-      setLoading(false);
-    })();
-  }, [region]);
+
+    const items = docs.map(d => ({
+      id: d.id,
+      parent: folders.find(f => d.module.startsWith(f.text))?.id || folders[0].id,
+      text: d.title,
+      droppable: false,
+      data: d,
+    }));
+
+    return [root, ...folders, ...templateNodes, ...items];
+  };
 
   const handleDrop = (newTree: Node[]) => setTree(newTree);
-
-  const toggleSelect = (id: number) => setSelected(prev => {
-    const n = new Set(prev);
-    n.has(id) ? n.delete(id) : n.add(id);
-    return n;
-  });
-
-  /** rule evaluation */
-  const ruleResult = useMemo(() => {
-    const rules = REGION_RULES[region] || {};
-    const satisfied: Record<string, boolean> = {};
-    const docs = tree.filter(n => !n.droppable && n.parent !== 0).map(n => n.data as Doc);
-    Object.entries(rules).forEach(([mod, regexes]) => {
-      satisfied[mod] = regexes.every(rx => docs.some(d => d.module.startsWith(mod) && rx.test(d.title)));
-    });
-    return satisfied;
-  }, [tree, region]);
+  
+  const toggleSelect = (id: number) => {
+    if (id < 0) {
+      // Don't allow selecting placeholder items
+      toast.warning('Cannot select placeholder items. Please upload the actual document first.');
+      return;
+    }
+    
+    setSelected(prev => new Set(prev.has(id) ? 
+      [...prev].filter(x => x !== id) : 
+      [...prev, id]
+    ));
+  };
 
   const bulkApprove = async () => {
+    if (selected.size === 0) {
+      toast.warning('Please select at least one document to approve');
+      return;
+    }
+    
     try {
       await fetch('/api/documents/bulk-approve', {
-        method: 'POST',
+        method: 'POST', 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ids: Array.from(selected) })
       });
-      toast.success('Bulk approval started');
+      
+      toast.info(`Queued QC for ${selected.size} document(s)`);
       setSelected(new Set());
-    } catch {
-      toast.error('Bulk approve failed');
+    } catch (error) {
+      console.error('Error during bulk approve:', error);
+      toast.error('Failed to queue documents for approval');
     }
   };
 
-  if (loading) return <p className="text-center mt-4">Loading…</p>;
-
-  return (
-    <div className="container py-4">
-      <h2 className="mb-2">
-        Submission Builder <span className="badge bg-secondary ms-2">{region}</span>
-        <span className="ms-2 small">
-          {wsConnected ? 
-            <Wifi size={16} className="text-success" aria-label="QC Updates Active" /> : 
-            <WifiOff size={16} className="text-muted" aria-label="QC Updates Offline" />}
-        </span>
-      </h2>
+  const saveOrder = async () => {
+    // Filter out placeholder items (id < 0)
+    const validNodes = tree.filter(n => !n.droppable && n.parent !== 0 && (n.id as number) > 0);
+    
+    if (validNodes.length === 0) {
+      toast.warning('No valid documents to save order');
+      return;
+    }
+    
+    const docsPayload = validNodes.map((n, i) => ({
+      id: n.id,
+      module: tree.find(f => f.id === n.parent)!.text,
+      order: i
+    }));
+    
+    try {
+      await fetch('/api/documents/builder-order', { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' }, 
+        body: JSON.stringify({ docs: docsPayload }) 
+      });
       
-      <div className="row mb-4">
-        <div className="col-12">
-          <div className="card bg-light">
-            <div className="card-body py-2">
-              <h6 className="card-title mb-1"><Info size={14} className="me-1" /> {region} Guidelines</h6>
-              <ul className="list-unstyled mb-0 small">
-                {regionHints[region]?.map((hint, i) => (
-                  <li key={i} className="text-muted">• {hint}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div className="row">
-        <div className="col-md-8">
-          <DndProvider backend={HTML5Backend}>
-            <Tree
-              tree={tree}
-              rootId={0}
-              render={renderNode}
-              onDrop={handleDrop}
-            />
-          </DndProvider>
-          <div className="d-flex gap-3 mt-3">
-            <button className="btn btn-primary" onClick={saveOrder}>Save Order</button>
-            <button className="btn btn-outline-success" disabled={selected.size === 0} onClick={bulkApprove}>
-              Bulk Approve + QC {selected.size > 0 && <span className="badge bg-light text-dark ms-1">{selected.size}</span>}
-            </button>
-          </div>
-        </div>
-        <div className="col-md-4">
-          <h5 className="mb-2">Region Requirements</h5>
-          <ul className="list-group">
-            {Object.entries(REGION_RULES[region] || {}).map(([mod, _]) => (
-              <li key={mod} className="list-group-item d-flex align-items-center gap-2">
-                {ruleResult[mod] ? <CheckCircle className="text-success" size={16}/> : <AlertTriangle className="text-warning" size={16}/>}
-                {mod}
-              </li>
-            ))}
-          </ul>
-          
-          <div className="alert alert-info mt-3" role="alert">
-            <small className="d-flex align-items-center gap-2">
-              {wsConnected ? 
-                <><Wifi size={14} /> Live QC updates active</> : 
-                <><WifiOff size={14} /> Reconnecting to QC service...</>}
-            </small>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+      toast.success('Order saved successfully');
+    } catch (error) {
+      console.error('Error saving order:', error);
+      toast.error('Failed to save document order');
+    }
+  };
 
-  function renderNode(node: Node, { depth, isOpen, onToggle }: any) {
+  const renderNode = (node: Node, { depth, isOpen, onToggle }: any) => {
     if (node.droppable) {
       return (
-        <div style={{ marginLeft: depth * 16 }} className="d-flex align-items-center gap-1 py-1">
+        <div style={{ marginLeft: depth * 16 }} className="py-1 d-flex align-items-center gap-1">
           <button onClick={onToggle} className="btn btn-sm btn-link p-0">{isOpen ? '▾' : '▸'}</button>
           <strong>{node.text}</strong>
         </div>
       );
     }
+    
     const qcStatus = node.data?.qc_json?.status;
-    const nodeId = typeof node.id === 'string' ? parseInt(node.id, 10) : node.id;
+    const isPlaceholder = (node.id as number) < 0;
     
     return (
-      <div style={{ marginLeft: depth * 16 }} className="d-flex align-items-center gap-2 py-1">
-        <input type="checkbox" checked={selected.has(nodeId)} onChange={() => toggleSelect(nodeId)} />
-        {qcStatus === 'passed' ? <CheckCircle size={14} className="text-success"/> : <XCircle size={14} className="text-danger"/>}
+      <div style={{ marginLeft: depth * 16 }} className={`py-1 d-flex align-items-center gap-2 ${isPlaceholder ? 'text-muted fst-italic' : ''}`}>
+        <input 
+          type="checkbox" 
+          checked={selected.has(node.id as number)} 
+          onChange={() => toggleSelect(node.id as number)} 
+          disabled={isPlaceholder}
+        />
+        {qcStatus === 'passed' ? 
+          <CheckCircle size={14} className="text-success"/> : 
+          <XCircle size={14} className={`text-${isPlaceholder ? 'warning' : 'danger'}`}/>
+        }
         <span>{node.text}</span>
       </div>
     );
-  }
+  };
 
-  function saveOrder() {
-    const ordered = tree.filter(n => !n.droppable && n.parent !== 0).map((n, idx) => ({
-      id: n.id,
-      module: tree.find(f => f.id === n.parent)!.text,
-      order: idx
-    }));
-    fetch('/api/documents/builder-order', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ docs: ordered })
-    }).then(() => toast.success('Order saved'));
-  }
+  if (loading) return <p className="text-center mt-4">Loading documents...</p>;
+
+  return (
+    <div className="container py-4">
+      <h2>
+        Submission Builder 
+        <span className="badge bg-secondary ms-1">{region}</span>
+        {wsConnected && <span className="badge bg-success ms-2">QC Connected</span>}
+        {!wsConnected && <span className="badge bg-danger ms-2">QC Disconnected</span>}
+      </h2>
+      
+      {REGION_RULE_HINT[region] && (
+        <div className="alert alert-info py-1 d-flex gap-2 align-items-center">
+          <Info size={16}/> {REGION_RULE_HINT[region]}
+        </div>
+      )}
+      
+      <div className="mb-3">
+        <div className="alert alert-secondary py-2">
+          <strong>Region Requirements:</strong> This view shows required documents for {region} submissions.
+          <div className="small mt-1">
+            <span className="badge bg-warning me-1">Yellow</span> items are placeholders for required documents.
+            Please upload or assign these documents before saving the submission.
+          </div>
+        </div>
+      </div>
+      
+      <DndProvider backend={HTML5Backend}>
+        <Tree rootId={0} tree={tree} onDrop={handleDrop} render={renderNode} />
+      </DndProvider>
+
+      <div className="d-flex gap-3 mt-3">
+        <button className="btn btn-primary" onClick={saveOrder}>Save Order</button>
+        <button 
+          className="btn btn-outline-success" 
+          disabled={selected.size === 0} 
+          onClick={bulkApprove}
+        >
+          Bulk Approve + QC ({selected.size})
+        </button>
+      </div>
+    </div>
+  );
 }
 
 async function fetchJson(url: string) {
-  const r = await fetch(url);
-  if (!r.ok) throw new Error('fetch failed');
+  const r = await fetch(url); 
+  if (!r.ok) throw new Error(`Fetch failed: ${r.status} ${r.statusText}`); 
   return r.json();
 }
