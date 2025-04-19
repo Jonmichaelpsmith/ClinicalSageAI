@@ -238,7 +238,7 @@ def nightly_audit():
                         alerts.append((org,'SAML certificate expires <30 days'))
     for org,msg in alerts:
         db.append_history(org,{"type":"alert","msg":msg,"timestamp":now.isoformat()})
-        metrics.compute(org)  # refresh metrics cache
+        metrics_sql.refresh(org)  # refresh metrics cache
     # Filter alerts based on customer's enabled rules
     filtered_alerts = []
     for org, msg in alerts:
