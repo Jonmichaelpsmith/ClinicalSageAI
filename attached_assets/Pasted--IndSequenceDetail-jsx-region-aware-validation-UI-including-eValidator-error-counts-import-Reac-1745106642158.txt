@@ -1,0 +1,89 @@
+// IndSequenceDetail.jsx – region‑aware validation UI including eValidator error counts
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { Spinner } from 'reactstrap';
+import { FileText, UploadCloud, ShieldCheck, ShieldOff, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
+
+const POLL_MS = 30000;
+
+export default function IndSequenceDetail() {
+  const { sequenceId } = useParams();
+  const [sequence, setSequence] = useState(null);
+  const [docs, setDocs] = useState([]);
+  const [acks, setAcks] = useState(null);
+  const [validation, setValidation] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [validating, setValidating] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const seq = await fetchJson(`/api/ind/sequence/${sequenceId}`);
+        const d   = await fetchJson(`/api/ind/sequence/${sequenceId}/docs`);
+        setSequence(seq); setDocs(d);
+        fetchAcks();
+      } catch (e) { setError(e.message);} finally { setLoading(false);}  })();
+    const intv = setInterval(() => { if(!acks?.ack3) fetchAcks();}, POLL_MS);
+    return () => clearInterval(intv);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sequenceId]);
+
+  const fetchAcks = async () => {
+    try { const data = await fetchJson(`/api/ind/sequence/${sequenceId}/acks`); setAcks(data); setSequence(s=>({...s,status:data.status})); }catch{ /* ignore */ }
+  };
+
+  const runValidate = async () => {
+    setValidating(true); setError('');
+    try { const res = await fetchJson(`/api/ind/sequence/${sequenceId}/validate`); setValidation(res);} catch(e){setError(e.message);} finally {setValidating(false);} };
+
+  const handleSubmit = async () => {
+    setSubmitting(true); setError('');
+    try { const res= await fetchJson(`/api/ind/sequence/${sequenceId}/submit`,{method:'POST'}); setSequence({...sequence,status:res.status,submitted_at:new Date().toISOString()}); }
+    catch(e){setError(e.message);} finally {setSubmitting(false);} };
+
+  if(loading) return <div className="text-center mt-5"><Spinner/></div>;
+  if(error)   return <div className="alert alert-danger mt-3">{error}</div>;
+
+  const AckBadge=({label,ok})=> ok?<span className="badge bg-success d-flex align-items-center gap-1"><CheckCircle size={12}/> {label}</span>:<span className="badge bg-secondary d-flex align-items-center gap-1"><Clock size={12}/> {label}</span>;
+
+  const region=sequence.region||'FDA';
+
+  return(
+  <div className="container py-4">
+    <div className="d-flex align-items-center flex-wrap gap-2 mb-3">
+      <FileText size={24}/> <h2 className="mb-0">Sequence {sequence.sequence}</h2>
+      <span className="badge bg-info text-dark">{region}</span>
+      <span className={`badge ${sequence.status?.includes('Success')||sequence.status==='Centre Receipt'?'bg-success':'bg-secondary'}`}>{sequence.status}</span>
+      {validation && (validation.status==='passed'
+        ? <span className="badge bg-success d-flex align-items-center gap-1"><ShieldCheck size={14}/> XML Valid</span>
+        : <span className="badge bg-danger d-flex align-items-center gap-1"><ShieldOff size={14}/> XML Errors</span>) }
+      {acks && (
+        <div className="d-flex gap-1">
+          <AckBadge label="ACK1" ok={Boolean(acks.ack1)}/>
+          <AckBadge label="ACK2" ok={Boolean(acks.ack2)}/>
+          <AckBadge label="ACK3" ok={Boolean(acks.ack3)}/>
+        </div>) }
+    </div>
+
+    <h5>Validation Summary</h5>
+    {validation && (
+      <div className="border rounded p-3 mb-3">
+        <p className="mb-1"><strong>DTD Errors:</strong> {Object.values(validation.dtd_errors).flat().length}</p>
+        <p className="mb-1"><strong>eValidator Errors:</strong> {validation.evalidator.error_count} | Warnings: {validation.evalidator.warning_count}</p>
+        {validation.evalidator.error && <p className="text-danger small">{validation.evalidator.error}</p>}
+        {validation.status==='failed' && (
+          <details className="mt-2"><summary>Show full list</summary>
+            {Object.entries(validation.dtd_errors).map(([file,errs])=>errs.length>0&&<div key={file}><strong>{file}</strong><ul>{errs.map((e,i)=><li key={i}>{e}</li>)}</ul></div>)}
+            {validation.evalidator.errors&& validation.evalidator.errors.length>0 && (
+              <div><strong>eValidator</strong><ul>{validation.evalidator.errors.map((e,i)=><li key={i}>{e['message']||JSON.stringify(e)}</li>)}</ul></div>)}
+          </details>) }
+      </div>) }
+
+    <button className="btn btn-outline-secondary me-2" onClick={runValidate} disabled={validating}>{validating?<Spinner size="sm"/>:'Validate XML'}</button>
+    <button className="btn btn-primary" onClick={handleSubmit} disabled={submitting||(validation&&validation.status!=='passed')||sequence.status==='Submitted'}>{submitting?<Spinner size="sm"/>:<><UploadCloud size={16}/> Submit to {region==='FDA'?'FDA':region==='EMA'?'EMA':'PMDA'}</>}</button>
+  </div>);
+}
+
+async function fetchJson(url,opts){const r=await fetch(url,opts);if(!r.ok)throw new Error((await r.json()).detail||r.statusText);return r.json();}
