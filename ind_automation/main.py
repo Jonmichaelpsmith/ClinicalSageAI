@@ -290,3 +290,25 @@ async def widgets(org: str, user: str = Depends(auth.get_current_user)):
 async def save_widget(org: str, body: dict, user: str = Depends(auth.get_current_user)):
     widgets_sql.save_widget(org, user, body)
     return {"status": "ok"}
+
+@app.get('/api/org/{org}/widgets')
+async def widgets(org: str, user: str = Depends(auth.get_current_user)):
+    return widgets_sql.list_widgets(org, user)
+
+@app.post('/api/org/{org}/widgets')
+async def save_widget(org: str, body: dict, user: str = Depends(auth.get_current_user)):
+    return widgets_sql.save_widget(org, user, body)
+
+@app.delete('/api/org/{org}/widgets/{widget_id}')
+async def delete_widget(org: str, widget_id: int, user: str = Depends(auth.get_current_user)):
+    return {"success": widgets_sql.delete_widget(org, user, widget_id)}
+
+@app.post('/api/org/{org}/widgets/layouts')
+async def save_layouts(org: str, body: list, user: str = Depends(auth.get_current_user)):
+    return {"success": widgets_sql.update_layout(org, user, body)}
+
+@app.post('/api/org/{org}/widgets/execute')
+async def execute_sql(org: str, body: dict, user: str = Depends(auth.get_current_user)):
+    widget_id = body.get('widget_id')
+    sql = body.get('sql')
+    return widgets_sql.execute_widget_sql(org, widget_id, sql)
