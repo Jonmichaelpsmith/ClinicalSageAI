@@ -1,0 +1,128 @@
+// SubmissionBuilder.tsx – drag‑drop tree, live QC badge updates via WebSocket
+import React, { useEffect, useState } from 'react';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import { DndProvider } from 'react-dnd';
+import { Tree, NodeModel } from '@minoru/react-dnd-treeview';
+import { CheckCircle, XCircle } from 'lucide-react';
+import { toast } from 'react-toastify';
+import update from 'immutability-helper';
+import 'react-toastify/dist/ReactToastify.css';
+
+const REGION_FOLDERS: Record<string, string[]> = {
+  FDA: ['m1', 'm2', 'm3', 'm4', 'm5'],
+  EMA: ['m1', 'm2', 'm3', 'm4', 'm5'],
+  PMDA: ['m1', 'm2', 'm3', 'm4', 'm5', 'jp‑annex'],
+};
+
+type DocData = { id: number; title: string; module: string; qc_json?: { status: string } };
+type TreeNode = NodeModel<DocData>;
+
+export default function SubmissionBuilder({ region = 'FDA' }: { region?: string }) {
+  const [tree, setTree] = useState<TreeNode[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+
+  useEffect(() => {
+    initTree();
+    // live QC WebSocket
+    const ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws/qc`);
+    ws.onmessage = (evt) => {
+      const { id, status } = JSON.parse(evt.data);
+      setTree(prev => prev.map(n => n.id === id ? { ...n, data: { ...n.data!, qc_json: { status } } } : n));
+    };
+    return () => ws.close();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [region]);
+
+  const initTree = async () => {
+    setLoading(true);
+    const docs: DocData[] = await fetchJson('/api/documents?status=approved_or_qc_failed');
+    const root: TreeNode = { id: 0, parent: 0, text: 'root', droppable: true };
+    const folders = REGION_FOLDERS[region].map((m, i) => ({ id: 10000 + i, parent: 0, text: m, droppable: true }));
+    const items = docs.map(d => ({
+      id: d.id,
+      parent: folders.find(f => d.module.startsWith(f.text))?.id || folders[0].id,
+      text: d.title,
+      droppable: false,
+      data: d
+    }));
+    setTree([root, ...folders, ...items]);
+    setLoading(false);
+  };
+
+  const handleDrop = (newTree: TreeNode[]) => setTree(newTree);
+  const toggleSelect = (id: number) => setSelected(prev => {
+    const set = new Set(prev);
+    set.has(id) ? set.delete(id) : set.add(id);
+    return set;
+  });
+
+  const bulkApprove = async () => {
+    try {
+      await fetch('/api/documents/bulk-approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: Array.from(selected) })
+      });
+      toast.info('Bulk approval started – QC running');
+      setSelected(new Set());
+    } catch (e) {
+      toast.error('Bulk approve failed');
+    }
+  };
+
+  const saveOrder = () => {
+    const ordered = tree.filter(n => !n.droppable && n.parent !== 0)
+      .map((n, idx) => ({ id: n.id, module: tree.find(f => f.id === n.parent)!.text, order: idx }));
+    fetch('/api/documents/builder-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ docs: ordered })
+    }).then(() => toast.success('Order saved'));
+  };
+
+  const renderNode = (node: TreeNode, { depth, isOpen, onToggle }: any) => {
+    if (node.droppable) {
+      return (
+        <div style={{ marginLeft: depth * 16 }} className="d-flex align-items-center gap-1 py-1 fw-bold">
+          <button onClick={onToggle} className="btn btn-sm btn-link p-0">{isOpen ? '▾' : '▸'}</button>
+          {node.text}
+        </div>
+      );
+    }
+    const qc = node.data?.qc_json?.status;
+    return (
+      <div style={{ marginLeft: depth * 16 }} className="d-flex align-items-center gap-2 py-1">
+        <input type="checkbox" checked={selected.has(node.id)} onChange={() => toggleSelect(node.id)} />
+        {qc === 'passed' ? <CheckCircle size={14} className="text-success"/> : <XCircle size={14} className="text-danger"/>}
+        <span>{node.text}</span>
+      </div>
+    );
+  };
+
+  if (loading) return <p className="text-center mt-4">Loading…</p>;
+
+  return (
+    <div className="container py-4">
+      <h2>Submission Builder <span className="badge bg-secondary ms-2">{region}</span></h2>
+      <DndProvider backend={HTML5Backend}>
+        <Tree
+          rootId={0}
+          tree={tree}
+          onDrop={handleDrop}
+          render={renderNode}
+        />
+      </DndProvider>
+      <div className="d-flex gap-3 mt-3">
+        <button className="btn btn-primary" onClick={saveOrder}>Save Order</button>
+        <button className="btn btn-outline-success" disabled={selected.size === 0} onClick={bulkApprove}>Bulk Approve + QC</button>
+      </div>
+    </div>
+  );
+}
+
+async function fetchJson(url: string) {
+  const r = await fetch(url);
+  if (!r.ok) throw new Error('Fetch failed');
+  return r.json();
+}

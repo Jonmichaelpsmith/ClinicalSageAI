@@ -3,6 +3,10 @@ import { createServer } from "http";
 import { storage } from "./storage";
 import { insertDocumentSchema, insertDocumentVersionSchema, insertDocumentCommentSchema } from "../shared/schema";
 import { z } from "zod";
+import WebSocket from 'ws';
+
+// Global socket.io instance to allow emitting from other modules
+export let io: any;
 // We'll add the IND sequence routes during registration
 
 const router = express.Router();
@@ -22,8 +26,45 @@ export async function registerRoutes(app: Application) {
     console.error('Failed to register IND sequence routes:', error);
   }
   
-  // Return an HTTP server
-  return createServer(app);
+  // Register document QC routes
+  try {
+    const documentQcRoutes = await import('./routes/document_qc_routes');
+    app.use(documentQcRoutes.default);
+    console.log('Document QC routes registered successfully');
+  } catch (error) {
+    console.error('Failed to register document QC routes:', error);
+  }
+  
+  // Create HTTP server
+  const httpServer = createServer(app);
+  
+  // Set up WebSocket server for QC updates
+  try {
+    // Use dynamic import for ESM compatibility
+    import('./api/ws/qc.js').then((qcModule) => {
+      qcModule.init({ server: httpServer, path: '/ws/qc' });
+      console.log('QC WebSocket server initialized successfully');
+    }).catch(err => {
+      console.error('Failed to import QC WebSocket server:', err);
+    });
+  } catch (error) {
+    console.error('Failed to setup QC WebSocket server:', error);
+  }
+  
+  // Register document approval routes
+  try {
+    // Use dynamic import for ESM compatibility
+    import('./routes/document_approval.js').then((documentApproval) => {
+      documentApproval.registerRoutes(app);
+      console.log('Document approval routes registered successfully');
+    }).catch(err => {
+      console.error('Failed to import document approval routes:', err);
+    });
+  } catch (error) {
+    console.error('Failed to register document approval routes:', error);
+  }
+  
+  return httpServer;
 }
 
 // Document routes

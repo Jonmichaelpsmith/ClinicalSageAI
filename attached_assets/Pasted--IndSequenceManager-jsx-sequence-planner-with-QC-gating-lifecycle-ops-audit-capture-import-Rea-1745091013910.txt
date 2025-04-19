@@ -1,0 +1,97 @@
+// IndSequenceManager.jsx – sequence planner with QC gating, lifecycle ops, audit capture
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { FileText, AlertTriangle, ArrowRight } from 'lucide-react';
+
+export default function IndSequenceManager() {
+  const [docs, setDocs] = useState([]);
+  const [lastSeq, setLastSeq] = useState('0000');
+  const [plan, setPlan] = useState([]);
+  const [errors, setErrors] = useState([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    Promise.all([
+      fetchJson('/api/ind/last-sequence'),
+      fetchJson('/api/documents?status=approved')
+    ]).then(([seq, approvedDocs]) => {
+      setLastSeq(seq || '0000');
+      const result = approvedDocs.map(analyzeDoc);
+      setPlan(result);
+      setErrors(result.filter(r => r.errors.length));
+    }).catch(console.error);
+  }, []);
+
+  const analyzeDoc = (doc) => {
+    const meta = doc.metadata || {};
+    const mod = meta.module_slot || inferModule(doc.title);
+    const lifecycle = doc.last_submitted_version ? 'replace' : 'new';
+    const errs = [];
+    if (!mod) errs.push('Missing module slot');
+    if (!doc.qc_json || doc.qc_json.status !== 'passed') errs.push('QC not passed');
+    if (!doc.version) errs.push('Missing version');
+    return { ...doc, module: mod, operation: lifecycle, errors: errs };
+  };
+
+  const submitPlan = () => {
+    fetch('/api/ind/sequence/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ base: lastSeq, plan })
+    })
+      .then(r => r.json())
+      .then(res => navigate(`/portal/ind/${res.sequence}`));
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto py-10">
+      <h1 className="text-2xl font-bold mb-1">IND Sequence Plan</h1>
+      <p className="text-sm text-gray-500 mb-6">Next eCTD sequence: <span className="font-mono">{lastSeq}</span></p>
+
+      {errors.length > 0 && (
+        <div className="bg-red-50 dark:bg-red-900/30 text-sm text-red-700 dark:text-red-300 p-3 rounded border border-red-300 mb-4">
+          <AlertTriangle size={16} className="inline me-2" />{errors.length} document(s) need attention before sequence can be finalized.
+        </div>
+      )}
+
+      <div className="bg-white dark:bg-slate-800 rounded-lg shadow divide-y">
+        {plan.map(p => (
+          <div key={p.id} className="flex items-center px-4 py-3 text-sm">
+            <FileText size={16} className="text-gray-400" />
+            <span className="ml-2 flex-1 truncate">{p.title}</span>
+            <span className="w-20 text-xs text-gray-500">v{p.version}</span>
+            <span className="w-28 font-mono">{p.module || '—'}</span>
+            <span className="w-20 capitalize text-gray-500">{p.operation}</span>
+            {p.errors.length > 0 && (
+              <span className="text-red-500 text-xs" title={p.errors.join(', ')}>{p.errors[0]}</span>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <button
+        disabled={errors.length > 0}
+        onClick={submitPlan}
+        className="mt-6 bg-emerald-600 text-white px-5 py-2 rounded disabled:opacity-50 flex items-center gap-2"
+      >
+        Finalize Sequence Plan <ArrowRight size={16} />
+      </button>
+    </div>
+  );
+}
+
+function inferModule(title) {
+  const t = title.toLowerCase();
+  if (t.includes('protocol')) return 'm5.3.1';
+  if (t.includes('cmc') || t.includes('drug product')) return 'm3.2';
+  if (t.includes('overview')) return 'm2';
+  if (t.includes('brochure')) return 'm1.3';
+  if (t.includes('1571')) return 'm1.1';
+  return null;
+}
+
+async function fetchJson(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('Network error');
+  return res.json();
+}

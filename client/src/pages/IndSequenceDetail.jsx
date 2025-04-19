@@ -11,7 +11,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { CheckCircle, Calendar, Clock, Download, AlertTriangle, FileText, Send, Check, AlertCircle, FileWarning, ShieldCheck, ShieldOff, UploadCloud } from 'lucide-react';
+import { CheckCircle, Calendar, Clock, Download, AlertTriangle, FileText, Send, Check, AlertCircle, FileWarning, ShieldCheck, ShieldOff, UploadCloud, Globe, Share2 } from 'lucide-react';
+import RegionalExportModal from '@/components/RegionalExportModal';
 
 export default function IndSequenceDetail() {
   const { id } = useParams();
@@ -21,6 +22,7 @@ export default function IndSequenceDetail() {
   const [submitDialogOpen, setSubmitDialogOpen] = useState(false);
   const [validationResults, setValidationResults] = useState(null);
   const [isValidating, setIsValidating] = useState(false);
+  const [exportModalOpen, setExportModalOpen] = useState(false);
   
   // Fetch sequence details
   const sequenceQuery = useQuery({
@@ -149,7 +151,9 @@ export default function IndSequenceDetail() {
     setValidationResults(null);
     
     try {
-      const response = await fetch(`/api/ind/sequence/${id}/validate`);
+      // If sequence has a region, use it for validation
+      const regionParam = sequence.region ? `?region=${sequence.region}` : "";
+      const response = await fetch(`/api/ind/sequence/${id}/validate${regionParam}`);
       
       if (!response.ok) {
         throw new Error('Failed to validate XML files');
@@ -242,6 +246,12 @@ export default function IndSequenceDetail() {
             <div>
               Status: {renderStatusBadge(sequence.submission_status)}
             </div>
+            {sequence.region && (
+              <div className="flex items-center">
+                <Globe className="mr-1" size={16} />
+                <span>Region: <Badge variant="secondary">{sequence.region}</Badge></span>
+              </div>
+            )}
           </div>
         </div>
         
@@ -251,6 +261,15 @@ export default function IndSequenceDetail() {
               <Download className="mr-2" size={16} />
               Download Package
             </Link>
+          </Button>
+          
+          <Button 
+            variant="outline" 
+            className="flex items-center"
+            onClick={() => setExportModalOpen(true)}
+          >
+            <Share2 className="mr-2" size={16} />
+            Export
           </Button>
           
           <Button 
@@ -521,7 +540,7 @@ export default function IndSequenceDetail() {
                 )}
                 {validationResults.validation.regional.length > 0 && (
                   <div className="p-4 border border-red-200 rounded-md bg-red-50">
-                    <h3 className="font-semibold text-red-700 mb-2">us-regional.xml Errors</h3>
+                    <h3 className="font-semibold text-red-700 mb-2">{sequence.region === 'EMA' ? 'eu' : sequence.region === 'PMDA' ? 'jp' : sequence.region === 'Health Canada' ? 'ca' : 'us'}-regional.xml Errors</h3>
                     <ul className="list-disc pl-5 space-y-1">
                       {validationResults.validation.regional.map((error, idx) => (
                         <li key={idx} className="text-sm text-red-700">{error}</li>
@@ -533,7 +552,7 @@ export default function IndSequenceDetail() {
             )}
             {validationResults.validation.valid && (
               <div className="p-4 border border-green-200 rounded-md bg-green-50 text-green-700">
-                <p>All XML files have been validated against FDA eCTD DTD specifications and are ready for submission.</p>
+                <p>All XML files have been validated against {sequence.region || "FDA"} eCTD DTD specifications and are ready for submission.</p>
               </div>
             )}
           </CardContent>
@@ -584,8 +603,8 @@ export default function IndSequenceDetail() {
               </a>
             </Button>
             <Button variant="outline" size="sm" asChild>
-              <a href={`/ectd/${sequence.sequence_id}/us-regional.xml`} target="_blank" rel="noopener noreferrer">
-                View us-regional.xml
+              <a href={`/ectd/${sequence.sequence_id}/${sequence.region === 'EMA' ? 'eu' : sequence.region === 'PMDA' ? 'jp' : sequence.region === 'Health Canada' ? 'ca' : 'us'}-regional.xml`} target="_blank" rel="noopener noreferrer">
+                View {sequence.region === 'EMA' ? 'eu' : sequence.region === 'PMDA' ? 'jp' : sequence.region === 'Health Canada' ? 'ca' : 'us'}-regional.xml
               </a>
             </Button>
           </div>

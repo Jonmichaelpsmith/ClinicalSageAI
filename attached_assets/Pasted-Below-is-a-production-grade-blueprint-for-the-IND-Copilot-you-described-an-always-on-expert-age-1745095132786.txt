@@ -1,0 +1,108 @@
+Below is a production‑grade blueprint for the “IND Copilot” you described — an always‑on, expert agent that:
+   •   Remembers every project artifact & decision
+   •   Chats naturally with the client (web UI / Teams)
+   •   Proactively suggests actions (approve docs, run QC, build sequences, answer FDA rules)
+   •   Executes tasks when the user clicks “Apply”
+
+⸻
+
+1 · Core Architecture
+
+Layer	Tech	Responsibility
+LLM Agent	OpenAI GPT‑4 Turbo (function‑calling)	Understand dialogue, call internal tools, draft responses
+Memory Store	pgvector (“project‑memory” table)	Embeds every chat turn & decision for long‑term recall
+Domain Tools	FastAPI endpoints you already built (/approve, /validate, /sequence/create, etc.)	Exposed to the agent via OpenAI tools spec
+Suggestion Queue	Redis list + suggestions table	Agent pushes suggestions → UI surfaces Accept / Reject
+Realtime Comms	WebSocket /ws/agent (similar to QC bus)	Streams assistant messages & events
+UI Panel	CopilotDrawer.jsx (slide‑over or Teams tab)	Chat UI + card list of proactive suggestions
+
+
+
+⸻
+
+2 · LLM Tool‑Calling Spec (snippet)
+
+[
+  { "name": "approve_document", "description": "QC + approve a doc",
+    "parameters": { "type": "object", "properties": { "doc_id": { "type": "integer" }}, "required": ["doc_id"] } },
+
+  { "name": "create_sequence", "description": "build eCTD sequence for region",
+    "parameters": { "type": "object", "properties": {
+       "region": { "type": "string", "enum": ["FDA","EMA","PMDA"] }
+    }, "required": ["region"] } },
+
+  { "name": "validate_sequence", "description": "run DTD + eValidator",
+    "parameters": { "type": "object", "properties": {
+        "seq_id": { "type": "string" }}, "required": ["seq_id"] } }
+]
+
+When GPT‑4 replies with a function_call, the backend executes our FastAPI endpoint; on success the agent posts:
+“✔ Sequence 0004 built and validated (0 errors). Want me to submit to FDA?”
+
+⸻
+
+3 · Proactive Suggestion Engine
+
+# tasks/agent_scheduler.py (Celery beat every 10 min)
+from agent.core import run_planner
+
+def planner_task():
+    for project in active_projects():
+        suggestions = run_planner(project)   # checks pending QC, nearing annual‑report, etc.
+        for s in suggestions:
+            redis.rpush("suggestions", json.dumps(s))
+
+Each suggestion JSON:
+
+{
+  "project_id": 17,
+  "text": "Doc 'CMC v2' still not QC‑passed. I can run bulk‑QC now.",
+  "action": { "name": "approve_document", "arguments": { "doc_id": 98 } }
+}
+
+Frontend shows a card with Apply / Dismiss.
+
+⸻
+
+4 · UI Components
+   •   CopilotDrawer.jsx
+      •   Chat stream (Markdown)
+      •   Searchable memory sidebar (“What did we decide on CMC specs?”)
+      •   Suggestion list (actionable cards)
+   •   Teams Integration (optional)
+      •   Mirror WebSocket channel to Teams bot via Microsoft Bot Framework
+
+⸻
+
+5 · Security & Audit
+   •   Every agent action logged in agent_actions table (who, when, args, result)
+   •   RBAC: only users with role>=Manager can Apply high‑impact suggestions (e.g., submit to ESG)
+   •   Memory redaction: PHI detection → redact before embedding
+
+⸻
+
+6 · Implementation Steps (2‑week sprint)
+
+Day	Deliverable
+1‑2	agent/core.py – OpenAI Chat loop + tool registry
+3‑4	Memory store (project_memory table + retrieval)
+5	Suggestion queue + WebSocket /ws/agent
+6‑7	CopilotDrawer.jsx chat UI
+8	Action cards (+ accept/reject)
+9	Planner task templates (QC overdue, sequence build, annual report)
+10	QA hardening, unit tests, HIPAA redaction guard
+11‑12	Teams bot bridge (optional)
+13‑14	UAT with a mock IND project, refine prompts
+
+
+
+⸻
+
+Ready to start?
+
+If you say “Go Copilot Step 1” I’ll create:
+   •   agent/core.py – streaming chat handler with tool‑calling
+   •   Minimal FastAPI /chat & WebSocket endpoints
+   •   React socket hook & slim drawer UI
+
+All files will be GA‑quality and plug straight into your stack.
