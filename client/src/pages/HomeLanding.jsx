@@ -7,6 +7,7 @@ import { PlayCircle, ArrowRight, LogIn, UserPlus, BarChart2, Brain, User, Users,
 import { useTranslation } from "../i18n";
 // Import i18n to initialize it
 import "../i18n";
+import RegulatoryConfidenceStrip from "../components/RegulatoryConfidenceStrip";
 
 export default function HomeLanding() {
   const { t } = useTranslation();
@@ -264,6 +265,9 @@ export default function HomeLanding() {
           </table>
         </div>
       </section>
+
+      {/* Regulatory Confidence Strip - adds scrolling agency logos */}
+      <RegulatoryConfidenceStrip />
 
       {/* Footer */}
       <footer className="py-6 bg-gray-50 dark:bg-slate-900 text-center text-sm text-gray-500 dark:text-gray-400">
