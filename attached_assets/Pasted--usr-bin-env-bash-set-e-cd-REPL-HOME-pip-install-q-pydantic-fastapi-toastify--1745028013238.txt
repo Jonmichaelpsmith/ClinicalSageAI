@@ -1,0 +1,120 @@
+#!/usr/bin/env bash
+set -e
+cd "$REPL_HOME"
+
+pip install -q pydantic fastapi_toastify
+
+##############################################################################
+# 1) users.py – typed Enum + helpers
+##############################################################################
+python - << 'PY'
+import pathlib, textwrap
+f=pathlib.Path('ind_automation/users.py'); src=f.read_text()
+if 'class AlertChannel' not in src or 'unique' not in src:
+    src=textwrap.dedent("""from enum import IntFlag, unique
+@unique
+class AlertChannel(IntFlag):
+    NONE  = 0
+    TEAMS = 1
+    EMAIL = 2
+    BOTH  = TEAMS | EMAIL
+""")+src.split('from enum',1)[1]
+    # default & helpers
+    if 'get_channels' not in src:
+        src+=textwrap.dedent("""
+        def get_channels(username:str)->AlertChannel:
+            return AlertChannel(_load().get(username,{"alert_channels":int(AlertChannel.TEAMS)})['alert_channels'])
+        def set_channels(username:str, ch:AlertChannel):
+            d=_load(); d[username]['alert_channels']=int(ch); _save(d)
+        def all_users():
+            return _load()
+        """)
+    f.write_text(src)
+PY
+
+##############################################################################
+# 2) alerter.py – dispatch façade
+##############################################################################
+cat > ind_automation/alerter.py << 'PY'
+"""Channel‑aware alert dispatcher (Teams & Email). Extendable to Slack etc."""
+from __future__ import annotations
+from typing import Dict
+from .users import AlertChannel, get_channels, all_users
+import os, requests, smtplib, ssl
+from email.message import EmailMessage
+
+SMTP_HOST=os.getenv('SMTP_HOST'); SMTP_PORT=int(os.getenv('SMTP_PORT','465'))
+SMTP_USER=os.getenv('SMTP_USER'); SMTP_PASS=os.getenv('SMTP_PASS')
+TEAMS_WEBHOOK=os.getenv('TEAMS_WEBHOOK_URL')
+
+def _send_teams(alert:Dict):
+    if not TEAMS_WEBHOOK: return
+    payload={"@type":"MessageCard","@context":"https://schema.org/extensions","summary":alert['msg'],"themeColor":"D9534F","title":"Compliance Alert","text":alert['msg']}
+    try: requests.post(TEAMS_WEBHOOK,json=payload,timeout=4)
+    except Exception as e: print('Teams send error',e)
+
+def _send_email(alert:Dict, user:str):
+    if not SMTP_HOST: return
+    msg=EmailMessage(); msg['Subject']='TrialSage Alert'; msg['From']=SMTP_USER; msg['To']=user; msg.set_content(alert['msg'])
+    try:
+        with smtplib.SMTP_SSL(SMTP_HOST,SMTP_PORT,context=ssl.create_default_context()) as s:
+            s.login(SMTP_USER,SMTP_PASS); s.send_message(msg)
+    except Exception as e:
+        print('Email send error',e)
+
+def publish(alert:Dict):
+    for user,meta in all_users().items():
+        chan=AlertChannel(meta.get('alert_channels',int(AlertChannel.TEAMS)))
+        if chan & AlertChannel.TEAMS: _send_teams(alert)
+        if chan & AlertChannel.EMAIL: _send_email(alert,user)
+PY
+
+##############################################################################
+# 3) FastAPI models & routes – typed
+##############################################################################
+python - << 'PY'
+import pathlib, textwrap, re
+main=pathlib.Path('ind_automation/main.py'); code=main.read_text()
+if 'UserUpdate' not in code:
+    code=code.replace('from pydantic', 'from pydantic import BaseModel, Field') if 'from pydantic' in code else code
+    code=code.replace('def update_user(', 'class UserUpdate(BaseModel):\n        role: str | None = None\n        perms: list[str] | None = None\n        alert_channels: int | None = Field(None, ge=0, le=3)\n    \n    def update_user(')
+    # adjust field refs
+    code=re.sub(r'body\.role', 'body.role', code)
+    code=re.sub(r'body\.perms', 'body.perms', code)
+    code=re.sub(r'body\.alert_channels', 'body.alert_channels', code)
+    # invitation model
+    code+=textwrap.dedent("""\nclass UserInvite(BaseModel):\n    username:str; role:str='user'; alert_channels:int=1; perms:list[str]=[]\n    """)
+    code=code.replace('@app.post('/api/org/{org}/users',','@app.post('/api/org/{org}/users',') # anchor
+    code=re.sub(r'def invite_user[^:]+:', 'def invite_user(org:str, body:UserInvite):', code)
+    main.write_text(code)
+PY
+
+##############################################################################
+# 4) RoleManager.jsx – replace tenant stub with prop, memo & toast
+##############################################################################
+python - << 'PY'
+import pathlib, textwrap, re
+rm=pathlib.Path('client/src/components/RoleManager.jsx'); code=rm.read_text()
+if 'org' not in code.split('function RoleManager',1)[0]:
+    code='import Toast from "fastapi_toastify";'+code
+    code=re.sub(r'export default function RoleManager\(\)', 'export default function RoleManager({org})', code,1)
+    code=re.sub(r'api.get\(\'/api/org/tenant','api.get(`/api/org/${org}`', code)
+    code=re.sub(r'api.put\(`/api/org/tenant','api.put(`/api/org/${org}`', code)
+    code=re.sub(r'api.post\('/api/org/tenant','api.post(`/api/org/${org}`', code)
+    # add toast on success
+    code=re.sub(r'\.then\(load\)', '.then(()=>{Toast.success("Saved");load();})', code)
+    rm.write_text(code)
+PY
+
+##############################################################################
+# 5) Integrate org prop in IndAutomationPage
+##############################################################################
+python - << 'PY'
+import pathlib, textwrap, re
+page=pathlib.Path('client/src/pages/IndAutomationPage.jsx'); p=page.read_text()
+if '<RoleManager/>' in p:
+    p=p.replace('<RoleManager/>', '<RoleManager org={selected.project_id}/>',1)
+    page.write_text(p)
+PY
+
+echo '✅ Polished alert‑channel preferences deployed – restart servers.'

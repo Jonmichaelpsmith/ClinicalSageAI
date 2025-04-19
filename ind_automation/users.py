@@ -1,4 +1,11 @@
-from enum import IntFlag
+from enum import IntFlag, unique
+@unique
+class AlertChannel(IntFlag):
+    NONE  = 0
+    TEAMS = 1
+    EMAIL = 2
+    BOTH  = TEAMS | EMAIL
+ import IntFlag
 class AlertChannel(IntFlag):
     NONE = 0
     TEAMS = 1

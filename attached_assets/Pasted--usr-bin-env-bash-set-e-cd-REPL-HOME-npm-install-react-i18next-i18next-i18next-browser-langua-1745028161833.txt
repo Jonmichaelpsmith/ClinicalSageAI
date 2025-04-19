@@ -1,0 +1,124 @@
+#!/usr/bin/env bash
+set -e
+cd "$REPL_HOME"
+
+npm install react-i18next i18next i18next-browser-languagedetector dayjs
+pip install -q babel
+
+############################################################################
+# 1) i18n.ts – i18next init with lazy backend
+############################################################################
+mkdir -p client/src/i18n
+cat > client/src/i18n/index.js << 'JS'
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+import LanguageDetector from 'i18next-browser-languagedetector';
+
+i18n
+  .use(LanguageDetector)
+  .use(initReactI18next)
+  .init({
+    fallbackLng: 'en',
+    debug: false,
+    interpolation: { escapeValue: false },
+    resources: {
+      en: { common: require('./locales/en/common.json') },
+      fr: { common: require('./locales/fr/common.json') },
+      de: { common: require('./locales/de/common.json') },
+      ja: { common: require('./locales/ja/common.json') }
+    }
+  });
+export default i18n;
+JS
+
+mkdir -p client/src/i18n/locales/{en,fr,de,ja}
+for L in en fr de ja; do mkdir -p client/src/i18n/locales/$L; echo '{"Compliance Insights":"Compliance Insights"}' > client/src/i18n/locales/$L/common.json; done
+
+############################################################################
+# 2) LanguageSelector component
+############################################################################
+cat > client/src/components/LanguageSelector.jsx << 'JSX'
+import React from'react';import {useTranslation} from'react-i18next';
+export default function LanguageSelector(){const{i18n}=useTranslation();const lng=i18n.language;
+ const change=e=>{i18n.changeLanguage(e.target.value);localStorage.setItem('lng',e.target.value)};
+ return(<select value={lng} onChange={change} className='border p-1 text-xs'>
+   <option value='en'>EN</option><option value='fr'>FR</option><option value='de'>DE</option><option value='ja'>日本語</option>
+ </select>);
+}
+JSX
+
+############################################################################
+# 3) Wire i18n into React entry
+############################################################################
+python - << 'PY'
+import pathlib, re
+app=pathlib.Path('client/src/main.jsx'); code=app.read_text()
+if 'i18n' not in code:
+    code="import './i18n';\n"+code
+    app.write_text(code)
+PY
+
+############################################################################
+# 4) Insert selector into Navbar (Assuming NavBar component exists)
+############################################################################
+python - << 'PY'
+import pathlib, re, textwrap
+nb=pathlib.Path('client/src/components/NavBar.jsx');
+if nb.exists():
+    code=nb.read_text()
+    if 'LanguageSelector' not in code:
+        code='import LanguageSelector from "./LanguageSelector";\n'+code
+        code=re.sub(r'</header>', '<LanguageSelector/>\n</header>', code,1)
+        nb.write_text(code)
+PY
+
+############################################################################
+# 5) dayjs locale in Insights, Audit & PDFs
+############################################################################
+python - << 'PY'
+import pathlib, re
+ci=pathlib.Path('client/src/components/ComplianceInsights.jsx');
+if ci.exists():
+    code=ci.read_text()
+    if 'dayjs' not in code.split('\n')[0]:
+        code='import dayjs from "dayjs"; import "dayjs/locale/fr"; import "dayjs/locale/de"; import "dayjs/locale/ja";\n'+code
+        code=code.replace('new Date(r.timestamp).toLocaleString()', 'dayjs(r.timestamp).locale(localStorage.getItem("lng")||"en").format("LLL")')
+        ci.write_text(code)
+PY
+
+############################################################################
+# 6) Backend adds timestamp_local field respecting Accept-Language
+############################################################################
+python - << 'PY'
+import pathlib, textwrap, re
+main=pathlib.Path('ind_automation/main.py'); code=main.read_text()
+if 'timestamp_local' not in code:
+    code=code.replace('from fastapi import', 'from fastapi import')  # anchor
+    code='import babel.dates as bdates\n'+code
+    hook=textwrap.dedent("""
+    @app.middleware('http')
+    async def locale_middleware(request, call_next):
+        response = await call_next(request)
+        lang=request.headers.get('accept-language','en')[:2]
+        if response.media_type=='application/json' and isinstance(response.body,bytes):
+            import json, datetime
+            data=json.loads(response.body)
+            def _local(d):
+                if isinstance(d,dict):
+                    if 'timestamp' in d and 'timestamp_local' not in d:
+                        try:
+                            d['timestamp_local']=bdates.format_datetime(datetime.datetime.fromisoformat(d['timestamp']),locale=lang)
+                        except: pass
+                    for v in d.values(): _local(v)
+                if isinstance(d,list):
+                    for v in d: _local(v)
+            _local(data)
+            response.body=json.dumps(data).encode()
+        return response
+    """)
+    code=code+hook
+    main.write_text(code)
+PY
+
+############################################################################
+echo '✅ i18n & locale support installed – restart React & FastAPI; switch language via navbar selector.'
