@@ -414,6 +414,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
   
+  // Serve files from attached_assets directory directly
+  app.use('/attached_assets', express.static(path.join(process.cwd(), 'attached_assets')));
+  console.log('Serving files from attached_assets directory at /attached_assets');
+  
   // Export trial success prediction to PDF
   app.post("/api/export/success-summary", async (req: Request, res: Response) => {
     try {
