@@ -1,0 +1,107 @@
+[
+  {
+    "reason": "Incomplete Module 1 regional information",
+    "frequency": "high",
+    "description": "Missing required EU-specific documentation in Module 1",
+    "common_modules_affected": ["m1"],
+    "keywords": ["regional", "EU", "application form", "cover letter"]
+  },
+  {
+    "reason": "Insufficient environmental risk assessment",
+    "frequency": "medium",
+    "description": "Environmental risk assessment is missing or does not meet EU requirements",
+    "common_modules_affected": ["m1.6"],
+    "keywords": ["environmental", "ERA", "risk assessment", "ecological"]
+  },
+  {
+    "reason": "Inadequate Pediatric Investigation Plan (PIP)",
+    "frequency": "high",
+    "description": "Missing or incomplete PIP documentation or compliance statement",
+    "common_modules_affected": ["m1.10"],
+    "keywords": ["pediatric", "PIP", "PDCO", "waiver", "deferral"]
+  },
+  {
+    "reason": "SmPC/labeling deficiencies",
+    "frequency": "high",
+    "description": "Product information not compliant with QRD template or missing translations",
+    "common_modules_affected": ["m1.3"],
+    "keywords": ["SmPC", "labeling", "QRD template", "package leaflet", "translation"]
+  },
+  {
+    "reason": "GMP non-compliance",
+    "frequency": "high",
+    "description": "Manufacturing sites not compliant with EU GMP or missing documentation",
+    "common_modules_affected": ["m1.2", "m3.2.R"],
+    "keywords": ["GMP", "manufacturing site", "inspection", "certificate", "QP declaration"]
+  },
+  {
+    "reason": "Improper Active Substance Master File (ASMF) handling",
+    "frequency": "medium",
+    "description": "Issues with ASMF structure, access, or documentation",
+    "common_modules_affected": ["m3.2.S"],
+    "keywords": ["ASMF", "DMF", "active substance", "applicant's part", "restricted part"]
+  },
+  {
+    "reason": "Orphan designation issues",
+    "frequency": "medium",
+    "description": "Problems with orphan drug designation application or documentation",
+    "common_modules_affected": ["m1.7"],
+    "keywords": ["orphan", "designation", "prevalence", "significant benefit"]
+  },
+  {
+    "reason": "Inconsistent eCTD lifecycle management",
+    "frequency": "high",
+    "description": "Errors in eCTD sequence handling, versioning, or document lifecycle operations",
+    "common_modules_affected": ["all"],
+    "keywords": ["lifecycle", "sequence", "operation attribute", "replace", "append", "delete"]
+  },
+  {
+    "reason": "Missing translations",
+    "frequency": "high",
+    "description": "Required translations for EU Member States are missing or incomplete",
+    "common_modules_affected": ["m1.3"],
+    "keywords": ["translation", "language", "member state", "national"]
+  },
+  {
+    "reason": "Incomplete risk management plan",
+    "frequency": "high",
+    "description": "Risk Management Plan (RMP) is inadequate or does not address important risks",
+    "common_modules_affected": ["m1.8.2"],
+    "keywords": ["RMP", "risk management", "pharmacovigilance", "PASS", "PAES"]
+  },
+  {
+    "reason": "Missing or inadequate user consultation",
+    "frequency": "medium",
+    "description": "Package leaflet user consultation (readability testing) is missing or inadequate",
+    "common_modules_affected": ["m1.3.4"],
+    "keywords": ["user consultation", "readability", "testing", "package leaflet"]
+  },
+  {
+    "reason": "Reference medicinal product issues",
+    "frequency": "medium",
+    "description": "For generic applications, issues with reference product selection or demonstration of equivalence",
+    "common_modules_affected": ["m1.8.2", "m2.5"],
+    "keywords": ["reference medicinal product", "RMP", "generic", "biosimilar"]
+  },
+  {
+    "reason": "Conditional approval documentation",
+    "frequency": "medium",
+    "description": "For conditional approval applications, inadequate justification or documentation",
+    "common_modules_affected": ["m1.5", "m2.5"],
+    "keywords": ["conditional", "approval", "public interest", "unmet need"]
+  },
+  {
+    "reason": "Incomplete Quality Overall Summary",
+    "frequency": "high",
+    "description": "Module 2.3 (QOS) does not adequately summarize quality information",
+    "common_modules_affected": ["m2.3"],
+    "keywords": ["QOS", "Quality Overall Summary", "summary", "overview"]
+  },
+  {
+    "reason": "Missing/incomplete PSURs",
+    "frequency": "medium",
+    "description": "Periodic Safety Update Reports are missing or incomplete",
+    "common_modules_affected": ["m5.3.6"],
+    "keywords": ["PSUR", "periodic", "safety", "update"]
+  }
+]

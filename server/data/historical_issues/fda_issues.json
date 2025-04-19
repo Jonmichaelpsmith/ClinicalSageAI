@@ -1,0 +1,107 @@
+[
+  {
+    "reason": "Inadequate CMC characterization",
+    "frequency": "high",
+    "description": "Inadequate characterization of the drug substance or drug product",
+    "common_modules_affected": ["m3.2.S", "m3.2.P"],
+    "keywords": ["characterization", "specifications", "analytical procedures", "validation"]
+  },
+  {
+    "reason": "Insufficient stability data",
+    "frequency": "high",
+    "description": "Lack of adequate stability data to support proposed shelf life",
+    "common_modules_affected": ["m3.2.P.8"],
+    "keywords": ["stability", "shelf life", "storage conditions", "expiration"]
+  },
+  {
+    "reason": "Incomplete safety pharmacology",
+    "frequency": "medium",
+    "description": "Incomplete evaluation of potential undesirable pharmacodynamic effects on physiological functions",
+    "common_modules_affected": ["m4.2.1"],
+    "keywords": ["safety pharmacology", "cardiovascular", "respiratory", "central nervous system"]
+  },
+  {
+    "reason": "Missing toxicology studies",
+    "frequency": "medium",
+    "description": "Key toxicology studies required for the specific drug class or indication are missing",
+    "common_modules_affected": ["m4.2.3"],
+    "keywords": ["toxicology", "carcinogenicity", "genotoxicity", "reproductive toxicology"]
+  },
+  {
+    "reason": "Study design concerns",
+    "frequency": "high",
+    "description": "Proposed or completed clinical studies with design flaws that prevent adequate assessment of safety or efficacy",
+    "common_modules_affected": ["m5.3.5"],
+    "keywords": ["study design", "endpoints", "sample size", "statistical methods"]
+  },
+  {
+    "reason": "Protocol deficiencies",
+    "frequency": "medium",
+    "description": "Significant problems with the clinical protocol that may impact data integrity or patient safety",
+    "common_modules_affected": ["m5.3"],
+    "keywords": ["protocol", "inclusion criteria", "exclusion criteria", "procedures"]
+  },
+  {
+    "reason": "Inconsistent application components",
+    "frequency": "high",
+    "description": "Information in different parts of the application is inconsistent or contradictory",
+    "common_modules_affected": ["m1", "m2", "m3", "m5"],
+    "keywords": ["inconsistent", "contradictory", "discrepancy"]
+  },
+  {
+    "reason": "Missing Form 1571",
+    "frequency": "high",
+    "description": "IND application missing FDA Form 1571 or form is incomplete",
+    "common_modules_affected": ["m1.2"],
+    "keywords": ["1571", "form", "signature", "administrative"]
+  },
+  {
+    "reason": "Inaccurate or incomplete Investigator's Brochure",
+    "frequency": "medium",
+    "description": "Investigator's Brochure does not accurately reflect current safety and efficacy information",
+    "common_modules_affected": ["m1.3"],
+    "keywords": ["investigator's brochure", "IB", "safety information"]
+  },
+  {
+    "reason": "Inadequate bioanalytical method validation",
+    "frequency": "medium",
+    "description": "Methods used to quantify drug in plasma/biological matrices not adequately validated",
+    "common_modules_affected": ["m4.2.2", "m5.3.1"],
+    "keywords": ["bioanalytical", "method validation", "accuracy", "precision"]
+  },
+  {
+    "reason": "PDF readability issues",
+    "frequency": "high",
+    "description": "Text in PDFs is not machine-readable, bookmarks missing, hyperlinks broken",
+    "common_modules_affected": ["all"],
+    "keywords": ["PDF", "readable", "text recognition", "bookmark", "hyperlink"]
+  },
+  {
+    "reason": "eCTD structure errors",
+    "frequency": "high",
+    "description": "Documents placed in incorrect locations within the eCTD structure",
+    "common_modules_affected": ["all"],
+    "keywords": ["eCTD", "structure", "placement", "folder"]
+  },
+  {
+    "reason": "Incomplete data sets",
+    "frequency": "high",
+    "description": "Required data sets are missing or incomplete",
+    "common_modules_affected": ["m5"],
+    "keywords": ["data set", "SDTM", "ADaM", "case report form"]
+  },
+  {
+    "reason": "Inadequate pediatric information",
+    "frequency": "medium",
+    "description": "Plan for pediatric assessment is missing or inadequate",
+    "common_modules_affected": ["m1.9"],
+    "keywords": ["pediatric", "children", "adolescent", "PREA"]
+  },
+  {
+    "reason": "Improper document formatting",
+    "frequency": "high",
+    "description": "Documents don't follow eCTD guidelines for formatting and structure",
+    "common_modules_affected": ["all"],
+    "keywords": ["format", "margin", "font", "header", "page number"]
+  }
+]
