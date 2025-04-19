@@ -82,3 +82,27 @@ export const WHO = () => (
     </svg>
   </div>
 );
+
+export const HIPAA = () => (
+  <div className={base} title="HIPAA Compliance (U.S.)">
+    <svg viewBox="0 0 160 40" className="w-full h-full fill-gray-500 hover:fill-purple-500">
+      <text x="0" y="30" fontSize="24" fontFamily="Helvetica">HIPAA</text>
+    </svg>
+  </div>
+);
+
+export const GDPR = () => (
+  <div className={base} title="GDPR Compliance (EU)">
+    <svg viewBox="0 0 160 40" className="w-full h-full fill-gray-500 hover:fill-blue-700">
+      <text x="0" y="30" fontSize="24" fontFamily="Helvetica">GDPR</text>
+    </svg>
+  </div>
+);
+
+export const ISO = () => (
+  <div className={base} title="ISO 27001 Certification">
+    <svg viewBox="0 0 120 40" className="w-full h-full fill-gray-500 hover:fill-teal-600">
+      <text x="0" y="30" fontSize="24" fontFamily="Helvetica">ISO</text>
+    </svg>
+  </div>
+);
