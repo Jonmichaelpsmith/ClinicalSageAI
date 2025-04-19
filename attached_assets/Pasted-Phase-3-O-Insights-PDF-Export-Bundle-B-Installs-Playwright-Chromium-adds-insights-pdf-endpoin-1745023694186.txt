@@ -1,0 +1,58 @@
+Phase 3‑O – Insights PDF Export (Bundle B)
+
+Installs Playwright/Chromium, adds /insights/pdf endpoint, and a React “Export PDF” button.
+
+#!/usr/bin/env bash
+set -e
+pip install -q playwright==1.43
+python -m playwright install chromium
+cd "$REPL_HOME"
+
+# 1) insights_pdf.py service
+cat > ind_automation/insights_pdf.py << 'PY'
+import asyncio, os, datetime
+from fastapi.responses import StreamingResponse
+from playwright.async_api import async_playwright
+
+async def render_pdf(url):
+    async with async_playwright() as p:
+        browser = await p.chromium.launch()
+        page = await browser.new_page()
+        await page.goto(url, wait_until='networkidle')
+        pdf_bytes = await page.pdf(format='Letter')
+        await browser.close()
+        return pdf_bytes
+
+def insights_pdf_endpoint(org:str):
+    url=f"{os.getenv('BASE_URL','http://localhost:3000')}/#/insights?org={org}&print=1"
+    pdf=asyncio.run(render_pdf(url))
+    filename=f"Insights_{org}_{datetime.date.today()}.pdf"
+    return StreamingResponse(io.BytesIO(pdf),media_type='application/pdf',headers={'Content-Disposition':f'attachment; filename={filename}'})
+PY
+
+# 2) FastAPI route
+python - << 'PY'
+import pathlib, textwrap
+main=pathlib.Path('ind_automation/main.py'); code=main.read_text()
+if '/insights/pdf' not in code:
+    code=code.replace('from ind_automation import metrics,', 'from ind_automation import metrics, insights_pdf,')
+    code+=textwrap.dedent("""
+    @app.get('/api/org/{org}/insights/pdf')
+    async def insights_pdf(org:str):
+        return insights_pdf.insights_pdf_endpoint(org)
+    """)
+    main.write_text(code)
+PY
+
+# 3) Add Export button in ComplianceInsights.jsx
+python - << 'PY'
+import pathlib, re, textwrap
+ci=pathlib.Path('client/src/components/ComplianceInsights.jsx'); c=ci.read_text()
+if 'Export PDF' not in c:
+    btn="<button className='bg-gray-700 text-white px-3 py-1 rounded mb-2' onClick={()=>window.open(`/api/org/${org}/insights/pdf`,'_blank')}>Export PDF</button>"
+    c=c.replace('return(', 'return('+btn)
+    ci.write_text(c)
+PY
+
+echo '✅ PDF export installed – restart FastAPI & React; button appears in Insights page.'
+
