@@ -11,7 +11,7 @@ import path from 'path';
 import fs from 'fs';
 
 // Default FastAPI server location
-const FASTAPI_SERVER = process.env.FASTAPI_SERVER || 'http://localhost:8080';
+const FASTAPI_SERVER = process.env.FASTAPI_SERVER || `http://localhost:${process.env.FASTAPI_PORT || '8083'}`;
 
 // Flag to track if FastAPI server is running
 let isServerRunning = false;
@@ -46,8 +46,10 @@ async function ensureFastApiServer() {
       return false;
     }
 
-    // Start the FastAPI server as a child process
-    const fastApiProcess = spawn('python3', [fastApiScriptPath]);
+    // Start the FastAPI server as a child process with environment variables
+    const fastApiProcess = spawn('python3', [fastApiScriptPath], {
+      env: { ...process.env, FASTAPI_PORT: process.env.FASTAPI_PORT || '8083' }
+    });
     
     fastApiProcess.stdout.on('data', (data) => {
       console.log(`FastAPI: ${data.toString()}`);
@@ -279,7 +281,7 @@ function createFastApiProxyMiddleware() {
     // Proxy IND Automation endpoints to the IND Automation service
     else if (req.path.startsWith('/api/ind') || req.path === '/api/projects') {
       // Configure to proxy to IND Automation service
-      const IND_AUTOMATION_SERVER = process.env.IND_AUTOMATION_SERVER || 'http://localhost:8081';
+      const IND_AUTOMATION_SERVER = process.env.IND_AUTOMATION_SERVER || 'http://localhost:8082';
       
       // Forward the request
       const method = req.method.toLowerCase();

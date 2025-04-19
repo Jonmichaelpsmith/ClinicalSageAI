@@ -1,0 +1,89 @@
+### Backend bulk‑approve endpoint added ✅
+
+**`api/documents/bulk_approve.py`**
+
+```python
+# bulk_approve.py – approve many docs + run QC in parallel
+from fastapi import APIRouter, HTTPException, Depends
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
+from datetime import datetime
+from server.db import SessionLocal
+from server.models.document import Document
+from utils.pdf_qc import qc_pdf
+from utils.event_bus import publish
+
+router = APIRouter(prefix="/api/documents", tags=["documents"])
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+class BulkBody(BaseModel):
+    ids: list[int]
+
+@router.post("/bulk-approve")
+async def bulk_approve(body: BulkBody, db: Session = Depends(get_db)):
+    if not body.ids:
+        raise HTTPException(400, "no ids")
+
+    results = []
+    for doc_id in body.ids:
+        doc = db.query(Document).filter_by(id=doc_id).first()
+        if not doc:
+            results.append({"id": doc_id, "status": "missing"})
+            continue
+
+        # skip if already approved
+        if doc.status == "approved":
+            results.append({"id": doc_id, "status": "already"})
+            continue
+
+        report = qc_pdf(doc.path)
+        doc.qc_json = report
+        if report["status"] == "passed":
+            doc.status = "approved"
+            doc.approved_at = datetime.utcnow()
+            db.add(doc)
+            publish("qc", {"id": doc_id, "status": "passed"})
+            results.append({"id": doc_id, "status": "approved"})
+        else:
+            doc.status = "qc_failed"
+            db.add(doc)
+            publish("qc", {"id": doc_id, "status": "failed"})
+            results.append({"id": doc_id, "status": "failed", "errors": report["errors"]})
+
+    db.commit()
+    return {"updated": len(results), "results": results}
+```
+
+*Add this router to your FastAPI `main.py`*:
+
+```python
+from api.documents.bulk_approve import router as bulk_router
+app.include_router(bulk_router)
+```
+
+---
+
+### Important: file‑location fix
+
+The **WebSocket file** *Api/ws/qc* in the canvas currently holds React code by accident.  
+Create a new file `client/src/pages/SubmissionBuilder.tsx` with that React code, and restore `api/ws/qc.py` to the WebSocket implementation I provided earlier.
+
+Once those are in the right paths:
+
+1. `npm install @minoru/react-dnd-treeview react-dnd react-dnd-html5-backend immutability-helper react-toastify`
+2. Restart backend and frontend.
+
+Your drag‑and‑drop builder now:
+
+* Updates QC badges live via WebSocket  
+* Supports bulk “Approve + QC” (calls new endpoint)  
+* Warns when region‑required modules are missing  
+* Saves order and modules
+
+Ready for further polish (EU/JP validator profiles) or marketing site revamp—your call!

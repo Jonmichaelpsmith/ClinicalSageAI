@@ -1,0 +1,98 @@
+// SubmissionBuilder.tsx – drag‑drop tree with QC badges, region rule hints & bulk approve
+import React, { useEffect, useState, useMemo } from 'react';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import { DndProvider } from 'react-dnd';
+import { Tree, NodeModel } from '@minoru/react-dnd-treeview';
+import { CheckCircle, XCircle, Info } from 'lucide-react';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+/** Region‑specific required module set */
+const REQUIRED: Record<string, string[]> = {
+  FDA: ['m1.1', 'm1.3', 'm2', 'm3', 'm5.3.1'],
+  EMA: ['m1.2', 'm1.3', 'm2', 'm3', 'm5.3.1'],
+  PMDA: ['m1', 'jp-annex', 'm2', 'm3', 'm5.3.1']
+};
+
+const REGION_FOLDERS: Record<string, string[]> = {
+  FDA: ['m1', 'm2', 'm3', 'm4', 'm5'],
+  EMA: ['m1', 'm2', 'm3', 'm4', 'm5'],
+  PMDA: ['m1', 'jp-annex', 'm2', 'm3', 'm4', 'm5']
+};
+
+type Doc = { id: number; title: string; module: string; qc_json?: { status: string } };
+type Node = NodeModel<Doc>;
+
+export default function SubmissionBuilder({ region = 'FDA' }: { region?: string }) {
+  const [tree, setTree] = useState<Node[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      const docs: Doc[] = await fetchJson('/api/documents?status=approved_or_qc_failed');
+      const root: Node = { id: 0, parent: 0, text: 'root', droppable: true };
+      const folders = REGION_FOLDERS[region].map((m, idx) => ({ id: 10_000 + idx, parent: 0, text: m, droppable: true }));
+      const items = docs.map(d => ({
+        id: d.id,
+        parent: folders.find(f => d.module.startsWith(f.text))?.id || folders[0].id,
+        text: d.title,
+        droppable: false,
+        data: d,
+      }));
+      setTree([root, ...folders, ...items]);
+      setLoading(false);
+    })();
+  }, [region]);
+
+  const missingModules = useMemo(() => {
+    const present = new Set(tree.filter(n => !n.droppable && n.parent !== 0).map(n => n.data!.module.split('.')[0]));
+    return REQUIRED[region].filter(req => !present.has(req.split('.')[0]));
+  }, [tree, region]);
+
+  const renderNode = (node: Node, { depth, isOpen, onToggle }: any) => {
+    if (node.droppable) {
+      const reqMissing = missingModules.some(m => m.startsWith(node.text));
+      return (
+        <div style={{ marginLeft: depth * 16 }} className="d-flex align-items-center gap-1 py-1">
+          <button onClick={onToggle} className="btn btn-sm btn-link p-0">{isOpen ? '▾' : '▸'}</button>
+          <strong className={reqMissing ? 'text-danger' : ''}>{node.text}</strong>
+          {reqMissing && <Info size={12} className="text-danger" title="Required docs missing in this module"/>}
+        </div>
+      );
+    }
+    const qcStatus = node.data?.qc_json?.status;
+    return (
+      <div style={{ marginLeft: depth * 16 }} className="d-flex align-items-center gap-2 py-1">
+        {qcStatus === 'passed' ? <CheckCircle size={14} className="text-success"/> : <XCircle size={14} className="text-danger"/>}
+        <span>{node.text}</span>
+      </div>
+    );
+  };
+
+  if (loading) return <p className="text-center mt-4">Loading…</p>;
+
+  return (
+    <div className="container py-4">
+      <h2>Submission Builder <span className="badge bg-secondary ms-2">{region}</span></h2>
+      {missingModules.length > 0 && (
+        <div className="alert alert-warning py-1 mb-3">
+          Missing required modules: {missingModules.join(', ')}
+        </div>
+      )}
+      <DndProvider backend={HTML5Backend}>
+        <Tree
+          tree={tree}
+          rootId={0}
+          render={renderNode}
+          onDrop={setTree}
+        />
+      </DndProvider>
+    </div>
+  );
+}
+
+async function fetchJson(url: string) {
+  const r = await fetch(url);
+  if (!r.ok) throw new Error('fetch failed');
+  return r.json();
+}

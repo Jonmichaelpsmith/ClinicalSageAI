@@ -8,13 +8,12 @@ import { Toaster } from "@/components/ui/toaster";
 import { Loader2, Beaker, MessageSquare } from 'lucide-react';
 import DashboardLayout from "@/components/DashboardLayout";
 import { AuthProvider } from '@/hooks/use-auth';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
 // Import page components
 import CsrIntelligence from './pages/CsrIntelligence';
 import DocumentsPage from './pages/DocumentsPage';
 import SubmissionBuilder from './pages/SubmissionBuilder';
+import ValidationPage from './pages/ValidationPage';
 import RiskAnalysis from './pages/RiskAnalysis';
 import AssistantPage from './pages/AssistantPage';
 import IndSequenceManager from './pages/IndSequenceManager';
@@ -445,7 +444,7 @@ export default function App() {
 
   return (
     <AuthProvider>
-      <ToastContainer position="top-right" autoClose={3000} />
+      {/* Toast container removed */}
       {/* Copilot drawer available on all pages */}
       <CopilotDrawer isOpen={copilotOpen} onClose={() => setCopilotOpen(false)} />
       
@@ -506,6 +505,15 @@ export default function App() {
             {() => (
               <DashboardLayout>
                 <IndSequenceDetail />
+              </DashboardLayout>
+            )}
+          </Route>
+
+          {/* === Validation Profiles and Rules === */}
+          <Route path="/portal/validation">
+            {() => (
+              <DashboardLayout>
+                <ValidationPage />
               </DashboardLayout>
             )}
           </Route>
