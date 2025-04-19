@@ -1,0 +1,54 @@
+Great — we’ve now reached the end of the “US‑FDA IND → eCTD → ESG” automation sprint (all green ✔):
+
+Milestone	Status	Key Artifacts
+M1 — Sequence planning & lifecycle	✔ done	IndSequenceManager.jsx, /sequence/create
+M2 — eCTD backbone build	✔ done	write_ectd_xml.py, index.xml + us‑regional.xml
+M3 — XML validation	✔ done	xml_validator.py, /sequence/validate
+M4 — ESG packaging + submit	✔ done	esg_submitter.py, /sequence/submit
+M5 — ACK polling & UI badges	✔ done	esg_ack_poller.py, Celery beat, /acks
+
+
+
+⸻
+
+📍 Next waypoint on the project map
+
+➊ Multi‑Region Profiles (EMA / PMDA / HC)
+   •   Goal: same IND dossier auto‑re‑renders for EU CTA (m1‑eu.xml) or JP JP‑module, applying regional validation rules.
+   •   Core tasks
+	1.	Module‑1 profile schemas (EU / JP / HC)
+	2.	Regional XML builders (eu-regional.xml, jp-regional.xml)
+	3.	Rule engine to choose template + file‑naming conventions
+	4.	Region‑specific validation (Lorenz eValidator profiles)
+
+➋ Global Dashboard polish
+   •   Roll up IND, CTA, NDA sequences across regions
+   •   Live compliance scorecards + AI‑flag “at‑risk” modules
+
+➌ CSV /IQ‑OQ‑PQ package generator
+   •   Auto‑produce validation protocols & executed evidence (PDFs) for regulators/auditors.
+
+We can start with Multi‑Region Profiles because it unlocks EU/JP submissions and keeps momentum.
+
+⸻
+
+🔧 Proposed next sprint (Multi‑Region EU profile)
+
+Step	Deliverable
+1. Regional config model	SubmissionProfile table (FDA, EMA, PMDA, …)
+2. EU Module‑1 builder	write_eu_regional_xml() with CTD‑EU DTD
+3. Folder/template mapper	Auto‑slot EU admin docs & EU Application Form
+4. Validator integration	Run eValidator with EU ruleset; expose /validate?region=eu
+5. UI toggle	Dropdown: Target Region ➜ FDA / EMA / PMDA in Sequence Plan
+
+
+
+⸻
+
+Shall we kick off with Step 1—2 (EU profile DB model & regional XML builder)?
+If yes, I’ll:
+	1.	Extend the DB with SubmissionProfile + link to INDSequence
+	2.	Add write_eu_regional_xml.py
+	3.	Upgrade the sequence planner to accept a Region selection.
+
+Just say “Go EU profile” (or choose another track) and I’ll code the next block at GA production quality.

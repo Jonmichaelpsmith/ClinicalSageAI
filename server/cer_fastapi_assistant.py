@@ -36,6 +36,8 @@ from routes.document_routes import router as document_router
 from routes.embedding_routes import router as embedding_router
 from routes.ind_xml_validation import router as xml_validation_router
 from routes.acks import router as acks_router
+from routes.document_approval import router as doc_approval_router
+from routes.ind_sequence_create import router as sequence_create_router
 
 # Register route modules
 app.include_router(assistant_router)
@@ -44,6 +46,8 @@ app.include_router(document_router)
 app.include_router(embedding_router)
 app.include_router(xml_validation_router)
 app.include_router(acks_router)
+app.include_router(doc_approval_router)
+app.include_router(sequence_create_router)
 
 # Add health check endpoint
 @app.get("/health")
