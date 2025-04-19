@@ -1,11 +1,15 @@
 import React from "react";
 import {
   FDA, EMA, MHRA, PMDA, NMPA, HealthCanada, TGA, MFDS,
-  CE, WHO, HIPAA, GDPR, ISO
+  CE, WHO, HIPAA, GDPR, ISO,
+  ASCO, NIH, ESMO, CDC, EPA, HHS, ICH,
+  FDA21CFR, FDAICHGCP, FDACompliance, FDACertification, EMAFull
 } from './RegulatoryLogosInlineComponents';
 
 const regulatory = [FDA, EMA, MHRA, PMDA, NMPA, HealthCanada, TGA, MFDS];
 const compliance = [CE, WHO, HIPAA, GDPR, ISO];
+const partners = [ASCO, NIH, ESMO, CDC, EPA, HHS, ICH];
+const certifications = [FDA21CFR, FDAICHGCP, FDACompliance];
 
 export default function RegulatoryConfidenceStrip() {
   return (
@@ -15,7 +19,7 @@ export default function RegulatoryConfidenceStrip() {
           Mastering global regulatory standards
         </div>
         
-        <div className="grid grid-cols-2 gap-2 mb-2">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
           <div className="border-r border-gray-200 dark:border-gray-700 pr-2">
             <div className="text-xs text-gray-500 dark:text-gray-400 mb-2 text-center">Regulatory Agencies</div>
             <div className="flex flex-wrap justify-center gap-3">
@@ -23,11 +27,25 @@ export default function RegulatoryConfidenceStrip() {
             </div>
           </div>
           
-          <div className="pl-2">
+          <div className="px-2 border-r border-gray-200 dark:border-gray-700">
             <div className="text-xs text-gray-500 dark:text-gray-400 mb-2 text-center">Compliance Standards</div>
             <div className="flex flex-wrap justify-center gap-3">
               {compliance.map((Logo, i) => <Logo key={`com-${i}`} />)}
             </div>
+          </div>
+          
+          <div className="pl-2">
+            <div className="text-xs text-gray-500 dark:text-gray-400 mb-2 text-center">Partner Organizations</div>
+            <div className="flex flex-wrap justify-center gap-3">
+              {partners.map((Logo, i) => <Logo key={`par-${i}`} />)}
+            </div>
+          </div>
+        </div>
+        
+        <div className="mt-3 pt-2 border-t border-gray-200 dark:border-gray-700">
+          <div className="text-xs text-gray-500 dark:text-gray-400 mb-2 text-center">Regulatory Certifications</div>
+          <div className="flex flex-wrap justify-center gap-3">
+            {certifications.map((Logo, i) => <Logo key={`cert-${i}`} />)}
           </div>
         </div>
       </div>
