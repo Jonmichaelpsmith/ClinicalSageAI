@@ -1,0 +1,42 @@
+# Regulatory Logos – Source Links & Usage Notes
+
+This document provides source links and usage notes for official grayscale or SVG-ready logos used in the RegulatoryConfidenceStrip banner.
+
+| Agency | Logo Source | License / Notes | Filename |
+|--------|-------------|------------------|----------|
+| **FDA (U.S.)** | [FDA Wikipedia SVG](https://en.wikipedia.org/wiki/File:US-FDA-Logo.svg) | Public domain in U.S. | `fda.svg` |
+| **EMA (Europe)** | [EMA Official Use Page](https://www.ema.europa.eu/en/about-us/contact/logo-use) | Requires permission for use in public/commercial settings | `ema.svg` (converted) |
+| **MHRA (UK)** | [Wikimedia SVG (CC BY-SA)](https://commons.wikimedia.org/wiki/File:MHRA_logo.svg) | CC BY-SA 4.0 – attribution required | `mhra.svg` |
+| **PMDA (Japan)** | [PMDA New Logo Press](https://www.pmda.go.jp/english/about-pmda/0003.html) / [SeekLogo Vector](https://seeklogo.com/vector-logo/432972/pmda) | Permitted for informational use, not endorsement | `pmda.svg` |
+| **NMPA (China)** | [Wikipedia/CFDA](https://en.wikipedia.org/wiki/National_Medical_Products_Administration) – logo inferred | Use acronym in official font, no known downloadable logo | `nmpa.svg` (stylized text) |
+| **Health Canada** | [Canada Wordmark](https://www.canada.ca/en/treasury-board-secretariat/services/government-communications/federal-identity-program/official-symbols.html) | Public use with no endorsement | `healthcanada.svg` |
+| **TGA (Australia)** | [Australian Gov Branding](https://www.health.gov.au/) | Logo is protected; use TGA wordmark in Helvetica or similar | `tga.svg` (text only) |
+| **MFDS (Korea)** | [MFDS Site](https://www.mfds.go.kr/eng/index.do) | Korean copyright – use English name or clean icon from open vector | `mfds.svg` (vector or stylized text) |
+
+## Attribution (if required)
+- MHRA: CC BY-SA 4.0 → Include attribution to Wikimedia user and link
+- EMA: May require written permission
+
+## Installation Path
+Place all finalized files into:
+```
+/public/logos/
+├─ fda.svg
+├─ ema.svg
+├─ mhra.svg
+├─ pmda.svg
+├─ nmpa.svg
+├─ healthcanada.svg
+├─ tga.svg
+├─ mfds.svg
+```
+
+Ensure each file is:
+- 1-color gray (`#6b7280` recommended or `currentColor` in CSS)
+- Transparent background
+- ≤ 20kb optimized SVG
+
+These will render smoothly in the `<RegulatoryConfidenceStrip />` component as part of the LumenTrialGuide.AI landing page.
+
+Let me know if you’d like me to create and deliver the .zip bundle of cleaned SVGs next.
+
