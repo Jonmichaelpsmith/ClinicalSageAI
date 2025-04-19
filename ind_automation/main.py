@@ -1,3 +1,4 @@
+import sqlparse
 import babel.dates as bdates
 import io, datetime, uuid
 from fastapi import FastAPI, HTTPException, Depends
@@ -284,7 +285,7 @@ async def locale_middleware(request, call_next):
 
 @app.get('/api/org/{org}/widgets')
 async def widgets(org: str, user: str = Depends(auth.get_current_user)):
-    return widgets_sql.list_widgets(org, user)
+    user_role = users.get_role(user); widgets = widgets_sql.list_widgets(org, user); return resolve_visibility(widgets, user_role)
 
 @app.post('/api/org/{org}/widgets')
 async def save_widget(org: str, body: dict, user: str = Depends(auth.get_current_user)):
@@ -293,7 +294,7 @@ async def save_widget(org: str, body: dict, user: str = Depends(auth.get_current
 
 @app.get('/api/org/{org}/widgets')
 async def widgets(org: str, user: str = Depends(auth.get_current_user)):
-    return widgets_sql.list_widgets(org, user)
+    user_role = users.get_role(user); widgets = widgets_sql.list_widgets(org, user); return resolve_visibility(widgets, user_role)
 
 @app.post('/api/org/{org}/widgets')
 async def save_widget(org: str, body: dict, user: str = Depends(auth.get_current_user)):
@@ -312,3 +313,18 @@ async def execute_sql(org: str, body: dict, user: str = Depends(auth.get_current
     widget_id = body.get('widget_id')
     sql = body.get('sql')
     return widgets_sql.execute_widget_sql(org, widget_id, sql)
+
+
+def resolve_visibility(widgets, user_role):
+    if user_role == "admin": return widgets
+    return [w for w in widgets if w.get("visibility", "private") in ("public", "role")]
+
+@app.get('/api/org/{org}/widget/{wid}/data')
+async def widget_data(org: str, wid: int, user: str = Depends(auth.get_current_user)):
+    w = [w for w in widgets_sql.list_widgets(org, user) if w['id'] == wid]
+    if not w: raise HTTPException(404)
+    sql = sqlparse.format(w[0]['sql'], strip_comments=True)
+    if any(k in sql.lower() for k in ('insert', 'update', 'delete', 'drop')):
+        raise HTTPException(400, 'Write statements not allowed')
+    db = sqlite3.connect('data/metrics.db'); db.row_factory = sqlite3.Row
+    rows = db.execute(sql).fetchall(); return [dict(r) for r in rows]

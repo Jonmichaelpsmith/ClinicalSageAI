@@ -20,7 +20,7 @@ conn.execute('''CREATE TABLE IF NOT EXISTS widget (
   id INTEGER PRIMARY KEY,
   org TEXT,
   user TEXT,
-  name TEXT,
+  name TEXT, visibility TEXT,
   sql TEXT,
   type TEXT,
   layout TEXT
@@ -31,7 +31,7 @@ conn.commit()
 conn.execute('''CREATE TABLE IF NOT EXISTS metrics (
   id INTEGER PRIMARY KEY,
   org TEXT,
-  metric_name TEXT,
+  metric_name TEXT, visibility TEXT,
   metric_value REAL,
   category TEXT,
   timestamp TEXT
