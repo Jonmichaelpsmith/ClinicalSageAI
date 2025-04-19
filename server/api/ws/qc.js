@@ -1,91 +1,115 @@
 /**
- * WebSocket QC Updates Endpoint
+ * WebSocket QC Updates Module
  * 
- * This module provides a WebSocket server endpoint for real-time QC status updates.
- * Clients can connect to receive live document QC status changes.
+ * This module provides WebSocket-based real-time QC status updates
+ * for documents in the submission builder.
  */
 
 import { WebSocketServer } from 'ws';
-import { subscribe, unsubscribe } from '../../utils/event_bus.js';
-
-let wss = null;
-const clients = new Set();
+import http from 'http';
 
 /**
- * Initialize WebSocket server
+ * Initialize the QC WebSocket server
  * 
- * @param {object} options Options object
- * @param {object} options.server HTTP server instance
- * @param {string} options.path WebSocket endpoint path
+ * @param {http.Server} server - HTTP server instance
+ * @returns {WebSocketServer} WebSocket server instance
  */
-export function init({ server, path = '/ws/qc' }) {
-  if (wss) {
-    console.warn('QC WebSocket server already initialized');
-    return;
-  }
+export function initQcWebSocketServer(server) {
+  const wss = new WebSocketServer({ 
+    server, 
+    path: '/ws/qc',
+    // Allow proper client identification
+    clientTracking: true
+  });
 
-  // Create WebSocket server
-  wss = new WebSocketServer({ server, path });
-  
-  // Set up connection handler
+  console.log('QC WebSocket server initialized on path: /ws/qc');
+
   wss.on('connection', (ws) => {
     console.log('QC WebSocket client connected');
-    clients.add(ws);
     
+    // Send initial connection confirmation
+    ws.send(JSON.stringify({
+      type: 'connection_status',
+      status: 'connected',
+      timestamp: new Date().toISOString()
+    }));
+    
+    // Handle client messages
+    ws.on('message', (message) => {
+      try {
+        const data = JSON.parse(message);
+        console.log('QC WebSocket message received:', data);
+        
+        // Handle specific message types
+        if (data.type === 'subscribe') {
+          ws.documentIds = data.documentIds || [];
+          ws.send(JSON.stringify({
+            type: 'subscription_status',
+            status: 'subscribed',
+            documentIds: ws.documentIds
+          }));
+        }
+      } catch (error) {
+        console.error('Error processing WebSocket message:', error);
+      }
+    });
+    
+    // Handle client disconnect
     ws.on('close', () => {
       console.log('QC WebSocket client disconnected');
-      clients.delete(ws);
-    });
-    
-    ws.on('error', (error) => {
-      console.error('QC WebSocket client error:', error);
-      clients.delete(ws);
     });
   });
-  
-  // Subscribe to QC events
-  subscribe('qc', (data) => {
-    const payload = JSON.stringify(data);
-    for (const client of clients) {
-      if (client.readyState === client.OPEN) {
-        try {
-          client.send(payload);
-        } catch (error) {
-          console.error('Failed to send QC update to client:', error);
-          clients.delete(client);
-        }
+
+  // Heart beat to keep connections alive
+  setInterval(() => {
+    wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify({ 
+          type: 'heartbeat',
+          timestamp: new Date().toISOString()
+        }));
       }
-    }
-  });
-  
-  console.log(`QC WebSocket server listening at ${path}`);
+    });
+  }, 30000);
+
   return wss;
 }
 
 /**
- * Shutdown WebSocket server
+ * Broadcast a QC status update to all connected clients
+ * 
+ * @param {WebSocketServer} wss - WebSocket server instance
+ * @param {number} documentId - ID of the document
+ * @param {string} status - New QC status ('passed', 'failed', etc.)
  */
-export function shutdown() {
-  if (!wss) return;
-  
-  // Unsubscribe from QC events
-  unsubscribe('qc');
-  
-  // Close all client connections
-  for (const client of clients) {
-    client.terminate();
+export function broadcastQcUpdate(wss, documentId, status) {
+  if (!wss || !wss.clients) {
+    console.error('WebSocket server not initialized');
+    return;
   }
-  clients.clear();
   
-  // Close server
-  wss.close(() => {
-    console.log('QC WebSocket server closed');
+  const message = JSON.stringify({
+    type: 'qc_status',
+    documentId,
+    status,
+    timestamp: new Date().toISOString()
   });
   
-  wss = null;
+  let clientCount = 0;
+  
+  wss.clients.forEach((client) => {
+    // Check if client is connected and subscribed to this document (or all docs)
+    if (client.readyState === WebSocket.OPEN && 
+        (!client.documentIds || client.documentIds.length === 0 || client.documentIds.includes(documentId))) {
+      client.send(message);
+      clientCount++;
+    }
+  });
+  
+  console.log(`QC update for document ${documentId} broadcasted to ${clientCount} clients`);
 }
 
 export default {
-  init,
-  shutdown
+  initQcWebSocketServer,
+  broadcastQcUpdate
 };

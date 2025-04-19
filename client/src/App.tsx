@@ -15,6 +15,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import CsrIntelligence from './pages/CsrIntelligence';
 import DocumentsPage from './pages/DocumentsPage';
 import SubmissionBuilder from './pages/SubmissionBuilder';
+import RiskAnalysis from './pages/RiskAnalysis';
 import AssistantPage from './pages/AssistantPage';
 import IndSequenceManager from './pages/IndSequenceManager';
 import SequenceDetail from './pages/SequenceDetail';
@@ -477,6 +478,15 @@ export default function App() {
             {() => (
               <DashboardLayout>
                 <SubmissionBuilder />
+              </DashboardLayout>
+            )}
+          </Route>
+          
+          {/* === Risk Analysis === */}
+          <Route path="/portal/risk-analysis/:submissionId">
+            {() => (
+              <DashboardLayout>
+                <RiskAnalysis />
               </DashboardLayout>
             )}
           </Route>

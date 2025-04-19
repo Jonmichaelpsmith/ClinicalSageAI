@@ -1,151 +1,95 @@
-{
-  "modules": {
-    "m1": {
-      "allowed_types": ["cover_letter", "form_1571", "form_1572", "table_of_contents", "labeling"],
-      "naming_pattern": null,
-      "suggested_redirect": ["m1.1", "m1.2"]
-    },
-    "m1.1": {
-      "allowed_types": ["cover_letter"],
-      "naming_pattern": null,
-      "suggested_redirect": []
-    },
-    "m1.2": {
-      "allowed_types": ["form_1571", "form_1572"],
-      "naming_pattern": null,
-      "suggested_redirect": []
-    },
-    "m1.3": {
-      "allowed_types": ["administrative_information"],
-      "naming_pattern": null,
-      "suggested_redirect": []
-    },
-    "m1.4": {
-      "allowed_types": ["reference_information"],
-      "naming_pattern": null,
-      "suggested_redirect": []
-    },
-    "m1.14": {
-      "allowed_types": ["labeling"],
-      "naming_pattern": null,
-      "suggested_redirect": []
-    },
-    "m2": {
-      "allowed_types": ["summary", "overview"],
-      "naming_pattern": null,
-      "suggested_redirect": ["m2.2", "m2.3", "m2.4", "m2.5", "m2.6", "m2.7"]
-    },
-    "m2.2": {
-      "allowed_types": ["introduction"],
-      "naming_pattern": null,
-      "suggested_redirect": []
-    },
-    "m2.3": {
-      "allowed_types": ["quality_summary"],
-      "naming_pattern": null,
-      "suggested_redirect": []
-    },
-    "m2.4": {
-      "allowed_types": ["nonclinical_overview"],
-      "naming_pattern": null,
-      "suggested_redirect": []
-    },
-    "m2.5": {
-      "allowed_types": ["clinical_overview"],
-      "naming_pattern": null,
-      "suggested_redirect": []
-    },
-    "m2.6": {
-      "allowed_types": ["nonclinical_summary"],
-      "naming_pattern": null,
-      "suggested_redirect": ["m2.6.1", "m2.6.2", "m2.6.3"]
-    },
-    "m2.7": {
-      "allowed_types": ["clinical_summary"],
-      "naming_pattern": null,
-      "suggested_redirect": ["m2.7.1", "m2.7.2", "m2.7.3", "m2.7.4"]
-    },
-    "m3": {
-      "allowed_types": ["quality"],
-      "naming_pattern": null,
-      "suggested_redirect": ["m3.2", "m3.3"]
-    },
-    "m3.2": {
-      "allowed_types": ["quality_data"],
-      "naming_pattern": null,
-      "suggested_redirect": ["m3.2.S", "m3.2.P", "m3.2.A", "m3.2.R"]
-    },
-    "m3.2.S": {
-      "allowed_types": ["drug_substance"],
-      "naming_pattern": null,
-      "suggested_redirect": ["m3.2.S.1", "m3.2.S.2", "m3.2.S.3", "m3.2.S.4", "m3.2.S.5", "m3.2.S.6", "m3.2.S.7"]
-    },
-    "m3.2.P": {
-      "allowed_types": ["drug_product"],
-      "naming_pattern": null,
-      "suggested_redirect": ["m3.2.P.1", "m3.2.P.2", "m3.2.P.3", "m3.2.P.4", "m3.2.P.5", "m3.2.P.6", "m3.2.P.7", "m3.2.P.8"]
-    },
-    "m3.2.P.5": {
-      "allowed_types": ["drug_product_specifications", "analytical_procedures", "validation_procedures"],
-      "naming_pattern": null,
-      "suggested_redirect": []
-    },
-    "m3.2.P.8": {
-      "allowed_types": ["stability_data"],
-      "naming_pattern": null,
-      "suggested_redirect": []
-    },
-    "m4": {
-      "allowed_types": ["nonclinical_study_reports"],
-      "naming_pattern": null,
-      "suggested_redirect": ["m4.2.1", "m4.2.2", "m4.2.3"]
-    },
-    "m4.2.1": {
-      "allowed_types": ["pharmacology_report"],
-      "naming_pattern": null,
-      "suggested_redirect": []
-    },
-    "m4.2.2": {
-      "allowed_types": ["pharmacokinetics_report"],
-      "naming_pattern": null,
-      "suggested_redirect": []
-    },
-    "m4.2.3": {
-      "allowed_types": ["toxicology_report"],
-      "naming_pattern": null,
-      "suggested_redirect": []
-    },
-    "m5": {
-      "allowed_types": ["clinical_study_reports"],
-      "naming_pattern": null,
-      "suggested_redirect": ["m5.2", "m5.3", "m5.4"]
-    },
-    "m5.2": {
-      "allowed_types": ["tabular_listing"],
-      "naming_pattern": null,
-      "suggested_redirect": []
-    },
-    "m5.3": {
-      "allowed_types": ["clinical_study_report", "clinical_trial_report"],
-      "naming_pattern": null,
-      "suggested_redirect": ["m5.3.1", "m5.3.2", "m5.3.3", "m5.3.4", "m5.3.5"]
-    },
-    "m5.3.5": {
-      "allowed_types": ["efficacy_safety_study_report", "indication_reports"],
-      "naming_pattern": null,
-      "suggested_redirect": []
-    },
-    "m5.4": {
-      "allowed_types": ["literature_references"],
-      "naming_pattern": null,
-      "suggested_redirect": []
+[
+  {
+    "id": "fda-rule-1",
+    "category": "documentation",
+    "title": "FDA Form 1571 Requirement",
+    "description": "Form FDA 1571 (Investigational New Drug Application) must be included in Module 1 of all IND submissions.",
+    "severity": "critical",
+    "validation_regex": null,
+    "required_file_pattern": "m1\\/us\\/.*1571.*\\.pdf",
+    "applicable_sections": ["m1/us"],
+    "metadata": {
+      "url": "https://www.fda.gov/media/72335/download",
+      "documentation": "Form FDA 1571 must be completed for all IND submissions"
     }
   },
-  "dependencies": {
-    "m2.7": ["m5.3"],
-    "m2.6": ["m4.2"],
-    "m2.3": ["m3.2"],
-    "m5.3.5": ["m5.2"],
-    "m3.2.P.8": ["m3.2.P.5"]
+  {
+    "id": "fda-rule-2",
+    "category": "documentation",
+    "title": "FDA Form 1572 Requirement",
+    "description": "Form FDA 1572 (Statement of Investigator) must be included for each investigator in the clinical trial.",
+    "severity": "critical",
+    "validation_regex": null,
+    "required_file_pattern": "m1\\/us\\/.*1572.*\\.pdf",
+    "applicable_sections": ["m1/us"],
+    "metadata": {
+      "url": "https://www.fda.gov/media/72981/download",
+      "documentation": "Form FDA 1572 is required for each investigator participating in the clinical trial"
+    }
+  },
+  {
+    "id": "fda-rule-3",
+    "category": "formatting",
+    "title": "Cover Letter Requirement",
+    "description": "A cover letter on company letterhead must be included with all submissions.",
+    "severity": "major",
+    "validation_regex": null,
+    "required_file_pattern": "m1\\/us\\/.*cover-letter.*\\.pdf",
+    "applicable_sections": ["m1/us"],
+    "metadata": {
+      "documentation": "Cover letter should be on company letterhead and signed by authorized representative"
+    }
+  },
+  {
+    "id": "fda-rule-4",
+    "category": "formatting",
+    "title": "PDF Format Requirements",
+    "description": "All PDF documents must conform to FDA PDF specifications, be unsecured, and have all fonts embedded.",
+    "severity": "major",
+    "validation_regex": null,
+    "required_file_pattern": null,
+    "applicable_sections": ["all"],
+    "metadata": {
+      "documentation": "PDF documents must not have security settings, must have embedded fonts, and must be PDF version 1.4 or higher"
+    }
+  },
+  {
+    "id": "fda-rule-5",
+    "category": "documentation",
+    "title": "Protocol Document Requirement",
+    "description": "A complete Protocol document must be included for all clinical trials.",
+    "severity": "critical",
+    "validation_regex": null,
+    "required_file_pattern": "m5\\/.*protocol.*\\.pdf",
+    "applicable_sections": ["m5"],
+    "metadata": {
+      "documentation": "Protocol document must include detailed study design, methodology, and statistical analysis plan"
+    }
+  },
+  {
+    "id": "fda-rule-6",
+    "category": "structure",
+    "title": "eCTD Structure Compliance",
+    "description": "Submission must adhere to FDA eCTD folder structure requirements.",
+    "severity": "critical",
+    "validation_regex": null,
+    "required_file_pattern": null,
+    "applicable_sections": ["all"],
+    "metadata": {
+      "documentation": "All submissions must follow the FDA eCTD structure and naming conventions"
+    }
+  },
+  {
+    "id": "fda-rule-7",
+    "category": "metadata",
+    "title": "XML Backbone Requirement",
+    "description": "A valid XML backbone file must be included and correctly reference all documents.",
+    "severity": "critical",
+    "validation_regex": null,
+    "required_file_pattern": "index\\.xml",
+    "applicable_sections": ["root"],
+    "metadata": {
+      "documentation": "XML backbone must conform to FDA DTD specifications and correctly reference all documents"
+    }
   }
-}
+]

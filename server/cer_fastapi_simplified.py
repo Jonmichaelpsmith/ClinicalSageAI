@@ -334,4 +334,5 @@ This report was generated on {datetime.now().strftime("%Y-%m-%d")} and reflects 
 # Run the FastAPI server if executed directly
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    # Use port 8080 to avoid conflict with any other service
+    uvicorn.run(app, host="0.0.0.0", port=8080)
