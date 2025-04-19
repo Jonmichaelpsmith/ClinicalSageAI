@@ -1,83 +1,96 @@
 // RegulatoryLogosInlineComponents.jsx
 // React components with actual SVG logos + hover effect
+import fdaLogo from '../assets/logos/fda.svg';
+import emaLogo from '../assets/logos/ema.svg';
+import mhraLogo from '../assets/logos/mhra.svg';
+import pmdaLogo from '../assets/logos/pmda.svg';
+import nmpaLogo from '../assets/logos/nmpa.svg';
+import healthCanadaLogo from '../assets/logos/healthcanada.svg';
+import tgaLogo from '../assets/logos/tga.svg';
+import mfdsLogo from '../assets/logos/mfds.svg';
+import ceLogo from '../assets/logos/ce.svg';
+import whoLogo from '../assets/logos/who.svg';
+import hipaaLogo from '../assets/logos/hipaa.svg';
+import gdprLogo from '../assets/logos/gdpr.svg';
+import isoLogo from '../assets/logos/iso.svg';
 
 const base = "inline-block transition-all duration-200 opacity-70 hover:opacity-100 m-0.5";
 const logoStyle = "h-6 w-auto filter grayscale hover:grayscale-0 transition-all";
 
 export const FDA = () => (
   <div className={base} title="FDA (U.S.)">
-    <img src="/logos/fda.svg" alt="FDA" className={logoStyle + " hover:filter-none"} />
+    <img src={fdaLogo} alt="FDA" className={logoStyle} />
   </div>
 );
 
 export const EMA = () => (
   <div className={base} title="EMA (Europe)">
-    <img src="/logos/ema.svg" alt="EMA" className={logoStyle} />
+    <img src={emaLogo} alt="EMA" className={logoStyle} />
   </div>
 );
 
 export const MHRA = () => (
   <div className={base} title="MHRA (UK)">
-    <img src="/logos/mhra.svg" alt="MHRA" className={logoStyle} />
+    <img src={mhraLogo} alt="MHRA" className={logoStyle} />
   </div>
 );
 
 export const PMDA = () => (
   <div className={base} title="PMDA (Japan)">
-    <img src="/logos/pmda.svg" alt="PMDA" className={logoStyle} />
+    <img src={pmdaLogo} alt="PMDA" className={logoStyle} />
   </div>
 );
 
 export const NMPA = () => (
   <div className={base} title="NMPA (China)">
-    <img src="/logos/nmpa.svg" alt="NMPA" className={logoStyle} />
+    <img src={nmpaLogo} alt="NMPA" className={logoStyle} />
   </div>
 );
 
 export const HealthCanada = () => (
   <div className={base} title="Health Canada">
-    <img src="/logos/healthcanada.svg" alt="Health Canada" className={logoStyle} />
+    <img src={healthCanadaLogo} alt="Health Canada" className={logoStyle} />
   </div>
 );
 
 export const TGA = () => (
   <div className={base} title="TGA (Australia)">
-    <img src="/logos/tga.svg" alt="TGA" className={logoStyle} />
+    <img src={tgaLogo} alt="TGA" className={logoStyle} />
   </div>
 );
 
 export const MFDS = () => (
   <div className={base} title="MFDS (Korea)">
-    <img src="/logos/mfds.svg" alt="MFDS" className={logoStyle} />
+    <img src={mfdsLogo} alt="MFDS" className={logoStyle} />
   </div>
 );
 
 export const CE = () => (
   <div className={base} title="CE Mark (Europe)">
-    <img src="/logos/ce.svg" alt="CE" className={logoStyle} />
+    <img src={ceLogo} alt="CE" className={logoStyle} />
   </div>
 );
 
 export const WHO = () => (
   <div className={base} title="WHO (World Health Organization)">
-    <img src="/logos/who.svg" alt="WHO" className={logoStyle} />
+    <img src={whoLogo} alt="WHO" className={logoStyle} />
   </div>
 );
 
 export const HIPAA = () => (
   <div className={base} title="HIPAA Compliance (U.S.)">
-    <img src="/logos/hipaa.svg" alt="HIPAA" className={logoStyle} />
+    <img src={hipaaLogo} alt="HIPAA" className={logoStyle} />
   </div>
 );
 
 export const GDPR = () => (
   <div className={base} title="GDPR Compliance (EU)">
-    <img src="/logos/gdpr.svg" alt="GDPR" className={logoStyle} />
+    <img src={gdprLogo} alt="GDPR" className={logoStyle} />
   </div>
 );
 
 export const ISO = () => (
   <div className={base} title="ISO 27001 Certification">
-    <img src="/logos/iso.svg" alt="ISO" className={logoStyle} />
+    <img src={isoLogo} alt="ISO" className={logoStyle} />
   </div>
 );
