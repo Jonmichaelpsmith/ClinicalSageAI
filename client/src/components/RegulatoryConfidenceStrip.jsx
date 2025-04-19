@@ -34,7 +34,7 @@ export default function RegulatoryConfidenceStrip() {
         </div>
         
         <div className="mt-3 pt-2 border-t border-gray-200 dark:border-gray-700">
-          <div className="text-xs text-gray-500 dark:text-gray-400 mb-2 text-center">Compatible With Standards From</div>
+          <div className="text-xs text-gray-500 dark:text-gray-400 mb-2 text-center">Experts on the Standards from</div>
           <div className="flex flex-wrap justify-center gap-3">
             {compatible.map((Logo, i) => <Logo key={`comp-${i}`} />)}
           </div>
