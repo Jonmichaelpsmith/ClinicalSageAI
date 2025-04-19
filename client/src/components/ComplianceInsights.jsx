@@ -1,5 +1,9 @@
+import {useSearchParams,useNavigate} from "react-router-dom";
+import dayjs from "dayjs";
+import TimeScrubber from "./TimeScrubber";
 
-function useDebounce(value,delay){const[d,setD]=React.useState(value);React.useEffect(()=>{const t=setTimeout(()=>setD(value),delay);return(<div className={hc?"contrast":theme==="dark"?"dark":""}>)=>clearTimeout(t)},[value,delay]);return d;}
+function useDebounce(value,delay){const[d,setD]=React.useState(value);React.useEffect(()=>{const t=setTimeout(()=>setD(value),delay);return(<><TimeScrubber min={data[data.length-1]?.date||""} max={data[0]?.date||""} from={from} to={to} onChange={(f,t)=>{setFrom(f);setTo(t);nav(`#/insights?from=${f}&to=${t}`)}}/>
+<div className={hc?"contrast":theme==="dark"?"dark":""}>)=>clearTimeout(t)},[value,delay]);return d;}
 
 function useTheme(){const[t,setT]=React.useState(localStorage.getItem('chartTheme')||'light');React.useEffect(()=>{localStorage.setItem('chartTheme',t)},[t]);return[t,()=>setT(p=>p==='light'?'dark':'light')];}
 import SidePanel from './SidePanel';
@@ -18,7 +22,7 @@ export default function ComplianceInsights({ org }) {
   const [data, setData] = useState([]);
   
   useEffect(() => { 
-    if (org) api.get(`/api/org/${org}/metrics`).then(r => setData(r.data));
+    if (org) api.get(`/api/org/${org}/metrics?from=${from}&to=${to}`).then(r => setData(r.data));
   }, [org]);
   
   if (!data.length) return <p>Loading metrics…</p>;
