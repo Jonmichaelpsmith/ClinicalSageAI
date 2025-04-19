@@ -143,7 +143,7 @@ export function INDAutomationPanel() {
           )}
 
           <Tabs defaultValue="benchling" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="benchling">
                 <Database className="h-4 w-4 mr-2" />
                 From Benchling
@@ -155,6 +155,10 @@ export function INDAutomationPanel() {
               <TabsTrigger value="fda-forms">
                 <FileText className="h-4 w-4 mr-2" />
                 FDA Forms
+              </TabsTrigger>
+              <TabsTrigger value="saml-settings">
+                <ShieldCheck className="h-4 w-4 mr-2" />
+                SAML Settings
               </TabsTrigger>
             </TabsList>
             
@@ -242,6 +246,10 @@ export function INDAutomationPanel() {
             
             <TabsContent value="fda-forms">
               <FDAFormsPanel />
+            </TabsContent>
+
+            <TabsContent value="saml-settings">
+              <SAMLSettingsPanel />
             </TabsContent>
           </Tabs>
         </div>

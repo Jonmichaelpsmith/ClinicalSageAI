@@ -137,83 +137,19 @@ app.include_router(esg_credentials_api.router)
 # Include SAML settings API
 app.include_router(saml_settings_api.router)
 
-# ---------- Auth routes ----------
-from fastapi import Depends
-@app.post("/api/auth/register")
-async def register(body: dict):
-    try:
-        users.create(body["username"], body["password"], role=body.get("role","user"))
-        return {"status":"created"}
-    except ValueError as e:
-        if str(e) == "exists":
-            raise HTTPException(400, "Username already exists")
-        raise HTTPException(400, str(e))
 
-@app.post("/api/auth/login")
-async def login(body: dict):
-    if users.verify(body["username"], body["password"]):
-        token = auth.create_token(body["username"])
-        return {"token": token, "username": body["username"], "role": users.get_role(body["username"])}
-    raise HTTPException(401, "Bad credentials")
+# ---------- SAML (pySAML2) ----------
+from fastapi.responses import RedirectResponse
+@app.get('/saml/{org}/login')
+async def saml_login(org: str, relay: str = '/'):
+    url = saml_sp_pysaml2.login_redirect(org, relay)
+    return RedirectResponse(url)
 
-@app.get("/api/auth/verify")
-async def verify_token(user: str = Depends(auth.get_current_user)):
-    """Verify that the token is valid"""
-    return {"username": user, "role": users.get_role(user)}
-
-@app.get("/api/ind-automation/auth/check-permissions")
-async def check_permissions(user: str = Depends(auth.get_current_user)):
-    """Get user permissions for client-side UI decisions"""
-    role = users.get_role(user)
-    permissions = []
-    
-    # Add permissions based on role
-    if role == "admin":
-        permissions.extend([
-            "saml.read", 
-            "saml.write", 
-            "saml.delete",
-            "esg.read",
-            "esg.write"
-        ])
-    elif role == "manager":
-        permissions.extend([
-            "saml.read",
-            "esg.read"
-        ])
-        
-    return {"username": user, "role": role, "permissions": permissions}
-
-# For compatibility with existing API calls
-@app.get("/projects")
-async def legacy_projects():
-    projects = []
-    for project in db.list_projects():
-        projects.append({
-            "id": project["project_id"],
-            "name": f"{project['sponsor']} - {project['drug_name']}"
-        })
-    
-    # Add fallback projects if none exist in the database
-    if not projects:
-        projects = [
-            {"id": "P001", "name": "Oncology - New Cancer Drug"},
-            {"id": "P002", "name": "Cardiovascular - Hypertension Treatment"}
-        ]
-    
-    return {"projects": projects}
-@app.get("/api/ind/{pid}/ectd/{serial}")
-async def build_ectd_ga(pid: str, serial: str):
-    meta = db.load(pid)
-    if not meta:
-        raise HTTPException(404, "Project not found")
-    zip_buf = ectd_ga.build_sequence(pid, serial)
-    db.append_history(pid, {
-        "type": "ectd_ga",
-        "serial": serial,
-        "timestamp": datetime.datetime.utcnow().isoformat(),
-        "zip": f"ectd_{pid}_{serial}.zip"
-    })
-    return StreamingResponse(zip_buf,
-        media_type="application/zip",
-        headers={"Content-Disposition": f"attachment; filename=ectd_{pid}_{serial}.zip"})
+@app.post('/saml/{org}/acs')
+async def saml_acs(org: str, request: Request):
+    attrs, nameid = await saml_sp_pysaml2.acs_process(org, request)
+    users.create(nameid, 'saml', role='user')
+    perms = attrs.get('trialsage-perms', [])
+    _d = users._load(); _d[nameid]['perms'] = perms; users._save(_d)
+    token = auth.create_token(nameid)
+    return RedirectResponse(f'/#/login-callback?token={token}')
