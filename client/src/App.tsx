@@ -35,11 +35,30 @@ const ToastProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
   
   const add = useCallback((options: ToastOptions | string) => {
     const isString = typeof options === 'string';
+    // Use a more unique ID with random component to prevent duplicates
     const toast: Toast = {
-      id: Date.now(),
+      id: Date.now() + Math.floor(Math.random() * 10000),
       message: isString ? options : options.message,
       type: isString ? 'success' : (options.type || 'success')
     };
+    
+    // Also use react-toastify to ensure reliable notifications
+    const toastType = isString ? 'success' : (options.type || 'success');
+    const message = isString ? options : options.message;
+    
+    // Display using react-toastify
+    switch(toastType) {
+      case 'success':
+        toastify.success(message);
+        break;
+      case 'error':
+        toastify.error(message);
+        break;
+      default:
+        toastify.info(message);
+    }
+    
+    // Still update internal state for backward compatibility
     setToasts(t => [...t, toast]);
   }, []);
   
@@ -98,40 +117,13 @@ const ToastProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
 export const useToast = () => useContext(ToastCtx);
 /* ------------------------------------------------------------------ */
 
-// WebSocket listener inside component rendered *after* provider
-import useQCWebSocket from './hooks/useQCWebSocket';
-
-function QCSocket() {
-  const toast = useToast();
-  
-  // Using our fallback implementation instead of real WebSocket
-  useQCWebSocket('FDA', (data) => {
-    // Handle messages by showing toasts
-    if (data.id && data.status) {
-      toast({
-        message: `QC ${data.status} for document ${data.id}`,
-        type: data.status === 'passed' ? 'success' : 'error'
-      });
-    } else if (data.type === 'connection_established') {
-      // Show a message that we're using fallback mode
-      console.log('[QC System] Using fallback mode (WebSocket disabled)', data);
-      toast({
-        message: 'QC system in fallback mode',
-        type: 'info'
-      });
-    } else {
-      console.log('[QC System] Received message:', data);
-    }
-  });
-  
-  return null;
-}
+// Import for useQCWebSocket now moved to SubmissionBuilder component
+// Each page that needs WebSocket will initialize its own connection
 
 export default function App() {
   return (
     <ErrorBoundary>
       <ToastProvider>
-        <QCSocket/>
         <Switch>
           <Route path="/">
             <ErrorBoundary>
