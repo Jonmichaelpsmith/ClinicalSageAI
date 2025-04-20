@@ -127,6 +127,11 @@ export const setupRoutes = (app: express.Express) => {
     res.status(200).json({ success: true });
   });
 
+  // Special route handler for the builder page
+  app.get('/builder', (req, res) => {
+    res.sendFile('builder.html', { root: './public' });
+  });
+  
   // API routes
   app.get('/api/users/:id', async (req, res) => {
     const id = parseInt(req.params.id);

@@ -6,6 +6,7 @@ import IndSequenceDetail from './pages/IndSequenceDetail';
 import IndSequenceManager from './pages/IndSequenceManager';
 import HomeLanding from './pages/HomeLandingProtected';
 import DebugInfo from './components/DebugInfo';
+import ErrorBoundary from './ErrorBoundary';
 import { CheckCircle, AlertTriangle, Info } from 'lucide-react';
 
 /* ------------ Improved Toast Provider ------------- */
@@ -173,15 +174,38 @@ function QCSocket() {
 
 export default function App() {
   return (
-    <ToastProvider>
-      <QCSocket/>
-      <Switch>
-        <Route path="/" component={HomeLanding} />
-        <Route path="/builder" component={SubmissionBuilder} />
-        <Route path="/portal/ind/:sequenceId" component={IndSequenceDetail} />
-        <Route path="/ind/planner" component={IndSequenceManager} />
-        <Route component={IndSequenceManager} />
-      </Switch>
-    </ToastProvider>
+    <ErrorBoundary>
+      <ToastProvider>
+        <QCSocket/>
+        <Switch>
+          <Route path="/">
+            <ErrorBoundary>
+              <HomeLanding />
+            </ErrorBoundary>
+          </Route>
+          <Route path="/builder">
+            <ErrorBoundary>
+              <SubmissionBuilder />
+            </ErrorBoundary>
+          </Route>
+          <Route path="/portal/ind/:sequenceId">
+            <ErrorBoundary>
+              <IndSequenceDetail />
+            </ErrorBoundary>
+          </Route>
+          <Route path="/ind/planner">
+            <ErrorBoundary>
+              <IndSequenceManager />
+            </ErrorBoundary>
+          </Route>
+          <Route>
+            <ErrorBoundary>
+              <HomeLanding />
+            </ErrorBoundary>
+          </Route>
+        </Switch>
+        <DebugInfo />
+      </ToastProvider>
+    </ErrorBoundary>
   );
 }

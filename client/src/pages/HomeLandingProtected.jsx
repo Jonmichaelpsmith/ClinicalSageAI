@@ -81,8 +81,24 @@ export default function HomeLanding() {
     };
   }, []);
 
+  const now = new Date();
+  
   return (
     <div className="min-h-screen flex flex-col dark:bg-slate-900">
+      {/* Indicator for rendering */}
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        right: 0,
+        background: 'red',
+        color: 'white',
+        padding: '5px 10px',
+        fontSize: '12px',
+        zIndex: 9999
+      }}>
+        Concept2Cures.AI Landing - {now.toLocaleTimeString()}
+      </div>
+      
       {/* Navigation Bar */}
       <header className="bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800">
         <div className="container mx-auto flex justify-between items-center py-4 px-6">
