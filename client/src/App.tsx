@@ -4,7 +4,7 @@ import { Route, Switch } from 'wouter';
 import SubmissionBuilder from './pages/SubmissionBuilder';
 import IndSequenceDetail from './pages/IndSequenceDetail';
 import IndSequenceManager from './pages/IndSequenceManager';
-import HomeLanding from './pages/HomeLanding';
+import HomeLanding from './pages/HomeLandingProtected';
 import { CheckCircle, AlertTriangle, Info } from 'lucide-react';
 
 /* ------------ Improved Toast Provider ------------- */
