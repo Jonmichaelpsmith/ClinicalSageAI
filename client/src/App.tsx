@@ -5,6 +5,7 @@ import SubmissionBuilder from './pages/SubmissionBuilder';
 import IndSequenceDetail from './pages/IndSequenceDetail';
 import IndSequenceManager from './pages/IndSequenceManager';
 import HomeLanding from './pages/HomeLandingProtected';
+import DebugInfo from './components/DebugInfo';
 import { CheckCircle, AlertTriangle, Info } from 'lucide-react';
 
 /* ------------ Improved Toast Provider ------------- */
