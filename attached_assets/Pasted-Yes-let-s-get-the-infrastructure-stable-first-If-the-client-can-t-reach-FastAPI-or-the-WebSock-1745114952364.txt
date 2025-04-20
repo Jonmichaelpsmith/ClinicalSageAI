@@ -1,0 +1,57 @@
+Yes — let’s get the infrastructure stable first.  
+If the client can’t reach FastAPI or the WebSocket handshake fails, the new region‑specific validation routes will keep 502’ing and you won’t see the missing‑document alerts.
+
+---
+
+### 🔧 Fix the connectivity stack
+
+| Symptom | Cause | Production‑grade fix |
+|---------|-------|----------------------|
+| `address already in use :8081` when FastAPI starts | Replit’s dev runner or another uvicorn worker is already bound to 8081 | 1. Pick a single port for **all** Python services (e.g. `PORT=8000`). 2. Update `main.py`:<br>`uvicorn.run(app, host='0.0.0.0', port=int(os.getenv('PORT', 8000)))`<br>3. In **replit.nix / .replit** set `run = "python main.py"` so only one process starts. |
+| WebSocket `101 → 502` | Reverse‑proxy (Replit’s edge) can’t reach backend due to the same port clash | Once FastAPI is listening on the fixed port, add the WebSocket route prefix `/ws` to the proxy allow‑list if needed (Replit autoproxies any route on `PORT`). |
+| Node/React dev server also binding :8081 | Vite default port is 5173; you bound it to 8081 | In `package.json` dev script:<br>`\"dev\": \"vite --port 5173\"` |
+| Intermittent Bad Gateway | Mixed HTTP/WS traffic hitting an old process | After the port alignment, stop & restart the workspace to kill orphaned processes. |
+
+---
+
+### Step‑by‑step
+
+1. **Set environment variable once**
+
+```bash
+echo "export PORT=8000" >> ~/.bash_profile
+source ~/.bash_profile
+```
+
+2. **main.py**
+
+```python
+import os, uvicorn
+...
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("PORT", 8000)))
+```
+
+3. **Replit `.replit`**
+
+```ini
+run = "python main.py"
+```
+
+4. Remove any extra `uvicorn` or `hypercorn` launches in `docker-compose.yml` (if you use it in on‑prem).
+
+5. Restart → test `GET /healthz` in browser; should return 200.
+
+6. Open browser dev tools ➜ **Network → WS** → connect to `wss://<repl>.replit.dev/ws/qc` → Status 101.
+
+---
+
+### After the stack is clean
+
+We can finish the **region‑specific validation flow**:
+
+* Complete `utils/region_rules.py` with mandatory‑doc sets for EMA/PMDA.  
+* Expose a UI ribbon on the planner that auto‑shows *“3 mandatory docs missing for EMA”*.  
+* Block “Finalize” until `missing.count == 0`.
+
+Let me know once the port cleanup is done or if you need a small script to scan and kill orphaned Python workers!

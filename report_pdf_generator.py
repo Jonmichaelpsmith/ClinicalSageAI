@@ -138,6 +138,9 @@ class ProtocolReportPDF(FPDF):
     def add_bullet_list(self, items):
         self.set_font('Arial', '', 11)
         for item in items:
+            self.cell(10, 5, chr(8226), 0, 0, 'R')  # bullet character
+            self.multi_cell(0, 5, item)
+            self.ln(1)
             
     def add_success_prediction(self, prediction_data):
         """Add success prediction section to PDF with visualization"""
@@ -262,9 +265,7 @@ class ProtocolReportPDF(FPDF):
                 self.multi_cell(0, 5, deep_clean(rec))
                 
         self.ln(5)
-            clean_item = deep_clean(item)
-            self.cell(5, 5, '•', 0, 0)
-            self.multi_cell(0, 5, clean_item)
+        # Add some space after the bullet list
         self.ln(3)
     
     def add_bar_chart(self, title, labels, values1, values2, labels1="Your Protocol", labels2="CSR Median"):

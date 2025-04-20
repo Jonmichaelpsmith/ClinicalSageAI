@@ -28,7 +28,7 @@ class DocSlot(BaseModel):
 
 class SequenceInput(BaseModel):
     base: str
-    region: str = Field('FDA', regex='^(FDA|EMA|PMDA)$')
+    region: str = Field('FDA', pattern='^(FDA|EMA|PMDA)$')
     plan: List[DocSlot]
 
 @router.post("/sequence/create-region")

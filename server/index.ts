@@ -2,9 +2,9 @@ import express, { type Request, Response, NextFunction } from "express";
 import { setupRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { scheduleDataUpdates, findLatestDataFile, importTrialsFromJson } from "./data-importer";
-import * as fastApiBridge from "./fastapi_bridge.js";
-// Import http-proxy-middleware using ESM syntax
-import { createProxyMiddleware } from 'http-proxy-middleware';
+
+// Import the fastapi_bridge module
+import registerFastapiProxy from "./fastapi_bridge";
 
 // Create a logger utility for consistent formatting
 const logger = {
@@ -28,20 +28,8 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Add FastAPI proxy middleware for data ingestion routes
-// Use the custom FastAPI proxy middleware
-app.use(fastApiBridge.createFastApiProxyMiddleware());
-
-// Add direct proxy to FastAPI server for all /api routes not handled by the custom middleware
-app.use('/api', createProxyMiddleware({
-  target: 'http://127.0.0.1:8081',
-  changeOrigin: false,
-  // Removed logLevel property which was causing type errors
-  onError: (err, req, res) => {
-    console.error(`Proxy error: ${err}`);
-    res.status(502).send('FastAPI server proxy error');
-  }
-}));
+// Register the FastAPI proxy for both REST and WebSocket endpoints
+registerFastapiProxy(app);
 
 // Request logging middleware with timestamp-based IDs
 app.use((req, res, next) => {
@@ -139,14 +127,9 @@ app.use((req, res, next) => {
     }, () => {
       log(`serving on port ${PORT}`);
       
-      // Start FastAPI server for data ingestion
-      fastApiBridge.startFastApiServer()
-        .then(() => {
-          log('FastAPI data ingestion server started successfully');
-        })
-        .catch(error => {
-          log(`Error starting FastAPI server: ${error.message}`);
-        });
+      // FastAPI server is now started via main.py directly, not from Node
+      const apiPort = process.env.PORT || '8000';
+      log(`Connected to FastAPI server running on PORT=${apiPort}`);
       
       // Start the clinical trial data updater
       const dataUpdateTimer = scheduleDataUpdates(12); // Update every 12 hours
@@ -166,9 +149,8 @@ app.use((req, res, next) => {
       
       // Handle server shutdown
       process.on('SIGTERM', () => {
-        log('SIGTERM signal received: closing data updater and FastAPI server');
+        log('SIGTERM signal received: closing data updater');
         clearInterval(dataUpdateTimer);
-        fastApiBridge.stopFastApiServer();
         server.close(() => {
           log('HTTP server closed');
         });

@@ -76,7 +76,7 @@ class Document(Base):
     version = Column(String(20), nullable=False)
     path = Column(Text, nullable=False)
     status = Column(String(20), default="draft")  # draft, in_review, approved, rejected
-    metadata = Column(JSON)
+    doc_metadata = Column(JSON)  # Renamed from metadata to avoid SQLAlchemy reserved name
     slug = Column(String(100))
     
     # PDF QC fields
@@ -87,6 +87,27 @@ class Document(Base):
     
     def __repr__(self):
         return f"<Document {self.id}: {self.title}>"
+
+class SubmissionProfile(Base):
+    """
+    Represents submission profile settings for different regulatory authorities
+    """
+    __tablename__ = 'submission_profiles'
+    
+    id = Column(Integer, primary_key=True)
+    name = Column(String(100), nullable=False)
+    region = Column(String(20), nullable=False)  # FDA, EMA, PMDA, etc.
+    company_id = Column(Integer, nullable=False)
+    contact_name = Column(String(100))
+    contact_email = Column(String(100))
+    contact_phone = Column(String(50))
+    address = Column(Text)
+    submission_type = Column(String(50))  # New, Amendment, etc.
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def __repr__(self):
+        return f"<SubmissionProfile {self.id}: {self.name} ({self.region})>"
 
 class INDAuditTrail(Base):
     """
