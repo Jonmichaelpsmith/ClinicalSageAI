@@ -11,32 +11,32 @@ import {
 // The Status Quo Problems - based on customer pain points
 const statusQuoProblems = [
   {
-    title: "Manual, Tedious Work",
-    description: "Critical reports like CSRs are still reviewed manually, consuming weeks of effort and prone to human error. Teams compile IND applications in Word documents, often taking over a year.",
-    icon: <Clock className="w-6 h-6 text-red-500" />,
-    stat: "14 months",
-    statLabel: "Average IND prep time"
+    title: "CSRs: Massive PDFs Nobody Reads",
+    description: "Critical CSRs are massive static PDFs that nobody reads in time. No insights until trial ends, then teams manually analyze documents when it's too late to make adjustments.",
+    icon: <FileText className="w-6 h-6 text-red-500" />,
+    stat: "500+",
+    statLabel: "Pages per CSR"
   },
   {
-    title: "Disconnected Tools & Data Silos",
-    description: "Regulatory submissions, trial operations, and data analysis live in separate systems that do not talk to each other, introducing inefficiencies and delays.",
+    title: "INDs Take 12+ Months & $1M",
+    description: "INDs take a full year and require expensive consultants. Teams compile applications in Word documents with high risk of missing critical pieces or regulatory issues.",
+    icon: <Clock className="w-6 h-6 text-red-500" />,
+    stat: "$1M+",
+    statLabel: "In consulting fees"
+  },
+  {
+    title: "Every Tool is a Silo",
+    description: "Every submission is a war room. Regulatory submissions, trial operations, and data analysis live in separate systems that don't communicate, creating inefficiencies and delays.",
     icon: <X className="w-6 h-6 text-red-500" />,
     stat: "5-7",
-    statLabel: "Different systems needed"
+    statLabel: "Disconnected systems"
   },
   {
-    title: "Slow, Risky Submissions",
-    description: "Legacy systems offer little help spotting errors or compliance risks until it is too late. Miss an issue and you are looking at an FDA clinical hold or rejection.",
-    icon: <ShieldCheck className="w-6 h-6 text-red-500" />,
-    stat: "40%",
-    statLabel: "INDs receive major comments"
-  },
-  {
-    title: "Black-Box Analytics, Zero Intelligence",
-    description: "Some have tried AI add-ons only to get opaque recommendations with no transparency. A black-box algorithm that cannot explain its suggestions breeds distrust.",
+    title: "Protocol Design is Guesswork",
+    description: "Protocol design is based on intuition rather than data. AI 'assistants' don't understand regulatory requirements, leading to costly amendments and delays.",
     icon: <Brain className="w-6 h-6 text-red-500" />,
-    stat: "0%",
-    statLabel: "Real-time intelligence"
+    stat: "2.3",
+    statLabel: "Amendments per study"
   }
 ];
 
@@ -201,15 +201,15 @@ export default function HomeLandingProtected() {
             </div>
             
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
-              The Status Quo is Broken.
+              The Clinical Intelligence System
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-teal-400 block mt-2">
-                Time to Break Free.
+                That Thinks Like a Biotech Founder.
               </span>
             </h1>
             
             <p className="text-xl md:text-2xl text-blue-100 mb-10 max-w-3xl mx-auto">
-              TrialSage® unifies AI-powered IND submissions, CER generation, 
-              CSR analysis, and study design in one category-defining platform.
+              Not a better document manager. Not another AI chatbot. Not a clinical trial plugin. 
+              A category-defining Clinical Intelligence System that gets your science to regulators—and to patients.
             </p>
             
             <div className="flex flex-wrap justify-center gap-4">
@@ -336,7 +336,7 @@ export default function HomeLandingProtected() {
         </div>
       </section>
 
-      {/* Category-Defining Platform Section */}
+      {/* The Core Systems Section */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16 max-w-3xl mx-auto">
@@ -344,12 +344,142 @@ export default function HomeLandingProtected() {
               CATEGORY-DEFINING INNOVATION
             </div>
             <h2 className="text-3xl md:text-4xl font-bold mb-6 text-gray-900">
-              Meet TrialSage: The First Unified Platform for AI-Guided Trials and Submissions
+              The Core Systems That Power TrialSage
             </h2>
             <p className="text-xl text-gray-700">
-              TrialSage is not just another tool – it is a revolutionary platform that makes traditional systems obsolete.
-              See how it compares to legacy approaches:
+              TrialSage is a real-time, AI-powered platform that automates the parts of clinical and regulatory development 
+              that don't need to be manual anymore—and enhances the parts that do, with precision insight and smart, embedded copilots.
             </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-8 mb-16">
+            <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl shadow-xl overflow-hidden">
+              <div className="p-8">
+                <div className="bg-white/20 p-3 rounded-full w-max mb-4">
+                  <FileCheck className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-2">IND ARCHITECT™</h3>
+                <p className="text-blue-100 text-lg font-medium italic mb-4">"Build an IND in ⅓ the time—with zero guesswork."</p>
+                <ul className="space-y-2 text-white">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="h-5 w-5 mt-0.5 text-teal-300 flex-shrink-0" />
+                    <span>FDA, EMA, PMDA ready</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="h-5 w-5 mt-0.5 text-teal-300 flex-shrink-0" />
+                    <span>Auto-generate Modules 1–5</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="h-5 w-5 mt-0.5 text-teal-300 flex-shrink-0" />
+                    <span>AI-guided summaries, rationales, cover letters</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="h-5 w-5 mt-0.5 text-teal-300 flex-shrink-0" />
+                    <span>Prebuilt rules engine for compliance</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="h-5 w-5 mt-0.5 text-teal-300 flex-shrink-0" />
+                    <span>Direct FDA ESG submission pipeline</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            
+            <div className="bg-gradient-to-br from-teal-600 to-teal-700 rounded-xl shadow-xl overflow-hidden">
+              <div className="p-8">
+                <div className="bg-white/20 p-3 rounded-full w-max mb-4">
+                  <LayoutDashboard className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-2">CSR ORACLE™</h3>
+                <p className="text-teal-100 text-lg font-medium italic mb-4">"Turn 500-page reports into live intelligence."</p>
+                <ul className="space-y-2 text-white">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="h-5 w-5 mt-0.5 text-blue-300 flex-shrink-0" />
+                    <span>Upload any CSR → Get structured JSON, KPIs, and smart dashboards</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="h-5 w-5 mt-0.5 text-blue-300 flex-shrink-0" />
+                    <span>Compare across trials by AE, MoA, endpoints, population</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="h-5 w-5 mt-0.5 text-blue-300 flex-shrink-0" />
+                    <span>Ask: "What studies had over 60% efficacy in patients over 65?"</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="h-5 w-5 mt-0.5 text-blue-300 flex-shrink-0" />
+                    <span>Real-time safety signal monitoring</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="h-5 w-5 mt-0.5 text-blue-300 flex-shrink-0" />
+                    <span>Auto-summarize CSR content by site, arm, or outcome</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            
+            <div className="bg-gradient-to-br from-purple-600 to-purple-700 rounded-xl shadow-xl overflow-hidden">
+              <div className="p-8">
+                <div className="bg-white/20 p-3 rounded-full w-max mb-4">
+                  <FileText className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-2">SMARTDOCS GENERATOR™</h3>
+                <p className="text-purple-100 text-lg font-medium italic mb-4">"CERs, protocols, summaries—drafted in hours, not weeks."</p>
+                <ul className="space-y-2 text-white">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="h-5 w-5 mt-0.5 text-yellow-300 flex-shrink-0" />
+                    <span>Auto-generate Clinical Evaluation Reports (MDR/IVDR)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="h-5 w-5 mt-0.5 text-yellow-300 flex-shrink-0" />
+                    <span>Extract evidence from CSRs + literature in one pass</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="h-5 w-5 mt-0.5 text-yellow-300 flex-shrink-0" />
+                    <span>GSPR + risk/benefit rationale completion</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="h-5 w-5 mt-0.5 text-yellow-300 flex-shrink-0" />
+                    <span>Write-ready narratives for regulatory sections</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="h-5 w-5 mt-0.5 text-yellow-300 flex-shrink-0" />
+                    <span>Full formatting, references, and traceability baked in</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            
+            <div className="bg-gradient-to-br from-gray-700 to-gray-800 rounded-xl shadow-xl overflow-hidden">
+              <div className="p-8">
+                <div className="bg-white/20 p-3 rounded-full w-max mb-4">
+                  <BarChart2 className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-2">INSIGHTVAULT™</h3>
+                <p className="text-gray-200 text-lg font-medium italic mb-4">"A DMS that actually understands your trial."</p>
+                <ul className="space-y-2 text-white">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="h-5 w-5 mt-0.5 text-blue-300 flex-shrink-0" />
+                    <span>Full document version control</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="h-5 w-5 mt-0.5 text-blue-300 flex-shrink-0" />
+                    <span>Tagging by indication, molecule, site, or phase</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="h-5 w-5 mt-0.5 text-blue-300 flex-shrink-0" />
+                    <span>Dashboard visualizations of submission status, trial risk, AE trends</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="h-5 w-5 mt-0.5 text-blue-300 flex-shrink-0" />
+                    <span>AI audit checks + document readiness validation</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="h-5 w-5 mt-0.5 text-blue-300 flex-shrink-0" />
+                    <span>21 CFR Part 11-aligned audit trails</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
           
           <div className="space-y-12">
@@ -453,17 +583,119 @@ export default function HomeLandingProtected() {
         </div>
       </section>
 
+      {/* First-to-Market Advantage */}
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="bg-white p-8 md:p-12 rounded-2xl shadow-xl">
+            <div className="max-w-3xl mx-auto text-center mb-10">
+              <div className="inline-block px-3 py-1 rounded-full bg-blue-100 text-blue-800 font-medium text-sm mb-6">
+                FIRST-TO-MARKET ADVANTAGE
+              </div>
+              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-gray-900">
+                Not a Plugin. Not a Widget.<br/>Not a Data Viewer.
+              </h2>
+              <p className="text-xl text-gray-700">
+                TrialSage is the first platform that turns your clinical data + regulatory knowledge into an AI-augmented intelligence engine.
+              </p>
+            </div>
+            
+            <div className="grid md:grid-cols-4 gap-6 mb-12">
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-xl">
+                <h3 className="text-xl font-bold text-blue-800 mb-3 flex items-center">
+                  <span className="p-2 rounded-full bg-blue-200 mr-3">
+                    <CheckCircle className="h-5 w-5 text-blue-700" />
+                  </span>
+                  Actionable
+                </h3>
+                <p className="text-gray-700">
+                  Never just insight—always integrated into your next step
+                </p>
+              </div>
+              
+              <div className="bg-gradient-to-br from-teal-50 to-teal-100 p-6 rounded-xl">
+                <h3 className="text-xl font-bold text-teal-800 mb-3 flex items-center">
+                  <span className="p-2 rounded-full bg-teal-200 mr-3">
+                    <CheckCircle className="h-5 w-5 text-teal-700" />
+                  </span>
+                  Explainable
+                </h3>
+                <p className="text-gray-700">
+                  Never a black box—always traceable and editable
+                </p>
+              </div>
+              
+              <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-xl">
+                <h3 className="text-xl font-bold text-purple-800 mb-3 flex items-center">
+                  <span className="p-2 rounded-full bg-purple-200 mr-3">
+                    <CheckCircle className="h-5 w-5 text-purple-700" />
+                  </span>
+                  Auditable
+                </h3>
+                <p className="text-gray-700">
+                  Built for submission, built for safety
+                </p>
+              </div>
+              
+              <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 p-6 rounded-xl">
+                <h3 className="text-xl font-bold text-emerald-800 mb-3 flex items-center">
+                  <span className="p-2 rounded-full bg-emerald-200 mr-3">
+                    <CheckCircle className="h-5 w-5 text-emerald-700" />
+                  </span>
+                  Strategic
+                </h3>
+                <p className="text-gray-700">
+                  Aligned to your trial, your risk profile, your success
+                </p>
+              </div>
+            </div>
+            
+            <div className="border-t border-gray-100 pt-10 flex flex-col md:flex-row items-center justify-between">
+              <div className="mb-6 md:mb-0 text-center md:text-left">
+                <h4 className="text-xl font-bold text-gray-900 mb-2">
+                  Who trusts TrialSage?
+                </h4>
+                <ul className="text-gray-700 space-y-1">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-emerald-600" />
+                    <span>Teams with ex-FDA and ex-EMA leadership</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-emerald-600" />
+                    <span>Early adopters already submitting INDs</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-emerald-600" />
+                    <span>HIPAA | 21 CFR Part 11 | EU MDR compliant</span>
+                  </li>
+                </ul>
+              </div>
+              
+              <div className="flex flex-wrap justify-center md:justify-end gap-4">
+                <Link to="/builder" className="px-6 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-teal-600 text-white hover:from-blue-700 hover:to-teal-700 shadow-lg font-medium transition-all flex items-center gap-2">
+                  Launch Platform Now <ArrowRight size={18} />
+                </Link>
+                <Link to="/demo" className="px-6 py-3 rounded-lg border border-blue-200 text-blue-700 bg-blue-50 hover:bg-blue-100 flex items-center gap-2 font-medium">
+                  Request Live Demo
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
       {/* Call to Action */}
-      <section className="py-24 bg-gradient-to-r from-blue-900 to-blue-800 text-white relative overflow-hidden">
+      <section className="py-24 bg-gradient-to-r from-gray-900 to-blue-900 text-white relative overflow-hidden">
         <div className="absolute inset-0 opacity-10"></div>
         <div className="container mx-auto px-4 text-center relative z-10">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">Ready to break free from inefficient legacy systems?</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">Build Smarter Biotech Together</h2>
           <p className="text-xl text-blue-100 mb-10 max-w-2xl mx-auto">
-            Join the leading biotechs and pharma companies using TrialSage to bring life-changing therapies to patients faster.
+            TrialSage is how tomorrow's biotech gets built: faster, safer, smarter.
+            If you're tired of waiting on consultants, wrangling PDFs, or crossing your fingers at submission—
+            this is your moment.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Link to="/builder" className="px-8 py-4 rounded-lg bg-gradient-to-r from-blue-500 to-teal-500 text-white hover:from-blue-600 hover:to-teal-600 shadow-xl flex items-center gap-2 font-medium transition-all text-lg">
-              Launch Platform Now
+              Launch eCTD Builder Now
             </Link>
             <Link to="/pricing" className="px-8 py-4 rounded-lg bg-white/10 border border-white/30 hover:bg-white/20 flex items-center gap-2 font-medium text-lg text-white">
               View Pricing
