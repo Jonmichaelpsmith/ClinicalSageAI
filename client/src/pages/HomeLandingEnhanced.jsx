@@ -202,6 +202,77 @@ export default function HomeLandingEnhanced() {
       {/* Value Proposition Section */}
       <AdvancedFeatureCards />
       
+      {/* Disrupting the Status Quo Section */}
+      <section className="py-16 bg-gradient-to-r from-slate-900 to-indigo-900 text-white">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-12">
+            <h2 className="inline-flex mx-auto px-6 py-2 rounded-full bg-blue-900/30 text-blue-300 text-sm font-medium mb-6">
+              REIMAGINING REGULATORY INTELLIGENCE
+            </h2>
+            <h2 className="text-4xl font-bold mb-6">Disrupting the Status Quo</h2>
+            <p className="text-xl text-slate-300 max-w-3xl mx-auto">
+              We're challenging outdated regulatory paradigms with a transformative approach that combines AI, data science, and domain expertise to eliminate inefficiencies that have plagued the industry for decades.
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8 mb-10">
+            <div className="bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 rounded-xl p-6 transform transition-transform hover:-translate-y-2 duration-300">
+              <div className="bg-blue-900/30 w-12 h-12 rounded-full flex items-center justify-center mb-6">
+                <Clock className="w-6 h-6 text-blue-400" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">Legacy System: <span className="line-through text-red-400">Months of Manual Work</span></h3>
+              <p className="text-slate-300 mb-3">
+                Traditional approaches require multiple consultants, thousands of hours, and error-prone manual formatting for each regulatory submission.
+              </p>
+              <div className="h-0.5 w-full bg-gradient-to-r from-transparent via-slate-700 to-transparent my-4"></div>
+              <h3 className="text-xl font-bold text-emerald-400 mb-2">Our Revolution: 60% Time Reduction</h3>
+              <p className="text-slate-300">
+                TrialSage's AI-driven workflows automate document generation, formatting, and validation, reducing submission time from months to weeks.
+              </p>
+            </div>
+            
+            <div className="bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 rounded-xl p-6 transform transition-transform hover:-translate-y-2 duration-300">
+              <div className="bg-indigo-900/30 w-12 h-12 rounded-full flex items-center justify-center mb-6">
+                <BarChart2 className="w-6 h-6 text-indigo-400" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">Legacy System: <span className="line-through text-red-400">Isolated Data Silos</span></h3>
+              <p className="text-slate-300 mb-3">
+                Critical insights remain trapped in silos with limited visibility across studies, reducing learning potential and creating duplicative efforts.
+              </p>
+              <div className="h-0.5 w-full bg-gradient-to-r from-transparent via-slate-700 to-transparent my-4"></div>
+              <h3 className="text-xl font-bold text-emerald-400 mb-2">Our Revolution: Unified Intelligence</h3>
+              <p className="text-slate-300">
+                Our platform connects thousands of CSRs and regulatory documents across therapeutic areas, protocols, and regions for unprecedented intelligence.
+              </p>
+            </div>
+            
+            <div className="bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 rounded-xl p-6 transform transition-transform hover:-translate-y-2 duration-300">
+              <div className="bg-violet-900/30 w-12 h-12 rounded-full flex items-center justify-center mb-6">
+                <Globe className="w-6 h-6 text-violet-400" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">Legacy System: <span className="line-through text-red-400">Region-Specific Rework</span></h3>
+              <p className="text-slate-300 mb-3">
+                Traditional processes require complete document rework for each regulatory region, leading to ballooning costs and compliance risks.
+              </p>
+              <div className="h-0.5 w-full bg-gradient-to-r from-transparent via-slate-700 to-transparent my-4"></div>
+              <h3 className="text-xl font-bold text-emerald-400 mb-2">Our Revolution: Multi-Region Dynamic Compliance</h3>
+              <p className="text-slate-300">
+                One platform handles FDA, EMA, PMDA, and Health Canada submissions simultaneously with real-time regulatory intelligence and validation.
+              </p>
+            </div>
+          </div>
+          
+          <div className="text-center mt-8">
+            <Link to="/disruption">
+              <button className="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-medium transition-all duration-300 shadow-lg hover:shadow-blue-500/20">
+                See Our Full Impact Analysis
+                <ArrowRight className="ml-2" />
+              </button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       <section className="py-20 bg-white">
         <div className="container mx-auto px-6">
           <div className="flex flex-col lg:flex-row items-center gap-12">
