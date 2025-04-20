@@ -2,7 +2,8 @@
 // Requires no extra npm packages – pure CSS animation keeps bundle size minimal.
 
 import React from 'react';
-import { Link } from 'wouter';
+import { Link, useLocation } from 'wouter';
+import AppPackagesBanner from '../components/AppPackagesBanner';
 
 const TAGLINES = [
   'Turning Concepts into Cures – 2× faster INDs',
@@ -22,8 +23,13 @@ const AGENCIES = [
 ];
 
 export default function HomeLandingEnhanced() {
+  const [location] = useLocation();
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-800">
+      {/* Application Packages Banner */}
+      <AppPackagesBanner currentPath={location} />
+      
       {/* Hero */}
       <section className="flex-1 flex flex-col justify-center items-center text-center px-6 py-24">
         <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-emerald-500 to-cyan-500 text-transparent bg-clip-text">
@@ -43,12 +49,17 @@ export default function HomeLandingEnhanced() {
 
       {/* Agency carousel */}
       <section className="py-6 bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-700 overflow-hidden">
-        <div className="whitespace-nowrap animate-scroll-slow inline-flex gap-12" style={{ animationDuration: '60s' }}>
-          {AGENCIES.concat(AGENCIES).map((a, idx) => (
-            <a key={idx} href={a.url} target="_blank" rel="noopener noreferrer" className="opacity-60 hover:opacity-100 transition-opacity">
-              <img src={a.logo} alt={a.name + ' logo'} className="h-12 grayscale hover:grayscale-0" loading="lazy" />
-            </a>
-          ))}
+        <div className="container mx-auto">
+          <h3 className="text-center text-lg mb-4 text-gray-700 dark:text-gray-300">Regulatory Agency Support</h3>
+          <div className="overflow-hidden">
+            <div className="flex animate-scroll space-x-12 whitespace-nowrap">
+              {AGENCIES.concat(AGENCIES).map((a, idx) => (
+                <a key={idx} href={a.url} target="_blank" rel="noopener noreferrer" className="opacity-60 hover:opacity-100 transition-opacity inline-block">
+                  <img src={a.logo} alt={a.name + ' logo'} className="h-12 grayscale hover:grayscale-0" loading="lazy" />
+                </a>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
