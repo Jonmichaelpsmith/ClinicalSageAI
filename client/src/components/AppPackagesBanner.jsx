@@ -247,9 +247,77 @@ export default function AppPackagesBanner({ currentPath }) {
         </div>
       </div>
       
+      {/* Company and platform description */}
+      <div className="bg-white py-10 border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-3">About Concepts2Cures.AI</h2>
+              <p className="text-gray-600 mb-4 leading-relaxed">
+                Concepts2Cures.AI is a pioneering regulatory technology company that bridges the gap between clinical research and market approval. With decades of experience in pharmaceutical development and regulatory science, our team is dedicated to transforming the way biotech and pharmaceutical companies navigate the complex regulatory landscape.
+              </p>
+              <p className="text-gray-600 mb-6 leading-relaxed">
+                Founded by industry experts from leading regulatory agencies and pharmaceutical companies, Concepts2Cures.AI combines deep domain expertise with cutting-edge artificial intelligence to create solutions that accelerate the journey from concept to cure.
+              </p>
+              <div className="flex items-center space-x-4">
+                <Link to="/about">
+                  <button className="text-sm font-medium text-blue-600 hover:text-blue-800 flex items-center">
+                    Learn More About Us
+                    <ChevronRight size={16} className="ml-1" />
+                  </button>
+                </Link>
+              </div>
+            </div>
+            <div>
+              <h2 className="text-3xl font-bold text-blue-600 mb-3">The TrialSage Platform</h2>
+              <p className="text-gray-600 mb-4 leading-relaxed">
+                TrialSage is our comprehensive AI-powered platform that revolutionizes regulatory submissions and clinical documentation. By leveraging advanced machine learning models trained on thousands of successful submissions, TrialSage delivers unprecedented efficiency and quality improvements across the entire regulatory lifecycle.
+              </p>
+              <ul className="space-y-2 mb-6">
+                <li className="flex items-start">
+                  <div className="mt-1 bg-blue-100 p-1 rounded text-blue-600">
+                    <FileArchive size={14} />
+                  </div>
+                  <span className="ml-2 text-gray-700">
+                    <strong>AI-Driven Submissions:</strong> Reduce preparation time by 60% with intelligent validation and formatting
+                  </span>
+                </li>
+                <li className="flex items-start">
+                  <div className="mt-1 bg-purple-100 p-1 rounded text-purple-600">
+                    <Database size={14} />
+                  </div>
+                  <span className="ml-2 text-gray-700">
+                    <strong>CSR Intelligence:</strong> Leverage insights from thousands of clinical study reports to optimize your approach
+                  </span>
+                </li>
+                <li className="flex items-start">
+                  <div className="mt-1 bg-emerald-100 p-1 rounded text-emerald-600">
+                    <BarChart2 size={14} />
+                  </div>
+                  <span className="ml-2 text-gray-700">
+                    <strong>Multi-Region Compliance:</strong> Ensure global regulatory standards with automatic validation for FDA, EMA, PMDA and more
+                  </span>
+                </li>
+              </ul>
+              <div className="flex items-center space-x-4">
+                <Link to="/platform">
+                  <button className="text-sm font-medium text-blue-600 hover:text-blue-800 flex items-center">
+                    Explore Platform Capabilities
+                    <ChevronRight size={16} className="ml-1" />
+                  </button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Module selection area */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Our Solutions</h2>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">Our Solutions</h2>
+        <p className="text-gray-600 mb-8 max-w-3xl">
+          Discover how our integrated suite of AI-powered tools can transform your regulatory workflows, accelerate approvals, and reduce costs across the entire development lifecycle.
+        </p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {modules.map((module, index) => (
             <ModuleTile
