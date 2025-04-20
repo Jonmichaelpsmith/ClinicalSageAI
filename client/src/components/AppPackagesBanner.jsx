@@ -268,9 +268,9 @@ export default function AppPackagesBanner({ currentPath }) {
               <div className="bg-blue-900/30 w-12 h-12 rounded-full flex items-center justify-center mb-6">
                 <Shield className="w-6 h-6 text-blue-400" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-3">Industry Expertise</h3>
+              <h3 className="text-xl font-bold text-white mb-3">Industry Vision</h3>
               <p className="text-slate-300 mb-4">
-                Founded by former regulatory agency executives and pharmaceutical leaders with over 70 years of combined experience in global submissions and approvals.
+                Built upon deep understanding of regulatory frameworks and pharmaceutical development processes to address the most critical challenges in global submissions.
               </p>
             </div>
             
@@ -288,9 +288,9 @@ export default function AppPackagesBanner({ currentPath }) {
               <div className="bg-emerald-900/30 w-12 h-12 rounded-full flex items-center justify-center mb-6">
                 <BarChart2 className="w-6 h-6 text-emerald-400" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-3">Proven Results</h3>
+              <h3 className="text-xl font-bold text-white mb-3">Expected Outcomes</h3>
               <p className="text-slate-300 mb-4">
-                Our clients have achieved 98% first-time acceptance rates, 60% reduction in preparation time, and average savings of $2M per trial using our platform.
+                Our platform is designed to achieve exceptional first-time acceptance rates, significant time reductions, and substantial cost savings throughout the regulatory process.
               </p>
             </div>
           </div>
@@ -370,7 +370,7 @@ export default function AppPackagesBanner({ currentPath }) {
                     <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
                     <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                   </div>
-                  <div className="flex-1 text-center text-gray-400 text-sm">TrialSage™ Intelligence Dashboard</div>
+                  <div className="flex-1 text-center text-gray-400 text-sm">TrialSage™ Intelligence Dashboard <span className="px-1.5 py-0.5 text-xs bg-slate-700 rounded ml-1">Interface Preview</span></div>
                 </div>
                 <div className="p-6">
                   <div className="grid grid-cols-2 gap-4 mb-6">
@@ -456,7 +456,11 @@ export default function AppPackagesBanner({ currentPath }) {
                   </div>
                   
                   <div className="text-gray-400 text-xs text-center">
-                    Real-time AI-powered insights and automated region-specific validation
+                    <div className="inline-flex items-center px-1.5 py-0.5 bg-slate-700/50 rounded mb-1">
+                      <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-1.5 animate-pulse"></div>
+                      Interface Demonstration - Sample Data
+                    </div>
+                    <div>Real-time AI-powered insights and automated region-specific validation</div>
                   </div>
                 </div>
               </div>
