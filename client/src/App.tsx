@@ -8,9 +8,9 @@ import HomeLanding from './pages/HomeLandingProtected';
 import DebugInfo from './components/DebugInfo';
 import ErrorBoundary from './ErrorBoundary';
 import { CheckCircle, AlertTriangle, Info } from 'lucide-react';
-// Custom toast notifications (without external dependencies)
-// import { ToastContainer, toast } from 'react-toastify';
-// Temporarily commented out to fix import issues
+// React Toastify for production-ready notifications
+import { ToastContainer, toast as toastify } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 /* ------------ Improved Toast Provider ------------- */
 export type ToastType = 'success' | 'error' | 'info';
@@ -161,7 +161,19 @@ export default function App() {
         </Switch>
         <DebugInfo />
         
-        {/* Temporarily removed ToastContainer */}
+        {/* React-Toastify container for production-ready notifications */}
+        <ToastContainer 
+          position="bottom-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+        />
       </ToastProvider>
     </ErrorBoundary>
   );
