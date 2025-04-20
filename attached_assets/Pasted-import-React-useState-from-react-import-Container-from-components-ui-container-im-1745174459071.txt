@@ -1,0 +1,123 @@
+import React, { useState } from 'react';
+import { Container } from '@/components/ui/container';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
+import { motion } from 'framer-motion';
+
+export default function GatedSalesInvestorAssets() {
+  const [email, setEmail] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError('Please enter a valid work email.');
+      return;
+    }
+    // TODO: integrate with CRM / marketing automation
+    setSubmitted(true);
+  };
+
+  const resourcesByCategory = [
+    {
+      category: 'AI Solutions Toolkit',
+      items: [
+        { title: 'AI Integration Guide', link: '/downloads/ai-integration-guide.pdf' },
+        { title: 'Custom AI Agent Playbook', link: '/downloads/ai-agent-playbook.pdf' },
+        { title: 'Semantic Search API Reference', link: '/downloads/semantic-search-api.pdf' },
+      ],
+    },
+    {
+      category: 'IND Solutions Suite',
+      items: [
+        { title: 'eCTD Submission Blueprint', link: '/downloads/ectd-blueprint.pdf' },
+        { title: 'IND Gap Analysis Template', link: '/downloads/ind-gap-template.xlsx' },
+        { title: 'Regulatory Checklist & Workflows', link: '/downloads/regulatory-checklist.pdf' },
+      ],
+    },
+    {
+      category: 'CER Solutions Package',
+      items: [
+        { title: 'MDR/IVDR CER Template', link: '/downloads/cer-template.docx' },
+        { title: 'Literature Review Guide', link: '/downloads/lit-review-guide.pdf' },
+        { title: 'Benefit-Risk Rationale Examples', link: '/downloads/benefit-risk-examples.pdf' },
+      ],
+    },
+    {
+      category: 'CSR Intelligence Engine Assets',
+      items: [
+        { title: 'CSR Semantic Data Model', link: '/downloads/csr-data-model.json' },
+        { title: 'Dashboard Demo Slides', link: '/downloads/dashboard-demo.pptx' },
+        { title: 'CSR Extraction API Docs', link: '/downloads/csr-api-docs.pdf' },
+      ],
+    },
+  ];
+
+  return (
+    <div className="font-sans bg-gray-50 py-20">
+      <Container>
+        {!submitted ? (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="max-w-2xl mx-auto bg-white p-12 rounded-2xl shadow-lg"
+          >
+            <h2 className="text-4xl font-extrabold text-gray-900 mb-4">Access Premium Solution Resources</h2>
+            <p className="mb-6 text-gray-700 text-lg">
+              Enter your corporate email to unlock in-depth guides, templates, and API references for our AI, IND, CER,
+              and CSR Intelligence solutions—crafted for biotech innovators.
+            </p>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <Input
+                  type="email"
+                  placeholder="you@company.com"
+                  value={email}
+                  onChange={(e) => { setEmail(e.target.value); setError(''); }}
+                  className="w-full px-4 py-3 border-gray-300 rounded-lg"
+                />
+                {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+              </div>
+              <Button type="submit" size="lg" className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3">
+                Unlock All Resources
+              </Button>
+            </form>
+            <p className="mt-8 text-center text-sm text-gray-500">
+              Your email remains private and secure.
+            </p>
+          </motion.div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6 }}
+            className="max-w-4xl mx-auto space-y-8"
+          >
+            {resourcesByCategory.map((cat, idx) => (
+              <Accordion key={idx} type="single" collapsible>
+                <AccordionItem value={cat.category}>
+                  <AccordionTrigger className="text-2xl font-bold text-gray-900">{cat.category}</AccordionTrigger>
+                  <AccordionContent>
+                    <ul className="list-disc list-inside space-y-2 mt-4">
+                      {cat.items.map((res, i) => (
+                        <li key={i} className="text-gray-800">
+                          <a href={res.link} className="text-blue-600 hover:underline">
+                            {res.title}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            ))}
+          </motion.div>
+        )}
+      </Container>
+    </div>
+  );
+}

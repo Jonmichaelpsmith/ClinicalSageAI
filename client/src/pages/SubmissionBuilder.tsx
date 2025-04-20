@@ -6,7 +6,6 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Tree, NodeModel } from '@minoru/react-dnd-treeview';
 import { CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 import { useQCWebSocket } from '../hooks/useQCWebSocket';
 
 // Region‑specific folder hierarchy definitions

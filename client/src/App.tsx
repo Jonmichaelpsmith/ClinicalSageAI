@@ -5,13 +5,16 @@ import SubmissionBuilder from './pages/SubmissionBuilder';
 import IndSequenceDetail from './pages/IndSequenceDetail';
 import IndSequenceManager from './pages/IndSequenceManager';
 import HomeLanding from './pages/HomeLandingProtected';
+import LandingPage from './components/LandingPage';
+import PersonaPages from './components/PersonaPages';
+import GatedSalesInvestorAssets from './components/GatedSalesInvestorAssets';
+import Walkthroughs from './pages/Walkthroughs';
 import DebugInfo from './components/DebugInfo';
 import ErrorBoundary from './ErrorBoundary';
 import ProductFeatures from './pages/ProductFeatures';
 import { CheckCircle, AlertTriangle, Info } from 'lucide-react';
 // React Toastify for production-ready notifications
 import { ToastContainer, toast as toastify } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
 /* ------------ Improved Toast Provider ------------- */
 export type ToastType = 'success' | 'error' | 'info';
@@ -161,14 +164,34 @@ export default function App() {
               <HomeLanding />
             </ErrorBoundary>
           </Route>
+          <Route path="/persona">
+            <ErrorBoundary>
+              <PersonaPages />
+            </ErrorBoundary>
+          </Route>
+          <Route path="/persona/:role">
+            <ErrorBoundary>
+              <PersonaPages />
+            </ErrorBoundary>
+          </Route>
+          <Route path="/investor-assets">
+            <ErrorBoundary>
+              <GatedSalesInvestorAssets />
+            </ErrorBoundary>
+          </Route>
+          <Route path="/walkthroughs">
+            <ErrorBoundary>
+              <Walkthroughs />
+            </ErrorBoundary>
+          </Route>
           <Route path="/">
             <ErrorBoundary>
-              <HomeLanding />
+              <LandingPage />
             </ErrorBoundary>
           </Route>
           <Route>
             <ErrorBoundary>
-              <HomeLanding />
+              <LandingPage />
             </ErrorBoundary>
           </Route>
         </Switch>
