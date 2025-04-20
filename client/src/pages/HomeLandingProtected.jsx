@@ -303,8 +303,19 @@ export default function HomeLanding() {
             <span className="text-2xl font-extrabold gradient-text">Concept2Cures.AI</span>
           </div>
           <nav className="hidden md:flex items-center space-x-6">
-            <Link to="/solutions" className="text-gray-600 hover:text-emerald-600 dark:text-gray-300 font-medium">Solutions</Link>
-            <Link to="/ind-architect" className="text-gray-600 hover:text-emerald-600 dark:text-gray-300 font-medium">IND Architect</Link>
+            <div className="relative group">
+              <span className="text-gray-600 hover:text-emerald-600 dark:text-gray-300 font-medium cursor-pointer flex items-center">
+                Solutions
+                <svg className="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </span>
+              <div className="absolute top-full left-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-slate-800 py-2 z-50 hidden group-hover:block">
+                <Link to="/ind-architect" className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700">IND Architect</Link>
+                <Link to="/csr-intelligence" className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700">CSR Intelligence</Link>
+                <Link to="/regulatory-portal" className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700">Regulatory Portal</Link>
+              </div>
+            </div>
             <Link to="/csr-intelligence" className="text-gray-600 hover:text-emerald-600 dark:text-gray-300 font-medium">CSR Intelligence</Link>
             <Link to="/portal" className="text-gray-600 hover:text-emerald-600 dark:text-gray-300 font-medium">Client Portal</Link>
             <Link to="/builder" className="px-5 py-2.5 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-700 text-white hover:from-emerald-700 hover:to-teal-800 shadow-md font-medium transition-all">
@@ -714,13 +725,12 @@ export default function HomeLanding() {
             </div>
             
             <div>
-              <h5 className="font-semibold mb-4">Products</h5>
+              <h5 className="font-semibold mb-4">Solutions</h5>
               <ul className="space-y-2">
-                <li><a href="#" className="text-gray-400 hover:text-white">IND Automation</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white">CSR Intelligence</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white">Regulatory Portal</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white">Trial Risk Analyzer</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white">eCTD Builder</a></li>
+                <li><Link to="/ind-architect" className="text-gray-400 hover:text-white">IND Architect</Link></li>
+                <li><Link to="/csr-intelligence" className="text-gray-400 hover:text-white">CSR Intelligence</Link></li>
+                <li><Link to="/portal" className="text-gray-400 hover:text-white">Client Portal</Link></li>
+                <li><Link to="/builder" className="text-gray-400 hover:text-white">eCTD Builder</Link></li>
               </ul>
             </div>
             
