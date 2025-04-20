@@ -12,7 +12,9 @@ import {
   Globe, 
   Sparkles,
   Users,
-  ArrowRight
+  ArrowRight,
+  Database,
+  FileSymlink
 } from 'lucide-react';
 import AppPackagesBanner from '../components/AppPackagesBanner';
 
@@ -254,6 +256,62 @@ export default function HomeLandingEnhanced() {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      {/* Core Capabilities Section */}
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-6">
+          <div className="text-center max-w-3xl mx-auto mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Our integrated suite of tools drives efficiency, compliance, and insight across your entire regulatory process.</h2>
+          </div>
+          <div className="max-w-5xl mx-auto">
+            <div className="space-y-4">
+              <div className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                <div className="flex items-center">
+                  <div className="w-10 h-10 rounded-md bg-blue-100 text-blue-600 flex items-center justify-center mr-4">
+                    <FileText size={20} />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-medium text-gray-900">Submission Builder</h3>
+                    <p className="text-gray-600 mt-1">Build and validate eCTD submissions with region-specific validation</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                <div className="flex items-center">
+                  <div className="w-10 h-10 rounded-md bg-blue-100 text-blue-600 flex items-center justify-center mr-4">
+                    <Database size={20} />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-medium text-gray-900">CSR Intelligence</h3>
+                    <p className="text-gray-600 mt-1">Deep learning-powered CSR analysis and optimization</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                <div className="flex items-center">
+                  <div className="w-10 h-10 rounded-md bg-blue-100 text-blue-600 flex items-center justify-center mr-4">
+                    <FileSymlink size={20} />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-medium text-gray-900">IND Architect</h3>
+                    <p className="text-gray-600 mt-1">Design and manage INDs with multi-region compliance</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="mt-8 text-center">
+              <Link to="/features">
+                <button className="inline-flex items-center text-blue-600 font-medium hover:text-blue-800">
+                  Explore Platform Capabilities <ArrowRight size={16} className="ml-2" />
+                </button>
+              </Link>
             </div>
           </div>
         </div>
