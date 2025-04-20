@@ -534,6 +534,20 @@ export default function SubmissionBuilder({ initialRegion = 'FDA', region: propR
 
   return (
     <div className="container py-4">
+      {/* ToastContainer for notifications */}
+      <ToastContainer
+        position="bottom-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+      
       {/* Region Selector */}
       <div className="mb-4">
         <div className="d-flex align-items-center">
