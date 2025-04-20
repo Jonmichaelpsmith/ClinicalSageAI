@@ -1,23 +1,42 @@
-// SubmissionBuilder.jsx – full drag‑drop builder with live QC websocket
+// SubmissionBuilder.tsx – drag‑drop tree with QC badges, bulk approve & region rule hints
 import React, { useEffect, useState, useRef } from 'react';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { DndProvider } from 'react-dnd';
-import { Tree, NodeModel } from '@minoru/react-dnd-treeview';
-import { CheckCircle, XCircle } from 'lucide-react';
-import { toast } from 'react-toastify';
-import update from 'immutability-helper';
+import { Tree } from '@minoru/react-dnd-treeview';
+import { CheckCircle, XCircle, Info } from 'lucide-react';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const REGION_FOLDERS = {
   FDA: ['m1', 'm2', 'm3', 'm4', 'm5'],
-  EMA: ['m1', 'm2', 'm3', 'm4', 'm5'],
-  PMDA: ['m1', 'm2', 'm3', 'm4', 'm5', 'jp‑annex'],
+  EMA: ['m1', 'm2', 'm3', 'm4', 'm5', 'application-form'],
+  PMDA: ['m1', 'm2', 'm3', 'm4', 'm5', 'jp-annex'],
 };
 
-export default function SubmissionBuilder({ region = 'FDA' }) {
+const REGION_HINTS = {
+  FDA: [
+    '✓ Form 1571 must be in m1.1',
+    '✓ Form 3674 (clinicaltrials.gov) required in m1.5',
+    '✓ Cover letter PDF <10 MB',
+  ],
+  EMA: [
+    '✓ "Application Form" PDF required in application-form folder',
+    '✓ Letter of Access in m1.2',
+  ],
+  PMDA: [
+    '✓ JP Annex PDF must be placed in jp-annex folder',
+    '✓ Japanese IB translation required in m1.3',
+  ],
+};
+
+export default function SubmissionBuilder({ initialRegion = 'FDA' }) {
+  const [region, setRegion] = useState(initialRegion);
   const [tree, setTree] = useState([]);
   const [selected, setSelected] = useState(new Set());
+  const [loading, setLoading] = useState(true);
   const wsRef = useRef(null);
 
+  // Load documents and set up WebSocket connection
   useEffect(() => {
     loadDocs();
     
@@ -84,55 +103,156 @@ export default function SubmissionBuilder({ region = 'FDA' }) {
   }, [region]);
 
   const loadDocs = async () => {
-    const docs = await fetchJson('/api/documents?status=approved_or_qc_failed');
-    const root = { id: 0, parent: 0, text: 'root', droppable: true };
-    const folders = REGION_FOLDERS[region].map((m, i) => ({ id: 10000 + i, parent: 0, text: m, droppable: true }));
-    const items = docs.map(d => ({ id: d.id, parent: folders.find(f => d.module.startsWith(f.text))?.id || folders[0].id, text: d.title, droppable: false, data: d }));
-    setTree([root, ...folders, ...items]);
+    setLoading(true);
+    try {
+      const docs = await fetchJson('/api/documents?status=approved_or_qc_failed');
+      const root = { id: 0, parent: 0, text: 'root', droppable: true };
+      const folders = REGION_FOLDERS[region].map((m, i) => ({ id: 10000 + i, parent: 0, text: m, droppable: true }));
+      const items = docs.map(d => ({ 
+        id: d.id, 
+        parent: folders.find(f => d.module?.startsWith(f.text))?.id || folders[0].id, 
+        text: d.title, 
+        droppable: false, 
+        data: d 
+      }));
+      setTree([root, ...folders, ...items]);
+    } catch (error) {
+      console.error('Error loading documents:', error);
+      toast.error('Failed to load documents');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const saveOrder = async () => {
-    const ordered = tree.filter(n => !n.droppable && n.parent !== 0).map((n, idx) => ({ id: n.id, module: tree.find(f => f.id === n.parent)?.text, order: idx }));
-    await fetch('/api/documents/builder-order', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ docs: ordered }) });
-    toast.success('Order saved');
+    const ordered = tree.filter(n => !n.droppable && n.parent !== 0).map((n, idx) => ({ 
+      id: n.id, 
+      module: tree.find(f => f.id === n.parent)?.text, 
+      order: idx 
+    }));
+    
+    try {
+      await fetch('/api/documents/builder-order', { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' }, 
+        body: JSON.stringify({ docs: ordered }) 
+      });
+      toast.success('Order saved');
+    } catch (error) {
+      console.error('Error saving order:', error);
+      toast.error('Failed to save order');
+    }
   };
 
-  const toggleSelect = (id) => setSelected(s => { const x = new Set(s); x.has(id) ? x.delete(id) : x.add(id); return x; });
+  const toggleSelect = (id) => setSelected(s => { 
+    const x = new Set(s); 
+    x.has(id) ? x.delete(id) : x.add(id); 
+    return x; 
+  });
 
   const bulkApprove = async () => {
-    await fetch('/api/documents/bulk-approve', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids: Array.from(selected) }) });
-    toast.info('Bulk approval/QC started');
-    setSelected(new Set());
+    try {
+      await fetch('/api/documents/bulk-approve', { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' }, 
+        body: JSON.stringify({ ids: Array.from(selected) }) 
+      });
+      toast.info('Bulk approval/QC started');
+      setSelected(new Set());
+    } catch (error) {
+      console.error('Error bulk approving:', error);
+      toast.error('Failed to start bulk approval');
+    }
   };
 
-  const onDrop = (newTree) => setTree(newTree);
+  const handleDrop = (newTree) => setTree(newTree);
 
-  const renderNode = (node, { depth, isOpen, onToggle }) => node.droppable ? (
-    <div style={{ marginLeft: depth * 16 }} className="fw-bold py-1">{node.text}</div>
-  ) : (
-    <div style={{ marginLeft: depth * 16 }} className="d-flex align-items-center gap-2 py-1">
-      <input type="checkbox" checked={selected.has(node.id)} onChange={() => toggleSelect(node.id)} />
-      {node.data?.qc_json?.status === 'passed' ? <CheckCircle size={14} className="text-success" /> : <XCircle size={14} className="text-danger" />}
-      <span>{node.text}</span>
-    </div>
-  );
+  const renderNode = (node, { depth, isOpen, onToggle }) => {
+    if (node.droppable) {
+      return (
+        <div style={{ marginLeft: depth * 16 }} className="d-flex align-items-center gap-1 py-1 fw-bold">
+          <button onClick={onToggle} className="btn btn-sm btn-link p-0">{isOpen ? '▾' : '▸'}</button>
+          {node.text}
+        </div>
+      );
+    }
+    
+    return (
+      <div style={{ marginLeft: depth * 16 }} className="d-flex align-items-center gap-2 py-1">
+        <input type="checkbox" checked={selected.has(node.id)} onChange={() => toggleSelect(node.id)} />
+        {node.data?.qc_json?.status === 'passed' ? 
+          <CheckCircle size={14} className="text-success" /> : 
+          <XCircle size={14} className="text-danger" />
+        }
+        <span>{node.text}</span>
+      </div>
+    );
+  };
+
+  if (loading) return <div className="text-center mt-4">Loading...</div>;
 
   return (
     <div className="container py-4">
-      <h2>Submission Builder <span className="badge bg-secondary ms-2">{region}</span></h2>
+      {/* Region Selector */}
+      <div className="mb-4">
+        <div className="d-flex align-items-center">
+          <h2 className="mb-0 me-4">Submission Builder</h2>
+          <div className="btn-group" role="group" aria-label="Region Selection">
+            {Object.keys(REGION_FOLDERS).map(r => (
+              <button 
+                key={r} 
+                type="button" 
+                className={`btn ${region === r ? 'btn-primary' : 'btn-outline-secondary'}`}
+                onClick={() => setRegion(r)}
+              >
+                {r}
+              </button>
+            ))}
+          </div>
+        </div>
+        <p className="text-muted mt-2">
+          {region === 'FDA' && 'FDA submissions follow US regulatory standards and 21 CFR Part 11 requirements.'}
+          {region === 'EMA' && 'EMA submissions adhere to EU regulatory requirements with regional variations.'}
+          {region === 'PMDA' && 'PMDA submissions include Japan-specific annexes and follow PMDA guidelines.'}
+        </p>
+      </div>
+      
+      {/* Region hints */}
+      <div className="alert alert-info d-flex gap-2 align-items-start py-2 mb-4">
+        <Info size={16} className="mt-1"/>
+        <ul className="mb-0">
+          {REGION_HINTS[region].map((h, i) => (<li key={i}>{h}</li>))}
+        </ul>
+      </div>
+      
       <DndProvider backend={HTML5Backend}>
-        <Tree rootId={0} tree={tree} onDrop={onDrop} render={renderNode} />
+        <Tree 
+          rootId={0} 
+          tree={tree} 
+          onDrop={handleDrop} 
+          render={renderNode} 
+          classes={{ 
+            draggingSource: 'opacity-50',
+            dropTarget: 'bg-light' 
+          }}
+        />
       </DndProvider>
+      
       <div className="d-flex gap-2 mt-3">
         <button className="btn btn-primary" onClick={saveOrder}>Save Order</button>
-        <button className="btn btn-outline-success" disabled={!selected.size} onClick={bulkApprove}>Bulk Approve + QC</button>
+        <button className="btn btn-outline-success" disabled={!selected.size} onClick={bulkApprove}>
+          Bulk Approve + QC
+        </button>
       </div>
+      
+      {/* Toast container for notifications */}
+      <ToastContainer position="bottom-right" />
     </div>
   );
 }
 
 async function fetchJson(u) { 
   const r = await fetch(u); 
-  if (!r.ok) throw new Error('fetch'); 
+  if (!r.ok) throw new Error('fetch failed'); 
   return r.json(); 
 }
