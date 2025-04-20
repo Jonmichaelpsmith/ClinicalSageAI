@@ -1,0 +1,55 @@
+I’ve reviewed all five screenshots and distilled the actionable issues into concrete engineering tasks.
+
+Below is a prioritized sprint plan that addresses every point, grouped as you requested:
+
+Priority	Issue / Objective	Root Cause & Solution	Owner / ETA
+🚑 Immediate	FastAPI connection failures (ECONNREFUSED 127.0.0.1:8000)	Root: Frontend proxy hits port 8000, but FastAPI runs on 8001 in Replit.Fix: 1️⃣ Add VITE_API_ORIGIN=http://localhost:8001 to .env.2️⃣ In vite.config.ts add proxy: { '/api': 'http://localhost:8001' }.3️⃣ Update dev script so backend:uvicorn … --port 8001 always starts.	DevOps – 30 min
+	WebSocket /ws/qc unstable	Root: no reconnection + region query missing.Fix:• Use ws://…/ws/qc?region=FDA and forward that param to FastAPI.• Add exponential‑backoff reconnect in useWebSocket hook.• FastAPI: router.websocket('/ws/qc') read region query and filter events.	FE + BE – 2 h
+	QC badge updates not live	After QC finishes we now publish Redis event, but SubmissionBuilder doesn’t listen.Fix: inside Builder’s useEffect open WS, on message parse {id,status} and update tree node QC badge.	FE – 1 h
+⚡ Short term	TypeScript declaration gaps (*.d.ts)	LSP errors come from untyped imports (react-dnd-treeview, custom utils).• npm i -D @types/immutability-helper• Create src/types/react-dnd-treeview.d.ts exporting minimal types.	FE – 1 h
+	Error monitoring & boundaries	Add ErrorBoundary HOC around <Routes>; integrate Sentry SDK with DSN via env var.	FE – 2 h
+	Asset‑loading (agency logos)	Preload SVGs with <link rel=\"preload\" as=\"image\">; add loading=\"lazy\" fallback JPEGs.	FE – 45 min
+🛠 Medium term	Robust Express ↔ FastAPI service discovery	Move to Docker Compose with shared network; set API_URL=http://backend:8000 in React container.	DevOps – 0.5 day
+	Comprehensive unit / integration tests (WebSocket, builder)	Jest + React Testing Library for drag‑drop tree; PyTest + httpx for /validate and WS echo.	QA – 1.5 days
+	EU / JP validator profiles UX	Add dropdown in Validation panel:“FDA 	 EMA 
+
+
+
+⸻
+
+🔧 Implementation steps for the Immediate fixes
+
+1. Align Frontend ↔ FastAPI ports
+
+# .env
+VITE_API_ORIGIN=http://localhost:8001
+
+// vite.config.ts
+export default defineConfig({
+  server: {
+    proxy: { '/api': 'http://localhost:8001' }
+  }
+});
+
+2. Robust WebSocket client (React hook)
+
+import { useEffect, useRef } from 'react';
+
+export const useQCWebSocket = (region='FDA', onMsg:(m:any)=>void) => {
+  const ws = useRef<WebSocket>();
+
+  useEffect(()=> {
+    let retry = 0;
+    const connect = () => {
+      ws.current = new WebSocket(`${import.meta.env.VITE_API_ORIGIN.replace('http','ws')}/ws/qc?region=${region}`);
+      ws.current.onmessage = e => onMsg(JSON.parse(e.data));
+      ws.current.onclose   = () => setTimeout(connect, Math.min(1000 * 2**retry++, 30000));
+    };
+    connect();
+    return ()=> ws.current?.close();
+  }, [region]);
+};
+
+3. Builder listens for QC events
+
+// inside
