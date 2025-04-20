@@ -42,10 +42,27 @@ export const setupRoutes = (app: express.Express) => {
       console.log('Client connected to WebSocket (fallback mode)');
       let clientRegion = 'FDA'; // Default region
       
+      // Setup keepalive ping interval (45 seconds) to prevent Replit from closing idle connections
+      const pingInterval = setInterval(() => {
+        if (socket.readyState === WebSocket.OPEN) {
+          console.log('Sending keepalive ping to WebSocket client');
+          socket.send(JSON.stringify({ 
+            type: 'ping',
+            timestamp: new Date().toISOString()
+          }));
+        }
+      }, 45000);
+      
       // Handle incoming messages (like subscribe/unsubscribe)
       socket.on('message', (message: WebSocket.Data) => {
         try {
           const data = JSON.parse(message.toString());
+          
+          // Handle ping/pong messages
+          if (data.type === 'pong') {
+            console.log('Received pong from client');
+            return;
+          }
           
           // Handle subscription requests
           if (data.action === 'subscribe' && data.region) {
@@ -70,10 +87,21 @@ export const setupRoutes = (app: express.Express) => {
       socket.on('close', () => {
         console.log('Client disconnected from WebSocket');
         clients.delete(socket);
+        clearInterval(pingInterval); // Clean up ping interval
       });
       
-      // Keep initial connection alive
-      socket.send(JSON.stringify({ type: 'connection_established' }));
+      // Handle errors
+      socket.on('error', (error) => {
+        console.error('WebSocket client error:', error);
+        clients.delete(socket);
+        clearInterval(pingInterval); // Clean up ping interval
+      });
+      
+      // Send initial connection message
+      socket.send(JSON.stringify({ 
+        type: 'connection_established',
+        timestamp: new Date().toISOString()
+      }));
     });
   }
   
