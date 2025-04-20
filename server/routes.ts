@@ -8,6 +8,7 @@ import { WebSocketServer, WebSocket } from 'ws';
 import { storage } from './storage';
 import { insertUserSchema } from '@shared/schema';
 import { URL } from 'url';
+import openaiService from './services/openaiService';
 
 // Extend Express types
 declare module 'express' {
@@ -335,6 +336,71 @@ export const setupRoutes = (app: express.Express) => {
 
     const user = await storage.createUser(parseResult.data);
     res.status(201).json(user);
+  });
+
+  // AI Co-pilot endpoint
+  app.post('/api/cer/ai-copilot', async (req, res) => {
+    try {
+      const { message, history } = req.body;
+      
+      if (!message) {
+        return res.status(400).json({ error: 'Message is required' });
+      }
+
+      // Check if OpenAI API key is available
+      if (!process.env.OPENAI_API_KEY) {
+        return res.status(503).json({ 
+          error: 'OpenAI API integration is not configured', 
+          details: 'The OPENAI_API_KEY environment variable is not set' 
+        });
+      }
+
+      // Generate response from OpenAI
+      const response = await openaiService.generateCopilotResponse(message, history || []);
+      
+      res.json({ response });
+    } catch (error) {
+      console.error('Error in AI Co-pilot endpoint:', error);
+      res.status(500).json({ 
+        error: 'Failed to generate AI response',
+        details: error.message
+      });
+    }
+  });
+
+  // CER generation endpoint
+  app.post('/api/cer/generate', async (req, res) => {
+    try {
+      const { productName, productType, regulatoryRegion, safetyData } = req.body;
+      
+      if (!productName || !productType || !regulatoryRegion || !safetyData) {
+        return res.status(400).json({ error: 'Missing required parameters' });
+      }
+
+      // Check if OpenAI API key is available
+      if (!process.env.OPENAI_API_KEY) {
+        return res.status(503).json({ 
+          error: 'OpenAI API integration is not configured', 
+          details: 'The OPENAI_API_KEY environment variable is not set' 
+        });
+      }
+
+      // Generate CER content from OpenAI
+      const content = await openaiService.generateCERContent(
+        productName,
+        productType,
+        regulatoryRegion,
+        safetyData
+      );
+      
+      res.json({ content });
+    } catch (error) {
+      console.error('Error in CER generation endpoint:', error);
+      res.status(500).json({ 
+        error: 'Failed to generate CER content',
+        details: error.message
+      });
+    }
   });
 
   // Extend the HTTP server with a method to broadcast QC updates

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'wouter';
 import { 
   Beaker, 
@@ -20,7 +20,8 @@ import {
   Activity,
   ServerCrash,
   Zap,
-  Timer
+  Timer,
+  Info as InfoIcon
 } from 'lucide-react';
 
 // CER Report Type Card Component
@@ -61,6 +62,71 @@ const CopilotMessage = ({ message, isUser = false }) => (
 export default function CERGenerator() {
   const [activeTab, setActiveTab] = useState('templates');
   const [showCopilot, setShowCopilot] = useState(false);
+  const [userMessage, setUserMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [messages, setMessages] = useState([
+    { message: "Hello, I'm your TrialSage AI Industry Co-pilot. I can guide you through creating regulatory submissions and clinical evaluation reports. How can I assist you today?", isUser: false },
+  ]);
+  const messagesEndRef = React.useRef(null);
+
+  // Function to handle sending messages to the AI Co-pilot
+  const handleSendMessage = async () => {
+    if (!userMessage.trim()) return;
+    
+    // Add user message to the chat
+    const newMessage = { message: userMessage, isUser: true };
+    setMessages(prev => [...prev, newMessage]);
+    
+    // Clear input field
+    setUserMessage('');
+    
+    // Set loading state
+    setIsLoading(true);
+    
+    try {
+      // Make API call to OpenAI service
+      const response = await fetch('/api/cer/ai-copilot', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: userMessage,
+          history: messages.map(msg => ({
+            role: msg.isUser ? 'user' : 'assistant',
+            content: msg.message
+          }))
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to get response from AI Co-pilot');
+      }
+      
+      const data = await response.json();
+      
+      // Add AI response to the chat
+      setMessages(prev => [...prev, { message: data.response, isUser: false }]);
+    } catch (error) {
+      console.error('Error communicating with AI Co-pilot:', error);
+      
+      // Add error message to chat
+      setMessages(prev => [...prev, { 
+        message: "I'm sorry, I'm having trouble connecting to the AI service. Please try again in a moment.", 
+        isUser: false 
+      }]);
+    } finally {
+      // Clear loading state
+      setIsLoading(false);
+    }
+  };
+
+  // Scroll to the bottom of the chat when new messages arrive
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
 
   // Sample report types for demonstration
   const reportTypes = [
@@ -544,22 +610,58 @@ export default function CERGenerator() {
                 </svg>
               </button>
             </div>
+            
             <div className="flex-1 overflow-y-auto p-4 bg-white">
-              {copilotHistory.map((msg, index) => (
+              {messages.map((msg, index) => (
                 <CopilotMessage key={index} message={msg.message} isUser={msg.isUser} />
               ))}
+              
+              {isLoading && (
+                <div className="flex justify-start my-4">
+                  <div className="bg-gray-100 text-gray-800 rounded-lg px-4 py-2 max-w-[75%] flex items-center">
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                      <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                      <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              <div ref={messagesEndRef} /> {/* Empty div for auto-scrolling */}
             </div>
+            
             <div className="p-4 border-t border-gray-200 bg-gray-50 rounded-b-lg">
-              <div className="flex items-center">
+              <form 
+                className="flex items-center" 
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleSendMessage();
+                }}
+              >
                 <input 
                   type="text" 
+                  value={userMessage}
+                  onChange={(e) => setUserMessage(e.target.value)}
                   placeholder="Ask about CER requirements or IND submissions..." 
                   className="flex-1 border border-gray-300 rounded-l-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={isLoading}
                 />
-                <button className="bg-blue-600 text-white rounded-r-md px-4 py-2 hover:bg-blue-700">
-                  <MessageSquare size={16} />
+                <button 
+                  type="submit"
+                  className="bg-blue-600 text-white rounded-r-md px-4 py-2 hover:bg-blue-700"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  ) : (
+                    <MessageSquare size={16} />
+                  )}
                 </button>
-              </div>
+              </form>
               <div className="mt-2 text-xs text-gray-500">
                 AI co-pilot can guide you through regulatory submissions, CER creation, and compliance requirements
               </div>
