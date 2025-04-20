@@ -14,7 +14,8 @@ import {
   User,
   ChevronRight,
   ExternalLink,
-  Globe
+  Globe,
+  Library
 } from 'lucide-react';
 
 // Clean, simplified module tile component
@@ -84,6 +85,13 @@ export default function AppPackagesBanner({ currentPath }) {
       description: "Clinical Evaluation Report generation and optimization",
       to: "/cer-generator",
       path: "/cer-generator"
+    },
+    {
+      icon: <Library size={20} />,
+      title: "Use Case Library",
+      description: "Comprehensive regulatory case studies and templates for reference",
+      to: "/use-case-library",
+      path: "/use-case-library"
     }
   ];
 
@@ -109,6 +117,27 @@ export default function AppPackagesBanner({ currentPath }) {
       to: "/csr-intelligence",
       icon: <Database size={18} />,
       color: "bg-emerald-600 hover:bg-emerald-700"
+    },
+    {
+      label: "IND Full Solution",
+      description: "End-to-end IND package templates",
+      to: "/ind-full-solution",
+      icon: <FileText size={18} />,
+      color: "bg-indigo-600 hover:bg-indigo-700"
+    },
+    {
+      label: "CER Module",
+      description: "Clinical evaluation reports",
+      to: "/cer-generator",
+      icon: <Beaker size={18} />,
+      color: "bg-rose-600 hover:bg-rose-700"
+    },
+    {
+      label: "Use Case Library",
+      description: "Regulatory case studies & templates",
+      to: "/use-case-library",
+      icon: <Library size={18} />,
+      color: "bg-teal-600 hover:bg-teal-700"
     }
   ];
   
