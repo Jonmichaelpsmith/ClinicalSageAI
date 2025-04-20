@@ -41,7 +41,7 @@ export default function SubmissionBuilder({ initialRegion = 'FDA', region: propR
   useEffect(() => {
     loadDocs();
     
-    // Socket connection with auto-reconnect
+    // Socket connection with auto-reconnect and region awareness
     const connectWebSocket = () => {
       const ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws/qc`);
       
@@ -49,13 +49,69 @@ export default function SubmissionBuilder({ initialRegion = 'FDA', region: propR
         console.log('QC WebSocket connected');
         // Reset reconnect attempts on successful connection
         reconnectAttempts.current = 0;
+        
+        // Subscribe to the current region's updates
+        ws.send(JSON.stringify({
+          action: 'subscribe',
+          region: region
+        }));
       };
       
       ws.onmessage = (e) => {
         try {
-          const { id, status } = JSON.parse(e.data);
-          // Update the corresponding document's QC status in the tree
-          setTree(prev => prev.map(n => n.id === id ? { ...n, data: { ...n.data, qc_json: { status } } } : n));
+          const data = JSON.parse(e.data);
+          console.log('WS Message:', data);
+          
+          // Handle different message types
+          if (data.type === 'connection_established') {
+            console.log('WebSocket connection confirmed');
+          } 
+          else if (data.type === 'subscription_ack') {
+            console.log(`Subscribed to ${data.region} updates`);
+            toast({ 
+              message: `Connected to ${data.region} validator updates`,
+              type: 'info'
+            });
+          }
+          else if (data.type === 'qc_status' && data.id && data.status) {
+            // Update individual document status
+            setTree(prev => prev.map(n => {
+              if (n.id === data.id) {
+                toast({ 
+                  message: `QC ${data.status === 'passed' ? 'passed' : 'failed'} for ${n.text}`,
+                  type: data.status === 'passed' ? 'success' : 'error'
+                });
+                return { 
+                  ...n, 
+                  data: { 
+                    ...n.data, 
+                    qc_json: { 
+                      status: data.status,
+                      profile: data.profile || `${region}_eCTD` 
+                    } 
+                  } 
+                };
+              }
+              return n;
+            }));
+          }
+          else if (data.type === 'bulk_qc_summary') {
+            // Handle bulk validation summary
+            const { passed, failed, total, profile } = data;
+            toast({ 
+              message: `Bulk validation complete: ${passed}/${total} passed using ${profile || `${region} profile`}`,
+              type: failed > 0 ? 'error' : 'success'
+            });
+            // Refresh document list to get updated statuses
+            loadDocs();
+          }
+          else if (data.type === 'bulk_qc_error') {
+            // Handle bulk validation errors
+            toast({ 
+              message: `Validation error: ${data.message || 'Unknown error'}`,
+              type: 'error'
+            });
+          }
         } catch (error) {
           console.error('Error parsing WebSocket message:', error);
         }
