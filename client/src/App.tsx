@@ -20,6 +20,8 @@ import LumenBioReports from './pages/LumenBioReports';
 import UseCaseLibrary from './pages/UseCaseLibrary';
 import INDFullSolution from './pages/INDFullSolution';
 import CERGenerator from './pages/CERGenerator';
+import ClientPortal from './pages/ClientPortal';
+import AIAdvancedAgent from './pages/AIAdvancedAgent';
 import { CheckCircle, AlertTriangle, Info } from 'lucide-react';
 // React Toastify for production-ready notifications
 import { ToastContainer, toast as toastify } from 'react-toastify';
@@ -225,6 +227,16 @@ export default function App() {
           <Route path="/demo">
             <ErrorBoundary>
               <Walkthroughs />
+            </ErrorBoundary>
+          </Route>
+          <Route path="/client-portal">
+            <ErrorBoundary>
+              <ClientPortal />
+            </ErrorBoundary>
+          </Route>
+          <Route path="/ai-agent">
+            <ErrorBoundary>
+              <AIAdvancedAgent />
             </ErrorBoundary>
           </Route>
           <Route path="/">
