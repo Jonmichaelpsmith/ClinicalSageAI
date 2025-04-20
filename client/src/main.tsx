@@ -3,6 +3,11 @@ import ReactDOM from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import App from './App';
 import './index.css';
+// Import necessary CSS files
+import 'react-toastify/dist/ReactToastify.css';
+// Import slick carousel CSS
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
 
 // Create a react-query client
 const queryClient = new QueryClient({

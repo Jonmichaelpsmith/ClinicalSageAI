@@ -10,7 +10,6 @@ import ErrorBoundary from './ErrorBoundary';
 import { CheckCircle, AlertTriangle, Info } from 'lucide-react';
 // Import react-toastify for modern toast notifications
 import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
 /* ------------ Improved Toast Provider ------------- */
 export type ToastType = 'success' | 'error' | 'info';

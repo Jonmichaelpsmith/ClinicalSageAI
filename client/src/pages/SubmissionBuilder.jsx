@@ -166,9 +166,6 @@ export default function SubmissionBuilder({ initialRegion = 'FDA', region: propR
     loadDocs();
   }, [region]);
   
-  // Setup WebSocket subscription by region using our new hook
-  const [connectionStatus, setConnectionStatus] = useState('disconnected');
-  
   // Handle messages from QC WebSocket
   const handleQCWebSocketMessage = (data) => {
     console.log(`[QC] Received update for region ${region}:`, data);
@@ -203,8 +200,38 @@ export default function SubmissionBuilder({ initialRegion = 'FDA', region: propR
     }
   };
   
-  // Set up the region-aware WebSocket connection
-  const { send } = useQCWebSocket(region, handleQCWebSocketMessage);
+  // Set up the region-aware WebSocket connection with improved status tracking
+  const { send, status: wsStatus } = useQCWebSocket(region, handleQCWebSocketMessage);
+  
+  // Function to get status badge color
+  const getStatusBadgeClass = () => {
+    switch(wsStatus) {
+      case 'connected':
+        return 'bg-success';
+      case 'connecting':
+        return 'bg-warning';
+      case 'reconnecting':
+        return 'bg-warning';
+      case 'disconnected':
+      default:
+        return 'bg-danger';
+    }
+  };
+  
+  // Function to get status badge text
+  const getStatusMessage = () => {
+    switch(wsStatus) {
+      case 'connected':
+        return `Connected to ${region} QC`;
+      case 'connecting':
+        return 'Connecting...';
+      case 'reconnecting':
+        return 'Reconnecting...';
+      case 'disconnected':
+      default:
+        return 'Disconnected';
+    }
+  };
   
   // When region changes, report it to the user and show appropriate validation profile
   useEffect(() => {
@@ -433,6 +460,20 @@ export default function SubmissionBuilder({ initialRegion = 'FDA', region: propR
       <div className="mb-4">
         <div className="d-flex align-items-center">
           <h2 className="mb-0 me-4">Submission Builder</h2>
+          
+          {/* WebSocket connection status indicator */}
+          <div className="d-flex align-items-center me-3">
+            <span 
+              className={`badge ${getStatusBadgeClass()} d-flex align-items-center gap-1`}
+              title={`QC WebSocket status: ${wsStatus}`}
+            >
+              <span className="spinner-grow spinner-grow-sm" role="status" aria-hidden="true" 
+                style={{ display: wsStatus === 'connecting' || wsStatus === 'reconnecting' ? 'inline-block' : 'none' }}
+              ></span>
+              {getStatusMessage()}
+            </span>
+          </div>
+          
           <div className="btn-group" role="group" aria-label="Region Selection">
             {Object.keys(REGION_FOLDERS).map(r => (
               <button 
@@ -479,6 +520,101 @@ export default function SubmissionBuilder({ initialRegion = 'FDA', region: propR
         <button className="btn btn-outline-success" disabled={!selected.size} onClick={bulkApprove}>
           Bulk Approve + QC
         </button>
+        
+        {/* Show status details button */}
+        <button 
+          className={`btn btn-outline-${wsStatus === 'connected' ? 'info' : 'warning'} ms-auto`} 
+          type="button" 
+          data-bs-toggle="modal" 
+          data-bs-target="#qcStatusModal"
+          title="Show QC connection details"
+        >
+          QC Status
+        </button>
+      </div>
+      
+      {/* QC Status Modal */}
+      <div className="modal fade" id="qcStatusModal" tabIndex="-1" aria-labelledby="qcStatusModalLabel" aria-hidden="true">
+        <div className="modal-dialog">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title" id="qcStatusModalLabel">QC System Status</h5>
+              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div className="modal-body">
+              <div className="card mb-3">
+                <div className="card-header">
+                  <strong>WebSocket Connection</strong>
+                </div>
+                <div className="card-body">
+                  <table className="table table-sm">
+                    <tbody>
+                      <tr>
+                        <th>Status:</th>
+                        <td>
+                          <span className={`badge ${getStatusBadgeClass()}`}>
+                            {wsStatus}
+                          </span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <th>Region:</th>
+                        <td>{region}</td>
+                      </tr>
+                      <tr>
+                        <th>Validation Profile:</th>
+                        <td>
+                          {region === 'FDA' && 'FDA_eCTD_3.2.2'}
+                          {region === 'EMA' && 'EU_eCTD_3.2.2'}
+                          {region === 'PMDA' && 'JP_eCTD_1.0'}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              
+              <div className="card">
+                <div className="card-header">
+                  <strong>Recent Activity</strong>
+                </div>
+                <div className="card-body">
+                  <p className="text-muted">
+                    {wsStatus === 'connected' 
+                      ? 'QC WebSocket connection is active and receiving updates.' 
+                      : 'Waiting for QC WebSocket connection to be established...'}
+                  </p>
+                  <p className="small text-muted">
+                    Documents will be automatically updated when QC status changes.
+                    Region-specific validation rules are applied based on the selected region.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              {wsStatus !== 'connected' && (
+                <button 
+                  type="button" 
+                  className="btn btn-primary"
+                  onClick={() => {
+                    // Try to reconnect by reloading documents which uses the WebSocket
+                    loadDocs();
+                    // Close the modal manually
+                    const modal = document.getElementById('qcStatusModal');
+                    if (modal) {
+                      // Just close using the attribute
+                      modal.setAttribute('data-bs-dismiss', 'modal');
+                      modal.click();
+                    }
+                  }}
+                >
+                  Reconnect
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
       
     </div>
