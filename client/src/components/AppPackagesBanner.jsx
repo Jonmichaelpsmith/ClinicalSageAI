@@ -96,7 +96,7 @@ export default function AppPackagesBanner({ currentPath }) {
             <div className="flex items-center">
               <Link to="/">
                 <div className="flex items-center">
-                  <img src="https://raw.githubusercontent.com/Concepts2Cures/assets/main/trialsage-logo.svg" alt="TrialSage" className="h-8 w-auto mr-3" />
+                  <div className="flex items-center justify-center w-10 h-10 rounded-md bg-blue-600 text-white font-bold text-xl mr-3">TS</div>
                   <span className="font-bold text-xl text-gray-900">TrialSage</span>
                   <span className="ml-2 text-sm text-gray-500">by Concepts2Cures.AI</span>
                 </div>
