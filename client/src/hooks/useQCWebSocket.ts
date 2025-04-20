@@ -67,6 +67,20 @@ export const useQCWebSocket = (region = 'FDA', onMsg: (msg: any) => void) => {
         ws.current.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data);
+            
+            // Handle ping messages with a pong response
+            if (data.type === 'ping') {
+              console.debug('[QC WebSocket] Received ping, sending pong');
+              if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+                ws.current.send(JSON.stringify({ 
+                  type: 'pong',
+                  timestamp: new Date().toISOString() 
+                }));
+              }
+              return; // Don't forward ping messages to the application
+            }
+            
+            // Forward other messages to the application
             onMsg(data);
           } catch (error) {
             console.error('Error parsing WebSocket message:', error);

@@ -34,6 +34,34 @@ active_connections: Dict[str, WebSocket] = {}
 # Track document subscriptions per connection
 connection_subscriptions: Dict[str, Set[str]] = {}
 
+async def send_keepalive_pings(websocket: WebSocket, connection_id: str):
+    """
+    Send periodic ping messages to keep the WebSocket connection alive
+    
+    Replit drops idle WebSocket connections after ~60 seconds, so we send
+    a ping every 45 seconds to keep the connection alive.
+    
+    Args:
+        websocket: The WebSocket connection
+        connection_id: The unique ID for this connection
+    """
+    try:
+        while connection_id in active_connections:
+            # Send a ping message
+            await websocket.send_text(json.dumps({
+                "type": "ping",
+                "timestamp": datetime.utcnow().isoformat()
+            }))
+            
+            logger.debug(f"Sent keepalive ping to connection: {connection_id}")
+            
+            # Wait 45 seconds before sending another ping
+            # This is below Replit's 60-second idle timeout
+            await asyncio.sleep(45)
+    except Exception as e:
+        logger.error(f"Error in keepalive ping task for {connection_id}: {str(e)}")
+        # The main WebSocket handler will cleanup on disconnect
+
 @router.websocket("/qc")
 async def websocket_qc_endpoint(websocket: WebSocket):
     """
@@ -65,6 +93,9 @@ async def websocket_qc_endpoint(websocket: WebSocket):
             "connection_id": connection_id,
             "timestamp": datetime.utcnow().isoformat()
         }))
+        
+        # Create a task for sending keepalive pings
+        keepalive_task = asyncio.create_task(send_keepalive_pings(websocket, connection_id))
         
         # Handle messages from client
         while True:
@@ -211,11 +242,22 @@ async def websocket_qc_endpoint(websocket: WebSocket):
     except Exception as e:
         logger.error(f"WebSocket error: {str(e)}")
     finally:
+        # Cancel keepalive task
+        if 'keepalive_task' in locals():
+            keepalive_task.cancel()
+            try:
+                await keepalive_task
+            except asyncio.CancelledError:
+                pass  # Task successfully cancelled
+        
         # Clean up subscriptions and connection
         if connection_id in connection_subscriptions:
             # Unsubscribe from all documents
             for doc_id in connection_subscriptions[connection_id]:
-                event_bus.unsubscribe_from_document(doc_id, send_update)
+                try:
+                    event_bus.unsubscribe_from_document(doc_id, send_update)
+                except Exception as e:
+                    logger.error(f"Error unsubscribing from document {doc_id}: {str(e)}")
             
             # Remove subscription record
             del connection_subscriptions[connection_id]
@@ -223,6 +265,7 @@ async def websocket_qc_endpoint(websocket: WebSocket):
         # Remove from active connections
         if connection_id in active_connections:
             del active_connections[connection_id]
+            logger.info(f"Cleaned up connection: {connection_id}")
 
 async def trigger_document_qc(document_id: str) -> bool:
     """
