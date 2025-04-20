@@ -156,13 +156,13 @@ export default function HomeLandingEnhanced() {
           <div className="max-w-4xl mx-auto text-center mb-12">
             <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-blue-700/30 backdrop-blur-sm text-blue-200 text-sm font-medium mb-6">
               <span className="flex h-2 w-2 rounded-full bg-blue-400 mr-2"></span>
-              The Future of Regulatory Automation
+              Enterprise Regulatory Intelligence Platform
             </div>
             <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-6 bg-gradient-to-r from-blue-300 via-blue-100 to-indigo-200 text-transparent bg-clip-text">
-              Accelerate Your Path <br className="hidden md:block" /> From Concept to Cure
+              Transforming Regulatory <br className="hidden md:block" /> Intelligence for Life Sciences
             </h1>
             <p className="text-xl text-blue-100 max-w-3xl mx-auto mb-10">
-              End-to-end AI automation for IND, CSR, CER and global regulatory submissions – <br className="hidden md:block" /> built for biotech teams who need speed without compromise.
+              Concept2Cures.AI delivers a comprehensive regulatory suite integrating <br className="hidden md:block" /> advanced machine learning with industry-compliant frameworks to revolutionize global submissions, clinical intelligence, and regulatory strategy across therapeutic domains.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Link to="/signup" className="px-8 py-4 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-medium rounded-lg shadow-lg shadow-blue-900/30 transition-all duration-200">
@@ -202,8 +202,8 @@ export default function HomeLandingEnhanced() {
         <div className="container mx-auto px-6">
           <div className="flex flex-col lg:flex-row items-center gap-12">
             <div className="lg:w-1/2">
-              <h2 className="text-3xl font-bold text-gray-900 mb-6">The Clinical Intelligence System That Thinks Like a Biotech Founder</h2>
-              <p className="text-lg text-gray-700 mb-8">Our AI-driven regulatory platform saves biotech teams thousands of hours by automating complex documentation and ensuring compliance across global markets.</p>
+              <h2 className="text-3xl font-bold text-gray-900 mb-6">Redefining Regulatory Intelligence for the Modern Life Sciences Enterprise</h2>
+              <p className="text-lg text-gray-700 mb-8">Concept2Cures.AI's proprietary intelligence platform streamlines complex regulatory processes through sophisticated machine learning algorithms, delivering unprecedented efficiency and precision while maintaining rigorous compliance with evolving global regulatory frameworks.</p>
               <ul className="space-y-4">
                 {TAGLINES.map((tagline, i) => (
                   <li key={i} className="flex items-start">
@@ -288,7 +288,8 @@ export default function HomeLandingEnhanced() {
       <section className="py-16 bg-white">
         <div className="container mx-auto px-6">
           <div className="text-center max-w-3xl mx-auto mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Our integrated suite of tools drives efficiency, compliance, and insight across your entire regulatory process.</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Advanced Regulatory Intelligence Architecture</h2>
+            <p className="text-lg text-gray-600 mt-4">Our integrated enterprise-grade platform orchestrates complex regulatory workflows with precision, enabling harmonized global submissions while maintaining rigorous validation across jurisdictional requirements.</p>
           </div>
           <div className="max-w-5xl mx-auto">
             <div className="space-y-4">
@@ -299,7 +300,7 @@ export default function HomeLandingEnhanced() {
                   </div>
                   <div>
                     <h3 className="text-xl font-medium text-gray-900">Submission Builder</h3>
-                    <p className="text-gray-600 mt-1">Build and validate eCTD submissions with region-specific validation</p>
+                    <p className="text-gray-600 mt-1">Advanced eCTD orchestration with multi-region validation and real-time compliance monitoring for FDA, EMA, and PMDA submissions</p>
                   </div>
                 </div>
               </div>
@@ -320,7 +321,7 @@ export default function HomeLandingEnhanced() {
                         )}
                       </div>
                     </div>
-                    <p className="text-gray-600 mt-1">Deep learning-powered CSR analysis and optimization</p>
+                    <p className="text-gray-600 mt-1">Proprietary deep learning architecture for comprehensive clinical study report analysis, predictive optimization, and cross-reference integration</p>
                   </div>
                 </div>
               </div>
@@ -332,7 +333,7 @@ export default function HomeLandingEnhanced() {
                   </div>
                   <div>
                     <h3 className="text-xl font-medium text-gray-900">IND Architect</h3>
-                    <p className="text-gray-600 mt-1">Design and manage INDs with multi-region compliance</p>
+                    <p className="text-gray-600 mt-1">Strategic IND development framework with intelligent cross-jurisdictional compliance analysis and automated documentation lifecycle management</p>
                   </div>
                 </div>
               </div>
@@ -353,8 +354,8 @@ export default function HomeLandingEnhanced() {
       <section className="py-20 bg-gradient-to-b from-gray-50 to-white">
         <div className="container mx-auto px-6">
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Comprehensive Regulatory Intelligence</h2>
-            <p className="text-xl text-gray-600">One platform to handle every aspect of your clinical and regulatory workflow.</p>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Enterprise-Grade Regulatory Intelligence Ecosystem</h2>
+            <p className="text-xl text-gray-600">A unified governance architecture that orchestrates complex regulatory operations across therapeutic domains and global jurisdictional frameworks, delivering cohesive compliance assurance at every stage of the product lifecycle.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {FEATURES.map((feature, i) => (
@@ -406,7 +407,7 @@ export default function HomeLandingEnhanced() {
       {/* Agency support carousel */}
       <section className="py-10 bg-white border-t border-gray-100">
         <div className="container mx-auto px-6">
-          <h3 className="text-center text-lg font-medium text-gray-700 mb-6">Comprehensive Global Regulatory Support</h3>
+          <h3 className="text-center text-lg font-medium text-gray-700 mb-6">Multi-Jurisdictional Regulatory Authority Integration</h3>
           <div className="overflow-hidden">
             <div className="flex animate-scroll space-x-16 whitespace-nowrap">
               {AGENCIES.concat(AGENCIES).map((a, idx) => (
