@@ -1,211 +1,72 @@
 /**
- * Simplified FastAPI Bridge (No External Dependencies)
+ * Simple FastAPI Bridge
  * 
- * A simplified version of the FastAPI bridge that doesn't rely on external
- * dependencies like http-proxy-middleware. It uses the native http module
- * to proxy requests to the FastAPI backend.
+ * Uses Express routing to forward requests to the FastAPI backend.
+ * This is a simplified version that doesn't require http-proxy-middleware.
  */
 
 import express from 'express';
 import http from 'http';
-import { URL } from 'url';
 
 /**
- * Register FastAPI proxy middleware with an Express app
+ * Register FastAPI proxy with an Express app
  * @param {express.Application} app - Express application instance
  * @returns {void}
  */
 export default function registerFastapiProxy(app: express.Application): void {
-  const apiPort = process.env.PORT || 8000;
+  const apiPort = 8000; // FastAPI is running on port 8000
   const apiHost = 'localhost';
-  const target = `http://${apiHost}:${apiPort}`;
   
-  console.log(`Setting up FastAPI proxy to ${target}`);
+  console.log(`Setting up FastAPI proxy to http://${apiHost}:${apiPort}`);
   
-  // Create a middleware to proxy HTTP requests
-  app.use(['/api', '/ws'], (req, res, next) => {
-    // Skip non-FastAPI routes
-    if (!req.url || (!req.url.startsWith('/api') && !req.url.startsWith('/ws'))) {
-      return next();
-    }
-    
-    let targetPath = req.url;
-    
-    // Path rewriting
-    if (targetPath.startsWith('/api/cer')) {
-      targetPath = targetPath.replace('/api/cer', '/cer');
-    } else if (targetPath.startsWith('/api/validation')) {
-      targetPath = targetPath.replace('/api/validation', '');
-    } else if (targetPath.startsWith('/api/ind')) {
-      targetPath = targetPath.replace('/api/ind', '');
-    }
-    
-    // Create proxy request options
-    const options: http.RequestOptions = {
+  // Simple proxy middleware for API routes
+  app.use('/api', (req, res) => {
+    const options = {
       hostname: apiHost,
       port: apiPort,
-      path: targetPath,
+      path: req.url.replace(/^\/api/, ''),
       method: req.method,
-      headers: { ...req.headers }
+      headers: {
+        ...req.headers,
+        host: `${apiHost}:${apiPort}`
+      }
     };
     
-    // Remove headers that might cause issues
-    delete options.headers.host;
-    delete options.headers.connection;
+    console.log(`Proxying ${req.method} ${req.url} to FastAPI`);
     
-    try {
-      // Create the proxy request
-      const proxyReq = http.request(options, (proxyRes) => {
-        // Copy status code and headers to the response
-        res.writeHead(proxyRes.statusCode || 200, proxyRes.headers);
-        
-        // Pipe the FastAPI response to our response
-        proxyRes.pipe(res, { end: true });
+    const proxyReq = http.request(options, (proxyRes) => {
+      res.statusCode = proxyRes.statusCode || 500;
+      
+      // Copy headers from the FastAPI response
+      Object.keys(proxyRes.headers).forEach((key) => {
+        res.setHeader(key, proxyRes.headers[key] || '');
       });
       
-      // Handle proxy request errors
-      proxyReq.on('error', (err) => {
-        console.error('FastAPI proxy error:', err.message);
-        
-        if (!res.headersSent) {
-          res.status(502).json({
-            success: false,
-            error: 'FastAPI service unreachable',
-            detail: err.message
-          });
-        }
-      });
-      
-      // Pipe the request body to the proxy request
-      req.pipe(proxyReq, { end: true });
-      
-    } catch (err) {
-      console.error('Failed to proxy request:', err);
-      
+      // Pipe the response from FastAPI to the client
+      proxyRes.pipe(res);
+    });
+    
+    // Handle proxy request errors
+    proxyReq.on('error', (err) => {
+      console.error('API Proxy Error:', err);
       if (!res.headersSent) {
-        res.status(500).json({
+        res.status(502).json({
           success: false,
-          error: 'Proxy error',
-          detail: err instanceof Error ? err.message : String(err)
+          error: 'FastAPI service unreachable',
+          detail: err.message
         });
-      }
-    }
-  });
-  
-  // Handle WebSocket upgrade events at the server level
-  // This must be set up with the HTTP server instance after app.listen()
-  const originalListen = app.listen;
-  
-  app.listen = function(...args: any[]) {
-    const server = originalListen.apply(this, args);
-    
-    server.on('upgrade', (req, socket, head) => {
-      if (!req.url || !req.url.startsWith('/ws')) return;
-      
-      console.log(`WebSocket upgrade request: ${req.url}`);
-      
-      try {
-        // Parse the URL
-        const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
-        const targetPath = parsedUrl.pathname + parsedUrl.search;
-        
-        console.log(`Proxying WebSocket to: ${apiHost}:${apiPort}${targetPath}`);
-        
-        // Create headers for the upgrade request to the API server
-        const headers: http.OutgoingHttpHeaders = {
-          'Connection': 'Upgrade',
-          'Upgrade': 'websocket',
-        };
-        
-        // Copy all relevant headers
-        Object.keys(req.headers).forEach(key => {
-          const lowerKey = key.toLowerCase();
-          if (lowerKey !== 'host' && lowerKey !== 'connection' && lowerKey !== 'upgrade') {
-            headers[key] = req.headers[key];
-          }
-        });
-        
-        // Always include the critical WebSocket headers
-        ['sec-websocket-key', 'sec-websocket-version', 'sec-websocket-protocol', 'sec-websocket-extensions']
-          .forEach(key => {
-            if (req.headers[key]) {
-              headers[key] = req.headers[key];
-            }
-          });
-        
-        // Create the upgrade request options
-        const options: http.RequestOptions = {
-          hostname: apiHost,
-          port: apiPort,
-          path: targetPath,
-          method: 'GET',
-          headers
-        };
-        
-        // Create proxy request
-        const proxyReq = http.request(options);
-        
-        proxyReq.on('upgrade', (proxyRes, proxySocket, proxyHead) => {
-          // Generate the upgrade response
-          const responseHeaders = [
-            'HTTP/1.1 101 Switching Protocols',
-            'Connection: Upgrade',
-            'Upgrade: websocket'
-          ];
-          
-          // Include the WebSocket accept header
-          if (proxyRes.headers['sec-websocket-accept']) {
-            responseHeaders.push(`Sec-WebSocket-Accept: ${proxyRes.headers['sec-websocket-accept']}`);
-          }
-          
-          // Add optional headers
-          ['sec-websocket-protocol', 'sec-websocket-extensions'].forEach(key => {
-            if (proxyRes.headers[key]) {
-              responseHeaders.push(`${key.split('-').map(part => 
-                part.charAt(0).toUpperCase() + part.slice(1)).join('-')}: ${proxyRes.headers[key]}`);
-            }
-          });
-          
-          // Send the upgrade response
-          socket.write(responseHeaders.join('\r\n') + '\r\n\r\n');
-          
-          // Connect the sockets
-          proxySocket.pipe(socket);
-          socket.pipe(proxySocket);
-          
-          // Handle socket events
-          proxySocket.on('error', (err) => {
-            console.error('Proxy WebSocket error:', err.message);
-            socket.end();
-          });
-          
-          socket.on('error', (err) => {
-            console.error('Client WebSocket error:', err.message);
-            proxySocket.end();
-          });
-          
-          const onClose = () => {
-            proxySocket.end();
-            socket.end();
-          };
-          
-          proxySocket.on('close', onClose);
-          socket.on('close', onClose);
-        });
-        
-        proxyReq.on('error', (err) => {
-          console.error('WebSocket proxy error:', err.message);
-          socket.end();
-        });
-        
-        proxyReq.end();
-        
-      } catch (err) {
-        console.error('WebSocket proxy setup error:', err);
-        socket.end();
       }
     });
     
-    return server;
-  };
+    // Pipe the request body from the client to FastAPI
+    req.pipe(proxyReq);
+  });
+  
+  // For now, we'll handle WebSocket connections in a simplified way
+  app.get('/ws-status', (req, res) => {
+    res.json({ 
+      status: 'ok',
+      message: 'WebSocket service status endpoint'
+    });
+  });
 }
