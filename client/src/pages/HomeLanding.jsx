@@ -51,10 +51,10 @@ export default function HomeLanding() {
           TrialSage® unifies AI‑driven protocol design, regulatory authoring & eCTD submission—turning biotech ambition into approved therapies at warp speed.
         </p>
         <div className="mt-8 flex justify-center gap-4">
-          <Link href="/signup" className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg flex items-center gap-2">
+          <Link to="/signup" className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg flex items-center gap-2">
             Get Started <ArrowRight size={18}/>
           </Link>
-          <Link href="/demo" className="px-6 py-3 border border-emerald-600 text-emerald-600 rounded-lg hover:bg-emerald-50 dark:hover:bg-slate-800">Request Live Demo</Link>
+          <Link to="/demo" className="px-6 py-3 border border-emerald-600 text-emerald-600 rounded-lg hover:bg-emerald-50 dark:hover:bg-slate-800">Request Live Demo</Link>
         </div>
       </section>
 
@@ -87,7 +87,7 @@ export default function HomeLanding() {
       <section className="bg-emerald-600 text-white py-14 text-center">
         <h2 className="text-2xl font-semibold">See how much time & budget you can reclaim</h2>
         <p className="mt-2 opacity-90">Our ROI calculator quantifies savings across CMC, medical writing & regulatory ops.</p>
-        <Link href="/roi" className="inline-block mt-6 bg-white text-emerald-600 font-medium px-6 py-3 rounded shadow hover:bg-gray-50">Calculate ROI</Link>
+        <Link to="/roi" className="inline-block mt-6 bg-white text-emerald-600 font-medium px-6 py-3 rounded shadow hover:bg-gray-50">Calculate ROI</Link>
       </section>
 
       {/* Footer */}
