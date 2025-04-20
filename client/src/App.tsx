@@ -1,4 +1,4 @@
-// App.tsx – root router with custom toast + resilient WS connection
+// App.tsx – root router with improved toast and resilient WebSocket connection
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { Route, Switch } from 'wouter';
 import SubmissionBuilder from './pages/SubmissionBuilder';
@@ -8,6 +8,9 @@ import HomeLanding from './pages/HomeLandingProtected';
 import DebugInfo from './components/DebugInfo';
 import ErrorBoundary from './ErrorBoundary';
 import { CheckCircle, AlertTriangle, Info } from 'lucide-react';
+// Import react-toastify for modern toast notifications
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 /* ------------ Improved Toast Provider ------------- */
 export type ToastType = 'success' | 'error' | 'info';
@@ -205,6 +208,19 @@ export default function App() {
           </Route>
         </Switch>
         <DebugInfo />
+        
+        {/* React Toastify container for modern toast notifications */}
+        <ToastContainer 
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+        />
       </ToastProvider>
     </ErrorBoundary>
   );
