@@ -1,9 +1,8 @@
 // App.tsx – root router with improved toast and resilient WebSocket connection
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { Route, Switch } from 'wouter';
-// Using both real and placeholder components for SubmissionBuilder
+// Using the region-aware SubmissionBuilder component
 import SubmissionBuilder from './pages/SubmissionBuilder';
-import SubmissionBuilderPlaceholder from './components/SubmissionBuilderPlaceholder';
 import IndSequenceDetail from './pages/IndSequenceDetail';
 import IndSequenceManager from './pages/IndSequenceManager';
 import HomeLanding from './pages/HomeLandingProtected';
@@ -135,7 +134,7 @@ export default function App() {
         <Switch>
           <Route path="/builder">
             <ErrorBoundary>
-              <SubmissionBuilderPlaceholder />
+              <SubmissionBuilder />
             </ErrorBoundary>
           </Route>
           <Route path="/portal/ind/:sequenceId">
