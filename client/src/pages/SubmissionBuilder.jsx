@@ -37,127 +37,88 @@ export default function SubmissionBuilder({ initialRegion = 'FDA', region: propR
   const [loading, setLoading] = useState(true);
   const wsRef = useRef(null);
 
-  // Load documents and set up WebSocket connection
+  // Load documents and setup simple WebSocket
   useEffect(() => {
     loadDocs();
-    
-    // Socket connection with auto-reconnect and region awareness
-    const connectWebSocket = () => {
-      const ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws/qc`);
-      
-      ws.onopen = () => {
-        console.log('QC WebSocket connected');
-        // Reset reconnect attempts on successful connection
-        reconnectAttempts.current = 0;
+  }, [region]);
+  
+  // Separate WebSocket setup to avoid conflicts with region changes
+  useEffect(() => {
+    const setupWebSocket = () => {
+      try {
+        // Simple websocket connection
+        const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+        const ws = new WebSocket(`${proto}://${location.host}/ws/qc`);
         
-        // Subscribe to the current region's updates
-        ws.send(JSON.stringify({
-          action: 'subscribe',
-          region: region
-        }));
-      };
-      
-      ws.onmessage = (e) => {
-        try {
-          const data = JSON.parse(e.data);
-          console.log('WS Message:', data);
+        // Handle connection open
+        ws.addEventListener('open', () => {
+          console.log('QC WebSocket connected');
+          toast({ message: `Connected to ${region} QC updates`, type: 'info' });
+        });
+        
+        // Handle messages
+        ws.addEventListener('message', (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            console.log('WS message received:', data);
+            
+            // Handle QC status updates
+            if (data.id && data.status) {
+              toast({ 
+                message: `QC ${data.status} for document ${data.id}`,
+                type: data.status === 'passed' ? 'success' : 'error'
+              });
+              
+              // Update the tree
+              setTree(prevTree => 
+                prevTree.map(node => 
+                  node.id === data.id 
+                    ? { 
+                        ...node, 
+                        data: { 
+                          ...node.data, 
+                          qc_json: { status: data.status } 
+                        } 
+                      } 
+                    : node
+                )
+              );
+            }
+          } catch (err) {
+            console.error('Failed to parse WebSocket message:', err);
+          }
+        });
+        
+        // Handle errors
+        ws.addEventListener('error', (error) => {
+          console.error('WebSocket error:', error);
+        });
+        
+        // Handle closure
+        ws.addEventListener('close', () => {
+          console.log('WebSocket connection closed');
           
-          // Handle different message types
-          if (data.type === 'connection_established') {
-            console.log('WebSocket connection confirmed');
-          } 
-          else if (data.type === 'subscription_ack') {
-            console.log(`Subscribed to ${data.region} updates`);
-            toast({ 
-              message: `Connected to ${data.region} validator updates`,
-              type: 'info'
-            });
-          }
-          else if (data.type === 'qc_status' && data.id && data.status) {
-            // Update individual document status
-            setTree(prev => prev.map(n => {
-              if (n.id === data.id) {
-                toast({ 
-                  message: `QC ${data.status === 'passed' ? 'passed' : 'failed'} for ${n.text}`,
-                  type: data.status === 'passed' ? 'success' : 'error'
-                });
-                return { 
-                  ...n, 
-                  data: { 
-                    ...n.data, 
-                    qc_json: { 
-                      status: data.status,
-                      profile: data.profile || `${region}_eCTD` 
-                    } 
-                  } 
-                };
-              }
-              return n;
-            }));
-          }
-          else if (data.type === 'bulk_qc_summary') {
-            // Handle bulk validation summary
-            const { passed, failed, total, profile } = data;
-            toast({ 
-              message: `Bulk validation complete: ${passed}/${total} passed using ${profile || `${region} profile`}`,
-              type: failed > 0 ? 'error' : 'success'
-            });
-            // Refresh document list to get updated statuses
-            loadDocs();
-          }
-          else if (data.type === 'bulk_qc_error') {
-            // Handle bulk validation errors
-            toast({ 
-              message: `Validation error: ${data.message || 'Unknown error'}`,
-              type: 'error'
-            });
-          }
-        } catch (error) {
-          console.error('Error parsing WebSocket message:', error);
-        }
-      };
-      
-      ws.onclose = (e) => {
-        console.log('QC WebSocket disconnected, attempting reconnect in 2s...');
+          // Auto-reconnect after delay
+          setTimeout(() => setupWebSocket(), 3000);
+        });
         
-        // Clear any existing reconnect timeout
-        if (reconnectTimeoutRef.current) {
-          clearTimeout(reconnectTimeoutRef.current);
-        }
-        
-        // Attempt to reconnect after delay (with exponential backoff)
-        const delay = Math.min(2000 * Math.pow(1.5, reconnectAttempts.current), 30000);
-        reconnectTimeoutRef.current = setTimeout(() => {
-          reconnectAttempts.current += 1;
-          wsRef.current = connectWebSocket();
-        }, delay);
-      };
-      
-      ws.onerror = (error) => {
-        console.error('WebSocket error:', error);
-        ws.close(); // This will trigger the onclose handler for reconnection
-      };
-      
-      return ws;
+        // Store reference
+        wsRef.current = ws;
+      } catch (err) {
+        console.error('Error setting up WebSocket:', err);
+      }
     };
     
-    // Track reconnection state
-    const reconnectAttempts = useRef(0);
-    const reconnectTimeoutRef = useRef(null);
+    // Initial setup
+    setupWebSocket();
     
-    // Initial connection
-    wsRef.current = connectWebSocket();
-    
-    // Cleanup function
+    // Cleanup on unmount
     return () => {
       if (wsRef.current) {
         wsRef.current.close();
       }
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-      }
     };
-  }, [region]);
+  }, []);
 
   const toast = useToast();
   
