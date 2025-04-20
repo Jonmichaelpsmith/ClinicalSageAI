@@ -1,15 +1,18 @@
 /**
- * Simple FastAPI Bridge
+ * Enhanced FastAPI Bridge with WebSocket Support
  * 
  * Uses Express routing to forward requests to the FastAPI backend.
- * This is a simplified version that doesn't require http-proxy-middleware.
+ * Includes WebSocket proxy support for real-time updates.
  */
 
 import express from 'express';
 import http from 'http';
+import { Server as HttpServer } from 'http';
+import WebSocket from 'ws';
+import { URL } from 'url';
 
 /**
- * Register FastAPI proxy with an Express app
+ * Register FastAPI proxy with an Express app and set up WebSocket proxy
  * @param {express.Application} app - Express application instance
  * @returns {void}
  */
@@ -62,11 +65,90 @@ export default function registerFastapiProxy(app: express.Application): void {
     req.pipe(proxyReq);
   });
   
-  // For now, we'll handle WebSocket connections in a simplified way
+  // WebSocket status check endpoint
   app.get('/ws-status', (req, res) => {
     res.json({ 
       status: 'ok',
-      message: 'WebSocket service status endpoint'
+      message: 'WebSocket proxy service is running'
     });
   });
+  
+  // Function to set up WebSocket proxy
+  app.wsPatch = (httpServer: HttpServer) => {
+    // Create a WebSocket server for the '/ws' route
+    const wsServer = new WebSocket.Server({ 
+      noServer: true, 
+      path: '/ws',
+    });
+    
+    console.log('Setting up WebSocket proxy server on /ws path');
+    
+    // Handle HTTP server upgrade events for WebSocket connections
+    httpServer.on('upgrade', (request, socket, head) => {
+      const pathname = new URL(request.url as string, 
+        `http://${request.headers.host || 'localhost'}`).pathname;
+      
+      // Only handle upgrades on our WebSocket path
+      if (pathname.startsWith('/ws')) {
+        console.log(`WebSocket connection requested on ${pathname}`);
+        
+        wsServer.handleUpgrade(request, socket, head, (ws) => {
+          // Create a connection to the FastAPI WebSocket server
+          const fastApiWs = new WebSocket(`ws://${apiHost}:${apiPort}${pathname}`);
+          
+          console.log(`Proxying WebSocket connection to ws://${apiHost}:${apiPort}${pathname}`);
+          
+          // Handle FastAPI WebSocket connection
+          fastApiWs.on('open', () => {
+            console.log('Connected to FastAPI WebSocket server');
+            
+            // Forward messages from client to FastAPI
+            ws.on('message', (message) => {
+              console.log('Forwarding client message to FastAPI');
+              fastApiWs.send(message.toString());
+            });
+            
+            // Forward messages from FastAPI to client
+            fastApiWs.on('message', (message) => {
+              console.log('Forwarding FastAPI message to client');
+              ws.send(message.toString());
+            });
+            
+            // Handle client close
+            ws.on('close', () => {
+              console.log('Client disconnected from WebSocket');
+              fastApiWs.close();
+            });
+            
+            // Handle FastAPI close
+            fastApiWs.on('close', () => {
+              console.log('FastAPI WebSocket connection closed');
+              ws.close();
+            });
+            
+            // Handle errors
+            ws.on('error', (err) => {
+              console.error('Client WebSocket error:', err);
+              fastApiWs.close();
+            });
+            
+            fastApiWs.on('error', (err) => {
+              console.error('FastAPI WebSocket error:', err);
+              ws.close();
+            });
+            
+            // Emit connection event
+            wsServer.emit('connection', ws, request);
+            console.log('Client connected to WebSocket');
+          });
+          
+          // Handle connection errors
+          fastApiWs.on('error', (err) => {
+            console.error('Error connecting to FastAPI WebSocket:', err);
+            ws.close();
+          });
+        });
+      }
+    });
+  };
 }
