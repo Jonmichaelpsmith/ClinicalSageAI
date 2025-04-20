@@ -12,7 +12,15 @@ import {
   ArrowUpRight, 
   Bot,
   AlertCircle,
-  ExternalLink
+  ExternalLink,
+  Database,
+  BarChart,
+  LineChart,
+  FileDown,
+  Activity,
+  ServerCrash,
+  Zap,
+  Timer
 } from 'lucide-react';
 
 // CER Report Type Card Component
@@ -153,6 +161,365 @@ export default function CERGenerator() {
       </div>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* CER Module Overview Section */}
+        <div className="mb-10 bg-white rounded-xl p-8 border border-gray-200">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+            <FileText className="mr-2 text-rose-600" size={24} />
+            How the CER Module Works
+          </h2>
+          <p className="text-gray-700 mb-6">
+            The CER module turns raw post-market safety data into a regulator-ready Clinical Evaluation Report in minutes, with continuous analytics and PDF output. It is delivered as a micro-service inside the Concepts2Cures "TrialSage" platform and integrates seamlessly with IND automation, KPI dashboards, and user SSO.
+          </p>
+          
+          {/* End-to-End Process Steps */}
+          <div className="space-y-8 mb-8">
+            {/* Step 1: Data Ingestion */}
+            <div className="relative pl-8 border-l-2 border-rose-200">
+              <div className="absolute -left-3 top-0 w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs font-bold">1</div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Data Ingestion & Normalization</h3>
+              <div className="mb-4">
+                <div className="bg-gray-50 rounded-lg p-4 mb-3">
+                  <div className="grid grid-cols-3 gap-4 text-sm">
+                    <div className="font-medium text-gray-700">Source</div>
+                    <div className="font-medium text-gray-700">What we pull</div>
+                    <div className="font-medium text-gray-700">Access layer</div>
+                  </div>
+                </div>
+                <div className="space-y-2 text-sm">
+                  <div className="grid grid-cols-3 gap-4 py-2 border-b border-gray-100">
+                    <div>FDA FAERS</div>
+                    <div>Drug adverse-event counts, patient demographics, outcomes</div>
+                    <div className="text-gray-500 font-mono text-xs">/utils/faers_client.py (REST)</div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-4 py-2 border-b border-gray-100">
+                    <div>FDA MAUDE</div>
+                    <div>Device complaints, device IDs, problem codes</div>
+                    <div className="text-gray-500 font-mono text-xs">/utils/maude_client.py (batch XML)</div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-4 py-2 border-b border-gray-100">
+                    <div>EU EUDAMED</div>
+                    <div>EU device vigilance</div>
+                    <div className="text-gray-500 font-mono text-xs">/utils/eudamed_scraper.py</div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-4 py-2">
+                    <div>PubMed / ClinicalTrials.gov</div>
+                    <div>Literature abstracts, study outcomes for context</div>
+                    <div className="text-gray-500 font-mono text-xs">/utils/pubmed_client.py</div>
+                  </div>
+                </div>
+              </div>
+              <p className="text-gray-600">Each client writes raw JSON into an ingest queue, then an ETL worker (Celery) normalizes fields to a common schema (DocEvent model): <span className="font-mono text-xs bg-gray-100 p-1 rounded">event_type | product_id | date | seriousness | age | sex | narrative</span></p>
+              <p className="text-gray-600 mt-2">All data land in PostgreSQL + pgvector so the AI engine can embed and search narrative fields.</p>
+            </div>
+            
+            {/* Step 2: Analytics & ML Layer */}
+            <div className="relative pl-8 border-l-2 border-rose-200">
+              <div className="absolute -left-3 top-0 w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs font-bold">2</div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Analytics & Machine-Learning Layer</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div className="bg-white border border-gray-200 rounded-lg p-4 flex">
+                  <div className="mr-3 mt-1">
+                    <LineChart className="h-5 w-5 text-rose-500" />
+                  </div>
+                  <div>
+                    <div className="font-medium text-gray-800 mb-1">Time-series Forecaster</div>
+                    <div className="text-sm text-gray-600">ARIMA/Prophet forecasts for each event code (default 12 months)</div>
+                    <div className="text-xs text-gray-500 font-mono mt-1">predictive_analytics.py</div>
+                  </div>
+                </div>
+                <div className="bg-white border border-gray-200 rounded-lg p-4 flex">
+                  <div className="mr-3 mt-1">
+                    <AlertCircle className="h-5 w-5 text-rose-500" />
+                  </div>
+                  <div>
+                    <div className="font-medium text-gray-800 mb-1">Anomaly Detector</div>
+                    <div className="text-sm text-gray-600">Rolling mean + 3σ flag for sudden spikes</div>
+                    <div className="text-xs text-gray-500 font-mono mt-1">detect_anomalies.py</div>
+                  </div>
+                </div>
+                <div className="bg-white border border-gray-200 rounded-lg p-4 flex">
+                  <div className="mr-3 mt-1">
+                    <BarChart className="h-5 w-5 text-rose-500" />
+                  </div>
+                  <div>
+                    <div className="font-medium text-gray-800 mb-1">Demographic Heat-map Generator</div>
+                    <div className="text-sm text-gray-600">Aggregates counts by age-band × sex</div>
+                  </div>
+                </div>
+                <div className="bg-white border border-gray-200 rounded-lg p-4 flex">
+                  <div className="mr-3 mt-1">
+                    <Database className="h-5 w-5 text-rose-500" />
+                  </div>
+                  <div>
+                    <div className="font-medium text-gray-800 mb-1">Embedding Index</div>
+                    <div className="text-sm text-gray-600">Splits historical CERs & guidance docs into chunks → OpenAI text-embedding-3-small → pgvector</div>
+                    <div className="text-xs text-gray-500 font-mono mt-1">embed_documents.py</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Step 3: Narrative Generation Service */}
+            <div className="relative pl-8 border-l-2 border-rose-200">
+              <div className="absolute -left-3 top-0 w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs font-bold">3</div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Narrative Generation Service</h3>
+              <p className="text-gray-600 mb-3">FastAPI micro-service (cer_narrative.py) exposes three main endpoints:</p>
+              <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                <table className="min-w-full">
+                  <thead>
+                    <tr>
+                      <th className="text-left text-sm font-medium text-gray-700 pb-2">Endpoint</th>
+                      <th className="text-left text-sm font-medium text-gray-700 pb-2">Purpose</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    <tr>
+                      <td className="py-2 font-mono text-xs">GET /api/narrative/faers/{'{ndc}'}</td>
+                      <td className="py-2 text-sm">Drug-only CER (FAERS + literature)</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2 font-mono text-xs">GET /api/narrative/device/{'{gmdn}'}</td>
+                      <td className="py-2 text-sm">Device-only CER (MAUDE + EUDAMED)</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2 font-mono text-xs">POST /api/narrative/multi</td>
+                      <td className="py-2 text-sm">Cross-product CER (multiple NDCs / device codes)</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <h4 className="font-semibold text-gray-800 mb-2">Prompt strategy</h4>
+              <ol className="list-decimal list-inside space-y-2 text-gray-600 ml-2">
+                <li>System seed summarises ISO 14155 & MDCG guidance ("Write in third-person, include benefit-risk ratio …").</li>
+                <li>Retrieval pulls the top-5 relevant chunks from the embedding index.</li>
+                <li>Structured user-message passes:
+                  <ul className="list-disc list-inside ml-6 mt-1">
+                    <li>Executive summary bullet points (from analytics)</li>
+                    <li>Tables of top 5 events + counts</li>
+                    <li>Forecast graph data (base-64 line chart)</li>
+                  </ul>
+                </li>
+                <li>GPT-4-Turbo 128K returns 3-section draft:
+                  <ul className="list-disc list-inside ml-6 mt-1">
+                    <li>Safety Trends & Signal Detection</li>
+                    <li>Benefit-Risk Assessment (ISO 14971 language)</li>
+                    <li>Corrective / Preventive Action recommendations</li>
+                  </ul>
+                </li>
+              </ol>
+            </div>
+            
+            {/* Step 4: PDF & DOCX Renderer */}
+            <div className="relative pl-8 border-l-2 border-rose-200">
+              <div className="absolute -left-3 top-0 w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs font-bold">4</div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">PDF & DOCX Renderer</h3>
+              <div className="bg-white border border-gray-200 rounded-lg p-4 flex items-start">
+                <div className="mr-4 mt-1">
+                  <FileDown className="h-5 w-5 text-rose-500" />
+                </div>
+                <div>
+                  <div className="font-mono text-xs text-gray-500 mb-2">/utils/pdf_renderer.py</div>
+                  <ul className="list-disc list-inside space-y-1 text-gray-600">
+                    <li>Uses ReportLab to lay out the GPT text, analytics charts, and boiler-plate headings</li>
+                    <li>Stamps footer with date + auto-generated control number</li>
+                    <li>Saves to <span className="font-mono text-xs">/mnt/data/cer_reports/{'{hash}'}.pdf</span></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            
+            {/* Step 5: Caching & Performance */}
+            <div className="relative pl-8 border-l-2 border-rose-200">
+              <div className="absolute -left-3 top-0 w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs font-bold">5</div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Caching & Performance</h3>
+              <div className="bg-gray-50 rounded-lg overflow-hidden">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-100">
+                    <tr>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-700">Layer</th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-700">TTL</th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-700">Purpose</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 bg-white">
+                    <tr>
+                      <td className="px-4 py-3 text-sm font-medium">Redis</td>
+                      <td className="px-4 py-3 text-sm">1 hour</td>
+                      <td className="px-4 py-3 text-sm">Stores narrative JSON & rendered PDF so repeated calls return &lt; 500 ms</td>
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-3 text-sm font-medium">In-memory fallback</td>
+                      <td className="px-4 py-3 text-sm">15 min</td>
+                      <td className="px-4 py-3 text-sm">Keeps dev environments running without Redis</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            
+            {/* Step 6: API Surface */}
+            <div className="relative pl-8 border-l-2 border-rose-200">
+              <div className="absolute -left-3 top-0 w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs font-bold">6</div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">REST / GraphQL API Surface</h3>
+              <div className="font-mono text-xs space-y-2 bg-gray-50 p-4 rounded-lg">
+                <div className="flex">
+                  <span className="w-20 text-rose-700">GET</span>
+                  <span className="flex-1">/api/cer/metrics/{'{code}'}?since=2023-01-01   → JSON analytics blobs</span>
+                </div>
+                <div className="flex">
+                  <span className="w-20 text-rose-700">GET</span>
+                  <span className="flex-1">/api/narrative/...                         → Markdown narrative</span>
+                </div>
+                <div className="flex">
+                  <span className="w-20 text-rose-700">GET</span>
+                  <span className="flex-1">/api/narrative/.../pdf                     → Binary PDF</span>
+                </div>
+                <div className="flex">
+                  <span className="w-20 text-rose-700">POST</span>
+                  <span className="flex-1">/api/cer/compare                           → Multi-product analytics + forecasts</span>
+                </div>
+              </div>
+              <p className="text-gray-600 mt-3">All endpoints inherit JWT auth & RBAC scopes (cer:read, cer:write).</p>
+            </div>
+            
+            {/* Step 7: React Front-End */}
+            <div className="relative pl-8 border-l-2 border-rose-200">
+              <div className="absolute -left-3 top-0 w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs font-bold">7</div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">React Front-End</h3>
+              <div className="space-y-4">
+                <div className="bg-white rounded-lg border border-gray-200 p-4">
+                  <h4 className="font-medium text-gray-800 mb-2 flex items-center">
+                    <Activity className="h-4 w-4 mr-2 text-rose-500" />
+                    AdvancedDashboard.jsx
+                  </h4>
+                  <ul className="list-disc list-inside text-sm text-gray-600 space-y-1 ml-4">
+                    <li>Ten interactive charts (bar, line, heat-map, gauge) rendered with Plotly</li>
+                    <li>Drill-down side panel shows raw case narratives</li>
+                    <li>NLP query bar calls /api/cer/nlp-query (OpenAI function-calling) for "Show trends in patients &gt; 60"</li>
+                  </ul>
+                </div>
+                <div className="bg-white rounded-lg border border-gray-200 p-4">
+                  <h4 className="font-medium text-gray-800 mb-2 flex items-center">
+                    <FileText className="h-4 w-4 mr-2 text-rose-500" />
+                    CERGenerator.jsx
+                  </h4>
+                  <ul className="list-disc list-inside text-sm text-gray-600 space-y-1 ml-4">
+                    <li>Tabbed UI for Drug / Device / Multi-source</li>
+                    <li>"Generate PDF" button streams /pdf endpoint and auto-downloads</li>
+                  </ul>
+                </div>
+                <div className="bg-white rounded-lg border border-gray-200 p-4">
+                  <h4 className="font-medium text-gray-800 mb-2 flex items-center">
+                    <BarChart className="h-4 w-4 mr-2 text-rose-500" />
+                    Compliance Insights Dashboard
+                  </h4>
+                  <ul className="list-disc list-inside text-sm text-gray-600 space-y-1 ml-4">
+                    <li>Weekly push-to-Teams / email of new anomalies</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            
+            {/* Step 8: Validation & QC */}
+            <div className="relative pl-8 border-l-2 border-rose-200">
+              <div className="absolute -left-3 top-0 w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs font-bold">8</div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Validation & QC</h3>
+              <ol className="list-decimal list-inside space-y-3 text-gray-600 ml-2">
+                <li>PDF QC (pdf_qc.py) ensures every narrative PDF is searchable, PDF/A-1b, &lt; 10 MB, and bookmarked.</li>
+                <li>Regulatory checklist stored in cer_checklist.json — gates "Release to client" until all ISO-/TR 20416 fields are present.</li>
+                <li>Audit trail (DocEventHistory) logs every generation with user, model-version, and analytics snapshot (GxP compliant).</li>
+              </ol>
+            </div>
+            
+            {/* Step 9: User Flow Summary */}
+            <div className="relative pl-8 border-l-2 border-rose-200">
+              <div className="absolute -left-3 top-0 w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs font-bold">9</div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">User Flow Summary</h3>
+              <div className="bg-white p-5 rounded-lg border border-gray-200">
+                <ol className="list-decimal list-inside space-y-3 text-gray-700 ml-2">
+                  <li className="flex items-start">
+                    <div className="flex-shrink-0 h-6 w-6 rounded-full bg-rose-100 text-rose-500 flex items-center justify-center mr-2">1</div>
+                    <span>Select product(s) → Choose Drug NDC / Device code(s)</span>
+                  </li>
+                  <li className="flex items-start">
+                    <div className="flex-shrink-0 h-6 w-6 rounded-full bg-rose-100 text-rose-500 flex items-center justify-center mr-2">2</div>
+                    <span>(Optional) Set date window & demographic filter</span>
+                  </li>
+                  <li className="flex items-start">
+                    <div className="flex-shrink-0 h-6 w-6 rounded-full bg-rose-100 text-rose-500 flex items-center justify-center mr-2">3</div>
+                    <span>Click "Generate CER"</span>
+                  </li>
+                  <li className="flex items-start">
+                    <div className="flex-shrink-0 h-6 w-6 rounded-full bg-rose-100 text-rose-500 flex items-center justify-center mr-2">4</div>
+                    <span>&lt; 20 s later UI shows draft narrative + all analytics; user can download PDF or edit in Word</span>
+                  </li>
+                  <li className="flex items-start">
+                    <div className="flex-shrink-0 h-6 w-6 rounded-full bg-rose-100 text-rose-500 flex items-center justify-center mr-2">5</div>
+                    <span>Sign-off → CER locked and revision stored; can be attached to IND module 5 or PMA supplement</span>
+                  </li>
+                </ol>
+              </div>
+            </div>
+            
+            {/* Step 10: Deployment & Ops */}
+            <div className="relative pl-8 border-l-2 border-rose-200">
+              <div className="absolute -left-3 top-0 w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs font-bold">10</div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Deployment & Ops</h3>
+              <ul className="list-disc space-y-2 text-gray-600 ml-6">
+                <li>Micro-service container (cer-service) behind API-gateway</li>
+                <li>Horizontal scalable via Kubernetes HPA (CPU + queue length)</li>
+                <li>Celery + Redis worker pool for long-running forecasts</li>
+                <li>All PII is stripped; only de-identified FDA data stored</li>
+                <li>SOC2 audit logs routed to ELK</li>
+              </ul>
+            </div>
+          </div>
+          
+          {/* Key Value */}
+          <div className="bg-gradient-to-r from-rose-50 to-rose-100 rounded-lg p-6 mb-4">
+            <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+              <Zap className="mr-2 text-rose-500" />
+              Key Value to Clients
+            </h3>
+            <ul className="space-y-3">
+              <li className="flex items-start">
+                <div className="flex-shrink-0 h-6 w-6 rounded-full bg-rose-200 text-rose-600 flex items-center justify-center mr-3">
+                  <Timer size={12} />
+                </div>
+                <span className="text-gray-700">Days → Minutes to produce regulator-grade CERs</span>
+              </li>
+              <li className="flex items-start">
+                <div className="flex-shrink-0 h-6 w-6 rounded-full bg-rose-200 text-rose-600 flex items-center justify-center mr-3">
+                  <CheckCircle size={12} />
+                </div>
+                <span className="text-gray-700">Eliminates manual Excel pivot-tables and Word templating</span>
+              </li>
+              <li className="flex items-start">
+                <div className="flex-shrink-0 h-6 w-6 rounded-full bg-rose-200 text-rose-600 flex items-center justify-center mr-3">
+                  <Activity size={12} />
+                </div>
+                <span className="text-gray-700">Continuous safety surveillance with ML-based anomaly alerts</span>
+              </li>
+              <li className="flex items-start">
+                <div className="flex-shrink-0 h-6 w-6 rounded-full bg-rose-200 text-rose-600 flex items-center justify-center mr-3">
+                  <Globe size={12} />
+                </div>
+                <span className="text-gray-700">Harmonised output that matches FDA, EU MDR Annex II, and ISO 14155 expectations</span>
+              </li>
+            </ul>
+            <div className="mt-6 text-gray-700">
+              <p className="font-medium">The module is GA-ready, validated, and already plumbed into the broader IND/eCTD workflow so clients can drop a CER PDF straight into Module 5 of their next sequence.</p>
+            </div>
+          </div>
+          
+          <div className="flex justify-center mt-6">
+            <button className="inline-flex items-center px-6 py-3 bg-rose-600 hover:bg-rose-700 text-white font-medium rounded-lg shadow transition-colors">
+              Try CER Generator Now
+              <ArrowRight size={16} className="ml-2" />
+            </button>
+          </div>
+        </div>
+        
         {/* AI Industry Co-pilot Button - Fixed in bottom corner */}
         <div className="fixed bottom-6 right-6 z-50">
           <button 
