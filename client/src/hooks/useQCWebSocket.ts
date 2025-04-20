@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import getWsUrl from '../utils/getWsUrl';
 
 /**
  * Connection status types for the WebSocket connection
@@ -23,14 +24,14 @@ export const useQCWebSocket = (region = 'FDA', onMsg: (msg: any) => void) => {
   useEffect(() => {
     const maxRetryDelay = 30000; // Max retry delay of 30 seconds
     let isComponentMounted = true;
+    let pingInterval: number | null = null;
     
     const connect = () => {
       // Update status to connecting or reconnecting based on retry count
       setStatus(retryCount.current === 0 ? 'connecting' : 'reconnecting');
       
-      // Ensure WebSocket URL works both in development and production
-      // Use the origin-based approach which is resilient to proxies and HTTPS
-      const wsUrl = `${window.location.origin.replace(/^http/, 'ws')}/ws/qc?region=${region}`;
+      // Use our utility function to get a reliable WebSocket URL
+      const wsUrl = getWsUrl(`/ws/qc?region=${region}`);
       console.log(`[QC WebSocket] Connecting to: ${wsUrl}`);
       
       try {
@@ -48,6 +49,19 @@ export const useQCWebSocket = (region = 'FDA', onMsg: (msg: any) => void) => {
               region: region
             }));
           }
+          
+          // Set up keepalive ping to prevent Replit from closing idle connections
+          // Send a ping every 45 seconds (Replit closes after 60s)
+          if (pingInterval) {
+            clearInterval(pingInterval);
+          }
+          
+          pingInterval = window.setInterval(() => {
+            if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+              console.log('[QC WebSocket] Sending keepalive ping');
+              ws.current.send(JSON.stringify({ type: 'PING' }));
+            }
+          }, 45000); // 45 seconds
         };
         
         ws.current.onmessage = (event) => {
@@ -98,6 +112,13 @@ export const useQCWebSocket = (region = 'FDA', onMsg: (msg: any) => void) => {
     // Cleanup function
     return () => {
       isComponentMounted = false;
+      
+      // Clear the keepalive ping interval
+      if (pingInterval) {
+        clearInterval(pingInterval);
+        pingInterval = null;
+      }
+      
       if (ws.current) {
         ws.current.onclose = null; // Prevent onclose from triggering reconnect
         ws.current.close();

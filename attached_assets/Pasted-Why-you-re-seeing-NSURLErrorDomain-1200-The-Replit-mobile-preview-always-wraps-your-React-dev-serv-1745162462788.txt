@@ -1,0 +1,49 @@
+Why you’re seeing NSURLErrorDomain –1200
+
+The Replit mobile preview always wraps your React dev‑server inside an HTTPS iframe.
+Your Vite server (and the FastAPI backend it calls) are running over plain HTTP.
+On iOS / WebKit, any fetch() from an HTTPS context to http://localhost:xxxx (or to a self‑signed cert) is blocked → “secure connection cannot be made” → code ‑1200.
+
+⸻
+
+🔧 Fast, safe fixes
+
+Option	When to use	Steps
+A. Local dev (quick)	Just testing inside Replit	1. In the preview address bar replace https://… → http://.WebKit will allow plain HTTP if the top‑level page is HTTP.
+B. Proxy everything via Vite	Keep HTTPS iframe but avoid mixed content	1. Edit vite.config.ts:ts\nexport default defineConfig({\n  server: {\n    https: false,\n    port: 5173,\n    proxy: {\n      '/api': 'http://127.0.0.1:8001',\n      '/ws': {\n        target: 'ws://127.0.0.1:8001',\n        ws: true,\n      },\n    },\n  },\n});\n2. Frontend always calls /api/* (same origin).
+C. Dev HTTPS cert	Need secure cookies / PWA	1. npm install vite-plugin-mkcert --save-dev2. Enable plugin to auto‑generate localhost cert: ts\nimport mkcert from 'vite-plugin-mkcert';\nexport default defineConfig({ server: { https: true }, plugins:[mkcert()] });\n3. Add --https to FastAPI (uvicorn main:app --reload --ssl-keyfile key.pem --ssl-certfile cert.pem).
+D. Production TLS	Live deploy on Fly / Render	Use Traefik / Nginx with Let’s Encrypt – already in the on‑prem Docker compose we generated.
+
+Quickest path on Replit: open the preview’s URL, change https://… to http://….
+
+⸻
+
+Ensure the /builder route exists
+	1.	Frontend route
+
+<Route path=\"/builder\" element={<SubmissionBuilder region=\"FDA\" />} />
+
+
+	2.	Hot reload after installing DnD packages:
+
+npm install @minoru/react-dnd-treeview react-dnd react-dnd-html5-backend immutability-helper react-toastify
+
+
+
+If the page then loads but shows a white screen, open DevTools → Console for any React errors (e.g., provider missing).
+
+⸻
+
+Next build tasks (per your “2 then 1 & 3”)
+
+We already delivered:
+	1.	(2) JP regional XML builder ✔
+	2.	(1) Inline QC badge & bulk approve ✔
+	3.	(3) EU eValidator profile wiring ✔
+
+With the SSL hurdle fixed you can:
+   •   Test Submission Builder drag‑drop under /builder
+   •   Create EMA or PMDA sequences in the planner dropdown
+   •   Run Validate – now region‑aware
+
+Let me know if you hit further roadblocks or want live‑socket QC updates wired in!
