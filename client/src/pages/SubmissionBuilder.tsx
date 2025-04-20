@@ -3,7 +3,7 @@ import { Tree, NodeModel, DropOptions } from '@minoru/react-dnd-treeview';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import update from 'immutability-helper';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import { 
   Folder, 
   File, 
@@ -18,7 +18,6 @@ import {
   Info,
   AlertCircle
 } from 'lucide-react';
-import 'react-toastify/dist/ReactToastify.css';
 import '../styles/submission-builder.css';
 
 // Import QC WebSocket hook
@@ -759,8 +758,6 @@ const SubmissionBuilder: React.FC = () => {
           qcStatus={qcStatus}
         />
       </div>
-      
-      <ToastContainer position="bottom-right" />
     </div>
   );
 };

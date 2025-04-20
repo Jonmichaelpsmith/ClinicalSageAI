@@ -1,0 +1,102 @@
+Below is a drop‑in update for client/src/App.tsx that ✅
+
+Finishes the Toastify setup (global ToastContainer with sensible defaults)
+
+Auto‑subscribes to the QC WebSocket (/ws/qc) and fires success / error toasts when PDF‑QC passes or fails
+
+Keeps your existing routing & providers intact
+
+Just replace the file (or patch manually) and hot‑reload. No other files change.
+
+client/src/App.tsx
+tsx
+Copy
+Edit
+import React, { useEffect } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+// pages
+import HomeLanding from './pages/HomeLanding';
+import SubmissionBuilder from './pages/SubmissionBuilder';
+import IndSequenceDetail from './pages/IndSequenceDetail';
+import IndSequenceManager from './pages/IndSequenceManager';
+
+export default function App() {
+  /** ───────────────────────────────────────── WebSocket QC listener */
+  useEffect(() => {
+    const ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws/qc`);
+    ws.onmessage = (evt) => {
+      try {
+        const m = JSON.parse(evt.data);
+        if (m.status === 'passed') {
+          toast.success(`QC passed – Doc #${m.id}`, { position: 'bottom-right' });
+        } else if (m.status === 'failed') {
+          toast.error(`QC failed – Doc #${m.id}`,   { position: 'bottom-right' });
+        }
+      } catch {/* ignore bad payload */}
+    };
+    return () => ws.close();
+  }, []);
+
+  return (
+    <BrowserRouter>
+      {/* ───────────  your routes  ─────────── */}
+      <Routes>
+        <Route path="/"                    element={<HomeLanding        />} />
+        <Route path="/builder"             element={<SubmissionBuilder  />} />
+        <Route path="/ind/plan"            element={<IndSequenceManager />} />
+        <Route path="/portal/ind/:sequenceId"
+               element={<IndSequenceDetail />} />
+      </Routes>
+
+      {/* ───────────  toast root  ─────────── */}
+      <ToastContainer
+        newestOnTop
+        closeOnClick
+        pauseOnHover
+        theme="colored"
+        position="bottom-right"
+        toastClassName="rounded shadow-sm"
+      />
+    </BrowserRouter>
+  );
+}
+One‑time package install (already done)
+bash
+Copy
+Edit
+npm install react-toastify@9 react-slick slick-carousel
+If you haven’t imported slick CSS for the carousel on HomeLanding:
+
+tsx
+Copy
+Edit
+// in HomeLanding.jsx
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
+How it works
+WebSocket /ws/qc (added earlier) streams {id, status}
+
+Listener shows green ✅ toast for “passed”, red ❌ for “failed”
+
+Toast container lives once at the bottom of the React tree
+
+You now have real‑time, non‑blocking notifications across the whole app.
+
+Next steps on the roadmap
+Per‑region drag‑folder rules (JP annex, EMA admin docs auto‑folder)
+
+Live socket for ESG ACKs → toast when ACK2/ACK3 arrive
+
+Bulk “Approve + QC” progress bar
+
+Tell me which item to tackle, or any further polish you’d like!
+
+
+
+
+
+
+
