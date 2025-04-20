@@ -1,95 +1,108 @@
 """
-Event Bus System
+Event Bus for WebSocket Communication
 
-This module provides a simple event publication/subscription system
-for application-wide event distribution. It enables components to:
-
-1. Subscribe to specific event types
-2. Publish events to all subscribed listeners
-3. Unsubscribe from events when no longer needed
-
-Used primarily for WebSocket real-time updates.
+This module provides a simple event bus that supports both synchronous 
+and asynchronous event publishing for real-time notifications via WebSockets.
 """
-import json
-from typing import Dict, List, Callable, Any
+import asyncio
+import threading
+import logging
+from typing import Any, Dict, List, Callable, Awaitable, Optional, Union
 
+# Setup logging
+logger = logging.getLogger(__name__)
 
-# Event subscribers registry: event_type -> list of callback functions
-_subscribers: Dict[str, List[Callable]] = {}
+# Event handler type
+EventHandler = Callable[[str, Any], Union[None, Awaitable[None]]]
 
-
-def subscribe(event_type: str, callback: Callable) -> None:
+class EventBus:
     """
-    Subscribe to an event type
+    Simple event bus with support for both sync and async callbacks
     
-    Args:
-        event_type: The event type to subscribe to
-        callback: Function to call when event is published
+    This provides:
+    - Event registration for both async and sync handlers
+    - Synchronous event publishing
+    - Asynchronous event publishing
+    - Thread-safe operation
     """
-    if event_type not in _subscribers:
-        _subscribers[event_type] = []
     
-    if callback not in _subscribers[event_type]:
-        _subscribers[event_type].append(callback)
-
-
-def unsubscribe(event_type: str, callback: Callable) -> None:
-    """
-    Unsubscribe from an event type
-    
-    Args:
-        event_type: The event type to unsubscribe from
-        callback: Function to remove from subscribers
-    """
-    if event_type in _subscribers and callback in _subscribers[event_type]:
-        _subscribers[event_type].remove(callback)
+    def __init__(self):
+        """Initialize the event bus with an empty handler dictionary"""
+        self._handlers: Dict[str, List[EventHandler]] = {}
+        self._lock = threading.Lock()
         
-        # Clean up empty lists
-        if not _subscribers[event_type]:
-            del _subscribers[event_type]
-
-
-def publish(event_type: str, data: Any) -> int:
-    """
-    Publish an event to all subscribers
-    
-    Args:
-        event_type: The type of event to publish
-        data: The event data (will be JSON serialized if not a string)
+    def register(self, event_type: str, handler: EventHandler) -> None:
+        """
+        Register a handler for an event type
         
-    Returns:
-        int: Number of subscribers the event was sent to
-    """
-    if event_type not in _subscribers:
-        return 0
-    
-    # Prepare the data as a JSON string if it's not already a string
-    if not isinstance(data, str):
-        data = json.dumps(data)
-    
-    # Dispatch to all subscribers
-    count = 0
-    for callback in _subscribers[event_type]:
-        try:
-            callback(data)
-            count += 1
-        except Exception as e:
-            print(f"Error in event subscriber: {str(e)}")
-    
-    return count
-
-
-def get_subscriber_count(event_type: str = None) -> Dict[str, int]:
-    """
-    Get count of subscribers, optionally for a specific event type
-    
-    Args:
-        event_type: Optional specific event type
+        Args:
+            event_type: The event type to listen for
+            handler: Function or coroutine function that will handle the event
+        """
+        with self._lock:
+            if event_type not in self._handlers:
+                self._handlers[event_type] = []
+            self._handlers[event_type].append(handler)
         
-    Returns:
-        Dict mapping event types to subscriber counts
-    """
-    if event_type:
-        return {event_type: len(_subscribers.get(event_type, []))}
+    def unregister(self, event_type: str, handler: EventHandler) -> None:
+        """
+        Unregister a handler from an event type
+        
+        Args:
+            event_type: The event type to stop listening for
+            handler: The handler to remove
+        """
+        with self._lock:
+            if event_type in self._handlers:
+                if handler in self._handlers[event_type]:
+                    self._handlers[event_type].remove(handler)
     
-    return {k: len(v) for k, v in _subscribers.items()}
+    def publish(self, event_type: str, *args: Any, **kwargs: Any) -> None:
+        """
+        Synchronously publish an event
+        
+        Args:
+            event_type: The type of event to publish
+            *args: Positional arguments to pass to handlers
+            **kwargs: Keyword arguments to pass to handlers
+        """
+        handlers = []
+        with self._lock:
+            if event_type in self._handlers:
+                handlers = self._handlers[event_type].copy()
+        
+        for handler in handlers:
+            try:
+                if asyncio.iscoroutinefunction(handler):
+                    # Create a future but don't await it - this is sync publish
+                    asyncio.create_task(handler(*args, **kwargs))
+                else:
+                    handler(*args, **kwargs)
+            except Exception as e:
+                logger.error(f"Error in event handler for {event_type}: {e}")
+    
+    async def publish_async(self, event_type: str, *args: Any, **kwargs: Any) -> None:
+        """
+        Asynchronously publish an event, waiting for async handlers to complete
+        
+        Args:
+            event_type: The type of event to publish
+            *args: Positional arguments to pass to handlers
+            **kwargs: Keyword arguments to pass to handlers
+        """
+        handlers = []
+        with self._lock:
+            if event_type in self._handlers:
+                handlers = self._handlers[event_type].copy()
+        
+        for handler in handlers:
+            try:
+                if asyncio.iscoroutinefunction(handler):
+                    await handler(*args, **kwargs)
+                else:
+                    handler(*args, **kwargs)
+            except Exception as e:
+                logger.error(f"Error in event handler for {event_type}: {e}")
+
+# Create a global instance
+global_event_bus = EventBus()

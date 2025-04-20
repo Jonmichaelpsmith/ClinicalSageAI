@@ -33,6 +33,7 @@ dependencies = [
     "python-dateutil>=2.9.0.post0",
     "python-docx>=1.1.2",
     "python-dotenv>=1.1.0",
+    "python-multipart>=0.0.20",
     "pytz>=2025.2",
     "redis>=5.2.1",
     "reportlab>=4.3.1",
@@ -46,6 +47,7 @@ dependencies = [
     "statsmodels>=0.14.4",
     "tqdm>=4.67.1",
     "uvicorn>=0.34.0",
+    "websockets>=15.0.1",
     "zipfile36>=0.1.3",
 ]
 

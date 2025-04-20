@@ -15,8 +15,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from fastapi.responses import JSONResponse
 
-# Import validation router
-from api.validation import validation_router
+# Fix import path with absolute imports
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# Import routers
+from server.api.validation import router as validation_router
+from server.api.ws.qc import router as ws_router
+from server.api.documents.bulk_approve import router as bulk_approve_router
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -46,6 +53,12 @@ class ErrorResponse(BaseModel):
 # Include validation router
 app.include_router(validation_router)
 
+# Include WebSocket QC router
+app.include_router(ws_router)
+
+# Include bulk approve router
+app.include_router(bulk_approve_router)
+
 # Health check endpoint
 @app.get("/health", response_model=StatusResponse)
 async def health_check():
@@ -74,6 +87,6 @@ async def global_exception_handler(request: Request, exc: Exception):
 # Start server if run directly
 if __name__ == "__main__":
     import uvicorn
-    port = int(os.environ.get("FASTAPI_PORT", 8083))
+    port = int(os.environ.get("FASTAPI_PORT", 8081))  # Changed default port to 8081
     logger.info(f"Starting FastAPI server on port {port}")
     uvicorn.run(app, host="0.0.0.0", port=port)
