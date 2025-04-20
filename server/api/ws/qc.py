@@ -45,6 +45,15 @@ async def send_keepalive_pings(websocket: WebSocket, connection_id: str):
         websocket: The WebSocket connection
         connection_id: The unique ID for this connection
     """
+    # Commented out for debugging - cause of disconnection issue
+    logger.warning(f"Keepalive ping task started but will not run (debugging)")
+    
+    # Just sleep indefinitely to keep the task alive but not send pings
+    while connection_id in active_connections:
+        await asyncio.sleep(10)
+        
+    # Original implementation below
+    """
     try:
         while connection_id in active_connections:
             # Send a ping message
@@ -61,6 +70,7 @@ async def send_keepalive_pings(websocket: WebSocket, connection_id: str):
     except Exception as e:
         logger.error(f"Error in keepalive ping task for {connection_id}: {str(e)}")
         # The main WebSocket handler will cleanup on disconnect
+    """
 
 @router.websocket("/qc")
 async def websocket_qc_endpoint(websocket: WebSocket):
