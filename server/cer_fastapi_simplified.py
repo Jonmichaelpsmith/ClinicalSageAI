@@ -22,8 +22,10 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import routers
 from server.api.validation import router as validation_router
+from server.api.validation.iqoq import router as iqoq_router
 from server.api.ws.qc import router as ws_router
 from server.api.documents.bulk_approve import router as bulk_approve_router
+from server.api.region import router as region_router
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -35,7 +37,8 @@ app = FastAPI(title="TrialSage Simplified API", version="1.0.0")
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, replace with specific origins
+    # Allow localhost and all Replit-based origins
+    allow_origins=["*", "http://localhost:8080", "https://*.repl.co"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -53,11 +56,17 @@ class ErrorResponse(BaseModel):
 # Include validation router
 app.include_router(validation_router)
 
+# Include IQ/OQ/PQ validation router
+app.include_router(iqoq_router)
+
 # Include WebSocket QC router
 app.include_router(ws_router)
 
 # Include bulk approve router
 app.include_router(bulk_approve_router)
+
+# Include region rules router
+app.include_router(region_router)
 
 # Health check endpoint
 @app.get("/health", response_model=StatusResponse)

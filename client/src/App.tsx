@@ -26,6 +26,7 @@ import SequenceDetail from './pages/SequenceDetail';
 import IndSequenceDetail from './pages/IndSequenceDetail';
 import AdminPage from './pages/AdminPage';
 import FullAuditDashboardPage from './pages/FullAuditDashboardPage';
+import IQOQDownload from './pages/IQOQDownload';
 
 // Fixed the missing Flask icon issue by using Beaker instead
 // Note: If you need a Flask icon, make sure to import it correctly
@@ -488,6 +489,15 @@ export default function App() {
             {() => (
               <DashboardLayout>
                 <ValidationDocuments />
+              </DashboardLayout>
+            )}
+          </Route>
+
+          {/* === IQ/OQ/PQ Download === */}
+          <Route path="/validation/iqoq">
+            {() => (
+              <DashboardLayout>
+                <IQOQDownload />
               </DashboardLayout>
             )}
           </Route>
