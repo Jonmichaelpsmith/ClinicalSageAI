@@ -1,0 +1,118 @@
+// SubmissionBuilder.tsx – region‑aware drag‑drop tree with QC badges and bulk operations
+
+import React, { useEffect, useState } from 'react';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import { Tree, NodeModel } from '@minoru/react-dnd-treeview';
+import { CheckCircle, XCircle } from 'lucide-react';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+// Region‑specific folder hierarchy definitions
+const REGION_TREE: Record<string, any> = {
+  FDA: { m1: {}, m2: {}, m3: {}, m4: {}, m5: {} },
+  EMA: {
+    m1: { 'm1.0': {}, 'm1.1': {}, 'm1.2': {}, 'm1.3': {}, 'm1.4': {}, 'm1.5': {} },
+    m2: {}, m3: {}, m4: {}, m5: {}
+  },
+  PMDA: {
+    m1: { 'm1.1': {}, 'm1.2': {}, 'm1.3': {}, 'm1.4': {}, 'm1.5': {} },
+    'jp-annex': {}, m2: {}, m3: {}, m4: {}, m5: {}
+  }
+};
+
+type Doc = { id: number; title: string; module: string; qc_json?: { status: string } };
+type Node = NodeModel<Doc>;
+
+export default function SubmissionBuilder({ region = 'FDA' }: { region?: string }) {
+  const [tree, setTree] = useState<Node[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => { buildTree(); }, [region]);
+
+  async function buildTree() {
+    setLoading(true);
+    const docs: Doc[] = await fetchJson('/api/documents?status=approved_or_qc_failed');
+    let idCounter = 0;
+    const makeId = () => --idCounter;
+
+    const nodes: Node[] = [{ id: 0, parent: 0, droppable: true, text: 'root' }];
+    const folderMap: Record<string, number> = {};
+    const addFolder = (name: string, parent: number) => {
+      if (folderMap[name]) return folderMap[name];
+      const id = makeId();
+      folderMap[name] = id;
+      nodes.push({ id, parent, droppable: true, text: name });
+      return id;
+    };
+    const buildFolders = (obj: any, parent: number) => {
+      Object.keys(obj).forEach(key => {
+        const id = addFolder(key, parent);
+        buildFolders(obj[key], id);
+      });
+    };
+    buildFolders(REGION_TREE[region], 0);
+
+    docs.forEach(d => {
+      const folderId = folderMap[closestFolder(d.module)] || folderMap['m1'];
+      nodes.push({ id: d.id, parent: folderId, droppable: false, text: d.title, data: d });
+    });
+    setTree(nodes);
+    setLoading(false);
+  }
+
+  const closestFolder = (mod: string) => {
+    // exact or startsWith match
+    const allKeys = Object.keys(REGION_TREE[region]).concat(
+      ...Object.keys(REGION_TREE[region].m1 || {})
+    );
+    return allKeys.find(k => mod === k || mod.startsWith(k)) || mod.split('.')[0];
+  };
+
+  const handleDrop = (nt: Node[]) => setTree(nt);
+
+  const saveOrder = async () => {
+    const ordered = tree.filter(n => !n.droppable && n.parent !== 0).map((n, idx) => ({
+      id: n.id,
+      module: folderName(n.parent),
+      order: idx
+    }));
+    await fetch('/api/documents/builder-order', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ docs: ordered })
+    });
+    toast.success('Order saved');
+  };
+
+  const folderName = (id: number) => tree.find(n => n.id === id)?.text || 'm1';
+
+  const renderNode = (node: Node, { depth }: any) => {
+    if (node.droppable) return (
+      <div style={{ marginLeft: depth * 12 }} className="py-1"><strong>{node.text}</strong></div>
+    );
+    const qc = node.data?.qc_json?.status;
+    return (
+      <div style={{ marginLeft: depth * 12 }} className="d-flex align-items-center gap-2 py-1">
+        {qc === 'passed' ? <CheckCircle size={14} className="text-success" /> : <XCircle size={14} className="text-danger" />}
+        <span>{node.text}</span>
+      </div>
+    );
+  };
+
+  if (loading) return <p className="text-center mt-4">Loading…</p>;
+
+  return (
+    <div className="container py-4">
+      <h4>Submission Builder (<span className="text-uppercase">{region}</span>)</h4>
+      <DndProvider backend={HTML5Backend}>
+        <Tree rootId={0} tree={tree} render={renderNode} onDrop={handleDrop} />
+      </DndProvider>
+      <button className="btn btn-primary mt-3" onClick={saveOrder}>Save Order</button>
+    </div>
+  );
+}
+
+async function fetchJson(url: string) {
+  const r = await fetch(url);
+  if (!r.ok) throw new Error('fetch failed');
+  return r.json();
+}

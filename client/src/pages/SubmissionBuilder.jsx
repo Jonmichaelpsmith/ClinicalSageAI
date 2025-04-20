@@ -1,11 +1,12 @@
 // SubmissionBuilder.jsx – drag‑drop tree with QC badges, bulk approve & region rule hints
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { DndProvider } from 'react-dnd';
 import { Tree } from '@minoru/react-dnd-treeview';
-import { CheckCircle, XCircle, Info } from 'lucide-react';
+import { CheckCircle, XCircle, Info, AlertTriangle } from 'lucide-react';
 import { useToast } from '../App';
 import update from 'immutability-helper';
+import { useQCWebSocket } from '../hooks/useQCWebSocket';
 
 const REGION_FOLDERS = {
   FDA: ['m1', 'm2', 'm3', 'm4', 'm5'],
@@ -42,83 +43,53 @@ export default function SubmissionBuilder({ initialRegion = 'FDA', region: propR
     loadDocs();
   }, [region]);
   
-  // Separate WebSocket setup to avoid conflicts with region changes
+  // Setup WebSocket subscription by region using our new hook
+  const [connectionStatus, setConnectionStatus] = useState('disconnected');
+  
+  // Handle messages from QC WebSocket
+  const handleQCWebSocketMessage = (data) => {
+    console.log(`[QC] Received update for region ${region}:`, data);
+    
+    // Handle QC status updates
+    if (data && data.id && data.status) {
+      // Show a toast notification
+      toast({ 
+        message: `QC ${data.status} for document ${data.id}`,
+        type: data.status === 'passed' ? 'success' : 'error'
+      });
+      
+      // Update the tree nodes with new QC status
+      setTree(prevTree => 
+        prevTree.map(node => 
+          node.id === data.id 
+            ? { 
+                ...node, 
+                data: { 
+                  ...node.data, 
+                  qc_json: { 
+                    ...node.data?.qc_json,
+                    status: data.status,
+                    timestamp: new Date().toISOString(),
+                    region: region
+                  } 
+                } 
+              } 
+            : node
+        )
+      );
+    }
+  };
+  
+  // Set up the region-aware WebSocket connection
+  const { send } = useQCWebSocket(region, handleQCWebSocketMessage);
+  
+  // When region changes, report it to the user
   useEffect(() => {
-    const setupWebSocket = () => {
-      try {
-        // Simple websocket connection
-        const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-        const ws = new WebSocket(`${proto}://${location.host}/ws/qc`);
-        
-        // Handle connection open
-        ws.addEventListener('open', () => {
-          console.log('QC WebSocket connected');
-          toast({ message: `Connected to ${region} QC updates`, type: 'info' });
-        });
-        
-        // Handle messages
-        ws.addEventListener('message', (event) => {
-          try {
-            const data = JSON.parse(event.data);
-            console.log('WS message received:', data);
-            
-            // Handle QC status updates
-            if (data.id && data.status) {
-              toast({ 
-                message: `QC ${data.status} for document ${data.id}`,
-                type: data.status === 'passed' ? 'success' : 'error'
-              });
-              
-              // Update the tree
-              setTree(prevTree => 
-                prevTree.map(node => 
-                  node.id === data.id 
-                    ? { 
-                        ...node, 
-                        data: { 
-                          ...node.data, 
-                          qc_json: { status: data.status } 
-                        } 
-                      } 
-                    : node
-                )
-              );
-            }
-          } catch (err) {
-            console.error('Failed to parse WebSocket message:', err);
-          }
-        });
-        
-        // Handle errors
-        ws.addEventListener('error', (error) => {
-          console.error('WebSocket error:', error);
-        });
-        
-        // Handle closure
-        ws.addEventListener('close', () => {
-          console.log('WebSocket connection closed');
-          
-          // Auto-reconnect after delay
-          setTimeout(() => setupWebSocket(), 3000);
-        });
-        
-        // Store reference
-        wsRef.current = ws;
-      } catch (err) {
-        console.error('Error setting up WebSocket:', err);
-      }
-    };
-    
-    // Initial setup
-    setupWebSocket();
-    
-    // Cleanup on unmount
-    return () => {
-      if (wsRef.current) {
-        wsRef.current.close();
-      }
-    };
-  }, []);
+    toast({ 
+      message: `Connected to ${region} QC updates`, 
+      type: 'info' 
+    });
+  }, [region]);
 
   const toast = useToast();
   
