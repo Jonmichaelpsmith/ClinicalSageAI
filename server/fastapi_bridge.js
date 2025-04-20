@@ -11,7 +11,7 @@ import path from 'path';
 import fs from 'fs';
 
 // Default FastAPI server location
-const FASTAPI_SERVER = process.env.FASTAPI_SERVER || `http://localhost:${process.env.FASTAPI_PORT || '8083'}`;
+const FASTAPI_SERVER = process.env.FASTAPI_SERVER || `http://localhost:${process.env.FASTAPI_PORT || '8081'}`;
 
 // Flag to track if FastAPI server is running
 let isServerRunning = false;
@@ -46,9 +46,26 @@ async function ensureFastApiServer() {
       return false;
     }
 
+    // First, kill any existing processes on this port to avoid conflict
+    try {
+      if (process.platform === 'win32') {
+        // Windows command
+        spawn('cmd', ['/c', `for /f "tokens=5" %a in ('netstat -aon ^| findstr :${process.env.FASTAPI_PORT || '8081'}') do taskkill /F /PID %a`]);
+      } else {
+        // Linux/Mac command
+        spawn('sh', ['-c', `lsof -i :${process.env.FASTAPI_PORT || '8081'} | grep LISTEN | awk '{print $2}' | xargs -r kill -9`]);
+      }
+      
+      // Wait a moment for the port to be released
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    } catch (err) {
+      console.log('Note: Port cleanup attempted (safe to ignore errors here)');
+    }
+    
     // Start the FastAPI server as a child process with environment variables
-    const fastApiProcess = spawn('python3', [fastApiScriptPath], {
-      env: { ...process.env, FASTAPI_PORT: process.env.FASTAPI_PORT || '8083' }
+    console.log(`Starting FastAPI server with ${fastApiScriptPath}`);
+    const fastApiProcess = spawn('python', [fastApiScriptPath], {
+      env: { ...process.env, FASTAPI_PORT: process.env.FASTAPI_PORT || '8081', PYTHONPATH: process.cwd() }
     });
     
     fastApiProcess.stdout.on('data', (data) => {

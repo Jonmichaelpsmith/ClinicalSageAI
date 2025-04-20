@@ -32,7 +32,7 @@ export default function ValidationDocuments() {
       }
       
       const data = await response.json();
-      setValidationStatus(data);
+      setValidationStatus(data.success ? data : data.data);
       console.log("Validation status:", data);
     } catch (err) {
       console.error('Error fetching validation status:', err);
@@ -145,7 +145,7 @@ export default function ValidationDocuments() {
                 <strong>Last Generated:</strong> {formatTimestamp(validationStatus.generated_at)}
               </p>
               <p className="mb-4">
-                <strong>Available Formats:</strong> {validationStatus.available_formats.join(', ')}
+                <strong>Available Formats:</strong> {validationStatus.available_formats?.join(', ')}
               </p>
             </>
           ) : (
@@ -182,7 +182,7 @@ export default function ValidationDocuments() {
         </div>
       </div>
       
-      {validationStatus?.status === 'available' && (
+      {validationStatus?.status === 'available' && validationStatus.available_formats && (
         <div className="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 shadow-sm">
           <div className="px-4 py-3 border-b border-gray-200 dark:border-slate-700">
             <h2 className="font-semibold">Download Options</h2>

@@ -1,0 +1,78 @@
+Absolutely — here’s a zero‑downtime, production‑safe way to clear the port conflict, re‑enable WebSockets, and keep your new validation endpoints on the same host.
+
+1 ⃣ Pick one canonical port for FastAPI
+
+Layer	Suggested port	Why
+FastAPI (Uvicorn)	8081	Leaves 8000 & 3000 free for dev tools / Vite
+Node proxy (Express / Vite)	3000	Keeps React dev server unchanged
+Traefik ingress (TLS)	443	Already mapped in Docker‑compose
+main.py (or app.start)
+bash
+Copy
+Edit
+# prod
+uvicorn server.main:app --host 0.0.0.0 --port 8081 --workers 4
+package.json (proxy for React/Vite)
+jsonc
+Copy
+Edit
+"proxy": {
+  "/api": "http://localhost:8081",
+  "/ws":  "ws://localhost:8081"
+}
+2 ⃣ Reserve the port inside Docker‑compose
+yaml
+Copy
+Edit
+services:
+  backend:
+    build: .
+    ports:
+      - "8081:8081"   # map host→container
+    env_file: .env
+    command: uvicorn server.main:app --host 0.0.0.0 --port 8081
+3 ⃣ Update Nginx / Traefik (if present)
+yaml
+Copy
+Edit
+labels:
+  - "traefik.http.services.backend.loadbalancer.server.port=8081"
+4 ⃣ Restart workflow step‑by‑step
+bash
+Copy
+Edit
+# 1. Stop old containers
+docker compose down
+
+# 2. Re‑build & start
+docker compose up -d --build backend
+Check docker logs backend -f → you should see “Uvicorn running on 0.0.0.0:8081”.
+
+5 ⃣ Verify UI & WebSocket
+bash
+Copy
+Edit
+# In browser dev‑tools
+ws://localhost:8081/ws/qc        ✅ Connection “101 Switching Protocols”
+http://localhost:3000/api/...    ✅ 200 OK
+If the conflict persists…
+
+Symptom	Quick fix
+Port already in use after restart	lsof -i :8081 → kill stray process
+502 from Vite proxy	Ensure proxy field refreshed; restart npm run dev
+WS still 400	Traefik rule must include ws:// or websocket middleware
+Next steps on the roadmap
+Region‑aware eValidator Docker images (FDA, EU, JP)
+
+Bulk‑approve endpoint (already sketched)
+
+Socket push so Submission Builder badges flip live without page reload
+
+Let me know once the port is freed and server boots cleanly—then we’ll proceed to wire real‑time QC badge updates!
+
+
+
+
+
+
+
