@@ -1,13 +1,12 @@
-// SubmissionBuilder.jsx – region‑aware drag‑drop tree with QC badges, bulk approve & region rule hints
-import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { HTML5Backend } from 'react-dnd-html5-backend';
+// SubmissionBuilder.jsx – region‑aware drag‑drop tree with QC badges and bulk operations
+import React, { useEffect, useState, useCallback } from 'react';
 import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Tree } from '@minoru/react-dnd-treeview';
 import { CheckCircle, XCircle, Info, AlertTriangle } from 'lucide-react';
 import { toast, ToastContainer } from 'react-toastify';
-import update from 'immutability-helper';
-import { useQCWebSocket } from '../hooks/useQCWebSocket';
 import 'react-toastify/dist/ReactToastify.css';
+import { useQCWebSocket } from '../hooks/useQCWebSocket';
 
 // Region‑specific folder hierarchy definitions
 const REGION_TREE = {
@@ -160,91 +159,9 @@ export default function SubmissionBuilder({ initialRegion = 'FDA', region: propR
   const [tree, setTree] = useState([]);
   const [selected, setSelected] = useState(new Set());
   const [loading, setLoading] = useState(true);
-  const wsRef = useRef(null);
 
-  // Load documents and setup WebSocket connection
-  useEffect(() => {
-    loadDocs();
-    
-    // Create direct WebSocket connection to get real-time QC updates
-    const sock = new WebSocket(
-      `${location.origin.replace('http', 'ws')}/ws/qc`
-    );
-    
-    sock.onopen = () => {
-      console.log(`Direct WebSocket connected for region ${region}`);
-      
-      // Register with region for filtered updates
-      sock.send(JSON.stringify({
-        action: 'subscribe',
-        region: region
-      }));
-    };
-    
-    sock.onmessage = (e) => {
-      try {
-        const msg = JSON.parse(e.data);
-        
-        // Handle ping messages
-        if (msg.type === 'ping') {
-          sock.send(JSON.stringify({ type: 'pong', timestamp: new Date().toISOString() }));
-          return;
-        }
-        
-        console.log('Direct WebSocket message:', msg);
-        
-        // Only update the tree if we have an ID and status
-        if (msg.id || msg.document_id) {
-          const docId = msg.id || msg.document_id;
-          const status = msg.status || (msg.result === 'passed' ? 'passed' : 'failed');
-          
-          // Update the tree with the new QC status
-          setTree(prev =>
-            prev.map(n =>
-              n.id === docId
-                ? { 
-                    ...n, 
-                    data: { 
-                      ...n.data, 
-                      qc_json: { 
-                        status: status,
-                        timestamp: new Date().toISOString(),
-                        region: region 
-                      } 
-                    } 
-                  }
-                : n
-            )
-          );
-          
-          // Show a toast notification
-          if (status === 'passed') {
-            toast.success(`QC passed for document ${docId}`);
-          } else {
-            toast.error(`QC failed for document ${docId}`);
-          }
-        }
-      } catch (err) {
-        console.error('Error processing WebSocket message:', err);
-      }
-    };
-    
-    sock.onerror = (error) => {
-      console.error('Direct WebSocket error:', error);
-    };
-    
-    sock.onclose = (event) => {
-      console.log(`Direct WebSocket closed, code: ${event.code}, reason: ${event.reason || 'unknown'}`);
-    };
-    
-    // Clean up the socket on component unmount or region change
-    return () => {
-      sock.close();
-    };
-  }, [region]);
-  
   // Handle messages from QC WebSocket
-  const handleQCWebSocketMessage = (data) => {
+  const handleQCMessage = useCallback((data) => {
     console.log(`[QC] Received update for region ${region}:`, data);
     
     // Handle QC status updates
@@ -276,11 +193,32 @@ export default function SubmissionBuilder({ initialRegion = 'FDA', region: propR
         )
       );
     }
-  };
+  }, [region]);
   
-  // Set up the region-aware WebSocket connection with improved status tracking
-  const { send, status: wsStatus } = useQCWebSocket(region, handleQCWebSocketMessage);
+  // Set up the region-aware WebSocket connection
+  const { send, status: wsStatus } = useQCWebSocket(region, handleQCMessage);
   
+  // When region changes, report it to the user and show appropriate validation profile
+  useEffect(() => {
+    // Show notification about region change
+    const regionProfiles = {
+      'FDA': 'FDA_eCTD_3.2.2',
+      'EMA': 'EU_eCTD_3.2.2',
+      'PMDA': 'JP_eCTD_1.0'
+    };
+    
+    toast.info(`Switched to ${region} region with ${regionProfiles[region]} validation profile`);
+    
+    // Send region info to the backend QC service
+    if (send) {
+      send({
+        type: 'SET_REGION',
+        region: region,
+        profile: regionProfiles[region]
+      });
+    }
+  }, [region, send]);
+
   // Function to get status badge color
   const getStatusBadgeClass = () => {
     switch(wsStatus) {
@@ -310,28 +248,7 @@ export default function SubmissionBuilder({ initialRegion = 'FDA', region: propR
         return 'Disconnected';
     }
   };
-  
-  // When region changes, report it to the user and show appropriate validation profile
-  useEffect(() => {
-    // Show notification about region change
-    const regionProfiles = {
-      'FDA': 'FDA_eCTD_3.2.2',
-      'EMA': 'EU_eCTD_3.2.2',
-      'PMDA': 'JP_eCTD_1.0'
-    };
-    
-    toast.info(`Switched to ${region} region with ${regionProfiles[region]} validation profile`);
-    
-    // Send region info to the backend QC service
-    if (send) {
-      send({
-        type: 'SET_REGION',
-        region: region,
-        profile: regionProfiles[region]
-      });
-    }
-  }, [region, send]);
-  
+
   // Build tree helper function to create folder structure + add documents
   const buildTree = useCallback((docs, selectedRegion) => {
     // Start with root node
@@ -358,174 +275,204 @@ export default function SubmissionBuilder({ initialRegion = 'FDA', region: propR
       });
     };
     
-    // Build the folders based on the region
     buildFolders(REGION_TREE[selectedRegion], 0);
     
-    // Helper to find the closest matching folder for a document module
-    const closestFolder = (module) => {
-      if (!module) return 'm1'; // Default to m1 if no module
-      
-      // Get all folder keys including subfolders
-      const allKeys = Object.keys(REGION_TREE[selectedRegion]).concat(
-        ...Object.entries(REGION_TREE[selectedRegion])
-          .filter(([k, v]) => k === 'm1' && typeof v === 'object')
-          .map(([_, v]) => Object.keys(v))
-          .flat()
-      );
-      
-      // Try exact match first
-      if (allKeys.includes(module)) return module;
-      
-      // Then try prefix match
-      const prefixMatch = allKeys.find(k => module.startsWith(k));
-      if (prefixMatch) return prefixMatch;
-      
-      // Fall back to the module's main folder (like "m1" from "m1.1")
-      const mainFolder = module.split('.')[0];
-      if (allKeys.includes(mainFolder)) return mainFolder;
-      
-      // Last resort: m1
-      return 'm1';
-    };
-    
-    // Add documents to the tree under appropriate folders
+    // Add documents to the tree
     docs.forEach(doc => {
-      const folderName = closestFolder(doc.module);
-      const folderId = folderMap[folderName] || folderMap['m1'];
-      nodes.push({ 
-        id: doc.id, 
-        parent: folderId, 
-        text: doc.title, 
-        droppable: false, 
-        data: doc 
+      // Place document in closest matching folder
+      const moduleParts = doc.module.split('.');
+      let currentFolder = 0;
+      
+      // Try to match deepest folder possible
+      for (let i = 0; i < moduleParts.length; i++) {
+        const folderName = moduleParts.slice(0, i + 1).join('.');
+        if (folderMap[folderName]) {
+          currentFolder = folderMap[folderName];
+        }
+      }
+      
+      // If no match found, use first segment (m1, m2, etc)
+      if (currentFolder === 0 && moduleParts.length > 0) {
+        currentFolder = folderMap[moduleParts[0]] || 0;
+      }
+      
+      nodes.push({
+        id: doc.id,
+        parent: currentFolder,
+        text: doc.title,
+        droppable: false,
+        data: doc
       });
     });
     
     return nodes;
   }, []);
 
-  const loadDocs = async () => {
-    setLoading(true);
-    try {
-      const docs = await fetchJson('/api/documents?status=approved_or_qc_failed');
-      
-      // Use the buildTree helper to create the tree structure
-      const nodes = buildTree(docs, region);
-      
-      // Update tree state
-      setTree(nodes);
-      setSelected(new Set());
-      
-      toast.info(`Loaded documents for ${region} region`);
-    } catch (error) {
-      console.error('Error loading documents:', error);
-      toast.error('Failed to load documents');
-    } finally {
-      setLoading(false);
+  // Load documents and build tree
+  useEffect(() => {
+    async function loadDocs() {
+      setLoading(true);
+      try {
+        const response = await fetch('/api/documents?status=all');
+        if (!response.ok) {
+          throw new Error(`HTTP error ${response.status}`);
+        }
+        const docs = await response.json();
+        
+        // Build region-specific tree with retrieved documents
+        const newTree = buildTree(docs, region);
+        setTree(newTree);
+      } catch (error) {
+        console.error('Error loading documents:', error);
+        toast.error('Failed to load submission documents');
+      } finally {
+        setLoading(false);
+      }
     }
+    
+    loadDocs();
+  }, [region, buildTree]);
+
+  // Handle tree drop (reorganization)
+  const handleDrop = (newTree) => {
+    setTree(newTree);
   };
 
+  // Save updated tree order
   const saveOrder = async () => {
-    const ordered = tree.filter(n => !n.droppable && n.parent !== 0).map((n, idx) => ({ 
-      id: n.id, 
-      module: tree.find(f => f.id === n.parent)?.text, 
-      order: idx 
-    }));
+    // Create ordered document list
+    const docs = tree
+      .filter(node => !node.droppable && node.id > 0)
+      .map((node, idx) => ({
+        id: node.id,
+        parent: node.parent,
+        order: idx
+      }));
     
     try {
-      await fetch('/api/documents/builder-order', { 
-        method: 'POST', 
-        headers: { 'Content-Type': 'application/json' }, 
-        body: JSON.stringify({ docs: ordered }) 
+      const response = await fetch('/api/documents/order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ documents: docs, region })
       });
-      toast.success('Order saved');
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error ${response.status}`);
+      }
+      
+      toast.success('Document order saved successfully');
     } catch (error) {
       console.error('Error saving order:', error);
-      toast.error('Failed to save order');
+      toast.error('Failed to save document order');
     }
   };
 
-  const toggleSelect = (id) => setSelected(s => { 
-    const x = new Set(s); 
-    x.has(id) ? x.delete(id) : x.add(id); 
-    return x; 
-  });
-
+  // Handle bulk approve action
   const bulkApprove = async () => {
+    if (selected.size === 0) {
+      toast.info('No documents selected for bulk approval');
+      return;
+    }
+    
+    const selectedIds = Array.from(selected);
+    
     try {
-      await fetch('/api/documents/bulk-approve', { 
-        method: 'POST', 
-        headers: { 'Content-Type': 'application/json' }, 
-        body: JSON.stringify({ ids: Array.from(selected) }) 
-      });
-      toast.info('Bulk approval/QC started');
-      setSelected(new Set());
+      // Send bulk approve request
+      toast.info(`Initiating QC checks for ${selectedIds.length} documents...`);
+      
+      // Use WebSocket for faster QC checks
+      if (send) {
+        send({
+          action: 'trigger_bulk_qc',
+          document_ids: selectedIds,
+          region: region
+        });
+      } else {
+        // Fall back to HTTP if WebSocket not available
+        const response = await fetch('/api/documents/bulk-qc', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ 
+            document_ids: selectedIds,
+            region: region
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error ${response.status}`);
+        }
+        
+        const result = await response.json();
+        
+        // Show summary toast
+        toast.success(`Completed QC for ${result.total} documents: ${result.passed} passed, ${result.failed} failed`);
+      }
     } catch (error) {
-      console.error('Error bulk approving:', error);
-      toast.error('Failed to start bulk approval');
+      console.error('Error performing bulk QC:', error);
+      toast.error('Failed to perform bulk QC checks');
     }
   };
 
-  const handleDrop = (newTree) => setTree(newTree);
+  // Handle node select/deselect
+  const toggleSelect = (id) => {
+    setSelected(prev => {
+      const newSelected = new Set(prev);
+      if (newSelected.has(id)) {
+        newSelected.delete(id);
+      } else {
+        newSelected.add(id);
+      }
+      return newSelected;
+    });
+  };
 
-  const renderNode = (node, { depth, isOpen, onToggle }) => {
+  // Render tree node
+  const renderNode = ({ node, depth }) => {
+    const isSelected = selected.has(node.id);
+    
+    // Render folder nodes
     if (node.droppable) {
+      if (node.id === 0) return null; // Don't render root
+      
       return (
-        <div style={{ marginLeft: depth * 16 }} className="d-flex align-items-center gap-1 py-1 fw-bold">
-          <button onClick={onToggle} className="btn btn-sm btn-link p-0">{isOpen ? '▾' : '▸'}</button>
-          {node.text}
+        <div style={{ marginLeft: depth * 16 }} className="py-2">
+          <strong>{node.text}</strong>
         </div>
       );
     }
     
-    // Render document node with QC status badge
+    // Render document nodes with QC badge
     const qcStatus = node.data?.qc_json?.status;
-    const qcRegion = node.data?.qc_json?.region;
-    const hasRegionSpecificQC = qcRegion === region;
-    
-    // Define QC badge rendering based on status and region
-    let QcBadge = null;
-    
-    if (qcStatus === 'passed' && hasRegionSpecificQC) {
-      QcBadge = <CheckCircle size={14} className="text-success" />;
-    } else if (qcStatus === 'failed' && hasRegionSpecificQC) {
-      QcBadge = <XCircle size={14} className="text-danger" />;
-    } else if (qcStatus === 'passed') {
-      // Passed but for another region - show info icon instead
-      QcBadge = <CheckCircle size={14} className="text-secondary" />;
-    } else if (qcStatus === 'failed') {
-      // Failed but for another region
-      QcBadge = <XCircle size={14} className="text-secondary" />;
-    } else if (qcStatus === 'in_progress') {
-      QcBadge = <AlertTriangle size={14} className="text-warning" />;
-    } else {
-      // No QC status yet
-      QcBadge = <Info size={14} className="text-secondary" />;
-    }
     
     return (
-      <div style={{ marginLeft: depth * 16 }} className="d-flex align-items-center gap-2 py-1">
-        <input 
-          type="checkbox" 
-          checked={selected.has(node.id)} 
-          onChange={() => toggleSelect(node.id)} 
-          aria-label={`Select ${node.text}`}
-        />
-        
-        <div className="position-relative" style={{ width: 18, height: 18 }}>
-          {QcBadge}
-          {qcStatus && !hasRegionSpecificQC && (
-            <span 
-              className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-secondary" 
-              style={{ fontSize: '0.6rem', padding: '2px 4px', transform: 'translate(-50%, -50%)' }}
-              title={`QC from ${qcRegion || 'unknown'} region`}
-            >
-              {qcRegion || '?'}
-            </span>
-          )}
+      <div 
+        style={{ marginLeft: depth * 16 }} 
+        className={`py-1 px-2 d-flex align-items-center rounded ${isSelected ? 'bg-light' : ''}`}
+        onClick={() => toggleSelect(node.id)}
+      >
+        <div className="form-check me-2">
+          <input 
+            type="checkbox" 
+            className="form-check-input" 
+            checked={isSelected}
+            onChange={() => {}}
+            id={`check-${node.id}`}
+          />
         </div>
         
-        <span className={qcStatus === 'failed' && hasRegionSpecificQC ? 'text-danger' : ''}>{node.text}</span>
+        {qcStatus === 'passed' ? (
+          <CheckCircle size={16} className="text-success me-2" />
+        ) : qcStatus === 'failed' ? (
+          <XCircle size={16} className="text-danger me-2" />
+        ) : (
+          <AlertTriangle size={16} className="text-warning me-2" />
+        )}
+        
+        <span>{node.text}</span>
       </div>
     );
   };
