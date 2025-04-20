@@ -1,0 +1,74 @@
+// App.tsx – root router with custom toast system (no react‑toastify)
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import SubmissionBuilder from './pages/SubmissionBuilder';
+import IndSequenceDetail from './pages/IndSequenceDetail';
+import IndSequenceManager from './pages/IndSequenceManager';
+import { CheckCircle, AlertTriangle } from 'lucide-react';
+
+/* ---------------- Simple Toast System ---------------- */
+const ToastCtx = createContext<(msg: string, type?: 'success'|'error') => void>(() => {});
+
+const ToastProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
+  const [toasts, setToasts] = useState<{id:number,msg:string,type:'success'|'error'}[]>([]);
+  const add = useCallback((msg: string, type: 'success'|'error' = 'success') => {
+    setToasts(t => [...t, { id: Date.now(), msg, type }]);
+  }, []);
+  const remove = (id: number) => setToasts(t => t.filter(x => x.id !== id));
+
+  return (
+    <ToastCtx.Provider value={add}>
+      {children}
+      <div style={{ position:'fixed', bottom:20, right:20, zIndex:9999, display:'flex', flexDirection:'column', gap:'8px' }}>
+        {toasts.map(t => (
+          <div key={t.id}
+            onAnimationEnd={() => remove(t.id)}
+            style={{
+              minWidth:250,
+              padding:'8px 12px',
+              borderRadius:4,
+              color:'#fff',
+              backgroundColor: t.type==='success' ? '#16a34a' : '#dc2626',
+              display:'flex', alignItems:'center', gap:6,
+              animation:'fadeout 4s forwards'
+            }}>
+            {t.type==='success'?<CheckCircle size={16}/>:<AlertTriangle size={16}/>}
+            <span style={{flex:1}}>{t.msg}</span>
+            <style>{`@keyframes fadeout{0%{opacity:1}80%{opacity:1}100%{opacity:0}}`}</style>
+          </div>
+        ))}
+      </div>
+    </ToastCtx.Provider>
+  );
+};
+
+export const useToast = () => useContext(ToastCtx);
+/* ----------------------------------------------------- */
+
+export default function App() {
+  const toast = useToast(); // placeholder until provider wraps, but hook used inside effect below
+  useEffect(() => {
+    const ws = new WebSocket(`${location.protocol==='https:'?'wss':'ws'}://${location.host}/ws/qc`);
+    ws.onmessage = (evt) => {
+      try {
+        const { id, status } = JSON.parse(evt.data);
+        if (status === 'passed') toast(`QC passed for doc ${id}`, 'success');
+        else if (status === 'failed') toast(`QC failed for doc ${id}`, 'error');
+      } catch { /* ignore */ }
+    };
+    return () => ws.close();
+  }, [toast]);
+
+  return (
+    <ToastProvider>
+      <Router>
+        <Routes>
+          <Route path="/builder" element={<SubmissionBuilder />} />
+          <Route path="/portal/ind/:sequenceId" element={<IndSequenceDetail />} />
+          <Route path="/ind/planner" element={<IndSequenceManager />} />
+          <Route path="*" element={<IndSequenceManager />} />
+        </Routes>
+      </Router>
+    </ToastProvider>
+  );
+}
