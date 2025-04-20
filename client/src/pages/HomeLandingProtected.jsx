@@ -19,21 +19,21 @@ const statusQuoProblems = [
   },
   {
     title: "Disconnected Tools & Data Silos",
-    description: "Regulatory submissions, trial operations, and data analysis live in separate systems that don't talk to each other, introducing inefficiencies and delays.",
+    description: "Regulatory submissions, trial operations, and data analysis live in separate systems that do not talk to each other, introducing inefficiencies and delays.",
     icon: <X className="w-6 h-6 text-red-500" />,
     stat: "5-7",
     statLabel: "Different systems needed"
   },
   {
     title: "Slow, Risky Submissions",
-    description: "Legacy systems offer little help spotting errors or compliance risks until it's too late. Miss an issue and you're looking at an FDA clinical hold or rejection.",
+    description: "Legacy systems offer little help spotting errors or compliance risks until it is too late. Miss an issue and you are looking at an FDA clinical hold or rejection.",
     icon: <ShieldCheck className="w-6 h-6 text-red-500" />,
     stat: "40%",
     statLabel: "INDs receive major comments"
   },
   {
     title: "Black-Box Analytics, Zero Intelligence",
-    description: "Some have tried 'AI' add-ons only to get opaque recommendations with no transparency. A black-box algorithm that can't explain its suggestions breeds distrust.",
+    description: "Some have tried AI add-ons only to get opaque recommendations with no transparency. A black-box algorithm that cannot explain its suggestions breeds distrust.",
     icon: <Brain className="w-6 h-6 text-red-500" />,
     stat: "0%",
     statLabel: "Real-time intelligence"
@@ -125,7 +125,7 @@ const platformDifferences = [
     },
     legacy: {
       title: "Limited or Opaque",
-      description: "Basic reporting at best. Any 'AI' features are separate add-ons with black-box outputs that few trust. Teams rely on manual data science or intuition."
+      description: "Basic reporting at best. Any AI features are separate add-ons with black-box outputs that few trust. Teams rely on manual data science or intuition."
     },
     icon: <Brain className="h-10 w-10 text-white" />
   }
@@ -193,7 +193,7 @@ export default function HomeLandingProtected() {
 
       {/* Hero Section - Category-Defining Positioning */}
       <section className="relative bg-gradient-to-r from-gray-900 to-blue-900 py-16 md:py-28">
-        <div className="absolute inset-0 bg-grid-white/5 bg-[size:20px_20px] opacity-10"></div>
+        <div className="absolute inset-0 opacity-10"></div>
         <div className="container mx-auto px-4 md:px-6 relative">
           <div className="max-w-4xl mx-auto text-center">
             <div className="inline-block px-3 py-1 rounded-full bg-blue-100 text-blue-800 font-medium text-sm mb-6">
@@ -216,7 +216,7 @@ export default function HomeLandingProtected() {
               <Link to="/builder" className="px-6 py-3 rounded-lg bg-gradient-to-r from-blue-500 to-teal-500 text-white hover:from-blue-600 hover:to-teal-600 shadow-xl flex items-center gap-2 font-medium transition-all text-lg">
                 Launch eCTD Builder <ArrowRight size={20}/>
               </Link>
-              <Link to="/demo" className="px-6 py-3 rounded-lg bg-white/10 backdrop-blur-sm text-white border border-white/30 hover:bg-white/20 flex items-center gap-2 font-medium text-lg">
+              <Link to="/demo" className="px-6 py-3 rounded-lg bg-white/10 border border-white/30 hover:bg-white/20 flex items-center gap-2 font-medium text-lg text-white">
                 Request Demo
               </Link>
             </div>
@@ -271,7 +271,7 @@ export default function HomeLandingProtected() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16 max-w-3xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold mb-6 text-gray-900">
-              Game-Changing ROI That Legacy Vendors Can't Match
+              Game-Changing ROI That Legacy Vendors Cannot Match
             </h2>
             <p className="text-xl text-gray-700">
               What does upgrading to an intelligent, integrated platform mean for your organization?
@@ -347,7 +347,7 @@ export default function HomeLandingProtected() {
               Meet TrialSage: The First Unified Platform for AI-Guided Trials and Submissions
             </h2>
             <p className="text-xl text-gray-700">
-              TrialSage isn't just another tool – it's a revolutionary platform that makes traditional systems obsolete.
+              TrialSage is not just another tool – it is a revolutionary platform that makes traditional systems obsolete.
               See how it compares to legacy approaches:
             </p>
           </div>
@@ -455,7 +455,7 @@ export default function HomeLandingProtected() {
 
       {/* Call to Action */}
       <section className="py-24 bg-gradient-to-r from-blue-900 to-blue-800 text-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-grid-white/5 bg-[size:20px_20px] opacity-10"></div>
+        <div className="absolute inset-0 opacity-10"></div>
         <div className="container mx-auto px-4 text-center relative z-10">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">Ready to break free from inefficient legacy systems?</h2>
           <p className="text-xl text-blue-100 mb-10 max-w-2xl mx-auto">
@@ -465,7 +465,7 @@ export default function HomeLandingProtected() {
             <Link to="/builder" className="px-8 py-4 rounded-lg bg-gradient-to-r from-blue-500 to-teal-500 text-white hover:from-blue-600 hover:to-teal-600 shadow-xl flex items-center gap-2 font-medium transition-all text-lg">
               Launch Platform Now
             </Link>
-            <Link to="/pricing" className="px-8 py-4 rounded-lg bg-white/10 backdrop-blur-sm text-white border border-white/30 hover:bg-white/20 flex items-center gap-2 font-medium text-lg">
+            <Link to="/pricing" className="px-8 py-4 rounded-lg bg-white/10 border border-white/30 hover:bg-white/20 flex items-center gap-2 font-medium text-lg text-white">
               View Pricing
             </Link>
           </div>
