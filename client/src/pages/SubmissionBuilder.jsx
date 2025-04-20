@@ -249,10 +249,11 @@ export default function SubmissionBuilder({ initialRegion = 'FDA', region: propR
     // Handle QC status updates
     if (data && data.id && data.status) {
       // Show a toast notification
-      toast({ 
-        message: `QC ${data.status} for document ${data.id}`,
-        type: data.status === 'passed' ? 'success' : 'error'
-      });
+      if (data.status === 'passed') {
+        toast.success(`QC passed for document ${data.id}`);
+      } else {
+        toast.error(`QC failed for document ${data.id}`);
+      }
       
       // Update the tree nodes with new QC status
       setTree(prevTree => 
@@ -318,10 +319,7 @@ export default function SubmissionBuilder({ initialRegion = 'FDA', region: propR
       'PMDA': 'JP_eCTD_1.0'
     };
     
-    toast({ 
-      message: `Switched to ${region} region with ${regionProfiles[region]} validation profile`, 
-      type: 'info' 
-    });
+    toast.info(`Switched to ${region} region with ${regionProfiles[region]} validation profile`);
     
     // Send region info to the backend QC service
     if (send) {
