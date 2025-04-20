@@ -1,223 +1,207 @@
+import { useState, useEffect, useCallback } from 'react';
+import { toast } from 'react-toastify';
+
+// QC Event interface for WebSocket messages
+export interface QcEvent {
+  id: string;
+  status: 'passed' | 'failed' | 'running';
+  errors?: string[];
+  warnings?: string[];
+  module?: string;
+}
+
 /**
- * useQcSocket - React hook for QC WebSocket connection
+ * Custom hook for managing QC WebSocket connection and document statuses
  * 
- * This hook provides a connection to the QC WebSocket server for real-time 
- * updates on document QC status. It handles connection management, reconnection,
- * and event subscription.
+ * @param documentIds Array of document IDs to track
+ * @returns Object containing QC states and helper functions
  */
+export const useQcSocket = (documentIds: string[]) => {
+  // Store QC status for each document
+  const [qcStatus, setQcStatus] = useState<Record<string, QcEvent>>({});
+  // Track connection status
+  const [socketStatus, setSocketStatus] = useState<'connecting' | 'connected' | 'disconnected'>('disconnected');
+  // Reference to WebSocket
+  const [socket, setSocket] = useState<WebSocket | null>(null);
+  // Retry counter for connection attempts
+  const [retryCount, setRetryCount] = useState(0);
+  const MAX_RETRIES = 5;
 
-import { useState, useEffect, useCallback, useRef } from 'react';
-
-export interface QcUpdate {
-  type: string;
-  document_id: string;
-  status: string;
-  timestamp: string;
-  details?: any;
-}
-
-interface UseQcSocketOptions {
-  autoConnect?: boolean;
-  reconnectInterval?: number;
-  maxReconnectAttempts?: number;
-  onMessage?: (data: any) => void;
-  onConnect?: () => void;
-  onDisconnect?: () => void;
-  onError?: (error: Event) => void;
-}
-
-export function useQcSocket(options: UseQcSocketOptions = {}) {
-  const {
-    autoConnect = true,
-    reconnectInterval = 3000,
-    maxReconnectAttempts = 5,
-    onMessage,
-    onConnect,
-    onDisconnect,
-    onError,
-  } = options;
-
-  const [isConnected, setIsConnected] = useState(false);
-  const [lastMessage, setLastMessage] = useState<QcUpdate | null>(null);
-  const [documentUpdates, setDocumentUpdates] = useState<Record<string, QcUpdate>>({});
-  
-  const socketRef = useRef<WebSocket | null>(null);
-  const reconnectAttemptsRef = useRef(0);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Get WebSocket URL based on current location
-  const getWebSocketUrl = useCallback(() => {
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    return `${protocol}//${window.location.host}/ws/qc`;
-  }, []);
-
-  // Connect to WebSocket
-  const connect = useCallback(() => {
-    // Clean up any existing connection
-    if (socketRef.current) {
-      socketRef.current.close();
-    }
-
+  // Function to establish WebSocket connection
+  const connectSocket = useCallback(() => {
+    if (socket !== null) return; // Don't connect if already connected
+    
     try {
-      const socket = new WebSocket(getWebSocketUrl());
-      socketRef.current = socket;
-
-      socket.onopen = () => {
+      setSocketStatus('connecting');
+      
+      // Setup WebSocket with dynamic protocol
+      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+      const wsUrl = `${protocol}//${window.location.host}/ws/qc`;
+      
+      console.log('Connecting to QC WebSocket:', wsUrl);
+      const newSocket = new WebSocket(wsUrl);
+      
+      // WebSocket event handlers
+      newSocket.onopen = () => {
         console.log('QC WebSocket connected');
-        setIsConnected(true);
-        reconnectAttemptsRef.current = 0;
-        onConnect?.();
-      };
-
-      socket.onclose = (event) => {
-        console.log('QC WebSocket disconnected', event);
-        setIsConnected(false);
-        onDisconnect?.();
-
-        // Try to reconnect if not closed cleanly
-        if (!event.wasClean && reconnectAttemptsRef.current < maxReconnectAttempts) {
-          reconnectAttemptsRef.current += 1;
-          console.log(`Attempting to reconnect (${reconnectAttemptsRef.current}/${maxReconnectAttempts})...`);
-          
-          // Exponential backoff
-          const delay = reconnectInterval * Math.pow(1.5, reconnectAttemptsRef.current - 1);
-          reconnectTimeoutRef.current = setTimeout(connect, delay);
+        setSocketStatus('connected');
+        setRetryCount(0); // Reset retry counter on successful connection
+        
+        // Subscribe to QC updates for the specified document IDs
+        if (documentIds.length > 0) {
+          newSocket.send(JSON.stringify({ 
+            action: 'subscribe', 
+            document_ids: documentIds 
+          }));
         }
       };
-
-      socket.onerror = (error) => {
-        console.error('QC WebSocket error:', error);
-        onError?.(error);
-      };
-
-      socket.onmessage = (event) => {
+      
+      newSocket.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
           
-          // Update our state based on message type
           if (data.type === 'qc_update') {
-            // Store the update in our document updates
-            setDocumentUpdates(prev => ({
+            // Update the QC status for the document
+            setQcStatus(prev => ({
               ...prev,
-              [data.document_id]: data
+              [data.id]: {
+                id: data.id,
+                status: data.status,
+                errors: data.errors || [],
+                warnings: data.warnings || [],
+                module: data.module
+              }
             }));
             
-            // Set as last message
-            setLastMessage(data);
+            // Show toast notification for status changes
+            if (data.status === 'passed') {
+              toast.success(`Document ${data.id.substring(0, 8)}... passed QC`);
+            } else if (data.status === 'failed') {
+              toast.error(`Document ${data.id.substring(0, 8)}... failed QC: ${data.errors?.length || 0} errors`);
+            }
           }
-          
-          // Call the custom message handler
-          onMessage?.(data);
-          
         } catch (err) {
-          console.error('Error parsing QC WebSocket message:', err);
+          console.error('Error parsing WebSocket message:', err);
         }
       };
+      
+      newSocket.onclose = () => {
+        console.log('QC WebSocket connection closed');
+        setSocketStatus('disconnected');
+        setSocket(null);
+        
+        // Implement reconnection with exponential backoff
+        if (retryCount < MAX_RETRIES) {
+          const delay = Math.min(1000 * Math.pow(2, retryCount), 10000);
+          console.log(`Reconnecting in ${delay}ms (attempt ${retryCount + 1}/${MAX_RETRIES})`);
+          
+          setTimeout(() => {
+            setRetryCount(prevCount => prevCount + 1);
+            connectSocket();
+          }, delay);
+        } else {
+          console.error('Max WebSocket reconnection attempts reached');
+          toast.error('Connection to QC service lost. Please refresh the page.');
+        }
+      };
+      
+      newSocket.onerror = (error) => {
+        console.error('QC WebSocket error:', error);
+        // Let onclose handle reconnection
+      };
+      
+      setSocket(newSocket);
+      
     } catch (error) {
-      console.error('Error connecting to QC WebSocket:', error);
+      console.error('Failed to connect to QC WebSocket:', error);
+      setSocketStatus('disconnected');
     }
-  }, [getWebSocketUrl, maxReconnectAttempts, onConnect, onDisconnect, onError, onMessage, reconnectInterval]);
-
-  // Disconnect from WebSocket
-  const disconnect = useCallback(() => {
-    if (reconnectTimeoutRef.current) {
-      clearTimeout(reconnectTimeoutRef.current);
-      reconnectTimeoutRef.current = null;
-    }
-
-    if (socketRef.current) {
-      socketRef.current.close();
-      socketRef.current = null;
-    }
-  }, []);
-
-  // Subscribe to a document's QC updates
-  const subscribeToDocument = useCallback((documentId: string) => {
-    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-      socketRef.current.send(JSON.stringify({
-        type: 'subscribe',
-        document_id: documentId
-      }));
-      return true;
-    }
-    return false;
-  }, []);
-
-  // Unsubscribe from a document's QC updates
-  const unsubscribeFromDocument = useCallback((documentId: string) => {
-    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-      socketRef.current.send(JSON.stringify({
-        type: 'unsubscribe',
-        document_id: documentId
-      }));
-      return true;
-    }
-    return false;
-  }, []);
-
-  // Send a ping to keep the connection alive
-  const sendPing = useCallback(() => {
-    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-      socketRef.current.send(JSON.stringify({
-        type: 'ping',
-        timestamp: new Date().toISOString()
-      }));
-      return true;
-    }
-    return false;
-  }, []);
-
-  // Auto connect on mount if enabled
+  }, [documentIds, retryCount, socket]);
+  
+  // Connect when the component mounts
   useEffect(() => {
-    if (autoConnect) {
-      connect();
-    }
-
-    // Clean up on unmount
+    connectSocket();
+    
+    // Cleanup function to close the WebSocket when component unmounts
     return () => {
-      disconnect();
-    };
-  }, [autoConnect, connect, disconnect]);
-
-  // Handle window focus/blur to reconnect when tab becomes active
-  useEffect(() => {
-    const handleFocus = () => {
-      if (!isConnected && autoConnect) {
-        connect();
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.close();
       }
     };
-
-    window.addEventListener('focus', handleFocus);
-    
-    return () => {
-      window.removeEventListener('focus', handleFocus);
-    };
-  }, [autoConnect, connect, isConnected]);
-
-  // Send a ping every 30 seconds to keep the connection alive
+  }, [connectSocket]);
+  
+  // When document IDs change, resubscribe
   useEffect(() => {
-    if (!isConnected) return;
-    
-    const pingInterval = setInterval(() => {
-      sendPing();
-    }, 30000);
-    
-    return () => {
-      clearInterval(pingInterval);
-    };
-  }, [isConnected, sendPing]);
-
-  // Return the connection state and methods
+    if (socket && socket.readyState === WebSocket.OPEN && documentIds.length > 0) {
+      socket.send(JSON.stringify({ 
+        action: 'subscribe', 
+        document_ids: documentIds 
+      }));
+    }
+  }, [documentIds, socket]);
+  
+  // Function to manually trigger QC for a document
+  const triggerQc = useCallback((documentId: string) => {
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      socket.send(JSON.stringify({
+        action: 'trigger_qc',
+        document_id: documentId
+      }));
+      
+      // Set initial running status
+      setQcStatus(prev => ({
+        ...prev,
+        [documentId]: {
+          id: documentId,
+          status: 'running'
+        }
+      }));
+      
+      return true;
+    }
+    return false;
+  }, [socket]);
+  
+  // Function to trigger QC for multiple documents (bulk)
+  const triggerBulkQc = useCallback((ids: string[]) => {
+    if (socket && socket.readyState === WebSocket.OPEN && ids.length > 0) {
+      socket.send(JSON.stringify({
+        action: 'trigger_bulk_qc',
+        document_ids: ids
+      }));
+      
+      // Set initial running status for all
+      const updates: Record<string, QcEvent> = {};
+      ids.forEach(id => {
+        updates[id] = {
+          id,
+          status: 'running'
+        };
+      });
+      
+      setQcStatus(prev => ({
+        ...prev,
+        ...updates
+      }));
+      
+      return true;
+    }
+    return false;
+  }, [socket]);
+  
+  // Function to get QC status for a specific document
+  const getDocumentQcStatus = useCallback((documentId: string): QcEvent | undefined => {
+    return qcStatus[documentId];
+  }, [qcStatus]);
+  
   return {
-    isConnected,
-    connect,
-    disconnect,
-    subscribeToDocument,
-    unsubscribeFromDocument,
-    lastMessage,
-    documentUpdates,
-    sendPing,
+    socketStatus,
+    qcStatus,
+    triggerQc,
+    triggerBulkQc,
+    getDocumentQcStatus,
+    reconnect: connectSocket
   };
-}
+};
 
 export default useQcSocket;

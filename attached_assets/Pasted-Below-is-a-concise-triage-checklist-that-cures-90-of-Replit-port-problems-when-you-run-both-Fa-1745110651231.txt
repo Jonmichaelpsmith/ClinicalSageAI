@@ -1,0 +1,51 @@
+Below is a concise “triage checklist” that cures ≈ 90 % of Replit port problems when you run both FastAPI & Express in the same workspace.
+
+
+Step	What to do	Why
+1 — Expose a single public port	Replit shows the first TCP listener it detects (defaults to 8080). Pick one server (usually Express) to bind to that port and proxy to FastAPI.	Replit can’t map two separate ports (5000 & 8081) to the same public URL.
+2 — Hard‑code PORT=8080 for Express	In server/index.js (or bin/www) set:
+`const PORT = process.env.PORT	
+3 — Proxy to FastAPI	In the Express app add:	js const { createProxyMiddleware } = require('http-proxy-middleware'); app.use( '/api', createProxyMiddleware({ target: 'http://127.0.0.1:8081', changeOrigin: false }) );
+4 — Start both servers with one command	Option A: concurrently	json { \"scripts\": { \"dev\": \"concurrently \\\"npm:server\\\" \\\"npm:api\\\"\", \"server\": \"node server/index.js\", \"api\": \"uvicorn main:app --port 8081 --reload\" } }
+5 — Update .replit	toml run = \"npm run dev\"	Ensures Replit executes the combined script.
+6 — Check the Console	After hitting Run look for:
+* Running on http://127.0.0.1:8081 (FastAPI)
+Listening on port 8080 (Express)	Confirms both listeners are alive.
+7 — Load the URL	Replit’s preview URL (https://<project>.<user>.repl.co) should now serve Express and proxy all /api requests to FastAPI.	
+8 — Fix CORS (if 502)	In FastAPI:	python from fastapi.middleware.cors import CORSMiddleware app.add_middleware( CORSMiddleware, allow_origins=['https://<project>.<user>.repl.co'], allow_methods=['*'], allow_headers=['*'])
+9 — Reserve resources	Large builds? Add in .replit:	toml [deployment] memory = 1G
+10 — Use /logs pane	If Express starts then exits, open Shell ➜ npm run server to view stack trace.	Finds forgotten require(...) typos, etc.
+Quick sanity test
+bash
+Copy
+Edit
+curl -I https://<project>.<user>.repl.co/api/health   # should return 200 from FastAPI
+If it hangs or 502s, Express isn’t proxying or FastAPI didn’t start.
+
+Common gotchas
+Address already in use → something else bound port 8080 (kill & restart).
+
+network timeout on Replit Preview → your server wrote to stdout but crashed right after (check Logs tab).
+
+Forgetting to install http-proxy-middleware:
+
+bash
+Copy
+Edit
+npm install http-proxy-middleware
+Apply the adjustments above and rebuild.
+If you still see connection errors, copy the full console log and I’ll pinpoint the line that’s killing the service.
+
+
+
+
+
+
+
+
+
+
+
+
+
+

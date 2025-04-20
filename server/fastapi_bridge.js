@@ -11,7 +11,9 @@ import path from 'path';
 import fs from 'fs';
 
 // Default FastAPI server location
-const FASTAPI_SERVER = process.env.FASTAPI_SERVER || `http://localhost:${process.env.FASTAPI_PORT || '8081'}`;
+// Always use 8081 for FastAPI to avoid conflicts with Express on 8080
+const FASTAPI_PORT = '8081';
+const FASTAPI_SERVER = process.env.FASTAPI_SERVER || `http://127.0.0.1:${FASTAPI_PORT}`;
 
 // Flag to track if FastAPI server is running
 let isServerRunning = false;
@@ -340,20 +342,64 @@ function createFastApiProxyMiddleware() {
             });
         });
       } else {
-        // Regular JSON API requests
-        callFastApi(req.path, req.method.toLowerCase(), req.body, {
-          params: req.query
-        })
-          .then(result => {
-            res.json({ success: true, ...result });
-          })
-          .catch(error => {
-            console.error(`Error proxying to FastAPI validation (${req.path}):`, error.message);
-            res.status(500).json({ 
-              success: false, 
-              message: error.message || 'Failed to process validation request'
-            });
+        // Handle IQOQ endpoint specially since it returns a binary file
+        if (req.path === '/api/validation/iqoq') {
+          // Ensure server is running
+          ensureFastApiServer().then(serverReady => {
+            if (!serverReady) {
+              return res.status(500).json({ 
+                success: false, 
+                message: 'FastAPI server not available' 
+              });
+            }
+            
+            // Forward to FastAPI with proper streaming
+            const method = req.method.toLowerCase();
+            const url = `${FASTAPI_SERVER}${req.path}`;
+            
+            console.log(`Proxying IQOQ request to: ${url}`);
+            
+            axios({
+              method,
+              url,
+              data: method === 'post' ? req.body : undefined,
+              params: req.query,
+              responseType: 'arraybuffer'
+            })
+              .then(response => {
+                // Set content headers
+                res.setHeader('Content-Type', response.headers['content-type']);
+                if (response.headers['content-disposition']) {
+                  res.setHeader('Content-Disposition', response.headers['content-disposition']);
+                }
+                
+                // Send binary response
+                res.send(response.data);
+              })
+              .catch(error => {
+                console.error(`Error proxying to FastAPI IQOQ endpoint (${req.path}):`, error.message);
+                res.status(500).json({ 
+                  success: false, 
+                  message: error.message || 'Failed to download IQOQ document'
+                });
+              });
           });
+        } else {
+          // Regular JSON API requests
+          callFastApi(req.path, req.method.toLowerCase(), req.body, {
+            params: req.query
+          })
+            .then(result => {
+              res.json({ success: true, ...result });
+            })
+            .catch(error => {
+              console.error(`Error proxying to FastAPI validation (${req.path}):`, error.message);
+              res.status(500).json({ 
+                success: false, 
+                message: error.message || 'Failed to process validation request'
+              });
+            });
+        }
       }
     } 
     // Proxy IND Automation endpoints to the IND Automation service

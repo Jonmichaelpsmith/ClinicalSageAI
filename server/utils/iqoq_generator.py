@@ -4,6 +4,18 @@ IQ/OQ/PQ Document Generator
 This module generates Installation Qualification (IQ), Operational Qualification (OQ),
 and Performance Qualification (PQ) documentation for system validation.
 """
+
+# Public build_doc() function to be used by the API endpoint
+def build_doc() -> str:
+    """
+    Build and generate an IQ/OQ/PQ validation document
+    
+    Returns:
+        str: Path to the generated document file
+    """
+    generator = ValidationDocumentGenerator()
+    result = generator.generate_all()
+    return result.get('docx', '')
 import os
 import sys
 import json
@@ -72,7 +84,12 @@ class ValidationDocumentGenerator:
                     "docx": os.path.basename(docx_path),
                     "pdf": os.path.basename(pdf_path),
                     "checksum": os.path.basename(checksum_path)
-                }
+                },
+                # Include full paths for API access
+                "json": json_path,
+                "docx": docx_path,
+                "pdf": pdf_path,
+                "checksum": checksum_path
             }
         except Exception as e:
             logger.error(f"Error generating validation documents: {e}")

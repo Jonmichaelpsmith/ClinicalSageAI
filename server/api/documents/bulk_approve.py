@@ -1,237 +1,255 @@
 """
 Bulk Document Approval API
 
-This module provides endpoints for bulk approving documents, triggering QC checks,
-and updating document status.
+This module provides endpoints for bulk approving documents and triggering QC.
 """
 
-import os
-import json
 import asyncio
+import json
 import logging
-from typing import List, Dict, Any, Optional
-from datetime import datetime
-
-from fastapi import APIRouter, HTTPException, BackgroundTasks
-from pydantic import BaseModel
-from sqlalchemy.orm import Session
-
-# Import event bus for WebSocket updates
 import sys
 import os
+import uuid
+from datetime import datetime
+from typing import Dict, List, Any, Optional
 
-# Add the parent directory to sys.path to allow absolute imports
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
-from utils.event_bus import EventBus
+# Add parent path to allow imports
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+
+# FastAPI imports
+from fastapi import APIRouter, Body, HTTPException, Depends, Query
+from pydantic import BaseModel, Field
+from sqlalchemy.orm import Session
+
+# Import event bus for QC notifications
+from utils.event_bus import event_bus
 
 # Configure logging
 logger = logging.getLogger(__name__)
 
-# Initialize router
-router = APIRouter()
+# Create router
+router = APIRouter(prefix="/api/documents", tags=["documents"])
 
-# Event bus for WebSocket notifications
-event_bus = EventBus()
+# Request models
+class BulkApproveRequest(BaseModel):
+    """Request model for bulk document approval"""
+    document_ids: List[str] = Field(..., description="List of document IDs to approve")
+    module_updates: Optional[Dict[str, str]] = Field(
+        None, 
+        description="Optional updates to document modules, mapping document_id to new module"
+    )
+    run_qc: bool = Field(
+        True, 
+        description="Whether to run QC after approval"
+    )
 
-# Document models
-class DocumentApproval(BaseModel):
-    """Model for document approval request"""
+# Response models
+class DocumentApprovalResponse(BaseModel):
+    """Response model for a single document approval"""
     document_id: str
-    status: str = "pending"
-    reason: Optional[str] = None
-    
-class BulkApprovalRequest(BaseModel):
-    """Model for bulk approval request"""
-    documents: List[DocumentApproval]
-    run_qc: bool = True
-    region: Optional[str] = None
-    
-class ApprovalResponse(BaseModel):
-    """Model for approval response"""
-    document_id: str
-    status: str
+    success: bool
     message: str
-    qc_status: Optional[str] = None
-    
-class BulkApprovalResponse(BaseModel):
-    """Model for bulk approval response"""
-    status: str
-    results: List[ApprovalResponse]
+    module: Optional[str] = None
+    qc_triggered: bool = False
+
+class BulkApproveResponse(BaseModel):
+    """Response model for bulk document approval"""
+    success: bool
     message: str
-    task_id: Optional[str] = None
+    results: List[DocumentApprovalResponse]
+    approved_count: int
+    failed_count: int
+    qc_triggered: bool
 
-# Mock document database (replace with real database in production)
-documents_db = {}
-
-# Simulate document QC check
-async def run_document_qc(document_id: str, region: Optional[str] = None) -> Dict[str, Any]:
+@router.post("/bulk-approve")
+async def bulk_approve_documents(
+    request: BulkApproveRequest = Body(...),
+) -> BulkApproveResponse:
     """
-    Run QC check on a document
+    Bulk approve multiple documents and optionally trigger QC
     
     Args:
-        document_id: ID of the document to check
-        region: Optional region for region-specific checks
+        request: Bulk approval request with document IDs and optional module updates
         
     Returns:
-        Dict with QC results
+        Response with approval results for each document
     """
-    # Simulate async processing time
-    await asyncio.sleep(1.5)
+    logger.info(f"Bulk approve request for {len(request.document_ids)} documents")
     
-    # Determine result based on document ID (for demo purposes)
-    if document_id.endswith('_failing'):
-        result = {
-            "status": "failed",
-            "errors": [
-                {"code": "PDF001", "message": "Invalid PDF structure", "location": "page 2"},
-                {"code": "META002", "message": "Missing metadata", "location": "document properties"}
-            ],
-            "warnings": [
-                {"code": "FMT001", "message": "Inconsistent formatting", "location": "section 3.2"}
-            ],
-            "region_issues": []
-        }
-    elif document_id.endswith('_warning'):
-        result = {
-            "status": "warning",
-            "errors": [],
-            "warnings": [
-                {"code": "FMT001", "message": "Inconsistent formatting", "location": "section 3.2"},
-                {"code": "REF001", "message": "External reference not resolved", "location": "bibliography"}
-            ],
-            "region_issues": []
-        }
-    else:
-        result = {
-            "status": "passed",
+    # Validate request
+    if not request.document_ids:
+        raise HTTPException(status_code=400, detail="No document IDs provided")
+    
+    # Track results for each document
+    results: List[DocumentApprovalResponse] = []
+    approved_count = 0
+    failed_count = 0
+    
+    # Process each document
+    for doc_id in request.document_ids:
+        try:
+            # Check if we have a module update for this document
+            new_module = None
+            if request.module_updates and doc_id in request.module_updates:
+                new_module = request.module_updates[doc_id]
+            
+            # In a real implementation, this would update the document status in the database
+            # For now, we'll simulate success
+            
+            # In production, you would have code like:
+            # await db.execute(
+            #     "UPDATE documents SET status = 'approved', module = :module WHERE id = :id",
+            #     {"id": doc_id, "module": new_module if new_module else db.func.current_module}
+            # )
+            
+            # Add to results
+            results.append(DocumentApprovalResponse(
+                document_id=doc_id,
+                success=True,
+                message="Document approved successfully",
+                module=new_module,
+                qc_triggered=request.run_qc
+            ))
+            
+            approved_count += 1
+            
+            # Trigger QC if requested
+            if request.run_qc:
+                # Publish a QC event for this document
+                await event_bus.publish({
+                    "type": "qc_update",
+                    "id": doc_id,
+                    "status": "running",
+                    "timestamp": datetime.utcnow().isoformat(),
+                    "module": new_module
+                })
+                
+                # In a real implementation, this would trigger the QC process
+                # For now, we'll create a task to simulate a QC process
+                asyncio.create_task(simulate_qc_process(doc_id, new_module))
+            
+        except Exception as e:
+            logger.error(f"Error approving document {doc_id}: {str(e)}")
+            
+            # Add to results
+            results.append(DocumentApprovalResponse(
+                document_id=doc_id,
+                success=False,
+                message=f"Error: {str(e)}",
+                qc_triggered=False
+            ))
+            
+            failed_count += 1
+    
+    # Return response
+    return BulkApproveResponse(
+        success=approved_count > 0,
+        message=f"Approved {approved_count} documents, {failed_count} failed",
+        results=results,
+        approved_count=approved_count,
+        failed_count=failed_count,
+        qc_triggered=request.run_qc
+    )
+
+@router.post("/approve/{document_id}")
+async def approve_document(
+    document_id: str,
+    module: Optional[str] = Query(None, description="New module for the document"),
+    run_qc: bool = Query(True, description="Whether to run QC after approval")
+) -> DocumentApprovalResponse:
+    """
+    Approve a single document and optionally trigger QC
+    
+    Args:
+        document_id: ID of document to approve
+        module: Optional new module for the document
+        run_qc: Whether to run QC after approval
+        
+    Returns:
+        Response with approval result
+    """
+    logger.info(f"Approve request for document {document_id}")
+    
+    try:
+        # In a real implementation, this would update the document status in the database
+        # For now, we'll simulate success
+        
+        # In production, you would have code like:
+        # await db.execute(
+        #     "UPDATE documents SET status = 'approved', module = :module WHERE id = :id",
+        #     {"id": document_id, "module": module if module else db.func.current_module}
+        # )
+        
+        # Trigger QC if requested
+        if run_qc:
+            # Publish a QC event for this document
+            await event_bus.publish({
+                "type": "qc_update",
+                "id": document_id,
+                "status": "running",
+                "timestamp": datetime.utcnow().isoformat(),
+                "module": module
+            })
+            
+            # In a real implementation, this would trigger the QC process
+            # For now, we'll create a task to simulate a QC process
+            asyncio.create_task(simulate_qc_process(document_id, module))
+        
+        # Return response
+        return DocumentApprovalResponse(
+            document_id=document_id,
+            success=True,
+            message="Document approved successfully",
+            module=module,
+            qc_triggered=run_qc
+        )
+        
+    except Exception as e:
+        logger.error(f"Error approving document {document_id}: {str(e)}")
+        
+        # Return error response
+        return DocumentApprovalResponse(
+            document_id=document_id,
+            success=False,
+            message=f"Error: {str(e)}",
+            qc_triggered=False
+        )
+
+async def simulate_qc_process(document_id: str, module: Optional[str] = None) -> None:
+    """
+    Simulate a QC process for development/testing
+    
+    Args:
+        document_id: ID of document to simulate QC for
+        module: Optional module the document is in
+    """
+    try:
+        # In a real implementation, this would run the actual QC process
+        # For now, simulate a delay and random result
+        await asyncio.sleep(2 + (hash(document_id) % 3))  # 2-5 second delay based on doc ID
+        
+        # Simulate a success result
+        # In a real implementation, this would be the actual QC result
+        await event_bus.publish({
+            "type": "qc_update",
+            "id": document_id,
+            "status": "passed",  # Or 'failed' with errors in a real implementation
             "errors": [],
             "warnings": [],
-            "region_issues": []
-        }
-    
-    # Add region-specific issues if applicable
-    if region:
-        if region == "EU" and (document_id.endswith('_1') or document_id.endswith('_warning')):
-            result["region_issues"].append({
-                "region": "EU",
-                "code": "EU001",
-                "message": "Missing EMA-required consent statement",
-                "location": "section 1.3"
-            })
-        elif region == "JP" and (document_id.endswith('_2') or document_id.endswith('_failing')):
-            result["region_issues"].append({
-                "region": "JP",
-                "code": "JP001",
-                "message": "Missing PMDA-required patient notification",
-                "location": "appendix 2"
-            })
-    
-    # Publish QC update over WebSocket
-    await event_bus.publish_async("qc_status_update", document_id, result["status"], {
-        "errors": len(result["errors"]),
-        "warnings": len(result["warnings"]),
-        "region_issues": len(result["region_issues"]),
-    })
-    
-    return result
-
-# Background task for processing bulk approval
-async def process_bulk_approval(documents: List[DocumentApproval], run_qc: bool, region: Optional[str] = None) -> List[ApprovalResponse]:
-    """
-    Process bulk document approval with optional QC
-    
-    Args:
-        documents: List of documents to approve
-        run_qc: Whether to run QC on the documents
-        region: Optional region for region-specific validation
+            "module": module,
+            "timestamp": datetime.utcnow().isoformat()
+        })
         
-    Returns:
-        List of approval results
-    """
-    results = []
-    
-    for doc in documents:
-        # Start QC as soon as possible if requested
-        qc_task = None
-        if run_qc:
-            # Publish "in_progress" status immediately
-            await event_bus.publish_async("qc_status_update", doc.document_id, "in_progress")
-            
-            # Start QC check
-            qc_task = asyncio.create_task(run_document_qc(doc.document_id, region))
+    except Exception as e:
+        logger.error(f"Error in simulated QC process for document {document_id}: {str(e)}")
         
-        # Process approval
-        try:
-            # Update document status in database
-            documents_db[doc.document_id] = {
-                "status": doc.status,
-                "updated_at": datetime.utcnow().isoformat(),
-                "reason": doc.reason
-            }
-            
-            # Wait for QC if running
-            qc_result = None
-            if qc_task:
-                qc_result = await qc_task
-                
-            results.append(ApprovalResponse(
-                document_id=doc.document_id,
-                status="approved" if doc.status == "approved" else doc.status,
-                message="Document successfully processed",
-                qc_status=qc_result["status"] if qc_result else None
-            ))
-        except Exception as e:
-            logger.error(f"Error processing document {doc.document_id}: {e}")
-            results.append(ApprovalResponse(
-                document_id=doc.document_id,
-                status="error",
-                message=f"Error processing document: {str(e)}",
-                qc_status="error" if run_qc else None
-            ))
-            
-            # Ensure QC is marked as failed if there was an error
-            if run_qc:
-                await event_bus.publish_async("qc_status_update", doc.document_id, "error", {
-                    "message": str(e)
-                })
-    
-    return results
-
-# Bulk approval endpoint
-@router.post("/api/documents/bulk-approve")
-async def bulk_approve_documents(
-    request: BulkApprovalRequest,
-    background_tasks: BackgroundTasks
-) -> BulkApprovalResponse:
-    """
-    Bulk approve documents with optional QC checks
-    
-    This endpoint:
-    1. Updates document status (approve/reject)
-    2. Optionally runs QC checks on documents
-    3. Returns immediate response while processing continues in background
-    4. Publishes QC status updates via WebSocket
-    
-    Args:
-        request: Bulk approval request with document IDs and statuses
-        background_tasks: FastAPI background tasks
-        
-    Returns:
-        Immediate response with task ID for tracking
-    """
-    if not request.documents:
-        raise HTTPException(status_code=400, detail="No documents provided")
-    
-    # Generate a task ID
-    task_id = f"bulk_approve_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
-    
-    # Start background processing
-    asyncio.create_task(process_bulk_approval(request.documents, request.run_qc, request.region))
-    
-    # Return immediate response
-    return BulkApprovalResponse(
-        status="processing",
-        results=[],  # Empty results for immediate response
-        message=f"Bulk approval started with {len(request.documents)} documents. QC checks: {request.run_qc}",
-        task_id=task_id
-    )
+        # Publish error event
+        await event_bus.publish({
+            "type": "qc_update",
+            "id": document_id,
+            "status": "failed",
+            "errors": [f"QC process error: {str(e)}"],
+            "warnings": [],
+            "module": module,
+            "timestamp": datetime.utcnow().isoformat()
+        })
