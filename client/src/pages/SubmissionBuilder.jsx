@@ -1,4 +1,4 @@
-// SubmissionBuilder.jsx – drag‑drop tree with QC badges, bulk approve & region rule hints
+// SubmissionBuilder.jsx – region‑aware drag‑drop tree with QC badges, bulk approve & region rule hints
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { DndProvider } from 'react-dnd';
@@ -240,7 +240,7 @@ export default function SubmissionBuilder({ initialRegion = 'FDA', region: propR
     return () => {
       sock.close();
     };
-  }, [region, toast]);
+  }, [region]);
   
   // Handle messages from QC WebSocket
   const handleQCWebSocketMessage = (data) => {
@@ -415,13 +415,10 @@ export default function SubmissionBuilder({ initialRegion = 'FDA', region: propR
       setTree(nodes);
       setSelected(new Set());
       
-      toast({ 
-        message: `Loaded documents for ${region} region`, 
-        type: 'info' 
-      });
+      toast.info(`Loaded documents for ${region} region`);
     } catch (error) {
       console.error('Error loading documents:', error);
-      toast({ message: 'Failed to load documents', type: 'error' });
+      toast.error('Failed to load documents');
     } finally {
       setLoading(false);
     }
@@ -440,10 +437,10 @@ export default function SubmissionBuilder({ initialRegion = 'FDA', region: propR
         headers: { 'Content-Type': 'application/json' }, 
         body: JSON.stringify({ docs: ordered }) 
       });
-      toast({ message: 'Order saved', type: 'success' });
+      toast.success('Order saved');
     } catch (error) {
       console.error('Error saving order:', error);
-      toast({ message: 'Failed to save order', type: 'error' });
+      toast.error('Failed to save order');
     }
   };
 
@@ -460,11 +457,11 @@ export default function SubmissionBuilder({ initialRegion = 'FDA', region: propR
         headers: { 'Content-Type': 'application/json' }, 
         body: JSON.stringify({ ids: Array.from(selected) }) 
       });
-      toast({ message: 'Bulk approval/QC started', type: 'info' });
+      toast.info('Bulk approval/QC started');
       setSelected(new Set());
     } catch (error) {
       console.error('Error bulk approving:', error);
-      toast({ message: 'Failed to start bulk approval', type: 'error' });
+      toast.error('Failed to start bulk approval');
     }
   };
 
@@ -654,55 +651,38 @@ export default function SubmissionBuilder({ initialRegion = 'FDA', region: propR
                 </div>
               </div>
               
-              <div className="card">
+              <div className="card mb-3">
                 <div className="card-header">
-                  <strong>Recent Activity</strong>
+                  <strong>Active Regions</strong>
                 </div>
                 <div className="card-body">
-                  <p className="text-muted">
-                    {wsStatus === 'connected' 
-                      ? 'QC WebSocket connection is active and receiving updates.' 
-                      : 'Waiting for QC WebSocket connection to be established...'}
-                  </p>
-                  <p className="small text-muted">
-                    Documents will be automatically updated when QC status changes.
-                    Region-specific validation rules are applied based on the selected region.
+                  <div className="mb-2">
+                    {Object.keys(REGION_FOLDERS).map(r => (
+                      <span key={r} className={`badge me-2 ${r === region ? 'bg-primary' : 'bg-secondary'}`}>
+                        {r}
+                      </span>
+                    ))}
+                  </div>
+                  <p className="text-muted small mb-0">
+                    The currently selected region will be used for new document validation
                   </p>
                 </div>
               </div>
             </div>
             <div className="modal-footer">
               <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-              {wsStatus !== 'connected' && (
-                <button 
-                  type="button" 
-                  className="btn btn-primary"
-                  onClick={() => {
-                    // Try to reconnect by reloading documents which uses the WebSocket
-                    loadDocs();
-                    // Close the modal manually
-                    const modal = document.getElementById('qcStatusModal');
-                    if (modal) {
-                      // Just close using the attribute
-                      modal.setAttribute('data-bs-dismiss', 'modal');
-                      modal.click();
-                    }
-                  }}
-                >
-                  Reconnect
-                </button>
-              )}
             </div>
           </div>
         </div>
       </div>
-      
     </div>
   );
 }
 
-async function fetchJson(u) { 
-  const r = await fetch(u); 
-  if (!r.ok) throw new Error('fetch failed'); 
-  return r.json(); 
+async function fetchJson(url) {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`HTTP error ${response.status}`);
+  }
+  return response.json();
 }
