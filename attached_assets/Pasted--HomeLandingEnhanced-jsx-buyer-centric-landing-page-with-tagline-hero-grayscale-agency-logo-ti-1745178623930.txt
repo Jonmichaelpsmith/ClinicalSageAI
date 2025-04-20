@@ -1,0 +1,70 @@
+// HomeLandingEnhanced.jsx – buyer‑centric landing page with tagline hero & grayscale agency logo ticker
+// Requires no extra npm packages – pure CSS animation keeps bundle size minimal.
+
+import React from 'react';
+import { Link } from 'react-router-dom';
+
+const TAGLINES = [
+  'Turning Concepts into Cures – 2× faster INDs',
+  'Automated CER & CSR intelligence that eliminates 90% manual formatting',
+  'Regulatory‑grade PDFs, eCTD, ESG in one click',
+  'AI‑guided study protocols save $2M average per trial',
+];
+
+const AGENCIES = [
+  { name: 'FDA', url: 'https://www.fda.gov', logo: 'https://raw.githubusercontent.com/Concepts2Cures/logos/main/fda.svg' },
+  { name: 'EMA', url: 'https://www.ema.europa.eu', logo: 'https://raw.githubusercontent.com/Concepts2Cures/logos/main/ema.svg' },
+  { name: 'MHRA', url: 'https://www.gov.uk/government/organisations/medicines-and-healthcare-products-regulatory-agency', logo: 'https://raw.githubusercontent.com/Concepts2Cures/logos/main/mhra.svg' },
+  { name: 'PMDA', url: 'https://www.pmda.go.jp', logo: 'https://raw.githubusercontent.com/Concepts2Cures/logos/main/pmda.svg' },
+  { name: 'TGA', url: 'https://www.tga.gov.au', logo: 'https://raw.githubusercontent.com/Concepts2Cures/logos/main/tga.svg' },
+  { name: 'NMPA', url: 'https://www.nmpa.gov.cn', logo: 'https://raw.githubusercontent.com/Concepts2Cures/logos/main/nmpa.svg' },
+  { name: 'MFDS', url: 'https://www.mfds.go.kr', logo: 'https://raw.githubusercontent.com/Concepts2Cures/logos/main/mfds.svg' },
+];
+
+export default function HomeLandingEnhanced() {
+  return (
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-800">
+      {/* Hero */}
+      <section className="flex-1 flex flex-col justify-center items-center text-center px-6 py-24">
+        <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-emerald-500 to-cyan-500 text-transparent bg-clip-text">
+          Concepts2Cures.AI TrialSage Platform
+        </h1>
+        <p className="mt-4 max-w-2xl text-lg text-gray-600 dark:text-gray-300">
+          End‑to‑end AI automation for IND, CSR, CER and global regulatory submissions – built for biotech teams who need speed without compromise.
+        </p>
+        <ul className="mt-6 space-y-2 text-gray-700 dark:text-gray-400">
+          {TAGLINES.map(t => <li key={t} className="before:content-['✔'] before:text-emerald-500 before:mr-2">{t}</li>)}
+        </ul>
+        <div className="mt-8 flex gap-4">
+          <Link to="/signup" className="px-6 py-3 bg-emerald-600 text-white rounded-lg shadow hover:bg-emerald-700">Create Account</Link>
+          <Link to="/demo" className="px-6 py-3 bg-white border border-emerald-600 text-emerald-600 rounded-lg shadow hover:bg-emerald-50 dark:bg-transparent dark:border-emerald-400 dark:text-emerald-400">Request Demo</Link>
+        </div>
+      </section>
+
+      {/* Agency carousel */}
+      <section className="py-6 bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-700 overflow-hidden">
+        <div className="whitespace-nowrap animate-scroll inline-flex gap-12" style={{ animationDuration: '60s' }}>
+          {AGENCIES.concat(AGENCIES).map((a, idx) => (
+            <a key={idx} href={a.url} target="_blank" rel="noopener noreferrer" className="opacity-60 hover:opacity-100 transition-opacity">
+              <img src={a.logo} alt={a.name + ' logo'} className="h-12 grayscale hover:grayscale-0" loading="lazy" />
+            </a>
+          ))}
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="text-center text-xs py-4 text-gray-500 dark:text-gray-400">
+        © {new Date().getFullYear()} Concepts2Cures.AI – Logos shown for regulatory context only; no endorsement implied.
+      </footer>
+    </div>
+  );
+}
+
+/* CSS KEYFRAMES (inject once in your global CSS) */
+/*
+@keyframes scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-scroll { animation: scroll linear infinite; }
+*/
