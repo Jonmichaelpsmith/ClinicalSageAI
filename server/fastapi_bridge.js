@@ -278,6 +278,67 @@ function createFastApiProxyMiddleware() {
           });
         });
     } 
+    // Proxy validation endpoints to the FastAPI service
+    else if (req.path.startsWith('/api/validation/')) {
+      console.log(`Proxying validation request: ${req.method} ${req.path}`);
+      
+      // If it's a download request, handle differently to support binary responses
+      if (req.path.includes('/download') || req.path.includes('/bundle')) {
+        // Ensure server is running
+        ensureFastApiServer().then(serverReady => {
+          if (!serverReady) {
+            return res.status(500).json({ 
+              success: false, 
+              message: 'FastAPI server not available' 
+            });
+          }
+          
+          // Forward to FastAPI with proper streaming
+          const method = req.method.toLowerCase();
+          const url = `${FASTAPI_SERVER}${req.path}`;
+          
+          axios({
+            method,
+            url,
+            data: method === 'post' ? req.body : undefined,
+            params: req.query,
+            responseType: 'arraybuffer'
+          })
+            .then(response => {
+              // Set content headers
+              res.setHeader('Content-Type', response.headers['content-type']);
+              if (response.headers['content-disposition']) {
+                res.setHeader('Content-Disposition', response.headers['content-disposition']);
+              }
+              
+              // Send binary response
+              res.send(response.data);
+            })
+            .catch(error => {
+              console.error(`Error proxying to FastAPI download (${req.path}):`, error.message);
+              res.status(500).json({ 
+                success: false, 
+                message: error.message || 'Failed to download file'
+              });
+            });
+        });
+      } else {
+        // Regular JSON API requests
+        callFastApi(req.path, req.method.toLowerCase(), req.body, {
+          params: req.query
+        })
+          .then(result => {
+            res.json({ success: true, ...result });
+          })
+          .catch(error => {
+            console.error(`Error proxying to FastAPI validation (${req.path}):`, error.message);
+            res.status(500).json({ 
+              success: false, 
+              message: error.message || 'Failed to process validation request'
+            });
+          });
+      }
+    } 
     // Proxy IND Automation endpoints to the IND Automation service
     else if (req.path.startsWith('/api/ind') || req.path === '/api/projects') {
       // Configure to proxy to IND Automation service

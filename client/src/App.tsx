@@ -18,6 +18,7 @@ import CsrIntelligence from './pages/CsrIntelligence';
 import DocumentsPage from './pages/DocumentsPage';
 import SubmissionBuilder from './pages/SubmissionBuilder';
 import ValidationPage from './pages/ValidationPage';
+import ValidationDocuments from './pages/ValidationDocuments';
 import RiskAnalysis from './pages/RiskAnalysis';
 import AssistantPage from './pages/AssistantPage';
 import IndSequenceManager from './pages/IndSequenceManager';
@@ -518,6 +519,15 @@ export default function App() {
             {() => (
               <DashboardLayout>
                 <ValidationPage />
+              </DashboardLayout>
+            )}
+          </Route>
+
+          {/* === Validation Documents (IQ/OQ/PQ) === */}
+          <Route path="/portal/validation-documents">
+            {() => (
+              <DashboardLayout>
+                <ValidationDocuments />
               </DashboardLayout>
             )}
           </Route>
