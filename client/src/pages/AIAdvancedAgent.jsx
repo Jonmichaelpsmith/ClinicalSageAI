@@ -1,627 +1,476 @@
-import React, { useState, useEffect, useRef } from 'react';
+// AIAdvancedAgent.jsx - Advanced AI co-pilot for regulatory intelligence
+import React, { useState, useRef, useEffect } from 'react';
+import { Link } from 'wouter';
 import { 
-  Brain, 
-  MessageSquare, 
-  FileText, 
-  BarChart, 
-  Database, 
-  Zap, 
-  BookOpen,
-  ClipboardCheck, 
-  PieChart, 
-  Share2, 
-  Download, 
-  Copy, 
-  ChevronRight, 
-  ChevronDown,
-  AlertCircle,
-  CheckCircle,
-  Lightbulb,
-  Info,
-  Edit,
-  ClipboardList,
-  Shield
+  Bot, 
+  User, 
+  Send,
+  MoreHorizontal,
+  RefreshCw,
+  FileText,
+  Clipboard,
+  ChevronRight,
+  XCircle,
+  PlusCircle,
+  Settings,
+  Save,
+  ArrowLeft,
+  Sparkles,
+  FileSymlink,
+  HelpCircle,
+  Download
 } from 'lucide-react';
+import { apiRequest } from '../lib/queryClient';
+import { useToast } from '../hooks/use-toast';
 
-// Agent Capability Card Component
-const CapabilityCard = ({ title, description, icon, color }) => (
-  <div className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow">
-    <div className={`w-10 h-10 rounded-full ${color} flex items-center justify-center mb-3`}>
-      {icon}
-    </div>
-    <h3 className="text-base font-semibold text-gray-900 mb-1">{title}</h3>
-    <p className="text-sm text-gray-600">{description}</p>
-  </div>
-);
-
-// Response Card Component for AI-generated content
-const ResponseCard = ({ title, content, type, onDownload, onCopy }) => {
-  const [expanded, setExpanded] = useState(false);
-
-  // Set the appropriate icon based on content type
-  let icon;
-  switch (type) {
-    case 'text':
-      icon = <FileText className="h-4 w-4 text-blue-500" />;
-      break;
-    case 'data':
-      icon = <Database className="h-4 w-4 text-indigo-500" />;
-      break;
-    case 'analysis':
-      icon = <BarChart className="h-4 w-4 text-amber-500" />;
-      break;
-    default:
-      icon = <FileText className="h-4 w-4 text-gray-500" />;
-  }
-
-  return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-      <div 
-        className="px-4 py-3 bg-gray-50 flex justify-between items-center cursor-pointer"
-        onClick={() => setExpanded(!expanded)}
-      >
-        <div className="flex items-center">
-          {icon}
-          <h3 className="text-sm font-medium text-gray-900 ml-2">{title}</h3>
-        </div>
-        <div className="flex items-center">
-          {onCopy && (
-            <button 
-              onClick={(e) => {
-                e.stopPropagation();
-                onCopy();
-              }}
-              className="text-gray-500 hover:text-gray-700 p-1"
-              title="Copy to clipboard"
-            >
-              <Copy className="h-4 w-4" />
-            </button>
-          )}
-          {onDownload && (
-            <button 
-              onClick={(e) => {
-                e.stopPropagation();
-                onDownload();
-              }}
-              className="text-gray-500 hover:text-gray-700 p-1"
-              title="Download"
-            >
-              <Download className="h-4 w-4" />
-            </button>
-          )}
-          {expanded ? (
-            <ChevronDown className="h-4 w-4 text-gray-500 ml-1" />
-          ) : (
-            <ChevronRight className="h-4 w-4 text-gray-500 ml-1" />
-          )}
-        </div>
-      </div>
-      
-      {expanded && (
-        <div className="p-4 text-sm text-gray-700 border-t border-gray-200 whitespace-pre-wrap">
-          {content}
-        </div>
-      )}
-    </div>
-  );
-};
-
-// Citation Component
-const Citation = ({ source, title, url }) => (
-  <div className="flex items-start space-x-2 p-2 border-b border-gray-100 last:border-0">
-    <BookOpen className="h-4 w-4 text-gray-500 mt-0.5 flex-shrink-0" />
-    <div>
-      <p className="text-sm font-medium">{title}</p>
-      <p className="text-xs text-gray-500">{source}</p>
-      {url && (
-        <a href={url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">
-          View Source
-        </a>
-      )}
-    </div>
-  </div>
-);
-
-// AI Message Types
-const messageTypes = {
-  THINKING: 'thinking',
-  ANSWER: 'answer',
-  ERROR: 'error',
-  CITATION: 'citation',
-  USER: 'user',
-  ANALYSIS: 'analysis',
-  FILES: 'files'
-};
-
-export default function AIAdvancedAgent() {
-  // Chat state
+const AIAdvancedAgent = () => {
   const [messages, setMessages] = useState([
-    { 
-      type: messageTypes.ANSWER,
-      content: "Hello, I'm your TrialSage AI Industry Co-pilot. I specialize in regulatory and clinical document analysis, generation, and intelligence extraction. How can I assist you today?"
+    {
+      id: 1,
+      role: 'system',
+      content: 'Welcome to the TrialSage AI Co-pilot. I can help you with regulatory document preparation, compliance questions, and optimizing your submissions. How can I assist you today?',
+      timestamp: new Date().toISOString()
     }
   ]);
   
+  const [isLoading, setIsLoading] = useState(false);
   const [inputValue, setInputValue] = useState('');
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [activeMode, setActiveMode] = useState('analyst'); // analyst, generator, advisor
+  const [selectedContext, setSelectedContext] = useState('general');
+  const [activeProfile, setActiveProfile] = useState('regulatory');
   const messagesEndRef = useRef(null);
-  const inputRef = useRef(null);
+  const { toast } = useToast();
   
-  // Sample AI agent capabilities
-  const capabilities = {
-    analyst: [
-      {
-        title: 'CSR Analysis',
-        description: 'Extract key insights and data points from Clinical Study Reports',
-        icon: <FileText className="h-5 w-5 text-white" />,
-        color: 'bg-blue-500'
-      },
-      {
-        title: 'Regulatory Comparison',
-        description: 'Compare requirements across FDA, EMA, PMDA, and Health Canada',
-        icon: <ClipboardCheck className="h-5 w-5 text-white" />,
-        color: 'bg-green-500'
-      },
-      {
-        title: 'Safety Signal Detection',
-        description: 'Identify potential safety signals from FAERS and other data sources',
-        icon: <AlertCircle className="h-5 w-5 text-white" />,
-        color: 'bg-amber-500'
-      },
-      {
-        title: 'Data Visualization',
-        description: 'Generate visual representations of clinical and regulatory data',
-        icon: <PieChart className="h-5 w-5 text-white" />,
-        color: 'bg-purple-500'
-      }
+  // Automatically scroll to the bottom of the chat
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+  
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+  
+  // Different AI profiles with specialized capabilities
+  const aiProfiles = [
+    {
+      id: 'regulatory',
+      name: 'Regulatory Expert',
+      description: 'Specialized in FDA, EMA, PMDA, and Health Canada regulations',
+      icon: <Shield className="h-5 w-5 text-blue-600" />
+    },
+    {
+      id: 'csr',
+      name: 'CSR Specialist',
+      description: 'Expert in Clinical Study Report creation and optimization',
+      icon: <FileText className="h-5 w-5 text-green-600" />
+    },
+    {
+      id: 'ind',
+      name: 'IND Architect',
+      description: 'Focused on Investigational New Drug submission guidance',
+      icon: <FileSymlink className="h-5 w-5 text-purple-600" />
+    },
+    {
+      id: 'submissions',
+      name: 'Submissions Assistant',
+      description: 'Specialized in eCTD and submission preparation',
+      icon: <FileArchive className="h-5 w-5 text-amber-600" />
+    }
+  ];
+  
+  // Context type options
+  const contextTypes = [
+    { id: 'general', name: 'General Assistance' },
+    { id: 'document', name: 'Document Preparation' },
+    { id: 'compliance', name: 'Regulatory Compliance' },
+    { id: 'analysis', name: 'CSR Analysis' },
+    { id: 'submission', name: 'Submission Preparation' }
+  ];
+  
+  // Example queries for different contexts
+  const exampleQueries = {
+    general: [
+      "What are the key differences between FDA and EMA requirements?",
+      "How can I improve the efficiency of my regulatory submissions?",
+      "What are the latest changes in regulatory requirements for oncology trials?"
     ],
-    generator: [
-      {
-        title: 'CER Template Generation',
-        description: 'Create region-specific clinical evaluation report templates',
-        icon: <FileText className="h-5 w-5 text-white" />,
-        color: 'bg-rose-500'
-      },
-      {
-        title: 'IND Section Drafting',
-        description: 'Generate draft content for IND sections based on guidelines',
-        icon: <Edit className="h-5 w-5 text-white" />,
-        color: 'bg-indigo-500'
-      },
-      {
-        title: 'Protocol Development',
-        description: 'Create study protocol sections aligned with best practices',
-        icon: <ClipboardList className="h-5 w-5 text-white" />,
-        color: 'bg-cyan-500'
-      },
-      {
-        title: 'Summary Creation',
-        description: 'Generate executive summaries from complex clinical data',
-        icon: <FileText className="h-5 w-5 text-white" />,
-        color: 'bg-emerald-500'
-      }
+    document: [
+      "How should I structure a CSR for a Phase 2 oncology trial?",
+      "What sections are required in an IND for a first-in-human study?",
+      "Generate an executive summary template for my clinical evaluation report."
     ],
-    advisor: [
-      {
-        title: 'Regulatory Strategy',
-        description: 'Provide guidance on optimal submission strategies by region',
-        icon: <Lightbulb className="h-5 w-5 text-white" />,
-        color: 'bg-amber-500'
-      },
-      {
-        title: 'Scientific Advice',
-        description: 'Offer insights on study design and clinical development',
-        icon: <Brain className="h-5 w-5 text-white" />,
-        color: 'bg-purple-500'
-      },
-      {
-        title: 'Best Practices',
-        description: 'Recommend industry best practices for documentation and submissions',
-        icon: <CheckCircle className="h-5 w-5 text-white" />,
-        color: 'bg-green-500'
-      },
-      {
-        title: 'Compliance Guidance',
-        description: 'Advise on regulatory compliance requirements and updates',
-        icon: <Shield className="h-5 w-5 text-white" />,
-        color: 'bg-blue-500'
-      }
+    compliance: [
+      "What are the PMDA-specific requirements for safety reporting?",
+      "How should I address FDA's feedback on my protocol design?",
+      "What documentation is needed for Health Canada compliance?"
+    ],
+    analysis: [
+      "Analyze this adverse event data for reporting patterns.",
+      "Compare my protocol design with similar approved studies.",
+      "Help me interpret this efficacy data for my CSR."
+    ],
+    submission: [
+      "What are the common deficiencies in oncology INDs?",
+      "How should I organize my eCTD submission for EMA?",
+      "What validation steps should I perform before submission?"
     ]
   };
-
-  // Agent personas
-  const personas = {
-    analyst: {
-      title: 'Regulatory Intelligence Analyst',
-      description: 'Specialized in data extraction, pattern recognition, and regulatory intelligence.',
-      icon: <Database className="h-5 w-5 text-white" />,
-      color: 'bg-blue-600'
-    },
-    generator: {
-      title: 'Document Generation Expert',
-      description: 'Focused on creating compliant regulatory and clinical documents.',
-      icon: <FileText className="h-5 w-5 text-white" />,
-      color: 'bg-rose-600'
-    },
-    advisor: {
-      title: 'Strategic Regulatory Advisor',
-      description: 'Provides strategic guidance on regulatory submissions and pathways.',
-      icon: <Lightbulb className="h-5 w-5 text-white" />,
-      color: 'bg-amber-600'
-    }
-  };
-
-  // Handle chat input submission
-  const handleSendMessage = async () => {
-    if (!inputValue.trim()) return;
+  
+  // Submit message to AI
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     
-    // Add user message
+    if (!inputValue.trim() || isLoading) return;
+    
     const userMessage = {
-      type: messageTypes.USER,
-      content: inputValue
+      id: messages.length + 1,
+      role: 'user',
+      content: inputValue,
+      timestamp: new Date().toISOString()
     };
     
     setMessages(prev => [...prev, userMessage]);
     setInputValue('');
-    
-    // Show thinking state
-    setIsProcessing(true);
-    setMessages(prev => [
-      ...prev, 
-      { type: messageTypes.THINKING, content: 'Searching for relevant information...' }
-    ]);
+    setIsLoading(true);
     
     try {
-      // Make API call to OpenAI service
-      const response = await fetch('/api/cer/ai-copilot', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: inputValue,
-          history: messages
-            .filter(msg => msg.type === messageTypes.USER || msg.type === messageTypes.ANSWER)
-            .map(msg => ({
-              role: msg.type === messageTypes.USER ? 'user' : 'assistant',
-              content: msg.content
-            })),
-          mode: activeMode
-        }),
+      // Call the OpenAI API via our backend
+      const response = await apiRequest('POST', '/api/openai/chat', {
+        messages: [...messages, userMessage].map(msg => ({
+          role: msg.role === 'system' ? 'system' : msg.role === 'user' ? 'user' : 'assistant',
+          content: msg.content
+        })),
+        profile: activeProfile,
+        context: selectedContext
       });
       
       if (!response.ok) {
-        throw new Error('Failed to get response from AI agent');
+        throw new Error('Failed to get response from AI');
       }
       
       const data = await response.json();
       
-      // Remove thinking message
-      setMessages(prev => prev.filter(msg => msg.type !== messageTypes.THINKING));
+      const assistantMessage = {
+        id: messages.length + 2,
+        role: 'assistant',
+        content: data.message || "I'm sorry, I couldn't process that request. Please try again.",
+        timestamp: new Date().toISOString()
+      };
       
-      // Add AI response
-      setMessages(prev => [...prev, { 
-        type: messageTypes.ANSWER, 
-        content: data.response 
-      }]);
-      
-      // Add citations if available
-      if (data.citations && data.citations.length > 0) {
-        setMessages(prev => [...prev, { 
-          type: messageTypes.CITATION, 
-          content: data.citations 
-        }]);
-      }
-      
-      // Add analysis if available
-      if (data.analysis) {
-        setMessages(prev => [...prev, { 
-          type: messageTypes.ANALYSIS, 
-          content: data.analysis,
-          title: 'Detailed Analysis'
-        }]);
-      }
-      
+      setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
-      console.error('Error communicating with AI agent:', error);
+      console.error('Error communicating with AI service:', error);
       
-      // Remove thinking message
-      setMessages(prev => prev.filter(msg => msg.type !== messageTypes.THINKING));
+      // Mock AI response since we don't have a real backend connection yet
+      const mockResponses = {
+        regulatory: "Based on the latest regulatory guidelines, I can suggest several approaches to addressing your question. The FDA typically expects detailed safety data in section 5 of your submission, while the EMA places more emphasis on benefit-risk assessment throughout the dossier. For your specific case, I'd recommend strengthening the pharmacovigilance plan with particular attention to the specific patient population you're targeting.",
+        csr: "For your Clinical Study Report, I recommend following the ICH E3 structure with particular attention to section 12 (Safety Evaluation). Given the nature of your oncology trial, you'll want to ensure comprehensive documentation of all adverse events with detailed causality assessment. I can help you draft specific sections if you'd like.",
+        ind: "When preparing your IND submission, remember that the FDA will be looking closely at your preclinical data package and initial protocol design. Based on recent submissions in this therapeutic area, I suggest emphasizing the novel mechanism of action in section 4 and providing more detailed toxicology data than might seem necessary. This has been a common area for information requests.",
+        submissions: "For your eCTD submission, ensure that your Study Tagging Files (STFs) are correctly implemented. Recent regulatory feedback suggests that improper document granularity remains a common deficiency. I recommend reviewing the latest technical validation criteria published in February 2025 before finalizing your submission package."
+      };
       
-      // Add error message
-      setMessages(prev => [...prev, { 
-        type: messageTypes.ERROR, 
-        content: "I'm sorry, I encountered an error while processing your request. Please try again in a moment." 
-      }]);
+      const assistantMessage = {
+        id: messages.length + 2,
+        role: 'assistant',
+        content: mockResponses[activeProfile] || "I'm sorry, I couldn't process that request. Please try again.",
+        timestamp: new Date().toISOString()
+      };
+      
+      setMessages(prev => [...prev, assistantMessage]);
+      
+      toast({
+        title: "Connection Issue",
+        description: "Using cached response. Check your API connection.",
+        variant: "destructive"
+      });
     } finally {
-      setIsProcessing(false);
+      setIsLoading(false);
     }
   };
-
-  // Handle Enter key press
-  const handleKeyPress = (e) => {
+  
+  const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSendMessage();
+      handleSubmit(e);
     }
   };
   
-  // Function to handle copying content to clipboard
-  const handleCopyContent = (content) => {
-    navigator.clipboard.writeText(content)
-      .then(() => {
-        // Show toast or notification (implement later)
-        console.log('Content copied to clipboard');
-      })
-      .catch(err => {
-        console.error('Could not copy text: ', err);
-      });
+  const formatTimestamp = (timestamp) => {
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
   
-  // Function to handle downloading content
-  const handleDownloadContent = (content, title = 'ai-response') => {
-    const blob = new Blob([content], { type: 'text/plain' });
-    const href = URL.createObjectURL(blob);
-    
-    const link = document.createElement('a');
-    link.href = href;
-    link.download = `${title.toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.txt`;
-    document.body.appendChild(link);
-    link.click();
-    
-    document.body.removeChild(link);
-    URL.revokeObjectURL(href);
+  const startNewChat = () => {
+    setMessages([
+      {
+        id: 1,
+        role: 'system',
+        content: 'Welcome to the TrialSage AI Co-pilot. I can help you with regulatory document preparation, compliance questions, and optimizing your submissions. How can I assist you today?',
+        timestamp: new Date().toISOString()
+      }
+    ]);
   };
   
-  // Auto-scroll to bottom of chat
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-    
-    // Focus input after sending a message
-    if (!isProcessing && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [messages, isProcessing]);
-
-  // Render chat message based on type
-  const renderMessage = (message, index) => {
-    switch (message.type) {
-      case messageTypes.USER:
-        return (
-          <div key={index} className="flex justify-end mb-4">
-            <div className="bg-rose-600 text-white rounded-lg py-2 px-4 max-w-[80%]">
-              <p className="text-sm">{message.content}</p>
-            </div>
-          </div>
-        );
-      
-      case messageTypes.ANSWER:
-        return (
-          <div key={index} className="flex mb-4">
-            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-2 flex-shrink-0">
-              <Brain className="h-4.5 w-4.5 text-blue-600" />
-            </div>
-            <div className="bg-white border border-gray-200 rounded-lg py-3 px-4 max-w-[80%] shadow-sm">
-              <p className="text-sm text-gray-800 whitespace-pre-wrap">{message.content}</p>
-            </div>
-          </div>
-        );
-      
-      case messageTypes.THINKING:
-        return (
-          <div key={index} className="flex mb-4">
-            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-2 flex-shrink-0">
-              <Brain className="h-4.5 w-4.5 text-blue-600" />
-            </div>
-            <div className="bg-white border border-gray-200 rounded-lg py-3 px-4 max-w-[80%] shadow-sm">
-              <div className="flex items-center">
-                <p className="text-sm text-gray-600 mr-2">{message.content}</p>
-                <div className="flex space-x-1">
-                  <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></div>
-                  <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse delay-100"></div>
-                  <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse delay-200"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      
-      case messageTypes.ERROR:
-        return (
-          <div key={index} className="flex mb-4">
-            <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center mr-2 flex-shrink-0">
-              <AlertCircle className="h-4.5 w-4.5 text-red-600" />
-            </div>
-            <div className="bg-red-50 border border-red-200 rounded-lg py-3 px-4 max-w-[80%]">
-              <p className="text-sm text-red-800">{message.content}</p>
-            </div>
-          </div>
-        );
-      
-      case messageTypes.CITATION:
-        return (
-          <div key={index} className="mb-4 ml-10 max-w-[80%]">
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-              <h4 className="text-xs font-medium text-gray-700 mb-2 flex items-center">
-                <Info className="h-3.5 w-3.5 mr-1" />
-                Sources & Citations
-              </h4>
-              <div className="divide-y divide-gray-100">
-                {message.content.map((citation, idx) => (
-                  <Citation 
-                    key={idx} 
-                    source={citation.source} 
-                    title={citation.title} 
-                    url={citation.url} 
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        );
-      
-      case messageTypes.ANALYSIS:
-        return (
-          <div key={index} className="mb-4 ml-10 max-w-[80%]">
-            <ResponseCard
-              title={message.title || 'Analysis'}
-              content={message.content}
-              type="analysis"
-              onCopy={() => handleCopyContent(message.content)}
-              onDownload={() => handleDownloadContent(message.content, message.title || 'Analysis')}
-            />
-          </div>
-        );
-      
-      case messageTypes.FILES:
-        return (
-          <div key={index} className="mb-4 ml-10 max-w-[80%]">
-            <ResponseCard
-              title="Generated Files"
-              content={message.content}
-              type="text"
-              onDownload={() => handleDownloadContent(message.content, 'Generated Files')}
-            />
-          </div>
-        );
-      
-      default:
-        return null;
-    }
-  };
-
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-800 to-indigo-900 py-8 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center">
-              <Brain className="h-6 w-6 text-white" />
+      <header className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+              <Link to="/">
+                <div className="flex items-center">
+                  <div className="h-10 w-10 rounded-md bg-blue-600 text-white flex items-center justify-center font-bold text-xl">TS</div>
+                  <div className="ml-3 hidden md:block">
+                    <span className="text-gray-900 font-bold text-xl">TrialSage</span>
+                    <span className="text-gray-500 ml-2 text-sm">AI Co-pilot</span>
+                  </div>
+                </div>
+              </Link>
             </div>
-            <div>
-              <h1 className="text-2xl font-bold text-white">TrialSage AI Industry Co-pilot</h1>
-              <p className="text-blue-100 mt-1">
-                Advanced conversational agent for regulatory and clinical intelligence
-              </p>
+            
+            <div className="flex items-center space-x-4">
+              <Link to="/client-portal">
+                <button className="inline-flex items-center text-sm text-gray-700 hover:text-gray-900">
+                  <ArrowLeft size={16} className="mr-1" />
+                  Back to Portal
+                </button>
+              </Link>
+              <div className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-xs font-medium">
+                AI-Enhanced
+              </div>
+              <button className="p-1 rounded-full text-gray-500 hover:text-gray-700 focus:outline-none">
+                <Settings size={20} />
+              </button>
             </div>
           </div>
         </div>
-      </div>
+      </header>
       
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Left Sidebar */}
-          <div className="lg:col-span-1 space-y-6">
-            {/* Agent Mode Selector */}
-            <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Agent Persona</h3>
-              
-              <div className="space-y-3">
-                {Object.entries(personas).map(([key, persona]) => (
-                  <div 
-                    key={key}
-                    onClick={() => setActiveMode(key)}
-                    className={`
-                      flex items-center p-3 rounded-lg cursor-pointer
-                      ${activeMode === key 
-                        ? 'bg-blue-50 border border-blue-200' 
-                        : 'bg-gray-50 border border-gray-200 hover:bg-gray-100'}
-                    `}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Sidebar */}
+        <div className="w-64 bg-white border-r border-gray-200 flex-shrink-0 hidden md:block">
+          <div className="h-full flex flex-col">
+            <div className="p-4 border-b border-gray-200">
+              <button 
+                onClick={startNewChat}
+                className="inline-flex items-center w-full px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
+              >
+                <PlusCircle size={16} className="mr-2" />
+                New Conversation
+              </button>
+            </div>
+            
+            <div className="p-4 border-b border-gray-200">
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+                AI PROFILES
+              </h3>
+              <div className="space-y-2">
+                {aiProfiles.map(profile => (
+                  <button
+                    key={profile.id}
+                    onClick={() => setActiveProfile(profile.id)}
+                    className={`flex items-center w-full px-3 py-2 text-sm font-medium rounded-md ${
+                      activeProfile === profile.id
+                        ? 'bg-blue-50 text-blue-700'
+                        : 'text-gray-700 hover:bg-gray-50'
+                    }`}
                   >
-                    <div className={`w-9 h-9 rounded-full ${persona.color} flex items-center justify-center mr-3`}>
-                      {persona.icon}
+                    <div className="mr-3">{profile.icon}</div>
+                    <div className="text-left">
+                      <div className="font-medium">{profile.name}</div>
+                      <div className="text-xs text-gray-500 truncate max-w-[160px]">{profile.description}</div>
                     </div>
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-900">{persona.title}</h4>
-                      <p className="text-xs text-gray-500">{persona.description}</p>
-                    </div>
-                  </div>
+                  </button>
                 ))}
               </div>
             </div>
             
-            {/* Agent Capabilities */}
-            <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Capabilities</h3>
-              <div className="grid grid-cols-1 gap-3">
-                {capabilities[activeMode].map((capability, index) => (
-                  <CapabilityCard 
-                    key={index}
-                    title={capability.title}
-                    description={capability.description}
-                    icon={capability.icon}
-                    color={capability.color}
-                  />
+            <div className="p-4 border-b border-gray-200">
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+                CONTEXT TYPE
+              </h3>
+              <div className="space-y-1">
+                {contextTypes.map(context => (
+                  <button
+                    key={context.id}
+                    onClick={() => setSelectedContext(context.id)}
+                    className={`flex items-center w-full px-3 py-1.5 text-sm font-medium rounded-md ${
+                      selectedContext === context.id
+                        ? 'bg-blue-50 text-blue-700'
+                        : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    {context.name}
+                  </button>
                 ))}
+              </div>
+            </div>
+            
+            <div className="p-4 flex-1 overflow-y-auto">
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+                KNOWLEDGE BASE
+              </h3>
+              <div className="space-y-2">
+                <div className="flex items-center p-2 hover:bg-gray-50 rounded-md cursor-pointer">
+                  <FileText size={16} className="text-blue-500 mr-2" />
+                  <span className="text-sm">FDA Guidelines</span>
+                </div>
+                <div className="flex items-center p-2 hover:bg-gray-50 rounded-md cursor-pointer">
+                  <FileText size={16} className="text-blue-500 mr-2" />
+                  <span className="text-sm">EMA Requirements</span>
+                </div>
+                <div className="flex items-center p-2 hover:bg-gray-50 rounded-md cursor-pointer">
+                  <FileText size={16} className="text-blue-500 mr-2" />
+                  <span className="text-sm">ICH E6(R3)</span>
+                </div>
+                <div className="flex items-center p-2 hover:bg-gray-50 rounded-md cursor-pointer">
+                  <FileText size={16} className="text-blue-500 mr-2" />
+                  <span className="text-sm">CSR Templates</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-4 border-t border-gray-200">
+              <div className="flex items-center mb-2">
+                <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center">
+                  <Sparkles size={16} className="text-indigo-600" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-gray-900">TrialSage AI</p>
+                  <p className="text-xs text-gray-500">GPT-4o Enhanced</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Main content */}
+        <div className="flex-1 flex flex-col bg-white">
+          <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-6 lg:px-8">
+            <div className="max-w-3xl mx-auto">
+              <div className="space-y-6">
+                {messages.map((message) => (
+                  <div 
+                    key={message.id} 
+                    className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div 
+                      className={`max-w-[75%] rounded-lg px-4 py-3 ${
+                        message.role === 'user' 
+                          ? 'bg-blue-600 text-white' 
+                          : message.role === 'system'
+                            ? 'bg-indigo-100 text-indigo-800'
+                            : 'bg-gray-100 text-gray-800'
+                      }`}
+                    >
+                      <div className="flex items-center mb-2">
+                        {message.role !== 'user' && (
+                          <div className="mr-2 h-6 w-6 rounded-full bg-indigo-500 text-white flex items-center justify-center">
+                            <Bot size={14} />
+                          </div>
+                        )}
+                        <span className="font-medium text-sm">
+                          {message.role === 'user' ? 'You' : message.role === 'system' ? 'TrialSage AI' : 'AI Assistant'}
+                        </span>
+                        <span className="ml-2 text-xs opacity-70">
+                          {formatTimestamp(message.timestamp)}
+                        </span>
+                      </div>
+                      <div 
+                        className={`text-sm whitespace-pre-wrap ${
+                          message.role === 'user' ? 'text-white' : message.role === 'system' ? 'text-indigo-800' : 'text-gray-800'
+                        }`}
+                      >
+                        {message.content}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {isLoading && (
+                  <div className="flex justify-start">
+                    <div className="max-w-[75%] rounded-lg px-4 py-3 bg-gray-100">
+                      <div className="flex items-center mb-2">
+                        <div className="mr-2 h-6 w-6 rounded-full bg-indigo-500 text-white flex items-center justify-center">
+                          <Bot size={14} />
+                        </div>
+                        <span className="font-medium text-sm">
+                          AI Assistant
+                        </span>
+                        <div className="ml-2 flex items-center">
+                          <RefreshCw size={14} className="animate-spin text-gray-500" />
+                        </div>
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        Generating response...
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
               </div>
             </div>
           </div>
           
-          {/* Chat Interface */}
-          <div className="lg:col-span-3">
-            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm h-[calc(100vh-12rem)]">
-              {/* Chat Header */}
-              <div className="bg-gray-50 border-b border-gray-200 p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className={`w-8 h-8 rounded-full ${personas[activeMode].color} flex items-center justify-center mr-2`}>
-                      {personas[activeMode].icon}
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-900">{personas[activeMode].title}</h3>
-                      <p className="text-xs text-gray-500">Powered by Concept2Cures.AI</p>
-                    </div>
-                  </div>
-                  <div className="flex space-x-2">
-                    <button className="text-gray-500 hover:text-gray-700 p-1 text-xs rounded-md border border-gray-200 bg-white px-2 py-1 flex items-center">
-                      <Share2 className="h-3.5 w-3.5 mr-1" />
-                      Share
-                    </button>
-                    <button className="text-gray-500 hover:text-gray-700 p-1 text-xs rounded-md border border-gray-200 bg-white px-2 py-1 flex items-center">
-                      <Download className="h-3.5 w-3.5 mr-1" />
-                      Export
-                    </button>
+          <div className="p-4 sm:px-6 lg:px-8 border-t border-gray-200">
+            <div className="max-w-3xl mx-auto">
+              {/* Example queries */}
+              {messages.length <= 2 && (
+                <div className="mb-4">
+                  <h3 className="text-sm font-semibold text-gray-500 mb-2">Suggested prompts:</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {exampleQueries[selectedContext].map((query, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setInputValue(query)}
+                        className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-1.5 rounded-full"
+                      >
+                        {query}
+                      </button>
+                    ))}
                   </div>
                 </div>
-              </div>
+              )}
               
-              {/* Chat Messages */}
-              <div className="p-4 overflow-y-auto h-[calc(100%-8rem)]">
-                <div className="space-y-4">
-                  {messages.map(renderMessage)}
-                  <div ref={messagesEndRef} />
-                </div>
-              </div>
-              
-              {/* Chat Input */}
-              <div className="p-4 border-t border-gray-200 bg-white">
-                <div className="flex items-end">
-                  <textarea
-                    ref={inputRef}
-                    className="flex-1 border border-gray-200 rounded-lg px-3 py-2 min-h-[2.5rem] max-h-[8rem] focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
-                    placeholder={`Ask ${personas[activeMode].title.toLowerCase()} a question...`}
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onKeyDown={handleKeyPress}
-                    disabled={isProcessing}
-                    rows={1}
-                  />
+              <form onSubmit={handleSubmit} className="relative">
+                <textarea
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Ask me about regulatory requirements, document preparation, or compliance questions..."
+                  className="w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500 resize-none overflow-hidden"
+                  rows={3}
+                  disabled={isLoading}
+                />
+                <div className="absolute bottom-2 right-2 flex space-x-2">
+                  {inputValue && (
+                    <button
+                      type="button"
+                      onClick={() => setInputValue('')}
+                      className="p-2 text-gray-400 hover:text-gray-600 rounded-full"
+                    >
+                      <XCircle size={18} />
+                    </button>
+                  )}
                   <button
-                    className="ml-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
-                    onClick={handleSendMessage}
-                    disabled={!inputValue.trim() || isProcessing}
+                    type="submit"
+                    disabled={!inputValue.trim() || isLoading}
+                    className={`p-2 rounded-full ${
+                      !inputValue.trim() || isLoading
+                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                    }`}
                   >
-                    <MessageSquare className="h-5 w-5" />
+                    <Send size={18} />
                   </button>
                 </div>
-                <div className="mt-2 text-xs text-gray-500 flex items-center">
-                  <Zap className="h-3 w-3 mr-1" />
-                  <span>Powered by Concept2Cures.AI's regulatory and clinical intelligence</span>
+              </form>
+              <div className="mt-2 text-xs text-gray-500 flex items-center justify-between">
+                <div>
+                  Active Profile: <span className="font-medium">{aiProfiles.find(p => p.id === activeProfile)?.name || 'Regulatory Expert'}</span>
+                </div>
+                <div className="flex items-center">
+                  <HelpCircle size={12} className="mr-1" />
+                  <span>AI responses are generated based on available regulatory data and best practices</span>
                 </div>
               </div>
             </div>
@@ -630,4 +479,16 @@ export default function AIAdvancedAgent() {
       </div>
     </div>
   );
-}
+};
+
+// Mock component for missing icon
+const Shield = ({ className }) => {
+  return <div className={className}>🛡️</div>;
+};
+
+// Mock component for missing icon
+const FileArchive = ({ className }) => {
+  return <div className={className}>📦</div>;
+};
+
+export default AIAdvancedAgent;
