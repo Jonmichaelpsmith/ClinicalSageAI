@@ -8,8 +8,9 @@ import HomeLanding from './pages/HomeLandingProtected';
 import DebugInfo from './components/DebugInfo';
 import ErrorBoundary from './ErrorBoundary';
 import { CheckCircle, AlertTriangle, Info } from 'lucide-react';
-// Import react-toastify for modern toast notifications
-import { ToastContainer, toast } from 'react-toastify';
+// Custom toast notifications (without external dependencies)
+// import { ToastContainer, toast } from 'react-toastify';
+// Temporarily commented out to fix import issues
 
 /* ------------ Improved Toast Provider ------------- */
 export type ToastType = 'success' | 'error' | 'info';
@@ -107,10 +108,9 @@ function QCSocket() {
     let reconnectAttempts = 0;
     
     const connectWebSocket = () => {
-      const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-      // Use Express server as proxy to FastAPI WebSocket
-      const wsUrl = `${proto}://${location.host}/ws/qc`;
-      console.log(`Connecting to WebSocket at ${wsUrl}`);
+      // Use a more resilient approach that works with proxies and HTTPS
+      const wsUrl = `${window.location.origin.replace(/^http/, 'ws')}/ws/qc`;
+      console.log(`[App] Connecting to WebSocket at ${wsUrl}`);
       
       ws = new WebSocket(wsUrl);
       
@@ -208,18 +208,7 @@ export default function App() {
         </Switch>
         <DebugInfo />
         
-        {/* React Toastify container for modern toast notifications */}
-        <ToastContainer 
-          position="top-right"
-          autoClose={3000}
-          hideProgressBar={false}
-          newestOnTop
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-        />
+        {/* Temporarily removed ToastContainer */}
       </ToastProvider>
     </ErrorBoundary>
   );

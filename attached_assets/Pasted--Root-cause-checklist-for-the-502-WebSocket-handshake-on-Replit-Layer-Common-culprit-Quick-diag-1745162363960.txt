@@ -1,0 +1,72 @@
+🔍 Root‑cause checklist for the 502 / WebSocket handshake on Replit
+
+Layer	Common culprit	Quick diagnostic
+Client URL	Using hard‑coded ws://localhost… or ws://your‑repl.repl.co.	In browser console: new WebSocket(url) → 502?
+Protocol mismatch	ws:// over https origin ⇒ proxy blocks.	Build URL with (location.protocol === 'https:' ? 'wss://' : 'ws://').
+Reverse proxy (Replit Nix VM)	WebSockets must be on port 443 and path not swallowed by Vite dev proxy.	Hit https://<repl>.repl.co/ws/qc in browser → should show “WebSocket connection failed” (but 404/502 reveals path).
+FastAPI mount	Route not included in main app (e.g., app.include_router(ws_router)).	curl -I https://<repl>.repl.co/ws/qc should return 307/400, not 404.
+Uvicorn workers	Multiple workers w/out sticky sessions; Replit proxy not sticky.	Run single process: uvicorn main:app --host 0.0.0.0 --port 8000.
+
+
+
+⸻
+
+✅ Fix blueprint (Step 2)
+	1.	Build origin‑safe WS URL
+
+// utils/getWsUrl.ts
+export function getWsUrl(path = '/ws/qc') {
+  const proto = location.protocol === 'https:' ? 'wss://' : 'ws://';
+  return proto + location.host + path;
+}
+
+// useQCWebSocket.ts
+const socket = useRef<WebSocket | null>(null);
+useEffect(() => {
+  socket.current = new WebSocket(getWsUrl());
+  ...
+}, []);
+
+
+	2.	Single Uvicorn worker on Replit
+
+# run.sh
+uvicorn main:app --host 0.0.0.0 --port 8000
+
+
+	3.	Verify route inclusion
+
+from api.ws.qc import router as qc_ws
+app.include_router(qc_ws)
+
+
+	4.	Keep‑alive pings (Replit idle gateway closes idle WS after 60 s).
+
+# ws/qc.py
+while True:
+    await ws.send_text('ping')
+    await asyncio.sleep(45)
+
+
+	5.	Dev vs Prod ports
+If Vite dev is 5173 and FastAPI 8000, the browser must call FastAPI host.
+During dev, proxy through Vite config:
+
+// vite.config.ts
+server: {
+  proxy: { '/ws': 'http://localhost:8000' }
+}
+
+
+
+⸻
+
+📌 Next steps in roadmap
+
+Order	Topic	Why
+1	Ensure client uses dynamic URL (above)	Eliminates 80 % handshake errors
+2	Ping / pong keep‑alive	Avoid Replit idle drops
+3	Fallback long‑poll for firewalls	Optional (XHR / SSE)
+
+Let me know when Step 2 is solid (WS connects without 502).
+Then we’ll proceed to EU profile validation hookup (item 1 in earlier list) and bulk QC socket updates (item 3).

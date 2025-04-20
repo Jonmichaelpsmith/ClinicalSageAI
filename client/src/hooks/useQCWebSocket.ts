@@ -28,9 +28,10 @@ export const useQCWebSocket = (region = 'FDA', onMsg: (msg: any) => void) => {
       // Update status to connecting or reconnecting based on retry count
       setStatus(retryCount.current === 0 ? 'connecting' : 'reconnecting');
       
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const host = window.location.host;
-      const wsUrl = `${protocol}//${host}/ws/qc?region=${region}`;
+      // Ensure WebSocket URL works both in development and production
+      // Use the origin-based approach which is resilient to proxies and HTTPS
+      const wsUrl = `${window.location.origin.replace(/^http/, 'ws')}/ws/qc?region=${region}`;
+      console.log(`[QC WebSocket] Connecting to: ${wsUrl}`);
       
       try {
         ws.current = new WebSocket(wsUrl);
