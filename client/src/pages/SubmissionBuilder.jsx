@@ -29,8 +29,9 @@ const REGION_HINTS = {
   ],
 };
 
-export default function SubmissionBuilder({ initialRegion = 'FDA' }) {
-  const [region, setRegion] = useState(initialRegion);
+export default function SubmissionBuilder({ initialRegion = 'FDA', region: propRegion }) {
+  // Use either the passed region prop or fall back to initialRegion
+  const [region, setRegion] = useState(propRegion || initialRegion);
   const [tree, setTree] = useState([]);
   const [selected, setSelected] = useState(new Set());
   const [loading, setLoading] = useState(true);
