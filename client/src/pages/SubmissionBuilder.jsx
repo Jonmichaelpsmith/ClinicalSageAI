@@ -161,10 +161,85 @@ export default function SubmissionBuilder({ initialRegion = 'FDA', region: propR
   const [loading, setLoading] = useState(true);
   const wsRef = useRef(null);
 
-  // Load documents and setup simple WebSocket
+  // Load documents and setup WebSocket connection
   useEffect(() => {
     loadDocs();
-  }, [region]);
+    
+    // Create direct WebSocket connection to get real-time QC updates
+    const sock = new WebSocket(
+      `${location.origin.replace('http', 'ws')}/ws/qc`
+    );
+    
+    sock.onopen = () => {
+      console.log(`Direct WebSocket connected for region ${region}`);
+      
+      // Register with region for filtered updates
+      sock.send(JSON.stringify({
+        action: 'subscribe',
+        region: region
+      }));
+    };
+    
+    sock.onmessage = (e) => {
+      try {
+        const msg = JSON.parse(e.data);
+        
+        // Handle ping messages
+        if (msg.type === 'ping') {
+          sock.send(JSON.stringify({ type: 'pong', timestamp: new Date().toISOString() }));
+          return;
+        }
+        
+        console.log('Direct WebSocket message:', msg);
+        
+        // Only update the tree if we have an ID and status
+        if (msg.id || msg.document_id) {
+          const docId = msg.id || msg.document_id;
+          const status = msg.status || (msg.result === 'passed' ? 'passed' : 'failed');
+          
+          // Update the tree with the new QC status
+          setTree(prev =>
+            prev.map(n =>
+              n.id === docId
+                ? { 
+                    ...n, 
+                    data: { 
+                      ...n.data, 
+                      qc_json: { 
+                        status: status,
+                        timestamp: new Date().toISOString(),
+                        region: region 
+                      } 
+                    } 
+                  }
+                : n
+            )
+          );
+          
+          // Show a toast notification
+          toast({ 
+            message: `QC ${status} for document ${docId}`,
+            type: status === 'passed' ? 'success' : 'error'
+          });
+        }
+      } catch (err) {
+        console.error('Error processing WebSocket message:', err);
+      }
+    };
+    
+    sock.onerror = (error) => {
+      console.error('Direct WebSocket error:', error);
+    };
+    
+    sock.onclose = (event) => {
+      console.log(`Direct WebSocket closed, code: ${event.code}, reason: ${event.reason || 'unknown'}`);
+    };
+    
+    // Clean up the socket on component unmount or region change
+    return () => {
+      sock.close();
+    };
+  }, [region, toast]);
   
   // Handle messages from QC WebSocket
   const handleQCWebSocketMessage = (data) => {
@@ -259,77 +334,85 @@ export default function SubmissionBuilder({ initialRegion = 'FDA', region: propR
 
   const toast = useToast();
   
+  // Build tree helper function to create folder structure + add documents
+  const buildTree = useCallback((docs, selectedRegion) => {
+    // Start with root node
+    const nodes = [{ id: 0, parent: 0, text: 'root', droppable: true }];
+    let idCounter = -1; // For creating unique negative IDs for folders
+    const folderMap = {}; // Map folder names to their ids
+    
+    // Helper functions for building the tree
+    const makeId = () => idCounter--;
+    
+    const addFolder = (name, parent) => {
+      if (folderMap[name]) return folderMap[name];
+      const id = makeId();
+      folderMap[name] = id;
+      nodes.push({ id, parent, droppable: true, text: name });
+      return id;
+    };
+    
+    // Recursively build the folder structure
+    const buildFolders = (obj, parent) => {
+      Object.keys(obj).forEach(key => {
+        const id = addFolder(key, parent);
+        buildFolders(obj[key], id);
+      });
+    };
+    
+    // Build the folders based on the region
+    buildFolders(REGION_TREE[selectedRegion], 0);
+    
+    // Helper to find the closest matching folder for a document module
+    const closestFolder = (module) => {
+      if (!module) return 'm1'; // Default to m1 if no module
+      
+      // Get all folder keys including subfolders
+      const allKeys = Object.keys(REGION_TREE[selectedRegion]).concat(
+        ...Object.entries(REGION_TREE[selectedRegion])
+          .filter(([k, v]) => k === 'm1' && typeof v === 'object')
+          .map(([_, v]) => Object.keys(v))
+          .flat()
+      );
+      
+      // Try exact match first
+      if (allKeys.includes(module)) return module;
+      
+      // Then try prefix match
+      const prefixMatch = allKeys.find(k => module.startsWith(k));
+      if (prefixMatch) return prefixMatch;
+      
+      // Fall back to the module's main folder (like "m1" from "m1.1")
+      const mainFolder = module.split('.')[0];
+      if (allKeys.includes(mainFolder)) return mainFolder;
+      
+      // Last resort: m1
+      return 'm1';
+    };
+    
+    // Add documents to the tree under appropriate folders
+    docs.forEach(doc => {
+      const folderName = closestFolder(doc.module);
+      const folderId = folderMap[folderName] || folderMap['m1'];
+      nodes.push({ 
+        id: doc.id, 
+        parent: folderId, 
+        text: doc.title, 
+        droppable: false, 
+        data: doc 
+      });
+    });
+    
+    return nodes;
+  }, []);
+
   const loadDocs = async () => {
     setLoading(true);
     try {
       const docs = await fetchJson('/api/documents?status=approved_or_qc_failed');
       
-      // Start with root node
-      const nodes = [{ id: 0, parent: 0, text: 'root', droppable: true }];
-      let idCounter = -1; // For creating unique negative IDs for folders
-      const folderMap = {}; // Map folder names to their ids
-      
-      // Helper functions for building the tree
-      const makeId = () => idCounter--;
-      
-      const addFolder = (name, parent) => {
-        if (folderMap[name]) return folderMap[name];
-        const id = makeId();
-        folderMap[name] = id;
-        nodes.push({ id, parent, droppable: true, text: name });
-        return id;
-      };
-      
-      // Recursively build the folder structure
-      const buildFolders = (obj, parent) => {
-        Object.keys(obj).forEach(key => {
-          const id = addFolder(key, parent);
-          buildFolders(obj[key], id);
-        });
-      };
-      
-      // Build the folders based on the region
-      buildFolders(REGION_TREE[region], 0);
-      
-      // Helper to find the closest matching folder for a document module
-      const closestFolder = (module) => {
-        if (!module) return 'm1'; // Default to m1 if no module
-        
-        // Get all folder keys including subfolders
-        const allKeys = Object.keys(REGION_TREE[region]).concat(
-          ...Object.entries(REGION_TREE[region])
-            .filter(([k, v]) => k === 'm1' && typeof v === 'object')
-            .map(([_, v]) => Object.keys(v))
-            .flat()
-        );
-        
-        // Try exact match first
-        if (allKeys.includes(module)) return module;
-        
-        // Then try prefix match
-        const prefixMatch = allKeys.find(k => module.startsWith(k));
-        if (prefixMatch) return prefixMatch;
-        
-        // Fall back to the module's main folder (like "m1" from "m1.1")
-        const mainFolder = module.split('.')[0];
-        if (allKeys.includes(mainFolder)) return mainFolder;
-        
-        // Last resort: m1
-        return 'm1';
-      };
-      
-      // Add documents to the tree under appropriate folders
-      docs.forEach(doc => {
-        const folderName = closestFolder(doc.module);
-        const folderId = folderMap[folderName] || folderMap['m1'];
-        nodes.push({ 
-          id: doc.id, 
-          parent: folderId, 
-          text: doc.title, 
-          droppable: false, 
-          data: doc 
-        });
-      });
+      // Use the buildTree helper to create the tree structure
+      const nodes = buildTree(docs, region);
       
       // Update tree state
       setTree(nodes);
