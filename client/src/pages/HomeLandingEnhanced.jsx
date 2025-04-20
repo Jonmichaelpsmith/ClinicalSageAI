@@ -1,6 +1,6 @@
 // HomeLandingEnhanced.jsx – enterprise-grade landing page with hero section, metrics, features, and testimonials
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
 import { 
   FileText, 
@@ -14,9 +14,11 @@ import {
   Users,
   ArrowRight,
   Database,
-  FileSymlink
+  FileSymlink,
+  Loader2
 } from 'lucide-react';
 import AppPackagesBanner from '../components/AppPackagesBanner';
+import { apiRequest } from '../lib/queryClient';
 
 const TAGLINES = [
   'Turning Concepts into Cures – 2× faster INDs',
@@ -118,6 +120,27 @@ const AGENCIES = [
 
 export default function HomeLandingEnhanced() {
   const [location] = useLocation();
+  const [csrCount, setCsrCount] = useState(3021);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  useEffect(() => {
+    const fetchCSRCount = async () => {
+      setIsLoading(true);
+      try {
+        const response = await apiRequest('GET', '/api/reports/count');
+        const data = await response.json();
+        if (data && data.count) {
+          setCsrCount(data.count);
+        }
+      } catch (error) {
+        console.error('Error fetching CSR count:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchCSRCount();
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800">
@@ -286,8 +309,17 @@ export default function HomeLandingEnhanced() {
                   <div className="w-10 h-10 rounded-md bg-blue-100 text-blue-600 flex items-center justify-center mr-4">
                     <Database size={20} />
                   </div>
-                  <div>
-                    <h3 className="text-xl font-medium text-gray-900">CSR Intelligence</h3>
+                  <div className="flex-1">
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-xl font-medium text-gray-900">CSR Intelligence</h3>
+                      <div className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium flex items-center">
+                        {isLoading ? (
+                          <><Loader2 size={10} className="animate-spin mr-1" /> Loading...</>
+                        ) : (
+                          <>{csrCount.toLocaleString()} Reports</>
+                        )}
+                      </div>
+                    </div>
                     <p className="text-gray-600 mt-1">Deep learning-powered CSR analysis and optimization</p>
                   </div>
                 </div>
