@@ -128,10 +128,10 @@ export default function SimplifiedLandingPage() {
                     ))}
                   </ul>
                   <div className="mt-4 pt-3 border-t border-white/10">
-                    <Link to="/walkthroughs" className="text-white hover:text-blue-300 text-sm flex items-center">
+                    <div className="text-white hover:text-blue-300 text-sm flex items-center cursor-pointer">
                       <span>Watch video walkthrough</span>
                       <span className="ml-1">→</span>
-                    </Link>
+                    </div>
                   </div>
                 </div>
               </div>
