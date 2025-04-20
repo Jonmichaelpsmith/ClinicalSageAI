@@ -99,77 +99,39 @@ export const useToast = () => useContext(ToastCtx);
 /* ------------------------------------------------------------------ */
 
 // WebSocket listener inside component rendered *after* provider
+import useQCWebSocket from './hooks/useQCWebSocket';
+
 function QCSocket() {
   const toast = useToast();
   
+  // Using our enhanced QC WebSocket hook with keepalive
+  const { status } = useQCWebSocket('FDA', (data) => {
+    // Handle WebSocket messages by showing toasts
+    if (data.id && data.status) {
+      toast({
+        message: `QC ${data.status} for document ${data.id}`,
+        type: data.status === 'passed' ? 'success' : 'error'
+      });
+    } else if (data.type === 'PONG') {
+      // Ignore ping-pong messages to reduce console noise
+      console.debug('[QC WebSocket] Received pong');
+    } else {
+      console.log('[QC WebSocket] Received message:', data);
+    }
+  });
+  
+  // Show connection status changes to the user
   useEffect(() => {
-    let ws: WebSocket | null = null;
-    let reconnectTimeout: number | null = null;
-    let reconnectAttempts = 0;
-    
-    const connectWebSocket = () => {
-      // Use a more resilient approach that works with proxies and HTTPS
-      const wsUrl = `${window.location.origin.replace(/^http/, 'ws')}/ws/qc`;
-      console.log(`[App] Connecting to WebSocket at ${wsUrl}`);
-      
-      ws = new WebSocket(wsUrl);
-      
-      ws.onopen = () => {
-        console.log('QC WebSocket connected');
-        reconnectAttempts = 0;
-      };
-      
-      ws.onmessage = evt => {
-        try {
-          const data = JSON.parse(evt.data);
-          if (data.id && data.status) {
-            toast({
-              message: `QC ${data.status} for document ${data.id}`,
-              type: data.status === 'passed' ? 'success' : 'error'
-            });
-          }
-        } catch (err) {
-          console.error('Failed to parse WebSocket message:', err);
-        }
-      };
-      
-      ws.onerror = (error) => {
-        console.error('WebSocket error:', error);
-        toast({
-          message: 'QC WebSocket connection error',
-          type: 'error'
-        });
-      };
-      
-      ws.onclose = () => {
-        console.log('WebSocket connection closed, attempting to reconnect...');
-        
-        // Implement exponential backoff for reconnection
-        const delay = Math.min(2000 * Math.pow(1.5, reconnectAttempts), 30000);
-        reconnectAttempts++;
-        
-        if (reconnectTimeout) {
-          window.clearTimeout(reconnectTimeout);
-        }
-        
-        // @ts-ignore - setTimeout returns a number in browser environments
-        reconnectTimeout = window.setTimeout(connectWebSocket, delay);
-      };
-    };
-    
-    // Initial connection
-    connectWebSocket();
-    
-    // Cleanup function
-    return () => {
-      if (ws) {
-        ws.close();
-      }
-      if (reconnectTimeout) {
-        window.clearTimeout(reconnectTimeout);
-      }
-    };
-  }, [toast]);
+    if (status === 'connected') {
+      console.log('QC WebSocket connected');
+    } else if (status === 'disconnected') {
+      console.log('QC WebSocket disconnected, will retry...');
+      toast({
+        message: 'QC connection lost, reconnecting...',
+        type: 'error'
+      });
+    }
+  }, [status, toast]);
   
   return null;
 }
