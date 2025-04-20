@@ -1,11 +1,11 @@
-// SubmissionBuilder.tsx – drag‑drop tree with QC badges, bulk approve & region rule hints
+// SubmissionBuilder.jsx – drag‑drop tree with QC badges, bulk approve & region rule hints
 import React, { useEffect, useState, useRef } from 'react';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { DndProvider } from 'react-dnd';
 import { Tree } from '@minoru/react-dnd-treeview';
 import { CheckCircle, XCircle, Info } from 'lucide-react';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { useToast } from '../App';
+import update from 'immutability-helper';
 
 const REGION_FOLDERS = {
   FDA: ['m1', 'm2', 'm3', 'm4', 'm5'],
@@ -102,6 +102,8 @@ export default function SubmissionBuilder({ initialRegion = 'FDA' }) {
     };
   }, [region]);
 
+  const toast = useToast();
+  
   const loadDocs = async () => {
     setLoading(true);
     try {
@@ -118,7 +120,7 @@ export default function SubmissionBuilder({ initialRegion = 'FDA' }) {
       setTree([root, ...folders, ...items]);
     } catch (error) {
       console.error('Error loading documents:', error);
-      toast.error('Failed to load documents');
+      toast({ message: 'Failed to load documents', type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -137,10 +139,10 @@ export default function SubmissionBuilder({ initialRegion = 'FDA' }) {
         headers: { 'Content-Type': 'application/json' }, 
         body: JSON.stringify({ docs: ordered }) 
       });
-      toast.success('Order saved');
+      toast({ message: 'Order saved', type: 'success' });
     } catch (error) {
       console.error('Error saving order:', error);
-      toast.error('Failed to save order');
+      toast({ message: 'Failed to save order', type: 'error' });
     }
   };
 
@@ -157,11 +159,11 @@ export default function SubmissionBuilder({ initialRegion = 'FDA' }) {
         headers: { 'Content-Type': 'application/json' }, 
         body: JSON.stringify({ ids: Array.from(selected) }) 
       });
-      toast.info('Bulk approval/QC started');
+      toast({ message: 'Bulk approval/QC started', type: 'info' });
       setSelected(new Set());
     } catch (error) {
       console.error('Error bulk approving:', error);
-      toast.error('Failed to start bulk approval');
+      toast({ message: 'Failed to start bulk approval', type: 'error' });
     }
   };
 
@@ -245,8 +247,6 @@ export default function SubmissionBuilder({ initialRegion = 'FDA' }) {
         </button>
       </div>
       
-      {/* Toast container for notifications */}
-      <ToastContainer position="bottom-right" />
     </div>
   );
 }
