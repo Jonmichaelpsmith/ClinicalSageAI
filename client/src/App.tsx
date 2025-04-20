@@ -104,34 +104,25 @@ import useQCWebSocket from './hooks/useQCWebSocket';
 function QCSocket() {
   const toast = useToast();
   
-  // Using our enhanced QC WebSocket hook with keepalive
-  const { status } = useQCWebSocket('FDA', (data) => {
-    // Handle WebSocket messages by showing toasts
+  // Using our fallback implementation instead of real WebSocket
+  useQCWebSocket('FDA', (data) => {
+    // Handle messages by showing toasts
     if (data.id && data.status) {
       toast({
         message: `QC ${data.status} for document ${data.id}`,
         type: data.status === 'passed' ? 'success' : 'error'
       });
-    } else if (data.type === 'PONG') {
-      // Ignore ping-pong messages to reduce console noise
-      console.debug('[QC WebSocket] Received pong');
+    } else if (data.type === 'connection_established') {
+      // Show a message that we're using fallback mode
+      console.log('[QC System] Using fallback mode (WebSocket disabled)', data);
+      toast({
+        message: 'QC system in fallback mode',
+        type: 'info'
+      });
     } else {
-      console.log('[QC WebSocket] Received message:', data);
+      console.log('[QC System] Received message:', data);
     }
   });
-  
-  // Show connection status changes to the user
-  useEffect(() => {
-    if (status === 'connected') {
-      console.log('QC WebSocket connected');
-    } else if (status === 'disconnected') {
-      console.log('QC WebSocket disconnected, will retry...');
-      toast({
-        message: 'QC connection lost, reconnecting...',
-        type: 'error'
-      });
-    }
-  }, [status, toast]);
   
   return null;
 }
