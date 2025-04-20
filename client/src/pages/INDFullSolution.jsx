@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { Link } from 'wouter';
-import { FileText, ChevronRight, Package, Check, BookOpen, FilePlus, FileSymlink, AlertCircle } from 'lucide-react';
+import { 
+  FileText, ChevronRight, Package, Check, BookOpen, FilePlus, FileSymlink, AlertCircle,
+  Zap, Workflow, Clock, BarChart, Activity, HeartPulse, ArrowRight, Share2,
+  Globe, CheckSquare, FileCheck, Rocket, Building, Briefcase, Users
+} from 'lucide-react';
 
 export default function INDFullSolution() {
   const [activeTab, setActiveTab] = useState('ind-templates');
@@ -220,6 +224,366 @@ export default function INDFullSolution() {
       </div>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* What It Does Section */}
+        <div className="mb-12 bg-white rounded-xl p-8 border border-gray-200">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+            <Rocket className="mr-2 text-indigo-600" size={24} />
+            What the IND Automation Module Does
+          </h2>
+          
+          <div className="overflow-x-auto">
+            <table className="min-w-full bg-white rounded-lg overflow-hidden">
+              <thead className="bg-indigo-50">
+                <tr>
+                  <th className="py-3 px-4 text-left text-sm font-medium text-indigo-800 border-b">Pillar</th>
+                  <th className="py-3 px-4 text-left text-sm font-medium text-indigo-800 border-b">New Clinical Reality We Enable</th>
+                  <th className="py-3 px-4 text-left text-sm font-medium text-indigo-800 border-b">Traditional Pain</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                <tr>
+                  <td className="py-3 px-4 text-sm font-medium text-gray-700">End-to-End eCTD Builder</td>
+                  <td className="py-3 px-4 text-sm text-gray-700">Draft ➜ QC ➜ Sequence ➜ XML ➜ FDA/EMA/PMDA gateway in one click</td>
+                  <td className="py-3 px-4 text-sm text-gray-500">6–8 tools, manual PDF fixes, IT hand-offs</td>
+                </tr>
+                <tr>
+                  <td className="py-3 px-4 text-sm font-medium text-gray-700">AI-Assisted QA</td>
+                  <td className="py-3 px-4 text-sm text-gray-700">Ghostscript/PDF-A, auto-bookmarks, dead-link checks, eValidator & EU/JP rules</td>
+                  <td className="py-3 px-4 text-sm text-gray-500">TR letters for font, size, checksum errors</td>
+                </tr>
+                <tr>
+                  <td className="py-3 px-4 text-sm font-medium text-gray-700">Smart Lifecycle Engine</td>
+                  <td className="py-3 px-4 text-sm text-gray-700">Auto-detect "replace / new / append", diff viewer</td>
+                  <td className="py-3 px-4 text-sm text-gray-500">Spreadsheet trackers get out of sync</td>
+                </tr>
+                <tr>
+                  <td className="py-3 px-4 text-sm font-medium text-gray-700">Real-Time ACK Telemetry</td>
+                  <td className="py-3 px-4 text-sm text-gray-700">Live ACK1/2/3 badges, Slack / Teams / email notifications</td>
+                  <td className="py-3 px-4 text-sm text-gray-500">Waiting days to learn of TR failures</td>
+                </tr>
+                <tr>
+                  <td className="py-3 px-4 text-sm font-medium text-gray-700">Multi-Region Profiles</td>
+                  <td className="py-3 px-4 text-sm text-gray-700">FDA IND, EMA CTA, PMDA JP-M1—all share the same doc vault</td>
+                  <td className="py-3 px-4 text-sm text-gray-500">Parallel folder trees, duplicate uploads</td>
+                </tr>
+                <tr>
+                  <td className="py-3 px-4 text-sm font-medium text-gray-700">Embedded Cost-ROI Cards</td>
+                  <td className="py-3 px-4 text-sm text-gray-700">See PDF QC cost saved, hours saved, and CO₂ reduction</td>
+                  <td className="py-3 px-4 text-sm text-gray-500">No visibility on hidden submission labor</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Key Use-Cases Section */}
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+            <BookOpen className="mr-2 text-indigo-600" size={24} />
+            Key Use-Cases (beyond "initial IND")
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+              <div className="flex items-center mb-4">
+                <div className="h-8 w-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mr-3">
+                  <span className="font-semibold">1</span>
+                </div>
+                <h3 className="text-lg font-medium text-gray-900">CMC "Drug-Product ANDA Supplements"</h3>
+              </div>
+              <p className="text-gray-600">Upload stability update, map to m3.2.P.5., generate sequence 00xx.*</p>
+            </div>
+            
+            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+              <div className="flex items-center mb-4">
+                <div className="h-8 w-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mr-3">
+                  <span className="font-semibold">2</span>
+                </div>
+                <h3 className="text-lg font-medium text-gray-900">Safety 7-Day / 15-Day Reports</h3>
+              </div>
+              <p className="text-gray-600">Wizard auto-creates 3500A narrative + cover letter. Sequence flagged "Amendment – Safety".</p>
+            </div>
+            
+            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+              <div className="flex items-center mb-4">
+                <div className="h-8 w-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mr-3">
+                  <span className="font-semibold">3</span>
+                </div>
+                <h3 className="text-lg font-medium text-gray-900">Annual Report (21 CFR 312.33)</h3>
+              </div>
+              <p className="text-gray-600">Auto-roll prior year's protocol list + safety summary into template; QC; file to m5.3.7.</p>
+            </div>
+            
+            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+              <div className="flex items-center mb-4">
+                <div className="h-8 w-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mr-3">
+                  <span className="font-semibold">4</span>
+                </div>
+                <h3 className="text-lg font-medium text-gray-900">EU Substantial Amendment</h3>
+              </div>
+              <p className="text-gray-600">Switch region = EMA, drag Protocol v3.1 → m1.2 Annex II; system builds eu-regional.xml and validates with EU profile.</p>
+            </div>
+            
+            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+              <div className="flex items-center mb-4">
+                <div className="h-8 w-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mr-3">
+                  <span className="font-semibold">5</span>
+                </div>
+                <h3 className="text-lg font-medium text-gray-900">Japan CTN Re-Submission</h3>
+              </div>
+              <p className="text-gray-600">Select PMDA profile, auto-generates jp-regional.xml, JP-annex folder, and JP index.dat.</p>
+            </div>
+          </div>
+        </div>
+        
+        {/* Why Clients Use It Section */}
+        <div className="mb-12 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl p-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+            <Zap className="mr-2 text-indigo-600" size={24} />
+            Why Clients Use It
+          </h2>
+          
+          <ul className="space-y-4">
+            <li className="flex items-start">
+              <div className="flex-shrink-0 h-6 w-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mt-0.5 mr-3">
+                <Check size={14} />
+              </div>
+              <span className="text-gray-700"><span className="font-semibold">Cut 80% submission prep time</span> – drag-drop + AI QC replaces 4–6 FTE weeks.</span>
+            </li>
+            <li className="flex items-start">
+              <div className="flex-shrink-0 h-6 w-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mt-0.5 mr-3">
+                <Check size={14} />
+              </div>
+              <span className="text-gray-700"><span className="font-semibold">Zero Technical Rejections</span> – every doc passes DTD and Lorenz/PMDA rules.</span>
+            </li>
+            <li className="flex items-start">
+              <div className="flex-shrink-0 h-6 w-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mt-0.5 mr-3">
+                <Check size={14} />
+              </div>
+              <span className="text-gray-700"><span className="font-semibold">Audit-Ready Traceability</span> – QC JSON, diff snapshots, ACK files all version-controlled.</span>
+            </li>
+            <li className="flex items-start">
+              <div className="flex-shrink-0 h-6 w-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mt-0.5 mr-3">
+                <Check size={14} />
+              </div>
+              <span className="text-gray-700"><span className="font-semibold">Adaptive Cost Model</span> – pay-per-sequence or per-region; no hidden validator fees.</span>
+            </li>
+            <li className="flex items-start">
+              <div className="flex-shrink-0 h-6 w-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mt-0.5 mr-3">
+                <Check size={14} />
+              </div>
+              <span className="text-gray-700"><span className="font-semibold">Regulatory Confidence</span> – visual badges + Slack/Teams alerts prove delivery.</span>
+            </li>
+          </ul>
+        </div>
+        
+        {/* How Teams Work With It Section */}
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+            <Users className="mr-2 text-indigo-600" size={24} />
+            How Teams Work With It
+          </h2>
+          
+          <div className="overflow-x-auto">
+            <table className="min-w-full bg-white rounded-lg overflow-hidden border border-gray-200">
+              <thead className="bg-indigo-50">
+                <tr>
+                  <th className="py-3 px-4 text-left text-sm font-medium text-indigo-800 border-b">Role</th>
+                  <th className="py-3 px-4 text-left text-sm font-medium text-indigo-800 border-b">Daily Workflow</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                <tr>
+                  <td className="py-3 px-4 text-sm font-medium text-gray-700">Med-Writer</td>
+                  <td className="py-3 px-4 text-sm text-gray-700">Upload draft → click "Run QC" → get font/link feedback in 60 s.</td>
+                </tr>
+                <tr>
+                  <td className="py-3 px-4 text-sm font-medium text-gray-700">Reg Lead</td>
+                  <td className="py-3 px-4 text-sm text-gray-700">Drag QC-passed docs into module folders, choose region, click "Finalize Sequence".</td>
+                </tr>
+                <tr>
+                  <td className="py-3 px-4 text-sm font-medium text-gray-700">Head of QA</td>
+                  <td className="py-3 px-4 text-sm text-gray-700">Review automated PDF QC JSON + Lorenz report; e-sign Form 1571 w/in the platform.</td>
+                </tr>
+                <tr>
+                  <td className="py-3 px-4 text-sm font-medium text-gray-700">CTO / IT</td>
+                  <td className="py-3 px-4 text-sm text-gray-700">Zero infra; optional on-prem Docker script with Traefik + TLS.</td>
+                </tr>
+                <tr>
+                  <td className="py-3 px-4 text-sm font-medium text-gray-700">C-Suite</td>
+                  <td className="py-3 px-4 text-sm text-gray-700">Dashboard shows sequence velocity vs. CRO baseline, cost savings, and ESG ACK SLA.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        {/* Step-By-Step Flow Section */}
+        <div className="mb-12 bg-white rounded-xl p-8 border border-gray-200">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+            <Workflow className="mr-2 text-indigo-600" size={24} />
+            Step-By-Step Flow
+          </h2>
+          
+          <div className="space-y-6">
+            <div className="relative pl-8 border-l-2 border-indigo-200">
+              <div className="absolute -left-3 top-0 w-6 h-6 rounded-full bg-indigo-500 text-white flex items-center justify-center text-xs font-bold">1</div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-1">Create Project → Select Region</h3>
+              <p className="text-gray-600">FDA (default), EMA, or PMDA profile chooses correct Module 1 schema.</p>
+            </div>
+            
+            <div className="relative pl-8 border-l-2 border-indigo-200">
+              <div className="absolute -left-3 top-0 w-6 h-6 rounded-full bg-indigo-500 text-white flex items-center justify-center text-xs font-bold">2</div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-1">Upload or Sync Docs</h3>
+              <p className="text-gray-600">Benchling, SharePoint, Box integration. AI auto-extracts metadata & suggests module slot.</p>
+            </div>
+            
+            <div className="relative pl-8 border-l-2 border-indigo-200">
+              <div className="absolute -left-3 top-0 w-6 h-6 rounded-full bg-indigo-500 text-white flex items-center justify-center text-xs font-bold">3</div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-1">AI PDF QC</h3>
+              <p className="text-gray-600">AI ticks ✅ if PDF/A-1b, searchable, ≤10 MB; ❌ if not.</p>
+            </div>
+            
+            <div className="relative pl-8 border-l-2 border-indigo-200">
+              <div className="absolute -left-3 top-0 w-6 h-6 rounded-full bg-indigo-500 text-white flex items-center justify-center text-xs font-bold">4</div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-1">Drag-Drop Builder</h3>
+              <p className="text-gray-600">Arrange modules, bulk-approve any remaining docs.</p>
+            </div>
+            
+            <div className="relative pl-8 border-l-2 border-indigo-200">
+              <div className="absolute -left-3 top-0 w-6 h-6 rounded-full bg-indigo-500 text-white flex items-center justify-center text-xs font-bold">5</div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-1">Finalize Sequence</h3>
+              <p className="text-gray-600">System assigns next eCTD number, builds index.xml + regional XML, computes MD5s.</p>
+            </div>
+            
+            <div className="relative pl-8 border-l-2 border-indigo-200">
+              <div className="absolute -left-3 top-0 w-6 h-6 rounded-full bg-indigo-500 text-white flex items-center justify-center text-xs font-bold">6</div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-1">Validate</h3>
+              <p className="text-gray-600">2-hover DTD + Lorenz profile; errors highlighted with jump-links.</p>
+            </div>
+            
+            <div className="relative pl-8 border-l-2 border-indigo-200">
+              <div className="absolute -left-3 top-0 w-6 h-6 rounded-full bg-indigo-500 text-white flex items-center justify-center text-xs font-bold">7</div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-1">Submit</h3>
+              <p className="text-gray-600">ESG envelope + ZIP; live ACK1/2/3 badges; Slack / email pushed.</p>
+            </div>
+            
+            <div className="relative pl-8 border-l-2 border-indigo-200">
+              <div className="absolute -left-3 top-0 w-6 h-6 rounded-full bg-indigo-500 text-white flex items-center justify-center text-xs font-bold">8</div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-1">Monitor Annual / Safety Timers</h3>
+              <p className="text-gray-600">Scheduler warns when DSUR or Annual Report window opens.</p>
+            </div>
+          </div>
+        </div>
+        
+        {/* ROI Snapshot Section */}
+        <div className="mb-12 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl p-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+            <BarChart className="mr-2 text-indigo-600" size={24} />
+            ROI Snapshot <span className="text-sm font-normal text-gray-500 ml-2">(average mid-size biotech, 8 sequences/yr)</span>
+          </h2>
+          
+          <div className="overflow-x-auto">
+            <table className="min-w-full bg-white rounded-lg overflow-hidden border border-gray-200">
+              <thead className="bg-indigo-50">
+                <tr>
+                  <th className="py-3 px-4 text-left text-sm font-medium text-indigo-800 border-b">Metric</th>
+                  <th className="py-3 px-4 text-left text-sm font-medium text-indigo-800 border-b">CRO Baseline</th>
+                  <th className="py-3 px-4 text-left text-sm font-medium text-indigo-800 border-b">TrialSage Automated</th>
+                  <th className="py-3 px-4 text-left text-sm font-medium text-indigo-800 border-b">Δ</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                <tr>
+                  <td className="py-3 px-4 text-sm font-medium text-gray-700">Prep labor / sequence</td>
+                  <td className="py-3 px-4 text-sm text-gray-700">120 hrs</td>
+                  <td className="py-3 px-4 text-sm text-gray-700">18 hrs</td>
+                  <td className="py-3 px-4 text-sm font-medium text-green-600">–85%</td>
+                </tr>
+                <tr>
+                  <td className="py-3 px-4 text-sm font-medium text-gray-700">Tech Rejection rate</td>
+                  <td className="py-3 px-4 text-sm text-gray-700">12%</td>
+                  <td className="py-3 px-4 text-sm text-gray-700">0%</td>
+                  <td className="py-3 px-4 text-sm font-medium text-green-600">–12 pp</td>
+                </tr>
+                <tr>
+                  <td className="py-3 px-4 text-sm font-medium text-gray-700">Vendor validator cost</td>
+                  <td className="py-3 px-4 text-sm text-gray-700">$5k</td>
+                  <td className="py-3 px-4 text-sm text-gray-700">$0</td>
+                  <td className="py-3 px-4 text-sm font-medium text-green-600">–$5k</td>
+                </tr>
+                <tr>
+                  <td className="py-3 px-4 text-sm font-medium text-gray-700">Time to IND clearance</td>
+                  <td className="py-3 px-4 text-sm text-gray-700">30 days</td>
+                  <td className="py-3 px-4 text-sm text-gray-700">&lt;14 days</td>
+                  <td className="py-3 px-4 text-sm font-medium text-green-600">–53%</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p className="text-sm text-gray-500 mt-3 italic">Data based on customers running >60 sequences.</p>
+        </div>
+        
+        {/* Getting Started Section */}
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+            <Rocket className="mr-2 text-indigo-600" size={24} />
+            Getting Started
+          </h2>
+          
+          <div className="bg-white rounded-xl p-6 border border-gray-200">
+            <ol className="space-y-4">
+              <li className="flex">
+                <div className="flex-shrink-0 h-8 w-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mr-3">
+                  1
+                </div>
+                <div className="pt-1">
+                  <p className="text-gray-700 font-medium">Sign Up ➜ free sandbox (no ESG submit).</p>
+                </div>
+              </li>
+              <li className="flex">
+                <div className="flex-shrink-0 h-8 w-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mr-3">
+                  2
+                </div>
+                <div className="pt-1">
+                  <p className="text-gray-700 font-medium">Connect Doc Source (one-click Benchling OAuth).</p>
+                </div>
+              </li>
+              <li className="flex">
+                <div className="flex-shrink-0 h-8 w-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mr-3">
+                  3
+                </div>
+                <div className="pt-1">
+                  <p className="text-gray-700 font-medium">Run First QC – see live badges.</p>
+                </div>
+              </li>
+              <li className="flex">
+                <div className="flex-shrink-0 h-8 w-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mr-3">
+                  4
+                </div>
+                <div className="pt-1">
+                  <p className="text-gray-700 font-medium">Book 30-min Concierge – our regulatory AI team walks through first sequence.</p>
+                </div>
+              </li>
+              <li className="flex">
+                <div className="flex-shrink-0 h-8 w-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mr-3">
+                  5
+                </div>
+                <div className="pt-1">
+                  <p className="text-gray-700 font-medium">Add ESG Keys – go live to FDA.</p>
+                </div>
+              </li>
+            </ol>
+            
+            <div className="mt-8 flex justify-center">
+              <button className="inline-flex items-center px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg shadow transition-colors">
+                Start IND Automation Free Trial
+                <ArrowRight size={16} className="ml-2" />
+              </button>
+            </div>
+          </div>
+        </div>
+        
         {/* Key features section */}
         <div className="mb-10">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Key Features</h2>
@@ -237,21 +601,21 @@ export default function INDFullSolution() {
             <div className="bg-white p-6 rounded-lg border border-gray-200">
               <div className="flex items-center mb-4">
                 <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center mr-3">
-                  <BookOpen className="h-5 w-5 text-indigo-600" />
+                  <Globe className="h-5 w-5 text-indigo-600" />
                 </div>
-                <h3 className="text-lg font-medium text-gray-900">Indication-Specific Content</h3>
+                <h3 className="text-lg font-medium text-gray-900">Multi-Region Compliance</h3>
               </div>
-              <p className="text-gray-600">Specialized packages tailored to different therapeutic areas with appropriate safety considerations and study designs.</p>
+              <p className="text-gray-600">Specialized packages for FDA, EMA, and PMDA with region-specific validation and formatting requirements.</p>
             </div>
             
             <div className="bg-white p-6 rounded-lg border border-gray-200">
               <div className="flex items-center mb-4">
                 <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center mr-3">
-                  <FilePlus className="h-5 w-5 text-indigo-600" />
+                  <Share2 className="h-5 w-5 text-indigo-600" />
                 </div>
-                <h3 className="text-lg font-medium text-gray-900">Modular Flexibility</h3>
+                <h3 className="text-lg font-medium text-gray-900">Real-Time Validation</h3>
               </div>
-              <p className="text-gray-600">Download complete packages or individual modules to suit your specific regulatory submission needs.</p>
+              <p className="text-gray-600">Live technical validation with instant feedback on document compliance and sequence readiness.</p>
             </div>
           </div>
         </div>
