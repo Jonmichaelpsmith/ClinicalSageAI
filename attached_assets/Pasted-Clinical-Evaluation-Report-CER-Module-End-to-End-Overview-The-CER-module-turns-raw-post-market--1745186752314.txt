@@ -1,0 +1,132 @@
+Clinical Evaluation Report (CER) Module — End‑to‑End Overview
+
+The CER module turns raw post‑market safety data into a regulator‑ready Clinical Evaluation Report in minutes, with continuous analytics and PDF output. It is delivered as a micro‑service inside the Concepts2Cures “TrialSage” platform and integrates seamlessly with IND automation, KPI dashboards, and user SSO.
+
+⸻
+
+1. Data Ingestion & Normalization
+
+Source	What we pull	Access layer
+FDA FAERS	Drug adverse‑event counts, patient demographics, outcomes	/utils/faers_client.py (REST)
+FDA MAUDE	Device complaints, device IDs, problem codes	/utils/maude_client.py (batch XML)
+EU EUDAMED	EU device vigilance (when available)	/utils/eudamed_scraper.py
+PubMed / ClinicalTrials.gov	Literature abstracts, study outcomes for context	/utils/pubmed_client.py
+
+Each client writes raw JSON into an ingest queue, then an ETL worker (Celery) normalizes fields to a common schema (DocEvent model):
+
+event_type | product_id | date | seriousness | age | sex | narrative
+
+All data land in PostgreSQL + pgvector so the AI engine can embed and search narrative fields.
+
+⸻
+
+2. Analytics & Machine‑Learning Layer
+
+Component	Function
+Time‑series Forecaster (predictive_analytics.py)	ARIMA/Prophet forecasts for each event code (default 12 months)
+Anomaly Detector (detect_anomalies)	Rolling mean + 3σ flag for sudden spikes
+Demographic Heat‑map Generator	Aggregates counts by age‑band × sex
+Embedding Index (embed_documents.py)	Splits historical CERs & guidance docs into chunks → OpenAI text‑embedding‑3‑small → pgvector
+
+
+
+⸻
+
+3. Narrative Generation Service
+
+FastAPI micro‑service (cer_narrative.py) exposes three main endpoints:
+
+Endpoint	Purpose
+GET /api/narrative/faers/{ndc}	Drug‑only CER (FAERS + literature)
+GET /api/narrative/device/{gmdn}	Device‑only CER (MAUDE + EUDAMED)
+POST /api/narrative/multi	Cross‑product CER (multiple NDCs / device codes)
+
+Prompt strategy
+	1.	System seed summarises ISO 14155 & MDCG guidance (“Write in third‑person, include benefit‑risk ratio …”).
+	2.	Retrieval pulls the top‑5 relevant chunks from the embedding index.
+	3.	Structured user‑message passes:
+      •   Executive summary bullet points (from analytics)
+      •   Tables of top 5 events + counts
+      •   Forecast graph data (base‑64 line chart)
+	4.	GPT‑4‑Turbo 128K returns 3‑section draft:
+      •   Safety Trends & Signal Detection
+      •   Benefit‑Risk Assessment (ISO 14971 language)
+      •   Corrective / Preventive Action recommendations
+
+⸻
+
+4. PDF & DOCX Renderer
+
+/utils/pdf_renderer.py
+   •   Uses ReportLab to lay out the GPT text, analytics charts, and boiler‑plate headings.
+   •   Stamps footer with date + auto‑generated control number.
+   •   Saves to /mnt/data/cer_reports/{hash}.pdf.
+
+⸻
+
+5. Caching & Performance
+
+Layer	TTL	Purpose
+Redis	1 hour	Stores narrative JSON & rendered PDF so repeated calls return < 500 ms
+In‑memory fallback	15 min	Keeps dev environments running without Redis
+
+
+
+⸻
+
+6. REST / GraphQL API Surface
+
+GET  /api/cer/metrics/{code}?since=2023-01-01   → JSON analytics blobs
+GET  /api/narrative/...                         → Markdown narrative
+GET  /api/narrative/.../pdf                     → Binary PDF
+POST /api/cer/compare                           → Multi‑product analytics + forecasts
+
+All endpoints inherit JWT auth & RBAC scopes (cer:read, cer:write).
+
+⸻
+
+7. React Front‑End
+   •   AdvancedDashboard.jsx
+      •   Ten interactive charts (bar, line, heat‑map, gauge) rendered with Plotly.
+      •   Drill‑down side panel shows raw case narratives.
+      •   NLP query bar calls /api/cer/nlp-query (OpenAI function‑calling) for “Show trends in patients > 60”.
+   •   CERGenerator.jsx
+      •   Tabbed UI for Drug / Device / Multi‑source.
+      •   “Generate PDF” button streams /pdf endpoint and auto‑downloads.
+   •   Compliance Insights Dashboard
+      •   Weekly push‑to‑Teams / email of new anomalies.
+
+⸻
+
+8. Validation & QC
+	1.	PDF QC (pdf_qc.py) ensures every narrative PDF is searchable, PDF/A‑1b, < 10 MB, and bookmarked.
+	2.	Regulatory checklist stored in cer_checklist.json — gates “Release to client” until all ISO‑/TR 20416 fields are present.
+	3.	Audit trail (DocEventHistory) logs every generation with user, model‑version, and analytics snapshot (GxP compliant).
+
+⸻
+
+9. User Flow Summary
+	1.	Select product(s) → Choose Drug NDC / Device code(s)
+	2.	(Optional) Set date window & demographic filter
+	3.	Click “Generate CER”
+	4.	< 20 s later UI shows draft narrative + all analytics; user can download PDF or edit in Word.
+	5.	Sign‑off → CER locked and revision stored; can be attached to IND module 5 or PMA supplement.
+
+⸻
+
+10. Deployment & Ops
+   •   Micro‑service container (cer-service) behind API‑gateway.
+   •   Horizontal scalable via Kubernetes HPA (CPU + queue length).
+   •   Celery + Redis worker pool for long‑running forecasts.
+   •   All PII is stripped; only de‑identified FDA data stored.
+   •   SOC2 audit logs routed to ELK.
+
+⸻
+
+Key Value to Clients
+   •   Days → Minutes to produce regulator‑grade CERs.
+   •   Eliminates manual Excel pivot‑tables and Word templating.
+   •   Continuous safety surveillance with ML‑based anomaly alerts.
+   •   Harmonised output that matches FDA, EU MDR Annex II, and ISO 14155 expectations.
+
+The module is GA‑ready, validated, and already plumbed into the broader IND/eCTD workflow so clients can drop a CER PDF straight into Module 5 of their next sequence.
