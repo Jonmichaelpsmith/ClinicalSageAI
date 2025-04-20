@@ -4,9 +4,10 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { DndProvider } from 'react-dnd';
 import { Tree } from '@minoru/react-dnd-treeview';
 import { CheckCircle, XCircle, Info, AlertTriangle } from 'lucide-react';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import update from 'immutability-helper';
 import { useQCWebSocket } from '../hooks/useQCWebSocket';
+import 'react-toastify/dist/ReactToastify.css';
 
 // Region‑specific folder hierarchy definitions
 const REGION_TREE = {
