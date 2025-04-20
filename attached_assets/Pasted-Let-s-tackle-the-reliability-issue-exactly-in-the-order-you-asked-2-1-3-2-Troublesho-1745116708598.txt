@@ -1,0 +1,90 @@
+Let’s tackle the reliability issue exactly in the order you asked — (2) → (1) → (3).
+
+2 ⟶ Troubleshoot the FastAPI ↔ Express connection
+
+Check‑point	What to verify	Quick fix if failing
+Port clashes	Make sure FastAPI’s UVICORN_PORT and Express’s PORT are different (e.g., 8001 & 3000).	Update .env or process.env.PORT in server/index.js.
+Reverse‑proxy rules	Express (or Vite dev server) should forward /api/** to FastAPI once. Duplicate proxies cause random 502s.	In vite.config.ts add only one proxy entry; remove older http‑proxy‑middleware.
+CORS	FastAPI must allow the frontend origin.	In main.py: app.add_middleware(CORSMiddleware, allow_origins=['*'], allow_methods=['*']) (tighten later).
+Graceful starts	If Replit starts Express first, FastAPI may still be building wheels → first proxy call fails.	Add a health‑check route in FastAPI (/livez) and have Express poll until it returns 200 before setting proxy target ready.
+Concurrent logging	Mix of console.log (Express) and uvicorn logs often hides crash.	Pipe both to a single logger (e.g., pino) or prefix logs with [API] / [WEB].
+Minimal reproduction test
+bash
+Copy
+Edit
+# tab 1
+uvicorn main:app --port 8001 --reload
+# tab 2
+npm run dev
+# tab 3
+curl -i http://localhost:3000/api/health
+If that hangs intermittently, note the timestamp and grep both logs. 90 % of the time it’s a port or proxy timing issue.
+
+1 ⟶ Unified workflow configuration
+Once the root‑cause above is fixed, create a single dev/start command so Replit (or Docker Compose) brings up both layers deterministically.
+
+package.json (frontend root)
+jsonc
+Copy
+Edit
+{
+  "scripts": {
+    "dev:api": "uvicorn main:app --reload --port 8001",
+    "dev:web": "vite",
+    "dev": "concurrently -k -n api,web -c green,cyan \"npm:dev:api\" \"npm:dev:web\""
+  },
+  "devDependencies": { "concurrently": "^8" }
+}
+docker-compose.dev.yaml
+yaml
+Copy
+Edit
+services:
+  api:
+    build: ./server
+    command: uvicorn main:app --reload --host 0.0.0.0 --port 8001
+    volumes: [./server:/app]
+    environment: [PYTHONUNBUFFERED=1]
+
+  web:
+    build: ./client
+    command: npm run dev
+    ports: ["3000:3000"]
+    volumes: [./client:/app]
+    environment:
+      VITE_API_BASE: http://localhost:8001
+    depends_on: [api]
+Why not one container? Hot‑reload of TypeScript (Vite) and Python (Uvicorn) inside the same container fights for signals; two slim containers keep feedback loop crisp.
+
+3 ⟶ Move on to the next feature
+With the servers stable and a one‑click npm run dev (or docker compose up) starting everything, we can:
+
+Hook the EU / JP validation profiles into the new region flow, or
+
+Finish the socket push for QC events to live‑refresh the drag‑drop builder.
+
+Recommended next action
+Run the port‑clash & proxy timing checks above.
+
+Commit the unified concurrently script (or Compose file).
+
+Ping me with any remaining error lines — I’ll zero in on those.
+
+When the servers start reliably twice in a row, we jump straight to integrating the EU / JP eValidator profiles.
+
+
+
+
+
+
+
+
+
+
+Search
+
+Deep research
+
+
+
+ChatGPT ca

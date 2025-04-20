@@ -1,0 +1,117 @@
+➋ Install react-router-dom (v6) & remove wouter
+Install react‑router‑dom (and its types if you use TS):
+
+bash
+Copy
+Edit
+npm install react-router-dom@6
+# optional for TS
+npm install -D @types/react-router-dom
+Remove wouter from package.json (to keep the packager from pulling it):
+
+bash
+Copy
+Edit
+npm uninstall wouter
+If Replit’s packager re‑adds it, add a line in .npmrc
+ignore-workspace-root-check=true and delete the entry from dependencies.
+
+➊ Replace App.tsx with a React‑Router layout
+Below is a drop‑in, production‑ready client/src/App.tsx that:
+
+Uses React‑Router v6 (BrowserRouter, Routes, Route)
+
+Defines all main pages (HomeLanding, SubmissionBuilder, IndSequenceDetail, etc.)
+
+Keeps your dark‑mode & i18n providers intact
+
+tsx
+Copy
+Edit
+// App.tsx – main router shell
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { I18nextProvider } from 'react-i18next';
+import i18n from './i18n';
+
+import HomeLanding from './pages/HomeLanding';
+import SubmissionBuilder from './pages/SubmissionBuilder';
+import IndSequenceManager from './ind/IndSequenceManager';
+import IndSequenceDetail from './pages/IndSequenceDetail';
+
+export default function App() {
+  return (
+    <I18nextProvider i18n={i18n}>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/"            element={<HomeLanding />} />
+          <Route path="/builder"     element={<SubmissionBuilder />} />
+          <Route path="/ind"         element={<IndSequenceManager />} />
+          <Route path="/ind/:sequenceId" element={<IndSequenceDetail />} />
+          {/* fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </I18nextProvider>
+  );
+}
+(Adjust imports if your component paths differ.)
+
+➌ Update main.tsx (or index.tsx) once
+Make sure the root render wraps only with <App />; remove any Router that might have been added for wouter.
+
+tsx
+Copy
+Edit
+// main.tsx (Vite)
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import './index.css';
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+➍ Run & verify
+bash
+Copy
+Edit
+npm run dev
+/ → HomeLanding
+
+/builder → Drag‑and‑drop Submission Builder
+
+/ind → Region‑aware Sequence Planner
+
+/ind/0003 → Sequence detail (with XML validation, ESG badges)
+
+You’re now fully on React‑Router—no mix of wouter left.
+
+Next milestones (after router switch):
+
+Socket client for QC event‑bus (/ws/qc) → live badge updates.
+
+EU & JP profile validation toggle in detail page.
+
+CSV IQ/OQ protocol generator.
+
+Let me know which you’d like to knock out next!
+
+
+
+
+
+
+
+
+
+
+Search
+
+Deep research
+
+
+
+ChatGPT can make mistakes. Chec

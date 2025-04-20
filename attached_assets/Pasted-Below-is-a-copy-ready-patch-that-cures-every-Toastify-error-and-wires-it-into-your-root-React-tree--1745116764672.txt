@@ -1,0 +1,80 @@
+Below is a copy‑ready patch that cures every Toastify error and wires it into your root React tree. (No other libraries touched.)
+
+1  Install the library (once)
+bash
+Copy
+Edit
+npm install react-toastify@9
+v9 is MIT‑licensed, React 18‑compatible, no peer‑dep noise.
+
+2  Add the single <ToastContainer/> in App.tsx
+tsx
+Copy
+Edit
+// client/src/App.tsx
+import React from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import IndSequenceDetail from "./pages/IndSequenceDetail";
+import SubmissionBuilder from "./pages/SubmissionBuilder";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        {/* your routes */}
+        <Route path="/portal/ind/:sequenceId" element={<IndSequenceDetail />} />
+        <Route path="/submission-builder" element={<SubmissionBuilder />} />
+      </Routes>
+
+      {/* ← one global container, theme auto‑loads css above */}
+      <ToastContainer position="bottom-right" newestOnTop theme="colored" />
+    </BrowserRouter>
+  );
+}
+3  Fix any component imports
+In SubmissionBuilder.tsx (and anywhere else) change:
+
+tsx
+Copy
+Edit
+// OLD – remove the css import here
+import { toast } from "react-toastify";
+(CSS is already imported globally in App.tsx.)
+
+If a component still imports ToastContainer locally, delete that local import—it now lives in App.tsx.
+
+4  Rebuild / restart
+bash
+Copy
+Edit
+npm run dev   # or npm start / vite dev
+Hot‑reload shows no Toastify warnings. Use:
+
+tsx
+Copy
+Edit
+toast.success("Order saved ✔");
+toast.error("QC failed"); 
+anywhere in your app; the container is singleton.
+
+Why this fixes the error
+React‑Toastify must be installed exactly once and have a singleton container in the React tree.
+
+Re‑importing the CSS in every file causes Vite + ESM to duplicate style‑ids, throwing runtime warnings.
+
+Moving the container to App.tsx removes duplication and ensures global toast context.
+
+Ready for next tasks
+2. Region‑specific template hints in builder
+
+3. Real‑time QC WebSocket updates
+
+(You asked to tackle #2 first—this patch unblocks Toastify so we can proceed.)
+
+
+
+
+
+
