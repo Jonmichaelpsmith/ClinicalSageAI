@@ -146,7 +146,17 @@ export default function App() {
               <HomeLanding />
             </ErrorBoundary>
           </Route>
-          <Route path="/products">
+          <Route path="/ind-architect">
+            <ErrorBoundary>
+              <HomeLanding />
+            </ErrorBoundary>
+          </Route>
+          <Route path="/csr-intelligence">
+            <ErrorBoundary>
+              <HomeLanding />
+            </ErrorBoundary>
+          </Route>
+          <Route path="/portal">
             <ErrorBoundary>
               <HomeLanding />
             </ErrorBoundary>

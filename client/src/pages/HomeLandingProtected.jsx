@@ -304,7 +304,7 @@ export default function HomeLanding() {
           </div>
           <nav className="hidden md:flex items-center space-x-6">
             <Link to="/solutions" className="text-gray-600 hover:text-emerald-600 dark:text-gray-300 font-medium">Solutions</Link>
-            <Link to="/reports" className="text-gray-600 hover:text-emerald-600 dark:text-gray-300 font-medium">Report Library</Link>
+            <Link to="/ind-architect" className="text-gray-600 hover:text-emerald-600 dark:text-gray-300 font-medium">IND Architect</Link>
             <Link to="/csr-intelligence" className="text-gray-600 hover:text-emerald-600 dark:text-gray-300 font-medium">CSR Intelligence</Link>
             <Link to="/portal" className="text-gray-600 hover:text-emerald-600 dark:text-gray-300 font-medium">Client Portal</Link>
             <Link to="/builder" className="px-5 py-2.5 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-700 text-white hover:from-emerald-700 hover:to-teal-800 shadow-md font-medium transition-all">
@@ -330,10 +330,10 @@ export default function HomeLanding() {
                 Trusted by 80+ Biotechs & Pharma Companies
               </div>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight text-gray-900 dark:text-white mb-6">
-                Transform Concepts <br/>Into <span className="gradient-text">Cures</span> <br/>10× Faster
+                Clinical Trials. <br/><span className="gradient-text">Regulated Intelligence.</span> <br/>Fully Automated.
               </h1>
               <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-xl">
-                TrialSage® unifies AI‑driven protocol design, regulatory authoring & eCTD submission—delivering approved therapies at unprecedented speed.
+                TrialSage® unifies AI-powered IND submissions, CER generation, CSR analysis, and study design—purpose-built for biotech.
               </p>
               <div className="flex flex-wrap gap-4">
                 <Link to="/builder" className="px-6 py-3 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-700 text-white hover:from-emerald-700 hover:to-teal-800 shadow-lg flex items-center gap-2 font-medium transition-all">
