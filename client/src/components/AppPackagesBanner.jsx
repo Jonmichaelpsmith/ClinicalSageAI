@@ -15,7 +15,9 @@ import {
   ChevronRight,
   ExternalLink,
   Globe,
-  Library
+  Library,
+  Bot,
+  Sparkles
 } from 'lucide-react';
 
 // Clean, simplified module tile component
@@ -156,6 +158,13 @@ export default function AppPackagesBanner({ currentPath }) {
       to: "/client-portal",
       icon: <User size={18} />,
       color: "bg-rose-600 hover:bg-rose-700"
+    },
+    {
+      label: "AI Co-pilot",
+      description: "Advanced AI assistance",
+      to: "/ai-agent",
+      icon: <Bot size={18} />,
+      color: "bg-violet-600 hover:bg-violet-700"
     }
   ];
 
@@ -282,6 +291,18 @@ export default function AppPackagesBanner({ currentPath }) {
                       <div className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
                         <FileText size={16} className="mr-2 text-blue-500" />
                         Lumen Bio Reports
+                      </div>
+                    </Link>
+                    <Link to="/client-portal">
+                      <div className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                        <User size={16} className="mr-2 text-rose-500" />
+                        Client Access Portal
+                      </div>
+                    </Link>
+                    <Link to="/ai-agent">
+                      <div className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                        <Bot size={16} className="mr-2 text-violet-500" />
+                        AI Co-pilot
                       </div>
                     </Link>
                   </div>
