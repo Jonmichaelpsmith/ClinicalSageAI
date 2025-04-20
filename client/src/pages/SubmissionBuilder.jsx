@@ -8,6 +8,121 @@ import { useToast } from '../App';
 import update from 'immutability-helper';
 import { useQCWebSocket } from '../hooks/useQCWebSocket';
 
+// Region‑specific folder hierarchy definitions
+const REGION_TREE = {
+  FDA: { 
+    m1: { 
+      'm1.1': { 'cover-letter': {} }, 
+      'm1.2': { 'form-1571': {}, 'form-3674': {} }, 
+      'm1.3': { 'administrative-information': {} },
+      'm1.4': { 'references': {} },
+      'm1.5': { 'promotional-materials': {} }
+    }, 
+    m2: { 
+      'm2.1': { 'toc': {} },
+      'm2.2': { 'introduction': {} },
+      'm2.3': { 'quality-summary': {} },
+      'm2.4': { 'non-clinical-summary': {} },
+      'm2.5': { 'clinical-summary': {} },
+      'm2.6': { 'non-clinical-written-summaries': {} },
+      'm2.7': { 'clinical-summary': {} }
+    }, 
+    m3: { 
+      'm3.1': { 'toc': {} },
+      'm3.2': { 'body-of-data': {} },
+      'm3.3': { 'literature-references': {} }
+    }, 
+    m4: { 
+      'm4.1': { 'toc': {} },
+      'm4.2': { 'study-reports': {} },
+      'm4.3': { 'literature-references': {} }
+    }, 
+    m5: { 
+      'm5.1': { 'toc': {} },
+      'm5.2': { 'tabular-listings': {} },
+      'm5.3': { 'clinical-study-reports': {} },
+      'm5.4': { 'literature-references': {} }
+    } 
+  },
+  EMA: {
+    m1: { 
+      'm1.0': { 'cover-letter': {} }, 
+      'm1.1': { 'leaflets': {} }, 
+      'm1.2': { 'application-form': {} }, 
+      'm1.3': { 'product-information': {} }, 
+      'm1.4': { 'experts': {} }, 
+      'm1.5': { 'specific-requirements': {} },
+      'asmf': { 'active-substance-master-file': {} }
+    },
+    m2: { 
+      'm2.1': { 'toc': {} },
+      'm2.2': { 'introduction': {} },
+      'm2.3': { 'quality-summary': {} },
+      'm2.4': { 'non-clinical-summary': {} },
+      'm2.5': { 'clinical-summary': {} },
+      'm2.6': { 'non-clinical-written-summaries': {} },
+      'm2.7': { 'clinical-summary': {} }
+    },
+    m3: { 
+      'm3.1': { 'toc': {} },
+      'm3.2': { 'body-of-data': {} },
+      'm3.3': { 'literature-references': {} }
+    },
+    m4: { 
+      'm4.1': { 'toc': {} },
+      'm4.2': { 'study-reports': {} },
+      'm4.3': { 'literature-references': {} }
+    },
+    m5: { 
+      'm5.1': { 'toc': {} },
+      'm5.2': { 'tabular-listings': {} },
+      'm5.3': { 'clinical-study-reports': {} },
+      'm5.4': { 'literature-references': {} }
+    },
+    'application-form': { 'eu-application-form': {} }
+  },
+  PMDA: {
+    m1: { 
+      'm1.1': { 'application-form': {} }, 
+      'm1.2': { 'approval-certificates': {} }, 
+      'm1.3': { 'labeling': {} }, 
+      'm1.4': { 'outline-of-data': {} },
+      'm1.5': { 'risk-management-plan': {} }
+    },
+    m2: { 
+      'm2.1': { 'toc': {} },
+      'm2.2': { 'introduction': {} },
+      'm2.3': { 'quality-summary': {} },
+      'm2.4': { 'non-clinical-summary': {} },
+      'm2.5': { 'clinical-summary': {} },
+      'm2.6': { 'non-clinical-written-summaries': {} },
+      'm2.7': { 'clinical-summary': {} }
+    },
+    m3: { 
+      'm3.1': { 'toc': {} },
+      'm3.2': { 'body-of-data': {} },
+      'm3.3': { 'literature-references': {} }
+    },
+    m4: { 
+      'm4.1': { 'toc': {} },
+      'm4.2': { 'study-reports': {} },
+      'm4.3': { 'literature-references': {} }
+    },
+    m5: { 
+      'm5.1': { 'toc': {} },
+      'm5.2': { 'tabular-listings': {} },
+      'm5.3': { 'clinical-study-reports': {} },
+      'm5.4': { 'literature-references': {} }
+    },
+    'jp-annex': { 
+      'jp-a1': { 'jp-specific-data': {} },
+      'jp-a2': { 'jp-validation-data': {} },
+      'jp-data': { 'translations': {} }
+    }
+  }
+};
+
+// For backward compatibility
 const REGION_FOLDERS = {
   FDA: ['m1', 'm2', 'm3', 'm4', 'm5'],
   EMA: ['m1', 'm2', 'm3', 'm4', 'm5', 'application-form'],
@@ -16,17 +131,25 @@ const REGION_FOLDERS = {
 
 const REGION_HINTS = {
   FDA: [
-    '✓ Form 1571 must be in m1.1',
-    '✓ Form 3674 (clinicaltrials.gov) required in m1.5',
-    '✓ Cover letter PDF <10 MB',
+    '✓ Form 1571 must be in m1.2/form-1571 folder',
+    '✓ Form 3674 (clinicaltrials.gov) required in m1.2/form-3674 folder',
+    '✓ Cover letter must be in m1.1/cover-letter and PDF < 10 MB',
+    '✓ Clinical study reports should be placed in m5.3/clinical-study-reports',
+    '✓ Follows FDA eCTD 3.2.2 validation rules',
   ],
   EMA: [
-    '✓ "Application Form" PDF required in application-form folder',
-    '✓ Letter of Access in m1.2',
+    '✓ EU Application Form PDF required in application-form/eu-application-form folder',
+    '✓ Letter of Authorization must be in m1.2/application-form',
+    '✓ Active Substance Master File should be in m1/asmf folder',
+    '✓ Product Information Annexes I-III must be in m1.3/product-information',
+    '✓ Follows EU eCTD 3.2.2 technical validation criteria',
   ],
   PMDA: [
     '✓ JP Annex PDF must be placed in jp-annex folder',
-    '✓ Japanese IB translation required in m1.3',
+    '✓ Japanese translations required in jp-annex/jp-data/translations',
+    '✓ Application form must be in m1.1/application-form',
+    '✓ Risk Management Plan required in m1.5/risk-management-plan',
+    '✓ Follows JP eCTD 1.0 technical validation requirements',
   ],
 };
 
@@ -83,13 +206,29 @@ export default function SubmissionBuilder({ initialRegion = 'FDA', region: propR
   // Set up the region-aware WebSocket connection
   const { send } = useQCWebSocket(region, handleQCWebSocketMessage);
   
-  // When region changes, report it to the user
+  // When region changes, report it to the user and show appropriate validation profile
   useEffect(() => {
+    // Show notification about region change
+    const regionProfiles = {
+      'FDA': 'FDA_eCTD_3.2.2',
+      'EMA': 'EU_eCTD_3.2.2',
+      'PMDA': 'JP_eCTD_1.0'
+    };
+    
     toast({ 
-      message: `Connected to ${region} QC updates`, 
+      message: `Switched to ${region} region with ${regionProfiles[region]} validation profile`, 
       type: 'info' 
     });
-  }, [region]);
+    
+    // Send region info to the backend QC service
+    if (send) {
+      send({
+        type: 'SET_REGION',
+        region: region,
+        profile: regionProfiles[region]
+      });
+    }
+  }, [region, send]);
 
   const toast = useToast();
   
@@ -97,16 +236,82 @@ export default function SubmissionBuilder({ initialRegion = 'FDA', region: propR
     setLoading(true);
     try {
       const docs = await fetchJson('/api/documents?status=approved_or_qc_failed');
-      const root = { id: 0, parent: 0, text: 'root', droppable: true };
-      const folders = REGION_FOLDERS[region].map((m, i) => ({ id: 10000 + i, parent: 0, text: m, droppable: true }));
-      const items = docs.map(d => ({ 
-        id: d.id, 
-        parent: folders.find(f => d.module?.startsWith(f.text))?.id || folders[0].id, 
-        text: d.title, 
-        droppable: false, 
-        data: d 
-      }));
-      setTree([root, ...folders, ...items]);
+      
+      // Start with root node
+      const nodes = [{ id: 0, parent: 0, text: 'root', droppable: true }];
+      let idCounter = -1; // For creating unique negative IDs for folders
+      const folderMap = {}; // Map folder names to their ids
+      
+      // Helper functions for building the tree
+      const makeId = () => idCounter--;
+      
+      const addFolder = (name, parent) => {
+        if (folderMap[name]) return folderMap[name];
+        const id = makeId();
+        folderMap[name] = id;
+        nodes.push({ id, parent, droppable: true, text: name });
+        return id;
+      };
+      
+      // Recursively build the folder structure
+      const buildFolders = (obj, parent) => {
+        Object.keys(obj).forEach(key => {
+          const id = addFolder(key, parent);
+          buildFolders(obj[key], id);
+        });
+      };
+      
+      // Build the folders based on the region
+      buildFolders(REGION_TREE[region], 0);
+      
+      // Helper to find the closest matching folder for a document module
+      const closestFolder = (module) => {
+        if (!module) return 'm1'; // Default to m1 if no module
+        
+        // Get all folder keys including subfolders
+        const allKeys = Object.keys(REGION_TREE[region]).concat(
+          ...Object.entries(REGION_TREE[region])
+            .filter(([k, v]) => k === 'm1' && typeof v === 'object')
+            .map(([_, v]) => Object.keys(v))
+            .flat()
+        );
+        
+        // Try exact match first
+        if (allKeys.includes(module)) return module;
+        
+        // Then try prefix match
+        const prefixMatch = allKeys.find(k => module.startsWith(k));
+        if (prefixMatch) return prefixMatch;
+        
+        // Fall back to the module's main folder (like "m1" from "m1.1")
+        const mainFolder = module.split('.')[0];
+        if (allKeys.includes(mainFolder)) return mainFolder;
+        
+        // Last resort: m1
+        return 'm1';
+      };
+      
+      // Add documents to the tree under appropriate folders
+      docs.forEach(doc => {
+        const folderName = closestFolder(doc.module);
+        const folderId = folderMap[folderName] || folderMap['m1'];
+        nodes.push({ 
+          id: doc.id, 
+          parent: folderId, 
+          text: doc.title, 
+          droppable: false, 
+          data: doc 
+        });
+      });
+      
+      // Update tree state
+      setTree(nodes);
+      setSelected(new Set());
+      
+      toast({ 
+        message: `Loaded documents for ${region} region`, 
+        type: 'info' 
+      });
     } catch (error) {
       console.error('Error loading documents:', error);
       toast({ message: 'Failed to load documents', type: 'error' });
@@ -168,14 +373,54 @@ export default function SubmissionBuilder({ initialRegion = 'FDA', region: propR
       );
     }
     
+    // Render document node with QC status badge
+    const qcStatus = node.data?.qc_json?.status;
+    const qcRegion = node.data?.qc_json?.region;
+    const hasRegionSpecificQC = qcRegion === region;
+    
+    // Define QC badge rendering based on status and region
+    let QcBadge = null;
+    
+    if (qcStatus === 'passed' && hasRegionSpecificQC) {
+      QcBadge = <CheckCircle size={14} className="text-success" />;
+    } else if (qcStatus === 'failed' && hasRegionSpecificQC) {
+      QcBadge = <XCircle size={14} className="text-danger" />;
+    } else if (qcStatus === 'passed') {
+      // Passed but for another region - show info icon instead
+      QcBadge = <CheckCircle size={14} className="text-secondary" />;
+    } else if (qcStatus === 'failed') {
+      // Failed but for another region
+      QcBadge = <XCircle size={14} className="text-secondary" />;
+    } else if (qcStatus === 'in_progress') {
+      QcBadge = <AlertTriangle size={14} className="text-warning" />;
+    } else {
+      // No QC status yet
+      QcBadge = <Info size={14} className="text-secondary" />;
+    }
+    
     return (
       <div style={{ marginLeft: depth * 16 }} className="d-flex align-items-center gap-2 py-1">
-        <input type="checkbox" checked={selected.has(node.id)} onChange={() => toggleSelect(node.id)} />
-        {node.data?.qc_json?.status === 'passed' ? 
-          <CheckCircle size={14} className="text-success" /> : 
-          <XCircle size={14} className="text-danger" />
-        }
-        <span>{node.text}</span>
+        <input 
+          type="checkbox" 
+          checked={selected.has(node.id)} 
+          onChange={() => toggleSelect(node.id)} 
+          aria-label={`Select ${node.text}`}
+        />
+        
+        <div className="position-relative" style={{ width: 18, height: 18 }}>
+          {QcBadge}
+          {qcStatus && !hasRegionSpecificQC && (
+            <span 
+              className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-secondary" 
+              style={{ fontSize: '0.6rem', padding: '2px 4px', transform: 'translate(-50%, -50%)' }}
+              title={`QC from ${qcRegion || 'unknown'} region`}
+            >
+              {qcRegion || '?'}
+            </span>
+          )}
+        </div>
+        
+        <span className={qcStatus === 'failed' && hasRegionSpecificQC ? 'text-danger' : ''}>{node.text}</span>
       </div>
     );
   };

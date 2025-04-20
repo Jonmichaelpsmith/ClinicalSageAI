@@ -1,4 +1,9 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+
+/**
+ * Connection status types for the WebSocket connection
+ */
+export type ConnectionStatus = 'connected' | 'connecting' | 'disconnected' | 'reconnecting';
 
 /**
  * Region-aware Quality Control WebSocket hook
@@ -8,16 +13,21 @@ import { useEffect, useRef } from 'react';
  * 
  * @param region - The regulatory region to subscribe to ('FDA', 'EMA', 'PMDA')
  * @param onMsg - Callback function for handling incoming messages
+ * @returns Object with send method and connection status
  */
 export const useQCWebSocket = (region = 'FDA', onMsg: (msg: any) => void) => {
   const ws = useRef<WebSocket>();
+  const [status, setStatus] = useState<ConnectionStatus>('connecting');
+  const retryCount = useRef(0);
   
   useEffect(() => {
-    let retry = 0;
     const maxRetryDelay = 30000; // Max retry delay of 30 seconds
     let isComponentMounted = true;
     
     const connect = () => {
+      // Update status to connecting or reconnecting based on retry count
+      setStatus(retryCount.current === 0 ? 'connecting' : 'reconnecting');
+      
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
       const host = window.location.host;
       const wsUrl = `${protocol}//${host}/ws/qc?region=${region}`;
@@ -27,7 +37,16 @@ export const useQCWebSocket = (region = 'FDA', onMsg: (msg: any) => void) => {
         
         ws.current.onopen = () => {
           console.log(`QC WebSocket connected for region: ${region}`);
-          retry = 0; // Reset retry counter on successful connection
+          retryCount.current = 0; // Reset retry counter on successful connection
+          setStatus('connected');
+          
+          // Send an initial registration message to the server
+          if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+            ws.current.send(JSON.stringify({
+              type: 'REGISTER',
+              region: region
+            }));
+          }
         };
         
         ws.current.onmessage = (event) => {
@@ -43,25 +62,36 @@ export const useQCWebSocket = (region = 'FDA', onMsg: (msg: any) => void) => {
           // Only attempt reconnection if component is still mounted
           if (isComponentMounted) {
             console.log(`QC WebSocket closed for region: ${region}, attempting reconnect...`);
+            setStatus('disconnected');
+            
             // Exponential backoff strategy
-            const delay = Math.min(1000 * Math.pow(2, retry), maxRetryDelay);
-            retry++;
+            const delay = Math.min(1000 * Math.pow(1.5, retryCount.current), maxRetryDelay);
+            retryCount.current++;
+            
             setTimeout(connect, delay);
           }
         };
         
         ws.current.onerror = (error) => {
           console.error(`QC WebSocket error for region: ${region}`, error);
+          setStatus('disconnected');
+          
+          // No need to attempt reconnect here as onclose will be triggered after onerror
         };
         
       } catch (error) {
         console.error('Error creating WebSocket connection:', error);
+        setStatus('disconnected');
+        
         if (isComponentMounted) {
-          setTimeout(connect, Math.min(1000 * Math.pow(2, retry++), maxRetryDelay));
+          const delay = Math.min(1000 * Math.pow(1.5, retryCount.current), maxRetryDelay);
+          retryCount.current++;
+          setTimeout(connect, delay);
         }
       }
     };
     
+    // Initial connection
     connect();
     
     // Cleanup function
@@ -74,13 +104,16 @@ export const useQCWebSocket = (region = 'FDA', onMsg: (msg: any) => void) => {
     };
   }, [region, onMsg]);
   
-  // Return methods to interact with the WebSocket
+  // Return methods to interact with the WebSocket and the current status
   return {
+    status,
     send: (data: any) => {
       if (ws.current && ws.current.readyState === WebSocket.OPEN) {
         ws.current.send(JSON.stringify(data));
+        return true;
       } else {
         console.warn('Cannot send message, WebSocket is not connected');
+        return false;
       }
     }
   };
