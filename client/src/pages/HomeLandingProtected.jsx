@@ -7,8 +7,6 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'wouter';
 import { ArrowRight, ShieldCheck, BarChart2, UploadCloud } from 'lucide-react';
 import Slider from 'react-slick';
-import 'slick-carousel/slick/slick.css';
-import 'slick-carousel/slick/slick-theme.css';
 // Import version control system
 import { validateComponentIntegrity, logProtectedComponentModificationAttempt } from '../utils/versionControl';
 
