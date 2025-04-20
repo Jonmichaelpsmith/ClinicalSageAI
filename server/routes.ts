@@ -129,7 +129,22 @@ export const setupRoutes = (app: express.Express) => {
 
   // Special route handler for the builder page
   app.get('/builder', (req, res) => {
-    res.sendFile('builder.html', { root: './public' });
+    const path = require('path');
+    const filePath = path.join(process.cwd(), 'public', 'builder.html');
+    res.sendFile(filePath);
+  });
+  
+  // Direct health check endpoint that won't go through proxy
+  app.get('/status/system', (req, res) => {
+    res.json({ 
+      status: 'ok', 
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'development',
+      services: {
+        express: 'running',
+        websocket: wss ? 'running' : 'not detected'
+      }
+    });
   });
   
   // API routes

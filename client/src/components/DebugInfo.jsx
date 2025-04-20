@@ -34,12 +34,21 @@ function DebugInfo() {
     const loadTime = Math.round(performance.now() - startTime);
     
     // Check API status
-    fetch('/api/health', { method: 'GET' })
+    fetch('/status/system', { method: 'GET' })
       .then(response => {
-        setInfo(prev => ({
-          ...prev,
-          apiStatus: response.ok ? 'OK' : `Error: ${response.status}`
-        }));
+        if (response.ok) {
+          return response.json().then(data => {
+            setInfo(prev => ({
+              ...prev,
+              apiStatus: `OK - ${data.services.express} (Express)`
+            }));
+          });
+        } else {
+          setInfo(prev => ({
+            ...prev,
+            apiStatus: `Error: ${response.status}`
+          }));
+        }
       })
       .catch(error => {
         setInfo(prev => ({
@@ -131,7 +140,7 @@ function DebugInfo() {
       
       <div style={{ marginBottom: '10px' }}>
         <strong>API Status:</strong> 
-        <span style={{ color: info.apiStatus === 'OK' ? '#00ff00' : '#ff5555' }}>
+        <span style={{ color: info.apiStatus.startsWith('OK') ? '#00ff00' : '#ff5555' }}>
           {info.apiStatus}
         </span>
       </div>
