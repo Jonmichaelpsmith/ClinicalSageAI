@@ -303,7 +303,6 @@ export default function HomeLanding() {
             <span className="text-2xl font-extrabold gradient-text">Concept2Cures.AI</span>
           </div>
           <nav className="hidden md:flex items-center space-x-6">
-            <Link to="/products" className="text-gray-600 hover:text-emerald-600 dark:text-gray-300 font-medium">Products</Link>
             <Link to="/solutions" className="text-gray-600 hover:text-emerald-600 dark:text-gray-300 font-medium">Solutions</Link>
             <Link to="/reports" className="text-gray-600 hover:text-emerald-600 dark:text-gray-300 font-medium">Report Library</Link>
             <Link to="/csr-intelligence" className="text-gray-600 hover:text-emerald-600 dark:text-gray-300 font-medium">CSR Intelligence</Link>
