@@ -4,7 +4,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { DndProvider } from 'react-dnd';
 import { Tree } from '@minoru/react-dnd-treeview';
 import { CheckCircle, XCircle, Info, AlertTriangle } from 'lucide-react';
-import { useToast } from '../App';
+import { toast } from 'react-toastify';
 import update from 'immutability-helper';
 import { useQCWebSocket } from '../hooks/useQCWebSocket';
 
@@ -217,10 +217,11 @@ export default function SubmissionBuilder({ initialRegion = 'FDA', region: propR
           );
           
           // Show a toast notification
-          toast({ 
-            message: `QC ${status} for document ${docId}`,
-            type: status === 'passed' ? 'success' : 'error'
-          });
+          if (status === 'passed') {
+            toast.success(`QC passed for document ${docId}`);
+          } else {
+            toast.error(`QC failed for document ${docId}`);
+          }
         }
       } catch (err) {
         console.error('Error processing WebSocket message:', err);
@@ -331,8 +332,6 @@ export default function SubmissionBuilder({ initialRegion = 'FDA', region: propR
       });
     }
   }, [region, send]);
-
-  const toast = useToast();
   
   // Build tree helper function to create folder structure + add documents
   const buildTree = useCallback((docs, selectedRegion) => {
