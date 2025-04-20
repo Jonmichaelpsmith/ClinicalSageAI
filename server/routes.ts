@@ -127,11 +127,9 @@ export const setupRoutes = (app: express.Express) => {
     res.status(200).json({ success: true });
   });
 
-  // Special route handler for the builder page
+  // Special route handler for builder page with direct routing to the frontend
   app.get('/builder', (req, res) => {
-    const path = require('path');
-    const filePath = path.join(process.cwd(), 'public', 'builder.html');
-    res.sendFile(filePath);
+    res.redirect('/');
   });
   
   // Direct health check endpoint that won't go through proxy
