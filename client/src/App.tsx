@@ -17,6 +17,9 @@ import ErrorBoundary from './ErrorBoundary';
 import ProductFeatures from './pages/ProductFeatures';
 import LumenBioDashboard from './pages/LumenBioDashboard';
 import LumenBioReports from './pages/LumenBioReports';
+import UseCaseLibrary from './pages/UseCaseLibrary';
+import INDFullSolution from './pages/INDFullSolution';
+import CERGenerator from './pages/CERGenerator';
 import { CheckCircle, AlertTriangle, Info } from 'lucide-react';
 // React Toastify for production-ready notifications
 import { ToastContainer, toast as toastify } from 'react-toastify';
@@ -162,6 +165,21 @@ export default function App() {
           <Route path="/csr-intelligence">
             <ErrorBoundary>
               <HomeLanding />
+            </ErrorBoundary>
+          </Route>
+          <Route path="/use-case-library">
+            <ErrorBoundary>
+              <UseCaseLibrary />
+            </ErrorBoundary>
+          </Route>
+          <Route path="/ind-full-solution">
+            <ErrorBoundary>
+              <INDFullSolution />
+            </ErrorBoundary>
+          </Route>
+          <Route path="/cer-generator">
+            <ErrorBoundary>
+              <CERGenerator />
             </ErrorBoundary>
           </Route>
           <Route path="/portal">
