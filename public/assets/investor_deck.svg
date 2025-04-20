@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="400" height="250" viewBox="0 0 400 250" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="250" fill="#2563EB"/>
+  <rect x="60" y="40" width="280" height="170" rx="5" fill="white" fill-opacity="0.2"/>
+  <rect x="70" y="60" width="260" height="30" rx="2" fill="white" fill-opacity="0.4"/>
+  <text x="80" y="80" font-family="Arial" font-size="14" fill="white">Problem Statement</text>
+  <rect x="70" y="100" width="120" height="80" rx="2" fill="white" fill-opacity="0.3"/>
+  <rect x="210" y="100" width="120" height="80" rx="2" fill="white" fill-opacity="0.3"/>
+  <path d="M90 130 L110 140 L150 110" stroke="white" stroke-width="2"/>
+  <path d="M230 160 L260 120 L290 140 L310 120" stroke="white" stroke-width="2"/>
+  <text x="130" y="150" font-family="Arial" font-size="12" fill="white">Market Size</text>
+  <text x="230" y="150" font-family="Arial" font-size="12" fill="white">Traction</text>
+  <text x="200" y="210" font-family="Arial" font-size="16" font-weight="bold" fill="white" text-anchor="middle">Investor-Grade Pitch Deck</text>
+</svg>

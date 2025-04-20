@@ -1,0 +1,6 @@
+<svg width="400" height="225" viewBox="0 0 400 225" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="225" fill="#2563EB"/>
+  <rect x="150" y="87.5" width="100" height="50" rx="5" fill="white" fill-opacity="0.2"/>
+  <path d="M170 112.5L190 100L190 125L170 112.5Z" fill="white"/>
+  <text x="200" y="175" fill="white" font-family="Arial" font-size="16" text-anchor="middle">Why TrialSage Exists</text>
+</svg>

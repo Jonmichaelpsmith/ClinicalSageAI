@@ -1,0 +1,7 @@
+<svg width="1280" height="720" viewBox="0 0 1280 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1280" height="720" fill="#0F172A"/>
+  <rect x="485" y="260" width="310" height="200" rx="15" fill="#334155" fill-opacity="0.4"/>
+  <path d="M580 360L700 290L700 430L580 360Z" fill="#94A3B8" fill-opacity="0.5"/>
+  <text x="640" y="520" fill="white" font-family="Arial" font-size="32" text-anchor="middle">Video Coming Soon</text>
+  <text x="640" y="560" fill="#94A3B8" font-family="Arial" font-size="24" text-anchor="middle">See transcript below</text>
+</svg>

@@ -1,6 +1,5 @@
 import React, { createContext, useContext, ReactNode } from 'react';
 import { toast, ToastContainer, ToastOptions } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
 // Define the context type
 interface ToastContextProps {

@@ -1,0 +1,261 @@
+# Video Walkthrough Voiceover Scripts & Integration Guide
+
+This document provides **end-to-end deliverables** for your TrialSage video walkthroughs, including:
+
+1. **Voiceover Scripts** for each video segment
+2. **Video Asset Folder Structure** & naming conventions
+3. **Integration Instructions** to drop into your Replit project
+4. **Lottie Animation Guidelines** (optional enhancements)
+
+---
+
+## 1. Voiceover Scripts
+
+### a) Hero Intro: “Why TrialSage Exists” (60s)
+```
+[0–5s] (Music swell)
+Narrator (calm, confident): "At the heart of every biotech breakthrough is one question: how fast can you move from concept to clinic?"
+
+[5–15s]
+Narrator: "But static PDFs, siloed platforms, and manual processes still waste months of your team’s time."
+
+[15–25s]
+Narrator: "TrialSage changes everything — by unifying IND automation, real-time CSR analytics, automated CER generation, and predictive risk modeling in one platform."
+
+[25–40s]
+Narrator: "Imagine compressing 14 months of work into just 6 months — without a single surprise."
+
+[40–50s]
+Narrator (uplift): "With AI copilots built for regulatory experts, you file faster, smarter, and with total confidence."
+
+[50–60s]
+Narrator (call-to-action): "Ready to lead the future of clinical development? Book your strategy demo with TrialSage today."
+```  
+
+### b) IND Architect™ Deep Dive (75s)
+```
+[0–5s] (Swipe SFX)
+Narrator: "Welcome to IND Architect™ — your AI-powered submission engine."
+
+[5–15s]
+Narrator: "Step one, click to auto-generate Modules 1 through 5 in seconds. No manual copy-paste."
+
+[15–25s]
+Narrator: "Our real-time gap checker validates every section against FDA and EMA guidelines — flags any missing data instantly."
+
+[25–35s]
+Narrator: "Connect directly to the FDA’s ESG gateway via secure SFTP for one-click submissions."
+
+[35–50s]
+Narrator: "Finally, leverage AI suggestions for your clinical overview and risk rationales — drafted and ready for review."
+
+[50–65s]
+Narrator: "Say goodbye to 12+ month timelines and costly rework. With IND Architect™, you file 60% faster, every time."
+
+[65–75s]
+Narrator (CTA): "See IND Architect™ in action — book your live demo now."
+```  
+
+### c) ClinOps in Real Time (60s)
+```
+[0–5s] (Data pulse SFX)
+Narrator: "Running a clinical trial? Data shouldn’t have to wait."
+
+[5–15s]
+Narrator: "Monitor live enrollment across all sites in a single dashboard — no spreadsheets required."
+
+[15–25s]
+Narrator: "Spot safety signals instantly with color-coded risk maps — protect your patients and your program."
+
+[25–35s]
+Narrator: "Run what-if protocol simulations to forecast timelines and outcomes before you invest another dollar."
+
+[35–45s]
+Narrator: "Get automated alerts when thresholds are breached — so you can act before issues escalate."
+
+[45–55s]
+Narrator: "From data chaos to total visibility — ClinOps on TrialSage gives you the insight to lead."
+
+[55–60s]
+Narrator (CTA): "Explore ClinOps Advantage — request your personalized walkthrough today."
+```  
+
+---
+
+## 2. Video Asset Folder Structure
+
+Place all video and poster assets under **`/public/videos/`** in your Replit project:
+
+```
+/public/videos/
+  hero_intro.mp4
+  hero_intro_poster.jpg
+  ind_architect.mp4
+  ind_architect_poster.jpg
+  clinops.mp4
+  clinops_poster.jpg
+/public/assets/
+  thumb_hero.png
+  thumb_ind.png
+  thumb_clinops.png
+  particle-bg.svg
+  icons/
+```
+
+Ensure **file names** match the paths referenced in your `EnhancedVideoWalkthroughs.jsx` and `VideoWalkthroughs.jsx` components.
+
+---
+
+## 3. Integration Instructions
+
+1. **Copy Components:**
+   - Place `VideoWalkthroughs.jsx` and `EnhancedVideoWalkthroughs.jsx` in `components/`.
+   - Ensure `GatedSalesInvestorAssets.jsx` imports the relevant Video component.
+
+2. **Install Dependencies:**
+   ```bash
+   npm install framer-motion @components/ui
+   ```
+
+3. **Update Routes:**
+   - Import and embed `<EnhancedVideoWalkthroughs />` in your landing page or dedicated `/walkthroughs` route.
+
+4. **Test Playback:**
+   - Run `npm run dev`
+   - Navigate to `/walkthroughs` or the parent page to verify video autoplay, controls, and CTA links.
+
+5. **Accessibility:**
+   - Add `<track>` elements for subtitles if required:
+     ```jsx
+     <video>
+       <track kind="captions" src="/videos/hero_captions.vtt" />
+     </video>
+     ```
+
+---
+
+## 4. Lottie Animation Guidelines (Optional)
+
+- Convert key UI transitions (e.g., pillar icons, particle backgrounds) to **Lottie JSON** for lighter web playback.
+- Embed using `react-lottie`:
+  ```jsx
+  <Lottie animationData={require('/assets/particle-bg.json')} loop autoplay />
+  ```
+- Ensure each Lottie asset is optimized (<200KB) and supports loopable micro-animations for continuous engagement.
+
+---
+
+**Deliverables Summary:**
+- Fully scripted voiceover text for each walkthrough video
+- Guidelines and best practices for **voiceover recording**
+- Video file structure & naming conventions (with baked-in audio)
+- React components for embedding final videos into Replit
+- Integration checklist for deployment and accessibility
+- Optional Lottie enhancements for UI animations
+
+---
+
+## 5. Voiceover Recording & Integration
+
+### Recording Best Practices
+- **Talent:** Engage professional voice actors or use high-quality in-house talent with a clear, confident tone.
+- **Equipment:** Record in a sound‑treated environment using a condenser microphone (e.g., Neumann TLM 103) and audio interface (48 kHz, 24‑bit).
+- **Delivery Format:** Export each narration as a high‑quality WAV file (48 kHz, 24‑bit) labeled according to:
+  ```
+  /public/audio/
+    hero_intro_vo.wav
+    ind_architect_vo.wav
+    clinops_vo.wav
+  ```
+
+### Audio-Video Sync
+- **Editor Workflow:** Import the WAV files into your video editor (Premiere, After Effects, DaVinci Resolve), sync with the placeholder MP4 animations, and render the final videos with embedded audio.
+- **Rendering Preset:** H.264 MP4, 1080p, AAC stereo 320 kbps audio.
+
+### Optional Separate Audio Tracks
+If you prefer to host audio separately (e.g., for accessibility or multi‑language swaps), include in the HTML:
+```jsx
+<video src="/videos/hero_intro.mp4" poster="/videos/hero_intro_poster.jpg" controls>
+  <track kind="captions" src="/videos/hero_intro_captions.vtt" />
+</video>
+<audio controls>
+  <source src="/audio/hero_intro_vo.wav" type="audio/wav" />
+</audio>
+```
+
+### Final Integration
+1. **Replace** the placeholder MP4s in `/public/videos/` with the final rendered videos that contain voiceover audio.  
+2. **Verify** playback in your Replit development build (`npm run dev`).  
+3. **Check** subtitles and captions for compliance and accessibility requirements.  
+
+Once the video assets include the recorded voiceovers, no additional code changes are needed—your GA‑ready walkthroughs are complete and live in TrialSage.
+
+---
+
+## 6. AI-Driven Voiceover Generation (No Media Team Needed)
+If you don’t have a media team, you can use AI text-to-speech to generate high-quality voiceovers in-house.
+
+### a) Using ElevenLabs API (Recommended)
+1. **Sign up** for an ElevenLabs account and obtain your API key.  
+2. **Install SDK:**
+   ```bash
+   npm install elevenlabs
+   ```
+3. **Generate Audio:**
+   ```javascript
+   import fs from 'fs';
+   import ElevenLabs from 'elevenlabs';
+
+   const client = new ElevenLabs({ apiKey: process.env.ELEVENLABS_API_KEY });
+
+   async function generateVoiceover(text, voice='Rachel') {
+     const response = await client.textToSpeech.speech({
+       voice: voice,
+       model: 'premade',
+       input: text,
+     });
+     const buffer = await response.arrayBuffer();
+     fs.writeFileSync(`public/audio/${voice}.wav`, Buffer.from(buffer));
+     console.log('Voiceover saved:', `${voice}.wav`);
+   }
+
+   // Example usage:
+   const heroScript = `At the heart of every biotech breakthrough ...`;
+   generateVoiceover(heroScript, 'Rachel');
+   ```
+4. **Replace** your audio files in `/public/audio/` with these AI-generated WAVs.  
+
+### b) Using AWS Polly (Alternate)
+1. **Configure AWS CLI** with credentials that have Polly permissions.  
+2. **Install AWS SDK:**
+   ```bash
+   npm install aws-sdk
+   ```
+3. **Generate Audio:**
+   ```javascript
+   import AWS from 'aws-sdk';
+   import fs from 'fs';
+
+   const polly = new AWS.Polly({ region: 'us-west-2' });
+
+   function synthesize(text, voice='Joanna') {
+     const params = {
+       OutputFormat: 'mp3',
+       Text: text,
+       VoiceId: voice,
+     };
+     polly.synthesizeSpeech(params, (err, data) => {
+       if (err) throw err;
+       fs.writeFileSync('public/audio/polly.mp3', data.AudioStream);
+       console.log('Polly audio saved: polly.mp3');
+     });
+   }
+
+   synthesize(heroScript);
+   ```
+4. **Convert** MP3 to WAV if needed (`ffmpeg -i polly.mp3 polly.wav`).  
+
+---
+
+**Now you can generate, integrate, and deploy AI‑driven voiceovers without a dedicated media team.**
+

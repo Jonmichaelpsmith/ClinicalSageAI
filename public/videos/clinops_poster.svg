@@ -1,0 +1,7 @@
+<svg width="1280" height="720" viewBox="0 0 1280 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1280" height="720" fill="#5B21B6"/>
+  <rect x="540" y="310" width="200" height="100" rx="10" fill="white" fill-opacity="0.3"/>
+  <path d="M600 360L640 335L640 385L600 360Z" fill="white"/>
+  <text x="640" y="550" fill="white" font-family="Arial" font-size="36" text-anchor="middle">ClinOps in Real Time</text>
+  <text x="640" y="600" fill="white" font-family="Arial" font-size="24" text-anchor="middle">Click to play video</text>
+</svg>
