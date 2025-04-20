@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import AppPackagesBanner from '../components/AppPackagesBanner';
 import UnifiedPlatformFeatures from '../components/UnifiedPlatformFeatures';
-import EnhancedVisionCards from '../components/EnhancedVisionCards';
+import AdvancedFeatureCards from '../components/AdvancedFeatureCards';
 import { apiRequest } from '../lib/queryClient';
 
 const TAGLINES = [
@@ -200,7 +200,7 @@ export default function HomeLandingEnhanced() {
       </section>
       
       {/* Value Proposition Section */}
-      <EnhancedVisionCards />
+      <AdvancedFeatureCards />
       
       <section className="py-20 bg-white">
         <div className="container mx-auto px-6">
