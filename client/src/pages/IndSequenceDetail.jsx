@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { CheckCircle, Calendar, Clock, Download, AlertTriangle, FileText, Send, Check, AlertCircle, FileWarning, ShieldCheck, ShieldOff, UploadCloud, Globe, Share2 } from 'lucide-react';
 import RegionalExportModal from '@/components/RegionalExportModal';
@@ -23,6 +24,7 @@ export default function IndSequenceDetail() {
   const [validationResults, setValidationResults] = useState(null);
   const [isValidating, setIsValidating] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
+  const [missing, setMissing] = useState({ region: '', missing: [], count: 0 });
   
   // Fetch sequence details
   const sequenceQuery = useQuery({
@@ -48,6 +50,16 @@ export default function IndSequenceDetail() {
   const sequence = sequenceQuery.data;
   const isSubmitted = sequence?.submission_status === 'submitted';
   const isInProgress = sequence?.submission_status === 'submitted_in_progress';
+  
+  // Check for missing required documents based on region
+  useEffect(() => {
+    if (id && sequence) {
+      fetch(`/api/ind/sequence/${id}/missing-required`)
+        .then(r => r.json())
+        .then(setMissing)
+        .catch(err => console.error("Error fetching missing documents:", err));
+    }
+  }, [id, sequence]);
   
   // Mutation for submitting the sequence to FDA ESG
   const submitMutation = useMutation({
@@ -349,6 +361,22 @@ export default function IndSequenceDetail() {
           )}
         </div>
       </div>
+      
+      {/* Missing Required Documents Alert */}
+      {missing.count > 0 && (
+        <Alert variant="destructive" className="mb-6 mt-2">
+          <AlertTriangle className="h-5 w-5" />
+          <AlertTitle>Missing Required Documents</AlertTitle>
+          <AlertDescription>
+            This {sequence.region} submission is missing {missing.count} required document(s): 
+            <ul className="ml-5 mt-2 list-disc">
+              {missing.missing.map((doc, idx) => (
+                <li key={idx} className="mt-1">{doc}</li>
+              ))}
+            </ul>
+          </AlertDescription>
+        </Alert>
+      )}
       
       {/* FDA ESG Acknowledgments Status */}
       {(sequence.submission_status === 'submitted' || 

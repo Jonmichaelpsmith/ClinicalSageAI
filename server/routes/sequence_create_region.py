@@ -56,6 +56,16 @@ async def create_sequence_region(body: SequenceInput, db: Session = Depends(get_
         db.add(rec)
         docs_models.append(rec)
 
+    # --- Region‑specific mandatory docs ---
+    from server.utils.region_rules import check_required
+    missing = check_required([doc for doc in docs_models], body.region)
+    if missing:
+        raise HTTPException(
+            status_code=400,
+            detail={"missing_docs": missing}
+        )
+    # --------------------------------------
+
     # write index.xml and regional depending on profile
     write_ectd_xml(folder, docs_models)
     if body.region == 'EMA':
