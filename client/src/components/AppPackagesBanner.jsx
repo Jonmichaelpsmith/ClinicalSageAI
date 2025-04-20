@@ -86,9 +86,89 @@ export default function AppPackagesBanner({ currentPath }) {
     }
   ];
 
+  // Top banner entry buttons
+  const entryButtons = [
+    {
+      label: "Submission Builder",
+      description: "Build and validate submissions",
+      to: "/builder",
+      icon: <FileArchive size={18} />,
+      color: "bg-blue-600 hover:bg-blue-700"
+    },
+    {
+      label: "IND Architect",
+      description: "Design and manage INDs",
+      to: "/ind-architect",
+      icon: <FileSymlink size={18} />,
+      color: "bg-purple-600 hover:bg-purple-700"
+    },
+    {
+      label: "CSR Intelligence",
+      description: "CSR analysis and optimization",
+      to: "/csr-intelligence",
+      icon: <Database size={18} />,
+      color: "bg-emerald-600 hover:bg-emerald-700"
+    },
+    {
+      label: "Lumen Bio Portal",
+      description: "Client dashboard & reports",
+      to: "/lumen-bio/dashboard",
+      icon: <Shield size={18} />,
+      color: "bg-amber-600 hover:bg-amber-700"
+    }
+  ];
+
   return (
     <div className="bg-gray-100 border-b border-gray-200">
-      {/* Top navigation bar */}
+      {/* Top entry buttons row */}
+      <div className="bg-slate-800 py-3">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center">
+              <div className="hidden md:flex space-x-1">
+                {entryButtons.map((button, index) => (
+                  <Link key={index} to={button.to}>
+                    <button className={`flex items-center text-sm font-medium text-white ${button.color} px-3 py-2 mr-2 rounded`}>
+                      <span className="mr-2">{button.icon}</span>
+                      <div className="text-left">
+                        <div className="font-medium">{button.label}</div>
+                        <div className="text-xs text-gray-200">{button.description}</div>
+                      </div>
+                    </button>
+                  </Link>
+                ))}
+              </div>
+              
+              {/* Mobile dropdown for the entry buttons */}
+              <div className="md:hidden">
+                <select className="bg-slate-700 text-white border border-slate-600 rounded px-2 py-1">
+                  <option value="">Select System Entry</option>
+                  {entryButtons.map((button, index) => (
+                    <option key={index} value={button.to}>{button.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-3">
+              <Link to="/login">
+                <button className="flex items-center text-xs font-medium text-white bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded">
+                  <LogIn size={14} className="mr-1" />
+                  Sign In
+                </button>
+              </Link>
+              <Link to="/signup">
+                <button className="flex items-center text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded">
+                  <User size={14} className="mr-1" />
+                  Sign Up
+                </button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Main navigation bar */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -160,18 +240,6 @@ export default function AppPackagesBanner({ currentPath }) {
                 <button className="flex items-center text-sm font-medium text-blue-600 hover:text-blue-800">
                   <ExternalLink size={16} className="mr-1" />
                   Request Demo
-                </button>
-              </Link>
-              <Link to="/login">
-                <button className="flex items-center text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-md">
-                  <LogIn size={16} className="mr-1" />
-                  Sign In
-                </button>
-              </Link>
-              <Link to="/signup">
-                <button className="flex items-center text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-md">
-                  <User size={16} className="mr-1" />
-                  Sign Up
                 </button>
               </Link>
             </div>
