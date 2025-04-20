@@ -9,6 +9,7 @@ import IndSequenceManager from './pages/IndSequenceManager';
 import HomeLanding from './pages/HomeLandingProtected';
 import SimplifiedLandingPage from './components/SimplifiedLandingPage';
 import ImprovedLandingPage from './components/ImprovedLandingPage';
+import HomeLandingEnhanced from './pages/HomeLandingEnhanced';
 import PersonaPages from './components/PersonaPages';
 import GatedSalesInvestorAssets from './components/GatedSalesInvestorAssets';
 import Walkthroughs from './pages/Walkthroughs';
@@ -187,14 +188,24 @@ export default function App() {
               <Walkthroughs />
             </ErrorBoundary>
           </Route>
+          <Route path="/signup">
+            <ErrorBoundary>
+              <HomeLanding />
+            </ErrorBoundary>
+          </Route>
+          <Route path="/demo">
+            <ErrorBoundary>
+              <Walkthroughs />
+            </ErrorBoundary>
+          </Route>
           <Route path="/">
             <ErrorBoundary>
-              <ImprovedLandingPage />
+              <HomeLandingEnhanced />
             </ErrorBoundary>
           </Route>
           <Route>
             <ErrorBoundary>
-              <ImprovedLandingPage />
+              <HomeLandingEnhanced />
             </ErrorBoundary>
           </Route>
         </Switch>
