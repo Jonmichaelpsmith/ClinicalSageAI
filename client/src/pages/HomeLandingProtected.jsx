@@ -58,13 +58,20 @@ const verifyVersionIntegrity = () => {
 export default function HomeLanding() {
   const sliderSettings = { arrows:false, infinite:true, autoplay:true, autoplaySpeed:3000, slidesToShow:5, slidesToScroll:1, pauseOnHover:false, cssEase:'linear', responsive:[{breakpoint:768, settings:{slidesToShow:3}}] };
 
-  // Add gradient text style
+  // Add gradient text style and debug info
   React.useEffect(() => {
     // Verify version integrity on component load
     if (!verifyVersionIntegrity()) {
       console.error("Landing page integrity check failed. Please contact the development team.");
     }
     
+    // Add diagnostic logging
+    console.log("TrialSage/Concept2Cures.AI landing page loaded");
+    console.log("Environment:", process.env.NODE_ENV);
+    console.log("Current route:", window.location.pathname);
+    console.log("Slider settings:", sliderSettings);
+    
+    // Create the gradient style
     const style = document.createElement('style');
     style.textContent = `.gradient-text{background:linear-gradient(90deg,#10b981 0%,#3b82f6 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}`;
     document.head.append(style);
