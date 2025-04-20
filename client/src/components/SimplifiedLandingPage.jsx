@@ -4,10 +4,9 @@ import { Card, CardContent, CardTitle, CardDescription } from '@/components/ui/c
 import { Container } from '@/components/ui/container';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { motion } from 'framer-motion';
 import { Link } from 'wouter';
 
-export default function LandingPage() {
+export default function SimplifiedLandingPage() {
   return (
     <div className="font-sans text-gray-100 bg-gradient-to-br from-gray-900 via-black to-gray-900">
 
@@ -15,41 +14,18 @@ export default function LandingPage() {
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
         {/* Animated background canvas */}
         <div className="absolute inset-0">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1 }}
-            className="absolute inset-0 bg-[url('/assets/particle-bg.svg')] bg-cover bg-center opacity-30" />
-          <motion.div
-            initial={{ scale: 1 }}
-            animate={{ scale: 1.2 }}
-            transition={{ repeat: Infinity, duration: 20, ease: 'linear' }}
-            className="absolute inset-0 bg-gradient-to-tr from-blue-800 via-transparent to-green-600 mix-blend-overlay" />
+          <div className="absolute inset-0 bg-[url('/assets/particle-bg.svg')] bg-cover bg-center opacity-30" />
+          <div className="absolute inset-0 bg-gradient-to-tr from-blue-800 via-transparent to-green-600 mix-blend-overlay" />
         </div>
         <Container className="relative z-10 text-center px-6">
-          <motion.h1
-            initial={{ y: 50, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.8 }}
-            className="text-5xl sm:text-6xl md:text-7xl font-extrabold mb-6 leading-tight"
-          >
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-extrabold mb-6 leading-tight">
             Collapse 14 Months into 6 Months
-          </motion.h1>
-          <motion.p
-            initial={{ y: 50, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.4, duration: 0.8 }}
-            className="text-lg sm:text-xl max-w-3xl mx-auto mb-10"
-          >
+          </h1>
+          <p className="text-lg sm:text-xl max-w-3xl mx-auto mb-10">
             TrialSage powers AI-driven IND automation, live CSR analytics, automated
             CER creation, and predictive risk modeling in one ultra-modern platform.
-          </motion.p>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.8, duration: 0.6 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center"
-          >
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/persona/regops">
               <Button size="lg" className="bg-gradient-to-r from-green-400 to-blue-500 text-black shadow-xl hover:scale-105 transform transition">
                 See 6‑Month IND Demo
@@ -65,7 +41,7 @@ export default function LandingPage() {
                 Instant ROI Calculator
               </Button>
             </Link>
-          </motion.div>
+          </div>
         </Container>
       </section>
 
@@ -83,11 +59,8 @@ export default function LandingPage() {
                 { stat: '4+ tools', title: 'Tool Silos', desc: 'No data flow, constant context switching.', icon: '/assets/icons/silo.svg' },
                 { stat: '2.3x', title: 'Protocol Revisions', desc: 'Guesswork leads to costly amendments.', icon: '/assets/icons/brain.svg' },
               ].map((item, idx) => (
-                <motion.div
+                <div
                   key={idx}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.2 }}
                   className="min-w-[280px] bg-gray-800 rounded-lg p-6 shadow-2xl hover:scale-105 transform transition">
 
                   <div className="flex items-center mb-4">
@@ -96,7 +69,7 @@ export default function LandingPage() {
                   </div>
                   <h3 className="text-2xl font-semibold mb-2">{item.title}</h3>
                   <p className="text-gray-400">{item.desc}</p>
-                </motion.div>
+                </div>
               ))}
             </div>
           </ScrollArea>
@@ -138,8 +111,7 @@ export default function LandingPage() {
               <Link to={`/persona/${
                 idx === 0 ? 'regops' : idx === 1 ? 'clinops' : idx === 2 ? 'writer' : 'founder'
               }`} key={idx}>
-                <motion.div
-                  whileHover={{ scale: 1.03, y: -5 }}
+                <div
                   className={`relative overflow-hidden rounded-xl p-6 bg-gradient-to-br ${mod.gradient} group cursor-pointer`}
                 >
                 <div className="absolute -inset-0.5 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition duration-500 rounded-xl blur-xl"></div>
@@ -162,7 +134,7 @@ export default function LandingPage() {
                     </Link>
                   </div>
                 </div>
-              </motion.div>
+              </div>
               </Link>
             ))}
           </div>
@@ -182,18 +154,15 @@ export default function LandingPage() {
               ['Query Response', '8–12 d', '24–48 h', '↑83%'],
               ['Publishing Cost', '$54K', '$17.5K', '↓68%'],
             ].map((row, idx) => (
-              <motion.div
+              <div
                 key={idx}
-                initial={{ opacity: 0, x: -50 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: idx * 0.2 }}
                 className="bg-gradient-to-r from-gray-800 to-gray-700 rounded-xl p-6 shadow-2xl grid grid-cols-4 items-center"
               >
                 <span className="text-white font-medium">{row[0]}</span>
                 <span className="text-gray-300">{row[1]}</span>
                 <span className="text-green-400 font-semibold">{row[2]}</span>
                 <span className="text-green-300 text-right font-bold">{row[3]}</span>
-              </motion.div>
+              </div>
             ))}
           </div>
           <div className="text-center mt-12">
@@ -213,23 +182,13 @@ export default function LandingPage() {
         <div className="absolute inset-0 bg-gradient-to-r from-blue-900 to-gray-900 opacity-70"></div>
         <Container className="relative z-10 flex flex-col lg:flex-row items-center justify-between">
           <div className="max-w-xl text-white mb-8 lg:mb-0">
-            <motion.h2
-              initial={{ opacity: 0, x: -30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-              className="text-4xl font-bold mb-4 leading-tight"
-            >
+            <h2 className="text-4xl font-bold mb-4 leading-tight">
               Ready to Redefine Clinical Development?
-            </motion.h2>
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              className="text-lg"
-            >
+            </h2>
+            <p className="text-lg">
               Step into the future today with TrialSage. Transform data into decisions,
               speed up approvals, and lead the next generation of biotech innovation.
-            </motion.p>
+            </p>
           </div>
           <Link to="/persona/clinops">
             <Button size="lg" className="bg-gradient-to-r from-blue-500 to-teal-400 text-black shadow-2xl hover:scale-105 transform transition">
