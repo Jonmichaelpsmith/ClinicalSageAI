@@ -6,6 +6,8 @@ import { Tree, NodeModel } from '@minoru/react-dnd-treeview';
 import update from 'immutability-helper';
 import { CheckCircle, XCircle, Info, AlertTriangle } from 'lucide-react';
 import { toast, ToastContainer } from 'react-toastify';
+import { useLocation } from 'wouter';
+import AppPackagesBanner from '../components/AppPackagesBanner';
 import 'react-toastify/dist/ReactToastify.css';
 import '@minoru/react-dnd-treeview/dist/react-dnd-treeview.css';
 import 'react-toastify/dist/ReactToastify.css';
@@ -49,6 +51,7 @@ interface Node extends NodeModel<Doc> { }
 export default function SubmissionBuilder({ region = 'FDA' }: { region?: string }) {
   const [tree, setTree] = useState<Node[]>([]);
   const [invalid, setInvalid] = useState<Set<number>>(new Set());
+  const [location] = useLocation();
 
   useEffect(() => {
     (async () => {
@@ -106,23 +109,26 @@ export default function SubmissionBuilder({ region = 'FDA' }: { region?: string 
   };
 
   return (
-    <div className="container py-4">
-      <h2>Builder <span className="badge bg-secondary ms-1">{region}</span></h2>
-      {invalid.size>0 && <div className="alert alert-warning py-1">{invalid.size} doc(s) in invalid slots for {region}</div>}
-      
-      {/* Region-specific hints */}
-      <div className="alert alert-info py-2 mb-3">
-        <div className="fw-bold mb-1">Region Hints: {region}</div>
-        <ul className="mb-0 small">
-          {REGION_HINTS[region as keyof typeof REGION_HINTS]?.map((hint, i) => (
-            <li key={i}>{hint}</li>
-          ))}
-        </ul>
+    <>
+      <AppPackagesBanner currentPath={location} />
+      <div className="container py-4">
+        <h2>Submission Builder <span className="badge bg-secondary ms-1">{region}</span></h2>
+        {invalid.size>0 && <div className="alert alert-warning py-1">{invalid.size} doc(s) in invalid slots for {region}</div>}
+        
+        {/* Region-specific hints */}
+        <div className="alert alert-info py-2 mb-3">
+          <div className="fw-bold mb-1">Region Hints: {region}</div>
+          <ul className="mb-0 small">
+            {REGION_HINTS[region as keyof typeof REGION_HINTS]?.map((hint, i) => (
+              <li key={i}>{hint}</li>
+            ))}
+          </ul>
+        </div>
+        
+        <DndProvider backend={HTML5Backend}><Tree tree={tree} rootId={0} render={render} onDrop={onDrop}/></DndProvider>
+        <button className="btn btn-primary mt-2" onClick={save}>Save</button>
       </div>
-      
-      <DndProvider backend={HTML5Backend}><Tree tree={tree} rootId={0} render={render} onDrop={onDrop}/></DndProvider>
-      <button className="btn btn-primary mt-2" onClick={save}>Save</button>
-    </div>
+    </>
   );
 }
 
