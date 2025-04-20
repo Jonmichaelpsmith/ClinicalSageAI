@@ -7,6 +7,7 @@ import IndSequenceManager from './pages/IndSequenceManager';
 import HomeLanding from './pages/HomeLandingProtected';
 import DebugInfo from './components/DebugInfo';
 import ErrorBoundary from './ErrorBoundary';
+import ProductFeatures from './pages/ProductFeatures';
 import { CheckCircle, AlertTriangle, Info } from 'lucide-react';
 // React Toastify for production-ready notifications
 import { ToastContainer, toast as toastify } from 'react-toastify';
@@ -125,11 +126,6 @@ export default function App() {
     <ErrorBoundary>
       <ToastProvider>
         <Switch>
-          <Route path="/">
-            <ErrorBoundary>
-              <HomeLanding />
-            </ErrorBoundary>
-          </Route>
           <Route path="/builder">
             <ErrorBoundary>
               <SubmissionBuilder />
@@ -143,6 +139,21 @@ export default function App() {
           <Route path="/ind/planner">
             <ErrorBoundary>
               <IndSequenceManager />
+            </ErrorBoundary>
+          </Route>
+          <Route path="/solutions">
+            <ErrorBoundary>
+              <HomeLanding />
+            </ErrorBoundary>
+          </Route>
+          <Route path="/products">
+            <ErrorBoundary>
+              <HomeLanding />
+            </ErrorBoundary>
+          </Route>
+          <Route path="/">
+            <ErrorBoundary>
+              <HomeLanding />
             </ErrorBoundary>
           </Route>
           <Route>
