@@ -1,0 +1,64 @@
+### Who We Are  
+**Concepts2Cures.AI** is a team of former regulatory‑affairs leaders, clinical‐operations directors, biostatisticians and ML engineers from top 10 pharma, leading CROs and health‑tech unicorns. We spent a decade watching promising molecules stall because — between data silos, PDF minutiae and ever‑shifting regional rules — an IND or CTA could take **4–6 months** and > $1.2 M in vendor fees.  
+
+Our mandate is simple: **compress “concept‑to‑first‑patient” from months to weeks**, without compromising compliance or scientific rigour.
+
+---
+
+## Why We Built TrialSage
+
+| Legacy reality | Pain | TrialSage shift |
+|----------------|------|-----------------|
+| Word + Excel “stitch‑ups”, manual PDF fixes | Human error ⇒ FDA Technical Rejection (TR) & 30‑day slips | **AI‑templated authoring + auto‑QC (PDF/A, bookmarks, MD5)** |
+| Vendor‑driven eCTD assembly ($100k/year) | Slow iterations, opaque pricing | **One‑click eCTD backbone builder** (index.xml + regional) |
+| Siloed regional submissions | Duplicate effort EU / JP | **Multi‑profile engine** (FDA / EMA / PMDA) re‑renders same dossier |
+| Post‑submission tracking in email | Lost ACKs, poor audit trail | **Real‑time ESG ACK badges + Celery polling** |
+| 7‑day & 15‑day safety reports hand‑crafted | Version drift | **Sequence wizard** auto‑slots safety amendments & annuals |
+
+---
+
+## Feature Nuances
+
+| Feature | Under‑the‑hood detail | Hidden “gotchas” we solved |
+|---------|----------------------|----------------------------|
+| **PDF QC Pipeline** | Ghostscript PDF/A‑1b conversion, auto‑bookmarks via pdfminer, link verifier, ≤ 10 MB enforcement | FDA rejects non‑searchable scans; we surface this *before* sequence build |
+| **Drag‑&‑Drop Submission Builder** | Region‑aware module folders (FDA m1‑m5, PMDA jp‑annex), React Dnd‑TreeView, QC badges inline | Prevents users dropping a non‑QC’d doc; bulk‑approve triggers QC in background |
+| **Sequence Planner** | Lifecycle diffing (`new` vs `replace`), module inference, error gate (missing metadata, QC fail) | Eliminates wrong operation codes that break eValidator rule 347 |
+| **XML Backbone** | `index.xml`, `us‑regional.xml`, `eu‑regional.xml`, `jp‑regional.xml`; MD5 checksums, UUIDs, xlink href | Handles path depth & UTF‑8 titles that often trip legacy tools |
+| **eValidator Integration** | Dockerised Lorenz CLI, FDA vs EU profiles, JSON report → UI badges | Fuses > 2 000 technical rules; blocks submission if any category “E” error |
+| **ESG Submitter** | SFTP with key‑based auth, auto‑manifest (`index-md5.txt`), ZIP, envelope | Generates remote folder per sequence; ACK1/2/3 polling updates UI |
+| **Real‑Time Event Bus** | Redis pub‑sub; WebSocket `/ws/qc` pushes QC + ACK events to browser | Ops teams watch badges flip green without refresh |
+| **Multi‑Region Profiles** | SubmissionProfile model, builder plugin registry | Allows future Health Canada, TGA with zero code fork |
+| **Annual Report Wizard (road‑mapped)** | Pulls last 365‑day sequences, pre‑compiles m5.3.7 safety tables | Slashes IND annual prep from 2 weeks to < 2 hours |
+
+---
+
+## Strategic Value to Stakeholders
+
+| Role | Day‑1 win | 12‑month win |
+|------|-----------|-------------|
+| **Reg‑Affairs VP** | No more vendor ping‑pong; audit trail auto‑generated | Submit IND, CTA & IMPD from one stack; cut $500k/compound |
+| **Clinical Ops** | Protocol + CSR versions live‑diffed; drag into m5 / DSUR | Faster cycle — start FIH 4–6 weeks sooner |
+| **Biotech CEO** | De‑risk FDA 30‑day hold; clarity for investors | Pipeline velocity ⬆, burn ⬇ — raise next round on data, not delays |
+
+---
+
+### The Bigger Vision  
+We aren’t just shaving hours off assembly; we’re building an *Autonomous Regulatory Copilot*:
+
+1. **Predictive gap‑scans** flag missing CMC stability data before FDA does.  
+2. **Generative Module‑2 narratives** auto‑draft QoS & Clinical Overview from raw study output.  
+3. **Cross‑submission intelligence**: lessons from NDA scientific advice feed back into pre‑clinical INDs.
+
+**Concepts2Cures.AI** accelerates good science into real cures — not by bending rules, but by encoding them into software.
+
+---
+
+### What’s Next for You
+
+* **Live demo**: full FDA IND build → validated → ESG submit in < 15 min.  
+* **Pilot onboarding**: 30‑day sandbox with your real CMC PDFs; see QC & eValidator pass on first try.  
+* **Road‑map workshop**: co‑define EU/JP module nuances specific to your portfolio.
+
+Ready to turn *concepts* into *cures* faster?  
+Let’s schedule your demo → **hello@concepts2cures.ai**.
