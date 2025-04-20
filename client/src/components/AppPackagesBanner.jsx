@@ -179,7 +179,7 @@ export default function AppPackagesBanner({ currentPath }) {
                 <div className="flex items-center">
                   <div className="flex items-center justify-center w-10 h-10 rounded-md bg-blue-600 text-white font-bold text-xl mr-3">TS</div>
                   <span className="font-bold text-xl text-gray-900">TrialSage</span>
-                  <span className="ml-2 text-sm text-gray-500">by Concepts2Cures.AI</span>
+                  <span className="ml-2 text-sm text-gray-500">by Concept2Cures.AI</span>
                 </div>
               </Link>
             </div>
@@ -256,7 +256,7 @@ export default function AppPackagesBanner({ currentPath }) {
               ENTERPRISE REGULATORY INTELLIGENCE
             </h2>
             <h2 className="text-4xl font-bold bg-gradient-to-r from-blue-300 to-indigo-300 bg-clip-text text-transparent tracking-tight mb-6">
-              Concepts2Cures.AI
+              Concept2Cures.AI
             </h2>
             <p className="text-xl text-slate-300 mb-8 max-w-3xl mx-auto">
               The industry leader in AI-driven regulatory technology, transforming how pharmaceutical and biotech organizations navigate global submission processes.
@@ -298,7 +298,7 @@ export default function AppPackagesBanner({ currentPath }) {
           <div className="flex justify-center mt-10">
             <Link to="/about">
               <button className="inline-flex items-center px-5 py-3 border border-slate-600 rounded-md bg-slate-800/50 hover:bg-slate-700/50 text-white font-medium transition-colors">
-                About Concepts2Cures.AI
+                About Concept2Cures.AI
                 <ChevronRight className="ml-2" />
               </button>
             </Link>
