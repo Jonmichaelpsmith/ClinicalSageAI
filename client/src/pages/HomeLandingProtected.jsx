@@ -1,9 +1,9 @@
 // HomeLandingProtected.jsx – Official Concept2Cures.AI landing page (DO NOT MODIFY WITHOUT APPROVAL)
 // This is the official approved landing page for TrialSage by Concept2Cures.AI
-// VERSION: 2.0 RELEASED APR 2025
+// VERSION: 2.1 RELEASED APR 2025
 // LAST APPROVAL: EXECUTIVE TEAM
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'wouter';
 import { ArrowRight, ShieldCheck, BarChart2, UploadCloud } from 'lucide-react';
 import Slider from 'react-slick';
@@ -11,6 +11,22 @@ import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 // Import version control system
 import { validateComponentIntegrity, logProtectedComponentModificationAttempt } from '../utils/versionControl';
+
+// Define a basic fallback UI in case of render errors
+const FallbackUI = () => (
+  <div style={{padding: '20px', maxWidth: '800px', margin: '40px auto', fontFamily: 'system-ui, sans-serif'}}>
+    <h1 style={{color: '#10b981', marginBottom: '20px'}}>Concept2Cures.AI - TrialSage Platform</h1>
+    <p>Welcome to the TrialSage platform by Concept2Cures.AI. Please use the links below to navigate:</p>
+    <ul style={{listStyle: 'none', padding: '20px 0'}}>
+      <li style={{marginBottom: '15px'}}><a href="/builder" style={{color: '#10b981', padding: '8px 16px', background: '#f0fdf4', border: '1px solid #10b981', borderRadius: '4px', textDecoration: 'none', fontWeight: 'bold'}}>eCTD Builder</a></li>
+      <li style={{marginBottom: '15px'}}><a href="/portal" style={{color: '#10b981', padding: '8px 16px', background: '#f0fdf4', border: '1px solid #10b981', borderRadius: '4px', textDecoration: 'none', fontWeight: 'bold'}}>Client Portal</a></li>
+      <li style={{marginBottom: '15px'}}><a href="/csr-library" style={{color: '#10b981', padding: '8px 16px', background: '#f0fdf4', border: '1px solid #10b981', borderRadius: '4px', textDecoration: 'none', fontWeight: 'bold'}}>CSR Intelligence</a></li>
+    </ul>
+    <p style={{marginTop: '20px', fontSize: '14px', color: '#666'}}>
+      © 2025 Concept2Cures.AI • All rights reserved
+    </p>
+  </div>
+);
 
 // PROTECTED: DO NOT MODIFY THESE BRAND ASSETS WITHOUT EXECUTIVE APPROVAL
 const logos = [
