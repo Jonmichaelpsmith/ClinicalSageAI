@@ -15,6 +15,8 @@ import Walkthroughs from './pages/Walkthroughs';
 import DebugInfo from './components/DebugInfo';
 import ErrorBoundary from './ErrorBoundary';
 import ProductFeatures from './pages/ProductFeatures';
+import LumenBioDashboard from './pages/LumenBioDashboard';
+import LumenBioReports from './pages/LumenBioReports';
 import { CheckCircle, AlertTriangle, Info } from 'lucide-react';
 // React Toastify for production-ready notifications
 import { ToastContainer, toast as toastify } from 'react-toastify';
@@ -180,6 +182,16 @@ export default function App() {
           <Route path="/investor-assets">
             <ErrorBoundary>
               <GatedSalesInvestorAssets />
+            </ErrorBoundary>
+          </Route>
+          <Route path="/lumen-bio/dashboard">
+            <ErrorBoundary>
+              <LumenBioDashboard />
+            </ErrorBoundary>
+          </Route>
+          <Route path="/lumen-bio/reports">
+            <ErrorBoundary>
+              <LumenBioReports />
             </ErrorBoundary>
           </Route>
           <Route path="/walkthroughs">
