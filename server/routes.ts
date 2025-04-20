@@ -8,95 +8,119 @@ import { WebSocketServer, WebSocket } from 'ws';
 import { storage } from './storage';
 import { insertUserSchema } from '@shared/schema';
 
+// Extend Express types
+declare module 'express' {
+  interface Express {
+    wsPatch?: (httpServer: http.Server) => void;
+  }
+}
+
+// Extend http.Server with WebSocket broadcast capability
+interface ServerWithBroadcaster extends http.Server {
+  broadcastQcUpdate: (data: any) => void;
+}
+
 export const setupRoutes = (app: express.Express) => {
   // Create an HTTP server with the Express app
   const httpServer = http.createServer(app);
-  // Set up WebSocket server for real-time QC updates
-  const wss = new WebSocketServer({ server: httpServer, path: '/ws/qc' });
   
-  // Store active connections with their regions
-  const clients = new Map();
+  // Initialize variables that will be conditionally set based on available functionality
+  let wss: WebSocketServer | undefined;
+  let clients: Map<WebSocket, string> = new Map();
   
-  // WebSocket connection handler
-  wss.on('connection', (socket) => {
-    console.log('Client connected to WebSocket');
-    let clientRegion = 'FDA'; // Default region
+  // Apply the WebSocket patch from FastAPI bridge if available
+  if (app.wsPatch && typeof app.wsPatch === 'function') {
+    console.log('Setting up enhanced WebSocket proxy to FastAPI');
+    app.wsPatch(httpServer);
+  } else {
+    console.log('FastAPI WebSocket proxy not available, using fallback WebSocket server');
+    // Set up fallback WebSocket server for development/testing
+    wss = new WebSocketServer({ server: httpServer, path: '/ws/qc' });
     
-    // Handle incoming messages (like subscribe/unsubscribe)
-    socket.on('message', (message) => {
-      try {
-        const data = JSON.parse(message.toString());
-        
-        // Handle subscription requests
-        if (data.action === 'subscribe' && data.region) {
-          clientRegion = data.region;
-          console.log(`Client subscribed to ${clientRegion} updates`);
+    // WebSocket connection handler
+    wss.on('connection', (socket: WebSocket) => {
+      console.log('Client connected to WebSocket (fallback mode)');
+      let clientRegion = 'FDA'; // Default region
+      
+      // Handle incoming messages (like subscribe/unsubscribe)
+      socket.on('message', (message: WebSocket.Data) => {
+        try {
+          const data = JSON.parse(message.toString());
           
-          // Store client with region for targeted updates
-          clients.set(socket, clientRegion);
-          
-          // Acknowledge subscription
-          socket.send(JSON.stringify({
-            type: 'subscription_ack',
-            region: clientRegion
-          }));
+          // Handle subscription requests
+          if (data.action === 'subscribe' && data.region) {
+            clientRegion = data.region;
+            console.log(`Client subscribed to ${clientRegion} updates`);
+            
+            // Store client with region for targeted updates
+            clients.set(socket, clientRegion);
+            
+            // Acknowledge subscription
+            socket.send(JSON.stringify({
+              type: 'subscription_ack',
+              region: clientRegion
+            }));
+          }
+        } catch (err) {
+          console.error('Error processing WebSocket message:', err);
         }
-      } catch (err) {
-        console.error('Error processing WebSocket message:', err);
-      }
+      });
+      
+      // Handle disconnection
+      socket.on('close', () => {
+        console.log('Client disconnected from WebSocket');
+        clients.delete(socket);
+      });
+      
+      // Keep initial connection alive
+      socket.send(JSON.stringify({ type: 'connection_established' }));
     });
-    
-    // Handle disconnection
-    socket.on('close', () => {
-      console.log('Client disconnected from WebSocket');
-      clients.delete(socket);
-    });
-    
-    // Keep initial connection alive
-    socket.send(JSON.stringify({ type: 'connection_established' }));
-  });
+  }
   
   // Create an endpoint for receiving events from Python backend
   app.post('/internal-events', express.json(), (req, res) => {
     const { event, data } = req.body;
     
-    // Handle different event types
-    if (event === 'qc_status') {
-      // Broadcast to all connected clients
-      wss.clients.forEach((client) => {
-        if (client.readyState === WebSocket.OPEN) {
-          client.send(JSON.stringify({
-            type: 'qc_status',
-            ...data
-          }));
-        }
-      });
-    } 
-    else if (event === 'bulk_qc_summary') {
-      const region = data.region || 'FDA';
-      
-      // Send to clients subscribed to this region
-      clients.forEach((clientRegion, client) => {
-        if (client.readyState === WebSocket.OPEN && clientRegion === region) {
-          client.send(JSON.stringify({
-            type: 'bulk_qc_summary',
-            ...data
-          }));
-        }
-      });
-    }
-    else if (event === 'bulk_qc_error') {
-      const region = data.region || 'FDA';
-      
-      // Send to clients subscribed to this region
-      clients.forEach((clientRegion, client) => {
-        if (client.readyState === WebSocket.OPEN && clientRegion === region) {
-          client.send(JSON.stringify({
-            type: 'bulk_qc_error',
-            ...data
-          }));
-        }
-      });
+    // Only process these events if we have our own WebSocket server
+    if (wss) {
+      // Handle different event types
+      if (event === 'qc_status') {
+        // Broadcast to all connected clients
+        wss.clients.forEach((client: WebSocket) => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify({
+              type: 'qc_status',
+              ...data
+            }));
+          }
+        });
+      } 
+      else if (event === 'bulk_qc_summary') {
+        const region = data.region || 'FDA';
+        
+        // Send to clients subscribed to this region
+        clients.forEach((clientRegion: string, client: WebSocket) => {
+          if (client.readyState === WebSocket.OPEN && clientRegion === region) {
+            client.send(JSON.stringify({
+              type: 'bulk_qc_summary',
+              ...data
+            }));
+          }
+        });
+      }
+      else if (event === 'bulk_qc_error') {
+        const region = data.region || 'FDA';
+        
+        // Send to clients subscribed to this region
+        clients.forEach((clientRegion: string, client: WebSocket) => {
+          if (client.readyState === WebSocket.OPEN && clientRegion === region) {
+            client.send(JSON.stringify({
+              type: 'bulk_qc_error',
+              ...data
+            }));
+          }
+        });
+      }
     }
     
     // Respond to the event
@@ -126,13 +150,15 @@ export const setupRoutes = (app: express.Express) => {
   // Extend the HTTP server with a method to broadcast QC updates
   const serverWithBroadcaster = Object.assign(httpServer, {
     broadcastQcUpdate: (data: any) => {
-      wss.clients.forEach((client) => {
-        if (client.readyState === WebSocket.OPEN) {
-          client.send(JSON.stringify(data));
-        }
-      });
+      if (wss) {
+        wss.clients.forEach((client: WebSocket) => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify(data));
+          }
+        });
+      }
     }
-  });
+  }) as ServerWithBroadcaster;
   
   // Return the extended HTTP server
   return serverWithBroadcaster;
