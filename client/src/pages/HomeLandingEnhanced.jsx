@@ -18,6 +18,8 @@ import {
   Loader2
 } from 'lucide-react';
 import AppPackagesBanner from '../components/AppPackagesBanner';
+import UnifiedPlatformFeatures from '../components/UnifiedPlatformFeatures';
+import EnhancedVisionCards from '../components/EnhancedVisionCards';
 import { apiRequest } from '../lib/queryClient';
 
 const TAGLINES = [
@@ -198,6 +200,8 @@ export default function HomeLandingEnhanced() {
       </section>
       
       {/* Value Proposition Section */}
+      <EnhancedVisionCards />
+      
       <section className="py-20 bg-white">
         <div className="container mx-auto px-6">
           <div className="flex flex-col lg:flex-row items-center gap-12">
@@ -284,92 +288,10 @@ export default function HomeLandingEnhanced() {
         </div>
       </section>
       
-      {/* Core Capabilities Section */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-6">
-          <div className="text-center max-w-3xl mx-auto mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Advanced Regulatory Intelligence Architecture</h2>
-            <p className="text-lg text-gray-600 mt-4">Our integrated enterprise-grade platform orchestrates complex regulatory workflows with precision, enabling harmonized global submissions while maintaining rigorous validation across jurisdictional requirements.</p>
-          </div>
-          <div className="max-w-5xl mx-auto">
-            <div className="space-y-4">
-              <div className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow">
-                <div className="flex items-center">
-                  <div className="w-10 h-10 rounded-md bg-blue-100 text-blue-600 flex items-center justify-center mr-4">
-                    <FileText size={20} />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-medium text-gray-900">Submission Builder</h3>
-                    <p className="text-gray-600 mt-1">Advanced eCTD orchestration with multi-region validation and real-time compliance monitoring for FDA, EMA, and PMDA submissions</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow">
-                <div className="flex items-center">
-                  <div className="w-10 h-10 rounded-md bg-blue-100 text-blue-600 flex items-center justify-center mr-4">
-                    <Database size={20} />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex justify-between items-center">
-                      <h3 className="text-xl font-medium text-gray-900">CSR Intelligence</h3>
-                      <div className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium flex items-center">
-                        {isLoading ? (
-                          <><Loader2 size={10} className="animate-spin mr-1" /> Loading...</>
-                        ) : (
-                          <>{csrCount.toLocaleString()} Reports</>
-                        )}
-                      </div>
-                    </div>
-                    <p className="text-gray-600 mt-1">Proprietary deep learning architecture for comprehensive clinical study report analysis, predictive optimization, and cross-reference integration</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow">
-                <div className="flex items-center">
-                  <div className="w-10 h-10 rounded-md bg-blue-100 text-blue-600 flex items-center justify-center mr-4">
-                    <FileSymlink size={20} />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-medium text-gray-900">IND Architect</h3>
-                    <p className="text-gray-600 mt-1">Strategic IND development framework with intelligent cross-jurisdictional compliance analysis and automated documentation lifecycle management</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="mt-8 text-center">
-              <Link to="/features">
-                <button className="inline-flex items-center text-blue-600 font-medium hover:text-blue-800">
-                  Explore Platform Capabilities <ArrowRight size={16} className="ml-2" />
-                </button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
+
       
-      {/* Features Grid Section */}
-      <section className="py-20 bg-gradient-to-b from-gray-50 to-white">
-        <div className="container mx-auto px-6">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Enterprise-Grade Regulatory Intelligence Ecosystem</h2>
-            <p className="text-xl text-gray-600">A unified governance architecture that orchestrates complex regulatory operations across therapeutic domains and global jurisdictional frameworks, delivering cohesive compliance assurance at every stage of the product lifecycle.</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {FEATURES.map((feature, i) => (
-              <div key={i} className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 hover:shadow-md transition-shadow duration-200">
-                <div className="flex justify-center items-center w-12 h-12 rounded-lg bg-gray-50 mb-6">
-                  {feature.icon}
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">{feature.title}</h3>
-                <p className="text-gray-600">{feature.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Unified Platform Features Section */}
+      <UnifiedPlatformFeatures />
       
       {/* Testimonials Section */}
       <section className="py-20 bg-gradient-to-r from-indigo-900 to-blue-900 text-white">
