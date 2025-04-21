@@ -45,105 +45,105 @@ export default function DashboardSidebar({ collapsed, setCollapsed }) {
 
   const navItems = [
     { 
-      title: t('Home'), 
+      title: t('Dashboard'), 
       icon: <Home size={20} />, 
-      link: '/dashboard',
+      link: '/ind/wizard',
       notification: null
     },
     { 
-      title: t('CSR Intelligence'), 
+      title: t('Pre-IND Planning'), 
       icon: <Database size={20} />, 
-      link: '/csr-library',
+      link: '/ind/wizard/pre-planning',
       notification: null,
       subItems: [
-        { title: t('Library Search'), icon: <Search size={18} />, link: '/csr-library/search' },
-        { title: t('Upload CSR'), icon: <Upload size={18} />, link: '/csr-library/upload' },
-        { title: t('Success Analytics'), icon: <BarChart size={18} />, link: '/csr-library/analytics' }
+        { title: t('Meeting Strategy'), icon: <Search size={18} />, link: '/ind/wizard/pre-planning' },
+        { title: t('FDA Interactions'), icon: <Upload size={18} />, link: '/ind/wizard/pre-planning' },
+        { title: t('Target Product Profile'), icon: <BarChart size={18} />, link: '/ind/wizard/pre-planning' }
       ]
     },
     { 
-      title: t('Protocol Optimizer'), 
+      title: t('Nonclinical Data'), 
       icon: <Brain size={20} />, 
-      link: '/protocol-optimization',
+      link: '/ind/wizard/nonclinical',
       notification: null,
       subItems: [
-        { title: t('Create New'), icon: <FileText size={18} />, link: '/protocol-optimization/new' },
-        { title: t('Open Existing'), icon: <FileSearch size={18} />, link: '/protocol-optimization/existing' },
-        { title: t('Intelligence Panel'), icon: <BarChart2 size={18} />, link: '/protocol-optimization/intelligence' }
+        { title: t('Pharmacology'), icon: <FileText size={18} />, link: '/ind/wizard/nonclinical' },
+        { title: t('Toxicology'), icon: <FileSearch size={18} />, link: '/ind/wizard/nonclinical' },
+        { title: t('Study Selection'), icon: <BarChart2 size={18} />, link: '/ind/wizard/nonclinical' }
       ]
     },
     { 
-      title: t('CER Generator'), 
+      title: t('CMC Section'), 
       icon: <Beaker size={20} />, 
-      link: '/cer-dashboard',
+      link: '/ind/wizard/cmc',
       notification: null,
       subItems: [
-        { title: t('Create Report'), icon: <FileText size={18} />, link: '/cer-dashboard/create' },
-        { title: t('FAERS Monitor'), icon: <Microscope size={18} />, link: '/cer-dashboard/faers' },
-        { title: t('Export Options'), icon: <ArrowUpRight size={18} />, link: '/cer-dashboard/export' }
+        { title: t('Drug Substance'), icon: <FileText size={18} />, link: '/ind/wizard/cmc' },
+        { title: t('Drug Product'), icon: <Microscope size={18} />, link: '/ind/wizard/cmc' },
+        { title: t('Manufacturing'), icon: <ArrowUpRight size={18} />, link: '/ind/wizard/cmc' }
       ]
     },
     { 
-      title: t('IND Automation'), 
+      title: t('IND Wizard'), 
       icon: <Package size={20} />, 
       link: '/ind/wizard',
       notification: 2,
       subItems: [
-        { title: t('IND Wizard'), icon: <FileText size={18} />, link: '/ind/wizard' },
+        { title: t('IND Overview'), icon: <FileText size={18} />, link: '/ind/wizard' },
         { title: t('Module Builder'), icon: <FileSearch size={18} />, link: '/ind/wizard/nonclinical' },
-        { title: t('eCTD Packager'), icon: <Package size={18} />, link: '/ind/wizard/final-assembly' },
-        { title: t('ESG Gateway'), icon: <ArrowUpRight size={18} />, link: '/ind/wizard/final-submission' }
+        { title: t('eCTD Packager'), icon: <Package size={18} />, link: '/ind/wizard' },
+        { title: t('ESG Gateway'), icon: <ArrowUpRight size={18} />, link: '/ind/wizard' }
       ]
     },
     { 
-      title: t('Submissions'), 
+      title: t('Clinical Protocol'), 
       icon: <Package size={20} />, 
-      link: '/portal/submissions',
+      link: '/ind/wizard',
       notification: null
     },
     { 
-      title: t('Context Assistant'), 
+      title: t('AI Assistant'), 
       icon: <MessageSquare size={20} />, 
-      link: '/portal/assistant',
+      link: '/ind/wizard',
       notification: null
     },
     { 
       title: t('Documents'), 
       icon: <Files size={20} />, 
-      link: '/documents',
+      link: '/ind/wizard',
       notification: null,
       subItems: [
-        { title: t('My Documents'), icon: <FileText size={18} />, link: '/documents' },
-        { title: t('Shared With Me'), icon: <MessageSquare size={18} />, link: '/documents/shared' }
+        { title: t('My Documents'), icon: <FileText size={18} />, link: '/ind/wizard' },
+        { title: t('Shared With Me'), icon: <MessageSquare size={18} />, link: '/ind/wizard' }
       ]
     },
     { 
       title: t('TrialSage Assistant'), 
       icon: <Coffee size={20} />, 
-      link: '/assistant',
+      link: '/ind/wizard',
       notification: null
     },
     { 
-      title: t('KPI Analytics'), 
+      title: t('Analytics'), 
       icon: <TrendingUp size={20} />, 
-      link: '/kpi',
+      link: '/ind/wizard',
       notification: null,
       subItems: [
-        { title: t('Custom Dashboards'), icon: <BarChart2 size={18} />, link: '/kpi/dashboards' },
-        { title: t('Data Sources'), icon: <Database size={18} />, link: '/kpi/sources' },
-        { title: t('Alert Configuration'), icon: <Bell size={18} />, link: '/kpi/alerts' }
+        { title: t('Custom Dashboards'), icon: <BarChart2 size={18} />, link: '/ind/wizard' },
+        { title: t('Data Sources'), icon: <Database size={18} />, link: '/ind/wizard' },
+        { title: t('Alert Configuration'), icon: <Bell size={18} />, link: '/ind/wizard' }
       ]
     },
     { 
-      title: t('Knowledge Library'), 
+      title: t('Regulatory Library'), 
       icon: <BookOpen size={20} />, 
-      link: '/academic',
+      link: '/ind/wizard',
       notification: 3
     },
     { 
       title: t('Admin'), 
       icon: <Shield size={20} />, 
-      link: '/admin',
+      link: '/ind/wizard',
       notification: null
     }
   ];
