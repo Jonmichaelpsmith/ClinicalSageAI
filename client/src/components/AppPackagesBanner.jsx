@@ -7,7 +7,8 @@ import {
   Beaker, 
   FileSymlink, 
   Folder, 
-  BarChart2, 
+  BarChart2,
+  BarChart,
   FileArchive,
   Shield,
   LogIn,
@@ -119,6 +120,13 @@ export default function AppPackagesBanner({ currentPath }) {
       to: "/cer-generator",
       icon: <Beaker size={18} />,
       color: "bg-rose-600 hover:bg-rose-700"
+    },
+    {
+      label: "Study & Protocol",
+      description: "Statistical model-driven design",
+      to: "/study-designer",
+      icon: <BarChart size={18} />,
+      color: "bg-indigo-600 hover:bg-indigo-700"
     },
     {
       label: "Use Case Library",
