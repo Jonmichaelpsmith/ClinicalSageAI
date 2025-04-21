@@ -100,15 +100,8 @@ export default function AppPackagesBanner({ currentPath }) {
   // Top banner entry buttons
   const entryButtons = [
     {
-      label: "Submission Builder",
-      description: "Build and validate submissions",
-      to: "/builder",
-      icon: <FileArchive size={18} />,
-      color: "bg-blue-600 hover:bg-blue-700"
-    },
-    {
-      label: "IND Architect",
-      description: "Design and manage INDs",
+      label: "Accelerate IND",
+      description: "Your AI partner for IND success",
       to: "/ind-architect",
       icon: <FileSymlink size={18} />,
       color: "bg-purple-600 hover:bg-purple-700"
@@ -119,13 +112,6 @@ export default function AppPackagesBanner({ currentPath }) {
       to: "/csr-intelligence",
       icon: <Database size={18} />,
       color: "bg-emerald-600 hover:bg-emerald-700"
-    },
-    {
-      label: "IND Full Solution",
-      description: "End-to-end IND package templates",
-      to: "/ind-full-solution",
-      icon: <FileText size={18} />,
-      color: "bg-indigo-600 hover:bg-indigo-700"
     },
     {
       label: "CER Module",
@@ -145,13 +131,6 @@ export default function AppPackagesBanner({ currentPath }) {
   
   // Client portal buttons
   const clientPortals = [
-    {
-      label: "Lumen Bio Portal",
-      description: "Client dashboard & reports",
-      to: "/lumen-bio/dashboard",
-      icon: <Shield size={18} />,
-      color: "bg-amber-600 hover:bg-amber-700"
-    },
     {
       label: "Client Access",
       description: "Secure portal login",
@@ -236,18 +215,6 @@ export default function AppPackagesBanner({ currentPath }) {
                 </span>
                 <div className="absolute left-0 mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-50 hidden group-hover:block">
                   <div className="py-1">
-                    <Link to="/lumen-bio/dashboard">
-                      <div className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
-                        <Shield size={16} className="mr-2 text-blue-500" />
-                        Lumen Bio Dashboard
-                      </div>
-                    </Link>
-                    <Link to="/lumen-bio/reports">
-                      <div className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
-                        <FileText size={16} className="mr-2 text-blue-500" />
-                        Lumen Bio Reports
-                      </div>
-                    </Link>
                     <Link to="/client-portal">
                       <div className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
                         <User size={16} className="mr-2 text-rose-500" />
@@ -299,20 +266,20 @@ export default function AppPackagesBanner({ currentPath }) {
           </div>
           
           {/* Feature Tiles Grid - Moved from the top banner */}
-          <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
+          <div className="grid md:grid-cols-4 gap-4 lg:gap-6 max-w-4xl mx-auto">
             {entryButtons.map((button, index) => (
               <Link key={index} to={button.to}>
-                <div className={`${button.color} rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 h-full`}>
-                  <div className="flex items-center mb-4">
-                    <div className="bg-white/20 p-3 rounded-lg">
+                <div className={`${button.color} rounded-lg shadow-md hover:shadow-lg transition-all duration-300 p-3 h-full`}>
+                  <div className="flex items-center mb-2">
+                    <div className="bg-white/20 p-2 rounded-lg">
                       {button.icon}
                     </div>
-                    <h3 className="text-xl font-bold text-white ml-4">{button.label}</h3>
+                    <h3 className="text-base font-bold text-white ml-2">{button.label}</h3>
                   </div>
-                  <p className="text-white/90 mb-4">{button.description}</p>
+                  <p className="text-xs text-white/90 mb-2">{button.description}</p>
                   <div className="flex justify-end">
-                    <div className="bg-white/10 hover:bg-white/20 transition-colors duration-200 rounded-full p-2">
-                      <ChevronRight size={18} className="text-white" />
+                    <div className="bg-white/10 hover:bg-white/20 transition-colors duration-200 rounded-full p-1">
+                      <ChevronRight size={14} className="text-white" />
                     </div>
                   </div>
                 </div>
@@ -321,20 +288,20 @@ export default function AppPackagesBanner({ currentPath }) {
           </div>
           
           {/* Client Portal Tiles */}
-          <div className="grid md:grid-cols-3 gap-6 lg:gap-8 mt-8">
+          <div className="grid md:grid-cols-4 gap-4 lg:gap-6 mt-6 max-w-4xl mx-auto">
             {clientPortals.map((portal, index) => (
               <Link key={index} to={portal.to}>
-                <div className={`${portal.color} rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 h-full`}>
-                  <div className="flex items-center mb-4">
-                    <div className="bg-white/20 p-3 rounded-lg">
+                <div className={`${portal.color} rounded-lg shadow-md hover:shadow-lg transition-all duration-300 p-3 h-full`}>
+                  <div className="flex items-center mb-2">
+                    <div className="bg-white/20 p-2 rounded-lg">
                       {portal.icon}
                     </div>
-                    <h3 className="text-xl font-bold text-white ml-4">{portal.label}</h3>
+                    <h3 className="text-base font-bold text-white ml-2">{portal.label}</h3>
                   </div>
-                  <p className="text-white/90 mb-4">{portal.description}</p>
+                  <p className="text-xs text-white/90 mb-2">{portal.description}</p>
                   <div className="flex justify-end">
-                    <div className="bg-white/10 hover:bg-white/20 transition-colors duration-200 rounded-full p-2">
-                      <ChevronRight size={18} className="text-white" />
+                    <div className="bg-white/10 hover:bg-white/20 transition-colors duration-200 rounded-full p-1">
+                      <ChevronRight size={14} className="text-white" />
                     </div>
                   </div>
                 </div>
