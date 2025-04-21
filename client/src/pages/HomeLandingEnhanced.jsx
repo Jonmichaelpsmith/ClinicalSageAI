@@ -106,7 +106,7 @@ const DisruptionCard = ({ icon, title, legacy, summary, caseStudies }) => {
 };
 
 import AppPackagesBanner from '../components/AppPackagesBanner';
-import UnifiedSolutionBundles from '../components/UnifiedSolutionBundles';
+import SimpleSolutionBundles from '../components/SimpleSolutionBundles';
 import AdvancedFeatureCards from '../components/AdvancedFeatureCards';
 import { apiRequest } from '../lib/queryClient';
 
@@ -237,43 +237,43 @@ export default function HomeLandingEnhanced() {
       {/* Application Packages Banner */}
       <AppPackagesBanner currentPath={location} />
       
-      {/* Hero Section */}
+      {/* Hero Section - Compact Version */}
       <section className="relative overflow-hidden bg-gradient-to-b from-indigo-900 via-blue-900 to-blue-800 text-white">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute inset-0 bg-[url('https://raw.githubusercontent.com/Concepts2Cures/assets/main/dna-pattern.svg')] bg-repeat opacity-30"></div>
         </div>
-        <div className="container mx-auto px-6 pt-20 pb-24 relative z-10">
-          <div className="max-w-4xl mx-auto text-center mb-12">
-            <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-blue-700/30 backdrop-blur-sm text-blue-200 text-sm font-medium mb-6">
-              <span className="flex h-2 w-2 rounded-full bg-blue-400 mr-2"></span>
+        <div className="container mx-auto px-6 pt-12 pb-16 relative z-10">
+          <div className="max-w-4xl mx-auto text-center mb-8">
+            <div className="inline-flex items-center px-3 py-1 rounded-full bg-blue-700/30 backdrop-blur-sm text-blue-200 text-xs font-medium mb-4">
+              <span className="flex h-1.5 w-1.5 rounded-full bg-blue-400 mr-1.5"></span>
               Enterprise Regulatory Intelligence Platform
             </div>
-            <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-6 bg-gradient-to-r from-blue-300 via-blue-100 to-indigo-200 text-transparent bg-clip-text">
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 bg-gradient-to-r from-blue-300 via-blue-100 to-indigo-200 text-transparent bg-clip-text">
               Transforming Regulatory <br className="hidden md:block" /> Intelligence for Life Sciences
             </h1>
-            <p className="text-xl text-blue-100 max-w-3xl mx-auto mb-10">
-              Concept2Cures.AI delivers a comprehensive regulatory suite integrating <br className="hidden md:block" /> advanced machine learning with industry-compliant frameworks to revolutionize global submissions, clinical intelligence, and regulatory strategy across therapeutic domains.
+            <p className="text-base text-blue-100 max-w-2xl mx-auto mb-6">
+              Concept2Cures.AI delivers a comprehensive regulatory suite integrating advanced machine learning with industry-compliant frameworks to revolutionize global submissions and regulatory strategy.
             </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <Link to="/signup" className="px-8 py-4 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-medium rounded-lg shadow-lg shadow-blue-900/30 transition-all duration-200">
+            <div className="flex flex-col sm:flex-row justify-center gap-3">
+              <Link to="/signup" className="px-6 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white text-sm font-medium rounded-md shadow shadow-blue-900/30 transition-all duration-200">
                 Start Free Trial
               </Link>
-              <Link to="/demo" className="px-8 py-4 bg-blue-800/40 hover:bg-blue-700/40 border border-blue-600/30 backdrop-blur-sm text-blue-100 font-medium rounded-lg shadow transition-all duration-200">
+              <Link to="/demo" className="px-6 py-2 bg-blue-800/40 hover:bg-blue-700/40 border border-blue-600/30 backdrop-blur-sm text-blue-100 text-sm font-medium rounded-md shadow-sm transition-all duration-200">
                 Request Demo
               </Link>
             </div>
           </div>
           
           {/* Highlighted Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-16">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-8">
             {METRICS.map((metric, i) => (
-              <div key={i} className="bg-gradient-to-br from-blue-800/40 to-indigo-900/40 backdrop-blur-sm border border-blue-700/30 rounded-xl p-6 text-center transform transition-transform hover:-translate-y-1 duration-200">
-                <div className="flex justify-center mb-4">
-                  {metric.icon}
+              <div key={i} className="bg-gradient-to-br from-blue-800/40 to-indigo-900/40 backdrop-blur-sm border border-blue-700/30 rounded-md p-3 text-center transition-all duration-200 hover:bg-blue-800/50">
+                <div className="flex justify-center mb-2">
+                  {React.cloneElement(metric.icon, { className: 'w-8 h-8', size: 20 })}
                 </div>
-                <h3 className="text-3xl md:text-4xl font-bold text-white mb-1">{metric.value}</h3>
-                <p className="font-medium text-blue-200 mb-2">{metric.label}</p>
-                <p className="text-sm text-blue-300">{metric.description}</p>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-0.5">{metric.value}</h3>
+                <p className="font-medium text-blue-200 text-sm mb-1">{metric.label}</p>
+                <p className="text-xs text-blue-300">{metric.description}</p>
               </div>
             ))}
           </div>
@@ -281,8 +281,8 @@ export default function HomeLandingEnhanced() {
         
         {/* Wave divider */}
         <div className="absolute bottom-0 left-0 right-0">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 120" className="w-full h-auto -mb-1">
-            <path fill="#ffffff" fillOpacity="1" d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z"></path>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 80" className="w-full h-auto -mb-1">
+            <path fill="#ffffff" fillOpacity="1" d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,80L1360,80C1280,80,1120,80,960,80C800,80,640,80,480,80C320,80,160,80,80,80L0,80Z"></path>
           </svg>
         </div>
       </section>
@@ -496,8 +496,8 @@ export default function HomeLandingEnhanced() {
       
 
       
-      {/* Unified Solution Bundles with Demo Tiles */}
-      <UnifiedSolutionBundles />
+      {/* Simple Solution Bundles with Demo Tiles */}
+      <SimpleSolutionBundles />
       
       {/* Testimonials Section */}
       <section className="py-20 bg-gradient-to-r from-indigo-900 to-blue-900 text-white">
