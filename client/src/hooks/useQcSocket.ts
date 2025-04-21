@@ -1,5 +1,7 @@
+// Toast notification system upgraded to SecureToast
+
 import { useState, useEffect, useCallback } from 'react';
-import { toast } from 'react-toastify';
+import { useToast } from '../App';
 
 // QC Event interface for WebSocket messages
 export interface QcEvent {
@@ -75,9 +77,9 @@ export const useQcSocket = (documentIds: string[]) => {
             
             // Show toast notification for status changes
             if (data.status === 'passed') {
-              toast.success(`Document ${data.id.substring(0, 8)}... passed QC`);
+              useToast().showToast(`Document ${data.id.substring(0, 8, "success")}... passed QC`);
             } else if (data.status === 'failed') {
-              toast.error(`Document ${data.id.substring(0, 8)}... failed QC: ${data.errors?.length || 0} errors`);
+              useToast().showToast(`Document ${data.id.substring(0, 8, "error")}... failed QC: ${data.errors?.length || 0} errors`);
             }
           }
         } catch (err) {
@@ -101,7 +103,7 @@ export const useQcSocket = (documentIds: string[]) => {
           }, delay);
         } else {
           console.error('Max WebSocket reconnection attempts reached');
-          toast.error('Connection to QC service lost. Please refresh the page.');
+          useToast().showToast('Connection to QC service lost. Please refresh the page.', "error");
         }
       };
       

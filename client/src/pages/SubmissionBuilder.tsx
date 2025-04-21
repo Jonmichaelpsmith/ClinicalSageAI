@@ -1,3 +1,5 @@
+// Toast notification system upgraded to SecureToast
+
 // SubmissionBuilder.tsx – region‑aware validation & live hints
 import React, { useEffect, useState, useRef } from 'react';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -15,12 +17,12 @@ import {
   Clock, 
   ShieldCheck 
 } from 'lucide-react';
-import { toast, ToastContainer } from 'react-toastify';
+import { useToast } from '../App';
 import { useLocation } from 'wouter';
 import AppPackagesBanner from '../components/AppPackagesBanner';
-import 'react-toastify/dist/ReactToastify.css';
+
 import '@minoru/react-dnd-treeview/dist/react-dnd-treeview.css';
-import 'react-toastify/dist/ReactToastify.css';
+
 
 const backend = HTML5Backend;
 
@@ -108,7 +110,7 @@ export default function SubmissionBuilder({ region = 'FDA' }: { region?: string 
     // Connection opened
     socket.addEventListener('open', (event) => {
       console.log('Connected to QC update server');
-      toast.info('Live QC updates connected');
+      useToast().showToast('Live QC updates connected', "info");
     });
     
     // Listen for messages
@@ -153,9 +155,9 @@ export default function SubmissionBuilder({ region = 'FDA' }: { region?: string 
         
         // Show toast notification for important status changes
         if (message.status === 'passed') {
-          toast.success(`${message.documentId}: QC validation passed`);
+          useToast().showToast(`${message.documentId}: QC validation passed`, "success");
         } else if (message.status === 'failed') {
-          toast.error(`${message.documentId}: QC validation failed - ${message.details || 'Check document'}`);
+          useToast().showToast(`${message.documentId}: QC validation failed - ${message.details || 'Check document'}`, "error");
         }
       } catch (err) {
         console.error('Error processing QC message:', err);
@@ -166,7 +168,7 @@ export default function SubmissionBuilder({ region = 'FDA' }: { region?: string 
     socket.addEventListener('close', () => {
       console.log('QC update connection closed');
       if (liveFeedActive) {
-        toast.warning('QC update feed disconnected, will retry in 5s');
+        useToast().showToast('QC update feed disconnected, will retry in 5s', "warning");
         setTimeout(() => setLiveFeedActive(true), 5000);
       }
     });
@@ -283,23 +285,23 @@ export default function SubmissionBuilder({ region = 'FDA' }: { region?: string 
   };
 
   const save = async () => {
-    if (invalid.size) { toast.error('Fix invalid placements first'); return; }
+    if (invalid.size) { useToast().showToast('Fix invalid placements first', "error"); return; }
     const docs = tree.filter(n=>!n.droppable&&n.parent!==0).map((n,i)=>({
       id:n.id,
       module: tree.find(f=>f.id===n.parent)!.text,
       order:i
     }));
     await fetch('/api/documents/builder-order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({docs})});
-    toast.success('Order saved');
+    useToast().showToast('Order saved', "success");
   };
 
   // Function to toggle live feed
   const toggleLiveFeed = () => {
     setLiveFeedActive(!liveFeedActive);
     if (!liveFeedActive) {
-      toast.info('Enabling live QC updates...');
+      useToast().showToast('Enabling live QC updates...', "info");
     } else {
-      toast.info('Live QC updates paused');
+      useToast().showToast('Live QC updates paused', "info");
       if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
         socketRef.current.close();
       }
@@ -309,11 +311,11 @@ export default function SubmissionBuilder({ region = 'FDA' }: { region?: string 
   // Function to trigger QC validation for a document
   const runQcValidation = async (docId: number) => {
     try {
-      toast.info(`Requesting QC validation for document #${docId}`);
+      useToast().showToast(`Requesting QC validation for document #${docId}`, "info");
       await fetch(`/api/documents/${docId}/validate`, { method: 'POST' });
     } catch (err) {
       console.error('Error triggering QC validation:', err);
-      toast.error('Failed to trigger validation');
+      useToast().showToast('Failed to trigger validation', "error");
     }
   };
 

@@ -1,0 +1,162 @@
+Okay, let's bridge that connection. If your existing toast function in App.tsx was previously responsible for triggering notifications (likely using react-toastify), you now need to update it to use the showToast function from your SecureToast context.
+
+Here's how you can modify App.tsx (or any other component where the old toast function was used):
+
+Import the useToast hook:
+
+TypeScript
+
+// client/src/App.tsx
+import React from 'react';
+import { ToastProvider, useToast } from './components/security/SecureToast';
+// ... other imports
+Access the showToast function using the hook:
+
+Inside your App component (or any child component where the toast function was defined or called), use the useToast hook to get access to the showToast function:
+
+TypeScript
+
+function App() {
+  const { showToast } = useToast();
+
+  // ... your other logic
+
+  // Modify your existing 'toast' function to use 'showToast'
+  const toast = (message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info', duration: number = 3000) => {
+    showToast(message, type, duration);
+  };
+
+  // ... the rest of your App component, using the 'toast' function as before
+}
+If the toast function was defined in a child component, you'd follow the same pattern within that component. If it was passed down as a prop, you'd need to ensure the parent component that renders it has access to the showToast function via the useToast hook and passes it down.
+
+Ensure App is wrapped with ToastProvider:
+
+As shown in the previous example, make sure your App component (or the root component of your application) is wrapped with the ToastProvider to make the context available to all its descendants.
+
+TypeScript
+
+// client/src/index.tsx or main entry point
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import { ToastProvider } from './components/security/SecureToast'; // Make sure this import is correct
+// ... other imports
+
+const root = ReactDOM.createRoot(
+  document.getElementById('root') as HTMLElement
+);
+root.render(
+  <React.StrictMode>
+    <ToastProvider>
+      <App />
+    </ToastProvider>
+  </React.StrictMode>
+);
+By following these steps, whenever your existing toast function in App.tsx (or elsewhere) is called, it will now trigger the showToast function from your SecureToast component, displaying the custom notifications you've implemented.
+
+Let me know if you encounter any specific scenarios where the connection isn't working, and we can troubleshoot further!
+
+
+
+
+
+
+I see there's still a dependency issue with react-toastify in the application. Let's completely remove all references to react-toastify in the application to prevent dependency errors, and fully integrate our custom secure toast solution:
+
+
+
+Coding partner
+Okay, let's surgically remove all traces of react-toastify and ensure your custom SecureToast is the sole notification provider. Here's how to proceed:
+
+Uninstall react-toastify:
+
+First, to completely remove the dependency, run the following command in your terminal within the client directory of your project:
+
+Bash
+
+npm uninstall react-toastify
+# or if you are using yarn:
+yarn remove react-toastify
+Remove all import statements:
+
+Carefully go through all your project files within the client/src directory (and any subdirectories) and remove any lines that import react-toastify. This will likely look like:
+
+TypeScript
+
+import { toast as originalToast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+Make sure to delete these lines wherever they appear. Your IDE's "Find in Files" functionality (usually Ctrl+Shift+F or Cmd+Shift+F) can be very helpful for this. Search for "react-toastify" to locate all relevant import statements.
+
+Replace usages of react-toastify's toast function:
+
+Wherever you were previously calling originalToast() (or however you imported it), you now need to call your custom showToast function from the useToast hook.
+
+For example, if you had code like this:
+
+TypeScript
+
+import { toast } from 'react-toastify';
+
+function SomeComponent() {
+  const handleAction = () => {
+    // ... some logic
+    toast.success('Action completed!');
+  };
+
+  // ...
+}
+You need to change it to:
+
+TypeScript
+
+import React from 'react';
+import { useToast } from './components/security/SecureToast';
+
+function SomeComponent() {
+  const { showToast } = useToast();
+
+  const handleAction = () => {
+    // ... some logic
+    showToast('Action completed!', 'success');
+  };
+
+  // ...
+}
+Remove the ToastContainer component:
+
+If you were using the <ToastContainer /> component from react-toastify in your App.tsx or a similar root-level component, you should now remove it. Your custom toast notifications are rendered directly within the ToastProvider.
+
+TypeScript
+
+// client/src/App.tsx (before)
+import React from 'react';
+import { ToastContainer } from 'react-toastify';
+import { ToastProvider, useToast } from './components/security/SecureToast';
+// ...
+
+function App() {
+  // ...
+  return (
+    <ToastProvider>
+      {/* ... other components */}
+      <ToastContainer /> {/* Remove this line */}
+    </ToastProvider>
+  );
+}
+TypeScript
+
+// client/src/App.tsx (after)
+import React from 'react';
+import { ToastProvider, useToast } from './components/security/SecureToast';
+// ...
+
+function App() {
+  // ...
+  return (
+    <ToastProvider>
+      {/* ... other components */}
+    </ToastProvider>
+  );
+}
+By following these steps, you will completely remove react-toastify from your project and rely solely on your custom SecureToast implementation for displaying notifications. Make sure to thoroughly test your application after these changes to ensure all notifications are working as expected.

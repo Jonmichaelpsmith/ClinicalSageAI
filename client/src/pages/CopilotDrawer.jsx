@@ -1,6 +1,8 @@
+// Toast notification system upgraded to SecureToast
+
 // CopilotDrawer.jsx - Slide-over chat UI with agent suggestions
 import React, { useState, useEffect, useRef } from 'react';
-import { toast } from 'react-toastify';
+import { useToast } from '../App';
 import { X, Send, CheckCircle, XCircle, MessageSquare, Lightbulb } from 'lucide-react';
 
 export default function CopilotDrawer({ isOpen, onClose, projectId = 1 }) {
@@ -55,7 +57,7 @@ export default function CopilotDrawer({ isOpen, onClose, projectId = 1 }) {
           });
         } else if (data.type === 'tool_call') {
           // Show tool call in UI
-          toast.info(`Agent is calling: ${data.tool_name}`);
+          useToast().showToast(`Agent is calling: ${data.tool_name}`, "info");
         } else if (data.type === 'tool_result') {
           // Show tool result in UI
           setMessages(prev => [
@@ -82,7 +84,7 @@ export default function CopilotDrawer({ isOpen, onClose, projectId = 1 }) {
           
           setIsLoading(false);
         } else if (data.type === 'error') {
-          toast.error(`Error: ${data.content}`);
+          useToast().showToast(`Error: ${data.content}`, "error");
           setIsLoading(false);
         }
       };
@@ -93,7 +95,7 @@ export default function CopilotDrawer({ isOpen, onClose, projectId = 1 }) {
       
       socket.onerror = (error) => {
         console.error("WebSocket error:", error);
-        toast.error("Connection error. Please try again.");
+        useToast().showToast("Connection error. Please try again.", "error");
         setIsLoading(false);
       };
       
@@ -133,7 +135,7 @@ export default function CopilotDrawer({ isOpen, onClose, projectId = 1 }) {
       }
     } catch (error) {
       console.error('Error loading suggestions:', error);
-      toast.error('Failed to load suggestions');
+      useToast().showToast('Failed to load suggestions', "error");
     }
   };
 
@@ -238,7 +240,7 @@ export default function CopilotDrawer({ isOpen, onClose, projectId = 1 }) {
             readStream();
           }).catch(error => {
             console.error('Error reading stream:', error);
-            toast.error('Error reading response');
+            useToast().showToast('Error reading response', "error");
             setIsLoading(false);
           });
         }
@@ -247,7 +249,7 @@ export default function CopilotDrawer({ isOpen, onClose, projectId = 1 }) {
       })
       .catch(error => {
         console.error('Error sending message:', error);
-        toast.error('Failed to send message');
+        useToast().showToast('Failed to send message', "error");
         setIsLoading(false);
       });
     }
@@ -262,7 +264,7 @@ export default function CopilotDrawer({ isOpen, onClose, projectId = 1 }) {
 
   const executeSuggestion = async (suggestion) => {
     if (!suggestion.action) {
-      toast.error('This suggestion has no executable action');
+      useToast().showToast('This suggestion has no executable action', "error");
       return;
     }
     
@@ -273,7 +275,7 @@ export default function CopilotDrawer({ isOpen, onClose, projectId = 1 }) {
       });
       
       if (response.ok) {
-        toast.success('Action executed successfully');
+        useToast().showToast('Action executed successfully', "success");
         // Update suggestion status
         updateSuggestion(suggestion.id, 'accepted');
       } else {
@@ -281,7 +283,7 @@ export default function CopilotDrawer({ isOpen, onClose, projectId = 1 }) {
       }
     } catch (error) {
       console.error('Error executing suggestion:', error);
-      toast.error('Failed to execute action');
+      useToast().showToast('Failed to execute action', "error");
     }
   };
 
@@ -307,7 +309,7 @@ export default function CopilotDrawer({ isOpen, onClose, projectId = 1 }) {
       }
     } catch (error) {
       console.error('Error updating suggestion:', error);
-      toast.error('Failed to update suggestion');
+      useToast().showToast('Failed to update suggestion', "error");
     }
   };
 

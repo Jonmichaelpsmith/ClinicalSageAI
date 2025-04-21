@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ReactDiffViewer from 'react-diff-viewer-continued';
-import { toast } from 'react-toastify';
+import { useToast } from '../App';
 
 // Define DiffType enum since it's not exported from the library
 enum DiffType {
@@ -73,7 +73,8 @@ export default function DocumentDiffViewer({
       } catch (err) {
         console.error('Error fetching document versions:', err);
         setError((err as Error).message || 'Failed to load document versions');
-        toast.error('Failed to load document versions');
+        const { showToast } = useToast();
+        showToast('Failed to load document versions', 'error');
       } finally {
         setLoading(false);
       }
@@ -111,7 +112,8 @@ export default function DocumentDiffViewer({
       } catch (err) {
         console.error('Error fetching version content:', err);
         setError((err as Error).message || 'Failed to load version content');
-        toast.error('Failed to load version content');
+        const { showToast } = useToast();
+        showToast('Failed to load version content', 'error');
       } finally {
         setLoading(false);
       }
@@ -125,7 +127,7 @@ export default function DocumentDiffViewer({
   const handleOldVersionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const versionId = parseInt(e.target.value);
     if (versionId === selectedNewVersionId) {
-      toast.warning('Please select different versions for comparison');
+      useToast().showToast('Please select different versions for comparison', "warning");
       return;
     }
     setSelectedOldVersionId(versionId);
@@ -134,7 +136,7 @@ export default function DocumentDiffViewer({
   const handleNewVersionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const versionId = parseInt(e.target.value);
     if (versionId === selectedOldVersionId) {
-      toast.warning('Please select different versions for comparison');
+      useToast().showToast('Please select different versions for comparison', "warning");
       return;
     }
     setSelectedNewVersionId(versionId);

@@ -1,7 +1,9 @@
+// Toast notification system upgraded to SecureToast
+
 import React, { useState } from 'react';
 import { Card, CardBody, CardHeader, CardFooter, CardTitle, CardSubtitle, Button, Alert, Spinner } from 'reactstrap';
 import { FileDown, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
-import { toast } from 'react-toastify';
+import { useToast } from '../App';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const IQOQDownload: React.FC = () => {
@@ -20,13 +22,13 @@ const IQOQDownload: React.FC = () => {
       // Set success after a short delay (since we can't directly track download completion)
       setTimeout(() => {
         setDownloadStatus('success');
-        toast.success('IQ/OQ/PQ validation document download initiated.');
+        useToast().showToast('IQ/OQ/PQ validation document download initiated.', "success");
         setLoading(false);
       }, 1500);
     } catch (error) {
       console.error('Download error:', error);
       setDownloadStatus('error');
-      toast.error('Failed to download validation document. Please try again.');
+      useToast().showToast('Failed to download validation document. Please try again.', "error");
       setLoading(false);
     }
   };
