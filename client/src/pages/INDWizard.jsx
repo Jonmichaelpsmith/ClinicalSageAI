@@ -5,11 +5,11 @@ import IndWizardLayout from '../components/ind-wizard/IndWizardLayout';
 import PreIndStep from '../components/ind-wizard/steps/PreIndStep';
 import NonclinicalStep from '../components/ind-wizard/steps/NonclinicalStep';
 import ClinicalProtocolStep from '../components/ind-wizard/steps/ClinicalProtocolStep';
+import InvestigatorBrochureStep from '../components/ind-wizard/steps/InvestigatorBrochureStep';
 import { Button } from '@/components/ui/button';
 
 // This would be filled with actual components as they are created
 const CmcStep = () => <div className="p-10 text-center">CMC Data (Coming Soon)</div>;
-const InvestigatorBrochureStep = () => <div className="p-10 text-center">Investigator Brochure (Coming Soon)</div>;
 const FDAFormsStep = () => <div className="p-10 text-center">FDA Forms (Coming Soon)</div>;
 const FinalSubmissionStep = () => <div className="p-10 text-center">Final Submission (Coming Soon)</div>;
 
