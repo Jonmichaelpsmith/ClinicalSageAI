@@ -71,7 +71,7 @@ targetFiles.forEach(filePath => {
     
     // Remove ToastContainer component
     content = content.replace(
-      /<ToastContainer[^>]*\/>/, 
+      //, 
       '<!-- Toast container now provided by SecureToast -->'
     );
     

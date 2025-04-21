@@ -16,7 +16,7 @@ function process_directory() {
       echo "🔧 Fixing imports in: $file"
       
       # Replace react-toastify imports with our secure implementation
-      sed -i 's/import.*from ["\']react-toastify["\']/import { useToast } from "..\/..\/hooks\/use-toast"/g' "$file"
+      sed -i 's/import.*from ["'\''"]react-toastify["'\'']/import { useToast } from "..\/..\/hooks\/use-toast"/g' "$file"
       
       # Replace any ToastContainer components with our own
       sed -i 's/<ToastContainer.*\/>//g' "$file"
