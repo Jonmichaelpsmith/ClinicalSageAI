@@ -1,86 +1,102 @@
-import React, { useEffect } from 'react';
-import Joyride, { STATUS } from 'react-joyride';
+import React, { useEffect, useState } from 'react';
 import { useTour } from './TourContext';
-import { toast } from 'react-toastify';
+import Joyride, { STATUS } from 'react-joyride';
 
-// Define tour steps
-const TOUR_STEPS = [
+// Define the tour steps
+const tourSteps = [
   {
     target: '[data-tour="solution-header"]',
-    content: 'Welcome to TrialSage! This section shows our solution bundles tailored to your regulatory and clinical needs.',
-    disableBeacon: true,
+    content: 'Welcome to TrialSage! This section shows our complete regulatory intelligence platform.',
     placement: 'bottom',
+    disableBeacon: true,
   },
   {
-    target: '[data-tour="bundle-ind-submissions"]',
-    content: 'The IND & NDA Submission Accelerator helps regulatory teams prepare and submit compliant regulatory applications.',
+    target: '[data-tour="bundle-ind-nda"]',
+    content: 'The IND & NDA Submission Accelerator helps regulatory teams file 60% faster with zero formatting errors.',
     placement: 'top',
   },
   {
-    target: '[data-tour="bundle-csr-intelligence"]',
-    content: 'The Global CSR Intelligence Suite provides insights from clinical study reports across multiple regions.',
-    placement: 'right',
+    target: '[data-tour="bundle-csr-intel"]',
+    content: 'Our Global CSR Intelligence Library gives you real-time trial performance insights and protocol optimization.',
+    placement: 'top',
   },
   {
-    target: '[data-tour="bundle-report-toolkit"]',
-    content: 'The Report & Review Toolkit helps you generate and manage clinical evaluation reports.',
-    placement: 'left',
+    target: '[data-tour="bundle-report-review"]',
+    content: 'The Report & Review Toolkit allows medical writers to draft compliant reports in hours with built-in GSPR mapping.',
+    placement: 'top',
   },
   {
     target: '[data-tour="bundle-enterprise"]',
-    content: 'The Enterprise Command Center gives real-time updates across all your organization\'s regulatory activities.',
+    content: 'The Enterprise Command Center unifies your entire operation with centralized visibility and AI support.',
     placement: 'top',
   }
 ];
 
 export default function InteractiveTour({ tourCompleted, setTourCompleted }) {
-  const { isTourActive, tourStep, stopTour, nextStep } = useTour();
-
-  // Handle tour events
+  const { isTourActive, startTour, stopTour } = useTour();
+  const [runTour, setRunTour] = useState(false);
+  
+  // Sync tour state with the context
+  useEffect(() => {
+    setRunTour(isTourActive);
+  }, [isTourActive]);
+  
+  // Handle tour completion and callbacks
   const handleJoyrideCallback = (data) => {
-    const { status, index, type } = data;
-
-    // Tour is finished or skipped
+    const { status, type } = data;
+    
+    // Tour ended (either completed or skipped)
     if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
       stopTour();
       setTourCompleted(true);
-      toast.success("Tour completed! You can restart it anytime with the help button.");
-    }
-    
-    // Update current step
-    if (type === 'step:after' && index < TOUR_STEPS.length - 1) {
-      nextStep();
     }
   };
-
-  // Don't show tour if already completed
-  if (tourCompleted) {
-    return null;
-  }
-
+  
+  // Custom styles for the tour
+  const tourStyles = {
+    options: {
+      zIndex: 10000,
+      arrowColor: '#fff',
+      backgroundColor: '#fff',
+      primaryColor: '#3B82F6',
+      textColor: '#334155',
+      overlayColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    tooltipContainer: {
+      textAlign: 'left'
+    },
+    tooltipTitle: {
+      fontSize: '16px',
+      fontWeight: 'bold'
+    },
+    tooltipContent: {
+      padding: '10px 0'
+    },
+    buttonBack: {
+      marginRight: 10,
+      backgroundColor: '#f1f5f9'
+    },
+    buttonNext: {
+      backgroundColor: '#3B82F6'
+    }
+  };
+  
   return (
-    <Joyride
-      callback={handleJoyrideCallback}
-      continuous
-      hideCloseButton
-      run={isTourActive}
-      scrollToFirstStep
-      showProgress
-      showSkipButton
-      steps={TOUR_STEPS}
-      styles={{
-        options: {
-          zIndex: 10000,
-          primaryColor: '#3b82f6',
-          textColor: '#333',
-        },
-        tooltipContainer: {
-          textAlign: 'left',
-        },
-        buttonBack: {
-          marginRight: 10,
-        }
-      }}
-    />
+    <div className="interactive-tour-container">
+      <Joyride
+        callback={handleJoyrideCallback}
+        continuous
+        hideCloseButton
+        run={runTour}
+        scrollToFirstStep
+        showProgress
+        showSkipButton
+        steps={tourSteps}
+        styles={tourStyles}
+        disableCloseOnEsc={false}
+        disableOverlayClose={false}
+        spotlightClicks={false}
+      />
+    </div>
   );
 }
