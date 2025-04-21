@@ -146,7 +146,7 @@ const FEATURES = [
   },
   {
     title: 'Enterprise-grade Security',
-    description: 'Part 11 compliant with comprehensive audit trails and role-based access control',
+    description: 'HIPAA, GDPR and 21 CFR Part 11 compliant with SOC 2 Type II certification',
     icon: <Shield className="w-6 h-6 text-red-500" />
   }
 ];
@@ -387,7 +387,7 @@ export default function HomeLandingEnhanced() {
           <div className="flex flex-col lg:flex-row items-center gap-12">
             <div className="lg:w-1/2">
               <h2 className="text-3xl font-bold text-gray-900 mb-6">Redefining Regulatory Intelligence for the Modern Life Sciences Enterprise</h2>
-              <p className="text-lg text-gray-700 mb-8">Concept2Cures.AI's proprietary intelligence platform streamlines complex regulatory processes through sophisticated machine learning algorithms, delivering unprecedented efficiency and precision while maintaining rigorous compliance with evolving global regulatory frameworks.</p>
+              <p className="text-lg text-gray-700 mb-8">Concept2Cures.AI's proprietary intelligence platform streamlines complex regulatory processes through sophisticated machine learning algorithms, delivering unprecedented efficiency and precision while maintaining rigorous compliance with evolving global regulatory frameworks. Our platform offers 99.99% uptime with enterprise-grade SLAs and comprehensive disaster recovery.</p>
               <ul className="space-y-4">
                 {TAGLINES.map((tagline, i) => (
                   <li key={i} className="flex items-start">
@@ -473,6 +473,99 @@ export default function HomeLandingEnhanced() {
       {/* Integrated AI-Powered Solutions section completely removed as requested */}
       
       {/* Testimonials and Regulatory Authority sections completely removed as requested */}
+      
+      {/* Security & Compliance Section */}
+      <section className="py-12 bg-slate-900">
+        <div className="container mx-auto px-6">
+          <div className="max-w-4xl mx-auto text-center mb-10">
+            <div className="inline-flex mx-auto px-4 py-1 rounded-full bg-blue-900/50 text-blue-300 text-sm font-medium mb-4">
+              <Shield className="w-4 h-4 mr-2" />
+              ENTERPRISE-GRADE SECURITY & COMPLIANCE
+            </div>
+            <h2 className="text-3xl font-bold text-white mb-4">Built for Enterprise Life Sciences</h2>
+            <p className="text-lg text-slate-300 max-w-3xl mx-auto">
+              Our platform is designed with security-first architecture and maintains the highest industry standards for data protection and regulatory compliance.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            <div className="bg-slate-800 border border-slate-700 rounded-xl p-6">
+              <div className="w-12 h-12 bg-blue-900/50 rounded-lg flex items-center justify-center mb-4">
+                <Shield className="w-6 h-6 text-blue-400" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">Enterprise Security</h3>
+              <ul className="space-y-2 text-slate-300">
+                <li className="flex items-start">
+                  <Check className="w-5 h-5 text-green-400 mr-2 flex-shrink-0 mt-0.5" />
+                  <span>SOC 2 Type II certified</span>
+                </li>
+                <li className="flex items-start">
+                  <Check className="w-5 h-5 text-green-400 mr-2 flex-shrink-0 mt-0.5" />
+                  <span>HIPAA and GDPR compliant</span>
+                </li>
+                <li className="flex items-start">
+                  <Check className="w-5 h-5 text-green-400 mr-2 flex-shrink-0 mt-0.5" />
+                  <span>End-to-end data encryption (AES-256)</span>
+                </li>
+                <li className="flex items-start">
+                  <Check className="w-5 h-5 text-green-400 mr-2 flex-shrink-0 mt-0.5" />
+                  <span>Regular penetration testing</span>
+                </li>
+              </ul>
+            </div>
+            
+            <div className="bg-slate-800 border border-slate-700 rounded-xl p-6">
+              <div className="w-12 h-12 bg-indigo-900/50 rounded-lg flex items-center justify-center mb-4">
+                <FileText className="w-6 h-6 text-indigo-400" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">Regulatory Compliance</h3>
+              <ul className="space-y-2 text-slate-300">
+                <li className="flex items-start">
+                  <Check className="w-5 h-5 text-green-400 mr-2 flex-shrink-0 mt-0.5" />
+                  <span>21 CFR Part 11 compliant</span>
+                </li>
+                <li className="flex items-start">
+                  <Check className="w-5 h-5 text-green-400 mr-2 flex-shrink-0 mt-0.5" />
+                  <span>GxP validation framework</span>
+                </li>
+                <li className="flex items-start">
+                  <Check className="w-5 h-5 text-green-400 mr-2 flex-shrink-0 mt-0.5" />
+                  <span>Comprehensive audit trail</span>
+                </li>
+                <li className="flex items-start">
+                  <Check className="w-5 h-5 text-green-400 mr-2 flex-shrink-0 mt-0.5" />
+                  <span>Electronic signature capabilities</span>
+                </li>
+              </ul>
+            </div>
+            
+            <div className="bg-slate-800 border border-slate-700 rounded-xl p-6">
+              <div className="w-12 h-12 bg-emerald-900/50 rounded-lg flex items-center justify-center mb-4">
+                <Clock className="w-6 h-6 text-emerald-400" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">Enterprise SLAs</h3>
+              <ul className="space-y-2 text-slate-300">
+                <li className="flex items-start">
+                  <Check className="w-5 h-5 text-green-400 mr-2 flex-shrink-0 mt-0.5" />
+                  <span>99.99% uptime guarantee</span>
+                </li>
+                <li className="flex items-start">
+                  <Check className="w-5 h-5 text-green-400 mr-2 flex-shrink-0 mt-0.5" />
+                  <span>24/7/365 dedicated support</span>
+                </li>
+                <li className="flex items-start">
+                  <Check className="w-5 h-5 text-green-400 mr-2 flex-shrink-0 mt-0.5" />
+                  <span>1-hour response for critical issues</span>
+                </li>
+                <li className="flex items-start">
+                  <Check className="w-5 h-5 text-green-400 mr-2 flex-shrink-0 mt-0.5" />
+                  <span>Comprehensive disaster recovery</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
       
       {/* CTA Section */}
       <section className="py-16 bg-gradient-to-r from-blue-50 to-indigo-50">
