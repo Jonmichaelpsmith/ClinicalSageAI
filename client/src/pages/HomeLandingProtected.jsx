@@ -694,8 +694,8 @@ export default function HomeLandingProtected() {
             this is your moment.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Link to="/builder" className="px-8 py-4 rounded-lg bg-gradient-to-r from-blue-500 to-teal-500 text-white hover:from-blue-600 hover:to-teal-600 shadow-xl flex items-center gap-2 font-medium transition-all text-lg">
-              Launch eCTD Builder Now
+            <Link to="/ind/wizard" className="px-8 py-4 rounded-lg bg-gradient-to-r from-blue-500 to-teal-500 text-white hover:from-blue-600 hover:to-teal-600 shadow-xl flex items-center gap-2 font-medium transition-all text-lg">
+              IND Now
             </Link>
             <Link to="/pricing" className="px-8 py-4 rounded-lg bg-white/10 border border-white/30 hover:bg-white/20 flex items-center gap-2 font-medium text-lg text-white">
               View Pricing
@@ -738,7 +738,7 @@ export default function HomeLandingProtected() {
                 <li><Link to="/ind-architect" className="text-gray-400 hover:text-white">Global IND Architect</Link></li>
                 <li><Link to="/csr-intelligence" className="text-gray-400 hover:text-white">Protocol Designer + CSR Oracle</Link></li>
                 <li><Link to="/document-suite" className="text-gray-400 hover:text-white">SmartDoc Suite</Link></li>
-                <li><Link to="/builder" className="text-gray-400 hover:text-white">eCTD Builder</Link></li>
+                <li><Link to="/ind/wizard" className="text-gray-400 hover:text-white">IND</Link></li>
               </ul>
             </div>
             
