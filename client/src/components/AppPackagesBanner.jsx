@@ -318,83 +318,82 @@ export default function AppPackagesBanner({ currentPath }) {
             ))}
           </div>
           
-          {/* Replaced "About Concept2Cures.AI" button with CSR Intelligence Library metrics */}
-          <div className="mt-10">
-            <div className="bg-gradient-to-r from-blue-900 to-indigo-900 py-4 rounded-lg">
-              <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="text-center mb-3">
-                  <h2 className="inline-flex items-center px-3 py-1 rounded-full bg-blue-800/40 backdrop-blur-sm text-blue-300 text-xs font-medium mb-2">
-                    <Database className="w-3 h-3 mr-1" />
-                    GLOBAL INTELLIGENCE LIBRARY
+          {/* Replaced "About Concept2Cures.AI" button with CSR Intelligence Library metrics - black background, 75% smaller */}
+          <div className="mt-8">
+            <div className="bg-black py-2 rounded-md">
+              <div className="max-w-3xl mx-auto px-2">
+                <div className="text-center mb-1.5">
+                  <h2 className="inline-flex items-center px-2 py-0.5 rounded-full bg-slate-800 text-blue-300 text-[10px] font-medium mb-1">
+                    <Database className="w-2 h-2 mr-0.5" />
+                    INTELLIGENCE LIBRARY
                   </h2>
-                  <h3 className="text-xl font-bold text-white mb-2">Comprehensive CSR Intelligence</h3>
-                  <p className="text-blue-200 text-sm max-w-2xl mx-auto">
-                    Deep learning models trained on the world's largest collection of clinical study reports
-                    and regulatory documentation across major therapeutic areas.
+                  <h3 className="text-sm font-bold text-white mb-1">Comprehensive CSR Intelligence</h3>
+                  <p className="text-blue-200 text-[10px] max-w-md mx-auto">
+                    Deep learning models trained on the world's largest collection of clinical reports.
                   </p>
                 </div>
                 
-                <div className="grid grid-cols-3 md:grid-cols-6 gap-3 text-center">
+                <div className="grid grid-cols-6 gap-1.5 text-center">
                   {/* CSR Reports */}
-                  <div className="bg-blue-800/30 backdrop-blur-sm border border-blue-700/30 rounded-lg p-2 flex flex-col items-center">
-                    <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full p-1.5 mb-1">
-                      <FileText className="h-3 w-3 text-white" />
+                  <div className="bg-slate-900 border border-slate-800 rounded p-1 flex flex-col items-center">
+                    <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full p-0.5 mb-0.5">
+                      <FileText className="h-1.5 w-1.5 text-white" />
                     </div>
-                    <div className="font-bold text-lg text-white mb-0.5">5,248+</div>
-                    <div className="text-xs text-blue-200">CSR Reports</div>
+                    <div className="font-bold text-xs text-white">5,248+</div>
+                    <div className="text-[8px] text-blue-200">CSR Reports</div>
                   </div>
                   
                   {/* Academic Papers */}
-                  <div className="bg-blue-800/30 backdrop-blur-sm border border-blue-700/30 rounded-lg p-2 flex flex-col items-center">
-                    <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full p-1.5 mb-1">
-                      <BookOpen className="h-3 w-3 text-white" />
+                  <div className="bg-slate-900 border border-slate-800 rounded p-1 flex flex-col items-center">
+                    <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full p-0.5 mb-0.5">
+                      <BookOpen className="h-1.5 w-1.5 text-white" />
                     </div>
-                    <div className="font-bold text-lg text-white mb-0.5">12,735+</div>
-                    <div className="text-xs text-blue-200">Academic Papers</div>
+                    <div className="font-bold text-xs text-white">12,735+</div>
+                    <div className="text-[8px] text-blue-200">Papers</div>
                   </div>
                   
                   {/* Regulatory Guidelines */}
-                  <div className="bg-blue-800/30 backdrop-blur-sm border border-blue-700/30 rounded-lg p-2 flex flex-col items-center">
-                    <div className="bg-gradient-to-br from-cyan-500 to-blue-600 rounded-full p-1.5 mb-1">
-                      <Globe className="h-3 w-3 text-white" />
+                  <div className="bg-slate-900 border border-slate-800 rounded p-1 flex flex-col items-center">
+                    <div className="bg-gradient-to-br from-cyan-500 to-blue-600 rounded-full p-0.5 mb-0.5">
+                      <Globe className="h-1.5 w-1.5 text-white" />
                     </div>
-                    <div className="font-bold text-lg text-white mb-0.5">327</div>
-                    <div className="text-xs text-blue-200">Regulatory Guidelines</div>
+                    <div className="font-bold text-xs text-white">327</div>
+                    <div className="text-[8px] text-blue-200">Guidelines</div>
                   </div>
                   
                   {/* Therapeutic Areas */}
-                  <div className="bg-blue-800/30 backdrop-blur-sm border border-blue-700/30 rounded-lg p-2 flex flex-col items-center">
-                    <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full p-1.5 mb-1">
-                      <Database className="h-3 w-3 text-white" />
+                  <div className="bg-slate-900 border border-slate-800 rounded p-1 flex flex-col items-center">
+                    <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full p-0.5 mb-0.5">
+                      <Database className="h-1.5 w-1.5 text-white" />
                     </div>
-                    <div className="font-bold text-lg text-white mb-0.5">48</div>
-                    <div className="text-xs text-blue-200">Therapeutic Areas</div>
+                    <div className="font-bold text-xs text-white">48</div>
+                    <div className="text-[8px] text-blue-200">Areas</div>
                   </div>
                   
                   {/* Global Regions */}
-                  <div className="bg-blue-800/30 backdrop-blur-sm border border-blue-700/30 rounded-lg p-2 flex flex-col items-center">
-                    <div className="bg-gradient-to-br from-rose-500 to-red-600 rounded-full p-1.5 mb-1">
-                      <Globe className="h-3 w-3 text-white" />
+                  <div className="bg-slate-900 border border-slate-800 rounded p-1 flex flex-col items-center">
+                    <div className="bg-gradient-to-br from-rose-500 to-red-600 rounded-full p-0.5 mb-0.5">
+                      <Globe className="h-1.5 w-1.5 text-white" />
                     </div>
-                    <div className="font-bold text-lg text-white mb-0.5">14</div>
-                    <div className="text-xs text-blue-200">Global Regions</div>
+                    <div className="font-bold text-xs text-white">14</div>
+                    <div className="text-[8px] text-blue-200">Regions</div>
                   </div>
                   
                   {/* Model Parameters */}
-                  <div className="bg-blue-800/30 backdrop-blur-sm border border-blue-700/30 rounded-lg p-2 flex flex-col items-center">
-                    <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-full p-1.5 mb-1">
-                      <Sparkles className="h-3 w-3 text-white" />
+                  <div className="bg-slate-900 border border-slate-800 rounded p-1 flex flex-col items-center">
+                    <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-full p-0.5 mb-0.5">
+                      <Sparkles className="h-1.5 w-1.5 text-white" />
                     </div>
-                    <div className="font-bold text-lg text-white mb-0.5">2.4B</div>
-                    <div className="text-xs text-blue-200">Model Parameters</div>
+                    <div className="font-bold text-xs text-white">2.4B</div>
+                    <div className="text-[8px] text-blue-200">Params</div>
                   </div>
                 </div>
                 
-                <div className="mt-3 text-center">
+                <div className="mt-1.5 text-center">
                   <Link to="/intelligence-library">
-                    <button className="inline-flex items-center px-3 py-1 border border-blue-600 bg-blue-700/30 hover:bg-blue-700/50 rounded text-xs font-medium text-white transition-colors duration-200">
-                      Explore Intelligence Library
-                      <ChevronRight className="h-3 w-3 ml-1" />
+                    <button className="inline-flex items-center px-2 py-0.5 border border-slate-700 bg-slate-800 hover:bg-slate-700 rounded text-[10px] font-medium text-white transition-colors duration-200">
+                      Explore Library
+                      <ChevronRight className="h-2 w-2 ml-0.5" />
                     </button>
                   </Link>
                 </div>
