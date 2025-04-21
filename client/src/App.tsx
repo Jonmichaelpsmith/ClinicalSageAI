@@ -25,8 +25,10 @@ import AIAdvancedAgent from './pages/AIAdvancedAgent';
 import SimpleLearningInterface from './components/SimpleLearningInterface';
 import { CheckCircle, AlertTriangle, Info, HelpCircle } from 'lucide-react';
 // React Toastify for production-ready notifications
+// Import the ToastContainer component but not the CSS
+// This prevents errors when the CSS file isn't found
 import { ToastContainer, toast as toastify } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+// CSS now imported in index.css to avoid direct import issues
 // Tour components
 import { TourProvider, TourHelpButton } from './components/TourContext';
 import InteractiveTour from './components/InteractiveTour';
