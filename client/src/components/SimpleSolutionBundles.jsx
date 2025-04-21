@@ -182,7 +182,7 @@ export default function SimpleSolutionBundles() {
   return (
     <section className="py-10 bg-white">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 solution-bundle-header">
           <span className="inline-flex mx-auto px-4 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-medium mb-2">
             SOLUTION BUNDLES
           </span>
@@ -194,7 +194,7 @@ export default function SimpleSolutionBundles() {
         
         <div className="space-y-8">
           {bundles.map((bundle) => (
-            <div key={bundle.id} className="mb-8">
+            <div key={bundle.id} className={`mb-8 ${bundle.id}-section`}>
               <div className={`rounded-lg shadow-sm p-4 mb-4 bg-${bundle.color}-50 border border-${bundle.color}-100`}>
                 <h3 className={`text-lg font-bold text-${bundle.color}-700 mb-1`}>{bundle.name}</h3>
                 <div className="flex flex-wrap text-sm">

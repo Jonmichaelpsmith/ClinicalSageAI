@@ -26,6 +26,12 @@ import SimpleLearningInterface from './components/SimpleLearningInterface';
 import { CheckCircle, AlertTriangle, Info } from 'lucide-react';
 // React Toastify for production-ready notifications
 import { ToastContainer, toast as toastify } from 'react-toastify';
+// Import tour components
+import { TourProvider, TourHelpButton } from './components/TourContext';
+import InteractiveTour from './components/InteractiveTour';
+import WelcomeAnimation from './components/WelcomeAnimation';
+// Import tour animations
+import './styles/tour-animations.css';
 
 /* ------------ Improved Toast Provider ------------- */
 export type ToastType = 'success' | 'error' | 'info';
@@ -136,20 +142,55 @@ export const useToast = () => useContext(ToastCtx);
 // Each page that needs WebSocket will initialize its own connection
 
 export default function App() {
+  const [welcomeComplete, setWelcomeComplete] = useState(false);
+  const [tourCompleted, setTourCompleted] = useState(false);
+  
+  // Check local storage for first-time visit
+  useEffect(() => {
+    const visited = localStorage.getItem('visited');
+    if (visited) {
+      setWelcomeComplete(true);
+    }
+  }, []);
+  
+  // Mark as visited once welcome animation completes
+  const handleWelcomeComplete = () => {
+    setWelcomeComplete(true);
+    localStorage.setItem('visited', 'true');
+  };
+  
   return (
     <ErrorBoundary>
       <ToastProvider>
-        <Switch>
-          <Route path="/builder">
-            <ErrorBoundary>
-              <SubmissionBuilder />
-            </ErrorBoundary>
-          </Route>
-          <Route path="/portal/ind/:sequenceId">
-            <ErrorBoundary>
-              <IndSequenceDetail />
-            </ErrorBoundary>
-          </Route>
+        <TourProvider>
+          {/* Welcome Animation for first-time visitors */}
+          <WelcomeAnimation 
+            onComplete={handleWelcomeComplete} 
+            skipAnimation={welcomeComplete} 
+          />
+          
+          {/* Tour is available on all pages */}
+          <InteractiveTour 
+            tourCompleted={tourCompleted} 
+            setTourCompleted={setTourCompleted} 
+          />
+          
+          {/* Add the help button to the top-right corner of the app */}
+          <div className="fixed top-4 right-4 z-50">
+            <TourHelpButton />
+          </div>
+          
+          <Switch>
+            <Route path="/builder">
+              <ErrorBoundary>
+                <SubmissionBuilder />
+              </ErrorBoundary>
+            </Route>
+            <Route path="/portal/ind/:sequenceId">
+              <ErrorBoundary>
+                <IndSequenceDetail />
+              </ErrorBoundary>
+            </Route>
           <Route path="/ind/planner">
             <ErrorBoundary>
               <IndSequenceManager />
@@ -271,6 +312,7 @@ export default function App() {
           pauseOnHover
           theme="light"
         />
+        </TourProvider>
       </ToastProvider>
     </ErrorBoundary>
   );
