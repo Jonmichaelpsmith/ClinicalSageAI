@@ -1,92 +1,134 @@
-import { pgTable, serial, text, timestamp, json, integer } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
-import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod";
+// shared/schema.ts
+import { pgTable, serial, integer, text, timestamp, json, boolean, pgEnum } from 'drizzle-orm/pg-core';
+import { createInsertSchema } from 'drizzle-zod';
+import { z } from 'zod';
 
-// User model
-export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
-  display_name: text("display_name"),
-  can_edit: text("can_edit").default("true"),
-  created_at: timestamp("created_at").defaultNow()
+// Users table
+export const users = pgTable('users', {
+  id: serial('id').primaryKey(),
+  username: text('username').notNull().unique(),
+  password: text('password').notNull(),
+  email: text('email').notNull().unique(),
+  fullName: text('full_name').notNull(),
+  role: text('role').notNull(),
+  company: text('company'),
+  domain: text('domain'), // e.g., "Oncology", "Cardiology"
+  expertiseLevel: text('expertise_level'), // e.g., "Beginner", "Intermediate", "Advanced"
+  interests: json('interests').$type<string[]>().default([]),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-// Document model
-export const documents = pgTable("documents", {
-  id: serial("id").primaryKey(),
-  title: text("title").notNull(),
-  author_id: integer("author_id").references(() => users.id),
-  created_at: timestamp("created_at").defaultNow(),
-  updated_at: timestamp("updated_at").defaultNow()
+// Learning modules table
+export const learningModules = pgTable('learning_modules', {
+  id: serial('id').primaryKey(),
+  title: text('title').notNull(),
+  description: text('description').notNull(),
+  content: json('content').notNull(),
+  level: text('level').notNull(), // "Beginner", "Intermediate", "Advanced"
+  duration: integer('duration').notNull(), // in minutes
+  tags: json('tags').$type<string[]>().default([]),
+  domains: json('domains').$type<string[]>().default([]),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-// Document version model
-export const documentVersions = pgTable("document_versions", {
-  id: serial("id").primaryKey(),
-  document_id: integer("document_id").references(() => documents.id).notNull(),
-  content: json("content").notNull(),
-  created_at: timestamp("created_at").defaultNow()
+// Document templates table
+export const documentTemplates = pgTable('document_templates', {
+  id: serial('id').primaryKey(),
+  title: text('title').notNull(),
+  description: text('description').notNull(),
+  content: json('content').notNull(),
+  tags: json('tags').$type<string[]>().default([]),
+  useCount: integer('use_count').default(0),
+  domains: json('domains').$type<string[]>().default([]),
+  recommendedFor: json('recommended_for').$type<string[]>().default([]),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-// Document comment model
-export const documentComments = pgTable("document_comments", {
-  id: serial("id").primaryKey(),
-  document_id: integer("document_id").references(() => documents.id).notNull(),
-  user_id: integer("user_id").references(() => users.id).notNull(),
-  content: text("content").notNull(),
-  position: text("position"), // Store position data within the doc
-  created_at: timestamp("created_at").defaultNow()
+// User learning progress table
+export const userProgress = pgTable('user_progress', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => users.id),
+  moduleId: integer('module_id').references(() => learningModules.id),
+  templateId: integer('template_id').references(() => documentTemplates.id), 
+  progress: integer('progress').notNull().default(0), // 0-100%
+  lastAccessed: timestamp('last_accessed').defaultNow().notNull(),
+  completed: boolean('completed').default(false),
+  completedAt: timestamp('completed_at'),
 });
 
-// Relations
-export const usersRelations = relations(users, ({ many }) => ({
-  documents: many(documents)
-}));
+// User generated AI insights
+export const aiInsights = pgTable('ai_insights', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => users.id),
+  title: text('title').notNull(),
+  description: text('description').notNull(),
+  source: text('source').notNull(),
+  relevanceScore: integer('relevance_score').notNull(), // 0-100
+  confidenceScore: integer('confidence_score').notNull(), // 0-100
+  tags: json('tags').$type<string[]>().default([]),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  isRead: boolean('is_read').default(false),
+  isSaved: boolean('is_saved').default(false),
+});
 
-export const documentsRelations = relations(documents, ({ one, many }) => ({
-  author: one(users, {
-    fields: [documents.author_id],
-    references: [users.id]
-  }),
-  versions: many(documentVersions),
-  comments: many(documentComments)
-}));
+// User activity log
+export const userActivity = pgTable('user_activity', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => users.id),
+  activityType: text('activity_type').notNull(), // "learning", "document", "template"
+  resourceId: integer('resource_id').notNull(), // ID of the module, document, or template
+  action: text('action').notNull(), // "view", "create", "update", "complete"
+  metadata: json('metadata'),
+  timestamp: timestamp('timestamp').defaultNow().notNull(),
+});
 
-export const documentVersionsRelations = relations(documentVersions, ({ one }) => ({
-  document: one(documents, {
-    fields: [documentVersions.document_id],
-    references: [documents.id]
-  })
-}));
+// User performance metrics
+export const userMetrics = pgTable('user_metrics', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => users.id),
+  completionRate: integer('completion_rate'), // 0-100%
+  efficiencyImprovement: integer('efficiency_improvement'), // 0-100%
+  documentQualityScore: integer('document_quality_score'), // 0-100
+  timeSpent: json('time_spent').$type<{ 
+    learning: number, 
+    documents: number,
+    reviews: number 
+  }>(),
+  strengths: json('strengths').$type<string[]>().default([]),
+  areasForImprovement: json('areas_for_improvement').$type<string[]>().default([]),
+  lastUpdated: timestamp('last_updated').defaultNow().notNull(),
+});
 
-export const documentCommentsRelations = relations(documentComments, ({ one }) => ({
-  document: one(documents, {
-    fields: [documentComments.document_id],
-    references: [documents.id]
-  }),
-  user: one(users, {
-    fields: [documentComments.user_id],
-    references: [users.id]
-  })
-}));
-
-// Insert schemas
+// Define Zod schemas for insert operations
 export const insertUserSchema = createInsertSchema(users).omit({ id: true });
-export const insertDocumentSchema = createInsertSchema(documents).omit({ id: true, created_at: true, updated_at: true });
-export const insertDocumentVersionSchema = createInsertSchema(documentVersions).omit({ id: true, created_at: true });
-export const insertDocumentCommentSchema = createInsertSchema(documentComments).omit({ id: true, created_at: true });
+export const insertLearningModuleSchema = createInsertSchema(learningModules).omit({ id: true });
+export const insertDocumentTemplateSchema = createInsertSchema(documentTemplates).omit({ id: true });
+export const insertUserProgressSchema = createInsertSchema(userProgress).omit({ id: true });
+export const insertAiInsightSchema = createInsertSchema(aiInsights).omit({ id: true });
+export const insertUserActivitySchema = createInsertSchema(userActivity).omit({ id: true });
+export const insertUserMetricsSchema = createInsertSchema(userMetrics).omit({ id: true });
 
-// Types
+// Define TypeScript types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 
-export type Document = typeof documents.$inferSelect;
-export type InsertDocument = z.infer<typeof insertDocumentSchema>;
+export type LearningModule = typeof learningModules.$inferSelect;
+export type InsertLearningModule = z.infer<typeof insertLearningModuleSchema>;
 
-export type DocumentVersion = typeof documentVersions.$inferSelect;
-export type InsertDocumentVersion = z.infer<typeof insertDocumentVersionSchema>;
+export type DocumentTemplate = typeof documentTemplates.$inferSelect;
+export type InsertDocumentTemplate = z.infer<typeof insertDocumentTemplateSchema>;
 
-export type DocumentComment = typeof documentComments.$inferSelect;
-export type InsertDocumentComment = z.infer<typeof insertDocumentCommentSchema>;
+export type UserProgress = typeof userProgress.$inferSelect;
+export type InsertUserProgress = z.infer<typeof insertUserProgressSchema>;
+
+export type AiInsight = typeof aiInsights.$inferSelect;
+export type InsertAiInsight = z.infer<typeof insertAiInsightSchema>;
+
+export type UserActivity = typeof userActivity.$inferSelect;
+export type InsertUserActivity = z.infer<typeof insertUserActivitySchema>;
+
+export type UserMetrics = typeof userMetrics.$inferSelect;
+export type InsertUserMetrics = z.infer<typeof insertUserMetricsSchema>;

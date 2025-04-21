@@ -1,15 +1,22 @@
 import { db } from "./db";
 import {
   users,
-  documents,
-  documentVersions,
-  documentComments,
+  learningModules,
+  documentTemplates,
+  userProgress,
+  aiInsights,
+  userActivity,
+  userMetrics,
   insertUserSchema,
-  insertDocumentSchema,
-  insertDocumentVersionSchema,
-  insertDocumentCommentSchema
+  User,
+  InsertLearningModule,
+  InsertDocumentTemplate,
+  InsertUserProgress,
+  InsertAiInsight,
+  InsertUserActivity,
+  InsertUserMetrics
 } from "../shared/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and, sql } from "drizzle-orm";
 import * as expressSession from "express-session";
 
 // We'll use a memory store for now to get the app running
@@ -18,25 +25,42 @@ const MemoryStore = expressSession.MemoryStore;
 export interface IStorage {
   // User operations
   createUser(user: typeof insertUserSchema._type): Promise<any>;
-  getUser(id: number): Promise<any>;
-  getUserByUsername(username: string): Promise<any>;
+  getUser(id: number): Promise<User | undefined>;
+  getUserByUsername(username: string): Promise<User | undefined>;
   
-  // Document operations
-  createDocument(document: typeof insertDocumentSchema._type): Promise<any>;
-  getDocument(id: number): Promise<any>;
-  getAllDocuments(): Promise<any[]>;
-  updateDocument(id: number, content: any): Promise<any>;
+  // Learning module operations
+  getLearningModules(): Promise<any[]>;
+  getLearningModuleById(id: number): Promise<any>;
+  createLearningModule(data: InsertLearningModule): Promise<any>;
+  updateLearningModule(id: number, data: Partial<InsertLearningModule>): Promise<any>;
+
+  // Document template operations
+  getDocumentTemplates(): Promise<any[]>;
+  getDocumentTemplateById(id: number): Promise<any>;
+  createDocumentTemplate(data: InsertDocumentTemplate): Promise<any>;
+  updateDocumentTemplate(id: number, data: Partial<InsertDocumentTemplate>): Promise<any>;
+  incrementTemplateUseCount(id: number): Promise<any>;
   
-  // Document Version operations
-  createDocumentVersion(version: typeof insertDocumentVersionSchema._type): Promise<any>;
-  getDocumentVersions(documentId: number): Promise<any[]>;
+  // User progress operations
+  getUserProgressByUserId(userId: number): Promise<any[]>;
+  createOrUpdateUserProgress(data: InsertUserProgress): Promise<any>;
   
-  // Document Comment operations
-  createDocumentComment(comment: typeof insertDocumentCommentSchema._type): Promise<any>;
-  getDocumentComments(documentId: number): Promise<any[]>;
+  // AI insights operations
+  getAiInsightsByUserId(userId: number): Promise<any[]>;
+  createAiInsight(data: InsertAiInsight): Promise<any>;
+  markInsightAsRead(id: number): Promise<any>;
+  saveOrUnsaveInsight(id: number, isSaved: boolean): Promise<any>;
+  
+  // User activity operations
+  getUserActivityByUserId(userId: number, limit?: number): Promise<any[]>;
+  logUserActivity(data: InsertUserActivity): Promise<any>;
+  
+  // User metrics operations
+  getUserMetrics(userId: number): Promise<any>;
+  createOrUpdateUserMetrics(userId: number, data: Partial<InsertUserMetrics>): Promise<any>;
   
   // Session store
-  sessionStore: any; // Use any for now to avoid type errors
+  sessionStore: any; 
 }
 
 export class DatabaseStorage implements IStorage {
@@ -72,114 +96,189 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
   
-  // Document operations
-  async createDocument(document: typeof insertDocumentSchema._type) {
-    const [newDocument] = await db.insert(documents)
-      .values(document)
+  // Learning module operations
+  async getLearningModules() {
+    return db.select().from(learningModules);
+  }
+
+  async getLearningModuleById(id: number) {
+    const [module] = await db.select().from(learningModules).where(eq(learningModules.id, id));
+    return module;
+  }
+
+  async createLearningModule(data: InsertLearningModule) {
+    const [module] = await db.insert(learningModules).values(data).returning();
+    return module;
+  }
+
+  async updateLearningModule(id: number, data: Partial<InsertLearningModule>) {
+    const [updatedModule] = await db
+      .update(learningModules)
+      .set(data)
+      .where(eq(learningModules.id, id))
       .returning();
-    
-    return newDocument;
+    return updatedModule;
   }
-  
-  async getDocument(id: number) {
-    const [document] = await db.select()
-      .from(documents)
-      .where(eq(documents.id, id));
-    
-    return document;
+
+  // Document template operations
+  async getDocumentTemplates() {
+    return db.select().from(documentTemplates);
   }
-  
-  async getAllDocuments() {
-    const allDocuments = await db.select()
-      .from(documents)
-      .orderBy(desc(documents.updated_at));
-    
-    return allDocuments;
+
+  async getDocumentTemplateById(id: number) {
+    const [template] = await db.select().from(documentTemplates).where(eq(documentTemplates.id, id));
+    return template;
   }
-  
-  async updateDocument(id: number, content: any) {
-    // First, create a version of the current document
-    const [currentDoc] = await db.select({
-      id: documents.id,
-      content: documents.id
-    })
-    .from(documents)
-    .where(eq(documents.id, id));
+
+  async createDocumentTemplate(data: InsertDocumentTemplate) {
+    const [template] = await db.insert(documentTemplates).values(data).returning();
+    return template;
+  }
+
+  async updateDocumentTemplate(id: number, data: Partial<InsertDocumentTemplate>) {
+    const [updatedTemplate] = await db
+      .update(documentTemplates)
+      .set(data)
+      .where(eq(documentTemplates.id, id))
+      .returning();
+    return updatedTemplate;
+  }
+
+  async incrementTemplateUseCount(id: number) {
+    const [updatedTemplate] = await db
+      .update(documentTemplates)
+      .set({ 
+        useCount: sql`${documentTemplates.useCount} + 1`
+      })
+      .where(eq(documentTemplates.id, id))
+      .returning();
+    return updatedTemplate;
+  }
+
+  // User progress operations
+  async getUserProgressByUserId(userId: number) {
+    return db.select().from(userProgress).where(eq(userProgress.userId, userId));
+  }
+
+  async createOrUpdateUserProgress(data: InsertUserProgress) {
+    // Check if progress entry exists
+    let existing;
     
-    if (currentDoc) {
-      // Get latest version content
-      const [latestVersion] = await db.select()
-        .from(documentVersions)
-        .where(eq(documentVersions.document_id, id))
-        .orderBy(desc(documentVersions.created_at))
-        .limit(1);
-      
-      if (latestVersion && latestVersion.content) {
-        // Create a new version with current content
-        await db.insert(documentVersions)
-          .values({
-            document_id: id,
-            content: latestVersion.content
-          });
-      }
+    if (data.moduleId) {
+      const [progress] = await db
+        .select()
+        .from(userProgress)
+        .where(
+          and(
+            eq(userProgress.userId, data.userId),
+            eq(userProgress.moduleId, data.moduleId)
+          )
+        );
+      existing = progress;
+    } else if (data.templateId) {
+      const [progress] = await db
+        .select()
+        .from(userProgress)
+        .where(
+          and(
+            eq(userProgress.userId, data.userId),
+            eq(userProgress.templateId, data.templateId)
+          )
+        );
+      existing = progress;
     }
     
-    // Now update the document
-    const [updatedDoc] = await db.update(documents)
-      .set({ 
-        updated_at: new Date()
-      })
-      .where(eq(documents.id, id))
-      .returning();
-    
-    // Also insert a new document version with the new content
-    const [newVersion] = await db.insert(documentVersions)
-      .values({
-        document_id: id,
-        content: content
-      })
-      .returning();
-    
-    return {
-      document: updatedDoc,
-      version: newVersion
-    };
+    if (existing) {
+      // Update existing progress
+      const [updatedProgress] = await db
+        .update(userProgress)
+        .set({
+          progress: data.progress,
+          lastAccessed: new Date(),
+          completed: data.completed,
+          completedAt: data.completed ? new Date() : existing.completedAt
+        })
+        .where(eq(userProgress.id, existing.id))
+        .returning();
+      return updatedProgress;
+    } else {
+      // Create new progress entry
+      const [newProgress] = await db
+        .insert(userProgress)
+        .values(data)
+        .returning();
+      return newProgress;
+    }
   }
-  
-  // Document Version operations
-  async createDocumentVersion(version: typeof insertDocumentVersionSchema._type) {
-    const [newVersion] = await db.insert(documentVersions)
-      .values(version)
+
+  // AI insights operations
+  async getAiInsightsByUserId(userId: number) {
+    return db
+      .select()
+      .from(aiInsights)
+      .where(eq(aiInsights.userId, userId))
+      .orderBy(desc(aiInsights.createdAt));
+  }
+
+  async createAiInsight(data: InsertAiInsight) {
+    const [insight] = await db.insert(aiInsights).values(data).returning();
+    return insight;
+  }
+
+  async markInsightAsRead(id: number) {
+    const [updatedInsight] = await db
+      .update(aiInsights)
+      .set({ isRead: true })
+      .where(eq(aiInsights.id, id))
       .returning();
-    
-    return newVersion;
+    return updatedInsight;
   }
-  
-  async getDocumentVersions(documentId: number) {
-    const versions = await db.select()
-      .from(documentVersions)
-      .where(eq(documentVersions.document_id, documentId))
-      .orderBy(desc(documentVersions.created_at));
-    
-    return versions;
-  }
-  
-  // Document Comment operations
-  async createDocumentComment(comment: typeof insertDocumentCommentSchema._type) {
-    const [newComment] = await db.insert(documentComments)
-      .values(comment)
+
+  async saveOrUnsaveInsight(id: number, isSaved: boolean) {
+    const [updatedInsight] = await db
+      .update(aiInsights)
+      .set({ isSaved: isSaved })
+      .where(eq(aiInsights.id, id))
       .returning();
-    
-    return newComment;
+    return updatedInsight;
   }
-  
-  async getDocumentComments(documentId: number) {
-    const comments = await db.select()
-      .from(documentComments)
-      .where(eq(documentComments.document_id, documentId))
-      .orderBy(desc(documentComments.created_at));
+
+  // User activity operations
+  async logUserActivity(data: InsertUserActivity) {
+    const [activity] = await db.insert(userActivity).values(data).returning();
+    return activity;
+  }
+
+  // User metrics operations
+  async getUserMetrics(userId: number) {
+    const [metrics] = await db.select().from(userMetrics).where(eq(userMetrics.userId, userId));
+    return metrics;
+  }
+
+  async createOrUpdateUserMetrics(userId: number, data: Partial<InsertUserMetrics>) {
+    const existing = await this.getUserMetrics(userId);
     
-    return comments;
+    if (existing) {
+      const [updatedMetrics] = await db
+        .update(userMetrics)
+        .set({
+          ...data,
+          lastUpdated: new Date()
+        })
+        .where(eq(userMetrics.userId, userId))
+        .returning();
+      return updatedMetrics;
+    } else {
+      const [newMetrics] = await db
+        .insert(userMetrics)
+        .values({
+          userId,
+          ...data,
+          lastUpdated: new Date()
+        } as InsertUserMetrics)
+        .returning();
+      return newMetrics;
+    }
   }
 }
 
