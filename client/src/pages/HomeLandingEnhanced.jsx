@@ -499,48 +499,48 @@ export default function HomeLandingEnhanced() {
       {/* Simple Solution Bundles with Demo Tiles */}
       <SimpleSolutionBundles />
       
-      {/* Testimonials Section */}
-      <section className="py-20 bg-gradient-to-r from-indigo-900 to-blue-900 text-white">
+      {/* Testimonials Section - Compact */}
+      <section className="py-10 bg-gradient-to-r from-indigo-900 to-blue-900 text-white">
         <div className="container mx-auto px-6">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-3xl font-bold mb-4">Trusted by Leading Biotech Companies</h2>
-            <p className="text-xl text-blue-100">See what our clients say about the impact TrialSage has on their regulatory operations.</p>
+          <div className="text-center max-w-2xl mx-auto mb-8">
+            <h2 className="text-xl font-bold mb-2">Trusted by Leading Biotech Companies</h2>
+            <p className="text-sm text-blue-100">See what our clients say about the impact TrialSage has on their regulatory operations.</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {TESTIMONIALS.map((testimonial, i) => (
-              <div key={i} className="bg-gradient-to-br from-blue-800/40 to-indigo-900/40 backdrop-blur-sm border border-blue-700/30 rounded-xl p-8">
-                <div className="flex mb-6">
+              <div key={i} className="bg-gradient-to-br from-blue-800/40 to-indigo-900/40 backdrop-blur-sm border border-blue-700/30 rounded-md p-4">
+                <div className="flex mb-3">
                   {[...Array(5)].map((_, idx) => (
-                    <svg key={idx} xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                    <svg key={idx} xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
                       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                     </svg>
                   ))}
                 </div>
-                <p className="italic mb-6 text-blue-100">{testimonial.quote}</p>
+                <p className="italic mb-3 text-blue-100 text-xs">{testimonial.quote}</p>
                 <div>
-                  <p className="font-bold text-white">{testimonial.author}</p>
-                  <p className="text-blue-200 text-sm">{testimonial.title}, {testimonial.company}</p>
+                  <p className="font-medium text-white text-sm">{testimonial.author}</p>
+                  <p className="text-blue-200 text-xs">{testimonial.title}, {testimonial.company}</p>
                 </div>
               </div>
             ))}
           </div>
-          <div className="mt-12 text-center">
-            <Link to="/case-studies" className="inline-flex items-center px-6 py-3 bg-blue-700 hover:bg-blue-800 text-white font-medium rounded-lg shadow-lg shadow-blue-900/30 transition-all duration-200">
-              View Success Stories <ArrowRight size={16} className="ml-2" />
+          <div className="mt-6 text-center">
+            <Link to="/case-studies" className="inline-flex items-center px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white text-xs font-medium rounded-md shadow-md shadow-blue-900/30 transition-all duration-200">
+              View Success Stories <ArrowRight size={12} className="ml-1" />
             </Link>
           </div>
         </div>
       </section>
       
-      {/* Agency support carousel */}
-      <section className="py-10 bg-white border-t border-gray-100">
+      {/* Agency support carousel - Compact */}
+      <section className="py-6 bg-white border-t border-gray-100">
         <div className="container mx-auto px-6">
-          <h3 className="text-center text-lg font-medium text-gray-700 mb-6">Multi-Jurisdictional Regulatory Authority Integration</h3>
+          <h3 className="text-center text-sm font-medium text-gray-700 mb-3">Multi-Jurisdictional Regulatory Authority Integration</h3>
           <div className="overflow-hidden">
-            <div className="flex animate-scroll space-x-16 whitespace-nowrap">
+            <div className="flex animate-scroll space-x-10 whitespace-nowrap">
               {AGENCIES.concat(AGENCIES).map((a, idx) => (
                 <a key={idx} href={a.url} target="_blank" rel="noopener noreferrer" className="opacity-60 hover:opacity-100 transition-opacity inline-block">
-                  <img src={a.logo} alt={a.name + ' logo'} className="h-14 grayscale hover:grayscale-0" loading="lazy" />
+                  <img src={a.logo} alt={a.name + ' logo'} className="h-8 grayscale hover:grayscale-0" loading="lazy" />
                 </a>
               ))}
             </div>
