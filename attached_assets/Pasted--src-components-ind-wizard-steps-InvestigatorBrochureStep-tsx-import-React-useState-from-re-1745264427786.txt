@@ -1,0 +1,283 @@
+// src/components/ind-wizard/steps/InvestigatorBrochureStep.tsx
+import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { useQueryClient, useMutation, useQuery } from '@tanstack/react-query';
+import { useWizard } from '../IndWizardLayout'; // Access previous step data
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Bot, HelpCircle, Loader2, Sparkles, FileText, BookOpen, Activity, ShieldAlert, Link as LinkIcon, Edit3 } from 'lucide-react'; // Added LinkIcon, Edit3
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from '@/components/ui/use-toast';
+import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge'; // For showing context used
+
+// --- API Simulation/Types ---
+// (Simulated API functions remain similar, maybe add more specific drafting types)
+const apiSaveIbData = async (data: IbStepFormData): Promise<{ success: boolean; message: string }> => { /* ... */ return { success: true, message: "IB data saved."}; };
+const apiTriggerIbAiDrafting = async (section: string, contextData: any, subSection?: string): Promise<{ draftText: string }> => {
+    console.log(`API CALL: Triggering IB AI Drafting (${section}, Sub: ${subSection || 'N/A'})...`, contextData);
+    await new Promise(resolve => setTimeout(resolve, 2500));
+
+    let draftText = `AI Draft for ${section} ${subSection ? `(${subSection})` : ''}:\n\n`;
+    // More specific drafting logic based on section and potentially subSection
+    if (section === 'introduction') {
+        draftText += `Introduction for ${contextData.projectDetails?.projectName || '[Project Name]'}. Therapeutic Area: ${contextData.projectDetails?.therapeuticArea || '[Area]'}. Objective: ${contextData.projectDetails?.projectObjective || '[Objective]'}.\n`;
+    } else if (section === 'nonclinicalStudiesSummary') {
+        if (subSection === 'toxicology') draftText += `Toxicology Summary: Based on studies [List relevant studies from contextData.nonclinicalData], key findings include [AI summarizes tox findings].\n`;
+        else if (subSection === 'pharmacology') draftText += `Pharmacology Summary: Primary pharmacological effects observed were [AI summarizes pharm findings].\n`;
+        else draftText += `Overall Nonclinical Summary: ${contextData.nonclinicalData?.overallNonclinicalSummary || '[Summary]'}. Studies: ${contextData.nonclinicalData?.studies?.map((s: any) => s.studyIdentifier).join(', ') || 'None'}.\n`;
+    } else if (section === 'safetyAndEfficacySummary') {
+         draftText += `Synthesized Safety/Efficacy: Nonclinical risks [Summarize]. Clinical safety profile [Summarize]. Efficacy signals [Summarize]. Overall assessment [AI provides synthesis].\n`;
+    } else {
+        draftText += `(AI draft placeholder for ${section} ${subSection || ''} using provided context).\n`;
+    }
+    return { draftText };
+};
+
+// --- Zod Schema Definition ---
+// (Schema remains the same)
+const ibStepSchema = z.object({
+  introduction: z.string().optional(),
+  physicalChemicalPharmaceuticalSummary: z.string().optional(),
+  nonclinicalStudiesSummary: z.string().optional(),
+  clinicalStudiesSummary: z.string().optional(),
+  safetyAndEfficacySummary: z.string().optional(),
+  marketingExperienceSummary: z.string().optional(),
+});
+export type IbStepFormData = z.infer<typeof ibStepSchema>;
+
+// --- Helper: Rich Text Area Placeholder ---
+// In a real app, replace this with an actual Rich Text Editor component (e.g., TipTap, Slate)
+interface RichTextAreaProps {
+    value: string | undefined;
+    onChange: (value: string) => void;
+    placeholder: string;
+    rows?: number;
+}
+const RichTextAreaPlaceholder: React.FC<RichTextAreaProps> = ({ value, onChange, placeholder, rows = 8 }) => {
+    return (
+        <div className="border rounded-md p-2 bg-white relative group">
+            {/* Simulate Toolbar */}
+            <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex space-x-1 bg-gray-100 border rounded px-1 py-0.5">
+                 <Tooltip><TooltipTrigger asChild><Button type="button" size="xs" variant="ghost" className="h-5 px-1"><span className="font-bold">B</span></Button></TooltipTrigger><TooltipContent>Bold</TooltipContent></Tooltip>
+                 <Tooltip><TooltipTrigger asChild><Button type="button" size="xs" variant="ghost" className="h-5 px-1"><span className="italic">I</span></Button></TooltipTrigger><TooltipContent>Italic</TooltipContent></Tooltip>
+                 <Tooltip><TooltipTrigger asChild><Button type="button" size="xs" variant="ghost" className="h-5 px-1">UL</Button></TooltipTrigger><TooltipContent>List</TooltipContent></Tooltip>
+            </div>
+            <Textarea
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                placeholder={placeholder}
+                rows={rows}
+                className="border-none focus-visible:ring-0 focus-visible:ring-offset-0 p-0 shadow-none" // Make textarea blend in
+            />
+        </div>
+    );
+};
+
+
+// --- Component Implementation ---
+export default function InvestigatorBrochureStep() {
+  const { indData, updateIndDataSection, goToNextStep } = useWizard();
+  const queryClient = useQueryClient();
+
+  // State for AI drafting
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [aiLoadingSection, setAiLoadingSection] = useState<string | null>(null);
+
+  // --- Data Fetching ---
+  // (useQuery setup remains the same)
+  const { data: initialData, isLoading: isLoadingInitialData } = useQuery({ /* ... */ });
+
+  // --- Form Setup ---
+  const form = useForm<IbStepFormData>({
+    resolver: zodResolver(ibStepSchema),
+    defaultValues: initialData?.investigatorBrochureData || { /* ... default empty strings ... */ },
+  });
+
+   // --- Data Mutation (Saving) ---
+  // (useMutation setup remains the same)
+   const mutation = useMutation({ mutationFn: apiSaveIbData, /* ... */ });
+   function onSubmit(values: IbStepFormData) { mutation.mutate(values); }
+
+  // --- AI Interaction ---
+  const handleAiDraft = async (
+      section: keyof IbStepFormData, // Use keys from schema
+      subSection?: string // Optional: for more granular drafting
+  ) => {
+      setIsAiLoading(true);
+      setAiLoadingSection(`${section}-${subSection || 'main'}`);
+
+      try {
+          const contextData = { /* Gather relevant context from indData */
+              projectDetails: indData.projectDetails,
+              cmcData: indData.cmcData,
+              nonclinicalData: indData.nonclinicalData,
+              clinicalProtocolData: indData.clinicalProtocolData,
+          };
+          const result = await apiTriggerIbAiDrafting(section, contextData, subSection);
+
+          // Append or replace text in the target field
+          const currentText = form.getValues(section) || '';
+          const newText = currentText ? `${currentText}\n\n---\n\n${result.draftText}` : result.draftText;
+          form.setValue(section, newText, { shouldValidate: true, shouldDirty: true });
+
+          toast({title: `AI Draft Complete`, description: `Draft generated for ${section} ${subSection || ''}. Please review and edit.`});
+      } catch (error: any) {
+          toast({ title: `AI Drafting Failed`, description: error.message || `Could not draft ${section}.`, variant: "destructive" });
+      } finally {
+          setIsAiLoading(false);
+          setAiLoadingSection(null);
+      }
+  };
+
+  // --- Conceptual Referencing ---
+  const handleInsertReference = (section: keyof IbStepFormData) => {
+      // In real app: Open a dialog to search/select nonclinical studies, CMC batches, etc. from indData
+      const studyId = prompt("Enter Nonclinical Study ID to reference (e.g., NC-001):"); // Simple prompt simulation
+      if (studyId) {
+           const currentText = form.getValues(section) || '';
+           const refText = `[Ref: Nonclinical Study ${studyId}]`; // Format reference
+           // Find insertion point or append
+           form.setValue(section, `${currentText} ${refText}`, { shouldDirty: true });
+           toast({title: "Reference Inserted", description: `Reference to ${studyId} added.`});
+      }
+  };
+
+
+  // --- Render Logic ---
+  if (isLoadingInitialData) { /* ... Skeleton loading ... */ }
+
+  // Helper to render form fields consistently
+  const renderSection = (
+      name: keyof IbStepFormData,
+      title: string,
+      description: string,
+      aiDraftSubSections?: { key: string; label: string }[], // Optional sub-sections for AI draft
+      allowReferences?: boolean // Optional flag to show reference button
+  ) => (
+       <FormField control={form.control} name={name} render={({ field }) => (
+          <FormItem>
+              <div className="flex justify-between items-center mb-1">
+                <FormLabel className="text-lg font-semibold">{title}</FormLabel>
+                {/* AI & Reference Buttons */}
+                <div className="flex space-x-1">
+                    {allowReferences && (
+                         <Tooltip>
+                            <TooltipTrigger asChild><Button type="button" variant="outline" size="xs" onClick={() => handleInsertReference(name)}><LinkIcon className="h-3 w-3" /></Button></TooltipTrigger>
+                            <TooltipContent><p>Insert Reference (e.g., to Study ID)</p></TooltipContent>
+                        </Tooltip>
+                    )}
+                    {/* Main AI Draft Button */}
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleAiDraft(name)} disabled={isAiLoading}>
+                                {isAiLoading && aiLoadingSection === `${name}-main` ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent><p>AI: Draft/Append Full Section</p></TooltipContent>
+                    </Tooltip>
+                    {/* Granular AI Draft Buttons */}
+                    {aiDraftSubSections?.map(sub => (
+                         <Tooltip key={sub.key}>
+                            <TooltipTrigger asChild>
+                                <Button type="button" variant="outline" size="xs" onClick={() => handleAiDraft(name, sub.key)} disabled={isAiLoading}>
+                                    {isAiLoading && aiLoadingSection === `${name}-${sub.key}` ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                                    <span className="ml-1">{sub.label}</span>
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent><p>AI: Draft {sub.label} Summary</p></TooltipContent>
+                        </Tooltip>
+                    ))}
+                     <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => alert('Trigger AI review for tone/clarity (Not Implemented)')}>
+                                <Edit3 className="h-4 w-4 text-blue-600" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent><p>AI: Review Tone & Clarity</p></TooltipContent>
+                    </Tooltip>
+                </div>
+              </div>
+              <FormControl>
+                  {/* Replace with actual Rich Text Editor component when available */}
+                  <RichTextAreaPlaceholder
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder={`Enter summary for ${title}...`}
+                      rows={8}
+                  />
+              </FormControl>
+              <FormDescription>{description}</FormDescription>
+              <FormMessage />
+          </FormItem>
+      )} />
+  );
+
+
+  return (
+    <TooltipProvider>
+      <Form {...form}>
+        <div className="space-y-8">
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center"><BookOpen className="mr-2 h-5 w-5" /> Investigator Brochure (IB) Sections</CardTitle>
+              <CardDescription>Assemble and summarize information. Use AI drafting tools and insert references as needed.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+
+              {renderSection("introduction", "1. Introduction", "Include product name, active ingredients, therapeutic class, rationale, etc.")}
+              <Separator />
+              {renderSection("physicalChemicalPharmaceuticalSummary", "2. Physical, Chemical, Pharmaceutical Properties & Formulation", "Summarize relevant information from the CMC section.")}
+              <Separator />
+              {renderSection(
+                  "nonclinicalStudiesSummary",
+                  "3. Nonclinical Studies Summary",
+                  "Synthesize key results relevant to human safety.",
+                  [ // Example granular AI triggers
+                      { key: 'toxicology', label: 'Tox Summary' },
+                      { key: 'pharmacology', label: 'Pharm Summary' }
+                  ],
+                  true // Allow references
+              )}
+              <Separator />
+              {renderSection(
+                  "clinicalStudiesSummary",
+                  "4. Effects in Humans (Clinical Studies Summary)",
+                  "Include dose-response information, adverse effects, etc.",
+                  undefined,
+                  true // Allow references
+              )}
+              <Separator />
+              {renderSection(
+                  "safetyAndEfficacySummary",
+                  "5. Summary of Data and Guidance for the Investigator",
+                  "Provide an overall discussion integrating nonclinical and clinical data. Offer guidance on monitoring, risk management."
+              )}
+              <Separator />
+               {renderSection(
+                  "marketingExperienceSummary",
+                  "6. Marketing Experience (If Applicable)",
+                  "Summarize experience in countries where the drug may have been marketed."
+              )}
+
+            </CardContent>
+          </Card>
+
+           {/* Footer Info & Mutation Status */}
+           {/* (Content remains the same) */}
+           <div className="text-center text-sm text-muted-foreground mt-4"> Use the layout buttons... </div>
+           {mutation.isLoading && ( /* ... Loading ... */ )}
+           {mutation.isError && ( /* ... Error ... */ )}
+
+        </div>
+      </Form>
+    </TooltipProvider>
+  );
+}
