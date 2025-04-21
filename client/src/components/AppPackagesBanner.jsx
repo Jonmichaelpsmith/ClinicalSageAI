@@ -301,21 +301,23 @@ export default function AppPackagesBanner({ currentPath }) {
           </div>
           
           {/* Feature Tiles Grid - Top row */}
-          <div className="flex justify-center">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 max-w-5xl px-4">
+          <div className="flex justify-center mb-4 px-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-5 w-full max-w-6xl" style={{ gap: '1px' }}>
               {entryButtons.map((button, index) => (
-                <Link key={index} to={button.to}>
-                  <div className={`${button.color} rounded-lg shadow-md hover:shadow-lg transition-all duration-300 p-4 h-full`}>
-                    <div className="flex items-center mb-2">
-                      <div className="bg-white/20 p-1.5 rounded-lg">
-                        {React.cloneElement(button.icon, { size: 20 })}
+                <Link key={index} to={button.to} className="block">
+                  <div className={`${button.color} hover:brightness-110 transition-all duration-200 border-t-0 border-l-0 border-r-0 border-b-[1px] border-white/10 h-full flex flex-col justify-between`} style={{ padding: '10px', minHeight: '82px' }}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <div className="bg-white/10 rounded-sm flex items-center justify-center" style={{ width: '18px', height: '18px' }}>
+                          {React.cloneElement(button.icon, { size: 10 })}
+                        </div>
+                        <h3 className="text-xs font-semibold text-white ml-1.5 tracking-tight">{button.label}</h3>
                       </div>
-                      <h3 className="text-base font-bold text-white ml-2">{button.label}</h3>
                     </div>
-                    <p className="text-sm text-white/90 mb-2 leading-tight">{button.description}</p>
-                    <div className="flex justify-end">
-                      <div className="bg-white/10 hover:bg-white/20 transition-colors duration-200 rounded-full p-1">
-                        <ChevronRight size={12} className="text-white" />
+                    <div>
+                      <p className="text-[11px] leading-tight text-white/75 mt-1.5">{button.description}</p>
+                      <div className="flex justify-end mt-1">
+                        <ChevronRight size={9} className="text-white/60" />
                       </div>
                     </div>
                   </div>
@@ -325,21 +327,23 @@ export default function AppPackagesBanner({ currentPath }) {
           </div>
           
           {/* Client Portal Tiles */}
-          <div className="mt-6 flex justify-center">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 max-w-5xl px-4">
+          <div className="flex justify-center px-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 w-full max-w-6xl" style={{ gap: '1px' }}>
               {clientPortals.map((portal, index) => (
-                <Link key={index} to={portal.to}>
-                  <div className={`${portal.color} rounded-lg shadow-md hover:shadow-lg transition-all duration-300 p-4 h-full`}>
-                    <div className="flex items-center mb-2">
-                      <div className="bg-white/20 p-1.5 rounded-lg">
-                        {React.cloneElement(portal.icon, { size: 20 })}
+                <Link key={index} to={portal.to} className="block">
+                  <div className={`${portal.color} hover:brightness-110 transition-all duration-200 border-t-0 border-l-0 border-r-0 border-b-[1px] border-white/10 h-full flex flex-col justify-between`} style={{ padding: '10px', minHeight: '82px' }}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <div className="bg-white/10 rounded-sm flex items-center justify-center" style={{ width: '18px', height: '18px' }}>
+                          {React.cloneElement(portal.icon, { size: 10 })}
+                        </div>
+                        <h3 className="text-xs font-semibold text-white ml-1.5 tracking-tight">{portal.label}</h3>
                       </div>
-                      <h3 className="text-base font-bold text-white ml-2">{portal.label}</h3>
                     </div>
-                    <p className="text-sm text-white/90 mb-2 leading-tight">{portal.description}</p>
-                    <div className="flex justify-end">
-                      <div className="bg-white/10 hover:bg-white/20 transition-colors duration-200 rounded-full p-1">
-                        <ChevronRight size={12} className="text-white" />
+                    <div>
+                      <p className="text-[11px] leading-tight text-white/75 mt-1.5">{portal.description}</p>
+                      <div className="flex justify-end mt-1">
+                        <ChevronRight size={9} className="text-white/60" />
                       </div>
                     </div>
                   </div>
