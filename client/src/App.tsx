@@ -1,6 +1,6 @@
 // App.tsx – root router with improved toast and resilient WebSocket connection
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { Route, Switch } from 'wouter';
+import { Route, Switch, Redirect } from 'wouter';
 // Using the region-aware SubmissionBuilder component
 import SubmissionBuilder from './pages/SubmissionBuilder';
 import IndSequenceDetail from './pages/IndSequenceDetail';
@@ -187,12 +187,16 @@ export default function App() {
             </Route>
             <Route path="/client-portal">
               <ErrorBoundary>
-                <ClientPortal />
+                {/* Redirect to IND Wizard */}
+                {typeof window !== 'undefined' && (window.location.href = '/ind/wizard')}
+                <div>Redirecting to IND Wizard...</div>
               </ErrorBoundary>
             </Route>
             <Route path="/ai-agent">
               <ErrorBoundary>
-                <AIAdvancedAgent />
+                {/* Redirect to IND Wizard */}
+                {typeof window !== 'undefined' && (window.location.href = '/ind/wizard')}
+                <div>Redirecting to IND Wizard...</div>
               </ErrorBoundary>
             </Route>
             <Route path="/learning">

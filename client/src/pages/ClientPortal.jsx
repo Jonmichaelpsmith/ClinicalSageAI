@@ -117,7 +117,7 @@ const ClientPortal = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <Link to="/">
+              <Link to="/ind/wizard">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
                     <div className="h-10 w-10 rounded-md bg-blue-600 text-white flex items-center justify-center font-bold text-xl">TS</div>
@@ -125,7 +125,7 @@ const ClientPortal = () => {
                   <div className="hidden md:block ml-3">
                     <div className="flex items-baseline">
                       <span className="text-gray-900 font-bold text-xl">TrialSage</span>
-                      <span className="text-gray-500 ml-2 text-sm">Client Portal</span>
+                      <span className="text-gray-500 ml-2 text-sm">IND Wizard</span>
                     </div>
                   </div>
                 </div>
@@ -220,10 +220,10 @@ const ClientPortal = () => {
                   </div>
                 </nav>
                 <div className="px-6 py-4 border-t border-gray-200">
-                  <Link to="/ai-agent">
+                  <Link to="/ind/wizard">
                     <button className="flex items-center w-full px-4 py-2 bg-indigo-50 hover:bg-indigo-100 rounded-md text-indigo-700 text-sm font-medium transition-colors">
                       <Sparkles className="mr-2 h-4 w-4" />
-                      Launch AI Co-pilot
+                      Open IND Wizard
                     </button>
                   </Link>
                   <div className="mt-4 text-xs text-gray-500">Need help? Contact support@concept2cures.ai</div>
@@ -418,9 +418,9 @@ const ClientPortal = () => {
                     <div className="text-center">
                       <Bot size={48} className="mx-auto text-indigo-500 mb-4" />
                       <p className="text-gray-700 mb-4">Launch our AI Co-pilot for intelligent assistance with your regulatory documents.</p>
-                      <Link to="/ai-agent">
+                      <Link to="/ind/wizard">
                         <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">
-                          Launch AI Co-pilot
+                          Open IND Wizard
                           <ChevronRight size={16} className="ml-2" />
                         </button>
                       </Link>
