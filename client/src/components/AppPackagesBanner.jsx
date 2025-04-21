@@ -274,20 +274,20 @@ export default function AppPackagesBanner({ currentPath }) {
           </div>
           
           {/* Feature Tiles Grid - Moved from the top banner */}
-          <div className="grid md:grid-cols-4 gap-4 lg:gap-6 max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-6 gap-3 max-w-4xl mx-auto">
             {entryButtons.map((button, index) => (
-              <Link key={index} to={button.to}>
-                <div className={`${button.color} rounded-lg shadow-md hover:shadow-lg transition-all duration-300 p-3 h-full`}>
-                  <div className="flex items-center mb-2">
-                    <div className="bg-white/20 p-2 rounded-lg">
-                      {button.icon}
+              <Link key={index} to={button.to} className="md:col-span-1">
+                <div className={`${button.color} rounded-lg shadow-md hover:shadow-lg transition-all duration-300 p-2 h-full`}>
+                  <div className="flex items-center mb-1">
+                    <div className="bg-white/20 p-1 rounded-lg">
+                      {React.cloneElement(button.icon, { size: 14 })}
                     </div>
-                    <h3 className="text-base font-bold text-white ml-2">{button.label}</h3>
+                    <h3 className="text-sm font-bold text-white ml-1.5">{button.label}</h3>
                   </div>
-                  <p className="text-xs text-white/90 mb-2">{button.description}</p>
+                  <p className="text-xs text-white/90 mb-1 line-clamp-2">{button.description}</p>
                   <div className="flex justify-end">
-                    <div className="bg-white/10 hover:bg-white/20 transition-colors duration-200 rounded-full p-1">
-                      <ChevronRight size={14} className="text-white" />
+                    <div className="bg-white/10 hover:bg-white/20 transition-colors duration-200 rounded-full p-0.5">
+                      <ChevronRight size={10} className="text-white" />
                     </div>
                   </div>
                 </div>
@@ -296,20 +296,20 @@ export default function AppPackagesBanner({ currentPath }) {
           </div>
           
           {/* Client Portal Tiles */}
-          <div className="grid md:grid-cols-4 gap-4 lg:gap-6 mt-6 max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-6 gap-3 mt-4 max-w-4xl mx-auto">
             {clientPortals.map((portal, index) => (
-              <Link key={index} to={portal.to}>
-                <div className={`${portal.color} rounded-lg shadow-md hover:shadow-lg transition-all duration-300 p-3 h-full`}>
-                  <div className="flex items-center mb-2">
-                    <div className="bg-white/20 p-2 rounded-lg">
-                      {portal.icon}
+              <Link key={index} to={portal.to} className="md:col-span-1">
+                <div className={`${portal.color} rounded-lg shadow-md hover:shadow-lg transition-all duration-300 p-2 h-full`}>
+                  <div className="flex items-center mb-1">
+                    <div className="bg-white/20 p-1 rounded-lg">
+                      {React.cloneElement(portal.icon, { size: 14 })}
                     </div>
-                    <h3 className="text-base font-bold text-white ml-2">{portal.label}</h3>
+                    <h3 className="text-sm font-bold text-white ml-1.5">{portal.label}</h3>
                   </div>
-                  <p className="text-xs text-white/90 mb-2">{portal.description}</p>
+                  <p className="text-xs text-white/90 mb-1 line-clamp-2">{portal.description}</p>
                   <div className="flex justify-end">
-                    <div className="bg-white/10 hover:bg-white/20 transition-colors duration-200 rounded-full p-1">
-                      <ChevronRight size={14} className="text-white" />
+                    <div className="bg-white/10 hover:bg-white/20 transition-colors duration-200 rounded-full p-0.5">
+                      <ChevronRight size={10} className="text-white" />
                     </div>
                   </div>
                 </div>
