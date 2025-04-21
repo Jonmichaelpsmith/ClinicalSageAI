@@ -1,106 +1,86 @@
-// InteractiveTour.jsx - Interactive feature tour using react-joyride
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import Joyride, { STATUS } from 'react-joyride';
 import { useTour } from './TourContext';
+import { toast } from 'react-toastify';
 
-// Tour step definitions
-const tourSteps = [
+// Define tour steps
+const TOUR_STEPS = [
   {
-    target: '.solution-bundle-header',
-    content: 'Welcome to TrialSage! This guided tour will introduce you to our solution bundles designed to streamline your regulatory and clinical workflows.',
-    placement: 'center',
+    target: '[data-tour="solution-header"]',
+    content: 'Welcome to TrialSage! This section shows our solution bundles tailored to your regulatory and clinical needs.',
     disableBeacon: true,
-  },
-  {
-    target: '.ind-nda-section',
-    content: 'The IND & NDA Submission Accelerator helps regulatory teams file 60% faster with zero formatting errors across FDA, EMA, PMDA, and other authorities.',
     placement: 'bottom',
   },
   {
-    target: '.csr-intelligence-section',
-    content: 'Our Global CSR Intelligence Library provides a centralized repository of clinical study reports with AI-powered insights.',
-    placement: 'bottom',
+    target: '[data-tour="bundle-ind-submissions"]',
+    content: 'The IND & NDA Submission Accelerator helps regulatory teams prepare and submit compliant regulatory applications.',
+    placement: 'top',
   },
   {
-    target: '.report-review-section',
-    content: 'The Report & Review Toolkit improves collaboration between clinical, regulatory, and safety teams with streamlined workflows.',
-    placement: 'bottom',
+    target: '[data-tour="bundle-csr-intelligence"]',
+    content: 'The Global CSR Intelligence Suite provides insights from clinical study reports across multiple regions.',
+    placement: 'right',
   },
   {
-    target: '.enterprise-section',
-    content: 'The Enterprise Command Center gives leadership a real-time view of your regulatory operations with comprehensive dashboards.',
-    placement: 'bottom',
-  },
-  {
-    target: '.help-button',
-    content: 'You can restart this tour anytime by clicking the help button in the top-right corner.',
+    target: '[data-tour="bundle-report-toolkit"]',
+    content: 'The Report & Review Toolkit helps you generate and manage clinical evaluation reports.',
     placement: 'left',
   },
+  {
+    target: '[data-tour="bundle-enterprise"]',
+    content: 'The Enterprise Command Center gives real-time updates across all your organization\'s regulatory activities.',
+    placement: 'top',
+  }
 ];
 
-const InteractiveTour = ({ tourCompleted, setTourCompleted }) => {
-  const { isTourActive, tourStep, endTour, goToStep } = useTour();
-  const [run, setRun] = useState(false);
-  const [steps, setSteps] = useState(tourSteps);
+export default function InteractiveTour({ tourCompleted, setTourCompleted }) {
+  const { isTourActive, tourStep, stopTour, nextStep } = useTour();
 
-  // Sync the tour state with the context
-  useEffect(() => {
-    setRun(isTourActive);
-  }, [isTourActive]);
-
+  // Handle tour events
   const handleJoyrideCallback = (data) => {
-    const { status, index } = data;
-    const finishedStatuses = [STATUS.FINISHED, STATUS.SKIPPED];
+    const { status, index, type } = data;
 
-    // Update the current step in the context
-    if (index !== tourStep) {
-      goToStep(index);
-    }
-
-    // Mark tour as completed if finished or skipped
-    if (finishedStatuses.includes(status)) {
-      setRun(false);
-      endTour();
+    // Tour is finished or skipped
+    if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
+      stopTour();
       setTourCompleted(true);
+      toast.success("Tour completed! You can restart it anytime with the help button.");
+    }
+    
+    // Update current step
+    if (type === 'step:after' && index < TOUR_STEPS.length - 1) {
+      nextStep();
     }
   };
+
+  // Don't show tour if already completed
+  if (tourCompleted) {
+    return null;
+  }
 
   return (
     <Joyride
       callback={handleJoyrideCallback}
       continuous
-      run={run}
+      hideCloseButton
+      run={isTourActive}
       scrollToFirstStep
       showProgress
       showSkipButton
-      steps={steps}
+      steps={TOUR_STEPS}
       styles={{
         options: {
-          arrowColor: '#ffffff',
-          backgroundColor: '#ffffff',
-          overlayColor: 'rgba(0, 0, 0, 0.5)',
-          primaryColor: '#2563eb',
+          zIndex: 10000,
+          primaryColor: '#3b82f6',
           textColor: '#333',
-          zIndex: 1000,
         },
         tooltipContainer: {
-          boxShadow: '0 0 15px rgba(0, 0, 0, 0.2)',
-          borderRadius: '0.5rem',
+          textAlign: 'left',
         },
         buttonBack: {
           marginRight: 10,
-          backgroundColor: '#f3f4f6',
-          color: '#1f2937',
-        },
-        buttonNext: {
-          backgroundColor: '#2563eb',
-        },
-        buttonSkip: {
-          color: '#6b7280',
-        },
+        }
       }}
     />
   );
-};
-
-export default InteractiveTour;
+}

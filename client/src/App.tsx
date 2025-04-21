@@ -23,7 +23,7 @@ import CERGenerator from './pages/CERGenerator';
 import ClientPortal from './pages/ClientPortal';
 import AIAdvancedAgent from './pages/AIAdvancedAgent';
 import SimpleLearningInterface from './components/SimpleLearningInterface';
-import { CheckCircle, AlertTriangle, Info } from 'lucide-react';
+import { CheckCircle, AlertTriangle, Info, HelpCircle } from 'lucide-react';
 // React Toastify for production-ready notifications
 import { ToastContainer, toast as toastify } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';

@@ -1,101 +1,76 @@
-/* Tour Animations CSS */
+/* Tour Animations */
 
-/* Pulse animation for tour targets */
-@keyframes tour-pulse {
+/* Highlight the current tour step */
+[data-tour].highlight {
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.4);
+  border-radius: 0.5rem;
+  transition: box-shadow 0.3s ease;
+}
+
+/* Pulse animation for indicators */
+@keyframes pulse {
   0% {
-    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4);
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
   }
   70% {
-    box-shadow: 0 0 0 10px rgba(37, 99, 235, 0);
+    box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0);
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
   }
 }
 
-/* Highlight effect for tour targets */
-[data-rj-element-type="tooltip"] + div,
-.react-joyride__beacon {
-  animation: tour-pulse 2s infinite;
+.pulse-animation {
+  animation: pulse 2s infinite;
 }
 
-/* Help button pulse effect */
-.help-button {
-  transition: all 0.3s ease;
-  box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.7);
-}
-
-.help-button:hover {
-  transform: scale(1.1);
-}
-
-/* Add pulse animation to help button */
-.help-button.pulse {
-  animation: help-button-pulse 2s infinite;
-}
-
-@keyframes help-button-pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.7);
+/* Fade-in animation for tour elements */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
   }
-  70% {
-    box-shadow: 0 0 0 10px rgba(37, 99, 235, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0);
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-/* Tooltip animations */
-.react-joyride__tooltip {
-  transition: opacity 0.3s, transform 0.3s !important;
+.tour-fade-in {
+  animation: fadeIn 0.5s ease forwards;
 }
 
-/* Overlay fade effect */
-.react-joyride__overlay {
-  transition: opacity 0.3s !important;
+/* Welcome animation styles */
+.welcome-slide-up {
+  animation: slideUp 0.8s ease forwards;
 }
 
-/* Tour step animations */
-.react-joyride__spotlight {
-  transition: all 0.5s ease !important;
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
-/* Enhanced spotlight effect */
-.react-joyride__spotlight {
-  border-radius: 4px;
-}
-
-/* Tooltip custom styles */
-.react-joyride__tooltip {
-  border-radius: 8px !important;
-}
-
-/* Button hover animations */
-.react-joyride__button {
-  transition: all 0.2s ease !important;
-}
-
-/* Progress bar animation */
-.react-joyride__progress {
-  transition: width 0.3s ease-out !important;
-}
-
-/* Add some spacing to tour tooltips */
-.react-joyride__tooltip-body {
-  padding: 4px 0 !important;
-}
-
-/* Make bundle sections highlight when targeted */
-.solution-bundle-header.tour-target,
-.ind-nda-section.tour-target,
-.csr-intelligence-section.tour-target,
-.report-review-section.tour-target,
-.enterprise-section.tour-target {
+/* Spotlight effect for highlighted elements */
+.tour-spotlight {
   position: relative;
   z-index: 10;
-  background-color: rgba(255, 255, 255, 0.05);
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.3);
-  border-radius: 6px;
-  transition: all 0.3s ease;
+}
+
+.tour-spotlight::before {
+  content: '';
+  position: absolute;
+  inset: -10px;
+  background: radial-gradient(
+    circle closest-side,
+    rgba(59, 130, 246, 0.15),
+    transparent
+  );
+  z-index: -1;
+  border-radius: 0.5rem;
 }

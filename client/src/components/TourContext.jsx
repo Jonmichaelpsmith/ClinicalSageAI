@@ -1,55 +1,47 @@
-// TourContext.jsx - Context provider for the interactive feature tour
-import React, { createContext, useState, useContext, useCallback } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import { HelpCircle } from 'lucide-react';
+import { toast } from 'react-toastify';
 
-// Create the Tour Context
-const TourContext = createContext();
+// Create a context for tour state management
+const TourContext = createContext(null);
 
-// Tour Provider component to manage tour state
 export function TourProvider({ children }) {
   const [isTourActive, setIsTourActive] = useState(false);
   const [tourStep, setTourStep] = useState(0);
   
-  // Start or restart the tour
-  const startTour = useCallback(() => {
+  // Start the tour
+  const startTour = () => {
     setIsTourActive(true);
     setTourStep(0);
-  }, []);
+    toast.info("Tour started! We'll guide you through the key features.");
+  };
   
-  // End the tour
-  const endTour = useCallback(() => {
+  // Stop the tour
+  const stopTour = () => {
     setIsTourActive(false);
     setTourStep(0);
-  }, []);
-  
-  // Go to a specific step
-  const goToStep = useCallback((step) => {
-    setTourStep(step);
-  }, []);
+    toast.info("Tour ended. You can restart it anytime using the help button.");
+  };
   
   // Go to next step
-  const nextStep = useCallback(() => {
+  const nextStep = () => {
     setTourStep(prev => prev + 1);
-  }, []);
+  };
   
   // Go to previous step
-  const prevStep = useCallback(() => {
+  const prevStep = () => {
     setTourStep(prev => Math.max(0, prev - 1));
-  }, []);
-  
-  // The context value that will be provided
-  const tourContextValue = {
-    isTourActive,
-    tourStep,
-    startTour,
-    endTour,
-    goToStep,
-    nextStep,
-    prevStep
   };
   
   return (
-    <TourContext.Provider value={tourContextValue}>
+    <TourContext.Provider value={{
+      isTourActive,
+      tourStep,
+      startTour,
+      stopTour,
+      nextStep,
+      prevStep
+    }}>
       {children}
     </TourContext.Provider>
   );
@@ -64,19 +56,25 @@ export function useTour() {
   return context;
 }
 
-// Help button component to start the tour
+// Helper button component to start/stop tour
 export function TourHelpButton() {
-  const { startTour } = useTour();
+  const { isTourActive, startTour, stopTour } = useTour();
+  
+  const handleClick = () => {
+    if (isTourActive) {
+      stopTour();
+    } else {
+      startTour();
+    }
+  };
   
   return (
-    <button 
-      onClick={startTour}
-      className="help-button bg-blue-600 hover:bg-blue-700 text-white rounded-full p-2 shadow-md transition-all duration-200 hover:shadow-lg"
-      aria-label="Start interactive tour"
+    <button
+      onClick={handleClick}
+      className="bg-blue-600 hover:bg-blue-700 text-white rounded-full p-2 shadow-md transition-all duration-200 hover:shadow-lg"
+      aria-label={isTourActive ? "Stop tour" : "Start guided tour"}
     >
       <HelpCircle size={20} />
     </button>
   );
 }
-
-export default TourContext;
