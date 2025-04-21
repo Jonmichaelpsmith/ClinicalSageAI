@@ -288,11 +288,11 @@ export default function HomeLandingEnhanced() {
         </div>
       </section>
       
+      {/* CSR Intelligence Library Metrics - Moved to top as requested */}
+      <CSRLibraryMetrics />
+      
       {/* Value Proposition Section */}
       <AdvancedFeatureCards />
-      
-      {/* CSR Intelligence Library Metrics */}
-      <CSRLibraryMetrics />
       
       {/* Disrupting the Status Quo Section - Compact, Interactive Version */}
       <section className="py-12 bg-gradient-to-r from-slate-900 to-indigo-900 text-white">
