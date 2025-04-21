@@ -42,7 +42,13 @@ export default function EmailArchiveButton({ sessionId }) {
 
   const handleSend = async () => {
     if (!email || !email.includes('@')) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Invalid Email",
+        description: "Please enter a valid email address",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Invalid Email",
         description: "Please enter a valid email address",
         variant: "destructive"
@@ -82,7 +88,12 @@ export default function EmailArchiveButton({ sessionId }) {
         // Also save to localStorage as fallback
         localStorage.setItem('userEmail', email);
         
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: "Archive Emailed",
+          description: `Complete study archive sent to ${email}`,
+        })
+  console.log('Toast would show:', {
           title: "Archive Emailed",
           description: `Complete study archive sent to ${email}`,
         });
@@ -93,7 +104,13 @@ export default function EmailArchiveButton({ sessionId }) {
     } catch (error) {
       console.error("Error sending email:", error);
       setStatus("❌ Failed to send");
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Email Failed",
+        description: "There was an error sending your archive.",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Email Failed",
         description: "There was an error sending your archive.",
         variant: "destructive"

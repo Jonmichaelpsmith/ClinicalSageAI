@@ -71,7 +71,13 @@ export default function ProtocolAnalysisPage() {
       } catch (err) {
         console.error('Error fetching protocol analysis:', err);
         setError(err instanceof Error ? err.message : 'An unknown error occurred');
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: 'Error',
+          description: 'Failed to load protocol analysis. Please try again.',
+          variant: 'destructive',
+        })
+  console.log('Toast would show:', {
           title: 'Error',
           description: 'Failed to load protocol analysis. Please try again.',
           variant: 'destructive',

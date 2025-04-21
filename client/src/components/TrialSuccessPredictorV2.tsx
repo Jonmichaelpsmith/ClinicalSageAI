@@ -112,7 +112,11 @@ export default function TrialSuccessPredictorV2() {
         reader.readAsText(file);
       }
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "File uploaded",
+        description: `${file.name} (${Math.round(file.size / 1024)
+  console.log('Toast would show:', {
         title: "File uploaded",
         description: `${file.name} (${Math.round(file.size / 1024)} KB) has been uploaded.`,
       });
@@ -139,7 +143,13 @@ export default function TrialSuccessPredictorV2() {
       setAnalysisResult(result);
     } catch (error) {
       console.error("Error analyzing protocol:", error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to analyze protocol",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to analyze protocol",
         variant: "destructive",
@@ -152,7 +162,13 @@ export default function TrialSuccessPredictorV2() {
   // Handle protocol text analysis
   const analyzeProtocolText = async () => {
     if (!protocolText.trim() && !uploadedFile) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Input required",
+        description: "Please paste protocol text or upload a file",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Input required",
         description: "Please paste protocol text or upload a file",
         variant: "destructive",
@@ -200,7 +216,13 @@ export default function TrialSuccessPredictorV2() {
       }
     } catch (error) {
       console.error("Error analyzing protocol text:", error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to analyze protocol text",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to analyze protocol text",
         variant: "destructive",
@@ -265,13 +287,24 @@ export default function TrialSuccessPredictorV2() {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Report exported",
+        description: "PDF report has been generated and downloaded",
+      })
+  console.log('Toast would show:', {
         title: "Report exported",
         description: "PDF report has been generated and downloaded",
       });
     } catch (error) {
       console.error("Error exporting PDF:", error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to export PDF report",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to export PDF report",
         variant: "destructive",
@@ -321,13 +354,24 @@ export default function TrialSuccessPredictorV2() {
         throw new Error(errorData.message || "Failed to save to dossier");
       }
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Saved to dossier",
+        description: "Report has been saved to your protocol dossier",
+      })
+  console.log('Toast would show:', {
         title: "Saved to dossier",
         description: "Report has been saved to your protocol dossier",
       });
     } catch (error) {
       console.error("Error saving to dossier:", error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to save to dossier",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to save to dossier",
         variant: "destructive",

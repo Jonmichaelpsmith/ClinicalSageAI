@@ -133,13 +133,24 @@ const ExportMenu = ({
       link.click();
       document.body.removeChild(link);
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "PDF exported successfully",
+        description: "Your protocol recommendations have been exported to PDF format.",
+      })
+  console.log('Toast would show:', {
         title: "PDF exported successfully",
         description: "Your protocol recommendations have been exported to PDF format.",
       });
     } catch (error) {
       console.error('Error exporting to PDF:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Export failed",
+        description: "Failed to export to PDF. Please try again.",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Export failed",
         description: "Failed to export to PDF. Please try again.",
         variant: "destructive",
@@ -177,13 +188,24 @@ const ExportMenu = ({
       link.click();
       document.body.removeChild(link);
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Word document exported successfully",
+        description: "Your protocol recommendations have been exported to Word format.",
+      })
+  console.log('Toast would show:', {
         title: "Word document exported successfully",
         description: "Your protocol recommendations have been exported to Word format.",
       });
     } catch (error) {
       console.error('Error exporting to Word:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Export failed",
+        description: "Failed to export to Word format. Please try again.",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Export failed",
         description: "Failed to export to Word format. Please try again.",
         variant: "destructive",
@@ -217,13 +239,24 @@ const ExportMenu = ({
       link.click();
       document.body.removeChild(link);
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "CSV exported successfully",
+        description: "Your CSR data has been exported to CSV format for analysis.",
+      })
+  console.log('Toast would show:', {
         title: "CSV exported successfully",
         description: "Your CSR data has been exported to CSV format for analysis.",
       });
     } catch (error) {
       console.error('Error exporting to CSV:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Export failed",
+        description: "Failed to export to CSV format. Please try again.",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Export failed",
         description: "Failed to export to CSV format. Please try again.",
         variant: "destructive",
@@ -238,7 +271,13 @@ const ExportMenu = ({
       setIsExporting(true);
       
       if (!academicReferences || academicReferences.length === 0) {
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: "No references available",
+          description: "There are no academic references available to export.",
+          variant: "destructive",
+        })
+  console.log('Toast would show:', {
           title: "No references available",
           description: "There are no academic references available to export.",
           variant: "destructive",
@@ -264,13 +303,24 @@ const ExportMenu = ({
       link.click();
       document.body.removeChild(link);
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "BibTeX exported successfully",
+        description: "Your academic references have been exported to BibTeX format.",
+      })
+  console.log('Toast would show:', {
         title: "BibTeX exported successfully",
         description: "Your academic references have been exported to BibTeX format.",
       });
     } catch (error) {
       console.error('Error exporting to BibTeX:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Export failed",
+        description: "Failed to export to BibTeX format. Please try again.",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Export failed",
         description: "Failed to export to BibTeX format. Please try again.",
         variant: "destructive",
@@ -285,7 +335,13 @@ const ExportMenu = ({
       setIsExporting(true);
       
       if (!academicReferences || academicReferences.length === 0) {
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: "No references available",
+          description: "There are no academic references available to export.",
+          variant: "destructive",
+        })
+  console.log('Toast would show:', {
           title: "No references available",
           description: "There are no academic references available to export.",
           variant: "destructive",
@@ -311,13 +367,24 @@ const ExportMenu = ({
       link.click();
       document.body.removeChild(link);
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "RIS exported successfully",
+        description: "Your academic references have been exported to RIS format for EndNote/Zotero.",
+      })
+  console.log('Toast would show:', {
         title: "RIS exported successfully",
         description: "Your academic references have been exported to RIS format for EndNote/Zotero.",
       });
     } catch (error) {
       console.error('Error exporting to RIS:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Export failed",
+        description: "Failed to export to RIS format. Please try again.",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Export failed",
         description: "Failed to export to RIS format. Please try again.",
         variant: "destructive",
@@ -353,13 +420,24 @@ const ExportMenu = ({
       link.click();
       document.body.removeChild(link);
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Markdown exported successfully",
+        description: "Your protocol recommendations have been exported to Markdown format.",
+      })
+  console.log('Toast would show:', {
         title: "Markdown exported successfully",
         description: "Your protocol recommendations have been exported to Markdown format.",
       });
     } catch (error) {
       console.error('Error exporting to Markdown:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Export failed",
+        description: "Failed to export to Markdown format. Please try again.",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Export failed",
         description: "Failed to export to Markdown format. Please try again.",
         variant: "destructive",
@@ -396,13 +474,24 @@ const ExportMenu = ({
       link.click();
       document.body.removeChild(link);
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "XML exported successfully",
+        description: "Your protocol data has been exported to XML format for data exchange.",
+      })
+  console.log('Toast would show:', {
         title: "XML exported successfully",
         description: "Your protocol data has been exported to XML format for data exchange.",
       });
     } catch (error) {
       console.error('Error exporting to XML:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Export failed",
+        description: "Failed to export to XML format. Please try again.",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Export failed",
         description: "Failed to export to XML format. Please try again.",
         variant: "destructive",

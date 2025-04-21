@@ -16,7 +16,13 @@ export default function DossierUploader() {
 
   const handleSubmit = async () => {
     if (!summary && !file) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: 'Missing Information',
+        description: 'Please provide an asset summary or upload a draft protocol.',
+        variant: 'destructive',
+      })
+  console.log('Toast would show:', {
         title: 'Missing Information',
         description: 'Please provide an asset summary or upload a draft protocol.',
         variant: 'destructive',
@@ -37,14 +43,26 @@ export default function DossierUploader() {
       });
 
       setSubmitted(true);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: 'Request Submitted Successfully',
+        description: 'We\'ll email your custom dossier within 72 hours.',
+        variant: 'default',
+      })
+  console.log('Toast would show:', {
         title: 'Request Submitted Successfully',
         description: 'We\'ll email your custom dossier within 72 hours.',
         variant: 'default',
       });
     } catch (error) {
       console.error('Error submitting request:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: 'Submission Failed',
+        description: 'There was a problem submitting your request. Please try again.',
+        variant: 'destructive',
+      })
+  console.log('Toast would show:', {
         title: 'Submission Failed',
         description: 'There was a problem submitting your request. Please try again.',
         variant: 'destructive',

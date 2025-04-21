@@ -94,7 +94,11 @@ const DesignFromMolecule = () => {
     const missingFields = requiredFields.filter(field => !molecule[field]);
     
     if (missingFields.length > 0) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Missing required fields",
+        description: `Please provide: ${missingFields.join(", ")
+  console.log('Toast would show:', {
         title: "Missing required fields",
         description: `Please provide: ${missingFields.join(", ")}`,
         variant: "destructive"
@@ -134,7 +138,12 @@ const DesignFromMolecule = () => {
       if (data.success) {
         setResults(data);
         setActiveTab("results");
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: "Analysis complete",
+          description: `Found ${data.similar_molecules?.length || 0} similar molecules`,
+        })
+  console.log('Toast would show:', {
           title: "Analysis complete",
           description: `Found ${data.similar_molecules?.length || 0} similar molecules`,
         });
@@ -144,7 +153,13 @@ const DesignFromMolecule = () => {
     } catch (err) {
       console.error("Error analyzing molecule:", err);
       setError(err.message);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Analysis failed",
+        description: err.message,
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Analysis failed",
         description: err.message,
         variant: "destructive"

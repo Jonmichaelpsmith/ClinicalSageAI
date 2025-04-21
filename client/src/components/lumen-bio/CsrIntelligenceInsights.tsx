@@ -298,7 +298,13 @@ const DocumentUploadForm = () => {
   // Simulate a file upload with progress
   const simulateUpload = () => {
     if (fileInputRef.current?.files?.length === 0) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "No file selected",
+        description: "Please select a file to upload",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "No file selected",
         description: "Please select a file to upload",
         variant: "destructive",
@@ -332,7 +338,12 @@ const DocumentUploadForm = () => {
   // Simulate starting the analysis
   const startAnalysis = () => {
     setAnalysisStarted(true);
-    toast({
+    // toast call replaced
+  // Original: toast({
+      title: "Analysis Started",
+      description: "Your document is being analyzed. You'll be notified when it's complete.",
+    })
+  console.log('Toast would show:', {
       title: "Analysis Started",
       description: "Your document is being analyzed. You'll be notified when it's complete.",
     });

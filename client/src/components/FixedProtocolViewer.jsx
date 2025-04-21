@@ -67,7 +67,13 @@ export default function FixedProtocolViewer({ originalText = "", sessionId = nul
 
   const handleRepairProtocol = async () => {
     if (!originalProtocol.trim()) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Empty Protocol",
+        description: "Please enter protocol text first.",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Empty Protocol",
         description: "Please enter protocol text first.",
         variant: "destructive",
@@ -77,7 +83,13 @@ export default function FixedProtocolViewer({ originalText = "", sessionId = nul
 
     // Enhanced session validation
     if (!sessionId || typeof sessionId !== "string" || sessionId.trim() === "") {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "No Study Session Selected",
+        description: "Please select a valid study session before repairing the protocol.",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "No Study Session Selected",
         description: "Please select a valid study session before repairing the protocol.",
         variant: "destructive",
@@ -153,13 +165,24 @@ export default function FixedProtocolViewer({ originalText = "", sessionId = nul
         onProtocolRepaired(data.changes || []);
       }
 
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Protocol Repaired",
+        description: "Your protocol has been improved based on regulatory standards.",
+      })
+  console.log('Toast would show:', {
         title: "Protocol Repaired",
         description: "Your protocol has been improved based on regulatory standards.",
       });
     } catch (error) {
       console.error("Protocol repair error:", error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Repair Failed",
+        description: error.message || "An error occurred during protocol repair.",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Repair Failed",
         description: error.message || "An error occurred during protocol repair.",
         variant: "destructive",
@@ -171,7 +194,13 @@ export default function FixedProtocolViewer({ originalText = "", sessionId = nul
 
   const handleDownloadFixed = () => {
     if (!fixedProtocol) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "No Fixed Protocol",
+        description: "Please repair the protocol first.",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "No Fixed Protocol",
         description: "Please repair the protocol first.",
         variant: "destructive",
@@ -211,7 +240,12 @@ export default function FixedProtocolViewer({ originalText = "", sessionId = nul
       console.warn("Protocol download not logged: Invalid or missing sessionId");
     }
 
-    toast({
+    // toast call replaced
+  // Original: toast({
+      title: "Protocol Downloaded",
+      description: "Your repaired protocol has been downloaded.",
+    })
+  console.log('Toast would show:', {
       title: "Protocol Downloaded",
       description: "Your repaired protocol has been downloaded.",
     });

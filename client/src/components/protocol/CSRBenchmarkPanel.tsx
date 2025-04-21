@@ -31,7 +31,13 @@ export function CSRBenchmarkPanel({ protocolData, onBenchmarkComplete }: CSRBenc
         setBenchmarkData(data.result);
         onBenchmarkComplete(data.result);
       } else {
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: "Benchmark Failed",
+          description: data.message || "Failed to analyze protocol against CSR benchmarks",
+          variant: "destructive",
+        })
+  console.log('Toast would show:', {
           title: "Benchmark Failed",
           description: data.message || "Failed to analyze protocol against CSR benchmarks",
           variant: "destructive",
@@ -39,7 +45,13 @@ export function CSRBenchmarkPanel({ protocolData, onBenchmarkComplete }: CSRBenc
       }
     },
     onError: (error: any) => {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Benchmark Analysis Failed",
+        description: error.message || "An error occurred during benchmark analysis",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Benchmark Analysis Failed",
         description: error.message || "An error occurred during benchmark analysis",
         variant: "destructive",

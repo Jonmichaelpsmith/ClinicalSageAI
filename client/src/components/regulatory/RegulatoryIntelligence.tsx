@@ -71,7 +71,13 @@ export function RegulatoryIntelligence() {
   // Handle search for intelligence
   const handleSearch = async () => {
     if (!phase) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Phase is required",
+        description: "Please select a trial phase to search for regulatory intelligence.",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Phase is required",
         description: "Please select a trial phase to search for regulatory intelligence.",
         variant: "destructive"
@@ -96,7 +102,13 @@ export function RegulatoryIntelligence() {
       setSummary(data);
     } catch (error) {
       console.error('Search error:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Search failed",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Search failed",
         description: error instanceof Error ? error.message : "An unknown error occurred",
         variant: "destructive"
@@ -109,7 +121,13 @@ export function RegulatoryIntelligence() {
   // Handle protocol analysis
   const handleProtocolAnalysis = async () => {
     if (!protocolText || !protocolPhase) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Missing information",
+        description: "Please provide both protocol text and phase.",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Missing information",
         description: "Please provide both protocol text and phase.",
         variant: "destructive"
@@ -140,7 +158,13 @@ export function RegulatoryIntelligence() {
       setAnalysisResult(data.analysis);
     } catch (error) {
       console.error('Analysis error:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Analysis failed",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Analysis failed",
         description: error instanceof Error ? error.message : "An unknown error occurred",
         variant: "destructive"

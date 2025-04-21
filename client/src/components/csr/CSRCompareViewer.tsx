@@ -35,7 +35,13 @@ export default function CSRCompareViewer({ selectedIds = [], onClose }: CSRCompa
         setData(loaded);
       } catch (error) {
         console.error("Error fetching CSR data:", error);
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: "Error loading CSR data",
+          description: "There was a problem retrieving the clinical study reports.",
+          variant: "destructive"
+        })
+  console.log('Toast would show:', {
           title: "Error loading CSR data",
           description: "There was a problem retrieving the clinical study reports.",
           variant: "destructive"
@@ -93,7 +99,13 @@ export default function CSRCompareViewer({ selectedIds = [], onClose }: CSRCompa
 
   const sendToDossier = async () => {
     if (selectedIds.length < 1) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "No CSRs selected",
+        description: "Please select at least one CSR to add to dossier.",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "No CSRs selected",
         description: "Please select at least one CSR to add to dossier.",
         variant: "destructive"
@@ -108,7 +120,12 @@ export default function CSRCompareViewer({ selectedIds = [], onClose }: CSRCompa
       });
       
       if (response.data?.dossier_id) {
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: "Dossier created",
+          description: `Successfully created dossier with ${selectedIds.length} CSRs.`,
+        })
+  console.log('Toast would show:', {
           title: "Dossier created",
           description: `Successfully created dossier with ${selectedIds.length} CSRs.`,
         });
@@ -119,7 +136,13 @@ export default function CSRCompareViewer({ selectedIds = [], onClose }: CSRCompa
       }
     } catch (error) {
       console.error("Error creating dossier:", error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Error creating dossier",
+        description: "There was a problem creating the dossier from selected CSRs.",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Error creating dossier",
         description: "There was a problem creating the dossier from selected CSRs.",
         variant: "destructive"

@@ -15,7 +15,13 @@ export default function ProtocolEmailer() {
 
   const handleSend = async () => {
     if (!email || !text) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Missing information",
+        description: "Please enter both email and protocol text.",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Missing information",
         description: "Please enter both email and protocol text.",
         variant: "destructive"
@@ -37,7 +43,12 @@ export default function ProtocolEmailer() {
       
       const data = await response.json();
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Protocol sent",
+        description: `Protocol successfully sent to ${email}`,
+      })
+  console.log('Toast would show:', {
         title: "Protocol sent",
         description: `Protocol successfully sent to ${email}`,
       });
@@ -48,7 +59,13 @@ export default function ProtocolEmailer() {
       
     } catch (error) {
       console.error("Failed to send protocol:", error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Failed to send",
+        description: "There was an error sending the protocol document.",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Failed to send",
         description: "There was an error sending the protocol document.",
         variant: "destructive"

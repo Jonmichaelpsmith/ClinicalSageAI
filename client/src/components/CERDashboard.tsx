@@ -212,7 +212,13 @@ function EndpointPanel({ type }: EndpointPanelProps) {
   // Fetch data from API
   const fetchNarrative = async (): Promise<void> => {
     if (!code) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Missing Code",
+        description: "Please enter a code to generate the report.",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Missing Code",
         description: "Please enter a code to generate the report.",
         variant: "destructive"
@@ -241,14 +247,24 @@ function EndpointPanel({ type }: EndpointPanelProps) {
       setData(json.trend);
       setNarrative(json.narrative);
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Report Generated",
+        description: `Successfully generated the ${type.toUpperCase()
+  console.log('Toast would show:', {
         title: "Report Generated",
         description: `Successfully generated the ${type.toUpperCase()} report.`,
         variant: "default"
       });
     } catch (e: any) {
       setError(e.message);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Error",
+        description: e.message || "Failed to generate report",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Error",
         description: e.message || "Failed to generate report",
         variant: "destructive"
@@ -267,7 +283,13 @@ function EndpointPanel({ type }: EndpointPanelProps) {
   // Export data as CSV
   const exportCSV = (): void => {
     if (!chartData.length) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Nothing to Export",
+        description: "Please generate a report first.",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Nothing to Export",
         description: "Please generate a report first.",
         variant: "destructive"
@@ -284,13 +306,25 @@ function EndpointPanel({ type }: EndpointPanelProps) {
       a.download = `${type}_${code}_trend.csv`;
       a.click();
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Export Successful",
+        description: "Your data has been exported as CSV.",
+        variant: "default"
+      })
+  console.log('Toast would show:', {
         title: "Export Successful",
         description: "Your data has been exported as CSV.",
         variant: "default"
       });
     } catch (e) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Export Failed",
+        description: "Failed to export data as CSV.",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Export Failed",
         description: "Failed to export data as CSV.",
         variant: "destructive"
@@ -311,13 +345,25 @@ function EndpointPanel({ type }: EndpointPanelProps) {
       const shareUrl = `${window.location.href.split('?')[0]}?tab=${type}&${params}`;
       navigator.clipboard.writeText(shareUrl);
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Link Copied",
+        description: "Link to this report has been copied to clipboard.",
+        variant: "default"
+      })
+  console.log('Toast would show:', {
         title: "Link Copied",
         description: "Link to this report has been copied to clipboard.",
         variant: "default"
       });
     } catch (e) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Copy Failed",
+        description: "Failed to copy link to clipboard.",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Copy Failed",
         description: "Failed to copy link to clipboard.",
         variant: "destructive"
@@ -553,7 +599,13 @@ function MultiSourcePanel() {
   // Fetch multi-source data
   const fetchMulti = async (): Promise<void> => {
     if (!ndcCodes && !deviceCodes) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Missing Codes",
+        description: "Please enter at least one NDC code or device code.",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Missing Codes",
         description: "Please enter at least one NDC code or device code.",
         variant: "destructive"
@@ -588,14 +640,26 @@ function MultiSourcePanel() {
       setPanels(json.analysis.analyses);
       setNarrative(json.narrative);
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Report Generated",
+        description: "Successfully generated the multi-source report.",
+        variant: "default"
+      })
+  console.log('Toast would show:', {
         title: "Report Generated",
         description: "Successfully generated the multi-source report.",
         variant: "default"
       });
     } catch (e: any) {
       setError(e.message);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Error",
+        description: e.message || "Failed to generate multi-source report",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Error",
         description: e.message || "Failed to generate multi-source report",
         variant: "destructive"
@@ -608,7 +672,13 @@ function MultiSourcePanel() {
   // Export multi-source data as CSV
   const exportCSVMulti = (): void => {
     if (!panels.length) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Nothing to Export",
+        description: "Please generate a report first.",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Nothing to Export",
         description: "Please generate a report first.",
         variant: "destructive"
@@ -634,13 +704,25 @@ function MultiSourcePanel() {
       a.download = `multi_cer.csv`;
       a.click();
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Export Successful",
+        description: "Your multi-source data has been exported as CSV.",
+        variant: "default"
+      })
+  console.log('Toast would show:', {
         title: "Export Successful",
         description: "Your multi-source data has been exported as CSV.",
         variant: "default"
       });
     } catch (e) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Export Failed",
+        description: "Failed to export data as CSV.",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Export Failed",
         description: "Failed to export data as CSV.",
         variant: "destructive"
@@ -660,13 +742,25 @@ function MultiSourcePanel() {
       const shareUrl = `${window.location.href.split('?')[0]}?tab=Multi-Source&${params}`;
       navigator.clipboard.writeText(shareUrl);
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Link Copied",
+        description: "Link to this multi-source report has been copied to clipboard.",
+        variant: "default"
+      })
+  console.log('Toast would show:', {
         title: "Link Copied",
         description: "Link to this multi-source report has been copied to clipboard.",
         variant: "default"
       });
     } catch (e) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Copy Failed",
+        description: "Failed to copy link to clipboard.",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Copy Failed",
         description: "Failed to copy link to clipboard.",
         variant: "destructive"

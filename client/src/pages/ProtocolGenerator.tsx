@@ -59,7 +59,13 @@ const ProtocolDesigner = () => {
   // Handler for analyzing uploaded protocol
   const handleAnalyzeProtocol = async () => {
     if (!uploadedFile) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "No file uploaded",
+        description: "Please select a protocol file first.",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "No file uploaded",
         description: "Please select a protocol file first.",
         variant: "destructive",
@@ -86,13 +92,24 @@ const ProtocolDesigner = () => {
       setAnalysisResults(data.protocol);
       setShowUploadDialog(false);
 
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Protocol Analyzed",
+        description: "Successfully analyzed your protocol.",
+      })
+  console.log('Toast would show:', {
         title: "Protocol Analyzed",
         description: "Successfully analyzed your protocol.",
       });
     } catch (error) {
       console.error("Error analyzing protocol:", error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Analysis Failed",
+        description: error instanceof Error ? error.message : "Failed to analyze protocol",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Analysis Failed",
         description: error instanceof Error ? error.message : "Failed to analyze protocol",
         variant: "destructive",
@@ -125,7 +142,12 @@ const ProtocolDesigner = () => {
       setEndpoint(analysisResults.primaryEndpoint);
     }
 
-    toast({
+    // toast call replaced
+  // Original: toast({
+      title: "Protocol Imported",
+      description: "The protocol information has been successfully imported for enhancement.",
+    })
+  console.log('Toast would show:', {
       title: "Protocol Imported",
       description: "The protocol information has been successfully imported for enhancement.",
     });
@@ -134,7 +156,13 @@ const ProtocolDesigner = () => {
   const handleGenerate = async () => {
     // Validate required fields
     if (!indication.trim()) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Missing Information",
+        description: "Please enter an indication for the protocol.",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Missing Information",
         description: "Please enter an indication for the protocol.",
         variant: "destructive"
@@ -143,7 +171,13 @@ const ProtocolDesigner = () => {
     }
 
     if (!phase.trim()) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Missing Information",
+        description: "Please select a phase for the protocol.",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Missing Information",
         description: "Please select a phase for the protocol.",
         variant: "destructive"
@@ -186,7 +220,13 @@ const ProtocolDesigner = () => {
       setActiveTab("preview");
     } catch (error) {
       console.error('Error generating protocol:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Generation Failed",
+        description: error instanceof Error ? error.message : "Failed to generate protocol. Please try again.",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Generation Failed",
         description: error instanceof Error ? error.message : "Failed to generate protocol. Please try again.",
         variant: "destructive"

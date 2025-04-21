@@ -251,7 +251,13 @@ ${endpoints.length > 0 ? `- Original endpoints: ${endpoints.join(', ')}` : ''}
   const generateSAP = useCallback(async (): Promise<void> => {
     try {
       setGenerating(true);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Generating SAP...",
+        description: "This may take a minute as we analyze your protocol.",
+        variant: "default"
+      })
+  console.log('Toast would show:', {
         title: "Generating SAP...",
         description: "This may take a minute as we analyze your protocol.",
         variant: "default"
@@ -288,7 +294,13 @@ ${endpoints.length > 0 ? `- Original endpoints: ${endpoints.join(', ')}` : ''}
         setSapContent(sapWithMetadata);
         setSapReady(true);
         
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: "SAP Generated Successfully",
+          description: "Your Statistical Analysis Plan is ready for review.",
+          variant: "default"
+        })
+  console.log('Toast would show:', {
           title: "SAP Generated Successfully",
           description: "Your Statistical Analysis Plan is ready for review.",
           variant: "default"
@@ -298,7 +310,13 @@ ${endpoints.length > 0 ? `- Original endpoints: ${endpoints.join(', ')}` : ''}
       }
     } catch (error: any) {
       console.error("Error generating SAP:", error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Error Generating SAP",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Error Generating SAP",
         description: error.message || "An unexpected error occurred",
         variant: "destructive",
@@ -314,7 +332,13 @@ ${endpoints.length > 0 ? `- Original endpoints: ${endpoints.join(', ')}` : ''}
   const generateIND = useCallback(async (): Promise<void> => {
     try {
       setGenerating(true);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Generating IND Summary...",
+        description: "This may take a minute as we analyze your protocol.",
+        variant: "default"
+      })
+  console.log('Toast would show:', {
         title: "Generating IND Summary...",
         description: "This may take a minute as we analyze your protocol.",
         variant: "default"
@@ -360,7 +384,13 @@ ${endpoints.length > 0 ? `- Original endpoints: ${endpoints.join(', ')}` : ''}
         setIndContent(indWithMetadata);
         setIndReady(true);
         
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: "IND Summary Generated Successfully",
+          description: "Your IND Summary is ready for review.",
+          variant: "default"
+        })
+  console.log('Toast would show:', {
           title: "IND Summary Generated Successfully",
           description: "Your IND Summary is ready for review.",
           variant: "default"
@@ -370,7 +400,13 @@ ${endpoints.length > 0 ? `- Original endpoints: ${endpoints.join(', ')}` : ''}
       }
     } catch (error: any) {
       console.error("Error generating IND Summary:", error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Error Generating IND Summary",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Error Generating IND Summary",
         description: error.message || "An unexpected error occurred",
         variant: "destructive",
@@ -386,7 +422,13 @@ ${endpoints.length > 0 ? `- Original endpoints: ${endpoints.join(', ')}` : ''}
   const generateSummary = useCallback(async (): Promise<void> => {
     try {
       setGenerating(true);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Generating Protocol Summary...",
+        description: "This may take a minute as we analyze your protocol.",
+        variant: "default"
+      })
+  console.log('Toast would show:', {
         title: "Generating Protocol Summary...",
         description: "This may take a minute as we analyze your protocol.",
         variant: "default"
@@ -432,7 +474,13 @@ ${endpoints.length > 0 ? `- Original endpoints: ${endpoints.join(', ')}` : ''}
         setSummaryContent(summaryWithMetadata);
         setSummaryReady(true);
         
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: "Protocol Summary Generated Successfully",
+          description: "Your Protocol Summary is ready for review.",
+          variant: "default"
+        })
+  console.log('Toast would show:', {
           title: "Protocol Summary Generated Successfully",
           description: "Your Protocol Summary is ready for review.",
           variant: "default"
@@ -442,7 +490,13 @@ ${endpoints.length > 0 ? `- Original endpoints: ${endpoints.join(', ')}` : ''}
       }
     } catch (error: any) {
       console.error("Error generating Protocol Summary:", error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Error Generating Protocol Summary",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Error Generating Protocol Summary",
         description: error.message || "An unexpected error occurred",
         variant: "destructive",
@@ -458,7 +512,13 @@ ${endpoints.length > 0 ? `- Original endpoints: ${endpoints.join(', ')}` : ''}
   const exportToPDF = useCallback(async (content: string, type: string): Promise<void> => {
     try {
       setExportLoading(true);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: `Exporting ${type}...`,
+        description: "Preparing PDF document.",
+        variant: "default"
+      })
+  console.log('Toast would show:', {
         title: `Exporting ${type}...`,
         description: "Preparing PDF document.",
         variant: "default"
@@ -495,14 +555,26 @@ ${endpoints.length > 0 ? `- Original endpoints: ${endpoints.join(', ')}` : ''}
       link.click();
       document.body.removeChild(link);
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Export Successful",
+        description: `Your ${type} has been exported as a PDF.`,
+        variant: "default"
+      })
+  console.log('Toast would show:', {
         title: "Export Successful",
         description: `Your ${type} has been exported as a PDF.`,
         variant: "default"
       });
     } catch (error: any) {
       console.error(`Error exporting ${type}:`, error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: `Error Exporting ${type}`,
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: `Error Exporting ${type}`,
         description: error.message || "An unexpected error occurred",
         variant: "destructive",

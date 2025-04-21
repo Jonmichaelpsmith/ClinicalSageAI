@@ -1,24 +1,16 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import App from './App';
 import './index.css';
+// Use our security components
+import { SecurityProvider } from './components/security/SecurityProvider';
+import { setupCSP } from './lib/security';
 
-// Create a simple App component directly in this file
-const BasicApp = () => {
-  return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-6">TrialSage</h1>
-      <div className="bg-white p-6 rounded-lg shadow-lg">
-        <h2 className="text-xl font-semibold mb-4">System Status</h2>
-        <p className="text-green-600 font-medium">✅ Application is running successfully</p>
-        <p className="mt-4">
-          We're currently resolving some dependency issues with the full application. 
-          This is a simplified version that confirms our server is working correctly.
-        </p>
-      </div>
-    </div>
-  );
-};
+// Initialize Content Security Policy before rendering
+if (typeof document !== 'undefined') {
+  setupCSP();
+}
 
 // Create a react-query client
 const queryClient = new QueryClient({
@@ -34,7 +26,9 @@ const queryClient = new QueryClient({
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
-      <BasicApp />
+      <SecurityProvider>
+        <App />
+      </SecurityProvider>
     </QueryClientProvider>
   </React.StrictMode>,
 );

@@ -54,7 +54,12 @@ export default function AlertsDashboard({ ndcCode }) {
 
   const downloadEnhancedPDF = async () => {
     try {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Generating PDF",
+        description: "Preparing enhanced report with charts...",
+      })
+  console.log('Toast would show:', {
         title: "Generating PDF",
         description: "Preparing enhanced report with charts...",
       });
@@ -82,13 +87,24 @@ export default function AlertsDashboard({ ndcCode }) {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "PDF Downloaded",
+        description: "Enhanced report has been downloaded successfully.",
+      })
+  console.log('Toast would show:', {
         title: "PDF Downloaded",
         description: "Enhanced report has been downloaded successfully.",
       });
     } catch (err) {
       console.error('Error downloading PDF:', err);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Download Failed",
+        description: err.message || "Failed to download enhanced report",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Download Failed",
         description: err.message || "Failed to download enhanced report",
         variant: "destructive",

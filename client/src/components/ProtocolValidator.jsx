@@ -16,7 +16,13 @@ export default function ProtocolValidator({ sessionId, onValidationComplete = ()
   // Validate protocol
   const handleValidateProtocol = async () => {
     if (!sessionId) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "No Study Session",
+        description: "Please select a study session first",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "No Study Session",
         description: "Please select a study session first",
         variant: "destructive",
@@ -85,13 +91,24 @@ export default function ProtocolValidator({ sessionId, onValidationComplete = ()
       // Call the callback
       onValidationComplete(data.issues || []);
 
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Validation Complete",
+        description: `Found ${data.issues?.length || 0} issues with the protocol.`,
+      })
+  console.log('Toast would show:', {
         title: "Validation Complete",
         description: `Found ${data.issues?.length || 0} issues with the protocol.`,
       });
     } catch (error) {
       console.error("Validation error:", error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Validation Failed",
+        description: error.message || "An error occurred during validation.",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Validation Failed",
         description: error.message || "An error occurred during validation.",
         variant: "destructive",

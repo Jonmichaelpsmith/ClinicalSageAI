@@ -22,7 +22,13 @@ export default function CSRDetail() {
         setCsr(response.data);
       } catch (error) {
         console.error('Error fetching CSR details:', error);
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: 'Failed to load CSR details',
+          description: 'Could not retrieve the requested clinical study report.',
+          variant: 'destructive'
+        })
+  console.log('Toast would show:', {
           title: 'Failed to load CSR details',
           description: 'Could not retrieve the requested clinical study report.',
           variant: 'destructive'

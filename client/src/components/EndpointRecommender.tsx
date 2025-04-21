@@ -113,7 +113,13 @@ export default function EndpointRecommender() {
   // Handler for search action
   const handleSearch = async () => {
     if (!indication || !phase) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Missing information",
+        description: "Please select both indication and phase to search for endpoints.",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Missing information",
         description: "Please select both indication and phase to search for endpoints.",
         variant: "destructive"
@@ -228,7 +234,13 @@ export default function EndpointRecommender() {
       
     } catch (error) {
       console.error('Error generating endpoint recommendations:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Error",
+        description: "Failed to generate endpoint recommendations. Please try again.",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Error",
         description: "Failed to generate endpoint recommendations. Please try again.",
         variant: "destructive"
@@ -240,7 +252,12 @@ export default function EndpointRecommender() {
   
   // Add an endpoint to a protocol (simulation)
   const handleAddToProtocol = (endpoint: Endpoint) => {
-    toast({
+    // toast call replaced
+  // Original: toast({
+      title: "Endpoint Added",
+      description: `${endpoint.name} has been added to your draft protocol.`,
+    })
+  console.log('Toast would show:', {
       title: "Endpoint Added",
       description: `${endpoint.name} has been added to your draft protocol.`,
     });
@@ -252,7 +269,12 @@ export default function EndpointRecommender() {
     
     // In a real implementation, this would generate and download a PDF
     // For now, we'll just show a toast
-    toast({
+    // toast call replaced
+  // Original: toast({
+      title: "Export Initiated",
+      description: "Your endpoint recommendations are being exported as PDF.",
+    })
+  console.log('Toast would show:', {
       title: "Export Initiated",
       description: "Your endpoint recommendations are being exported as PDF.",
     });

@@ -938,13 +938,24 @@ const AdvancedBiostatisticsPanel: React.FC = () => {
     },
     onSuccess: (data) => {
       setAdaptiveTrialResult(data);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Adaptive Trial Simulation Complete",
+        description: "Results are now available below.",
+      })
+  console.log('Toast would show:', {
         title: "Adaptive Trial Simulation Complete",
         description: "Results are now available below.",
       });
     },
     onError: (error: any) => {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Simulation Failed",
+        description: error.message,
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Simulation Failed",
         description: error.message,
         variant: "destructive",
@@ -959,13 +970,24 @@ const AdvancedBiostatisticsPanel: React.FC = () => {
     },
     onSuccess: (data) => {
       setBayesianPredictionResult(data);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Bayesian Calculation Complete",
+        description: "Results are now available below.",
+      })
+  console.log('Toast would show:', {
         title: "Bayesian Calculation Complete",
         description: "Results are now available below.",
       });
     },
     onError: (error: any) => {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Calculation Failed",
+        description: error.message,
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Calculation Failed",
         description: error.message,
         variant: "destructive",
@@ -980,13 +1002,24 @@ const AdvancedBiostatisticsPanel: React.FC = () => {
     },
     onSuccess: (data) => {
       setNonInferiorityResult(data);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Sample Size Calculation Complete",
+        description: "Results are now available below.",
+      })
+  console.log('Toast would show:', {
         title: "Sample Size Calculation Complete",
         description: "Results are now available below.",
       });
     },
     onError: (error: any) => {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Calculation Failed",
+        description: error.message,
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Calculation Failed",
         description: error.message,
         variant: "destructive",
@@ -1001,13 +1034,24 @@ const AdvancedBiostatisticsPanel: React.FC = () => {
     },
     onSuccess: (data) => {
       setSurvivalSimulationResult(data);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Survival Simulation Complete",
+        description: "Results are now available below.",
+      })
+  console.log('Toast would show:', {
         title: "Survival Simulation Complete",
         description: "Results are now available below.",
       });
     },
     onError: (error: any) => {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Simulation Failed",
+        description: error.message,
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Simulation Failed",
         description: error.message,
         variant: "destructive",
@@ -1022,13 +1066,24 @@ const AdvancedBiostatisticsPanel: React.FC = () => {
     },
     onSuccess: (data) => {
       setMamsSimulationResult(data);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "MAMS Trial Simulation Complete",
+        description: "Results are now available below.",
+      })
+  console.log('Toast would show:', {
         title: "MAMS Trial Simulation Complete",
         description: "Results are now available below.",
       });
     },
     onError: (error: any) => {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Simulation Failed",
+        description: error.message,
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Simulation Failed",
         description: error.message,
         variant: "destructive",
@@ -1053,7 +1108,13 @@ const AdvancedBiostatisticsPanel: React.FC = () => {
         throw new Error("Failed to generate report");
       }
     } catch (error) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Report Generation Failed",
+        description: "There was a problem generating the regulatory report.",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Report Generation Failed",
         description: "There was a problem generating the regulatory report.",
         variant: "destructive",

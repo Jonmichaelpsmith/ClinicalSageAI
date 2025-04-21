@@ -60,7 +60,13 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
 
     // Check if we'd exceed max files
     if (files.length + selectedFiles.length > maxFiles) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: 'Too many files',
+        description: `You can only upload a maximum of ${maxFiles} files.`,
+        variant: 'destructive',
+      })
+  console.log('Toast would show:', {
         title: 'Too many files',
         description: `You can only upload a maximum of ${maxFiles} files.`,
         variant: 'destructive',
@@ -73,7 +79,13 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
       
       // Check file size
       if (file.size > maxSizeBytes) {
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: 'File too large',
+          description: `${file.name} exceeds the maximum size of ${maxSize}MB`,
+          variant: 'destructive',
+        })
+  console.log('Toast would show:', {
           title: 'File too large',
           description: `${file.name} exceeds the maximum size of ${maxSize}MB`,
           variant: 'destructive',
@@ -92,7 +104,13 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
           type === fileExtension || 
           (type.includes('/*') && fileType.startsWith(type.replace('/*', '/')))
         )) {
-          toast({
+          // toast call replaced
+  // Original: toast({
+            title: 'Invalid file type',
+            description: `${file.name} is not an accepted file type`,
+            variant: 'destructive',
+          })
+  console.log('Toast would show:', {
             title: 'Invalid file type',
             description: `${file.name} is not an accepted file type`,
             variant: 'destructive',

@@ -59,7 +59,13 @@ export default function SampleSizeCalculator({ sessionId, onCalculationComplete 
 
   const calculateSampleSize = async () => {
     if (!sessionId) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "No Study Session",
+        description: "Please select a study session first",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "No Study Session",
         description: "Please select a study session first",
         variant: "destructive",
@@ -147,13 +153,23 @@ export default function SampleSizeCalculator({ sessionId, onCalculationComplete 
         `Allocation ratio: ${allocation}:1`
       ]);
 
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Calculation Complete",
+        description: `Sample size: ${data.result.totalN} participants (${data.result.perGroup} per group)
+  console.log('Toast would show:', {
         title: "Calculation Complete",
         description: `Sample size: ${data.result.totalN} participants (${data.result.perGroup} per group)`,
       });
     } catch (error) {
       console.error("Calculation error:", error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Calculation Failed",
+        description: error.message || "An error occurred during sample size calculation.",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Calculation Failed",
         description: error.message || "An error occurred during sample size calculation.",
         variant: "destructive",

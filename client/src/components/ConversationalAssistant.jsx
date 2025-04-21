@@ -63,7 +63,13 @@ export default function ConversationalAssistant({ initialPrompt }) {
           console.log("File uploaded successfully:", fileId);
         } catch (error) {
           console.error("Error uploading file:", error);
-          toast({
+          // toast call replaced
+  // Original: toast({
+            title: "File upload failed",
+            description: "Couldn't upload the file, but will continue with your message.",
+            variant: "destructive",
+          })
+  console.log('Toast would show:', {
             title: "File upload failed",
             description: "Couldn't upload the file, but will continue with your message.",
             variant: "destructive",
@@ -119,7 +125,13 @@ export default function ConversationalAssistant({ initialPrompt }) {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 10 * 1024 * 1024) { // 10MB limit
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: "File too large",
+          description: "Please select a file smaller than 10MB",
+          variant: "destructive",
+        })
+  console.log('Toast would show:', {
           title: "File too large",
           description: "Please select a file smaller than 10MB",
           variant: "destructive",
@@ -135,7 +147,13 @@ export default function ConversationalAssistant({ initialPrompt }) {
       ];
       
       if (!allowedTypes.includes(file.type)) {
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: "Unsupported file type",
+          description: "Please upload a PDF, TXT, or DOC/DOCX file",
+          variant: "destructive",
+        })
+  console.log('Toast would show:', {
           title: "Unsupported file type",
           description: "Please upload a PDF, TXT, or DOC/DOCX file",
           variant: "destructive",

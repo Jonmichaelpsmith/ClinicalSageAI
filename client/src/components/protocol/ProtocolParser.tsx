@@ -52,7 +52,13 @@ export function ProtocolParser({ onParseComplete }: ProtocolParserProps) {
     onSuccess: (data) => {
       console.log('Protocol file successfully parsed:', data);
       onParseComplete(data);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Protocol parsed successfully",
+        description: "Your protocol has been processed",
+        variant: "default",
+      })
+  console.log('Toast would show:', {
         title: "Protocol parsed successfully",
         description: "Your protocol has been processed",
         variant: "default",
@@ -60,7 +66,13 @@ export function ProtocolParser({ onParseComplete }: ProtocolParserProps) {
     },
     onError: (error: any) => {
       console.error('Error parsing protocol file:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Error parsing protocol",
+        description: error.response?.data?.message || "Failed to parse protocol file",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Error parsing protocol",
         description: error.response?.data?.message || "Failed to parse protocol file",
         variant: "destructive",
@@ -77,7 +89,13 @@ export function ProtocolParser({ onParseComplete }: ProtocolParserProps) {
     onSuccess: (data) => {
       console.log('Protocol text successfully parsed:', data);
       onParseComplete(data);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Protocol text parsed successfully",
+        description: "Your protocol has been processed",
+        variant: "default",
+      })
+  console.log('Toast would show:', {
         title: "Protocol text parsed successfully",
         description: "Your protocol has been processed",
         variant: "default",
@@ -85,7 +103,13 @@ export function ProtocolParser({ onParseComplete }: ProtocolParserProps) {
     },
     onError: (error: any) => {
       console.error('Error parsing protocol text:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Error parsing protocol text",
+        description: error.response?.data?.message || "Failed to parse protocol text",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Error parsing protocol text",
         description: error.response?.data?.message || "Failed to parse protocol text",
         variant: "destructive",
@@ -102,7 +126,13 @@ export function ProtocolParser({ onParseComplete }: ProtocolParserProps) {
     onSuccess: (data) => {
       console.log('Protocol deeply analyzed:', data);
       onParseComplete(data);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Deep analysis complete",
+        description: "Advanced protocol insights are ready",
+        variant: "default",
+      })
+  console.log('Toast would show:', {
         title: "Deep analysis complete",
         description: "Advanced protocol insights are ready",
         variant: "default",
@@ -110,7 +140,13 @@ export function ProtocolParser({ onParseComplete }: ProtocolParserProps) {
     },
     onError: (error: any) => {
       console.error('Error analyzing protocol text:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Error in deep analysis",
+        description: error.response?.data?.message || "Failed to perform deep analysis",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Error in deep analysis",
         description: error.response?.data?.message || "Failed to perform deep analysis",
         variant: "destructive",
@@ -130,7 +166,13 @@ export function ProtocolParser({ onParseComplete }: ProtocolParserProps) {
     if (protocolText.trim()) {
       parseTextMutation.mutate(protocolText);
     } else {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Empty input",
+        description: "Please enter protocol text to parse",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Empty input",
         description: "Please enter protocol text to parse",
         variant: "destructive",
@@ -143,7 +185,13 @@ export function ProtocolParser({ onParseComplete }: ProtocolParserProps) {
     if (protocolText.trim()) {
       analyzeMutation.mutate(protocolText);
     } else {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Empty input",
+        description: "Please enter protocol text to analyze",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Empty input",
         description: "Please enter protocol text to analyze",
         variant: "destructive",

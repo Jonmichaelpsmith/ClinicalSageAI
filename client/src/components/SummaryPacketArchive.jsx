@@ -48,7 +48,13 @@ export default function SummaryPacketArchive({ sessionId }) {
   // Load a specific packet version details
   const loadPacketDetails = async (packetId, versionId) => {
     if (!sessionId) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "No Session Selected",
+        description: "Please select a study session first",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "No Session Selected",
         description: "Please select a study session first",
         variant: "destructive",
@@ -85,7 +91,13 @@ export default function SummaryPacketArchive({ sessionId }) {
       setViewMode("details");
     } catch (error) {
       console.error("Error loading packet details:", error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Loading Failed",
+        description: error.message || "An error occurred while loading the packet details.",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Loading Failed",
         description: error.message || "An error occurred while loading the packet details.",
         variant: "destructive",
@@ -117,13 +129,24 @@ export default function SummaryPacketArchive({ sessionId }) {
       // Open the PDF in a new tab
       window.open(`/static/archive/${packetId}_v${versionId}.pdf`, "_blank");
 
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Download Started",
+        description: "Your archived summary packet is downloading.",
+      })
+  console.log('Toast would show:', {
         title: "Download Started",
         description: "Your archived summary packet is downloading.",
       });
     } catch (error) {
       console.error("Download error:", error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Download Failed",
+        description: error.message || "An error occurred during download.",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Download Failed",
         description: error.message || "An error occurred during download.",
         variant: "destructive",
@@ -170,7 +193,12 @@ export default function SummaryPacketArchive({ sessionId }) {
         console.error("Failed to log memory:", memoryError);
       }
 
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Packet Restored",
+        description: "The archived packet has been restored for editing.",
+      })
+  console.log('Toast would show:', {
         title: "Packet Restored",
         description: "The archived packet has been restored for editing.",
       });
@@ -184,7 +212,13 @@ export default function SummaryPacketArchive({ sessionId }) {
         
     } catch (error) {
       console.error("Restore error:", error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Restore Failed",
+        description: error.message || "An error occurred while restoring the packet.",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Restore Failed",
         description: error.message || "An error occurred while restoring the packet.",
         variant: "destructive",
@@ -234,14 +268,25 @@ export default function SummaryPacketArchive({ sessionId }) {
         console.error("Failed to log memory:", memoryError);
       }
 
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Share Link Created",
+        description: "Link copied to clipboard. You can now share this with colleagues.",
+      })
+  console.log('Toast would show:', {
         title: "Share Link Created",
         description: "Link copied to clipboard. You can now share this with colleagues.",
       });
 
     } catch (error) {
       console.error("Share error:", error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Share Failed",
+        description: error.message || "An error occurred while creating the share link.",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Share Failed",
         description: error.message || "An error occurred while creating the share link.",
         variant: "destructive",

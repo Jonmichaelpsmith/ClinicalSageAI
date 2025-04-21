@@ -25,7 +25,12 @@ export default function SessionSummaryPanel({ sessionId }) {
     try {
       setExporting(true);
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Preparing Export",
+        description: "Generating session summary report...",
+      })
+  console.log('Toast would show:', {
         title: "Preparing Export",
         description: "Generating session summary report...",
       });
@@ -49,13 +54,24 @@ export default function SessionSummaryPanel({ sessionId }) {
       // Trigger download
       window.open(`/api/download/session-summary/${sessionId}`, '_blank');
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Export Ready",
+        description: "Session summary report has been prepared and downloaded",
+      })
+  console.log('Toast would show:', {
         title: "Export Ready",
         description: "Session summary report has been prepared and downloaded",
       });
     } catch (error) {
       console.error("Failed to export summary:", error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Export Failed",
+        description: "There was an error generating your summary report",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Export Failed",
         description: "There was an error generating your summary report",
         variant: "destructive"

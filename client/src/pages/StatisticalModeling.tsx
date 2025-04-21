@@ -51,7 +51,12 @@ export default function StatisticalModeling() {
   const [showCode, setShowCode] = useState(false);
   
   const runModel = () => {
-    toast({
+    // toast call replaced
+  // Original: toast({
+      title: "Model run initiated",
+      description: "Your statistical model is now running. Results will appear shortly.",
+    })
+  console.log('Toast would show:', {
       title: "Model run initiated",
       description: "Your statistical model is now running. Results will appear shortly.",
     });

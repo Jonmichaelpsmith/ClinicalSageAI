@@ -66,7 +66,13 @@ export function DeepLearningPanel({ csrs = [], onAnalysisComplete }: DeepLearnin
 
   const runClusterAnalysis = async () => {
     if (clusterLimit <= 0) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Input Error",
+        description: "Please enter a positive number for CSR limit",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Input Error",
         description: "Please enter a positive number for CSR limit",
         variant: "destructive",
@@ -99,14 +105,25 @@ export function DeepLearningPanel({ csrs = [], onAnalysisComplete }: DeepLearnin
         onAnalysisComplete(result);
       }
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Analysis Complete",
+        description: "CSR clusters identified successfully",
+      })
+  console.log('Toast would show:', {
         title: "Analysis Complete",
         description: "CSR clusters identified successfully",
       });
       setProgressValue(100);
     } catch (error) {
       console.error('Error identifying CSR clusters:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Analysis Failed",
+        description: "Failed to identify CSR clusters. See console for details.",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Analysis Failed",
         description: "Failed to identify CSR clusters. See console for details.",
         variant: "destructive",
@@ -119,7 +136,13 @@ export function DeepLearningPanel({ csrs = [], onAnalysisComplete }: DeepLearnin
 
   const runPatternDiscovery = async () => {
     if (patternLimit <= 0) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Input Error",
+        description: "Please enter a positive number for CSR limit",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Input Error",
         description: "Please enter a positive number for CSR limit",
         variant: "destructive",
@@ -152,14 +175,25 @@ export function DeepLearningPanel({ csrs = [], onAnalysisComplete }: DeepLearnin
         onAnalysisComplete(result);
       }
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Analysis Complete",
+        description: "CSR patterns discovered successfully",
+      })
+  console.log('Toast would show:', {
         title: "Analysis Complete",
         description: "CSR patterns discovered successfully",
       });
       setProgressValue(100);
     } catch (error) {
       console.error('Error discovering CSR patterns:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Analysis Failed",
+        description: "Failed to discover CSR patterns. See console for details.",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Analysis Failed",
         description: "Failed to discover CSR patterns. See console for details.",
         variant: "destructive",
@@ -172,7 +206,13 @@ export function DeepLearningPanel({ csrs = [], onAnalysisComplete }: DeepLearnin
 
   const runInsightMining = async () => {
     if (insightLimit <= 0) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Input Error",
+        description: "Please enter a positive number for CSR limit",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Input Error",
         description: "Please enter a positive number for CSR limit",
         variant: "destructive",
@@ -205,14 +245,25 @@ export function DeepLearningPanel({ csrs = [], onAnalysisComplete }: DeepLearnin
         onAnalysisComplete(result);
       }
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Analysis Complete",
+        description: "Clinical insights mined successfully",
+      })
+  console.log('Toast would show:', {
         title: "Analysis Complete",
         description: "Clinical insights mined successfully",
       });
       setProgressValue(100);
     } catch (error) {
       console.error('Error mining clinical insights:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Analysis Failed",
+        description: "Failed to mine clinical insights. See console for details.",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Analysis Failed",
         description: "Failed to mine clinical insights. See console for details.",
         variant: "destructive",
@@ -225,7 +276,13 @@ export function DeepLearningPanel({ csrs = [], onAnalysisComplete }: DeepLearnin
 
   const generateStrategicIntelligence = async () => {
     if (!selectedIndication) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Selection Error",
+        description: "Please select an indication for strategic analysis",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Selection Error",
         description: "Please select an indication for strategic analysis",
         variant: "destructive",
@@ -258,14 +315,25 @@ export function DeepLearningPanel({ csrs = [], onAnalysisComplete }: DeepLearnin
         onAnalysisComplete(result);
       }
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Analysis Complete",
+        description: `Strategic intelligence generated for ${selectedIndication}`,
+      })
+  console.log('Toast would show:', {
         title: "Analysis Complete",
         description: `Strategic intelligence generated for ${selectedIndication}`,
       });
       setProgressValue(100);
     } catch (error) {
       console.error('Error generating strategic intelligence:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Analysis Failed",
+        description: "Failed to generate strategic intelligence. See console for details.",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Analysis Failed",
         description: "Failed to generate strategic intelligence. See console for details.",
         variant: "destructive",

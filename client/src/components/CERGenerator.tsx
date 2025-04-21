@@ -64,7 +64,13 @@ const CERGenerator: React.FC = () => {
     // Validate input
     if (!ndcCode.trim()) {
       setError('Please enter an NDC code');
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Missing NDC Code",
+        description: "Please enter an NDC code to generate a CER.",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Missing NDC Code",
         description: "Please enter an NDC code to generate a CER.",
         variant: "destructive"
@@ -74,7 +80,13 @@ const CERGenerator: React.FC = () => {
 
     if (!validateNdcCode(ndcCode)) {
       setError('Please enter a valid NDC code format (e.g., 12345-678-90, 12345-6789-01, or numeric)');
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Invalid Format",
+        description: "Please enter a valid NDC code format.",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Invalid Format",
         description: "Please enter a valid NDC code format.",
         variant: "destructive"
@@ -114,7 +126,13 @@ const CERGenerator: React.FC = () => {
         setPdfUrl(data.pdf_url);
       }
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "CER Generated",
+        description: `Clinical Evaluation Report for ${data.product_name || ndcCode} created successfully.`,
+        variant: "default"
+      })
+  console.log('Toast would show:', {
         title: "CER Generated",
         description: `Clinical Evaluation Report for ${data.product_name || ndcCode} created successfully.`,
         variant: "default"
@@ -124,7 +142,13 @@ const CERGenerator: React.FC = () => {
       console.error('Error generating CER:', err);
       setError(err.message || 'An error occurred while generating the CER');
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Generation Failed",
+        description: err.message || "An error occurred while generating the report.",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Generation Failed",
         description: err.message || "An error occurred while generating the report.",
         variant: "destructive"
@@ -156,7 +180,13 @@ const CERGenerator: React.FC = () => {
       // Open the PDF in a new tab/window
       window.open(url, '_blank');
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "PDF Ready",
+        description: "Your report has been prepared for download.",
+        variant: "default"
+      })
+  console.log('Toast would show:', {
         title: "PDF Ready",
         description: "Your report has been prepared for download.",
         variant: "default"
@@ -164,7 +194,13 @@ const CERGenerator: React.FC = () => {
     } catch (err: any) {
       console.error('Error downloading PDF:', err);
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Download Failed",
+        description: err.message || "Failed to download the PDF report.",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Download Failed",
         description: err.message || "Failed to download the PDF report.",
         variant: "destructive"

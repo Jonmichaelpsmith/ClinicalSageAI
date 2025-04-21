@@ -47,7 +47,13 @@ export default function AnalyticsPage() {
       setLoading(false);
     } catch (error) {
       console.error('Error fetching analytics:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Failed to load analytics",
+        description: "Please try again or contact support if the issue persists.",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Failed to load analytics",
         description: "Please try again or contact support if the issue persists.",
         variant: "destructive"
@@ -77,14 +83,25 @@ export default function AnalyticsPage() {
       document.body.appendChild(link);
       link.click();
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Report Downloaded",
+        description: "Your analytics report has been downloaded successfully.",
+      })
+  console.log('Toast would show:', {
         title: "Report Downloaded",
         description: "Your analytics report has been downloaded successfully.",
       });
       setDownloadingReport(false);
     } catch (error) {
       console.error('Error exporting report:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Export Failed",
+        description: "Failed to generate and download the report. Please try again.",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Export Failed",
         description: "Failed to generate and download the report. Please try again.",
         variant: "destructive"

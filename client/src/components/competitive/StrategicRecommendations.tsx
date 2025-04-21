@@ -80,7 +80,13 @@ const StrategicRecommendations: React.FC<StrategicRecommendationsProps> = ({
 
   const generateStrategicAnalysis = async () => {
     if (!protocolSummary) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Missing Information",
+        description: "Please provide a protocol summary.",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Missing Information",
         description: "Please provide a protocol summary.",
         variant: "destructive"
@@ -106,7 +112,13 @@ const StrategicRecommendations: React.FC<StrategicRecommendationsProps> = ({
         throw new Error(data.message || "Failed to generate strategic analysis");
       }
     } catch (error) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to generate strategic analysis",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to generate strategic analysis",
         variant: "destructive"
@@ -144,7 +156,12 @@ const StrategicRecommendations: React.FC<StrategicRecommendationsProps> = ({
         // Open download in new tab
         window.open(data.download_url, '_blank');
         
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: "Export Successful",
+          description: "Your strategic report PDF has been generated.",
+        })
+  console.log('Toast would show:', {
           title: "Export Successful",
           description: "Your strategic report PDF has been generated.",
         });
@@ -152,7 +169,13 @@ const StrategicRecommendations: React.FC<StrategicRecommendationsProps> = ({
         throw new Error(data.message || "Failed to export PDF");
       }
     } catch (error) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Export Failed",
+        description: error instanceof Error ? error.message : "Failed to export report to PDF",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Export Failed",
         description: error instanceof Error ? error.message : "Failed to export report to PDF",
         variant: "destructive"

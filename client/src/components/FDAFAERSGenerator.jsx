@@ -52,14 +52,26 @@ const FDAFAERSGenerator = () => {
       const result = await generateCERFromNDC(ndcCode, productName);
       setCerReport(result);
       setActiveTab("report");
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Report Generated Successfully",
+        description: "Your Clinical Evaluation Report has been created.",
+        variant: "success",
+      })
+  console.log('Toast would show:', {
         title: "Report Generated Successfully",
         description: "Your Clinical Evaluation Report has been created.",
         variant: "success",
       });
     } catch (err) {
       setError(err.message || "Failed to generate report");
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Error Generating Report",
+        description: err.message || "Failed to generate CER report",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Error Generating Report",
         description: err.message || "Failed to generate CER report",
         variant: "destructive",
@@ -94,13 +106,25 @@ const FDAFAERSGenerator = () => {
       
       const result = await response.json();
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Report Saved Successfully",
+        description: `Report ID: ${result.cer_id}`,
+        variant: "success",
+      })
+  console.log('Toast would show:', {
         title: "Report Saved Successfully",
         description: `Report ID: ${result.cer_id}`,
         variant: "success",
       });
     } catch (err) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Error Saving Report",
+        description: err.message || "Failed to save CER report",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Error Saving Report",
         description: err.message || "Failed to save CER report",
         variant: "destructive",

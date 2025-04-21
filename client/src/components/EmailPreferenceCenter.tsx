@@ -81,13 +81,24 @@ export default function EmailPreferenceCenter({
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Preferences saved",
+        description: "Your email preferences have been updated successfully.",
+      })
+  console.log('Toast would show:', {
         title: "Preferences saved",
         description: "Your email preferences have been updated successfully.",
       });
     } catch (error) {
       console.error('Error saving email preferences:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Error saving preferences",
+        description: "There was a problem saving your email preferences. Please try again.",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Error saving preferences",
         description: "There was a problem saving your email preferences. Please try again.",
         variant: "destructive"
@@ -110,13 +121,24 @@ export default function EmailPreferenceCenter({
         watchlistAlerts: false
       }));
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Unsubscribed",
+        description: "You've been unsubscribed from all email notifications.",
+      })
+  console.log('Toast would show:', {
         title: "Unsubscribed",
         description: "You've been unsubscribed from all email notifications.",
       });
     } catch (error) {
       console.error('Error unsubscribing:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Error unsubscribing",
+        description: "There was a problem processing your request. Please try again.",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Error unsubscribing",
         description: "There was a problem processing your request. Please try again.",
         variant: "destructive"

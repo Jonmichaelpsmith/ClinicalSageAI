@@ -61,14 +61,25 @@ const SequenceDetail = ({ params }) => {
     },
     onSuccess: (data) => {
       setIsSubmissionDialogOpen(false);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Submission initiated successfully",
+        description: "Your sequence has been submitted to the FDA ESG. A confirmation will be available when processing is complete.",
+      })
+  console.log('Toast would show:', {
         title: "Submission initiated successfully",
         description: "Your sequence has been submitted to the FDA ESG. A confirmation will be available when processing is complete.",
       });
       queryClient.invalidateQueries({ queryKey: ['/api/ind/sequence', id] });
     },
     onError: (error) => {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        variant: "destructive",
+        title: "Submission failed",
+        description: error.message || "There was an error submitting the sequence to the FDA ESG."
+      })
+  console.log('Toast would show:', {
         variant: "destructive",
         title: "Submission failed",
         description: error.message || "There was an error submitting the sequence to the FDA ESG."
@@ -83,7 +94,13 @@ const SequenceDetail = ({ params }) => {
 
   const handleSubmit = () => {
     if (confirmText !== 'SUBMIT') {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        variant: "destructive",
+        title: "Confirmation text required",
+        description: "Please type SUBMIT to confirm your submission."
+      })
+  console.log('Toast would show:', {
         variant: "destructive",
         title: "Confirmation text required",
         description: "Please type SUBMIT to confirm your submission."

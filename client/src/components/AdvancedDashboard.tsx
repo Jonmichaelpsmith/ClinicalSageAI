@@ -193,7 +193,13 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({ filteredData }) =
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
         
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: "Loading Error",
+          description: "Failed to load dashboard data. Please try again.",
+          variant: "destructive"
+        })
+  console.log('Toast would show:', {
           title: "Loading Error",
           description: "Failed to load dashboard data. Please try again.",
           variant: "destructive"
@@ -219,7 +225,12 @@ const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({ filteredData }) =
   // Export PDF handler
   const handleExportPDF = useCallback(() => {
     // In a real implementation, this would trigger a PDF export
-    toast({
+    // toast call replaced
+  // Original: toast({
+      title: "PDF Export",
+      description: "This feature would export the current dashboard view as a PDF.",
+    })
+  console.log('Toast would show:', {
       title: "PDF Export",
       description: "This feature would export the current dashboard view as a PDF.",
     });

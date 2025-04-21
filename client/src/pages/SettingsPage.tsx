@@ -28,7 +28,12 @@ function ResearchCompanionSettings() {
   const handleCopy = () => {
     if (apiKey) {
       navigator.clipboard.writeText(apiKey);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Copied to clipboard",
+        description: "API key copied to clipboard",
+      })
+  console.log('Toast would show:', {
         title: "Copied to clipboard",
         description: "API key copied to clipboard",
       });
@@ -173,12 +178,23 @@ export default function SettingsPage() {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Settings updated",
+        description: "Your settings have been successfully updated.",
+      })
+  console.log('Toast would show:', {
         title: "Settings updated",
         description: "Your settings have been successfully updated.",
       });
     } catch (error) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Error",
+        description: "Failed to update settings. Please try again.",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Error",
         description: "Failed to update settings. Please try again.",
         variant: "destructive",

@@ -27,7 +27,12 @@ function ExportEverythingButton({ sessionId }) {
 
   const handleExport = async () => {
     setStatus("📦 Generating export...");
-    toast({
+    // toast call replaced
+  // Original: toast({
+      title: "Preparing Complete Export",
+      description: "Generating all intelligence files into a single bundle..."
+    })
+  console.log('Toast would show:', {
       title: "Preparing Complete Export",
       description: "Generating all intelligence files into a single bundle..."
     });
@@ -43,13 +48,24 @@ function ExportEverythingButton({ sessionId }) {
         link.click();
         setStatus("✅ Export complete.");
         
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: "Export Complete",
+          description: "All intelligence files have been packaged and downloaded."
+        })
+  console.log('Toast would show:', {
           title: "Export Complete",
           description: "All intelligence files have been packaged and downloaded."
         });
       } else {
         setStatus("❌ Failed to generate export.");
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: "Export Failed",
+          description: "There was an error generating the complete export bundle.",
+          variant: "destructive"
+        })
+  console.log('Toast would show:', {
           title: "Export Failed",
           description: "There was an error generating the complete export bundle.",
           variant: "destructive"
@@ -58,7 +74,13 @@ function ExportEverythingButton({ sessionId }) {
     } catch (err) {
       console.error(err);
       setStatus("❌ Export failed.");
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Export Error",
+        description: "An unexpected error occurred during export.",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Export Error",
         description: "An unexpected error occurred during export.",
         variant: "destructive"
@@ -181,7 +203,13 @@ export default function ExampleReportsPage() {
   const handleLaunch = (persona) => {
     const config = launchConfig[persona];
     if (!config) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Demo Configuration Not Found",
+        description: "This demo is still being set up. Please try another option.",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Demo Configuration Not Found",
         description: "This demo is still being set up. Please try another option.",
         variant: "destructive"
@@ -194,7 +222,12 @@ export default function ExampleReportsPage() {
   const handleDownloadDemo = (url, title) => {
     setIsLoading(true);
     
-    toast({
+    // toast call replaced
+  // Original: toast({
+      title: "Preparing Download",
+      description: `Getting your ${title} ready...`
+    })
+  console.log('Toast would show:', {
       title: "Preparing Download",
       description: `Getting your ${title} ready...`
     });
@@ -206,7 +239,12 @@ export default function ExampleReportsPage() {
       // On a real implementation this would be a real download link
       window.open(url, '_blank');
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Download Ready",
+        description: `Your ${title} is ready to view`
+      })
+  console.log('Toast would show:', {
         title: "Download Ready",
         description: `Your ${title} is ready to view`
       });
