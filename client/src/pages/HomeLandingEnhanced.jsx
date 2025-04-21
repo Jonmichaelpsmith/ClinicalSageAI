@@ -15,8 +15,96 @@ import {
   ArrowRight,
   Database,
   FileSymlink,
-  Loader2
+  Loader2,
+  ChevronDown,
+  ChevronUp,
+  PieChart,
+  DollarSign,
+  BarChart
 } from 'lucide-react';
+
+// Interactive Disruption Card Component with expandable case studies
+const DisruptionCard = ({ icon, title, legacy, summary, caseStudies }) => {
+  const [expanded, setExpanded] = useState(false);
+  
+  return (
+    <div className="bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 rounded-lg overflow-hidden">
+      {/* Header Section - Always Visible */}
+      <div className="p-4 sm:p-5 cursor-pointer" onClick={() => setExpanded(!expanded)}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <div className="bg-blue-900/30 w-10 h-10 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+              {icon}
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-white">
+                {title}
+                <span className="ml-2 line-through text-red-400 text-sm">
+                  Legacy: {legacy}
+                </span>
+              </h3>
+              <p className="text-slate-300 text-sm">
+                {summary}
+              </p>
+            </div>
+          </div>
+          <div className="flex-shrink-0 ml-4">
+            {expanded ? (
+              <ChevronUp className="w-5 h-5 text-blue-400" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-blue-400" />
+            )}
+          </div>
+        </div>
+      </div>
+      
+      {/* Expandable Case Studies */}
+      {expanded && (
+        <div className="px-5 pb-5 border-t border-slate-700 pt-4">
+          <h4 className="text-sm font-semibold text-blue-300 mb-3">REAL-WORLD CASE STUDIES</h4>
+          <div className="space-y-4">
+            {caseStudies.map((study, index) => (
+              <div key={index} className="bg-slate-800/50 rounded-lg p-4">
+                <div className="flex flex-col sm:flex-row sm:items-center mb-3">
+                  <h5 className="font-semibold text-white">{study.title}</h5>
+                  <span className="text-xs text-slate-400 sm:ml-auto">{study.company}</span>
+                </div>
+                <p className="text-sm text-slate-300 mb-3">{study.results}</p>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-3">
+                  {Object.entries(study.stats).map(([key, value], i) => {
+                    // Determine icon based on stat key
+                    let StatIcon = PieChart;
+                    if (key.toLowerCase().includes('cost') || key.toLowerCase().includes('saved') || key.toLowerCase().includes('dollar')) {
+                      StatIcon = DollarSign;
+                    } else if (key.toLowerCase().includes('time') || key.toLowerCase().includes('speed')) {
+                      StatIcon = Clock;
+                    } else if (key.toLowerCase().includes('rate') || key.toLowerCase().includes('efficiency')) {
+                      StatIcon = BarChart;
+                    }
+                    
+                    return (
+                      <div key={i} className="flex items-center bg-slate-700/30 rounded px-3 py-2">
+                        <StatIcon className="w-4 h-4 text-slate-400 mr-2" />
+                        <div className="flex flex-col text-xs">
+                          <span className="text-slate-400 capitalize">
+                            {key.replace(/([A-Z])/g, ' $1').trim()}
+                          </span>
+                          <span className="font-semibold text-white">{value}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 import AppPackagesBanner from '../components/AppPackagesBanner';
 import UnifiedPlatformFeatures from '../components/UnifiedPlatformFeatures';
 import AdvancedFeatureCards from '../components/AdvancedFeatureCards';
@@ -202,73 +290,120 @@ export default function HomeLandingEnhanced() {
       {/* Value Proposition Section */}
       <AdvancedFeatureCards />
       
-      {/* Disrupting the Status Quo Section */}
-      <section className="py-16 bg-gradient-to-r from-slate-900 to-indigo-900 text-white">
+      {/* Disrupting the Status Quo Section - Compact, Interactive Version */}
+      <section className="py-12 bg-gradient-to-r from-slate-900 to-indigo-900 text-white">
         <div className="container mx-auto px-6">
-          <div className="text-center mb-12">
-            <h2 className="inline-flex mx-auto px-6 py-2 rounded-full bg-blue-900/30 text-blue-300 text-sm font-medium mb-6">
+          <div className="text-center mb-8">
+            <h2 className="inline-flex mx-auto px-6 py-2 rounded-full bg-blue-900/30 text-blue-300 text-sm font-medium mb-4">
               REIMAGINING REGULATORY INTELLIGENCE
             </h2>
-            <h2 className="text-4xl font-bold mb-6">Disrupting the Status Quo</h2>
-            <p className="text-xl text-slate-300 max-w-3xl mx-auto">
-              We're challenging outdated regulatory paradigms with a transformative approach that combines AI, data science, and domain expertise to eliminate inefficiencies that have plagued the industry for decades.
+            <h2 className="text-3xl font-bold mb-4">Disrupting the Status Quo</h2>
+            <p className="text-lg text-slate-300 max-w-3xl mx-auto">
+              Our AI-driven platform eliminates inefficiencies that have plagued the industry for decades with measurable, proven results.
             </p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-8 mb-10">
-            <div className="bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 rounded-xl p-6 transform transition-transform hover:-translate-y-2 duration-300">
-              <div className="bg-blue-900/30 w-12 h-12 rounded-full flex items-center justify-center mb-6">
-                <Clock className="w-6 h-6 text-blue-400" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-2">Legacy System: <span className="line-through text-red-400">Months of Manual Work</span></h3>
-              <p className="text-slate-300 mb-3">
-                Traditional approaches require multiple consultants, thousands of hours, and error-prone manual formatting for each regulatory submission.
-              </p>
-              <div className="h-0.5 w-full bg-gradient-to-r from-transparent via-slate-700 to-transparent my-4"></div>
-              <h3 className="text-xl font-bold text-emerald-400 mb-2">Our Revolution: 60% Time Reduction</h3>
-              <p className="text-slate-300">
-                TrialSage's AI-driven workflows automate document generation, formatting, and validation, reducing submission time from months to weeks.
-              </p>
+          <div className="max-w-4xl mx-auto">
+            <div className="space-y-3">
+              {/* Time & Resource Efficiency */}
+              <DisruptionCard 
+                icon={<Clock className="w-5 h-5 text-blue-400" />}
+                title="60% Time Reduction" 
+                legacy="Months of Manual Work"
+                summary="AI-driven workflow automation reduces submission time from months to weeks."
+                caseStudies={[
+                  {
+                    title: "Oncology IND Submission",
+                    company: "BioGenesis Therapeutics",
+                    results: "Submission preparation time reduced from 4 months to 6 weeks with 82% reduction in formatting errors",
+                    stats: {
+                      timeSaved: "70%",
+                      costSaved: "$420,000",
+                      accuracy: "99.2%"
+                    }
+                  },
+                  {
+                    title: "Multi-Regional Protocol Submissions",
+                    company: "LumenTrials Inc.",
+                    results: "Simultaneous submissions to FDA and EMA prepared in parallel, reducing review cycles by 40%",
+                    stats: {
+                      timeSaved: "58%",
+                      costSaved: "$280,000",
+                      accuracy: "98.7%"
+                    }
+                  }
+                ]}
+              />
+              
+              {/* Data Unification */}
+              <DisruptionCard 
+                icon={<BarChart2 className="w-5 h-5 text-indigo-400" />}
+                title="Unified Intelligence Platform" 
+                legacy="Isolated Data Silos"
+                summary="Connect thousands of CSRs and regulatory documents across therapeutic areas and regions."
+                caseStudies={[
+                  {
+                    title: "Cross-Program Insight Engine",
+                    company: "Phoenix Biologics",
+                    results: "Identified recurring regulatory issues across 3 development programs, preventing 7-figure submission delays",
+                    stats: {
+                      dataConnected: "12,400+ documents",
+                      insightsGenerated: "341 actionable recommendations",
+                      compliance: "100% regulatory alignment"
+                    }
+                  },
+                  {
+                    title: "Historical Submission Analysis",
+                    company: "TheraSage Oncology",
+                    results: "Leveraged insights from 200+ prior submissions to optimize study design and documentation strategy",
+                    stats: {
+                      approvalRate: "Increased by 27%",
+                      reviewTime: "Reduced by 31%",
+                      costEfficiency: "42% budget reduction"
+                    }
+                  }
+                ]}
+              />
+              
+              {/* Multi-Regional Compliance */}
+              <DisruptionCard 
+                icon={<Globe className="w-5 h-5 text-violet-400" />}
+                title="Dynamic Multi-Region Compliance" 
+                legacy="Region-Specific Rework"
+                summary="One platform handles FDA, EMA, PMDA and Health Canada submissions simultaneously."
+                caseStudies={[
+                  {
+                    title: "Global Phase 3 Submission",
+                    company: "Celeste Bio",
+                    results: "Concurrent submissions to 4 regulatory authorities with region-specific validation and zero rework",
+                    stats: {
+                      regionsSupported: "FDA, EMA, PMDA, Health Canada",
+                      complianceRate: "100% first-time acceptance",
+                      resourceSaving: "62% resource reduction"
+                    }
+                  },
+                  {
+                    title: "Adaptive Protocol Management",
+                    company: "NeuroBright Therapies",
+                    results: "Real-time compliance verification across multiple jurisdictions, enabling rapid protocol amendments",
+                    stats: {
+                      amendmentSpeed: "72% faster approval",
+                      regulatoryChanges: "Automatically incorporated",
+                      validationTime: "Minutes vs. weeks"
+                    }
+                  }
+                ]}
+              />
             </div>
             
-            <div className="bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 rounded-xl p-6 transform transition-transform hover:-translate-y-2 duration-300">
-              <div className="bg-indigo-900/30 w-12 h-12 rounded-full flex items-center justify-center mb-6">
-                <BarChart2 className="w-6 h-6 text-indigo-400" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-2">Legacy System: <span className="line-through text-red-400">Isolated Data Silos</span></h3>
-              <p className="text-slate-300 mb-3">
-                Critical insights remain trapped in silos with limited visibility across studies, reducing learning potential and creating duplicative efforts.
-              </p>
-              <div className="h-0.5 w-full bg-gradient-to-r from-transparent via-slate-700 to-transparent my-4"></div>
-              <h3 className="text-xl font-bold text-emerald-400 mb-2">Our Revolution: Unified Intelligence</h3>
-              <p className="text-slate-300">
-                Our platform connects thousands of CSRs and regulatory documents across therapeutic areas, protocols, and regions for unprecedented intelligence.
-              </p>
+            <div className="text-center mt-8">
+              <Link to="/impact-analysis">
+                <button className="inline-flex items-center px-5 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-medium transition-all duration-300 shadow-lg hover:shadow-blue-500/20">
+                  See Detailed ROI Analysis
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </button>
+              </Link>
             </div>
-            
-            <div className="bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 rounded-xl p-6 transform transition-transform hover:-translate-y-2 duration-300">
-              <div className="bg-violet-900/30 w-12 h-12 rounded-full flex items-center justify-center mb-6">
-                <Globe className="w-6 h-6 text-violet-400" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-2">Legacy System: <span className="line-through text-red-400">Region-Specific Rework</span></h3>
-              <p className="text-slate-300 mb-3">
-                Traditional processes require complete document rework for each regulatory region, leading to ballooning costs and compliance risks.
-              </p>
-              <div className="h-0.5 w-full bg-gradient-to-r from-transparent via-slate-700 to-transparent my-4"></div>
-              <h3 className="text-xl font-bold text-emerald-400 mb-2">Our Revolution: Multi-Region Dynamic Compliance</h3>
-              <p className="text-slate-300">
-                One platform handles FDA, EMA, PMDA, and Health Canada submissions simultaneously with real-time regulatory intelligence and validation.
-              </p>
-            </div>
-          </div>
-          
-          <div className="text-center mt-8">
-            <Link to="/disruption">
-              <button className="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-medium transition-all duration-300 shadow-lg hover:shadow-blue-500/20">
-                See Our Full Impact Analysis
-                <ArrowRight className="ml-2" />
-              </button>
-            </Link>
           </div>
         </div>
       </section>
