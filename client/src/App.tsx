@@ -22,6 +22,7 @@ import INDFullSolution from './pages/INDFullSolution';
 import CERGenerator from './pages/CERGenerator';
 import ClientPortal from './pages/ClientPortal';
 import AIAdvancedAgent from './pages/AIAdvancedAgent';
+import SimpleLearningInterface from './components/SimpleLearningInterface';
 import { CheckCircle, AlertTriangle, Info } from 'lucide-react';
 // React Toastify for production-ready notifications
 import { ToastContainer, toast as toastify } from 'react-toastify';
@@ -237,6 +238,11 @@ export default function App() {
           <Route path="/ai-agent">
             <ErrorBoundary>
               <AIAdvancedAgent />
+            </ErrorBoundary>
+          </Route>
+          <Route path="/learning">
+            <ErrorBoundary>
+              <SimpleLearningInterface />
             </ErrorBoundary>
           </Route>
           <Route path="/">
