@@ -106,7 +106,7 @@ const DisruptionCard = ({ icon, title, legacy, summary, caseStudies }) => {
 };
 
 import AppPackagesBanner from '../components/AppPackagesBanner';
-import SimpleSolutionBundles from '../components/SimpleSolutionBundles';
+// SimpleSolutionBundles section removed as requested
 import AdvancedFeatureCards from '../components/AdvancedFeatureCards';
 import { apiRequest } from '../lib/queryClient';
 
@@ -497,7 +497,7 @@ export default function HomeLandingEnhanced() {
 
       
       {/* Simple Solution Bundles with Demo Tiles */}
-      <SimpleSolutionBundles />
+      {/* SimpleSolutionBundles section removed as requested */}
       
       {/* Testimonials Section - Compact */}
       <section className="py-10 bg-gradient-to-r from-indigo-900 to-blue-900 text-white">
