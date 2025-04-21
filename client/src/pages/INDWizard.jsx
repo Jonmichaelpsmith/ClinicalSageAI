@@ -7,11 +7,11 @@ import NonclinicalStep from '../components/ind-wizard/steps/NonclinicalStep';
 import ClinicalProtocolStep from '../components/ind-wizard/steps/ClinicalProtocolStep';
 import InvestigatorBrochureStep from '../components/ind-wizard/steps/InvestigatorBrochureStep';
 import FdaFormsStep from '../components/ind-wizard/steps/FdaFormsStep';
+import FinalAssemblyStep from '../components/ind-wizard/steps/FinalAssemblyStep';
 import { Button } from '@/components/ui/button';
 
 // This would be filled with actual components as they are created
 const CmcStep = () => <div className="p-10 text-center">CMC Data (Coming Soon)</div>;
-const FinalSubmissionStep = () => <div className="p-10 text-center">Final Submission (Coming Soon)</div>;
 
 export default function INDWizard() {
   return (
@@ -71,12 +71,12 @@ export default function INDWizard() {
         </Route>
         <Route path="/ind/wizard/final-submission">
           <IndWizardLayout>
-            <FinalSubmissionStep />
+            <FinalAssemblyStep />
           </IndWizardLayout>
         </Route>
         <Route path="/ind/wizard/final-assembly">
           <IndWizardLayout>
-            <FinalSubmissionStep />
+            <FinalAssemblyStep />
           </IndWizardLayout>
         </Route>
       </Switch>
