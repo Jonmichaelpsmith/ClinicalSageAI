@@ -49,10 +49,10 @@ export default function IndWizardLayout({ children }) {
   const [savingStatus, setSavingStatus] = useState('idle'); // idle, saving, success, error
 
   // Determine current step from route
-  const currentPath = location.pathname.split('/').pop();
+  const currentPath = location && location.pathname ? location.pathname.split('/').pop() : '';
   const currentStepIndex = indWizardSteps.findIndex(step => step.path === currentPath);
   const adjustedStepIndex = currentStepIndex === -1 ? 0 : currentStepIndex;
-  const currentStep = indWizardSteps[adjustedStepIndex]; // Default to first step if path not found
+  const currentStep = indWizardSteps[adjustedStepIndex] || indWizardSteps[0]; // Default to first step if path not found
   const totalSteps = indWizardSteps.length;
   const progress = ((adjustedStepIndex + 1) / totalSteps) * 100;
 

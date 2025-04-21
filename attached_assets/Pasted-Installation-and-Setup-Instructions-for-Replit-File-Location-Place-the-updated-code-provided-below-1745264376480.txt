@@ -1,0 +1,38 @@
+Installation and Setup Instructions for Replit
+File Location:
+
+Place the updated code provided below into the following file within your Replit project structure: src/components/ind-wizard/steps/InvestigatorBrochureStep.tsx. Create the directory structure (steps inside ind-wizard, etc.) if it doesn't exist.
+Dependencies: Ensure your package.json includes the following core dependencies (you likely have most already). If any are missing, add them using npm install [package-name] or yarn add [package-name] in the Replit Shell:
+
+react & react-dom
+react-hook-form
+@hookform/resolvers
+zod
+@tanstack/react-query
+lucide-react (for icons)
+class-variance-authority, clsx, tailwind-merge (utilities for shadcn/ui)
+All necessary shadcn/ui components (e.g., button, card, textarea, form, tooltip, separator, skeleton, toast, dialog, label, input, select). You install these using the shadcn-ui CLI within the Replit Shell (e.g., npx shadcn-ui@latest add button card textarea ...). Note: We are not adding a full rich text editor library in this iteration to maintain focus, but that would be a dependency if implemented.
+Imports: The code itself includes the necessary import statements for React, hooks, shadcn/ui components, icons, and utilities. Ensure the import paths (like @/components/ui/... or @/lib/utils) match your project's configuration (usually set up in tsconfig.json or vite.config.js).
+
+Wiring Up (Integration):
+
+Routing: Make sure this step is included in your routing setup (likely in src/App.jsx or similar, as shown in previous examples). You need a route like { path: 'investigator-brochure', title: 'Investigator Brochure', element: <InvestigatorBrochureStep /> } within the main wizard layout's routes.
+Wizard Context: The component uses the useWizard() hook. Ensure the IndWizardLayout component provides this context, which holds the shared indData (containing data from previous steps like projectDetails, nonclinicalData, etc.) and navigation functions.
+API Calls: The code includes simulated API calls (apiSaveIbData, apiTriggerIbAiDrafting). You will need to replace these simulations with actual fetch or axios calls to your backend API endpoints once they are built. The TanStack Query useMutation and useQuery hooks are set up to handle these calls.
+Enhanced InvestigatorBrochureStep.tsx Code
+Now, here is the enhanced code incorporating more sophistication, focusing on granular AI drafting and conceptual referencing/linking features:
+
+Summary of Enhancements:
+
+Conceptual Rich Text Editing: Replaced Textarea with a RichTextAreaPlaceholder component that simulates the presence of a rich text editor with basic formatting controls appearing on hover. This visually suggests the intended sophistication without requiring a complex library setup at this stage.
+Granular AI Drafting:
+Modified handleAiDraft to accept an optional subSection parameter.
+Added specific AI trigger buttons within relevant sections (e.g., "AI: Draft Tox Summary", "AI: Draft Pharm Summary" within the Nonclinical section) alongside the main section draft button.
+The simulated API (apiTriggerIbAiDrafting) conceptually uses this subSection for more targeted generation.
+Conceptual Referencing:
+Added an "Insert Reference" button (LinkIcon) to sections where it's relevant (Nonclinical, Clinical summaries).
+The handleInsertReference function simulates prompting the user for an ID (e.g., study ID) and inserting a formatted reference string into the text area. A real implementation would involve a more sophisticated search/selection dialog.
+AI Review Trigger: Added an "AI: Review Tone & Clarity" button (Edit3 icon) as a placeholder for another type of AI assistance focused on refining the generated/written text.
+Refactored Rendering: Created a renderSection helper function to reduce repetition when rendering each IB section's FormField, AI buttons, and reference button.
+Clearer Context Usage: The handleAiDraft function now explicitly gathers data from various parts of the indData context, highlighting the data integration aspect crucial for IB generation.
+This enhanced version provides a more sophisticated user experience for assembling the IB by integrating more granular AI drafting capabilities, conceptual referencing, and hinting at rich text editing, aligning better with the goal of an enterprise-grade, AI-powered workflow.
