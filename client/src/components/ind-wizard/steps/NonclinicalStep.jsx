@@ -63,11 +63,26 @@ const apiParseStudyText = async (text) => {
   return extracted;
 };
 
-// Simulate saving nonclinical data
+// Real API function for saving nonclinical data
 const apiSaveNonclinicalData = async (data) => {
   console.log("API CALL: Saving Nonclinical Data...", data);
-  await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate network delay
-  return { success: true, message: "Nonclinical data saved successfully." };
+  
+  const currentDraftId = localStorage.getItem('currentDraftId') || 'draft-1'; // Use draft-1 as fallback for now
+  
+  const response = await fetch(`/api/ind-drafts/${currentDraftId}/nonclinical`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+  
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || `API error: ${response.status}`);
+  }
+  
+  return await response.json();
 };
 
 // Simulate AI analysis
@@ -101,15 +116,41 @@ export default function NonclinicalStep() {
   const [studyTextToParse, setStudyTextToParse] = useState('');
   const [isParsingText, setIsParsingText] = useState(false);
 
-  // --- Data Fetching (Example) ---
-  // Using the context data directly instead of trying to fetch from API
-  const initialData = indData;
-  const isLoadingInitialData = false;
+  // --- Data Fetching from API ---
+  const { data: initialData, isLoading: isLoadingInitialData } = useQuery({
+    queryKey: ['indDraft', 'nonclinicalStepData'], 
+    queryFn: async () => {
+      console.log("API CALL: Fetching initial Nonclinical data...");
+      
+      const currentDraftId = localStorage.getItem('currentDraftId') || 'draft-1'; // Use draft-1 as fallback
+      
+      try {
+        const response = await fetch(`/api/ind-drafts/${currentDraftId}/nonclinical`);
+        
+        if (!response.ok) {
+          if (response.status === 404) {
+            console.warn('No Nonclinical data found for this draft yet. Starting with defaults.');
+            return null; // Will use default values from the form setup
+          }
+          throw new Error(`API error: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return data.data; // Assuming the API returns { success: true, data: {...} }
+      } catch (error) {
+        console.error('Error fetching Nonclinical data:', error);
+        // Fall back to context data if API fails
+        return indData.nonclinicalData;
+      }
+    },
+    enabled: true, // Fetch data on mount
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
   // --- Form Setup ---
   const form = useForm({
     resolver: zodResolver(nonclinicalStepSchema),
-    defaultValues: initialData?.nonclinicalData || { 
+    defaultValues: initialData || { 
       overallNonclinicalSummary: indData.nonclinicalData?.overallNonclinicalSummary || '', 
       studies: indData.nonclinicalData?.studies || [] 
     },
@@ -117,27 +158,20 @@ export default function NonclinicalStep() {
 
   // --- Data Mutation (Saving) ---
   const mutation = useMutation({
-    mutationFn: async (formData) => {
-      // Use our own API endpoint for saving data
-      const response = await fetch('/api/ind/wizard/save', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+    mutationFn: apiSaveNonclinicalData,
+    onSuccess: (data) => {
+      toast({ 
+        title: "Save Successful", 
+        description: data.message || "Nonclinical data saved successfully." 
       });
       
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
-      }
-      
-      return response.json();
-    },
-    onSuccess: (data) => {
-      toast({ title: "Save Successful", description: data.message });
       // Update context/global state
       updateIndDataSection('nonclinicalData', form.getValues());
-      // Go to next step if requested
+      
+      // Invalidate query cache to ensure fresh data on next visit
+      queryClient.invalidateQueries({ queryKey: ['indDraft', 'nonclinicalStepData'] });
+      
+      // Go to next step
       goToNextStep();
     },
     onError: (error) => {
@@ -302,10 +336,17 @@ export default function NonclinicalStep() {
     }
   };
 
-  // Placeholder for triggerAiAssistance (called from NonclinicalStudyTracker)
+  // Handler for AI assistance (called from NonclinicalStudyTracker)
   const handleAiTrigger = (context, study) => {
     console.log("AI Triggered:", { context, study });
-    alert(`AI assistance requested: ${context} for study: ${study?.studyIdentifier || 'general'}`);
+    
+    toast({
+      title: "AI Assistant",
+      description: `Requesting assistance for: ${context} ${study ? `(Study: ${study.studyIdentifier || 'Unnamed'})` : ''}`,
+    });
+    
+    // Here you would integrate with your actual AI assistance API
+    // For example, making a call to OpenAI or your own AI service
   };
 
   // --- Render Logic ---
