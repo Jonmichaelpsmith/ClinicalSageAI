@@ -5,15 +5,20 @@
  * Provides fallback responses when the FastAPI server is unavailable.
  */
 
-import express from 'express';
+import express, { Request } from 'express';
 import http from 'http';
 import { Server as HttpServer } from 'http';
 import { URL } from 'url';
 
-// Extend Express Application with wsPatch method
+// Extend Express types
 declare module 'express' {
   interface Application {
     wsPatch?: (httpServer: HttpServer) => void;
+  }
+  
+  interface Request {
+    skipFastApiProxy?: boolean;
+    requestId?: string;
   }
 }
 
@@ -31,16 +36,22 @@ export default function registerFastapiProxy(app: express.Application): void {
   // Fallback responses for common endpoints when FastAPI is unavailable
   const fallbackResponses: Record<string, any> = {
     '/reports/count': { count: 0, message: 'Fallback response - FastAPI unavailable' },
-    '/ind/stats': { total: 0, pending: 0, approved: 0, rejected: 0, message: 'Fallback response - FastAPI unavailable' },
-    '/wizard': { message: 'IND Wizard fallback - FastAPI unavailable' },
-    '/wizard/nonclinical': { message: 'Nonclinical fallback - FastAPI unavailable' },
+    '/reports/stats': { total: 0, pending: 0, approved: 0, message: 'Fallback response - FastAPI unavailable' },
     // Add more fallbacks as needed
   };
   
+  // IND wizard endpoints route handler - direct to Express, not FastAPI
+  app.use(['/ind', '/api/ind'], (req, res, next) => {
+    // Skip proxying for all IND-related routes
+    console.log(`Bypassing FastAPI proxy for IND path: ${req.originalUrl}`);
+    req.skipFastApiProxy = true;
+    return next();
+  });
+
   // Simple proxy middleware for API routes
   app.use(['/api', '/reports'], (req, res, next) => {
-    // Simple FastAPI check for direct API routes
-    if (req.originalUrl.includes('/api/ind/wizard')) {
+    // Skip if already handled by a more specific middleware
+    if (req.skipFastApiProxy === true) {
       return next();
     }
     // Check if we have a fallback for this path
