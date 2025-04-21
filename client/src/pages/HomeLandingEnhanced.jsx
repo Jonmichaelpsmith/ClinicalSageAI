@@ -106,7 +106,8 @@ const DisruptionCard = ({ icon, title, legacy, summary, caseStudies }) => {
 };
 
 import AppPackagesBanner from '../components/AppPackagesBanner';
-import UnifiedPlatformFeatures from '../components/UnifiedPlatformFeatures';
+import SolutionTour from '../components/SolutionTour';
+import SolutionBundles from '../components/SolutionBundles';
 import AdvancedFeatureCards from '../components/AdvancedFeatureCards';
 import { apiRequest } from '../lib/queryClient';
 
@@ -497,7 +498,11 @@ export default function HomeLandingEnhanced() {
 
       
       {/* Unified Platform Features Section */}
-      <UnifiedPlatformFeatures />
+      {/* Comprehensive Solution Tour */}
+      <SolutionTour />
+      
+      {/* Solution Bundles */}
+      <SolutionBundles />
       
       {/* Testimonials Section */}
       <section className="py-20 bg-gradient-to-r from-indigo-900 to-blue-900 text-white">

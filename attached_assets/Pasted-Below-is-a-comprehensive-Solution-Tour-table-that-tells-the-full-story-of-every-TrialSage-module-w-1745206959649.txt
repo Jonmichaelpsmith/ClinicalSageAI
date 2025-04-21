@@ -1,0 +1,51 @@
+Below is a comprehensive “Solution Tour” table that tells the full story of every TrialSage module—what it does, its core features, and the key ways it helps your teams. You can drop this directly above your “Choose Your Bundle” section on the landing page so prospects see the end‑to‑end story before drilling into individual packages.
+
+markdown
+Copy
+Edit
+## How TrialSage Powers Every Stage of Your Submission & Trial
+
+| **Module**           | **What It Does**                                                                                       | **Key Features**                                                                                                   | **How It Helps**                                                                              |
+|----------------------|--------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------|
+| **Submission Builder** | Build & validate region‑specific eCTD submissions                                                        | • Drag‑&‑drop eCTD assembly<br>• FDA/EMA/PMDA validation rules engine<br>• Error reporting & fix suggestions         | Eliminates manual formatting errors, ensuring 100% compliance across global regions.          |
+| **IND Architect™**     | Auto‑generate your entire IND dossier                                                                  | • AI‑powered Modules 1–5 writer<br>• Real‑time gap analysis<br>• FDA ESG SFTP integration                            | Cuts IND prep from 12 months to 5–7 months with zero guesswork and end‑to‑end audit trails.   |
+| **CSR Intelligence**   | Parse, analyze, and dashboard Clinical Study Reports (CSRs)                                            | • Deep‑learning text extraction → JSON<br>• Safety/efficacy trend dashboards<br>• AI Q&A on any CSR data             | Turns 500+ page static reports into live insights—spot safety signals weeks earlier.          |
+| **eCTD Manager**       | Lifecycle tracking & publishing for all your submissions                                              | • Centralized status boards<br>• Version control & approval gating<br>• Automated publishing workflows              | Gives you one source of truth for every submission, from draft → publish → archive.          |
+| **Study Designer**     | Stat‑model driven protocol & statistical analysis planning                                            | • What‑if enrollment simulators<br>• Adaptive sample size calculators<br>• Comparator arm benchmarking               | Optimize your study design up‑front—minimize amendments, control costs, maximize power.       |
+| **CER Generator**      | Automated Clinical Evaluation Report drafting                                                         | • MDR/IVDR CER templates<br>• GSPR & risk/benefit rationale<br>• Auto‑formatted references & citations               | Produce audit‑ready CERs in hours—free up writers to focus on interpretation, not formatting. |
+| **Use Case Library**   | Central repository of regulatory case studies, templates, and best‑practice examples                   | • Redacted IND/CER examples<br>• Annotated decision‑rationale<br>• Template downloads                               | Learn from 50+ real submissions—accelerate your own package build with proven patterns.      |
+| **Lumen Bio Portal**   | White‑label client dashboards & reporting portal                                                      | • Customizable KPI widgets<br>• Secure multi‑tenant login<br>• Exportable status snapshots                         | Impress stakeholders with up‑to‑the‑minute program metrics in your own branded portal.        |
+| **Client Access**      | Role‑based permissions & secure data sharing                                                           | • SSO & 2FA support<br>• Dynamic ACLs by role/phase<br>• Encrypted data at rest & in transit                        | Keep your data safe and your partners in sync—without building your own authentication stack. |
+| **AI Co‑pilot**        | Role‑based smart assistants embedded across the platform                                               | • Regulatory Q&A (“What’s the latest IND status?”)<br>• Writing suggestions<br>• Automated compliance alerts         | Elevate every user—from CEO to writer—with on‑demand AI guidance tailored to their tasks.    |
+
+> **Next up**: scroll down to pick the perfect bundle for your role and spin up a live demo environment in seconds.  
+Instructions for your Replit agent:
+
+Insert this Markdown above the Bundles section in your landing page component (e.g. components/LandingPage.jsx inside a <Markdown> or next‑mdx block).
+
+Ensure styling matches your theme (e.g., striped row backgrounds or subtle separators).
+
+Verify mobile responsiveness so the table scrolls horizontally on small screens.
+
+Add anchor link #how-it-works so you can link to this section from nav or CTAs.
+
+Update bundle cards (as you’ve already scaffolded) to follow immediately after this table.
+
+This “Solution Tour” will clearly tell the complete story of every tool in your platform, show how they fit together, and naturally lead prospects into the bundle entry points and live demos.
+
+
+
+
+
+
+
+
+
+
+
+Search
+
+Deep research
+
+
+
