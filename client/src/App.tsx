@@ -1,5 +1,5 @@
 // App.tsx – root router with improved toast and resilient WebSocket connection
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 import { Route, Switch } from 'wouter';
 // Using the region-aware SubmissionBuilder component
 import SubmissionBuilder from './pages/SubmissionBuilder';
@@ -23,7 +23,7 @@ import CERGenerator from './pages/CERGenerator';
 import ClientPortal from './pages/ClientPortal';
 import AIAdvancedAgent from './pages/AIAdvancedAgent';
 import SimpleLearningInterface from './components/SimpleLearningInterface';
-import { CheckCircle, AlertTriangle, Info, HelpCircle } from 'lucide-react';
+import { CheckCircle, AlertTriangle, Info } from 'lucide-react';
 // React Toastify for production-ready notifications
 import { ToastContainer, toast as toastify } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -137,24 +137,9 @@ export const useToast = () => useContext(ToastCtx);
 // Each page that needs WebSocket will initialize its own connection
 
 export default function App() {
-  // Simple function to show help toast
-  const showHelpToast = () => {
-    toastify.info("Help: You can explore different solution bundles below!");
-  };
-  
   return (
     <ErrorBoundary>
       <ToastProvider>
-        {/* Simple help button without tour functionality */}
-        <div className="fixed top-4 right-4 z-50">
-          <button 
-            onClick={showHelpToast}
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-full p-2 shadow-md transition-all duration-200 hover:shadow-lg"
-            aria-label="Show help"
-          >
-            <HelpCircle size={20} />
-          </button>
-        </div>
         
         <Switch>
           <Route path="/builder">
