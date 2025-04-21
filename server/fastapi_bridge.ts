@@ -5,20 +5,21 @@
  * Provides fallback responses when the FastAPI server is unavailable.
  */
 
-import express, { Request } from 'express';
+import express from 'express';
 import http from 'http';
 import { Server as HttpServer } from 'http';
 import { URL } from 'url';
+
+// Create our custom extended Request type
+interface ExtendedRequest extends express.Request {
+  skipFastApiProxy?: boolean;
+  requestId?: string;
+}
 
 // Extend Express types
 declare module 'express' {
   interface Application {
     wsPatch?: (httpServer: HttpServer) => void;
-  }
-  
-  interface Request {
-    skipFastApiProxy?: boolean;
-    requestId?: string;
   }
 }
 
@@ -57,7 +58,7 @@ export default function registerFastapiProxy(app: express.Application): void {
   };
   
   // IND wizard endpoints route handler - direct to Express, not FastAPI
-  app.use(['/ind', '/api/ind'], (req, res, next) => {
+  app.use(['/ind', '/api/ind'], (req: ExtendedRequest, res, next) => {
     // Skip proxying for all IND-related routes
     console.log(`Bypassing FastAPI proxy for IND path: ${req.originalUrl}`);
     req.skipFastApiProxy = true;
@@ -65,7 +66,7 @@ export default function registerFastapiProxy(app: express.Application): void {
   });
 
   // Direct middleware for endpoints with fallbacks
-  app.use(['/api', '/reports'], (req, res, next) => {
+  app.use(['/api', '/reports'], (req: ExtendedRequest, res, next) => {
     // Skip if already handled by a more specific middleware
     if (req.skipFastApiProxy === true) {
       return next();
