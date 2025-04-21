@@ -69,7 +69,13 @@ export default function StrategicLauncherPage() {
       return response.json();
     },
     onSuccess: (data) => {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Use case launched",
+        description: "The strategic intelligence workflow has been started.",
+        variant: "default",
+      })
+  console.log('Toast would show:', {
         title: "Use case launched",
         description: "The strategic intelligence workflow has been started.",
         variant: "default",
@@ -79,7 +85,13 @@ export default function StrategicLauncherPage() {
       navigate(`/protocol-builder?scenario=${data.useCase.id}`);
     },
     onError: (error: any) => {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Launch failed",
+        description: error.message || "Failed to launch use case.",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Launch failed",
         description: error.message || "Failed to launch use case.",
         variant: "destructive",
@@ -94,7 +106,13 @@ export default function StrategicLauncherPage() {
       return response.json();
     },
     onSuccess: (data) => {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Report prepared",
+        description: "Your report is ready for download.",
+        variant: "default",
+      })
+  console.log('Toast would show:', {
         title: "Report prepared",
         description: "Your report is ready for download.",
         variant: "default",
@@ -106,7 +124,13 @@ export default function StrategicLauncherPage() {
       }
     },
     onError: (error: any) => {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Download failed",
+        description: error.message || "Failed to download report.",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Download failed",
         description: error.message || "Failed to download report.",
         variant: "destructive",

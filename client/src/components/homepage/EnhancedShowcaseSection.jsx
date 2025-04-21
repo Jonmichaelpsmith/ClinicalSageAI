@@ -95,7 +95,13 @@ const EnhancedShowcaseSection = () => {
         } catch (err) {
           console.error('Error fetching reports:', err);
           setError('Failed to load recent reports. Please try again later.');
-          toast({
+          // toast call replaced
+  // Original: toast({
+            title: "Error loading reports",
+            description: "We couldn't fetch the latest reports. Please try again later.",
+            variant: "destructive"
+          })
+  console.log('Toast would show:', {
             title: "Error loading reports",
             description: "We couldn't fetch the latest reports. Please try again later.",
             variant: "destructive"

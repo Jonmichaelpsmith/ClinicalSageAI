@@ -58,7 +58,13 @@ const CSRExtractorDashboard: React.FC = () => {
       // Check file type
       const validTypes = ['application/pdf', 'text/plain'];
       if (!validTypes.includes(selectedFile.type)) {
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: "Invalid File Type",
+          description: "Please upload a PDF or text file.",
+          variant: "destructive"
+        })
+  console.log('Toast would show:', {
           title: "Invalid File Type",
           description: "Please upload a PDF or text file.",
           variant: "destructive"
@@ -68,7 +74,13 @@ const CSRExtractorDashboard: React.FC = () => {
       
       // Check file size (limit to 20MB)
       if (selectedFile.size > 20 * 1024 * 1024) {
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: "File Too Large",
+          description: "File size should not exceed 20MB.",
+          variant: "destructive"
+        })
+  console.log('Toast would show:', {
           title: "File Too Large",
           description: "File size should not exceed 20MB.",
           variant: "destructive"
@@ -78,7 +90,13 @@ const CSRExtractorDashboard: React.FC = () => {
       
       setFile(selectedFile);
       setStatus("");
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "File Selected",
+        description: `${selectedFile.name} selected for processing.`,
+        variant: "default"
+      })
+  console.log('Toast would show:', {
         title: "File Selected",
         description: `${selectedFile.name} selected for processing.`,
         variant: "default"
@@ -91,7 +109,13 @@ const CSRExtractorDashboard: React.FC = () => {
    */
   const handleUpload = useCallback(async () => {
     if (!file) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "No File Selected",
+        description: "Please select a CSR document to upload.",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "No File Selected",
         description: "Please select a CSR document to upload.",
         variant: "destructive"
@@ -119,7 +143,13 @@ const CSRExtractorDashboard: React.FC = () => {
       setResult(data);
       setStatus("✅ CSR document successfully processed");
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Processing Complete",
+        description: "CSR has been parsed and mapped successfully.",
+        variant: "default"
+      })
+  console.log('Toast would show:', {
         title: "Processing Complete",
         description: "CSR has been parsed and mapped successfully.",
         variant: "default"
@@ -128,7 +158,13 @@ const CSRExtractorDashboard: React.FC = () => {
       console.error("Upload error:", err);
       setStatus("❌ Upload or processing failed");
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Processing Failed",
+        description: "Failed to process the CSR document. Please try again.",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Processing Failed",
         description: "Failed to process the CSR document. Please try again.",
         variant: "destructive"
@@ -143,7 +179,13 @@ const CSRExtractorDashboard: React.FC = () => {
    */
   const handleUseInPlanning = useCallback(() => {
     if (!result?.csr_id) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Invalid CSR",
+        description: "Cannot use this CSR for planning. Missing CSR ID.",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Invalid CSR",
         description: "Cannot use this CSR for planning. Missing CSR ID.",
         variant: "destructive"

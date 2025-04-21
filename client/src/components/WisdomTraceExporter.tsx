@@ -38,7 +38,11 @@ export default function WisdomTraceExporter({
       await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API delay
       
       // Show success message
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Export Successful",
+        description: `Wisdom trace "${traceName}" has been exported as ${exportFormat.toUpperCase()
+  console.log('Toast would show:', {
         title: "Export Successful",
         description: `Wisdom trace "${traceName}" has been exported as ${exportFormat.toUpperCase()}.`,
         variant: "default",
@@ -53,7 +57,13 @@ export default function WisdomTraceExporter({
       
       setIsDialogOpen(false);
     } catch (error) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Export Failed",
+        description: "There was an error exporting the wisdom trace. Please try again.",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Export Failed",
         description: "There was an error exporting the wisdom trace. Please try again.",
         variant: "destructive",
@@ -65,7 +75,12 @@ export default function WisdomTraceExporter({
   };
 
   const handlePrint = () => {
-    toast({
+    // toast call replaced
+  // Original: toast({
+      title: "Print Initiated",
+      description: "Preparing wisdom trace for printing...",
+    })
+  console.log('Toast would show:', {
       title: "Print Initiated",
       description: "Preparing wisdom trace for printing...",
     });
@@ -74,7 +89,12 @@ export default function WisdomTraceExporter({
   };
 
   const handleShare = () => {
-    toast({
+    // toast call replaced
+  // Original: toast({
+      title: "Sharing Options",
+      description: "You can now share this trace with your team or stakeholders.",
+    })
+  console.log('Toast would show:', {
       title: "Sharing Options",
       description: "You can now share this trace with your team or stakeholders.",
     });

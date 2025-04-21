@@ -42,7 +42,13 @@ export default function DigestDashboard() {
         setLastSent(todayMinus7);
       } catch (error) {
         console.error('Error fetching digest data:', error);
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: "Failed to load digest",
+          description: "Your weekly digest could not be loaded. Please try again later.",
+          variant: "destructive",
+        })
+  console.log('Toast would show:', {
           title: "Failed to load digest",
           description: "Your weekly digest could not be loaded. Please try again later.",
           variant: "destructive",
@@ -67,7 +73,12 @@ export default function DigestDashboard() {
       });
       
       if (response.ok) {
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: "Digest sent",
+          description: "Your weekly digest has been generated and sent.",
+        })
+  console.log('Toast would show:', {
           title: "Digest sent",
           description: "Your weekly digest has been generated and sent.",
         });
@@ -79,7 +90,13 @@ export default function DigestDashboard() {
       }
     } catch (error) {
       console.error('Error sending digest:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Failed to send digest",
+        description: "The digest could not be sent. Please try again later.",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Failed to send digest",
         description: "The digest could not be sent. Please try again later.",
         variant: "destructive",

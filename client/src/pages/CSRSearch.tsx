@@ -31,7 +31,13 @@ export default function CSRSearch() {
 
   const handleSearch = async () => {
     if (!query.trim() && phase === 'Any' && indication === 'Any' && !minSampleSize) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Search criteria required",
+        description: "Please enter a query or select filters",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Search criteria required",
         description: "Please enter a query or select filters",
         variant: "destructive"
@@ -73,24 +79,44 @@ export default function CSRSearch() {
       
       // Show appropriate toast message
       if (query.trim() && semanticSearchAvailable) {
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: `Found ${response.data.results_count || 0} results`,
+          description: "Using deep semantic search with intelligent matching",
+        })
+  console.log('Toast would show:', {
           title: `Found ${response.data.results_count || 0} results`,
           description: "Using deep semantic search with intelligent matching",
         });
       } else if (query.trim()) {
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: `Found ${response.data.results_count || 0} results`,
+          description: "Using basic keyword-based search (Deep semantic search unavailable)
+  console.log('Toast would show:', {
           title: `Found ${response.data.results_count || 0} results`,
           description: "Using basic keyword-based search (Deep semantic search unavailable)",
         });
       } else {
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: `Found ${response.data.results_count || 0} results`,
+          description: "Using filter-based search"
+        })
+  console.log('Toast would show:', {
           title: `Found ${response.data.results_count || 0} results`,
           description: "Using filter-based search"
         });
       }
     } catch (error) {
       console.error('Search error:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Search failed",
+        description: "Could not connect to the search API. Please try again.",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Search failed",
         description: "Could not connect to the search API. Please try again.",
         variant: "destructive"
@@ -334,7 +360,13 @@ export default function CSRSearch() {
                                 if (selectedCSRs.length < 3) {
                                   setSelectedCSRs([...selectedCSRs, csrId]);
                                 } else {
-                                  toast({
+                                  // toast call replaced
+  // Original: toast({
+                                    title: "Maximum selection reached",
+                                    description: "You can compare up to 3 CSRs at a time",
+                                    variant: "destructive"
+                                  })
+  console.log('Toast would show:', {
                                     title: "Maximum selection reached",
                                     description: "You can compare up to 3 CSRs at a time",
                                     variant: "destructive"
@@ -423,7 +455,13 @@ export default function CSRSearch() {
                             } else if (selectedCSRs.length < 3) {
                               setSelectedCSRs([...selectedCSRs, csrId]);
                             } else {
-                              toast({
+                              // toast call replaced
+  // Original: toast({
+                                title: "Maximum selection reached",
+                                description: "You can compare up to 3 CSRs at a time",
+                                variant: "destructive"
+                              })
+  console.log('Toast would show:', {
                                 title: "Maximum selection reached",
                                 description: "You can compare up to 3 CSRs at a time",
                                 variant: "destructive"

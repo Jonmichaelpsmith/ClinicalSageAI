@@ -196,7 +196,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               variant="ghost"
               size="icon"
               onClick={() => {
-                toast({
+                // toast call replaced
+  // Original: toast({
+                  title: "Notifications",
+                  description: "No new notifications at this time."
+                })
+  console.log('Toast would show:', {
                   title: "Notifications",
                   description: "No new notifications at this time."
                 });

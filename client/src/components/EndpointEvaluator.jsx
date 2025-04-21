@@ -29,7 +29,13 @@ export default function EndpointEvaluator({
   // Request endpoint evaluation from API
   const evaluateEndpoints = async () => {
     if (!indication || endpoints.length === 0) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Missing Information",
+        description: "Please select an indication and at least one endpoint",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Missing Information",
         description: "Please select an indication and at least one endpoint",
         variant: "destructive"
@@ -61,13 +67,24 @@ export default function EndpointEvaluator({
       setEvaluations(evaluationResults);
       onEvaluationComplete(evaluationResults);
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Evaluation Complete",
+        description: `Evaluated ${endpoints.length} endpoint${endpoints.length !== 1 ? 's' : ''}`,
+      })
+  console.log('Toast would show:', {
         title: "Evaluation Complete",
         description: `Evaluated ${endpoints.length} endpoint${endpoints.length !== 1 ? 's' : ''}`,
       });
     } catch (error) {
       console.error("Error evaluating endpoints:", error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Evaluation Error",
+        description: "Unable to evaluate endpoints. Please try again.",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Evaluation Error",
         description: "Unable to evaluate endpoints. Please try again.",
         variant: "destructive"

@@ -78,7 +78,13 @@ export const ResearchCompanionProvider: React.FC<{ children: ReactNode }> = ({ c
 
   const showCompanion = () => {
     if (!isEnabled) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Research Companion Disabled",
+        description: "Please add your API key in settings to enable the Research Companion.",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Research Companion Disabled",
         description: "Please add your API key in settings to enable the Research Companion.",
         variant: "destructive",
@@ -116,13 +122,24 @@ export const ResearchCompanionProvider: React.FC<{ children: ReactNode }> = ({ c
       setIsEnabled(true);
       localStorage.setItem(ENABLED_STORAGE_KEY, "true");
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "API Key Saved",
+        description: "Your Research Companion is now enabled.",
+      })
+  console.log('Toast would show:', {
         title: "API Key Saved",
         description: "Your Research Companion is now enabled.",
       });
     } catch (error) {
       console.error("Error saving Research Companion API key:", error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Error Saving API Key",
+        description: "There was a problem saving your API key. Please try again.",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Error Saving API Key",
         description: "There was a problem saving your API key. Please try again.",
         variant: "destructive",
@@ -138,7 +155,12 @@ export const ResearchCompanionProvider: React.FC<{ children: ReactNode }> = ({ c
       localStorage.setItem(ENABLED_STORAGE_KEY, "false");
       setIsVisible(false);
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "API Key Removed",
+        description: "Research Companion has been disabled.",
+      })
+  console.log('Toast would show:', {
         title: "API Key Removed",
         description: "Research Companion has been disabled.",
       });

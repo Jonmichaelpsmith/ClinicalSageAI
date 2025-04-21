@@ -96,13 +96,24 @@ const SAMLSettingsPanel: React.FC = () => {
       }
       
       setSaveSuccess(true);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "SAML Settings Saved",
+        description: "Your SAML configuration has been saved successfully.",
+      })
+  console.log('Toast would show:', {
         title: "SAML Settings Saved",
         description: "Your SAML configuration has been saved successfully.",
       });
     } catch (error: any) {
       setSaveError(error.message || 'Failed to save SAML settings');
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Failed to Save Settings",
+        description: error.message || 'An error occurred while saving SAML settings',
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Failed to Save Settings",
         description: error.message || 'An error occurred while saving SAML settings',
         variant: "destructive",

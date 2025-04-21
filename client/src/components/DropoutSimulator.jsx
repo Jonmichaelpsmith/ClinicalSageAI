@@ -49,14 +49,25 @@ export default function DropoutSimulator({ sessionId, onEstimationComplete }) {
           ]);
         }
         
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: "Forecast Generated",
+          description: `Predicted dropout rate: ${dropoutRate}% by week ${duration}`
+        })
+  console.log('Toast would show:', {
           title: "Forecast Generated",
           description: `Predicted dropout rate: ${dropoutRate}% by week ${duration}`
         });
       }
     } catch (error) {
       console.error("Error generating forecast:", error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Forecast Error",
+        description: "Failed to generate dropout forecast",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Forecast Error",
         description: "Failed to generate dropout forecast",
         variant: "destructive"

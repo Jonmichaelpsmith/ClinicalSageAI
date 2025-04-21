@@ -55,7 +55,13 @@ export default function ProtocolIntelligenceBuilder() {
 
   const runAnalysis = async () => {
     if (!text.trim()) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Missing input",
+        description: "Please enter your protocol text first",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Missing input",
         description: "Please enter your protocol text first",
         variant: "destructive"
@@ -144,7 +150,13 @@ export default function ProtocolIntelligenceBuilder() {
       
     } catch (error) {
       console.error("Error analyzing protocol text:", error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Analysis failed",
+        description: error instanceof Error ? error.message : "An error occurred during analysis",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Analysis failed",
         description: error instanceof Error ? error.message : "An error occurred during analysis",
         variant: "destructive"
@@ -156,7 +168,13 @@ export default function ProtocolIntelligenceBuilder() {
 
   const exportReport = async () => {
     if (!parsed || !prediction) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Missing data",
+        description: "Please analyze a protocol first",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Missing data",
         description: "Please analyze a protocol first",
         variant: "destructive"
@@ -186,7 +204,13 @@ export default function ProtocolIntelligenceBuilder() {
       
     } catch (error) {
       console.error("Error exporting report:", error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Export failed",
+        description: error instanceof Error ? error.message : "Failed to export report",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Export failed",
         description: error instanceof Error ? error.message : "Failed to export report",
         variant: "destructive"
@@ -196,7 +220,13 @@ export default function ProtocolIntelligenceBuilder() {
 
   const saveToDossier = async () => {
     if (!parsed || !prediction || !user) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Cannot save",
+        description: user ? "Please analyze a protocol first" : "Please log in to save",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Cannot save",
         description: user ? "Please analyze a protocol first" : "Please log in to save",
         variant: "destructive"
@@ -226,7 +256,12 @@ export default function ProtocolIntelligenceBuilder() {
       
       const data = await res.json();
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Saved successfully",
+        description: `Protocol saved as version ${data.version}`,
+      })
+  console.log('Toast would show:', {
         title: "Saved successfully",
         description: `Protocol saved as version ${data.version}`,
       });
@@ -237,7 +272,13 @@ export default function ProtocolIntelligenceBuilder() {
       
     } catch (error) {
       console.error("Error saving to dossier:", error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Save failed",
+        description: error instanceof Error ? error.message : "Failed to save to dossier",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Save failed",
         description: error instanceof Error ? error.message : "Failed to save to dossier",
         variant: "destructive"
@@ -259,7 +300,12 @@ export default function ProtocolIntelligenceBuilder() {
       
       const data = await res.json();
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Version restored",
+        description: `Protocol restored from ${version} and saved as ${data.version}`,
+      })
+  console.log('Toast would show:', {
         title: "Version restored",
         description: `Protocol restored from ${version} and saved as ${data.version}`,
       });
@@ -281,7 +327,13 @@ export default function ProtocolIntelligenceBuilder() {
       
     } catch (error) {
       console.error("Error restoring version:", error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Restore failed",
+        description: error instanceof Error ? error.message : "Failed to restore version",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Restore failed",
         description: error instanceof Error ? error.message : "Failed to restore version",
         variant: "destructive"

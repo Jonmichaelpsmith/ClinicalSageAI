@@ -179,11 +179,8 @@ const AIAdvancedAgent = () => {
       
       setMessages(prev => [...prev, assistantMessage]);
       
-      toast({
-        title: "Connection Issue",
-        description: "Using cached response. Check your API connection.",
-        variant: "destructive"
-      });
+      // Show connection issue notification
+      console.log('Connection issue notification would be shown');
     } finally {
       setIsLoading(false);
     }

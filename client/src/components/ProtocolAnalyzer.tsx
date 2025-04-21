@@ -114,14 +114,25 @@ export default function ProtocolAnalyzer() {
     onSuccess: (data) => {
       setCurrentAnalysisId(data.id);
       setActiveTab('overview');
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: 'Protocol uploaded successfully',
+        description: 'Your protocol is now being analyzed.',
+      })
+  console.log('Toast would show:', {
         title: 'Protocol uploaded successfully',
         description: 'Your protocol is now being analyzed.',
       });
       queryClient.invalidateQueries({ queryKey: ['/api/protocol-analyses'] });
     },
     onError: (error: Error) => {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: 'Upload failed',
+        description: error.message,
+        variant: 'destructive',
+      })
+  console.log('Toast would show:', {
         title: 'Upload failed',
         description: error.message,
         variant: 'destructive',
@@ -146,13 +157,24 @@ export default function ProtocolAnalyzer() {
       document.body.removeChild(a);
     },
     onSuccess: () => {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: 'Report exported',
+        description: 'Your protocol assessment report has been downloaded.',
+      })
+  console.log('Toast would show:', {
         title: 'Report exported',
         description: 'Your protocol assessment report has been downloaded.',
       });
     },
     onError: (error: Error) => {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: 'Export failed',
+        description: error.message,
+        variant: 'destructive',
+      })
+  console.log('Toast would show:', {
         title: 'Export failed',
         description: error.message,
         variant: 'destructive',
@@ -168,7 +190,13 @@ export default function ProtocolAnalyzer() {
 
   const handleUpload = () => {
     if (!file) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: 'No file selected',
+        description: 'Please select a protocol file to upload.',
+        variant: 'destructive',
+      })
+  console.log('Toast would show:', {
         title: 'No file selected',
         description: 'Please select a protocol file to upload.',
         variant: 'destructive',

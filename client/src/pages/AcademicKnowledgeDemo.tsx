@@ -68,7 +68,13 @@ export default function AcademicKnowledgeDemo() {
       }
     } catch (error) {
       console.error('Error fetching stats:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: 'Error',
+        description: 'Failed to fetch knowledge base statistics.',
+        variant: 'destructive',
+      })
+  console.log('Toast would show:', {
         title: 'Error',
         description: 'Failed to fetch knowledge base statistics.',
         variant: 'destructive',
@@ -94,7 +100,13 @@ export default function AcademicKnowledgeDemo() {
 
   const handleUpload = async () => {
     if (!uploadFile) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: 'No file selected',
+        description: 'Please select a file to upload.',
+        variant: 'destructive',
+      })
+  console.log('Toast would show:', {
         title: 'No file selected',
         description: 'Please select a file to upload.',
         variant: 'destructive',
@@ -122,7 +134,12 @@ export default function AcademicKnowledgeDemo() {
       const data = await response.json();
       
       if (data.success) {
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: 'Upload successful',
+          description: `Resource ${data.resourceId} added to knowledge base.`,
+        })
+  console.log('Toast would show:', {
           title: 'Upload successful',
           description: `Resource ${data.resourceId} added to knowledge base.`,
         });
@@ -144,7 +161,13 @@ export default function AcademicKnowledgeDemo() {
         // Switch to search tab
         setActiveTab('search');
       } else {
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: 'Upload failed',
+          description: data.message || 'An error occurred during upload.',
+          variant: 'destructive',
+        })
+  console.log('Toast would show:', {
           title: 'Upload failed',
           description: data.message || 'An error occurred during upload.',
           variant: 'destructive',
@@ -152,7 +175,13 @@ export default function AcademicKnowledgeDemo() {
       }
     } catch (error) {
       console.error('Error uploading resource:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: 'Upload error',
+        description: 'Failed to upload to academic knowledge base.',
+        variant: 'destructive',
+      })
+  console.log('Toast would show:', {
         title: 'Upload error',
         description: 'Failed to upload to academic knowledge base.',
         variant: 'destructive',
@@ -164,7 +193,13 @@ export default function AcademicKnowledgeDemo() {
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: 'Empty search',
+        description: 'Please enter a search query.',
+        variant: 'destructive',
+      })
+  console.log('Toast would show:', {
         title: 'Empty search',
         description: 'Please enter a search query.',
         variant: 'destructive',
@@ -186,13 +221,24 @@ export default function AcademicKnowledgeDemo() {
         setSearchResults(data.results);
         
         if (data.results.length === 0) {
-          toast({
+          // toast call replaced
+  // Original: toast({
+            title: 'No results found',
+            description: 'Try a different search query or upload new resources.',
+          })
+  console.log('Toast would show:', {
             title: 'No results found',
             description: 'Try a different search query or upload new resources.',
           });
         }
       } else {
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: 'Search failed',
+          description: data.message || 'An error occurred during search.',
+          variant: 'destructive',
+        })
+  console.log('Toast would show:', {
           title: 'Search failed',
           description: data.message || 'An error occurred during search.',
           variant: 'destructive',
@@ -200,7 +246,13 @@ export default function AcademicKnowledgeDemo() {
       }
     } catch (error) {
       console.error('Error searching resources:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: 'Search error',
+        description: 'Failed to search academic knowledge base.',
+        variant: 'destructive',
+      })
+  console.log('Toast would show:', {
         title: 'Search error',
         description: 'Failed to search academic knowledge base.',
         variant: 'destructive',

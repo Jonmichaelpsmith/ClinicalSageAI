@@ -21,7 +21,13 @@ const CompetitiveIntelligenceForm: React.FC<CompetitiveIntelligenceFormProps> = 
 
   const runAnalysis = async () => {
     if (!protocol) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Missing Information",
+        description: "Please provide a protocol summary",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Missing Information",
         description: "Please provide a protocol summary",
         variant: "destructive"
@@ -48,7 +54,13 @@ const CompetitiveIntelligenceForm: React.FC<CompetitiveIntelligenceFormProps> = 
         throw new Error(data.message || "Failed to generate competitive analysis");
       }
     } catch (error) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to generate competitive analysis",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to generate competitive analysis",
         variant: "destructive"

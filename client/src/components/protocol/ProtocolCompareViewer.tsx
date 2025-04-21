@@ -24,7 +24,13 @@ export default function ProtocolCompareViewer({ protocolId, userId }: ProtocolCo
       })
       .catch(err => {
         console.error('Error fetching protocol versions:', err);
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: 'Error',
+          description: 'Failed to load protocol versions',
+          variant: 'destructive'
+        })
+  console.log('Toast would show:', {
           title: 'Error',
           description: 'Failed to load protocol versions',
           variant: 'destructive'
@@ -54,7 +60,12 @@ export default function ProtocolCompareViewer({ protocolId, userId }: ProtocolCo
       
       if (data.success && data.download_url) {
         window.open(data.download_url, '_blank');
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: 'Success',
+          description: 'Comparison report generated successfully',
+        })
+  console.log('Toast would show:', {
           title: 'Success',
           description: 'Comparison report generated successfully',
         });
@@ -63,7 +74,13 @@ export default function ProtocolCompareViewer({ protocolId, userId }: ProtocolCo
       }
     } catch (error) {
       console.error('Error generating comparison:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to generate comparison report',
+        variant: 'destructive'
+      })
+  console.log('Toast would show:', {
         title: 'Error',
         description: error instanceof Error ? error.message : 'Failed to generate comparison report',
         variant: 'destructive'

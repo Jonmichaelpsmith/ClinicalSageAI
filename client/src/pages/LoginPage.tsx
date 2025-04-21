@@ -36,13 +36,24 @@ export default function LoginPage() {
     setIsSubmitting(true);
     try {
       await login(data.email, data.password);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: 'Login successful',
+        description: 'Welcome back to TrialSage!',
+      })
+  console.log('Toast would show:', {
         title: 'Login successful',
         description: 'Welcome back to TrialSage!',
       });
       setLocation('/dashboard');
     } catch (error) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: 'Login failed',
+        description: error instanceof Error ? error.message : 'An error occurred during login',
+        variant: 'destructive',
+      })
+  console.log('Toast would show:', {
         title: 'Login failed',
         description: error instanceof Error ? error.message : 'An error occurred during login',
         variant: 'destructive',

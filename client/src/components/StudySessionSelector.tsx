@@ -101,7 +101,12 @@ export default function StudySessionSelector({
       return await res.json();
     },
     onSuccess: (newSession) => {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: 'Study Session Created',
+        description: `"${newSession.name}" has been created successfully.`,
+      })
+  console.log('Toast would show:', {
         title: 'Study Session Created',
         description: `"${newSession.name}" has been created successfully.`,
       });
@@ -110,7 +115,13 @@ export default function StudySessionSelector({
       onSessionChange(newSession);
     },
     onError: (error: Error) => {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: 'Failed to Create Session',
+        description: error.message,
+        variant: 'destructive',
+      })
+  console.log('Toast would show:', {
         title: 'Failed to Create Session',
         description: error.message,
         variant: 'destructive',
@@ -126,7 +137,13 @@ export default function StudySessionSelector({
   // Handle creating new session
   const handleCreateSession = () => {
     if (!newSession.name.trim()) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: 'Session Name Required',
+        description: 'Please provide a name for the study session.',
+        variant: 'destructive',
+      })
+  console.log('Toast would show:', {
         title: 'Session Name Required',
         description: 'Please provide a name for the study session.',
         variant: 'destructive',

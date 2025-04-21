@@ -42,7 +42,13 @@ export default function DigestPreferences() {
         }
       } catch (error) {
         console.error('Error fetching preferences:', error);
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: "Failed to load preferences",
+          description: "Your digest preferences could not be loaded. Default settings will be used.",
+          variant: "destructive",
+        })
+  console.log('Toast would show:', {
           title: "Failed to load preferences",
           description: "Your digest preferences could not be loaded. Default settings will be used.",
           variant: "destructive",
@@ -65,7 +71,12 @@ export default function DigestPreferences() {
       });
       
       if (response.ok) {
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: "Preferences saved",
+          description: "Your digest preferences have been updated successfully.",
+        })
+  console.log('Toast would show:', {
           title: "Preferences saved",
           description: "Your digest preferences have been updated successfully.",
         });
@@ -74,7 +85,13 @@ export default function DigestPreferences() {
       }
     } catch (error) {
       console.error('Error saving preferences:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Failed to save preferences",
+        description: "Your digest preferences could not be saved. Please try again.",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Failed to save preferences",
         description: "Your digest preferences could not be saved. Please try again.",
         variant: "destructive",
@@ -96,7 +113,12 @@ export default function DigestPreferences() {
       });
       
       if (response.ok) {
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: "Test digest sent",
+          description: "A test weekly digest has been generated and sent.",
+        })
+  console.log('Toast would show:', {
           title: "Test digest sent",
           description: "A test weekly digest has been generated and sent.",
         });
@@ -105,7 +127,13 @@ export default function DigestPreferences() {
       }
     } catch (error) {
       console.error('Error sending test digest:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Failed to send test digest",
+        description: "The test digest could not be sent. Please try again.",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Failed to send test digest",
         description: "The test digest could not be sent. Please try again.",
         variant: "destructive",

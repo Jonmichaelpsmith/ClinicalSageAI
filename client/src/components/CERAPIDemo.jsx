@@ -351,14 +351,25 @@ export default function CERAPIDemo() {
         }))
       });
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Success",
+        description: "Data fetched successfully. You can now download the PDF.",
+      })
+  console.log('Toast would show:', {
         title: "Success",
         description: "Data fetched successfully. You can now download the PDF.",
       });
       
     } catch (error) {
       console.error('Error fetching data:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Error",
+        description: error.message || "Failed to fetch data from API",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Error",
         description: error.message || "Failed to fetch data from API",
         variant: "destructive"
@@ -426,14 +437,25 @@ export default function CERAPIDemo() {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Download Started",
+        description: "Your PDF report is being downloaded.",
+      })
+  console.log('Toast would show:', {
         title: "Download Started",
         description: "Your PDF report is being downloaded.",
       });
       
     } catch (error) {
       console.error('Error downloading PDF:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Download Error",
+        description: error.message || "Failed to download PDF report",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Download Error",
         description: error.message || "Failed to download PDF report",
         variant: "destructive"

@@ -114,7 +114,13 @@ export default function ReportsAnalytics() {
       setReports(data);
     } catch (err) {
       setError("Failed to load reports. Please try again.");
-      toast({
+      // toast call replaced
+  // Original: toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to load reports. Please try again.",
+      })
+  console.log('Toast would show:', {
         variant: "destructive",
         title: "Error",
         description: "Failed to load reports. Please try again.",

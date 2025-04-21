@@ -33,7 +33,13 @@ export function AcademicUploader() {
       
       // Validate file type
       if (selectedFile.type !== 'application/pdf') {
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: "Invalid file type",
+          description: "Please upload a PDF file.",
+          variant: "destructive"
+        })
+  console.log('Toast would show:', {
           title: "Invalid file type",
           description: "Please upload a PDF file.",
           variant: "destructive"
@@ -48,7 +54,13 @@ export function AcademicUploader() {
   // Handle file upload
   const handleUpload = async () => {
     if (!file) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "No file selected",
+        description: "Please select a PDF file to upload.",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "No file selected",
         description: "Please select a PDF file to upload.",
         variant: "destructive"
@@ -75,7 +87,13 @@ export function AcademicUploader() {
       
       if (result.success) {
         setProcessedDocument(result);
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: "Document processed successfully",
+          description: `Processed ${result.fileName}`,
+          variant: "default"
+        })
+  console.log('Toast would show:', {
           title: "Document processed successfully",
           description: `Processed ${result.fileName}`,
           variant: "default"
@@ -84,7 +102,13 @@ export function AcademicUploader() {
         // Add to recent documents
         setRecentDocuments(prev => [result, ...prev]);
       } else {
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: "Processing error",
+          description: result.error || "Failed to process document",
+          variant: "destructive"
+        })
+  console.log('Toast would show:', {
           title: "Processing error",
           description: result.error || "Failed to process document",
           variant: "destructive"
@@ -92,7 +116,13 @@ export function AcademicUploader() {
       }
     } catch (error) {
       console.error('Upload error:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Upload failed",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Upload failed",
         description: error instanceof Error ? error.message : "An unknown error occurred",
         variant: "destructive"

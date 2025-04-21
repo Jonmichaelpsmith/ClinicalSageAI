@@ -82,7 +82,13 @@ export function AdvancedStatsPanel({ trials = [], onAnalysisComplete }: Advanced
 
   const runMetaAnalysis = async () => {
     if (selectedTrials.length < 2) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Selection Error",
+        description: "Please select at least two trials for meta-analysis",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Selection Error",
         description: "Please select at least two trials for meta-analysis",
         variant: "destructive",
@@ -91,7 +97,13 @@ export function AdvancedStatsPanel({ trials = [], onAnalysisComplete }: Advanced
     }
     
     if (!selectedEndpoint) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Selection Error",
+        description: "Please select an endpoint for analysis",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Selection Error",
         description: "Please select an endpoint for analysis",
         variant: "destructive",
@@ -126,13 +138,24 @@ export function AdvancedStatsPanel({ trials = [], onAnalysisComplete }: Advanced
         onAnalysisComplete(result);
       }
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Analysis Complete",
+        description: "Meta-analysis has been successfully completed",
+      })
+  console.log('Toast would show:', {
         title: "Analysis Complete",
         description: "Meta-analysis has been successfully completed",
       });
     } catch (error) {
       console.error('Error performing meta-analysis:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Analysis Failed",
+        description: "Failed to perform meta-analysis. See console for details.",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Analysis Failed",
         description: "Failed to perform meta-analysis. See console for details.",
         variant: "destructive",
@@ -170,13 +193,24 @@ export function AdvancedStatsPanel({ trials = [], onAnalysisComplete }: Advanced
         onAnalysisComplete(result);
       }
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Analysis Complete",
+        description: "Bayesian analysis has been successfully completed",
+      })
+  console.log('Toast would show:', {
         title: "Analysis Complete",
         description: "Bayesian analysis has been successfully completed",
       });
     } catch (error) {
       console.error('Error performing Bayesian analysis:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Analysis Failed",
+        description: "Failed to perform Bayesian analysis. See console for details.",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Analysis Failed",
         description: "Failed to perform Bayesian analysis. See console for details.",
         variant: "destructive",
@@ -218,13 +252,24 @@ export function AdvancedStatsPanel({ trials = [], onAnalysisComplete }: Advanced
         onAnalysisComplete(result);
       }
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Analysis Complete",
+        description: "Multivariate analysis has been successfully completed",
+      })
+  console.log('Toast would show:', {
         title: "Analysis Complete",
         description: "Multivariate analysis has been successfully completed",
       });
     } catch (error) {
       console.error('Error performing multivariate analysis:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Analysis Failed",
+        description: "Failed to perform multivariate analysis. See console for details.",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Analysis Failed",
         description: "Failed to perform multivariate analysis. See console for details.",
         variant: "destructive",
@@ -270,13 +315,24 @@ export function AdvancedStatsPanel({ trials = [], onAnalysisComplete }: Advanced
         onAnalysisComplete(result);
       }
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Analysis Complete",
+        description: "Survival analysis has been successfully completed",
+      })
+  console.log('Toast would show:', {
         title: "Analysis Complete",
         description: "Survival analysis has been successfully completed",
       });
     } catch (error) {
       console.error('Error performing survival analysis:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Analysis Failed",
+        description: "Failed to perform survival analysis. See console for details.",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Analysis Failed",
         description: "Failed to perform survival analysis. See console for details.",
         variant: "destructive",
@@ -329,13 +385,24 @@ export function AdvancedStatsPanel({ trials = [], onAnalysisComplete }: Advanced
         onAnalysisComplete(result);
       }
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Analysis Complete",
+        description: "Regression analysis has been successfully completed",
+      })
+  console.log('Toast would show:', {
         title: "Analysis Complete",
         description: "Regression analysis has been successfully completed",
       });
     } catch (error) {
       console.error('Error performing regression analysis:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Analysis Failed",
+        description: "Failed to perform regression analysis. See console for details.",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Analysis Failed",
         description: "Failed to perform regression analysis. See console for details.",
         variant: "destructive",

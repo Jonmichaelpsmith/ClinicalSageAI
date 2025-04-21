@@ -30,7 +30,13 @@ export default function EndpointRecommender({
   // Request endpoint recommendations from API
   const fetchRecommendations = async () => {
     if (!indication) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Missing Information",
+        description: "Please select an indication first",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Missing Information",
         description: "Please select an indication first",
         variant: "destructive"
@@ -55,7 +61,13 @@ export default function EndpointRecommender({
       }
     } catch (error) {
       console.error("Error fetching endpoint recommendations:", error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Recommendation Error",
+        description: "Unable to generate endpoint recommendations. Please try again.",
+        variant: "destructive"
+      })
+  console.log('Toast would show:', {
         title: "Recommendation Error",
         description: "Unable to generate endpoint recommendations. Please try again.",
         variant: "destructive"
@@ -77,7 +89,12 @@ export default function EndpointRecommender({
         type: endpointType
       });
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Endpoint Added",
+        description: `Added ${endpoint} as a ${endpointType} endpoint`,
+      })
+  console.log('Toast would show:', {
         title: "Endpoint Added",
         description: `Added ${endpoint} as a ${endpointType} endpoint`,
       });
@@ -96,7 +113,12 @@ export default function EndpointRecommender({
         type: endpointType
       });
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Custom Endpoint Added",
+        description: `Added ${customEndpoint} as a ${endpointType} endpoint`,
+      })
+  console.log('Toast would show:', {
         title: "Custom Endpoint Added",
         description: `Added ${customEndpoint} as a ${endpointType} endpoint`,
       });

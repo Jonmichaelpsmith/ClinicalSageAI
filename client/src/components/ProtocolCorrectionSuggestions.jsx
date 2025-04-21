@@ -115,7 +115,12 @@ const ProtocolCorrectionSuggestions = ({ csrContext, protocolData }) => {
 
   const copySuggestion = (text) => {
     navigator.clipboard.writeText(text);
-    toast({
+    // toast call replaced
+  // Original: toast({
+      title: "Copied to clipboard",
+      description: "Suggestion copied for easy insertion into protocol",
+    })
+  console.log('Toast would show:', {
       title: "Copied to clipboard",
       description: "Suggestion copied for easy insertion into protocol",
     });
@@ -124,7 +129,13 @@ const ProtocolCorrectionSuggestions = ({ csrContext, protocolData }) => {
   const acceptSuggestion = (id) => {
     // This would typically update the protocol with the suggested change
     // For now, just show a toast confirmation
-    toast({
+    // toast call replaced
+  // Original: toast({
+      title: "Suggestion accepted",
+      description: "The suggested change will be applied to the protocol",
+      icon: <CheckCircleIcon className="h-4 w-4 text-green-500" />
+    })
+  console.log('Toast would show:', {
       title: "Suggestion accepted",
       description: "The suggested change will be applied to the protocol",
       icon: <CheckCircleIcon className="h-4 w-4 text-green-500" />

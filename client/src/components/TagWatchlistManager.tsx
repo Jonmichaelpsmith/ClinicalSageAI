@@ -37,7 +37,13 @@ export default function TagWatchlistManager({
       }, 500);
     } catch (error) {
       console.error('Error fetching watchlist:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: 'Error',
+        description: 'Failed to load your tag watchlist',
+        variant: 'destructive',
+      })
+  console.log('Toast would show:', {
         title: 'Error',
         description: 'Failed to load your tag watchlist',
         variant: 'destructive',
@@ -66,14 +72,25 @@ export default function TagWatchlistManager({
         setWatchedTags([...watchedTags, tag]);
         onWatchTag(tag);
         setIsLoading(false);
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: 'Tag added to watchlist',
+          description: `You'll be notified of significant changes to "${tag}"`,
+        })
+  console.log('Toast would show:', {
           title: 'Tag added to watchlist',
           description: `You'll be notified of significant changes to "${tag}"`,
         });
       }, 300);
     } catch (error) {
       console.error('Error adding tag to watchlist:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: 'Error',
+        description: 'Failed to add tag to your watchlist',
+        variant: 'destructive',
+      })
+  console.log('Toast would show:', {
         title: 'Error',
         description: 'Failed to add tag to your watchlist',
         variant: 'destructive',
@@ -100,14 +117,25 @@ export default function TagWatchlistManager({
         setWatchedTags(watchedTags.filter(t => t !== tag));
         onUnwatchTag(tag);
         setIsLoading(false);
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: 'Tag removed from watchlist',
+          description: `"${tag}" has been removed from your alerts`,
+        })
+  console.log('Toast would show:', {
           title: 'Tag removed from watchlist',
           description: `"${tag}" has been removed from your alerts`,
         });
       }, 300);
     } catch (error) {
       console.error('Error removing tag from watchlist:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: 'Error',
+        description: 'Failed to remove tag from your watchlist',
+        variant: 'destructive',
+      })
+  console.log('Toast would show:', {
         title: 'Error',
         description: 'Failed to remove tag from your watchlist',
         variant: 'destructive',

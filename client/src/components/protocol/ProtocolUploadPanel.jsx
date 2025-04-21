@@ -62,7 +62,13 @@ export default function ProtocolUploadPanel() {
       const selectedFile = e.target.files[0];
       // Check file type
       if (!['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword'].includes(selectedFile.type)) {
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: "Invalid file type",
+          description: "Please upload a PDF or Word document",
+          variant: "destructive",
+        })
+  console.log('Toast would show:', {
           title: "Invalid file type",
           description: "Please upload a PDF or Word document",
           variant: "destructive",
@@ -72,7 +78,13 @@ export default function ProtocolUploadPanel() {
       
       // Check file size (10MB limit)
       if (selectedFile.size > 10 * 1024 * 1024) {
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: "File too large",
+          description: "Please upload a file smaller than 10MB",
+          variant: "destructive",
+        })
+  console.log('Toast would show:', {
           title: "File too large",
           description: "Please upload a file smaller than 10MB",
           variant: "destructive",
@@ -88,7 +100,13 @@ export default function ProtocolUploadPanel() {
   // Upload and analyze file
   const handleFileUpload = async () => {
     if (!file) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "No file selected",
+        description: "Please select a file to upload",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "No file selected",
         description: "Please select a file to upload",
         variant: "destructive",
@@ -129,13 +147,24 @@ export default function ProtocolUploadPanel() {
       const data = await response.json();
       setAnalysisResult(data);
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Analysis complete",
+        description: "Protocol has been analyzed successfully.",
+      })
+  console.log('Toast would show:', {
         title: "Analysis complete",
         description: "Protocol has been analyzed successfully.",
       });
     } catch (error) {
       console.error('Upload error:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Analysis failed",
+        description: "There was an error analyzing your protocol. Please try again.",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Analysis failed",
         description: "There was an error analyzing your protocol. Please try again.",
         variant: "destructive",
@@ -150,7 +179,13 @@ export default function ProtocolUploadPanel() {
   // Analyze pasted text
   const handleAnalyzePasted = async () => {
     if (!pastingText.trim()) {
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "No text provided",
+        description: "Please paste protocol text to analyze",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "No text provided",
         description: "Please paste protocol text to analyze",
         variant: "destructive",
@@ -180,13 +215,24 @@ export default function ProtocolUploadPanel() {
       setAnalysisResult(data);
       setProgress(100);
       
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Analysis complete",
+        description: "Protocol text has been analyzed successfully.",
+      })
+  console.log('Toast would show:', {
         title: "Analysis complete",
         description: "Protocol text has been analyzed successfully.",
       });
     } catch (error) {
       console.error('Analysis error:', error);
-      toast({
+      // toast call replaced
+  // Original: toast({
+        title: "Analysis failed",
+        description: "There was an error analyzing your protocol text. Please try again.",
+        variant: "destructive",
+      })
+  console.log('Toast would show:', {
         title: "Analysis failed",
         description: "There was an error analyzing your protocol text. Please try again.",
         variant: "destructive",
@@ -203,14 +249,25 @@ export default function ProtocolUploadPanel() {
       () => {
         setClipboard({ copied: true, text });
         setTimeout(() => setClipboard({ copied: false, text: "" }), 3000);
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: "Copied to clipboard",
+          description: "Analysis summary copied to clipboard",
+        })
+  console.log('Toast would show:', {
           title: "Copied to clipboard",
           description: "Analysis summary copied to clipboard",
         });
       },
       (err) => {
         console.error('Could not copy text: ', err);
-        toast({
+        // toast call replaced
+  // Original: toast({
+          title: "Failed to copy",
+          description: "Could not copy to clipboard",
+          variant: "destructive",
+        })
+  console.log('Toast would show:', {
           title: "Failed to copy",
           description: "Could not copy to clipboard",
           variant: "destructive",
