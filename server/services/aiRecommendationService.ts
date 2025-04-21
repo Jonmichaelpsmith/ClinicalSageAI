@@ -155,9 +155,11 @@ export class AiRecommendationService {
     userId: number, 
     modules: LearningModule[]
   ): Promise<any[]> {
+    let user: User | undefined;
+    
     try {
       // Fetch user data
-      const user = await storage.getUser(userId);
+      user = await storage.getUser(userId);
       if (!user) throw new Error("User not found");
       
       const prompt = this.buildModuleScoringPrompt(user, modules);
@@ -187,11 +189,17 @@ export class AiRecommendationService {
     } catch (error) {
       console.error("Error scoring module relevance:", error);
       
-      // Fall back to a simpler scoring method if AI scoring fails
-      return modules.map(module => ({
-        id: module.id,
-        relevanceScore: this.calculateBaseRelevanceScore(user, module)
-      }));
+      // If we get an error but already have the user data, try the fallback scoring
+      if (user) {
+        // Fall back to a simpler scoring method if AI scoring fails
+        return modules.map(module => ({
+          id: module.id,
+          relevanceScore: this.calculateBaseRelevanceScore(user, module)
+        }));
+      }
+      
+      // Otherwise, just return empty results
+      return [];
     }
   }
   
@@ -202,12 +210,12 @@ export class AiRecommendationService {
     let score = 70; // Base score
     
     // Domain match
-    if (user.domain && module.domains.includes(user.domain)) {
+    if (user.domain && module.domains && Array.isArray(module.domains) && module.domains.includes(user.domain)) {
       score += 15;
     }
     
     // Interest matches
-    if (user.interests && module.tags) {
+    if (user.interests && Array.isArray(user.interests) && module.tags && Array.isArray(module.tags)) {
       const interestMatches = user.interests.filter(interest => 
         module.tags.includes(interest)
       ).length;
@@ -276,14 +284,14 @@ export class AiRecommendationService {
   async generatePersonalizedLearningPath(userId: number): Promise<any> {
     try {
       // Fetch user data
-      const [user] = await this.learningRepo.db.select().from(this.learningRepo.users).where(eq(this.learningRepo.users.id, userId));
+      const user = await storage.getUser(userId);
       if (!user) throw new Error("User not found");
       
       // Fetch all available modules
-      const modules = await this.learningRepo.getLearningModules();
+      const modules = await storage.getLearningModules();
       
       // Fetch user's progress
-      const progress = await this.learningRepo.getUserProgressByUserId(userId);
+      const progress = await storage.getUserProgressByUserId(userId);
       
       const prompt = this.buildLearningPathPrompt(user, modules, progress);
       

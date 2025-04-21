@@ -244,6 +244,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   // User activity operations
+  async getUserActivityByUserId(userId: number, limit = 10) {
+    return db
+      .select()
+      .from(userActivity)
+      .where(eq(userActivity.userId, userId))
+      .orderBy(desc(userActivity.timestamp))
+      .limit(limit);
+  }
+  
   async logUserActivity(data: InsertUserActivity) {
     const [activity] = await db.insert(userActivity).values(data).returning();
     return activity;
