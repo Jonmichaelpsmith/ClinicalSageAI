@@ -1,11 +1,6 @@
-// SubmissionBuilder.jsx – region‑aware drag‑drop tree with QC badges and bulk operations
+// SubmissionBuilder.jsx – simplified version without drag-drop tree
 import React, { useEffect, useState, useCallback } from 'react';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
-import { Tree } from '@minoru/react-dnd-treeview';
 import { CheckCircle, XCircle, Info, AlertTriangle } from 'lucide-react';
-import { toast, ToastContainer } from 'react-toastify';
-//import 'react-toastify/dist/ReactToastify.css';
 import { useQCWebSocket } from '../hooks/useQCWebSocket';
 
 // Region‑specific folder hierarchy definitions
