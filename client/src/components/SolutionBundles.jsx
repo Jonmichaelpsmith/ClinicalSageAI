@@ -20,7 +20,7 @@ import {
 const bundles = [
   {
     id: 'submission-accelerator',
-    name: 'Submission Accelerator',
+    name: 'IND & NDA Submission Accelerator',
     audience: 'Regulatory teams filing INDs/NDAs/CTAs',
     modules: [
       { name: 'Submission Builder', description: 'eCTD assembly & regional validation', icon: <FileArchive className="w-5 h-5" /> },
@@ -32,12 +32,12 @@ const bundles = [
   },
   {
     id: 'clinical-intelligence',
-    name: 'Clinical Intelligence Suite',
+    name: 'Global CSR Intelligent Library',
     audience: 'Clinical ops & biostatisticians',
     modules: [
       { name: 'CSR Intelligence', description: 'deep‑learning CSR parsing & dashboards', icon: <Database className="w-5 h-5" /> },
       { name: 'Study Designer', description: 'model‑driven protocol simulation', icon: <BarChart2 className="w-5 h-5" /> },
-      { name: 'Use Case Library', description: 'annotated case studies & templates', icon: <Library className="w-5 h-5" /> }
+      { name: 'Protocol Designer', description: 'optimized clinical protocol creation', icon: <Library className="w-5 h-5" /> }
     ],
     value: 'See trial performance in real time, optimize your protocol up front, and benchmark against peer studies instantly.',
     color: 'from-emerald-600 to-emerald-700'
