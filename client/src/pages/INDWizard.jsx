@@ -3,10 +3,10 @@ import React from 'react';
 import { Route, Switch, useLocation } from 'wouter';
 import IndWizardLayout from '../components/ind-wizard/IndWizardLayout';
 import PreIndStep from '../components/ind-wizard/steps/PreIndStep';
+import NonclinicalStep from '../components/ind-wizard/steps/NonclinicalStep';
 import { Button } from '@/components/ui/button';
 
 // This would be filled with actual components as they are created
-const NonclinicalStep = () => <div className="p-10 text-center">Nonclinical Data Collection (Coming Soon)</div>;
 const CmcStep = () => <div className="p-10 text-center">CMC Data (Coming Soon)</div>;
 const ClinicalProtocolStep = () => <div className="p-10 text-center">Clinical Protocol (Coming Soon)</div>;
 const InvestigatorBrochureStep = () => <div className="p-10 text-center">Investigator Brochure (Coming Soon)</div>;

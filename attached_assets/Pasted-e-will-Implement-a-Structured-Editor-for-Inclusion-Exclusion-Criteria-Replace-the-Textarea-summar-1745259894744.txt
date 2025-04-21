@@ -1,0 +1,22 @@
+e will:
+
+Implement a Structured Editor for Inclusion/Exclusion Criteria: Replace the Textarea summaries with a dedicated CriteriaBuilder component allowing management of individual criteria points.
+Integrate Per-Criterion AI Checks: Add functionality within the CriteriaBuilder to trigger AI validation/consistency checks for each specific criterion.
+Introduce Conceptual Templating: Add UI elements suggesting where protocol templates or standard criteria snippets could be accessed.
+This requires refactoring the schema and the component structure significantly. Here is the updated code, including the new CriteriaBuilder sub-component:
+
+Summary of Enhancements:
+
+Structured Criteria (CriteriaBuilder):
+Replaced Textarea summaries for inclusion/exclusion criteria with the new CriteriaBuilder component.
+Uses useFieldArray to manage individual criteria items (text, AI status, feedback).
+Allows adding, inline editing (basic implementation), and deleting criteria.
+Per-Criterion AI Checks:
+Each criterion item in the builder has an "AI Check" button (Sparkles icon).
+Clicking it triggers triggerCriterionAiCheck, which calls a (simulated) specific API (apiCheckCriterionAi).
+The AI status (Not Checked, Checking, Checked, Suggestion, Potential Issue) and feedback are updated directly on the specific criterion item using form.setValue.
+Visual feedback (Badges, Icons, Tooltips) is provided for the AI status.
+Conceptual Templating: Added a "Load Template / Standard Criteria" button within the CriteriaBuilder as a placeholder for future template integration.
+Schema Update: The main zod schema (clinicalProtocolStepSchema) now expects arrays of structured criterionSchema objects for inclusionCriteria and exclusionCriteria.
+Improved Modularity: The logic for handling criteria lists is encapsulated within the CriteriaBuilder component, making the main ClinicalProtocolStep cleaner.
+This iteration significantly increases the sophistication of the "Study Population" section by moving from free text to structured data management with embedded, granular AI assistance. This pattern can be applied to other complex sections (like Endpoints or Study Design) if needed. We are demonstrating a more interactive, AI-augmented workflow closer to an enterprise standard.
