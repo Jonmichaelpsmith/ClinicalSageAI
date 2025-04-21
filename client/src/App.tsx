@@ -26,6 +26,7 @@ import SimpleLearningInterface from './components/SimpleLearningInterface';
 import { CheckCircle, AlertTriangle, Info } from 'lucide-react';
 // React Toastify for production-ready notifications
 import { ToastContainer, toast as toastify } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 // Import tour components
 import { TourProvider, TourHelpButton } from './components/TourContext';
 import InteractiveTour from './components/InteractiveTour';
