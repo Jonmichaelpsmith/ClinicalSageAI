@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Database, Globe, Shield, Server, FileText, BarChart, ArrowRight } from 'lucide-react';
 
-// New component for the previously boring section - much more visually appealing
+// Compact, professional component for features section
 const AdvancedFeatureCards = () => {
   const [selectedCard, setSelectedCard] = useState(0);
   const [counter1, setCounter1] = useState(0);
@@ -13,11 +13,11 @@ const AdvancedFeatureCards = () => {
       id: 'vision',
       title: 'Industry Vision',
       description: 'Built upon deep understanding of regulatory frameworks and pharmaceutical development processes to address the most critical challenges in global submissions.',
-      icon: <Globe className="h-8 w-8 text-blue-400" />,
+      icon: <Globe className="h-6 w-6 text-blue-400" />,
       color: 'from-blue-900 to-blue-800',
       stats: [
-        { label: 'Global Reach', value: '8 Regions', icon: <Globe className="h-5 w-5 text-blue-400" /> },
-        { label: 'Success Rate', value: '99.8%', icon: <Shield className="h-5 w-5 text-blue-400" /> }
+        { label: 'Global Reach', value: '8 Regions', icon: <Globe className="h-4 w-4 text-blue-400" /> },
+        { label: 'Success Rate', value: '99.8%', icon: <Shield className="h-4 w-4 text-blue-400" /> }
       ],
       features: [
         'Comprehensive regulatory intelligence',
@@ -29,11 +29,11 @@ const AdvancedFeatureCards = () => {
       id: 'innovation',
       title: 'Data-Backed Innovation',
       description: 'Our AI models are trained on thousands of regulatory documents, clinical study reports, and historical submission data to ensure precise, compliant outputs.',
-      icon: <Database className="h-8 w-8 text-indigo-400" />,
+      icon: <Database className="h-6 w-6 text-indigo-400" />,
       color: 'from-indigo-900 to-indigo-800',
       stats: [
-        { label: 'Training Documents', value: '12,500+', icon: <FileText className="h-5 w-5 text-indigo-400" /> },
-        { label: 'Analysis Points', value: '75,000+', icon: <BarChart className="h-5 w-5 text-indigo-400" /> }
+        { label: 'Training Documents', value: '12,500+', icon: <FileText className="h-4 w-4 text-indigo-400" /> },
+        { label: 'Analysis Points', value: '75,000+', icon: <BarChart className="h-4 w-4 text-indigo-400" /> }
       ],
       features: [
         'Neural network document validation',
@@ -45,11 +45,11 @@ const AdvancedFeatureCards = () => {
       id: 'architecture',
       title: 'Enterprise Architecture',
       description: 'Secure, scalable infrastructure designed for pharmaceutical and biotech enterprises with comprehensive audit trails and role-based access control.',
-      icon: <Server className="h-8 w-8 text-purple-400" />,
+      icon: <Server className="h-6 w-6 text-purple-400" />,
       color: 'from-purple-900 to-purple-800',
       stats: [
-        { label: 'Security Rating', value: 'HITRUST CSF', icon: <Shield className="h-5 w-5 text-purple-400" /> },
-        { label: 'Uptime', value: '99.99%', icon: <Server className="h-5 w-5 text-purple-400" /> }
+        { label: 'Security Rating', value: 'HITRUST CSF', icon: <Shield className="h-4 w-4 text-purple-400" /> },
+        { label: 'Uptime', value: '99.99%', icon: <Server className="h-4 w-4 text-purple-400" /> }
       ],
       features: [
         'GxP validated environment',
@@ -87,37 +87,37 @@ const AdvancedFeatureCards = () => {
       </div>
       
       <div className="container mx-auto px-6 relative z-10">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400 text-transparent bg-clip-text">
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-bold mb-2 bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400 text-transparent bg-clip-text">
             Enterprise Intelligence Platform
           </h2>
-          <p className="text-xl text-blue-200 max-w-3xl mx-auto">
+          <p className="text-sm text-blue-200 max-w-2xl mx-auto">
             Advanced computational models transforming regulatory operations across therapeutic domains
           </p>
         </div>
         
         {/* Metrics row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
-          <div className="bg-gradient-to-br from-blue-900/50 to-blue-800/50 rounded-xl p-6 border border-blue-700/30 shadow-lg flex flex-col items-center">
-            <div className="text-5xl font-bold text-white mb-2">{counter1}%</div>
-            <p className="text-blue-300 text-lg">Compliance Rate</p>
-            <div className="mt-4 h-2 w-full bg-blue-950 rounded-full overflow-hidden">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-10">
+          <div className="bg-gradient-to-br from-blue-900/50 to-blue-800/50 rounded-md p-4 border border-blue-700/30 shadow-md flex flex-col items-center">
+            <div className="text-3xl font-bold text-white mb-1">{counter1}%</div>
+            <p className="text-blue-300 text-sm">Compliance Rate</p>
+            <div className="mt-2 h-1.5 w-full bg-blue-950 rounded-full overflow-hidden">
               <div className="h-full bg-blue-500 rounded-full" style={{ width: `${counter1}%` }}></div>
             </div>
           </div>
           
-          <div className="bg-gradient-to-br from-indigo-900/50 to-indigo-800/50 rounded-xl p-6 border border-indigo-700/30 shadow-lg flex flex-col items-center">
-            <div className="text-5xl font-bold text-white mb-2">{counter2.toLocaleString()}</div>
-            <p className="text-indigo-300 text-lg">Training Documents</p>
-            <div className="mt-4 h-2 w-full bg-indigo-950 rounded-full overflow-hidden">
+          <div className="bg-gradient-to-br from-indigo-900/50 to-indigo-800/50 rounded-md p-4 border border-indigo-700/30 shadow-md flex flex-col items-center">
+            <div className="text-3xl font-bold text-white mb-1">{counter2.toLocaleString()}</div>
+            <p className="text-indigo-300 text-sm">Training Documents</p>
+            <div className="mt-2 h-1.5 w-full bg-indigo-950 rounded-full overflow-hidden">
               <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${Math.min(counter2 / 125, 100)}%` }}></div>
             </div>
           </div>
           
-          <div className="bg-gradient-to-br from-purple-900/50 to-purple-800/50 rounded-xl p-6 border border-purple-700/30 shadow-lg flex flex-col items-center">
-            <div className="text-5xl font-bold text-white mb-2">{counter3.toFixed(1)}%</div>
-            <p className="text-purple-300 text-lg">Technical Validation</p>
-            <div className="mt-4 h-2 w-full bg-purple-950 rounded-full overflow-hidden">
+          <div className="bg-gradient-to-br from-purple-900/50 to-purple-800/50 rounded-md p-4 border border-purple-700/30 shadow-md flex flex-col items-center">
+            <div className="text-3xl font-bold text-white mb-1">{counter3.toFixed(1)}%</div>
+            <p className="text-purple-300 text-sm">Technical Validation</p>
+            <div className="mt-2 h-1.5 w-full bg-purple-950 rounded-full overflow-hidden">
               <div className="h-full bg-purple-500 rounded-full" style={{ width: `${counter3}%` }}></div>
             </div>
           </div>
