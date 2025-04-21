@@ -32,11 +32,17 @@ export default function registerFastapiProxy(app: express.Application): void {
   const fallbackResponses: Record<string, any> = {
     '/reports/count': { count: 0, message: 'Fallback response - FastAPI unavailable' },
     '/ind/stats': { total: 0, pending: 0, approved: 0, rejected: 0, message: 'Fallback response - FastAPI unavailable' },
+    '/wizard': { message: 'IND Wizard fallback - FastAPI unavailable' },
+    '/wizard/nonclinical': { message: 'Nonclinical fallback - FastAPI unavailable' },
     // Add more fallbacks as needed
   };
   
   // Simple proxy middleware for API routes
-  app.use(['/api', '/reports', '/ind'], (req, res) => {
+  app.use(['/api', '/reports', '/ind'], (req, res, next) => {
+    // Skip proxying for routes that we're handling directly in Express
+    if (req.path.startsWith('/ind/wizard')) {
+      return next();
+    }
     // Check if we have a fallback for this path
     const fullPath = req.originalUrl;
     const hasFallback = Object.keys(fallbackResponses).some(path => fullPath.includes(path));

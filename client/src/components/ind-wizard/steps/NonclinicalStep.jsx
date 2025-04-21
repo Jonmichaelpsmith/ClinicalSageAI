@@ -102,15 +102,9 @@ export default function NonclinicalStep() {
   const [isParsingText, setIsParsingText] = useState(false);
 
   // --- Data Fetching (Example) ---
-  const { data: initialData, isLoading: isLoadingInitialData } = useQuery({
-    queryKey: ['indDraft', 'nonclinicalStepData'],
-    queryFn: async () => {
-      console.log("API CALL: Fetching initial Nonclinical draft data...");
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate fetch
-      return indData; // Using context data as placeholder for fetched data
-    },
-    enabled: false, // Set to true if you want to fetch data on mount
-  });
+  // Using the context data directly instead of trying to fetch from API
+  const initialData = indData;
+  const isLoadingInitialData = false;
 
   // --- Form Setup ---
   const form = useForm({
