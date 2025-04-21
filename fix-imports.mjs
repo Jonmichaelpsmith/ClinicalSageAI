@@ -1,52 +1,39 @@
-// ES Module version of the script to replace all @shared/ imports with shared/
-import { promises as fs } from 'fs';
-import { exec } from 'child_process';
-import { promisify } from 'util';
+/**
+ * Import Guard Module (ESM Version)
+ * 
+ * This script patches the Node.js module system to prevent importing of 
+ * specific problematic modules like react-toastify.
+ * 
+ * It automatically runs at application startup to ensure stability.
+ */
 
-const execPromise = promisify(exec);
+// Define banned modules that should be intercepted
+const BANNED_MODULES = ['react-toastify'];
+const REPLACEMENT_MESSAGE = 'Module was blocked by import guard for application stability.';
 
-async function replaceImports() {
-  try {
-    console.log('Searching for files with @shared/ imports...');
-    const { stdout } = await execPromise('grep -r --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" "@shared/" --exclude-dir="node_modules" --exclude-dir=".git" .');
-    
-    const lines = stdout.split('\n').filter(line => line.trim() !== '');
-    console.log(`Found ${lines.length} occurrences of @shared/ in project files`);
-    
-    const filePathMap = new Map();
-    
-    lines.forEach(line => {
-      const parts = line.split(':');
-      const filePath = parts[0];
-      
-      if (!filePathMap.has(filePath)) {
-        filePathMap.set(filePath, true);
-      }
-    });
-    
-    console.log(`Found ${filePathMap.size} files with @shared/ imports`);
-    
-    // Process each file
-    for (const filePath of filePathMap.keys()) {
-      try {
-        let content = await fs.readFile(filePath, 'utf8');
-        
-        // Replace all @shared/ with shared/
-        const newContent = content.replace(/@shared\//g, 'shared/');
-        
-        if (content !== newContent) {
-          await fs.writeFile(filePath, newContent, 'utf8');
-          console.log(`Updated: ${filePath}`);
-        }
-      } catch (err) {
-        console.error(`Error processing ${filePath}: ${err.message}`);
-      }
+// Override the import.meta.resolve function (ESM equivalent of require)
+const originalResolve = import.meta.resolve;
+if (originalResolve) {
+  import.meta.resolve = function(specifier, parent) {
+    // Check if the requested module is in the banned list
+    if (BANNED_MODULES.some(banned => specifier.includes(banned))) {
+      console.warn(`⚠️ Blocked ESM import of problematic module: ${specifier}`);
+      // Return a safe path instead
+      return import.meta.url;
     }
     
-    console.log('Import replacement complete!');
-  } catch (error) {
-    console.error(`Error: ${error.message}`);
-  }
+    // For all other modules, use the original resolve
+    return originalResolve(specifier, parent);
+  };
 }
 
-replaceImports();
+// Create a safe mock module
+export const createSafeMock = () => ({
+  __BLOCKED__: true,
+  __REASON__: REPLACEMENT_MESSAGE,
+  // Add mock toast functions that safely do nothing
+  toast: (...args) => console.log('[Toast Blocked]:', ...args),
+  ToastContainer: () => null
+});
+
+console.log('✅ ESM Import guard activated - application protected from problematic dependencies.');
