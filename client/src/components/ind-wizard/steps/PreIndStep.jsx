@@ -1,10 +1,16 @@
 // src/components/ind-wizard/steps/PreIndStep.jsx
 import React, { useState } from 'react';
+import { useForm, useFieldArray } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { useQueryClient, useMutation, useQuery } from '@tanstack/react-query';
 import { useWizard } from '../IndWizardLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { 
   Card, 
   CardContent, 
@@ -36,10 +42,15 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { HelpCircle, UserPlus, Users, Trash2, Bot, Loader2, Sparkles } from 'lucide-react';
+import { format } from "date-fns";
+import { CalendarIcon, HelpCircle, UserPlus, Users, Trash2, Bot, Loader2, Sparkles } from 'lucide-react';
+import { cn } from "@/lib/utils";
 import { MilestoneTracker } from './components/MilestoneTracker';
+import { milestoneSchema } from './components/milestoneSchema';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function PreIndStep() {
   const { indData, updateIndDataSection, getAiAssistance } = useWizard();

@@ -49,13 +49,14 @@ const formatDate = (date) => {
 }
 
 // --- Data Types ---
-// const milestoneSchema = {
-//   id: string,
-//   title: string,
-//   dueDate: Date | null,
-//   status: 'Pending' | 'InProgress' | 'Completed' | 'Blocked',
-//   description: string | null,
-// };
+// Export milestone schema for use in other components
+export const milestoneSchema = {
+  id: "string",
+  title: "string",
+  dueDate: "Date | null",
+  status: "'Pending' | 'InProgress' | 'Completed' | 'Blocked'",
+  description: "string | null",
+};
 
 // --- Component Props ---
 // MilestoneTrackerProps {
