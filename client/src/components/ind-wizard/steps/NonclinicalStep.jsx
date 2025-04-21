@@ -575,16 +575,16 @@ export default function NonclinicalStep() {
             </DialogContent>
           </Dialog>
 
-          {/* Footer Info & Mutation Status */}
+          {/* Footer Info & Saving Status */}
           <div className="text-center text-sm text-muted-foreground mt-4">
             Use the layout buttons to navigate or save.
           </div>
-          {mutation.isLoading && (
+          {isSaving && (
             <div className="flex items-center justify-center text-sm text-blue-600">
               <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...
             </div>
           )}
-          {mutation.isError && (
+          {saveError && (
             <div className="text-center text-sm text-red-600">
               Error saving. Please try again.
             </div>
@@ -595,15 +595,16 @@ export default function NonclinicalStep() {
             <Button 
               type="button" 
               variant="outline" 
+              disabled={isSaving}
               onClick={() => console.log("Saving draft...", form.getValues())}
             >
               Save Draft
             </Button>
             <Button 
               type="submit" 
-              disabled={mutation.isLoading}
+              disabled={isSaving}
             >
-              {mutation.isLoading ? (
+              {isSaving ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Saving...
