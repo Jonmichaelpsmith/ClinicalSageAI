@@ -18,7 +18,9 @@ import {
   Sparkles,
   FileSymlink,
   HelpCircle,
-  Download
+  Download,
+  Shield,
+  Archive as FileArchive
 } from 'lucide-react';
 import { apiRequest } from '../lib/queryClient';
 import { useToast } from '../hooks/use-toast';
@@ -481,14 +483,6 @@ const AIAdvancedAgent = () => {
   );
 };
 
-// Mock component for missing icon
-const Shield = ({ className }) => {
-  return <div className={className}>🛡️</div>;
-};
-
-// Mock component for missing icon
-const FileArchive = ({ className }) => {
-  return <div className={className}>📦</div>;
-};
+// No longer need mock components since we're importing from lucide-react
 
 export default AIAdvancedAgent;
