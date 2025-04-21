@@ -108,6 +108,7 @@ const DisruptionCard = ({ icon, title, legacy, summary, caseStudies }) => {
 import AppPackagesBanner from '../components/AppPackagesBanner';
 // SimpleSolutionBundles section removed as requested
 import AdvancedFeatureCards from '../components/AdvancedFeatureCards';
+import CSRLibraryMetrics from '../components/CSRLibraryMetrics';
 import { apiRequest } from '../lib/queryClient';
 
 const TAGLINES = [
@@ -289,6 +290,9 @@ export default function HomeLandingEnhanced() {
       
       {/* Value Proposition Section */}
       <AdvancedFeatureCards />
+      
+      {/* CSR Intelligence Library Metrics */}
+      <CSRLibraryMetrics />
       
       {/* Disrupting the Status Quo Section - Compact, Interactive Version */}
       <section className="py-12 bg-gradient-to-r from-slate-900 to-indigo-900 text-white">
