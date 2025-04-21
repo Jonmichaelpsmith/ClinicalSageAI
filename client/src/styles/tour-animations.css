@@ -1,31 +1,46 @@
-/* Tour Animations */
+/* Tour Animation Styles */
 
-/* Highlight the current tour step */
-[data-tour].highlight {
-  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.4);
-  border-radius: 0.5rem;
-  transition: box-shadow 0.3s ease;
+/* Highlight styles for tour target elements */
+[data-tour]:not(.tour-active) {
+  transition: all 0.3s ease-in-out;
 }
 
-/* Pulse animation for indicators */
-@keyframes pulse {
+[data-tour].tour-active {
+  position: relative;
+  z-index: 1000;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.5);
+  border-radius: 6px;
+  transition: all 0.3s ease-in-out;
+}
+
+/* Subtle pulse animation for active elements */
+@keyframes tour-pulse {
   0% {
     box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
   }
   70% {
-    box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+    box-shadow: 0 0 0 6px rgba(59, 130, 246, 0);
   }
   100% {
     box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
   }
 }
 
-.pulse-animation {
-  animation: pulse 2s infinite;
+[data-tour].tour-pulse {
+  animation: tour-pulse 2s infinite;
 }
 
-/* Fade-in animation for tour elements */
-@keyframes fadeIn {
+/* Welcome animation slide-up effect */
+.welcome-slide-up {
+  animation-fill-mode: both;
+}
+
+/* Tooltip custom animations */
+.react-joyride__tooltip {
+  animation: tooltip-appear 0.3s ease-out;
+}
+
+@keyframes tooltip-appear {
   from {
     opacity: 0;
     transform: translateY(10px);
@@ -36,41 +51,63 @@
   }
 }
 
-.tour-fade-in {
-  animation: fadeIn 0.5s ease forwards;
+/* For animating individual tooltip steps */
+.react-joyride__tooltip.tour-step-1 {
+  animation-delay: 0.1s;
 }
 
-/* Welcome animation styles */
-.welcome-slide-up {
-  animation: slideUp 0.8s ease forwards;
+.react-joyride__tooltip.tour-step-2 {
+  animation-delay: 0.2s;
 }
 
-@keyframes slideUp {
+.react-joyride__tooltip.tour-step-3 {
+  animation-delay: 0.3s;
+}
+
+/* Special styles for beacon (the pulsing dot) */
+.react-joyride__beacon {
+  animation: beacon-pulse 1.5s infinite;
+}
+
+@keyframes beacon-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+  }
+}
+
+/* Help button animations */
+.tour-help-button {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+/* Fade-in animation for overlay */
+.tour-overlay {
+  animation: fade-in 0.3s ease-out;
+}
+
+@keyframes fade-in {
   from {
-    transform: translateY(20px);
     opacity: 0;
   }
   to {
-    transform: translateY(0);
     opacity: 1;
   }
-}
-
-/* Spotlight effect for highlighted elements */
-.tour-spotlight {
-  position: relative;
-  z-index: 10;
-}
-
-.tour-spotlight::before {
-  content: '';
-  position: absolute;
-  inset: -10px;
-  background: radial-gradient(
-    circle closest-side,
-    rgba(59, 130, 246, 0.15),
-    transparent
-  );
-  z-index: -1;
-  border-radius: 0.5rem;
 }
