@@ -6,11 +6,11 @@ import PreIndStep from '../components/ind-wizard/steps/PreIndStep';
 import NonclinicalStep from '../components/ind-wizard/steps/NonclinicalStep';
 import ClinicalProtocolStep from '../components/ind-wizard/steps/ClinicalProtocolStep';
 import InvestigatorBrochureStep from '../components/ind-wizard/steps/InvestigatorBrochureStep';
+import FdaFormsStep from '../components/ind-wizard/steps/FdaFormsStep';
 import { Button } from '@/components/ui/button';
 
 // This would be filled with actual components as they are created
 const CmcStep = () => <div className="p-10 text-center">CMC Data (Coming Soon)</div>;
-const FDAFormsStep = () => <div className="p-10 text-center">FDA Forms (Coming Soon)</div>;
 const FinalSubmissionStep = () => <div className="p-10 text-center">Final Submission (Coming Soon)</div>;
 
 export default function INDWizard() {
@@ -66,7 +66,7 @@ export default function INDWizard() {
         </Route>
         <Route path="/ind/wizard/fda-forms">
           <IndWizardLayout>
-            <FDAFormsStep />
+            <FdaFormsStep />
           </IndWizardLayout>
         </Route>
         <Route path="/ind/wizard/final-submission">

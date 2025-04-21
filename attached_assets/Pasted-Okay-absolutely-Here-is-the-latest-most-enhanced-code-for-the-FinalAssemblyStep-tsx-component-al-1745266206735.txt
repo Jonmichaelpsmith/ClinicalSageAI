@@ -1,0 +1,41 @@
+Okay, absolutely. Here is the latest, most enhanced code for the FinalAssemblyStep.tsx component, along with the instructions for integrating it into your Replit project.
+
+1. Code to Use:
+
+The code you need is the one currently displayed in the artifact on the right side of your screen, titled "Final Assembly Step Component (React/TS/shadcn)" (it has the ID ind_final_assembly_step_v1).
+
+(-> Please copy the entire code block from that artifact.)
+
+2. Instructions for Replit:
+
+File Location:
+
+Place the copied code into the following file path within your Replit project:
+src/components/ind-wizard/steps/FinalAssemblyStep.tsx
+If the steps or ind-wizard directories don't exist under src/components, please create them.
+This code should replace any previous content you might have had in FinalAssemblyStep.tsx.
+Dependencies:
+
+Ensure your package.json file includes the necessary libraries. You likely have most, but double-check for:
+react, react-dom
+react-hook-form
+@hookform/resolvers (specifically for zodResolver)
+zod
+@tanstack/react-query
+lucide-react
+class-variance-authority, clsx, tailwind-merge
+The specific shadcn/ui components used in the file (run npx shadcn-ui@latest add [component_name] in the Replit Shell for any missing ones like button, card, checkbox, tooltip, skeleton, toast, separator, badge, progress, accordion, alert, dialog, input, textarea, label, tabs, popover, hover-card, select).
+Run npm install or yarn install in the Replit Shell after adding any missing dependencies.
+Imports & Configuration:
+
+The code includes the necessary import statements at the top.
+Verify that the import paths like @/components/ui/... and @/lib/utils match your project's setup (defined in tsconfig.json or vite.config.js's resolve.alias). This is standard for projects initialized with shadcn/ui.
+Wiring Up (Integration):
+
+Routing: Add this component to your wizard's routing configuration (likely in src/App.jsx or a dedicated routing file). Ensure you have a route definition similar to this within your main wizard layout route:
+JavaScript
+
+{ path: 'final-assembly', title: 'Final Assembly & Submission', element: <FinalAssemblyStep /> }
+Wizard Context: This component relies heavily on the useWizard() hook to access the complete indData collected from all previous steps and potentially functions like updateAiPanelContent. Make sure the parent IndWizardLayout component provides this context correctly.
+API Calls: Remember that the apiInitiateSubmission and apiTriggerFinalAiChecks functions are currently simulations. You will need to replace the content of these functions later with actual fetch or axios calls to your real backend API endpoints once they are built.
+Once you've placed this code in the correct file and ensured the dependencies are met, this final step of the wizard should be integrated into your application's frontend flow. Let me know when you're ready for the next phase, which would likely involve designing the backend APIs!
