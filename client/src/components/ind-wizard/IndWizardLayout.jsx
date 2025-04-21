@@ -16,7 +16,7 @@ const indWizardSteps = [
   { path: 'clinical-protocol', title: 'Clinical Protocol' },
   { path: 'investigator-brochure', title: 'Investigator Brochure' },
   { path: 'fda-forms', title: 'FDA Forms' },
-  { path: 'final-submission', title: 'Final Submission' },
+  { path: 'final-assembly', title: 'Final Assembly & Submission' },
 ];
 
 // Define the structure for your IND data
