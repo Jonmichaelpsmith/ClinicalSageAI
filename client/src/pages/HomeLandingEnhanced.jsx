@@ -1,7 +1,8 @@
 // HomeLandingEnhanced.jsx – enterprise-grade landing page with hero section, metrics, features, and testimonials
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'wouter';
+import { useQuery } from '@tanstack/react-query';
 import { 
   FileText, 
   BarChart2, 
@@ -182,45 +183,36 @@ const METRICS = [
 
 export default function HomeLandingEnhanced() {
   const [location] = useLocation();
-  const [csrCount, setCsrCount] = useState(3021);
-  const [isLoading, setIsLoading] = useState(false);
   
-  useEffect(() => {
-    const fetchCSRCount = async () => {
-      setIsLoading(true);
+  // Default CSR count value to use if API fails
+  const DEFAULT_CSR_COUNT = 3021;
+  
+  // Use React Query to fetch CSR count with error handling and caching
+  const { data: csrCountData, isLoading } = useQuery({
+    queryKey: ['/api/reports/count'],
+    queryFn: async () => {
       try {
-        // First try the direct endpoint 
-        const response = await fetch('/api/reports/count', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
-          }
-        });
-        
-        // Check if response is ok before trying to parse JSON
-        if (response.ok) {
-          const data = await response.json();
-          if (data && data.count) {
-            setCsrCount(data.count);
-            setIsLoading(false);
-            return; // Exit early if we got data
-          }
+        const response = await apiRequest('GET', '/api/reports/count');
+        if (!response.ok) {
+          throw new Error('Failed to fetch CSR count');
         }
-        
-        // If we get here, response wasn't ok or didn't have count - use default value
-        console.log('Using default CSR count value');
-        // Keep the current value - no need to update state if API fails
+        const data = await response.json();
+        return data?.count || DEFAULT_CSR_COUNT;
       } catch (error) {
         console.error('Error fetching CSR count:', error);
-        // Keep the current value instead of breaking the UI
-      } finally {
-        setIsLoading(false);
+        return DEFAULT_CSR_COUNT; // Use default value on error
       }
-    };
-    
-    fetchCSRCount();
-  }, []);
+    },
+    // Use default value to avoid loading states on page load
+    initialData: DEFAULT_CSR_COUNT,
+    // Prevent automatic refetching to reduce API calls
+    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: 1, // Only retry once to avoid multiple failed requests
+  });
+  
+  // Extract the actual count value to use in the component
+  const csrCount = csrCountData || DEFAULT_CSR_COUNT;
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800">
