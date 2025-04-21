@@ -1,5 +1,7 @@
+// Toast notification system upgraded to SecureToast
+
 import React, { useEffect, useRef } from 'react';
-import { toast } from 'react-toastify';
+import { useToast } from '../App';
 
 interface SubmissionBuilderWebSocketProps {
   onStatusChange: (status: string) => void;
@@ -43,7 +45,7 @@ const SubmissionBuilderWebSocket: React.FC<SubmissionBuilderWebSocketProps> = ({
           console.log('WebSocket connected');
           onStatusChange('connected');
           reconnectAttempt.current = 0;
-          toast.success('QC WebSocket connected');
+          useToast().showToast('QC WebSocket connected', "success");
         };
         
         // Handle incoming messages
@@ -94,7 +96,7 @@ const SubmissionBuilderWebSocket: React.FC<SubmissionBuilderWebSocketProps> = ({
                 connectWebSocket();
               }, delay);
             } else {
-              toast.error('Could not reconnect to QC server');
+              useToast().showToast('Could not reconnect to QC server', "error");
             }
           }
         };

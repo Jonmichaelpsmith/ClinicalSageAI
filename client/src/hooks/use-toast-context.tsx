@@ -1,3 +1,5 @@
+// Toast notification system upgraded to SecureToast
+
 import React, { createContext, useContext, ReactNode } from 'react';
 import { toast, ToastContainer, ToastOptions } from 'react-toastify';
 
@@ -16,19 +18,19 @@ const ToastContext = createContext<ToastContextProps | undefined>(undefined);
 export const ToastProvider = ({ children }: { children: ReactNode }) => {
   // Define the toast functions
   const success = (message: string, options?: ToastOptions) => {
-    toast.success(message, options);
+    useToast().showToast(message, options, "success");
   };
 
   const error = (message: string, options?: ToastOptions) => {
-    toast.error(message, options);
+    useToast().showToast(message, options, "error");
   };
 
   const info = (message: string, options?: ToastOptions) => {
-    toast.info(message, options);
+    useToast().showToast(message, options, "info");
   };
 
   const warning = (message: string, options?: ToastOptions) => {
-    toast.warning(message, options);
+    useToast().showToast(message, options, "warning");
   };
 
   return (
@@ -75,9 +77,9 @@ export const useQcWebSocket = () => {
       try {
         const m = JSON.parse(evt.data);
         if (m.status === 'passed') {
-          toast.success(`QC passed – Doc #${m.id}`);
+          useToast().showToast(`QC passed – Doc #${m.id}`, "success");
         } else if (m.status === 'failed') {
-          toast.error(`QC failed – Doc #${m.id}`);
+          useToast().showToast(`QC failed – Doc #${m.id}`, "error");
         }
       } catch (err) {
         console.error('Error parsing WebSocket message:', err);

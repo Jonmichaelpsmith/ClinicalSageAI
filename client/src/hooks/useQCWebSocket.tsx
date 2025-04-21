@@ -1,6 +1,8 @@
+// Toast notification system upgraded to SecureToast
+
 // useQCWebSocket.tsx – Custom WebSocket hook for QC real-time updates
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { toast } from 'react-toastify';
+import { useToast } from '../App';
 
 interface QCWebSocketOptions {
   onMessage?: (data: any) => void;
@@ -65,7 +67,7 @@ export function useQCWebSocket({
       }
       
       // Notify with toast
-      toast.success('QC WebSocket connected');
+      useToast().showToast('QC WebSocket connected', "success");
     };
     
     ws.onmessage = (event) => {
@@ -78,9 +80,9 @@ export function useQCWebSocket({
           case 'qc_status':
             // Show toast notification for QC status updates
             if (data.status === 'passed') {
-              toast.success(`Document #${data.documentId} passed QC`);
+              useToast().showToast(`Document #${data.documentId} passed QC`, "success");
             } else if (data.status === 'failed') {
-              toast.error(`Document #${data.documentId} failed QC: ${data.message || 'No details provided'}`);
+              useToast().showToast(`Document #${data.documentId} failed QC: ${data.message || 'No details provided'}`, "error");
             }
             break;
             
@@ -122,7 +124,7 @@ export function useQCWebSocket({
         }, delay);
       } else {
         console.log('Max reconnect attempts reached, giving up');
-        toast.error('Unable to connect to QC WebSocket after multiple attempts');
+        useToast().showToast('Unable to connect to QC WebSocket after multiple attempts', "error");
       }
     };
     

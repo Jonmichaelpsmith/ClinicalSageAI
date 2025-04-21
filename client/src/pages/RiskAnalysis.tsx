@@ -1,6 +1,8 @@
+// Toast notification system upgraded to SecureToast
+
 import React, { useState, useEffect } from 'react';
 import { useLocation, useRoute } from 'wouter';
-import { toast } from 'react-toastify';
+import { useToast } from '../App';
 import { AlertTriangle, AlertCircle, CheckCircle, ChevronDown, ChevronRight, RefreshCw, Loader2, FileText, Shield, List, BarChart, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -136,7 +138,7 @@ export default function RiskAnalysis() {
   // Start risk analysis
   const startAnalysis = async () => {
     if (!submissionId) {
-      toast.error('No submission ID provided');
+      useToast().showToast('No submission ID provided', "error");
       return;
     }
 
@@ -165,7 +167,7 @@ export default function RiskAnalysis() {
       }
     } catch (error) {
       console.error('Error starting risk analysis:', error);
-      toast.error('Failed to start risk analysis');
+      useToast().showToast('Failed to start risk analysis', "error");
       setAnalysisInProgress(false);
     }
   };
@@ -179,7 +181,7 @@ export default function RiskAnalysis() {
         // Continue polling every 2 seconds
         setTimeout(() => pollForResults(tid), 2000);
       } else if (result.status === 'error') {
-        toast.error(`Analysis error: ${result.error}`);
+        useToast().showToast(`Analysis error: ${result.error}`, "error");
         setPolling(false);
         setAnalysisInProgress(false);
       } else {
@@ -188,11 +190,11 @@ export default function RiskAnalysis() {
         setPolling(false);
         setAnalysisInProgress(false);
         setLoading(false);
-        toast.success('Risk analysis complete');
+        useToast().showToast('Risk analysis complete', "success");
       }
     } catch (error) {
       console.error('Error polling for results:', error);
-      toast.error('Failed to retrieve analysis results');
+      useToast().showToast('Failed to retrieve analysis results', "error");
       setPolling(false);
       setAnalysisInProgress(false);
     }
@@ -214,7 +216,7 @@ export default function RiskAnalysis() {
     if (submissionId && !taskId && !analysisInProgress) {
       startAnalysis();
     } else if (!submissionId) {
-      toast.error('No submission ID provided');
+      useToast().showToast('No submission ID provided', "error");
       navigate('/submissions');
     }
   }, [submissionId, region]);
