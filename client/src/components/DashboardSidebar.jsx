@@ -86,13 +86,13 @@ export default function DashboardSidebar({ collapsed, setCollapsed }) {
     { 
       title: t('IND Automation'), 
       icon: <Package size={20} />, 
-      link: '/ind-automation',
+      link: '/ind/wizard',
       notification: 2,
       subItems: [
-        { title: t('New Submission'), icon: <FileText size={18} />, link: '/ind-automation/new' },
-        { title: t('Module Builder'), icon: <FileSearch size={18} />, link: '/ind-automation/builder' },
-        { title: t('eCTD Packager'), icon: <Package size={18} />, link: '/ind-automation/ectd' },
-        { title: t('ESG Gateway'), icon: <ArrowUpRight size={18} />, link: '/ind-automation/esg' }
+        { title: t('IND Wizard'), icon: <FileText size={18} />, link: '/ind/wizard' },
+        { title: t('Module Builder'), icon: <FileSearch size={18} />, link: '/ind/wizard/nonclinical' },
+        { title: t('eCTD Packager'), icon: <Package size={18} />, link: '/ind/wizard/final-assembly' },
+        { title: t('ESG Gateway'), icon: <ArrowUpRight size={18} />, link: '/ind/wizard/final-submission' }
       ]
     },
     { 
