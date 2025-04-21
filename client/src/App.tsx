@@ -42,7 +42,7 @@ export { useToast };
 
 // Import for useQCWebSocket now moved to SubmissionBuilder component
 // Each page that needs WebSocket will initialize its own connection
-import SecureToastProvider from './components/security/SecureToast';
+import { ToastProvider as SecureToastProvider } from './components/security/SecureToast';
 
 export default function App() {
   const [tourCompleted, setTourCompleted] = useState(false);

@@ -1,0 +1,28 @@
+This experimental model uses your Search history. Some features aren't available.
+It looks like you're running into a common issue in React related to how Hooks are used. The error message "Cannot read properties of null (reading 'useState')" along with the "Invalid hook call" warning strongly suggests a problem with the setup or usage of React Hooks in your App component.
+
+Here's a breakdown of the likely causes and how you can troubleshoot them:
+
+1. Mismatching Versions of React and React DOM:
+
+Check your package.json: Ensure that the versions of react and react-dom listed in your project's package.json file are the same or at least compatible.
+Examine your package-lock.json or yarn.lock: These files lock down the exact versions of your dependencies. If there's a discrepancy between what's listed in package.json and these lock files, it could lead to version mismatches.
+Reinstall dependencies: Try deleting your node_modules folder and your lock file (package-lock.json or yarn.lock) and then reinstalling your dependencies using npm install or yarn install. This ensures you have a consistent set of packages.
+2. Breaking the Rules of Hooks:
+
+Hooks can only be called inside the body of a function component: Make sure the useState call (and any other Hook) is directly within your App function component and not inside any nested functions, classes, or conditional statements that are not part of the main component logic.
+Hooks must be called in the same order on every render: Avoid calling Hooks inside if statements, loops, or other conditional logic where the order of execution might change between renders. If you need conditional logic based on a Hook's value, ensure the Hook itself is always called.
+Are you using Hooks in a class component? Hooks cannot be used inside class components. They are a feature specifically for function components. If App is a class component, you'll need to refactor it to a function component to use useState.
+Custom Hooks also follow these rules: If you have any custom Hooks, make sure they also adhere to these rules and only call other Hooks within their own body.
+3. More Than One Copy of React in the Same App:
+
+Check your bundle: If you're using a module bundler like Webpack or Parcel, analyze your build output to see if there are multiple copies of the react package being included in your final bundle. This can happen due to incorrect configurations or dependencies.
+npm link or yarn link issues: If you're using npm link or yarn link to connect local packages, it can sometimes lead to multiple React copies. Ensure your linking setup is correct.
+Debugging Tips:
+
+Go to the line number in the error: The error message points to https://abb15664-61d9-4852-884c-d59384023199-00-1rbx8h3zks8bw.picard.replit.dev/src/App.tsx?v=EaT2ZpS5QJxFylkLgI1HQ:47:45. Inspect this specific line in your App.tsx file. Is there a useState call (or any other Hook call) around this line? Is it being called directly within the function component's body?
+Simplify your App component: Try commenting out parts of your App component to isolate the area where the error is occurring. If the error disappears after commenting out a section, you've likely found the source of the problem.
+Review the React documentation on Hooks: The link provided in the error message (https://reactjs.org/link/invalid-hook-call) offers detailed explanations and debugging tips for this specific issue.
+Without seeing your App.tsx code, it's difficult to pinpoint the exact cause. However, by systematically checking these three potential reasons and using the debugging tips, you should be able to identify and fix the issue.
+
+Could you perhaps share the relevant part of your App.tsx component where the useState call is being made? That might help in providing more specific guidance.
