@@ -320,7 +320,7 @@ export default function AppPackagesBanner({ currentPath }) {
           
           {/* Replaced "About Concept2Cures.AI" button with CSR Intelligence Library metrics - black background, 75% smaller */}
           <div className="mt-8">
-            <div className="bg-black py-2 rounded-md">
+            <div className="bg-gradient-to-r from-slate-900 to-slate-800 py-2 rounded-md">
               <div className="max-w-3xl mx-auto px-2">
                 <div className="text-center mb-1.5">
                   <h2 className="inline-flex items-center px-2 py-0.5 rounded-full bg-slate-800 text-blue-300 text-[10px] font-medium mb-1">
@@ -389,14 +389,7 @@ export default function AppPackagesBanner({ currentPath }) {
                   </div>
                 </div>
                 
-                <div className="mt-1.5 text-center">
-                  <Link to="/intelligence-library">
-                    <button className="inline-flex items-center px-2 py-0.5 border border-slate-700 bg-slate-800 hover:bg-slate-700 rounded text-[10px] font-medium text-white transition-colors duration-200">
-                      Explore Library
-                      <ChevronRight className="h-2 w-2 ml-0.5" />
-                    </button>
-                  </Link>
-                </div>
+                {/* Removed "Explore Library" button as requested */}
               </div>
             </div>
           </div>
