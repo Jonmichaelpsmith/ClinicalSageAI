@@ -10,8 +10,7 @@ import FdaFormsStep from '../components/ind-wizard/steps/FdaFormsStep';
 import FinalAssemblyStep from '../components/ind-wizard/steps/FinalAssemblyStep';
 import { Button } from '@/components/ui/button';
 
-// This would be filled with actual components as they are created
-const CmcStep = () => <div className="p-10 text-center">CMC Data (Coming Soon)</div>;
+import CmcStep from '../components/ind-wizard/steps/CmcStep';
 
 export default function INDWizard() {
   return (
