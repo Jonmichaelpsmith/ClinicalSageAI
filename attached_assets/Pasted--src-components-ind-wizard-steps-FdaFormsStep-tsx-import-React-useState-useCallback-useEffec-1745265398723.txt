@@ -1,0 +1,274 @@
+// src/components/ind-wizard/steps/FdaFormsStep.tsx
+import React, { useState, useCallback, useEffect, useContext } from 'react';
+import { useForm, Controller, useWatch } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { useQueryClient, useMutation, useQuery } from '@tanstack/react-query';
+import { useWizard, WizardContext } from '../IndWizardLayout'; // Import WizardContext
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Bot, HelpCircle, Loader2, Sparkles, FileText, UserCheck, ListChecks, FileSymlink, CheckCircle2, AlertCircle, Search, Link as LinkIcon, XCircle, Info, ExternalLink, MessageSquare, Eye } from 'lucide-react'; // Added Eye icon
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from '@/components/ui/use-toast';
+import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose, DialogDescription } from '@/components/ui/dialog';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"; // Import HoverCard
+
+// --- API Simulation/Types ---
+// (API simulations remain the same)
+const apiSaveFdaFormsData = async (data: FdaFormsStepFormData): Promise<{ success: boolean; message: string }> => { /* ... */ return { success: true, message: "FDA Forms data saved." }; };
+type AiValidationStatus = 'unchecked' | 'checking' | 'valid' | 'warning' | 'error';
+interface AiValidationResult { status: AiValidationStatus; message: string; details?: string; guidelineRef?: { text: string; url: string }; }
+interface AiGuidanceResult { guidanceText: string; relevantLinks?: { text: string; url: string }[]; }
+const apiTriggerFdaFormAiAction = async ( /* ... */ ): Promise<{ result?: any; validationResult?: AiValidationResult; guidanceResult?: AiGuidanceResult; message: string }> => { /* ... */ };
+
+
+// --- Zod Schema Definition ---
+// (Schemas remain the same)
+const form1571Schema = z.object({ /* ... */ });
+const fdaFormsStepSchema = z.object({ form1571: form1571Schema.optional(), /* ... */ });
+export type Form1571Data = z.infer<typeof form1571Schema>;
+export type FdaFormsStepFormData = z.infer<typeof fdaFormsStepSchema>;
+
+// --- Helper: AI Status Indicator ---
+// (Component remains the same)
+const AiValidationIndicator: React.FC<{ /* ... props ... */ }> = ({ /* ... */ }) => { /* ... */ };
+
+// --- Helper: Data Linking Component (Enhanced with Preview) ---
+interface DataLinkerProps {
+    label: string;
+    linkedItems: { id: string; name: string; [key: string]: any }[]; // Allow extra data for preview
+    availableItems: { id: string; name: string; [key: string]: any }[]; // Allow extra data for preview
+    itemType: 'protocol' | 'investigator'; // To fetch correct details for preview
+    onLink: (item: { id: string; name: string }) => void;
+    onUnlink: (id: string) => void;
+    triggerAiCheck: () => void;
+    aiStatus: AiValidationStatus;
+    aiMessage?: string;
+    aiDetails?: string;
+}
+const DataLinker: React.FC<DataLinkerProps> = ({
+    label, linkedItems, availableItems, itemType, onLink, onUnlink, triggerAiCheck, aiStatus, aiMessage, aiDetails
+}) => {
+    const { indData } = useWizard(); // Access full context to get details for preview
+    const [isLinkingDialogOpen, setIsLinkingDialogOpen] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+
+    // Function to get preview details based on item type and ID from full indData context
+    const getItemPreviewDetails = (itemId: string): React.ReactNode => {
+        // --- SIMULATION: Fetch details from indData context ---
+        if (itemType === 'protocol') {
+            // Find the full protocol data in indData.clinicalProtocolData (assuming it's stored there)
+            // This is highly dependent on your actual indData structure
+            const protocol = indData.clinicalProtocolData; // Simplistic: assumes only one protocol in context for demo
+            if (protocol && protocol.protocolIdentifier === itemId) { // Match by ID if available, otherwise use title/name
+                 return (
+                    <div className="text-xs space-y-1">
+                        <p><strong>Phase:</strong> {protocol.phase || 'N/A'}</p>
+                        <p><strong>Objective:</strong> {protocol.objectives?.substring(0, 100) || 'N/A'}...</p>
+                        <p><strong>Design:</strong> {protocol.studyDesignSummary?.substring(0, 100) || 'N/A'}...</p>
+                    </div>
+                );
+            }
+        } else if (itemType === 'investigator') {
+            // Find investigator data (assuming it's stored somewhere like indData.investigators)
+            // const investigator = indData.investigators?.find(inv => inv.id === itemId);
+            // if (investigator) { ... return details ... }
+             return <p className="text-xs">Investigator details placeholder (e.g., Site, Role).</p>; // Placeholder
+        }
+        return <p className="text-xs text-muted-foreground">Preview details not available.</p>;
+    };
+
+    const filteredAvailable = availableItems.filter(item =>
+        item.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        !linkedItems.some(linked => linked.id === item.id)
+    );
+
+    return (
+        <FormItem>
+            <div className="flex justify-between items-center">
+                <FormLabel>{label}</FormLabel>
+                 <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={triggerAiCheck} disabled={aiStatus === 'checking'}>
+                    <AiValidationIndicator status={aiStatus} message={aiMessage} details={aiDetails} />
+                 </Button>
+            </div>
+            <div className="p-2 border rounded-md min-h-[60px] space-y-1 bg-muted/30">
+                {linkedItems.length === 0 && <p className="text-xs text-muted-foreground text-center py-2">No items linked.</p>}
+                {linkedItems.map(item => (
+                    // Use HoverCard for preview on hover
+                    <HoverCard key={item.id} openDelay={200}>
+                        <HoverCardTrigger asChild>
+                             <Badge variant="secondary" className="mr-1 mb-1 flex justify-between items-center cursor-default">
+                                <span>{item.name || item.title}</span> {/* Use title if name not present */}
+                                <button type="button" onClick={() => onUnlink(item.id)} className="ml-1 text-muted-foreground hover:text-red-500 opacity-50 hover:opacity-100">
+                                    <XCircle className="h-3 w-3" />
+                                </button>
+                            </Badge>
+                        </HoverCardTrigger>
+                        <HoverCardContent className="w-80" side="top" align="start">
+                            <div className="space-y-2">
+                                <h4 className="font-semibold">{item.name || item.title}</h4>
+                                <Separator />
+                                {getItemPreviewDetails(item.id)}
+                                {/* Add button to view full details if needed */}
+                                <Button variant="link" size="xs" className="p-0 h-auto" onClick={() => alert(`Navigate to full details for ${item.id} (Not Implemented)`)}>View Full Details</Button>
+                            </div>
+                        </HoverCardContent>
+                    </HoverCard>
+                ))}
+            </div>
+            {/* Dialog for Linking Items */}
+            <Dialog open={isLinkingDialogOpen} onOpenChange={setIsLinkingDialogOpen}>
+                <DialogTrigger asChild>
+                    <Button type="button" variant="outline" size="sm" className="mt-1 w-full sm:w-auto">
+                        <LinkIcon className="mr-2 h-4 w-4" /> Link Existing {label}
+                    </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[500px]">
+                     {/* ... Dialog Header ... */}
+                     <DialogHeader><DialogTitle>Link {label}</DialogTitle></DialogHeader>
+                     <div className="py-2">
+                        <Input placeholder={`Search available ${label.toLowerCase()}...`} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="mb-2" />
+                        <div className="max-h-60 overflow-y-auto border rounded-md p-1 space-y-1">
+                            {/* ... Rendering available items with Link button ... */}
+                             {filteredAvailable.length === 0 && <p className="text-sm text-muted-foreground text-center p-4">No matching items found.</p>}
+                             {filteredAvailable.map(item => (
+                                <div key={item.id} className="flex justify-between items-center p-2 rounded hover:bg-accent">
+                                    <span>{item.name || item.title}</span>
+                                    <Button type="button" size="xs" onClick={() => { onLink(item); setIsLinkingDialogOpen(false); }}>Link</Button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                     <DialogFooter><DialogClose asChild><Button type="button" variant="outline">Cancel</Button></DialogClose></DialogFooter>
+                </DialogContent>
+            </Dialog>
+            <FormDescription>Link relevant items managed elsewhere.</FormDescription>
+        </FormItem>
+    );
+};
+
+
+// --- Helper: Section Status Indicator ---
+// (Component remains the same)
+const SectionStatusIndicator: React.FC<{ status: AiValidationStatus }> = ({ status }) => { /* ... */ };
+
+
+// --- Component Implementation ---
+export default function FdaFormsStep() {
+  const { indData, updateIndDataSection, goToNextStep, updateAiPanelContent } = useWizard();
+  const queryClient = useQueryClient();
+
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [aiActionType, setAiActionType] = useState<string | null>(null);
+
+  // --- Data Fetching ---
+  const { data: initialData, isLoading: isLoadingInitialData } = useQuery({ /* ... */ });
+
+  // --- Form Setup ---
+  const form = useForm<FdaFormsStepFormData>({ /* ... */ });
+
+  // --- Section Status Calculation ---
+  const calculateSectionStatus = useCallback((sectionPrefix: string): AiValidationStatus => { /* ... */ }, [form]);
+  const sponsorSectionStatus = calculateSectionStatus('sponsor');
+  // ... other section statuses ...
+
+  // --- Data Mutation (Saving) ---
+  const mutation = useMutation({ mutationFn: apiSaveFdaFormsData, /* ... */ });
+  function onSubmit(values: FdaFormsStepFormData) { mutation.mutate(values); }
+
+  // --- AI Interaction ---
+  const runFieldAiValidation = useCallback(async (field: keyof Form1571Data) => { /* ... updated to use updateAiPanelContent ... */ }, [form, indData, updateAiPanelContent]);
+  const runConsistencyCheck = useCallback(async (field: keyof Form1571Data | string) => { /* ... updated to use updateAiPanelContent ... */ }, [form, indData, updateAiPanelContent]);
+  const handleAiGuidance = async (field: keyof Form1571Data) => { /* ... updated to use updateAiPanelContent ... */ };
+
+  // --- Data Linking Handlers ---
+  const handleLinkProtocol = (item: { id: string; title: string }) => { /* ... updates form ... */ };
+  const handleUnlinkProtocol = (id: string) => { /* ... updates form ... */ };
+  // ... similar handlers for investigators ...
+
+  // --- Render Logic ---
+  if (isLoadingInitialData) { /* ... Skeleton ... */ }
+
+  // Helper to render FormField with enhanced AI validation/guidance
+  const renderValidatedField = (name: keyof Form1571Data, label: string, /* ... */ Component: React.ElementType = Input, props: any = {}) => {
+       // ... (Watch AI status fields) ...
+       const showDetailsInPanel = () => { /* ... uses updateAiPanelContent ... */ };
+       return ( /* ... FormField structure with AiValidationIndicator and HelpCircle ... */ );
+  };
+
+  // Prepare available items for linking (SIMULATED - fetch from indData)
+  const availableProtocols = indData.clinicalProtocolData ? [{ id: indData.clinicalProtocolData.protocolIdentifier || 'P001', title: indData.clinicalProtocolData.protocolTitle || 'Protocol from Context' }] : [];
+  const availableInvestigators = indData.investigators || [{id: 'INV001', name: 'Dr. Placeholder'}]; // Assuming investigators are stored in indData.investigators
+
+
+  return (
+    <TooltipProvider>
+      <Form {...form}>
+        <div className="space-y-6">
+          <Card>
+            <CardHeader> {/* ... Title/Description ... */} </CardHeader>
+            <CardContent>
+               <Tabs defaultValue="form1571" className="w-full">
+                  <TabsList> {/* ... Triggers ... */} </TabsList>
+                  <TabsContent value="form1571" className="mt-4">
+                    <Card>
+                        <CardHeader> {/* ... Title/Prefill ... */} </CardHeader>
+                        <CardContent className="space-y-6 pt-4">
+                            {/* Section Headers now include Status Indicator */}
+                            <h3 className="font-semibold text-lg border-b pb-1 flex items-center">1. Sponsor Information <SectionStatusIndicator status={sponsorSectionStatus} /></h3>
+                            {/* ... renderValidatedField for sponsor fields ... */}
+                            <Separator />
+                            {/* ... other sections ... */}
+                            <h3 className="font-semibold text-lg border-b pb-1 flex items-center">4. Protocol Information <SectionStatusIndicator status={'unchecked'} /></h3> {/* Replace with calculated status */}
+                             <DataLinker
+                                label="Protocols"
+                                linkedItems={form.watch('form1571.protocolLinks') || []}
+                                availableItems={availableProtocols} // Pass available items
+                                itemType="protocol" // Specify item type for preview
+                                onLink={handleLinkProtocol}
+                                onUnlink={handleUnlinkProtocol}
+                                triggerAiCheck={() => runConsistencyCheck('section_protocols')} // Trigger consistency check
+                                aiStatus={form.watch('form1571._protocolLinks_aiStatus')}
+                                aiMessage={form.watch('form1571._protocolLinks_aiMessage')}
+                                aiDetails={form.watch('form1571._protocolLinks_aiDetails')}
+                             />
+                             <Separator />
+
+                            <h3 className="font-semibold text-lg border-b pb-1 flex items-center">5. Investigator Information <SectionStatusIndicator status={'unchecked'} /></h3>
+                             <DataLinker
+                                label="Investigators"
+                                linkedItems={form.watch('form1571.investigatorLinks') || []}
+                                availableItems={availableInvestigators} // Pass available items
+                                itemType="investigator" // Specify item type for preview
+                                onLink={(item) => { /* ... handleLinkInvestigator ... */ }}
+                                onUnlink={(id) => { /* ... handleUnlinkInvestigator ... */ }}
+                                triggerAiCheck={() => runConsistencyCheck('section_investigators')}
+                                aiStatus={form.watch('form1571._investigatorLinks_aiStatus')}
+                                aiMessage={form.watch('form1571._investigatorLinks_aiMessage')}
+                                aiDetails={form.watch('form1571._investigatorLinks_aiDetails')}
+                             />
+                             <Separator />
+                            {/* ... IRB Info, Contents Checklist, Certification ... */}
+                        </CardContent>
+                    </Card>
+                  </TabsContent>
+                  {/* --- Other Tab Placeholders --- */}
+               </Tabs>
+            </CardContent>
+          </Card>
+           {/* Footer Info & Mutation Status */}
+        </div>
+      </Form>
+    </TooltipProvider>
+  );
+}
