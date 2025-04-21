@@ -500,8 +500,7 @@ export default function HomeLandingEnhanced() {
       
 
       
-      {/* Simple Solution Bundles with Demo Tiles */}
-      {/* SimpleSolutionBundles section removed as requested */}
+      {/* Integrated AI-Powered Solutions section completely removed as requested */}
       
       {/* Testimonials Section - Compact */}
       <section className="py-10 bg-gradient-to-r from-indigo-900 to-blue-900 text-white">
