@@ -29,15 +29,17 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 // Direct routes for IND wizard
-app.get('/ind/wizard', (req, res) => {
-  console.log("IND wizard route hit - serving main HTML");
-  res.sendFile('index.html', { root: './client/dist' });
+app.get('/ind/wizard', (req, res, next) => {
+  console.log("IND wizard route hit - will be handled by Vite dev server or static file server");
+  // Let Vite handle it in dev mode, or static file server in prod
+  next();
 });
 
 // Catch-all route for all IND wizard nested paths
-app.get('/ind/wizard/*', (req, res) => {
-  console.log(`IND wizard nested route hit: ${req.path} - serving main HTML`);
-  res.sendFile('index.html', { root: './client/dist' });
+app.get('/ind/wizard/*', (req, res, next) => {
+  console.log(`IND wizard nested route hit: ${req.path}`);
+  // Let Vite handle it in dev mode, or static file server in prod
+  next();
 });
 
 // Direct API routes for IND wizard
