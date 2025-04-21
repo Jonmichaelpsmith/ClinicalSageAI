@@ -1,18 +1,52 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'wouter';
+import { useQuery } from '@tanstack/react-query';
 import { 
   BarChart2, FileText, Database, Book, ClipboardCheck, 
   FileSearch, Server, Activity, Settings, Grid3X3, ArrowRight
 } from 'lucide-react';
+import { apiRequest } from '../lib/queryClient';
 
 export default function TrialSageDashboard() {
   const [activeModule, setActiveModule] = useState(null);
-  const [metrics, setMetrics] = useState({
+  
+  // Initial metrics to ensure we always have valid values
+  const initialMetrics = {
     csrCount: 3021,
     indSequences: 147,
     studies: 492,
     qcPassed: 89
+  };
+  
+  // Use React Query to fetch the dashboard metrics
+  const { data } = useQuery({
+    queryKey: ['/api/reports/count'],
+    queryFn: async () => {
+      try {
+        const response = await apiRequest('GET', '/api/reports/count');
+        if (!response.ok) {
+          return initialMetrics;
+        }
+        const data = await response.json();
+        // Merge with initial data and return
+        return { 
+          ...initialMetrics, 
+          csrCount: data?.count || initialMetrics.csrCount 
+        };
+      } catch (error) {
+        console.error('Error fetching dashboard metrics:', error);
+        return initialMetrics;
+      }
+    },
+    // Use initial data to prevent loading states
+    initialData: initialMetrics,
+    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: 1
   });
+  
+  // Always use valid metrics
+  const metrics = data || initialMetrics;
 
   useEffect(() => {
     document.title = "TrialSage - Regulatory Intelligence Platform";
