@@ -18,7 +18,7 @@ export default function TrialSageDashboard() {
     qcPassed: 89
   };
   
-  // Use React Query to fetch the dashboard metrics
+  // Use React Query with maximum stability settings to prevent UI flashing
   const { data } = useQuery({
     queryKey: ['/api/reports/count'],
     queryFn: async () => {
@@ -28,7 +28,6 @@ export default function TrialSageDashboard() {
           return initialMetrics;
         }
         const data = await response.json();
-        // Merge with initial data and return
         return { 
           ...initialMetrics, 
           csrCount: data?.count || initialMetrics.csrCount 
@@ -38,11 +37,13 @@ export default function TrialSageDashboard() {
         return initialMetrics;
       }
     },
-    // Use initial data to prevent loading states
     initialData: initialMetrics,
+    // Completely disable all automatic refetching to prevent UI flashing
+    refetchOnMount: false,
     refetchOnWindowFocus: false,
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    retry: 1
+    refetchOnReconnect: false,
+    retry: false,
+    staleTime: Infinity // Prevent any automatic refetching
   });
   
   // Always use valid metrics

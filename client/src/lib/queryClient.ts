@@ -1,12 +1,16 @@
 import { QueryClient } from "@tanstack/react-query";
 
-// Create a client
+// Create a client with very stable settings to prevent UI flickering
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: false,
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      retry: 1,
+      refetchOnMount: false,
+      refetchOnReconnect: false,
+      retry: false,
+      staleTime: Infinity, // Prevent automatic refetching
+      // This ensures queries will never automatically refetch
+      // which prevents UI flickering due to network instability
     },
   },
 });
