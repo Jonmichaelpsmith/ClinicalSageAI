@@ -1,9 +1,8 @@
 // src/components/ind-wizard/steps/PreIndStep.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useQueryClient, useMutation, useQuery } from '@tanstack/react-query';
 import { useWizard } from '../IndWizardLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -144,7 +143,6 @@ const apiFetchAiSuggestions = async (context, prompt) => {
 // Enhanced PreIndStep component with React Hook Form
 export default function PreIndStep() {
   const { indData, updateIndDataSection, goToNextStep, getAiAssistance } = useWizard();
-  const queryClient = useQueryClient(); // For cache invalidation
 
   // State for AI suggestions dialog
   const [aiSuggestions, setAiSuggestions] = useState([]);
@@ -155,20 +153,50 @@ export default function PreIndStep() {
   // Get current draft ID for API calls
   const currentDraftId = localStorage.getItem('currentDraftId') || 'draft-1';
 
-  // --- Data Fetching with useQuery ---
-  const queryKey = ['preIndData', currentDraftId];
-  const {
-    data: fetchedData,
-    isLoading: isLoadingInitialData,
-    isError: isFetchError,
-    error: fetchError
-  } = useQuery({
-    queryKey: queryKey,
-    queryFn: () => fetchPreIndData(currentDraftId),
-    enabled: !!currentDraftId, // Only run query if draftId is available
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    refetchOnWindowFocus: false, // Optional: prevent refetch on window focus
-  });
+  // --- Simple Data Fetching with useEffect ---
+  const [fetchedData, setFetchedData] = useState(null);
+  const [isLoadingInitialData, setIsLoadingInitialData] = useState(true);
+  const [isFetchError, setIsFetchError] = useState(false);
+  const [fetchError, setFetchError] = useState(null);
+  
+  // Fetch data on component mount
+  useEffect(() => {
+    let isMounted = true;
+    
+    const fetchData = async () => {
+      if (!currentDraftId) {
+        setIsLoadingInitialData(false);
+        return;
+      }
+      
+      setIsLoadingInitialData(true);
+      setIsFetchError(false);
+      
+      try {
+        const data = await fetchPreIndData(currentDraftId);
+        
+        // Only update state if component is still mounted
+        if (isMounted) {
+          setFetchedData(data);
+          setIsLoadingInitialData(false);
+        }
+      } catch (error) {
+        // Only update state if component is still mounted
+        if (isMounted) {
+          setIsFetchError(true);
+          setFetchError(error);
+          setIsLoadingInitialData(false);
+        }
+      }
+    };
+    
+    fetchData();
+    
+    // Cleanup function to prevent state updates after unmount
+    return () => {
+      isMounted = false;
+    };
+  }, [currentDraftId]); // Only re-run if currentDraftId changes
 
   // --- Form Setup ---
   const form = useForm({
@@ -235,48 +263,54 @@ export default function PreIndStep() {
     name: "preIndAttendees"
   });
 
-  // --- Data Mutation (Saving) ---
-  const mutation = useMutation({
-    mutationFn: savePreIndData,
-    onSuccess: (data) => {
-      // Show toast notification
+  // --- Data Saving State ---
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState(null);
+
+  // Handle form submission -> save data directly
+  async function onSubmit(values) {
+    console.log("Pre-IND Step Data Submitted:", values);
+    
+    setIsSaving(true);
+    setSaveError(null);
+    
+    try {
+      // Get the current draft ID
+      const currentDraftId = localStorage.getItem('currentDraftId') || 'draft-1';
+      
+      // Call save function directly
+      const data = await savePreIndData({ 
+        draftId: currentDraftId, 
+        data: values 
+      });
+      
+      // Handle success
       toast({
         title: "Save Successful",
         description: data.message || "Pre-IND data saved successfully.",
       });
       
-      // Update context/global state (optional, query invalidation might be sufficient)
+      // Update context/global state
       updateIndDataSection('projectDetails', form.getValues());
       updateIndDataSection('preIndMeeting', form.getValues());
       updateIndDataSection('milestones', form.getValues('milestones'));
       
-      // Invalidate query cache to ensure fresh data on next visit
-      queryClient.invalidateQueries({ queryKey: ['indDraft', 'preIndStepData'] });
+      // Refresh data (optional - not needed here since we're navigating away)
+      // setFetchedData(values);
       
       // Proceed to next step
       goToNextStep();
-    },
-    onError: (error) => {
+    } catch (error) {
+      // Handle error
+      setSaveError(error);
       toast({
         title: "Save Failed",
         description: error.message || "An unknown error occurred.",
         variant: "destructive",
       });
-    },
-  });
-
-  // Handle form submission -> trigger mutation
-  function onSubmit(values) {
-    console.log("Pre-IND Step Data Submitted:", values);
-    
-    // Get the current draft ID
-    const currentDraftId = localStorage.getItem('currentDraftId') || 'draft-1';
-    
-    // Pass both draftId and data to the mutation function
-    mutation.mutate({ 
-      draftId: currentDraftId, 
-      data: values 
-    });
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   // --- AI Interaction ---
