@@ -1,0 +1,42 @@
+offerings into four clear bundles, each with a focused name, a concise description, and a list of exactly which modules/tools it includes. You can drop this table directly into your landing page copy (or CMS structured content) to eliminate confusion and guide prospects to the right package.
+
+
+Bundle Name	Who It’s For	Includes	Key Value
+1. Submission Accelerator	Regulatory teams filing INDs/NDAs/CTAs	• Submission Builder (eCTD assembly & regional validation)
+• IND Architect™ (AI‑powered Module 1–5 creator)
+• eCTD Manager (lifecycle tracking & publishing)	File 60% faster with zero formatting errors and live compliance checks across FDA, EMA, PMDA, and more.
+2. Clinical Intelligence Suite	Clinical ops & biostatisticians	• CSR Intelligence (deep‑learning CSR parsing & dashboards)
+• Study Designer (model‑driven protocol simulation)
+• Use Case Library (annotated case studies & templates)	See trial performance in real time, optimize your protocol up front, and benchmark against peer studies instantly.
+3. Report & Review Toolkit	Medical writers & safety/risk teams	• CER Generator (auto‑draft Clinical Evaluation Reports)
+• Use Case Library (regulatory CER examples)
+• Literature Review Guide*	Draft compliant reports in hours, with built‑in GSPR mapping, reference linking, and audit‑ready formatting.
+4. Enterprise Command Center	CEOs, Partners, & IT integration leads	• Lumen Bio Portal (white‑label client dashboards)
+• Client Access (secure multi‑tenant login)
+• AI Co‑pilot (role‑based smart assistant)	Unify your entire operation—centralize visibility, empower every team with on‑demand AI support, and scale securely.
+*Note: “Literature Review Guide” in Bundle 3 is included as part of the CER module deliverables—link to your downloadable guide in the gated assets.
+
+How to Present on the Page
+Section header:
+“Choose Your TrialSage Bundle”
+“Select the package that fits your role—everything you need, nothing you don’t.”
+
+Bundle cards:
+
+Card background color mapped to bundle theme (e.g. blue for Accelerator, green for Intelligence, red for Reports, purple/orange for Enterprise).
+
+Inside each card:
+
+Bundle Name (bold)
+
+Tagline (e.g. “File 60% faster with zero surprise errors.”)
+
+List of included modules
+
+Primary CTA: “Get Accelerator Pricing” / “Request Intelligence Demo” / etc.
+
+Tooltip or “Learn More” modal for each module in the list, showing a 1‑sentence summary and icon.
+
+Pipeline Visual: Below the table/cards, a simple 4‑step horizontal flow (Plan → Build → Analyze → Scale), mapping to each bundle.
+
+This structure clarifies exactly wha
