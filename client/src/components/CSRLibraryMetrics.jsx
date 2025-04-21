@@ -14,31 +14,30 @@ export default function CSRLibraryMetrics() {
     modelParameters: '2.4B'
   };
   
-  // Use React Query to handle API data fetching with proper caching and error handling
-  const { data, isLoading } = useQuery({
+  // Use React Query with a more stable configuration to prevent UI flickering
+  const { data } = useQuery({
     queryKey: ['/api/reports/metrics'],
     queryFn: async () => {
       try {
         const response = await apiRequest('GET', '/api/reports/metrics');
         if (!response.ok) {
-          // If API returns an error, just use our initial data
           console.log('API returned an error, using default metrics data');
           return initialMetrics;
         }
         const data = await response.json();
-        // Merge with initial data to ensure we have values for all fields
         return { ...initialMetrics, ...data };
       } catch (error) {
         console.log('API request failed, using default metrics data');
         return initialMetrics;
       }
     },
-    // Prevent automatic refetching on window focus to reduce API calls
+    initialData: initialMetrics,
+    // Completely disable all automatic refetching
+    refetchOnMount: false,
     refetchOnWindowFocus: false,
-    // Set staleTime to reduce unnecessary refetches
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    // Use our initial data to avoid rendering issues if API fails
-    initialData: initialMetrics
+    refetchOnReconnect: false,
+    retry: false,
+    staleTime: Infinity
   });
   
   // Always have valid metrics by using the data from the query or our initial data

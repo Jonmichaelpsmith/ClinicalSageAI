@@ -187,31 +187,33 @@ export default function HomeLandingEnhanced() {
   // Default CSR count value to use if API fails
   const DEFAULT_CSR_COUNT = 3021;
   
-  // Use React Query to fetch CSR count with error handling and caching
-  const { data: csrCountData, isLoading } = useQuery({
+  // Use a simpler approach with initialData and no refetching
+  // This stabilizes the UI by preventing unnecessary updates
+  const { data: csrCountData } = useQuery({
     queryKey: ['/api/reports/count'],
     queryFn: async () => {
       try {
         const response = await apiRequest('GET', '/api/reports/count');
         if (!response.ok) {
-          throw new Error('Failed to fetch CSR count');
+          console.log('Using default CSR count - API returned error');
+          return DEFAULT_CSR_COUNT;
         }
         const data = await response.json();
         return data?.count || DEFAULT_CSR_COUNT;
       } catch (error) {
         console.error('Error fetching CSR count:', error);
-        return DEFAULT_CSR_COUNT; // Use default value on error
+        return DEFAULT_CSR_COUNT;
       }
     },
-    // Use default value to avoid loading states on page load
     initialData: DEFAULT_CSR_COUNT,
-    // Prevent automatic refetching to reduce API calls
+    refetchOnMount: false,
     refetchOnWindowFocus: false,
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    retry: 1, // Only retry once to avoid multiple failed requests
+    refetchOnReconnect: false,
+    retry: false,
+    staleTime: Infinity // Don't mark the data as stale - prevents auto refetching
   });
   
-  // Extract the actual count value to use in the component
+  // Use the data directly with fallback
   const csrCount = csrCountData || DEFAULT_CSR_COUNT;
 
   return (
