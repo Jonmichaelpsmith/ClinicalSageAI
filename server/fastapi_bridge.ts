@@ -1,8 +1,8 @@
 /**
- * Enhanced FastAPI Bridge with Simple Proxy
+ * Enhanced FastAPI Bridge with Simple Proxy and Fallback Handling
  * 
  * Uses Express routing to forward requests to the FastAPI backend.
- * Focuses on reliable API proxying without WebSocket complexities.
+ * Provides fallback responses when the FastAPI server is unavailable.
  */
 
 import express from 'express';
@@ -28,12 +28,23 @@ export default function registerFastapiProxy(app: express.Application): void {
   
   console.log(`Setting up FastAPI proxy to http://${apiHost}:${apiPort}`);
   
+  // Fallback responses for common endpoints when FastAPI is unavailable
+  const fallbackResponses: Record<string, any> = {
+    '/reports/count': { count: 0, message: 'Fallback response - FastAPI unavailable' },
+    '/ind/stats': { total: 0, pending: 0, approved: 0, rejected: 0, message: 'Fallback response - FastAPI unavailable' },
+    // Add more fallbacks as needed
+  };
+  
   // Simple proxy middleware for API routes
-  app.use('/api', (req, res) => {
+  app.use(['/api', '/reports', '/ind'], (req, res) => {
+    // Check if we have a fallback for this path
+    const fullPath = req.originalUrl;
+    const hasFallback = Object.keys(fallbackResponses).some(path => fullPath.includes(path));
+    
     const options = {
       hostname: apiHost,
       port: apiPort,
-      path: req.url.replace(/^\/api/, ''),
+      path: req.url,
       method: req.method,
       headers: {
         ...req.headers,
@@ -59,10 +70,20 @@ export default function registerFastapiProxy(app: express.Application): void {
     proxyReq.on('error', (err) => {
       console.error('API Proxy Error:', err);
       if (!res.headersSent) {
+        // If we have a fallback for this endpoint, use it
+        for (const path in fallbackResponses) {
+          if (fullPath.includes(path)) {
+            console.log(`Using fallback response for ${fullPath}`);
+            return res.json(fallbackResponses[path]);
+          }
+        }
+        
+        // No fallback available, return error
         res.status(502).json({
           success: false,
           error: 'FastAPI service unreachable',
-          detail: err.message
+          detail: err.message,
+          path: fullPath
         });
       }
     });
