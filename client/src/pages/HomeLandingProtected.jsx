@@ -178,8 +178,8 @@ export default function HomeLandingProtected() {
               Client Portal
             </Link>
             
-            <Link to="/builder" className="px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-teal-600 text-white hover:from-blue-700 hover:to-teal-700 shadow-md font-medium transition-all flex items-center gap-1">
-              Launch eCTD Builder <ArrowRight size={16} />
+            <Link to="/ind/wizard" className="px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-teal-600 text-white hover:from-blue-700 hover:to-teal-700 shadow-md font-medium transition-all flex items-center gap-1">
+              IND <ArrowRight size={16} />
             </Link>
           </nav>
           
@@ -213,8 +213,8 @@ export default function HomeLandingProtected() {
             </p>
             
             <div className="flex flex-wrap justify-center gap-4">
-              <Link to="/builder" className="px-6 py-3 rounded-lg bg-gradient-to-r from-blue-500 to-teal-500 text-white hover:from-blue-600 hover:to-teal-600 shadow-xl flex items-center gap-2 font-medium transition-all text-lg">
-                Launch eCTD Builder <ArrowRight size={20}/>
+              <Link to="/ind/wizard" className="px-6 py-3 rounded-lg bg-gradient-to-r from-blue-500 to-teal-500 text-white hover:from-blue-600 hover:to-teal-600 shadow-xl flex items-center gap-2 font-medium transition-all text-lg">
+                IND <ArrowRight size={20}/>
               </Link>
               <Link to="/demo" className="px-6 py-3 rounded-lg bg-white/10 border border-white/30 hover:bg-white/20 flex items-center gap-2 font-medium text-lg text-white">
                 Request Demo
@@ -671,7 +671,7 @@ export default function HomeLandingProtected() {
               </div>
               
               <div className="flex flex-wrap justify-center md:justify-end gap-4">
-                <Link to="/builder" className="px-6 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-teal-600 text-white hover:from-blue-700 hover:to-teal-700 shadow-lg font-medium transition-all flex items-center gap-2">
+                <Link to="/ind/wizard" className="px-6 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-teal-600 text-white hover:from-blue-700 hover:to-teal-700 shadow-lg font-medium transition-all flex items-center gap-2">
                   Launch Platform Now <ArrowRight size={18} />
                 </Link>
                 <Link to="/demo" className="px-6 py-3 rounded-lg border border-blue-200 text-blue-700 bg-blue-50 hover:bg-blue-100 flex items-center gap-2 font-medium">
