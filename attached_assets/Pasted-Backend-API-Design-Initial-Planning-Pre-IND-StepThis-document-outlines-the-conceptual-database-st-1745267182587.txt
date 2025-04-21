@@ -1,0 +1,98 @@
+Backend API Design: Initial Planning & Pre-IND StepThis document outlines the conceptual database structure and API endpoints required to support the data persistence for the "Initial Planning & Pre-IND" step of the IND Wizard.Assumptions:Backend Framework: Express.js (as per initial requirements)Database: PostgreSQLAuthentication: Assumed to be handled (user context available)Base API Path: /apiMain Resource: ind-drafts (representing an individual IND application being drafted)1. Conceptual PostgreSQL Data ModelsWe need tables to store the overall IND draft information and the specific details related to the Pre-IND step, including milestones.a) ind_drafts Table: (Stores overall information about each IND application draft)CREATE TABLE ind_drafts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(), -- Or SERIAL PRIMARY KEY
+    user_id UUID NOT NULL REFERENCES users(id), -- Link to the user who owns the draft
+    draft_title VARCHAR(255) NOT NULL,
+    current_step VARCHAR(50), -- Track the user's current step in the wizard
+    status VARCHAR(50) DEFAULT 'draft', -- e.g., draft, submitted, approved
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+-- Add indexes on user_id, status
+b) ind_pre_ind_data Table: (Stores data specific to the Pre-IND step, linked to a draft)CREATE TABLE ind_pre_ind_data (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    draft_id UUID NOT NULL UNIQUE REFERENCES ind_drafts(id) ON DELETE CASCADE, -- One-to-one with draft
+    -- Project Initiation Fields
+    project_name VARCHAR(255),
+    therapeutic_area VARCHAR(255),
+    project_objective TEXT,
+    -- Pre-IND Planning Fields
+    target_pre_ind_meeting_date DATE,
+    pre_ind_meeting_objective TEXT,
+    pre_ind_agenda_topics JSONB, -- Store array of strings as JSONB
+    pre_ind_attendees JSONB, -- Store array of strings as JSONB
+    fda_interaction_notes TEXT,
+    -- Timestamps
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+-- Add index on draft_id
+c) ind_milestones Table: (Stores milestones associated with the Pre-IND step)-- Based on milestoneSchema from MilestoneTracker.tsx
+CREATE TABLE ind_milestones (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    pre_ind_data_id UUID NOT NULL REFERENCES ind_pre_ind_data(id) ON DELETE CASCADE, -- Link to the specific Pre-IND data entry
+    title VARCHAR(255) NOT NULL,
+    due_date DATE,
+    status VARCHAR(50) CHECK (status IN ('Pending', 'InProgress', 'Completed', 'Blocked')) DEFAULT 'Pending',
+    description TEXT,
+    -- Optional: Add order column if needed
+    -- item_order INTEGER,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+-- Add index on pre_ind_data_id
+(Note: JSONB is used for arrays for flexibility, though separate tables might be better for complex querying if needed later. Timestamps use TIMESTAMPTZ for time zone awareness.)2. API Endpoints (Express.js Routes)We need endpoints to fetch and save the data for the Pre-IND step, associated with a specific ind_draft.a) Get Pre-IND Data for a DraftRoute: GET /api/ind-drafts/:draftId/pre-indDescription: Retrieves the Pre-IND data and associated milestones for a specific IND draft.Auth: Required (User must own the draft or have permission).Request:Params: draftId (UUID)Response (Success - 200 OK):{
+    "success": true,
+    "data": {
+        // Fields from ind_pre_ind_data table
+        "projectName": "TrialSage Alpha Study",
+        "therapeuticArea": "Oncology",
+        "projectObjective": "...",
+        "targetPreIndMeetingDate": "2025-08-15", // ISO Date string
+        "preIndMeetingObjective": "...",
+        "preIndAgendaTopics": ["Topic 1", "Topic 2"],
+        "preIndAttendees": ["Attendee 1", "Attendee 2"],
+        "fdaInteractionNotes": "...",
+        // Associated milestones
+        "milestones": [
+            {
+                "id": "uuid-for-milestone-1",
+                "title": "Finalize Pre-IND Meeting Request",
+                "dueDate": "2025-07-31", // ISO Date string
+                "status": "InProgress",
+                "description": "..."
+            },
+            // ... other milestones
+        ]
+    }
+}
+Response (Error - 404 Not Found): If draft or Pre-IND data doesn't exist.Response (Error - 403 Forbidden): If user doesn't have access.Response (Error - 500 Server Error): For database or other errors.b) Save/Update Pre-IND Data for a DraftRoute: PUT /api/ind-drafts/:draftId/pre-ind (Using PUT for idempotent update/create)Description: Creates or updates the Pre-IND data and associated milestones for a specific IND draft.Auth: Required.Request:Params: draftId (UUID)Body (JSON): Matches the structure of PreIndStepFormData from the frontend.{
+    // Fields matching ind_pre_ind_data schema
+    "projectName": "Updated Project Name",
+    "therapeuticArea": "Oncology",
+    // ... all other fields ...
+    // Milestones array
+    "milestones": [
+        { // Existing milestone with potential updates
+            "id": "uuid-for-milestone-1",
+            "title": "UPDATED: Finalize Pre-IND Meeting Request",
+            "dueDate": "2025-08-01",
+            "status": "Completed",
+            "description": "Updated description."
+        },
+        { // New milestone (no ID or temporary frontend ID)
+            "title": "New Milestone Added",
+            "dueDate": "2025-09-01",
+            "status": "Pending",
+            "description": "Details..."
+        }
+        // Milestones omitted from array might be deleted, or handle updates explicitly
+    ]
+}
+Backend Logic:Verify user owns draftId.Use UPSERT (or INSERT ... ON CONFLICT ... UPDATE) for the ind_pre_ind_data record based on draft_id.Handle milestones:Identify existing milestones (by ID).Update existing ones.Insert new ones (without ID or with temporary ID).Decide on deletion strategy (e.g., delete milestones associated with pre_ind_data_id that are not in the incoming array, or require explicit delete flags).Wrap operations in a database transaction.Response (Success - 200 OK):{
+    "success": true,
+    "message": "Pre-IND data saved successfully.",
+    "data": { // Optionally return the saved data including new milestone IDs
+        // ... saved data structure ...
+    }
+}
+Response (Error - 400 Bad Request): If request body validation fails (e.g., missing required fields).Response (Error - 403/404/500): As above.3. ConsiderationsError Handling: Implement robust error handling and logging on the backend.Validation: Use a library like express-validator or integrate zod on the backend to validate incoming request bodies against the expected schema.Milestone Updates: The logic for updating the list of milestones needs careful implementation to handle additions, updates, and deletions correctly within a transaction.AI Endpoints: Separate endpoints (e.g., POST /api/ai/check-criterion) will be needed later to handle the AI-specific requests simulated in the frontend.
