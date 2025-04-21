@@ -1,9 +1,8 @@
 // src/components/ind-wizard/steps/NonclinicalStep.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useQueryClient, useMutation, useQuery } from '@tanstack/react-query';
 
 // UI Components from shadcn/ui
 import { Button } from '@/components/ui/button';
@@ -105,7 +104,6 @@ const apiTriggerAiAnalysis = async (type, contextData) => {
 // --- Main Nonclinical Step Component ---
 export default function NonclinicalStep() {
   const { indData, updateIndDataSection, goToNextStep } = useWizard();
-  const queryClient = useQueryClient();
 
   // State for AI analysis, study editor dialog, text parsing
   const [aiAnalysisResult, setAiAnalysisResult] = useState(null);
@@ -116,50 +114,102 @@ export default function NonclinicalStep() {
   const [studyTextToParse, setStudyTextToParse] = useState('');
   const [isParsingText, setIsParsingText] = useState(false);
 
-  // --- Data Fetching from API ---
-  const { data: initialData, isLoading: isLoadingInitialData } = useQuery({
-    queryKey: ['indDraft', 'nonclinicalStepData'], 
-    queryFn: async () => {
+  // --- Data Fetching with useState/useEffect ---
+  const [initialData, setInitialData] = useState(null);
+  const [isLoadingInitialData, setIsLoadingInitialData] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
+  
+  // Fetch data on component mount
+  useEffect(() => {
+    let isMounted = true;
+    
+    const fetchData = async () => {
       console.log("API CALL: Fetching initial Nonclinical data...");
       
       const currentDraftId = localStorage.getItem('currentDraftId') || 'draft-1'; // Use draft-1 as fallback
       
       try {
+        setIsLoadingInitialData(true);
+        
         const response = await fetch(`/api/ind-drafts/${currentDraftId}/nonclinical`);
         
         if (!response.ok) {
           if (response.status === 404) {
             console.warn('No Nonclinical data found for this draft yet. Starting with defaults.');
-            return null; // Will use default values from the form setup
+            if (isMounted) {
+              setInitialData(null);
+              setIsLoadingInitialData(false);
+            }
+            return;
           }
           throw new Error(`API error: ${response.status}`);
         }
         
         const data = await response.json();
-        return data.data; // Assuming the API returns { success: true, data: {...} }
+        
+        // Only update state if component is still mounted
+        if (isMounted) {
+          setInitialData(data.data); // Assuming the API returns { success: true, data: {...} }
+          setIsLoadingInitialData(false);
+        }
       } catch (error) {
         console.error('Error fetching Nonclinical data:', error);
-        // Fall back to context data if API fails
-        return indData.nonclinicalData;
+        
+        // Only update state if component is still mounted
+        if (isMounted) {
+          setFetchError(error);
+          // Fall back to context data if API fails
+          setInitialData(indData.nonclinicalData);
+          setIsLoadingInitialData(false);
+        }
       }
-    },
-    enabled: true, // Fetch data on mount
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
+    };
+    
+    fetchData();
+    
+    // Cleanup function to prevent state updates after unmount
+    return () => {
+      isMounted = false;
+    };
+  }, []); // Empty dependency array means this runs once on mount
 
   // --- Form Setup ---
   const form = useForm({
     resolver: zodResolver(nonclinicalStepSchema),
-    defaultValues: initialData || { 
-      overallNonclinicalSummary: indData.nonclinicalData?.overallNonclinicalSummary || '', 
-      studies: indData.nonclinicalData?.studies || [] 
+    defaultValues: { 
+      overallNonclinicalSummary: '', 
+      studies: [] 
     },
   });
+  
+  // Update form when initialData changes
+  useEffect(() => {
+    if (initialData) {
+      form.reset(initialData);
+    } else if (indData && indData.nonclinicalData) {
+      form.reset({
+        overallNonclinicalSummary: indData.nonclinicalData.overallNonclinicalSummary || '',
+        studies: indData.nonclinicalData.studies || []
+      });
+    }
+  }, [initialData, indData, form.reset]);
 
-  // --- Data Mutation (Saving) ---
-  const mutation = useMutation({
-    mutationFn: apiSaveNonclinicalData,
-    onSuccess: (data) => {
+  // --- Data Saving State ---
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState(null);
+
+  // Handle form submission -> save data directly
+  async function onSubmit(values) {
+    console.log("Nonclinical Step Data Submitted:", values);
+    
+    setIsSaving(true);
+    setSaveError(null);
+    
+    try {
+      // Call save function directly
+      const data = await apiSaveNonclinicalData(values);
+      
+      // Handle success
       toast({ 
         title: "Save Successful", 
         description: data.message || "Nonclinical data saved successfully." 
@@ -168,25 +218,19 @@ export default function NonclinicalStep() {
       // Update context/global state
       updateIndDataSection('nonclinicalData', form.getValues());
       
-      // Invalidate query cache to ensure fresh data on next visit
-      queryClient.invalidateQueries({ queryKey: ['indDraft', 'nonclinicalStepData'] });
-      
       // Go to next step
       goToNextStep();
-    },
-    onError: (error) => {
+    } catch (error) {
+      // Handle error
+      setSaveError(error);
       toast({ 
         title: "Save Failed", 
         description: error.message || "An unknown error occurred.", 
         variant: "destructive" 
       });
-    },
-  });
-
-  // Handle form submission -> trigger mutation
-  function onSubmit(values) {
-    console.log("Nonclinical Step Data Submitted:", values);
-    mutation.mutate(values);
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   // --- AI Interaction ---
