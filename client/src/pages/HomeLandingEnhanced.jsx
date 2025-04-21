@@ -108,7 +108,7 @@ const DisruptionCard = ({ icon, title, legacy, summary, caseStudies }) => {
 import AppPackagesBanner from '../components/AppPackagesBanner';
 // SimpleSolutionBundles section removed as requested
 import AdvancedFeatureCards from '../components/AdvancedFeatureCards';
-import CSRLibraryMetrics from '../components/CSRLibraryMetrics';
+{/* Removed CSRLibraryMetrics import - now integrated in AppPackagesBanner */}
 import { apiRequest } from '../lib/queryClient';
 
 const TAGLINES = [
@@ -288,8 +288,7 @@ export default function HomeLandingEnhanced() {
         </div>
       </section>
       
-      {/* CSR Intelligence Library Metrics - Moved to top as requested */}
-      <CSRLibraryMetrics />
+      {/* CSR Intelligence Library Metrics - Now integrated into AppPackagesBanner */}
       
       {/* Value Proposition Section */}
       <AdvancedFeatureCards />
