@@ -66,17 +66,17 @@ export default function INDWizard() {
         </Route>
         <Route path="/ind/wizard/fda-forms">
           <IndWizardLayout>
-            <FdaFormsStep />
+            <FDAFormsStep />
           </IndWizardLayout>
         </Route>
         <Route path="/ind/wizard/final-submission">
           <IndWizardLayout>
-            <FinalAssemblyStep />
+            <FinalSubmissionStep />
           </IndWizardLayout>
         </Route>
         <Route path="/ind/wizard/final-assembly">
           <IndWizardLayout>
-            <FinalAssemblyStep />
+            <FinalSubmissionStep />
           </IndWizardLayout>
         </Route>
       </Switch>
