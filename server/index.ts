@@ -28,6 +28,15 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Direct routes for IND wizard
+app.get('/ind/wizard', (req, res) => {
+  res.sendFile('index.html', { root: './client/dist' });
+});
+
+app.get('/ind/wizard/*', (req, res) => {
+  res.sendFile('index.html', { root: './client/dist' });
+});
+
 // Register the FastAPI proxy for both REST and WebSocket endpoints
 registerFastapiProxy(app);
 
