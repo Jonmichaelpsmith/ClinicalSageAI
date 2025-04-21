@@ -1,3 +1,7 @@
+/**
+ * This script safely finds and replaces all react-toastify imports with our secure toast implementation.
+ */
+
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -5,85 +9,76 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Find all JS/JSX/TS/TSX files
-function findFiles(dir, extensions) {
-  let results = [];
-  const files = fs.readdirSync(dir);
-  
-  for (const file of files) {
-    const filePath = path.join(dir, file);
-    const stat = fs.statSync(filePath);
-    
-    if (stat.isDirectory() && file !== 'node_modules') {
-      results = results.concat(findFiles(filePath, extensions));
-    } else if (extensions.includes(path.extname(filePath))) {
-      results.push(filePath);
-    }
-  }
-  
-  return results;
-}
+// Get client source directory
+const CLIENT_SRC_DIR = path.join(__dirname, 'client', 'src');
 
-// Replace all react-toastify imports
-function fixToastifyImports(filePath) {
+console.log('🔍 Finding all files with react-toastify imports...');
+
+// Function to process a file
+function processFile(filePath) {
   try {
-    let content = fs.readFileSync(filePath, 'utf8');
-    let modified = false;
-
-    // Replace different import patterns
-    const patterns = [
-      {
-        regex: /import\s+.*\s+from\s+['"]react-toastify.*['"]/g,
-        replacement: '// Import removed by fix-toast-imports.js'
-      },
-      {
-        regex: /import\s+['"]react-toastify\/dist\/ReactToastify\.css['"]/g,
-        replacement: '// CSS import removed by fix-toast-imports.js'
-      },
-      {
-        regex: /.*toast\([^\)]+\).*/g,
-        replacement: (match) => {
-          return match.replace(/toast\(([^)]+)\)/, "// toast call replaced\n  // Original: toast($1)\n  console.log('Toast would show:', $1)");
-        }
-      }
-    ];
-
-    for (const pattern of patterns) {
-      const newContent = content.replace(pattern.regex, pattern.replacement);
-      if (newContent !== content) {
-        content = newContent;
-        modified = true;
-      }
+    // Read file content
+    const content = fs.readFileSync(filePath, 'utf8');
+    
+    // Check if file contains react-toastify imports
+    if (content.includes('react-toastify')) {
+      console.log(`🔧 Fixing imports in: ${filePath}`);
+      
+      // Replace imports
+      let newContent = content;
+      
+      // Replace imports
+      newContent = newContent.replace(/import.*from ['"]react-toastify['"]/g, 
+        'import { useToast } from "../../hooks/use-toast"');
+      
+      // Replace ToastContainer
+      newContent = newContent.replace(/<ToastContainer.*\/>/g, '');
+      
+      // Replace toast functions
+      newContent = newContent.replace(/toast\.success/g, 'toast.success');
+      newContent = newContent.replace(/toast\.error/g, 'toast.error');
+      newContent = newContent.replace(/toast\.info/g, 'toast.info');
+      newContent = newContent.replace(/toast\.warning/g, 'toast.warning');
+      
+      // Replace direct toast calls
+      newContent = newContent.replace(/toast\(/g, 'toast.info(');
+      
+      // Write the modified content
+      fs.writeFileSync(filePath, newContent, 'utf8');
+      
+      console.log(`✅ Fixed: ${filePath}`);
     }
-
-    if (modified) {
-      fs.writeFileSync(filePath, content, 'utf8');
-      console.log(`Fixed imports in: ${filePath}`);
-      return true;
-    }
-  } catch (error) {
-    console.error(`Error processing ${filePath}:`, error);
+  } catch (err) {
+    console.error(`❌ Error processing file ${filePath}:`, err.message);
   }
-  
-  return false;
 }
 
-// Main function
-function main() {
-  const extensions = ['.js', '.jsx', '.ts', '.tsx'];
-  const clientDir = path.join(__dirname, 'client');
-  const files = findFiles(clientDir, extensions);
-  
-  console.log(`Scanning ${files.length} files for react-toastify imports...`);
-  
-  let fixedCount = 0;
-  for (const file of files) {
-    if (fixToastifyImports(file)) {
-      fixedCount++;
+// Function to recursively process a directory
+function processDirectory(directoryPath) {
+  try {
+    const files = fs.readdirSync(directoryPath);
+    
+    for (const file of files) {
+      const filePath = path.join(directoryPath, file);
+      const stats = fs.statSync(filePath);
+      
+      if (stats.isDirectory()) {
+        processDirectory(filePath);
+      } else if (stats.isFile() && 
+                (file.endsWith('.js') || file.endsWith('.jsx') || 
+                 file.endsWith('.ts') || file.endsWith('.tsx'))) {
+        processFile(filePath);
+      }
     }
+  } catch (err) {
+    console.error(`❌ Error processing directory ${directoryPath}:`, err.message);
   }
-  
-  console.log(`\nFixed imports in ${fixedCount} files.`);
 }
 
-main();
+// Start processing from client src directory
+if (fs.existsSync(CLIENT_SRC_DIR)) {
+  processDirectory(CLIENT_SRC_DIR);
+  console.log('✨ Toast import fixing complete!');
+} else {
+  console.error(`❌ Client source directory not found: ${CLIENT_SRC_DIR}`);
+}
