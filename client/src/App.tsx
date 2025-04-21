@@ -92,7 +92,7 @@ export default function App() {
           <Switch>
             <Route path="/builder">
               <ErrorBoundary>
-                <SubmissionBuilder />
+                <INDWizard />
               </ErrorBoundary>
             </Route>
             <Route path="/portal/ind/:sequenceId">
