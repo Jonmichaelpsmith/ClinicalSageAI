@@ -153,6 +153,20 @@ export default function AppPackagesBanner({ currentPath }) {
       to: "/ai-agent",
       icon: <Bot size={18} />,
       color: "bg-violet-600 hover:bg-violet-700"
+    },
+    {
+      label: "SmartDocs Generator™",
+      description: "CERs, protocols, summaries—drafted in hours, not weeks",
+      to: "/smartdocs",
+      icon: <FileText size={18} />,
+      color: "bg-purple-600 hover:bg-purple-700"
+    },
+    {
+      label: "InsightVault™",
+      description: "A DMS that actually understands your trial",
+      to: "/insightvault",
+      icon: <BarChart size={18} />,
+      color: "bg-slate-700 hover:bg-slate-800"
     }
   ];
 
@@ -234,6 +248,18 @@ export default function AppPackagesBanner({ currentPath }) {
                       <div className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
                         <Bot size={16} className="mr-2 text-violet-500" />
                         AI Co-pilot
+                      </div>
+                    </Link>
+                    <Link to="/smartdocs">
+                      <div className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                        <FileText size={16} className="mr-2 text-purple-500" />
+                        SmartDocs Generator™
+                      </div>
+                    </Link>
+                    <Link to="/insightvault">
+                      <div className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                        <BarChart size={16} className="mr-2 text-slate-700" />
+                        InsightVault™
                       </div>
                     </Link>
                   </div>
