@@ -318,78 +318,76 @@ export default function AppPackagesBanner({ currentPath }) {
             ))}
           </div>
           
-          {/* Replaced "About Concept2Cures.AI" button with CSR Intelligence Library metrics - black background, 75% smaller */}
-          <div className="mt-8">
-            <div className="bg-gradient-to-r from-slate-900 to-slate-800 py-2 rounded-md">
-              <div className="max-w-3xl mx-auto px-2">
-                <div className="text-center mb-1.5">
-                  <h2 className="inline-flex items-center px-2 py-0.5 rounded-full bg-slate-800 text-blue-300 text-[10px] font-medium mb-1">
-                    <Database className="w-2 h-2 mr-0.5" />
+          {/* Intelligence Library - redesigned to match the example image */}
+          <div className="mt-6">
+            <div className="bg-[#0f1625] py-3 rounded-lg">
+              <div className="max-w-3xl mx-auto px-4">
+                <div className="text-center mb-2">
+                  <h2 className="inline-flex items-center px-2 py-1 rounded-full bg-[#1b2235] text-blue-200 text-xs font-medium mb-1">
+                    <Database className="w-3 h-3 mr-1" />
                     INTELLIGENCE LIBRARY
                   </h2>
-                  <h3 className="text-sm font-bold text-white mb-1">Comprehensive CSR Intelligence</h3>
-                  <p className="text-blue-200 text-[10px] max-w-md mx-auto">
+                  <h3 className="text-lg font-bold text-white mb-1">Comprehensive CSR Intelligence</h3>
+                  <p className="text-blue-200 text-sm max-w-md mx-auto">
                     Deep learning models trained on the world's largest collection of clinical reports.
                   </p>
                 </div>
                 
-                <div className="grid grid-cols-6 gap-1.5 text-center">
+                <div className="grid grid-cols-6 gap-3 text-center mt-3">
                   {/* CSR Reports */}
-                  <div className="bg-slate-900 border border-slate-800 rounded p-1 flex flex-col items-center">
-                    <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full p-0.5 mb-0.5">
-                      <FileText className="h-1.5 w-1.5 text-white" />
+                  <div className="group relative">
+                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -mt-2.5 w-5 h-5 rounded-full bg-blue-500"></div>
+                    <div className="bg-[#0c111d] pt-4 pb-2 px-1 rounded-md">
+                      <div className="font-bold text-white text-lg">5,248<span className="text-xs font-normal text-blue-300">+</span></div>
+                      <div className="text-xs text-blue-200 mt-0.5">CSR Reports</div>
                     </div>
-                    <div className="font-bold text-xs text-white">5,248+</div>
-                    <div className="text-[8px] text-blue-200">CSR Reports</div>
                   </div>
                   
                   {/* Academic Papers */}
-                  <div className="bg-slate-900 border border-slate-800 rounded p-1 flex flex-col items-center">
-                    <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full p-0.5 mb-0.5">
-                      <BookOpen className="h-1.5 w-1.5 text-white" />
+                  <div className="group relative">
+                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -mt-2.5 w-5 h-5 rounded-full bg-purple-500"></div>
+                    <div className="bg-[#0c111d] pt-4 pb-2 px-1 rounded-md">
+                      <div className="font-bold text-white text-lg">12,735<span className="text-xs font-normal text-blue-300">+</span></div>
+                      <div className="text-xs text-blue-200 mt-0.5">Papers</div>
                     </div>
-                    <div className="font-bold text-xs text-white">12,735+</div>
-                    <div className="text-[8px] text-blue-200">Papers</div>
                   </div>
                   
                   {/* Regulatory Guidelines */}
-                  <div className="bg-slate-900 border border-slate-800 rounded p-1 flex flex-col items-center">
-                    <div className="bg-gradient-to-br from-cyan-500 to-blue-600 rounded-full p-0.5 mb-0.5">
-                      <Globe className="h-1.5 w-1.5 text-white" />
+                  <div className="group relative">
+                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -mt-2.5 w-5 h-5 rounded-full bg-cyan-500"></div>
+                    <div className="bg-[#0c111d] pt-4 pb-2 px-1 rounded-md">
+                      <div className="font-bold text-white text-lg">327</div>
+                      <div className="text-xs text-blue-200 mt-0.5">Guidelines</div>
                     </div>
-                    <div className="font-bold text-xs text-white">327</div>
-                    <div className="text-[8px] text-blue-200">Guidelines</div>
                   </div>
                   
                   {/* Therapeutic Areas */}
-                  <div className="bg-slate-900 border border-slate-800 rounded p-1 flex flex-col items-center">
-                    <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full p-0.5 mb-0.5">
-                      <Database className="h-1.5 w-1.5 text-white" />
+                  <div className="group relative">
+                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -mt-2.5 w-5 h-5 rounded-full bg-emerald-500"></div>
+                    <div className="bg-[#0c111d] pt-4 pb-2 px-1 rounded-md">
+                      <div className="font-bold text-white text-lg">48</div>
+                      <div className="text-xs text-blue-200 mt-0.5">Areas</div>
                     </div>
-                    <div className="font-bold text-xs text-white">48</div>
-                    <div className="text-[8px] text-blue-200">Areas</div>
                   </div>
                   
                   {/* Global Regions */}
-                  <div className="bg-slate-900 border border-slate-800 rounded p-1 flex flex-col items-center">
-                    <div className="bg-gradient-to-br from-rose-500 to-red-600 rounded-full p-0.5 mb-0.5">
-                      <Globe className="h-1.5 w-1.5 text-white" />
+                  <div className="group relative">
+                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -mt-2.5 w-5 h-5 rounded-full bg-rose-500"></div>
+                    <div className="bg-[#0c111d] pt-4 pb-2 px-1 rounded-md">
+                      <div className="font-bold text-white text-lg">14</div>
+                      <div className="text-xs text-blue-200 mt-0.5">Regions</div>
                     </div>
-                    <div className="font-bold text-xs text-white">14</div>
-                    <div className="text-[8px] text-blue-200">Regions</div>
                   </div>
                   
                   {/* Model Parameters */}
-                  <div className="bg-slate-900 border border-slate-800 rounded p-1 flex flex-col items-center">
-                    <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-full p-0.5 mb-0.5">
-                      <Sparkles className="h-1.5 w-1.5 text-white" />
+                  <div className="group relative">
+                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -mt-2.5 w-5 h-5 rounded-full bg-amber-500"></div>
+                    <div className="bg-[#0c111d] pt-4 pb-2 px-1 rounded-md">
+                      <div className="font-bold text-white text-lg">2.4B</div>
+                      <div className="text-xs text-blue-200 mt-0.5">Params</div>
                     </div>
-                    <div className="font-bold text-xs text-white">2.4B</div>
-                    <div className="text-[8px] text-blue-200">Params</div>
                   </div>
                 </div>
-                
-                {/* Removed "Explore Library" button as requested */}
               </div>
             </div>
           </div>
