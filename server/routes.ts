@@ -1,6 +1,8 @@
 import express from 'express';
 import http from 'http';
 import { WebSocketServer, WebSocket } from 'ws';
+import preIndRoutes from './routes/preIndRoutes';
+import nonclinicalRoutes from './routes/nonclinicalRoutes';
 
 // Basic WebSocket server implementation
 export const setupRoutes = (app: express.Express) => {
@@ -35,7 +37,11 @@ export const setupRoutes = (app: express.Express) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
   });
   
-  // IND Wizard API endpoints
+  // Mount the IND Wizard routes
+  app.use('/api/ind-drafts/:draftId/pre-ind', preIndRoutes);
+  app.use('/api/ind-drafts/:draftId/nonclinical', nonclinicalRoutes);
+  
+  // IND Wizard API endpoints (legacy - will be replaced by the mounted routes)
   app.get('/api/ind/wizard/data', (req, res) => {
     // Return a mock response for IND wizard data
     res.json({
@@ -85,7 +91,7 @@ export const setupRoutes = (app: express.Express) => {
     });
   });
   
-  // Save endpoint for IND wizard data
+  // Save endpoint for IND wizard data (legacy)
   app.post('/api/ind/wizard/save', (req, res) => {
     const data = req.body;
     console.log("Saving IND Wizard data (mock):", data);
@@ -129,6 +135,60 @@ export const setupRoutes = (app: express.Express) => {
     setTimeout(() => {
       res.json(response);
     }, 1000);
+  });
+  
+  // Create IND draft endpoint
+  app.post('/api/ind-drafts', (req, res) => {
+    const { title, userId } = req.body;
+    
+    if (!title) {
+      return res.status(400).json({
+        success: false,
+        message: 'Draft title is required'
+      });
+    }
+    
+    // In a production implementation, this would create a new entry in the ind_drafts table
+    // For now, return a mock success response with a generated UUID
+    const draftId = 'draft-' + Math.random().toString(36).substring(2, 15);
+    
+    res.status(201).json({
+      success: true,
+      message: 'IND draft created successfully',
+      data: {
+        id: draftId,
+        title,
+        status: 'draft',
+        createdAt: new Date().toISOString()
+      }
+    });
+  });
+  
+  // Get all IND drafts for user
+  app.get('/api/ind-drafts', (req, res) => {
+    // In a production implementation, this would query the ind_drafts table for the authenticated user
+    // For now, return mock data
+    res.json({
+      success: true,
+      data: [
+        {
+          id: 'draft-1',
+          title: 'IND Application for Drug XYZ',
+          status: 'draft',
+          currentStep: 'pre-ind',
+          createdAt: '2025-01-01T00:00:00.000Z',
+          updatedAt: '2025-01-15T00:00:00.000Z'
+        },
+        {
+          id: 'draft-2',
+          title: 'Second IND Application',
+          status: 'draft',
+          currentStep: 'nonclinical',
+          createdAt: '2025-02-01T00:00:00.000Z',
+          updatedAt: '2025-02-15T00:00:00.000Z'
+        }
+      ]
+    });
   });
   
   // Return the HTTP server

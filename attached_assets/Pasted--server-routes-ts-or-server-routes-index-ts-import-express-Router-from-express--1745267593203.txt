@@ -1,0 +1,52 @@
+// server/routes.ts (or server/routes/index.ts)
+
+import express, { Router } from 'express';
+
+// Import the route handlers for specific features
+// Adjust paths based on your actual file structure
+import preIndRoutes from './routes/preIndRoutes'; // Assuming export default or module.exports
+import nonclinicalRoutes from './routes/nonclinicalRoutes'; // Assuming export default or module.exports
+// Import other route handlers as needed (e.g., cmcRoutes, authRoutes, etc.)
+
+// Create the main router instance for the API
+const apiRouter: Router = express.Router();
+
+// --- Mount IND Draft Specific Routes ---
+
+// Mount the Pre-IND routes under /ind-drafts/:draftId/pre-ind
+// The preIndRoutes router will handle the final '/'.
+// Ensure preIndRoutes uses express.Router({ mergeParams: true }) to access :draftId
+apiRouter.use('/ind-drafts/:draftId/pre-ind', preIndRoutes);
+
+// Mount the Nonclinical routes under /ind-drafts/:draftId/nonclinical
+// The nonclinicalRoutes router will handle '/studies/:studyId/validate' and other sub-paths.
+// Ensure nonclinicalRoutes uses express.Router({ mergeParams: true })
+apiRouter.use('/ind-drafts/:draftId/nonclinical', nonclinicalRoutes);
+
+// --- Mount other future IND Draft routes here ---
+// Example:
+// apiRouter.use('/ind-drafts/:draftId/cmc', cmcRoutes);
+// apiRouter.use('/ind-drafts/:draftId/clinical-protocol', clinicalProtocolRoutes);
+// ... and so on for IB, FDA Forms, Final Assembly ...
+
+// --- Mount other API routes if needed ---
+// Example: A simple status check endpoint
+apiRouter.get('/status', (req, res) => {
+  res.status(200).json({ status: 'TrialSage API is running' });
+});
+
+// Example: Routes for managing drafts themselves (e.g., creating a new draft)
+// apiRouter.post('/ind-drafts', /* ... handler to create new draft ... */);
+// apiRouter.get('/ind-drafts', /* ... handler to list user's drafts ... */);
+
+
+// Export the main API router to be used in your main server file (server.ts or app.ts)
+export default apiRouter;
+
+// If using CommonJS modules instead of ES Modules:
+// const express = require('express');
+// const preIndRoutes = require('./routes/preIndRoutes');
+// const nonclinicalRoutes = require('./routes/nonclinicalRoutes');
+// const apiRouter = express.Router();
+// ... (rest of the mounting logic) ...
+// module.exports = apiRouter;
