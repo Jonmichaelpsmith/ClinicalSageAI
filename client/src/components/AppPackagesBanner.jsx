@@ -170,56 +170,11 @@ export default function AppPackagesBanner({ currentPath }) {
 
   return (
     <div className="bg-gray-100 border-b border-gray-200">
-      {/* Top entry buttons row */}
-      <div className="bg-slate-800 py-3">
+      {/* Simplified top section - only login/signup buttons */}
+      <div className="bg-slate-800 py-2">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center">
-              <div className="hidden md:flex space-x-1">
-                {entryButtons.map((button, index) => (
-                  <Link key={index} to={button.to}>
-                    <button className={`flex items-center text-sm font-medium text-white ${button.color} px-3 py-2 mr-2 rounded`}>
-                      <span className="mr-2">{button.icon}</span>
-                      <div className="text-left">
-                        <div className="font-medium">{button.label}</div>
-                        <div className="text-xs text-gray-200">{button.description}</div>
-                      </div>
-                    </button>
-                  </Link>
-                ))}
-              </div>
-              
-              {/* Mobile dropdown for the entry buttons */}
-              <div className="md:hidden">
-                <select className="bg-slate-700 text-white border border-slate-600 rounded px-2 py-1">
-                  <option value="">Select System Entry</option>
-                  {entryButtons.map((button, index) => (
-                    <option key={index} value={button.to}>{button.label}</option>
-                  ))}
-                  <option value="" disabled>── Client Portals ──</option>
-                  {clientPortals.map((portal, index) => (
-                    <option key={`portal-${index}`} value={portal.to}>{portal.label}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-3">
-              {/* Client Portal Access Buttons */}
-              <div className="hidden md:flex mr-3">
-                {clientPortals.map((portal, index) => (
-                  <Link key={index} to={portal.to}>
-                    <button className={`flex items-center text-sm font-medium text-white ${portal.color} px-3 py-2 mr-2 rounded-md`}>
-                      <span className="mr-2">{portal.icon}</span>
-                      <div className="text-left">
-                        <div className="font-medium">{portal.label}</div>
-                        <div className="text-xs text-gray-200">{portal.description}</div>
-                      </div>
-                    </button>
-                  </Link>
-                ))}
-              </div>
-              
+          <div className="flex justify-end items-center">
+            <div className="flex items-center space-x-3">              
               <Link to="/login">
                 <button className="flex items-center text-xs font-medium text-white bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded">
                   <LogIn size={14} className="mr-1" />
@@ -343,36 +298,48 @@ export default function AppPackagesBanner({ currentPath }) {
             </p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-gradient-to-br from-slate-800 to-slate-900 backdrop-blur-sm border border-slate-700 rounded-xl p-8">
-              <div className="bg-blue-900/30 w-12 h-12 rounded-full flex items-center justify-center mb-6">
-                <Shield className="w-6 h-6 text-blue-400" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-3">Industry Vision</h3>
-              <p className="text-slate-300 mb-4">
-                Built upon deep understanding of regulatory frameworks and pharmaceutical development processes to address the most critical challenges in global submissions.
-              </p>
-            </div>
-            
-            <div className="bg-gradient-to-br from-slate-800 to-slate-900 backdrop-blur-sm border border-slate-700 rounded-xl p-8">
-              <div className="bg-indigo-900/30 w-12 h-12 rounded-full flex items-center justify-center mb-6">
-                <Database className="w-6 h-6 text-indigo-400" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-3">Data-Backed Innovation</h3>
-              <p className="text-slate-300 mb-4">
-                Our AI models are trained on thousands of regulatory documents, clinical study reports, and historical submission data to ensure precise, compliant outputs.
-              </p>
-            </div>
-            
-            <div className="bg-gradient-to-br from-slate-800 to-slate-900 backdrop-blur-sm border border-slate-700 rounded-xl p-8">
-              <div className="bg-emerald-900/30 w-12 h-12 rounded-full flex items-center justify-center mb-6">
-                <BarChart2 className="w-6 h-6 text-emerald-400" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-3">Expected Outcomes</h3>
-              <p className="text-slate-300 mb-4">
-                Our platform is designed to achieve exceptional first-time acceptance rates, significant time reductions, and substantial cost savings throughout the regulatory process.
-              </p>
-            </div>
+          {/* Feature Tiles Grid - Moved from the top banner */}
+          <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
+            {entryButtons.map((button, index) => (
+              <Link key={index} to={button.to}>
+                <div className={`${button.color} rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 h-full`}>
+                  <div className="flex items-center mb-4">
+                    <div className="bg-white/20 p-3 rounded-lg">
+                      {button.icon}
+                    </div>
+                    <h3 className="text-xl font-bold text-white ml-4">{button.label}</h3>
+                  </div>
+                  <p className="text-white/90 mb-4">{button.description}</p>
+                  <div className="flex justify-end">
+                    <div className="bg-white/10 hover:bg-white/20 transition-colors duration-200 rounded-full p-2">
+                      <ChevronRight size={18} className="text-white" />
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+          
+          {/* Client Portal Tiles */}
+          <div className="grid md:grid-cols-3 gap-6 lg:gap-8 mt-8">
+            {clientPortals.map((portal, index) => (
+              <Link key={index} to={portal.to}>
+                <div className={`${portal.color} rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 h-full`}>
+                  <div className="flex items-center mb-4">
+                    <div className="bg-white/20 p-3 rounded-lg">
+                      {portal.icon}
+                    </div>
+                    <h3 className="text-xl font-bold text-white ml-4">{portal.label}</h3>
+                  </div>
+                  <p className="text-white/90 mb-4">{portal.description}</p>
+                  <div className="flex justify-end">
+                    <div className="bg-white/10 hover:bg-white/20 transition-colors duration-200 rounded-full p-2">
+                      <ChevronRight size={18} className="text-white" />
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            ))}
           </div>
           
           <div className="flex justify-center mt-10">
