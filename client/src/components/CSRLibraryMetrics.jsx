@@ -1,41 +1,48 @@
 import React, { useState, useEffect } from 'react';
 import { Database, BookOpen, FileText, Globe, BarChart, Brain } from 'lucide-react';
 import { apiRequest } from '../lib/queryClient';
+import { useQuery } from '@tanstack/react-query';
 
 export default function CSRLibraryMetrics() {
-  const [metrics, setMetrics] = useState({
-    csrCount: 5248,
+  // Initial metrics data to ensure we have valid values
+  const initialMetrics = {
+    csrCount: 5248, 
     academicPapers: 12735,
     regulatoryGuidelines: 327,
-    therapeuticAreas: 48,
+    therapeuticAreas: 48, 
     globalRegions: 14,
     modelParameters: '2.4B'
+  };
+  
+  // Use React Query to handle API data fetching with proper caching and error handling
+  const { data, isLoading } = useQuery({
+    queryKey: ['/api/reports/metrics'],
+    queryFn: async () => {
+      try {
+        const response = await apiRequest('GET', '/api/reports/metrics');
+        if (!response.ok) {
+          // If API returns an error, just use our initial data
+          console.log('API returned an error, using default metrics data');
+          return initialMetrics;
+        }
+        const data = await response.json();
+        // Merge with initial data to ensure we have values for all fields
+        return { ...initialMetrics, ...data };
+      } catch (error) {
+        console.log('API request failed, using default metrics data');
+        return initialMetrics;
+      }
+    },
+    // Prevent automatic refetching on window focus to reduce API calls
+    refetchOnWindowFocus: false,
+    // Set staleTime to reduce unnecessary refetches
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    // Use our initial data to avoid rendering issues if API fails
+    initialData: initialMetrics
   });
   
-  const [isLoading, setIsLoading] = useState(false);
-  
-  useEffect(() => {
-    const fetchMetrics = async () => {
-      setIsLoading(true);
-      try {
-        // Attempt to get real metrics from API
-        const response = await apiRequest('GET', '/api/reports/metrics');
-        const data = await response.json();
-        if (data && Object.keys(data).length > 0) {
-          setMetrics(prevMetrics => ({
-            ...prevMetrics,
-            ...data
-          }));
-        }
-      } catch (error) {
-        console.log('Using default metrics data');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    fetchMetrics();
-  }, []);
+  // Always have valid metrics by using the data from the query or our initial data
+  const metrics = data || initialMetrics;
 
   return (
     <div className="bg-gradient-to-r from-blue-900 to-indigo-900 py-6">

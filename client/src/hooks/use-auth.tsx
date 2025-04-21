@@ -37,13 +37,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (response.ok) {
           return await response.json();
         }
-        return null;
+        // If not OK but it's a 401, we return null without error
+        if (response.status === 401) {
+          return null;
+        }
+        // For other errors, throw to trigger the onError handler
+        throw new Error(`Server returned ${response.status}`);
       } catch (e) {
         console.error("Error fetching user:", e);
+        // Return null instead of throwing - don't break the UI on auth errors
         return null;
       }
     },
-    retry: false
+    retry: false,
+    // Add staleTime to prevent excessive refetching
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    // Disable refetch on window focus to reduce API calls
+    refetchOnWindowFocus: false,
   });
 
   useEffect(() => {
