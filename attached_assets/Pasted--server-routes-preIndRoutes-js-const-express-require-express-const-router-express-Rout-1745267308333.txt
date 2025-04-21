@@ -1,0 +1,212 @@
+// server/routes/preIndRoutes.js
+
+const express = require('express');
+const router = express.Router({ mergeParams: true }); // Enable merging params from parent router (for :draftId)
+// const { body, validationResult } = require('express-validator'); // Optional: for input validation
+
+// --- Placeholder for Authentication/Authorization Middleware ---
+// Replace this with your actual middleware to check if the user is authenticated
+// and authorized to access the specified draftId.
+const authMiddleware = (req, res, next) => {
+  console.log(`Auth Check for User: ${req.user?.id} on Draft: ${req.params.draftId}`);
+  // Example: Check if req.user exists and owns req.params.draftId
+  if (!req.user) { // Assuming user info is attached by a previous middleware
+    return res.status(401).json({ success: false, message: 'Authentication required.' });
+  }
+  // Add authorization logic here (e.g., check ownership)
+  // const userOwnsDraft = await db.checkOwnership(req.user.id, req.params.draftId);
+  // if (!userOwnsDraft) {
+  //    return res.status(403).json({ success: false, message: 'Forbidden.' });
+  // }
+  next();
+};
+
+// --- Placeholder for Database Interaction Logic ---
+// Replace these comments with your actual database queries using your chosen library (pg, Sequelize, Knex, etc.)
+const db = {
+  // Function to get Pre-IND data and milestones for a draft
+  getPreIndData: async (draftId, userId) => {
+    console.log(`DB: Fetching Pre-IND data for draft ${draftId} by user ${userId}`);
+    // --- Replace with your actual DB query ---
+    // 1. Fetch pre_ind_data record WHERE draft_id = draftId (ensure user owns draftId via JOIN or separate check)
+    // 2. Fetch associated milestones from ind_milestones WHERE pre_ind_data_id matches
+    // 3. Combine results into the expected structure.
+    // Example structure (replace with real data):
+    const preIndRecord = {
+        // ...fields from ind_pre_ind_data...
+        projectName: 'Fetched Project Name',
+        therapeuticArea: 'Fetched Area',
+        // Ensure date fields are formatted as ISO strings (YYYY-MM-DD) if needed by frontend
+        targetPreIndMeetingDate: '2025-08-15',
+        preIndAgendaTopics: ['Fetched Topic 1'],
+        preIndAttendees: ['Fetched Attendee 1'],
+        // ... other fields ...
+        id: 'pre-ind-data-uuid' // The primary key of the ind_pre_ind_data record
+    };
+    const milestones = [
+        { id: 'milestone-uuid-1', title: 'Fetched Milestone 1', dueDate: '2025-07-31', status: 'InProgress', description: 'Fetched Desc' },
+    ];
+
+    if (!preIndRecord) return null; // Not found
+
+    return { ...preIndRecord, milestones }; // Combine data
+    // --- End of DB Query Placeholder ---
+  },
+
+  // Function to save/update Pre-IND data and milestones
+  savePreIndData: async (draftId, userId, data) => {
+    console.log(`DB: Saving Pre-IND data for draft ${draftId} by user ${userId}`);
+    // --- Replace with your actual DB transaction ---
+    // Use a transaction to ensure atomicity
+    // const transaction = await db.beginTransaction(); // Start transaction
+    try {
+        // 1. UPSERT ind_pre_ind_data
+        //    INSERT INTO ind_pre_ind_data (draft_id, project_name, ...) VALUES ($1, $2, ...)
+        //    ON CONFLICT (draft_id) DO UPDATE SET project_name = EXCLUDED.project_name, ... RETURNING id;
+        const preIndDataId = 'returned-pre-ind-data-uuid'; // Get the ID from the UPSERT result
+
+        // 2. Handle Milestones (Complex part)
+        const incomingMilestones = data.milestones || [];
+        const existingMilestoneIds = []; // Fetch existing milestone IDs for this pre_ind_data_id within transaction
+
+        const updatePromises = [];
+        const insertPromises = [];
+        const processedIncomingIds = new Set();
+
+        for (const ms of incomingMilestones) {
+            if (ms.id) { // Potential Update or Insert (if ID was frontend-generated but not yet saved)
+                 processedIncomingIds.add(ms.id);
+                 // Check if ms.id exists in existingMilestoneIds
+                 // If yes: UPDATE ind_milestones SET title=$1, ... WHERE id=$2 AND pre_ind_data_id=$3;
+                 // If no (frontend ID): INSERT INTO ind_milestones (id, pre_ind_data_id, title, ...) VALUES ($1, $2, $3, ...);
+                 // Add the promise to updatePromises
+            } else { // Insert New
+                 // INSERT INTO ind_milestones (pre_ind_data_id, title, ...) VALUES ($1, $2, ...);
+                 // Add the promise to insertPromises
+            }
+        }
+
+        // 3. Handle Deletions (Example: Delete milestones not present in the incoming array)
+        const deletePromises = [];
+        // for (const existingId of existingMilestoneIds) {
+        //     if (!processedIncomingIds.has(existingId)) {
+        //         // DELETE FROM ind_milestones WHERE id=$1 AND pre_ind_data_id=$2;
+        //         // Add the promise to deletePromises
+        //     }
+        // }
+
+        // Execute all promises (update, insert, delete)
+        // await Promise.all([...updatePromises, ...insertPromises, ...deletePromises]);
+
+        // await db.commitTransaction(transaction); // Commit transaction
+        console.log(`DB: Pre-IND data and milestones saved for draft ${draftId}`);
+        // Optionally fetch and return the saved data including generated IDs
+        return { success: true, message: 'Pre-IND data saved successfully.'/*, savedData: ... */ };
+
+    } catch (error) {
+        // await db.rollbackTransaction(transaction); // Rollback on error
+        console.error(`DB Error saving Pre-IND data for draft ${draftId}:`, error);
+        throw error; // Re-throw error to be caught by route handler
+    }
+    // --- End of DB Transaction Placeholder ---
+  }
+};
+
+
+// === ROUTES ===
+
+/**
+ * GET /api/ind-drafts/:draftId/pre-ind
+ * Retrieves the Pre-IND data and associated milestones for a specific draft.
+ */
+router.get('/', authMiddleware, async (req, res) => {
+  const { draftId } = req.params;
+  const userId = req.user.id; // Assuming user ID is available from authMiddleware
+
+  try {
+    const preIndData = await db.getPreIndData(draftId, userId);
+
+    if (!preIndData) {
+      return res.status(404).json({ success: false, message: 'Pre-IND data not found for this draft.' });
+    }
+
+    // Map database fields to frontend field names if they differ (e.g., snake_case to camelCase)
+    // Example: Assuming DB returns snake_case
+    const responseData = {
+        projectName: preIndData.project_name || preIndData.projectName, // Handle potential naming difference
+        therapeuticArea: preIndData.therapeutic_area || preIndData.therapeuticArea,
+        projectObjective: preIndData.project_objective || preIndData.projectObjective,
+        targetPreIndMeetingDate: preIndData.target_pre_ind_meeting_date || preIndData.targetPreIndMeetingDate,
+        preIndMeetingObjective: preIndData.pre_ind_meeting_objective || preIndData.preIndMeetingObjective,
+        preIndAgendaTopics: preIndData.pre_ind_agenda_topics || preIndData.preIndAgendaTopics || [],
+        preIndAttendees: preIndData.pre_ind_attendees || preIndData.preIndAttendees || [],
+        fdaInteractionNotes: preIndData.fda_interaction_notes || preIndData.fdaInteractionNotes,
+        milestones: (preIndData.milestones || []).map(ms => ({
+             id: ms.id,
+             title: ms.title,
+             dueDate: ms.due_date || ms.dueDate, // Handle potential naming difference
+             status: ms.status,
+             description: ms.description
+        }))
+    };
+
+
+    res.status(200).json({ success: true, data: responseData });
+
+  } catch (error) {
+    console.error(`Error fetching Pre-IND data for draft ${draftId}:`, error);
+    res.status(500).json({ success: false, message: 'Failed to retrieve Pre-IND data.' });
+  }
+});
+
+/**
+ * PUT /api/ind-drafts/:draftId/pre-ind
+ * Creates or updates the Pre-IND data and milestones for a specific draft.
+ */
+router.put(
+  '/',
+  authMiddleware,
+  // --- Optional: Add Input Validation Middleware ---
+  // Example using express-validator (install it first)
+  // [
+  //   body('projectName').optional().isString().trim().isLength({ min: 3 }),
+  //   body('therapeuticArea').optional().isString().trim(),
+  //   body('milestones').optional().isArray(),
+  //   body('milestones.*.title').optional({ checkFalsy: true }).isString().trim().isLength({ min: 3 }),
+  //   // Add validation for other fields...
+  // ],
+  async (req, res) => {
+    // --- Optional: Handle Validation Errors ---
+    // const errors = validationResult(req);
+    // if (!errors.isEmpty()) {
+    //   return res.status(400).json({ success: false, errors: errors.array() });
+    // }
+
+    const { draftId } = req.params;
+    const userId = req.user.id;
+    const dataToSave = req.body; // Contains PreIndStepFormData
+
+    // Basic check for required data structure (more robust with validation library)
+    if (!dataToSave || typeof dataToSave !== 'object') {
+        return res.status(400).json({ success: false, message: 'Invalid request body.' });
+    }
+
+    try {
+      // Map frontend field names to database column names if needed before saving
+      // Example: camelCase to snake_case
+      // const dbData = mapFrontendToDb(dataToSave);
+
+      const result = await db.savePreIndData(draftId, userId, dataToSave /* or dbData */);
+
+      res.status(200).json(result); // Send back { success: true, message: '...' }
+
+    } catch (error) {
+      console.error(`Error saving Pre-IND data for draft ${draftId}:`, error);
+      // Could check for specific DB errors (e.g., unique constraint violation)
+      res.status(500).json({ success: false, message: 'Failed to save Pre-IND data.' });
+    }
+  }
+);
+
+module.exports = router;
+
