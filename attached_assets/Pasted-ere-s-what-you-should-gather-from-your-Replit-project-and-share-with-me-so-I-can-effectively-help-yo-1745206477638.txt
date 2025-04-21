@@ -1,0 +1,35 @@
+ere's what you should gather from your Replit project and share with me so I can effectively help you drive it towards completion:
+
+Project Overview & Goals:
+
+Briefly describe the specific IND/NDA tasks the system should automate (e.g., document generation, data extraction, compliance checking, summarization).
+What parts are currently working?
+What specific feature or module are you working on right now?
+What is the immediate next step you want help with?
+Directory Structure:
+
+Show the main folders and files. You can use the tree -L 2 command (or just tree) in the Replit Shell (you might need to install it first via the shell: pkgs.tree if using Nix, or sudo apt-get install tree if applicable) or manually list the key directories (client/, server/, scripts/, prompts/, etc.) and important files.
+Key Configuration Files: Copy and paste the contents of:
+
+package.json (if using Node.js/React)
+requirements.txt or pyproject.toml (if using Python)
+.replit (shows the run command)
+replit.nix (if you've customized the environment significantly)
+vite.config.js / vite.config.ts (if using Vite for the frontend)
+Any other build or configuration files (e.g., tsconfig.json).
+Core Code Snippets: Share the code for the relevant parts you need help with. Don't paste the entire project, but focus on:
+
+Frontend: Key React components, API calling functions (Workspace, axios, TanStack Query hooks), WebSocket connection logic.
+Backend: Main server file (e.g., server.js, main.py), API endpoint definitions (Express routes, Flask routes), WebSocket server setup and event handlers.
+OpenAI Integration: The code where you interact with the OpenAI API (showing how you construct prompts, make API calls, and process responses). Please do not share your API keys.
+Database Interaction: Code snippets showing how you interact with your storage layer or database.
+Current Errors/Issues:
+
+Paste the full error messages you are currently seeing (like the dependency or WebSocket errors). Include stack traces if available, from both the browser console (for frontend errors) and the Replit console/logs (for backend errors).
+Specific Questions: The clearer your questions, the better I can help. Instead of "help me finish this," ask things like:
+
+"How can I fix this specific ENOENT error in SubmissionBuilder.jsx?"
+"My WebSocket connection gets a 400 error in Replit, here's my backend code [snippet] and frontend code [snippet], what could be wrong?"
+"How should I structure the prompt for OpenAI to generate section X of an IND document based on this input data [description]?"
+"I'm trying to implement [specific feature], here's my attempt [code snippet], but it's not working as expected."
+Essentially, you need to provide me with the context (code, configuration, errors, goals) that I'm missing by not having direct access to your Replit environment. The more relevant details you provide, the more targeted and helpful my assistance can be.
