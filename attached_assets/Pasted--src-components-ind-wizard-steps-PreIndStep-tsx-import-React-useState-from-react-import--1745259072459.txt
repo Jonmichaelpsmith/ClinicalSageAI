@@ -1,0 +1,420 @@
+// src/components/ind-wizard/steps/PreIndStep.tsx
+import React, { useState } from 'react';
+import { useForm, useFieldArray } from 'react-hook-form'; // Added useFieldArray
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { useQueryClient, useMutation, useQuery } from '@tanstack/react-query'; // Added TanStack Query hooks
+import { useWizard } from '../IndWizardLayout'; // Import the context hook
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { CalendarIcon, HelpCircle, UserPlus, Users, Trash2, Bot, Loader2, Sparkles } from 'lucide-react'; // Added Loader2, Sparkles
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { MilestoneTracker, Milestone, milestoneSchema } from './components/MilestoneTracker';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { toast } from '@/components/ui/use-toast'; // For feedback
+import { Skeleton } from '@/components/ui/skeleton'; // For loading states
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog" // For AI Suggestions
+
+
+// --- API Simulation/Types ---
+// Simulate API functions (replace with actual API calls)
+const apiSavePreIndData = async (data: PreIndStepFormData): Promise<{ success: boolean; message: string }> => {
+  console.log("API CALL: Saving Pre-IND Data...", data);
+  await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate network delay
+  // Simulate potential error
+  // if (Math.random() < 0.2) {
+  //   throw new Error("Simulated server error saving Pre-IND data.");
+  // }
+  return { success: true, message: "Pre-IND data saved successfully." };
+};
+
+const apiFetchAiSuggestions = async (context: string, prompt: string): Promise<string[]> => {
+    console.log("API CALL: Fetching AI Suggestions...", { context, prompt });
+    await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate AI processing time
+    // Simulate potential error
+    // if (Math.random() < 0.2) {
+    //   throw new Error("Simulated AI service error.");
+    // }
+    // Example response based on prompt
+    if (prompt.includes("agenda topics")) {
+        return [
+            "Review of Nonclinical Data Summary",
+            "Proposed Clinical Protocol Overview (Phase 1)",
+            "CMC Update and Stability Data",
+            "Specific Questions for FDA Regarding Protocol Design",
+            "Pediatric Study Plan Discussion (if applicable)",
+        ];
+    } else if (prompt.includes("FDA questions")) {
+         return [
+            "Are the proposed nonclinical safety studies adequate to support Phase 1 initiation?",
+            "Does the FDA concur with the proposed starting dose and dose escalation plan?",
+            "Is the proposed patient population for the Phase 1 study acceptable?",
+            "Are there specific CMC requirements we should address prior to Phase 2?",
+         ];
+    }
+    return ["AI Suggestion 1", "AI Suggestion 2", "AI Suggestion 3"];
+};
+
+
+// --- Zod Schema Definition ---
+// (Schema remains the same as previous version)
+const preIndStepSchema = z.object({
+  projectName: z.string().min(3, { message: "Project name must be at least 3 characters." }),
+  therapeuticArea: z.string().nonempty({ message: "Therapeutic area is required." }),
+  projectObjective: z.string().max(500, { message: "Objective cannot exceed 500 characters." }).optional(),
+  targetPreIndMeetingDate: z.date().optional(),
+  preIndMeetingObjective: z.string().max(1000, "Meeting objective too long").optional(),
+  preIndAgendaTopics: z.array(z.string().min(1, "Topic cannot be empty")).optional().default([]),
+  preIndAttendees: z.array(z.string().min(1, "Attendee name cannot be empty")).optional().default([]),
+  fdaInteractionNotes: z.string().optional(),
+  milestones: z.array(milestoneSchema).optional().default([]),
+});
+
+type PreIndStepFormData = z.infer<typeof preIndStepSchema>;
+
+// --- Component Implementation ---
+
+export default function PreIndStep() {
+  const { indData, updateIndDataSection, goToNextStep } = useWizard(); // Access wizard context
+  const queryClient = useQueryClient(); // For cache invalidation
+
+  // State for AI suggestions dialog
+  const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
+  const [isAiSuggestLoading, setIsAiSuggestLoading] = useState(false);
+  const [aiSuggestionType, setAiSuggestionType] = useState<'agenda' | 'questions' | null>(null);
+
+
+  // --- Data Fetching (Example - if loading draft from server) ---
+  // Replace 'indDraftId' with actual ID if applicable
+  const { data: initialData, isLoading: isLoadingInitialData } = useQuery({
+      queryKey: ['indDraft', 'preIndStepData'], // Example query key
+      queryFn: async () => {
+          console.log("API CALL: Fetching initial Pre-IND draft data...");
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate fetch
+          // In real app, fetch data from your backend API based on draft ID
+          // Return data in the shape of PreIndStepFormData or adapt defaultValues
+          return indData; // Using context data as placeholder for fetched data
+      },
+      enabled: false, // Set to true if you want to fetch data on mount
+      staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  // --- Form Setup ---
+  const form = useForm<PreIndStepFormData>({
+    resolver: zodResolver(preIndStepSchema),
+    // Use fetched data or context data for defaults
+    defaultValues: initialData || {
+        projectName: indData.projectDetails?.projectName || '',
+        therapeuticArea: indData.projectDetails?.therapeuticArea || '',
+        projectObjective: indData.projectDetails?.projectObjective || '',
+        targetPreIndMeetingDate: indData.preIndMeeting?.targetPreIndMeetingDate ? new Date(indData.preIndMeeting.targetPreIndMeetingDate) : undefined,
+        preIndMeetingObjective: indData.preIndMeeting?.preIndMeetingObjective || '',
+        preIndAgendaTopics: indData.preIndMeeting?.preIndAgendaTopics || [],
+        preIndAttendees: indData.preIndMeeting?.preIndAttendees || [],
+        fdaInteractionNotes: indData.preIndMeeting?.fdaInteractionNotes || '',
+        milestones: indData.milestones || [],
+    },
+  });
+
+  // useFieldArray for dynamic lists (Agenda, Attendees)
+  const { fields: agendaFields, append: appendAgenda, remove: removeAgenda } = useFieldArray({
+    control: form.control,
+    name: "preIndAgendaTopics"
+  });
+
+  const { fields: attendeeFields, append: appendAttendee, remove: removeAttendee } = useFieldArray({
+    control: form.control,
+    name: "preIndAttendees"
+  });
+
+  // --- Data Mutation (Saving) ---
+  const mutation = useMutation({
+    mutationFn: apiSavePreIndData,
+    onSuccess: (data) => {
+      toast({ title: "Save Successful", description: data.message });
+      // Update context/global state if necessary (or rely on query invalidation)
+      updateIndDataSection('projectDetails', form.getValues()); // Update context with saved data
+      updateIndDataSection('preIndMeeting', form.getValues());
+      updateIndDataSection('milestones', form.getValues('milestones'));
+      // Invalidate queries if needed to refetch data elsewhere
+      // queryClient.invalidateQueries({ queryKey: ['indDraft', 'preIndStepData'] });
+      goToNextStep(); // Proceed to next step on successful save
+    },
+    onError: (error: Error) => {
+      toast({ title: "Save Failed", description: error.message || "An unknown error occurred.", variant: "destructive" });
+    },
+  });
+
+  // Handle form submission -> trigger mutation
+  function onSubmit(values: PreIndStepFormData) {
+    console.log("Pre-IND Step Data Submitted:", values);
+    mutation.mutate(values); // Pass validated data to the mutation
+  }
+
+  // --- AI Interaction ---
+  const handleAiTrigger = async (context: string, milestone?: Milestone) => {
+    console.log("AI Triggered:", { context, milestone });
+    alert(`AI assistance requested: ${context}`);
+    // TODO: Implement richer interaction, maybe opening the AI Co-Pilot panel
+    // with the context pre-filled.
+  };
+
+  const fetchAndShowAiSuggestions = async (type: 'agenda' | 'questions') => {
+      setIsAiSuggestLoading(true);
+      setAiSuggestionType(type);
+      setAiSuggestions([]); // Clear previous suggestions
+
+      const currentData = form.getValues();
+      const promptContext = `Project: ${currentData.projectName}, Area: ${currentData.therapeuticArea}, Objective: ${currentData.projectObjective || 'N/A'}`;
+      const prompt = type === 'agenda'
+          ? `Based on the context [${promptContext}], suggest 5 key agenda topics for a Pre-IND meeting with the FDA.`
+          : `Based on the context [${promptContext}], suggest 5 potential questions to ask the FDA during a Pre-IND meeting.`;
+
+      try {
+          const suggestions = await apiFetchAiSuggestions(promptContext, prompt);
+          setAiSuggestions(suggestions);
+      } catch (error: any) {
+          toast({ title: "AI Suggestion Failed", description: error.message || "Could not fetch suggestions.", variant: "destructive" });
+      } finally {
+          setIsAiSuggestLoading(false);
+      }
+  };
+
+  const addSuggestionToForm = (suggestion: string) => {
+      if (aiSuggestionType === 'agenda') {
+          appendAgenda(suggestion);
+      }
+      // Could add logic for adding questions to notes or a dedicated section
+      toast({ title: "Suggestion Added", description: `"${suggestion}" added.` });
+  };
+
+  // Callback for MilestoneTracker
+  const handleMilestonesChange = (updatedMilestones: Milestone[]) => {
+      form.setValue('milestones', updatedMilestones, { shouldValidate: true });
+  };
+
+  // --- Render Logic ---
+  if (isLoadingInitialData) {
+      return (
+          <div className="space-y-8 p-4">
+              <Skeleton className="h-32 w-full" />
+              <Skeleton className="h-48 w-full" />
+              <Skeleton className="h-64 w-full" />
+          </div>
+      );
+  }
+
+  return (
+    <TooltipProvider>
+      <Form {...form}>
+        {/* onSubmit is now handled by the mutation trigger, often linked to layout buttons */}
+        <div className="space-y-8">
+
+          {/* Section 1: Project Initiation (Similar to previous, ensure AI triggers are wired) */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Project Initiation</CardTitle>
+              <CardDescription>Basic details about this Investigational New Drug project.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+               {/* Project Name, Therapeutic Area, Project Objective fields... */}
+               {/* (Code omitted for brevity - same as previous version) */}
+               {/* Example: Project Name */}
+                <FormField control={form.control} name="projectName" render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Project Name</FormLabel>
+                        <div className="flex items-center space-x-2">
+                        <FormControl><Input placeholder="e.g., TrialSage Alpha Study" {...field} /></FormControl>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                            <Button type="button" variant="ghost" size="icon" onClick={() => handleAiTrigger('Guidance on project naming conventions.')}><HelpCircle className="h-4 w-4" /></Button>
+                            </TooltipTrigger>
+                            <TooltipContent><p>Get AI guidance on project naming.</p></TooltipContent>
+                        </Tooltip>
+                        </div>
+                        <FormMessage />
+                    </FormItem>
+                )} />
+                 {/* ... other fields ... */}
+            </CardContent>
+          </Card>
+
+          {/* Section 2: Pre-IND Planning (Enhanced with AI Suggestions) */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Pre-IND Meeting & FDA Interaction</CardTitle>
+              <CardDescription>Plan the Pre-IND meeting and log communications. Use AI suggestions to help.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+               {/* Target Meeting Date, Meeting Objective fields... */}
+               {/* (Code omitted for brevity - same as previous version) */}
+                <FormField control={form.control} name="targetPreIndMeetingDate" render={/* ... Date Picker ... */ ({ field }) => <FormItem><FormLabel>Target Pre-IND Meeting Date</FormLabel><FormControl><Input type="date" {...field} value={field.value ? format(field.value, 'yyyy-MM-dd') : ''} /></FormControl><FormMessage /></FormItem>} />
+                <FormField control={form.control} name="preIndMeetingObjective" render={/* ... Textarea with AI Help ... */ ({ field }) => <FormItem><FormLabel>Pre-IND Meeting Objective(s)</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>} />
+
+                {/* --- Enhanced Agenda Topics --- */}
+                <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                        <Label>Proposed Agenda Topics</Label>
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button type="button" variant="outline" size="sm" onClick={() => fetchAndShowAiSuggestions('agenda')} disabled={isAiSuggestLoading}>
+                                    {isAiSuggestLoading && aiSuggestionType === 'agenda' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                                    AI Suggest Topics
+                                </Button>
+                            </AlertDialogTrigger>
+                            {/* AI Suggestion Dialog Content */}
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                <AlertDialogTitle>AI Suggested Agenda Topics</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    Based on your project details, here are some suggested topics. Select any to add them below.
+                                </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <div className="max-h-60 overflow-y-auto p-2 space-y-2">
+                                {isAiSuggestLoading ? (
+                                    <div className="flex justify-center items-center h-20"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
+                                ) : aiSuggestions.length > 0 ? (
+                                    aiSuggestions.map((suggestion, index) => (
+                                    <div key={index} className="flex justify-between items-center p-2 border rounded hover:bg-accent">
+                                        <span>{suggestion}</span>
+                                        <Button type="button" size="sm" onClick={() => addSuggestionToForm(suggestion)}>Add</Button>
+                                    </div>
+                                    ))
+                                ) : (
+                                    <p className="text-center text-muted-foreground">No suggestions available or error loading.</p>
+                                )}
+                                </div>
+                                <AlertDialogFooter>
+                                <AlertDialogCancel>Close</AlertDialogCancel>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    </div>
+                    {/* Display existing topics */}
+                    <div className="space-y-2">
+                        {agendaFields.map((field, index) => (
+                            <div key={field.id} className="flex items-center space-x-2">
+                                <Input {...form.register(`preIndAgendaTopics.${index}` as const)} placeholder={`Topic ${index + 1}`} />
+                                <Button type="button" variant="ghost" size="icon" onClick={() => removeAgenda(index)}><Trash2 className="h-4 w-4 text-red-500" /></Button>
+                            </div>
+                        ))}
+                    </div>
+                    <Button type="button" variant="outline" size="sm" onClick={() => appendAgenda('')}>+ Add Topic Manually</Button>
+                    {form.formState.errors.preIndAgendaTopics && <p className="text-sm font-medium text-destructive">{form.formState.errors.preIndAgendaTopics.root?.message || form.formState.errors.preIndAgendaTopics.message}</p>}
+                </div>
+
+                 {/* --- Enhanced Attendees --- */}
+                <div className="space-y-2">
+                    <Label>Key Attendees (Internal/External)</Label>
+                     {/* Display existing attendees */}
+                    <div className="space-y-2">
+                         {attendeeFields.map((field, index) => (
+                            <div key={field.id} className="flex items-center space-x-2">
+                                <Users className="h-4 w-4 text-muted-foreground" />
+                                <Input {...form.register(`preIndAttendees.${index}` as const)} placeholder={`Attendee ${index + 1}`} />
+                                <Button type="button" variant="ghost" size="icon" onClick={() => removeAttendee(index)}><Trash2 className="h-4 w-4 text-red-500" /></Button>
+                            </div>
+                        ))}
+                    </div>
+                    <Button type="button" variant="outline" size="sm" onClick={() => appendAttendee('')}>+ Add Attendee</Button>
+                    {form.formState.errors.preIndAttendees && <p className="text-sm font-medium text-destructive">{form.formState.errors.preIndAttendees.root?.message || form.formState.errors.preIndAttendees.message}</p>}
+                </div>
+
+                <Separator />
+
+                {/* --- Enhanced FDA Interaction Notes --- */}
+               <FormField
+                control={form.control}
+                name="fdaInteractionNotes"
+                render={({ field }) => (
+                  <FormItem>
+                     <div className="flex justify-between items-center">
+                        <FormLabel>FDA Interaction Log / Notes</FormLabel>
+                         <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button type="button" variant="outline" size="sm" onClick={() => fetchAndShowAiSuggestions('questions')} disabled={isAiSuggestLoading}>
+                                    {isAiSuggestLoading && aiSuggestionType === 'questions' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                                    AI Suggest FDA Questions
+                                </Button>
+                            </AlertDialogTrigger>
+                             {/* AI Suggestion Dialog Content (Similar structure as Agenda) */}
+                            <AlertDialogContent>
+                                 <AlertDialogHeader>
+                                    <AlertDialogTitle>AI Suggested Questions for FDA</AlertDialogTitle>
+                                    <AlertDialogDescription>Consider asking these questions during your Pre-IND interactions. You can copy them into your notes.</AlertDialogDescription>
+                                 </AlertDialogHeader>
+                                  <div className="max-h-60 overflow-y-auto p-2 space-y-2">
+                                     {/* Loading/Suggestion rendering logic */}
+                                      {isAiSuggestLoading ? (
+                                        <div className="flex justify-center items-center h-20"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
+                                    ) : aiSuggestions.length > 0 ? (
+                                        aiSuggestions.map((suggestion, index) => (
+                                        <div key={index} className="p-2 border rounded">
+                                            <span>{suggestion}</span>
+                                            {/* Maybe add a copy button */}
+                                        </div>
+                                        ))
+                                    ) : (
+                                        <p className="text-center text-muted-foreground">No suggestions available or error loading.</p>
+                                    )}
+                                  </div>
+                                 <AlertDialogFooter><AlertDialogCancel>Close</AlertDialogCancel></AlertDialogFooter>
+                            </AlertDialogContent>
+                         </AlertDialog>
+                     </div>
+                     <FormControl><Textarea rows={6} placeholder="Log meeting minutes, questions asked, FDA feedback, communication records..." {...field} /></FormControl>
+                     <FormDescription>Maintain a clear record of all FDA interactions.</FormDescription>
+                     <FormMessage />
+                  </FormItem>
+                 )}
+               />
+            </CardContent>
+          </Card>
+
+          {/* Section 3: Milestone Tracking */}
+           <MilestoneTracker
+                initialMilestones={form.getValues('milestones')}
+                onMilestonesChange={handleMilestonesChange}
+                triggerAiAssistance={handleAiTrigger}
+            />
+
+          {/* Informational: Submit action is usually tied to the main layout buttons */}
+           <div className="text-center text-sm text-muted-foreground mt-4">
+               Use the 'Previous' / 'Save and Next' buttons in the main layout footer to navigate or save progress.
+           </div>
+           {/* Display mutation status */}
+           {mutation.isLoading && (
+               <div className="flex items-center justify-center text-sm text-blue-600">
+                   <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving changes...
+               </div>
+           )}
+            {mutation.isError && (
+               <div className="text-center text-sm text-red-600">
+                   Error saving changes. Please try again.
+               </div>
+           )}
+
+        </div>
+      </Form>
+    </TooltipProvider>
+  );
+}
