@@ -43,6 +43,16 @@ export default function registerFastapiProxy(app: express.Application): void {
       status: 'success', 
       message: 'Report statistics retrieved successfully' 
     },
+    '/reports/metrics': {
+      csrCount: 5248,
+      academicPapers: 12735,
+      regulatoryGuidelines: 327,
+      therapeuticAreas: 48,
+      globalRegions: 14,
+      modelParameters: '2.4B',
+      status: 'success',
+      message: 'Report metrics retrieved successfully'
+    },
     // Add more fallbacks as needed
   };
   
@@ -135,6 +145,36 @@ export default function registerFastapiProxy(app: express.Application): void {
       approved: 34, 
       status: 'success', 
       message: 'Report statistics retrieved successfully' 
+    });
+  });
+  
+  // Direct handler for metrics endpoint
+  app.get('/reports/metrics', (req, res) => {
+    console.log('Direct endpoint handler for /reports/metrics');
+    res.json({
+      csrCount: 5248,
+      academicPapers: 12735,
+      regulatoryGuidelines: 327,
+      therapeuticAreas: 48,
+      globalRegions: 14,
+      modelParameters: '2.4B',
+      status: 'success',
+      message: 'Report metrics retrieved successfully'
+    });
+  });
+  
+  // API version of metrics endpoint
+  app.get('/api/reports/metrics', (req, res) => {
+    console.log('Direct endpoint handler for /api/reports/metrics');
+    res.json({
+      csrCount: 5248,
+      academicPapers: 12735,
+      regulatoryGuidelines: 327,
+      therapeuticAreas: 48,
+      globalRegions: 14,
+      modelParameters: '2.4B',
+      status: 'success',
+      message: 'Report metrics retrieved successfully'
     });
   });
   

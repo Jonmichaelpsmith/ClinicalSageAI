@@ -189,13 +189,31 @@ export default function HomeLandingEnhanced() {
     const fetchCSRCount = async () => {
       setIsLoading(true);
       try {
-        const response = await apiRequest('GET', '/api/reports/count');
-        const data = await response.json();
-        if (data && data.count) {
-          setCsrCount(data.count);
+        // First try the direct endpoint 
+        const response = await fetch('/api/reports/count', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        });
+        
+        // Check if response is ok before trying to parse JSON
+        if (response.ok) {
+          const data = await response.json();
+          if (data && data.count) {
+            setCsrCount(data.count);
+            setIsLoading(false);
+            return; // Exit early if we got data
+          }
         }
+        
+        // If we get here, response wasn't ok or didn't have count - use default value
+        console.log('Using default CSR count value');
+        // Keep the current value - no need to update state if API fails
       } catch (error) {
         console.error('Error fetching CSR count:', error);
+        // Keep the current value instead of breaking the UI
       } finally {
         setIsLoading(false);
       }
