@@ -1,9 +1,9 @@
-// src/components/ind-wizard/steps/ClinicalProtocolStep.tsx
+// src/components/ind-wizard/steps/ClinicalProtocolStep.jsx
 import React, { useState, useCallback } from 'react';
-import { useForm, useFieldArray, Controller } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useQueryClient, useMutation, useQuery } from '@tanstack/react-query';
+import { useQueryClient, useMutation } from '@tanstack/react-query';
 
 // UI Components
 import { Button } from '@/components/ui/button';
@@ -17,26 +17,25 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog'; 
 import { Badge } from '@/components/ui/badge';
 
 // Icons
-import { Bot, HelpCircle, Loader2, Sparkles, FileText, Target, Users, ShieldCheck, ClipboardList, PlusCircle, Trash2, Check, AlertCircle, Library, Edit } from 'lucide-react'; // Added Edit icon
+import { Bot, HelpCircle, Loader2, Sparkles, FileText, Target, Users, ShieldCheck, ClipboardList, PlusCircle, Trash2, Check, AlertCircle, Library, Edit } from 'lucide-react';
 
 // Utilities and Context
 import { useWizard } from '../IndWizardLayout';
 import { cn } from "@/lib/utils";
 
-// --- API Simulation/Types ---
+// --- API Simulation ---
 // Simulated API functions
-const apiSaveClinicalProtocolData = async (data: ClinicalProtocolStepFormData): Promise<{ success: boolean; message: string }> => {
+const apiSaveClinicalProtocolData = async (data) => {
   console.log("Saving clinical protocol data:", data);
   // Simulate API call
   await new Promise(resolve => setTimeout(resolve, 1000));
   return { success: true, message: "Protocol data saved." };
 };
 
-const apiTriggerProtocolAiAnalysis = async (type: string, contextData: any): Promise<{ result: string; details?: any }> => {
+const apiTriggerProtocolAiAnalysis = async (type, contextData) => {
   console.log(`Triggering AI analysis for ${type}:`, contextData);
   // Simulate API call
   await new Promise(resolve => setTimeout(resolve, 2000));
@@ -44,7 +43,7 @@ const apiTriggerProtocolAiAnalysis = async (type: string, contextData: any): Pro
 };
 
 // Simulate AI check for a single criterion
-const apiCheckCriterionAi = async (criterionText: string, criteriaType: 'inclusionCriteria' | 'exclusionCriteria', context: any): Promise<{ status: CriterionAiStatus; feedback?: string }> => {
+const apiCheckCriterionAi = async (criterionText, criteriaType, context) => {
     console.log(`API CALL: AI Checking ${criteriaType} criterion: "${criterionText}"`, context);
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1500));
@@ -55,10 +54,8 @@ const apiCheckCriterionAi = async (criterionText: string, criteriaType: 'inclusi
     return { status: 'Potential Issue', feedback: 'This criterion might conflict with [other criteria/guideline] or be ambiguous.' };
 };
 
-
 // --- Zod Schema Definition ---
 // Define schema for a single criterion
-export type CriterionAiStatus = 'Not Checked' | 'Checking' | 'Checked' | 'Suggestion' | 'Potential Issue';
 const criterionSchema = z.object({
   id: z.string().uuid().or(z.string().min(1)),
   text: z.string().min(5, "Criterion text is too short"),
@@ -66,7 +63,6 @@ const criterionSchema = z.object({
   aiStatus: z.enum(['Not Checked', 'Checking', 'Checked', 'Suggestion', 'Potential Issue']).default('Not Checked'),
   aiFeedback: z.string().optional(),
 });
-export type Criterion = z.infer<typeof criterionSchema>;
 
 // Main step schema with arrays of criteria
 const clinicalProtocolStepSchema = z.object({
@@ -84,33 +80,22 @@ const clinicalProtocolStepSchema = z.object({
   statisticalConsiderationsSummary: z.string().optional(),
 });
 
-export type ClinicalProtocolStepFormData = z.infer<typeof clinicalProtocolStepSchema>;
-
-
 // --- Criteria Builder Sub-Component ---
-interface CriteriaBuilderProps {
-    form: any; // Pass the react-hook-form instance
-    name: "inclusionCriteria" | "exclusionCriteria";
-    label: string;
-    description: string;
-    triggerAiCheck: (index: number, type: 'inclusionCriteria' | 'exclusionCriteria') => Promise<void>; // Callback for AI check
-}
-
-function CriteriaBuilder({ form, name, label, description, triggerAiCheck }: CriteriaBuilderProps) {
+function CriteriaBuilder({ form, name, label, description, triggerAiCheck }) {
     const { fields, append, remove, update } = useFieldArray({
         control: form.control,
         name: name
     });
 
-    const [editingIndex, setEditingIndex] = useState<number | null>(null);
+    const [editingIndex, setEditingIndex] = useState(null);
     const [editText, setEditText] = useState('');
 
-    const startEditing = (index: number, currentText: string) => {
+    const startEditing = (index, currentText) => {
         setEditingIndex(index);
         setEditText(currentText);
     };
 
-    const saveEdit = (index: number) => {
+    const saveEdit = (index) => {
         if (editText.trim().length >= 5) {
              // Update the specific field's text value
              update(index, { ...fields[index], text: editText.trim(), aiStatus: 'Not Checked', aiFeedback: undefined }); // Reset AI status on edit
@@ -136,7 +121,7 @@ function CriteriaBuilder({ form, name, label, description, triggerAiCheck }: Cri
         // append({ id: crypto.randomUUID(), text: "Standard Criterion Example 2", aiStatus: 'Not Checked' });
     };
 
-    const getStatusBadgeVariant = (status: CriterionAiStatus): "default" | "secondary" | "outline" | "destructive" => {
+    const getStatusBadgeVariant = (status) => {
         switch (status) {
             case 'Checked': return 'default'; // Use default (often blue/primary) for 'Checked'
             case 'Suggestion': return 'secondary'; // Use secondary (often gray) for 'Suggestion'
@@ -146,7 +131,7 @@ function CriteriaBuilder({ form, name, label, description, triggerAiCheck }: Cri
         }
     };
 
-    const getStatusIcon = (status: CriterionAiStatus) => {
+    const getStatusIcon = (status) => {
          switch (status) {
             case 'Checked': return <Check className="h-3 w-3" />;
             case 'Suggestion': return <HelpCircle className="h-3 w-3" />;
@@ -155,7 +140,6 @@ function CriteriaBuilder({ form, name, label, description, triggerAiCheck }: Cri
             default: return null; // No icon for 'Not Checked'
         }
     };
-
 
     return (
         <div className="space-y-3">
@@ -253,35 +237,20 @@ function CriteriaBuilder({ form, name, label, description, triggerAiCheck }: Cri
     );
 }
 
-
 // --- Main Component Implementation ---
-
 export default function ClinicalProtocolStep() {
   const { indData, updateIndDataSection, goToNextStep } = useWizard();
   const queryClient = useQueryClient();
 
   // State for AI analysis (overall)
-  const [aiAnalysisResult, setAiAnalysisResult] = useState<string | null>(null);
+  const [aiAnalysisResult, setAiAnalysisResult] = useState(null);
   const [isOverallAiLoading, setIsOverallAiLoading] = useState(false);
-  const [overallAiAnalysisType, setOverallAiAnalysisType] = useState<string | null>(null);
-
-  // --- Data Fetching (Example) ---
-  const { data: initialData, isLoading: isLoadingInitialData } = useQuery({
-    queryKey: ['/api/ind/wizard/data'],
-    queryFn: async () => {
-      const response = await fetch('/api/ind/wizard/data');
-      if (!response.ok) throw new Error('Failed to fetch wizard data');
-      const data = await response.json();
-      return data;
-    },
-    // Only enable this query if we have indData
-    enabled: !!indData
-  });
+  const [overallAiAnalysisType, setOverallAiAnalysisType] = useState(null);
 
   // --- Form Setup ---
-  const form = useForm<ClinicalProtocolStepFormData>({
+  const form = useForm({
     resolver: zodResolver(clinicalProtocolStepSchema),
-    defaultValues: initialData?.sections?.clinicalProtocolData || {
+    defaultValues: {
         protocolTitle: '', 
         protocolIdentifier: '', 
         phase: undefined, 
@@ -309,7 +278,7 @@ export default function ClinicalProtocolStep() {
          updateIndDataSection('clinicalProtocolData', form.getValues());
        }
      },
-     onError: (error: any) => {
+     onError: (error) => {
        toast({ 
          title: "Error", 
          description: error.message || "Failed to save protocol data", 
@@ -318,13 +287,13 @@ export default function ClinicalProtocolStep() {
      }
    });
 
-   function onSubmit(values: ClinicalProtocolStepFormData) { 
+   function onSubmit(values) { 
      mutation.mutate(values);
    }
 
   // --- AI Interaction ---
   // Overall AI Analysis Handler
-  const handleOverallAiAnalysis = async (type: 'endpoint_suggestion' | 'safety_draft' | 'stats_guidance') => {
+  const handleOverallAiAnalysis = async (type) => {
       setIsOverallAiLoading(true);
       setOverallAiAnalysisType(type);
       setAiAnalysisResult(null);
@@ -333,7 +302,7 @@ export default function ClinicalProtocolStep() {
           const analysis = await apiTriggerProtocolAiAnalysis(type, currentData); // Use existing function
           setAiAnalysisResult(analysis.result);
           toast({title: `AI ${type.replace('_', ' ')} Complete`, description: analysis.result.substring(0, 100) + "..."});
-      } catch (error: any) {
+      } catch (error) {
           toast({ title: `AI ${type.replace('_', ' ')} Failed`, description: error.message || "Could not perform analysis.", variant: "destructive" });
           setAiAnalysisResult(`Error performing ${type} analysis.`);
       } finally {
@@ -342,7 +311,7 @@ export default function ClinicalProtocolStep() {
   };
 
   // Handler for individual criterion AI check (passed to CriteriaBuilder)
-  const triggerCriterionAiCheck = useCallback(async (index: number, type: 'inclusionCriteria' | 'exclusionCriteria') => {
+  const triggerCriterionAiCheck = useCallback(async (index, type) => {
         const fieldName = type;
         const criteria = form.getValues(fieldName);
         const criterionToCheck = criteria[index];
@@ -364,29 +333,11 @@ export default function ClinicalProtocolStep() {
             form.setValue(`${fieldName}.${index}.aiStatus`, result.status, { shouldDirty: true });
             form.setValue(`${fieldName}.${index}.aiFeedback`, result.feedback, { shouldDirty: true });
             toast({ title: `AI Check Complete (${result.status})`, description: result.feedback || `Criterion ${index + 1} checked.` });
-        } catch (error: any) {
+        } catch (error) {
             form.setValue(`${fieldName}.${index}.aiStatus`, 'Not Checked', { shouldDirty: true }); // Revert status on error
             toast({ title: "AI Check Failed", description: error.message || "Could not check criterion.", variant: "destructive" });
         }
     }, [form]); // Include form in dependency array for useCallback
-
-
-  // --- Render Logic ---
-  if (isLoadingInitialData) {
-    return (
-      <div className="space-y-6">
-        <Skeleton className="h-8 w-64" />
-        <div className="space-y-3">
-          <Skeleton className="h-4 w-32" />
-          <Skeleton className="h-10 w-full" />
-        </div>
-        <div className="space-y-3">
-          <Skeleton className="h-4 w-32" />
-          <Skeleton className="h-20 w-full" />
-        </div>
-      </div>
-    );
-  }
 
   return (
     <TooltipProvider>
@@ -731,7 +682,7 @@ export default function ClinicalProtocolStep() {
           {mutation.isError && (
             <div className="text-center text-destructive">
               <AlertCircle className="inline-block h-4 w-4 mr-2" />
-              Error: {(mutation.error as Error)?.message || "Failed to save data"}
+              Error: {mutation.error?.message || "Failed to save data"}
             </div>
           )}
         </form>
