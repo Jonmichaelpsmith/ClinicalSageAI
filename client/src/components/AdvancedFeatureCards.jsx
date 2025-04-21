@@ -80,7 +80,7 @@ const AdvancedFeatureCards = () => {
   }, [cards.length]);
 
   return (
-    <section className="py-20 bg-gray-900 text-white relative overflow-hidden">
+    <section className="py-10 bg-gray-900 text-white relative overflow-hidden">
       {/* Background pattern */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute inset-0 bg-[url('https://raw.githubusercontent.com/Concepts2Cures/assets/main/dna-pattern.svg')] bg-repeat opacity-30"></div>
@@ -123,14 +123,14 @@ const AdvancedFeatureCards = () => {
           </div>
         </div>
         
-        {/* Card Navigation */}
-        <div className="flex justify-center mb-8">
-          <div className="inline-flex bg-gray-800/50 p-1 rounded-lg">
+        {/* Card Navigation - Compact */}
+        <div className="flex justify-center mb-4">
+          <div className="inline-flex bg-gray-800/50 p-0.5 rounded-md">
             {cards.map((card, index) => (
               <button
                 key={card.id}
                 onClick={() => setSelectedCard(index)}
-                className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                className={`px-2 py-1 text-xs font-medium rounded transition-colors ${
                   selectedCard === index 
                     ? 'bg-blue-700 text-white' 
                     : 'text-blue-200 hover:text-white hover:bg-gray-700/50'
@@ -142,60 +142,60 @@ const AdvancedFeatureCards = () => {
           </div>
         </div>
         
-        {/* Featured Card */}
-        <div className="max-w-4xl mx-auto">
-          <div className={`bg-gradient-to-br ${cards[selectedCard].color} rounded-2xl p-8 border border-blue-700/30 shadow-xl`}>
-            <div className="flex items-center mb-6">
-              <div className="w-16 h-16 bg-blue-800/50 rounded-xl flex items-center justify-center mr-5">
+        {/* Featured Card - Compact Version */}
+        <div className="max-w-3xl mx-auto">
+          <div className={`bg-gradient-to-br ${cards[selectedCard].color} rounded-lg p-4 border border-blue-700/30 shadow-md`}>
+            <div className="flex items-center mb-3">
+              <div className="w-10 h-10 bg-blue-800/50 rounded-md flex items-center justify-center mr-3">
                 {cards[selectedCard].icon}
               </div>
-              <h3 className="text-3xl font-bold">{cards[selectedCard].title}</h3>
+              <h3 className="text-xl font-bold">{cards[selectedCard].title}</h3>
             </div>
             
-            <p className="text-xl text-blue-100 mb-8">
+            <p className="text-sm text-blue-100 mb-4">
               {cards[selectedCard].description}
             </p>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
               {cards[selectedCard].stats.map((stat, i) => (
-                <div key={i} className="bg-blue-900/30 rounded-xl p-4 border border-blue-700/20">
-                  <div className="flex items-center mb-2">
+                <div key={i} className="bg-blue-900/30 rounded-md p-3 border border-blue-700/20">
+                  <div className="flex items-center mb-1">
                     {stat.icon}
-                    <span className="text-blue-300 ml-2">{stat.label}</span>
+                    <span className="text-blue-300 text-xs ml-2">{stat.label}</span>
                   </div>
-                  <div className="text-2xl font-bold text-white">{stat.value}</div>
+                  <div className="text-lg font-bold text-white">{stat.value}</div>
                 </div>
               ))}
             </div>
             
-            <div className="space-y-3 mb-6">
+            <div className="space-y-2 mb-4">
               {cards[selectedCard].features.map((feature, i) => (
                 <div key={i} className="flex items-center">
-                  <div className="h-6 w-6 rounded-full bg-blue-800/50 flex items-center justify-center mr-3">
-                    <svg className="h-3 w-3 text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div className="h-4 w-4 rounded-full bg-blue-800/50 flex items-center justify-center mr-2">
+                    <svg className="h-2 w-2 text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <span className="text-blue-100">{feature}</span>
+                  <span className="text-blue-100 text-xs">{feature}</span>
                 </div>
               ))}
             </div>
             
-            <div className="mt-6">
-              <button className="inline-flex items-center text-blue-300 hover:text-white font-medium transition-colors">
-                Learn More <ArrowRight className="ml-2 h-4 w-4" />
+            <div className="mt-3">
+              <button className="inline-flex items-center text-blue-300 hover:text-white text-xs font-medium transition-colors">
+                Learn More <ArrowRight className="ml-1 h-3 w-3" />
               </button>
             </div>
           </div>
         </div>
         
         {/* Indicator Dots */}
-        <div className="flex justify-center mt-8">
+        <div className="flex justify-center mt-4">
           {cards.map((_, index) => (
             <button
               key={index}
               onClick={() => setSelectedCard(index)}
-              className={`h-3 w-3 rounded-full mx-1 ${
+              className={`h-2 w-2 rounded-full mx-0.5 ${
                 selectedCard === index ? 'bg-blue-500' : 'bg-blue-800/50'
               }`}
             />

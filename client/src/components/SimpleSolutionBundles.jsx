@@ -151,14 +151,6 @@ const bundles = [
     color: 'amber',
     modules: [
       {
-        id: 'lumen-bio-portal',
-        name: 'Lumen Bio Portal',
-        description: 'Client dashboard & reports',
-        icon: <Shield />,
-        route: '/lumen-portal',
-        bgColor: 'bg-amber-600'
-      },
-      {
         id: 'client-access',
         name: 'Client Access',
         description: 'Secure portal login',
@@ -172,6 +164,14 @@ const bundles = [
         description: 'Advanced AI assistance',
         icon: <Bot />,
         route: '/ai-copilot',
+        bgColor: 'bg-amber-600'
+      },
+      {
+        id: 'regulatory-dashboard',
+        name: 'Regulatory Dashboard',
+        description: 'Program lifecycle overview',
+        icon: <Layout />,
+        route: '/regulatory-dashboard',
         bgColor: 'bg-amber-600'
       }
     ]
