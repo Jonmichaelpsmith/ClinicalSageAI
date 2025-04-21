@@ -202,7 +202,7 @@ export default function SubmissionBuilder({ initialRegion = 'FDA', region: propR
       'PMDA': 'JP_eCTD_1.0'
     };
     
-    toast.info(`Switched to ${region} region with ${regionProfiles[region]} validation profile`);
+    console.log(`Switched to ${region} region with ${regionProfiles[region]} validation profile`);
     
     // Send region info to the backend QC service
     if (send) {

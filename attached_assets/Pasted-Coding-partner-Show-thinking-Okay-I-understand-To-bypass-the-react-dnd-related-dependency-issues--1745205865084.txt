@@ -1,0 +1,130 @@
+Coding partner
+
+Show thinking
+Okay, I understand. To bypass the react-dnd related dependency issues for now and focus on the SimpleLearningInterface, we can comment out or remove the drag-and-drop specific code from SubmissionBuilder.jsx.
+
+Here’s how you can modify client/src/pages/SubmissionBuilder.jsx to create a simplified version without the react-dnd and @minoru/react-dnd-treeview functionality:
+
+JavaScript
+
+// client/src/pages/SubmissionBuilder.jsx
+
+import React, { useState, useEffect } from 'react';
+// Comment out or remove DnD related imports:
+// import { DndProvider } from 'react-dnd';
+// import { HTML5Backend } from 'react-dnd-html5-backend';
+// import { Tree, NodeModel } from "@minoru/react-dnd-treeview"; // Assuming NodeModel was also imported
+
+// --- Keep other necessary imports ---
+// import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+// import { getSubmissionStructure, saveSubmissionStructure } from '../api'; // Example API calls
+// import styles from './SubmissionBuilder.module.css'; // Example CSS Modules import
+
+// A placeholder component or simple rendering logic
+const PlaceholderTreeView = ({ data }) => {
+  const renderNode = (node) => (
+    <li key={node.id}>
+      {node.text || node.name || `Item ${node.id}`} {/* Adjust based on your data structure */}
+      {node.children && node.children.length > 0 && (
+        <ul>{node.children.map(renderNode)}</ul>
+      )}
+    </li>
+  );
+
+  return (
+    <div style={{ border: '1px dashed #ccc', padding: '10px', margin: '10px 0' }}>
+      <h4>Submission Structure (Drag-and-Drop Temporarily Disabled)</h4>
+      {data && data.length > 0 ? (
+        <ul>
+          {/* Simple recursive list rendering as a placeholder */}
+          {data.map(renderNode)}
+        </ul>
+      ) : (
+        <p>Loading structure or no items found...</p>
+      )}
+      <p><em>Drag-and-drop functionality will be re-enabled later.</em></p>
+    </div>
+  );
+};
+
+
+function SubmissionBuilder() {
+  // --- Keep your existing state, hooks, and data fetching logic ---
+  // Example: Fetching data that the original Tree might have used
+  // const { data: treeData, isLoading, error } = useQuery({
+  //   queryKey: ['submissionStructure'],
+  //   queryFn: getSubmissionStructure
+  // });
+  // const queryClient = useQueryClient();
+  // const mutation = useMutation({ mutationFn: saveSubmissionStructure, onSuccess: () => ... });
+
+  // Example state (replace with your actual state if needed for the placeholder)
+  const [placeholderData, setPlaceholderData] = useState([
+    { id: 1, text: 'Section 1', parent: 0 },
+    { id: 2, text: 'Subsection 1.1', parent: 1 },
+    { id: 3, text: 'Section 2', parent: 0 },
+  ]); // Use fetched `treeData` if available and adapt format if necessary
+
+
+  // --- Keep other component logic like handlers, useEffects etc. ---
+  // Example: A function that might have handled drops
+  // const handleDrop = (newTreeData) => {
+  //   console.log("Drop handled (currently disabled), new structure:", newTreeData);
+  //   // mutation.mutate(newTreeData); // Would normally save changes
+  // };
+
+  // Render the component
+  return (
+    // Remove the DndProvider wrapper
+    // <DndProvider backend={HTML5Backend}>
+    <div /* className={styles.container} */ > {/* Add back styles if needed */}
+      <h2>Submission Builder</h2>
+      <p>Configure the structure of the submission below.</p>
+
+      {/* Other UI elements like buttons, forms, etc. */}
+
+      {/* Replace the original Tree component with the placeholder */}
+      <PlaceholderTreeView data={placeholderData /* or pass your actual treeData here */} />
+
+      {/* Example usage of original Tree component (commented out):
+      <div className="tree-container">
+        {isLoading && <p>Loading tree...</p>}
+        {error && <p>Error loading tree: {error.message}</p>}
+        {treeData && (
+          <Tree
+            treeData={treeData}
+            rootId={0} // Assuming rootId is 0
+            render={(node, { depth, isOpen, onToggle }) => (
+              <div style={{ marginLeft: depth * 10 }}>
+                <button onClick={onToggle} disabled={!node.droppable}>{isOpen ? '-' : '+'}</button>
+                <span>{node.text}</span>
+              </div>
+            )}
+            onDrop={handleDrop}
+            // Add other necessary props from the original implementation
+          />
+        )}
+      </div>
+      */}
+
+      {/* Other UI elements */}
+      <button /* onClick={() => mutation.mutate(currentTreeData)} disabled={mutation.isLoading} */ >
+        Save Structure (Currently Disabled)
+      </button>
+
+    </div>
+    // </DndProvider> // End removal of DndProvider wrapper
+  );
+}
+
+export default SubmissionBuilder;
+
+Explanation of Changes:
+
+Imports Removed: The lines importing DndProvider, HTML5Backend, and Tree (and potentially NodeModel) are commented out or deleted.
+DndProvider Wrapper Removed: The <DndProvider backend={HTML5Backend}>...</DndProvider> tags surrounding the component's main JSX are removed.
+<Tree> Replaced: The <Tree ... /> component instance is replaced with <PlaceholderTreeView data={...} />.
+PlaceholderTreeView Component: A simple functional component (PlaceholderTreeView) is added to display the data that would have gone into the tree. It uses basic HTML lists (<ul>, <li>) to show the structure. You should adapt the rendering inside this placeholder (e.g., node.text || node.name) based on the actual properties of your data objects.
+Data Handling: The logic for fetching (useQuery) or managing the state (useState) for the tree data (treeData or similar) should likely remain, as the placeholder might need it. Adjust the data prop passed to PlaceholderTreeView accordingly.
+Event Handlers (e.g., handleDrop): Functions that were specifically used as props for the <Tree> component (like onDrop) can be commented out or kept if they contain other logic you might need later. Mutation calls triggered by drag-and-drop should be disabled.
+Now, when you run your application, SubmissionBuilder.jsx should render without trying to load or use the react-dnd libraries, hopefully bypassing the ENOENT error originating from this component.
