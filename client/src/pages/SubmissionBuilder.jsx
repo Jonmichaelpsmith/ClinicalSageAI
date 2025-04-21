@@ -163,9 +163,9 @@ export default function SubmissionBuilder({ initialRegion = 'FDA', region: propR
     if (data && data.id && data.status) {
       // Show a toast notification
       if (data.status === 'passed') {
-        toast.success(`QC passed for document ${data.id}`);
+        console.log(`QC passed for document ${data.id}`);
       } else {
-        toast.error(`QC failed for document ${data.id}`);
+        console.error(`QC failed for document ${data.id}`);
       }
       
       // Update the tree nodes with new QC status
@@ -319,7 +319,7 @@ export default function SubmissionBuilder({ initialRegion = 'FDA', region: propR
         setTree(newTree);
       } catch (error) {
         console.error('Error loading documents:', error);
-        toast.error('Failed to load submission documents');
+        console.error('Failed to load submission documents');
       } finally {
         setLoading(false);
       }
@@ -357,17 +357,17 @@ export default function SubmissionBuilder({ initialRegion = 'FDA', region: propR
         throw new Error(`HTTP error ${response.status}`);
       }
       
-      toast.success('Document order saved successfully');
+      console.log('Document order saved successfully');
     } catch (error) {
       console.error('Error saving order:', error);
-      toast.error('Failed to save document order');
+      console.error('Failed to save document order');
     }
   };
 
   // Handle bulk approve action
   const bulkApprove = async () => {
     if (selected.size === 0) {
-      toast.info('No documents selected for bulk approval');
+      console.log('No documents selected for bulk approval');
       return;
     }
     
@@ -375,7 +375,7 @@ export default function SubmissionBuilder({ initialRegion = 'FDA', region: propR
     
     try {
       // Send bulk approve request
-      toast.info(`Initiating QC checks for ${selectedIds.length} documents...`);
+      console.log(`Initiating QC checks for ${selectedIds.length} documents...`);
       
       // Use WebSocket for faster QC checks
       if (send) {
@@ -404,11 +404,11 @@ export default function SubmissionBuilder({ initialRegion = 'FDA', region: propR
         const result = await response.json();
         
         // Show summary toast
-        toast.success(`Completed QC for ${result.total} documents: ${result.passed} passed, ${result.failed} failed`);
+        console.log(`Completed QC for ${result.total} documents: ${result.passed} passed, ${result.failed} failed`);
       }
     } catch (error) {
       console.error('Error performing bulk QC:', error);
-      toast.error('Failed to perform bulk QC checks');
+      console.error('Failed to perform bulk QC checks');
     }
   };
 
@@ -476,19 +476,7 @@ export default function SubmissionBuilder({ initialRegion = 'FDA', region: propR
 
   return (
     <div className="container py-4">
-      {/* ToastContainer for notifications */}
-      <ToastContainer
-        position="bottom-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
+      {/* Notification handling now done with console.log */}
       
       {/* Region Selector */}
       <div className="mb-4">
@@ -536,18 +524,61 @@ export default function SubmissionBuilder({ initialRegion = 'FDA', region: propR
         </ul>
       </div>
       
-      <DndProvider backend={HTML5Backend}>
-        <Tree 
-          rootId={0} 
-          tree={tree} 
-          onDrop={handleDrop} 
-          render={renderNode} 
-          classes={{ 
-            draggingSource: 'opacity-50',
-            dropTarget: 'bg-light' 
-          }}
-        />
-      </DndProvider>
+      {/* Tree structure - using simplified version without DnD */}
+      <div className="tree-structure bg-light p-3 rounded mb-3">
+        <div className="alert alert-warning">
+          <AlertTriangle size={16} className="me-2" />
+          Drag and drop functionality temporarily disabled
+        </div>
+        
+        <div className="folders-container">
+          {tree
+            .filter(node => node.droppable && node.id !== 0)
+            .map(folder => (
+              <div key={folder.id} className="folder mb-3">
+                <div className="folder-header py-1 px-2 bg-light border-bottom">
+                  <strong>{folder.text}</strong>
+                </div>
+                <div className="folder-content">
+                  {tree
+                    .filter(node => !node.droppable && node.parent === folder.id)
+                    .map(doc => {
+                      const qcStatus = doc.data?.qc_json?.status;
+                      const isSelected = selected.has(doc.id);
+                      
+                      return (
+                        <div
+                          key={doc.id}
+                          onClick={() => toggleSelect(doc.id)}
+                          className={`doc-item py-1 px-2 d-flex align-items-center ${isSelected ? 'bg-light' : ''}`}
+                        >
+                          <div className="form-check me-2">
+                            <input
+                              type="checkbox"
+                              className="form-check-input"
+                              checked={isSelected}
+                              onChange={() => {}}
+                              id={`check-${doc.id}`}
+                            />
+                          </div>
+                          
+                          {qcStatus === 'passed' ? (
+                            <CheckCircle size={16} className="text-success me-2" />
+                          ) : qcStatus === 'failed' ? (
+                            <XCircle size={16} className="text-danger me-2" />
+                          ) : (
+                            <AlertTriangle size={16} className="text-warning me-2" />
+                          )}
+                          
+                          <span>{doc.text}</span>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+            ))}
+        </div>
+      </div>
       
       <div className="d-flex gap-2 mt-3">
         <button className="btn btn-primary" onClick={saveOrder}>Save Order</button>
