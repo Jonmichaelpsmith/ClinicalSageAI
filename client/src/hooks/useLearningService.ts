@@ -1,14 +1,16 @@
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { apiRequest, queryClient } from '@/lib/queryClient';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 
 /**
  * Hook for accessing the AI learning recommendation services
  */
 export function useLearningService(userId?: number) {
+  const queryClient = useQueryClient();
+  
   // Get AI-generated insights for a user
   const useInsights = () => {
     return useQuery({
-      queryKey: userId ? ['/api/learning/insights', userId] : null,
+      queryKey: userId ? ['/api/learning/insights', userId] : ['skip-query'],
       queryFn: async () => {
         if (!userId) return null;
         const res = await apiRequest('GET', `/api/learning/insights/${userId}`);
@@ -22,7 +24,7 @@ export function useLearningService(userId?: number) {
   // Get personalized learning path
   const useLearningPath = () => {
     return useQuery({
-      queryKey: userId ? ['/api/learning/path', userId] : null,
+      queryKey: userId ? ['/api/learning/path', userId] : ['skip-query'],
       queryFn: async () => {
         if (!userId) return null;
         const res = await apiRequest('GET', `/api/learning/path/${userId}`);
@@ -36,7 +38,7 @@ export function useLearningService(userId?: number) {
   // Get recommended modules with relevance scores
   const useRecommendedModules = () => {
     return useQuery({
-      queryKey: userId ? ['/api/learning/recommended-modules', userId] : null,
+      queryKey: userId ? ['/api/learning/recommended-modules', userId] : ['skip-query'],
       queryFn: async () => {
         if (!userId) return null;
         const res = await apiRequest('GET', `/api/learning/recommended-modules/${userId}`);
