@@ -1,0 +1,303 @@
+// src/components/ind-wizard/steps/PreIndStep.tsx
+import React, { useState, useEffect, useCallback } from 'react';
+import { useParams } from 'react-router-dom'; // Assuming react-router-dom for draftId
+import { useForm, useFieldArray } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { useQueryClient, useMutation, useQuery } from '@tanstack/react-query';
+import { useWizard } from '../IndWizardLayout';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { CalendarIcon, HelpCircle, UserPlus, Users, Trash2, Bot, Loader2, Sparkles } from 'lucide-react';
+import { cn } from "@/lib/utils";
+import { format, parseISO } from "date-fns"; // Added parseISO for date handling
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { MilestoneTracker, Milestone, milestoneSchema } from './components/MilestoneTracker'; // Assuming this component exists
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { toast } from '@/components/ui/use-toast';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"; // For errors
+
+
+// --- Zod Schema Definition ---
+// (Schema remains the same as defined previously for the frontend)
+const preIndStepSchema = z.object({
+  projectName: z.string().min(3, { message: "Project name must be at least 3 characters." }),
+  therapeuticArea: z.string().nonempty({ message: "Therapeutic area is required." }),
+  projectObjective: z.string().max(500, { message: "Objective cannot exceed 500 characters." }).optional(),
+  targetPreIndMeetingDate: z.date().optional(),
+  preIndMeetingObjective: z.string().max(1000, "Meeting objective too long").optional(),
+  preIndAgendaTopics: z.array(z.string().min(1, "Topic cannot be empty")).optional().default([]),
+  preIndAttendees: z.array(z.string().min(1, "Attendee name cannot be empty")).optional().default([]),
+  fdaInteractionNotes: z.string().optional(),
+  milestones: z.array(milestoneSchema).optional().default([]),
+});
+type PreIndStepFormData = z.infer<typeof preIndStepSchema>;
+
+// Type for the data structure returned by the GET API endpoint
+// Adjust based on your actual API response and DB-to-frontend mapping
+interface PreIndApiResponseData {
+    projectName?: string;
+    therapeuticArea?: string;
+    projectObjective?: string;
+    targetPreIndMeetingDate?: string; // Expecting ISO string from backend
+    preIndMeetingObjective?: string;
+    preIndAgendaTopics?: string[];
+    preIndAttendees?: string[];
+    fdaInteractionNotes?: string;
+    milestones?: Milestone[]; // Assuming milestones are returned nested
+}
+
+
+// --- API Fetching Function ---
+const fetchPreIndData = async (draftId: string | undefined): Promise<PreIndApiResponseData> => {
+    if (!draftId) {
+        throw new Error("Draft ID is required to fetch Pre-IND data.");
+    }
+    const response = await fetch(`/api/ind-drafts/${draftId}/pre-ind`); // Use the GET endpoint
+    if (!response.ok) {
+        // Handle specific errors if needed (e.g., 404 Not Found)
+        const errorData = await response.json().catch(() => ({})); // Try to parse error body
+        throw new Error(errorData.message || `Failed to fetch Pre-IND data (${response.status})`);
+    }
+    const data = await response.json();
+    return data.data; // Assuming backend wraps response in { success: true, data: {...} }
+};
+
+// --- API Saving Function ---
+const savePreIndData = async ({ draftId, data }: { draftId: string | undefined; data: PreIndStepFormData }): Promise<{ success: boolean; message: string }> => {
+     if (!draftId) {
+        throw new Error("Draft ID is required to save Pre-IND data.");
+    }
+     const response = await fetch(`/api/ind-drafts/${draftId}/pre-ind`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            // Add authentication headers (e.g., Authorization: `Bearer ${token}`) if needed
+        },
+        body: JSON.stringify(data),
+    });
+     const responseData = await response.json();
+     if (!response.ok) {
+        throw new Error(responseData.message || `Failed to save Pre-IND data (${response.status})`);
+     }
+     return responseData; // Assuming backend returns { success: true, message: '...' }
+};
+
+
+// --- Component Implementation ---
+export default function PreIndStep() {
+  const { draftId } = useParams<{ draftId: string }>(); // Get draftId from URL
+  const { indData, updateIndDataSection, goToNextStep } = useWizard();
+  const queryClient = useQueryClient();
+
+  // State for dynamic lists (agenda, attendees) - Keep this local UI state
+  const [agendaInput, setAgendaInput] = useState('');
+  const [attendeeInput, setAttendeeInput] = useState('');
+
+  // --- Data Fetching with useQuery ---
+  const queryKey = ['preIndData', draftId];
+  const {
+      data: fetchedData,
+      isLoading: isLoadingData,
+      isError: isFetchError,
+      error: fetchError,
+  } = useQuery<PreIndApiResponseData, Error>({
+      queryKey: queryKey,
+      queryFn: () => fetchPreIndData(draftId),
+      enabled: !!draftId, // Only run query if draftId is available
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      refetchOnWindowFocus: false, // Optional: prevent refetch on window focus
+  });
+
+  // --- Form Setup ---
+  const form = useForm<PreIndStepFormData>({
+    resolver: zodResolver(preIndStepSchema),
+    defaultValues: { // Set initial default values
+        projectName: '', therapeuticArea: '', projectObjective: '',
+        targetPreIndMeetingDate: undefined, preIndMeetingObjective: '',
+        preIndAgendaTopics: [], preIndAttendees: [], fdaInteractionNotes: '',
+        milestones: [],
+    },
+  });
+
+  // --- Effect to Reset Form with Fetched Data ---
+  useEffect(() => {
+    if (fetchedData) {
+        // Map fetched data (potentially API/DB structure) to form structure
+        const formData: Partial<PreIndStepFormData> = {
+            ...fetchedData,
+            // Convert date string from API to Date object for the form/calendar
+            targetPreIndMeetingDate: fetchedData.targetPreIndMeetingDate
+                ? parseISO(fetchedData.targetPreIndMeetingDate) // Use date-fns parseISO
+                : undefined,
+            // Ensure arrays are initialized correctly
+            preIndAgendaTopics: fetchedData.preIndAgendaTopics || [],
+            preIndAttendees: fetchedData.preIndAttendees || [],
+            milestones: (fetchedData.milestones || []).map(m => ({
+                ...m,
+                // Convert milestone due date string to Date object if needed
+                dueDate: m.dueDate ? parseISO(m.dueDate as unknown as string) : undefined,
+            })),
+        };
+        form.reset(formData); // Reset the form with fetched data
+    }
+  }, [fetchedData, form.reset]); // Dependency on fetchedData and form.reset
+
+  // --- Data Mutation (Saving) ---
+  const mutation = useMutation({
+    mutationFn: savePreIndData,
+    onSuccess: (data) => {
+      toast({ title: "Save Successful", description: data.message });
+      // Invalidate the query for this step to refetch fresh data if needed
+      queryClient.invalidateQueries({ queryKey: queryKey });
+      // Update the shared context (optional, query invalidation might be sufficient)
+      // updateIndDataSection('projectDetails', form.getValues());
+      // updateIndDataSection('preIndMeeting', form.getValues());
+      // updateIndDataSection('milestones', form.getValues('milestones'));
+      goToNextStep(); // Proceed to next step
+    },
+    onError: (error: Error) => {
+      toast({ title: "Save Failed", description: error.message || "An unknown error occurred.", variant: "destructive" });
+    },
+  });
+
+  // Handle form submission -> trigger mutation
+  function onSubmit(values: PreIndStepFormData) {
+    console.log("Pre-IND Step Data Submitted to Backend:", values);
+    mutation.mutate({ draftId, data: values }); // Pass draftId and form data
+  }
+
+  // --- AI Interaction ---
+  // (AI handlers remain the same, using simulated API calls for now)
+  const handleAiTrigger = (context: string, milestone?: Milestone) => { /* ... */ };
+
+  // --- Dynamic List Handlers ---
+  // (Handlers remain the same, using form.getValues/setValue)
+  const addAgendaTopic = () => { /* ... */ };
+  const removeAgendaTopic = (index: number) => { /* ... */ };
+  const addAttendee = () => { /* ... */ };
+  const removeAttendee = (index: number) => { /* ... */ };
+
+  // Callback for MilestoneTracker
+  const handleMilestonesChange = (updatedMilestones: Milestone[]) => {
+      form.setValue('milestones', updatedMilestones, { shouldValidate: true });
+  };
+
+
+  // --- Render Logic ---
+  if (isLoadingData) {
+      return ( // Show loading skeletons while fetching initial data
+          <div className="space-y-8 p-4">
+              <Skeleton className="h-32 w-full" />
+              <Skeleton className="h-48 w-full" />
+              <Skeleton className="h-64 w-full" />
+          </div>
+      );
+  }
+
+  if (isFetchError) {
+       return ( // Show error message if fetching failed
+           <Alert variant="destructive">
+               <AlertCircle className="h-4 w-4" />
+               <AlertTitle>Error Loading Data</AlertTitle>
+               <AlertDescription>
+                   {fetchError?.message || "Could not load Pre-IND data. Please try again later."}
+               </AlertDescription>
+           </Alert>
+       );
+  }
+
+  return (
+    <TooltipProvider>
+      <Form {...form}>
+        {/* onSubmit is now handled by the mutation trigger, linked via layout buttons */}
+        {/* The main layout's "Save and Next" button should call form.handleSubmit(onSubmit) */}
+        <div className="space-y-8">
+
+          {/* Section 1: Project Initiation */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Project Initiation</CardTitle>
+              <CardDescription>Basic details about this Investigational New Drug project.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Project Name */}
+              <FormField control={form.control} name="projectName" render={({ field }) => ( /* ... FormItem structure ... */ )} />
+              {/* Therapeutic Area */}
+               <FormField control={form.control} name="therapeuticArea" render={({ field }) => ( /* ... FormItem structure ... */ )} />
+               {/* Project Objective */}
+               <FormField control={form.control} name="projectObjective" render={({ field }) => ( /* ... FormItem structure ... */ )} />
+            </CardContent>
+          </Card>
+
+          {/* Section 2: Pre-IND Planning */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Pre-IND Meeting & FDA Interaction</CardTitle>
+              <CardDescription>Plan the Pre-IND meeting and log communications.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+               {/* Target Meeting Date (using Controller for Popover/Calendar) */}
+                <FormField control={form.control} name="targetPreIndMeetingDate" render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                        <FormLabel>Target Pre-IND Meeting Date</FormLabel>
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <FormControl>
+                                    <Button variant={"outline"} className={cn("w-[240px] pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>
+                                        {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                    </Button>
+                                </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
+                            </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                    </FormItem>
+                )} />
+               {/* Meeting Objective */}
+                <FormField control={form.control} name="preIndMeetingObjective" render={({ field }) => ( /* ... FormItem structure ... */ )} />
+                {/* Agenda Topics */}
+                <div className="space-y-2"> {/* ... Dynamic list UI ... */} </div>
+                 {/* Attendees */}
+                <div className="space-y-2"> {/* ... Dynamic list UI ... */} </div>
+                <Separator />
+               {/* FDA Interaction Notes */}
+               <FormField control={form.control} name="fdaInteractionNotes" render={({ field }) => ( /* ... FormItem structure ... */ )} />
+            </CardContent>
+          </Card>
+
+          {/* Section 3: Milestone Tracking */}
+           <MilestoneTracker
+                // Pass milestones from form state, ensuring they are defined
+                initialMilestones={form.watch('milestones') || []}
+                onMilestonesChange={handleMilestonesChange}
+                triggerAiAssistance={handleAiTrigger} // Still uses simulation
+            />
+
+          {/* Display mutation status */}
+           {mutation.isLoading && (
+               <div className="flex items-center justify-center text-sm text-blue-600">
+                   <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving changes...
+               </div>
+           )}
+           {/* Note: Error display for mutation is handled by the toast in onError */}
+           <div className="text-center text-sm text-muted-foreground mt-4">
+               Use the 'Previous' / 'Save and Next' buttons in the main layout footer to save progress.
+           </div>
+
+        </div>
+      </Form>
+    </TooltipProvider>
+  );
+}

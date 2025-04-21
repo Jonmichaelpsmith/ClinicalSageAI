@@ -50,6 +50,7 @@ import { cn } from "@/lib/utils";
 import { MilestoneTracker } from './components/MilestoneTracker';
 import { milestoneSchema } from './components/milestoneSchema';
 import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from '@/hooks/use-toast';
 
 // --- Zod Schema and API Simulation ---
 // Define the form schema with zod
@@ -65,11 +66,26 @@ const preIndStepSchema = z.object({
   milestones: z.array(z.any()).optional().default([]),
 });
 
-// Simulate API functions (replace with actual API calls)
+// Real API function for saving Pre-IND data
 const apiSavePreIndData = async (data) => {
   console.log("API CALL: Saving Pre-IND Data...", data);
-  await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate network delay
-  return { success: true, message: "Pre-IND data saved successfully." };
+  
+  const currentDraftId = localStorage.getItem('currentDraftId') || 'draft-1'; // Use draft-1 as fallback for now
+  
+  const response = await fetch(`/api/ind-drafts/${currentDraftId}/pre-ind`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+  
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || `API error: ${response.status}`);
+  }
+  
+  return await response.json();
 };
 
 const apiFetchAiSuggestions = async (context, prompt) => {
@@ -107,15 +123,34 @@ export default function PreIndStep() {
   const [aiSuggestionType, setAiSuggestionType] = useState(null);
   const [activeTab, setActiveTab] = useState('project-details');
 
-  // --- Data Fetching (Example - if loading draft from server) ---
+  // --- Data Fetching from API ---
   const { data: initialData, isLoading: isLoadingInitialData } = useQuery({
       queryKey: ['indDraft', 'preIndStepData'], 
       queryFn: async () => {
           console.log("API CALL: Fetching initial Pre-IND draft data...");
-          await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate fetch
-          return indData; // Using context data as placeholder for fetched data
+          
+          const currentDraftId = localStorage.getItem('currentDraftId') || 'draft-1'; // Use draft-1 as fallback
+          
+          try {
+            const response = await fetch(`/api/ind-drafts/${currentDraftId}/pre-ind`);
+            
+            if (!response.ok) {
+              if (response.status === 404) {
+                console.warn('No Pre-IND data found for this draft yet. Starting with defaults.');
+                return null; // Will use default values from the form setup
+              }
+              throw new Error(`API error: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            return data.data; // Assuming the API returns { success: true, data: {...} }
+          } catch (error) {
+            console.error('Error fetching Pre-IND data:', error);
+            // Fall back to context data if API fails
+            return indData;
+          }
       },
-      enabled: false, // Set to true if you want to fetch data on mount
+      enabled: true, // Fetch data on mount
       staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
@@ -150,17 +185,30 @@ export default function PreIndStep() {
   const mutation = useMutation({
     mutationFn: apiSavePreIndData,
     onSuccess: (data) => {
-      alert(data.message);
-      // Update context/global state if necessary (or rely on query invalidation)
-      updateIndDataSection('projectDetails', form.getValues()); // Update context with saved data
+      // Replace alert with toast for better UX
+      toast({
+        title: "Success",
+        description: data.message || "Pre-IND data saved successfully.",
+      });
+      
+      // Update context/global state
+      updateIndDataSection('projectDetails', form.getValues());
       updateIndDataSection('preIndMeeting', form.getValues());
       updateIndDataSection('milestones', form.getValues('milestones'));
-      // Invalidate queries if needed to refetch data elsewhere
-      // queryClient.invalidateQueries({ queryKey: ['indDraft', 'preIndStepData'] });
-      goToNextStep(); // Proceed to next step on successful save
+      
+      // Invalidate query cache to ensure fresh data on next visit
+      queryClient.invalidateQueries({ queryKey: ['indDraft', 'preIndStepData'] });
+      
+      // Proceed to next step
+      goToNextStep();
     },
     onError: (error) => {
-      alert(error.message || "An unknown error occurred.");
+      // Replace alert with toast for better UX
+      toast({
+        title: "Error Saving Data",
+        description: error.message || "An unknown error occurred.",
+        variant: "destructive",
+      });
     },
   });
 
@@ -191,7 +239,11 @@ export default function PreIndStep() {
         const suggestions = await apiFetchAiSuggestions(promptContext, prompt);
         setAiSuggestions(suggestions);
     } catch (error) {
-        alert(error.message || "Could not fetch suggestions.");
+        toast({
+          title: "Error",
+          description: error.message || "Could not fetch suggestions.",
+          variant: "destructive",
+        });
     } finally {
         setIsAiSuggestLoading(false);
     }
@@ -203,7 +255,10 @@ export default function PreIndStep() {
     } else if (aiSuggestionType === 'questions') {
         form.setValue('fdaInteractionNotes', form.getValues('fdaInteractionNotes') + `\n• ${suggestion}`);
     }
-    alert(`"${suggestion}" added.`);
+    toast({
+      title: "Suggestion Added",
+      description: `"${suggestion}" has been added.`
+    });
   };
 
   // Callback for MilestoneTracker
