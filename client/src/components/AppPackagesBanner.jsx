@@ -557,33 +557,7 @@ export default function AppPackagesBanner({ currentPath }) {
         </div>
       </div>
 
-      {/* Module selection area - Enterprise Grade */}
-      <div className="bg-gray-50 py-16 border-t border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-12">
-            <div className="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-medium mb-4">
-              UNIFIED PLATFORM
-            </div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Integrated AI-Powered Solutions</h2>
-            <p className="text-lg text-gray-600">
-              Our comprehensive suite of enterprise tools drives efficiency, compliance, and insight across your entire regulatory process.
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {modules.map((module, index) => (
-              <ModuleTile
-                key={index}
-                icon={module.icon}
-                title={module.title}
-                description={module.description}
-                to={module.to}
-                highlight={currentPath && module.path && currentPath.startsWith(module.path)}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
+      {/* Integrated AI-Powered Solutions section completely removed as requested */}
     </div>
   );
 }
