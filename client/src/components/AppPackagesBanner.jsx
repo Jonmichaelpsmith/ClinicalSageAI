@@ -300,22 +300,22 @@ export default function AppPackagesBanner({ currentPath }) {
             </p>
           </div>
           
-          {/* Feature Tiles Grid - Moved from the top banner */}
+          {/* Feature Tiles Grid - Top row */}
           <div className="flex justify-center">
-            <div className="grid md:grid-cols-6 gap-3 max-w-fit">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 max-w-5xl px-4">
               {entryButtons.map((button, index) => (
                 <Link key={index} to={button.to}>
-                  <div className={`${button.color} rounded-lg shadow-md hover:shadow-lg transition-all duration-300 p-2 h-full`}>
-                    <div className="flex items-center mb-1">
-                      <div className="bg-white/20 p-1 rounded-lg">
-                        {React.cloneElement(button.icon, { size: 14 })}
+                  <div className={`${button.color} rounded-lg shadow-md hover:shadow-lg transition-all duration-300 p-4 h-full`}>
+                    <div className="flex items-center mb-2">
+                      <div className="bg-white/20 p-1.5 rounded-lg">
+                        {React.cloneElement(button.icon, { size: 20 })}
                       </div>
-                      <h3 className="text-sm font-bold text-white ml-1.5">{button.label}</h3>
+                      <h3 className="text-base font-bold text-white ml-2">{button.label}</h3>
                     </div>
-                    <p className="text-xs text-white/90 mb-1 line-clamp-2">{button.description}</p>
+                    <p className="text-sm text-white/90 mb-2 leading-tight">{button.description}</p>
                     <div className="flex justify-end">
-                      <div className="bg-white/10 hover:bg-white/20 transition-colors duration-200 rounded-full p-0.5">
-                        <ChevronRight size={10} className="text-white" />
+                      <div className="bg-white/10 hover:bg-white/20 transition-colors duration-200 rounded-full p-1">
+                        <ChevronRight size={12} className="text-white" />
                       </div>
                     </div>
                   </div>
@@ -325,21 +325,21 @@ export default function AppPackagesBanner({ currentPath }) {
           </div>
           
           {/* Client Portal Tiles */}
-          <div className="mt-4 flex justify-center">
-            <div className="grid md:grid-cols-4 gap-3 max-w-fit">
+          <div className="mt-6 flex justify-center">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 max-w-5xl px-4">
               {clientPortals.map((portal, index) => (
                 <Link key={index} to={portal.to}>
-                  <div className={`${portal.color} rounded-lg shadow-md hover:shadow-lg transition-all duration-300 p-2 h-full`}>
-                    <div className="flex items-center mb-1">
-                      <div className="bg-white/20 p-1 rounded-lg">
-                        {React.cloneElement(portal.icon, { size: 14 })}
+                  <div className={`${portal.color} rounded-lg shadow-md hover:shadow-lg transition-all duration-300 p-4 h-full`}>
+                    <div className="flex items-center mb-2">
+                      <div className="bg-white/20 p-1.5 rounded-lg">
+                        {React.cloneElement(portal.icon, { size: 20 })}
                       </div>
-                      <h3 className="text-sm font-bold text-white ml-1.5">{portal.label}</h3>
+                      <h3 className="text-base font-bold text-white ml-2">{portal.label}</h3>
                     </div>
-                    <p className="text-xs text-white/90 mb-1 line-clamp-2">{portal.description}</p>
+                    <p className="text-sm text-white/90 mb-2 leading-tight">{portal.description}</p>
                     <div className="flex justify-end">
-                      <div className="bg-white/10 hover:bg-white/20 transition-colors duration-200 rounded-full p-0.5">
-                        <ChevronRight size={10} className="text-white" />
+                      <div className="bg-white/10 hover:bg-white/20 transition-colors duration-200 rounded-full p-1">
+                        <ChevronRight size={12} className="text-white" />
                       </div>
                     </div>
                   </div>
@@ -363,11 +363,11 @@ export default function AppPackagesBanner({ currentPath }) {
                   </p>
                 </div>
                 
-                <div className="grid grid-cols-6 gap-3 text-center mt-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 text-center mt-3">
                   {/* CSR Reports */}
                   <div className="group relative">
                     <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -mt-2.5 w-5 h-5 rounded-full bg-blue-500"></div>
-                    <div className="bg-[#0c111d] pt-4 pb-2 px-1 rounded-md">
+                    <div className="bg-[#0c111d] pt-4 pb-2 px-3 rounded-md">
                       <div className="font-bold text-white text-lg">5,248<span className="text-xs font-normal text-blue-300">+</span></div>
                       <div className="text-xs text-blue-200 mt-0.5">CSR Reports</div>
                     </div>
@@ -376,7 +376,7 @@ export default function AppPackagesBanner({ currentPath }) {
                   {/* Academic Papers */}
                   <div className="group relative">
                     <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -mt-2.5 w-5 h-5 rounded-full bg-purple-500"></div>
-                    <div className="bg-[#0c111d] pt-4 pb-2 px-1 rounded-md">
+                    <div className="bg-[#0c111d] pt-4 pb-2 px-3 rounded-md">
                       <div className="font-bold text-white text-lg">12,735<span className="text-xs font-normal text-blue-300">+</span></div>
                       <div className="text-xs text-blue-200 mt-0.5">Papers</div>
                     </div>
@@ -385,7 +385,7 @@ export default function AppPackagesBanner({ currentPath }) {
                   {/* Regulatory Guidelines */}
                   <div className="group relative">
                     <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -mt-2.5 w-5 h-5 rounded-full bg-cyan-500"></div>
-                    <div className="bg-[#0c111d] pt-4 pb-2 px-1 rounded-md">
+                    <div className="bg-[#0c111d] pt-4 pb-2 px-3 rounded-md">
                       <div className="font-bold text-white text-lg">327</div>
                       <div className="text-xs text-blue-200 mt-0.5">Guidelines</div>
                     </div>
@@ -394,7 +394,7 @@ export default function AppPackagesBanner({ currentPath }) {
                   {/* Therapeutic Areas */}
                   <div className="group relative">
                     <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -mt-2.5 w-5 h-5 rounded-full bg-emerald-500"></div>
-                    <div className="bg-[#0c111d] pt-4 pb-2 px-1 rounded-md">
+                    <div className="bg-[#0c111d] pt-4 pb-2 px-3 rounded-md">
                       <div className="font-bold text-white text-lg">48</div>
                       <div className="text-xs text-blue-200 mt-0.5">Areas</div>
                     </div>
@@ -403,7 +403,7 @@ export default function AppPackagesBanner({ currentPath }) {
                   {/* Global Regions */}
                   <div className="group relative">
                     <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -mt-2.5 w-5 h-5 rounded-full bg-rose-500"></div>
-                    <div className="bg-[#0c111d] pt-4 pb-2 px-1 rounded-md">
+                    <div className="bg-[#0c111d] pt-4 pb-2 px-3 rounded-md">
                       <div className="font-bold text-white text-lg">14</div>
                       <div className="text-xs text-blue-200 mt-0.5">Regions</div>
                     </div>
@@ -412,7 +412,7 @@ export default function AppPackagesBanner({ currentPath }) {
                   {/* Model Parameters */}
                   <div className="group relative">
                     <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -mt-2.5 w-5 h-5 rounded-full bg-amber-500"></div>
-                    <div className="bg-[#0c111d] pt-4 pb-2 px-1 rounded-md">
+                    <div className="bg-[#0c111d] pt-4 pb-2 px-3 rounded-md">
                       <div className="font-bold text-white text-lg">2.4B</div>
                       <div className="text-xs text-blue-200 mt-0.5">Params</div>
                     </div>
