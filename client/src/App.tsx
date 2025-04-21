@@ -112,7 +112,7 @@ export default function App() {
             </Route>
             <Route path="/ind-architect">
               <ErrorBoundary>
-                <HomeLanding />
+                <INDWizard />
               </ErrorBoundary>
             </Route>
             <Route path="/csr-intelligence">
@@ -127,7 +127,7 @@ export default function App() {
             </Route>
             <Route path="/ind-full-solution">
               <ErrorBoundary>
-                <INDFullSolution />
+                <INDWizard />
               </ErrorBoundary>
             </Route>
             <Route path="/ind/wizard/*">
