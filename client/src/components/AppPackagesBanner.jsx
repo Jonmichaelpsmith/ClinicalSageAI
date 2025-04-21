@@ -64,10 +64,10 @@ export default function AppPackagesBanner({ currentPath }) {
     },
     {
       icon: <FileSymlink size={20} />,
-      title: "IND Architect",
+      title: "IND Wizard",
       description: "Design and manage INDs with multi-region compliance",
-      to: "/ind-architect",
-      path: "/ind-architect"
+      to: "/ind/wizard",
+      path: "/ind/wizard"
     },
     {
       icon: <Folder size={20} />,
@@ -104,7 +104,7 @@ export default function AppPackagesBanner({ currentPath }) {
     {
       label: "Accelerate IND",
       description: "Your AI partner for IND success",
-      to: "/ind-architect",
+      to: "/ind/wizard",
       icon: <FileSymlink size={18} />,
       color: "bg-purple-600 hover:bg-purple-700"
     },
@@ -141,30 +141,30 @@ export default function AppPackagesBanner({ currentPath }) {
   // Client portal buttons
   const clientPortals = [
     {
-      label: "Client Access",
-      description: "Secure portal login",
-      to: "/client-portal",
+      label: "IND Overview",
+      description: "Main IND wizard interface",
+      to: "/ind/wizard",
       icon: <User size={18} />,
       color: "bg-rose-600 hover:bg-rose-700"
     },
     {
-      label: "AI Co-pilot",
-      description: "Advanced AI assistance",
-      to: "/ai-agent",
+      label: "Pre-IND Planning",
+      description: "Initial planning steps",
+      to: "/ind/wizard/pre-planning",
       icon: <Bot size={18} />,
       color: "bg-violet-600 hover:bg-violet-700"
     },
     {
-      label: "SmartDocs Generator™",
-      description: "CERs, protocols, summaries—drafted in hours, not weeks",
-      to: "/smartdocs",
+      label: "Nonclinical Studies",
+      description: "Manage nonclinical data and milestones",
+      to: "/ind/wizard/nonclinical",
       icon: <FileText size={18} />,
       color: "bg-purple-600 hover:bg-purple-700"
     },
     {
-      label: "InsightVault™",
-      description: "A DMS that actually understands your trial",
-      to: "/insightvault",
+      label: "CMC Section",
+      description: "Chemistry, Manufacturing, Controls",
+      to: "/ind/wizard/cmc",
       icon: <BarChart size={18} />,
       color: "bg-slate-700 hover:bg-slate-800"
     }
@@ -233,33 +233,33 @@ export default function AppPackagesBanner({ currentPath }) {
               </Link>
               <div className="relative group">
                 <span className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-600 cursor-pointer">
-                  Client Portals
+                  IND Sections
                   <ChevronRight size={16} className="ml-1 transform group-hover:rotate-90 transition-transform" />
                 </span>
                 <div className="absolute left-0 mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-50 hidden group-hover:block">
                   <div className="py-1">
-                    <Link to="/client-portal">
+                    <Link to="/ind/wizard">
                       <div className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
                         <User size={16} className="mr-2 text-rose-500" />
-                        Client Access Portal
+                        IND Overview
                       </div>
                     </Link>
-                    <Link to="/ai-agent">
+                    <Link to="/ind/wizard/pre-planning">
                       <div className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
                         <Bot size={16} className="mr-2 text-violet-500" />
-                        AI Co-pilot
+                        Pre-IND Planning
                       </div>
                     </Link>
-                    <Link to="/smartdocs">
+                    <Link to="/ind/wizard/nonclinical">
                       <div className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
                         <FileText size={16} className="mr-2 text-purple-500" />
-                        SmartDocs Generator™
+                        Nonclinical Data
                       </div>
                     </Link>
-                    <Link to="/insightvault">
+                    <Link to="/ind/wizard/cmc">
                       <div className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
                         <BarChart size={16} className="mr-2 text-slate-700" />
-                        InsightVault™
+                        CMC Section
                       </div>
                     </Link>
                   </div>
@@ -274,10 +274,10 @@ export default function AppPackagesBanner({ currentPath }) {
             
             {/* Action buttons */}
             <div className="flex items-center space-x-4">
-              <Link to="/demo">
+              <Link to="/ind/wizard">
                 <button className="flex items-center text-sm font-medium text-blue-600 hover:text-blue-800">
                   <ExternalLink size={16} className="mr-1" />
-                  Request Demo
+                  Open IND Wizard
                 </button>
               </Link>
             </div>
