@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Database, BookOpen, FileText, Globe, BarChart, Brain } from 'lucide-react';
-import { apiRequest } from '../lib/queryClient';
-import { useQuery } from '@tanstack/react-query';
 
 export default function CSRLibraryMetrics() {
   // Initial metrics data to ensure we have valid values
@@ -14,34 +12,46 @@ export default function CSRLibraryMetrics() {
     modelParameters: '2.4B'
   };
   
-  // Use React Query with a more stable configuration to prevent UI flickering
-  const { data } = useQuery({
-    queryKey: ['/api/reports/metrics'],
-    queryFn: async () => {
-      try {
-        const response = await apiRequest('GET', '/api/reports/metrics');
-        if (!response.ok) {
-          console.log('API returned an error, using default metrics data');
-          return initialMetrics;
-        }
-        const data = await response.json();
-        return { ...initialMetrics, ...data };
-      } catch (error) {
-        console.log('API request failed, using default metrics data');
-        return initialMetrics;
-      }
-    },
-    initialData: initialMetrics,
-    // Completely disable all automatic refetching
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-    retry: false,
-    staleTime: Infinity
-  });
+  // Use simple state management instead of React Query
+  const [metrics, setMetrics] = useState(initialMetrics);
   
-  // Always have valid metrics by using the data from the query or our initial data
-  const metrics = data || initialMetrics;
+  // Fetch data once on component mount
+  useEffect(() => {
+    // Flag to prevent state updates if component unmounts
+    let isMounted = true;
+    
+    const fetchMetrics = async () => {
+      try {
+        const response = await fetch('/api/reports/metrics', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include'
+        });
+        
+        // Only update state if component is still mounted and response is ok
+        if (isMounted && response.ok) {
+          const data = await response.json();
+          if (data) {
+            // Merge with initial data to handle partial API responses
+            setMetrics(prevMetrics => ({ ...prevMetrics, ...data }));
+          }
+        }
+      } catch (error) {
+        console.log('API request failed, keeping default metrics data');
+        // No state update on error - keep using initial values
+      }
+    };
+    
+    // Execute fetch immediately
+    fetchMetrics();
+    
+    // Cleanup function
+    return () => {
+      isMounted = false;
+    };
+  }, []); // Empty dependencies - run once on mount
 
   return (
     <div className="bg-gradient-to-r from-blue-900 to-indigo-900 py-6">

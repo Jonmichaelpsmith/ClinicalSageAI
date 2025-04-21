@@ -1,8 +1,8 @@
 // HomeLandingEnhanced.jsx – enterprise-grade landing page with hero section, metrics, features, and testimonials
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
-import { useQuery } from '@tanstack/react-query';
+
 import { 
   FileText, 
   BarChart2, 
@@ -110,7 +110,7 @@ import AppPackagesBanner from '../components/AppPackagesBanner';
 // SimpleSolutionBundles section removed as requested
 import AdvancedFeatureCards from '../components/AdvancedFeatureCards';
 {/* Removed CSRLibraryMetrics import - now integrated in AppPackagesBanner */}
-import { apiRequest } from '../lib/queryClient';
+
 
 const TAGLINES = [
   'Turning Concepts into Cures – 2× faster INDs',
@@ -184,37 +184,46 @@ const METRICS = [
 export default function HomeLandingEnhanced() {
   const [location] = useLocation();
   
-  // Default CSR count value to use if API fails
-  const DEFAULT_CSR_COUNT = 3021;
+  // Use a simple state approach with a default value
+  // This completely eliminates any potential React Query flickering issues
+  const [csrCount, setCsrCount] = useState(3021);
   
-  // Use a simpler approach with initialData and no refetching
-  // This stabilizes the UI by preventing unnecessary updates
-  const { data: csrCountData } = useQuery({
-    queryKey: ['/api/reports/count'],
-    queryFn: async () => {
+  // Effect to fetch data once on mount
+  useEffect(() => {
+    // Create a flag to track if component is mounted
+    let isMounted = true;
+    
+    const fetchData = async () => {
       try {
-        const response = await apiRequest('GET', '/api/reports/count');
-        if (!response.ok) {
-          console.log('Using default CSR count - API returned error');
-          return DEFAULT_CSR_COUNT;
+        const response = await fetch('/api/reports/count', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include'
+        });
+        
+        // Only update state if component is still mounted
+        if (isMounted && response.ok) {
+          const data = await response.json();
+          if (data && data.count) {
+            setCsrCount(data.count);
+          }
         }
-        const data = await response.json();
-        return data?.count || DEFAULT_CSR_COUNT;
       } catch (error) {
-        console.error('Error fetching CSR count:', error);
-        return DEFAULT_CSR_COUNT;
+        console.error('Failed to fetch CSR count:', error);
+        // Keep using default value on error - no state update
       }
-    },
-    initialData: DEFAULT_CSR_COUNT,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-    retry: false,
-    staleTime: Infinity // Don't mark the data as stale - prevents auto refetching
-  });
-  
-  // Use the data directly with fallback
-  const csrCount = csrCountData || DEFAULT_CSR_COUNT;
+    };
+    
+    // Fetch data immediately
+    fetchData();
+    
+    // Cleanup function
+    return () => {
+      isMounted = false;
+    };
+  }, []); // Empty dependency array means this runs once on mount
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800">
