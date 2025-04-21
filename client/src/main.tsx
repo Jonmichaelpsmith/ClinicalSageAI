@@ -4,6 +4,13 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import App from './App';
 import './index.css';
 import './toast.css';
+import { SecurityProvider } from './components/security/SecurityProvider';
+import { setupCSP } from './lib/security';
+
+// Initialize Content Security Policy before rendering
+if (typeof document !== 'undefined') {
+  setupCSP();
+}
 
 // Remove problematic CSS imports that are causing 502 errors
 
