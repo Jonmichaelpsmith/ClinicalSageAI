@@ -30,11 +30,20 @@ app.use(express.urlencoded({ extended: false }));
 
 // Direct routes for IND wizard
 app.get('/ind/wizard', (req, res) => {
+  console.log("IND wizard route hit - serving main HTML");
   res.sendFile('index.html', { root: './client/dist' });
 });
 
+// Catch-all route for all IND wizard nested paths
 app.get('/ind/wizard/*', (req, res) => {
+  console.log(`IND wizard nested route hit: ${req.path} - serving main HTML`);
   res.sendFile('index.html', { root: './client/dist' });
+});
+
+// Direct API routes for IND wizard
+app.get('/api/ind/wizard/*', (req, res, next) => {
+  console.log(`IND wizard API route: ${req.path}`);
+  next(); // Pass to the actual handlers in routes.ts
 });
 
 // Register the FastAPI proxy for both REST and WebSocket endpoints
