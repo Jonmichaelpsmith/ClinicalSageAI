@@ -117,7 +117,22 @@ export default function NonclinicalStep() {
 
   // --- Data Mutation (Saving) ---
   const mutation = useMutation({
-    mutationFn: apiSaveNonclinicalData,
+    mutationFn: async (formData) => {
+      // Use our own API endpoint for saving data
+      const response = await fetch('/api/ind/wizard/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+      
+      return response.json();
+    },
     onSuccess: (data) => {
       toast({ title: "Save Successful", description: data.message });
       // Update context/global state
@@ -153,7 +168,20 @@ export default function NonclinicalStep() {
         studyTypes: [...new Set(form.getValues('studies').map(s => s.studyType))],
       };
       
-      const result = await apiTriggerAiAnalysis(type, contextData);
+      // Call our new API endpoint
+      const response = await fetch('/api/ind/wizard/ai-analysis', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ type, contextData }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+      
+      const result = await response.json();
       setAiAnalysisResult(result.result);
       
       toast({ 
@@ -229,15 +257,41 @@ export default function NonclinicalStep() {
     setIsParsingText(true);
     
     try {
-      const parsedData = await apiParseStudyText(studyTextToParse);
+      // Use our new API endpoint for study text parsing
+      const response = await fetch('/api/ind/wizard/ai-analysis', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          type: 'study_parser', 
+          contextData: { text: studyTextToParse } 
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      
+      // For the study parser, the result is JSON string that needs to be parsed
+      const parsedData = typeof result.result === 'string' ? 
+        JSON.parse(result.result) : result.result;
+        
+      // Generate a unique ID for the new study
+      parsedData.id = Date.now().toString();
+      
       setEditingStudy(parsedData); // Pre-fill editor with parsed data
       setIsStudyEditorOpen(true); // Open editor
       setStudyTextToParse(''); // Clear textarea
+      
       toast({ 
         title: "AI Parsing Complete", 
         description: "Review the extracted details and save." 
       });
     } catch (error) {
+      console.error("Parsing error:", error);
       toast({ 
         title: "AI Parsing Failed", 
         description: error.message || "Could not parse text.", 

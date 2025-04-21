@@ -38,9 +38,9 @@ export default function registerFastapiProxy(app: express.Application): void {
   };
   
   // Simple proxy middleware for API routes
-  app.use(['/api', '/reports', '/ind'], (req, res, next) => {
-    // Skip proxying for routes that we're handling directly in Express
-    if (req.path.startsWith('/ind/wizard')) {
+  app.use(['/api', '/reports'], (req, res, next) => {
+    // Simple FastAPI check for direct API routes
+    if (req.originalUrl.includes('/api/ind/wizard')) {
       return next();
     }
     // Check if we have a fallback for this path
