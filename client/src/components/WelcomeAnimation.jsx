@@ -1,29 +1,36 @@
-import React, { useState, useEffect } from 'react';
+// WelcomeAnimation.jsx - Welcome animation using framer-motion
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Sparkles } from 'lucide-react';
+import { Play, FileCheck, Database, LineChart } from 'lucide-react';
 
-const WelcomeAnimation = ({ onComplete, skipAnimation }) => {
-  const [show, setShow] = useState(!skipAnimation);
+const WelcomeAnimation = ({ onComplete, skipAnimation = false }) => {
+  const [step, setStep] = useState(0);
+  const [visible, setVisible] = useState(!skipAnimation);
   
+  // Animation steps sequence
   useEffect(() => {
-    if (!skipAnimation) {
-      // Auto-hide the animation after 5 seconds
+    if (skipAnimation) {
+      setVisible(false);
+      return;
+    }
+    
+    if (step === 0) {
+      // Start the animation sequence
+      const timer = setTimeout(() => setStep(1), 800);
+      return () => clearTimeout(timer);
+    } else if (step < 5) {
+      // Move through steps 1-4
+      const timer = setTimeout(() => setStep(step + 1), 1200);
+      return () => clearTimeout(timer);
+    } else if (step === 5) {
+      // Final step, fade out after delay
       const timer = setTimeout(() => {
-        handleComplete();
-      }, 5000);
-      
+        setVisible(false);
+        if (onComplete) onComplete();
+      }, 1500);
       return () => clearTimeout(timer);
     }
-  }, [skipAnimation]);
-  
-  const handleComplete = () => {
-    setShow(false);
-    // Small delay to allow exit animation to complete
-    setTimeout(() => {
-      if (onComplete) onComplete();
-    }, 500);
-  };
+  }, [step, skipAnimation, onComplete]);
   
   if (skipAnimation) {
     return null;
@@ -31,81 +38,86 @@ const WelcomeAnimation = ({ onComplete, skipAnimation }) => {
   
   return (
     <AnimatePresence>
-      {show && (
+      {visible && (
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50"
+          transition={{ duration: 0.5 }}
+          className="fixed inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-blue-800 to-blue-900 z-50 text-white"
         >
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ 
-              scale: 1, 
-              opacity: 1,
-              transition: { delay: 0.2, duration: 0.5 }
-            }}
-            exit={{ scale: 0.8, opacity: 0 }}
-            className="bg-white rounded-xl p-8 max-w-md mx-4 text-center shadow-2xl"
-          >
-            <motion.div
-              initial={{ rotate: -180, scale: 0.2 }}
-              animate={{ 
-                rotate: 0, 
-                scale: 1,
-                transition: { 
-                  type: "spring",
-                  stiffness: 260,
-                  damping: 20,
-                  delay: 0.3
-                }
-              }}
-              className="mx-auto mb-6 w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center"
-            >
-              <Sparkles className="w-12 h-12 text-blue-600" />
-            </motion.div>
-            
-            <motion.h1
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ 
-                y: 0, 
-                opacity: 1,
-                transition: { delay: 0.5, duration: 0.4 }
-              }}
-              className="text-3xl font-bold mb-4 text-gray-900"
-            >
-              Welcome to TrialSage
-            </motion.h1>
-            
-            <motion.p
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ 
-                y: 0, 
-                opacity: 1,
-                transition: { delay: 0.7, duration: 0.4 }
-              }}
-              className="text-gray-600 mb-6"
-            >
-              Your intelligent clinical regulatory platform for accelerated submissions
-            </motion.p>
-            
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ 
-                y: 0, 
-                opacity: 1,
-                transition: { delay: 0.9, duration: 0.4 }
-              }}
-            >
-              <Button 
-                onClick={handleComplete}
-                className="bg-blue-600 hover:bg-blue-700 transition-colors"
-                size="lg"
+          <div className="w-full max-w-2xl px-6 text-center">
+            {step >= 1 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="mb-8"
               >
-                Get Started
-              </Button>
-            </motion.div>
-          </motion.div>
+                <h1 className="text-4xl font-bold mb-4">Welcome to TrialSage</h1>
+                <p className="text-xl text-blue-200">The Clinical Intelligence System That Thinks Like a Biotech Founder</p>
+              </motion.div>
+            )}
+            
+            {step >= 2 && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+                className="flex justify-center space-x-8 mb-10"
+              >
+                <div className="flex flex-col items-center">
+                  <div className="bg-blue-600 p-4 rounded-full mb-3">
+                    <FileCheck size={28} />
+                  </div>
+                  <p className="text-sm">2× faster INDs</p>
+                </div>
+                <div className="flex flex-col items-center">
+                  <div className="bg-blue-600 p-4 rounded-full mb-3">
+                    <Database size={28} />
+                  </div>
+                  <p className="text-sm">90% less manual work</p>
+                </div>
+                <div className="flex flex-col items-center">
+                  <div className="bg-blue-600 p-4 rounded-full mb-3">
+                    <LineChart size={28} />
+                  </div>
+                  <p className="text-sm">Save $2M per trial</p>
+                </div>
+              </motion.div>
+            )}
+            
+            {step >= 3 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5 }}
+                className="mb-8"
+              >
+                <p className="text-blue-100 mb-6">
+                  Our platform streamlines multi-regional regulatory research with intelligent document validation and compliance mechanisms.
+                </p>
+              </motion.div>
+            )}
+            
+            {step >= 4 && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="flex justify-center"
+              >
+                <button 
+                  className="flex items-center px-6 py-3 bg-white text-blue-800 rounded-full font-medium hover:bg-blue-50 transition-colors"
+                  onClick={() => {
+                    setStep(5);
+                  }}
+                >
+                  <Play size={18} className="mr-2" />
+                  Get Started
+                </button>
+              </motion.div>
+            )}
+          </div>
         </motion.div>
       )}
     </AnimatePresence>
