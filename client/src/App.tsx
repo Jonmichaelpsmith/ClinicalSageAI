@@ -1,24 +1,324 @@
-// App.tsx – simplified version for debugging
-import React from 'react';
+// App.tsx – root router with improved toast and resilient WebSocket connection
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { Route, Switch } from 'wouter';
+// Using the region-aware SubmissionBuilder component
+import SubmissionBuilder from './pages/SubmissionBuilder';
+import IndSequenceDetail from './pages/IndSequenceDetail';
+import IndSequenceManager from './pages/IndSequenceManager';
+import HomeLanding from './pages/HomeLandingProtected';
+import SimplifiedLandingPage from './components/SimplifiedLandingPage';
+import ImprovedLandingPage from './components/ImprovedLandingPage';
 import HomeLandingEnhanced from './pages/HomeLandingEnhanced';
+import PersonaPages from './components/PersonaPages';
+import GatedSalesInvestorAssets from './components/GatedSalesInvestorAssets';
+import Walkthroughs from './pages/Walkthroughs';
+import DebugInfo from './components/DebugInfo';
 import ErrorBoundary from './ErrorBoundary';
+import ProductFeatures from './pages/ProductFeatures';
+import LumenBioDashboard from './pages/LumenBioDashboard';
+import LumenBioReports from './pages/LumenBioReports';
+import UseCaseLibrary from './pages/UseCaseLibrary';
+import INDFullSolution from './pages/INDFullSolution';
+import CERGenerator from './pages/CERGenerator';
+import ClientPortal from './pages/ClientPortal';
+import AIAdvancedAgent from './pages/AIAdvancedAgent';
+import SimpleLearningInterface from './components/SimpleLearningInterface';
+import { CheckCircle, AlertTriangle, Info, HelpCircle } from 'lucide-react';
+// React Toastify for production-ready notifications
+import { ToastContainer, toast as toastify } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+// Tour components
+import { TourProvider, TourHelpButton } from './components/TourContext';
+import InteractiveTour from './components/InteractiveTour';
+import WelcomeAnimation from './components/WelcomeAnimation';
+// Tour animations
+import './styles/tour-animations.css';
+
+/* ------------ Improved Toast Provider ------------- */
+export type ToastType = 'success' | 'error' | 'info';
+
+export interface ToastOptions {
+  type?: ToastType;
+  message: string;
+}
+
+interface Toast {
+  id: number;
+  message: string;
+  type: ToastType;
+}
+
+type ToastContextValue = (options: ToastOptions | string) => void;
+
+const ToastCtx = createContext<ToastContextValue>(() => {});
+
+const ToastProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
+  const [toasts, setToasts] = useState<Toast[]>([]);
+  
+  const add = useCallback((options: ToastOptions | string) => {
+    const isString = typeof options === 'string';
+    // Use a more unique ID with random component to prevent duplicates
+    const toast: Toast = {
+      id: Date.now() + Math.floor(Math.random() * 10000),
+      message: isString ? options : options.message,
+      type: isString ? 'success' : (options.type || 'success')
+    };
+    
+    // Also use react-toastify to ensure reliable notifications
+    const toastType = isString ? 'success' : (options.type || 'success');
+    const message = isString ? options : options.message;
+    
+    // Display using react-toastify
+    switch(toastType) {
+      case 'success':
+        toastify.success(message);
+        break;
+      case 'error':
+        toastify.error(message);
+        break;
+      default:
+        toastify.info(message);
+    }
+    
+    // Still update internal state for backward compatibility
+    setToasts(t => [...t, toast]);
+  }, []);
+  
+  const remove = (id: number) => setToasts(t => t.filter(x => x.id !== id));
+  
+  return (
+    <ToastCtx.Provider value={add}>
+      {children}
+      <div style={{
+        position: 'fixed',
+        bottom: 20,
+        right: 20,
+        zIndex: 9999,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 8
+      }}>
+        {toasts.map(t => {
+          // Determine background color based on type
+          const bgColor = t.type === 'success' ? '#16a34a' : 
+                         t.type === 'error' ? '#dc2626' : 
+                         '#0891b2'; // info color
+          
+          // Determine icon based on type
+          const Icon = t.type === 'success' ? CheckCircle : 
+                     t.type === 'error' ? AlertTriangle : 
+                     Info;
+                    
+          return (
+            <div 
+              key={t.id} 
+              onAnimationEnd={() => remove(t.id)}
+              style={{
+                minWidth: 250,
+                padding: '8px 12px',
+                borderRadius: 4,
+                color: '#fff',
+                backgroundColor: bgColor,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                animation: 'fadeout 4s forwards'
+              }}
+            >
+              <Icon size={16} />
+              <span>{t.message}</span>
+              <style>{`@keyframes fadeout{0%{opacity:1}80%{opacity:1}100%{opacity:0}}`}</style>
+            </div>
+          );
+        })}
+      </div>
+    </ToastCtx.Provider>
+  );
+};
+
+export const useToast = () => useContext(ToastCtx);
+/* ------------------------------------------------------------------ */
+
+// Import for useQCWebSocket now moved to SubmissionBuilder component
+// Each page that needs WebSocket will initialize its own connection
 
 export default function App() {
+  const [tourCompleted, setTourCompleted] = useState(false);
+  const [welcomeCompleted, setWelcomeCompleted] = useState(false);
+
+  // Check if this is the user's first visit to automatically start the tour
+  useEffect(() => {
+    const hasVisitedBefore = localStorage.getItem('trialsage_welcomed');
+    if (!hasVisitedBefore) {
+      // Mark as visited
+      localStorage.setItem('trialsage_welcomed', 'true');
+      // Will show welcome animation first
+      setWelcomeCompleted(false);
+    } else {
+      // Skip welcome animation if already visited
+      setWelcomeCompleted(true);
+    }
+  }, []);
+
   return (
     <ErrorBoundary>
-      <Switch>
-        <Route path="/">
-          <ErrorBoundary>
-            <HomeLandingEnhanced />
-          </ErrorBoundary>
-        </Route>
-        <Route>
-          <ErrorBoundary>
-            <HomeLandingEnhanced />
-          </ErrorBoundary>
-        </Route>
-      </Switch>
+      <ToastProvider>
+        <TourProvider>
+          {/* Welcome animation component */}
+          {!welcomeCompleted && (
+            <WelcomeAnimation 
+              onComplete={() => setWelcomeCompleted(true)} 
+              skipAnimation={welcomeCompleted} 
+            />
+          )}
+          
+          {/* Interactive tour component */}
+          <InteractiveTour 
+            tourCompleted={tourCompleted} 
+            setTourCompleted={setTourCompleted} 
+          />
+          
+          {/* Fixed position help button - only visible after welcome animation */}
+          {welcomeCompleted && (
+            <div className="fixed bottom-6 right-6 z-50">
+              <TourHelpButton />
+            </div>
+          )}
+          
+          <Switch>
+            <Route path="/builder">
+              <ErrorBoundary>
+                <SubmissionBuilder />
+              </ErrorBoundary>
+            </Route>
+            <Route path="/portal/ind/:sequenceId">
+              <ErrorBoundary>
+                <IndSequenceDetail />
+              </ErrorBoundary>
+            </Route>
+            <Route path="/ind/planner">
+              <ErrorBoundary>
+                <IndSequenceManager />
+              </ErrorBoundary>
+            </Route>
+            <Route path="/solutions">
+              <ErrorBoundary>
+                <HomeLanding />
+              </ErrorBoundary>
+            </Route>
+            <Route path="/ind-architect">
+              <ErrorBoundary>
+                <HomeLanding />
+              </ErrorBoundary>
+            </Route>
+            <Route path="/csr-intelligence">
+              <ErrorBoundary>
+                <HomeLanding />
+              </ErrorBoundary>
+            </Route>
+            <Route path="/use-case-library">
+              <ErrorBoundary>
+                <UseCaseLibrary />
+              </ErrorBoundary>
+            </Route>
+            <Route path="/ind-full-solution">
+              <ErrorBoundary>
+                <INDFullSolution />
+              </ErrorBoundary>
+            </Route>
+            <Route path="/cer-generator">
+              <ErrorBoundary>
+                <CERGenerator />
+              </ErrorBoundary>
+            </Route>
+            <Route path="/portal">
+              <ErrorBoundary>
+                <HomeLanding />
+              </ErrorBoundary>
+            </Route>
+            <Route path="/persona">
+              <ErrorBoundary>
+                <PersonaPages />
+              </ErrorBoundary>
+            </Route>
+            <Route path="/persona/:role">
+              <ErrorBoundary>
+                <PersonaPages />
+              </ErrorBoundary>
+            </Route>
+            <Route path="/investor-assets">
+              <ErrorBoundary>
+                <GatedSalesInvestorAssets />
+              </ErrorBoundary>
+            </Route>
+            <Route path="/lumen-bio/dashboard">
+              <ErrorBoundary>
+                <LumenBioDashboard />
+              </ErrorBoundary>
+            </Route>
+            <Route path="/lumen-bio/reports">
+              <ErrorBoundary>
+                <LumenBioReports />
+              </ErrorBoundary>
+            </Route>
+            <Route path="/walkthroughs">
+              <ErrorBoundary>
+                <Walkthroughs />
+              </ErrorBoundary>
+            </Route>
+            <Route path="/signup">
+              <ErrorBoundary>
+                <HomeLanding />
+              </ErrorBoundary>
+            </Route>
+            <Route path="/demo">
+              <ErrorBoundary>
+                <Walkthroughs />
+              </ErrorBoundary>
+            </Route>
+            <Route path="/client-portal">
+              <ErrorBoundary>
+                <ClientPortal />
+              </ErrorBoundary>
+            </Route>
+            <Route path="/ai-agent">
+              <ErrorBoundary>
+                <AIAdvancedAgent />
+              </ErrorBoundary>
+            </Route>
+            <Route path="/learning">
+              <ErrorBoundary>
+                <SimpleLearningInterface />
+              </ErrorBoundary>
+            </Route>
+            <Route path="/">
+              <ErrorBoundary>
+                <HomeLandingEnhanced />
+              </ErrorBoundary>
+            </Route>
+            <Route>
+              <ErrorBoundary>
+                <HomeLandingEnhanced />
+              </ErrorBoundary>
+            </Route>
+          </Switch>
+          <DebugInfo />
+          
+          {/* React-Toastify container for production-ready notifications */}
+          <ToastContainer 
+            position="bottom-right"
+            autoClose={5000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="light"
+          />
+        </TourProvider>
+      </ToastProvider>
     </ErrorBoundary>
   );
 }
