@@ -1,6 +1,7 @@
 // AppPackagesBanner.jsx – Simplified top navigation with essential elements
 import React from 'react';
 import { Link } from 'wouter';
+import CSRLibraryMetrics from './CSRLibraryMetrics';
 import { 
   FileText, 
   Database, 
@@ -352,78 +353,9 @@ export default function AppPackagesBanner({ currentPath }) {
             </div>
           </div>
           
-          {/* Intelligence Library - redesigned to match the example image */}
+          {/* Intelligence Library - using the CSRLibraryMetrics component */}
           <div className="mt-6">
-            <div className="bg-[#0f1625] py-3 rounded-lg">
-              <div className="max-w-3xl mx-auto px-4">
-                <div className="text-center mb-2">
-                  <h2 className="inline-flex items-center px-2 py-1 rounded-full bg-[#1b2235] text-blue-200 text-xs font-medium mb-1">
-                    <Database className="w-3 h-3 mr-1" />
-                    INTELLIGENCE LIBRARY
-                  </h2>
-                  <h3 className="text-lg font-bold text-white mb-1">Comprehensive CSR Intelligence</h3>
-                  <p className="text-blue-200 text-sm max-w-md mx-auto">
-                    Deep learning models trained on the world's largest collection of clinical reports.
-                  </p>
-                </div>
-                
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 text-center mt-3">
-                  {/* CSR Reports */}
-                  <div className="group relative">
-                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -mt-2.5 w-5 h-5 rounded-full bg-blue-500"></div>
-                    <div className="bg-[#0c111d] pt-4 pb-2 px-3 rounded-md">
-                      <div className="font-bold text-white text-lg">5,248<span className="text-xs font-normal text-blue-300">+</span></div>
-                      <div className="text-xs text-blue-200 mt-0.5">CSR Reports</div>
-                    </div>
-                  </div>
-                  
-                  {/* Academic Papers */}
-                  <div className="group relative">
-                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -mt-2.5 w-5 h-5 rounded-full bg-purple-500"></div>
-                    <div className="bg-[#0c111d] pt-4 pb-2 px-3 rounded-md">
-                      <div className="font-bold text-white text-lg">12,735<span className="text-xs font-normal text-blue-300">+</span></div>
-                      <div className="text-xs text-blue-200 mt-0.5">Papers</div>
-                    </div>
-                  </div>
-                  
-                  {/* Regulatory Guidelines */}
-                  <div className="group relative">
-                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -mt-2.5 w-5 h-5 rounded-full bg-cyan-500"></div>
-                    <div className="bg-[#0c111d] pt-4 pb-2 px-3 rounded-md">
-                      <div className="font-bold text-white text-lg">327</div>
-                      <div className="text-xs text-blue-200 mt-0.5">Guidelines</div>
-                    </div>
-                  </div>
-                  
-                  {/* Therapeutic Areas */}
-                  <div className="group relative">
-                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -mt-2.5 w-5 h-5 rounded-full bg-emerald-500"></div>
-                    <div className="bg-[#0c111d] pt-4 pb-2 px-3 rounded-md">
-                      <div className="font-bold text-white text-lg">48</div>
-                      <div className="text-xs text-blue-200 mt-0.5">Areas</div>
-                    </div>
-                  </div>
-                  
-                  {/* Global Regions */}
-                  <div className="group relative">
-                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -mt-2.5 w-5 h-5 rounded-full bg-rose-500"></div>
-                    <div className="bg-[#0c111d] pt-4 pb-2 px-3 rounded-md">
-                      <div className="font-bold text-white text-lg">14</div>
-                      <div className="text-xs text-blue-200 mt-0.5">Regions</div>
-                    </div>
-                  </div>
-                  
-                  {/* Model Parameters */}
-                  <div className="group relative">
-                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -mt-2.5 w-5 h-5 rounded-full bg-amber-500"></div>
-                    <div className="bg-[#0c111d] pt-4 pb-2 px-3 rounded-md">
-                      <div className="font-bold text-white text-lg">2.4B</div>
-                      <div className="text-xs text-blue-200 mt-0.5">Params</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <CSRLibraryMetrics />
           </div>
         </div>
       </div>
@@ -512,72 +444,7 @@ export default function AppPackagesBanner({ currentPath }) {
                     </div>
                   </div>
                   
-                  <div className="space-y-3 mb-6">
-                    <div className="bg-slate-800/70 border border-slate-700 rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center">
-                          <div className="h-8 w-8 rounded-md bg-blue-900/50 flex items-center justify-center text-blue-400 mr-3">
-                            <FileArchive className="h-4 w-4" />
-                          </div>
-                          <div>
-                            <div className="text-gray-200 font-medium">Oncology IND-23845</div>
-                            <div className="text-xs text-gray-400">FDA Submission</div>
-                          </div>
-                        </div>
-                        <div className="bg-emerald-900/30 text-emerald-400 text-xs font-medium px-2.5 py-1 rounded">
-                          Ready to Submit
-                        </div>
-                      </div>
-                      <div className="flex justify-between items-center text-xs text-gray-400 mt-3">
-                        <div>Technical validation: 100%</div>
-                        <div>Last updated: 2h ago</div>
-                      </div>
-                    </div>
-                    
-                    <div className="bg-slate-800/70 border border-slate-700 rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center">
-                          <div className="h-8 w-8 rounded-md bg-indigo-900/50 flex items-center justify-center text-indigo-400 mr-3">
-                            <Database className="h-4 w-4" />
-                          </div>
-                          <div>
-                            <div className="text-gray-200 font-medium">LUM-578 CSR Analysis</div>
-                            <div className="text-xs text-gray-400">Phase 2 Reports</div>
-                          </div>
-                        </div>
-                        <div className="bg-amber-900/30 text-amber-400 text-xs font-medium px-2.5 py-1 rounded">
-                          In Progress
-                        </div>
-                      </div>
-                      <div className="flex justify-between items-center text-xs text-gray-400 mt-3">
-                        <div>Analysis: 75% complete</div>
-                        <div>ETA: 3h remaining</div>
-                      </div>
-                    </div>
-                    
-                    <div className="bg-slate-800/70 border border-slate-700 rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center">
-                          <div className="h-8 w-8 rounded-md bg-purple-900/50 flex items-center justify-center text-purple-400 mr-3">
-                            <Beaker className="h-4 w-4" />
-                          </div>
-                          <div>
-                            <div className="text-gray-200 font-medium">MHRA Investigational Device</div>
-                            <div className="text-xs text-gray-400">CER Validation</div>
-                          </div>
-                        </div>
-                        <div className="bg-blue-900/30 text-blue-400 text-xs font-medium px-2.5 py-1 rounded">
-                          QC Review
-                        </div>
-                      </div>
-                      <div className="flex justify-between items-center text-xs text-gray-400 mt-3">
-                        <div>Compliance: 98.5%</div>
-                        <div>Regional issues: 3 pending</div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="text-gray-400 text-xs text-center">
+                  <div className="text-center text-gray-400 text-xs mt-6">
                     <div className="inline-flex items-center px-1.5 py-0.5 bg-slate-700/50 rounded mb-1">
                       <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-1.5 animate-pulse"></div>
                       Interface Demonstration - Sample Data
@@ -590,8 +457,6 @@ export default function AppPackagesBanner({ currentPath }) {
           </div>
         </div>
       </div>
-
-      {/* Integrated AI-Powered Solutions section completely removed as requested */}
     </div>
   );
 }
