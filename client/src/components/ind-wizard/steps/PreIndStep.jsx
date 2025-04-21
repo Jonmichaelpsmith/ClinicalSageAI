@@ -44,8 +44,9 @@ import {
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { format } from "date-fns";
-import { CalendarIcon, HelpCircle, UserPlus, Users, Trash2, Bot, Loader2, Sparkles } from 'lucide-react';
+import { AlertCircle, CalendarIcon, HelpCircle, UserPlus, Users, Trash2, Bot, Loader2, Sparkles } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { MilestoneTracker } from './components/MilestoneTracker';
 import { milestoneSchema } from './components/milestoneSchema';
@@ -66,13 +67,40 @@ const preIndStepSchema = z.object({
   milestones: z.array(z.any()).optional().default([]),
 });
 
-// Real API function for saving Pre-IND data
-const apiSavePreIndData = async (data) => {
-  console.log("API CALL: Saving Pre-IND Data...", data);
+// API function for fetching Pre-IND data 
+const fetchPreIndData = async (draftId) => {
+  console.log("API CALL: Fetching Pre-IND Data for draft:", draftId);
   
-  const currentDraftId = localStorage.getItem('currentDraftId') || 'draft-1'; // Use draft-1 as fallback for now
+  if (!draftId) {
+    throw new Error("Draft ID is required to fetch Pre-IND data.");
+  }
   
-  const response = await fetch(`/api/ind-drafts/${currentDraftId}/pre-ind`, {
+  const response = await fetch(`/api/ind-drafts/${draftId}/pre-ind`);
+  
+  if (!response.ok) {
+    // Handle specific errors if needed (e.g., 404 Not Found) 
+    if (response.status === 404) {
+      console.warn("No Pre-IND data found for this draft yet.");
+      return null; // Return null to indicate no data exists yet
+    }
+    
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || `Failed to fetch Pre-IND data (${response.status})`);
+  }
+  
+  const data = await response.json();
+  return data.data; // Assuming backend wraps response in { success: true, data: {...} }
+};
+
+// API function for saving Pre-IND data
+const savePreIndData = async ({ draftId, data }) => {
+  console.log("API CALL: Saving Pre-IND Data for draft:", draftId, data);
+  
+  if (!draftId) {
+    throw new Error("Draft ID is required to save Pre-IND data.");
+  }
+  
+  const response = await fetch(`/api/ind-drafts/${draftId}/pre-ind`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -80,12 +108,13 @@ const apiSavePreIndData = async (data) => {
     body: JSON.stringify(data),
   });
   
+  const responseData = await response.json();
+  
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || `API error: ${response.status}`);
+    throw new Error(responseData.message || `Failed to save Pre-IND data (${response.status})`);
   }
   
-  return await response.json();
+  return responseData; // Assuming backend returns { success: true, message: '...' }
 };
 
 const apiFetchAiSuggestions = async (context, prompt) => {
@@ -123,52 +152,77 @@ export default function PreIndStep() {
   const [aiSuggestionType, setAiSuggestionType] = useState(null);
   const [activeTab, setActiveTab] = useState('project-details');
 
-  // --- Data Fetching from API ---
-  const { data: initialData, isLoading: isLoadingInitialData } = useQuery({
-      queryKey: ['indDraft', 'preIndStepData'], 
-      queryFn: async () => {
-          console.log("API CALL: Fetching initial Pre-IND draft data...");
-          
-          const currentDraftId = localStorage.getItem('currentDraftId') || 'draft-1'; // Use draft-1 as fallback
-          
-          try {
-            const response = await fetch(`/api/ind-drafts/${currentDraftId}/pre-ind`);
-            
-            if (!response.ok) {
-              if (response.status === 404) {
-                console.warn('No Pre-IND data found for this draft yet. Starting with defaults.');
-                return null; // Will use default values from the form setup
-              }
-              throw new Error(`API error: ${response.status}`);
-            }
-            
-            const data = await response.json();
-            return data.data; // Assuming the API returns { success: true, data: {...} }
-          } catch (error) {
-            console.error('Error fetching Pre-IND data:', error);
-            // Fall back to context data if API fails
-            return indData;
-          }
-      },
-      enabled: true, // Fetch data on mount
-      staleTime: 5 * 60 * 1000, // 5 minutes
+  // Get current draft ID for API calls
+  const currentDraftId = localStorage.getItem('currentDraftId') || 'draft-1';
+
+  // --- Data Fetching with useQuery ---
+  const queryKey = ['preIndData', currentDraftId];
+  const {
+    data: fetchedData,
+    isLoading: isLoadingInitialData,
+    isError: isFetchError,
+    error: fetchError
+  } = useQuery({
+    queryKey: queryKey,
+    queryFn: () => fetchPreIndData(currentDraftId),
+    enabled: !!currentDraftId, // Only run query if draftId is available
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false, // Optional: prevent refetch on window focus
   });
 
   // --- Form Setup ---
   const form = useForm({
     resolver: zodResolver(preIndStepSchema),
-    defaultValues: initialData || {
+    defaultValues: {
+      projectName: '',
+      therapeuticArea: '',
+      projectObjective: '',
+      targetPreIndMeetingDate: undefined,
+      preIndMeetingObjective: '',
+      preIndAgendaTopics: [],
+      preIndAttendees: [],
+      fdaInteractionNotes: '',
+      milestones: [],
+    },
+  });
+
+  // Update form with fetched data when it becomes available
+  useEffect(() => {
+    if (fetchedData) {
+      // Map fetched data (potentially API/DB structure) to form structure
+      const formData = {
+        ...fetchedData,
+        // Convert date string from API to Date object for the form/calendar
+        targetPreIndMeetingDate: fetchedData.targetPreIndMeetingDate
+          ? new Date(fetchedData.targetPreIndMeetingDate)
+          : undefined,
+        // Ensure arrays are initialized correctly
+        preIndAgendaTopics: fetchedData.preIndAgendaTopics || [],
+        preIndAttendees: fetchedData.preIndAttendees || [],
+        milestones: (fetchedData.milestones || []).map(m => ({
+          ...m,
+          // Convert milestone due date string to Date object if needed
+          dueDate: m.dueDate ? new Date(m.dueDate) : undefined,
+        })),
+      };
+      form.reset(formData); // Reset the form with fetched data
+    } else if (indData) {
+      // Fallback to context data if API returns no data
+      form.reset({
         projectName: indData.projectDetails?.projectName || '',
         therapeuticArea: indData.projectDetails?.therapeuticArea || '',
         projectObjective: indData.projectDetails?.projectObjective || '',
-        targetPreIndMeetingDate: indData.preIndMeeting?.targetPreIndMeetingDate ? new Date(indData.preIndMeeting.targetPreIndMeetingDate) : undefined,
+        targetPreIndMeetingDate: indData.preIndMeeting?.targetPreIndMeetingDate 
+          ? new Date(indData.preIndMeeting.targetPreIndMeetingDate) 
+          : undefined,
         preIndMeetingObjective: indData.preIndMeeting?.preIndMeetingObjective || '',
         preIndAgendaTopics: indData.preIndMeeting?.preIndAgendaTopics || [],
         preIndAttendees: indData.preIndMeeting?.preIndAttendees || [],
         fdaInteractionNotes: indData.preIndMeeting?.fdaInteractionNotes || '',
         milestones: indData.milestones || [],
-    },
-  });
+      });
+    }
+  }, [fetchedData, indData, form.reset]);
 
   // useFieldArray for dynamic lists (Agenda, Attendees)
   const { fields: agendaFields, append: appendAgenda, remove: removeAgenda } = useFieldArray({
@@ -183,15 +237,15 @@ export default function PreIndStep() {
 
   // --- Data Mutation (Saving) ---
   const mutation = useMutation({
-    mutationFn: apiSavePreIndData,
+    mutationFn: savePreIndData,
     onSuccess: (data) => {
-      // Replace alert with toast for better UX
+      // Show toast notification
       toast({
-        title: "Success",
+        title: "Save Successful",
         description: data.message || "Pre-IND data saved successfully.",
       });
       
-      // Update context/global state
+      // Update context/global state (optional, query invalidation might be sufficient)
       updateIndDataSection('projectDetails', form.getValues());
       updateIndDataSection('preIndMeeting', form.getValues());
       updateIndDataSection('milestones', form.getValues('milestones'));
@@ -203,9 +257,8 @@ export default function PreIndStep() {
       goToNextStep();
     },
     onError: (error) => {
-      // Replace alert with toast for better UX
       toast({
-        title: "Error Saving Data",
+        title: "Save Failed",
         description: error.message || "An unknown error occurred.",
         variant: "destructive",
       });
@@ -215,7 +268,15 @@ export default function PreIndStep() {
   // Handle form submission -> trigger mutation
   function onSubmit(values) {
     console.log("Pre-IND Step Data Submitted:", values);
-    mutation.mutate(values); // Pass validated data to the mutation
+    
+    // Get the current draft ID
+    const currentDraftId = localStorage.getItem('currentDraftId') || 'draft-1';
+    
+    // Pass both draftId and data to the mutation function
+    mutation.mutate({ 
+      draftId: currentDraftId, 
+      data: values 
+    });
   }
 
   // --- AI Interaction ---
@@ -274,6 +335,18 @@ export default function PreIndStep() {
         <Skeleton className="h-48 w-full" />
         <Skeleton className="h-64 w-full" />
       </div>
+    );
+  }
+
+  if (isFetchError) {
+    return (
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>Error Loading Data</AlertTitle>
+        <AlertDescription>
+          {fetchError?.message || "Could not load Pre-IND data. Please try again later."}
+        </AlertDescription>
+      </Alert>
     );
   }
 
