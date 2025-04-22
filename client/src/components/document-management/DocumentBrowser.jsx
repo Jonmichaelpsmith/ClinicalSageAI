@@ -1,23 +1,16 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDocuShare } from '@/hooks/useDocuShare';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   Card,
   CardContent,
@@ -27,544 +20,506 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { 
-  Search, 
-  FileText, 
-  Upload, 
-  RefreshCw, 
-  Filter, 
-  ChevronRight 
+  FileText,
+  FolderOpen,
+  Search,
+  Upload,
+  Filter,
+  Download,
+  ClipboardList,
+  Filter as FilterIcon,
+  Grid3X3,
+  List,
+  Plus,
+  ChevronRight,
+  ChevronDown,
+  ArrowDownAZ,
+  ArrowUpZA,
+  Calendar,
+  AlignLeft,
 } from 'lucide-react';
 
 /**
- * Document Browser Component
+ * DocumentBrowser Component
  * 
- * This component implements a regulatory document browser with:
- * - Document listing with filtering and sorting
- * - Document upload with metadata
- * - Integration with Part 11 compliant DocuShare system
+ * This component provides a browsing interface for the DocuShare document management system.
+ * It displays documents in either a list or grid view, with filtering, sorting, and search capabilities.
  */
-export function DocumentBrowser({ 
-  collectionId = 'regulatory',
-  onSelectDocument,
-  defaultView = 'list'
-}) {
+export default function DocumentBrowser({ onSelectDocument }) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState('list');
+  const [sortBy, setSortBy] = useState('date');
+  const [sortOrder, setSortOrder] = useState('desc');
+  const [currentFolder, setCurrentFolder] = useState('/');
+  const [selectedDocumentId, setSelectedDocumentId] = useState(null);
+  const [activeTab, setActiveTab] = useState('all');
+  
   const {
-    isAuthenticated,
-    isLoading,
     documents,
+    folders,
+    isLoading,
     error,
-    authenticate,
-    loadDocuments,
-    uploadDocument
+    fetchDocuments,
+    uploadDocument,
+    downloadDocument,
   } = useDocuShare();
   
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState('all');
-  const [sortBy, setSortBy] = useState('date');
-  const [viewMode, setViewMode] = useState(defaultView);
-  const [showUploadDialog, setShowUploadDialog] = useState(false);
-  const [uploadFile, setUploadFile] = useState(null);
-  const [uploadMetadata, setUploadMetadata] = useState({
-    documentType: '',
-    regulatoryPhase: '',
-    controlStatus: 'Draft',
-    confidentiality: 'Confidential'
-  });
-  
-  // Document types for regulatory submissions
-  const documentTypes = [
-    { value: 'protocol', label: 'Clinical Protocol' },
-    { value: 'csr', label: 'Clinical Study Report' },
-    { value: 'ib', label: 'Investigator Brochure' },
-    { value: 'cta', label: 'Clinical Trial Application' },
-    { value: 'ind', label: 'IND Application' },
-    { value: 'nda', label: 'NDA Submission' },
-    { value: 'ctd', label: 'Common Technical Document' },
-    { value: 'dsp', label: 'Development Safety Update Report' },
-    { value: 'sop', label: 'Standard Operating Procedure' },
-    { value: 'iqoq', label: 'IQ/OQ Protocol' }
-  ];
-  
-  // Regulatory phases
-  const regulatoryPhases = [
-    { value: 'preclinical', label: 'Preclinical' },
-    { value: 'phase1', label: 'Phase 1' },
-    { value: 'phase2', label: 'Phase 2' },
-    { value: 'phase3', label: 'Phase 3' },
-    { value: 'phase4', label: 'Phase 4' },
-    { value: 'submission', label: 'Submission' },
-    { value: 'postApproval', label: 'Post-Approval' }
-  ];
-  
-  // Control status options (21 CFR Part 11 relevant)
-  const controlStatusOptions = [
-    { value: 'Draft', label: 'Draft' },
-    { value: 'In-Review', label: 'In Review' },
-    { value: 'Approved', label: 'Approved' },
-    { value: 'Effective', label: 'Effective' },
-    { value: 'Superseded', label: 'Superseded' },
-    { value: 'Obsolete', label: 'Obsolete' }
-  ];
-  
-  // Confidentiality levels
-  const confidentialityLevels = [
-    { value: 'Public', label: 'Public' },
-    { value: 'Confidential', label: 'Confidential' },
-    { value: 'Restricted', label: 'Restricted' },
-    { value: 'HighlyConfidential', label: 'Highly Confidential' }
-  ];
-  
-  // Load documents on mount if authenticated
+  // Load documents when component mounts or when folder/filters change
   useEffect(() => {
-    if (isAuthenticated) {
-      loadDocuments(collectionId);
-    }
-  }, [isAuthenticated, collectionId, loadDocuments]);
-  
-  // Handle authentication if not already authenticated
-  useEffect(() => {
-    if (!isAuthenticated) {
-      // In a real implementation, this would prompt for credentials or use stored tokens
-      // For this example, we'll authenticate with default values
-      authenticate('regulatory_user', 'secure_password');
-    }
-  }, [isAuthenticated, authenticate]);
-  
-  // Handle file upload selection
-  const handleFileChange = (event) => {
-    if (event.target.files && event.target.files[0]) {
-      setUploadFile(event.target.files[0]);
-    }
-  };
-  
-  // Handle document upload
-  const handleUpload = async () => {
-    if (!uploadFile) return;
-    
-    // Prepare metadata for regulatory document
-    const metadata = {
-      ...uploadMetadata,
-      filename: uploadFile.name,
-      uploadDate: new Date().toISOString(),
-      fileSize: uploadFile.size,
-      mimeType: uploadFile.type
-    };
-    
-    await uploadDocument(collectionId, uploadFile, metadata);
-    setShowUploadDialog(false);
-    setUploadFile(null);
-    setUploadMetadata({
-      documentType: '',
-      regulatoryPhase: '',
-      controlStatus: 'Draft',
-      confidentiality: 'Confidential'
-    });
-    
-    // Reload documents after upload
-    loadDocuments(collectionId);
-  };
-  
-  // Filter documents based on search term and filter type
-  const filteredDocuments = documents.filter(doc => {
-    const matchesSearch = doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (doc.description && doc.description.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    if (filterType === 'all') return matchesSearch;
-    return matchesSearch && doc.documentType === filterType;
-  });
-  
-  // Sort documents
-  const sortedDocuments = [...filteredDocuments].sort((a, b) => {
-    if (sortBy === 'name') {
-      return a.name.localeCompare(b.name);
-    } else if (sortBy === 'type') {
-      return a.documentType.localeCompare(b.documentType);
-    } else if (sortBy === 'status') {
-      return a.controlStatus.localeCompare(b.controlStatus);
-    } else {
-      // Default sort by date (newest first)
-      return new Date(b.uploadDate) - new Date(a.uploadDate);
-    }
-  });
+    fetchDocuments();
+  }, [fetchDocuments, currentFolder]);
   
   // Handle document selection
-  const handleSelectDocument = (document) => {
+  const handleSelectDocument = (doc) => {
+    setSelectedDocumentId(doc.id);
     if (onSelectDocument) {
-      onSelectDocument(document);
+      onSelectDocument(doc);
     }
   };
   
-  // Render file size in a human-readable format
-  const formatFileSize = (bytes) => {
-    if (bytes < 1024) return bytes + ' B';
-    else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
-    else return (bytes / 1048576).toFixed(1) + ' MB';
+  // Handle file upload
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      await uploadDocument(file, currentFolder, activeTab !== 'all' ? activeTab : 'document');
+    }
   };
+  
+  // Handle folder navigation
+  const handleFolderClick = (folder) => {
+    setCurrentFolder(folder.path);
+  };
+  
+  // Filter documents based on search query and active tab
+  const filteredDocuments = React.useMemo(() => {
+    if (!documents) return [];
+    
+    return documents.filter((doc) => {
+      // Apply search filter
+      const matchesSearch = 
+        searchQuery === '' || 
+        doc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        doc.documentId.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      // Apply tab filter
+      const matchesTab = 
+        activeTab === 'all' || 
+        doc.type === activeTab;
+      
+      return matchesSearch && matchesTab;
+    });
+  }, [documents, searchQuery, activeTab]);
+  
+  // Sort documents based on sort criteria
+  const sortedDocuments = React.useMemo(() => {
+    if (!filteredDocuments) return [];
+    
+    return [...filteredDocuments].sort((a, b) => {
+      let comparison = 0;
+      
+      switch (sortBy) {
+        case 'name':
+          comparison = a.title.localeCompare(b.title);
+          break;
+        case 'date':
+          comparison = new Date(b.modifiedDate) - new Date(a.modifiedDate);
+          break;
+        case 'type':
+          comparison = a.type.localeCompare(b.type);
+          break;
+        case 'status':
+          comparison = a.controlStatus.localeCompare(b.controlStatus);
+          break;
+        default:
+          comparison = new Date(b.modifiedDate) - new Date(a.modifiedDate);
+      }
+      
+      return sortOrder === 'asc' ? comparison : -comparison;
+    });
+  }, [filteredDocuments, sortBy, sortOrder]);
   
   // Format date for display
   const formatDate = (dateString) => {
+    if (!dateString) return '';
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('en-US', {
       year: 'numeric',
       month: 'short',
-      day: 'numeric'
+      day: 'numeric',
     }).format(date);
   };
   
-  // Get document type label from value
-  const getDocumentTypeLabel = (value) => {
-    const docType = documentTypes.find(type => type.value === value);
-    return docType ? docType.label : value;
+  // Get document status badge class
+  const getStatusBadgeClass = (status) => {
+    const classes = {
+      'Approved': 'bg-green-100 text-green-800',
+      'In-Review': 'bg-blue-100 text-blue-800',
+      'Draft': 'bg-gray-100 text-gray-800',
+      'Submitted': 'bg-amber-100 text-amber-800',
+      'Active': 'bg-purple-100 text-purple-800',
+    };
+    
+    return classes[status] || 'bg-gray-100 text-gray-800';
   };
   
-  // Render document icon based on type
-  const getDocumentIcon = (documentType) => {
-    // In a real implementation, this would return different icons based on document type
-    return <FileText className="h-5 w-5" />;
+  // Get document type icon
+  const getDocumentTypeIcon = (type) => {
+    switch (type) {
+      case 'protocol':
+        return <ClipboardList className="h-5 w-5 text-blue-600" />;
+      case 'report':
+        return <FileText className="h-5 w-5 text-green-600" />;
+      case 'form':
+        return <AlignLeft className="h-5 w-5 text-purple-600" />;
+      case 'submission':
+        return <FileText className="h-5 w-5 text-amber-600" />;
+      case 'correspondence':
+        return <FileText className="h-5 w-5 text-sky-600" />;
+      default:
+        return <FileText className="h-5 w-5 text-gray-600" />;
+    }
   };
   
-  // Render list view of documents
-  const renderListView = () => (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-[300px]">Document Name</TableHead>
-          <TableHead>Type</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>Modified</TableHead>
-          <TableHead>Size</TableHead>
-          <TableHead className="text-right">Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {sortedDocuments.length === 0 ? (
-          <TableRow>
-            <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-              {isLoading ? (
-                <div className="flex justify-center items-center">
-                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                  Loading documents...
-                </div>
-              ) : (
-                'No documents found. Upload a new document to get started.'
-              )}
-            </TableCell>
-          </TableRow>
-        ) : (
-          sortedDocuments.map((doc) => (
-            <TableRow key={doc.id} onClick={() => handleSelectDocument(doc)} className="cursor-pointer hover:bg-muted">
-              <TableCell className="font-medium flex items-center">
-                {getDocumentIcon(doc.documentType)}
-                <span className="ml-2">{doc.name}</span>
-              </TableCell>
-              <TableCell>{getDocumentTypeLabel(doc.documentType)}</TableCell>
-              <TableCell>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  doc.controlStatus === 'Approved' ? 'bg-green-100 text-green-800' :
-                  doc.controlStatus === 'In-Review' ? 'bg-blue-100 text-blue-800' :
-                  doc.controlStatus === 'Draft' ? 'bg-gray-100 text-gray-800' :
-                  'bg-yellow-100 text-yellow-800'
-                }`}>
-                  {doc.controlStatus}
-                </span>
-              </TableCell>
-              <TableCell>{formatDate(doc.uploadDate)}</TableCell>
-              <TableCell>{formatFileSize(doc.fileSize)}</TableCell>
-              <TableCell className="text-right">
-                <Button variant="ghost" size="sm" onClick={(e) => {
-                  e.stopPropagation();
-                  handleSelectDocument(doc);
-                }}>
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))
-        )}
-      </TableBody>
-    </Table>
-  );
-  
-  // Render grid view of documents
-  const renderGridView = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {sortedDocuments.length === 0 ? (
-        <div className="col-span-full text-center py-8 text-muted-foreground">
-          {isLoading ? (
-            <div className="flex justify-center items-center">
-              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-              Loading documents...
-            </div>
-          ) : (
-            'No documents found. Upload a new document to get started.'
-          )}
+  // Render folder path breadcrumbs
+  const renderBreadcrumbs = () => {
+    if (currentFolder === '/') {
+      return (
+        <div className="flex items-center text-sm text-muted-foreground">
+          <span className="font-medium">Root</span>
         </div>
-      ) : (
-        sortedDocuments.map((doc) => (
-          <Card key={doc.id} className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => handleSelectDocument(doc)}>
-            <CardHeader className="pb-2">
-              <div className="flex justify-between items-start">
-                <div className="flex items-center">
-                  {getDocumentIcon(doc.documentType)}
-                  <CardTitle className="ml-2 text-base truncate">{doc.name}</CardTitle>
-                </div>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  doc.controlStatus === 'Approved' ? 'bg-green-100 text-green-800' :
-                  doc.controlStatus === 'In-Review' ? 'bg-blue-100 text-blue-800' :
-                  doc.controlStatus === 'Draft' ? 'bg-gray-100 text-gray-800' :
-                  'bg-yellow-100 text-yellow-800'
-                }`}>
-                  {doc.controlStatus}
-                </span>
-              </div>
-              <CardDescription className="truncate">
-                {getDocumentTypeLabel(doc.documentType)}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-0 pb-2">
-              {doc.description && (
-                <p className="text-sm text-muted-foreground line-clamp-2">
-                  {doc.description}
-                </p>
-              )}
-            </CardContent>
-            <CardFooter className="flex justify-between pt-0">
-              <span className="text-xs text-muted-foreground">{formatDate(doc.uploadDate)}</span>
-              <span className="text-xs text-muted-foreground">{formatFileSize(doc.fileSize)}</span>
-            </CardFooter>
-          </Card>
-        ))
-      )}
-    </div>
-  );
+      );
+    }
+    
+    const parts = currentFolder.split('/').filter(Boolean);
+    
+    return (
+      <div className="flex items-center text-sm text-muted-foreground overflow-x-auto">
+        <span 
+          className="cursor-pointer hover:text-foreground"
+          onClick={() => setCurrentFolder('/')}
+        >
+          Root
+        </span>
+        
+        {parts.map((part, index) => (
+          <React.Fragment key={index}>
+            <ChevronRight className="h-4 w-4 mx-1" />
+            <span 
+              className={`cursor-pointer ${index === parts.length - 1 ? 'font-medium text-foreground' : 'hover:text-foreground'}`}
+              onClick={() => setCurrentFolder('/' + parts.slice(0, index + 1).join('/'))}
+            >
+              {part}
+            </span>
+          </React.Fragment>
+        ))}
+      </div>
+    );
+  };
   
   return (
-    <div className="space-y-4">
-      {/* Search and Actions Bar */}
-      <div className="flex flex-col sm:flex-row justify-between gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="Search documents..."
-            className="pl-8"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-        <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => loadDocuments(collectionId)}
-            disabled={isLoading}
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
+    <Card className="w-full border-teal-200 shadow-sm">
+      <CardHeader className="pb-3">
+        <div className="flex justify-between items-center">
+          <div>
+            <CardTitle className="text-xl font-semibold flex items-center">
+              <FileText className="h-5 w-5 mr-2 text-teal-600" />
+              DocuShare Document Repository
+            </CardTitle>
+            <CardDescription>
+              21 CFR Part 11 compliant document management system
+            </CardDescription>
+          </div>
           
-          <Dialog open={showUploadDialog} onOpenChange={setShowUploadDialog}>
-            <DialogTrigger asChild>
-              <Button>
-                <Upload className="h-4 w-4 mr-2" />
+          <div className="flex space-x-2">
+            <Button variant="outline" size="sm" className="h-9">
+              <label className="cursor-pointer flex items-center">
+                <Upload className="h-4 w-4 mr-1" />
                 Upload
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
-              <DialogHeader>
-                <DialogTitle>Upload Regulatory Document</DialogTitle>
-                <DialogDescription>
-                  Upload a document to the regulatory document management system.
-                  All documents are tracked for 21 CFR Part 11 compliance.
-                </DialogDescription>
-              </DialogHeader>
-              
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="file">Document File</Label>
-                  <Input 
-                    id="file" 
-                    type="file" 
-                    onChange={handleFileChange}
-                  />
-                </div>
-                
-                <div className="grid gap-2">
-                  <Label htmlFor="documentType">Document Type</Label>
-                  <Select 
-                    value={uploadMetadata.documentType} 
-                    onValueChange={(value) => setUploadMetadata({...uploadMetadata, documentType: value})}
-                  >
-                    <SelectTrigger id="documentType">
-                      <SelectValue placeholder="Select document type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {documentTypes.map((type) => (
-                        <SelectItem key={type.value} value={type.value}>
-                          {type.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="grid gap-2">
-                  <Label htmlFor="regulatoryPhase">Regulatory Phase</Label>
-                  <Select 
-                    value={uploadMetadata.regulatoryPhase} 
-                    onValueChange={(value) => setUploadMetadata({...uploadMetadata, regulatoryPhase: value})}
-                  >
-                    <SelectTrigger id="regulatoryPhase">
-                      <SelectValue placeholder="Select regulatory phase" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {regulatoryPhases.map((phase) => (
-                        <SelectItem key={phase.value} value={phase.value}>
-                          {phase.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="grid gap-2">
-                  <Label htmlFor="controlStatus">Control Status</Label>
-                  <Select 
-                    value={uploadMetadata.controlStatus}
-                    onValueChange={(value) => setUploadMetadata({...uploadMetadata, controlStatus: value})}
-                  >
-                    <SelectTrigger id="controlStatus">
-                      <SelectValue placeholder="Select control status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {controlStatusOptions.map((status) => (
-                        <SelectItem key={status.value} value={status.value}>
-                          {status.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="grid gap-2">
-                  <Label htmlFor="confidentiality">Confidentiality</Label>
-                  <Select 
-                    value={uploadMetadata.confidentiality} 
-                    onValueChange={(value) => setUploadMetadata({...uploadMetadata, confidentiality: value})}
-                  >
-                    <SelectTrigger id="confidentiality">
-                      <SelectValue placeholder="Select confidentiality level" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {confidentialityLevels.map((level) => (
-                        <SelectItem key={level.value} value={level.value}>
-                          {level.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setShowUploadDialog(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={handleUpload} disabled={!uploadFile || !uploadMetadata.documentType}>
-                  <Upload className="h-4 w-4 mr-2" />
-                  Upload Document
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </div>
-      </div>
-      
-      {/* Filters and View Controls */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-2">
-        <div className="flex items-center gap-2">
-          <Filter className="h-4 w-4 text-muted-foreground" />
-          <Label htmlFor="filterType" className="text-sm font-medium">
-            Filter by:
-          </Label>
-          <Select 
-            value={filterType} 
-            onValueChange={setFilterType}
-          >
-            <SelectTrigger id="filterType" className="w-[180px]">
-              <SelectValue placeholder="Select filter type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Document Types</SelectItem>
-              {documentTypes.map((type) => (
-                <SelectItem key={type.value} value={type.value}>
-                  {type.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          
-          <Label htmlFor="sortBy" className="text-sm font-medium ml-2">
-            Sort by:
-          </Label>
-          <Select 
-            value={sortBy} 
-            onValueChange={setSortBy}
-          >
-            <SelectTrigger id="sortBy" className="w-[150px]">
-              <SelectValue placeholder="Select sort" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="date">Date Modified</SelectItem>
-              <SelectItem value="name">Name</SelectItem>
-              <SelectItem value="type">Document Type</SelectItem>
-              <SelectItem value="status">Status</SelectItem>
-            </SelectContent>
-          </Select>
+                <input
+                  type="file"
+                  className="hidden"
+                  onChange={handleFileUpload}
+                />
+              </label>
+            </Button>
+            
+            <Button variant="default" size="sm" className="h-9 bg-teal-600 hover:bg-teal-700">
+              <Plus className="h-4 w-4 mr-1" />
+              New Document
+            </Button>
+          </div>
         </div>
         
-        <div className="flex items-center">
-          <Label className="text-sm font-medium mr-2">View:</Label>
-          <div className="bg-muted rounded-md p-1 flex">
-            <Button
-              variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-              size="sm"
-              className="px-2"
-              onClick={() => setViewMode('list')}
-            >
-              List
-            </Button>
-            <Button
-              variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
-              size="sm"
-              className="px-2"
-              onClick={() => setViewMode('grid')}
-            >
-              Grid
-            </Button>
+        <div className="mt-3 space-y-3">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Search documents..."
+              className="pl-9"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          
+          <div className="flex items-center justify-between">
+            {renderBreadcrumbs()}
+            
+            <div className="flex items-center space-x-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-8 gap-1">
+                    <FilterIcon className="h-3.5 w-3.5" />
+                    <span className="text-xs">Filter</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => setActiveTab('all')}>
+                    All Documents
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setActiveTab('protocol')}>
+                    Protocols Only
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setActiveTab('report')}>
+                    Reports Only
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setActiveTab('submission')}>
+                    Submissions Only
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-8 gap-1">
+                    {sortOrder === 'asc' ? (
+                      <ArrowUpZA className="h-3.5 w-3.5" />
+                    ) : (
+                      <ArrowDownAZ className="h-3.5 w-3.5" />
+                    )}
+                    <span className="text-xs">Sort</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => { setSortBy('date'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc'); }}>
+                    By Date {sortBy === 'date' && (sortOrder === 'asc' ? '↑' : '↓')}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => { setSortBy('name'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc'); }}>
+                    By Name {sortBy === 'name' && (sortOrder === 'asc' ? '↑' : '↓')}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => { setSortBy('type'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc'); }}>
+                    By Type {sortBy === 'type' && (sortOrder === 'asc' ? '↑' : '↓')}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => { setSortBy('status'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc'); }}>
+                    By Status {sortBy === 'status' && (sortOrder === 'asc' ? '↑' : '↓')}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              
+              <div className="border rounded-md flex">
+                <Button 
+                  variant={viewMode === 'list' ? 'subtle' : 'ghost'} 
+                  size="sm" 
+                  className="h-8 px-2 rounded-r-none"
+                  onClick={() => setViewMode('list')}
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+                <Button 
+                  variant={viewMode === 'grid' ? 'subtle' : 'ghost'} 
+                  size="sm" 
+                  className="h-8 px-2 rounded-l-none"
+                  onClick={() => setViewMode('grid')}
+                >
+                  <Grid3X3 className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </CardHeader>
       
-      {/* Document List */}
-      <ScrollArea className="h-[calc(100vh-220px)]">
-        {error ? (
-          <div className="p-4 rounded-md bg-destructive/10 text-destructive">
-            <p className="font-medium">Error loading documents</p>
-            <p className="text-sm">{error}</p>
+      <CardContent className="p-0 border-t">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <div className="border-b px-4">
+            <TabsList className="mb-px">
+              <TabsTrigger value="all" className="text-xs">All Documents</TabsTrigger>
+              <TabsTrigger value="protocol" className="text-xs">Protocols</TabsTrigger>
+              <TabsTrigger value="report" className="text-xs">Reports</TabsTrigger>
+              <TabsTrigger value="submission" className="text-xs">Submissions</TabsTrigger>
+              <TabsTrigger value="form" className="text-xs">Forms</TabsTrigger>
+            </TabsList>
           </div>
-        ) : viewMode === 'list' ? renderListView() : renderGridView()}
-      </ScrollArea>
-    </div>
+          
+          <TabsContent value={activeTab} className="m-0 pt-0">
+            {isLoading ? (
+              <div className="flex justify-center items-center p-8">
+                <div className="animate-spin h-8 w-8 border-2 border-teal-500 border-t-transparent rounded-full"></div>
+              </div>
+            ) : error ? (
+              <div className="p-6 text-center">
+                <p className="text-red-500 mb-2">Error loading documents</p>
+                <Button variant="outline" onClick={() => fetchDocuments()}>Retry</Button>
+              </div>
+            ) : (
+              <div className="px-4 py-3">
+                {/* Folders Section */}
+                {currentFolder === '/' && folders && folders.length > 0 && (
+                  <div className="mb-4">
+                    <h3 className="text-sm font-medium mb-2 text-muted-foreground">Folders</h3>
+                    <div className={viewMode === 'grid' ? 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3' : 'space-y-1'}>
+                      {folders.map((folder) => (
+                        <div
+                          key={folder.id}
+                          className={`
+                            border rounded-md cursor-pointer hover:bg-muted/40 transition-colors
+                            ${viewMode === 'grid' ? 'p-3' : 'p-2 flex items-center'}
+                          `}
+                          onClick={() => handleFolderClick(folder)}
+                        >
+                          <div className={viewMode === 'grid' ? 'flex items-center mb-1' : 'flex items-center'}>
+                            <FolderOpen className={`text-amber-500 ${viewMode === 'grid' ? 'h-5 w-5 mr-2' : 'h-5 w-5 mr-3'}`} />
+                            <div>
+                              <div className="font-medium text-sm">{folder.name}</div>
+                              {viewMode === 'grid' && (
+                                <div className="text-xs text-muted-foreground mt-1">
+                                  {folder.documentCount} document{folder.documentCount !== 1 ? 's' : ''}
+                                </div>
+                              )}
+                            </div>
+                            {viewMode === 'list' && (
+                              <div className="ml-auto text-xs text-muted-foreground">
+                                {folder.documentCount} document{folder.documentCount !== 1 ? 's' : ''}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="border-t my-4"></div>
+                  </div>
+                )}
+                
+                {/* Documents Section */}
+                <div>
+                  <h3 className="text-sm font-medium mb-2 text-muted-foreground">
+                    Documents {filteredDocuments.length > 0 && `(${filteredDocuments.length})`}
+                  </h3>
+                  
+                  {filteredDocuments.length === 0 ? (
+                    <div className="py-8 text-center border rounded-md bg-muted/20">
+                      <FileText className="h-8 w-8 text-muted-foreground/60 mx-auto mb-3" />
+                      <p className="text-muted-foreground">No documents found</p>
+                      {searchQuery && (
+                        <Button 
+                          variant="link" 
+                          className="mt-1 text-teal-600"
+                          onClick={() => setSearchQuery('')}
+                        >
+                          Clear search
+                        </Button>
+                      )}
+                    </div>
+                  ) : viewMode === 'grid' ? (
+                    // Grid View
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                      {sortedDocuments.map((doc) => (
+                        <Card
+                          key={doc.id}
+                          className={`overflow-hidden cursor-pointer transition-all hover:border-teal-300 hover:shadow-md ${selectedDocumentId === doc.id ? 'border-teal-500 ring-1 ring-teal-500/30' : ''}`}
+                          onClick={() => handleSelectDocument(doc)}
+                        >
+                          <CardContent className="p-3">
+                            <div className="mb-2">
+                              {getDocumentTypeIcon(doc.type)}
+                            </div>
+                            <h4 className="font-medium text-sm mb-1 line-clamp-2">{doc.title}</h4>
+                            <div className="flex justify-between items-center mt-2">
+                              <Badge className={getStatusBadgeClass(doc.controlStatus)}>
+                                {doc.controlStatus}
+                              </Badge>
+                              <div className="flex items-center text-xs text-muted-foreground">
+                                <Calendar className="h-3 w-3 mr-1" />
+                                {formatDate(doc.modifiedDate)}
+                              </div>
+                            </div>
+                            <div className="text-xs text-muted-foreground mt-2">
+                              {doc.documentId} • v{doc.version}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  ) : (
+                    // List View
+                    <div className="rounded-md border overflow-hidden">
+                      <div className="bg-muted/30 px-4 py-2 text-xs font-medium text-muted-foreground grid grid-cols-12 gap-3">
+                        <div className="col-span-6">Name</div>
+                        <div className="col-span-2">Status</div>
+                        <div className="col-span-2">Type</div>
+                        <div className="col-span-2">Modified</div>
+                      </div>
+                      
+                      <ScrollArea className="h-[calc(100vh-21rem)]">
+                        <div className="divide-y">
+                          {sortedDocuments.map((doc) => (
+                            <div
+                              key={doc.id}
+                              className={`px-4 py-3 grid grid-cols-12 gap-3 cursor-pointer hover:bg-muted/30 transition-colors ${
+                                selectedDocumentId === doc.id ? 'bg-teal-50 border-l-2 border-l-teal-600' : ''
+                              }`}
+                              onClick={() => handleSelectDocument(doc)}
+                            >
+                              <div className="col-span-6 flex items-center">
+                                {getDocumentTypeIcon(doc.type)}
+                                <div className="ml-3 min-w-0">
+                                  <div className="font-medium text-sm truncate">{doc.title}</div>
+                                  <div className="text-xs text-muted-foreground">{doc.documentId} • v{doc.version}</div>
+                                </div>
+                              </div>
+                              
+                              <div className="col-span-2 flex items-center">
+                                <Badge className={getStatusBadgeClass(doc.controlStatus)}>
+                                  {doc.controlStatus}
+                                </Badge>
+                              </div>
+                              
+                              <div className="col-span-2 flex items-center text-sm">
+                                {doc.documentType || doc.type}
+                              </div>
+                              
+                              <div className="col-span-2 flex items-center text-xs text-muted-foreground">
+                                {formatDate(doc.modifiedDate)}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </ScrollArea>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
+      </CardContent>
+      
+      <CardFooter className="py-3 px-4 border-t flex justify-between items-center bg-muted/10">
+        <div className="text-xs text-muted-foreground">
+          Connected to DocuShare server: <span className="font-mono">TrialSAGE-DS7</span>
+        </div>
+        {selectedDocumentId && (
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="h-8"
+            onClick={() => downloadDocument(selectedDocumentId)}
+          >
+            <Download className="h-3 w-3 mr-1" />
+            Download Selected
+          </Button>
+        )}
+      </CardFooter>
+    </Card>
   );
 }
