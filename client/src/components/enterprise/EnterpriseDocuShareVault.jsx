@@ -90,7 +90,7 @@ export default function EnterpriseDocuShareVault() {
       },
       {
         id: 'doc-4',
-        name: 'Investigator's Brochure - Compound XYZ-123',
+        name: 'Investigator\'s Brochure - Compound XYZ-123',
         module: 'regulatory',
         docType: 'brochure',
         lastModified: '2025-04-15T16:10:00Z',

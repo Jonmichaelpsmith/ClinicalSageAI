@@ -1,15 +1,43 @@
 import React from 'react';
+import { Link } from "wouter";
 import { Layout } from '@/components/ui/layout';
+import { Button } from '@/components/ui/button';
 import DocuShareVault from '@/components/DocuShareVault';
+import { BuildingLibrary, MoveRight } from 'lucide-react';
 
 export default function DocumentManagement() {
   return (
     <Layout>
       <div className="container mx-auto py-8">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">Document Management</h1>
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-3xl font-bold">Document Management</h1>
+            <p className="text-gray-600 mt-1">
+              Unified document repository with 21 CFR Part 11 compliance
+            </p>
+          </div>
           <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
             21 CFR Part 11 Compliant
+          </div>
+        </div>
+        
+        <div className="mb-6 p-4 bg-indigo-50 border border-indigo-100 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <BuildingLibrary className="h-6 w-6 text-indigo-600" />
+              <div>
+                <h2 className="text-lg font-semibold">Enterprise Document Vault Available</h2>
+                <p className="text-sm text-gray-700">
+                  Experience our enhanced DocuShare Enterprise solution with comprehensive case studies for Life Sciences
+                </p>
+              </div>
+            </div>
+            <Link href="/enterprise-vault">
+              <Button className="gap-1">
+                <span>Enterprise Showcase</span>
+                <MoveRight className="h-4 w-4" />
+              </Button>
+            </Link>
           </div>
         </div>
         
