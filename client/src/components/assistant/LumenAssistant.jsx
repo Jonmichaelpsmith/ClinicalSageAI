@@ -47,7 +47,7 @@ const formatMessageText = (text) => {
   );
   
   // Handle links
-  const linkFormatted = highlightFormatted.replace(
+  const linkFormatted = cmcHighlightFormatted.replace(
     /\[([^\]]+)\]\(([^)]+)\)/g, 
     '<a href="$2" class="text-blue-600 dark:text-blue-400 underline" target="_blank">$1</a>'
   );
