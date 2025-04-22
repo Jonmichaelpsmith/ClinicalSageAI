@@ -178,18 +178,20 @@ export default function PreIndStep() {
         if (isMounted && isLoadingInitialData) {
           console.log("Fetch timeout reached, using default data");
           setIsLoadingInitialData(false);
-          // Use default initial data
-          setFetchedData({
-            projectName: "New IND Application",
-            therapeuticArea: "",
-            projectObjective: "",
-            targetPreIndMeetingDate: new Date(),
-            preIndMeetingObjective: "",
-            preIndAgendaTopics: [],
-            preIndAttendees: [],
-            fdaInteractionNotes: "",
-            milestones: []
-          });
+          // Use default initial data only if no data exists yet
+          if (!fetchedData) {
+            setFetchedData({
+              projectName: "New IND Application",
+              therapeuticArea: "",
+              projectObjective: "",
+              targetPreIndMeetingDate: new Date(),
+              preIndMeetingObjective: "",
+              preIndAgendaTopics: [],
+              preIndAttendees: [],
+              fdaInteractionNotes: "",
+              milestones: []
+            });
+          }
         }
       }, 5000); // 5 second timeout
       
@@ -225,18 +227,20 @@ export default function PreIndStep() {
           setFetchError(error);
           setIsLoadingInitialData(false);
           
-          // Use default initial data on error
-          setFetchedData({
-            projectName: "New IND Application",
-            therapeuticArea: "",
-            projectObjective: "",
-            targetPreIndMeetingDate: new Date(),
-            preIndMeetingObjective: "",
-            preIndAgendaTopics: [],
-            preIndAttendees: [],
-            fdaInteractionNotes: "",
-            milestones: []
-          });
+          // Use default initial data on error (only if no data exists yet)
+          if (!fetchedData) {
+            setFetchedData({
+              projectName: "New IND Application",
+              therapeuticArea: "",
+              projectObjective: "",
+              targetPreIndMeetingDate: new Date(),
+              preIndMeetingObjective: "",
+              preIndAgendaTopics: [],
+              preIndAttendees: [],
+              fdaInteractionNotes: "",
+              milestones: []
+            });
+          }
         }
       }
     };
@@ -863,9 +867,9 @@ export default function PreIndStep() {
             </Button>
             <Button 
               type="submit" 
-              disabled={mutation.isPending}
+              disabled={isSaving}
             >
-              {mutation.isPending ? (
+              {isSaving ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Saving...
