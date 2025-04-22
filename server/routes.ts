@@ -9,20 +9,22 @@ export const setupRoutes = (app: express.Express) => {
   // Create an HTTP server with the Express app
   const httpServer = http.createServer(app);
   
-  // Set up WebSocket server
+  // Set up WebSocket servers
+  // Main WebSocket endpoint
   const wss = new WebSocketServer({ 
     server: httpServer,
     path: '/ws',
   });
   
-  // WebSocket connection handler
+  // QC-specific WebSocket endpoint
+  const qcWss = new WebSocketServer({
+    server: httpServer,
+    path: '/ws/qc',
+  });
+  
+  // Main WebSocket connection handler
   wss.on('connection', (socket: WebSocket) => {
-    console.log('Client connected to WebSocket');
-    
-    // Handle disconnection
-    socket.on('close', () => {
-      console.log('Client disconnected from WebSocket');
-    });
+    console.log('Client connected to main WebSocket');
     
     // Send welcome message
     socket.send(JSON.stringify({ 
@@ -30,6 +32,98 @@ export const setupRoutes = (app: express.Express) => {
       message: 'Connected to TrialSage WebSocket server',
       timestamp: new Date().toISOString(),
     }));
+    
+    // Message handler
+    socket.on('message', (message: WebSocket.Data) => {
+      try {
+        const messageContent = JSON.parse(message.toString());
+        console.log('Received WebSocket message:', messageContent);
+          
+        // Echo message back as acknowledgment
+        socket.send(JSON.stringify({
+          type: 'acknowledgment',
+          receivedMessage: messageContent,
+          timestamp: new Date().toISOString(),
+        }));
+      } catch (err) {
+        console.error('Error parsing WebSocket message:', err);
+      }
+    });
+    
+    // Handle disconnection
+    socket.on('close', () => {
+      console.log('Client disconnected from main WebSocket');
+    });
+    
+    // Handle errors
+    socket.on('error', (error) => {
+      console.error('WebSocket error:', error);
+    });
+  });
+  
+  // QC WebSocket connection handler
+  qcWss.on('connection', (socket: WebSocket) => {
+    console.log('Client connected to QC WebSocket');
+    
+    // Send welcome message
+    socket.send(JSON.stringify({ 
+      type: 'connection_established',
+      message: 'Connected to TrialSage QC WebSocket server',
+      timestamp: new Date().toISOString(),
+    }));
+    
+    // Set up heartbeat to prevent timeouts
+    const heartbeatInterval = setInterval(() => {
+      if (socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({ 
+          type: 'heartbeat',
+          timestamp: new Date().toISOString(),
+        }));
+      } else {
+        clearInterval(heartbeatInterval);
+      }
+    }, 30000); // Send heartbeat every 30 seconds
+    
+    // Message handler
+    socket.on('message', (message: WebSocket.Data) => {
+      try {
+        const messageContent = JSON.parse(message.toString());
+        console.log('Received QC WebSocket message:', messageContent);
+        
+        // Handle different message types
+        if (messageContent.type === 'subscribe') {
+          // Handle subscription messages
+          console.log('Client subscribed to QC updates for documents:', messageContent.documentIds);
+          
+          // Acknowledge the subscription
+          socket.send(JSON.stringify({
+            type: 'subscription_confirmed',
+            documentIds: messageContent.documentIds,
+            timestamp: new Date().toISOString(),
+          }));
+        } else {
+          // Echo other messages back
+          socket.send(JSON.stringify({
+            type: 'acknowledgment',
+            receivedMessage: messageContent,
+            timestamp: new Date().toISOString(),
+          }));
+        }
+      } catch (err) {
+        console.error('Error parsing QC WebSocket message:', err);
+      }
+    });
+    
+    // Handle disconnection
+    socket.on('close', () => {
+      console.log('Client disconnected from QC WebSocket');
+      clearInterval(heartbeatInterval);
+    });
+    
+    // Handle errors
+    socket.on('error', (error) => {
+      console.error('QC WebSocket error:', error);
+    });
   });
   
   // Simple API route for health check

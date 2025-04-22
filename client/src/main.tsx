@@ -1,11 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import SimpleApp from './SimpleApp';
+import App from './App';
 
-// Render the app with React 18 createRoot API - bypass all other providers
+// Render the app with React 18 createRoot API
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <SimpleApp />
+    <App />
   </React.StrictMode>
 );
