@@ -3,6 +3,70 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <title>TrialSage - Advanced Clinical Intelligence</title>
+    
+    <!-- Critical anti-flash solution - load before anything else -->
+    <style id="anti-flash-critical">
+      /* Create an opaque overlay that covers the entire viewport to prevent flashing */
+      body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #fff;
+        z-index: 999999;
+        pointer-events: none;
+      }
+      
+      /* Immediately disable all animations and transitions */
+      *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+        animation-duration: 0s !important;
+        animation-delay: 0s !important;
+        transition-duration: 0s !important;
+        transition-delay: 0s !important;
+      }
+      
+      /* Force scrollbar to always appear to prevent layout shifts */
+      html {
+        overflow-y: scroll !important;
+      }
+      
+      /* Prevent layout shifts by setting a min-height */
+      body, #root {
+        min-height: 100vh;
+      }
+      
+      /* Set background to prevent FOUC */
+      body {
+        background-color: #fff;
+      }
+    </style>
+    
+    <!-- Pre-connect to key domains to speed up rendering -->
+    <link rel="dns-prefetch" href="//fonts.googleapis.com">
+    <link rel="preconnect" href="//fonts.googleapis.com" crossorigin>
+    
+    <!-- Add a simple fix to remove the white screen overlay after load completes -->
+    <script>
+      // Wait for the DOM to be loaded and then remove the white overlay
+      document.addEventListener('DOMContentLoaded', function() {
+        // Remove body::before overlay with 500ms delay to ensure content is ready
+        setTimeout(function() {
+          const style = document.createElement('style');
+          style.textContent = `
+            body::before { 
+              opacity: 0 !important;
+              transition: opacity 0.2s ease-out !important;
+            }
+          `;
+          document.head.appendChild(style);
+        }, 800);
+      });
+    </script>
   </head>
   <body>
     <div id="root"></div>
