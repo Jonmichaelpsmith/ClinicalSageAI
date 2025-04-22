@@ -34,6 +34,16 @@ const WebSocketDiagnostic = () => {
         setWsStatus(`Connection closed (Code: ${event.code})`);
         if (event.code !== 1000) {
           setWsErrors(prev => [...prev, `WebSocket closed with code ${event.code}: ${event.reason || 'No reason provided'}`]);
+          
+          // More detailed diagnostic for code 1006
+          if (event.code === 1006) {
+            setWsErrors(prev => [...prev, 
+              "WebSocket Code 1006 (Abnormal Closure) detected. This typically means either:" +
+              "\n1. The server closed the connection without sending a close frame" +
+              "\n2. The connection was closed abnormally (e.g., network error)" +
+              "\n3. There might be an issue with the WebSocket server implementation"
+            ]);
+          }
         }
       };
       
