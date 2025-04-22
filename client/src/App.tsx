@@ -29,6 +29,9 @@ import INDWizard from './pages/INDWizard';
 const LazyINDWizard = INDWizard;
 const LazyUseCaseLibrary = React.lazy(() => import('./pages/UseCaseLibrary'));
 const LazyCERGenerator = React.lazy(() => import('./pages/CERGenerator'));
+// Add CSR Intelligence module
+import CSRIntelligence from './pages/CSRIntelligence';
+const LazyCSRIntelligence = CSRIntelligence;
 const LazyLumenBioDashboard = React.lazy(() => import('./pages/LumenBioDashboard'));
 const LazyLumenBioReports = React.lazy(() => import('./pages/LumenBioReports'));
 const LazySimpleLearningInterface = React.lazy(() => import('./components/SimpleLearningInterface'));
@@ -96,7 +99,7 @@ export default function App() {
             </Route>
             <Route path="/csr-intelligence">
               <SimpleErrorBoundary fallback={<EmergencyFallback pageName="CSR Intelligence" />}>
-                <LazyHomeLanding />
+                <LazyCSRIntelligence />
               </SimpleErrorBoundary>
             </Route>
             <Route path="/use-case-library">
