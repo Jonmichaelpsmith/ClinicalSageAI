@@ -532,9 +532,11 @@ export const setupRoutes = (app: express.Express) => {
   
   // IND Wizard 2.0 API Routes
   
-  // Get KPI data with trend information
+  // Get KPI data with trend information and optional module-level readiness for 3.1
   app.get("/api/ind/kpi", (req, res) => {
-    res.json({
+    const includeModules = req.query.modules === 'true';
+    
+    const baseData = {
       ready: 67,
       errors: 3,
       docs: 12,
@@ -543,7 +545,23 @@ export const setupRoutes = (app: express.Express) => {
         errors: -1,
         docs: 3
       }
-    });
+    };
+    
+    // If modules data is requested, add the modules array with readiness percentages
+    if (includeModules) {
+      return res.json({
+        ...baseData,
+        modules: [
+          { name: "Module 1: Administrative", ready: 85 },
+          { name: "Module 2: Summaries", ready: 72 },
+          { name: "Module 3: Quality", ready: 53 },
+          { name: "Module 4: Nonclinical", ready: 68 },
+          { name: "Module 5: Clinical", ready: 42 }
+        ]
+      });
+    }
+    
+    res.json(baseData);
   });
   
   // Get step flags (validation status for each step)
