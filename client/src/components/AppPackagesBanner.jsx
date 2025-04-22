@@ -239,25 +239,25 @@ export default function AppPackagesBanner({ currentPath }) {
                 </span>
                 <div className="absolute left-0 mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-50 hidden group-hover:block">
                   <div className="py-1">
-                    <Link to="/ind/wizard">
+                    <Link to="/ind-architect">
                       <div className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
                         <User size={16} className="mr-2 text-rose-500" />
                         IND Overview
                       </div>
                     </Link>
-                    <Link to="/ind/wizard/pre-planning">
+                    <Link to="/ind-architect">
                       <div className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
                         <Bot size={16} className="mr-2 text-violet-500" />
                         Pre-IND Planning
                       </div>
                     </Link>
-                    <Link to="/ind/wizard/nonclinical">
+                    <Link to="/ind-architect">
                       <div className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
                         <FileText size={16} className="mr-2 text-purple-500" />
                         Nonclinical Data
                       </div>
                     </Link>
-                    <Link to="/ind/wizard/cmc">
+                    <Link to="/ind-architect">
                       <div className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
                         <BarChart size={16} className="mr-2 text-slate-700" />
                         CMC Section
@@ -275,7 +275,7 @@ export default function AppPackagesBanner({ currentPath }) {
             
             {/* Action buttons */}
             <div className="flex items-center space-x-4">
-              <Link to="/ind/wizard">
+              <Link to="/ind-architect">
                 <button className="flex items-center text-sm font-medium text-blue-600 hover:text-blue-800">
                   <ExternalLink size={16} className="mr-1" />
                   Open IND Wizard
