@@ -1,12 +1,11 @@
 /**
- * DocDrawer Component
+ * DocDrawer Component - Simplified Version
  * 
  * Document drawer for IND Wizard 2.0 with tabs for Browse, Search, QC Errors, and Recent
  */
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Tab } from "@headlessui/react";
 import { 
   X, 
   FolderOpen, 
@@ -18,8 +17,6 @@ import {
   FileWarning, 
   ChevronRight 
 } from "lucide-react";
-
-import clsx from "clsx";
 
 export default function DocDrawer({ onClose }) {
   const [documents, setDocuments] = useState([]);
@@ -104,53 +101,12 @@ export default function DocDrawer({ onClose }) {
     { key: "recent", label: "Recent", icon: Clock }
   ];
   
-  return (
-    <motion.div
-      initial={{ x: "100%" }}
-      animate={{ x: 0 }}
-      exit={{ x: "100%" }}
-      transition={{ type: "spring", damping: 30, stiffness: 300 }}
-      className="absolute top-0 right-0 w-96 h-full bg-white dark:bg-slate-800 border-l shadow-xl flex flex-col z-50"
-    >
-      <div className="flex items-center justify-between border-b p-4">
-        <h2 className="text-lg font-semibold">Document Manager</h2>
-        <button 
-          onClick={onClose}
-          className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-        >
-          <X size={20} />
-        </button>
-      </div>
-      
-      <Tab.Group onChange={setActiveTab} selectedIndex={activeTab}>
-        <Tab.List className="flex space-x-1 p-1 border-b">
-          {tabs.map(tab => (
-            <Tab
-              key={tab.key}
-              className={({ selected }) =>
-                clsx(
-                  'w-full py-2 text-sm font-medium leading-5 text-center rounded-lg',
-                  'flex items-center justify-center transition-colors duration-150',
-                  selected
-                    ? 'bg-regulatory-50 dark:bg-regulatory-900/40 text-regulatory-700 dark:text-regulatory-200'
-                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50'
-                )
-              }
-            >
-              <tab.icon size={16} className="mr-1" />
-              {tab.label}
-              {tab.key === "qc" && qcErrors.length > 0 && (
-                <span className="ml-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {qcErrors.length}
-                </span>
-              )}
-            </Tab>
-          ))}
-        </Tab.List>
-        
-        <Tab.Panels className="flex-1 overflow-y-auto">
-          {/* Browse Documents Panel */}
-          <Tab.Panel className="p-4 space-y-2">
+  // Simplified tabs component without @headlessui/react dependency
+  const renderContent = () => {
+    switch(activeTab) {
+      case 0: // Browse
+        return (
+          <div className="p-4 space-y-2">
             <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">
               All Documents ({documents.length})
             </h3>
@@ -183,10 +139,12 @@ export default function DocDrawer({ onClose }) {
                 ))}
               </ul>
             )}
-          </Tab.Panel>
-          
-          {/* Search Panel */}
-          <Tab.Panel className="p-4">
+          </div>
+        );
+        
+      case 1: // Search
+        return (
+          <div className="p-4">
             <div className="mb-4">
               <input
                 type="text"
@@ -229,10 +187,12 @@ export default function DocDrawer({ onClose }) {
                 </ul>
               </div>
             )}
-          </Tab.Panel>
-          
-          {/* QC Errors Panel */}
-          <Tab.Panel className="p-4">
+          </div>
+        );
+        
+      case 2: // QC Errors
+        return (
+          <div className="p-4">
             <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">
               Quality Control Issues ({qcErrors.length})
             </h3>
@@ -279,10 +239,12 @@ export default function DocDrawer({ onClose }) {
                 })}
               </ul>
             )}
-          </Tab.Panel>
-          
-          {/* Recent Documents Panel */}
-          <Tab.Panel className="p-4">
+          </div>
+        );
+        
+      case 3: // Recent Documents
+        return (
+          <div className="p-4">
             <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">
               Recently Updated
             </h3>
@@ -310,9 +272,62 @@ export default function DocDrawer({ onClose }) {
                 ))}
               </ul>
             )}
-          </Tab.Panel>
-        </Tab.Panels>
-      </Tab.Group>
+          </div>
+        );
+        
+      default:
+        return null;
+    }
+  };
+  
+  return (
+    <motion.div
+      initial={{ x: "100%" }}
+      animate={{ x: 0 }}
+      exit={{ x: "100%" }}
+      transition={{ type: "spring", damping: 30, stiffness: 300 }}
+      className="absolute top-0 right-0 w-96 h-full bg-white dark:bg-slate-800 border-l shadow-xl flex flex-col z-50"
+    >
+      <div className="flex items-center justify-between border-b p-4">
+        <h2 className="text-lg font-semibold">Document Manager</h2>
+        <button 
+          onClick={onClose}
+          className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+          aria-label="Close document manager"
+        >
+          <X size={20} />
+        </button>
+      </div>
+      
+      {/* Simplified tab navigation */}
+      <div className="flex space-x-1 p-1 border-b">
+        {tabs.map((tab, index) => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(index)}
+            className={`w-full py-2 text-sm font-medium leading-5 text-center rounded-lg 
+                       flex items-center justify-center transition-colors duration-150
+                       ${activeTab === index 
+                         ? 'bg-regulatory-50 dark:bg-regulatory-900/40 text-regulatory-700 dark:text-regulatory-200' 
+                         : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50'}`}
+            aria-selected={activeTab === index}
+            role="tab"
+          >
+            <tab.icon size={16} className="mr-1" />
+            {tab.label}
+            {tab.key === "qc" && qcErrors.length > 0 && (
+              <span className="ml-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                {qcErrors.length}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
+      
+      {/* Tab content */}
+      <div className="flex-1 overflow-y-auto">
+        {renderContent()}
+      </div>
     </motion.div>
   );
 }
