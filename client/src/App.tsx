@@ -24,7 +24,9 @@ const LazyPersonaPages = React.lazy(() => import('./components/PersonaPages'));
 const LazyGatedSalesInvestorAssets = React.lazy(() => import('./components/GatedSalesInvestorAssets'));
 const LazyWalkthroughs = React.lazy(() => import('./pages/Walkthroughs'));
 const LazyDebugInfo = React.lazy(() => import('./components/DebugInfo'));
-const LazyINDWizard = React.lazy(() => import('./pages/INDWizard'));
+// Force non-lazy loading of INDWizard to ensure it renders properly
+import INDWizard from './pages/INDWizard';
+const LazyINDWizard = INDWizard;
 const LazyUseCaseLibrary = React.lazy(() => import('./pages/UseCaseLibrary'));
 const LazyCERGenerator = React.lazy(() => import('./pages/CERGenerator'));
 const LazyLumenBioDashboard = React.lazy(() => import('./pages/LumenBioDashboard'));

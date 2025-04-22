@@ -13,6 +13,19 @@ import { Button } from '@/components/ui/button';
 import CmcStep from '../components/ind-wizard/steps/CmcStep';
 
 export default function INDWizard() {
+  const [location] = useLocation();
+  console.log("INDWizard component rendering with location:", location);
+
+  // Force IndWizardLayout with PreIndStep as a fallback if no specific route matches
+  const renderFallbackContent = () => {
+    console.log("Rendering fallback content");
+    return (
+      <IndWizardLayout>
+        <PreIndStep />
+      </IndWizardLayout>
+    );
+  };
+
   return (
     <div className="min-h-screen">
       <div className="flex justify-between items-center p-4 bg-white border-b">
@@ -33,9 +46,7 @@ export default function INDWizard() {
 
       <Switch>
         <Route path="/ind/wizard" exact>
-          <IndWizardLayout>
-            <PreIndStep />
-          </IndWizardLayout>
+          {renderFallbackContent()}
         </Route>
         <Route path="/ind/wizard/pre-planning">
           <IndWizardLayout>
@@ -76,6 +87,10 @@ export default function INDWizard() {
           <IndWizardLayout>
             <FinalAssemblyStep />
           </IndWizardLayout>
+        </Route>
+        <Route>
+          {/* Catch-all route to ensure at least something renders */}
+          {renderFallbackContent()}
         </Route>
       </Switch>
     </div>
