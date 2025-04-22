@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Route, Switch } from 'wouter';
 import { ToastProvider } from './hooks/use-toast-context';
+import { AuroraAssistantProvider } from './components/assistant';
 
 // Emergency fallback component to ensure something renders
 const EmergencyFallback = ({ pageName }: { pageName: string }) => (
@@ -129,9 +130,10 @@ export default function App() {
   return (
     <SimpleErrorBoundary>
       <ToastProvider>
-        <React.Suspense fallback={<div className="flex items-center justify-center h-screen">Loading application...</div>}>
-          <TopNav />
-          <div className="pt-12"> {/* Add padding for the fixed TopNav */}
+        <AuroraAssistantProvider>
+          <React.Suspense fallback={<div className="flex items-center justify-center h-screen">Loading application...</div>}>
+            <TopNav />
+            <div className="pt-12"> {/* Add padding for the fixed TopNav */}
             <Switch>
               <Route path="/builder">
                 <SimpleErrorBoundary fallback={<EmergencyFallback pageName="IND Builder" />}>
@@ -288,7 +290,8 @@ export default function App() {
               </Route>
             </Switch>
           </div>
-        </React.Suspense>
+          </React.Suspense>
+        </AuroraAssistantProvider>
       </ToastProvider>
     </SimpleErrorBoundary>
   );
