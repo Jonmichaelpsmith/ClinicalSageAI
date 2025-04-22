@@ -1,464 +1,472 @@
 /**
  * DocuShare Service
  * 
- * This service provides the interface to interact with the DocuShare document management system.
- * It handles document CRUD operations and authentication with the DocuShare API.
- * The service is compliant with 21 CFR Part 11 requirements for electronic records and signatures.
+ * Provides integration with the DocuShare document management system
+ * with 21 CFR Part 11 compliance for electronic records and signatures.
  */
 
-// DocuShare service class for 21 CFR Part 11 compliant document management
-class DocuShareService {
-  constructor() {
-    this.baseUrl = '/api/docushare';
-    this.token = null;
-    this.serverId = process.env.DOCUSHARE_SERVER_ID || 'TrialSAGE-DS7';
-    
-    // Check for valid token on initialization
-    const storedToken = localStorage.getItem('docushare_token');
-    const tokenExpiry = localStorage.getItem('docushare_token_expiry');
-    
-    if (storedToken && tokenExpiry && new Date().getTime() < parseInt(tokenExpiry)) {
-      this.token = storedToken;
-    }
-  }
-  
+const DocuShareService = {
   /**
-   * Authenticate with DocuShare
-   * @param {string} username - DocuShare username
-   * @param {string} password - DocuShare password
-   * @returns {Promise<Object>} - Authentication result
+   * Fetch documents from DocuShare
+   * 
+   * @param {Object} options - Query options
+   * @param {string} options.moduleContext - Filter by module context
+   * @param {string} options.documentType - Filter by document type
+   * @param {string} options.searchTerm - Search term for document names
+   * @returns {Promise<Array>} Array of document objects
    */
-  async authenticate(username, password) {
+  async fetchDocuments(options = {}) {
     try {
-      const response = await fetch(`${this.baseUrl}/auth`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      // This would be a real API call in production
+      // return await apiRequest('GET', '/api/docushare/documents', options);
+      
+      // For demo purposes, return sample documents
+      const sampleDocuments = [
+        {
+          id: '1',
+          name: 'IND Application Overview.docx',
+          moduleContext: 'ind',
+          sectionContext: 'pre-planning',
+          documentType: 'submission',
+          lastModified: '2025-04-10T10:30:00Z',
+          author: 'John Smith',
+          version: '1.2',
+          status: 'approved',
+          url: '/documents/ind-overview.docx'
         },
-        body: JSON.stringify({ username, password, serverId: this.serverId }),
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Authentication failed: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      this.token = data.token;
-      
-      // Store token with expiry (24 hours)
-      const expiry = new Date().getTime() + (24 * 60 * 60 * 1000);
-      localStorage.setItem('docushare_token', this.token);
-      localStorage.setItem('docushare_token_expiry', expiry.toString());
-      
-      return data;
-    } catch (error) {
-      console.error('DocuShare authentication error:', error);
-      throw error;
-    }
-  }
-  
-  /**
-   * Get documents based on filter criteria
-   * @param {Object} filters - Filtering options
-   * @returns {Promise<Array>} - List of documents
-   */
-  async getDocuments(filters = {}) {
-    try {
-      // For development testing, provide some sample document data
-      // In production, this would make an API call to DocuShare
-      if (!this.isAuthenticated()) {
-        return await this.getSampleDocuments(filters);
-      }
-      
-      const queryParams = new URLSearchParams();
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value) queryParams.append(key, value);
-      });
-      
-      const response = await fetch(`${this.baseUrl}/documents?${queryParams.toString()}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${this.token}`,
+        {
+          id: '2',
+          name: 'Clinical Protocol Template.docx',
+          moduleContext: 'ind',
+          sectionContext: 'clinical-protocol',
+          documentType: 'template',
+          lastModified: '2025-04-12T14:15:00Z',
+          author: 'Sarah Johnson',
+          version: '2.0',
+          status: 'approved',
+          url: '/documents/protocol-template.docx'
         },
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Failed to fetch documents: ${response.status}`);
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error('DocuShare getDocuments error:', error);
-      // Fall back to sample data if API is unavailable
-      return await this.getSampleDocuments(filters);
-    }
-  }
-  
-  /**
-   * Get a specific document by ID
-   * @param {string} documentId - DocuShare document ID
-   * @returns {Promise<Object>} - Document details
-   */
-  async getDocument(documentId) {
-    try {
-      if (!this.isAuthenticated()) {
-        const sampleDocs = await this.getSampleDocuments();
-        return sampleDocs.find(doc => doc.id === documentId) || null;
-      }
-      
-      const response = await fetch(`${this.baseUrl}/documents/${documentId}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${this.token}`,
+        {
+          id: '3',
+          name: 'Investigational Product Information.pdf',
+          moduleContext: 'ind',
+          sectionContext: 'cmc',
+          documentType: 'submission',
+          lastModified: '2025-04-05T09:45:00Z',
+          author: 'David Miller',
+          version: '1.0',
+          status: 'in-review',
+          url: '/documents/product-info.pdf'
         },
-      });
+        {
+          id: '4',
+          name: 'Statistical Analysis Plan.docx',
+          moduleContext: 'csr',
+          sectionContext: 'statistics',
+          documentType: 'plan',
+          lastModified: '2025-04-15T11:20:00Z',
+          author: 'Emily Chen',
+          version: '1.1',
+          status: 'draft',
+          url: '/documents/analysis-plan.docx'
+        },
+        {
+          id: '5',
+          name: 'Preclinical Study Results.pdf',
+          moduleContext: 'ind',
+          sectionContext: 'nonclinical',
+          documentType: 'report',
+          lastModified: '2025-03-28T15:30:00Z',
+          author: 'Robert Jones',
+          version: '1.0',
+          status: 'approved',
+          url: '/documents/preclinical-results.pdf'
+        },
+        {
+          id: '6',
+          name: 'FDA Form 1571.pdf',
+          moduleContext: 'ind',
+          sectionContext: 'fda-forms',
+          documentType: 'form',
+          lastModified: '2025-04-18T10:00:00Z',
+          author: 'Jennifer Wilson',
+          version: '1.0',
+          status: 'approved',
+          url: '/documents/form-1571.pdf'
+        },
+        {
+          id: '7',
+          name: 'Investigator Brochure Draft.docx',
+          moduleContext: 'ind',
+          sectionContext: 'investigator-brochure',
+          documentType: 'submission',
+          lastModified: '2025-04-09T16:45:00Z',
+          author: 'Michael Brown',
+          version: '0.9',
+          status: 'draft',
+          url: '/documents/ib-draft.docx'
+        },
+        {
+          id: '8',
+          name: 'Final Submission Checklist.pdf',
+          moduleContext: 'ind',
+          sectionContext: 'final-assembly',
+          documentType: 'checklist',
+          lastModified: '2025-04-20T09:15:00Z',
+          author: 'Lisa Garcia',
+          version: '2.1',
+          status: 'approved',
+          url: '/documents/submission-checklist.pdf'
+        },
+        {
+          id: '9',
+          name: 'Clinical Study Report Template.docx',
+          moduleContext: 'csr',
+          sectionContext: 'general',
+          documentType: 'template',
+          lastModified: '2025-03-25T14:00:00Z',
+          author: 'Thomas Lee',
+          version: '3.0',
+          status: 'approved',
+          url: '/documents/csr-template.docx'
+        },
+        {
+          id: '10',
+          name: 'QC Review Form.pdf',
+          moduleContext: 'general',
+          sectionContext: '',
+          documentType: 'form',
+          lastModified: '2025-04-17T11:30:00Z',
+          author: 'Amanda White',
+          version: '1.3',
+          status: 'approved',
+          url: '/documents/qc-form.pdf'
+        }
+      ];
       
-      if (!response.ok) {
-        throw new Error(`Failed to fetch document: ${response.status}`);
+      // Apply filters
+      let filteredDocuments = [...sampleDocuments];
+      
+      if (options.moduleContext) {
+        filteredDocuments = filteredDocuments.filter(doc => 
+          doc.moduleContext === options.moduleContext
+        );
       }
       
-      return await response.json();
+      if (options.documentType) {
+        filteredDocuments = filteredDocuments.filter(doc => 
+          doc.documentType === options.documentType
+        );
+      }
+      
+      if (options.searchTerm) {
+        const searchLower = options.searchTerm.toLowerCase();
+        filteredDocuments = filteredDocuments.filter(doc => 
+          doc.name.toLowerCase().includes(searchLower)
+        );
+      }
+      
+      return filteredDocuments;
     } catch (error) {
-      console.error('DocuShare getDocument error:', error);
-      throw error;
+      console.error('Error fetching documents:', error);
+      throw new Error('Failed to fetch documents from DocuShare');
     }
-  }
+  },
   
   /**
    * Upload a document to DocuShare
-   * @param {File} file - File to upload
-   * @param {string} contextId - Context ID (e.g., study ID)
-   * @param {string} documentType - Document type
-   * @returns {Promise<Object>} - Upload result
+   * 
+   * @param {File} file - The file to upload
+   * @param {string} moduleContext - The module context
+   * @param {string} sectionContext - The section context
+   * @returns {Promise<Object>} The uploaded document
    */
-  async uploadDocument(file, contextId, documentType) {
+  async uploadDocument(file, moduleContext, sectionContext) {
     try {
-      if (!this.isAuthenticated()) {
-        console.warn('DocuShare: Not authenticated, upload would fail');
-        // Simulate successful upload for development
-        return {
-          id: 'doc-' + Math.floor(Math.random() * 10000),
-          name: file.name,
-          status: 'success',
-        };
-      }
-      
+      // In production, this would use FormData to upload the file
+      /*
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('contextId', contextId || '');
-      formData.append('documentType', documentType || '');
+      formData.append('moduleContext', moduleContext);
+      formData.append('sectionContext', sectionContext);
       
-      const response = await fetch(`${this.baseUrl}/upload`, {
-        method: 'POST',
+      return await apiRequest('POST', '/api/docushare/documents', formData, {
         headers: {
-          'Authorization': `Bearer ${this.token}`,
+          // No Content-Type header, let the browser set it with the boundary
         },
-        body: formData,
       });
+      */
       
-      if (!response.ok) {
-        throw new Error(`Upload failed: ${response.status}`);
-      }
+      // For demo, return a mock success after a delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      return await response.json();
+      return {
+        id: Math.random().toString(36).substring(2, 9),
+        name: file.name,
+        moduleContext,
+        sectionContext,
+        documentType: guessDocumentType(file.name),
+        lastModified: new Date().toISOString(),
+        author: 'Current User',
+        version: '1.0',
+        status: 'draft',
+        url: URL.createObjectURL(file)
+      };
     } catch (error) {
-      console.error('DocuShare uploadDocument error:', error);
-      throw error;
+      console.error('Error uploading document:', error);
+      throw new Error('Failed to upload document to DocuShare');
     }
-  }
+  },
   
   /**
    * Download a document from DocuShare
-   * @param {string} documentId - DocuShare document ID
-   * @returns {Promise<Blob>} - Document content as blob
+   * 
+   * @param {string} documentId - The document ID
+   * @returns {Promise<void>}
    */
   async downloadDocument(documentId) {
     try {
-      if (!this.isAuthenticated()) {
-        console.warn('DocuShare: Not authenticated, download would fail');
-        throw new Error('Authentication required for download');
-      }
-      
-      const response = await fetch(`${this.baseUrl}/documents/${documentId}/download`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${this.token}`,
-        },
+      // In production, this would trigger a file download
+      /*
+      const response = await apiRequest('GET', `/api/docushare/documents/${documentId}/download`, null, {
+        responseType: 'blob',
       });
       
-      if (!response.ok) {
-        throw new Error(`Download failed: ${response.status}`);
-      }
+      const url = window.URL.createObjectURL(response);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'document.pdf'); // would get actual filename from headers
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      */
       
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
+      // For demo, log the action
+      console.log(`Downloaded document: ${documentId}`);
       
-      // Create a temporary link and click it to download
-      const a = document.createElement('a');
-      a.style.display = 'none';
-      a.href = url;
-      // Try to get filename from Content-Disposition header
-      const contentDisposition = response.headers.get('Content-Disposition');
-      const filename = contentDisposition 
-        ? contentDisposition.split('filename=')[1].replace(/"/g, '') 
-        : `document-${documentId}.pdf`;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-      
-      return blob;
+      // Simulate success
+      return { success: true };
     } catch (error) {
-      console.error('DocuShare downloadDocument error:', error);
-      throw error;
+      console.error('Error downloading document:', error);
+      throw new Error('Failed to download document from DocuShare');
     }
-  }
+  },
   
   /**
-   * Check if user is authenticated with DocuShare
-   * @returns {boolean} - Whether user is authenticated
+   * Get document details
+   * 
+   * @param {string} documentId - The document ID
+   * @returns {Promise<Object>} The document details
    */
-  isAuthenticated() {
-    return !!this.token;
-  }
-  
-  /**
-   * Sign out from DocuShare
-   */
-  signOut() {
-    this.token = null;
-    localStorage.removeItem('docushare_token');
-    localStorage.removeItem('docushare_token_expiry');
-  }
-  
-  /**
-   * Get folders from DocuShare
-   * @returns {Promise<Array>} - List of folders
-   */
-  async getFolders() {
+  async getDocumentDetails(documentId) {
     try {
-      if (!this.isAuthenticated()) {
-        return this.getSampleFolders();
-      }
+      // This would be a real API call in production
+      // return await apiRequest('GET', `/api/docushare/documents/${documentId}`);
       
-      const response = await fetch(`${this.baseUrl}/folders`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${this.token}`,
-        },
-      });
+      // For demo, return mock data
+      await new Promise(resolve => setTimeout(resolve, 500));
       
-      if (!response.ok) {
-        throw new Error(`Failed to fetch folders: ${response.status}`);
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error('DocuShare getFolders error:', error);
-      return this.getSampleFolders();
-    }
-  }
-  
-  /**
-   * Generate sample documents for development/testing
-   * @param {Object} filters - Filter options
-   * @returns {Array} - Sample documents
-   */
-  async getSampleDocuments(filters = {}) {
-    // Sample document data for development and testing
-    const sampleDocs = [
-      {
-        id: 'doc-1001',
-        documentId: 'DOC-2025-001',
-        title: 'Clinical Study Protocol - Phase 1',
-        type: 'protocol',
+      return {
+        id: documentId,
+        name: 'Document Name.pdf',
+        moduleContext: 'ind',
+        sectionContext: 'cmc',
+        documentType: 'report',
+        lastModified: '2025-04-15T10:30:00Z',
+        author: 'John Smith',
         version: '1.2',
-        status: 'Approved',
-        controlStatus: 'Approved',
-        creator: 'John Smith',
-        createdDate: '2025-01-15T10:30:00Z',
-        modifiedDate: '2025-02-10T14:45:00Z',
-        size: 1240000,
-        mimeType: 'application/pdf',
-        documentType: 'Clinical',
-        name: 'Clinical Study Protocol - Phase 1',
-        uploadDate: '2025-01-15T10:30:00Z',
-        lastModified: '2025-02-10T14:45:00Z'
-      },
-      {
-        id: 'doc-1002',
-        documentId: 'DOC-2025-002',
-        title: 'Investigator Brochure v2.1',
-        type: 'submission',
-        version: '2.1',
-        status: 'In-Review',
-        controlStatus: 'In-Review',
-        creator: 'Sarah Johnson',
-        createdDate: '2025-02-20T09:15:00Z',
-        modifiedDate: '2025-03-05T11:20:00Z',
-        size: 3450000,
-        mimeType: 'application/pdf',
-        documentType: 'Regulatory',
-        name: 'Investigator Brochure v2.1',
-        uploadDate: '2025-02-20T09:15:00Z',
-        lastModified: '2025-03-05T11:20:00Z'
-      },
-      {
-        id: 'doc-1003',
-        documentId: 'DOC-2025-003',
-        title: 'Clinical Study Report - Study XYZ-123',
-        type: 'report',
-        version: '1.0',
-        status: 'Draft',
-        controlStatus: 'Draft',
-        creator: 'Robert Chen',
-        createdDate: '2025-03-10T15:00:00Z',
-        modifiedDate: '2025-03-10T15:00:00Z',
-        size: 5200000,
-        mimeType: 'application/pdf',
-        documentType: 'Clinical',
-        name: 'Clinical Study Report - Study XYZ-123',
-        uploadDate: '2025-03-10T15:00:00Z',
-        lastModified: '2025-03-10T15:00:00Z'
-      },
-      {
-        id: 'doc-1004',
-        documentId: 'DOC-2025-004',
-        title: 'IND Application Form 1571',
-        type: 'form',
-        version: '1.0',
-        status: 'Approved',
-        controlStatus: 'Approved',
-        creator: 'Emily Wilson',
-        createdDate: '2025-01-05T08:45:00Z',
-        modifiedDate: '2025-01-20T13:10:00Z',
-        size: 890000,
-        mimeType: 'application/pdf',
-        documentType: 'Regulatory',
-        name: 'IND Application Form 1571',
-        uploadDate: '2025-01-05T08:45:00Z',
-        lastModified: '2025-01-20T13:10:00Z'
-      },
-      {
-        id: 'doc-1005',
-        documentId: 'DOC-2025-005',
-        title: 'FDA Correspondence - Pre-IND Meeting',
-        type: 'correspondence',
-        version: '1.0',
-        status: 'Final',
-        controlStatus: 'Approved',
-        creator: 'Michael Brown',
-        createdDate: '2024-12-15T14:20:00Z',
-        modifiedDate: '2024-12-15T14:20:00Z',
-        size: 1120000,
-        mimeType: 'application/pdf',
-        documentType: 'Regulatory',
-        name: 'FDA Correspondence - Pre-IND Meeting',
-        uploadDate: '2024-12-15T14:20:00Z',
-        lastModified: '2024-12-15T14:20:00Z'
-      },
-      {
-        id: 'doc-1006',
-        documentId: 'DOC-2025-006',
-        title: 'CMC Documentation Package',
-        type: 'submission',
-        version: '2.3',
-        status: 'In-Review',
-        controlStatus: 'In-Review',
-        creator: 'Jessica Lee',
-        createdDate: '2025-03-01T10:00:00Z',
-        modifiedDate: '2025-03-18T16:30:00Z',
-        size: 7800000,
-        mimeType: 'application/pdf',
-        documentType: 'CMC',
-        name: 'CMC Documentation Package',
-        uploadDate: '2025-03-01T10:00:00Z',
-        lastModified: '2025-03-18T16:30:00Z'
-      },
-      {
-        id: 'doc-1007',
-        documentId: 'DOC-2025-007',
-        title: 'Statistical Analysis Plan',
-        type: 'protocol',
-        version: '1.1',
-        status: 'Approved',
-        controlStatus: 'Approved',
-        creator: 'David Parker',
-        createdDate: '2025-02-05T11:15:00Z',
-        modifiedDate: '2025-02-28T09:45:00Z',
-        size: 1650000,
-        mimeType: 'application/pdf',
-        documentType: 'Statistics',
-        name: 'Statistical Analysis Plan',
-        uploadDate: '2025-02-05T11:15:00Z',
-        lastModified: '2025-02-28T09:45:00Z'
-      }
-    ];
-    
-    // Apply filters if provided
-    let filteredDocs = [...sampleDocs];
-    
-    if (filters.documentType && filters.documentType !== 'all') {
-      filteredDocs = filteredDocs.filter(doc => doc.type === filters.documentType);
+        status: 'approved',
+        url: '/documents/document.pdf',
+        metadata: {
+          createdDate: '2025-03-10T08:15:00Z',
+          lastReviewed: '2025-04-12T14:20:00Z',
+          reviewedBy: 'Sarah Johnson',
+          docType: 'PDF',
+          size: '2.4 MB',
+          pageCount: 24,
+          keywords: ['IND', 'CMC', 'Pharmaceutical', 'Quality']
+        },
+        auditTrail: [
+          {
+            action: 'Created',
+            user: 'John Smith',
+            timestamp: '2025-03-10T08:15:00Z',
+            details: 'Initial document creation'
+          },
+          {
+            action: 'Modified',
+            user: 'John Smith',
+            timestamp: '2025-03-15T11:30:00Z',
+            details: 'Updated content in section 3.2'
+          },
+          {
+            action: 'Reviewed',
+            user: 'Sarah Johnson',
+            timestamp: '2025-04-12T14:20:00Z',
+            details: 'Quality review passed'
+          },
+          {
+            action: 'Approved',
+            user: 'Michael Brown',
+            timestamp: '2025-04-15T10:30:00Z',
+            details: 'Final approval for submission'
+          }
+        ]
+      };
+    } catch (error) {
+      console.error('Error fetching document details:', error);
+      throw new Error('Failed to get document details from DocuShare');
     }
-    
-    if (filters.contextId) {
-      // In a real implementation, this would filter by study ID or other context
-      // For now, just return a subset based on the context string length as a simple "randomization"
-      const contextLength = filters.contextId.length;
-      filteredDocs = filteredDocs.filter((_, index) => index % (contextLength % 3 + 1) === 0);
-    }
-    
-    return filteredDocs;
-  }
+  },
   
   /**
-   * Generate sample folders for development/testing
-   * @returns {Array} - Sample folders
+   * Get document version history
+   * 
+   * @param {string} documentId - The document ID
+   * @returns {Promise<Array>} Array of version objects
    */
-  getSampleFolders() {
-    // Sample folder data for development and testing
-    return [
-      {
-        id: 'folder-1',
-        name: 'Clinical Protocols',
-        path: '/Clinical/Protocols',
-        documentCount: 12,
-        lastModified: '2025-03-10T15:00:00Z'
-      },
-      {
-        id: 'folder-2',
-        name: 'Regulatory Submissions',
-        path: '/Regulatory/Submissions',
-        documentCount: 8,
-        lastModified: '2025-03-15T09:30:00Z'
-      },
-      {
-        id: 'folder-3',
-        name: 'CMC Documentation',
-        path: '/CMC',
-        documentCount: 15,
-        lastModified: '2025-03-12T14:45:00Z'
-      },
-      {
-        id: 'folder-4',
-        name: 'Safety Reports',
-        path: '/Safety/Reports',
-        documentCount: 20,
-        lastModified: '2025-03-18T11:20:00Z'
-      },
-      {
-        id: 'folder-5',
-        name: 'Investigator Communications',
-        path: '/Clinical/Investigators',
-        documentCount: 7,
-        lastModified: '2025-03-05T16:15:00Z'
-      }
-    ];
+  async getDocumentVersionHistory(documentId) {
+    try {
+      // This would be a real API call in production
+      // return await apiRequest('GET', `/api/docushare/documents/${documentId}/versions`);
+      
+      // For demo, return mock data
+      return [
+        {
+          version: '1.2',
+          timestamp: '2025-04-15T10:30:00Z',
+          user: 'John Smith',
+          comment: 'Final version for review',
+          status: 'current'
+        },
+        {
+          version: '1.1',
+          timestamp: '2025-04-02T14:45:00Z',
+          user: 'John Smith',
+          comment: 'Updated based on QC feedback',
+          status: 'superseded'
+        },
+        {
+          version: '1.0',
+          timestamp: '2025-03-28T09:15:00Z',
+          user: 'John Smith',
+          comment: 'Initial submission draft',
+          status: 'superseded'
+        }
+      ];
+    } catch (error) {
+      console.error('Error fetching version history:', error);
+      throw new Error('Failed to get document version history from DocuShare');
+    }
+  },
+  
+  /**
+   * Get audit trail for a document
+   * 
+   * @param {string} documentId - The document ID
+   * @returns {Promise<Array>} Array of audit events
+   */
+  async getDocumentAuditTrail(documentId) {
+    try {
+      // This would be a real API call in production
+      // return await apiRequest('GET', `/api/docushare/documents/${documentId}/audit`);
+      
+      // For demo, return mock data
+      return [
+        {
+          action: 'View',
+          user: 'Sarah Johnson',
+          timestamp: '2025-04-20T13:45:00Z',
+          ipAddress: '192.168.1.105',
+          details: 'Document viewed'
+        },
+        {
+          action: 'Approve',
+          user: 'Michael Brown',
+          timestamp: '2025-04-15T10:30:00Z',
+          ipAddress: '192.168.1.110',
+          details: 'Document approved for submission'
+        },
+        {
+          action: 'Modify',
+          user: 'John Smith',
+          timestamp: '2025-04-10T09:15:00Z',
+          ipAddress: '192.168.1.102',
+          details: 'Content updated in section 2.3'
+        },
+        {
+          action: 'Comment',
+          user: 'Lisa Garcia',
+          timestamp: '2025-04-05T11:20:00Z',
+          ipAddress: '192.168.1.115',
+          details: 'Added comment on methodology section'
+        },
+        {
+          action: 'Create',
+          user: 'John Smith',
+          timestamp: '2025-03-28T09:15:00Z',
+          ipAddress: '192.168.1.102',
+          details: 'Document created'
+        }
+      ];
+    } catch (error) {
+      console.error('Error fetching audit trail:', error);
+      throw new Error('Failed to get document audit trail from DocuShare');
+    }
+  },
+  
+  /**
+   * Get system status for DocuShare
+   * 
+   * @returns {Promise<Object>} System status
+   */
+  async getSystemStatus() {
+    try {
+      // This would be a real API call in production
+      // return await apiRequest('GET', '/api/docushare/system/status');
+      
+      // For demo, return mock data
+      return {
+        status: 'operational',
+        version: '7.5.3',
+        lastValidated: '2025-04-15T00:00:00Z',
+        documentCount: 2457,
+        storage: {
+          used: '458.3 GB',
+          total: '2.0 TB',
+          percentage: 22.9
+        },
+        compliance: {
+          status: 'compliant',
+          framework: '21 CFR Part 11',
+          lastAudit: '2025-03-01T00:00:00Z'
+        }
+      };
+    } catch (error) {
+      console.error('Error fetching system status:', error);
+      throw new Error('Failed to get DocuShare system status');
+    }
   }
+};
+
+/**
+ * Guess the document type based on the filename
+ * 
+ * @param {string} filename - The filename
+ * @returns {string} The guessed document type
+ */
+function guessDocumentType(filename) {
+  const lowercaseFilename = filename.toLowerCase();
+  
+  if (lowercaseFilename.includes('protocol')) return 'protocol';
+  if (lowercaseFilename.includes('report')) return 'report';
+  if (lowercaseFilename.includes('form')) return 'form';
+  if (lowercaseFilename.includes('template')) return 'template';
+  if (lowercaseFilename.includes('checklist')) return 'checklist';
+  if (lowercaseFilename.includes('brochure')) return 'brochure';
+  
+  // Default to 'document'
+  return 'document';
 }
 
-// Create a singleton instance
-const docuShareService = new DocuShareService();
-export default docuShareService;
+export default DocuShareService;

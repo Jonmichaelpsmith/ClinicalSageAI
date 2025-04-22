@@ -1,354 +1,116 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useDocuShare } from '@/hooks/useDocuShare';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Loader2, Search, FileText, FolderOpen, Upload, Download, File, Filter } from 'lucide-react';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Link } from 'wouter';
+import { FileText, FileUp, FileDown, Clock, Lock, Eye, Search, Filter } from 'lucide-react';
 
 /**
- * DocuSharePanel - A reusable component that can be embedded in any module
- * for 21 CFR Part 11 compliant document management
+ * DocuShare Panel Component
  * 
- * @param {Object} props
- * @param {string} props.moduleId - The ID of the module using this panel (e.g., "ind", "csr", "cer")
- * @param {string} props.documentType - The type of documents to filter (e.g., "protocol", "report")
- * @param {boolean} props.compact - Whether to show the panel in compact mode
- * @param {Function} props.onDocumentSelect - Callback when document is selected
+ * A compact panel for displaying documents from DocuShare with filtering
+ * by module and document type. Typically used in sidebar contexts.
+ * 
+ * @param {Object} props - Component props
+ * @param {string} props.moduleId - Filter documents by this module ID
+ * @param {string} props.documentType - Filter documents by this document type
+ * @param {boolean} props.compact - Whether to use a compact display
  */
 export default function DocuSharePanel({ 
-  moduleId = "general", 
-  documentType = "all",
-  compact = false,
-  onDocumentSelect
+  moduleId = '',
+  documentType = '',
+  compact = false
 }) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState('recent');
-  const [selectedDocument, setSelectedDocument] = useState(null);
-  const { 
-    documents, 
-    folders, 
-    recentDocuments,
-    isLoading, 
-    fetchDocuments, 
-    uploadDocument, 
-    downloadDocument 
-  } = useDocuShare(moduleId);
+  const [searchTerm, setSearchTerm] = useState('');
+  const { documents } = useDocuShare();
   
-  useEffect(() => {
-    fetchDocuments(documentType);
-  }, [documentType, moduleId, fetchDocuments]);
-  
-  const filteredDocuments = documents?.filter(doc => 
-    doc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    doc.documentId.includes(searchQuery)
-  ) || [];
-  
-  const handleDocumentSelect = (document) => {
-    setSelectedDocument(document);
-    if (onDocumentSelect) {
-      onDocumentSelect(document);
-    }
-  };
-  
-  const handleUpload = async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      await uploadDocument(file, moduleId, documentType);
-    }
-  };
-  
-  const getDocumentTypeColor = (type) => {
-    const colors = {
-      'protocol': 'bg-blue-100 text-blue-800',
-      'report': 'bg-green-100 text-green-800',
-      'form': 'bg-purple-100 text-purple-800',
-      'submission': 'bg-amber-100 text-amber-800',
-      'correspondence': 'bg-sky-100 text-sky-800',
-      'approval': 'bg-emerald-100 text-emerald-800',
-    };
-    return colors[type] || 'bg-gray-100 text-gray-800';
-  };
-  
-  if (compact) {
-    return (
-      <Card className="w-full shadow-sm border border-gray-200">
-        <CardHeader className="p-4 pb-0">
-          <div className="flex justify-between items-center">
-            <CardTitle className="text-sm font-medium text-gray-700 flex items-center">
-              <FileText className="h-4 w-4 mr-1 text-teal-600" />
-              DocuShare Documents
-            </CardTitle>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <label htmlFor="uploadDoc" className="cursor-pointer">
-                    <Upload className="h-4 w-4 text-gray-500 hover:text-gray-700" />
-                    <input 
-                      id="uploadDoc" 
-                      type="file" 
-                      className="hidden" 
-                      onChange={handleUpload}
-                    />
-                  </label>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Upload Document</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-        </CardHeader>
-        <CardContent className="p-2">
-          {isLoading ? (
-            <div className="flex justify-center p-4">
-              <Loader2 className="h-4 w-4 animate-spin text-gray-500" />
-            </div>
-          ) : (
-            <ScrollArea className="h-32">
-              <ul className="space-y-1">
-                {recentDocuments?.slice(0, 5).map((doc) => (
-                  <li 
-                    key={doc.id}
-                    className="py-1 px-2 text-xs flex items-center hover:bg-gray-50 rounded cursor-pointer"
-                    onClick={() => handleDocumentSelect(doc)}
-                  >
-                    <File className="h-3 w-3 mr-1 flex-shrink-0 text-gray-500" />
-                    <span className="truncate">{doc.title}</span>
-                  </li>
-                ))}
-              </ul>
-            </ScrollArea>
-          )}
-        </CardContent>
-      </Card>
-    );
-  }
-  
+  // Filter documents based on module ID, document type, and search term
+  const filteredDocuments = documents
+    .filter(doc => 
+      (!moduleId || doc.moduleContext === moduleId) &&
+      (!documentType || doc.documentType === documentType) &&
+      (!searchTerm || doc.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    )
+    .slice(0, compact ? 5 : 10); // Limit the number of documents based on compact mode
+    
   return (
-    <Card className="w-full shadow-md border border-gray-200">
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-center">
-          <div>
-            <CardTitle className="text-xl font-semibold text-gray-800 flex items-center">
-              <FileText className="h-5 w-5 mr-2 text-teal-600" />
-              DocuShare Integration
-            </CardTitle>
-            <CardDescription className="text-sm text-gray-500">
-              21 CFR Part 11 compliant document management
-            </CardDescription>
-          </div>
-          <div className="flex space-x-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="h-8">
-                  <Filter className="h-4 w-4 mr-1" />
-                  Filter
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => fetchDocuments('all')}>
-                  All Documents
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => fetchDocuments('protocol')}>
-                  Protocols
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => fetchDocuments('report')}>
-                  Reports
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => fetchDocuments('submission')}>
-                  Submissions
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="default" size="sm" className="h-8 bg-teal-600 hover:bg-teal-700">
-                    <Upload className="h-4 w-4 mr-1" />
-                    <label htmlFor="uploadDocFull" className="cursor-pointer">
-                      Upload
-                      <input 
-                        id="uploadDocFull" 
-                        type="file" 
-                        className="hidden" 
-                        onChange={handleUpload}
-                      />
-                    </label>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Upload Document to DocuShare</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
+    <div className="w-full">
+      {!compact && (
+        <div className="flex justify-between items-center mb-3">
+          <h3 className="text-base font-medium">DocuShare Documents</h3>
+          <Badge className="bg-teal-100 text-teal-800 text-xs">21 CFR Part 11</Badge>
         </div>
-        <div className="mt-2">
-          <div className="relative">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
-            <Input
-              placeholder="Search documents..."
-              className="pl-8"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+      )}
+      
+      {/* Search Bar */}
+      <div className="relative mb-2">
+        <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-gray-400" />
+        <input
+          type="text"
+          placeholder={compact ? "Search..." : "Search documents..."}
+          className="w-full bg-gray-50 border border-gray-200 rounded-md py-1 px-7 text-xs"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+        <Filter className="absolute right-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-gray-400" />
+      </div>
+      
+      {/* Document List */}
+      <ScrollArea className={`border rounded-md ${compact ? 'h-40' : 'h-64'}`}>
+        {filteredDocuments.length > 0 ? (
+          <ul className="divide-y divide-gray-100">
+            {filteredDocuments.map(doc => (
+              <li key={doc.id} className="p-2 hover:bg-gray-50 transition-colors">
+                <div className="flex items-start">
+                  <FileText className={`${compact ? 'h-3 w-3' : 'h-4 w-4'} text-teal-600 mt-0.5 mr-1.5 flex-shrink-0`} />
+                  <div className="min-w-0 flex-1">
+                    <p className={`font-medium truncate ${compact ? 'text-xs' : 'text-sm'}`}>
+                      {doc.name}
+                    </p>
+                    <div className={`flex items-center text-gray-500 ${compact ? 'text-[10px]' : 'text-xs'}`}>
+                      <Clock className={`${compact ? 'h-2 w-2' : 'h-3 w-3'} mr-0.5`} />
+                      <span>{new Date(doc.lastModified).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                  <div className="flex space-x-1 ml-1">
+                    <button className="text-gray-400 hover:text-gray-600">
+                      <Eye className={`${compact ? 'h-3 w-3' : 'h-4 w-4'}`} />
+                    </button>
+                    <button className="text-gray-400 hover:text-gray-600">
+                      <FileDown className={`${compact ? 'h-3 w-3' : 'h-4 w-4'}`} />
+                    </button>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className={`flex flex-col items-center justify-center h-full text-center p-4 ${compact ? 'text-xs' : 'text-sm'} text-gray-500`}>
+            <p>No documents found</p>
+            <Button 
+              variant="link" 
+              size="sm" 
+              className={`mt-1 h-auto p-0 ${compact ? 'text-[10px]' : 'text-xs'}`}
+            >
+              <FileUp className={`${compact ? 'h-2 w-2' : 'h-3 w-3'} mr-1`} />
+              Upload Document
+            </Button>
           </div>
-        </div>
-      </CardHeader>
-      <CardContent className="pb-2">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-2">
-            <TabsTrigger value="recent">Recent</TabsTrigger>
-            <TabsTrigger value="all">All Documents</TabsTrigger>
-            <TabsTrigger value="folders">Folders</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="recent" className="m-0">
-            {isLoading ? (
-              <div className="flex justify-center p-8">
-                <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-              </div>
-            ) : (
-              <ScrollArea className="h-64">
-                <ul className="space-y-2">
-                  {recentDocuments?.map((doc) => (
-                    <li 
-                      key={doc.id}
-                      className={`p-2 flex items-center justify-between hover:bg-gray-50 rounded-md cursor-pointer ${selectedDocument?.id === doc.id ? 'bg-gray-100' : ''}`}
-                      onClick={() => handleDocumentSelect(doc)}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <FileText className="h-5 w-5 text-gray-500" />
-                        <div>
-                          <div className="font-medium text-sm">{doc.title}</div>
-                          <div className="text-xs text-gray-500">
-                            Last modified: {new Date(doc.modifiedDate).toLocaleDateString()}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center">
-                        <Badge className={getDocumentTypeColor(doc.type)}>
-                          {doc.type}
-                        </Badge>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            downloadDocument(doc.id);
-                          }}
-                        >
-                          <Download className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </ScrollArea>
-            )}
-          </TabsContent>
-          
-          <TabsContent value="all" className="m-0">
-            {isLoading ? (
-              <div className="flex justify-center p-8">
-                <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-              </div>
-            ) : (
-              <ScrollArea className="h-64">
-                <ul className="space-y-2">
-                  {filteredDocuments.map((doc) => (
-                    <li 
-                      key={doc.id}
-                      className={`p-2 flex items-center justify-between hover:bg-gray-50 rounded-md cursor-pointer ${selectedDocument?.id === doc.id ? 'bg-gray-100' : ''}`}
-                      onClick={() => handleDocumentSelect(doc)}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <FileText className="h-5 w-5 text-gray-500" />
-                        <div>
-                          <div className="font-medium text-sm">{doc.title}</div>
-                          <div className="text-xs text-gray-500">
-                            ID: {doc.documentId} • Version: {doc.version}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center">
-                        <Badge className={getDocumentTypeColor(doc.type)}>
-                          {doc.type}
-                        </Badge>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            downloadDocument(doc.id);
-                          }}
-                        >
-                          <Download className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </ScrollArea>
-            )}
-          </TabsContent>
-          
-          <TabsContent value="folders" className="m-0">
-            {isLoading ? (
-              <div className="flex justify-center p-8">
-                <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-              </div>
-            ) : (
-              <ScrollArea className="h-64">
-                <ul className="space-y-2">
-                  {folders?.map((folder) => (
-                    <li 
-                      key={folder.id}
-                      className="p-2 flex items-center hover:bg-gray-50 rounded-md cursor-pointer"
-                    >
-                      <FolderOpen className="h-5 w-5 text-amber-500 mr-3" />
-                      <div>
-                        <div className="font-medium text-sm">{folder.name}</div>
-                        <div className="text-xs text-gray-500">
-                          {folder.documentCount} documents
-                        </div>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </ScrollArea>
-            )}
-          </TabsContent>
-        </Tabs>
-      </CardContent>
-      <CardFooter className="pt-0 text-xs text-gray-500 justify-between items-center">
-        <div>Connected to DocuShare server: TrialSAGE-DS7</div>
-        <Badge variant="outline" className="text-green-600 border-green-200">
+        )}
+      </ScrollArea>
+      
+      {/* Compliance Footer */}
+      <div className="mt-1 flex justify-between items-center">
+        <span className={`text-gray-500 ${compact ? 'text-[10px]' : 'text-xs'} flex items-center`}>
+          <Lock className={`${compact ? 'h-2 w-2' : 'h-3 w-3'} mr-0.5`} />
           21 CFR Part 11 Compliant
-        </Badge>
-      </CardFooter>
-    </Card>
+        </span>
+        
+        <Link to="/document-management" className={`text-teal-600 hover:text-teal-700 hover:underline ${compact ? 'text-[10px]' : 'text-xs'}`}>
+          View All Documents
+        </Link>
+      </div>
+    </div>
   );
 }

@@ -1,291 +1,190 @@
 import React, { useState } from 'react';
-import { Link } from 'wouter';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { useDocuShare } from '@/hooks/useDocuShare';
-import { FileText, Upload, Search, Plus, Settings, ChevronDown, Eye, ArrowUpRight, Shield } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { toast } from '@/hooks/use-toast';
+import { FileUp, FileDown, Clipboard, Search, Eye, Lock, ArrowUpDown, Check, FileCheck, Clock } from 'lucide-react';
 
 /**
  * DocuShare Integration Component
  * 
- * This component provides a reusable interface to the DocuShare document management system
- * that can be integrated into any module of the application.
+ * Provides a 21 CFR Part 11 compliant document management integration
+ * that can be embedded within other modules to provide document access.
  * 
- * It allows for:
- * - Quick access to recent documents
- * - Document upload
- * - Document search
- * - Navigation to full document management system
+ * @param {Object} props - Component props
+ * @param {string} props.moduleContext - The module context (e.g., 'ind', 'csr')
+ * @param {string} props.sectionContext - The section context within the module
+ * @param {boolean} props.allowUpload - Whether to allow document uploads
+ * @param {number} props.height - The height of the component
  */
 export function DocuShareIntegration({ 
-  contextId = '', // Optional context ID to filter documents (e.g., "IND-12345")
-  contextType = '', // Optional context type (e.g., "ind", "csr", "protocol")
-  mode = 'sidebar', // 'sidebar', 'panel', 'compact'
-  onSelectDocument = null, // Callback when document is selected
-  recentCount = 5, // Number of recent documents to show
-  height = 400, // Height of the component in 'sidebar' or 'panel' mode
+  moduleContext = 'general',
+  sectionContext = '',
+  allowUpload = true,
+  height = 200
 }) {
-  const { 
-    isAuthenticated,
-    isLoading,
-    documents,
-    error,
-    loadDocuments
-  } = useDocuShare();
+  const [activeTab, setActiveTab] = useState('relevant');
+  const [searchTerm, setSearchTerm] = useState('');
+  const { documents, uploadDocument, downloadDocument } = useDocuShare();
   
-  const [showRelevant, setShowRelevant] = useState(true);
+  // Filter documents based on the module context, section, and search term
+  const relevantDocuments = documents.filter(doc => 
+    doc.moduleContext === moduleContext && 
+    (!sectionContext || doc.sectionContext === sectionContext)
+  ).slice(0, 5); // Limit to 5 documents
   
-  // Load documents on mount
-  React.useEffect(() => {
-    if (isAuthenticated) {
-      // In a real implementation, we would pass context filters
-      loadDocuments('regulatory', {
-        contextId,
-        contextType,
-        limit: recentCount,
-        sort: 'date'
+  const recentDocuments = [...documents]
+    .sort((a, b) => new Date(b.lastModified) - new Date(a.lastModified))
+    .slice(0, 5); // Limit to 5 documents
+    
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    // Upload the document to DocuShare
+    uploadDocument(file, moduleContext, sectionContext)
+      .then(() => {
+        toast({
+          title: "Document uploaded",
+          description: "Document uploaded to DocuShare successfully.",
+        });
+      })
+      .catch(error => {
+        toast({
+          title: "Upload failed",
+          description: error.message,
+          variant: "destructive",
+        });
       });
-    }
-  }, [isAuthenticated, contextId, contextType, recentCount, loadDocuments]);
-  
-  // Format date for display
-  const formatDate = (dateString) => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    }).format(date);
   };
   
-  // Get document status badge class
-  const getStatusClass = (status) => {
-    switch (status) {
-      case 'Approved':
-        return 'bg-green-100 text-green-800';
-      case 'In-Review':
-        return 'bg-blue-100 text-blue-800';
-      case 'Draft':
-        return 'bg-gray-100 text-gray-800';
-      default:
-        return 'bg-yellow-100 text-yellow-800';
-    }
-  };
-  
-  // Get document icon based on type
-  const getDocumentIcon = (type) => {
-    return <FileText className="h-4 w-4 flex-shrink-0" />;
-  };
-  
-  // Render different modes
-  if (mode === 'compact') {
-    return (
-      <Card className="w-full border-teal-200 shadow-sm">
-        <CardHeader className="pb-2">
-          <div className="flex justify-between items-center">
-            <CardTitle className="text-sm font-medium flex items-center">
-              <Shield className="h-4 w-4 text-teal-500 mr-1" />
-              DocuShare Integration
-            </CardTitle>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem>
-                  <Search className="h-4 w-4 mr-2" />
-                  Search Documents
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Upload className="h-4 w-4 mr-2" />
-                  Upload Document
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/document-management">
-                    <ArrowUpRight className="h-4 w-4 mr-2" />
-                    Open DocuShare
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-          <CardDescription className="text-xs">
-            21 CFR Part 11 compliant document management
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="pb-2">
-          {isLoading ? (
-            <p className="text-xs text-muted-foreground py-2 text-center">
-              Loading documents...
-            </p>
-          ) : documents && documents.length > 0 ? (
-            <ul className="space-y-1">
-              {documents.slice(0, 3).map((doc) => (
-                <li key={doc.id} className="text-xs flex items-center justify-between">
-                  <div className="flex items-center overflow-hidden">
-                    {getDocumentIcon(doc.documentType)}
-                    <span className="ml-1 truncate">{doc.name}</span>
-                  </div>
-                  <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${getStatusClass(doc.controlStatus)}`}>
-                    {doc.controlStatus}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-xs text-muted-foreground py-2 text-center">
-              No recent documents
-            </p>
-          )}
-        </CardContent>
-        <CardFooter className="pt-0">
-          <Button size="sm" variant="ghost" className="text-xs w-full justify-center text-teal-600 hover:text-teal-800 hover:bg-teal-50" asChild>
-            <Link to="/document-management">
-              <Eye className="h-3 w-3 mr-1" />
-              View All Documents
-            </Link>
-          </Button>
-        </CardFooter>
-      </Card>
-    );
-  }
-  
-  // Sidebar/Panel layouts
   return (
-    <Card className={`w-full border-teal-200 shadow-sm ${mode === 'panel' ? 'h-full' : ''}`}>
-      <CardHeader className="pb-3">
-        <div className="flex justify-between items-center">
-          <CardTitle className="text-md flex items-center">
-            <Shield className="h-5 w-5 text-teal-600 mr-2" />
-            DocuShare Repository
-          </CardTitle>
-          <Button variant="outline" size="sm" asChild>
-            <Link to="/document-management">
-              Open Full System
-            </Link>
-          </Button>
-        </div>
-        <CardDescription>
-          21 CFR Part 11 compliant document management system
-        </CardDescription>
-        <div className="flex gap-2 mt-2">
-          <Button variant="outline" size="sm" className="text-xs" asChild>
-            <Link to="/document-management">
-              <Search className="h-3 w-3 mr-1" />
-              Search
-            </Link>
-          </Button>
-          <Button variant="outline" size="sm" className="text-xs" asChild>
-            <Link to="/document-management">
-              <Upload className="h-3 w-3 mr-1" />
+    <div className="w-full" style={{ height: `${height}px` }}>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full h-full">
+        <div className="flex justify-between items-center mb-2">
+          <TabsList className="grid grid-cols-2 w-64">
+            <TabsTrigger value="relevant">Relevant</TabsTrigger>
+            <TabsTrigger value="recent">Recent</TabsTrigger>
+          </TabsList>
+          
+          {allowUpload && (
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="h-7 text-xs"
+              onClick={() => document.getElementById('docushare-file-upload').click()}
+            >
+              <FileUp className="h-3 w-3 mr-1" />
               Upload
-            </Link>
-          </Button>
-          <Button variant="outline" size="sm" className="text-xs" asChild>
-            <Link to="/document-management">
-              <Plus className="h-3 w-3 mr-1" />
-              New
-            </Link>
-          </Button>
-          <Button variant="ghost" size="sm" className="text-xs ml-auto" asChild>
-            <Link to="/document-management">
-              <Settings className="h-3 w-3 mr-1" />
-              Settings
-            </Link>
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent className="p-0">
-        <div className="px-6 py-2 bg-muted/50 flex items-center justify-between border-y">
-          <div className="flex gap-2">
-            <Button 
-              variant={showRelevant ? "subtle" : "ghost"} 
-              size="sm"
-              onClick={() => setShowRelevant(true)}
-              className="text-xs h-7"
-            >
-              Relevant Documents
+              <input 
+                id="docushare-file-upload"
+                type="file"
+                className="hidden"
+                onChange={handleFileUpload}
+              />
             </Button>
-            <Button 
-              variant={!showRelevant ? "subtle" : "ghost"} 
-              size="sm"
-              onClick={() => setShowRelevant(false)}
-              className="text-xs h-7"
-            >
-              Recent Activity
-            </Button>
-          </div>
+          )}
         </div>
         
-        <ScrollArea className="h-[calc(100%-3.5rem)]" style={{ maxHeight: height ? `${height - 150}px` : '250px' }}>
-          {isLoading ? (
-            <div className="flex items-center justify-center p-8">
-              <div className="animate-spin h-5 w-5 border-2 border-teal-500 border-t-transparent rounded-full mr-2" />
-              <p className="text-sm text-muted-foreground">Loading documents...</p>
-            </div>
-          ) : error ? (
-            <div className="p-6 text-center">
-              <p className="text-sm text-destructive mb-2">Failed to load documents</p>
-              <Button variant="outline" size="sm" onClick={() => loadDocuments('regulatory')}>
-                Retry
-              </Button>
-            </div>
-          ) : documents && documents.length > 0 ? (
-            <ul className="divide-y">
-              {documents.map((doc) => (
-                <li 
-                  key={doc.id} 
-                  className="p-3 hover:bg-muted/50 cursor-pointer transition-colors"
-                  onClick={() => onSelectDocument && onSelectDocument(doc)}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="bg-teal-100 p-2 rounded">
-                      {getDocumentIcon(doc.documentType)}
-                    </div>
+        <TabsContent value="relevant" className="h-full flex flex-col">
+          <div className="relative mb-2">
+            <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input 
+              type="text"
+              placeholder="Search documents..."
+              className="pl-8 h-8 text-sm"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          
+          <ScrollArea className="flex-grow rounded-md border">
+            {relevantDocuments.length > 0 ? (
+              <ul className="text-sm divide-y">
+                {relevantDocuments.map(doc => (
+                  <li key={doc.id} className="py-2 px-3 hover:bg-gray-50 flex justify-between items-center">
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm truncate">{doc.name}</p>
-                      <p className="text-xs text-muted-foreground">{doc.documentType}</p>
-                      <div className="flex items-center mt-1">
-                        <span className="text-xs text-muted-foreground">
-                          {formatDate(doc.lastModified || doc.uploadDate)}
-                        </span>
-                        <span className={`ml-2 px-1.5 py-0.5 rounded-full text-[10px] font-medium ${getStatusClass(doc.controlStatus)}`}>
-                          {doc.controlStatus}
-                        </span>
+                      <div className="font-medium truncate">{doc.name}</div>
+                      <div className="text-xs text-gray-500 flex items-center">
+                        <Clock className="h-3 w-3 mr-1 inline" />
+                        {new Date(doc.lastModified).toLocaleDateString()}
                       </div>
                     </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <div className="p-6 text-center">
-              <p className="text-sm text-muted-foreground mb-2">No documents found</p>
-              <Button variant="outline" size="sm" asChild>
-                <Link to="/document-management">
-                  Browse All Documents
-                </Link>
-              </Button>
-            </div>
-          )}
-        </ScrollArea>
-      </CardContent>
-      <CardFooter className="border-t bg-muted/20 p-3">
-        <p className="text-xs text-muted-foreground">DocuShare Server ID: <span className="font-mono">TrialSAGE-DS7</span></p>
-        <Button variant="link" size="sm" className="text-xs ml-auto p-0" asChild>
-          <Link to="/document-management">View All</Link>
-        </Button>
-      </CardFooter>
-    </Card>
+                    <div className="flex items-center space-x-1">
+                      <Button variant="ghost" size="icon" className="h-6 w-6">
+                        <Eye className="h-3 w-3" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-6 w-6">
+                        <FileDown className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-center px-4 py-6 text-sm text-gray-500">
+                <FileCheck className="h-8 w-8 mb-2 text-gray-300" />
+                <p>No relevant documents found for this section.</p>
+                {allowUpload && (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="mt-2 text-xs"
+                    onClick={() => document.getElementById('docushare-file-upload').click()}
+                  >
+                    <FileUp className="h-3 w-3 mr-1" />
+                    Upload Document
+                  </Button>
+                )}
+              </div>
+            )}
+          </ScrollArea>
+        </TabsContent>
+        
+        <TabsContent value="recent" className="h-full">
+          <ScrollArea className="h-full rounded-md border">
+            {recentDocuments.length > 0 ? (
+              <ul className="text-sm divide-y">
+                {recentDocuments.map(doc => (
+                  <li key={doc.id} className="py-2 px-3 hover:bg-gray-50 flex justify-between items-center">
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium truncate">{doc.name}</div>
+                      <div className="text-xs text-gray-500">
+                        {doc.moduleContext} · {doc.sectionContext || 'General'}
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <Button variant="ghost" size="icon" className="h-6 w-6">
+                        <Eye className="h-3 w-3" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-6 w-6">
+                        <FileDown className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-center px-4 py-6 text-sm text-gray-500">
+                <FileCheck className="h-8 w-8 mb-2 text-gray-300" />
+                <p>No recent documents available.</p>
+              </div>
+            )}
+          </ScrollArea>
+        </TabsContent>
+      </Tabs>
+      
+      {/* Compliance Badge */}
+      <div className="mt-1 flex justify-end">
+        <div className="text-[10px] text-gray-500 flex items-center">
+          <Lock className="h-2 w-2 mr-0.5" />
+          21 CFR Part 11 Electronic Records
+        </div>
+      </div>
+    </div>
   );
 }
