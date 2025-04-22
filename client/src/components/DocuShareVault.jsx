@@ -3,35 +3,95 @@ import { listDocs, uploadDoc } from "../hooks/useDocuShare";
 
 export default function DocuShareVault() {
   const [docs, setDocs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [viewUrl, setViewUrl] = useState(null);
 
   useEffect(() => {
-    listDocs().then(setDocs);
+    const fetchDocs = async () => {
+      setLoading(true);
+      try {
+        const data = await listDocs();
+        setDocs(Array.isArray(data) ? data : []);
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching documents:", err);
+        setError("Unable to connect to document service");
+        setDocs([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchDocs();
   }, []);
 
   const onFile = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    await uploadDoc(file);
-    setDocs(await listDocs());
+    
+    try {
+      await uploadDoc(file);
+      const data = await listDocs();
+      setDocs(Array.isArray(data) ? data : []);
+      setError(null);
+    } catch (err) {
+      console.error("Error uploading document:", err);
+      setError("Unable to upload document");
+    }
+  };
+
+  const renderDocList = () => {
+    if (loading) {
+      return <div className="p-4 text-gray-500">Loading documents...</div>;
+    }
+    
+    if (error) {
+      return (
+        <div className="p-4 text-red-500">
+          {error}
+          <div className="mt-2 text-gray-600 text-sm">
+            The document service is currently unavailable. This demo page is for UI preview only.
+          </div>
+        </div>
+      );
+    }
+    
+    if (docs.length === 0) {
+      return <div className="p-4 text-gray-500">No documents available</div>;
+    }
+    
+    return docs.map((d) => (
+      <button
+        key={d.objectId || Math.random()}
+        className="block w-full text-left p-2 rounded hover:bg-slate-100"
+        onClick={() => setViewUrl(d.contentUrl)}
+      >
+        {d.displayName}
+      </button>
+    ));
   };
 
   return (
     <div className="grid grid-cols-3 gap-4 p-4">
       <div className="space-y-2">
         <input type="file" accept="application/pdf" onChange={onFile} />
-        {docs.map((d) => (
-          <button
-            key={d.objectId}
-            className="block w-full text-left p-2 rounded hover:bg-slate-100"
-            onClick={() => setViewUrl(d.contentUrl)}
-          >
-            {d.displayName}
-          </button>
-        ))}
+        {renderDocList()}
       </div>
       <div className="col-span-2 border rounded-lg shadow-inner max-h-[80vh] overflow-auto">
-        {viewUrl && (
+        {!viewUrl ? (
+          <div className="flex flex-col items-center justify-center h-full p-6">
+            <div className="bg-gray-50 rounded-lg p-8 text-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No Document Selected</h3>
+              <p className="text-sm text-gray-600">
+                Select a document from the list to preview it here, or upload a new document.
+              </p>
+            </div>
+          </div>
+        ) : (
           <div className="flex flex-col items-center justify-center h-full p-6">
             <div className="bg-blue-50 rounded-lg p-8 text-center">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
