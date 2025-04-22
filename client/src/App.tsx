@@ -45,24 +45,7 @@ export { useToast };
 // Each page that needs WebSocket will initialize its own connection
 import { ToastProvider as SecureToastProvider } from './components/security/SecureToast';
 
-// Anti-flash CSS injection
-if (typeof document !== 'undefined') {
-  // Insert CSS that prevents flickering
-  const style = document.createElement('style');
-  style.textContent = `
-    /* Disable all animations to prevent flickering */
-    *, *::before, *::after {
-      animation: none !important;
-      transition: none !important;
-    }
-    
-    /* Force scrollbar to prevent layout shifting */
-    body {
-      overflow-y: scroll !important;
-    }
-  `;
-  document.head.appendChild(style);
-}
+// No need for complex app ready signaling with our simplified approach
 
 export default function App() {
   // Use static state to prevent layout shifting
