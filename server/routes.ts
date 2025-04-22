@@ -22,113 +22,168 @@ export const setupRoutes = (app: express.Express) => {
     path: '/ws/qc',
   });
   
-  // Main WebSocket connection handler
-  wss.on('connection', (socket: WebSocket) => {
-    console.log('Client connected to main WebSocket');
-    
-    // Send welcome message
-    socket.send(JSON.stringify({ 
-      type: 'connection_established',
-      message: 'Connected to TrialSage WebSocket server',
-      timestamp: new Date().toISOString(),
-    }));
-    
-    // Message handler
-    socket.on('message', (message: WebSocket.Data) => {
+  // WebSocket connection handler implementation with added safety guards
+  const setupWebSocketServer = (server: WebSocketServer, name: string) => {
+    server.on('connection', (socket: WebSocket, req: http.IncomingMessage) => {
+      console.log(`Client connected to ${name} WebSocket from ${req.socket.remoteAddress}`);
+      
+      // Properly wrap socket interactions in try/catch blocks
       try {
-        const messageContent = JSON.parse(message.toString());
-        console.log('Received WebSocket message:', messageContent);
+        // Security check - ensure the connection hasn't been closed already (might help with code 1006)
+        if (socket.readyState === WebSocket.OPEN) {
+          // Send welcome message
+          const welcomeMsg = JSON.stringify({ 
+            type: 'connection_established', 
+            message: `Connected to TrialSage ${name} WebSocket server`,
+            timestamp: new Date().toISOString()
+          });
           
-        // Echo message back as acknowledgment
-        socket.send(JSON.stringify({
-          type: 'acknowledgment',
-          receivedMessage: messageContent,
-          timestamp: new Date().toISOString(),
-        }));
-      } catch (err) {
-        console.error('Error parsing WebSocket message:', err);
-      }
-    });
-    
-    // Handle disconnection
-    socket.on('close', () => {
-      console.log('Client disconnected from main WebSocket');
-    });
-    
-    // Handle errors
-    socket.on('error', (error) => {
-      console.error('WebSocket error:', error);
-    });
-  });
-  
-  // QC WebSocket connection handler
-  qcWss.on('connection', (socket: WebSocket) => {
-    console.log('Client connected to QC WebSocket');
-    
-    // Send welcome message
-    socket.send(JSON.stringify({ 
-      type: 'connection_established',
-      message: 'Connected to TrialSage QC WebSocket server',
-      timestamp: new Date().toISOString(),
-    }));
-    
-    // Set up heartbeat to prevent timeouts
-    const heartbeatInterval = setInterval(() => {
-      if (socket.readyState === WebSocket.OPEN) {
-        socket.send(JSON.stringify({ 
-          type: 'heartbeat',
-          timestamp: new Date().toISOString(),
-        }));
-      } else {
-        clearInterval(heartbeatInterval);
-      }
-    }, 30000); // Send heartbeat every 30 seconds
-    
-    // Message handler
-    socket.on('message', (message: WebSocket.Data) => {
-      try {
-        const messageContent = JSON.parse(message.toString());
-        console.log('Received QC WebSocket message:', messageContent);
-        
-        // Handle different message types
-        if (messageContent.type === 'subscribe') {
-          // Handle subscription messages
-          console.log('Client subscribed to QC updates for documents:', messageContent.documentIds);
+          socket.send(welcomeMsg);
+          console.log(`Sent welcome message to ${name} client`);
           
-          // Acknowledge the subscription
-          socket.send(JSON.stringify({
-            type: 'subscription_confirmed',
-            documentIds: messageContent.documentIds,
-            timestamp: new Date().toISOString(),
-          }));
+          // Set up ping/pong mechanism to keep the connection alive
+          const pingInterval = setInterval(() => {
+            try {
+              if (socket.readyState === WebSocket.OPEN) {
+                socket.ping(() => {});
+                console.log(`Sent ping to ${name} client`);
+              } else {
+                clearInterval(pingInterval);
+                console.log(`Cleared ping interval for ${name} client - socket no longer open`);
+              }
+            } catch (pingError) {
+              console.error(`Error sending ping to ${name} client:`, pingError);
+              clearInterval(pingInterval);
+            }
+          }, 15000); // Send ping every 15 seconds
+          
+          // Message handler with robust error handling
+          socket.on('message', (message) => {
+            try {
+              // First check if we need to handle a binary message
+              let parsedMessage;
+              if (Buffer.isBuffer(message)) {
+                console.log(`Received binary message from ${name} client`);
+                // Handle binary message if needed
+                parsedMessage = { type: 'binary', size: message.length };
+              } else {
+                const rawMessage = message.toString();
+                console.log(`Received text message from ${name} client: ${rawMessage}`);
+                parsedMessage = JSON.parse(rawMessage);
+              }
+              
+              // Process the message based on type
+              if (parsedMessage.type === 'subscribe' && name === 'QC') {
+                // Special handling for QC subscriptions
+                socket.send(JSON.stringify({
+                  type: 'subscription_confirmed',
+                  documentIds: parsedMessage.documentIds || [],
+                  timestamp: new Date().toISOString()
+                }));
+              } else {
+                // Standard acknowledgment
+                socket.send(JSON.stringify({
+                  type: 'acknowledgment',
+                  receivedAt: new Date().toISOString(),
+                  messageType: parsedMessage.type || 'unknown'
+                }));
+              }
+            } catch (msgError) {
+              console.error(`Error processing ${name} message:`, msgError);
+              // Try to send an error response to the client
+              try {
+                if (socket.readyState === WebSocket.OPEN) {
+                  socket.send(JSON.stringify({
+                    type: 'error',
+                    message: 'Failed to process message',
+                    timestamp: new Date().toISOString()
+                  }));
+                }
+              } catch (responseError) {
+                console.error('Failed to send error response:', responseError);
+              }
+            }
+          });
+          
+          // Pong handler to respond to pings
+          socket.on('pong', () => {
+            console.log(`Received pong from ${name} client`);
+          });
+          
+          // Proper cleanup on close
+          socket.on('close', (code, reason) => {
+            console.log(`${name} connection closed with code ${code} and reason: ${reason || 'No reason provided'}`);
+            clearInterval(pingInterval);
+          });
+          
+          // Error handler
+          socket.on('error', (error) => {
+            console.error(`${name} WebSocket error:`, error);
+            try {
+              socket.close(1011, 'Internal server error');
+            } catch (closeError) {
+              console.error(`Error closing ${name} socket after error:`, closeError);
+            }
+            clearInterval(pingInterval);
+          });
         } else {
-          // Echo other messages back
-          socket.send(JSON.stringify({
-            type: 'acknowledgment',
-            receivedMessage: messageContent,
-            timestamp: new Date().toISOString(),
-          }));
+          console.warn(`${name} socket not in OPEN state on connection - immediate state: ${socket.readyState}`);
         }
-      } catch (err) {
-        console.error('Error parsing QC WebSocket message:', err);
+      } catch (setupError) {
+        console.error(`Error setting up ${name} WebSocket connection:`, setupError);
+        try {
+          if (socket.readyState === WebSocket.OPEN) {
+            socket.close(1011, 'Connection setup failed');
+          }
+        } catch (closeError) {
+          console.error(`Error closing ${name} socket after setup failure:`, closeError);
+        }
       }
     });
     
-    // Handle disconnection
-    socket.on('close', () => {
-      console.log('Client disconnected from QC WebSocket');
-      clearInterval(heartbeatInterval);
+    // Handle server-level errors
+    server.on('error', (error) => {
+      console.error(`${name} WebSocket server error:`, error);
     });
-    
-    // Handle errors
-    socket.on('error', (error) => {
-      console.error('QC WebSocket error:', error);
-    });
-  });
+  };
+  
+  // Set up both WebSocket servers
+  setupWebSocketServer(wss, 'Main');
+  setupWebSocketServer(qcWss, 'QC');
   
   // Simple API route for health check
   app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  });
+  
+  // REST fallback routes for when WebSockets aren't available
+  
+  // Recent QC status updates
+  app.get('/api/qc/recent-status', (req, res) => {
+    // Mock data to simulate QC updates - in a real app, this would come from a database
+    res.json([
+      // Return an empty array by default - client will handle empty response
+      // The WebSocket would deliver these in real-time, but this endpoint serves as a fallback
+    ]);
+  });
+  
+  // Document status check endpoint
+  app.get('/api/qc/documents/status', (req, res) => {
+    const documentIds = req.query.ids ? String(req.query.ids).split(',').map(id => parseInt(id, 10)) : [];
+    
+    if (!documentIds.length) {
+      return res.status(400).json({ error: 'No document IDs provided' });
+    }
+    
+    // Mock response with document statuses
+    const statuses = documentIds.map(id => ({
+      id,
+      status: Math.random() > 0.8 ? 'failed' : 'passed', // Randomly generate statuses for testing
+      timestamp: new Date().toISOString(),
+      message: Math.random() > 0.8 ? 'Failed validation check' : undefined
+    }));
+    
+    res.json(statuses);
   });
   
   // Mount the IND Wizard routes
