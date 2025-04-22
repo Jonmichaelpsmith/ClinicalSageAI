@@ -532,12 +532,17 @@ export const setupRoutes = (app: express.Express) => {
   
   // IND Wizard 2.0 API Routes
   
-  // Get KPI data
+  // Get KPI data with trend information
   app.get("/api/ind/kpi", (req, res) => {
     res.json({
       ready: 67,
       errors: 3,
-      docs: 12
+      docs: 12,
+      trend: {
+        ready: 5,
+        errors: -1,
+        docs: 3
+      }
     });
   });
   

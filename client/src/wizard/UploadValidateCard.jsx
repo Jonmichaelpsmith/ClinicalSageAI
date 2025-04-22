@@ -1,24 +1,26 @@
 /**
  * UploadValidateCard Component
  * 
- * Drag and drop file upload with AI preview and QC pass/fail chips for IND Wizard 2.0
+ * Drag and drop file upload with AI preview, commit/review decision
+ * and QC pass/fail chips for IND Wizard 3.0
  */
 
 import Dropzone from "react-dropzone";
 import { useState } from "react";
-import { CheckCircle, XCircle, Upload, FileText } from "lucide-react";
+import { CheckCircle, XCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import clsx from "clsx";
 
 export default function UploadValidateCard({ step, onOpenDrawer }) {
   const [preview, setPreview] = useState(null);
-  const [isUploading, setIsUploading] = useState(false);
+  const [status, setStatus] = useState("idle");
   const { toast } = useToast();
-
+  
   const onDrop = async (files) => {
     if (!files || files.length === 0) return;
     
     const file = files[0];
-    setIsUploading(true);
+    setStatus("preview");
     
     try {
       // Read file as ArrayBuffer
@@ -27,34 +29,17 @@ export default function UploadValidateCard({ step, onOpenDrawer }) {
       const base64 = btoa(String.fromCharCode(...new Uint8Array(buf)));
       
       // AI preview
-      const previewResponse = await fetch("/api/ai/preview", {
+      const pv = await fetch("/api/ai/preview", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ base64, fileName: file.name, step })
-      });
+        body: JSON.stringify({ base64, fileName: file.name })
+      }).then(r => r.json());
       
-      if (!previewResponse.ok) {
-        throw new Error("Failed to generate AI preview");
-      }
+      setPreview(pv);
+      setStatus("review");
       
-      const previewData = await previewResponse.json();
-      setPreview(previewData);
-      
-      // Full upload + QC auto in backend
-      const uploadResponse = await fetch("/api/docs", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ file: base64, name: file.name, step })
-      });
-      
-      if (!uploadResponse.ok) {
-        throw new Error("Upload failed");
-      }
-      
-      toast({
-        title: "Document uploaded successfully",
-        description: `${file.name} has been processed and added to your IND application`,
-      });
+      // Keep file buffer for commit
+      window.__pendingUpload = { base64, name: file.name };
       
     } catch (error) {
       console.error("Upload error:", error);
@@ -63,18 +48,40 @@ export default function UploadValidateCard({ step, onOpenDrawer }) {
         description: error.message || "An unexpected error occurred",
         variant: "destructive",
       });
+      setStatus("idle");
+    }
+  };
+
+  const commit = async () => {
+    setStatus("upload");
+    try {
+      const { base64, name } = window.__pendingUpload;
       
-      // Fallback preview for demonstration
-      if (!preview) {
-        setPreview({
-          summary: "Document appears to contain toxicology study results with abnormal findings highlighted in tables 3-5.",
-          module: "Module 4: Nonclinical Study Reports",
-          qcStatus: "Needs Review",
-          type: "Toxicology Report"
-        });
-      }
-    } finally {
-      setIsUploading(false);
+      await fetch("/api/docs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ file: base64, name, step })
+      });
+      
+      toast({
+        title: "Document committed",
+        description: `${name} has been processed and added to your IND application`,
+      });
+      
+      setStatus("done");
+      setTimeout(() => {
+        setPreview(null);
+        setStatus("idle");
+      }, 2000);
+      
+    } catch (error) {
+      console.error("Commit error:", error);
+      toast({
+        title: "Commit failed",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive",
+      });
+      setStatus("review");
     }
   };
   
@@ -83,80 +90,64 @@ export default function UploadValidateCard({ step, onOpenDrawer }) {
       onDrop={onDrop} 
       accept={{ 'application/pdf': [] }} 
       multiple={false}
-      disabled={isUploading}
+      disabled={status !== "idle"}
     >
       {({ getRootProps, getInputProps, isDragActive }) => (
         <div 
           {...getRootProps()} 
-          className={`border-2 border-dashed rounded-2xl p-10 text-center transition ${
+          className={clsx("border-2 border-dashed rounded-2xl p-10 text-center transition", 
             isDragActive 
-              ? "bg-indigo-50 dark:bg-indigo-900/20 border-indigo-300" 
-              : "bg-white/20 dark:bg-slate-800/20 border-gray-300 dark:border-gray-700"
-          } ${isUploading ? "opacity-75 cursor-wait" : "cursor-pointer"}`}
+              ? "bg-regulatory-50 dark:bg-regulatory-900/20 border-regulatory-300" 
+              : "bg-white/30 dark:bg-slate-800/30 border-gray-300 dark:border-gray-700",
+            status === "idle" ? "cursor-pointer" : "cursor-default"
+          )}
         >
           <input {...getInputProps()} />
           
-          {preview ? (
-            <div className="space-y-4">
-              <div className="flex justify-center mb-2">
-                <FileText size={32} className="text-indigo-500" />
+          {status === "idle" && (
+            <p className="text-gray-500 dark:text-gray-400">
+              Drag & drop PDF here or click to browse
+            </p>
+          )}
+          
+          {status === "preview" && (
+            <p className="text-gray-600 dark:text-gray-300">Analyzing...</p>
+          )}
+          
+          {status === "review" && preview && (
+            <div className="space-y-3">
+              <p className="font-medium text-gray-800 dark:text-gray-200">{preview.summary}</p>
+              <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-200">
+                <CheckCircle size={12}/> {preview.module}
+              </span>
+              <div className="flex justify-center gap-3 mt-4">
+                <button 
+                  onClick={commit} 
+                  className="bg-emerald-600 text-white px-4 py-1 rounded-lg hover:bg-emerald-700 transition-colors"
+                >
+                  Looks Good → Commit
+                </button>
+                <button 
+                  onClick={(e) => { 
+                    e.stopPropagation(); 
+                    onOpenDrawer(); 
+                  }} 
+                  className="bg-amber-600 text-white px-4 py-1 rounded-lg hover:bg-amber-700 transition-colors"
+                >
+                  Open in Review
+                </button>
               </div>
-              <p className="font-semibold text-gray-800 dark:text-gray-200">{preview.summary}</p>
-              <div className="flex flex-wrap justify-center gap-2">
-                <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200">
-                  <FileText size={12} /> {preview.type || "Document"}
-                </span>
-                <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-200">
-                  <CheckCircle size={12} /> {preview.module}
-                </span>
-                {preview.qcStatus && (
-                  <span className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full ${
-                    preview.qcStatus === "Passed" 
-                      ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-200" 
-                      : "bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200"
-                  }`}>
-                    {preview.qcStatus === "Passed" ? (
-                      <CheckCircle size={12} />
-                    ) : (
-                      <XCircle size={12} />
-                    )}
-                    {preview.qcStatus}
-                  </span>
-                )}
-              </div>
-              <button 
-                onClick={(e) => { 
-                  e.stopPropagation(); 
-                  onOpenDrawer(); 
-                }}
-                className="mt-3 text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
-              >
-                View in document drawer
-              </button>
             </div>
-          ) : (
-            <div className="flex flex-col items-center">
-              {isUploading ? (
-                <>
-                  <div className="mb-2 animate-pulse">
-                    <Upload size={32} className="text-indigo-500" />
-                  </div>
-                  <p className="text-gray-500 dark:text-gray-400">Uploading and analyzing document...</p>
-                </>
-              ) : (
-                <>
-                  <div className="mb-2">
-                    <Upload size={32} className="text-gray-400 dark:text-gray-600" />
-                  </div>
-                  <p className="text-gray-500 dark:text-gray-400">
-                    Drag & drop a PDF here or click to browse
-                  </p>
-                  <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
-                    AI will automatically analyze and validate your document
-                  </p>
-                </>
-              )}
-            </div>
+          )}
+          
+          {status === "upload" && (
+            <p className="text-gray-600 dark:text-gray-300 animate-pulse">Uploading...</p>
+          )}
+          
+          {status === "done" && (
+            <p className="text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-1">
+              <CheckCircle size={18} /> Document uploaded successfully!
+            </p>
           )}
         </div>
       )}
