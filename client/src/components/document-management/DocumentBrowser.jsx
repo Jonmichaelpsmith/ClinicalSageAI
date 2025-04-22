@@ -1,525 +1,483 @@
 import React, { useState, useEffect } from 'react';
 import { useDocuShare } from '@/hooks/useDocuShare';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
-  FileText,
-  FolderOpen,
-  Search,
-  Upload,
-  Filter,
-  Download,
-  ClipboardList,
-  Filter as FilterIcon,
-  Grid3X3,
-  List,
-  Plus,
-  ChevronRight,
-  ChevronDown,
-  ArrowDownAZ,
-  ArrowUpZA,
-  Calendar,
-  AlignLeft,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { toast } from '@/hooks/use-toast';
+import { 
+  Search, Filter, Plus, MoreVertical, FileText, Download, Eye, 
+  ArrowUpDown, Clock, CheckCircle, History, Lock, Trash2, Edit,
+  FileUp
 } from 'lucide-react';
 
 /**
- * DocumentBrowser Component
+ * Document Browser Component
  * 
- * This component provides a browsing interface for the DocuShare document management system.
- * It displays documents in either a list or grid view, with filtering, sorting, and search capabilities.
+ * A comprehensive document management interface for browsing, searching,
+ * filtering, and managing documents in the 21 CFR Part 11 compliant DocuShare system.
+ * 
+ * @param {Object} props - Component props
+ * @param {Function} props.onDocumentSelect - Called when a document is selected
+ * @param {string} props.moduleContext - Filter documents by module context
+ * @param {number} props.height - The height of the browser component
  */
-export default function DocumentBrowser({ onSelectDocument }) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState('list');
-  const [sortBy, setSortBy] = useState('date');
-  const [sortOrder, setSortOrder] = useState('desc');
-  const [currentFolder, setCurrentFolder] = useState('/');
-  const [selectedDocumentId, setSelectedDocumentId] = useState(null);
-  const [activeTab, setActiveTab] = useState('all');
+export default function DocumentBrowser({ 
+  onDocumentSelect,
+  moduleContext,
+  height = 500
+}) {
+  const { documents, isLoadingDocuments, downloadDocument } = useDocuShare();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedDocuments, setSelectedDocuments] = useState([]);
+  const [sortConfig, setSortConfig] = useState({ key: 'lastModified', direction: 'desc' });
+  const [filteredDocuments, setFilteredDocuments] = useState([]);
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    documentTypes: [],
+    dateRange: { start: null, end: null },
+    authors: [],
+  });
   
-  const {
-    documents,
-    folders,
-    isLoading,
-    error,
-    fetchDocuments,
-    uploadDocument,
-    downloadDocument,
-  } = useDocuShare();
-  
-  // Load documents when component mounts or when folder/filters change
-  useEffect(() => {
-    fetchDocuments();
-  }, [fetchDocuments, currentFolder]);
+  // Format file size for display
+  const formatFileSize = (bytes) => {
+    if (bytes < 1024) return bytes + ' B';
+    else if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    else if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    else return (bytes / (1024 * 1024 * 1024)).toFixed(1) + ' GB';
+  };
   
   // Handle document selection
-  const handleSelectDocument = (doc) => {
-    setSelectedDocumentId(doc.id);
-    if (onSelectDocument) {
-      onSelectDocument(doc);
+  const handleDocumentClick = (doc) => {
+    if (onDocumentSelect) {
+      onDocumentSelect(doc);
     }
   };
   
-  // Handle file upload
-  const handleFileUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      await uploadDocument(file, currentFolder, activeTab !== 'all' ? activeTab : 'document');
+  // Sort documents
+  const requestSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
     }
+    setSortConfig({ key, direction });
   };
   
-  // Handle folder navigation
-  const handleFolderClick = (folder) => {
-    setCurrentFolder(folder.path);
+  // Handle document download
+  const handleDownload = (document) => {
+    downloadDocument(document.id);
   };
   
-  // Filter documents based on search query and active tab
-  const filteredDocuments = React.useMemo(() => {
-    if (!documents) return [];
+  // Filter and sort documents
+  useEffect(() => {
+    let docsToDisplay = [...documents];
     
-    return documents.filter((doc) => {
-      // Apply search filter
-      const matchesSearch = 
-        searchQuery === '' || 
-        doc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        doc.documentId.toLowerCase().includes(searchQuery.toLowerCase());
-      
-      // Apply tab filter
-      const matchesTab = 
-        activeTab === 'all' || 
-        doc.type === activeTab;
-      
-      return matchesSearch && matchesTab;
-    });
-  }, [documents, searchQuery, activeTab]);
-  
-  // Sort documents based on sort criteria
-  const sortedDocuments = React.useMemo(() => {
-    if (!filteredDocuments) return [];
-    
-    return [...filteredDocuments].sort((a, b) => {
-      let comparison = 0;
-      
-      switch (sortBy) {
-        case 'name':
-          comparison = a.title.localeCompare(b.title);
-          break;
-        case 'date':
-          comparison = new Date(b.modifiedDate) - new Date(a.modifiedDate);
-          break;
-        case 'type':
-          comparison = a.type.localeCompare(b.type);
-          break;
-        case 'status':
-          comparison = a.controlStatus.localeCompare(b.controlStatus);
-          break;
-        default:
-          comparison = new Date(b.modifiedDate) - new Date(a.modifiedDate);
-      }
-      
-      return sortOrder === 'asc' ? comparison : -comparison;
-    });
-  }, [filteredDocuments, sortBy, sortOrder]);
-  
-  // Format date for display
-  const formatDate = (dateString) => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    }).format(date);
-  };
-  
-  // Get document status badge class
-  const getStatusBadgeClass = (status) => {
-    const classes = {
-      'Approved': 'bg-green-100 text-green-800',
-      'In-Review': 'bg-blue-100 text-blue-800',
-      'Draft': 'bg-gray-100 text-gray-800',
-      'Submitted': 'bg-amber-100 text-amber-800',
-      'Active': 'bg-purple-100 text-purple-800',
-    };
-    
-    return classes[status] || 'bg-gray-100 text-gray-800';
-  };
-  
-  // Get document type icon
-  const getDocumentTypeIcon = (type) => {
-    switch (type) {
-      case 'protocol':
-        return <ClipboardList className="h-5 w-5 text-blue-600" />;
-      case 'report':
-        return <FileText className="h-5 w-5 text-green-600" />;
-      case 'form':
-        return <AlignLeft className="h-5 w-5 text-purple-600" />;
-      case 'submission':
-        return <FileText className="h-5 w-5 text-amber-600" />;
-      case 'correspondence':
-        return <FileText className="h-5 w-5 text-sky-600" />;
-      default:
-        return <FileText className="h-5 w-5 text-gray-600" />;
+    // Apply module context filter if provided
+    if (moduleContext) {
+      docsToDisplay = docsToDisplay.filter(doc => doc.moduleContext === moduleContext);
     }
-  };
-  
-  // Render folder path breadcrumbs
-  const renderBreadcrumbs = () => {
-    if (currentFolder === '/') {
-      return (
-        <div className="flex items-center text-sm text-muted-foreground">
-          <span className="font-medium">Root</span>
-        </div>
+    
+    // Apply search filter
+    if (searchTerm) {
+      docsToDisplay = docsToDisplay.filter(doc => 
+        doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        doc.author.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
     
-    const parts = currentFolder.split('/').filter(Boolean);
+    // Apply sorting
+    docsToDisplay.sort((a, b) => {
+      if (a[sortConfig.key] < b[sortConfig.key]) {
+        return sortConfig.direction === 'asc' ? -1 : 1;
+      }
+      if (a[sortConfig.key] > b[sortConfig.key]) {
+        return sortConfig.direction === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
     
-    return (
-      <div className="flex items-center text-sm text-muted-foreground overflow-x-auto">
-        <span 
-          className="cursor-pointer hover:text-foreground"
-          onClick={() => setCurrentFolder('/')}
-        >
-          Root
-        </span>
-        
-        {parts.map((part, index) => (
-          <React.Fragment key={index}>
-            <ChevronRight className="h-4 w-4 mx-1" />
-            <span 
-              className={`cursor-pointer ${index === parts.length - 1 ? 'font-medium text-foreground' : 'hover:text-foreground'}`}
-              onClick={() => setCurrentFolder('/' + parts.slice(0, index + 1).join('/'))}
-            >
-              {part}
-            </span>
-          </React.Fragment>
-        ))}
-      </div>
-    );
-  };
+    setFilteredDocuments(docsToDisplay);
+  }, [documents, searchTerm, sortConfig, moduleContext]);
+  
+  // Get unique document types for filtering
+  const documentTypes = [...new Set(documents.map(doc => doc.documentType))];
+  
+  // Get unique authors for filtering
+  const authors = [...new Set(documents.map(doc => doc.author))];
   
   return (
-    <Card className="w-full border-teal-200 shadow-sm">
-      <CardHeader className="pb-3">
-        <div className="flex justify-between items-center">
-          <div>
-            <CardTitle className="text-xl font-semibold flex items-center">
-              <FileText className="h-5 w-5 mr-2 text-teal-600" />
-              DocuShare Document Repository
-            </CardTitle>
-            <CardDescription>
-              21 CFR Part 11 compliant document management system
-            </CardDescription>
-          </div>
-          
-          <div className="flex space-x-2">
-            <Button variant="outline" size="sm" className="h-9">
-              <label className="cursor-pointer flex items-center">
-                <Upload className="h-4 w-4 mr-1" />
-                Upload
-                <input
-                  type="file"
-                  className="hidden"
-                  onChange={handleFileUpload}
-                />
-              </label>
-            </Button>
-            
-            <Button variant="default" size="sm" className="h-9 bg-teal-600 hover:bg-teal-700">
-              <Plus className="h-4 w-4 mr-1" />
-              New Document
-            </Button>
-          </div>
+    <div className="w-full" style={{ height: `${height}px` }}>
+      <div className="mb-4 flex justify-between">
+        <div className="flex-1 mr-2 relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input
+            className="pl-9 pr-4 py-2"
+            placeholder="Search documents by name, author..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
         </div>
-        
-        <div className="mt-3 space-y-3">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search documents..."
-              className="pl-9"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
+        <div className="flex space-x-2">
+          <Button 
+            variant="outline" 
+            size="icon" 
+            onClick={() => setShowFilters(!showFilters)}
+            className={showFilters ? 'bg-blue-50 text-blue-600' : ''}
+          >
+            <Filter className="h-4 w-4" />
+          </Button>
           
-          <div className="flex items-center justify-between">
-            {renderBreadcrumbs()}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-1.5" />
+                Upload
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem className="cursor-pointer">
+                <FileUp className="h-4 w-4 mr-2" />
+                Upload Document
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="cursor-pointer">
+                <Lock className="h-4 w-4 mr-2" />
+                Import with Electronic Signature
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+      
+      {showFilters && (
+        <div className="mb-4 p-3 border rounded-md bg-gray-50">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <h4 className="text-sm font-medium mb-2">Document Types</h4>
+              <div className="space-y-2">
+                {documentTypes.map(type => (
+                  <div key={type} className="flex items-center">
+                    <Checkbox 
+                      id={`type-${type}`} 
+                      checked={filters.documentTypes.includes(type)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setFilters(prev => ({
+                            ...prev,
+                            documentTypes: [...prev.documentTypes, type]
+                          }));
+                        } else {
+                          setFilters(prev => ({
+                            ...prev,
+                            documentTypes: prev.documentTypes.filter(t => t !== type)
+                          }));
+                        }
+                      }}
+                    />
+                    <label 
+                      htmlFor={`type-${type}`}
+                      className="ml-2 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      {type.charAt(0).toUpperCase() + type.slice(1)}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
             
-            <div className="flex items-center space-x-2">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-8 gap-1">
-                    <FilterIcon className="h-3.5 w-3.5" />
-                    <span className="text-xs">Filter</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => setActiveTab('all')}>
-                    All Documents
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setActiveTab('protocol')}>
-                    Protocols Only
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setActiveTab('report')}>
-                    Reports Only
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setActiveTab('submission')}>
-                    Submissions Only
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-8 gap-1">
-                    {sortOrder === 'asc' ? (
-                      <ArrowUpZA className="h-3.5 w-3.5" />
-                    ) : (
-                      <ArrowDownAZ className="h-3.5 w-3.5" />
-                    )}
-                    <span className="text-xs">Sort</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => { setSortBy('date'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc'); }}>
-                    By Date {sortBy === 'date' && (sortOrder === 'asc' ? '↑' : '↓')}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => { setSortBy('name'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc'); }}>
-                    By Name {sortBy === 'name' && (sortOrder === 'asc' ? '↑' : '↓')}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => { setSortBy('type'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc'); }}>
-                    By Type {sortBy === 'type' && (sortOrder === 'asc' ? '↑' : '↓')}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => { setSortBy('status'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc'); }}>
-                    By Status {sortBy === 'status' && (sortOrder === 'asc' ? '↑' : '↓')}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              
-              <div className="border rounded-md flex">
-                <Button 
-                  variant={viewMode === 'list' ? 'subtle' : 'ghost'} 
-                  size="sm" 
-                  className="h-8 px-2 rounded-r-none"
-                  onClick={() => setViewMode('list')}
-                >
-                  <List className="h-4 w-4" />
-                </Button>
-                <Button 
-                  variant={viewMode === 'grid' ? 'subtle' : 'ghost'} 
-                  size="sm" 
-                  className="h-8 px-2 rounded-l-none"
-                  onClick={() => setViewMode('grid')}
-                >
-                  <Grid3X3 className="h-4 w-4" />
-                </Button>
+            <div>
+              <h4 className="text-sm font-medium mb-2">Date Range</h4>
+              <div className="space-y-2">
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">From</label>
+                  <Input 
+                    type="date" 
+                    value={filters.dateRange.start || ''}
+                    onChange={(e) => {
+                      setFilters(prev => ({
+                        ...prev,
+                        dateRange: {
+                          ...prev.dateRange,
+                          start: e.target.value
+                        }
+                      }));
+                    }}
+                    className="h-8"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">To</label>
+                  <Input 
+                    type="date" 
+                    value={filters.dateRange.end || ''}
+                    onChange={(e) => {
+                      setFilters(prev => ({
+                        ...prev,
+                        dateRange: {
+                          ...prev.dateRange,
+                          end: e.target.value
+                        }
+                      }));
+                    }}
+                    className="h-8"
+                  />
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h4 className="text-sm font-medium mb-2">Authors</h4>
+              <div className="space-y-2">
+                {authors.map(author => (
+                  <div key={author} className="flex items-center">
+                    <Checkbox 
+                      id={`author-${author.replace(/\s+/g, '-')}`} 
+                      checked={filters.authors.includes(author)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setFilters(prev => ({
+                            ...prev,
+                            authors: [...prev.authors, author]
+                          }));
+                        } else {
+                          setFilters(prev => ({
+                            ...prev,
+                            authors: prev.authors.filter(a => a !== author)
+                          }));
+                        }
+                      }}
+                    />
+                    <label 
+                      htmlFor={`author-${author.replace(/\s+/g, '-')}`}
+                      className="ml-2 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      {author}
+                    </label>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
-        </div>
-      </CardHeader>
-      
-      <CardContent className="p-0 border-t">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <div className="border-b px-4">
-            <TabsList className="mb-px">
-              <TabsTrigger value="all" className="text-xs">All Documents</TabsTrigger>
-              <TabsTrigger value="protocol" className="text-xs">Protocols</TabsTrigger>
-              <TabsTrigger value="report" className="text-xs">Reports</TabsTrigger>
-              <TabsTrigger value="submission" className="text-xs">Submissions</TabsTrigger>
-              <TabsTrigger value="form" className="text-xs">Forms</TabsTrigger>
-            </TabsList>
-          </div>
           
-          <TabsContent value={activeTab} className="m-0 pt-0">
-            {isLoading ? (
-              <div className="flex justify-center items-center p-8">
-                <div className="animate-spin h-8 w-8 border-2 border-teal-500 border-t-transparent rounded-full"></div>
-              </div>
-            ) : error ? (
-              <div className="p-6 text-center">
-                <p className="text-red-500 mb-2">Error loading documents</p>
-                <Button variant="outline" onClick={() => fetchDocuments()}>Retry</Button>
-              </div>
-            ) : (
-              <div className="px-4 py-3">
-                {/* Folders Section */}
-                {currentFolder === '/' && folders && folders.length > 0 && (
-                  <div className="mb-4">
-                    <h3 className="text-sm font-medium mb-2 text-muted-foreground">Folders</h3>
-                    <div className={viewMode === 'grid' ? 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3' : 'space-y-1'}>
-                      {folders.map((folder) => (
-                        <div
-                          key={folder.id}
-                          className={`
-                            border rounded-md cursor-pointer hover:bg-muted/40 transition-colors
-                            ${viewMode === 'grid' ? 'p-3' : 'p-2 flex items-center'}
-                          `}
-                          onClick={() => handleFolderClick(folder)}
-                        >
-                          <div className={viewMode === 'grid' ? 'flex items-center mb-1' : 'flex items-center'}>
-                            <FolderOpen className={`text-amber-500 ${viewMode === 'grid' ? 'h-5 w-5 mr-2' : 'h-5 w-5 mr-3'}`} />
-                            <div>
-                              <div className="font-medium text-sm">{folder.name}</div>
-                              {viewMode === 'grid' && (
-                                <div className="text-xs text-muted-foreground mt-1">
-                                  {folder.documentCount} document{folder.documentCount !== 1 ? 's' : ''}
-                                </div>
-                              )}
-                            </div>
-                            {viewMode === 'list' && (
-                              <div className="ml-auto text-xs text-muted-foreground">
-                                {folder.documentCount} document{folder.documentCount !== 1 ? 's' : ''}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="border-t my-4"></div>
-                  </div>
-                )}
-                
-                {/* Documents Section */}
-                <div>
-                  <h3 className="text-sm font-medium mb-2 text-muted-foreground">
-                    Documents {filteredDocuments.length > 0 && `(${filteredDocuments.length})`}
-                  </h3>
-                  
-                  {filteredDocuments.length === 0 ? (
-                    <div className="py-8 text-center border rounded-md bg-muted/20">
-                      <FileText className="h-8 w-8 text-muted-foreground/60 mx-auto mb-3" />
-                      <p className="text-muted-foreground">No documents found</p>
-                      {searchQuery && (
-                        <Button 
-                          variant="link" 
-                          className="mt-1 text-teal-600"
-                          onClick={() => setSearchQuery('')}
-                        >
-                          Clear search
-                        </Button>
-                      )}
-                    </div>
-                  ) : viewMode === 'grid' ? (
-                    // Grid View
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                      {sortedDocuments.map((doc) => (
-                        <Card
-                          key={doc.id}
-                          className={`overflow-hidden cursor-pointer transition-all hover:border-teal-300 hover:shadow-md ${selectedDocumentId === doc.id ? 'border-teal-500 ring-1 ring-teal-500/30' : ''}`}
-                          onClick={() => handleSelectDocument(doc)}
-                        >
-                          <CardContent className="p-3">
-                            <div className="mb-2">
-                              {getDocumentTypeIcon(doc.type)}
-                            </div>
-                            <h4 className="font-medium text-sm mb-1 line-clamp-2">{doc.title}</h4>
-                            <div className="flex justify-between items-center mt-2">
-                              <Badge className={getStatusBadgeClass(doc.controlStatus)}>
-                                {doc.controlStatus}
-                              </Badge>
-                              <div className="flex items-center text-xs text-muted-foreground">
-                                <Calendar className="h-3 w-3 mr-1" />
-                                {formatDate(doc.modifiedDate)}
-                              </div>
-                            </div>
-                            <div className="text-xs text-muted-foreground mt-2">
-                              {doc.documentId} • v{doc.version}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  ) : (
-                    // List View
-                    <div className="rounded-md border overflow-hidden">
-                      <div className="bg-muted/30 px-4 py-2 text-xs font-medium text-muted-foreground grid grid-cols-12 gap-3">
-                        <div className="col-span-6">Name</div>
-                        <div className="col-span-2">Status</div>
-                        <div className="col-span-2">Type</div>
-                        <div className="col-span-2">Modified</div>
-                      </div>
-                      
-                      <ScrollArea className="h-[calc(100vh-21rem)]">
-                        <div className="divide-y">
-                          {sortedDocuments.map((doc) => (
-                            <div
-                              key={doc.id}
-                              className={`px-4 py-3 grid grid-cols-12 gap-3 cursor-pointer hover:bg-muted/30 transition-colors ${
-                                selectedDocumentId === doc.id ? 'bg-teal-50 border-l-2 border-l-teal-600' : ''
-                              }`}
-                              onClick={() => handleSelectDocument(doc)}
-                            >
-                              <div className="col-span-6 flex items-center">
-                                {getDocumentTypeIcon(doc.type)}
-                                <div className="ml-3 min-w-0">
-                                  <div className="font-medium text-sm truncate">{doc.title}</div>
-                                  <div className="text-xs text-muted-foreground">{doc.documentId} • v{doc.version}</div>
-                                </div>
-                              </div>
-                              
-                              <div className="col-span-2 flex items-center">
-                                <Badge className={getStatusBadgeClass(doc.controlStatus)}>
-                                  {doc.controlStatus}
-                                </Badge>
-                              </div>
-                              
-                              <div className="col-span-2 flex items-center text-sm">
-                                {doc.documentType || doc.type}
-                              </div>
-                              
-                              <div className="col-span-2 flex items-center text-xs text-muted-foreground">
-                                {formatDate(doc.modifiedDate)}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </ScrollArea>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
-      </CardContent>
-      
-      <CardFooter className="py-3 px-4 border-t flex justify-between items-center bg-muted/10">
-        <div className="text-xs text-muted-foreground">
-          Connected to DocuShare server: <span className="font-mono">TrialSAGE-DS7</span>
+          <div className="mt-4 flex justify-end space-x-2">
+            <Button variant="outline" size="sm" onClick={() => {
+              setFilters({
+                documentTypes: [],
+                dateRange: { start: null, end: null },
+                authors: [],
+              });
+            }}>
+              Reset Filters
+            </Button>
+            <Button size="sm" onClick={() => setShowFilters(false)}>
+              Apply Filters
+            </Button>
+          </div>
         </div>
-        {selectedDocumentId && (
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="h-8"
-            onClick={() => downloadDocument(selectedDocumentId)}
-          >
-            <Download className="h-3 w-3 mr-1" />
-            Download Selected
-          </Button>
-        )}
-      </CardFooter>
-    </Card>
+      )}
+      
+      <div className="border rounded-md overflow-hidden">
+        <ScrollArea style={{ height: showFilters ? height - 200 : height - 80 }}>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-9">
+                  <Checkbox 
+                    checked={
+                      filteredDocuments.length > 0 && 
+                      selectedDocuments.length === filteredDocuments.length
+                    }
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        setSelectedDocuments(filteredDocuments.map(doc => doc.id));
+                      } else {
+                        setSelectedDocuments([]);
+                      }
+                    }}
+                  />
+                </TableHead>
+                <TableHead className="w-[40%] cursor-pointer" onClick={() => requestSort('name')}>
+                  <div className="flex items-center">
+                    Document Name
+                    {sortConfig.key === 'name' && (
+                      <ArrowUpDown className={`ml-1 h-3 w-3 ${sortConfig.direction === 'asc' ? 'rotate-180' : ''}`} />
+                    )}
+                  </div>
+                </TableHead>
+                <TableHead className="cursor-pointer" onClick={() => requestSort('documentType')}>
+                  <div className="flex items-center">
+                    Type
+                    {sortConfig.key === 'documentType' && (
+                      <ArrowUpDown className={`ml-1 h-3 w-3 ${sortConfig.direction === 'asc' ? 'rotate-180' : ''}`} />
+                    )}
+                  </div>
+                </TableHead>
+                <TableHead className="cursor-pointer" onClick={() => requestSort('author')}>
+                  <div className="flex items-center">
+                    Author
+                    {sortConfig.key === 'author' && (
+                      <ArrowUpDown className={`ml-1 h-3 w-3 ${sortConfig.direction === 'asc' ? 'rotate-180' : ''}`} />
+                    )}
+                  </div>
+                </TableHead>
+                <TableHead className="cursor-pointer" onClick={() => requestSort('lastModified')}>
+                  <div className="flex items-center">
+                    Last Modified
+                    {sortConfig.key === 'lastModified' && (
+                      <ArrowUpDown className={`ml-1 h-3 w-3 ${sortConfig.direction === 'asc' ? 'rotate-180' : ''}`} />
+                    )}
+                  </div>
+                </TableHead>
+                <TableHead className="cursor-pointer" onClick={() => requestSort('version')}>
+                  <div className="flex items-center">
+                    Version
+                    {sortConfig.key === 'version' && (
+                      <ArrowUpDown className={`ml-1 h-3 w-3 ${sortConfig.direction === 'asc' ? 'rotate-180' : ''}`} />
+                    )}
+                  </div>
+                </TableHead>
+                <TableHead className="cursor-pointer" onClick={() => requestSort('size')}>
+                  <div className="flex items-center">
+                    Size
+                    {sortConfig.key === 'size' && (
+                      <ArrowUpDown className={`ml-1 h-3 w-3 ${sortConfig.direction === 'asc' ? 'rotate-180' : ''}`} />
+                    )}
+                  </div>
+                </TableHead>
+                <TableHead className="w-9"></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isLoadingDocuments ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="h-24 text-center">
+                    Loading documents...
+                  </TableCell>
+                </TableRow>
+              ) : filteredDocuments.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="h-24 text-center">
+                    <div className="flex flex-col items-center justify-center">
+                      <FileText className="h-8 w-8 text-gray-300 mb-2" />
+                      <p className="text-gray-500">No documents found</p>
+                      <Button variant="outline" className="mt-2">
+                        <Plus className="h-4 w-4 mr-1.5" />
+                        Upload Document
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredDocuments.map(doc => (
+                  <TableRow 
+                    key={doc.id}
+                    className={`cursor-pointer ${selectedDocuments.includes(doc.id) ? 'bg-blue-50' : ''}`}
+                    onClick={() => handleDocumentClick(doc)}
+                  >
+                    <TableCell className="py-2" onClick={(e) => e.stopPropagation()}>
+                      <Checkbox 
+                        checked={selectedDocuments.includes(doc.id)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedDocuments(prev => [...prev, doc.id]);
+                          } else {
+                            setSelectedDocuments(prev => prev.filter(id => id !== doc.id));
+                          }
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell className="font-medium py-2">
+                      <div className="flex items-center">
+                        <FileText className="h-4 w-4 mr-2 text-blue-600" />
+                        <span>{doc.name}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-2">
+                      <Badge variant="outline">{doc.documentType}</Badge>
+                    </TableCell>
+                    <TableCell className="py-2">{doc.author}</TableCell>
+                    <TableCell className="py-2 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <Clock className="h-3 w-3 text-gray-400 mr-1" />
+                        {new Date(doc.lastModified).toLocaleDateString()}
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-2">v{doc.version}</TableCell>
+                    <TableCell className="py-2">{formatFileSize(doc.size)}</TableCell>
+                    <TableCell className="py-2" onClick={(e) => e.stopPropagation()}>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem 
+                            className="cursor-pointer"
+                            onClick={() => handleDocumentClick(doc)}
+                          >
+                            <Eye className="h-4 w-4 mr-2" />
+                            View
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            className="cursor-pointer"
+                            onClick={() => handleDownload(doc)}
+                          >
+                            <Download className="h-4 w-4 mr-2" />
+                            Download
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem className="cursor-pointer">
+                            <History className="h-4 w-4 mr-2" />
+                            Version History
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="cursor-pointer">
+                            <Edit className="h-4 w-4 mr-2" />
+                            Edit Properties
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem className="cursor-pointer text-red-600">
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </ScrollArea>
+      </div>
+      
+      <div className="mt-3 flex justify-between items-center text-xs text-gray-500">
+        <div className="flex items-center">
+          <CheckCircle className="h-3 w-3 mr-1 text-teal-600" />
+          21 CFR Part 11 Compliant Document Repository
+        </div>
+        <div>
+          {filteredDocuments.length} of {documents.length} documents
+        </div>
+      </div>
+    </div>
   );
 }
