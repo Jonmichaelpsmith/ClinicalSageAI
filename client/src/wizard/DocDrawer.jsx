@@ -19,9 +19,7 @@ import {
   ChevronRight 
 } from "lucide-react";
 
-function classNames(...classes) {
-  return classes.filter(Boolean).join(' ');
-}
+import clsx from "clsx";
 
 export default function DocDrawer({ onClose }) {
   const [documents, setDocuments] = useState([]);
@@ -130,11 +128,11 @@ export default function DocDrawer({ onClose }) {
             <Tab
               key={tab.key}
               className={({ selected }) =>
-                classNames(
+                clsx(
                   'w-full py-2 text-sm font-medium leading-5 text-center rounded-lg',
                   'flex items-center justify-center transition-colors duration-150',
                   selected
-                    ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-200'
+                    ? 'bg-regulatory-50 dark:bg-regulatory-900/40 text-regulatory-700 dark:text-regulatory-200'
                     : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50'
                 )
               }

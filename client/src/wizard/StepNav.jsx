@@ -4,7 +4,7 @@
  * Enhanced navigation for IND Wizard 2.0 with status indicators
  */
 
-import clsx from "classnames";
+import clsx from "clsx";
 import { Check, AlertCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -44,7 +44,7 @@ export default function StepNav({ step, onSelect }) {
             className={clsx(
               "flex items-center justify-between w-full text-left px-3 py-2 rounded-lg", 
               i === step 
-                ? "bg-indigo-100 dark:bg-indigo-900/40 font-semibold"
+                ? "bg-regulatory-100 dark:bg-regulatory-900/40 font-semibold"
                 : "hover:bg-slate-100 dark:hover:bg-slate-700"
             )}
           > 
