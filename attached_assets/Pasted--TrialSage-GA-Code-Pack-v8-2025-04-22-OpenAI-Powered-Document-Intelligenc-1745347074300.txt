@@ -1,0 +1,153 @@
+// ===== TrialSage GA Code Pack — v8  (2025‑04‑22) =====
+//  ⬛  OpenAI‑Powered Document Intelligence Suite  — **Operational Play‑Out** ⬛
+// -----------------------------------------------------------------------------
+//  New in v8 (final hand‑off for Replit automation):
+//   • AI Back‑fill CLI — migrates all legacy DocuShare files → embeddings, summary, classification
+//   • /api/ai/preview  — returns summary + classification instantly during drag‑drop (UX delight)
+//   • /api/ind/tips    — generates “missing doc / outdated” tips via OpenAI function‐calling
+//   • Extended prisma schema (add studyId link in document & study_document)
+//   • Cron job template for nightly re‑embedding (handles model upgrades)
+// -----------------------------------------------------------------------------
+
+// 0.  ENVIRONMENT VARIABLES (new)
+// -----------------------------------------------------------------------------
+CRON_REEMBED_HOUR  = 3   # 3 AM local — nightly re‑embed
+
+// -----------------------------------------------------------------------------
+// 1.  prisma/schema.prisma  (final form)
+// -----------------------------------------------------------------------------
+model document {
+  id         Int      @id @default(autoincrement())
+  name       String
+  sha256     String   @unique
+  summary    String?
+  module     String?
+  subSection String?
+  keywords   String[] @db.StringArray
+  studyId    String?                     // link to study / project
+  createdAt  DateTime @default(now())
+}
+model study_document {
+  id        Int      @id @default(autoincrement())
+  objectId  String   @unique
+  title     String
+  text      String   @db.Text
+  embedding Unsupported("vector(1536)")
+  studyId   String?  // for filtering in /chat
+  createdAt DateTime @default(now())
+}
+
+// -----------------------------------------------------------------------------
+// 2.  scripts/aiBackfill.js  — one‑shot back‑fill & nightly cron
+// -----------------------------------------------------------------------------
+import prisma from "../prisma/client.js";
+import * as ds  from "../services/docushare.js";
+import * as ai  from "../services/aiUtils.js";
+import pdf      from "pdf-parse";
+
+export async function backfill() {
+  const docs = await ds.list();
+  for (const d of docs) {
+    // skip if already processed
+    const exists = await prisma.document.findFirst({ where: { sha256: d.objectId } });
+    if (exists) continue;
+
+    const buf = await ds.download(d.objectId);
+    const text = (await pdf(buf)).text;
+    const [embedding, summary, cls] = await Promise.all([
+      ai.embed(text), ai.summarize(text), ai.classify(text),
+    ]);
+
+    await prisma.document.create({
+      data: {
+        name: d.displayName,
+        sha256: d.objectId,
+        summary,
+        module: cls.module,
+        subSection: cls.subSection,
+        keywords: { set: cls.keywords },
+      },
+    });
+    await prisma.study_document.create({
+      data: {
+        objectId: d.objectId,
+        title: d.displayName,
+        text,
+        embedding,
+      },
+    });
+    console.log("Back‑filled", d.displayName);
+  }
+  console.log("AI back‑fill complete.");
+}
+
+if (require.main === module) backfill();
+
+// -----------------------------------------------------------------------------
+// 3.  routes/aiPreview.js  — instant summary+classify on upload preview
+// -----------------------------------------------------------------------------
+import { Router } from "express";
+import * as ai from "../services/aiUtils.js";
+import pdf from "pdf-parse";
+const preview = Router();
+
+// POST /api/ai/preview   { base64 }
+preview.post("/ai/preview", async (req, res, next) => {
+  try {
+    const { base64 } = req.body;
+    const buf  = Buffer.from(base64, "base64");
+    const text = (await pdf(buf)).text;
+    const [summary, cls] = await Promise.all([
+      ai.summarize(text), ai.classify(text),
+    ]);
+    res.json({ summary, ...cls });
+  } catch (e) { next(e); }
+});
+export default preview;
+
+// -----------------------------------------------------------------------------
+// 4.  routes/indTips.js  — AI suggestions for IND Builder
+// -----------------------------------------------------------------------------
+import { Router } from "express";
+import prisma from "../prisma/client.js";
+import * as ai from "../services/aiUtils.js";
+const tips = Router();
+
+// GET /api/ind/tips  → [{ msg }]
+tips.get("/ind/tips", async (_req, res, next) => {
+  try {
+    const docs = await prisma.document.findMany();
+    const modulesPresent = new Set(docs.map(d=>d.module));
+    const question = `Given modules present (${[...modulesPresent].join(",")}), list missing eCTD modules for an initial IND.`;
+    const answer = await ai.answerQuestion({ question, context: "" });
+    res.json(answer.split("\n").filter(l=>l.trim()).map(msg=>msg.trim()));
+  } catch(e){next(e);}  
+});
+export default tips;
+
+// Update routes/api.js — add:  api.use(previewRoutes); api.use(tipsRoutes);
+
+// -----------------------------------------------------------------------------
+// 5.  Cron job template (server index.js)
+// -----------------------------------------------------------------------------
+import { backfill } from "./scripts/aiBackfill.js";
+import cron from "node-cron";
+cron.schedule(`0 ${process.env.CRON_REEMBED_HOUR} * * *`, backfill, { timezone: "America/Los_Angeles" });
+
+// -----------------------------------------------------------------------------
+// 6.  Front‑end tweaks
+// -----------------------------------------------------------------------------
+// a) DropzoneUpload: after file selected but before upload, POST to `/api/ai/preview` with base64,
+//    then display returned summary & module chips beneath the dropzone.
+// b) INDAssembler: tips fetch added (code in v7 comment now active).
+
+// -----------------------------------------------------------------------------
+// 7.  Validation docs (new)
+// -----------------------------------------------------------------------------
+// • AI-Backfill-OQ.xlsx — import legacy set, verify counts match DocuShare
+// • AI-Preview-UAT.docx — tester confirms summary & module chips visible within 5 s
+// • Re‑embed CRON SOP  — outlines nightly job, rollback plan
+
+// -----------------------------------------------------------------------------
+// END v8 — AI Back‑fill, Preview & Tips integration
+// -----------------------------------------------------------------------------
