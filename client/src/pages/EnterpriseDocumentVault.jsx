@@ -1,14 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Layout } from '@/components/ui/layout';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   FileText, Lock, FileCheck, Database, Shield, 
   BookOpen, Layers, Clock, CheckCircle, 
-  ListChecks, BookType, FileArchive, Folder
+  ListChecks, BookType, FileArchive, Folder,
+  Search, FileSearch, Filter, Sparkles
 } from 'lucide-react';
 import DocuShareIntegration from '@/components/document-management/DocuShareIntegration';
 import { Button } from '@/components/ui/button';
+import SemanticSearchBar from '@/components/search/SemanticSearchBar';
+import SemanticSearchResults from '@/components/search/SemanticSearchResults';
+import { semanticSearch } from '@/services/SemanticSearchService';
 
 /**
  * Enterprise Document Vault Page
@@ -17,6 +21,35 @@ import { Button } from '@/components/ui/button';
  * detailed use cases for Life Sciences and Biotech industries.
  */
 export default function EnterpriseDocumentVault() {
+  const [searchResults, setSearchResults] = useState(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState(null);
+  
+  const handleSearch = async (searchParams) => {
+    setIsSearching(true);
+    setShowSearchResults(true);
+    
+    try {
+      const results = await semanticSearch(
+        searchParams.query, 
+        searchParams.filters, 
+        searchParams.searchMode
+      );
+      setSearchResults(results);
+    } catch (error) {
+      console.error('Error performing semantic search:', error);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+  
+  const handleSelectDocument = (document) => {
+    setSelectedDocument(document);
+    console.log('Selected document:', document);
+    // In a full implementation, this would open a document preview or details panel
+  };
+  
   return (
     <Layout>
       <div className="container mx-auto py-8">
@@ -35,6 +68,58 @@ export default function EnterpriseDocumentVault() {
               GxP Validated
             </Badge>
           </div>
+        </div>
+        
+        {/* Unified Semantic Search */}
+        <div className="mb-6">
+          <Card className="bg-gradient-to-r from-indigo-50 via-purple-50 to-blue-50 border-indigo-100 overflow-hidden">
+            <CardHeader className="pb-2 flex items-center gap-3">
+              <div className="rounded-full bg-indigo-600 p-2">
+                <Sparkles className="h-4 w-4 text-white" />
+              </div>
+              <div>
+                <CardTitle>Unified Semantic Search</CardTitle>
+                <CardDescription>
+                  Search across all documents, data, and communications using natural language queries
+                </CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <SemanticSearchBar 
+                onSearch={handleSearch}
+                placeholder="Try searching 'regulatory deviations in EU submissions' or 'safety concerns in clinical trials'..."
+                initialFilters={{ modules: ['regulatory'] }}
+              />
+            </CardContent>
+          </Card>
+          
+          {/* Search Results Section */}
+          {showSearchResults && (
+            <Card className="mt-4 border-indigo-100">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <div className="flex items-center">
+                  <Search className="text-indigo-600 mr-2 h-5 w-5" />
+                  <CardTitle>Search Results</CardTitle>
+                </div>
+                {searchResults && (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setShowSearchResults(false)}
+                  >
+                    Close Results
+                  </Button>
+                )}
+              </CardHeader>
+              <CardContent>
+                <SemanticSearchResults
+                  results={searchResults}
+                  isLoading={isSearching}
+                  onSelectDocument={handleSelectDocument}
+                />
+              </CardContent>
+            </Card>
+          )}
         </div>
         
         <Card className="mb-6">
