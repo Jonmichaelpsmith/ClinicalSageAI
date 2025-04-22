@@ -22,8 +22,7 @@ export default function INDWizard() {
             variant="outline" 
             className="mr-2"
             onClick={() => {
-              // This would be implemented to return to the dashboard
-              alert('Return to dashboard');
+              // Return to the dashboard without an alert
               window.location.href = '/';
             }}
           >

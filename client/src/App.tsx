@@ -86,8 +86,10 @@ export default function App() {
               </SimpleErrorBoundary>
             </Route>
             <Route path="/ind-architect">
-              <SimpleErrorBoundary fallback={<EmergencyFallback pageName="IND Architect" />}>
-                <LazyINDWizard />
+              <SimpleErrorBoundary fallback={<EmergencyFallback pageName="IND Accelerator" />}>
+                <React.Suspense fallback={<EmergencyFallback pageName="IND Accelerator" />}>
+                  <LazyINDWizard />
+                </React.Suspense>
               </SimpleErrorBoundary>
             </Route>
             <Route path="/csr-intelligence">
@@ -107,7 +109,9 @@ export default function App() {
             </Route>
             <Route path="/ind/wizard/*">
               <SimpleErrorBoundary fallback={<EmergencyFallback pageName="IND Wizard" />}>
-                <LazyINDWizard />
+                <React.Suspense fallback={<EmergencyFallback pageName="IND Wizard" />}>
+                  <LazyINDWizard />
+                </React.Suspense>
               </SimpleErrorBoundary>
             </Route>
             <Route path="/cer-generator">
