@@ -6,6 +6,7 @@ const resources = {
   en: {
     translation: {
       appTitle: "TrialSage™ IND Wizard",
+      submit: "Submit by",
       wizardHeader: {
         title: "IND Preparation Wizard 3.3",
         moduleReadiness: "Module Readiness",
@@ -45,6 +46,8 @@ const resources = {
   },
   es: {
     translation: {
+      appTitle: "TrialSage™ Asistente IND",
+      submit: "Enviar antes de",
       wizardHeader: {
         title: "Asistente de Preparación IND 3.3",
         moduleReadiness: "Estado de los Módulos",
@@ -60,11 +63,32 @@ const resources = {
         module3: "Módulo 3: Calidad",
         module4: "Módulo 4: No Clínico",
         module5: "Módulo 5: Clínico"
+      },
+      stepNav: {
+        step: "Paso",
+        completion: "Completado",
+        confidence: "Confianza",
+        estimatedCompletion: "Finalización est.",
+        trend: "Tendencia de progreso",
+        help: "Leyenda",
+        validStep: "Paso válido",
+        issuesDetected: "Problemas detectados",
+        titles: {
+          0: "Planificación inicial",
+          1: "Datos no clínicos",
+          2: "Datos CMC",
+          3: "Protocolo clínico",
+          4: "Folleto del investigador",
+          5: "Formularios FDA",
+          6: "Ensamblaje final"
+        }
       }
     }
   },
   ja: {
     translation: {
+      appTitle: "TrialSage™ INDウィザード",
+      submit: "提出期限",
       wizardHeader: {
         title: "IND準備ウィザード 3.3",
         moduleReadiness: "モジュール準備状況",
@@ -85,6 +109,8 @@ const resources = {
   },
   fr: {
     translation: {
+      appTitle: "TrialSage™ Assistant IND",
+      submit: "Soumettre avant",
       wizardHeader: {
         title: "Assistant de Préparation IND 3.3",
         moduleReadiness: "État de Préparation des Modules",
