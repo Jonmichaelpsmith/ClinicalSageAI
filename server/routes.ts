@@ -3,6 +3,10 @@ import http from 'http';
 import { WebSocketServer, WebSocket } from 'ws';
 import preIndRoutes from './routes/preIndRoutes';
 import nonclinicalRoutes from './routes/nonclinicalRoutes';
+// Import CER routes - work around ESM/CommonJS conflicts
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const apiRouter = require('./api');
 
 // Basic WebSocket server implementation
 export const setupRoutes = (app: express.Express) => {
@@ -189,6 +193,9 @@ export const setupRoutes = (app: express.Express) => {
   // Mount the IND Wizard routes
   app.use('/api/ind-drafts/:draftId/pre-ind', preIndRoutes);
   app.use('/api/ind-drafts/:draftId/nonclinical', nonclinicalRoutes);
+  
+  // Mount the CER API routes
+  app.use('/api', apiRouter);
   
   // IND Wizard API endpoints (legacy - will be replaced by the mounted routes)
   app.get('/api/ind/wizard/data', (req, res) => {
