@@ -150,14 +150,14 @@ export default function AppPackagesBanner({ currentPath }) {
   // Client portal buttons
   const clientPortals = [
     {
-      label: "Document Management",
-      description: "Enterprise document vault",
+      label: "Enterprise DocShare",
+      description: "Unified document vault",
       to: "/document-management",
       icon: <BookOpen size={18} />,
       color: "bg-blue-600 hover:bg-blue-700"
     },
     {
-      label: "Enterprise Vault",
+      label: "Validated Vault",
       description: "21 CFR Part 11 compliance",
       to: "/enterprise-document-vault",
       icon: <FileText size={18} />,
@@ -250,13 +250,13 @@ export default function AppPackagesBanner({ currentPath }) {
                     <Link to="/document-management">
                       <div className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
                         <BookOpen size={16} className="mr-2 text-blue-500" />
-                        Document Management
+                        Enterprise DocShare
                       </div>
                     </Link>
                     <Link to="/enterprise-document-vault">
                       <div className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
                         <FileText size={16} className="mr-2 text-blue-700" />
-                        Enterprise Vault
+                        Validated Vault
                       </div>
                     </Link>
                     <Link to="/csr-intelligence">
