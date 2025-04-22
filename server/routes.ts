@@ -532,7 +532,7 @@ export const setupRoutes = (app: express.Express) => {
   
   // IND Wizard 2.0 API Routes
   
-  // Get KPI data with trend information and optional module-level readiness for 3.1
+  // Get KPI data with trend information and optional module-level readiness for 3.3
   app.get("/api/ind/kpi", (req, res) => {
     const includeModules = req.query.modules === 'true';
     
@@ -540,28 +540,136 @@ export const setupRoutes = (app: express.Express) => {
       ready: 67,
       errors: 3,
       docs: 12,
+      savings: 32500, // Added in 3.2: Cost savings in USD
       trend: {
         ready: 5,
         errors: -1,
-        docs: 3
+        docs: 3,
+        savings: 4200 // Added in 3.2: 7-day savings delta
+      },
+      // Added in 3.3: Sparkline data for mini charts
+      spark: {
+        docs: [3, 5, 6, 7, 8, 8, 9, 10, 11, 12],
+        errors: [5, 4, 4, 3, 3, 3, 3, 3, 2, 3],
+        ready: [45, 48, 52, 54, 58, 62, 65, 65, 66, 67],
+        savings: [10000, 12000, 15000, 18000, 22000, 25000, 28000, 30000, 31500, 32500]
       }
     };
     
-    // If modules data is requested, add the modules array with readiness percentages
+    // If modules data is requested, add the modules array with readiness percentages and confidence intervals
     if (includeModules) {
       return res.json({
         ...baseData,
         modules: [
-          { name: "Module 1: Administrative", ready: 85 },
-          { name: "Module 2: Summaries", ready: 72 },
-          { name: "Module 3: Quality", ready: 53 },
-          { name: "Module 4: Nonclinical", ready: 68 },
-          { name: "Module 5: Clinical", ready: 42 }
+          { 
+            name: "moduleNames.module1", 
+            ready: 85,
+            ci: { lower: 81, upper: 89 } // 95% confidence interval
+          },
+          { 
+            name: "moduleNames.module2", 
+            ready: 72,
+            ci: { lower: 67, upper: 77 } 
+          },
+          { 
+            name: "moduleNames.module3", 
+            ready: 53,
+            ci: { lower: 48, upper: 58 } 
+          },
+          { 
+            name: "moduleNames.module4", 
+            ready: 68,
+            ci: { lower: 64, upper: 72 } 
+          },
+          { 
+            name: "moduleNames.module5", 
+            ready: 42,
+            ci: { lower: 37, upper: 47 } 
+          }
         ]
       });
     }
     
     res.json(baseData);
+  });
+  
+  // Added in 3.3: Monte Carlo waterfall chart data
+  app.get("/api/ind/forecast/waterfall", (req, res) => {
+    res.json({
+      waterfall: [
+        { name: "Initial", value: 25 },
+        { name: "Module 1", value: 15 },
+        { name: "Module 2", value: 12 },
+        { name: "Module 3", value: 8 },
+        { name: "Module 4", value: 14 },
+        { name: "Module 5", value: 6 },
+        { name: "Final", value: 80 }
+      ]
+    });
+  });
+  
+  // Added in 3.3: Predictive analytics for step completion
+  app.get("/api/ind/predict", (req, res) => {
+    const step = parseInt(req.query.step as string) || 0;
+    
+    // Calculate completion based on step
+    let completion = 0;
+    let confidence = 0;
+    let daysRemaining = 0;
+    
+    switch(step) {
+      case 1:
+        completion = 72;
+        confidence = 95;
+        daysRemaining = 3;
+        break;
+      case 2:
+        completion = 48;
+        confidence = 85;
+        daysRemaining = 7;
+        break;
+      case 3:
+        completion = 63;
+        confidence = 92;
+        daysRemaining = 5;
+        break;
+      case 4:
+        completion = 38;
+        confidence = 78;
+        daysRemaining = 10;
+        break;
+      case 5:
+        completion = 51;
+        confidence = 88;
+        daysRemaining = 6;
+        break;
+      case 6:
+        completion = 83;
+        confidence = 97;
+        daysRemaining = 2;
+        break;
+      default:
+        completion = 0;
+        confidence = 0;
+        daysRemaining = 30;
+    }
+    
+    // Calculate estimated completion date
+    const estimatedDate = new Date();
+    estimatedDate.setDate(estimatedDate.getDate() + daysRemaining);
+    
+    res.json({
+      completion,
+      confidence,
+      estimatedDate: estimatedDate.toISOString(),
+      timelineData: [
+        { day: 1, predicted: Math.max(0, completion - 15), actual: Math.max(0, completion - 10) },
+        { day: 2, predicted: Math.max(0, completion - 12), actual: Math.max(0, completion - 8) },
+        { day: 3, predicted: Math.max(0, completion - 10), actual: Math.max(0, completion - 5) },
+        { day: 4, predicted: Math.max(0, completion - 7), actual: completion - 3 },
+        { day: 5, predicted: completion, actual: completion }
+      ]
+    });
   });
   
   // Get step flags (validation status for each step)
