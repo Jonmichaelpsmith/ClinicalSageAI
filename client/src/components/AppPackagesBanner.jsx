@@ -111,8 +111,8 @@ export default function AppPackagesBanner({ currentPath }) {
   // Top banner entry buttons
   const entryButtons = [
     {
-      label: "Accelerate IND",
-      description: "Your AI partner for IND success",
+      label: "IND Suite",
+      description: "Comprehensive IND planning and automation",
       to: "/ind-architect",
       icon: <FileSymlink size={18} />,
       color: "bg-purple-600 hover:bg-purple-700"
@@ -139,50 +139,43 @@ export default function AppPackagesBanner({ currentPath }) {
       color: "bg-rose-600 hover:bg-rose-700"
     },
     {
-      label: "Study & Protocol",
+      label: "Study Design",
       description: "Statistical model-driven design",
       to: "/study-designer",
       icon: <BarChart size={18} />,
       color: "bg-indigo-600 hover:bg-indigo-700"
-    },
-    {
-      label: "Use Case Library",
-      description: "Regulatory case studies & templates",
-      to: "/use-case-library",
-      icon: <Library size={18} />,
-      color: "bg-teal-600 hover:bg-teal-700"
     }
   ];
   
   // Client portal buttons
   const clientPortals = [
     {
-      label: "IND Overview",
-      description: "Main IND wizard interface",
-      to: "/ind-architect",
-      icon: <User size={18} />,
-      color: "bg-rose-600 hover:bg-rose-700"
+      label: "Document Management",
+      description: "Enterprise document vault",
+      to: "/document-management",
+      icon: <BookOpen size={18} />,
+      color: "bg-blue-600 hover:bg-blue-700"
     },
     {
-      label: "Pre-IND Planning",
-      description: "Initial planning steps",
-      to: "/ind-architect",
-      icon: <Bot size={18} />,
-      color: "bg-violet-600 hover:bg-violet-700"
-    },
-    {
-      label: "Nonclinical Studies",
-      description: "Manage nonclinical data and milestones",
-      to: "/ind-architect",
+      label: "Enterprise Vault",
+      description: "21 CFR Part 11 compliance",
+      to: "/enterprise-document-vault",
       icon: <FileText size={18} />,
-      color: "bg-purple-600 hover:bg-purple-700"
+      color: "bg-blue-700 hover:bg-blue-800"
     },
     {
-      label: "CMC Section",
-      description: "Chemistry, Manufacturing, Controls",
-      to: "/ind-architect",
-      icon: <BarChart size={18} />,
-      color: "bg-slate-700 hover:bg-slate-800"
+      label: "CSR Repository",
+      description: "Clinical Study Reports",
+      to: "/csr-intelligence",
+      icon: <Database size={18} />,
+      color: "bg-emerald-600 hover:bg-emerald-700"
+    },
+    {
+      label: "CER Module",
+      description: "Clinical evaluation reports",
+      to: "/cer-generator",
+      icon: <Beaker size={18} />,
+      color: "bg-rose-600 hover:bg-rose-700"
     }
   ];
 
@@ -249,33 +242,33 @@ export default function AppPackagesBanner({ currentPath }) {
               </Link>
               <div className="relative group">
                 <span className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-600 cursor-pointer">
-                  IND Sections
+                  Document Tools
                   <ChevronRight size={16} className="ml-1 transform group-hover:rotate-90 transition-transform" />
                 </span>
                 <div className="absolute left-0 mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-50 hidden group-hover:block">
                   <div className="py-1">
-                    <Link to="/ind-architect">
+                    <Link to="/document-management">
                       <div className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
-                        <User size={16} className="mr-2 text-rose-500" />
-                        IND Overview
+                        <BookOpen size={16} className="mr-2 text-blue-500" />
+                        Document Management
                       </div>
                     </Link>
-                    <Link to="/ind-architect">
+                    <Link to="/enterprise-document-vault">
                       <div className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
-                        <Bot size={16} className="mr-2 text-violet-500" />
-                        Pre-IND Planning
+                        <FileText size={16} className="mr-2 text-blue-700" />
+                        Enterprise Vault
                       </div>
                     </Link>
-                    <Link to="/ind-architect">
+                    <Link to="/csr-intelligence">
                       <div className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
-                        <FileText size={16} className="mr-2 text-purple-500" />
-                        Nonclinical Data
+                        <Database size={16} className="mr-2 text-emerald-500" />
+                        CSR Repository
                       </div>
                     </Link>
-                    <Link to="/ind-architect">
+                    <Link to="/cer-generator">
                       <div className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
-                        <BarChart size={16} className="mr-2 text-slate-700" />
-                        CMC Section
+                        <Beaker size={16} className="mr-2 text-rose-500" />
+                        CER Module
                       </div>
                     </Link>
                   </div>
@@ -290,10 +283,10 @@ export default function AppPackagesBanner({ currentPath }) {
             
             {/* Action buttons */}
             <div className="flex items-center space-x-4">
-              <Link to="/ind-architect">
+              <Link to="/document-management">
                 <button className="flex items-center text-sm font-medium text-blue-600 hover:text-blue-800">
                   <ExternalLink size={16} className="mr-1" />
-                  Open IND Wizard
+                  Open Document Vault
                 </button>
               </Link>
             </div>
@@ -318,7 +311,7 @@ export default function AppPackagesBanner({ currentPath }) {
           
           {/* Feature Tiles Grid - Top row */}
           <div className="flex justify-center mb-4 px-6">
-            <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-6 w-full max-w-6xl" style={{ gap: '1px' }}>
+            <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-5 w-full max-w-6xl" style={{ gap: '1px' }}>
               {entryButtons.map((button, index) => (
                 <Link key={index} to={button.to} className="block">
                   <div className={`${button.color} hover:brightness-110 transition-all duration-200 border-t-0 border-l-0 border-r-0 border-b-[1px] border-white/10 h-full flex flex-col justify-between`} style={{ padding: '10px', minHeight: '82px' }}>
