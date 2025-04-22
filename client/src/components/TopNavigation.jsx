@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
-import { FileText } from 'lucide-react';
+import { FileText, MessageSquare } from 'lucide-react';
 
 export default function TopNavigation() {
   return (
@@ -43,6 +43,15 @@ export default function TopNavigation() {
               DocuShare
               <span className="absolute -top-1 -right-1 bg-teal-100 text-teal-800 text-[8px] px-1 rounded-full border border-teal-300 whitespace-nowrap">
                 21 CFR Part 11
+              </span>
+            </Button>
+          </Link>
+          <Link to="/chat">
+            <Button variant="ghost" className="text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 flex items-center relative">
+              <MessageSquare className="h-4 w-4 mr-1" />
+              Chat
+              <span className="absolute -top-1 -right-1 bg-indigo-100 text-indigo-800 text-[8px] px-1 rounded-full border border-indigo-300 whitespace-nowrap">
+                New
               </span>
             </Button>
           </Link>

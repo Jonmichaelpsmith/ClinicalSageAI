@@ -25,6 +25,10 @@ model document {
   sha256     String   @unique
   uploadedBy Int
   studyId    String?
+  summary    String?
+  module     String?
+  subSection String?
+  keywords   String[]
   createdAt  DateTime @default(now())
 }
 
@@ -40,6 +44,7 @@ model study_document {
   objectId  String   @unique
   title     String
   text      String   @db.Text
-  embedding Unsupported("vector(1536)")
+  embedding Float[]
+  studyId   String?  @default("legacy")
   createdAt DateTime @default(now())
 }
