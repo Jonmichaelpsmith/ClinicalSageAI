@@ -53,6 +53,8 @@ import EnterpriseCSRIntelligence from './pages/EnterpriseCSRIntelligence';
 const LazyCSRIntelligence = EnterpriseCSRIntelligence;
 // Add CMC Module with enhanced manufacturing controls capabilities
 const LazyCMCModule = React.lazy(() => import('./pages/CMCModule'));
+// Add AI-CMC Blueprint Generator for molecular structure to regulatory documents
+const LazyCMCBlueprintGenerator = React.lazy(() => import('./pages/CMCBlueprintGenerator'));
 const LazyLumenBioDashboard = React.lazy(() => import('./pages/LumenBioDashboard'));
 const LazyLumenBioReports = React.lazy(() => import('./pages/LumenBioReports'));
 const LazySimpleLearningInterface = React.lazy(() => import('./components/SimpleLearningInterface'));
@@ -283,6 +285,11 @@ export default function App() {
               <Route path="/cmc-module">
                 <SimpleErrorBoundary fallback={<EmergencyFallback pageName="CMC Module" />}>
                   <LazyCMCModule />
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/cmc-blueprint-generator">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="AI-CMC Blueprint Generator" />}>
+                  <LazyCMCBlueprintGenerator />
                 </SimpleErrorBoundary>
               </Route>
               <Route path="/">
