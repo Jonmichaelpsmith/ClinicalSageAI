@@ -8,16 +8,21 @@ import axios from 'axios';
  */
 class DocuShareService {
   constructor() {
-    // DocuShare API endpoints - these will be configured with actual values
-    this.baseUrl = process.env.DOCUSHARE_API_URL || 'https://api.docushare.com';
+    // DocuShare API endpoints using environment variables
+    this.baseUrl = import.meta.env.DOCUSHARE_API_URL || 'https://api.docushare.com/v1';
     this.authToken = null;
+    this.serverId = import.meta.env.DOCUSHARE_SERVER_ID || 'TrialSAGE-DS7';
+    this.licenseKey = import.meta.env.DOCUSHARE_LICENSE_KEY;
+    this.publicKey = import.meta.env.VITE_DOCUSHARE_PUBLIC_KEY;
     
     // Create axios instance with default config
     this.client = axios.create({
       baseURL: this.baseUrl,
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json'
+        'Accept': 'application/json',
+        'X-DocuShare-Server-ID': this.serverId,
+        'X-DocuShare-Public-Key': this.publicKey
       }
     });
     
