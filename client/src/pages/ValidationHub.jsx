@@ -14,7 +14,7 @@ import {
   Filter,
   PlusCircle
 } from 'lucide-react';
-import { JPValidationPanel } from '@/components/validation/JPValidationPanel';
+import JPValidationPanel from '@/components/validation/JPValidationPanel';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {

@@ -141,9 +141,12 @@ class ValidationConnectionManager:
 manager = ValidationConnectionManager()
 
 # Start ping task
-@asyncio.gather
 async def start_ping_task():
     await manager.ping_clients()
+
+# Create a task for pinging clients
+def create_ping_task():
+    asyncio.create_task(start_ping_task())
 
 # WebSocket endpoint for validation updates
 async def validation_websocket_endpoint(websocket: WebSocket, channel: str = "qc"):

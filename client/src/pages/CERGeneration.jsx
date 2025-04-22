@@ -10,7 +10,7 @@ import {
   Microscope,
   FileDown
 } from 'lucide-react';
-import { CERStreamingGenerator } from '@/components/cer/CERStreamingGenerator';
+import CERStreamingGenerator from '@/components/cer/CERStreamingGenerator';
 import { FAERSIntegration } from '@/components/cer/FAERSIntegration';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
