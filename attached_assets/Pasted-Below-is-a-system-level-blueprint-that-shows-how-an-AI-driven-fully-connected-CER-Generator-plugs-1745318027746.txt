@@ -1,0 +1,134 @@
+Below is a system‑level “blueprint” that shows how an AI‑driven, fully connected CER Generator plugs into your existing Replit stack (FastAPI + React + Celery + pgvector). Use it as an architectural map before we dive into code.
+
+1 Data & Knowledge Layer
+yaml
+Copy
+Edit
+┌──────────────────────────────────────────────────────────────┐
+│  Postgres + pgvector                                         │
+│  ────────────────────────────────                            │
+│  • tables: device, drug, adverse_event, literature           │
+│  • pgvector index: doc_chunk (FAERS / MAUDE / PubMed)        │
+│  • csr_library: embeddings for past CERs & CSRs              │
+└──────────────────────────────────────────────────────────────┘
+
+Component	How it’s filled	Key jobs
+ETL Tasks (Celery)	faers_ingest.py, maude_ingest.py, pubmed_ingest.py run nightly	Normalize, de‑duplicate, write to Postgres
+embed_documents.py	Batch‑chunks each new doc, stores embeddings in doc_chunk (current code)	Enables RAG retrieval
+Metadata APIs	/api/catalog/devices, /api/catalog/drugs	Autocomplete & pick‑lists for UI
+2 AI Narrative & Insight Engine
+java
+Copy
+Edit
+FASTAPI microservice  ─┐
+                       │  ➜  OpenAI Chat / Function Calling
+Celery worker (GPU opt) ┘    (GPT‑4o Turbo)
+Flow
+Query Builder
+User selects Device + Period ➜ FastAPI builds Elastic‑style query.
+
+Retriever
+Embeddings → cosine sim → top‑K chunks from doc_chunk.
+
+Insight Models
+14 AI Insight functions (e.g., Time‑series spike, Demographic skew, Signal Ratio) run in parallel Celery jobs; each returns JSON insight.
+
+Narrative Prompt
+
+makefile
+Copy
+Edit
+system: “You are an expert EU MDR writer...”
+user:   “Write CER section ‘Clinical Data’ …”
+        {retrieved_evidence}
+        {insight_json}
+GPT‑4o Turbo → structured JSON
+
+json
+Copy
+Edit
+{
+  "executive_summary": "...",
+  "benefit_risk": "...",
+  "tables": [{ "caption": "...", "data": [...] }],
+  ...
+}
+Formatter
+docx_builder.py turns JSON → Docx with styles, then PDF‑A.
+
+PDF QC
+pdf_qc.py auto‑validates, embeds bookmarks, size.
+
+Cache & Audit
+Narrative, JSON, PDF stored; QC report linked; event “cer_ready” on Redis.
+
+3 API Layer
+
+Endpoint	Verb	Returns
+/api/cer/generate	POST {device_code, date_range}	job_id
+/api/cer/status/{job}	GET	"queued" / "running" / "done"
+/api/cer/{job}/download	GET	PDF stream
+/api/cer/{job}/insights	GET	Raw insight JSON for dashboards
+All long jobs dispatched to Celery; status polled via event bus (or WebSocket /ws/cer).
+
+4 Front‑End UX (React)
+java
+Copy
+Edit
+             ┌──────── CER Dashboard (14 Insight Cards) ────────┐
+Home ➜ CER Hub ┤                                                  │
+               └── Narrative Tab (Rich‑text + side‑by‑side data) ─┘
+Device / Period picker (autocomplete with FDA IDs)
+
+Generate button → shows progress bar (WebSocket events)
+
+Insight Cards: trend charts (Recharts), spike alerts, map heat‑plot
+
+Download: PDF, DOCX, CSV export
+
+Compare mode: overlay two devices / competitors
+
+5 Orchestration & Events
+
+Channel	Event	Consumer
+cer_jobs	{"job":"123", "status":"done"}	Web UI progress bar
+qc	existing	Submission builder badges
+metrics	generated nightly	Compliance Insights dashboard
+Implement via utils/event_bus.py (Redis pub/sub fallback in‑proc).
+
+6 Security / Multi‑tenant
+Row‑level security (Postgres → organization_id)
+
+JWT Auth (existing SAML SSO) → tenant context in each API
+
+Rate‑limit OpenAI calls (Redis token‑bucket)
+
+Audit: every AI prompt/response stored in ai_audit table for FDA traceability.
+
+7 Deployment in Replit
+Dockerfile – Adds ghostscript, poppler-utils, gsfonts.
+
+docker-compose.yml – Existing TLS Traefik + new service celery_insights.
+
+Secrets – OPENAI_API_KEY, REDIS_URL.
+
+8 Dev Roadmap (2 → 1 → 3)
+2 (Insight Models)
+Implement 14 Celery tasks:
+
+signal_spike, cumulative_incidence, weibull_time_to_event, …
+
+Unit‑test each against sample FAERS slice.
+
+1 (Narrative Prompt & Formatter)
+Build master prompt template in prompts/cer_narrative.jinja.
+
+docx_builder.py uses python‑docx w/ corporate template.
+
+PDF through LibreOffice headless + pdf_qc.py.
+
+3 (Global Dashboard)
+/api/cer/metrics aggregates insight JSON → pg‑materialized view.
+
+React Recharts grid with filter chips, export to branded PDF.
+

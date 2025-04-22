@@ -29,6 +29,7 @@ import INDWizard from './pages/INDWizard';
 const LazyINDWizard = INDWizard;
 const LazyUseCaseLibrary = React.lazy(() => import('./pages/UseCaseLibrary'));
 const LazyCERGenerator = React.lazy(() => import('./pages/EnterpriseGradeCERGenerator'));
+const LazyCERGeneration = React.lazy(() => import('./pages/CERGeneration'));
 // Add Enterprise CSR Intelligence module
 import EnterpriseCSRIntelligence from './pages/EnterpriseCSRIntelligence';
 const LazyCSRIntelligence = EnterpriseCSRIntelligence;
