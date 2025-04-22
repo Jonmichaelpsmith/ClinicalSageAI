@@ -38,9 +38,12 @@ export default function TopNavigation() {
             </Button>
           </Link>
           <Link to="/document-management">
-            <Button variant="ghost" className="text-teal-600 hover:text-teal-800 hover:bg-teal-50 flex items-center">
+            <Button variant="ghost" className="text-teal-600 hover:text-teal-800 hover:bg-teal-50 flex items-center relative">
               <FileText className="h-4 w-4 mr-1" />
               DocuShare
+              <span className="absolute -top-1 -right-1 bg-teal-100 text-teal-800 text-[8px] px-1 rounded-full border border-teal-300 whitespace-nowrap">
+                21 CFR Part 11
+              </span>
             </Button>
           </Link>
           <Link to="/walkthroughs">

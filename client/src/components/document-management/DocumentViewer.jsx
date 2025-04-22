@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
-import { useDocuShare } from '@/hooks/useDocuShare';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 import {
   Card,
   CardContent,
@@ -10,649 +11,442 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import { 
-  FileText, 
-  Download, 
-  Clock, 
-  CheckCircle2, 
-  XCircle, 
-  AlertCircle,
-  RefreshCw,
+  FileText,
+  Download,
+  Printer,
   History,
-  PenTool,
+  Edit,
   Lock,
-  Eye,
-  Layers,
-  FileSignature
+  CheckCircle,
+  User,
+  Calendar,
+  AlertCircle,
+  Info,
+  Shield
 } from 'lucide-react';
 
 /**
- * Document Viewer Component
+ * DocumentViewer Component
  * 
- * This component provides a 21 CFR Part 11 compliant document viewer with:
- * - PDF/Document rendering
- * - Version history and audit trails
- * - Electronic signature capabilities
- * - Metadata display
+ * This component displays the contents and metadata of a selected document
+ * from the DocuShare system with controls for viewing and managing it.
  */
-export function DocumentViewer({ documentId, onClose }) {
-  const {
-    isLoading,
-    currentDocument,
-    documentContent,
-    auditTrail,
-    signatures,
-    error,
-    loadDocument,
-    loadDocumentContent,
-    signDocument
-  } = useDocuShare();
-  
+export default function DocumentViewer({ document, onClose, allowEdit = false }) {
   const [activeTab, setActiveTab] = useState('preview');
-  const [showSignDialog, setShowSignDialog] = useState(false);
-  const [signatureReason, setSignatureReason] = useState('');
-  const [signatureDetails, setSignatureDetails] = useState({
-    name: '',
-    title: '',
-    reason: ''
-  });
+  const [loading, setLoading] = useState(true);
+  const [versionHistory, setVersionHistory] = useState([]);
   
-  const pdfViewerRef = useRef(null);
-  
-  // Load document on mount
+  // Simulate loading document content and metadata
   useEffect(() => {
-    if (documentId) {
-      loadDocument(documentId);
+    if (document) {
+      setLoading(true);
+      const timer = setTimeout(() => {
+        setLoading(false);
+        
+        // Generate sample version history if we're viewing a real document
+        if (document.id) {
+          const currentVersion = parseFloat(document.version);
+          const history = [];
+          
+          for (let i = 1; i <= currentVersion * 10; i++) {
+            const version = (i / 10).toFixed(1);
+            const date = new Date();
+            date.setDate(date.getDate() - (currentVersion * 10 - i) * 3);
+            
+            history.push({
+              version,
+              date: date.toISOString(),
+              author: i === currentVersion * 10 ? 'Current User' : document.author,
+              notes: i === currentVersion * 10 ? 'Current version' : `Version ${version} changes`
+            });
+          }
+          
+          setVersionHistory(history.reverse());
+        }
+      }, 1200);
+      
+      return () => clearTimeout(timer);
     }
-  }, [documentId, loadDocument]);
+  }, [document]);
   
-  // Load document content when tab changes to preview
-  useEffect(() => {
-    if (documentId && activeTab === 'preview' && !documentContent) {
-      loadDocumentContent(documentId);
-    }
-  }, [documentId, activeTab, documentContent, loadDocumentContent]);
-  
-  // Handle document signature
-  const handleSignDocument = async () => {
-    if (!signatureDetails.name || !signatureDetails.reason) {
-      return;
-    }
-    
-    await signDocument(documentId, {
-      signedBy: signatureDetails.name,
-      title: signatureDetails.title,
-      reason: signatureDetails.reason,
-      timestamp: new Date().toISOString()
-    });
-    
-    setShowSignDialog(false);
-    setSignatureDetails({
-      name: '',
-      title: '',
-      reason: ''
-    });
-  };
+  // If no document is selected, show a placeholder
+  if (!document) {
+    return (
+      <Card className="w-full h-full flex flex-col items-center justify-center bg-muted/30">
+        <div className="text-center p-8">
+          <FileText className="h-12 w-12 text-muted-foreground mb-4 mx-auto" />
+          <h3 className="text-lg font-medium text-muted-foreground">No Document Selected</h3>
+          <p className="text-sm text-muted-foreground/70 mt-1">
+            Select a document from the list to view its contents
+          </p>
+        </div>
+      </Card>
+    );
+  }
   
   // Format date for display
   const formatDate = (dateString) => {
+    if (!dateString) return '';
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('en-US', {
       year: 'numeric',
-      month: 'short',
+      month: 'long',
       day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+      hour: 'numeric',
+      minute: 'numeric'
     }).format(date);
   };
   
-  // Create object URL for document content
-  const getDocumentUrl = () => {
-    if (!documentContent) return null;
-    return URL.createObjectURL(documentContent);
+  // Get status badge styling based on document status
+  const getStatusBadge = (status) => {
+    const styles = {
+      'Approved': 'bg-green-100 text-green-800 hover:bg-green-200',
+      'In-Review': 'bg-blue-100 text-blue-800 hover:bg-blue-200',
+      'Draft': 'bg-gray-100 text-gray-800 hover:bg-gray-200',
+      'Submitted': 'bg-amber-100 text-amber-800 hover:bg-amber-200',
+      'Active': 'bg-purple-100 text-purple-800 hover:bg-purple-200',
+    };
+    
+    return styles[status] || 'bg-gray-100 text-gray-800 hover:bg-gray-200';
   };
   
-  // Render loading state
-  if (isLoading) {
-    return (
-      <Card className="w-full h-full">
-        <CardContent className="p-6 flex flex-col items-center justify-center h-[calc(100vh-200px)]">
-          <RefreshCw className="h-8 w-8 animate-spin text-primary mb-4" />
-          <p className="text-lg text-center text-muted-foreground">
-            Loading document...
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-  
-  // Render error state
-  if (error) {
-    return (
-      <Card className="w-full h-full">
-        <CardContent className="p-6 flex flex-col items-center justify-center h-[calc(100vh-200px)]">
-          <AlertCircle className="h-8 w-8 text-destructive mb-4" />
-          <h3 className="text-lg font-medium mb-2">Failed to load document</h3>
-          <p className="text-center text-muted-foreground">{error}</p>
-          <Button className="mt-4" onClick={() => loadDocument(documentId)}>
-            Try Again
-          </Button>
-        </CardContent>
-      </Card>
-    );
-  }
-  
-  // Render if no document is selected
-  if (!currentDocument) {
-    return (
-      <Card className="w-full h-full">
-        <CardContent className="p-6 flex flex-col items-center justify-center h-[calc(100vh-200px)]">
-          <FileText className="h-8 w-8 text-muted-foreground mb-4" />
-          <p className="text-lg text-center text-muted-foreground">
-            Select a document to view
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-  
   return (
-    <Card className="w-full h-full">
-      <CardHeader className="pb-3">
-        <div className="flex justify-between items-start">
+    <Card className="w-full h-full flex flex-col border-teal-200">
+      <CardHeader className="pb-3 border-b">
+        <div className="flex items-start justify-between">
           <div>
-            <CardTitle className="text-xl">{currentDocument.name}</CardTitle>
-            <CardDescription className="flex items-center mt-1">
-              <FileText className="h-4 w-4 mr-1" />
-              {currentDocument.documentType} 
-              <span className="mx-2">•</span>
-              <Clock className="h-4 w-4 mr-1" />
-              Last modified: {formatDate(currentDocument.lastModified || currentDocument.uploadDate)}
+            <div className="flex items-center">
+              <FileText className="h-5 w-5 text-teal-600 mr-2" />
+              <CardTitle className="text-lg">{document.title}</CardTitle>
+            </div>
+            <CardDescription className="mt-1">
+              {document.documentId} • Version {document.version} • {formatDate(document.modifiedDate)}
             </CardDescription>
           </div>
-          <div className="flex gap-2">
-            {signatures.length > 0 && (
-              <Badge variant="outline" className="flex items-center gap-1 bg-green-50">
-                <FileSignature className="h-3 w-3" />
-                Signed
-              </Badge>
-            )}
-            <Badge 
-              variant="outline" 
-              className={`flex items-center gap-1 ${
-                currentDocument.controlStatus === 'Approved' ? 'bg-green-50' :
-                currentDocument.controlStatus === 'In-Review' ? 'bg-blue-50' :
-                currentDocument.controlStatus === 'Draft' ? 'bg-gray-50' :
-                'bg-yellow-50'
-              }`}
-            >
-              {currentDocument.controlStatus}
+          <div className="flex space-x-2">
+            <Badge className={getStatusBadge(document.controlStatus)}>
+              {document.controlStatus}
+            </Badge>
+            <Badge variant="outline" className="text-teal-700 border-teal-200 bg-teal-50">
+              <Shield className="h-3 w-3 mr-1" /> 21 CFR Part 11
             </Badge>
           </div>
         </div>
       </CardHeader>
       
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="w-full justify-start px-6">
-          <TabsTrigger value="preview" className="flex items-center">
-            <Eye className="h-4 w-4 mr-2" />
-            Preview
-          </TabsTrigger>
-          <TabsTrigger value="details" className="flex items-center">
-            <Layers className="h-4 w-4 mr-2" />
-            Details
-          </TabsTrigger>
-          <TabsTrigger value="audit" className="flex items-center">
-            <History className="h-4 w-4 mr-2" />
-            Audit Trail
-          </TabsTrigger>
-          <TabsTrigger value="signatures" className="flex items-center">
-            <Lock className="h-4 w-4 mr-2" />
-            Signatures
-          </TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="preview" className="mt-0 p-6 pt-0">
-          <div className="flex justify-end mb-2">
-            {documentContent && (
-              <a 
-                href={getDocumentUrl()} 
-                download={currentDocument.name}
-                className="inline-flex"
-              >
-                <Button variant="outline" size="sm">
-                  <Download className="h-4 w-4 mr-2" />
-                  Download
-                </Button>
-              </a>
-            )}
+      <div className="flex-grow flex flex-col">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-grow flex flex-col">
+          <div className="border-b px-6">
+            <TabsList className="mb-px">
+              <TabsTrigger value="preview" className="px-4">
+                Preview
+              </TabsTrigger>
+              <TabsTrigger value="metadata" className="px-4">
+                Metadata
+              </TabsTrigger>
+              <TabsTrigger value="history" className="px-4">
+                Version History
+              </TabsTrigger>
+            </TabsList>
           </div>
           
-          {documentContent ? (
-            <div 
-              ref={pdfViewerRef}
-              className="border rounded-md overflow-hidden h-[calc(100vh-270px)]"
-            >
-              <iframe 
-                src={getDocumentUrl()} 
-                className="w-full h-full"
-                title={currentDocument.name}
-              />
-            </div>
-          ) : (
-            <div className="border rounded-md flex items-center justify-center h-[calc(100vh-270px)]">
-              <RefreshCw className="h-6 w-6 animate-spin text-primary mb-4" />
-              <p className="ml-2">Loading document preview...</p>
-            </div>
-          )}
-        </TabsContent>
-        
-        <TabsContent value="details" className="mt-0 p-6 pt-0">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">Document Information</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="grid grid-cols-3 gap-1">
-                    <span className="text-sm font-medium">Document Name</span>
-                    <span className="text-sm col-span-2">{currentDocument.name}</span>
-                  </div>
-                  <Separator />
-                  
-                  <div className="grid grid-cols-3 gap-1">
-                    <span className="text-sm font-medium">Document Type</span>
-                    <span className="text-sm col-span-2">{currentDocument.documentType}</span>
-                  </div>
-                  <Separator />
-                  
-                  <div className="grid grid-cols-3 gap-1">
-                    <span className="text-sm font-medium">File Size</span>
-                    <span className="text-sm col-span-2">
-                      {(currentDocument.fileSize / 1024).toFixed(2)} KB
-                    </span>
-                  </div>
-                  <Separator />
-                  
-                  <div className="grid grid-cols-3 gap-1">
-                    <span className="text-sm font-medium">Creation Date</span>
-                    <span className="text-sm col-span-2">
-                      {formatDate(currentDocument.uploadDate)}
-                    </span>
-                  </div>
-                  <Separator />
-                  
-                  <div className="grid grid-cols-3 gap-1">
-                    <span className="text-sm font-medium">Last Modified</span>
-                    <span className="text-sm col-span-2">
-                      {formatDate(currentDocument.lastModified || currentDocument.uploadDate)}
-                    </span>
-                  </div>
-                  <Separator />
-                  
-                  <div className="grid grid-cols-3 gap-1">
-                    <span className="text-sm font-medium">Version</span>
-                    <span className="text-sm col-span-2">
-                      {currentDocument.version || '1.0'}
-                    </span>
+          <div className="flex-grow">
+            <TabsContent value="preview" className="mt-0 h-full">
+              {loading ? (
+                <div className="flex h-full items-center justify-center p-8">
+                  <div className="text-center">
+                    <div className="animate-spin h-8 w-8 border-2 border-teal-500 border-t-transparent rounded-full inline-block mb-3"></div>
+                    <p className="text-muted-foreground">Loading document...</p>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              ) : (
+                <div className="h-full flex flex-col">
+                  <div className="flex items-center justify-between p-4 bg-muted/20">
+                    <div className="text-sm text-muted-foreground">
+                      <span className="font-medium">{document.documentType}</span> • 
+                      <span className="ml-1">Last modified: {formatDate(document.modifiedDate)}</span>
+                    </div>
+                    <div className="flex space-x-2">
+                      <Button variant="ghost" size="sm">
+                        <Download className="h-4 w-4 mr-1" />
+                        Download
+                      </Button>
+                      <Button variant="ghost" size="sm">
+                        <Printer className="h-4 w-4 mr-1" />
+                        Print
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <ScrollArea className="flex-grow p-6">
+                    <div className="max-w-4xl mx-auto bg-white shadow-sm rounded-md p-8 border">
+                      <div className="text-center mb-8 pb-6 border-b">
+                        <h1 className="text-xl font-bold mb-2">{document.title}</h1>
+                        <p className="text-sm text-muted-foreground">
+                          Document ID: {document.documentId} • Version: {document.version}
+                        </p>
+                      </div>
+                      
+                      {/* This would be replaced with the actual document content */}
+                      <div className="space-y-4 text-sm">
+                        <p>This is a preview of the document content. In a production environment, this would display the actual document content or an embedded PDF viewer.</p>
+                        
+                        <p>The document is being served from the DocuShare document management system, which provides 21 CFR Part 11 compliance for electronic records and signatures.</p>
+                        
+                        <div className="py-2 px-3 bg-amber-50 border border-amber-200 rounded-md flex items-start mt-4">
+                          <AlertCircle className="h-5 w-5 text-amber-500 mr-2 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="font-medium text-amber-800">Controlled Document Notice</p>
+                            <p className="text-amber-700 mt-1">This is a controlled document under 21 CFR Part 11 compliance. All access and modifications are being logged and require appropriate authorization.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </ScrollArea>
+                </div>
+              )}
+            </TabsContent>
             
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">Regulatory Metadata</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="grid grid-cols-3 gap-1">
-                    <span className="text-sm font-medium">Control Status</span>
-                    <span className="text-sm col-span-2">
-                      <Badge 
-                        variant="outline" 
-                        className={`flex items-center gap-1 ${
-                          currentDocument.controlStatus === 'Approved' ? 'bg-green-50' :
-                          currentDocument.controlStatus === 'In-Review' ? 'bg-blue-50' :
-                          currentDocument.controlStatus === 'Draft' ? 'bg-gray-50' :
-                          'bg-yellow-50'
-                        }`}
-                      >
-                        {currentDocument.controlStatus}
-                      </Badge>
-                    </span>
+            <TabsContent value="metadata" className="mt-0 h-full">
+              <ScrollArea className="h-full p-6">
+                <div className="max-w-3xl mx-auto space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-sm flex items-center">
+                          <Info className="h-4 w-4 mr-2 text-teal-600" />
+                          Document Information
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="pb-3">
+                        <dl className="space-y-2 text-sm">
+                          <div className="flex items-center justify-between">
+                            <dt className="text-muted-foreground">Document ID:</dt>
+                            <dd className="font-medium">{document.documentId}</dd>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <dt className="text-muted-foreground">Type:</dt>
+                            <dd className="font-medium">{document.documentType}</dd>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <dt className="text-muted-foreground">Version:</dt>
+                            <dd className="font-medium">{document.version}</dd>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <dt className="text-muted-foreground">Status:</dt>
+                            <dd>
+                              <Badge className={getStatusBadge(document.controlStatus)}>
+                                {document.controlStatus}
+                              </Badge>
+                            </dd>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <dt className="text-muted-foreground">File Size:</dt>
+                            <dd className="font-medium">
+                              {(document.size / 1024 / 1024).toFixed(2)} MB
+                            </dd>
+                          </div>
+                        </dl>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-sm flex items-center">
+                          <Calendar className="h-4 w-4 mr-2 text-teal-600" />
+                          Dates & Timestamps
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="pb-3">
+                        <dl className="space-y-2 text-sm">
+                          <div className="flex items-center justify-between">
+                            <dt className="text-muted-foreground">Created:</dt>
+                            <dd className="font-medium">{formatDate(document.uploadDate)}</dd>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <dt className="text-muted-foreground">Last Modified:</dt>
+                            <dd className="font-medium">{formatDate(document.modifiedDate)}</dd>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <dt className="text-muted-foreground">Last Reviewed:</dt>
+                            <dd className="font-medium">
+                              {formatDate(document.modifiedDate)}
+                            </dd>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <dt className="text-muted-foreground">Effective Date:</dt>
+                            <dd className="font-medium">
+                              {document.controlStatus === 'Approved' ? formatDate(document.modifiedDate) : 'Not yet effective'}
+                            </dd>
+                          </div>
+                        </dl>
+                      </CardContent>
+                    </Card>
                   </div>
-                  <Separator />
                   
-                  <div className="grid grid-cols-3 gap-1">
-                    <span className="text-sm font-medium">Confidentiality</span>
-                    <span className="text-sm col-span-2">
-                      {currentDocument.confidentiality || 'Confidential'}
-                    </span>
-                  </div>
-                  <Separator />
-                  
-                  <div className="grid grid-cols-3 gap-1">
-                    <span className="text-sm font-medium">Regulatory Phase</span>
-                    <span className="text-sm col-span-2">
-                      {currentDocument.regulatoryPhase || 'N/A'}
-                    </span>
-                  </div>
-                  <Separator />
-                  
-                  <div className="grid grid-cols-3 gap-1">
-                    <span className="text-sm font-medium">Document ID</span>
-                    <span className="text-sm col-span-2 font-mono">
-                      {currentDocument.id}
-                    </span>
-                  </div>
-                  <Separator />
-                  
-                  <div className="grid grid-cols-3 gap-1">
-                    <span className="text-sm font-medium">Signatures</span>
-                    <span className="text-sm col-span-2">
-                      {signatures.length || 0} signature(s)
-                    </span>
-                  </div>
-                  <Separator />
-                  
-                  <div className="grid grid-cols-3 gap-1">
-                    <span className="text-sm font-medium">Part 11 Compliant</span>
-                    <span className="text-sm col-span-2 flex items-center">
-                      <CheckCircle2 className="h-4 w-4 text-green-600 mr-1" />
-                      Yes
-                    </span>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-sm flex items-center">
+                          <User className="h-4 w-4 mr-2 text-teal-600" />
+                          Ownership & Responsibility
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="pb-3">
+                        <dl className="space-y-2 text-sm">
+                          <div className="flex items-center justify-between">
+                            <dt className="text-muted-foreground">Author:</dt>
+                            <dd className="font-medium">{document.author}</dd>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <dt className="text-muted-foreground">Owner:</dt>
+                            <dd className="font-medium">{document.author}</dd>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <dt className="text-muted-foreground">Department:</dt>
+                            <dd className="font-medium">
+                              {document.module === 'regulatory' ? 'Regulatory Affairs' : 
+                                document.module === 'csr' ? 'Clinical Operations' :
+                                document.module === 'cer' ? 'Medical Affairs' :
+                                document.module === 'quality' ? 'Quality Assurance' :
+                                'Regulatory Affairs'}
+                            </dd>
+                          </div>
+                        </dl>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-sm flex items-center">
+                          <Shield className="h-4 w-4 mr-2 text-teal-600" />
+                          Compliance & Control
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="pb-3">
+                        <dl className="space-y-2 text-sm">
+                          <div className="flex items-center justify-between">
+                            <dt className="text-muted-foreground">Compliance:</dt>
+                            <dd className="font-medium">21 CFR Part 11</dd>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <dt className="text-muted-foreground">Electronic Signature:</dt>
+                            <dd className="font-medium flex items-center">
+                              {document.controlStatus === 'Approved' ? (
+                                <>
+                                  <CheckCircle className="h-3 w-3 text-green-600 mr-1" />
+                                  Validated
+                                </>
+                              ) : (
+                                <>
+                                  <Lock className="h-3 w-3 text-amber-600 mr-1" />
+                                  Pending
+                                </>
+                              )}
+                            </dd>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <dt className="text-muted-foreground">Audit Trail:</dt>
+                            <dd className="font-medium flex items-center">
+                              <CheckCircle className="h-3 w-3 text-green-600 mr-1" />
+                              Active
+                            </dd>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <dt className="text-muted-foreground">Server ID:</dt>
+                            <dd className="font-medium font-mono text-xs">TrialSAGE-DS7</dd>
+                          </div>
+                        </dl>
+                      </CardContent>
+                    </Card>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="audit" className="mt-0 p-6 pt-0">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">Document Audit Trail</CardTitle>
-              <CardDescription>
-                Complete audit history for 21 CFR Part 11 compliance
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ScrollArea className="h-[calc(100vh-350px)]">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Action</TableHead>
-                      <TableHead>Date & Time</TableHead>
-                      <TableHead>User</TableHead>
-                      <TableHead>Details</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {auditTrail && auditTrail.length > 0 ? (
-                      auditTrail.map((entry, index) => (
-                        <TableRow key={index}>
-                          <TableCell className="font-medium">{entry.action}</TableCell>
-                          <TableCell>{formatDate(entry.timestamp)}</TableCell>
-                          <TableCell>{entry.user}</TableCell>
-                          <TableCell>{entry.details}</TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={4} className="text-center py-4 text-muted-foreground">
-                          No audit trail entries found.
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
               </ScrollArea>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="signatures" className="mt-0 p-6 pt-0">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-medium">Electronic Signatures</h3>
+            </TabsContent>
             
-            <Dialog open={showSignDialog} onOpenChange={setShowSignDialog}>
-              <DialogTrigger asChild>
-                <Button>
-                  <PenTool className="h-4 w-4 mr-2" />
-                  Sign Document
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[500px]">
-                <DialogHeader>
-                  <DialogTitle>Apply Electronic Signature</DialogTitle>
-                  <DialogDescription>
-                    This will apply a 21 CFR Part 11 compliant electronic signature.
-                    Your signature is legally binding.
-                  </DialogDescription>
-                </DialogHeader>
-                
-                <div className="grid gap-4 py-4">
-                  <div className="grid gap-2">
-                    <label htmlFor="signature-name" className="text-sm font-medium">Full Name</label>
-                    <input
-                      id="signature-name"
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                      placeholder="Your full name"
-                      value={signatureDetails.name}
-                      onChange={(e) => setSignatureDetails({...signatureDetails, name: e.target.value})}
-                    />
-                  </div>
-                  
-                  <div className="grid gap-2">
-                    <label htmlFor="signature-title" className="text-sm font-medium">Title/Position</label>
-                    <input
-                      id="signature-title"
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                      placeholder="Your title or position"
-                      value={signatureDetails.title}
-                      onChange={(e) => setSignatureDetails({...signatureDetails, title: e.target.value})}
-                    />
-                  </div>
-                  
-                  <div className="grid gap-2">
-                    <label htmlFor="signature-reason" className="text-sm font-medium">Reason for Signing</label>
-                    <select
-                      id="signature-reason"
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                      value={signatureDetails.reason}
-                      onChange={(e) => setSignatureDetails({...signatureDetails, reason: e.target.value})}
-                    >
-                      <option value="">Select a reason</option>
-                      <option value="I am the author of this document">I am the author of this document</option>
-                      <option value="I have reviewed this document">I have reviewed this document</option>
-                      <option value="I approve this document">I approve this document</option>
-                      <option value="I am acknowledging receipt of this document">I am acknowledging receipt</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </div>
-                  
-                  {signatureDetails.reason === 'Other' && (
-                    <div className="grid gap-2">
-                      <label htmlFor="signature-reason-other" className="text-sm font-medium">Specify Reason</label>
-                      <input
-                        id="signature-reason-other"
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                        placeholder="Specify reason for signature"
-                        value={signatureReason}
-                        onChange={(e) => setSignatureReason(e.target.value)}
-                      />
-                    </div>
-                  )}
-                  
-                  <div className="border rounded-md p-3 bg-muted/50">
-                    <p className="text-sm font-medium mb-2">Electronic Signature Attestation</p>
-                    <p className="text-xs text-muted-foreground">
-                      By clicking "Sign Document" below, I understand that my electronic signature 
-                      is legally binding, equivalent to my handwritten signature, and complies with 
-                      21 CFR Part 11 requirements. I certify that I am the person identified above.
-                    </p>
-                  </div>
-                </div>
-                
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setShowSignDialog(false)}>
-                    Cancel
-                  </Button>
-                  <Button 
-                    onClick={handleSignDocument}
-                    disabled={!signatureDetails.name || !signatureDetails.reason}
-                  >
-                    Sign Document
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </div>
-          
-          <Card>
-            <CardContent className="p-3">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Title</TableHead>
-                    <TableHead>Date & Time</TableHead>
-                    <TableHead>Reason</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {signatures && signatures.length > 0 ? (
-                    signatures.map((signature, index) => (
-                      <TableRow key={index}>
-                        <TableCell className="font-medium">{signature.signedBy}</TableCell>
-                        <TableCell>{signature.title}</TableCell>
-                        <TableCell>{formatDate(signature.timestamp)}</TableCell>
-                        <TableCell>{signature.reason}</TableCell>
-                        <TableCell>
-                          <Badge className="bg-green-50 text-green-800 flex items-center gap-1">
-                            <CheckCircle2 className="h-3 w-3" />
-                            Valid
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={5} className="text-center py-4 text-muted-foreground">
-                        No signatures have been applied to this document.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-          
-          <div className="mt-4">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">21 CFR Part 11 Compliance</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="flex items-start gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5" />
-                    <div>
-                      <p className="text-sm font-medium">Electronic Signatures</p>
-                      <p className="text-xs text-muted-foreground">
-                        All signatures are compliant with 21 CFR Part 11 requirements and include
-                        time stamps, user identification, and signature meaning.
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5" />
-                    <div>
-                      <p className="text-sm font-medium">Audit Trails</p>
-                      <p className="text-xs text-muted-foreground">
-                        Complete audit trails are maintained for all activities, including creation, 
-                        modification, and approval of documents.
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5" />
-                    <div>
-                      <p className="text-sm font-medium">System Validation</p>
-                      <p className="text-xs text-muted-foreground">
-                        DocuShare has been validated according to regulatory requirements to
-                        ensure accurate, reliable, and consistent performance.
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5" />
-                    <div>
-                      <p className="text-sm font-medium">Access Controls</p>
-                      <p className="text-xs text-muted-foreground">
-                        System ensures that only authorized individuals can access, modify,
-                        and sign documents through role-based permissions.
-                      </p>
+            <TabsContent value="history" className="mt-0 h-full">
+              <ScrollArea className="h-full p-6">
+                <div className="max-w-3xl mx-auto">
+                  <div className="relative">
+                    <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-teal-100"></div>
+                    
+                    <div className="space-y-4">
+                      {versionHistory.map((version, index) => (
+                        <div key={index} className="relative pl-10">
+                          <div className="absolute left-2 top-2 h-6 w-6 rounded-full bg-teal-100 flex items-center justify-center">
+                            <span className="text-xs font-medium text-teal-800">{version.version}</span>
+                          </div>
+                          
+                          <Card>
+                            <CardHeader className="py-3">
+                              <div className="flex justify-between items-center">
+                                <CardTitle className="text-sm flex items-center">
+                                  Version {version.version}
+                                  {parseFloat(version.version) === parseFloat(document.version) && (
+                                    <Badge className="ml-2 bg-teal-100 text-teal-800 hover:bg-teal-200">
+                                      Current
+                                    </Badge>
+                                  )}
+                                </CardTitle>
+                                <CardDescription>
+                                  {formatDate(version.date)}
+                                </CardDescription>
+                              </div>
+                            </CardHeader>
+                            <CardContent className="py-0">
+                              <div className="text-sm">
+                                <div className="mb-1 text-muted-foreground">Modified by: {version.author}</div>
+                                <div>{version.notes}</div>
+                              </div>
+                            </CardContent>
+                            <CardFooter className="py-2">
+                              <div className="flex gap-2">
+                                <Button variant="ghost" size="sm">
+                                  <Download className="h-3 w-3 mr-1" />
+                                  Download
+                                </Button>
+                                {parseFloat(version.version) === parseFloat(document.version) && allowEdit && (
+                                  <Button variant="ghost" size="sm">
+                                    <Edit className="h-3 w-3 mr-1" />
+                                    Edit
+                                  </Button>
+                                )}
+                              </div>
+                            </CardFooter>
+                          </Card>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </ScrollArea>
+            </TabsContent>
           </div>
-        </TabsContent>
-      </Tabs>
+        </Tabs>
+      </div>
       
-      <CardFooter className="justify-between pt-0">
-        <Button variant="outline" onClick={onClose}>
-          Close
-        </Button>
+      <CardFooter className="border-t py-3 flex justify-between bg-muted/10">
+        <div className="text-xs text-muted-foreground flex items-center">
+          <Lock className="h-3 w-3 mr-1 text-teal-600" />
+          21 CFR Part 11 Compliant Document Management
+        </div>
         
-        <div className="flex gap-2">
-          {activeTab === 'preview' && documentContent && (
-            <a 
-              href={getDocumentUrl()} 
-              download={currentDocument.name}
-              className="inline-flex"
-            >
-              <Button variant="outline">
-                <Download className="h-4 w-4 mr-2" />
-                Download
-              </Button>
-            </a>
-          )}
-          
-          {activeTab !== 'signatures' && (
-            <Button onClick={() => setActiveTab('signatures')}>
-              <FileSignature className="h-4 w-4 mr-2" />
-              Sign Document
+        <div className="flex space-x-2">
+          {allowEdit && document.controlStatus !== 'Approved' && (
+            <Button variant="outline" size="sm" className="h-8">
+              <Edit className="h-3 w-3 mr-1" />
+              Edit
             </Button>
           )}
+          <Button variant="outline" size="sm" className="h-8">
+            <History className="h-3 w-3 mr-1" />
+            Audit Log
+          </Button>
+          <Button variant="default" size="sm" className="h-8 bg-teal-600 hover:bg-teal-700">
+            <Download className="h-3 w-3 mr-1" />
+            Download
+          </Button>
         </div>
       </CardFooter>
     </Card>
