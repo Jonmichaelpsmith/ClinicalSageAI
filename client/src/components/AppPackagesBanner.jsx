@@ -150,11 +150,11 @@ export default function AppPackagesBanner({ currentPath }) {
   // Client portal buttons
   const clientPortals = [
     {
-      label: "Enterprise DocShare",
-      description: "Unified document vault",
+      label: "Semantic AI Search",
+      description: "AI-powered document queries",
       to: "/document-management",
-      icon: <BookOpen size={18} />,
-      color: "bg-blue-600 hover:bg-blue-700"
+      icon: <Bot size={18} />,
+      color: "bg-indigo-600 hover:bg-indigo-700"
     },
     {
       label: "Validated Vault",
@@ -249,8 +249,8 @@ export default function AppPackagesBanner({ currentPath }) {
                   <div className="py-1">
                     <Link to="/document-management">
                       <div className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
-                        <BookOpen size={16} className="mr-2 text-blue-500" />
-                        Enterprise DocShare
+                        <Bot size={16} className="mr-2 text-indigo-500" />
+                        Semantic AI Search
                       </div>
                     </Link>
                     <Link to="/enterprise-document-vault">
@@ -284,9 +284,9 @@ export default function AppPackagesBanner({ currentPath }) {
             {/* Action buttons */}
             <div className="flex items-center space-x-4">
               <Link to="/document-management">
-                <button className="flex items-center text-sm font-medium text-blue-600 hover:text-blue-800">
-                  <ExternalLink size={16} className="mr-1" />
-                  Open Document Vault
+                <button className="flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-800">
+                  <Bot size={16} className="mr-1" />
+                  Try Semantic AI Search
                 </button>
               </Link>
             </div>
