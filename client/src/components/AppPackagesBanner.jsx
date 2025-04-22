@@ -78,6 +78,14 @@ export default function AppPackagesBanner({ currentPath }) {
       path: "/ectd-manager"
     },
     {
+      icon: <BookOpen size={20} />,
+      title: "Document Management",
+      description: "Enterprise document vault with 21 CFR Part 11 compliance",
+      to: "/document-management",
+      path: "/document-management",
+      highlight: true
+    },
+    {
       icon: <BarChart2 size={20} />,
       title: "Study Designer",
       description: "Statistical model-driven clinical study design",
@@ -115,6 +123,13 @@ export default function AppPackagesBanner({ currentPath }) {
       to: "/csr-intelligence",
       icon: <Database size={18} />,
       color: "bg-emerald-600 hover:bg-emerald-700"
+    },
+    {
+      label: "Document Vault",
+      description: "21 CFR Part 11 compliant document management",
+      to: "/document-management",
+      icon: <BookOpen size={18} />,
+      color: "bg-blue-600 hover:bg-blue-700"
     },
     {
       label: "CER Module",
