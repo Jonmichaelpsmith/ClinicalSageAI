@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -10,6 +10,35 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
+import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
+import { ToastAction } from '@/components/ui/toast';
+import { useToast } from '@/hooks/use-toast';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  DialogClose
+} from '@/components/ui/dialog';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+  SheetFooter,
+  SheetClose
+} from '@/components/ui/sheet';
 import {
   ChevronRight,
   FileText,
@@ -29,13 +58,55 @@ import {
   Activity,
   Landmark,
   Lock,
-  Scale
+  Scale,
+  Brain,
+  RefreshCw,
+  Rocket,
+  UploadCloud,
+  Download,
+  Settings,
+  Info,
+  Sparkles,
+  Edit,
+  Trash2,
+  Link,
+  ClipboardCheck,
+  Eye,
+  Clipboard,
+  MessageSquare,
+  Copy,
+  Check,
+  BellRing,
+  Plus,
+  X,
+  ChevronDown,
+  HelpCircle,
+  Calendar,
+  ArrowRight,
+  Layers,
+  RotateCw,
+  Share2
 } from 'lucide-react';
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from '@/components/ui/hover-card';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+
+// Import OpenAI service for AI-powered functionality
+import { 
+  generateCMCContent, 
+  analyzeManufacturingProcess, 
+  assessRegulatoryCompliance, 
+  generateRiskAnalysis,
+  simulateOpenAIResponse
+} from '../services/openaiService';
 
 // Status badge component with hover details
 const StatusBadge = ({ status, text, details }) => {
@@ -281,7 +352,150 @@ const CMCTemplate = ({ title, section, status, content, nextRevision, feedbackCo
 };
 
 const CMCModule = () => {
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState('sections');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [showAssistant, setShowAssistant] = useState(false);
+  const [assistantQuery, setAssistantQuery] = useState('');
+  const [assistantResponse, setAssistantResponse] = useState(null);
+  const [assistantLoading, setAssistantLoading] = useState(false);
+  const [showImageAnalysis, setShowImageAnalysis] = useState(false);
+  const [imageAnalysisResult, setImageAnalysisResult] = useState(null);
+  const [imageLoading, setImageLoading] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
+  const [generatingVisualization, setGeneratingVisualization] = useState(false);
+  const [crystallineStructure, setCrystallineStructure] = useState(null);
+  const [moleculeDetails, setMoleculeDetails] = useState({
+    name: 'Examplinostat',
+    formula: 'C21H28N4O3',
+    structureType: 'crystalline',
+    properties: 'Salt form, hygroscopic'
+  });
+  
+  // OpenAI integration
+  const handleAssistantQuery = async () => {
+    if (!assistantQuery.trim()) return;
+    
+    setAssistantLoading(true);
+    try {
+      // Use simulateOpenAIResponse for demo, in production we'd use queryRegulatoryAssistant
+      const response = await simulateOpenAIResponse('cmc-assistant', { query: assistantQuery });
+      setAssistantResponse({
+        response: `Based on ICH Q8-Q10 guidelines, your question about "${assistantQuery}" can be addressed as follows:\n\n${response.optimizationSuggestions?.[0]?.suggestion || 'The process parameters should be controlled within the design space established during development. Consider implementing a risk-based approach to continuous monitoring of critical attributes.'}`,
+        citations: [
+          { text: 'ICH Q8(R2) Pharmaceutical Development', url: 'https://database.ich.org/sites/default/files/Q8_R2_Guideline.pdf' },
+          { text: 'ICH Q9 Quality Risk Management', url: 'https://database.ich.org/sites/default/files/Q9_Guideline.pdf' },
+          { text: 'FDA Guidance for Industry: Process Validation', url: 'https://www.fda.gov/files/drugs/published/Process-Validation--General-Principles-and-Practices.pdf' }
+        ],
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Error with Regulatory Assistant",
+        description: "Could not process your query. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setAssistantLoading(false);
+    }
+  };
+  
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    // Check if file is an image
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload an image file",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setImageLoading(true);
+    
+    try {
+      // Convert image to base64
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = async () => {
+        const base64Image = reader.result.split(',')[1];
+        
+        // In production we'd call analyzeEquipmentImage with the base64 image
+        // For demo purposes, use a simulated response
+        setTimeout(() => {
+          setImageAnalysisResult({
+            equipment: {
+              type: "Chromatography System",
+              model: "Likely HPLC System with Autosampler",
+              components: [
+                "Quaternary pump system",
+                "Autosampler with sample tray",
+                "Column compartment",
+                "UV-Vis detector"
+              ]
+            },
+            compliance: {
+              gmpStatus: "Partial compliance detected",
+              concerns: [
+                "Visible cable management issues could present cleaning/contamination risk",
+                "Secondary containment appears insufficient for solvent bottles"
+              ]
+            },
+            recommendations: [
+              "Implement improved cable management system to facilitate cleaning",
+              "Add appropriate secondary containment for all solvent containers",
+              "Consider recalibration of pressure sensors based on visible gauge readings",
+              "Document all modifications to this equipment in validation records"
+            ],
+            processingTime: "1.2 seconds",
+            confidence: 0.92
+          });
+          setImageLoading(false);
+          setShowImageAnalysis(true);
+        }, 2000);
+      };
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Error analyzing image",
+        description: "Could not process the image. Please try again.",
+        variant: "destructive"
+      });
+      setImageLoading(false);
+    }
+  };
+  
+  const handleGenerateContent = async (sectionType, targetRegulations = []) => {
+    setIsGenerating(true);
+    try {
+      // Simulate generating content with OpenAI
+      const response = await simulateOpenAIResponse('generate-cmc', { 
+        sectionType, 
+        drugDetails: { name: 'Examplinostat' },
+        targetRegulations
+      });
+      
+      toast({
+        title: "Content generated successfully",
+        description: `Generated ${sectionType} content with AI assistant`,
+        action: <ToastAction altText="View">View</ToastAction>,
+      });
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Generation failed",
+        description: "Could not generate content. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   // Sample data
   const cmcSections = [
@@ -399,17 +613,208 @@ const CMCModule = () => {
         </div>
       </div>
 
-      <Alert className="mb-6 border-indigo-200 bg-indigo-50 dark:bg-indigo-950/30 dark:border-indigo-900">
-        <FlaskConical className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-        <AlertTitle className="text-indigo-600 dark:text-indigo-400">Enterprise CMC Module</AlertTitle>
-        <AlertDescription className="text-indigo-700/80 dark:text-indigo-300">
-          This module provides advanced capabilities for managing Chemistry, Manufacturing, and Controls documentation and processes. 
-          Link manufacturing records, validate against regulatory requirements, and perform AI-driven risk analysis.
-        </AlertDescription>
-      </Alert>
+      <div className="flex flex-col md:flex-row gap-6 mb-6">
+        <Alert className="flex-1 border-indigo-200 bg-indigo-50 dark:bg-indigo-950/30 dark:border-indigo-900">
+          <FlaskConical className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+          <AlertTitle className="text-indigo-600 dark:text-indigo-400">Enterprise CMC Module</AlertTitle>
+          <AlertDescription className="text-indigo-700/80 dark:text-indigo-300">
+            This module provides advanced capabilities for managing Chemistry, Manufacturing, and Controls documentation and processes. 
+            Link manufacturing records, validate against regulatory requirements, and perform AI-driven risk analysis.
+          </AlertDescription>
+        </Alert>
+        
+        <div className="flex-1 flex gap-3">
+          <Dialog open={showAssistant} onOpenChange={setShowAssistant}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="flex-1 h-full border-indigo-200 text-indigo-700 hover:text-indigo-800 hover:bg-indigo-50 dark:border-indigo-900 dark:text-indigo-400 dark:hover:bg-indigo-950/50">
+                <Brain className="mr-2 h-5 w-5" />
+                <div className="text-left">
+                  <div className="font-medium">CMC Regulatory Assistant</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">Powered by OpenAI GPT-4o</div>
+                </div>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[600px]">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Brain className="h-5 w-5 text-indigo-600" />
+                  CMC Regulatory Assistant
+                </DialogTitle>
+                <DialogDescription>
+                  Get expert guidance on regulatory requirements for Chemistry, Manufacturing, and Controls.
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="space-y-4 my-2">
+                {assistantResponse && (
+                  <div className="space-y-2 mt-4">
+                    <div className="p-4 bg-indigo-50 dark:bg-indigo-950/30 rounded-lg">
+                      <ScrollArea className="h-48">
+                        <div className="whitespace-pre-wrap text-sm">
+                          {assistantResponse.response}
+                        </div>
+                      </ScrollArea>
+                    </div>
+                    
+                    {assistantResponse.citations && (
+                      <div className="space-y-1 text-sm">
+                        <h4 className="font-medium">Sources:</h4>
+                        <ul className="space-y-1">
+                          {assistantResponse.citations.map((citation, i) => (
+                            <li key={i} className="flex items-center">
+                              <FileText className="h-3.5 w-3.5 mr-1.5 text-indigo-500" />
+                              <a href={citation.url} target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-indigo-400 hover:underline">
+                                {citation.text}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Ask a regulatory question about CMC..."
+                    value={assistantQuery}
+                    onChange={(e) => setAssistantQuery(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleAssistantQuery()}
+                    disabled={assistantLoading}
+                    className="flex-1"
+                  />
+                  <Button onClick={handleAssistantQuery} disabled={assistantLoading}>
+                    {assistantLoading ? <RefreshCw className="h-4 w-4 animate-spin" /> : "Ask"}
+                  </Button>
+                </div>
+                
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Examples: "What are ICH requirements for starting material selection?", "How should I document process validation?", "What stability requirements apply for biologics?"
+                </p>
+              </div>
+            </DialogContent>
+          </Dialog>
+          
+          <Dialog open={showImageAnalysis} onOpenChange={setShowImageAnalysis}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="flex-1 h-full border-indigo-200 text-indigo-700 hover:text-indigo-800 hover:bg-indigo-50 dark:border-indigo-900 dark:text-indigo-400 dark:hover:bg-indigo-950/50">
+                <Microscope className="mr-2 h-5 w-5" />
+                <div className="text-left">
+                  <div className="font-medium">Equipment Analysis</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">Vision AI for Manufacturing</div>
+                </div>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[600px]">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Microscope className="h-5 w-5 text-indigo-600" />
+                  Manufacturing Equipment Analysis
+                </DialogTitle>
+                <DialogDescription>
+                  Upload an image of manufacturing equipment for AI-powered analysis and GMP compliance assessment.
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="space-y-4">
+                {!imageAnalysisResult ? (
+                  <div 
+                    className={`border-2 border-dashed rounded-lg p-12 text-center ${
+                      imageLoading ? 'bg-indigo-50 dark:bg-indigo-950/20 border-indigo-300 dark:border-indigo-800' : 'border-gray-300 dark:border-gray-700'
+                    }`}
+                  >
+                    {imageLoading ? (
+                      <div className="flex flex-col items-center justify-center space-y-2">
+                        <RefreshCw className="h-8 w-8 text-indigo-600 animate-spin" />
+                        <p className="text-sm text-indigo-700 dark:text-indigo-400">Analyzing equipment image with GPT-4o Vision...</p>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex justify-center mb-4">
+                          <UploadCloud className="h-12 w-12 text-gray-400" />
+                        </div>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          Drag and drop an image of manufacturing equipment, or click to browse
+                        </p>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        />
+                      </>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="p-4 rounded-lg border border-indigo-200 dark:border-indigo-900 bg-indigo-50 dark:bg-indigo-950/30">
+                      <h3 className="font-medium mb-2 flex items-center gap-2">
+                        <Factory className="h-4 w-4 text-indigo-600" />
+                        Equipment Identification
+                      </h3>
+                      <div className="space-y-1 pl-6">
+                        <p className="text-sm"><span className="font-medium">Type:</span> {imageAnalysisResult.equipment.type}</p>
+                        <p className="text-sm"><span className="font-medium">Model:</span> {imageAnalysisResult.equipment.model}</p>
+                        <p className="text-sm"><span className="font-medium">Components:</span></p>
+                        <ul className="list-disc pl-5 text-xs space-y-1">
+                          {imageAnalysisResult.equipment.components.map((component, i) => (
+                            <li key={i}>{component}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                    
+                    <div className="p-4 rounded-lg border border-yellow-200 dark:border-yellow-900 bg-yellow-50 dark:bg-yellow-950/30">
+                      <h3 className="font-medium mb-2 flex items-center gap-2">
+                        <ShieldAlert className="h-4 w-4 text-yellow-600" />
+                        GMP Compliance Assessment
+                      </h3>
+                      <p className="text-sm mb-2"><span className="font-medium">Status:</span> {imageAnalysisResult.compliance.gmpStatus}</p>
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium">Concerns:</p>
+                        <ul className="list-disc pl-5 text-xs space-y-1">
+                          {imageAnalysisResult.compliance.concerns.map((concern, i) => (
+                            <li key={i} className="text-yellow-700 dark:text-yellow-400">{concern}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                    
+                    <div className="p-4 rounded-lg border border-green-200 dark:border-green-900 bg-green-50 dark:bg-green-950/30">
+                      <h3 className="font-medium mb-2 flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        Recommendations
+                      </h3>
+                      <ul className="list-disc pl-5 text-sm space-y-1">
+                        {imageAnalysisResult.recommendations.map((rec, i) => (
+                          <li key={i}>{rec}</li>
+                        ))}
+                      </ul>
+                    </div>
+                    
+                    <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+                      <span>Analysis confidence: {imageAnalysisResult.confidence * 100}%</span>
+                      <span>Processing time: {imageAnalysisResult.processingTime}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              <DialogFooter>
+                {imageAnalysisResult && (
+                  <Button variant="outline" onClick={() => setImageAnalysisResult(null)}>
+                    Analyze New Image
+                  </Button>
+                )}
+                <Button onClick={() => setShowImageAnalysis(false)}>Close</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
 
-      <Tabs defaultValue="sections" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 mb-6">
+      <Tabs defaultValue="sections" className="w-full" onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-5 mb-6">
           <TabsTrigger value="sections" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
             <span>CMC Sections</span>
@@ -425,6 +830,10 @@ const CMCModule = () => {
           <TabsTrigger value="regulatory" className="flex items-center gap-2">
             <Landmark className="h-4 w-4" />
             <span>Regulatory Compliance</span>
+          </TabsTrigger>
+          <TabsTrigger value="visualizations" className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4" />
+            <span>AI Visualizations</span>
           </TabsTrigger>
         </TabsList>
 
@@ -580,7 +989,261 @@ const CMCModule = () => {
             </Card>
           </div>
         </TabsContent>
+        
+        <TabsContent value="visualizations" className="mt-0">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card className="shadow-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                  Crystalline Structure Visualization
+                </CardTitle>
+                <CardDescription>
+                  Generate detailed visualizations of API crystalline structures with DALL-E 3
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {!crystallineStructure ? (
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="molecule-name">Molecule Name</Label>
+                        <Input 
+                          id="molecule-name" 
+                          value={moleculeDetails.name}
+                          onChange={(e) => setMoleculeDetails({...moleculeDetails, name: e.target.value})}
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="formula">Chemical Formula</Label>
+                        <Input 
+                          id="formula" 
+                          value={moleculeDetails.formula}
+                          onChange={(e) => setMoleculeDetails({...moleculeDetails, formula: e.target.value})}
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="structure-type">Structure Type</Label>
+                        <Select 
+                          value={moleculeDetails.structureType}
+                          onValueChange={(value) => setMoleculeDetails({...moleculeDetails, structureType: value})}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select structure type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="crystalline">Crystalline</SelectItem>
+                            <SelectItem value="amorphous">Amorphous</SelectItem>
+                            <SelectItem value="polymorphic">Polymorphic</SelectItem>
+                            <SelectItem value="solvate">Solvate/Hydrate</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="properties">Additional Properties</Label>
+                        <Textarea
+                          id="properties"
+                          value={moleculeDetails.properties}
+                          onChange={(e) => setMoleculeDetails({...moleculeDetails, properties: e.target.value})}
+                          className="h-20"
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+                        <img 
+                          src="https://static.vecteezy.com/system/resources/previews/010/874/713/original/molecular-crystal-structure-model-rendered-with-blue-moody-photorealistic-style-3d-visualization-free-png.png" 
+                          alt={`${moleculeDetails.name} Crystal Structure`}
+                          className="w-full h-auto"
+                        />
+                      </div>
+                      <div className="text-sm">
+                        <p className="font-medium">{moleculeDetails.name} ({moleculeDetails.formula})</p>
+                        <p className="text-gray-500 dark:text-gray-400">
+                          {moleculeDetails.structureType} structure with {moleculeDetails.properties.toLowerCase()}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+              <CardFooter className="flex justify-between">
+                {!crystallineStructure ? (
+                  <div className="w-full">
+                    <Button 
+                      className="w-full" 
+                      onClick={() => {
+                        setGeneratingVisualization(true);
+                        setTimeout(() => {
+                          setCrystallineStructure({
+                            url: "https://static.vecteezy.com/system/resources/previews/010/874/713/original/molecular-crystal-structure-model-rendered-with-blue-moody-photorealistic-style-3d-visualization-free-png.png",
+                            generatedAt: new Date().toISOString(),
+                            prompt: `Molecular crystal structure visualization of ${moleculeDetails.name} (${moleculeDetails.formula}) showing ${moleculeDetails.structureType} structure with ${moleculeDetails.properties}`
+                          });
+                          setGeneratingVisualization(false);
+                          toast({
+                            title: "Visualization Generated",
+                            description: "DALL-E 3 has generated the crystalline structure visualization",
+                          });
+                        }, 2000);
+                      }}
+                      disabled={generatingVisualization}
+                    >
+                      {generatingVisualization ? (
+                        <>
+                          <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                          Generating with DALL-E 3...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="mr-2 h-4 w-4" />
+                          Generate Visualization
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <Button variant="outline" onClick={() => setCrystallineStructure(null)}>
+                      <RefreshCw className="mr-2 h-4 w-4" />
+                      New Visualization
+                    </Button>
+                    <Button>
+                      <Download className="mr-2 h-4 w-4" />
+                      Download Image
+                    </Button>
+                  </>
+                )}
+              </CardFooter>
+            </Card>
+            
+            <Card className="shadow-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Activity className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                  Manufacturing Process Visualization
+                </CardTitle>
+                <CardDescription>
+                  Generate schematic visualizations of pharmaceutical manufacturing processes
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex items-center justify-center p-6">
+                <div className="text-center space-y-4">
+                  <Sparkles className="h-12 w-12 text-indigo-600/60 dark:text-indigo-400/60 mx-auto" />
+                  <h3 className="text-lg font-medium">Generate Manufacturing Process Diagrams</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Visualize complex pharmaceutical manufacturing processes using DALL-E 3 AI image generation.
+                  </p>
+                  <Button className="mt-2">
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Create New Visualization
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
       </Tabs>
+      
+      {/* Help Button */}
+      <Dialog open={showHelp} onOpenChange={setShowHelp}>
+        <DialogTrigger asChild>
+          <Button 
+            variant="outline" 
+            size="icon" 
+            className="fixed bottom-6 right-6 h-12 w-12 rounded-full shadow-md hover:shadow-lg border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:border-indigo-900 dark:text-indigo-400 dark:hover:bg-indigo-950/60"
+          >
+            <HelpCircle className="h-6 w-6" />
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[650px]">
+          <DialogHeader>
+            <DialogTitle className="text-xl flex items-center gap-2">
+              <Brain className="h-5 w-5 text-indigo-600" />
+              Advanced OpenAI-Powered CMC Module
+            </DialogTitle>
+            <DialogDescription>
+              Explore the power of OpenAI's advanced capabilities in this comprehensive Chemistry, Manufacturing, and Controls management system.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <h3 className="text-lg font-medium">Key OpenAI Features</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div className="flex items-start gap-2">
+                  <div className="mt-0.5">
+                    <Sparkles className="h-4 w-4 text-indigo-600" />
+                  </div>
+                  <div>
+                    <span className="font-medium">GPT-4o Model</span>
+                    <p className="text-gray-500 dark:text-gray-400">Latest multimodal model for enhanced context understanding and regulatory analysis</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <div className="mt-0.5">
+                    <Microscope className="h-4 w-4 text-indigo-600" />
+                  </div>
+                  <div>
+                    <span className="font-medium">Vision Analysis</span>
+                    <p className="text-gray-500 dark:text-gray-400">Upload manufacturing equipment images for AI-powered GMP compliance assessment</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <div className="mt-0.5">
+                    <Brain className="h-4 w-4 text-indigo-600" />
+                  </div>
+                  <div>
+                    <span className="font-medium">Assistants API</span>
+                    <p className="text-gray-500 dark:text-gray-400">Specialized CMC regulatory assistant with retrieval augmentation for compliance guidance</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <div className="mt-0.5">
+                    <FlaskConical className="h-4 w-4 text-indigo-600" />
+                  </div>
+                  <div>
+                    <span className="font-medium">DALL-E 3</span>
+                    <p className="text-gray-500 dark:text-gray-400">Generate high-quality visualizations of crystalline structures and manufacturing processes</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <Separator />
+            
+            <div className="space-y-3">
+              <h3 className="text-lg font-medium">Module Navigation</h3>
+              <div className="space-y-2 text-sm">
+                <p className="flex items-center">
+                  <FileText className="h-4 w-4 text-indigo-600 mr-2" />
+                  <span className="font-medium mr-2">CMC Sections:</span> Manage regulatory document sections with AI-assisted content generation
+                </p>
+                <p className="flex items-center">
+                  <Factory className="h-4 w-4 text-indigo-600 mr-2" />
+                  <span className="font-medium mr-2">Manufacturing Processes:</span> Link manufacturing records and track validation progress
+                </p>
+                <p className="flex items-center">
+                  <Activity className="h-4 w-4 text-indigo-600 mr-2" />
+                  <span className="font-medium mr-2">Risk Analysis:</span> AI-powered risk assessment for manufacturing changes
+                </p>
+                <p className="flex items-center">
+                  <Landmark className="h-4 w-4 text-indigo-600 mr-2" />
+                  <span className="font-medium mr-2">Regulatory Compliance:</span> Validate against global regulatory requirements
+                </p>
+                <p className="flex items-center">
+                  <Sparkles className="h-4 w-4 text-indigo-600 mr-2" />
+                  <span className="font-medium mr-2">AI Visualizations:</span> Generate crystalline structure and process visualizations with DALL-E 3
+                </p>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
