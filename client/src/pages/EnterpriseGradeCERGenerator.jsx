@@ -4,6 +4,13 @@ import { useQuery, useMutation, useQueryClient, QueryClient, QueryClientProvider
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 
+// Import our module components
+import DocumentUploadExtraction from '@/components/cer/DocumentUploadExtraction';
+import SmartTemplateSelector from '@/components/cer/SmartTemplateSelector';
+import TrialSageAIWriter from '@/components/cer/TrialSageAIWriter';
+import RegulatoryQAAssistant from '@/components/cer/RegulatoryQAAssistant';
+import ExportModule from '@/components/cer/ExportModule';
+
 // UI Components
 import { 
   Tabs, 
@@ -1579,6 +1586,7 @@ const ReportsList = ({ onSelectReport, onCreateNew }) => {
 /**
  * Create a client for React Query
  */
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -1589,9 +1597,14 @@ const queryClient = new QueryClient({
 });
 
 const EnterpriseGradeCERGenerator = () => {
-  const [activeView, setActiveView] = useState('list'); // list, detail, create
+  const [activeView, setActiveView] = useState('list'); // list, detail, create, editor, export
+  const [currentStep, setCurrentStep] = useState(1); // For wizard-style workflow
   const [selectedReportId, setSelectedReportId] = useState(null);
   const [showAIAssistant, setShowAIAssistant] = useState(false);
+  const [documentData, setDocumentData] = useState(null);
+  const [templateData, setTemplateData] = useState(null);
+  const [currentSectionId, setCurrentSectionId] = useState(null);
+  const [documentContent, setDocumentContent] = useState({});
   
   const handleSelectReport = (reportId) => {
     setSelectedReportId(reportId);
@@ -1600,11 +1613,51 @@ const EnterpriseGradeCERGenerator = () => {
   
   const handleCreateNewReport = () => {
     setActiveView('create');
+    setCurrentStep(1); // Reset to first step
   };
   
   const handleReportCreated = (report) => {
     setSelectedReportId(report.id);
     setActiveView('detail');
+  };
+
+  // Handle documents processed in upload step
+  const handleDocumentsProcessed = (data) => {
+    setDocumentData(data);
+    setCurrentStep(2); // Move to template selection
+  };
+  
+  // Handle template selection
+  const handleTemplateSelected = (data) => {
+    setTemplateData(data);
+    setCurrentStep(3); // Move to editor
+    setActiveView('editor');
+  };
+  
+  // Handle section editing
+  const handleSectionChange = (sectionId, content) => {
+    setDocumentContent(prev => ({
+      ...prev,
+      [sectionId]: content
+    }));
+  };
+  
+  // Handle moving to QA step
+  const handleStartQA = () => {
+    setCurrentStep(4);
+    setActiveView('qa');
+  };
+  
+  // Handle issue fixed in QA
+  const handleIssueFixed = (issueId, fixContent) => {
+    // In a real implementation, this would update the corresponding section
+    console.log(`Fixed issue ${issueId} with content: ${fixContent}`);
+  };
+  
+  // Handle moving to export step
+  const handleStartExport = () => {
+    setCurrentStep(5);
+    setActiveView('export');
   };
 
   return (
@@ -1616,7 +1669,7 @@ const EnterpriseGradeCERGenerator = () => {
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-3xl font-bold text-white">
-                  Clinical Evaluation Report Generator
+                  TrialSage™ CER Generator
                 </h1>
                 <p className="mt-2 text-rose-100 max-w-3xl">
                   AI-powered regulatory writing, reimagined for speed, accuracy, and global compliance.
@@ -1630,6 +1683,74 @@ const EnterpriseGradeCERGenerator = () => {
                 AI Assistant
               </Button>
             </div>
+            
+            {/* Progress Steps - Show when in wizard flow (steps 1-5) */}
+            {currentStep >= 1 && activeView !== 'list' && activeView !== 'detail' && (
+              <div className="mt-6 bg-rose-900/30 rounded-lg p-3">
+                <div className="flex justify-between items-center">
+                  <div className="hidden sm:flex items-center w-full">
+                    <div className={`flex items-center ${currentStep >= 1 ? 'text-white' : 'text-rose-300'}`}>
+                      <div className={`rounded-full h-8 w-8 flex items-center justify-center mr-2 ${
+                        currentStep >= 1 ? 'bg-rose-600' : 'bg-rose-800/50'
+                      }`}>
+                        1
+                      </div>
+                      <span className="text-sm">Upload</span>
+                    </div>
+                    <div className={`flex-1 h-0.5 mx-2 ${currentStep >= 2 ? 'bg-rose-600' : 'bg-rose-800/50'}`}></div>
+                    
+                    <div className={`flex items-center ${currentStep >= 2 ? 'text-white' : 'text-rose-300'}`}>
+                      <div className={`rounded-full h-8 w-8 flex items-center justify-center mr-2 ${
+                        currentStep >= 2 ? 'bg-rose-600' : 'bg-rose-800/50'
+                      }`}>
+                        2
+                      </div>
+                      <span className="text-sm">Template</span>
+                    </div>
+                    <div className={`flex-1 h-0.5 mx-2 ${currentStep >= 3 ? 'bg-rose-600' : 'bg-rose-800/50'}`}></div>
+                    
+                    <div className={`flex items-center ${currentStep >= 3 ? 'text-white' : 'text-rose-300'}`}>
+                      <div className={`rounded-full h-8 w-8 flex items-center justify-center mr-2 ${
+                        currentStep >= 3 ? 'bg-rose-600' : 'bg-rose-800/50'
+                      }`}>
+                        3
+                      </div>
+                      <span className="text-sm">AI Writer</span>
+                    </div>
+                    <div className={`flex-1 h-0.5 mx-2 ${currentStep >= 4 ? 'bg-rose-600' : 'bg-rose-800/50'}`}></div>
+                    
+                    <div className={`flex items-center ${currentStep >= 4 ? 'text-white' : 'text-rose-300'}`}>
+                      <div className={`rounded-full h-8 w-8 flex items-center justify-center mr-2 ${
+                        currentStep >= 4 ? 'bg-rose-600' : 'bg-rose-800/50'
+                      }`}>
+                        4
+                      </div>
+                      <span className="text-sm">QA Check</span>
+                    </div>
+                    <div className={`flex-1 h-0.5 mx-2 ${currentStep >= 5 ? 'bg-rose-600' : 'bg-rose-800/50'}`}></div>
+                    
+                    <div className={`flex items-center ${currentStep >= 5 ? 'text-white' : 'text-rose-300'}`}>
+                      <div className={`rounded-full h-8 w-8 flex items-center justify-center mr-2 ${
+                        currentStep >= 5 ? 'bg-rose-600' : 'bg-rose-800/50'
+                      }`}>
+                        5
+                      </div>
+                      <span className="text-sm">Export</span>
+                    </div>
+                  </div>
+                  
+                  {/* Mobile step indicator */}
+                  <div className="sm:hidden text-white">
+                    Step {currentStep} of 5: {
+                      currentStep === 1 ? 'Document Upload' : 
+                      currentStep === 2 ? 'Template Selection' :
+                      currentStep === 3 ? 'AI Writing' :
+                      currentStep === 4 ? 'QA Check' : 'Export'
+                    }
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </header>
         
@@ -1649,7 +1770,87 @@ const EnterpriseGradeCERGenerator = () => {
             />
           )}
           
-          {activeView === 'create' && (
+          {activeView === 'create' && currentStep === 1 && (
+            <DocumentUploadExtraction 
+              onDocumentsProcessed={handleDocumentsProcessed}
+            />
+          )}
+          
+          {currentStep === 2 && (
+            <SmartTemplateSelector 
+              onTemplateSelected={handleTemplateSelected}
+              documentData={documentData}
+            />
+          )}
+          
+          {activeView === 'editor' && currentStep === 3 && (
+            <div className="space-y-6">
+              <TrialSageAIWriter 
+                sectionId={currentSectionId || "introduction"}
+                sectionTitle="Introduction"
+                sectionType="standard"
+                templateData={templateData}
+                documentData={documentData}
+                documentType={templateData?.documentType || "cer"}
+                framework={templateData?.framework || "mdr"}
+                onSave={(content) => handleSectionChange(currentSectionId || "introduction", content)}
+              />
+              
+              <div className="flex justify-end space-x-4">
+                <Button variant="outline" onClick={() => setActiveView('list')}>
+                  Save & Exit
+                </Button>
+                <Button onClick={handleStartQA}>
+                  Continue to QA Check
+                </Button>
+              </div>
+            </div>
+          )}
+          
+          {activeView === 'qa' && currentStep === 4 && (
+            <div className="space-y-6">
+              <RegulatoryQAAssistant 
+                documentContent={documentContent}
+                documentType={templateData?.documentType || "cer"}
+                framework={templateData?.framework || "mdr"}
+                onIssueFixed={handleIssueFixed}
+              />
+              
+              <div className="flex justify-end space-x-4">
+                <Button variant="outline" onClick={() => setActiveView('editor')}>
+                  Back to Editor
+                </Button>
+                <Button onClick={handleStartExport}>
+                  Continue to Export
+                </Button>
+              </div>
+            </div>
+          )}
+          
+          {activeView === 'export' && currentStep === 5 && (
+            <div className="space-y-6">
+              <ExportModule 
+                documentId={selectedReportId || "temp-id"}
+                documentTitle="Clinical Evaluation Report"
+                documentType={templateData?.documentType || "cer"}
+                framework={templateData?.framework || "mdr"}
+                lastModified={new Date().toISOString()}
+                isComplete={true}
+                canExport={true}
+              />
+              
+              <div className="flex justify-end space-x-4">
+                <Button variant="outline" onClick={() => setActiveView('qa')}>
+                  Back to QA Check
+                </Button>
+                <Button onClick={() => setActiveView('list')}>
+                  Save & Return to Dashboard
+                </Button>
+              </div>
+            </div>
+          )}
+          
+          {activeView === 'create' && currentStep === 1 && (
             <NewReportForm 
               onSubmit={handleReportCreated} 
               onCancel={() => setActiveView('list')} 
