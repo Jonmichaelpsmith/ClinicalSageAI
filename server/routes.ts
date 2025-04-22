@@ -3,6 +3,7 @@ import http from 'http';
 import { WebSocketServer, WebSocket } from 'ws';
 import preIndRoutes from './routes/preIndRoutes';
 import nonclinicalRoutes from './routes/nonclinicalRoutes';
+import docuShareRoutes from './routes/docushare.js';
 // Import CER routes - work around ESM/CommonJS conflicts
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
@@ -193,6 +194,9 @@ export const setupRoutes = (app: express.Express) => {
   // Mount the IND Wizard routes
   app.use('/api/ind-drafts/:draftId/pre-ind', preIndRoutes);
   app.use('/api/ind-drafts/:draftId/nonclinical', nonclinicalRoutes);
+  
+  // Mount DocuShare routes
+  app.use('/api', docuShareRoutes);
   
   // Mount the CER API routes
   app.use('/api', apiRouter);

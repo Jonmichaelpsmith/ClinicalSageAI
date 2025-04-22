@@ -1,0 +1,148 @@
+// ===== TrialSage GA Code Pack — v5  (2025‑04‑22) =====
+// DocuShare + DocuSign + Metabase KPIs + Semantic Search + Bulk Import
+// NEW in v5  ➜  **UX POLISH PACK**
+//   • Drag‑and‑drop uploads everywhere (DropzoneUpload component)
+//   • Inline PDF annotation using *PDF.js + pdf-annotate.js* (open‑source)
+//   • Contextual "Docs Needed" checklist widget for IND Wizard
+//   • Global toasts via react‑hot‑toast for success/error feedback
+//   • Tailwind tweaks (rounded‑2xl, shadow, smooth animations)
+//   • Refactored TopNavigation with icons (lucide‑react)
+//   • No backend changes required — uses existing /api/docs route
+// ───────────────────────────────────────────────
+// NOTE: this version only touches front‑end assets; backend remains at v4.
+// ───────────────────────────────────────────────
+
+// 1.  Install packages (front‑end)
+//     npm i react-dropzone pdfjs-dist pdf-annotate react-hot-toast lucide-react framer-motion
+
+// ───────────────────────────────────────────────
+// 2.  src/components/DropzoneUpload.jsx  (NEW)
+// ───────────────────────────────────────────────
+import { useCallback } from "react";
+import { useDropzone } from "react-dropzone";
+import { uploadDoc } from "../hooks/useDocuShare";
+import { toast } from "react-hot-toast";
+
+export default function DropzoneUpload({ onComplete }) {
+  const onDrop = useCallback(async (files) => {
+    for (const f of files) {
+      toast.promise(uploadDoc(f), {
+        loading: `Uploading ${f.name}…`,
+        success: `${f.name} uploaded!`,
+        error: `${f.name} failed ⚠️`,
+      });
+    }
+    onComplete?.();
+  }, [onComplete]);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, accept: { 'application/pdf': [] } });
+
+  return (
+    <div {...getRootProps()} className={`border-2 border-dashed rounded-2xl p-6 text-center transition-all ${isDragActive ? 'bg-indigo-50' : 'bg-white'}` }>
+      <input {...getInputProps()} />
+      <p className="text-gray-600">Drag & drop PDFs here, or click to browse</p>
+    </div>
+  );
+}
+
+// ───────────────────────────────────────────────
+// 3.  src/components/AnnotatedViewer.jsx  (NEW)
+// ───────────────────────────────────────────────
+import { useEffect, useRef } from "react";
+import { pdfjs } from "react-pdf";
+import * as PDFAnnotate from "pdf-annotate";
+
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
+
+export default function AnnotatedViewer({ url }) {
+  const container = useRef(null);
+  useEffect(() => {
+    if (!url) return;
+    PDFAnnotate.UI.render({ pdf: url, container: container.current, readOnly: false });
+  }, [url]);
+
+  return (<div ref={container} className="border rounded-lg shadow-inner max-h-[80vh] overflow-auto" />);
+}
+
+// ───────────────────────────────────────────────
+// 4.  src/components/DocsChecklist.jsx  (NEW)
+// ───────────────────────────────────────────────
+import { useEffect, useState } from "react";
+import { listDocs } from "../hooks/useDocuShare";
+
+export default function DocsChecklist({ required = [] }) {
+  const [status, setStatus] = useState({});
+  useEffect(() => {
+    listDocs().then(docs => {
+      const names = docs.map(d => d.displayName.toLowerCase());
+      const s = Object.fromEntries(required.map(r => [r, names.some(n => n.includes(r.toLowerCase()))]));
+      setStatus(s);
+    });
+  }, [required]);
+  return (
+    <ul className="space-y-1">
+      {required.map(r => (
+        <li key={r} className="flex items-center gap-2">
+          <span className={`h-3 w-3 rounded-full ${status[r] ? 'bg-emerald-500' : 'bg-gray-300'}`} />
+          <span>{r}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+// Usage in IND Wizard Step component:
+// <DocsChecklist required={["Protocol.pdf", "IB.pdf", "DSUR.pdf"]} />
+
+// ───────────────────────────────────────────────
+// 5.  src/layout/TopNavigation.jsx  (REFRESH)
+// ───────────────────────────────────────────────
+import { FileText, Search, BarChart2, Upload } from "lucide-react";
+import { Link } from "react-router-dom";
+
+export default function TopNavigation() {
+  return (
+    <nav className="bg-slate-800 text-white px-6 py-3 flex items-center gap-6 shadow-xl">
+      <Link to="/docs" className="flex items-center gap-1 hover:opacity-80"><FileText size={18}/> Docs</Link>
+      <Link to="/search" className="flex items-center gap-1 hover:opacity-80"><Search size={18}/> Search</Link>
+      <Link to="/analytics" className="flex items-center gap-1 hover:opacity-80"><BarChart2 size={18}/> Analytics</Link>
+      <Link to="/import" className="flex items-center gap-1 hover:opacity-80"><Upload size={18}/> Import</Link>
+    </nav>
+  );
+}
+
+// ───────────────────────────────────────────────
+// 6.  Pages wiring
+// ───────────────────────────────────────────────
+// Add routes:
+// <Route path="/upload" element={<DropzoneUpload onComplete={()=>navigate('/docs')}/>}/>
+// <Route path="/import" element={<ImportPanel/>}/>
+// Update existing DocumentViewer to swap in <AnnotatedViewer url={viewUrl}/> when ‘Annotate’ mode toggled.
+
+// ───────────────────────────────────────────────
+// 7.  Toast container  (Root App)
+// ───────────────────────────────────────────────
+import { Toaster } from "react-hot-toast";
+function App() { return (<><Routes/> <Toaster position="bottom-right"/></>); }
+
+// ───────────────────────────────────────────────
+// 8.  Tailwind tweaks (optional — tailwind.config.js)
+// ───────────────────────────────────────────────
+module.exports = {
+  theme: {
+    extend: {
+      borderRadius: { '2xl': '1.25rem' },
+      boxShadow: { 'inner': 'inset 0 2px 4px 0 rgba(0,0,0,0.06)' },
+    }
+  }
+};
+
+// ───────────────────────────────────────────────
+// 9.  Validation updates
+// ───────────────────────────────────────────────
+// • UX-OQ.xlsx  — verify drag‑drop, annotation save, checklist indicators
+// • Update URS to include annotation & checklist user stories
+
+// ───────────────────────────────────────────────
+// END v5 UX POLISH PACK
+// ───────────────────────────────────────────────

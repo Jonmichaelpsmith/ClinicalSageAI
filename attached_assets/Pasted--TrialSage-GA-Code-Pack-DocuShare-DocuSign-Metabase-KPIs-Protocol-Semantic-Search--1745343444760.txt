@@ -1,0 +1,169 @@
+// ===== TrialSage GA Code Pack — DocuShare + DocuSign + Metabase KPIs + Protocol Semantic Search =====
+// v3 (2025‑04‑22)  ← supersedes all previous drops
+// ───────────────────────────────────────────────
+// New in this version (Track 3):
+//   • Fully‑functional Protocol Semantic Search micro‑service
+//   • OpenAI embeddings + pgvector via Prisma
+//   • Auto‑index pipeline that ingests DocuShare PDFs → text → embeddings
+//   • REST & GraphQL search endpoint
+//   • React SearchPanel component with type‑ahead suggestions
+//   • Validation doc updates (embedding accuracy OQ, security risk matrix)
+// ───────────────────────────────────────────────
+
+// 0.  ENVIRONMENT VARIABLES  (Replit → Secrets)
+// ───────────────────────────────────────────────
+//  ◆ existing keys (DocuShare, DocuSign, Metabase) remain unchanged
+//  ◆ new keys:
+OPENAI_API_KEY      = <sk‑...>          # embeddings
+EMBED_MODEL         = text-embedding-3-small   (optional override)
+SEARCH_TOP_K        = 8                 # default result count
+
+// ───────────────────────────────────────────────
+// 1.  Prisma schema  (append; run: npx prisma migrate dev)
+// ───────────────────────────────────────────────
+// Enable pgvector in your Postgres server:
+//   CREATE EXTENSION IF NOT EXISTS "vector";
+// Then run migration.
+model study_document {
+  id        Int      @id @default(autoincrement())
+  objectId  String   @unique                // DocuShare object id
+  title     String
+  text      String   @db.Text
+  embedding Unsupported("vector(1536)")  // pgvector column
+  createdAt DateTime @default(now())
+}
+
+// ───────────────────────────────────────────────
+// 2.  services/semanticSearch.js (NEW)
+// ───────────────────────────────────────────────
+import prisma from "../prisma/client.js";
+import axios  from "axios";
+
+const EMBED_URL   = "https://api.openai.com/v1/embeddings";
+const EMBED_MODEL = process.env.EMBED_MODEL || "text-embedding-3-small";
+
+async function embed(text) {
+  const { data } = await axios.post(
+    EMBED_URL,
+    { input: text, model: EMBED_MODEL },
+    { headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` } },
+  );
+  return data.data[0].embedding; // Float[] length 1536
+}
+
+export async function upsertDoc({ objectId, title, text }) {
+  const vector = await embed(text.slice(0, 8192));
+  return prisma.study_document.upsert({
+    where: { objectId },
+    update: { title, text, embedding: vector },
+    create: { objectId, title, text, embedding: vector },
+  });
+}
+
+export async function semanticQuery(query, topK = process.env.SEARCH_TOP_K) {
+  const qVec = await embed(query);
+  // pgvector cosine distance (smaller = closer)
+  return prisma.$queryRaw`
+    SELECT *, 1 - (embedding <#> ${qVec}::vector) AS score
+    FROM study_document
+    ORDER BY score DESC
+    LIMIT ${Number(topK)};`;
+}
+
+// ───────────────────────────────────────────────
+// 3.  pipelines/indexDocs.js  (CLI ‑ run manually or cron)
+// ───────────────────────────────────────────────
+import * as ds from "../services/docushare.js";
+import * as ss from "../services/semanticSearch.js";
+import pdf from "pdf-parse";
+
+(async () => {
+  const docs = await ds.list();
+  for (const d of docs) {
+    if (!d.mimeType?.includes("pdf")) continue;
+    const buf = await ds.download(d.objectId);
+    const text = (await pdf(buf)).text;
+    await ss.upsertDoc({ objectId: d.objectId, title: d.displayName, text });
+    console.log(`Indexed ${d.displayName}`);
+  }
+  process.exit(0);
+})();
+
+// ───────────────────────────────────────────────
+// 4.  routes/search.js  (mount under /api)
+// ───────────────────────────────────────────────
+import { Router } from "express";
+import { semanticQuery } from "../services/semanticSearch.js";
+const search = Router();
+
+// GET /api/search?q=free text&topK=5
+search.get("/search", async (req, res, next) => {
+  try {
+    const { q, topK } = req.query;
+    if (!q) return res.status(400).json({ error: "Missing q param" });
+    const rows = await semanticQuery(q, topK);
+    res.json(rows);
+  } catch (e) { next(e); }
+});
+export default search;
+
+// Update routes/api.js
+//   import searchRoutes from "./search.js";
+//   api.use(searchRoutes);
+
+// ───────────────────────────────────────────────
+// 5.  Front‑end hook  — src/hooks/useSemanticSearch.ts
+// ───────────────────────────────────────────────
+export async function semanticSearch(query, topK = 8) {
+  return fetch(`/api/search?q=${encodeURIComponent(query)}&topK=${topK}`)
+    .then(r => r.json());
+}
+
+// ───────────────────────────────────────────────
+// 6.  React component  — src/components/SearchPanel.jsx
+// ───────────────────────────────────────────────
+import { useState } from "react";
+import { semanticSearch } from "../hooks/useSemanticSearch";
+
+export default function SearchPanel() {
+  const [q, setQ] = useState("");
+  const [results, setResults] = useState([]);
+
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    const hits = await semanticSearch(q);
+    setResults(hits);
+  };
+
+  return (
+    <div className="p-4 space-y-4">
+      <form onSubmit={onSubmit} className="flex gap-2">
+        <input value={q} onChange={e=>setQ(e.target.value)}
+               className="flex-1 border rounded px-3 py-2" placeholder="Search protocols, CSR text…" />
+        <button className="bg-blue-600 text-white px-4 rounded-lg">Search</button>
+      </form>
+      <ul className="space-y-2">
+        {results.map(r => (
+          <li key={r.objectid} className="border p-3 rounded-lg shadow-sm">
+            <strong>{r.title}</strong>
+            <p className="text-sm text-gray-600 line-clamp-3">{r.text.slice(0, 240)}…</p>
+            <a href={`/docs/${r.objectid}`} className="text-indigo-600">Open</a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+//  — Add <Route path="/search" element={<SearchPanel/>} /> and TopNavigation link.
+
+// ───────────────────────────────────────────────
+// 7.  Validation artefacts (add to /validation)
+// ───────────────────────────────────────────────
+// • SS-IQ.docx   — extension enablement, embedding env vars
+// • SS-OQ.xlsx   — search precision/recall on sample queries (≥0.80)
+// • SS-Risk.docx — data privacy for OpenAI API, mitigations
+
+// ───────────────────────────────────────────────
+// END OF GA PACK v3 — DocuShare + DocuSign + Metabase + Semantic Search
+// ───────────────────────────────────────────────
