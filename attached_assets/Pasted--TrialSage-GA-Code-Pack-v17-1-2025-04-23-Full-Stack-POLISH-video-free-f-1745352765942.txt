@@ -1,0 +1,55 @@
+// ===== TrialSage GA Code Pack — v17.1 (2025‑04‑23) =====
+//  ⬛  Full‑Stack POLISH — video‑free, fully‑working demo flow ⬛
+// -----------------------------------------------------------------------------
+//  What changed vs v17
+//    • Landing hero no longer requires an external video file → replaced by
+//      lightweight **Framer‑motion animated gradient + blur blobs** (zero assets).
+//    • Fixed broken import in NotFound.jsx (added Link).
+//    • Added live route guard so unauth users hitting /demo are redirected to /start.
+// -----------------------------------------------------------------------------
+//  Dependencies: framer‑motion already installed.
+// -----------------------------------------------------------------------------
+
+// 0.  Router guard (App.jsx)
+import { Navigate } from "react-router-dom";
+const Protected=({children})=> localStorage.getItem("token")?children:<Navigate to="/start"/>;
+export default function App(){return(<Routes>
+ <Route path="/"        element={<Landing/>}/>
+ <Route path="/demo"    element={<Protected><Wizard sandbox/></Protected>}/>
+ <Route path="/start"   element={<DemoStart/>}/>
+ <Route path="*"        element={<NotFound/>}/>
+</Routes>);} 
+
+// -----------------------------------------------------------------------------
+// 1.  Landing.jsx — animated gradient hero (no video)
+import { motion } from "framer-motion";import { Link } from "react-router-dom";import ROIWidget from "../sales/ROIWidget.jsx";import Pricing from "../sales/Pricing.jsx";import Testimonials from "../sales/Testimonials.jsx";
+export default function Landing(){return(<div className="min-h-screen flex flex-col text-slate-900 dark:text-slate-100 bg-gradient-to-br from-regulatory-50 to-white dark:from-slate-900 dark:to-slate-800">
+  {/* HERO */}
+  <section className="relative h-[80vh] flex items-center justify-center text-center overflow-hidden">
+    {/* animated blobs */}
+    <motion.div initial={{opacity:0,scale:.8}} animate={{opacity:1,scale:1}} transition={{duration:1}} className="absolute inset-0 -z-10">
+      <motion.div className="absolute w-96 h-96 bg-regulatory-400 opacity-50 rounded-full filter blur-3xl" style={{top:"10%",left:"20%"}} animate={{y:[0,15,-15,0]}} transition={{repeat:Infinity,duration:10,ease:"easeInOut"}}/>
+      <motion.div className="absolute w-[30rem] h-[30rem] bg-indigo-300 opacity-40 rounded-full filter blur-3xl" style={{bottom:"-5rem",right:"-4rem"}} animate={{y:[0,-20,20,0]}} transition={{repeat:Infinity,duration:12,ease:"easeInOut"}}/>
+    </motion.div>
+    <div className="space-y-6 px-4">
+      <h1 className="text-5xl md:text-6xl font-extrabold leading-tight">AI‑HYPERDRIVE eCTD Suite</h1>
+      <p className="max-w-3xl mx-auto text-lg md:text-xl">Instant IND readiness. Predictive insights. Outpace Certara & Veeva.</p>
+      <Link to="/start" className="inline-block bg-regulatory-500 hover:bg-regulatory-600 text-white px-8 py-3 rounded-lg shadow-lg transition">Start Live Demo</Link>
+    </div>
+  </section>
+  {/* SOCIAL PROOF */}
+  <Testimonials/>
+  {/* PRICING */}
+  <Pricing/>
+  {/* ROI */}
+  <section className="py-20 bg-regulatory-50 dark:bg-slate-900/40"><ROIWidget/></section>
+</div>);} 
+
+// -----------------------------------------------------------------------------
+// 2.  NotFound.jsx — fixed import
+import { Link } from "react-router-dom";
+export default ()=> (<div className="h-screen flex flex-col items-center justify-center text-center space-y-4"><h1 className="text-6xl font-black">404</h1><p>Oops! Page not found.</p><Link to="/" className="text-regulatory-500 underline">Return home</Link></div>);
+
+// -----------------------------------------------------------------------------
+// END v17.1 — video‑free hero + route guard fix
+// -----------------------------------------------------------------------------

@@ -80,154 +80,207 @@ class SimpleErrorBoundary extends React.Component<
   }
 }
 
+// Import TopNav component
+import TopNav from './components/TopNav';
+
+// Route guards for protected routes
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  // Check if user is authenticated
+  const token = localStorage.getItem("token");
+  
+  // If not authenticated, redirect to /start page
+  if (!token) {
+    // Use wouter's Redirect component (useLocation hook pattern)
+    window.location.href = "/start";
+    return null;
+  }
+  
+  // If authenticated, render the protected component
+  return <>{children}</>;
+};
+// Import NotFound page
+const LazyNotFound = React.lazy(() => import('./pages/NotFound'));
+// Currently using a fallback for DemoStart page until we implement it fully
+const LazyDemoStart = () => {
+  // Redirects user to home if they're not logged in
+  const handleAuth = () => {
+    localStorage.setItem("token", "demo-token-" + Date.now());
+    window.location.href = "/demo";
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-regulatory-50 to-white dark:from-slate-900 dark:to-slate-800">
+      <div className="max-w-md w-full p-8 bg-white dark:bg-slate-800 rounded-lg shadow-lg">
+        <h1 className="text-2xl font-bold mb-6 text-center">Start Demo</h1>
+        <button 
+          onClick={handleAuth}
+          className="w-full bg-regulatory-600 hover:bg-regulatory-700 text-white py-3 px-6 rounded-md focus:outline-none focus:ring-2 focus:ring-regulatory-500 focus:ring-offset-2 transition-colors"
+        >
+          Start Trial Wizard Demo
+        </button>
+      </div>
+    </div>
+  );
+};
+
 export default function App() {
   return (
     <SimpleErrorBoundary>
       <ToastProvider>
         <React.Suspense fallback={<div className="flex items-center justify-center h-screen">Loading application...</div>}>
-          <Switch>
-            <Route path="/builder">
-              <SimpleErrorBoundary fallback={<EmergencyFallback pageName="IND Builder" />}>
-                <LazyINDWizard />
-              </SimpleErrorBoundary>
-            </Route>
-            <Route path="/portal/ind/:sequenceId">
-              <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Sequence Detail" />}>
-                <LazyIndSequenceDetail />
-              </SimpleErrorBoundary>
-            </Route>
-            <Route path="/ind/planner">
-              <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Sequence Manager" />}>
-                <LazyIndSequenceManager />
-              </SimpleErrorBoundary>
-            </Route>
-            <Route path="/solutions">
-              <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Solutions" />}>
-                <LazyHomeLanding />
-              </SimpleErrorBoundary>
-            </Route>
-            <Route path="/ind-architect">
-              <SimpleErrorBoundary fallback={<EmergencyFallback pageName="IND Accelerator" />}>
-                <React.Suspense fallback={<EmergencyFallback pageName="IND Accelerator" />}>
+          <TopNav />
+          <div className="pt-12"> {/* Add padding for the fixed TopNav */}
+            <Switch>
+              <Route path="/builder">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="IND Builder" />}>
                   <LazyINDWizard />
-                </React.Suspense>
-              </SimpleErrorBoundary>
-            </Route>
-            <Route path="/csr-intelligence">
-              <SimpleErrorBoundary fallback={<EmergencyFallback pageName="CSR Intelligence" />}>
-                <LazyCSRIntelligence />
-              </SimpleErrorBoundary>
-            </Route>
-            <Route path="/use-case-library">
-              <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Use Case Library" />}>
-                <LazyUseCaseLibrary />
-              </SimpleErrorBoundary>
-            </Route>
-            <Route path="/ind-full-solution">
-              <SimpleErrorBoundary fallback={<EmergencyFallback pageName="IND Full Solution" />}>
-                <LazyINDWizard />
-              </SimpleErrorBoundary>
-            </Route>
-            <Route path="/ind/wizard-v2">
-              <SimpleErrorBoundary fallback={<EmergencyFallback pageName="IND Wizard 2.0" />}>
-                <React.Suspense fallback={<EmergencyFallback pageName="IND Wizard 2.0" />}>
-                  <LazyINDWizard2 />
-                </React.Suspense>
-              </SimpleErrorBoundary>
-            </Route>
-            <Route path="/ind/wizard/*">
-              <SimpleErrorBoundary fallback={<EmergencyFallback pageName="IND Wizard" />}>
-                <React.Suspense fallback={<EmergencyFallback pageName="IND Wizard" />}>
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/portal/ind/:sequenceId">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Sequence Detail" />}>
+                  <LazyIndSequenceDetail />
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/ind/planner">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Sequence Manager" />}>
+                  <LazyIndSequenceManager />
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/solutions">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Solutions" />}>
+                  <LazyHomeLanding />
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/ind-architect">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="IND Accelerator" />}>
+                  <React.Suspense fallback={<EmergencyFallback pageName="IND Accelerator" />}>
+                    <LazyINDWizard />
+                  </React.Suspense>
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/csr-intelligence">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="CSR Intelligence" />}>
+                  <LazyCSRIntelligence />
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/use-case-library">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Use Case Library" />}>
+                  <LazyUseCaseLibrary />
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/ind-full-solution">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="IND Full Solution" />}>
                   <LazyINDWizard />
-                </React.Suspense>
-              </SimpleErrorBoundary>
-            </Route>
-            <Route path="/cer-generator">
-              <SimpleErrorBoundary fallback={<EmergencyFallback pageName="CER Generator" />}>
-                <LazyCERGenerator />
-              </SimpleErrorBoundary>
-            </Route>
-            <Route path="/cer-generator-streaming">
-              <SimpleErrorBoundary fallback={<EmergencyFallback pageName="CER Generator with Streaming" />}>
-                <LazyStreamingCERGenerator />
-              </SimpleErrorBoundary>
-            </Route>
-            <Route path="/validation-hub">
-              <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Validation Hub" />}>
-                <LazyValidationHub />
-              </SimpleErrorBoundary>
-            </Route>
-            <Route path="/chat">
-              <SimpleErrorBoundary fallback={<EmergencyFallback pageName="AI Chat" />}>
-                <LazyChatPanel />
-              </SimpleErrorBoundary>
-            </Route>
-            <Route path="/portal">
-              <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Portal" />}>
-                <LazyHomeLanding />
-              </SimpleErrorBoundary>
-            </Route>
-            <Route path="/persona*">
-              <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Persona Pages" />}>
-                <LazyPersonaPages />
-              </SimpleErrorBoundary>
-            </Route>
-            <Route path="/investor-assets">
-              <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Investor Assets" />}>
-                <LazyGatedSalesInvestorAssets />
-              </SimpleErrorBoundary>
-            </Route>
-            <Route path="/lumen-bio/dashboard">
-              <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Lumen Bio Dashboard" />}>
-                <LazyLumenBioDashboard />
-              </SimpleErrorBoundary>
-            </Route>
-            <Route path="/lumen-bio/reports">
-              <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Lumen Bio Reports" />}>
-                <LazyLumenBioReports />
-              </SimpleErrorBoundary>
-            </Route>
-            <Route path="/walkthroughs">
-              <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Walkthroughs" />}>
-                <LazyWalkthroughs />
-              </SimpleErrorBoundary>
-            </Route>
-            <Route path="/demo">
-              <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Demo" />}>
-                <LazyWalkthroughs />
-              </SimpleErrorBoundary>
-            </Route>
-            <Route path="/learning">
-              <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Learning Interface" />}>
-                <LazySimpleLearningInterface />
-              </SimpleErrorBoundary>
-            </Route>
-            <Route path="/adaptive-learning">
-              <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Adaptive Learning" />}>
-                <LazyAdaptiveLearning />
-              </SimpleErrorBoundary>
-            </Route>
-            <Route path="/document-risk/:id?">
-              <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Document Risk Prediction" />}>
-                <LazyDocumentRiskPrediction />
-              </SimpleErrorBoundary>
-            </Route>
-            <Route path="/document-management">
-              <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Document Management" />}>
-                <LazyDocumentManagement />
-              </SimpleErrorBoundary>
-            </Route>
-            <Route path="/">
-              <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Home" />}>
-                <LazyHomeLandingEnhanced />
-              </SimpleErrorBoundary>
-            </Route>
-            <Route>
-              <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Home" />}>
-                <LazyHomeLandingEnhanced />
-              </SimpleErrorBoundary>
-            </Route>
-          </Switch>
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/ind/wizard-v2">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="IND Wizard 2.0" />}>
+                  <React.Suspense fallback={<EmergencyFallback pageName="IND Wizard 2.0" />}>
+                    <LazyINDWizard2 />
+                  </React.Suspense>
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/ind/wizard/*">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="IND Wizard" />}>
+                  <React.Suspense fallback={<EmergencyFallback pageName="IND Wizard" />}>
+                    <LazyINDWizard />
+                  </React.Suspense>
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/cer-generator">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="CER Generator" />}>
+                  <LazyCERGenerator />
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/cer-generator-streaming">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="CER Generator with Streaming" />}>
+                  <LazyStreamingCERGenerator />
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/validation-hub">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Validation Hub" />}>
+                  <LazyValidationHub />
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/chat">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="AI Chat" />}>
+                  <LazyChatPanel />
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/portal">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Portal" />}>
+                  <LazyHomeLanding />
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/persona*">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Persona Pages" />}>
+                  <LazyPersonaPages />
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/investor-assets">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Investor Assets" />}>
+                  <LazyGatedSalesInvestorAssets />
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/lumen-bio/dashboard">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Lumen Bio Dashboard" />}>
+                  <LazyLumenBioDashboard />
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/lumen-bio/reports">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Lumen Bio Reports" />}>
+                  <LazyLumenBioReports />
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/walkthroughs">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Walkthroughs" />}>
+                  <LazyWalkthroughs />
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/start">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Demo Start" />}>
+                  <LazyDemoStart />
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/demo">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Demo" />}>
+                  <ProtectedRoute>
+                    <LazyWalkthroughs />
+                  </ProtectedRoute>
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/learning">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Learning Interface" />}>
+                  <LazySimpleLearningInterface />
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/adaptive-learning">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Adaptive Learning" />}>
+                  <LazyAdaptiveLearning />
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/document-risk/:id?">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Document Risk Prediction" />}>
+                  <LazyDocumentRiskPrediction />
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/document-management">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Document Management" />}>
+                  <LazyDocumentManagement />
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Home" />}>
+                  <LazyHomeLandingEnhanced />
+                </SimpleErrorBoundary>
+              </Route>
+              <Route>
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="404 Not Found" />}>
+                  <LazyNotFound />
+                </SimpleErrorBoundary>
+              </Route>
+            </Switch>
+          </div>
         </React.Suspense>
       </ToastProvider>
     </SimpleErrorBoundary>

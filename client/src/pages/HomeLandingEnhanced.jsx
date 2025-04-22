@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
+import { motion } from 'framer-motion';
 
 import { 
   FileText, 
@@ -193,11 +194,30 @@ export default function HomeLandingEnhanced() {
       {/* Application Packages Banner */}
       <AppPackagesBanner currentPath={location} />
       
-      {/* Hero Section - Compact Version */}
+      {/* Hero Section - Enhanced with Animated Gradient Blobs (No Video) */}
       <section className="relative overflow-hidden bg-gradient-to-b from-indigo-900 via-blue-900 to-blue-800 text-white">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0 bg-[url('https://raw.githubusercontent.com/Concepts2Cures/assets/main/dna-pattern.svg')] bg-repeat opacity-30"></div>
-        </div>
+        {/* Animated gradient blobs */}
+        <motion.div initial={{opacity:0, scale:0.8}} animate={{opacity:1, scale:1}} transition={{duration:1}} className="absolute inset-0 -z-0">
+          <motion.div 
+            className="absolute w-[40rem] h-[40rem] bg-regulatory-500/30 rounded-full filter blur-3xl" 
+            style={{top:"-10%", left:"-10%"}} 
+            animate={{y:[0, 50, -30, 0], x:[0, -30, 30, 0]}} 
+            transition={{repeat:Infinity, duration:20, ease:"easeInOut"}}
+          />
+          <motion.div 
+            className="absolute w-[30rem] h-[30rem] bg-indigo-400/20 rounded-full filter blur-3xl" 
+            style={{bottom:"-5rem", right:"-4rem"}} 
+            animate={{y:[0, -40, 40, 0], x:[0, 30, -20, 0]}} 
+            transition={{repeat:Infinity, duration:23, ease:"easeInOut"}}
+          />
+          <motion.div 
+            className="absolute w-[25rem] h-[25rem] bg-blue-300/20 rounded-full filter blur-3xl" 
+            style={{top:"30%", right:"20%"}} 
+            animate={{y:[0, 30, -50, 0], scale:[1, 1.1, 0.9, 1]}} 
+            transition={{repeat:Infinity, duration:18, ease:"easeInOut"}}
+          />
+        </motion.div>
+        
         <div className="container mx-auto px-6 pt-12 pb-16 relative z-10">
           <div className="max-w-4xl mx-auto text-center mb-8">
             <div className="inline-flex items-center px-3 py-1 rounded-full bg-blue-700/30 backdrop-blur-sm text-blue-200 text-xs font-medium mb-4">
@@ -211,10 +231,18 @@ export default function HomeLandingEnhanced() {
               Concept2Cures.AI delivers a comprehensive regulatory suite integrating advanced machine learning with industry-compliant frameworks to revolutionize global submissions and regulatory strategy.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-3">
-              <Link to="/ind/wizard" className="px-6 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white text-sm font-medium rounded-md shadow shadow-blue-900/30 transition-all duration-200">
+              <Link 
+                to="/ind/wizard" 
+                className="px-6 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white text-sm font-medium rounded-md shadow shadow-blue-900/30 transition-all duration-200 focus-visible:ring focus-visible:ring-regulatory-400"
+                aria-label="Launch IND Wizard"
+              >
                 IND Wizard
               </Link>
-              <Link to="/ind/wizard/pre-planning" className="px-6 py-2 bg-blue-800/40 hover:bg-blue-700/40 border border-blue-600/30 backdrop-blur-sm text-blue-100 text-sm font-medium rounded-md shadow-sm transition-all duration-200">
+              <Link 
+                to="/ind/wizard/pre-planning" 
+                className="px-6 py-2 bg-blue-800/40 hover:bg-blue-700/40 border border-blue-600/30 backdrop-blur-sm text-blue-100 text-sm font-medium rounded-md shadow-sm transition-all duration-200 focus-visible:ring focus-visible:ring-regulatory-400"
+                aria-label="Access Pre-IND Planning"
+              >
                 Pre-IND Planning
               </Link>
             </div>
@@ -225,7 +253,7 @@ export default function HomeLandingEnhanced() {
             {METRICS.map((metric, i) => (
               <div key={i} className="bg-gradient-to-br from-blue-800/40 to-indigo-900/40 backdrop-blur-sm border border-blue-700/30 rounded-md p-3 text-center transition-all duration-200 hover:bg-blue-800/50">
                 <div className="flex justify-center mb-2">
-                  {React.cloneElement(metric.icon, { className: 'w-8 h-8', size: 20 })}
+                  {React.cloneElement(metric.icon, { className: 'w-8 h-8', size: 20, "aria-hidden":"true" })}
                 </div>
                 <h3 className="text-xl md:text-2xl font-bold text-white mb-0.5">{metric.value}</h3>
                 <p className="font-medium text-blue-200 text-sm mb-1">{metric.label}</p>
@@ -237,7 +265,7 @@ export default function HomeLandingEnhanced() {
         
         {/* Wave divider */}
         <div className="absolute bottom-0 left-0 right-0">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 80" className="w-full h-auto -mb-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 80" className="w-full h-auto -mb-1" aria-hidden="true">
             <path fill="#ffffff" fillOpacity="1" d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,80L1360,80C1280,80,1120,80,960,80C800,80,640,80,480,80C320,80,160,80,80,80L0,80Z"></path>
           </svg>
         </div>
