@@ -530,6 +530,231 @@ export const setupRoutes = (app: express.Express) => {
     });
   });
   
+  // IND Wizard 2.0 API Routes
+  
+  // Get KPI data
+  app.get("/api/ind/kpi", (req, res) => {
+    res.json({
+      ready: 67,
+      errors: 3,
+      docs: 12
+    });
+  });
+  
+  // Get step flags (validation status for each step)
+  app.get("/api/ind/flags", (req, res) => {
+    res.json([false, true, false, true, false, false, true]);
+  });
+  
+  // Get step data
+  app.get("/api/ind/steps/:stepId", (req, res) => {
+    const stepId = parseInt(req.params.stepId);
+    let completedItems = [];
+    
+    switch(stepId) {
+      case 0:
+        completedItems = [
+          "Pre-IND Meeting Request Form",
+          "Initial Development Strategy"
+        ];
+        break;
+      case 1:
+        completedItems = [
+          "28-Day Toxicology Study Report"
+        ];
+        break;
+      case 2:
+        completedItems = [
+          "Drug Substance Specifications",
+          "Stability Data Summary"
+        ];
+        break;
+      default:
+        completedItems = [];
+    }
+    
+    res.json({
+      stepId,
+      completedItems,
+      status: "in_progress"
+    });
+  });
+  
+  // Get documents
+  app.get("/api/docs", (req, res) => {
+    res.json([
+      { id: 1, name: "Toxicology Study 28-Day Rat.pdf", status: "validated", module: "Nonclinical", createdAt: new Date() },
+      { id: 2, name: "Phase 1 Protocol.pdf", status: "has_errors", module: "Clinical", createdAt: new Date() },
+      { id: 3, name: "CMC Stability Data.pdf", status: "validated", module: "Quality", createdAt: new Date() },
+      { id: 4, name: "Investigator's Brochure v2.pdf", status: "validated", module: "Clinical", createdAt: new Date() },
+      { id: 5, name: "FDA Form 1571.pdf", status: "has_errors", module: "Administrative", createdAt: new Date() }
+    ]);
+  });
+  
+  // Get QC issues list
+  app.get("/api/qc/list", (req, res) => {
+    res.json([
+      { id: 1, documentId: 2, page: 12, severity: "major", message: "Missing primary endpoint definition" },
+      { id: 2, documentId: 2, page: 15, severity: "minor", message: "Inconsistent inclusion criteria numbering" },
+      { id: 3, documentId: 5, page: 2, severity: "major", message: "Missing investigator credentials" }
+    ]);
+  });
+  
+  // Get AI tips
+  app.get("/api/ai/tips", (req, res) => {
+    const step = parseInt(req.query.step as string) || 0;
+    const tipsByStep = [
+      // Step 0: Initial Planning
+      [
+        {
+          title: "Complete Pre-IND meeting request",
+          description: "Submit the meeting request form at least 60 days before your desired meeting date to discuss your development plan with the FDA."
+        },
+        {
+          title: "Prepare a target product profile (TPP)",
+          description: "A well-defined TPP helps align your development program with your therapeutic goals and regulatory strategy."
+        },
+        {
+          title: "Outline your development timeline",
+          description: "Map out key milestones from pre-IND through Phase 1 to help manage resources and set realistic expectations."
+        }
+      ],
+      // Step 1: Nonclinical Data
+      [
+        {
+          title: "Include both GLP and non-GLP studies",
+          description: "While pivotal toxicology studies should be GLP-compliant, include relevant non-GLP studies to support your overall safety assessment."
+        },
+        {
+          title: "Address dosing rationale clearly",
+          description: "Provide strong scientific justification for your first-in-human dosing based on nonclinical findings and safety margins."
+        },
+        {
+          title: "Consider specialized studies based on indication",
+          description: "For oncology products, include specialized assessments like genotoxicity or cardiac safety studies that are indication-specific."
+        }
+      ],
+      // Step 2: CMC Data
+      [
+        {
+          title: "Focus on batch consistency",
+          description: "Demonstrate consistency between your toxicology, clinical, and stability batches with appropriate analytical testing."
+        },
+        {
+          title: "Include stability data projections",
+          description: "Provide stability data and projected shelf-life with justification based on accelerated and real-time testing."
+        },
+        {
+          title: "Detail analytical methods validation status",
+          description: "Clearly state the validation status of all analytical methods with a timeline for full validation if not yet complete."
+        }
+      ],
+      // Step 3: Clinical Protocol
+      [
+        {
+          title: "Define clear primary endpoints",
+          description: "Ensure your primary endpoints are specific, measurable, and directly related to your study objectives."
+        },
+        {
+          title: "Include robust safety monitoring plan",
+          description: "Detail safety monitoring procedures, stopping rules, and the data monitoring committee's role if applicable."
+        },
+        {
+          title: "Address special populations",
+          description: "Clearly define inclusion/exclusion criteria with scientific rationale, especially for vulnerable populations."
+        }
+      ],
+      // Step 4: Investigator Brochure
+      [
+        {
+          title: "Summarize key findings concisely",
+          description: "Present nonclinical and clinical data in a way that's easily understood by investigators without technical background."
+        },
+        {
+          title: "Highlight potential risks clearly",
+          description: "Include a dedicated section on potential risks to subjects with monitoring guidance for investigators."
+        },
+        {
+          title: "Include detailed dosing instructions",
+          description: "Provide clear dosing instructions, preparation details, and administration guidance for clinical sites."
+        }
+      ],
+      // Step 5: FDA Forms
+      [
+        {
+          title: "Double-check FDA Form 1571 completeness",
+          description: "Ensure all sections are complete and consistent with your submission package, particularly the contents section."
+        },
+        {
+          title: "Verify investigator credentials",
+          description: "Confirm all Form 1572s are complete with current CV and medical licenses for each listed investigator."
+        },
+        {
+          title: "Include comprehensive cover letter",
+          description: "Your cover letter should succinctly summarize your development program and highlight any special considerations."
+        }
+      ],
+      // Step 6: Final Assembly
+      [
+        {
+          title: "Follow the CTD format structure",
+          description: "Organize your submission according to the Common Technical Document (CTD) format for consistency with regulatory expectations."
+        },
+        {
+          title: "Include hyperlinked table of contents",
+          description: "Create a detailed, hyperlinked table of contents to help reviewers navigate your submission efficiently."
+        },
+        {
+          title: "Run final QC check on submission",
+          description: "Perform a comprehensive quality check for consistency, completeness, and formatting before final submission."
+        }
+      ]
+    ];
+    
+    res.json({
+      tips: tipsByStep[step] || []
+    });
+  });
+  
+  // Document upload + AI preview
+  app.post("/api/ai/preview", (req, res) => {
+    try {
+      // In a real implementation, this would analyze the document using AI
+      const { fileName } = req.body;
+      
+      let module = "Unknown";
+      let type = "Document";
+      let qcStatus = "Needs Review";
+      
+      if (fileName.toLowerCase().includes("tox")) {
+        module = "Module 4: Nonclinical Study Reports";
+        type = "Toxicology Report";
+      } else if (fileName.toLowerCase().includes("protocol")) {
+        module = "Module 5: Clinical Study Reports";
+        type = "Clinical Protocol";
+      } else if (fileName.toLowerCase().includes("cmc") || fileName.toLowerCase().includes("stabil")) {
+        module = "Module 3: Quality";
+        type = "CMC Report";
+      } else if (fileName.toLowerCase().includes("form")) {
+        module = "Module 1: Administrative Information";
+        type = "FDA Form";
+      }
+      
+      // Random QC status for demo
+      qcStatus = Math.random() > 0.5 ? "Passed" : "Needs Review";
+      
+      res.json({
+        summary: `Document appears to be a ${type.toLowerCase()} with key information highlighted in the first section.`,
+        module,
+        type,
+        qcStatus
+      });
+    } catch (error) {
+      console.error("AI preview error:", error);
+      res.status(500).json({ error: "Failed to generate AI preview" });
+    }
+  });
+  
   // Return the HTTP server
   return httpServer;
 };
