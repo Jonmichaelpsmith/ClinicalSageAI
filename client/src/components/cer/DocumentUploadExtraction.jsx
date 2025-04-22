@@ -24,7 +24,7 @@ import {
   CheckCircle, 
   Loader2, 
   Upload, 
-  FileUp2, 
+  FileOutput, 
   Database, 
   Zap, 
   ListFilter, 
@@ -350,7 +350,7 @@ const DocumentUploadExtraction = ({ onDocumentsProcessed }) => {
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold flex items-center">
-          <FileUp2 className="mr-2 h-5 w-5 text-blue-600" />
+          <FileOutput className="mr-2 h-5 w-5 text-blue-600" />
           Document Upload & Extraction
         </h2>
         <TabsList>
