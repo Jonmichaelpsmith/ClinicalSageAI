@@ -29,9 +29,9 @@ import INDWizard from './pages/INDWizard';
 const LazyINDWizard = INDWizard;
 const LazyUseCaseLibrary = React.lazy(() => import('./pages/UseCaseLibrary'));
 const LazyCERGenerator = React.lazy(() => import('./pages/CERGenerator'));
-// Add CSR Intelligence module
-import CSRIntelligence from './pages/CSRIntelligence';
-const LazyCSRIntelligence = CSRIntelligence;
+// Add Enterprise CSR Intelligence module
+import EnterpriseCSRIntelligence from './pages/EnterpriseCSRIntelligence';
+const LazyCSRIntelligence = EnterpriseCSRIntelligence;
 const LazyLumenBioDashboard = React.lazy(() => import('./pages/LumenBioDashboard'));
 const LazyLumenBioReports = React.lazy(() => import('./pages/LumenBioReports'));
 const LazySimpleLearningInterface = React.lazy(() => import('./components/SimpleLearningInterface'));
