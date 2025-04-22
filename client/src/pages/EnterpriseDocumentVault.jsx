@@ -2,6 +2,13 @@ import React from 'react';
 import { Layout } from '@/components/ui/layout';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { 
+  FileText, Lock, FileCheck, Database, Shield, 
+  BookOpen, Layers, Clock, CheckCircle, 
+  ListChecks, BookType, FileArchive, Folder
+} from 'lucide-react';
+import DocuShareIntegration from '@/components/document-management/DocuShareIntegration';
+import { Button } from '@/components/ui/button';
 
 /**
  * Enterprise Document Vault Page
@@ -35,7 +42,9 @@ export default function EnterpriseDocumentVault() {
             <div className="flex justify-between">
               <div>
                 <CardTitle className="text-2xl flex items-center gap-2">
-                  <div className="h-6 w-6 bg-indigo-600 rounded-md flex items-center justify-center text-white text-xs font-bold">D</div>
+                  <div className="h-7 w-7 bg-indigo-600 rounded-md flex items-center justify-center text-white">
+                    <FileText size={16} />
+                  </div>
                   DocuShare Enterprise
                 </CardTitle>
                 <CardDescription className="text-base">
@@ -51,7 +60,9 @@ export default function EnterpriseDocumentVault() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
               <Card className="bg-blue-50">
                 <CardContent className="p-4 flex items-center gap-3">
-                  <div className="h-8 w-8 bg-blue-600 rounded-md flex items-center justify-center text-white font-bold text-xs">D</div>
+                  <div className="h-8 w-8 bg-blue-600 rounded-md flex items-center justify-center text-white">
+                    <Database size={16} />
+                  </div>
                   <div>
                     <h3 className="font-medium">Document Repository</h3>
                     <p className="text-sm text-gray-600">Unified secure storage</p>
@@ -61,7 +72,9 @@ export default function EnterpriseDocumentVault() {
               
               <Card className="bg-green-50">
                 <CardContent className="p-4 flex items-center gap-3">
-                  <div className="h-8 w-8 bg-green-600 rounded-md flex items-center justify-center text-white font-bold text-xs">W</div>
+                  <div className="h-8 w-8 bg-green-600 rounded-md flex items-center justify-center text-white">
+                    <ListChecks size={16} />
+                  </div>
                   <div>
                     <h3 className="font-medium">Automated Workflows</h3>
                     <p className="text-sm text-gray-600">Configurable approval chains</p>
@@ -71,7 +84,9 @@ export default function EnterpriseDocumentVault() {
               
               <Card className="bg-orange-50">
                 <CardContent className="p-4 flex items-center gap-3">
-                  <div className="h-8 w-8 bg-orange-600 rounded-md flex items-center justify-center text-white font-bold text-xs">R</div>
+                  <div className="h-8 w-8 bg-orange-600 rounded-md flex items-center justify-center text-white">
+                    <CheckCircle size={16} />
+                  </div>
                   <div>
                     <h3 className="font-medium">Regulatory Compliance</h3>
                     <p className="text-sm text-gray-600">FDA, EMA, PMDA ready</p>
@@ -81,7 +96,9 @@ export default function EnterpriseDocumentVault() {
               
               <Card className="bg-indigo-50">
                 <CardContent className="p-4 flex items-center gap-3">
-                  <div className="h-8 w-8 bg-indigo-600 rounded-md flex items-center justify-center text-white font-bold text-xs">M</div>
+                  <div className="h-8 w-8 bg-indigo-600 rounded-md flex items-center justify-center text-white">
+                    <Layers size={16} />
+                  </div>
                   <div>
                     <h3 className="font-medium">Module Integration</h3>
                     <p className="text-sm text-gray-600">Seamless cross-module access</p>
@@ -90,8 +107,30 @@ export default function EnterpriseDocumentVault() {
               </Card>
             </div>
             
+            {/* Showcase DocuShare Enterprise Integration */}
+            <div className="rounded-lg border bg-slate-50 overflow-hidden mb-8">
+              <div className="bg-gradient-to-r from-indigo-500 to-blue-600 text-white px-4 py-3">
+                <h3 className="font-semibold flex items-center">
+                  <Folder size={18} className="mr-2" />
+                  Enterprise Document Repository Demo
+                </h3>
+                <p className="text-xs text-indigo-100">
+                  Demonstration of DocuShare Enterprise with life sciences documentation
+                </p>
+              </div>
+              <div className="p-4">
+                <DocuShareIntegration 
+                  moduleName="enterprise"
+                  moduleLabel="Enterprise Document Vault"
+                />
+              </div>
+            </div>
+            
             <div className="border-t border-gray-200 pt-6 mt-4">
-              <h2 className="text-xl font-semibold mb-4">DocuShare Enterprise Features</h2>
+              <h2 className="text-xl font-semibold mb-4 flex items-center">
+                <BookOpen size={18} className="text-blue-600 mr-2" />
+                DocuShare Enterprise Features
+              </h2>
               <div className="prose max-w-none">
                 <p>
                   DocuShare Enterprise is a comprehensive document management system designed specifically for 
@@ -100,11 +139,26 @@ export default function EnterpriseDocumentVault() {
                 </p>
                 <h3 className="mt-4">Key Benefits</h3>
                 <ul>
-                  <li>Secure Document Repository with AES-256 encryption</li>
-                  <li>21 CFR Part 11 Compliant electronic signatures</li>
-                  <li>Configurable Workflows for document approval</li>
-                  <li>Version Control with complete document history</li>
-                  <li>Automatic Metadata Extraction for advanced search</li>
+                  <li className="flex items-baseline gap-2">
+                    <Shield size={16} className="text-green-600 flex-shrink-0" />
+                    <span>Secure Document Repository with AES-256 encryption</span>
+                  </li>
+                  <li className="flex items-baseline gap-2">
+                    <Lock size={16} className="text-blue-600 flex-shrink-0" />
+                    <span>21 CFR Part 11 Compliant electronic signatures</span>
+                  </li>
+                  <li className="flex items-baseline gap-2">
+                    <ListChecks size={16} className="text-purple-600 flex-shrink-0" />
+                    <span>Configurable Workflows for document approval</span>
+                  </li>
+                  <li className="flex items-baseline gap-2">
+                    <Clock size={16} className="text-orange-600 flex-shrink-0" />
+                    <span>Version Control with complete document history</span>
+                  </li>
+                  <li className="flex items-baseline gap-2">
+                    <BookType size={16} className="text-red-600 flex-shrink-0" />
+                    <span>Automatic Metadata Extraction for advanced search</span>
+                  </li>
                 </ul>
               </div>
             </div>
@@ -113,7 +167,7 @@ export default function EnterpriseDocumentVault() {
               <Card>
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg flex items-center gap-2">
-                    <div className="h-5 w-5 bg-indigo-600 rounded-md flex items-center justify-center text-white text-xs font-bold">R</div>
+                    <CheckCircle size={18} className="text-indigo-600" />
                     Regulatory Compliance
                   </CardTitle>
                 </CardHeader>
@@ -144,7 +198,7 @@ export default function EnterpriseDocumentVault() {
               <Card>
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg flex items-center gap-2">
-                    <div className="h-5 w-5 bg-blue-600 rounded-md flex items-center justify-center text-white text-xs font-bold">S</div>
+                    <Shield size={18} className="text-blue-600" />
                     Security Certifications
                   </CardTitle>
                 </CardHeader>
@@ -174,31 +228,49 @@ export default function EnterpriseDocumentVault() {
             </div>
             
             <div className="bg-gray-50 p-4 rounded-lg border mt-6">
-              <h3 className="text-lg font-medium mb-2">Validation Documentation</h3>
+              <h3 className="text-lg font-medium mb-2 flex items-center">
+                <FileArchive size={18} className="text-indigo-600 mr-2" />
+                Validation Documentation
+              </h3>
               <p className="text-sm text-gray-600 mb-4">
                 All DocuShare Enterprise deployments include comprehensive validation documentation to 
                 support regulatory compliance and audit readiness.
               </p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="p-3 bg-white rounded-lg border">
-                  <h4 className="font-medium mb-1">Validation Master Plan (VMP)</h4>
+                  <h4 className="font-medium mb-1 flex items-center">
+                    <FileCheck size={14} className="text-blue-600 mr-1.5" />
+                    Validation Master Plan (VMP)
+                  </h4>
                   <p className="text-xs text-gray-600">
                     Complete documentation of validation strategy
                   </p>
                 </div>
                 <div className="p-3 bg-white rounded-lg border">
-                  <h4 className="font-medium mb-1">Installation Qualification (IQ)</h4>
+                  <h4 className="font-medium mb-1 flex items-center">
+                    <FileCheck size={14} className="text-green-600 mr-1.5" />
+                    Installation Qualification (IQ)
+                  </h4>
                   <p className="text-xs text-gray-600">
                     Verification of proper installation
                   </p>
                 </div>
                 <div className="p-3 bg-white rounded-lg border">
-                  <h4 className="font-medium mb-1">Operational Qualification (OQ)</h4>
+                  <h4 className="font-medium mb-1 flex items-center">
+                    <FileCheck size={14} className="text-purple-600 mr-1.5" />
+                    Operational Qualification (OQ)
+                  </h4>
                   <p className="text-xs text-gray-600">
                     Validation of system functionality
                   </p>
                 </div>
               </div>
+            </div>
+            
+            <div className="flex justify-center mt-8">
+              <Button className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                Request Enterprise Demo
+              </Button>
             </div>
           </CardContent>
         </Card>

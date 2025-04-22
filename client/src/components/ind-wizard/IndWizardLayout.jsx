@@ -9,7 +9,7 @@ import { Bot, FileText } from 'lucide-react'; // AI icon and file icon
 
 // Import DocuShare components and tabs
 import DocuSharePanel from '@/components/document-management/DocuSharePanel';
-import { DocuShareIntegration } from '@/components/document-management/DocuShareIntegration';
+import DocuShareIntegration from '@/components/document-management/DocuShareIntegration';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 // Import the steps configuration
@@ -159,10 +159,11 @@ export default function IndWizardLayout({ children }) {
                 <FileText className="h-4 w-4 mr-1.5 text-teal-600" />
                 DocuShare Documents
               </h3>
-              <DocuSharePanel 
-                moduleId="ind" 
-                documentType="submission"
+              <DocuShareIntegration 
+                moduleName="ind" 
+                moduleLabel="IND Documents"
                 compact={true}
+                hidePreview={true}
               />
             </div>
           </ScrollArea>
@@ -218,10 +219,11 @@ export default function IndWizardLayout({ children }) {
               </CardHeader>
               <CardContent className="pt-0">
                 <DocuShareIntegration 
-                  moduleContext="ind"
-                  sectionContext={currentStep.path}
-                  allowUpload={true}
-                  height={120}
+                  moduleName="ind"
+                  moduleLabel={`${currentStep.title} Documents`}
+                  compact={true}
+                  hidePreview={true}
+                  hideMetadata={true}
                 />
               </CardContent>
             </Card>
