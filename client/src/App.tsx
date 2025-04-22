@@ -51,6 +51,8 @@ const LazyChatPanel = React.lazy(() => import('./pages/ChatPanel'));
 // Add Enterprise CSR Intelligence module
 import EnterpriseCSRIntelligence from './pages/EnterpriseCSRIntelligence';
 const LazyCSRIntelligence = EnterpriseCSRIntelligence;
+// Add CMC Module with enhanced manufacturing controls capabilities
+const LazyCMCModule = React.lazy(() => import('./pages/CMCModule'));
 const LazyLumenBioDashboard = React.lazy(() => import('./pages/LumenBioDashboard'));
 const LazyLumenBioReports = React.lazy(() => import('./pages/LumenBioReports'));
 const LazySimpleLearningInterface = React.lazy(() => import('./components/SimpleLearningInterface'));
@@ -276,6 +278,11 @@ export default function App() {
               <Route path="/enterprise-vault">
                 <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Enterprise Document Vault" />}>
                   <LazyEnterpriseDocumentVault />
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/cmc-module">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="CMC Module" />}>
+                  <LazyCMCModule />
                 </SimpleErrorBoundary>
               </Route>
               <Route path="/">
