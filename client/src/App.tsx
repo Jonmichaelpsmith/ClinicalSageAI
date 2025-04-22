@@ -147,6 +147,11 @@ export default function App() {
                 <LazyValidationHub />
               </SimpleErrorBoundary>
             </Route>
+            <Route path="/chat">
+              <SimpleErrorBoundary fallback={<EmergencyFallback pageName="AI Chat" />}>
+                <LazyChatPanel />
+              </SimpleErrorBoundary>
+            </Route>
             <Route path="/portal">
               <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Portal" />}>
                 <LazyHomeLanding />
@@ -200,11 +205,6 @@ export default function App() {
             <Route path="/document-management">
               <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Document Management" />}>
                 <LazyDocumentManagement />
-              </SimpleErrorBoundary>
-            </Route>
-            <Route path="/chat">
-              <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Document AI Chat" />}>
-                <LazyChatPanel />
               </SimpleErrorBoundary>
             </Route>
             <Route path="/">

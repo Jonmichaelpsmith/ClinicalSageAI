@@ -205,11 +205,53 @@ export async function generateDocumentInsights(text) {
   return result;
 }
 
+/**
+ * Generate text embeddings for semantic search
+ * 
+ * @param {string} text - The text to embed
+ * @returns {Promise<number[]>} - Vector embedding of the text
+ */
+export async function embed(text) {
+  try {
+    // Check if OpenAI API key is configured
+    if (!process.env.OPENAI_API_KEY) {
+      console.warn('OpenAI API key not configured');
+      return new Array(1536).fill(0); // Return zero vector as fallback
+    }
+    
+    const truncatedText = text.length > 8000 ? text.substring(0, 8000) + "..." : text;
+    
+    const response = await fetch('https://api.openai.com/v1/embeddings', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: 'text-embedding-3-large',
+        input: truncatedText
+      })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`OpenAI API error: ${errorData.error?.message || response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data.data[0].embedding;
+  } catch (error) {
+    console.error('Error generating embeddings:', error);
+    return new Array(1536).fill(0); // Return zero vector as fallback
+  }
+}
+
 export default {
   processWithOpenAI,
   processWithOpenAIJson,
   generateDocumentSummary,
   extractKeywords,
   analyzeDocumentType,
-  generateDocumentInsights
+  generateDocumentInsights,
+  embed
 };
