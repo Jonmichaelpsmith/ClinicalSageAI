@@ -1,0 +1,156 @@
+// ===== TrialSage GA Code Pack — DocuShare + DocuSign + Metabase KPIs =====
+// This supersedes previous versions.  It contains:
+//   • DocuShare Pharma Edition integration (upload, list, download)
+//   • DocuSign e‑signature workflow with webhook + auto‑versioning
+//   • Metabase Embedded dashboard (document KPIs) with JWT auth
+//   • Prisma schema updates (audit_log, document, signature)
+//   • Front‑end components/hooks for Vault, Signatures, Analytics
+// Replace existing files wholesale to stay in sync.
+
+// ───────────────────────────────────────────────
+// 0.  ENVIRONMENT VARIABLES (Replit → Secrets)
+// ───────────────────────────────────────────────
+// DocuShare
+DS_DOMAIN            = vault.trialsage.com
+DS_CLIENT_ID         = <docushare‑oauth‑id>
+DS_CLIENT_SECRET     = <docushare‑oauth‑secret>
+DS_SIGNED_FOLDER     = /Shared/TrialSage/Signed      (optional)
+DS_DRAFT_FOLDER      = /Shared/TrialSage             (optional)
+// DocuSign
+DSN_BASE_URL         = https://demo.docusign.net/restapi  (or prod)
+DSN_INTEGRATION_KEY  = <guid>
+DSN_SECRET           = <secret>
+DSN_USER_ID          = <API user GUID>
+DSN_ACCOUNT_ID       = <Account GUID>
+DSN_REDIRECT_URI     = https://trialsage.ai/docusign/return
+DSN_WEBHOOK_URL      = https://trialsage.ai/api/docusign/hook
+// Metabase Embedded
+MB_SITE_URL          = https://metabase.trialsage.ai
+MB_SECRET_KEY        = <metabase‑embed‑secret>
+MB_DASHBOARD_ID      = 3                              (document KPI dashboard)
+
+// ───────────────────────────────────────────────
+// 1.  services/docushare.js  (UNCHANGED)
+// ───────────────────────────────────────────────
+import axios from "axios";
+import crypto from "crypto";
+let cachedToken = null;
+let expiresAt = 0;
+...
+// (full file identical to prior version — kept for brevity)
+
+// ───────────────────────────────────────────────
+// 2.  services/docusign.js  (UNCHANGED)
+// ───────────────────────────────────────────────
+import axios from "axios";
+...
+// (same as previous doc)
+
+// ───────────────────────────────────────────────
+// 3.  services/metabase.js  (NEW)
+// ───────────────────────────────────────────────
+import jwt from "jsonwebtoken";
+
+export function getEmbedUrl(params = {}) {
+  const payload = {
+    resource: { dashboard: parseInt(process.env.MB_DASHBOARD_ID, 10) },
+    params,
+    exp: Math.round(Date.now() / 1000) + 60 * 10, // 10‑min TTL
+  };
+  const token = jwt.sign(payload, process.env.MB_SECRET_KEY);
+  return `${process.env.MB_SITE_URL}/embed/dashboard/${token}#bordered=false&titled=true`;
+}
+
+// ───────────────────────────────────────────────
+// 4.  routes/api.js  (excerpt additions)
+// ───────────────────────────────────────────────
+import { Router } from "express";
+import sigRoutes from "./signature.js";
+import dsRoutes  from "./docushare.js";
+import { getEmbedUrl } from "../services/metabase.js";
+
+const api = Router();
+api.use(sigRoutes);
+api.use(dsRoutes);
+
+// GET /api/analytics/embed?studyId=123
+api.get("/analytics/embed", (req, res) => {
+  const url = getEmbedUrl({ study_id: req.query.studyId || "all" });
+  res.json({ url });
+});
+export default api;
+
+// ───────────────────────────────────────────────
+// 5.  prisma/schema.prisma  (consolidated)
+// ───────────────────────────────────────────────
+model audit_log {
+  id        Int      @id @default(autoincrement())
+  objectid  String
+  event     String
+  actor     String
+  timestamp DateTime
+  meta      Json
+}
+model document {
+  id         Int      @id @default(autoincrement())
+  name       String
+  sha256     String   @unique
+  uploadedBy Int
+  createdAt  DateTime @default(now())
+}
+model signature {
+  envelopeId String @id
+  objectId   String
+  status     String
+  createdAt  DateTime @default(now())
+}
+
+// ───────────────────────────────────────────────
+// 6.  Front‑end hooks
+// ───────────────────────────────────────────────
+// src/hooks/useMetabase.ts
+export async function getDashboardUrl(studyId?: string) {
+  const q = studyId ? `?studyId=${studyId}` : "";
+  const { url } = await fetch(`/api/analytics/embed${q}`).then(r => r.json());
+  return url;
+}
+
+// src/hooks/useSignatures.ts (UNCHANGED)
+...
+
+// ───────────────────────────────────────────────
+// 7.  Front‑end components
+// ───────────────────────────────────────────────
+// src/components/AnalyticsDashboard.jsx
+import { useEffect, useState } from "react";
+import { getDashboardUrl } from "../hooks/useMetabase";
+
+export default function AnalyticsDashboard({ studyId }) {
+  const [embedUrl, setEmbedUrl] = useState(null);
+  useEffect(() => {
+    getDashboardUrl(studyId).then(setEmbedUrl);
+  }, [studyId]);
+
+  if (!embedUrl) return <p>Loading dashboard…</p>;
+  return (
+    <iframe
+      title="Document KPIs"
+      src={embedUrl}
+      className="w-full h-[85vh] border rounded-lg shadow"
+      allowTransparency
+    />
+  );
+}
+
+// Extend TopNavigation to include “Analytics” link → <Route path="/analytics" element={<AnalyticsDashboard/>} />
+
+// ───────────────────────────────────────────────
+// 8.  Validation additions
+// ───────────────────────────────────────────────
+// • MB-IQ.docx   — install & configuration evidence (site URL, secret key)
+// • MB-OQ.xlsx   — dashboard load, filter tests, permission checks
+// • Trace matrix updated to include Metabase objects
+
+// ───────────────────────────────────────────────
+// END OF GA PACK v2 — pushed on 2025‑04‑22
+// ───────────────────────────────────────────────
