@@ -1,11 +1,13 @@
 /**
  * AiTipsPanel Component
  * 
- * AI-generated tips and guidance for each step of the IND Wizard 2.0
+ * AI-generated tips and guidance for each step of the IND Wizard 3.0
+ * With regulatory-purple theme and dark mode support
  */
 
 import { useState, useEffect } from "react";
 import { Lightbulb, ChevronUp, ChevronDown } from "lucide-react";
+import clsx from "clsx";
 
 export default function AiTipsPanel({ step }) {
   const [expanded, setExpanded] = useState(true);
@@ -35,14 +37,14 @@ export default function AiTipsPanel({ step }) {
   const toggleExpanded = () => setExpanded(!expanded);
   
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
       <div 
-        className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 p-4 flex items-center justify-between cursor-pointer"
+        className="bg-gradient-to-r from-regulatory-50 to-regulatory-100/70 dark:from-regulatory-900/30 dark:to-regulatory-800/20 p-4 flex items-center justify-between cursor-pointer"
         onClick={toggleExpanded}
       >
         <div className="flex items-center">
-          <Lightbulb size={18} className="text-indigo-600 dark:text-indigo-400 mr-2" />
-          <h3 className="font-medium">AI Assistant Recommendations</h3>
+          <Lightbulb size={18} className="text-regulatory-600 dark:text-regulatory-400 mr-2" />
+          <h3 className="font-medium">Executive AI Insights</h3>
         </div>
         <button className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
           {expanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
@@ -54,23 +56,23 @@ export default function AiTipsPanel({ step }) {
           {loading ? (
             <div className="animate-pulse flex space-x-4">
               <div className="flex-1 space-y-4 py-1">
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+                <div className="h-4 bg-regulatory-100 dark:bg-regulatory-900/30 rounded w-3/4"></div>
                 <div className="space-y-2">
-                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
+                  <div className="h-4 bg-regulatory-100 dark:bg-regulatory-900/30 rounded"></div>
+                  <div className="h-4 bg-regulatory-100 dark:bg-regulatory-900/30 rounded w-5/6"></div>
                 </div>
               </div>
             </div>
           ) : tips.length === 0 ? (
             <p className="text-gray-500 dark:text-gray-400 text-center py-2">
-              No recommendations available for this step
+              No insights available for this step
             </p>
           ) : (
             <ul className="space-y-3">
               {tips.map((tip, index) => (
                 <li key={index} className="text-sm">
                   <div className="flex items-start">
-                    <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-200 text-xs mr-2 mt-0.5">
+                    <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-regulatory-100 dark:bg-regulatory-900/40 text-regulatory-800 dark:text-regulatory-200 text-xs mr-2 mt-0.5">
                       {index + 1}
                     </span>
                     <div>
