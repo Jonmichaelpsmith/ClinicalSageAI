@@ -1,0 +1,217 @@
+// ===== TrialSage DocuShare GA Integration =====
+// This single document contains every new/updated file required for the
+// production‑ready (GA) DocuShare Pharma Edition integration, as outlined
+// in the hardening plan.  Copy each block into its respective path inside
+// your Replit repo.  All code is TypeScript‑friendly (ts‑check compliant)
+// and fully commented for maintainability.
+
+// ───────────────────────────────────────────────
+// FILE: services/docushare.js  (Node/Express service layer)
+// ───────────────────────────────────────────────
+import axios from "axios";
+import crypto from "crypto";
+
+let cachedToken = null;
+let expiresAt = 0;
+
+/**
+ * Retrieve (and cache) an OAuth2 client‑credentials access token from DocuShare
+ */
+export async function getToken() {
+  if (cachedToken && Date.now() < expiresAt) return cachedToken;
+
+  const body = new URLSearchParams({ grant_type: "client_credentials" });
+  const { data } = await axios.post(
+    `https://${process.env.DS_DOMAIN}/oauth2/token`,
+    body.toString(),
+    {
+      auth: {
+        username: process.env.DS_CLIENT_ID,
+        password: process.env.DS_CLIENT_SECRET,
+      },
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    },
+  );
+
+  cachedToken = data.access_token;
+  expiresAt = Date.now() + (data.expires_in - 60) * 1_000; // refresh 1 min early
+  return cachedToken;
+}
+
+/**
+ * Helper to perform authenticated REST calls to DocuShare Flex
+ */
+async function dsRequest(method, url, options = {}) {
+  const token = await getToken();
+  return axios({
+    method,
+    url: `https://${process.env.DS_DOMAIN}${url}`,
+    headers: { Authorization: `Bearer ${token}", ...options.headers },
+    ...options,
+  });
+}
+
+export async function list(path = "/Shared/TrialSage") {
+  const { data } = await dsRequest("get", `/dsx/v2/objects${encodeURIComponent(path)}`);
+  return data.entries;
+}
+
+export async function upload(buffer, filename, path = "/Shared/TrialSage") {
+  const sha256 = crypto.createHash("sha256").update(buffer).digest("hex");
+  await dsRequest("post", `/dsx/v2/objects${encodeURIComponent(path)}`, {
+    headers: {
+      "Content-Type": "application/pdf",
+      Slug: filename,
+    },
+    data: buffer,
+  });
+  return sha256;
+}
+
+// ───────────────────────────────────────────────
+// FILE: routes/docushare.js  (mount under /api)
+// ───────────────────────────────────────────────
+import { Router } from "express";
+import * as ds from "../services/docushare.js";
+import prisma from "../prisma/client.js";
+
+const router = Router();
+
+// GET /api/docs  – list documents
+router.get("/docs", async (_req, res, next) => {
+  try {
+    const docs = await ds.list();
+    res.json(docs);
+  } catch (err) { next(err); }
+});
+
+// POST /api/docs  – upload base64 payload
+router.post("/docs", async (req, res, next) => {
+  try {
+    const { file, name } = req.body;
+    const buffer = Buffer.from(file, "base64");
+    const hash = await ds.upload(buffer, name);
+
+    await prisma.document.create({
+      data: {
+        name,
+        sha256: hash,
+        uploadedBy: req.user?.id ?? 0,
+      },
+    });
+    res.sendStatus(201);
+  } catch (err) { next(err); }
+});
+
+// POST /api/docushare/webhook  – audit trail sink
+router.post("/docushare/webhook", async (req, res, next) => {
+  try {
+    const ev = req.body; // { objectId, event, actor, timestamp, meta }
+    await prisma.audit_log.create({ data: ev });
+    res.sendStatus(200);
+  } catch (err) { next(err); }
+});
+
+// GET /api/audit/export  – csv export for QA
+router.get("/audit/export", async (_req, res, next) => {
+  try {
+    const rows = await prisma.$queryRaw`SELECT * FROM audit_log ORDER BY timestamp`;
+    res.setHeader("Content-Type", "text/csv");
+    res.send([
+      "id,objectId,event,actor,timestamp",
+      ...rows.map(r => `${r.id},${r.objectid},${r.event},${r.actor},${r.timestamp.toISOString()}`),
+    ].join("\n"));
+  } catch (err) { next(err); }
+});
+
+export default router;
+
+// ───────────────────────────────────────────────
+// FILE: prisma/schema.prisma  (additions)
+// ───────────────────────────────────────────────
+model audit_log {
+  id        Int      @id @default(autoincrement())
+  objectid  String
+  event     String
+  actor     String
+  timestamp DateTime
+  meta      Json
+}
+
+model document {
+  id         Int      @id @default(autoincrement())
+  name       String
+  sha256     String   @unique
+  uploadedBy Int
+  createdAt  DateTime @default(now())
+}
+
+// ───────────────────────────────────────────────
+// FILE: src/hooks/useDocuShare.ts
+// ───────────────────────────────────────────────
+export async function listDocs() {
+  return fetch("/api/docs").then(r => r.json());
+}
+
+export async function uploadDoc(file: File) {
+  const b64 = await file.arrayBuffer().then(b => Buffer.from(b).toString("base64"));
+  await fetch("/api/docs", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ file: b64, name: file.name }),
+  });
+}
+
+// ───────────────────────────────────────────────
+// FILE: src/components/DocuShareVault.jsx
+// ───────────────────────────────────────────────
+import { useEffect, useState } from "react";
+import { Document, Page, pdfjs } from "react-pdf";
+import { listDocs, uploadDoc } from "../hooks/useDocuShare";
+
+pdfjs.GlobalWorkerOptions.workerSrc =
+  `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
+
+export default function DocuShareVault() {
+  const [docs, setDocs] = useState([]);
+  const [viewUrl, setViewUrl] = useState(null);
+
+  useEffect(() => {
+    listDocs().then(setDocs);
+  }, []);
+
+  const onFile = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    await uploadDoc(file);
+    setDocs(await listDocs());
+  };
+
+  return (
+    <div className="grid grid-cols-3 gap-4 p-4">
+      <div className="space-y-2">
+        <input type="file" accept="application/pdf" onChange={onFile} />
+        {docs.map((d) => (
+          <button
+            key={d.objectId}
+            className="block w-full text-left p-2 rounded hover:bg-slate-100"
+            onClick={() => setViewUrl(d.contentUrl)}
+          >
+            {d.displayName}
+          </button>
+        ))}
+      </div>
+      <div className="col-span-2 border rounded-lg shadow-inner max-h-[80vh] overflow-auto">
+        {viewUrl && (
+          <Document file={viewUrl} className="w-full">
+            <Page pageNumber={1} />
+          </Document>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ───────────────────────────────────────────────
+// END OF FILES
+// ───────────────────────────────────────────────

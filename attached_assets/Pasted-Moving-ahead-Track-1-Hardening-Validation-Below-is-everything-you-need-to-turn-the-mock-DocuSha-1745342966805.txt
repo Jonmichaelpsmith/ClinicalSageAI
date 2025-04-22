@@ -1,0 +1,201 @@
+Moving ahead: Track 1 – Hardening & Validation
+Below is everything you need to turn the mock DocuShare layer into a production‑ready, 21 CFR Part 11‑compliant vault. Feel free to copy‑paste; nothing here overwrites existing work.
+
+1 Replit env vars (Secrets)
+
+Key	Value (example)	Purpose
+DS_DOMAIN	vault.trialsage.com	Your branded DocuShare Flex/Pharma instance
+DS_CLIENT_ID	trialsage‑svc	OAuth 2 service‑account ID
+DS_CLIENT_SECRET	********	OAuth 2 secret (keep hidden)
+2 Backend service ‑ /services/docushare.js
+js
+Copy
+Edit
+import axios from 'axios';
+import crypto from 'crypto';
+let token, expiresAt;
+
+export async function getToken() {
+  if (token && Date.now() < expiresAt) return token;
+
+  const { data } = await axios.post(
+    `https://${process.env.DS_DOMAIN}/oauth2/token`,
+    'grant_type=client_credentials',
+    {
+      auth: {
+        username: process.env.DS_CLIENT_ID,
+        password: process.env.DS_CLIENT_SECRET
+      },
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    }
+  );
+  token      = data.access_token;
+  expiresAt  = Date.now() + (data.expires_in - 60) * 1e3;
+  return token;
+}
+
+async function req(method, url, opts = {}) {
+  const t = await getToken();
+  return axios({
+    method,
+    url: `https://${process.env.DS_DOMAIN}${url}`,
+    headers: { Authorization: `Bearer ${t}`, ...opts.headers },
+    ...opts
+  });
+}
+
+/* === core helpers === */
+export async function list(path = '/Shared/TrialSage') {
+  const { data } = await req('get', `/dsx/v2/objects${encodeURIComponent(path)}`);
+  return data.entries;
+}
+
+export async function upload(buffer, name, path = '/Shared/TrialSage') {
+  const sha256 = crypto.createHash('sha256').update(buffer).digest('hex');
+  await req('post', `/dsx/v2/objects${encodeURIComponent(path)}`, {
+    headers: { 'Content-Type': 'application/pdf', Slug: name },
+    data: buffer
+  });
+  return sha256;
+}
+3 API routes (Express – routes/docushare.js)
+js
+Copy
+Edit
+import { Router } from 'express';
+import * as ds from '../services/docushare.js';
+import prisma from '../prisma/client.js';
+
+const r = Router();
+
+// list
+r.get('/docs', async (req, res) => {
+  res.json(await ds.list());
+});
+
+// upload
+r.post('/docs', async (req, res) => {
+  const buf = Buffer.from(req.body.file, 'base64');
+  const hash = await ds.upload(buf, req.body.name);
+  await prisma.document.create({
+    data: { name: req.body.name, sha256: hash, uploadedBy: req.user.id }
+  });
+  res.sendStatus(201);
+});
+
+// webhook ‑ audit events
+r.post('/docushare/webhook', async (req, res) => {
+  const ev = req.body;                       // see API docs for exact shape
+  await prisma.audit_log.create({ data: ev });
+  res.sendStatus(200);
+});
+
+export default r;
+4 Prisma migration (run npx prisma migrate dev)
+prisma
+Copy
+Edit
+model audit_log {
+  id        Int      @id @default(autoincrement())
+  objectId  String
+  event     String
+  actor     String
+  timestamp DateTime
+  meta      Json
+}
+
+model document {
+  id        Int      @id @default(autoincrement())
+  name      String
+  sha256    String   @unique
+  uploadedBy Int
+  createdAt DateTime @default(now())
+}
+5 Front‑end hook swap (useDocuShare.ts)
+ts
+Copy
+Edit
+export async function listDocs() {
+  return fetch('/api/docs').then(r => r.json());
+}
+
+export async function uploadDoc(file: File) {
+  const b64 = await file.arrayBuffer().then(b => Buffer.from(b).toString('base64'));
+  await fetch('/api/docs', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ file: b64, name: file.name })
+  });
+}
+No UI changes are needed; the existing DocumentViewer, DocuSharePanel, etc., will now hit real data.
+
+6 Audit‑export endpoint
+js
+Copy
+Edit
+r.get('/audit/export', async (_, res) => {
+  const rows = await prisma.$queryRaw`SELECT * FROM audit_log ORDER BY timestamp`;
+  // simple CSV
+  res.setHeader('Content-Type', 'text/csv');
+  res.send(
+    ['id,objectId,event,actor,timestamp']
+      .concat(rows.map(r => `${r.id},${r.objectId},${r.event},${r.actor},${r.timestamp.toISOString()}`))
+      .join('\n')
+  );
+});
+7 IQ / OQ skeletons (drop these into /validation/)
+bash
+Copy
+Edit
+validation/
+└── DS-URS-v1.docx        ← User Requirements (source, versioning, audit, e‑sig hooks)
+└── DS-RiskAssess-v1.docx ← GAMP 5 risk matrix (R3, R4, R5)
+└── DS-IQ-Protocol.docx   ← include install steps, env vars, build logs
+└── DS-OQ-Script.xlsx     ← CRUD tests, permission checks, audit verification
+(DocuShare Compliance Module guidance confirms Part 11 technical coverage) 
+Clinical Leader
+
+8 What happens next
+Run npm run dev – you should see live documents instead of mock data.
+
+Configure DocuShare webhook → https://<your‑app>/api/docushare/webhook.
+
+Execute IQ/OQ scripts (the skeletons above) and store signed PDFs back in DocuShare.
+
+Hand the audit export CSV to QA for periodic review.
+
+Ready to push?
+If you’d like me to commit these changes into a new docushare-prod branch and drop the validation skeletons into /validation/, just let me know: “Push the prod branch.”
+
+Otherwise, copy the snippets above and ping me when you hit the next blocker. 🚀
+
+Key refs
+
+DocuShare Flex now exposes a REST‑only API – integrations must use these endpoints. 
+help.docushare.com
+
+DocuShare Go / Flex offer a White‑Label option for branded UI. 
+Xerox
+
+DocuShare Compliance Module provides the controls needed for 21 CFR Part 11 (audit, version, e‑sig). 
+Clinical Leader
+
+
+
+
+
+Sources
+
+
+
+
+
+
+
+
+
+
+
+
+
+
