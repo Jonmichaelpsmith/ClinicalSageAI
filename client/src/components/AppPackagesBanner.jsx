@@ -318,7 +318,7 @@ export default function AppPackagesBanner({ currentPath }) {
           
           {/* Feature Tiles Grid - Top row */}
           <div className="flex justify-center mb-4 px-6">
-            <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-5 w-full max-w-6xl" style={{ gap: '1px' }}>
+            <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-6 w-full max-w-6xl" style={{ gap: '1px' }}>
               {entryButtons.map((button, index) => (
                 <Link key={index} to={button.to} className="block">
                   <div className={`${button.color} hover:brightness-110 transition-all duration-200 border-t-0 border-l-0 border-r-0 border-b-[1px] border-white/10 h-full flex flex-col justify-between`} style={{ padding: '10px', minHeight: '82px' }}>
