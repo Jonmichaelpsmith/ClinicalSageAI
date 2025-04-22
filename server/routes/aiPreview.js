@@ -6,8 +6,7 @@
  */
 
 import { Router } from 'express';
-import * as aiUtils from '../services/aiUtils.js';
-import pdf from 'pdf-parse';
+import aiUtils from '../services/aiUtils.js';
 
 const router = Router();
 
@@ -19,52 +18,66 @@ const router = Router();
  * 
  * @param {Object} req.body.base64 - Base64-encoded document data
  */
-router.post('/ai/preview', async (req, res, next) => {
+router.post('/api/ai/preview', async (req, res) => {
   try {
-    const { base64 } = req.body;
+    const { base64, filename, mimeType } = req.body;
     
     if (!base64) {
-      return res.status(400).json({ error: 'Missing base64 document data' });
-    }
-    
-    // Convert base64 to buffer
-    const buffer = Buffer.from(base64, 'base64');
-    
-    // Extract text from the PDF
-    let text;
-    try {
-      const data = await pdf(buffer);
-      text = data.text;
-    } catch (error) {
-      console.error('Error extracting text from PDF:', error);
-      // If PDF parsing fails, return a helpful error
-      return res.status(422).json({ 
-        error: 'Unable to extract text from document. Please ensure it is a valid PDF.'
+      return res.status(400).json({
+        success: false,
+        message: 'Missing document data'
       });
     }
     
-    // Process with AI in parallel for faster response
-    const [summary, classification] = await Promise.all([
+    // Decode base64 document
+    const buffer = Buffer.from(base64.split(',')[1] || base64, 'base64');
+    
+    // For text-based files, convert buffer to text
+    let text = '';
+    if (mimeType?.startsWith('text/') || mimeType === 'application/json') {
+      text = buffer.toString('utf8');
+    } else {
+      // Extract text from non-text documents
+      // This would require specialized parsing based on the document type
+      // For now, we'll assume PDF and use a simple text extraction technique
+      
+      // In a real implementation, use appropriate parsing libraries based on mimeType
+      // This is a simplified placeholder
+      text = buffer.toString('utf8').replace(/[\x00-\x1F\x7F-\xFF]/g, ' ');
+    }
+    
+    // If text is too large, truncate it
+    const maxLength = 10000;
+    if (text.length > maxLength) {
+      text = text.substring(0, maxLength) + '...';
+    }
+    
+    // Generate document insights in parallel
+    const [summary, documentType, keywords] = await Promise.all([
       aiUtils.generateDocumentSummary(text),
-      aiUtils.analyzeDocumentType(text, req.body.filename || 'uploaded-document.pdf')
+      aiUtils.analyzeDocumentType(text, filename || ''),
+      aiUtils.extractKeywords(text)
     ]);
     
-    // Extract keywords
-    const keywords = await aiUtils.extractKeywords(text, 8);
-    
-    // Return the analysis results
+    // Return AI insights
     res.json({
-      summary,
-      documentType: classification.documentType || 'unknown',
-      regulatoryContext: classification.regulatoryContext || 'unknown',
-      therapeuticArea: classification.therapeuticArea || 'unknown',
-      module: classification.documentType || 'unknown',  // For backward compatibility
-      subSection: classification.regulatoryContext || 'unknown',  // For backward compatibility
-      keywords: keywords || []
+      success: true,
+      preview: {
+        summary,
+        document_type: documentType.type,
+        regulatory_context: documentType.context,
+        keywords,
+        character_count: text.length,
+        filename: filename || 'Unnamed document'
+      }
     });
   } catch (error) {
-    console.error('Error in AI preview:', error);
-    next(error);
+    console.error('AI preview error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error analyzing document',
+      error: error.message
+    });
   }
 });
 

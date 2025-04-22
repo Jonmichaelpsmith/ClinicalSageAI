@@ -6,6 +6,11 @@ import { scheduleDataUpdates, findLatestDataFile, importTrialsFromJson } from ".
 // Import the fastapi_bridge module
 import registerFastapiProxy from "./fastapi_bridge";
 
+// Import AI backfill functionality for nightly scheduled re-embedding
+// Temporarily commented out due to dependency issues
+// import { backfill } from "../scripts/aiBackfill.js";
+// import cron from "node-cron";
+
 // Create a logger utility for consistent formatting
 const logger = {
   info: (message: string) => {
@@ -168,6 +173,9 @@ app.use((req, res, next) => {
       }
       
       // Handle server shutdown
+      // Temporarily disabled nightly document re-embedding
+      // Will be re-enabled after dependency issues are resolved
+
       process.on('SIGTERM', () => {
         log('SIGTERM signal received: closing data updater');
         clearInterval(dataUpdateTimer);
