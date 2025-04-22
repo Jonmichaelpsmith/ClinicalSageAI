@@ -67,8 +67,8 @@ export default function AppPackagesBanner({ currentPath }) {
       icon: <FileSymlink size={20} />,
       title: "IND Wizard",
       description: "Design and manage INDs with multi-region compliance",
-      to: "/ind/wizard",
-      path: "/ind/wizard"
+      to: "/ind-architect",
+      path: "/ind-architect"
     },
     {
       icon: <Folder size={20} />,
@@ -105,7 +105,7 @@ export default function AppPackagesBanner({ currentPath }) {
     {
       label: "Accelerate IND",
       description: "Your AI partner for IND success",
-      to: "/ind/wizard",
+      to: "/ind-architect",
       icon: <FileSymlink size={18} />,
       color: "bg-purple-600 hover:bg-purple-700"
     },
@@ -144,28 +144,28 @@ export default function AppPackagesBanner({ currentPath }) {
     {
       label: "IND Overview",
       description: "Main IND wizard interface",
-      to: "/ind/wizard",
+      to: "/ind-architect",
       icon: <User size={18} />,
       color: "bg-rose-600 hover:bg-rose-700"
     },
     {
       label: "Pre-IND Planning",
       description: "Initial planning steps",
-      to: "/ind/wizard/pre-planning",
+      to: "/ind-architect",
       icon: <Bot size={18} />,
       color: "bg-violet-600 hover:bg-violet-700"
     },
     {
       label: "Nonclinical Studies",
       description: "Manage nonclinical data and milestones",
-      to: "/ind/wizard/nonclinical",
+      to: "/ind-architect",
       icon: <FileText size={18} />,
       color: "bg-purple-600 hover:bg-purple-700"
     },
     {
       label: "CMC Section",
       description: "Chemistry, Manufacturing, Controls",
-      to: "/ind/wizard/cmc",
+      to: "/ind-architect",
       icon: <BarChart size={18} />,
       color: "bg-slate-700 hover:bg-slate-800"
     }
