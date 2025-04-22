@@ -19,8 +19,12 @@ import {
   Eye,
   Bell,
   Calendar,
-  Clipboard
+  Clipboard,
+  FileSearch
 } from 'lucide-react';
+import SemanticSearchBar from '@/components/search/SemanticSearchBar';
+import SemanticSearchResults from '@/components/search/SemanticSearchResults';
+import { semanticSearch } from '@/services/SemanticSearchService';
 
 const ClientPortal = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
