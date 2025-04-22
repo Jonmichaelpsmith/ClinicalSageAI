@@ -29,6 +29,35 @@ import { semanticSearch } from '@/services/SemanticSearchService';
 const ClientPortal = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState(null);
+  
+  // Handle semantic search
+  const handleSearch = async (searchParams) => {
+    setIsSearching(true);
+    setShowSearchResults(true);
+    
+    try {
+      const results = await semanticSearch(
+        searchParams.query, 
+        searchParams.filters, 
+        searchParams.searchMode
+      );
+      setSearchResults(results);
+    } catch (error) {
+      console.error('Error performing semantic search:', error);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+  
+  // Handle document selection
+  const handleSelectDocument = (document) => {
+    setSelectedDocument(document);
+    console.log('Selected document:', document);
+  };
   
   // Mock client projects
   const clientProjects = [
@@ -409,9 +438,222 @@ const ClientPortal = () => {
               )}
               
               {activeTab === 'documents' && (
-                <div className="bg-white shadow rounded-lg p-6">
-                  <h2 className="text-xl font-semibold text-gray-800 mb-6">Document Library</h2>
-                  <p className="text-gray-600 mb-4">This is the documents tab content. You can expand this with document management features.</p>
+                <div className="space-y-6">
+                  <div className="bg-white shadow rounded-lg overflow-hidden">
+                    <div className="p-6">
+                      <div className="flex justify-between items-baseline mb-6">
+                        <h2 className="text-xl font-semibold text-gray-800">Document Library</h2>
+                        <div className="flex items-center text-sm text-blue-600">
+                          <FileSearch className="w-4 h-4 mr-1" />
+                          <span>Semantic search enabled</span>
+                        </div>
+                      </div>
+                      
+                      {/* Semantic Search Component */}
+                      <div className="mb-6">
+                        <div className="bg-blue-50 border border-blue-100 rounded-md p-4 mb-4">
+                          <SemanticSearchBar 
+                            onSearch={handleSearch}
+                            placeholder="Search across all documents with natural language..."
+                          />
+                          <div className="text-xs text-blue-600 mt-2">
+                            Try searching for concepts like "efficacy endpoints in oncology" or "adverse events in phase 2 trials"
+                          </div>
+                        </div>
+                        
+                        {/* Search Results Section */}
+                        {showSearchResults && (
+                          <div className="border border-gray-200 rounded-md mb-6">
+                            <div className="bg-gray-50 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
+                              <h3 className="text-sm font-medium text-gray-700">Search Results</h3>
+                              <button 
+                                onClick={() => setShowSearchResults(false)}
+                                className="text-xs text-gray-500 hover:text-gray-700"
+                              >
+                                Back to all documents
+                              </button>
+                            </div>
+                            <div className="p-4">
+                              <SemanticSearchResults 
+                                results={searchResults}
+                                isLoading={isSearching}
+                                onSelectDocument={handleSelectDocument}
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Document Table - Only shown when not viewing search results */}
+                      {!showSearchResults && (
+                        <div className="overflow-x-auto">
+                          <div className="flex justify-between items-center mb-4">
+                            <div className="relative w-64">
+                              <div className="absolute inset-y-0 start-0 flex items-center pl-3 pointer-events-none">
+                                <Search className="h-4 w-4 text-gray-400" />
+                              </div>
+                              <input 
+                                type="search" 
+                                className="block w-full pl-10 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Filter documents..." 
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                              />
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <button className="px-3 py-1.5 text-xs bg-white border border-gray-300 rounded text-gray-700 flex items-center">
+                                <Filter className="h-3 w-3 mr-1" />
+                                Filter
+                              </button>
+                              <button className="px-3 py-1.5 text-xs bg-blue-50 border border-blue-200 rounded text-blue-700 flex items-center">
+                                <Download className="h-3 w-3 mr-1" />
+                                Export
+                              </button>
+                            </div>
+                          </div>
+                          
+                          <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-50">
+                              <tr>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project</th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                              <tr>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="flex items-center">
+                                    <div className="flex-shrink-0 h-8 w-8 bg-blue-100 rounded-md flex items-center justify-center text-blue-700">
+                                      <FileText size={16} />
+                                    </div>
+                                    <div className="ml-4">
+                                      <div className="text-sm font-medium text-gray-900">Clinical Study Protocol v2.1</div>
+                                      <div className="text-sm text-gray-500">12MB</div>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm text-gray-900">Protocol</div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm text-gray-900">Lumentrial Phase 2</div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm text-gray-900">Apr 19, 2025</div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    Approved
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-indigo-500 space-x-2">
+                                  <button className="hover:text-indigo-700">View</button>
+                                  <button className="hover:text-indigo-700">Download</button>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="flex items-center">
+                                    <div className="flex-shrink-0 h-8 w-8 bg-indigo-100 rounded-md flex items-center justify-center text-indigo-700">
+                                      <FileText size={16} />
+                                    </div>
+                                    <div className="ml-4">
+                                      <div className="text-sm font-medium text-gray-900">Statistical Analysis Plan</div>
+                                      <div className="text-sm text-gray-500">8MB</div>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm text-gray-900">Report</div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm text-gray-900">Lumentrial Phase 2</div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm text-gray-900">Apr 10, 2025</div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                    In Review
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-indigo-500 space-x-2">
+                                  <button className="hover:text-indigo-700">View</button>
+                                  <button className="hover:text-indigo-700">Download</button>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="flex items-center">
+                                    <div className="flex-shrink-0 h-8 w-8 bg-emerald-100 rounded-md flex items-center justify-center text-emerald-700">
+                                      <FileText size={16} />
+                                    </div>
+                                    <div className="ml-4">
+                                      <div className="text-sm font-medium text-gray-900">Interim Results Report</div>
+                                      <div className="text-sm text-gray-500">15MB</div>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm text-gray-900">Results</div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm text-gray-900">BioGenesis IND</div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm text-gray-900">Apr 15, 2025</div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                    Draft
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-indigo-500 space-x-2">
+                                  <button className="hover:text-indigo-700">View</button>
+                                  <button className="hover:text-indigo-700">Download</button>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="flex items-center">
+                                    <div className="flex-shrink-0 h-8 w-8 bg-rose-100 rounded-md flex items-center justify-center text-rose-700">
+                                      <FileText size={16} />
+                                    </div>
+                                    <div className="ml-4">
+                                      <div className="text-sm font-medium text-gray-900">FDA Response Letter</div>
+                                      <div className="text-sm text-gray-500">2MB</div>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm text-gray-900">Correspondence</div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm text-gray-900">Phoenix Therapeutics</div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div className="text-sm text-gray-900">Apr 5, 2025</div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                    Urgent
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-indigo-500 space-x-2">
+                                  <button className="hover:text-indigo-700">View</button>
+                                  <button className="hover:text-indigo-700">Download</button>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               )}
               
