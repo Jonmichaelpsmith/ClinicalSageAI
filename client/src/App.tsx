@@ -40,6 +40,8 @@ const LazyAdaptiveLearning = React.lazy(() => import('./pages/AdaptiveLearning')
 const LazyDocumentRiskPrediction = React.lazy(() => import('./pages/DocumentRiskPrediction'));
 // Add Document Management with DocuShare integration
 const LazyDocumentManagement = React.lazy(() => import('./pages/DocumentManagement'));
+// Add AI Chat Panel for document Q&A
+const LazyChatPanel = React.lazy(() => import('./pages/ChatPanel'));
 // Add Enterprise CSR Intelligence module
 import EnterpriseCSRIntelligence from './pages/EnterpriseCSRIntelligence';
 const LazyCSRIntelligence = EnterpriseCSRIntelligence;
@@ -198,6 +200,11 @@ export default function App() {
             <Route path="/document-management">
               <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Document Management" />}>
                 <LazyDocumentManagement />
+              </SimpleErrorBoundary>
+            </Route>
+            <Route path="/chat">
+              <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Document AI Chat" />}>
+                <LazyChatPanel />
               </SimpleErrorBoundary>
             </Route>
             <Route path="/">

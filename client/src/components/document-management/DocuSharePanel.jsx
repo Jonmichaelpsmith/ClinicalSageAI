@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useDocuShare } from '@/hooks/useDocuShare';
+import { useDocuShare } from '@/hooks/useDocuShareComponents';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';

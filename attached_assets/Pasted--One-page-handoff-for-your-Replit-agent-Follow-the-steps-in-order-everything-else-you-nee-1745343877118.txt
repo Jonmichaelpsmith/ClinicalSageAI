@@ -1,0 +1,25 @@
+### One‑page “handoff” for your Replit agent  
+*(Follow the steps in order; everything else you need is already in the canvas code file **“TrialSage GA Code Pack — v7”**.)*
+
+| # |Action in Replit|Exact commands / edits|
+|---|---|---|
+|**1**|**Pull the canvas file** into your repo|Copy the entire v7 code pack sections to their paths:<br>• `services/aiUtils.js`<br>• `services/docAI.js`<br>• `routes/chat.js` (and add `import chatRoutes` → `api.use(chatRoutes)` in `routes/api.js`)<br>• Update **Prisma schema** block under `model document`|
+|**2**|Add new environment variables|Open **Tools → Secrets** in Replit and paste:<br>`OPENAI_API_KEY` = `sk‑…`<br>`EMBED_MODEL` = `text-embedding-3-large`<br>`CHAT_MODEL` = `gpt-4o-mini-instruct`<br>`FUNC_MODEL` = `gpt-4o-mini-instruct`|
+|**3**|Install required packages|```bash\nnpm i openai pdf-parse xmlbuilder2 fs-extra minimist pgvector\nnpm i -D @prisma/adapter-pgvector\n```|
+|**4**|Enable pgvector extension|In your Postgres console:<br>`CREATE EXTENSION IF NOT EXISTS "vector";`|
+|**5**|Run Prisma migration|```bash\nnpx prisma generate\nnpx prisma migrate dev --name add_ai_fields\n```|
+|**6**|Wire AI pipeline into Dropzone upload|In `DropzoneUpload.onDrop` **replace** `uploadDoc(f)` with:<br>`await docAI.processAndStore(await f.arrayBuffer(), f.name, process.env.DS_DRAFT_FOLDER);`<br>(Add `import * as docAI from "../services/docAI.js"`.)|
+|**7**|Add **ChatPanel** route & nav|*Front‑end*:<br>• Create `src/components/ChatPanel.jsx` exactly as in canvas.<br>• Add `<Route path="/chat" element={<ChatPanel/>} />`.<br>• In `TopNavigation.jsx` add icon link: `Chat` (use lucide `MessageSquare`).|
+|**8**|Re‑start dev server|`npm run dev` (or Replit **Run**). Confirm:<br>• Uploading a PDF shows AI summary + tags in the UI.<br>• `/chat` answers questions with citations.<br>• New docs appear in Postgres tables `document` & `study_document`.|
+|**9**|Back‑fill existing PDFs (one‑time)|```bash\nnode scripts/indexDocs.js   # from v6, now uses new AI pipeline\n```|
+|**10**|Smoke‑test** IND Builder AI tips|get to `/ind`, ensure yellow tips appear if a doc is missing; add doc → tips disappear.|
+
+---
+
+### If something breaks
+
+*OpenAI errors* → check key + usage limits in Secrets.  
+*Prisma vector column mismatch* → drop/re‑migrate `study_document` table after enabling pgvector.  
+*Chat endpoint 404* → confirm `api.use(chatRoutes)` line is in `routes/api.js`.
+
+When those 10 steps are green, the OpenAI‑powered Document Management suite is fully live inside your Replit build—and demo‑ready against Veeva Vault.

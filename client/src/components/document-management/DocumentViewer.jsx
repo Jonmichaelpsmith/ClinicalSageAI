@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useDocuShare } from '@/hooks/useDocuShare';
+import { useDocuShare } from '@/hooks/useDocuShareComponents';
 import {
   Card,
   CardContent,
