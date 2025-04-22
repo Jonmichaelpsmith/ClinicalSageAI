@@ -1,70 +1,134 @@
 /**
  * WizardHeader Component
  * 
- * Header bar for the IND Wizard 3.1 with KPI chips display, trend indicators 
- * and module-level readiness dropdown
+ * Header bar for the IND Wizard 3.3 with KPI chips display, trend indicators,
+ * module-level readiness dropdown, and predictive insights
  */
 
-import { Gauge, ShieldCheck, UploadCloud, ChevronUp, ChevronDown } from "lucide-react";
+import { Gauge, ShieldCheck, UploadCloud, ChevronUp, ChevronDown, DollarSign } from "lucide-react";
 import clsx from "clsx";
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { Sparklines, SparklinesLine } from "react-sparklines";
+import { ResponsiveContainer, ComposedChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
 
 export default function WizardHeader({ kpi }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [modules, setModules] = useState([]);
+  const [waterfall, setWaterfall] = useState([]);
   
   // Fetch module-level readiness data
   useEffect(() => {
     fetch("/api/ind/kpi?modules=true")
       .then(r => r.json())
-      .then(data => setModules(data.modules || []))
+      .then(data => {
+        setModules(data.modules || []);
+      })
       .catch(err => {
         console.error("Error fetching module readiness:", err);
       });
+      
+    // Fetch waterfall chart data
+    fetch("/api/ind/forecast/waterfall")
+      .then(r => r.json())
+      .then(data => {
+        setWaterfall(data.waterfall || []);
+      })
+      .catch(err => {
+        console.error("Error fetching waterfall data:", err);
+        // Fallback data
+        setWaterfall([
+          { name: "Initial", value: 25 },
+          { name: "CMC", value: 12 },
+          { name: "Clinical", value: 18 },
+          { name: "Form Updates", value: 8 },
+          { name: "Final", value: 63 }
+        ]);
+      });
   }, []);
+  
+  // Default sparkline data if not provided
+  const sparkDocsData = kpi.spark?.docs || [3, 5, 6, 7, 8, 8, 9, 10, 11, 12];
+  const sparkErrorsData = kpi.spark?.errors || [5, 4, 4, 3, 3, 3, 3, 3, 2, 3];
+  const sparkReadyData = kpi.spark?.ready || [45, 48, 52, 54, 58, 62, 65, 65, 66, 67];
+  const sparkSavingsData = kpi.spark?.savings || [10000, 12000, 15000, 18000, 22000, 25000, 28000, 30000, 31500, 32500];
   
   return (
     <header className="relative flex items-center justify-between backdrop-blur-md bg-white/70 dark:bg-slate-900/70 border-b px-6 py-3">
-      <h1 className="text-xl font-bold text-regulatory-700 dark:text-regulatory-300">IND Preparation Wizard 3.1</h1>
+      <h1 className="text-xl font-bold text-regulatory-700 dark:text-regulatory-300">IND Preparation Wizard 3.3</h1>
       <div className="flex gap-3 items-center">
         <Chip 
           icon={Gauge} 
-          label={`${kpi.ready}% Ready`} 
+          label={`${kpi.ready}% ${t('wizardHeader.ready')}`} 
           delta={kpi.trend?.ready} 
           color="emerald" 
+          data={sparkReadyData}
           onClick={() => setOpen(!open)} 
         />
         <Chip 
           icon={ShieldCheck} 
-          label={`${kpi.errors} Errors`} 
+          label={`${kpi.errors} ${t('wizardHeader.errors')}`} 
           delta={-kpi.trend?.errors} 
           color="amber" 
+          data={sparkErrorsData}
         />
         <Chip 
           icon={UploadCloud} 
-          label={`${kpi.docs} Docs`} 
+          label={`${kpi.docs} ${t('wizardHeader.docs')}`} 
           delta={kpi.trend?.docs} 
           color="sky" 
+          data={sparkDocsData}
+        />
+        <Chip 
+          icon={DollarSign} 
+          label={`$${Math.round(kpi.savings / 1000)}k ${t('wizardHeader.savings')}`} 
+          delta={kpi.trend?.savings} 
+          color="regulatory" 
+          data={sparkSavingsData.map(v => v / 1000)}
         />
       </div>
       
-      {/* Module-level readiness dropdown */}
+      {/* Module-level readiness dropdown with Monte Carlo waterfall chart */}
       {open && (
-        <div className="absolute right-6 top-14 w-64 bg-white dark:bg-slate-800 border rounded-xl shadow-lg p-4 z-10">
-          <h4 className="font-semibold mb-2 text-sm text-regulatory-700 dark:text-regulatory-300">Module Readiness</h4>
+        <div className="absolute right-6 top-14 w-96 bg-white dark:bg-slate-800 border rounded-xl shadow-lg p-4 z-10">
+          <h4 className="font-semibold mb-2 text-sm text-regulatory-700 dark:text-regulatory-300">{t('wizardHeader.moduleReadiness')}</h4>
           <ul className="space-y-2">
             {modules.length > 0 ? (
               modules.map(module => (
-                <li key={module.name} className="flex justify-between text-sm">
-                  <span className="text-gray-700 dark:text-gray-300">{module.name}</span>
-                  <span className={clsx(
-                    "font-medium", 
-                    module.ready >= 80 ? "text-emerald-600 dark:text-emerald-400" : 
-                    module.ready >= 50 ? "text-amber-600 dark:text-amber-400" : 
-                    "text-red-600 dark:text-red-400"
-                  )}>
-                    {module.ready}%
-                  </span>
+                <li key={module.name} className="space-y-1">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-700 dark:text-gray-300">{t(module.name)}</span>
+                    <div className="flex gap-1 items-center">
+                      <span className={clsx(
+                        "font-medium", 
+                        module.ready >= 80 ? "text-emerald-600 dark:text-emerald-400" : 
+                        module.ready >= 50 ? "text-amber-600 dark:text-amber-400" : 
+                        "text-red-600 dark:text-red-400"
+                      )}>
+                        {module.ready}%
+                      </span>
+                      
+                      {/* Confidence interval display */}
+                      {module.ci && (
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          ({module.ci.lower}–{module.ci.upper})
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  {/* Progress bar */}
+                  <div className="h-1.5 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div 
+                      className={clsx(
+                        "h-full rounded-full",
+                        module.ready >= 80 ? "bg-emerald-500" : 
+                        module.ready >= 50 ? "bg-amber-500" : 
+                        "bg-red-500"
+                      )}
+                      style={{ width: `${module.ready}%` }}
+                    ></div>
+                  </div>
                 </li>
               ))
             ) : (
@@ -73,13 +137,35 @@ export default function WizardHeader({ kpi }) {
               </li>
             )}
           </ul>
+          
+          {/* Monte Carlo waterfall chart */}
+          <div className="mt-4">
+            <h4 className="font-semibold mb-2 text-sm text-regulatory-700 dark:text-regulatory-300">{t('wizardHeader.confidenceInterval')}</h4>
+            <div className="h-[150px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={waterfall} layout="vertical">
+                  <XAxis type="number" hide />
+                  <YAxis type="category" dataKey="name" tick={{ fontSize: 12 }} width={100} />
+                  <Tooltip 
+                    formatter={(value) => [`${value}%`, 'Readiness']}
+                    contentStyle={{ 
+                      backgroundColor: 'rgba(255, 255, 255, 0.9)', 
+                      borderColor: '#e2e8f0',
+                      fontSize: '12px'
+                    }}
+                  />
+                  <Bar dataKey="value" fill="#7549ff" isAnimationActive={true} />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         </div>
       )}
     </header>
   );
 }
 
-function Chip({ icon: Icon, label, delta, color, onClick }) {
+function Chip({ icon: Icon, label, delta, color, data = [], onClick }) {
   const up = delta > 0;
   const neutral = delta === 0 || delta === undefined;
   
@@ -88,6 +174,13 @@ function Chip({ icon: Icon, label, delta, color, onClick }) {
     amber: "bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200",
     sky: "bg-sky-100 dark:bg-sky-900/30 text-sky-800 dark:text-sky-200",
     regulatory: "bg-regulatory-100 dark:bg-regulatory-900/30 text-regulatory-800 dark:text-regulatory-200"
+  };
+  
+  const sparklineColors = {
+    emerald: "#10b981",
+    amber: "#d97706",
+    sky: "#0ea5e9",
+    regulatory: "#7549ff"
   };
   
   return (
@@ -100,6 +193,12 @@ function Chip({ icon: Icon, label, delta, color, onClick }) {
       onClick={onClick}
     >
       <Icon size={14} /> {label}
+      
+      {/* Sparkline mini-chart */}
+      <Sparklines data={data} width={40} height={14} margin={0}>
+        <SparklinesLine color={sparklineColors[color]} />
+      </Sparklines>
+      
       {!neutral && (
         up 
           ? <ChevronUp size={12} className="text-emerald-600" /> 

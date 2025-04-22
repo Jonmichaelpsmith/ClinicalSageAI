@@ -1,0 +1,77 @@
+// ===== TrialSage GA Code Pack — v15  (2025‑04‑23) =====
+//  ⬛  IND Wizard 3.3 – Predictive Insights + Demo‑Ready Landing Site ⬛
+// -----------------------------------------------------------------------------
+//  Incremental upgrades over v14 (multilingual & ROI):
+//   • Sparkline trend mini‑charts inside each KPI chip (react‑sparklines)
+//   • Monte‑Carlo waterfall chart (Recharts) in module dropdown (timeline CI)
+//   • Added **French (fr)** locale
+//   • Public Landing Page (`/`) with hero, live embed demo iframe, CTA → `/demo`
+//   • Auto‑provisioned **sandbox demo tenant** (14‑day reset) via `/api/demo/signin`
+//   • SALES: Pricing cards + ROI calculator widget on landing page
+// -----------------------------------------------------------------------------
+//  Extra deps:  npm i react-sparklines recharts react-router-dom@6 dayjs react-i18next i18next
+// -----------------------------------------------------------------------------
+
+// 0.  i18n.js — now with fr
+import i18n from "i18next";import { initReactI18next } from "react-i18next";
+const resources={
+ en:{t:{docs:"Docs",errors:"Errors",ready:"Ready",cost:"Savings"}},
+ es:{t:{docs:"Docs",errors:"Errores",ready:"Listo",cost:"Ahorro"}},
+ ja:{t:{docs:"ドキュメント",errors:"エラー",ready:"準備率",cost:"節約"}},
+ fr:{t:{docs:"Docs",errors:"Erreurs",ready:"Prêt",cost:"Économies"}},
+};
+i18n.use(initReactI18next).init({resources,lng:"en",fallbackLng:"en",interpolation:{escapeValue:false}});
+export default i18n;
+
+// -----------------------------------------------------------------------------
+// 1.  KPI Chip with sparkline (WizardHeader.jsx)
+import { Sparklines, SparklinesLine } from "react-sparklines"; ...
+const Chip=({icon:Icon,label,delta,color,data,onClick})=>{const up=delta>0;return(<span onClick={onClick} className={`flex items-center gap-1 px-3 py-1 rounded-full bg-${color}-100 dark:bg-${color}-900/30 text-${color}-800 dark:text-${color}-200 text-sm cursor-pointer`}><Icon size={14}/> {label}<Sparklines data={data} width={40} height={14}><SparklinesLine color="currentColor"/></Sparklines></span>);} ;
+// pass kpi.spark.docs etc arrays from API
+
+// -----------------------------------------------------------------------------
+// 2.  Module dropdown with Recharts waterfall (WizardHeader.jsx)
+import { ResponsiveContainer,ComposedChart,Bar,XAxis,YAxis,Tooltip } from "recharts";
+... inside dropdown after CI line:
+<ResponsiveContainer width="100%" height={120}>
+ <ComposedChart data={waterData} layout="vertical">
+   <XAxis type="number" hide/><YAxis type="category" dataKey="name" hide/>
+   <Bar dataKey="value" fill="#7549ff" isAnimationActive={false}/>
+ </ComposedChart></ResponsiveContainer>
+// waterData from API `/api/ind/forecast/waterfall`
+
+// -----------------------------------------------------------------------------
+// 3.  calcKpi() — add spark data arrays
+/*
+  const sparkDocs = await prisma.$queryRaw`SELECT date_trunc('day',"createdAt") as d, count(*) FROM document WHERE "createdAt"> now()-interval '30 day' GROUP BY d ORDER BY d`;
+  // produce last 14 values
+  ... return {..., spark:{docs: sparkDocs.map(r=>r.count), errors: sparkErr, ready: sparkReady}};
+*/
+
+// -----------------------------------------------------------------------------
+// 4.  Landing Page (src/pages/Landing.jsx)
+import { Link } from "react-router-dom";import ROIWidget from "../sales/ROIWidget.jsx";
+export default function Landing(){
+  return (<div className="min-h-screen bg-gradient-to-br from-regulatory-50 to-white dark:from-slate-900 dark:to-slate-800 text-slate-900 dark:text-slate-100"> <section className="px-8 py-32 text-center space-y-6"> <h1 className="text-5xl font-extrabold">AI‑HYPERDRIVE eCTD Suite</h1> <p className="text-lg max-w-2xl mx-auto">Publish • Validate • Review – In minutes, not days. Outpace Certara & Veeva with predictive insights and voice control.</p> <div className="flex justify-center gap-4"> <Link to="/demo" className="bg-regulatory-500 hover:bg-regulatory-600 text-white px-6 py-3 rounded-lg shadow">Live Demo</Link> <a href="#pricing" className="border border-regulatory-500 text-regulatory-500 px-6 py-3 rounded-lg">Pricing</a></div> </section> <section className="px-8"><iframe title="Demo" src="/demo" className="w-full h-[600px] border rounded-xl shadow-lg"/></section> <section id="pricing" className="px-8 py-20 grid md:grid-cols-3 gap-6"> {/* pricing cards */}</section> <section className="px-8 py-12 bg-regulatory-50 dark:bg-slate-900/40"><ROIWidget/></section></div>);
+}
+
+// 5.  Demo route (App.jsx)
+// <Route path="/demo" element={<IndWizardLayout sandbox/>}/> // passes sandbox flag to load demo tenant
+// Landing route: <Route path="/" element={<Landing/>}/>
+
+// 6.  /api/demo/signin — provisions sandbox
+/*
+app.post('/api/demo/signin',async(req,res)=>{
+  const demoId = `demo_${Date.now()}`;
+  // create tenant + seeded data
+  await createDemoTenant(demoId);
+  res.json({token:await generateJwt(demoId)});
+});
+*/
+
+// 7.  ROIWidget.jsx (sales)
+import { useState } from "react";export default function ROIWidget(){const[docs,setDocs]=useState(200);const sav=docs*2000*0.65;return(<div className="max-w-xl mx-auto text-center space-y-4"><h2 className="text-2xl font-bold">ROI Calculator</h2><input type="range" min="50" max="500" value={docs} onChange={e=>setDocs(e.target.value)} className="w-full"/><p>{docs} docs/year → <span className="font-semibold text-regulatory-600">${sav.toLocaleString()}</span> potential savings</p></div>);} 
+
+// -----------------------------------------------------------------------------
+// END v15 — Wizard 3.3 Predictive Insights + Demo Landing Site
+// -----------------------------------------------------------------------------
