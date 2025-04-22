@@ -23,16 +23,16 @@ export default function DocuSharePanel({
   compact = false
 }) {
   const [searchTerm, setSearchTerm] = useState('');
-  const { documents } = useDocuShare();
+  const { documents = [] } = useDocuShare();
   
   // Filter documents based on module ID, document type, and search term
-  const filteredDocuments = documents
+  const filteredDocuments = Array.isArray(documents) ? documents
     .filter(doc => 
       (!moduleId || doc.moduleContext === moduleId) &&
       (!documentType || doc.documentType === documentType) &&
-      (!searchTerm || doc.name.toLowerCase().includes(searchTerm.toLowerCase()))
+      (!searchTerm || doc.name?.toLowerCase().includes(searchTerm.toLowerCase()))
     )
-    .slice(0, compact ? 5 : 10); // Limit the number of documents based on compact mode
+    .slice(0, compact ? 5 : 10) : []; // Limit the number of documents based on compact mode
     
   return (
     <div className="w-full">
