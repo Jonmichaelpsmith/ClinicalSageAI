@@ -1,6 +1,6 @@
 // App.tsx – root router with improved toast and resilient WebSocket connection
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { Route, Switch, Redirect } from 'wouter';
+import React, { useState } from 'react';
+import { Route, Switch } from 'wouter';
 // Using the region-aware SubmissionBuilder component
 import SubmissionBuilder from './pages/SubmissionBuilder';
 import IndSequenceDetail from './pages/IndSequenceDetail';
@@ -45,34 +45,47 @@ export { useToast };
 // Each page that needs WebSocket will initialize its own connection
 import { ToastProvider as SecureToastProvider } from './components/security/SecureToast';
 
-// Import our stability wrapper to completely prevent UI flashing
-import StabilityWrapper from './components/StabilityWrapper';
+// Anti-flash CSS injection
+if (typeof document !== 'undefined') {
+  // Insert CSS that prevents flickering
+  const style = document.createElement('style');
+  style.textContent = `
+    /* Disable all animations to prevent flickering */
+    *, *::before, *::after {
+      animation: none !important;
+      transition: none !important;
+    }
+    
+    /* Force scrollbar to prevent layout shifting */
+    body {
+      overflow-y: scroll !important;
+    }
+  `;
+  document.head.appendChild(style);
+}
 
 export default function App() {
-  const [tourCompleted, setTourCompleted] = useState(false);
-  const [welcomeCompleted, setWelcomeCompleted] = useState(true); // Set to true to skip animation & prevent flashing
-
-  // No useEffect for localStorage to prevent any flashing
-  // All animations are forcibly disabled using the StabilityWrapper CSS
+  // Use static state to prevent layout shifting
+  const [tourCompleted] = useState(false);
+  
+  // Always skip welcome animation to prevent flashing
+  const welcomeCompleted = true;
 
   return (
     <ErrorBoundary>
       <SecureToastProvider>
-        <StabilityWrapper>
-          <TourProvider>
-            {/* Welcome animation skipped for stability */}
-            
-            {/* Fixed position help button - always visible */}
-            <div className="fixed bottom-6 right-6 z-50">
-              <TourHelpButton />
-            </div>
-            
-            <Switch>
-              <Route path="/builder">
-                <ErrorBoundary>
-                  <INDWizard />
-                </ErrorBoundary>
-              </Route>
+        <TourProvider>
+          {/* Fixed position help button - always visible */}
+          <div className="fixed bottom-6 right-6 z-50">
+            <TourHelpButton />
+          </div>
+          
+          <Switch>
+            <Route path="/builder">
+              <ErrorBoundary>
+                <INDWizard />
+              </ErrorBoundary>
+            </Route>
             <Route path="/portal/ind/:sequenceId">
               <ErrorBoundary>
                 <IndSequenceDetail />
@@ -195,7 +208,6 @@ export default function App() {
           </Switch>
           <DebugInfo />
         </TourProvider>
-        </StabilityWrapper>
       </SecureToastProvider>
     </ErrorBoundary>
   );
