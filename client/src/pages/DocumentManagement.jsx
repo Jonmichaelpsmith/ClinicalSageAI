@@ -3,7 +3,6 @@ import { Link } from "wouter";
 import { Layout } from '@/components/ui/layout';
 import { Button } from '@/components/ui/button';
 import DocuShareVault from '@/components/DocuShareVault';
-import { Library, ArrowRight } from 'lucide-react';
 
 export default function DocumentManagement() {
   return (
@@ -24,7 +23,9 @@ export default function DocumentManagement() {
         <div className="mb-6 p-4 bg-indigo-50 border border-indigo-100 rounded-lg">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Library className="h-6 w-6 text-indigo-600" />
+              <div className="h-6 w-6 bg-indigo-600 rounded-md flex items-center justify-center text-white font-bold text-sm">
+                D
+              </div>
               <div>
                 <h2 className="text-lg font-semibold">Enterprise Document Vault Available</h2>
                 <p className="text-sm text-gray-700">
@@ -33,9 +34,8 @@ export default function DocumentManagement() {
               </div>
             </div>
             <Link href="/enterprise-vault">
-              <Button className="gap-1">
-                <span>Enterprise Showcase</span>
-                <ArrowRight className="h-4 w-4" />
+              <Button>
+                Enterprise Showcase →
               </Button>
             </Link>
           </div>
