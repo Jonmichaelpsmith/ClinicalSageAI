@@ -30,6 +30,14 @@ const LazyINDWizard = INDWizard;
 const LazyUseCaseLibrary = React.lazy(() => import('./pages/UseCaseLibrary'));
 const LazyCERGenerator = React.lazy(() => import('./pages/EnterpriseGradeCERGenerator'));
 const LazyCERGeneration = React.lazy(() => import('./pages/CERGeneration'));
+// Add newly created CER Generator with streaming capabilities
+const LazyStreamingCERGenerator = React.lazy(() => import('./pages/CERGenerator'));
+// Add JP Validation Hub
+const LazyValidationHub = React.lazy(() => import('./pages/ValidationHub'));
+// Add Adaptive Learning interface
+const LazyAdaptiveLearning = React.lazy(() => import('./pages/AdaptiveLearning'));
+// Add Document Risk Prediction with AI-powered insights
+const LazyDocumentRiskPrediction = React.lazy(() => import('./pages/DocumentRiskPrediction'));
 // Add Enterprise CSR Intelligence module
 import EnterpriseCSRIntelligence from './pages/EnterpriseCSRIntelligence';
 const LazyCSRIntelligence = EnterpriseCSRIntelligence;
@@ -125,6 +133,16 @@ export default function App() {
                 <LazyCERGenerator />
               </SimpleErrorBoundary>
             </Route>
+            <Route path="/cer-generator-streaming">
+              <SimpleErrorBoundary fallback={<EmergencyFallback pageName="CER Generator with Streaming" />}>
+                <LazyStreamingCERGenerator />
+              </SimpleErrorBoundary>
+            </Route>
+            <Route path="/validation-hub">
+              <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Validation Hub" />}>
+                <LazyValidationHub />
+              </SimpleErrorBoundary>
+            </Route>
             <Route path="/portal">
               <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Portal" />}>
                 <LazyHomeLanding />
@@ -163,6 +181,16 @@ export default function App() {
             <Route path="/learning">
               <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Learning Interface" />}>
                 <LazySimpleLearningInterface />
+              </SimpleErrorBoundary>
+            </Route>
+            <Route path="/adaptive-learning">
+              <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Adaptive Learning" />}>
+                <LazyAdaptiveLearning />
+              </SimpleErrorBoundary>
+            </Route>
+            <Route path="/document-risk/:id?">
+              <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Document Risk Prediction" />}>
+                <LazyDocumentRiskPrediction />
               </SimpleErrorBoundary>
             </Route>
             <Route path="/">
