@@ -5,12 +5,13 @@ import { Button } from '@/components/ui/button';
 import { 
   Database, FileText, Lock, FileCheck, 
   BookOpen, Layers, Lightbulb, Search,
-  FileSearch, Filter
+  FileSearch, Filter, Bot
 } from 'lucide-react';
 import DocuShareIntegration from '@/components/document-management/DocuShareIntegration';
 import SemanticSearchBar from '@/components/search/SemanticSearchBar';
 import SemanticSearchResults from '@/components/search/SemanticSearchResults';
 import { semanticSearch } from '@/services/SemanticSearchService';
+import { LumenAssistantButton } from '@/components/assistant';
 
 export default function DocumentManagement() {
   const [searchResults, setSearchResults] = useState(null);
@@ -239,6 +240,19 @@ export default function DocumentManagement() {
             moduleLabel="Document Repository"
           />
         </div>
+      </div>
+      
+      {/* Floating Lumen Assistant Button */}
+      <div className="fixed bottom-6 right-6 z-50">
+        <LumenAssistantButton 
+          variant="primary"
+          size="lg"
+          tooltip="Ask Lumen about document compliance"
+          contextData={{
+            module: "documentManagement",
+            activeView: selectedDocument ? "documentView" : "repositoryView"
+          }}
+        />
       </div>
     </Layout>
   );
