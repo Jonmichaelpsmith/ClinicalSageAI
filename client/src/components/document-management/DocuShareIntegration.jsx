@@ -29,16 +29,19 @@ export function DocuShareIntegration({
 }) {
   const [activeTab, setActiveTab] = useState('relevant');
   const [searchTerm, setSearchTerm] = useState('');
-  const { documents, uploadDocument, downloadDocument } = useDocuShare();
+  const { documents = [], uploadDocument, downloadDocument } = useDocuShare();
+  
+  // Ensure documents is an array
+  const docsArray = Array.isArray(documents) ? documents : [];
   
   // Filter documents based on the module context, section, and search term
-  const relevantDocuments = documents.filter(doc => 
+  const relevantDocuments = docsArray.filter(doc => 
     doc.moduleContext === moduleContext && 
     (!sectionContext || doc.sectionContext === sectionContext)
   ).slice(0, 5); // Limit to 5 documents
   
-  const recentDocuments = [...documents]
-    .sort((a, b) => new Date(b.lastModified) - new Date(a.lastModified))
+  const recentDocuments = [...docsArray]
+    .sort((a, b) => new Date(b.lastModified || Date.now()) - new Date(a.lastModified || Date.now()))
     .slice(0, 5); // Limit to 5 documents
     
   const handleFileUpload = (event) => {

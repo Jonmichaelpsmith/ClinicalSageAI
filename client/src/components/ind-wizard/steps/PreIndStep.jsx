@@ -162,6 +162,7 @@ export default function PreIndStep() {
   // Fetch data on component mount
   useEffect(() => {
     let isMounted = true;
+    let fetchTimeout = null;
     
     const fetchData = async () => {
       if (!currentDraftId) {
@@ -172,20 +173,70 @@ export default function PreIndStep() {
       setIsLoadingInitialData(true);
       setIsFetchError(false);
       
+      // Set a timeout to prevent indefinite loading
+      fetchTimeout = setTimeout(() => {
+        if (isMounted && isLoadingInitialData) {
+          console.log("Fetch timeout reached, using default data");
+          setIsLoadingInitialData(false);
+          // Use default initial data
+          setFetchedData({
+            projectName: "New IND Application",
+            therapeuticArea: "",
+            projectObjective: "",
+            targetPreIndMeetingDate: new Date(),
+            preIndMeetingObjective: "",
+            preIndAgendaTopics: [],
+            preIndAttendees: [],
+            fdaInteractionNotes: "",
+            milestones: []
+          });
+        }
+      }, 5000); // 5 second timeout
+      
       try {
         const data = await fetchPreIndData(currentDraftId);
         
+        // Clear the timeout since we got a response
+        clearTimeout(fetchTimeout);
+        
         // Only update state if component is still mounted
         if (isMounted) {
-          setFetchedData(data);
+          setFetchedData(data || {
+            projectName: "New IND Application",
+            therapeuticArea: "",
+            projectObjective: "",
+            targetPreIndMeetingDate: new Date(),
+            preIndMeetingObjective: "",
+            preIndAgendaTopics: [],
+            preIndAttendees: [],
+            fdaInteractionNotes: "",
+            milestones: []
+          });
           setIsLoadingInitialData(false);
         }
       } catch (error) {
+        // Clear the timeout since we got a response
+        clearTimeout(fetchTimeout);
+        
         // Only update state if component is still mounted
         if (isMounted) {
+          console.error("Error fetching data:", error);
           setIsFetchError(true);
           setFetchError(error);
           setIsLoadingInitialData(false);
+          
+          // Use default initial data on error
+          setFetchedData({
+            projectName: "New IND Application",
+            therapeuticArea: "",
+            projectObjective: "",
+            targetPreIndMeetingDate: new Date(),
+            preIndMeetingObjective: "",
+            preIndAgendaTopics: [],
+            preIndAttendees: [],
+            fdaInteractionNotes: "",
+            milestones: []
+          });
         }
       }
     };
@@ -195,8 +246,9 @@ export default function PreIndStep() {
     // Cleanup function to prevent state updates after unmount
     return () => {
       isMounted = false;
+      if (fetchTimeout) clearTimeout(fetchTimeout);
     };
-  }, [currentDraftId]); // Only re-run if currentDraftId changes
+  }, [currentDraftId, isLoadingInitialData]); // Only re-run if currentDraftId changes
 
   // --- Form Setup ---
   const form = useForm({
