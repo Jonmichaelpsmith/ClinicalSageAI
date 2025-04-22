@@ -45,56 +45,34 @@ export { useToast };
 // Each page that needs WebSocket will initialize its own connection
 import { ToastProvider as SecureToastProvider } from './components/security/SecureToast';
 
+// Import our stability wrapper to completely prevent UI flashing
+import StabilityWrapper from './components/StabilityWrapper';
+
 export default function App() {
   const [tourCompleted, setTourCompleted] = useState(false);
-  const [welcomeCompleted, setWelcomeCompleted] = useState(false);
+  const [welcomeCompleted, setWelcomeCompleted] = useState(true); // Set to true to skip animation & prevent flashing
 
-  // Check if this is the user's first visit to automatically start the tour
-  useEffect(() => {
-    const hasVisitedBefore = localStorage.getItem('trialsage_welcomed');
-    if (!hasVisitedBefore) {
-      // Mark as visited
-      localStorage.setItem('trialsage_welcomed', 'true');
-      // Will show welcome animation first
-      setWelcomeCompleted(false);
-    } else {
-      // Skip welcome animation if already visited
-      setWelcomeCompleted(true);
-    }
-  }, []);
+  // No useEffect for localStorage to prevent any flashing
+  // All animations are forcibly disabled using the StabilityWrapper CSS
 
   return (
     <ErrorBoundary>
-      {/* Replace react-toastify with our custom SecureToastProvider */}
       <SecureToastProvider>
-        <TourProvider>
-          {/* Welcome animation component */}
-          {!welcomeCompleted && (
-            <WelcomeAnimation 
-              onComplete={() => setWelcomeCompleted(true)} 
-              skipAnimation={welcomeCompleted} 
-            />
-          )}
-          
-          {/* Interactive tour component */}
-          <InteractiveTour 
-            tourCompleted={tourCompleted} 
-            setTourCompleted={setTourCompleted} 
-          />
-          
-          {/* Fixed position help button - only visible after welcome animation */}
-          {welcomeCompleted && (
+        <StabilityWrapper>
+          <TourProvider>
+            {/* Welcome animation skipped for stability */}
+            
+            {/* Fixed position help button - always visible */}
             <div className="fixed bottom-6 right-6 z-50">
               <TourHelpButton />
             </div>
-          )}
-          
-          <Switch>
-            <Route path="/builder">
-              <ErrorBoundary>
-                <INDWizard />
-              </ErrorBoundary>
-            </Route>
+            
+            <Switch>
+              <Route path="/builder">
+                <ErrorBoundary>
+                  <INDWizard />
+                </ErrorBoundary>
+              </Route>
             <Route path="/portal/ind/:sequenceId">
               <ErrorBoundary>
                 <IndSequenceDetail />
@@ -217,6 +195,7 @@ export default function App() {
           </Switch>
           <DebugInfo />
         </TourProvider>
+        </StabilityWrapper>
       </SecureToastProvider>
     </ErrorBoundary>
   );
