@@ -1,5 +1,5 @@
-// preload.js - Ultra minimal approach to prevent flashing
+// Simple preload script - no runtime operations performed here
+console.log('Preload script loaded');
 
-// Nothing to do - preload.js is now empty to avoid any conflicts or issues
-
-// We've moved everything to index.html to ensure it runs before anything else
+// Export an empty module
+export default {};
