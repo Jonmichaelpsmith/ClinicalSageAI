@@ -5,30 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
     <title>TrialSage - Advanced Clinical Intelligence</title>
     
-    <!-- SIMPLIFIED Anti-flash solution - VERY simple approach to avoid blank screens -->
-    <style id="anti-flash-critical">
-      /* Disable all animations and transitions */
-      *, *::before, *::after {
+    <!-- Critical - Force immediate render with no flash -->
+    <script>
+      // Configure document before any content loads
+      window.__DISABLE_FLASH__ = true;
+      
+      // Prevent any potential HMR issues from Vite
+      window.__VITE_HMR_TIMEOUT__ = 0;
+      
+      // Mark document as ready to show immediately to prevent flashing
+      document.documentElement.classList.add('ready-to-show');
+    </script>
+    
+    <!-- Anti-flash minimal approach -->
+    <style>
+      /* Only transition we want to enable is for fading in content */
+      * {
         animation: none !important;
         transition: none !important;
       }
       
-      /* Force scrollbar to always appear */
+      /* Ensure smooth scrolling and fixed scrollbar */
       html {
-        overflow-y: scroll !important;
+        overflow-y: scroll;
       }
       
-      /* Prevent layout shifts */
-      body, #root {
+      /* Default background color to match app */
+      body {
+        background-color: #fff;
+        margin: 0;
+        padding: 0;
+      }
+      
+      /* Ensure root has appropriate sizing */
+      #root {
         min-height: 100vh;
+        display: block;
       }
-      
-      /* No overlay that blocks content */
     </style>
-    
-    <!-- Pre-connect to key domains -->
-    <link rel="dns-prefetch" href="//fonts.googleapis.com">
-    <link rel="preconnect" href="//fonts.googleapis.com" crossorigin>
   </head>
   <body>
     <div id="root"></div>
