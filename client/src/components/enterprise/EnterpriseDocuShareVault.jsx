@@ -27,7 +27,7 @@ import {
   BarChart4,
   FileSignature,
   History,
-  Workflow,
+  ClipboardList,
   LifeBuoy
 } from 'lucide-react';
 
@@ -232,7 +232,7 @@ export default function EnterpriseDocuShareVault() {
             <span>Documents</span>
           </TabsTrigger>
           <TabsTrigger value="integrations" className="flex items-center gap-1">
-            <Workflow className="h-4 w-4" />
+            <ClipboardList className="h-4 w-4" />
             <span>Integrations</span>
           </TabsTrigger>
           <TabsTrigger value="compliance" className="flex items-center gap-1">
