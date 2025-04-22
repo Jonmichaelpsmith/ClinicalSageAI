@@ -5,7 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Bot } from 'lucide-react'; // AI icon
+import { Bot, FileText } from 'lucide-react'; // AI icon and file icon
+
+// Import DocuShare components and tabs
+import DocuSharePanel from '@/components/document-management/DocuSharePanel';
+import { DocuShareIntegration } from '@/components/document-management/DocuShareIntegration';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 // Import the steps configuration
 // NOTE: In production, adjust the import path as needed
@@ -147,6 +152,19 @@ export default function IndWizardLayout({ children }) {
                 </li>
               ))}
             </ul>
+            
+            {/* DocuShare Documents Integration */}
+            <div className="mt-6">
+              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3 flex items-center">
+                <FileText className="h-4 w-4 mr-1.5 text-teal-600" />
+                DocuShare Documents
+              </h3>
+              <DocuSharePanel 
+                moduleId="ind" 
+                documentType="submission"
+                compact={true}
+              />
+            </div>
           </ScrollArea>
           <div className="mt-auto border-t pt-4">
              {/* Maybe add overall save draft / exit buttons */}
@@ -157,6 +175,11 @@ export default function IndWizardLayout({ children }) {
              >
                Save Draft
              </Button>
+             <div className="text-center mt-2">
+               <Link to="/document-management" className="text-xs text-teal-600 hover:text-teal-800">
+                 Open Full DocuShare System
+               </Link>
+             </div>
           </div>
         </nav>
 
@@ -164,14 +187,45 @@ export default function IndWizardLayout({ children }) {
         <main className="flex-1 flex flex-col overflow-hidden">
           <header className="bg-white border-b p-4 flex justify-between items-center">
             <h1 className="text-xl font-semibold">{currentStep.title}</h1>
-             {/* AI Co-Pilot Toggle Button */}
-             <Button variant="outline" size="icon" onClick={() => setIsCoPilotOpen(!isCoPilotOpen)}>
-               <Bot className="h-4 w-4" />
-             </Button>
+            <div className="flex items-center space-x-2">
+              {/* DocuShare Integration Badge */}
+              <div className="mr-3 flex items-center">
+                <span className="bg-teal-100 text-teal-800 text-xs px-1.5 py-0.5 rounded-md border border-teal-200 flex items-center">
+                  <FileText className="h-3 w-3 mr-1 text-teal-600" />
+                  21 CFR Part 11 Compliant
+                </span>
+              </div>
+              
+              {/* AI Co-Pilot Toggle Button */}
+              <Button variant="outline" size="icon" onClick={() => setIsCoPilotOpen(!isCoPilotOpen)}>
+                <Bot className="h-4 w-4" />
+              </Button>
+            </div>
           </header>
 
           {/* Step Content */}
           <ScrollArea className="flex-1 p-6">
+            {/* DocuShare Integration Card for current step */}
+            <Card className="mb-5 border-teal-100 bg-teal-50/30">
+              <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                <div className="flex items-center">
+                  <FileText className="h-5 w-5 text-teal-600 mr-2" />
+                  <CardTitle className="text-sm font-medium">Step Documents</CardTitle>
+                </div>
+                <div className="text-xs bg-teal-100 text-teal-800 px-1.5 py-0.5 rounded-sm">
+                  21 CFR Part 11 Compliant
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <DocuShareIntegration 
+                  moduleContext="ind"
+                  sectionContext={currentStep.path}
+                  allowUpload={true}
+                  height={120}
+                />
+              </CardContent>
+            </Card>
+            
             {children} {/* Display the current step's component */}
           </ScrollArea>
 
