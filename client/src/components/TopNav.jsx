@@ -46,6 +46,12 @@ export default function TopNav() {
           CMC Suite
         </Link>
         <Link 
+          to="/cmc-blueprint-generator" 
+          className="text-sm text-slate-700 dark:text-slate-300 hover:text-regulatory-600 dark:hover:text-regulatory-400 transition-colors focus-visible:outline-none focus-visible:ring focus-visible:ring-regulatory-400 rounded-sm"
+        >
+          AI-CMC Blueprint
+        </Link>
+        <Link 
           to="/demo" 
           className="text-sm text-slate-700 dark:text-slate-300 hover:text-regulatory-600 dark:hover:text-regulatory-400 transition-colors focus-visible:outline-none focus-visible:ring focus-visible:ring-regulatory-400 rounded-sm"
         >
