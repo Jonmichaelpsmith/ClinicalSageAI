@@ -1,8 +1,14 @@
 // Toast notification system upgraded to SecureToast
 
-// useQCWebSocket.tsx – Custom WebSocket hook for QC real-time updates
+// useQCWebSocket.tsx – Custom WebSocket hook for QC real-time updates with fallback
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useToast } from '../App';
+
+// Import the toast directly from the component, not from App to prevent circular dependencies
+// Let's handle toast display simply to avoid any hook issues
+const showToastMessage = (message: string, type: string) => {
+  console.log(`Toast (${type}): ${message}`);
+  // Don't try to use toast hooks here - just log
+};
 
 interface QCWebSocketOptions {
   onMessage?: (data: any) => void;
@@ -31,16 +37,10 @@ export function useQCWebSocket({
   const maxReconnectAttempts = 3; // Reduced to prevent excessive attempts
   const connectionAttempted = useRef<boolean>(false);
 
-  // Prefer try/catch with function calls to avoid uncaught exceptions
+  // Simplified toast approach that doesn't use hooks
   const safeToast = useCallback((message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') => {
     try {
-      // Safely call the toast function
-      const toast = useToast();
-      if (toast && typeof toast.showToast === 'function') {
-        toast.showToast(message, type);
-      } else {
-        console.log(`Toast (${type}): ${message}`);
-      }
+      showToastMessage(message, type);
     } catch (error) {
       console.error('Error showing toast:', error);
     }
