@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
+import { FileText } from 'lucide-react';
 
 export default function TopNavigation() {
   return (
@@ -34,6 +35,12 @@ export default function TopNavigation() {
           <Link to="/portal">
             <Button variant="ghost" className="text-purple-600 hover:text-purple-800 hover:bg-purple-50">
               SmartDocs
+            </Button>
+          </Link>
+          <Link to="/document-management">
+            <Button variant="ghost" className="text-teal-600 hover:text-teal-800 hover:bg-teal-50 flex items-center">
+              <FileText className="h-4 w-4 mr-1" />
+              DocuShare
             </Button>
           </Link>
           <Link to="/walkthroughs">

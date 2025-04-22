@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'wouter';
 import { Database, Globe, Shield, Server, FileText, BarChart, ArrowRight } from 'lucide-react';
 
 // Compact, professional component for features section
@@ -55,6 +56,22 @@ const AdvancedFeatureCards = () => {
         'GxP validated environment',
         'Comprehensive audit logging',
         'Role-based access control'
+      ]
+    },
+    {
+      id: 'docushare',
+      title: '21 CFR Part 11 Document Management',
+      description: 'Integrated DocuShare system provides a fully compliant document management solution for all regulatory submissions and controlled documents.',
+      icon: <FileText className="h-6 w-6 text-teal-400" />,
+      color: 'from-teal-900 to-teal-800',
+      stats: [
+        { label: 'Compliance', value: '21 CFR Part 11', icon: <Shield className="h-4 w-4 text-teal-400" /> },
+        { label: 'Electronic Signatures', value: 'Validated', icon: <FileText className="h-4 w-4 text-teal-400" /> }
+      ],
+      features: [
+        'Complete audit trails for all documents',
+        'Validated electronic signatures',
+        'Secure document lifecycle management'
       ]
     }
   ];
@@ -182,9 +199,15 @@ const AdvancedFeatureCards = () => {
             </div>
             
             <div className="mt-3">
-              <button className="inline-flex items-center text-blue-300 hover:text-white text-xs font-medium transition-colors">
-                Learn More <ArrowRight className="ml-1 h-3 w-3" />
-              </button>
+              {selectedCard === 3 ? (
+                <Link to="/document-management" className="inline-flex items-center text-teal-300 hover:text-white text-xs font-medium transition-colors">
+                  Open DocuShare <ArrowRight className="ml-1 h-3 w-3" />
+                </Link>
+              ) : (
+                <button className="inline-flex items-center text-blue-300 hover:text-white text-xs font-medium transition-colors">
+                  Learn More <ArrowRight className="ml-1 h-3 w-3" />
+                </button>
+              )}
             </div>
           </div>
         </div>
