@@ -21,33 +21,40 @@ export function useDocuShare() {
     isLoading: isLoadingDocuments,
     error: documentsError 
   } = useQuery({
-    queryKey: ['/api/docushare/documents'],
+    queryKey: ['/api/docs'],
+    queryFn: async () => {
+      return fetch('/api/docs').then(r => r.json());
+    },
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
   
   // Upload a document to DocuShare
   const uploadMutation = useMutation({
     mutationFn: async ({ file, moduleContext, sectionContext, metadata }) => {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('moduleContext', moduleContext || 'general');
-      formData.append('sectionContext', sectionContext || '');
+      // Convert file to base64
+      const b64 = await file.arrayBuffer().then(b => Buffer.from(b).toString('base64'));
       
-      if (metadata) {
-        formData.append('metadata', JSON.stringify(metadata));
-      }
-      
-      const response = await apiRequest('POST', '/api/docushare/upload', formData, {
-        headers: {
-          // Don't set Content-Type here; the browser will set it with the boundary for FormData
-        },
+      const response = await fetch('/api/docs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          file: b64,
+          name: file.name,
+          moduleContext: moduleContext || 'general',
+          sectionContext: sectionContext || '',
+          metadata: metadata || {}
+        })
       });
       
-      return response.json();
+      if (!response.ok) {
+        throw new Error('Failed to upload document');
+      }
+      
+      return { success: true, filename: file.name };
     },
     onSuccess: () => {
       // Invalidate documents query to refresh the list
-      queryClient.invalidateQueries({ queryKey: ['/api/docushare/documents'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/docs'] });
       
       toast({
         title: 'Document uploaded',
@@ -135,72 +142,7 @@ export function useDocuShare() {
     return true;
   }, []);
   
-  // For development/demo purposes, if there are no documents, generate some placeholder documents
-  useEffect(() => {
-    if (documents.length === 0 && !isLoadingDocuments) {
-      // This is just for demonstration purposes and would be removed in production
-      const placeholderDocuments = [
-        {
-          id: 'doc1',
-          name: 'Clinical Protocol v1.2',
-          moduleContext: 'ind',
-          sectionContext: 'clinical-protocol',
-          documentType: 'protocol',
-          lastModified: new Date('2025-04-10').toISOString(),
-          size: 1245000,
-          version: '1.2',
-          author: 'Dr. Sarah Johnson',
-        },
-        {
-          id: 'doc2',
-          name: 'Investigator Brochure Draft',
-          moduleContext: 'ind',
-          sectionContext: 'investigator-brochure',
-          documentType: 'brochure',
-          lastModified: new Date('2025-04-08').toISOString(),
-          size: 3450000,
-          version: '0.9',
-          author: 'Dr. Michael Chen',
-        },
-        {
-          id: 'doc3',
-          name: 'CMC Documentation Package',
-          moduleContext: 'ind',
-          sectionContext: 'cmc',
-          documentType: 'submission',
-          lastModified: new Date('2025-04-15').toISOString(),
-          size: 7890000,
-          version: '2.0',
-          author: 'Dr. Emily Roberts',
-        },
-        {
-          id: 'doc4',
-          name: 'FDA Form 1571',
-          moduleContext: 'ind',
-          sectionContext: 'fda-forms',
-          documentType: 'form',
-          lastModified: new Date('2025-04-18').toISOString(),
-          size: 450000,
-          version: '1.0',
-          author: 'James Wilson',
-        },
-        {
-          id: 'doc5',
-          name: 'Pre-IND Meeting Minutes',
-          moduleContext: 'ind',
-          sectionContext: 'pre-planning',
-          documentType: 'minutes',
-          lastModified: new Date('2025-03-22').toISOString(),
-          size: 890000,
-          version: '1.0',
-          author: 'Dr. Lisa Patel',
-        },
-      ];
-      
-      // Set the placeholder documents in the query cache
-      queryClient.setQueryData(['/api/docushare/documents'], placeholderDocuments);
-    }
-  }, [documents, isLoadingDocuments, queryClient]);
+  // No more placeholder documents - we're using real data from the DocuShare API now
   
   return {
     // Data
