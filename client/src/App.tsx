@@ -38,6 +38,8 @@ const LazyValidationHub = React.lazy(() => import('./pages/ValidationHub'));
 const LazyAdaptiveLearning = React.lazy(() => import('./pages/AdaptiveLearning'));
 // Add Document Risk Prediction with AI-powered insights
 const LazyDocumentRiskPrediction = React.lazy(() => import('./pages/DocumentRiskPrediction'));
+// Add Document Management with DocuShare integration
+const LazyDocumentManagement = React.lazy(() => import('./pages/DocumentManagement'));
 // Add Enterprise CSR Intelligence module
 import EnterpriseCSRIntelligence from './pages/EnterpriseCSRIntelligence';
 const LazyCSRIntelligence = EnterpriseCSRIntelligence;
@@ -191,6 +193,11 @@ export default function App() {
             <Route path="/document-risk/:id?">
               <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Document Risk Prediction" />}>
                 <LazyDocumentRiskPrediction />
+              </SimpleErrorBoundary>
+            </Route>
+            <Route path="/document-management">
+              <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Document Management" />}>
+                <LazyDocumentManagement />
               </SimpleErrorBoundary>
             </Route>
             <Route path="/">
