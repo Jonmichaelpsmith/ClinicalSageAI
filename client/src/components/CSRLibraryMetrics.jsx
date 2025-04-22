@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Database, BookOpen, FileText, Globe, BarChart, Brain } from 'lucide-react';
 
+// Fixed CSRLibraryMetrics component - no hooks to prevent React errors
 export default function CSRLibraryMetrics() {
-  // Initial metrics data to ensure we have valid values
-  const initialMetrics = {
+  // Using fixed metrics values directly without hooks to prevent issues
+  const metrics = {
     csrCount: 5248, 
     academicPapers: 12735,
     regulatoryGuidelines: 327,
@@ -11,18 +12,6 @@ export default function CSRLibraryMetrics() {
     globalRegions: 14,
     modelParameters: '2.4B'
   };
-  
-  // Use simple state management instead of React Query
-  const [metrics, setMetrics] = useState(initialMetrics);
-  
-  // No fetch - use initial values without API calls
-  // This completely eliminates the API calls that were causing UI flashing
-  
-  // We've removed the useEffect hook entirely since the API connection is failing
-  // and the component already has good default data loaded in the initialMetrics object
-  
-  // This ensures the UI stays stable without any network-related flashing
-  // All metrics values come from the initialMetrics object directly
 
   return (
     <div className="bg-gradient-to-r from-blue-900 to-indigo-900 py-6">
