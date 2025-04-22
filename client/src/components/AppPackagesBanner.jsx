@@ -105,7 +105,7 @@ export default function AppPackagesBanner({ currentPath }) {
     {
       label: "Accelerate IND",
       description: "Your AI partner for IND success",
-      to: "/ind/wizard",
+      to: "/ind-architect",
       icon: <FileSymlink size={18} />,
       color: "bg-purple-600 hover:bg-purple-700"
     },
@@ -275,10 +275,10 @@ export default function AppPackagesBanner({ currentPath }) {
             
             {/* Action buttons */}
             <div className="flex items-center space-x-4">
-              <Link to="/ind/wizard">
+              <Link to="/ind-architect">
                 <button className="flex items-center text-sm font-medium text-blue-600 hover:text-blue-800">
                   <ExternalLink size={16} className="mr-1" />
-                  Open IND Wizard
+                  Open IND Accelerator
                 </button>
               </Link>
             </div>
