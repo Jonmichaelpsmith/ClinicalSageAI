@@ -27,6 +27,9 @@ const LazyDebugInfo = React.lazy(() => import('./components/DebugInfo'));
 // Force non-lazy loading of INDWizard to ensure it renders properly
 import INDWizard from './pages/INDWizard';
 const LazyINDWizard = INDWizard;
+// Import IND Wizard 2.0 with modern UI components
+import INDWizard2 from './pages/INDWizard2';
+const LazyINDWizard2 = INDWizard2;
 const LazyUseCaseLibrary = React.lazy(() => import('./pages/UseCaseLibrary'));
 const LazyCERGenerator = React.lazy(() => import('./pages/EnterpriseGradeCERGenerator'));
 const LazyCERGeneration = React.lazy(() => import('./pages/CERGeneration'));
@@ -123,6 +126,13 @@ export default function App() {
             <Route path="/ind-full-solution">
               <SimpleErrorBoundary fallback={<EmergencyFallback pageName="IND Full Solution" />}>
                 <LazyINDWizard />
+              </SimpleErrorBoundary>
+            </Route>
+            <Route path="/ind/wizard-v2">
+              <SimpleErrorBoundary fallback={<EmergencyFallback pageName="IND Wizard 2.0" />}>
+                <React.Suspense fallback={<EmergencyFallback pageName="IND Wizard 2.0" />}>
+                  <LazyINDWizard2 />
+                </React.Suspense>
               </SimpleErrorBoundary>
             </Route>
             <Route path="/ind/wizard/*">

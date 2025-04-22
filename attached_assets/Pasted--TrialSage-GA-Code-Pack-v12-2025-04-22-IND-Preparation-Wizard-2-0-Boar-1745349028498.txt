@@ -1,0 +1,150 @@
+// ===== TrialSage GA Code Pack — v12  (2025‑04‑22) =====
+//  ⬛  IND Preparation Wizard 2.0 — “Board‑Room Demo” Edition ⬛
+// -----------------------------------------------------------------------------
+//  Goals
+//  • Convey *progress, compliance & AI insight* at a glance (beats Certara UI)
+//  • Zero‑click access to validation errors + one‑tap fixes
+//  • Built‑in KPI ribbon (docs, QC errors, eCTD readiness %)
+//  • Modern motion & dark‑mode friendly
+// -----------------------------------------------------------------------------
+//  Major additions
+//  ① <WizardHeader/>       — progress bar + KPI chips + Certara‑style icon bar
+//  ② <StepNav/>            — check/alert icons per step, collapsible on small screens
+//  ③ <DocDrawer/>          — 4 tabs: Browse | Search | QC Errors | Recent
+//  ④ <UploadValidateCard/> — drag‑drop, real‑time AI summary & QC pass/fail chips
+//  ⑤ <KpiRibbon/>          — sticky footer w/ live counts (AI‑Predict feeds timeline)
+//  ⑥ Tailwind dark class + glassmorphism cards
+// -----------------------------------------------------------------------------
+//  New deps:  npm i react-countup dayjs react-use-count-up
+// -----------------------------------------------------------------------------
+
+// 1.  src/layout/IndWizardLayout.jsx (root wrapper)
+import { useState,useEffect } from "react";
+import WizardHeader from "../wizard/WizardHeader.jsx";
+import StepNav       from "../wizard/StepNav.jsx";
+import StepContent   from "../wizard/StepContent.jsx";
+import DocDrawer     from "../wizard/DocDrawer.jsx";
+import KpiRibbon     from "../wizard/KpiRibbon.jsx";
+import { AnimatePresence } from "framer-motion";
+
+export default function IndWizardLayout(){
+  const [step,setStep]=useState(0); const [drawer,setDrawer]=useState(false);
+  const [kpi,setKpi]  =useState({docs:0,errors:0,ready:0});
+  useEffect(()=>{fetch("/api/ind/kpi").then(r=>r.json()).then(setKpi);},[step]);
+  return (
+    <div className="dark:bg-slate-900 text-slate-900 dark:text-slate-100 flex flex-col h-screen">
+      <WizardHeader kpi={kpi}/>
+      <div className="flex flex-1 overflow-hidden">
+        <StepNav step={step} onSelect={setStep}/>
+        <div className="flex-1 relative p-6 overflow-y-auto">
+          <StepContent step={step} onOpenDrawer={()=>setDrawer(true)}/>
+        </div>
+        <AnimatePresence initial={false}>{drawer && <DocDrawer onClose={()=>setDrawer(false)}/>}</AnimatePresence>
+      </div>
+      <KpiRibbon kpi={kpi}/>
+    </div>
+  );
+}
+
+// 2.  src/wizard/WizardHeader.jsx
+import { Gauge, ShieldCheck, UploadCloud } from "lucide-react";
+export default function WizardHeader({kpi}){
+  return (
+    <header className="flex items-center justify-between bg-white/60 dark:bg-slate-800/60 backdrop-blur border-b px-6 py-3">
+      <h1 className="text-xl font-semibold">IND Preparation Wizard</h1>
+      <div className="flex gap-4 items-center">
+        <Chip icon={Gauge}  label={`${kpi.ready}% Ready`}  color="emerald"/>
+        <Chip icon={ShieldCheck} label={`${kpi.errors} QC Errors`} color={kpi.errors?"amber":"emerald"}/>
+        <Chip icon={UploadCloud} label={`${kpi.docs} Docs`}   color="sky"/>
+      </div>
+    </header>
+  );
+}
+function Chip({icon:Icon,label,color}){return(<span className={`flex items-center gap-1 px-3 py-1 rounded-full text-${color}-800 bg-${color}-100 dark:bg-${color}-900/30 text-sm`}><Icon size={14}/> {label}</span>) }
+
+// 3.  src/wizard/StepNav.jsx (enhanced)
+import clsx from "classnames";import { Check, AlertCircle } from "lucide-react";import { useEffect,useState } from "react";
+const titles=["Initial Planning","Nonclinical Data","CMC Data","Clinical Protocol","Investigator Brochure","FDA Forms","Final Assembly"];
+export default function StepNav({step,onSelect}){
+  const [flags,setFlags]=useState([]);
+  useEffect(()=>{fetch("/api/ind/flags").then(r=>r.json()).then(setFlags);},[]);
+  return (
+    <nav className="w-72 dark:bg-slate-800 bg-slate-50 border-r overflow-y-auto p-4 space-y-2">
+      {titles.map((t,i)=>{
+        const flag=flags[i];
+        return (<button key={i} onClick={()=>onSelect(i)} className={clsx("flex items-center justify-between w-full text-left px-3 py-2 rounded-lg", i===step?"bg-indigo-100 dark:bg-indigo-900/40 font-semibold":"hover:bg-slate-100 dark:hover:bg-slate-700")}> <span>{`Step ${i+1}: ${t}`}</span> {flag? <AlertCircle size={16} className="text-amber-500"/> : <Check size={16} className="text-emerald-500"/>}</button>);
+      })}
+    </nav>
+  );
+}
+
+// 4.  src/wizard/StepContent.jsx (adds UploadValidateCard)
+import AiTipsPanel from "./AiTipsPanel.jsx";
+import UploadValidateCard from "./UploadValidateCard.jsx";
+export default function StepContent({step,onOpenDrawer}){
+  return (
+    <div className="space-y-6 max-w-5xl">
+      <h2 className="text-2xl font-bold">{titles[step]}</h2>
+      <UploadValidateCard step={step} onOpenDrawer={onOpenDrawer}/>
+      <AiTipsPanel step={step}/>
+    </div>
+  );
+}
+const titles=["Initial Planning & Pre‑IND","Nonclinical Data Collection","CMC Data","Clinical Protocol","Investigator Brochure","FDA Forms","Final Assembly & Submission"];
+
+// 5.  src/wizard/UploadValidateCard.jsx
+import Dropzone from "react-dropzone";import { useState } from "react";import { CheckCircle, XCircle } from "lucide-react";
+export default function UploadValidateCard({step,onOpenDrawer}){
+  const [preview,setPreview]=useState(null);
+  const onDrop=async(files)=>{
+    const f=files[0]; const buf=await f.arrayBuffer();
+    const base64=btoa(String.fromCharCode(...new Uint8Array(buf)));
+    // AI preview
+    const p=await fetch("/api/ai/preview",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({base64})}).then(r=>r.json());
+    setPreview(p);
+    // real upload + QC auto in backend
+    await fetch("/api/docs",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({file:base64,name:f.name,step})});
+  };
+  return (
+    <Dropzone onDrop={onDrop} accept={{'application/pdf':[]}} multiple={false}>
+      {({getRootProps,getInputProps,isDragActive})=> (
+        <div {...getRootProps()} className={`border-2 border-dashed rounded-2xl p-10 text-center transition ${isDragActive?"bg-indigo-50 dark:bg-indigo-900/20":"bg-white/20"}`}>
+          <input {...getInputProps()}/>
+          {preview? (
+            <div className="space-y-2"><p className="font-semibold">{preview.summary}</p><span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-emerald-100 text-emerald-800"><CheckCircle size={12}/> {preview.module}</span></div>
+          ): <p className="text-gray-500">Drag & drop PDF here or click to browse</p> }
+        </div>
+      )}
+    </Dropzone>
+  );
+}
+
+// 6.  src/wizard/DocDrawer.jsx — add QC tab
+// (inside tabs array) {key:"qc", label:"QC Errors", icon:AlertCircle }
+// Fetch `/api/qc/list?step=${step}` and render list with severity color dots.
+// clicking error focuses PDF @page in LiveReview (emit via ioRTC)
+
+// 7.  src/wizard/KpiRibbon.jsx — sticky footer
+import CountUp from "react-countup";
+export default function KpiRibbon({kpi}){
+  return (
+    <footer className="backdrop-blur bg-white/60 dark:bg-slate-800/60 border-t px-6 py-2 flex justify-around text-sm">
+      <div>Docs <CountUp end={kpi.docs}/></div>
+      <div>QC Errors <CountUp end={kpi.errors}/></div>
+      <div>Readiness <CountUp end={kpi.ready}/> %</div>
+    </footer>
+  );
+}
+
+// 8.  API stubs (express) — examples
+// app.get("/api/ind/kpi", async (req,res)=>{ res.json(await calcKpi()); });
+// app.get("/api/ind/flags", … );
+// app.get("/api/qc/list", … );
+
+// -----------------------------------------------------------------------------
+// 9.  Tailwind tweaks (tailwind.config.js)
+module.exports={theme:{extend:{colors:{glass:"rgba(255,255,255,0.4)"}}},darkMode:"class"}
+
+// -----------------------------------------------------------------------------
+// END v12 — Wizard 2.0 (board‑room demo level)
+// -----------------------------------------------------------------------------
