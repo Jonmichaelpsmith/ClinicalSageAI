@@ -1,8 +1,10 @@
-import { Sun, Moon } from "lucide-react";
+import { Sun, Moon, Bot } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
+import { useLumenAssistant } from './assistant';
 
 export default function TopNav() {
+  const { toggleAssistant } = useLumenAssistant();
   const [dark, setDark] = useState(
     localStorage.getItem("theme") === "dark" || 
     (!localStorage.getItem("theme") && window.matchMedia("(prefers-color-scheme: dark)").matches)
@@ -43,6 +45,14 @@ export default function TopNav() {
         >
           Demo
         </Link>
+        <button 
+          aria-label="Ask Lumen AI Assistant" 
+          onClick={toggleAssistant}
+          className="flex items-center px-3 py-1.5 mr-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-sm transition-colors focus-visible:outline-none focus-visible:ring focus-visible:ring-indigo-400"
+        >
+          <Bot size={16} className="mr-1.5" />
+          <span>Ask Lumen</span>
+        </button>
         <button 
           aria-label="Toggle dark mode" 
           onClick={() => setDark(!dark)}
