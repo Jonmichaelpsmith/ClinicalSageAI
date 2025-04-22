@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'wouter';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 
@@ -1577,8 +1577,17 @@ const ReportsList = ({ onSelectReport, onCreateNew }) => {
 };
 
 /**
- * Main CER Generator Component 
+ * Create a client for React Query
  */
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
 const EnterpriseGradeCERGenerator = () => {
   const [activeView, setActiveView] = useState('list'); // list, detail, create
   const [selectedReportId, setSelectedReportId] = useState(null);
@@ -1599,64 +1608,65 @@ const EnterpriseGradeCERGenerator = () => {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen">
-      {/* Header */}
-      <header className="bg-gradient-to-r from-rose-800 to-rose-900 py-8 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-white">
-                Clinical Evaluation Report Generator
-              </h1>
-              <p className="mt-2 text-rose-100 max-w-3xl">
-                Enterprise-grade platform for creating, managing, and generating regulatory-compliant
-                clinical evaluation reports with AI-powered assistance.
-              </p>
+    <QueryClientProvider client={queryClient}>
+      <div className="bg-gray-50 min-h-screen">
+        {/* Header */}
+        <header className="bg-gradient-to-r from-rose-800 to-rose-900 py-8 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-white">
+                  Clinical Evaluation Report Generator
+                </h1>
+                <p className="mt-2 text-rose-100 max-w-3xl">
+                  AI-powered regulatory writing, reimagined for speed, accuracy, and global compliance.
+                </p>
+              </div>
+              <Button 
+                className="bg-white text-rose-800 hover:bg-rose-50"
+                onClick={() => setShowAIAssistant(true)}
+              >
+                <Bot className="mr-2 h-4 w-4" />
+                AI Assistant
+              </Button>
             </div>
-            <Button 
-              className="bg-white text-rose-800 hover:bg-rose-50"
-              onClick={() => setShowAIAssistant(true)}
-            >
-              <Bot className="mr-2 h-4 w-4" />
-              AI Assistant
-            </Button>
           </div>
-        </div>
-      </header>
-      
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {activeView === 'list' && (
-          <ReportsList 
-            onSelectReport={handleSelectReport} 
-            onCreateNew={handleCreateNewReport} 
-          />
-        )}
+        </header>
         
-        {activeView === 'detail' && selectedReportId && (
-          <ReportDetail 
-            reportId={selectedReportId} 
-            onBack={() => setActiveView('list')} 
-          />
-        )}
+        {/* Main Content */}
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {activeView === 'list' && (
+            <ReportsList 
+              onSelectReport={handleSelectReport} 
+              onCreateNew={handleCreateNewReport} 
+            />
+          )}
+          
+          {activeView === 'detail' && selectedReportId && (
+            <ReportDetail 
+              reportId={selectedReportId} 
+              onBack={() => setActiveView('list')} 
+            />
+          )}
+          
+          {activeView === 'create' && (
+            <NewReportForm 
+              onSubmit={handleReportCreated} 
+              onCancel={() => setActiveView('list')} 
+            />
+          )}
+        </main>
         
-        {activeView === 'create' && (
-          <NewReportForm 
-            onSubmit={handleReportCreated} 
-            onCancel={() => setActiveView('list')} 
-          />
-        )}
-      </main>
-      
-      {/* AI Co-Pilot Dialog */}
-      <Dialog open={showAIAssistant} onOpenChange={setShowAIAssistant}>
-        <DialogContent className="sm:max-w-[600px] p-0">
-          <AICoPilot 
-            onClose={() => setShowAIAssistant(false)} 
-          />
-        </DialogContent>
-      </Dialog>
-    </div>
+        {/* AI Co-Pilot Dialog */}
+        <Dialog open={showAIAssistant} onOpenChange={setShowAIAssistant}>
+          <DialogContent className="sm:max-w-[600px] p-0">
+            <AICoPilot 
+              onClose={() => setShowAIAssistant(false)} 
+            />
+          </DialogContent>
+        </Dialog>
+      </div>
+    </QueryClientProvider>
   );
 };
 
