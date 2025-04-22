@@ -6,6 +6,47 @@ import { scheduleDataUpdates, findLatestDataFile, importTrialsFromJson } from ".
 // Import the fastapi_bridge module
 import registerFastapiProxy from "./fastapi_bridge";
 
+// Initialize WebSocket services with graceful degradation
+let initWs: (server: any) => any;
+
+// Try to dynamically load WebSocket module with graceful error handling
+try {
+  // @ts-ignore - using dynamic import for resilience
+  const wsModule = require("./ws.js");
+  if (wsModule && typeof wsModule.initWs === 'function') {
+    initWs = wsModule.initWs;
+    console.log("WebSocket module loaded successfully");
+  } else {
+    throw new Error("WebSocket module found but initWs function is missing");
+  }
+} catch (error) {
+  console.warn(`WebSocket module could not be loaded: ${error instanceof Error ? error.message : String(error)}`);
+  // Provide a no-op fallback function
+  initWs = (server) => {
+    console.warn("Using fallback WebSocket initialization (no-op)");
+    return null;
+  };
+}
+
+// Import v11.1 services - handle import errors gracefully
+// @ts-ignore - using dynamic imports for resilience
+let voiceCopilotService: any, regIntelService: any;
+try {
+  // @ts-ignore - using dynamic import
+  voiceCopilotService = require("./services/voiceCopilot.js");
+} catch (error: unknown) {
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  console.warn("Voice Copilot service not available:", errorMessage);
+}
+
+try {
+  // @ts-ignore - using dynamic import
+  regIntelService = require("./services/regIntel.js");
+} catch (error: unknown) {
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  console.warn("RegIntel service not available:", errorMessage);
+}
+
 // Import AI backfill functionality for nightly scheduled re-embedding
 // Temporarily commented out due to dependency issues
 // import { backfill } from "../scripts/aiBackfill.js";
@@ -151,6 +192,25 @@ app.use((req, res, next) => {
       reusePort: true,
     }, () => {
       log(`serving on port ${PORT}`);
+      
+      // Initialize WebSocket servers for v11.1 features
+      try {
+        // Initialize WebSocket namespaces
+        log('Initializing WebSocket server...');
+        initWs(server);
+        log('WebSocket server initialized successfully');
+        
+        // Initialize Voice Copilot service
+        if (voiceCopilotService && voiceCopilotService.initVoiceServer) {
+          log('Initializing Voice Copilot service...');
+          voiceCopilotService.initVoiceServer(server);
+          log('Voice Copilot service initialized successfully');
+        } else {
+          log('Voice Copilot service not available, skipping initialization');
+        }
+      } catch (error) {
+        logger.error(`Error initializing WebSocket services: ${error instanceof Error ? error.message : String(error)}`);
+      }
       
       // FastAPI server is now started via main.py directly, not from Node
       const apiPort = process.env.PORT || '8000';
