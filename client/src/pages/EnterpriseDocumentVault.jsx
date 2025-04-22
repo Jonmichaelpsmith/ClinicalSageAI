@@ -6,16 +6,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import EnterpriseDocuShareVault from '@/components/enterprise/EnterpriseDocuShareVault';
 import { 
-  BuildingLibrary, 
+  Library, 
   ShieldCheck, 
   Calendar,
   FileCheck,
   BookOpen,
   Network,
-  MoveRight,
+  ArrowRight,
   Lock,
   FileText,
-  Workflow
+  FileSpreadsheet
 } from 'lucide-react';
 
 /**
@@ -56,7 +56,7 @@ export default function EnterpriseDocumentVault() {
             <div className="flex justify-between">
               <div>
                 <CardTitle className="text-2xl flex items-center gap-2">
-                  <BuildingLibrary className="h-6 w-6 text-indigo-600" />
+                  <Library className="h-6 w-6 text-indigo-600" />
                   DocuShare Enterprise
                 </CardTitle>
                 <CardDescription className="text-base">
@@ -82,7 +82,7 @@ export default function EnterpriseDocumentVault() {
               
               <Card className="bg-green-50">
                 <CardContent className="p-4 flex items-center gap-3">
-                  <Workflow className="h-8 w-8 text-green-600" />
+                  <FileSpreadsheet className="h-8 w-8 text-green-600" />
                   <div>
                     <h3 className="font-medium">Automated Workflows</h3>
                     <p className="text-sm text-gray-600">Configurable approval chains</p>
