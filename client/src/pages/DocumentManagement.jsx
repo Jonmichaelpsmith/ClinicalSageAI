@@ -1,14 +1,47 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from "wouter";
 import { Layout } from '@/components/ui/layout';
 import { Button } from '@/components/ui/button';
 import { 
   Database, FileText, Lock, FileCheck, 
-  BookOpen, Layers, Lightbulb
+  BookOpen, Layers, Lightbulb, Search,
+  FileSearch, Filter
 } from 'lucide-react';
 import DocuShareIntegration from '@/components/document-management/DocuShareIntegration';
+import SemanticSearchBar from '@/components/search/SemanticSearchBar';
+import SemanticSearchResults from '@/components/search/SemanticSearchResults';
+import { semanticSearch } from '@/services/SemanticSearchService';
 
 export default function DocumentManagement() {
+  const [searchResults, setSearchResults] = useState(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState(null);
+  
+  const handleSearch = async (searchParams) => {
+    setIsSearching(true);
+    setShowSearchResults(true);
+    
+    try {
+      const results = await semanticSearch(
+        searchParams.query, 
+        searchParams.filters, 
+        searchParams.searchMode
+      );
+      setSearchResults(results);
+    } catch (error) {
+      console.error('Error performing semantic search:', error);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+  
+  const handleSelectDocument = (document) => {
+    setSelectedDocument(document);
+    console.log('Selected document:', document);
+    // In a full implementation, this would open a document preview or details panel
+  };
+  
   return (
     <Layout>
       <div className="container mx-auto py-8">
@@ -22,6 +55,56 @@ export default function DocumentManagement() {
           <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
             21 CFR Part 11 Compliant
           </div>
+        </div>
+        
+        {/* Unified Semantic Search */}
+        <div className="mb-6">
+          <div className="bg-gradient-to-r from-purple-50 via-purple-100 to-indigo-50 p-4 rounded-lg border border-purple-200 mb-4">
+            <div className="flex items-start mb-4">
+              <div className="bg-purple-600 p-2 rounded-md mr-3">
+                <FileSearch size={20} className="text-white" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold">Unified Data & Semantic Search</h2>
+                <p className="text-sm text-gray-700">
+                  Search across all document types, records, and communications using natural language. Our AI-powered semantic search understands context and relationships.
+                </p>
+              </div>
+            </div>
+            <SemanticSearchBar 
+              onSearch={handleSearch}
+              size="lg"
+              placeholder="Try 'critical deviations in EU in Q1' or 'safety concerns in Phase II trials'..."
+            />
+          </div>
+          
+          {/* Search Results Section */}
+          {showSearchResults && (
+            <div className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden mb-8">
+              <div className="border-b border-gray-200 bg-gray-50 p-4 flex items-center justify-between">
+                <div className="flex items-center">
+                  <Search className="text-purple-600 mr-2 h-5 w-5" />
+                  <h3 className="font-medium">Search Results</h3>
+                </div>
+                {searchResults && (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setShowSearchResults(false)}
+                  >
+                    Close Results
+                  </Button>
+                )}
+              </div>
+              <div className="p-4">
+                <SemanticSearchResults
+                  results={searchResults}
+                  isLoading={isSearching}
+                  onSelectDocument={handleSelectDocument}
+                />
+              </div>
+            </div>
+          )}
         </div>
         
         <div className="mb-6 p-4 bg-indigo-50 border border-indigo-100 rounded-lg">
