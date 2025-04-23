@@ -37,8 +37,21 @@ export const AuthProvider = ({ children }) => {
   // Login function
   const login = async (credentials) => {
     try {
-      const response = await api.post("/login", credentials);
-      const { token, user } = response.data;
+      // Use the correct API endpoint with /api prefix
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(credentials),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Authentication failed');
+      }
+      
+      const data = await response.json();
+      const { token, user } = data;
       
       // Save token to localStorage
       localStorage.setItem("token", token);
