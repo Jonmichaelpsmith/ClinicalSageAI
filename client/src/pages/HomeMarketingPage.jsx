@@ -10,7 +10,7 @@ import {
   FileText, 
   Database, 
   Sparkles,
-  ChevronRight,
+  ChevronDown,
   Play,
   Bookmark,
   Globe,
@@ -18,7 +18,7 @@ import {
   Wand2
 } from 'lucide-react';
 
-// Apple-style animated hero component with parallax effect
+// Apple-style modern hero component
 const AppleHero = () => {
   const [scrollY, setScrollY] = useState(0);
   const heroRef = useRef(null);
@@ -36,51 +36,124 @@ const AppleHero = () => {
   return (
     <section 
       ref={heroRef} 
-      className="relative h-screen w-full overflow-hidden bg-black text-white flex items-center"
+      className="relative min-h-screen w-full overflow-hidden bg-white flex items-center justify-center"
+      style={{
+        paddingTop: Math.max(120 - scrollY * 0.5, 30) + 'px',
+        paddingBottom: Math.max(120 - scrollY * 0.5, 30) + 'px',
+      }}
     >
-      {/* Parallax background */}
-      <div 
-        className="absolute inset-0 w-full h-full"
-        style={{
-          backgroundImage: "url('https://i.imgur.com/jKQnRHw.jpg')",
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          transform: `translateY(${scrollY * 0.5}px)`,
-          opacity: 1 - scrollY / 1000,
-        }}
-      />
+      <div className="absolute inset-0 w-full h-full bg-[#FAFAFA]"></div>
       
-      {/* Gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent" />
-      
-      {/* Content */}
-      <div className="container mx-auto px-6 z-10 text-center">
+      {/* Content container */}
+      <div className="container mx-auto px-6 z-10 max-w-6xl">
+        <div className="text-center mb-16">
+          <motion.h5 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8 }}
+            className="text-[#06c] font-medium mb-4 tracking-tight"
+          >
+            Introducing
+          </motion.h5>
+          
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="text-5xl md:text-7xl font-semibold tracking-tight text-[#1d1d1f] mb-6"
+          >
+            TrialSage™
+          </motion.h1>
+          
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="text-2xl md:text-3xl font-medium text-[#1d1d1f] mb-4 max-w-3xl mx-auto"
+          >
+            Regulatory intelligence.
+            <span className="block">Reimagined.</span>
+          </motion.p>
+          
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.6 }}
+            className="text-lg text-[#86868b] mb-12 max-w-2xl mx-auto"
+          >
+            The complete AI-powered platform for regulatory excellence.
+          </motion.p>
+        </div>
+        
+        {/* Hero image */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="max-w-4xl mx-auto"
+          transition={{ duration: 1, delay: 0.8 }}
+          className="relative mx-auto max-w-4xl"
         >
-          <h5 className="text-blue-400 font-medium mb-3">Introducing</h5>
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-4">
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-300">
-              TrialSage™
-            </span>
-          </h1>
-          <p className="text-xl md:text-2xl font-light text-gray-300 mb-6">
-            Regulatory intelligence. Reimagined.
-          </p>
-          <p className="text-lg text-gray-400 mb-8 max-w-2xl mx-auto">
-            The complete AI-powered platform that transforms how pharmaceutical companies create, manage, and submit regulatory documents.
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link to="/versions" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full font-medium transition-all transform hover:scale-105">
-              See the Document Vault
-            </Link>
-            <Link to="/ind-wizard" className="bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white border border-white/20 px-6 py-3 rounded-full font-medium transition-all">
-              Explore IND Wizard
-            </Link>
+          <div className="rounded-2xl overflow-hidden shadow-2xl">
+            <div className="relative aspect-[16/9] bg-gradient-to-br from-[#f5f5f7] to-[#fafafa]">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-4/5 h-4/5 bg-white rounded-xl shadow-lg overflow-hidden flex flex-col">
+                  <div className="h-10 bg-[#f5f5f7] border-b border-[#e5e5e7] flex items-center px-4">
+                    <div className="flex space-x-2">
+                      <div className="w-3 h-3 rounded-full bg-[#ff5f57]"></div>
+                      <div className="w-3 h-3 rounded-full bg-[#febc2e]"></div>
+                      <div className="w-3 h-3 rounded-full bg-[#28c840]"></div>
+                    </div>
+                  </div>
+                  <div className="flex-1 p-6 flex">
+                    {/* Left panel - Document structure */}
+                    <div className="w-1/4 border-r border-[#e5e5e7] pr-4">
+                      <div className="mb-3 text-sm font-medium text-[#1d1d1f]">IND Structure</div>
+                      <div className="space-y-2">
+                        {['Module 1', 'Module 2', 'Module 3', 'Module 4', 'Module 5'].map((module, idx) => (
+                          <div key={idx} className={`py-1 px-2 rounded-md text-sm ${idx === 2 ? 'bg-[#0066cc1a] text-[#0066cc]' : 'text-[#4b4b4f]'}`}>
+                            {module}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    {/* Right panel - Document editor */}
+                    <div className="flex-1 pl-6">
+                      <div className="flex justify-between mb-4">
+                        <div className="text-lg font-medium text-[#1d1d1f]">Module 3: Quality</div>
+                        <div className="bg-[#0066cc] text-white text-sm py-1 px-3 rounded-full">AI Assistance</div>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="bg-[#f5f5f7] h-4 rounded w-full"></div>
+                        <div className="bg-[#f5f5f7] h-4 rounded w-5/6"></div>
+                        <div className="bg-[#f5f5f7] h-4 rounded w-4/5"></div>
+                        <div className="bg-[#f5f5f7] h-4 rounded w-full"></div>
+                        <div className="bg-[#f5f5f7] h-4 rounded w-3/4"></div>
+                        <div className="mt-6 flex items-center text-[#0066cc]">
+                          <Sparkles className="w-4 h-4 mr-2" />
+                          <span className="text-sm">AI is generating compliant CMC content...</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
+        </motion.div>
+        
+        {/* Action buttons */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 1.2 }}
+          className="flex flex-col sm:flex-row gap-5 justify-center mt-12"
+        >
+          <Link to="/versions" className="bg-[#0071e3] hover:bg-[#0077ed] text-white px-8 py-3 rounded-full font-medium text-lg transition-all">
+            Try Document Vault
+          </Link>
+          <Link to="/ind-wizard" className="bg-transparent border border-[#0071e3] hover:bg-[#0071e3]/5 text-[#0071e3] px-8 py-3 rounded-full font-medium text-lg transition-all">
+            Explore IND Wizard
+          </Link>
         </motion.div>
       </div>
       
@@ -90,73 +163,107 @@ const AppleHero = () => {
         animate={{ y: [0, 10, 0] }}
         transition={{ duration: 1.5, repeat: Infinity }}
       >
-        <ChevronRight className="w-8 h-8 text-white/60 rotate-90" />
+        <ChevronDown className="w-6 h-6 text-[#86868b]" />
       </motion.div>
     </section>
   );
 };
 
 // Apple-style product showcase component
-const ProductShowcase = ({ title, description, imageSrc, features, reversed, primaryColor = 'blue' }) => {
+const ProductShowcase = ({ title, description, features, reversed }) => {
   return (
-    <section className={`py-20 ${reversed ? 'bg-gradient-to-br from-gray-900 to-gray-950' : 'bg-black'} text-white`}>
-      <div className="container mx-auto px-6">
-        <div className={`flex flex-col ${reversed ? 'lg:flex-row-reverse' : 'lg:flex-row'} items-center gap-12`}>
-          {/* Image */}
-          <motion.div 
-            className="w-full lg:w-1/2"
-            initial={{ opacity: 0, x: reversed ? -30 : 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-          >
-            <div className="relative">
-              <div className={`absolute inset-0 bg-${primaryColor}-500/20 blur-2xl rounded-full transform scale-90 -z-10`}></div>
-              <img 
-                src={imageSrc} 
-                alt={title} 
-                className="w-full h-auto rounded-2xl shadow-2xl" 
-              />
-            </div>
-          </motion.div>
-          
-          {/* Content */}
-          <motion.div 
-            className="w-full lg:w-1/2"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-          >
-            <h2 className={`text-3xl md:text-4xl font-bold mb-4 text-${primaryColor}-400`}>{title}</h2>
-            <p className="text-xl text-gray-300 mb-8">{description}</p>
-            
-            <div className="space-y-4">
-              {features.map((feature, index) => (
-                <div key={index} className="flex items-start">
-                  <CheckCircle2 className={`w-6 h-6 text-${primaryColor}-500 mt-0.5 mr-3 flex-shrink-0`} />
-                  <div>
-                    <h3 className="text-lg font-semibold text-white">{feature.title}</h3>
-                    <p className="text-gray-400">{feature.description}</p>
+    <section className="py-32 bg-white relative overflow-hidden">
+      <div className="container mx-auto px-6 relative z-10 max-w-6xl">
+        {/* Section title */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.7 }}
+          className={`text-${reversed ? 'right' : 'left'} mb-12`}
+        >
+          <h3 className="text-[#06c] mb-3 text-lg font-medium">{title}</h3>
+          <h2 className="text-4xl md:text-5xl font-semibold text-[#1d1d1f] tracking-tight">{description}</h2>
+        </motion.div>
+        
+        {/* Feature grid - Apple style with clean UI */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12 mt-20">
+          {features.map((feature, index) => (
+            <motion.div 
+              key={index} 
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              className="relative"
+            >
+              {/* Apple-style feature card */}
+              <div className="relative bg-[#f5f5f7] rounded-3xl overflow-hidden group">
+                {/* Feature top color bar - different color per feature */}
+                <div className={`h-1.5 w-full ${
+                  index % 4 === 0 ? 'bg-[#06c]' : 
+                  index % 4 === 1 ? 'bg-[#ac39ff]' : 
+                  index % 4 === 2 ? 'bg-[#00b9e6]' : 
+                  'bg-[#66bf4f]'
+                }`}></div>
+                
+                <div className="p-8">
+                  <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center mb-6 shadow-sm">
+                    <CheckCircle2 className={`w-5 h-5 ${
+                      index % 4 === 0 ? 'text-[#06c]' : 
+                      index % 4 === 1 ? 'text-[#ac39ff]' : 
+                      index % 4 === 2 ? 'text-[#00b9e6]' : 
+                      'text-[#66bf4f]'
+                    }`} />
+                  </div>
+                  
+                  <h3 className="text-xl font-semibold text-[#1d1d1f] mb-3">{feature.title}</h3>
+                  <p className="text-[#86868b] leading-relaxed">{feature.description}</p>
+                  
+                  {/* Feature visualization - stylized */}
+                  <div className="mt-8 h-32 bg-white rounded-xl overflow-hidden shadow-sm">
+                    <div className="h-full w-full flex items-center justify-center">
+                      <div className={`w-5/6 h-4/6 ${
+                        index % 4 === 0 ? 'bg-[#e9f0fd]' : 
+                        index % 4 === 1 ? 'bg-[#f5edff]' : 
+                        index % 4 === 2 ? 'bg-[#e5f6fb]' : 
+                        'bg-[#e8f5e3]'
+                      } rounded-lg flex items-center justify-center`}>
+                        <div className={`h-2 w-20 rounded-full ${
+                          index % 4 === 0 ? 'bg-[#06c]' : 
+                          index % 4 === 1 ? 'bg-[#ac39ff]' : 
+                          index % 4 === 2 ? 'bg-[#00b9e6]' : 
+                          'bg-[#66bf4f]'
+                        } opacity-60`}></div>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              ))}
-            </div>
-            
-            <div className="mt-8">
-              <Link to={`/${title.toLowerCase().replace(/\s+/g, '-')}`} className="group flex items-center text-lg font-medium text-blue-400 hover:text-blue-300 transition-colors">
-                Learn more about {title}
-                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Link>
-            </div>
-          </motion.div>
+              </div>
+            </motion.div>
+          ))}
         </div>
+        
+        {/* Learn more link - Apple style */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.7, delay: 0.6 }}
+          className="mt-12 text-center"
+        >
+          <Link to={`/${title.toLowerCase().replace(/\s+/g, '-')}`} 
+            className="group inline-flex items-center text-[#06c] font-medium hover:underline">
+            <span>Learn more about {title}</span>
+            <ArrowRight className="ml-1 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          </Link>
+        </motion.div>
       </div>
     </section>
   );
 };
 
-// Apple-style metrics display
+// Apple-style metrics display component
 const MetricsDisplay = () => {
   const metrics = [
     { value: '60%', label: 'Time Savings', description: 'Average reduction in document preparation' },
@@ -166,35 +273,65 @@ const MetricsDisplay = () => {
   ];
   
   return (
-    <section className="py-20 bg-gradient-to-br from-blue-950 to-indigo-950 text-white">
-      <div className="container mx-auto px-6">
+    <section className="py-32 bg-[#f5f5f7]">
+      <div className="container mx-auto px-6 max-w-6xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.7 }}
-          className="text-center mb-16"
+          className="text-center mb-24"
         >
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Measurable Impact</h2>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">TrialSage delivers meaningful results for regulatory teams worldwide</p>
+          <h3 className="text-[#06c] font-medium mb-3">Results that matter</h3>
+          <h2 className="text-4xl md:text-5xl font-semibold text-[#1d1d1f] max-w-3xl mx-auto">
+            Measurable impact for regulatory teams
+          </h2>
         </motion.div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {metrics.map((metric, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="bg-white/5 backdrop-blur-lg rounded-2xl p-8 text-center border border-white/10 hover:border-blue-500/30 transition-colors"
-            >
-              <h3 className="text-4xl font-bold text-white mb-2">{metric.value}</h3>
-              <p className="text-lg font-medium text-blue-300 mb-2">{metric.label}</p>
-              <p className="text-gray-400">{metric.description}</p>
-            </motion.div>
-          ))}
-        </div>
+        <motion.div 
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.7 }}
+          className="relative rounded-3xl overflow-hidden bg-white shadow-xl mx-auto"
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+            {metrics.map((metric, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className={`p-10 text-center ${index !== metrics.length - 1 ? 'border-r border-[#e5e5e7] lg:border-r md:border-b lg:border-b-0' : ''} ${index < metrics.length - (metrics.length % 2) ? 'border-b border-[#e5e5e7]' : ''}`}
+              >
+                <div className="inline-block">
+                  <h3 className="text-5xl font-semibold text-[#1d1d1f] mb-3">{metric.value}</h3>
+                  <div className={`h-1 w-16 mx-auto ${
+                    index % 4 === 0 ? 'bg-[#06c]' : 
+                    index % 4 === 1 ? 'bg-[#ac39ff]' : 
+                    index % 4 === 2 ? 'bg-[#00b9e6]' : 
+                    'bg-[#66bf4f]'
+                  } mb-4`}></div>
+                </div>
+                <p className="text-xl font-medium text-[#1d1d1f] mb-2">{metric.label}</p>
+                <p className="text-[#86868b]">{metric.description}</p>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+        
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.6 }}
+          className="mt-10 text-center"
+        >
+          <p className="text-[#86868b] text-sm max-w-2xl mx-auto">
+            Based on aggregated customer experience data. Individual results may vary depending on implementation scope and regulatory context.
+          </p>
+        </motion.div>
       </div>
     </section>
   );
@@ -203,14 +340,11 @@ const MetricsDisplay = () => {
 // Apple-style CTA section
 const CTASection = () => {
   return (
-    <section className="py-24 bg-black text-white relative overflow-hidden">
-      {/* Abstract background elements */}
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-blue-700 rounded-full filter blur-3xl opacity-20 transform -translate-x-1/2 -translate-y-1/2"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-indigo-700 rounded-full filter blur-3xl opacity-20 transform translate-x-1/2 translate-y-1/2"></div>
-      </div>
+    <section className="py-32 bg-[#f5f5f7] relative overflow-hidden">
+      {/* Apple-style gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-b from-white to-[#f5f5f7]"></div>
       
-      <div className="container mx-auto px-6 relative z-10">
+      <div className="container mx-auto px-6 relative z-10 max-w-6xl">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -218,32 +352,46 @@ const CTASection = () => {
           transition={{ duration: 0.8 }}
           className="max-w-4xl mx-auto text-center"
         >
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">Transform Your Regulatory Strategy</h2>
-          <p className="text-xl text-gray-300 mb-10 max-w-3xl mx-auto">
-            Join leading pharmaceutical companies that are accelerating approvals, reducing costs, and ensuring compliance with TrialSage.
+          <h3 className="text-[#06c] font-medium mb-3">Ready to get started?</h3>
+          <h2 className="text-4xl md:text-6xl font-semibold text-[#1d1d1f] mb-6 tracking-tight">
+            Transform your regulatory strategy
+          </h2>
+          <p className="text-xl text-[#86868b] mb-10 max-w-2xl mx-auto leading-relaxed">
+            Join leading pharmaceutical companies accelerating approvals and ensuring compliance with TrialSage.
           </p>
           
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link to="/contact" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-full font-medium text-lg transition-all transform hover:scale-105">
+          <div className="flex flex-col sm:flex-row justify-center gap-5 mt-12">
+            <Link to="/contact" className="bg-[#0071e3] hover:bg-[#0077ed] text-white px-8 py-4 rounded-full font-medium text-lg transition-all">
               Request a Demo
             </Link>
-            <Link to="/ask-lumen" className="bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white border border-white/20 px-8 py-4 rounded-full font-medium text-lg transition-all">
+            <Link to="/ask-lumen" className="bg-[#f5f5f7] hover:bg-[#e5e5e7] text-[#1d1d1f] border border-[#d2d2d7] px-8 py-4 rounded-full font-medium text-lg transition-all">
               Try Ask Lumen
             </Link>
           </div>
           
-          <div className="mt-16 flex flex-wrap justify-center gap-8">
-            <div className="flex items-center text-gray-400">
-              <Shield className="w-5 h-5 mr-2" />
-              <span>21 CFR Part 11 Compliant</span>
-            </div>
-            <div className="flex items-center text-gray-400">
-              <Award className="w-5 h-5 mr-2" />
-              <span>SOC 2 Type II Certified</span>
-            </div>
-            <div className="flex items-center text-gray-400">
-              <Globe className="w-5 h-5 mr-2" />
-              <span>Global Regulatory Support</span>
+          <div className="mt-20 max-w-3xl mx-auto border-t border-[#d2d2d7] pt-10">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="text-center">
+                <div className="flex justify-center mb-3">
+                  <Shield className="w-6 h-6 text-[#06c]" />
+                </div>
+                <p className="text-[#1d1d1f] font-medium mb-1">21 CFR Part 11 Compliant</p>
+                <p className="text-[#86868b] text-sm">Complete audit trails and E-signatures</p>
+              </div>
+              <div className="text-center">
+                <div className="flex justify-center mb-3">
+                  <Award className="w-6 h-6 text-[#06c]" />
+                </div>
+                <p className="text-[#1d1d1f] font-medium mb-1">SOC 2 Type II Certified</p>
+                <p className="text-[#86868b] text-sm">Enterprise-grade security</p>
+              </div>
+              <div className="text-center">
+                <div className="flex justify-center mb-3">
+                  <Globe className="w-6 h-6 text-[#06c]" />
+                </div>
+                <p className="text-[#1d1d1f] font-medium mb-1">Global Support</p>
+                <p className="text-[#86868b] text-sm">FDA, EMA, and PMDA compliant</p>
+              </div>
             </div>
           </div>
         </motion.div>
@@ -252,89 +400,118 @@ const CTASection = () => {
   );
 };
 
-// Apple-style product cards section
+// Apple-style products grid - fully matches Apple.com design language
 const ProductCards = () => {
   const products = [
     {
       title: "IND Wizard™",
       description: "Build, validate and submit INDs twice as fast with intelligent automation and templates.",
       icon: <Wand2 className="w-6 h-6" />,
-      color: "blue",
+      bgColor: "#d1e4ff",
+      iconColor: "#06c",
       route: "/ind-wizard"
     },
     {
       title: "CSR Intelligence™",
       description: "Extract insights from thousands of clinical study reports to optimize trial designs.",
       icon: <Sparkles className="w-6 h-6" />,
-      color: "indigo",
+      bgColor: "#e8ecfd",
+      iconColor: "#5e5ce6",
       route: "/csr-library"
     },
     {
       title: "Document Vault™",
       description: "Securely store, manage, and collaborate on regulatory documents with 21 CFR Part 11 compliance.",
       icon: <Database className="w-6 h-6" />,
-      color: "purple",
+      bgColor: "#f5e6ff",
+      iconColor: "#bf5af2",
       route: "/versions"
     },
     {
       title: "Protocol Design™",
       description: "Create optimized protocols using AI-powered insights from successful trials.",
       icon: <FileText className="w-6 h-6" />,
-      color: "sky",
+      bgColor: "#d9f8ff",
+      iconColor: "#00c7be",
       route: "/protocol-optimization"
     },
     {
       title: "CMC Insights™",
       description: "Streamline Chemistry, Manufacturing, and Controls documentation with intelligent templates.",
       icon: <Bookmark className="w-6 h-6" />,
-      color: "emerald",
+      bgColor: "#e3f5e3",
+      iconColor: "#34c759",
       route: "/cmc-module"
     },
     {
       title: "Ask Lumen",
       description: "Get instant answers to regulatory questions from our specialized AI assistant.",
       icon: <Globe className="w-6 h-6" />,
-      color: "amber",
+      bgColor: "#fff8e3",
+      iconColor: "#ff9f0a", 
       route: "/ask-lumen"
     }
   ];
   
   return (
-    <section className="py-24 bg-black text-white">
-      <div className="container mx-auto px-6">
+    <section className="py-36 bg-white">
+      <div className="container mx-auto px-6 max-w-6xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.7 }}
-          className="text-center mb-16"
+          className="text-center mb-20"
         >
-          <h5 className="text-blue-400 font-medium mb-3">Features</h5>
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">TrialSage™ Platform</h2>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            A complete ecosystem for regulatory excellence
-          </p>
+          <h3 className="text-[#06c] mb-3 text-lg font-medium">Features</h3>
+          <h2 className="text-4xl md:text-5xl font-semibold text-[#1d1d1f] max-w-2xl mx-auto">
+            Everything you need for regulatory excellence
+          </h2>
         </motion.div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {products.map((product, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
             >
-              <Link to={product.route}>
-                <div className={`h-full bg-gradient-to-br from-gray-900 to-gray-950 rounded-2xl p-8 border border-gray-800 hover:border-${product.color}-500/50 transition-all group transform hover:-translate-y-1`}>
-                  <div className={`w-12 h-12 rounded-full bg-${product.color}-900/50 flex items-center justify-center mb-6 text-${product.color}-400 group-hover:text-${product.color}-300`}>
-                    {product.icon}
-                  </div>
-                  <h3 className="text-xl font-bold mb-3 text-white">{product.title}</h3>
-                  <p className="text-gray-400 mb-6">{product.description}</p>
-                  <div className={`flex items-center text-${product.color}-400 group-hover:text-${product.color}-300`}>
-                    <span className="font-medium">Learn more</span>
-                    <ArrowRight className="ml-2 w-5 h-5 transform group-hover:translate-x-1 transition-transform" />
+              <Link to={product.route} className="block">
+                <div className="group">
+                  {/* Card with Apple-style subtle styling */}
+                  <div className="bg-white rounded-2xl shadow-sm border border-[#e5e5e7] overflow-hidden hover:shadow-md transition-all duration-300">
+                    {/* Top colored section with icon */}
+                    <div 
+                      className="p-6 flex items-center"
+                      style={{ backgroundColor: product.bgColor }}
+                    >
+                      <div 
+                        className="w-12 h-12 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center shadow-sm"
+                        style={{ color: product.iconColor }}
+                      >
+                        {product.icon}
+                      </div>
+                    </div>
+                    
+                    {/* Content section */}
+                    <div className="p-6">
+                      <h3 className="text-xl font-semibold text-[#1d1d1f] mb-2 group-hover:text-[#06c] transition-colors">
+                        {product.title}
+                      </h3>
+                      <p className="text-[#86868b]">
+                        {product.description}
+                      </p>
+                    </div>
+                    
+                    {/* Footer with arrow link - Apple style */}
+                    <div className="px-6 pb-6">
+                      <div className="flex items-center text-[#06c] font-medium">
+                        <span>Learn more</span>
+                        <ArrowRight className="ml-1 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </Link>
