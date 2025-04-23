@@ -49,6 +49,8 @@ const LazyDocumentManagement = React.lazy(() => import('./pages/DocumentManageme
 const LazyEnterpriseDocumentVault = React.lazy(() => import('./pages/EnterpriseDocumentVault'));
 // Add AI Chat Panel for document Q&A
 const LazyChatPanel = React.lazy(() => import('./pages/ChatPanel'));
+// Add Ask Lumen Chat interface
+const LazyAskLumen = React.lazy(() => import('./pages/Chat'));
 // Add Enterprise CSR Intelligence module
 import EnterpriseCSRIntelligence from './pages/EnterpriseCSRIntelligence';
 const LazyCSRIntelligence = EnterpriseCSRIntelligence;
@@ -190,7 +192,7 @@ export default function App() {
               </Route>
               <Route path="/cer-generator">
                 <SimpleErrorBoundary fallback={<EmergencyFallback pageName="CER Generator" />}>
-                  <LazyCERGenerator />
+                  <LazyStreamingCERGenerator />
                 </SimpleErrorBoundary>
               </Route>
               <Route path="/cer-generator-streaming">
@@ -201,6 +203,16 @@ export default function App() {
               <Route path="/validation-hub">
                 <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Validation Hub" />}>
                   <LazyValidationHub />
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/cmc-blueprint-generator">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="CMC Blueprint Generator" />}>
+                  <LazyCMCBlueprintGenerator />
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/ask-lumen">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Ask Lumen" />}>
+                  <LazyAskLumen />
                 </SimpleErrorBoundary>
               </Route>
               <Route path="/chat">
