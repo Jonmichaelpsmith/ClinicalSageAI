@@ -886,6 +886,16 @@ export const setupRoutes = (app: express.Express) => {
     }
   });
   
+  // Register CMC Blueprint Generator routes
+  import('./api/cmc-blueprint-generator.js')
+    .then(({ registerCMCBlueprintRoutes }) => {
+      registerCMCBlueprintRoutes(app);
+      console.log('Successfully registered CMC Blueprint Generator routes');
+    })
+    .catch(error => {
+      console.error('Failed to register CMC Blueprint Generator routes:', error);
+    });
+  
   // Return the HTTP server
   return httpServer;
 };

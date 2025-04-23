@@ -1,196 +1,157 @@
 /**
- * Type definitions for the CMC Module
- * These types provide strong typing for OpenAI integrations and other CMC module functionality
+ * TypeScript type definitions for CMC (Chemistry, Manufacturing, and Controls) module
  */
 
-// OpenAI API response types
-export type OpenAIUsage = {
-  prompt_tokens: number;
-  completion_tokens: number;
-  total_tokens: number;
-};
+// Molecular Structure types
+export interface Ingredient {
+  name: string;
+  function: string;
+  amount: string;
+}
 
-export type OpenAIErrorResponse = {
-  error: string;
-  details?: string | string[];
-};
+export interface Formulation {
+  dosageForm: string;
+  routeOfAdministration: string;
+  ingredients?: Ingredient[];
+}
 
-// CMC Content Generation
-export type CMCSection = {
-  id: number;
+export interface MolecularStructure {
+  moleculeName: string;
+  molecularFormula: string;
+  smiles?: string;
+  inchi?: string;
+  molecularWeight?: string;
+  synthesisPathway?: string;
+  analyticalMethods?: string[];
+  formulation?: Formulation;
+}
+
+// CMC Blueprint Generator response types
+export interface SectionMetadata {
+  sectionId: string;
+  generatedAt: string;
+  model: string;
+  tokens: number;
+  error?: boolean;
+  errorMessage?: string;
+}
+
+export interface ContentSubsection {
   title: string;
-  section: string;
-  status: 'Draft' | 'In Review' | 'Approved' | 'Rejected';
   content: string;
-  nextRevision: string;
-  feedbackCount: number;
-};
+  subsections?: ContentSubsection[];
+}
 
-export type CMCContentParams = {
-  sectionType: string;
-  drugDetails?: {
-    name: string;
-    indication?: string;
-    dosageForm?: string;
-  };
-  currentContent?: string;
-  targetRegulations?: string[];
-};
-
-export type CMCContentResponse = {
+export interface SectionContent {
+  title: string;
   content: string;
-  usage: OpenAIUsage;
-};
+  subsections: ContentSubsection[];
+  metadata: SectionMetadata;
+}
 
-// Manufacturing Process
-export type ManufacturingProcess = {
-  title: string;
-  description: string;
-  status: 'Draft' | 'In Progress' | 'Validated' | 'In Review';
-  progress: number;
-  linkedRecords: Array<{
-    name: string;
-    type: 'Validation' | 'Deviation' | 'CAPA' | 'Qualification';
-  }>;
-};
-
-export type ManufacturingProcessAnalysisParams = {
-  processDetails: {
-    name: string;
-    description: string;
-    steps: Array<{
-      name: string;
-      parameters?: Record<string, any>;
-    }>;
-  };
-};
-
-export type ManufacturingProcessAnalysisResponse = {
-  analysis: string;
-  optimizationSuggestions: Array<{
-    step: string;
-    suggestion: string;
-    impact: string;
-    implementationComplexity: 'Low' | 'Medium' | 'High';
-  }>;
-  usage: OpenAIUsage;
-};
-
-// Risk Analysis
-export type RiskAnalysis = {
-  title: string;
-  severity: number; // 1-5
-  probability: number; // 1-5
-  impact: string;
-  description: string;
-  recommendations: string[];
-};
-
-export type RiskAnalysisParams = {
-  changeType: string;
-  currentState: string;
-  proposedChange: string;
-  productDetails?: Record<string, any>;
-};
-
-export type RiskAnalysisResponse = {
-  analysis: {
-    severity: number;
-    probability: number;
-    impactAreas: string[];
-    summary: string;
-  };
-  recommendations: string[];
-  regulatoryConsiderations: string[];
-  usage: OpenAIUsage;
-};
-
-// Equipment Image Analysis
-export type EquipmentImageAnalysisParams = {
-  image: string; // Base64-encoded image
-  processDetails?: Record<string, any>;
-};
-
-export type EquipmentImageAnalysisResponse = {
-  equipment: {
-    type: string;
-    model?: string;
-    components: string[];
-  };
-  compliance: {
-    gmpStatus: string;
-    concerns: string[];
-  };
-  recommendations: string[];
-  processingTime: string;
-  confidence: number;
-};
-
-// Crystalline Structure Visualization
-export type CrystallineVisualizationParams = {
-  moleculeDetails: {
-    name: string;
-    formula: string;
-    structureType: 'crystalline' | 'amorphous' | 'polymorphic' | 'solvate';
-    properties?: string;
-  };
-  visualizationType?: string;
-  resolution?: string;
-};
-
-export type CrystallineVisualizationResponse = {
-  image: string; // URL to the generated image
+export interface Diagram {
+  url: string;
   revisedPrompt?: string;
-};
+  generatedAt: string;
+  error?: boolean;
+  errorMessage?: string;
+}
 
-// CMC Regulatory Assistant
-export type RegulatoryAssistantParams = {
-  query: string;
-  threadId?: string | null;
-  files?: string[];
-};
+export interface CMCBlueprintResponse {
+  drugSubstance: Record<string, SectionContent>;
+  drugProduct: Record<string, SectionContent>;
+  diagrams: Record<string, Diagram>;
+  metadata: {
+    generatedAt: string;
+    molecule: {
+      name: string;
+      formula: string;
+    }
+  }
+}
 
-export type RegulatoryAssistantResponse = {
-  response: string;
-  threadId: string;
-  citations?: Array<{
-    text: string;
-    url?: string;
-  }>;
-  timestamp: string;
-};
+export interface CompositionItem {
+  name: string;
+  amount: string;
+  function: string;
+  reference: string;
+}
 
-// Regulatory Checks
-export type RegulatoryCheck = {
-  requirement: string;
-  status: 'compliant' | 'partial' | 'non-compliant';
-  region: string;
-  details: string;
-};
+export interface DrugProductComposition {
+  activeIngredient: CompositionItem;
+  inactiveIngredients: CompositionItem[];
+}
 
-// Search
-export type SemanticSearchParams = {
-  query: string;
-  filters?: {
-    documentType?: string[];
-    dateRange?: {
-      start?: string;
-      end?: string;
-    };
-    author?: string[];
+export interface P1SectionContent extends SectionContent {
+  composition: DrugProductComposition;
+  description: string;
+  containerClosure: string;
+}
+
+// Molecular Properties types
+export interface MolecularProperties {
+  iupacName: string;
+  molecularWeight: number;
+  exactMass: number;
+  logP: number;
+  hbondDonors: number;
+  hbondAcceptors: number;
+  rotatableBonds: number;
+  tpsa: number;
+  appearance: string;
+  solubility: string;
+  therapeuticClass: string;
+  metadata: {
+    identifier: string;
+    identifierType: string;
+    generatedAt: string;
+    source: string;
+    model: string;
+  }
+}
+
+// CMC Analysis types
+export interface CrystallineStructure {
+  description: string;
+  crystalSystem: string;
+  spaceGroup?: string;
+  unitCellDimensions?: {
+    a?: number;
+    b?: number;
+    c?: number;
+    alpha?: number;
+    beta?: number;
+    gamma?: number;
   };
-};
+  visualizations?: string[];
+}
 
-export type SemanticSearchResponse = {
-  results: Array<{
-    documentId: string;
-    documentTitle: string;
-    documentType: string;
-    relevanceScore: number;
-    snippet: string;
-    createdAt: string;
-    author: string;
-  }>;
-  totalResults: number;
-  processingTimeMs: number;
-};
+export interface PolymorprhAnalysis {
+  name: string;
+  description: string;
+  stabilityData?: Record<string, string | number>;
+  recommendedForm?: string;
+  visualizations?: string[];
+}
+
+export interface StabilityData {
+  condition: string;
+  duration: string;
+  results: Record<string, string | number>;
+  conclusion: string;
+}
+
+export interface ManufacturingRisk {
+  riskType: string;
+  description: string;
+  likelihood: 'Low' | 'Medium' | 'High';
+  impact: 'Low' | 'Medium' | 'High';
+  mitigationStrategy?: string;
+}
+
+export interface ManufacturingRiskAssessment {
+  identifiedRisks: ManufacturingRisk[];
+  overallRiskLevel: 'Low' | 'Medium' | 'High';
+  recommendedControls: string[];
+  conclusion: string;
+}
