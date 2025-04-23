@@ -142,13 +142,14 @@ export default function HomeMarketingPage() {
       {/* Apple-style navigation */}
       <header className="bg-white sticky top-0 z-50 border-b border-gray-200 shadow-sm">
         <div className="container mx-auto flex justify-between items-center py-3 px-4">
-          <div className="flex items-center">
+          <div className="flex flex-col items-start">
             <Link to="/" className="flex items-center">
               <div className="bg-gradient-to-r from-[#0071e3] to-[#2b8fff] rounded p-1.5 mr-2">
-                <div className="text-white font-bold text-sm tracking-wide">C2C</div>
+                <div className="text-white font-bold text-xs tracking-wide">C2C.AI</div>
               </div>
-              <span className="text-xl font-semibold text-[#1d1d1f] tracking-tight">TrialSage™</span>
+              <span className="text-lg font-semibold text-[#1d1d1f] tracking-tight">CONCEPT2CURE.AI</span>
             </Link>
+            <span className="ml-7 text-sm text-[#86868b] mt-0.5">TrialSage™ Platform</span>
           </div>
           
           <nav className="hidden lg:flex items-center justify-center space-x-1 flex-1 px-4">
@@ -1032,7 +1033,7 @@ export default function HomeMarketingPage() {
                 Ready to transform your clinical and regulatory operations? Connect with our team
                 to get started with TrialSage.
               </p>
-              <Link to="/contact" className="mt-auto inline-flex items-center text-[#06c] text-sm font-medium hover:underline">
+              <Link to="/auth" className="mt-auto inline-flex items-center text-[#06c] text-sm font-medium hover:underline">
                 Get Started <ArrowRight className="ml-1 w-4 h-4" />
               </Link>
             </div>
