@@ -10,219 +10,167 @@ import {
 export default function HomeMarketingPage() {
   try {
     return (
-      <div className="min-h-screen bg-white" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif" }}>
-        {/* Top utility navbar (Certara style) */}
-        <div className="bg-[#f5f5f7]">
-          <div className="max-w-6xl mx-auto px-4 py-1 flex justify-end items-center">
-            <div className="flex space-x-5 text-[10px] text-[#333333]">
-              <a href="#" className="hover:text-[#06c]">Support</a>
-              <span>|</span>
-              <a href="#" className="hover:text-[#06c]">For Investors</a>
-              <span>|</span>
-              <a href="#" className="hover:text-[#06c]">News</a>
-              <span>|</span>
-              <a href="#" className="hover:text-[#06c]">Contact</a>
+      <div className="min-h-screen bg-white" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', sans-serif" }}>
+        {/* Apple-style navigation */}
+        <header className="bg-white sticky top-0 z-50">
+          {/* Top navigation - dark */}
+          <div className="h-11 bg-black">
+            <div className="max-w-[980px] mx-auto h-full px-4">
+              <ul className="flex items-center justify-center h-full space-x-7">
+                <li>
+                  <Link to="/" className="inline-block">
+                    <span className="text-white text-xs font-medium">CONCEPT2CURE.AI</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/ind-wizard" className="text-[#f5f5f7] opacity-80 hover:opacity-100 text-[11px] font-light">
+                    IND Wizard
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/enterprise-csr-intelligence" className="text-[#f5f5f7] opacity-80 hover:opacity-100 text-[11px] font-light">
+                    CSR Intelligence
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/versions" className="text-[#f5f5f7] opacity-80 hover:opacity-100 text-[11px] font-light">
+                    Document Vault
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/analytics-dashboard" className="text-[#f5f5f7] opacity-80 hover:opacity-100 text-[11px] font-light">
+                    Analytics
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/cmc-blueprint-generator" className="text-[#f5f5f7] opacity-80 hover:opacity-100 text-[11px] font-light">
+                    CMC Blueprint
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/cer-generator" className="text-[#f5f5f7] opacity-80 hover:opacity-100 text-[11px] font-light">
+                    CER Generator
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/ask-lumen" className="text-[#f5f5f7] opacity-80 hover:opacity-100 text-[11px] font-light flex items-center">
+                    <Sparkles className="w-2.5 h-2.5 mr-1 text-violet-300" />
+                    Ask Lumen
+                  </Link>
+                </li>
+                <li className="ml-auto">
+                  <button className="text-[#f5f5f7] opacity-80 hover:opacity-100">
+                    <Search className="w-3.5 h-3.5" />
+                  </button>
+                </li>
+                <li>
+                  <Link to="/auth" className="text-[#f5f5f7] opacity-80 hover:opacity-100 text-[11px] font-light">
+                    Log in
+                  </Link>
+                </li>
+              </ul>
             </div>
           </div>
-        </div>
-
-        {/* Main navigation */}
-        <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-          <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-            {/* Logo */}
-            <Link to="/">
-              <div className="flex items-center">
-                <div>
-                  <h1 className="font-semibold text-[#333] text-lg leading-none">CONCEPT2CURE.AI</h1>
-                  <p className="text-[10px] text-gray-500 -mt-0.5">TrialSage™ Platform</p>
+          
+          {/* Product navigation bar */}
+          <div className="h-12 bg-[#fbfbfd] border-b border-[#d2d2d7]">
+            <div className="max-w-[980px] mx-auto h-full px-4">
+              <div className="flex justify-between items-center h-full">
+                <div className="flex items-center h-full">
+                  <p className="text-[#1d1d1f] text-sm font-medium">TrialSage™ Platform</p>
+                </div>
+                <div className="flex items-center space-x-6">
+                  <Link to="/ind-wizard" className="inline-block">
+                    <button className="bg-[#06c] hover:bg-blue-700 text-white px-4 py-1 rounded-full text-xs font-medium">
+                      Launch IND Wizard
+                    </button>
+                  </Link>
+                  <Link to="/team-signup" className="text-[#06c] text-xs hover:underline">
+                    Enterprise Signup
+                  </Link>
                 </div>
               </div>
-            </Link>
-
-            {/* Main Nav */}
-            <nav className="hidden lg:flex items-center space-x-8">
-              <div className="relative group">
-                <button className="flex items-center text-[#333] font-medium text-sm">
-                  Solutions
-                  <ChevronRight className="w-4 h-4 ml-1 transform rotate-90 text-gray-400 group-hover:text-[#004f9f]" />
-                </button>
-                <div className="absolute invisible group-hover:visible opacity-0 group-hover:opacity-100 left-0 top-full w-[520px] bg-white shadow-lg rounded-md border border-gray-100 transition-all duration-200 z-50">
-                  <div className="grid grid-cols-2 gap-3 p-5">
-                    <Link to="/ind-wizard" className="flex p-3 hover:bg-gray-50 rounded">
-                      <div className="w-9 h-9 bg-[#004f9f] rounded flex items-center justify-center flex-shrink-0">
-                        <FileCheck className="w-5 h-5 text-white" />
-                      </div>
-                      <div className="ml-3">
-                        <h4 className="font-medium text-[#333] text-sm">IND Wizard™</h4>
-                        <p className="text-xs text-gray-500">Complete IND assembly & submission</p>
-                      </div>
-                    </Link>
-                    <Link to="/enterprise-csr-intelligence" className="flex p-3 hover:bg-gray-50 rounded">
-                      <div className="w-9 h-9 bg-[#004f9f] rounded flex items-center justify-center flex-shrink-0">
-                        <LayoutDashboard className="w-5 h-5 text-white" />
-                      </div>
-                      <div className="ml-3">
-                        <h4 className="font-medium text-[#333] text-sm">CSR Intelligence™</h4>
-                        <p className="text-xs text-gray-500">Extract & analyze CSR data</p>
-                      </div>
-                    </Link>
-                    <Link to="/versions" className="flex p-3 hover:bg-gray-50 rounded">
-                      <div className="w-9 h-9 bg-[#004f9f] rounded flex items-center justify-center flex-shrink-0">
-                        <Database className="w-5 h-5 text-white" />
-                      </div>
-                      <div className="ml-3">
-                        <h4 className="font-medium text-[#333] text-sm">Document Vault™</h4>
-                        <p className="text-xs text-gray-500">21 CFR Part 11 compliant storage</p>
-                      </div>
-                    </Link>
-                    <Link to="/cmc-blueprint-generator" className="flex p-3 hover:bg-gray-50 rounded">
-                      <div className="w-9 h-9 bg-[#004f9f] rounded flex items-center justify-center flex-shrink-0">
-                        <Microscope className="w-5 h-5 text-white" />
-                      </div>
-                      <div className="ml-3">
-                        <h4 className="font-medium text-[#333] text-sm">CMC Blueprint™</h4>
-                        <p className="text-xs text-gray-500">Chemistry & manufacturing controls</p>
-                      </div>
-                    </Link>
-                  </div>
-                </div>
-              </div>
-              
-              <Link to="/ind-wizard" className="text-[#333] text-sm font-medium hover:text-[#004f9f]">
-                IND Wizard
-              </Link>
-              <Link to="/enterprise-csr-intelligence" className="text-[#333] text-sm font-medium hover:text-[#004f9f]">
-                CSR Intelligence
-              </Link>
-              <Link to="/versions" className="text-[#333] text-sm font-medium hover:text-[#004f9f]">
-                Document Vault
-              </Link>
-              <Link to="/analytics-dashboard" className="text-[#333] text-sm font-medium hover:text-[#004f9f]">
-                Analytics
-              </Link>
-              <Link to="/ask-lumen" className="bg-gradient-to-r from-purple-600 to-violet-600 text-white text-sm font-medium px-3 py-1.5 rounded flex items-center">
-                <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-                Ask Lumen™
-              </Link>
-            </nav>
-
-            {/* Right utilities */}
-            <div className="flex items-center space-x-3">
-              <button className="text-gray-400 hover:text-gray-700">
-                <Search className="w-4 h-4" />
-              </button>
-              
-              <Link to="/auth" className="hidden md:block text-[#333] text-sm font-medium hover:text-[#004f9f] mr-1">
-                Log in
-              </Link>
-              
-              <Link to="/auth" className="bg-[#004f9f] hover:bg-[#003d7a] text-white text-sm font-medium px-4 py-1.5 rounded">
-                Get Started
-              </Link>
-              
-              <Link to="/team-signup" className="hidden md:flex text-[#333] text-sm font-medium hover:text-[#004f9f] items-center ml-2">
-                <UserPlus className="w-3.5 h-3.5 mr-1" />
-                Enterprise
-              </Link>
-              
-              <button className="lg:hidden text-gray-700 bg-gray-100 p-1.5 rounded">
-                <Menu className="w-4 h-4" />
-              </button>
             </div>
           </div>
         </header>
 
-        {/* Hero section with clean, professional layout */}
-        <section className="bg-gradient-to-br from-[#f8f9fd] to-[#f0f5fe] border-b border-gray-200 pt-10 md:pt-16 pb-12 md:pb-20">
-          <div className="max-w-6xl mx-auto px-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-              <div>
-                <div className="inline-block bg-blue-50 px-3 py-1 rounded-full mb-6">
-                  <span className="text-[#004f9f] text-sm font-medium">Regulatory Excellence</span>
-                </div>
-                
-                <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#111827] leading-tight mb-5">
-                  Your regulatory submissions, <span className="text-[#004f9f]">accelerated</span>
-                </h1>
-                
-                <p className="text-lg text-gray-600 mb-8 max-w-xl">
-                  The complete regulatory writing platform with AI-powered automation for FDA, EMA, and PMDA submissions. Reduce IND preparation time by 55%.
-                </p>
-                
-                <div className="flex space-x-4">
-                  <Link to="/ind-wizard">
-                    <button className="bg-[#06c] hover:bg-blue-700 text-white px-6 py-3 rounded-full text-sm font-medium flex items-center">
-                      Launch IND Wizard
-                      <ArrowRight className="ml-2 w-4 h-4" />
-                    </button>
-                  </Link>
-                  <Link to="/ask-lumen">
-                    <button className="bg-violet-600 hover:bg-violet-700 text-white px-6 py-3 rounded-full text-sm font-medium flex items-center">
-                      Try Ask Lumen™ Free
-                      <ArrowRight className="ml-2 w-4 h-4" />
-                    </button>
-                  </Link>
-                </div>
-                
-                <div className="mt-10 flex items-center">
-                  <div className="flex -space-x-2">
-                    {[1, 2, 3].map(i => (
-                      <div key={i} className="w-8 h-8 rounded-full bg-gray-300 border-2 border-white flex items-center justify-center text-xs text-gray-700 font-bold">
-                        {i}
-                      </div>
-                    ))}
+        {/* Hero section - Apple style */}
+        <section className="pt-8 pb-16 bg-white">
+          <div className="max-w-[980px] mx-auto px-4">
+            {/* Headline and tagline - centered Apple style */}
+            <div className="text-center mb-8">
+              <h2 className="text-[56px] leading-tight font-semibold text-[#1d1d1f] tracking-tight">
+                TrialSage™
+              </h2>
+              <h3 className="text-[27px] leading-tight font-medium text-[#1d1d1f] mb-1">
+                Regulatory automation. <span className="text-[#06c]">Accelerated.</span>
+              </h3>
+              <p className="text-[17px] text-[#86868b] max-w-2xl mx-auto mb-6">
+                The complete regulatory writing platform with AI-powered automation for FDA, EMA, and PMDA submissions.
+              </p>
+              
+              <div className="flex justify-center space-x-5 mb-8">
+                <Link to="/ind-wizard">
+                  <button className="bg-[#06c] hover:bg-blue-700 text-white px-5 py-2.5 rounded-full text-sm font-medium flex items-center">
+                    Launch IND Wizard
+                    <ArrowRight className="ml-2 w-4 h-4" />
+                  </button>
+                </Link>
+                <Link to="/ask-lumen">
+                  <button className="bg-violet-600 hover:bg-violet-700 text-white px-5 py-2.5 rounded-full text-sm font-medium flex items-center">
+                    Try Ask Lumen™ Free
+                    <ArrowRight className="ml-2 w-4 h-4" />
+                  </button>
+                </Link>
+              </div>
+            </div>
+            
+            {/* Feature card for Ask Lumen - Apple style */}
+            <div className="max-w-3xl mx-auto bg-gradient-to-br from-violet-700 to-purple-800 rounded-[20px] shadow-lg overflow-hidden p-8">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <div className="flex items-center mb-2">
+                    <Sparkles className="w-5 h-5 text-violet-200 mr-2" />
+                    <h3 className="text-lg font-medium text-white">Ask Lumen™ AI Assistant</h3>
                   </div>
-                  <p className="ml-3 text-sm text-gray-500">
-                    <span className="font-medium">200+</span> regulatory professionals use TrialSage™ daily
+                  <p className="text-violet-100 text-sm mb-4">
+                    Your digital regulatory compliance coach with deep knowledge of FDA guidelines and global regulations.
                   </p>
                 </div>
               </div>
               
-              <div className="relative hidden md:block">
-                <div className="absolute -top-10 -right-10 w-40 h-40 bg-blue-200/20 rounded-full blur-xl"></div>
-                <div className="absolute -bottom-5 -left-5 w-32 h-32 bg-violet-200/20 rounded-full blur-xl"></div>
+              <div className="grid sm:grid-cols-3 gap-4 mb-6">
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                  <CheckCircle className="h-4 w-4 text-violet-200 mb-1" />
+                  <span className="text-white text-xs font-medium">Real-time regulatory guidance</span>
+                </div>
                 
-                <div className="relative bg-white rounded-xl shadow-lg border border-gray-100 p-6 z-10">
-                  <div className="flex justify-between items-start mb-4">
-                    <h3 className="text-lg font-semibold text-[#333]">Ask Lumen™ AI Assistant</h3>
-                    <div className="p-2 bg-violet-100 rounded-lg">
-                      <Sparkles className="w-5 h-5 text-violet-600" />
-                    </div>
-                  </div>
-                  
-                  <p className="text-sm text-gray-600 mb-5">
-                    Your digital regulatory compliance coach with deep knowledge of 200k+ submissions, FDA guidelines, and global regulations.
-                  </p>
-                  
-                  <div className="space-y-3 mb-6">
-                    <div className="flex items-start">
-                      <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <CheckCircle className="h-2.5 w-2.5 text-green-600" />
-                      </div>
-                      <span className="text-sm text-gray-700 ml-2">Real-time regulatory guidance</span>
-                    </div>
-                    <div className="flex items-start">
-                      <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <CheckCircle className="h-2.5 w-2.5 text-green-600" />
-                      </div>
-                      <span className="text-sm text-gray-700 ml-2">Multi-modal document analysis</span>
-                    </div>
-                    <div className="flex items-start">
-                      <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <CheckCircle className="h-2.5 w-2.5 text-green-600" />
-                      </div>
-                      <span className="text-sm text-gray-700 ml-2">Powered by OpenAI GPT-4o</span>
-                    </div>
-                  </div>
-                  
-                  <Link to="/ask-lumen">
-                    <button className="w-full bg-violet-600 hover:bg-violet-700 text-white py-2.5 px-4 rounded text-sm font-medium flex items-center justify-center">
-                      Try 10-Minute Free Trial
-                      <ArrowRight className="ml-2 w-3.5 h-3.5" />
-                    </button>
-                  </Link>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                  <CheckCircle className="h-4 w-4 text-violet-200 mb-1" />
+                  <span className="text-white text-xs font-medium">Multi-modal document analysis</span>
+                </div>
+                
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                  <CheckCircle className="h-4 w-4 text-violet-200 mb-1" />
+                  <span className="text-white text-xs font-medium">Powered by OpenAI GPT-4o</span>
                 </div>
               </div>
+              
+              <div className="flex justify-end">
+                <Link to="/ask-lumen">
+                  <button className="bg-white text-violet-700 hover:bg-violet-50 py-2 px-4 rounded-full text-sm font-medium flex items-center">
+                    Start 10-Minute Free Trial
+                    <ArrowRight className="ml-2 w-3.5 h-3.5" />
+                  </button>
+                </Link>
+              </div>
+            </div>
+            
+            {/* Customer stats */}
+            <div className="mt-12 text-center">
+              <p className="text-[#86868b] text-sm">
+                <span className="text-[#1d1d1f] font-medium text-xl">200+</span> regulatory professionals use TrialSage™ daily
+              </p>
             </div>
           </div>
         </section>
