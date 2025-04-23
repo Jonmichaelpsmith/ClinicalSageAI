@@ -160,11 +160,23 @@ export default function App() {
                   <LazyHomeLanding />
                 </SimpleErrorBoundary>
               </Route>
+              <Route path="/ind-wizard">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="IND Wizard" />}>
+                  <React.Suspense fallback={<EmergencyFallback pageName="IND Wizard" />}>
+                    <LazyINDWizard />
+                  </React.Suspense>
+                </SimpleErrorBoundary>
+              </Route>
               <Route path="/ind-architect">
                 <SimpleErrorBoundary fallback={<EmergencyFallback pageName="IND Accelerator" />}>
                   <React.Suspense fallback={<EmergencyFallback pageName="IND Accelerator" />}>
                     <LazyINDWizard />
                   </React.Suspense>
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/enterprise-csr-intelligence">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="CSR Intelligence" />}>
+                  <LazyCSRIntelligence />
                 </SimpleErrorBoundary>
               </Route>
               <Route path="/csr-intelligence">
