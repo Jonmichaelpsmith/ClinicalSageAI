@@ -252,10 +252,19 @@ const ValidationResultItem = ({
     setExplanation(null);
     
     try {
-      const response = await axiosWithToken.post('/api/regintel/explain', { 
-        rule: validation.rule 
-      });
-      setExplanation(response.data.explanation);
+      // Connect to our new FastAPI explanation endpoint
+      const ruleId = validation.id.split('-')[0]; // Extract rule ID like 'REG001'
+      const response = await axiosWithToken.get(`/regintel/explain/${ruleId}`);
+      
+      // Format the explanation from the API response
+      const data = response.data;
+      const formattedExplanation = 
+        `${data.title}\n\n` +
+        `${data.description}\n\n` +
+        `Requirement: ${data.requirement}\n\n` +
+        `Impact: ${data.impact}`;
+      
+      setExplanation(formattedExplanation);
     } catch (error) {
       console.error('Error explaining rule:', error);
       toast.error('Failed to get explanation');
@@ -277,10 +286,17 @@ const ValidationResultItem = ({
     setFix(null);
     
     try {
-      const response = await axiosWithToken.post('/api/regintel/fix', { 
-        rule: validation.rule 
-      });
-      setFix(response.data.fix);
+      // Connect to our new FastAPI fix suggestion endpoint
+      const ruleId = validation.id.split('-')[0]; // Extract rule ID like 'REG001'
+      const response = await axiosWithToken.get(`/regintel/fix/${ruleId}`);
+      
+      // Format the fix suggestions from the API response
+      const suggestions = response.data.suggestions;
+      const formattedFix = suggestions.map((suggestion: string, index: number) => 
+        `${index + 1}. ${suggestion}`
+      ).join('\n');
+      
+      setFix(formattedFix);
       toast.success('Fix suggestions generated');
     } catch (error) {
       console.error('Error fixing rule:', error);
