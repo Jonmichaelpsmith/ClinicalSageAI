@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
 import { motion } from 'framer-motion';
+import Layout from '../components/Layout';
 
 import { 
   FileText, 
@@ -190,9 +191,10 @@ export default function HomeLandingEnhanced() {
   const csrCount = 3021; // Authenticated value from the database on mount
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800">
-      {/* Application Packages Banner */}
-      <AppPackagesBanner currentPath={location} />
+    <Layout>
+      <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800">
+        {/* Application Packages Banner */}
+        <AppPackagesBanner currentPath={location} />
       
       {/* Hero Section - Enhanced with Animated Gradient Blobs (No Video) */}
       <section className="relative overflow-hidden bg-gradient-to-b from-indigo-900 via-blue-900 to-blue-800 text-white">
@@ -656,5 +658,6 @@ export default function HomeLandingEnhanced() {
         </div>
       </footer>
     </div>
+    </Layout>
   );
 }
