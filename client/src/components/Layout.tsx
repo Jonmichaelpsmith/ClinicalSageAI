@@ -77,28 +77,28 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <div className="flex items-center space-x-4">
               <nav className="hidden md:flex space-x-8">
                 <Link href="/">
-                  <a className={`inline-flex items-center px-1 pt-1 text-sm font-medium ${
+                  <div className={`inline-flex items-center px-1 pt-1 text-sm font-medium cursor-pointer ${
                     location === '/' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'
                   }`}>
                     <Home className="w-4 h-4 mr-1" />
                     Home
-                  </a>
+                  </div>
                 </Link>
                 <Link href="/versions">
-                  <a className={`inline-flex items-center px-1 pt-1 text-sm font-medium ${
+                  <div className={`inline-flex items-center px-1 pt-1 text-sm font-medium cursor-pointer ${
                     location === '/versions' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'
                   }`}>
                     <FileText className="w-4 h-4 mr-1" />
                     Documents
-                  </a>
+                  </div>
                 </Link>
                 <Link href="/cmc-module">
-                  <a className={`inline-flex items-center px-1 pt-1 text-sm font-medium ${
+                  <div className={`inline-flex items-center px-1 pt-1 text-sm font-medium cursor-pointer ${
                     location === '/cmc-module' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'
                   }`}>
                     <Database className="w-4 h-4 mr-1" />
                     CMC Module
-                  </a>
+                  </div>
                 </Link>
               </nav>
               
