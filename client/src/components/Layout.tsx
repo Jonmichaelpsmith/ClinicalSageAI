@@ -58,83 +58,94 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       {/* Toast notifications handled by the app-level toast container */}
 
       {/* Top Navigation Bar */}
-      <header className="bg-white shadow-sm border-b border-gray-200 z-10">
+      <header className="bg-slate-800 text-white border-b border-slate-700 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex-shrink-0 flex items-center">
               <Link href="/">
-                <a className="flex items-center">
-                  <img 
-                    className="h-8 w-auto" 
-                    src="/logo-blue.svg" 
-                    alt="TrialSage" 
-                  />
-                  <span className="ml-2 text-xl font-bold text-blue-800">TrialSage™</span>
-                </a>
+                <div className="flex items-center cursor-pointer">
+                  <span className="text-xl font-bold text-white">TrialSage</span>
+                </div>
               </Link>
             </div>
             
             <div className="flex items-center space-x-4">
               <nav className="hidden md:flex space-x-8">
-                <Link href="/">
-                  <div className={`inline-flex items-center px-1 pt-1 text-sm font-medium cursor-pointer ${
-                    location === '/' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'
+                <Link href="/ind-wizard">
+                  <div className={`inline-flex items-center px-4 py-2 text-sm font-medium cursor-pointer ${
+                    location === '/ind-wizard' ? 'text-white' : 'text-slate-300 hover:text-white'
                   }`}>
-                    <Home className="w-4 h-4 mr-1" />
-                    Home
+                    IND Wizard
                   </div>
                 </Link>
-                <Link href="/versions">
-                  <div className={`inline-flex items-center px-1 pt-1 text-sm font-medium cursor-pointer ${
-                    location === '/versions' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'
+                <Link href="/csr-library">
+                  <div className={`inline-flex items-center px-4 py-2 text-sm font-medium cursor-pointer ${
+                    location === '/csr-library' ? 'text-white' : 'text-slate-300 hover:text-white'
                   }`}>
-                    <FileText className="w-4 h-4 mr-1" />
-                    Documents
+                    CSR Library
                   </div>
                 </Link>
-                <Link href="/cmc-module">
-                  <div className={`inline-flex items-center px-1 pt-1 text-sm font-medium cursor-pointer ${
-                    location === '/cmc-module' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'
+                <Link href="/cmc-suite">
+                  <div className={`inline-flex items-center px-4 py-2 text-sm font-medium cursor-pointer ${
+                    location === '/cmc-suite' ? 'text-white' : 'text-slate-300 hover:text-white'
                   }`}>
-                    <Database className="w-4 h-4 mr-1" />
-                    CMC Module
+                    CMC Suite
+                  </div>
+                </Link>
+                <Link href="/ai-cmc-blueprint">
+                  <div className={`inline-flex items-center px-4 py-2 text-sm font-medium cursor-pointer ${
+                    location === '/ai-cmc-blueprint' ? 'text-white' : 'text-slate-300 hover:text-white'
+                  }`}>
+                    AI-CMC Blueprint
+                  </div>
+                </Link>
+                <Link href="/demo">
+                  <div className={`inline-flex items-center px-4 py-2 text-sm font-medium cursor-pointer ${
+                    location === '/demo' ? 'text-white' : 'text-slate-300 hover:text-white'
+                  }`}>
+                    Demo
                   </div>
                 </Link>
               </nav>
+              
+              <Link href="/ask-lumen">
+                <div className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-md px-4 py-2 text-sm font-medium cursor-pointer flex items-center">
+                  Ask Lumen
+                </div>
+              </Link>
               
               {/* User Menu */}
               <div className="relative" ref={menuRef}>
                 <button
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center text-sm font-medium text-gray-700 rounded-full hover:bg-gray-100 focus:outline-none p-2 transition duration-150 ease-in-out"
+                  className="flex items-center text-sm font-medium text-white rounded-full hover:bg-slate-700 focus:outline-none p-2 transition duration-150 ease-in-out"
                 >
-                  <span className="hidden md:block mr-1">{userInfo.name}</span>
-                  <div className="flex items-center justify-center h-8 w-8 rounded-full bg-blue-100 text-blue-800">
+                  <div className="flex items-center justify-center h-8 w-8 rounded-full bg-slate-700 text-white">
                     <User className="h-4 w-4" />
                   </div>
-                  <ChevronDown className={`ml-1 h-4 w-4 text-gray-400 ${userMenuOpen ? 'transform rotate-180' : ''}`} />
+                  <ChevronDown className={`ml-1 h-4 w-4 text-slate-400 ${userMenuOpen ? 'transform rotate-180' : ''}`} />
                 </button>
                 
                 {userMenuOpen && (
-                  <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
+                  <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-slate-800 ring-1 ring-slate-700 ring-opacity-5 z-50">
                     <div className="py-1">
-                      <div className="block px-4 py-2 text-sm text-gray-700 border-b border-gray-200">
-                        Signed in as <span className="font-bold">{userInfo.name}</span>
+                      <div className="block px-4 py-2 text-sm text-slate-300 border-b border-slate-700">
+                        Signed in as <span className="font-bold text-white">{userInfo.name}</span>
                       </div>
                       
-                      <a href="#settings" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                      <a href="#settings" className="flex items-center px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white">
                         <Settings className="mr-2 h-4 w-4" />
                         Settings
                       </a>
                       
-                      <a href="#security" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                      <a href="#security" className="flex items-center px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white">
                         <Shield className="mr-2 h-4 w-4" />
                         Security
                       </a>
                       
                       <button
                         onClick={handleLogout}
-                        className="w-full text-left flex items-center px-4 py-2 text-sm text-red-700 hover:bg-gray-100"
+                        className="w-full text-left flex items-center px-4 py-2 text-sm text-red-400 hover:bg-slate-700 hover:text-red-300"
                       >
                         <LogOut className="mr-2 h-4 w-4" />
                         Sign out
@@ -153,14 +164,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         {children}
       </main>
 
-      {/* Footer - we can add it later if needed */}
-      <footer className="bg-white border-t border-gray-200 py-4">
+      {/* Footer */}
+      <footer className="bg-slate-900 border-t border-slate-800 py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
-            <div className="text-sm text-gray-500">
+            <div className="text-sm text-slate-400">
               © {new Date().getFullYear()} TrialSage™ by C2C.AI. All rights reserved.
             </div>
-            <div className="text-sm text-gray-500">
+            <div className="text-sm text-slate-400">
               <span className="inline-flex items-center">
                 <Shield className="h-3 w-3 mr-1" />
                 21 CFR Part 11 Compliant
