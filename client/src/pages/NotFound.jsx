@@ -1,13 +1,20 @@
-import { Link } from "wouter";
+import React from 'react';
+import { Link } from 'wouter';
 
 export default function NotFound() {
   return (
-    <div className="h-screen flex flex-col items-center justify-center text-center space-y-4">
-      <h1 className="text-6xl font-black">404</h1>
-      <p>Oops! Page not found.</p>
-      <Link to="/" className="text-regulatory-500 underline focus-visible:ring focus-visible:ring-regulatory-400">
-        Return home
-      </Link>
+    <div className="flex min-h-screen items-center justify-center bg-white">
+      <div className="text-center max-w-md mx-auto px-4">
+        <h1 className="text-4xl font-bold text-[#1d1d1f] mb-4">Page Not Found</h1>
+        <p className="text-[#86868b] mb-8">
+          The page you're looking for doesn't exist or has been moved.
+        </p>
+        <Link to="/">
+          <a className="inline-flex items-center px-5 py-2.5 bg-[#0071e3] text-white rounded-lg font-medium">
+            Back to Home
+          </a>
+        </Link>
+      </div>
     </div>
   );
 }
