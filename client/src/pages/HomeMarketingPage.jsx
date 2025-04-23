@@ -77,25 +77,30 @@ export default function HomeMarketingPage() {
                         <ChevronDown className="ml-1 h-3 w-3 transition group-hover:rotate-180" />
                       </a>
                       
-                      {/* Dropdown like Certara */}
-                      <div className="absolute left-0 mt-2 w-[240px] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 bg-white shadow-lg border border-gray-200 z-50 py-4">
-                        <Link to="/ind-wizard" className="block px-6 py-2 text-[14px] text-[#444] hover:text-[#0078d4] hover:bg-gray-50">
+                      {/* Dropdown with delay to make it easier to click */}
+                      <div className="absolute left-0 mt-2 w-[240px] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 bg-white shadow-lg border border-gray-200 z-50 py-4"
+                           style={{ transitionDelay: '0.15s' }}
+                      >
+                        <Link to="/ind-wizard" className="block px-6 py-3 text-[14px] text-[#444] hover:text-[#0078d4] hover:bg-gray-50">
                           IND Wizard™
                         </Link>
-                        <Link to="/enterprise-csr-intelligence" className="block px-6 py-2 text-[14px] text-[#444] hover:text-[#0078d4] hover:bg-gray-50">
+                        <Link to="/enterprise-csr-intelligence" className="block px-6 py-3 text-[14px] text-[#444] hover:text-[#0078d4] hover:bg-gray-50">
                           CSR Intelligence™
                         </Link>
-                        <Link to="/versions" className="block px-6 py-2 text-[14px] text-[#444] hover:text-[#0078d4] hover:bg-gray-50">
+                        <Link to="/versions" className="block px-6 py-3 text-[14px] text-[#444] hover:text-[#0078d4] hover:bg-gray-50">
                           Document Vault™
                         </Link>
-                        <Link to="/analytics-dashboard" className="block px-6 py-2 text-[14px] text-[#444] hover:text-[#0078d4] hover:bg-gray-50">
+                        <Link to="/analytics-dashboard" className="block px-6 py-3 text-[14px] text-[#444] hover:text-[#0078d4] hover:bg-gray-50">
                           Analytics
                         </Link>
-                        <Link to="/cmc-blueprint-generator" className="block px-6 py-2 text-[14px] text-[#444] hover:text-[#0078d4] hover:bg-gray-50">
+                        <Link to="/cmc-blueprint-generator" className="block px-6 py-3 text-[14px] text-[#444] hover:text-[#0078d4] hover:bg-gray-50">
                           CMC Blueprint™
                         </Link>
-                        <Link to="/ask-lumen" className="block px-6 py-2 text-[14px] text-[#444] hover:text-[#0078d4] hover:bg-gray-50">
+                        <Link to="/ask-lumen" className="block px-6 py-3 text-[14px] text-[#444] hover:text-[#0078d4] hover:bg-gray-50">
                           Ask Lumen™
+                        </Link>
+                        <Link to="/case-studies" className="block px-6 py-3 text-[14px] text-[#444] hover:text-[#0078d4] hover:bg-gray-50">
+                          Case Studies
                         </Link>
                       </div>
                     </li>
