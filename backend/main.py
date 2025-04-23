@@ -13,6 +13,7 @@ from datetime import datetime
 
 # Import routes
 from routes.generate_module32 import router as module32_router
+from routes.versions import router as versions_router
 
 # Setup logging
 logging.basicConfig(
