@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import withAuthGuard from '../utils/withAuthGuard';
+import api from '../utils/api';
 
 const Module32Form = () => {
   const [formData, setFormData] = useState({
@@ -222,4 +224,5 @@ ${formData.manufacturing_controls}
   );
 };
 
-export default Module32Form;
+// Export the component wrapped with the auth guard
+export default withAuthGuard(Module32Form);
