@@ -6,6 +6,7 @@ import axiosWithToken from "../utils/axiosWithToken"
 import { FileText, Download, Eye, Diff, Loader2, ShieldCheck } from "lucide-react"
 import ReactDiffViewer from "react-diff-viewer-continued"
 import toast from "react-hot-toast"
+import VersionsTour from "../components/VersionsTour"
 
 function VersionsPage() {
   const [versions, setVersions] = useState<any[]>([])
@@ -58,6 +59,7 @@ function VersionsPage() {
 
   return (
     <Layout>
+      <VersionsTour />
       <div className="py-12 px-6 max-w-5xl mx-auto">
         <h1 className="text-3xl font-bold text-blue-800 mb-8">Document Version History</h1>
         {loading ? (
