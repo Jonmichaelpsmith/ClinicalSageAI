@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Eye, EyeOff, User, Lock, UserPlus, LogIn, ArrowRight } from "lucide-react";
 import { useAuth } from "../hooks/use-auth";
+import Layout from "../components/Layout";
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -102,20 +103,21 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-gray-50">
-      {/* Auth Form Section */}
-      <div className="w-full md:w-1/2 flex items-center justify-center p-8">
-        <div className="w-full max-w-md">
-          <div className="text-center mb-10">
-            <h1 className="text-3xl font-bold text-blue-800">
-              {isLogin ? "Welcome Back" : "Create Account"}
-            </h1>
-            <p className="text-gray-600 mt-2">
-              {isLogin 
-                ? "Sign in to access your TrialSage™ account" 
-                : "Register to get started with TrialSage™"}
-            </p>
-          </div>
+    <Layout hideNavigation>
+      <div className="min-h-screen flex flex-col md:flex-row bg-gray-50">
+        {/* Auth Form Section */}
+        <div className="w-full md:w-1/2 flex items-center justify-center p-8">
+          <div className="w-full max-w-md">
+            <div className="text-center mb-10">
+              <h1 className="text-3xl font-bold text-blue-800">
+                {isLogin ? "Welcome Back" : "Create Account"}
+              </h1>
+              <p className="text-gray-600 mt-2">
+                {isLogin 
+                  ? "Sign in to access your TrialSage™ account" 
+                  : "Register to get started with TrialSage™"}
+              </p>
+            </div>
           
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Username */}
@@ -278,6 +280,7 @@ const AuthPage = () => {
         </div>
       </div>
     </div>
+    </Layout>
   );
 };
 

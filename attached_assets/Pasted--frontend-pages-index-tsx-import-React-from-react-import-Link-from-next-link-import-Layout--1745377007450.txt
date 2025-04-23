@@ -1,0 +1,63 @@
+// frontend/pages/index.tsx
+import React from "react"
+import Link from "next/link"
+import Layout from "../components/Layout"
+import { Sparkles, FileText, TrendingUp } from "lucide-react"
+
+export default function Home() {
+  return (
+    <Layout>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 text-gray-800">
+        <main className="max-w-6xl mx-auto py-24 px-6 text-center">
+          <h1 className="text-5xl font-bold mb-6 text-blue-900">
+            AI-Powered Chemistry, Manufacturing & Controls
+          </h1>
+          <p className="text-lg text-gray-600 max-w-4xl mx-auto mb-10">
+            TrialSage™ transforms the complexity of global CMC documentation into a seamless, intelligent,
+            and automated experience. From IND through NDA, optimize regulatory speed, quality, and confidence.
+          </p>
+
+          <div className="flex justify-center space-x-6 mb-12">
+            <Link href="/module32">
+              <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-lg shadow-lg flex items-center space-x-2">
+                <Sparkles className="w-5 h-5" />
+                <span>Start Generating</span>
+              </button>
+            </Link>
+            <Link href="/versions">
+              <button className="bg-white hover:bg-gray-100 border border-blue-300 text-blue-800 font-medium px-8 py-3 rounded-lg shadow flex items-center space-x-2">
+                <FileText className="w-5 h-5" />
+                <span>View History</span>
+              </button>
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
+            <div className="p-6 bg-white rounded shadow">
+              <h3 className="text-lg font-semibold text-blue-800 mb-2">Regulatory-Ready Output</h3>
+              <p className="text-sm text-gray-600">
+                Instantly generate fully structured ICH Module 3.2 drafts with aligned control strategy, analytical data, and manufacturing narrative.
+              </p>
+            </div>
+            <div className="p-6 bg-white rounded shadow">
+              <h3 className="text-lg font-semibold text-blue-800 mb-2">Version Control + Comparison</h3>
+              <p className="text-sm text-gray-600">
+                View, compare, and export all historical document versions. See what changed. Share what matters.
+              </p>
+            </div>
+            <div className="p-6 bg-white rounded shadow">
+              <h3 className="text-lg font-semibold text-blue-800 mb-2">Built for Biotech Velocity</h3>
+              <p className="text-sm text-gray-600">
+                Eliminate regulatory bottlenecks with smart automation, embedded best practices, and predictive CMC insights.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-16">
+            <p className="text-sm text-gray-400">© {new Date().getFullYear()} TrialSage by Concept2Cures.AI. All rights reserved.</p>
+          </div>
+        </main>
+      </div>
+    </Layout>
+  )
+}

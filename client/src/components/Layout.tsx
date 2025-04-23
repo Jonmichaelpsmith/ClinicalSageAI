@@ -1,7 +1,6 @@
 import React, { ReactNode } from 'react';
 import { Link, useLocation } from 'wouter';
 import { LogOut, User, ChevronDown, Settings, Shield, FileText, Database, Home } from 'lucide-react';
-import { Toaster } from 'react-hot-toast';
 import axiosWithToken from '../utils/axiosWithToken';
 
 interface LayoutProps {
@@ -56,31 +55,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      {/* Global Toast Container */}
-      <Toaster 
-        position="top-right"
-        toastOptions={{
-          duration: 4000,
-          style: {
-            background: '#FFFFFF',
-            color: '#333333',
-            border: '1px solid #E2E8F0',
-            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-          },
-          success: {
-            iconTheme: {
-              primary: '#0D6EFD',
-              secondary: '#FFFFFF',
-            },
-          },
-          error: {
-            iconTheme: {
-              primary: '#EF4444',
-              secondary: '#FFFFFF',
-            },
-          },
-        }}
-      />
+      {/* Toast notifications handled by the app-level toast container */}
 
       {/* Top Navigation Bar */}
       <header className="bg-white shadow-sm border-b border-gray-200 z-10">
