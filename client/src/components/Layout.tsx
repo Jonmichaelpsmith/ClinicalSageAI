@@ -281,6 +281,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 >
                   CMC
                 </NavLink>
+
+                <NavLink 
+                  to="/document-vault"
+                  onClick={closeMenus}
+                  className={`inline-flex items-center px-3 py-2 text-sm font-medium cursor-pointer ${
+                    location === '/document-vault' ? 'text-white border-b-2 border-blue-400' : 'text-slate-300 hover:text-white'
+                  }`}
+                >
+                  DM Vault
+                </NavLink>
               </div>
               
               <NavLink 
