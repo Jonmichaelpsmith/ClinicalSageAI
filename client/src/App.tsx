@@ -16,6 +16,7 @@ const EmergencyFallback = ({ pageName }: { pageName: string }) => (
 );
 
 // Lazy load all components to prevent dependency issues
+const LazyHomeMarketingPage = React.lazy(() => import('./pages/HomeMarketingPage'));
 const LazySubmissionBuilder = React.lazy(() => import('./pages/SubmissionBuilder'));
 const LazyIndSequenceDetail = React.lazy(() => import('./pages/IndSequenceDetail'));
 const LazyIndSequenceManager = React.lazy(() => import('./pages/IndSequenceManager'));
@@ -300,7 +301,9 @@ export default function App() {
               </Route>
               <Route path="/">
                 <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Home" />}>
-                  <LazyHomeLandingEnhanced />
+                  <React.Suspense fallback={<EmergencyFallback pageName="Marketing" />}>
+                    <LazyHomeMarketingPage />
+                  </React.Suspense>
                 </SimpleErrorBoundary>
               </Route>
               <Route>
