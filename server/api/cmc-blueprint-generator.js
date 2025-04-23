@@ -8,12 +8,38 @@
 
 import { z } from 'zod';
 import { OpenAI } from 'openai';
-import rateLimit from 'express-rate-limit';
 import multer from 'multer';
 import path from 'path';
 import { promises as fs } from 'fs';
 import { sanitizeInput, logApiUsage, handleApiError } from '../utils/api-security.js';
 import { createDocx, createPDF, createECTD, createJSONExport } from '../utils/document-generator.js';
+
+// Simple rate limiter implementation until express-rate-limit is properly installed
+const createRateLimiter = (options) => {
+  const requests = new Map();
+  
+  return (req, res, next) => {
+    const ip = req.ip;
+    const now = Date.now();
+    const windowStart = now - (options.windowMs || 3600000);
+    
+    // Clean old entries
+    if (requests.has(ip)) {
+      const requestTimes = requests.get(ip).filter(time => time > windowStart);
+      requests.set(ip, requestTimes);
+      
+      if (requestTimes.length >= (options.max || 10)) {
+        return res.status(429).json(options.message || { error: 'Too many requests, please try again later.' });
+      }
+      
+      requestTimes.push(now);
+    } else {
+      requests.set(ip, [now]);
+    }
+    
+    next();
+  };
+};
 
 // Ensure OpenAI API key is configured
 if (!process.env.OPENAI_API_KEY) {
@@ -26,20 +52,16 @@ const openai = new OpenAI({
 });
 
 // Rate limiter specific to blueprint generation (stricter limits due to high resource usage)
-const blueprintRateLimiter = rateLimit({
+const blueprintRateLimiter = createRateLimiter({
   windowMs: 60 * 60 * 1000, // 1 hour window
   max: 10, // 10 requests per hour
-  standardHeaders: true,
-  legacyHeaders: false,
   message: { error: 'Too many blueprint generation requests. Please try again later.' }
 });
 
 // Rate limiter for file uploads (even stricter)
-const uploadRateLimiter = rateLimit({
+const uploadRateLimiter = createRateLimiter({
   windowMs: 60 * 60 * 1000, // 1 hour window
   max: 20, // 20 uploads per hour
-  standardHeaders: true,
-  legacyHeaders: false,
   message: { error: 'Too many file uploads. Please try again later.' }
 });
 
@@ -111,6 +133,181 @@ const molecularStructureSchema = z.object({
  * Register CMC Blueprint Generator API routes
  * @param {Express} app - Express app instance
  */
+// Placeholder implementations of required functions
+async function processChemistryFile(file) {
+  // In a production environment, this would use chemistry parsing libraries
+  return {
+    moleculeName: file.originalname.split('.')[0],
+    molecularFormula: "C12H22O11", // Example formula
+    estimatedMolecularWeight: "342.3 g/mol",
+    detectedFunctionalGroups: ["Hydroxyl", "Ether"],
+    fileType: file.mimetype,
+    fileName: file.originalname
+  };
+}
+
+async function processStructureImage(file) {
+  // In a production environment, this would use OpenAI Vision API
+  return {
+    moleculeName: file.originalname.split('.')[0],
+    molecularFormula: "C12H22O11", // Example formula
+    confidence: 0.92,
+    fileType: file.mimetype,
+    fileName: file.originalname
+  };
+}
+
+async function generateRegulatoryCitations(moleculeType, regulatoryRegion, sections) {
+  // In production, this would use OpenAI to generate region-specific citations
+  return sections.map(section => ({
+    section,
+    citations: [
+      {
+        reference: `${regulatoryRegion} Guideline on ${moleculeType} Development (2023)`,
+        relevance: "High",
+        quote: "Specifications should be set according to international standards."
+      }
+    ]
+  }));
+}
+
+async function generateProcessDiagram(molecularData) {
+  // In production, this would use DALL-E or similar to create a diagram
+  return {
+    diagramUrl: "/placeholder-diagram.png",
+    generatedAt: new Date().toISOString(),
+    molecule: molecularData.moleculeName
+  };
+}
+
+async function performRiskAnalysis(molecularData, targetMarkets) {
+  // In production, this would use OpenAI to analyze manufacturing risks
+  return {
+    overallRiskCategory: "Medium",
+    risksByMarket: targetMarkets.map(market => ({
+      market,
+      riskLevel: "Medium",
+      complianceGaps: [
+        "Additional stability data may be required"
+      ]
+    })),
+    mitigationSuggestions: [
+      "Implement additional in-process controls",
+      "Consider alternative purification method"
+    ]
+  };
+}
+
+async function exportToWord(template, moleculeName, blueprintId) {
+  // In production, this would use document generation library
+  return Buffer.from(`Mock Word document for ${moleculeName}`);
+}
+
+async function exportToPDF(template, moleculeName, blueprintId) {
+  // In production, this would use PDF generation library
+  return Buffer.from(`Mock PDF document for ${moleculeName}`);
+}
+
+async function exportToECTD(template, moleculeName, blueprintId) {
+  // In production, this would generate a valid eCTD structure
+  return Buffer.from(`Mock eCTD package for ${moleculeName}`);
+}
+
+async function exportToJSON(template, moleculeName, blueprintId) {
+  // Export the blueprint data as JSON
+  return JSON.stringify({
+    molecule: moleculeName,
+    exportedAt: new Date().toISOString(),
+    format: "JSON",
+    template
+  });
+}
+
+async function fetchMolecularProperties(identifier, identifierType) {
+  // In production, this would query PubChem, ChEMBL or similar databases
+  return {
+    properties: {
+      molecularWeight: "342.30 g/mol",
+      logP: -3.24,
+      hydrogenBondDonors: 8,
+      hydrogenBondAcceptors: 11,
+      rotableBonds: 5,
+      polarSurfaceArea: 139.06,
+      solubility: "Freely soluble in water"
+    },
+    source: "API Simulation",
+    identifier,
+    identifierType
+  };
+}
+
+// This function needs implementation for actual generation
+async function generateCMCBlueprint(molecularData) {
+  if (!process.env.OPENAI_API_KEY) {
+    return {
+      error: "OpenAI API key not configured",
+      message: "Please configure OPENAI_API_KEY to use this functionality"
+    };
+  }
+  
+  // Return a structured response with placeholder content for now
+  return {
+    drugSubstance: {
+      "s.1": {
+        title: "General Information",
+        content: `${molecularData.moleculeName} (${molecularData.molecularFormula}) is a synthetic compound...`,
+        regulatoryConsiderations: ["ICH Q6A", "ICH Q3A"]
+      },
+      "s.2": {
+        title: "Manufacture",
+        content: `The manufacturing process for ${molecularData.moleculeName} consists of the following steps...`,
+        criticalSteps: ["Stereoselective synthesis", "Purification"]
+      }
+    },
+    drugProduct: {
+      "p.1": {
+        title: "Description and Composition",
+        content: `${molecularData.moleculeName} is formulated as a ${molecularData.formulation?.dosageForm || "tablet"}...`,
+        composition: molecularData.formulation?.ingredients || []
+      }
+    },
+    metadata: {
+      generatedAt: new Date().toISOString(),
+      molecule: {
+        name: molecularData.moleculeName,
+        formula: molecularData.molecularFormula
+      }
+    }
+  };
+}
+
+// Helper functions for generating detailed section prompts
+function generateS1Prompt(molecularData) {
+  return `Generate a comprehensive Section S.1 "General Information" for the ICH CTD Module 3 Quality documentation for ${molecularData.moleculeName} (${molecularData.molecularFormula}).`;
+}
+
+function generateS2Prompt(molecularData) {
+  return `Generate a detailed Section S.2 "Manufacture" for the ICH CTD Module 3 Quality documentation for ${molecularData.moleculeName}.`;
+}
+
+function generateS3Prompt(molecularData) {
+  return `Generate Section S.3 "Characterisation" for the ICH CTD Module 3 Quality documentation for ${molecularData.moleculeName}, including elucidation of structure and potential impurities.`;
+}
+
+function generateS4Prompt(molecularData) {
+  return `Generate Section S.4 "Control of Drug Substance" for the ICH CTD Module 3 Quality documentation for ${molecularData.moleculeName}, including specifications, analytical procedures, and batch analyses.`;
+}
+
+function generateP1Prompt(molecularData) {
+  const dosageForm = molecularData.formulation?.dosageForm || "pharmaceutical form";
+  return `Generate Section P.1 "Description and Composition" for the ICH CTD Module 3 Quality documentation for ${molecularData.moleculeName} ${dosageForm}.`;
+}
+
+function generateP2Prompt(molecularData) {
+  const dosageForm = molecularData.formulation?.dosageForm || "pharmaceutical form";
+  return `Generate Section P.2 "Pharmaceutical Development" for the ICH CTD Module 3 Quality documentation for ${molecularData.moleculeName} ${dosageForm}.`;
+}
+
 export function registerCMCBlueprintRoutes(app) {
   /**
    * Upload and process molecular structure files

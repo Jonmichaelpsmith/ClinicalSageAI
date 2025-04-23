@@ -6,8 +6,8 @@
  * security vulnerabilities.
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 const fsPromises = fs.promises;
 
 // Ensure logs directory exists
