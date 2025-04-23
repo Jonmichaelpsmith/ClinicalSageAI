@@ -267,7 +267,7 @@ export default function HomeMarketingPage() {
                     </Link>
                     <Link to="/document-management" className="flex p-4 hover:bg-gray-50 group/item border-t border-gray-100">
                       <div className="w-10 h-10 flex items-center justify-center bg-blue-600 rounded-lg shrink-0">
-                        <Files className="w-5 h-5 text-white" />
+                        <FileText className="w-5 h-5 text-white" />
                       </div>
                       <div className="ml-4">
                         <h4 className="font-medium text-gray-900 group-hover/item:text-blue-600">DocuFlow™</h4>
