@@ -87,8 +87,7 @@ class SimpleErrorBoundary extends React.Component<
   }
 }
 
-// Import TopNav component
-import TopNav from './components/TopNav';
+// Removed TopNav import as we're using layout component instead
 // Import auth components and context providers
 import { AuthProvider } from './hooks/use-auth';
 import AuthPage from './pages/auth-page';
@@ -130,8 +129,7 @@ export default function App() {
           <OnboardingProvider>
             <LumenAssistantProvider>
           <React.Suspense fallback={<div className="flex items-center justify-center h-screen">Loading application...</div>}>
-            <TopNav />
-            <div className="pt-12"> {/* Add padding for the fixed TopNav */}
+            <div className=""> {/* No additional padding needed */}
             <Switch>
               <Route path="/builder">
                 <SimpleErrorBoundary fallback={<EmergencyFallback pageName="IND Builder" />}>
