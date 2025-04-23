@@ -8,7 +8,7 @@ import {
   CheckCircle, X, ArrowUpRight, BookOpen,
   LayoutDashboard, Beaker, Sparkles, Database,
   Target, SearchCheck, Combine, LineChart, CalendarClock,
-  Microscope, Phone, Mail, User, Globe, 
+  Microscope, Phone, Mail, User, UserPlus, Globe, 
   Building2, Users, Calendar, Shield, Check, Plus, Trash2, AlertCircle
 } from 'lucide-react';
 
@@ -139,151 +139,88 @@ const platformDifferences = [
 export default function HomeMarketingPage() {
   const [activeTab, setActiveTab] = useState('problems');
   
-  // Add error boundary
+  // Render the component
   try {
+    // Return the main UI
     return (
     <div className="min-h-screen bg-white text-[#1d1d1f]" style={{ fontFamily: "SF Pro Text, -apple-system, BlinkMacSystemFont, sans-serif" }}>
       {/* Apple-style navigation */}
-      <header className="bg-white sticky top-0 z-50 border-b border-gray-200 shadow-sm">
-        <div className="container mx-auto flex justify-between items-center py-3 px-4">
-          <div className="flex flex-col items-start">
-            <Link to="/" className="flex items-center">
-              <div className="bg-gradient-to-r from-[#0071e3] to-[#2b8fff] rounded p-1.5 mr-2">
-                <div className="text-white font-bold text-xs tracking-wide">C2C.AI</div>
-              </div>
-              <span className="text-lg font-semibold text-[#1d1d1f] tracking-tight">CONCEPT2CURE.AI</span>
+      <header className="bg-white sticky top-0 z-50 border-b border-gray-100">
+        <div className="max-w-[980px] mx-auto flex justify-between items-center h-[44px] px-5">
+          <div className="flex items-center">
+            <Link to="/" className="text-[#1d1d1f] font-medium text-xl tracking-tight">
+              <span className="font-semibold">CONCEPT2CURE.AI</span>
             </Link>
-            <span className="ml-7 text-sm text-[#86868b] mt-0.5">TrialSage™ Platform</span>
           </div>
           
-          <nav className="hidden lg:flex items-center justify-center space-x-1 flex-1 px-4">
-            <div className="group relative px-4 py-2">
-              <button className="flex items-center text-[#1d1d1f] font-medium text-sm group-hover:text-[#06c]">
-                Products <ArrowRight className="w-3 h-3 ml-1 transform rotate-90 group-hover:text-[#06c]" />
-              </button>
-              <div className="absolute hidden group-hover:block left-0 top-full min-w-[280px] bg-white shadow-lg rounded-lg border border-gray-200 p-4 z-50">
-                <div className="grid gap-3">
-                  <Link to="/ind-wizard" className="flex p-2 hover:bg-[#f5f5f7] rounded-md">
-                    <FileCheck className="w-6 h-6 text-[#06c] mr-3 flex-shrink-0" />
-                    <div>
-                      <span className="font-medium text-[#1d1d1f] block">IND Wizard™</span>
-                      <span className="text-xs text-[#86868b]">Automated IND submissions</span>
-                    </div>
-                  </Link>
-                  <Link to="/enterprise-csr-intelligence" className="flex p-2 hover:bg-[#f5f5f7] rounded-md">
-                    <LayoutDashboard className="w-6 h-6 text-[#06c] mr-3 flex-shrink-0" />
-                    <div>
-                      <span className="font-medium text-[#1d1d1f] block">CSR Intelligence™</span>
-                      <span className="text-xs text-[#86868b]">Interactive CSR dashboards</span>
-                    </div>
-                  </Link>
-                  <Link to="/versions" className="flex p-2 hover:bg-[#f5f5f7] rounded-md">
-                    <Database className="w-6 h-6 text-[#06c] mr-3 flex-shrink-0" />
-                    <div>
-                      <span className="font-medium text-[#1d1d1f] block">Document Vault™</span>
-                      <span className="text-xs text-[#86868b]">21 CFR Part 11 compliant storage</span>
-                    </div>
-                  </Link>
-                  <Link to="/ask-lumen" className="flex p-2 hover:bg-[#f5f5f7] rounded-md">
-                    <Sparkles className="w-6 h-6 text-[#06c] mr-3 flex-shrink-0" />
-                    <div>
-                      <span className="font-medium text-[#1d1d1f] block">Ask Lumen™</span>
-                      <span className="text-xs text-[#86868b]">AI regulatory assistant</span>
-                    </div>
-                  </Link>
-                </div>
-              </div>
-            </div>
-            
-            <Link to="/pricing" className="px-4 py-2 text-sm font-medium text-[#1d1d1f] hover:text-[#06c]">
-              Pricing
+          <nav className="hidden md:flex items-center space-x-9">
+            <Link to="/ind-wizard" className="text-[#1d1d1f] text-sm font-normal hover:text-[#06c]">
+              IND Wizard
             </Link>
-            
-            <Link to="/about" className="px-4 py-2 text-sm font-medium text-[#1d1d1f] hover:text-[#06c]">
-              About C2C.AI
+            <Link to="/enterprise-csr-intelligence" className="text-[#1d1d1f] text-sm font-normal hover:text-[#06c]">
+              CSR Intelligence
             </Link>
-            
-            <Link to="/contact" className="px-4 py-2 text-sm font-medium text-[#1d1d1f] hover:text-[#06c]">
-              Contact
+            <Link to="/versions" className="text-[#1d1d1f] text-sm font-normal hover:text-[#06c]">
+              Document Vault
+            </Link>
+            <Link to="/cmc-blueprint-generator" className="text-[#1d1d1f] text-sm font-normal hover:text-[#06c]">
+              CMC Blueprint
+            </Link>
+            <Link to="/analytics-dashboard" className="text-[#1d1d1f] text-sm font-normal hover:text-[#06c]">
+              Analytics
             </Link>
           </nav>
           
-          <div className="flex items-center space-x-3">
-            <Link to="/auth" className="text-sm font-medium text-[#1d1d1f] hover:text-[#06c] px-4 py-2">
+          <div className="flex items-center space-x-6">
+            <Link to="/auth" className="text-[#1d1d1f] text-sm font-normal hover:text-[#06c]">
               Login
             </Link>
             
             <Link to="/auth" 
-              className="hidden md:flex bg-[#0071e3] hover:bg-[#0077ed] text-white px-4 py-2 rounded-md text-sm font-medium transition-all">
+              className="bg-[#06c] hover:bg-[#0071e3] text-white px-3 py-1 rounded-full text-sm font-normal transition-all">
               Get Started
             </Link>
             
             <Link to="/team-signup" 
-              className="hidden md:flex text-[#1d1d1f] hover:text-[#06c] text-sm font-medium ml-2">
-              <UserPlus className="h-4 w-4 mr-1 mt-0.5" />
+              className="hidden md:flex text-[#1d1d1f] hover:text-[#06c] text-sm">
               Enterprise
             </Link>
             
-            <button className="lg:hidden text-[#1d1d1f]">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            <button className="md:hidden text-[#1d1d1f]">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
           </div>
         </div>
       </header>
 
-      {/* Quick Module Access Bar - Non-gated top modules */}
-      <div className="bg-[#fbfbfd] border-b border-[#e5e5e7] py-2 px-4">
-        <div className="container mx-auto">
-          <div className="flex flex-wrap items-center justify-between">
-            <div className="flex items-center space-x-6 overflow-x-auto py-2 scrollbar-hide">
-              <Link to="/ind-wizard" className="flex items-center text-[#1d1d1f] hover:text-[#06c] whitespace-nowrap">
-                <FileCheck className="h-4 w-4 mr-2" />
-                <span className="text-sm font-medium">IND Wizard</span>
-              </Link>
-              <Link to="/enterprise-csr-intelligence" className="flex items-center text-[#1d1d1f] hover:text-[#06c] whitespace-nowrap">
-                <LayoutDashboard className="h-4 w-4 mr-2" />
-                <span className="text-sm font-medium">CSR Intelligence</span>
-              </Link>
-              <Link to="/versions" className="flex items-center text-[#1d1d1f] hover:text-[#06c] whitespace-nowrap">
-                <Database className="h-4 w-4 mr-2" />
-                <span className="text-sm font-medium">Document Vault</span>
-              </Link>
-              <Link to="/cmc-blueprint-generator" className="flex items-center text-[#1d1d1f] hover:text-[#06c] whitespace-nowrap">
-                <Microscope className="h-4 w-4 mr-2" />
-                <span className="text-sm font-medium">CMC Blueprint</span>
-              </Link>
-              <Link to="/analytics-dashboard" className="flex items-center text-[#1d1d1f] hover:text-[#06c] whitespace-nowrap">
-                <BarChart3 className="h-4 w-4 mr-2" />
-                <span className="text-sm font-medium">Analytics</span>
-              </Link>
-            </div>
-            <Link to="/ask-lumen" className="flex items-center bg-[#f8f9ff] hover:bg-[#f2f7ff] px-3 py-1.5 rounded-full text-[#06c] transition-all">
-              <Sparkles className="h-4 w-4 mr-2" />
-              <span className="text-sm font-medium">Try Ask Lumen Free</span>
-              <span className="ml-2 text-xs py-0.5 px-1.5 bg-[#06c] text-white rounded-full">10 min</span>
-            </Link>
-          </div>
+      {/* Subtitle bar */}
+      <div className="bg-white border-b border-gray-100 py-1">
+        <div className="max-w-[980px] mx-auto flex items-center justify-between px-5">
+          <p className="text-[#86868b] text-sm">TrialSage™ Platform</p>
+          <Link to="/ask-lumen" className="text-[#06c] hover:underline text-sm flex items-center">
+            <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+            <span>Try Ask Lumen Free</span>
+            <span className="ml-1.5 text-xs py-0.5 px-1.5 bg-[#06c]/10 text-[#06c] rounded-full">10 min</span>
+          </Link>
         </div>
       </div>
 
-      {/* Free Ask Lumen Highlight */}
-      <section className="bg-gradient-to-r from-[#f8f9ff] to-[#f0f7ff] py-4 border-b border-[#e5e5e7]">
-        <div className="container mx-auto px-4">
+      {/* Ask Lumen promotion - clean Apple style */}
+      <section className="bg-[#f5f5f7] py-3 border-b border-gray-100">
+        <div className="max-w-[980px] mx-auto px-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <div className="bg-white p-2 rounded-full shadow-sm mr-4">
-                <Sparkles className="h-8 w-8 text-[#06c]" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-[#1d1d1f]">Ask Lumen™ AI Assistant</h3>
-                <p className="text-sm text-[#424245]">Try our regulatory AI assistant free for 10 minutes - no credit card required</p>
-              </div>
+              <Sparkles className="h-5 w-5 text-[#06c] mr-3" />
+              <p className="text-sm text-[#1d1d1f]">
+                <span className="font-medium">Ask Lumen™ AI Assistant</span>
+                <span className="text-[#86868b] ml-2">Try our regulatory AI assistant free for 10 minutes</span>
+              </p>
             </div>
             <Link to="/ask-lumen">
-              <button className="bg-[#0071e3] hover:bg-[#0077ed] text-white px-4 py-2 rounded-full text-sm font-medium transition-all">
-                Start Free Trial
+              <button className="text-[#06c] text-sm hover:underline">
+                Start Free Trial →
               </button>
             </Link>
           </div>
