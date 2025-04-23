@@ -4,10 +4,8 @@ import { WebSocketServer, WebSocket } from 'ws';
 import preIndRoutes from './routes/preIndRoutes';
 import nonclinicalRoutes from './routes/nonclinicalRoutes';
 import docuShareRoutes from './routes/docushare.js';
-// Import CER routes - work around ESM/CommonJS conflicts
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
-const apiRouter = require('./api');
+// Import API routes
+import apiRouter from './api/index.js';
 
 // Basic WebSocket server implementation
 export const setupRoutes = (app: express.Express) => {

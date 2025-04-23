@@ -11,9 +11,9 @@ import { OpenAI } from 'openai';
 import rateLimit from 'express-rate-limit';
 import multer from 'multer';
 import path from 'path';
-import { sanitizeInput, logApiUsage, handleApiError } from '../utils/api-security.js';
 import { promises as fs } from 'fs';
-import { createDocx, createPDF } from '../utils/document-generator.js';
+import { sanitizeInput, logApiUsage, handleApiError } from '../utils/api-security.js';
+import { createDocx, createPDF, createECTD, createJSONExport } from '../utils/document-generator.js';
 
 // Ensure OpenAI API key is configured
 if (!process.env.OPENAI_API_KEY) {
@@ -115,43 +115,49 @@ export function registerCMCBlueprintRoutes(app) {
   /**
    * Upload and process molecular structure files
    */
-  app.post('/api/cmc-blueprint-generator/upload', uploadRateLimiter, async (req, res) => {
-    try {
-      // Check if file upload middleware is configured
-      if (!req.files || Object.keys(req.files).length === 0) {
-        return res.status(400).json({ error: 'No files were uploaded.' });
+  app.post('/api/cmc-blueprint-generator/upload', uploadRateLimiter, (req, res) => {
+    upload(req, res, async (err) => {
+      if (err) {
+        return res.status(400).json({ error: err.message });
       }
+    
+      try {
+        // Check if file upload middleware is configured
+        if (!req.file) {
+          return res.status(400).json({ error: 'No files were uploaded.' });
+        }
 
-      const file = req.files.file;
-      const fileExtension = file.name.split('.').pop().toLowerCase();
+        const file = req.file;
+        const fileExtension = file.originalname.split('.').pop().toLowerCase();
       
-      // Process different file types
-      let extractedData = {};
-      
-      if (['mol', 'sdf', 'pdb', 'cif', 'smi'].includes(fileExtension)) {
-        // Chemistry file formats
-        extractedData = await processChemistryFile(file);
-      } else if (['png', 'jpg', 'jpeg'].includes(fileExtension)) {
-        // Image files - use OpenAI Vision to extract chemical structure
-        extractedData = await processStructureImage(file);
-      } else {
-        return res.status(400).json({ 
-          error: 'Unsupported file format. Please upload .mol, .sdf, .pdb, .cif, .smi, .png, .jpg, or .jpeg files.' 
+        // Process different file types
+        let extractedData = {};
+        
+        if (['mol', 'sdf', 'pdb', 'cif', 'smi'].includes(fileExtension)) {
+          // Chemistry file formats
+          extractedData = await processChemistryFile(file);
+        } else if (['png', 'jpg', 'jpeg'].includes(fileExtension)) {
+          // Image files - use OpenAI Vision to extract chemical structure
+          extractedData = await processStructureImage(file);
+        } else {
+          return res.status(400).json({ 
+            error: 'Unsupported file format. Please upload .mol, .sdf, .pdb, .cif, .smi, .png, .jpg, or .jpeg files.' 
+          });
+        }
+        
+        // Log successful upload
+        logApiUsage(req, 'cmc-blueprint-generator-upload', true, { fileType: fileExtension });
+        
+        // Return the extracted data
+        return res.json({ 
+          success: true, 
+          message: 'File processed successfully',
+          extractedData
         });
+      } catch (error) {
+        return handleApiError(error, res, 'Failed to process uploaded file');
       }
-      
-      // Log successful upload
-      logApiUsage(req, 'cmc-blueprint-generator-upload', true, { fileType: fileExtension });
-      
-      // Return the extracted data
-      return res.json({ 
-        success: true, 
-        message: 'File processed successfully',
-        extractedData
-      });
-    } catch (error) {
-      return handleApiError(error, res, 'Failed to process uploaded file');
-    }
+    });
   });
 
   /**
@@ -1006,6 +1012,8 @@ async function fetchMolecularProperties(identifier, identifierType) {
     throw new Error(`Failed to fetch molecular properties: ${error.message}`);
   }
 }
+
+// Export functions already handled by export statements
 
 /**
  * Generate prompt for S.1 General Information
