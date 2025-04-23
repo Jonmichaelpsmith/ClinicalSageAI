@@ -107,6 +107,8 @@ const LazyNotFound = React.lazy(() => import('./pages/NotFound'));
 const LazyVersions = React.lazy(() => import('./pages/versions'));
 // Team signup page with detailed profile and license management
 const LazyTeamSignup = React.lazy(() => import('./pages/TeamSignup'));
+// Case Studies page with authentic customer success stories
+const LazyCaseStudies = React.lazy(() => import('./pages/CaseStudies'));
 // Currently using a fallback for DemoStart page until we implement it fully
 const LazyDemoStart = () => {
   // Redirects user to home if they're not logged in
@@ -349,6 +351,11 @@ export default function App() {
               <Route path="/admin-profile">
                 <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Admin Profile" />}>
                   <LazyAdminProfile />
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/case-studies">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Case Studies" />}>
+                  <LazyCaseStudies />
                 </SimpleErrorBoundary>
               </Route>
               {/* Protected root route with enhanced error handling for marketing page */}
