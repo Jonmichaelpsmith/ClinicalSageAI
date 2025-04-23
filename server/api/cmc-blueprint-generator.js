@@ -241,45 +241,8 @@ async function fetchMolecularProperties(identifier, identifierType) {
   };
 }
 
-// This function needs implementation for actual generation
-async function generateCMCBlueprint(molecularData) {
-  if (!process.env.OPENAI_API_KEY) {
-    return {
-      error: "OpenAI API key not configured",
-      message: "Please configure OPENAI_API_KEY to use this functionality"
-    };
-  }
-  
-  // Return a structured response with placeholder content for now
-  return {
-    drugSubstance: {
-      "s.1": {
-        title: "General Information",
-        content: `${molecularData.moleculeName} (${molecularData.molecularFormula}) is a synthetic compound...`,
-        regulatoryConsiderations: ["ICH Q6A", "ICH Q3A"]
-      },
-      "s.2": {
-        title: "Manufacture",
-        content: `The manufacturing process for ${molecularData.moleculeName} consists of the following steps...`,
-        criticalSteps: ["Stereoselective synthesis", "Purification"]
-      }
-    },
-    drugProduct: {
-      "p.1": {
-        title: "Description and Composition",
-        content: `${molecularData.moleculeName} is formulated as a ${molecularData.formulation?.dosageForm || "tablet"}...`,
-        composition: molecularData.formulation?.ingredients || []
-      }
-    },
-    metadata: {
-      generatedAt: new Date().toISOString(),
-      molecule: {
-        name: molecularData.moleculeName,
-        formula: molecularData.molecularFormula
-      }
-    }
-  };
-}
+// Placeholder for function references
+// Actual implementation is further down in the file
 
 // Helper functions for generating detailed section prompts
 function generateS1Prompt(molecularData) {
