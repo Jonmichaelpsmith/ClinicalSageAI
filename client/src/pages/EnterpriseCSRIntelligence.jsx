@@ -1791,7 +1791,7 @@ const EnterpriseMetricsDisplay = () => {
           <CardTitle className="text-sm text-gray-500">CSR Library Size</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{formatNumber(safeMetrics?.totalCSRs)}</div>
+          <div className="text-2xl font-bold">{formatNumber(metrics.totalCSRs)}</div>
           <p className="text-xs text-green-600 mt-1">+324 in the last 90 days</p>
         </CardContent>
       </Card>
@@ -1802,18 +1802,18 @@ const EnterpriseMetricsDisplay = () => {
         </CardHeader>
         <CardContent>
           <div className="flex space-x-2 items-center">
-            <div className="text-lg font-bold text-green-600">{formatNumber(safeMetrics?.successfulTrials)}</div>
+            <div className="text-lg font-bold text-green-600">{formatNumber(metrics.successfulTrials)}</div>
             <div className="text-gray-400">|</div>
-            <div className="text-lg font-bold text-red-600">{formatNumber(safeMetrics?.failedTrials)}</div>
+            <div className="text-lg font-bold text-red-600">{formatNumber(metrics.failedTrials)}</div>
           </div>
           <div className="mt-1 w-full h-2 bg-gray-200 rounded-full overflow-hidden">
             <div 
               className="h-full bg-green-500" 
-              style={{ width: `${safeMetrics?.regulatorySuccessRate || 0}%` }}
+              style={{ width: `${metrics.regulatorySuccessRate}%` }}
             ></div>
           </div>
           <p className="text-xs text-gray-600 mt-1">
-            {safeMetrics?.regulatorySuccessRate || 0}% success rate
+            {metrics.regulatorySuccessRate}% success rate
           </p>
         </CardContent>
       </Card>
@@ -1824,11 +1824,11 @@ const EnterpriseMetricsDisplay = () => {
         </CardHeader>
         <CardContent>
           <div className="flex space-x-2 items-center">
-            <div className="text-lg font-bold text-purple-600">{formatNumber(safeMetrics?.aiRecommendations)}</div>
+            <div className="text-lg font-bold text-purple-600">{formatNumber(metrics.aiRecommendations)}</div>
             <div className="text-xs text-gray-500">recommendations</div>
           </div>
           <p className="text-xs text-purple-600 mt-1">
-            {safeMetrics?.aiCorrectedDesignFlaws || 0} design flaws prevented
+            {formatNumber(metrics.aiCorrectedDesignFlaws)} design flaws prevented
           </p>
         </CardContent>
       </Card>
@@ -1840,11 +1840,11 @@ const EnterpriseMetricsDisplay = () => {
         <CardContent>
           <div className="flex space-x-4 items-center">
             <div>
-              <div className="text-lg font-bold text-blue-600">{safeMetrics?.costSavingsEstimate || "$0"}</div>
+              <div className="text-lg font-bold text-blue-600">{metrics.costSavingsEstimate}</div>
               <p className="text-xs text-gray-600 mt-0">Est. savings</p>
             </div>
             <div>
-              <div className="text-lg font-bold text-amber-600">{safeMetrics?.timeToMarketImprovement || "0 months"}</div>
+              <div className="text-lg font-bold text-amber-600">{metrics.timeToMarketImprovement}</div>
               <p className="text-xs text-gray-600 mt-0">Time saved</p>
             </div>
           </div>
