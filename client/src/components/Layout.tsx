@@ -70,40 +70,47 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </div>
             
             <div className="flex items-center space-x-4">
-              <nav className="hidden md:flex space-x-8">
+              <nav className="hidden md:flex space-x-4">
                 <Link href="/ind-wizard">
-                  <div className={`inline-flex items-center px-4 py-2 text-sm font-medium cursor-pointer ${
-                    location === '/ind-wizard' ? 'text-white' : 'text-slate-300 hover:text-white'
+                  <div className={`inline-flex items-center px-3 py-2 text-sm font-medium cursor-pointer ${
+                    location === '/ind-wizard' ? 'text-white border-b-2 border-blue-400' : 'text-slate-300 hover:text-white'
                   }`}>
                     IND Wizard
                   </div>
                 </Link>
                 <Link href="/csr-library">
-                  <div className={`inline-flex items-center px-4 py-2 text-sm font-medium cursor-pointer ${
-                    location === '/csr-library' ? 'text-white' : 'text-slate-300 hover:text-white'
+                  <div className={`inline-flex items-center px-3 py-2 text-sm font-medium cursor-pointer ${
+                    location === '/csr-library' ? 'text-white border-b-2 border-blue-400' : 'text-slate-300 hover:text-white'
                   }`}>
                     CSR Library
                   </div>
                 </Link>
-                <Link href="/cmc-suite">
-                  <div className={`inline-flex items-center px-4 py-2 text-sm font-medium cursor-pointer ${
-                    location === '/cmc-suite' ? 'text-white' : 'text-slate-300 hover:text-white'
+                <Link href="/cer-generator">
+                  <div className={`inline-flex items-center px-3 py-2 text-sm font-medium cursor-pointer ${
+                    location === '/cer-generator' ? 'text-white border-b-2 border-blue-400' : 'text-slate-300 hover:text-white'
                   }`}>
-                    CMC Suite
+                    CER Generator
                   </div>
                 </Link>
-                <Link href="/ai-cmc-blueprint">
-                  <div className={`inline-flex items-center px-4 py-2 text-sm font-medium cursor-pointer ${
-                    location === '/ai-cmc-blueprint' ? 'text-white' : 'text-slate-300 hover:text-white'
+                <Link href="/cmc-module">
+                  <div className={`inline-flex items-center px-3 py-2 text-sm font-medium cursor-pointer ${
+                    location === '/cmc-module' ? 'text-white border-b-2 border-blue-400' : 'text-slate-300 hover:text-white'
                   }`}>
-                    AI-CMC Blueprint
+                    CMC Module
                   </div>
                 </Link>
-                <Link href="/demo">
-                  <div className={`inline-flex items-center px-4 py-2 text-sm font-medium cursor-pointer ${
-                    location === '/demo' ? 'text-white' : 'text-slate-300 hover:text-white'
+                <Link href="/document-vault">
+                  <div className={`inline-flex items-center px-3 py-2 text-sm font-medium cursor-pointer ${
+                    location === '/document-vault' ? 'text-white border-b-2 border-blue-400' : 'text-slate-300 hover:text-white'
                   }`}>
-                    Demo
+                    Document Vault
+                  </div>
+                </Link>
+                <Link href="/versions">
+                  <div className={`inline-flex items-center px-3 py-2 text-sm font-medium cursor-pointer ${
+                    location === '/versions' ? 'text-white border-b-2 border-blue-400' : 'text-slate-300 hover:text-white'
+                  }`}>
+                    Versions
                   </div>
                 </Link>
               </nav>
