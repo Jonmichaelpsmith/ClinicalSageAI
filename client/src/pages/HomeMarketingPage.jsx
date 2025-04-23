@@ -139,7 +139,8 @@ export default function HomeMarketingPage() {
             <Link to="/analytics-dashboard" className="text-gray-800 hover:text-blue-600 font-medium transition-colors">
               Analytics
             </Link>
-            <Link to="/ask-lumen" className="text-gray-800 hover:text-blue-600 font-medium transition-colors">
+            <Link to="/ask-lumen" className="text-violet-700 hover:text-violet-800 bg-violet-50 px-3 py-1 rounded-md font-medium transition-colors flex items-center">
+              <Sparkles className="h-4 w-4 mr-1.5 text-violet-600" />
               Ask Lumen
             </Link>
           </nav>
@@ -175,18 +176,23 @@ export default function HomeMarketingPage() {
         </div>
       </header>
 
-      {/* Ask Lumen banner - enterprise style */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-500 text-white">
-        <div className="max-w-7xl mx-auto px-6 py-2 flex items-center justify-between">
-          <div className="flex items-center">
-            <Sparkles className="w-5 h-5 mr-3" />
-            <p className="text-sm font-medium">
-              Ask Lumen™ AI Assistant now available with free 10-minute trial for regulatory advice
-            </p>
+      {/* Ask Lumen prominent feature banner */}
+      <div className="bg-gradient-to-r from-blue-700 to-blue-600 text-white">
+        <div className="max-w-7xl mx-auto px-6 py-3 flex flex-col md:flex-row items-center justify-between">
+          <div className="flex items-center mb-3 md:mb-0">
+            <div className="bg-white/20 p-2 rounded-lg mr-4">
+              <Sparkles className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="font-bold text-lg">Ask Lumen™ AI Assistant</h3>
+              <p className="text-sm text-blue-100">
+                Regulatory compliance coach trained on 200k+ submissions and global regulations
+              </p>
+            </div>
           </div>
           <Link to="/ask-lumen">
-            <button className="text-white bg-white/20 hover:bg-white/30 text-sm font-medium py-1 px-4 rounded-md transition-colors whitespace-nowrap">
-              Try Free
+            <button className="bg-white text-blue-700 hover:bg-blue-50 font-medium py-2 px-5 rounded-md transition-colors whitespace-nowrap flex items-center">
+              Try 10-Minute Free Trial <ArrowRight className="ml-2 w-4 h-4" />
             </button>
           </Link>
         </div>
@@ -299,6 +305,73 @@ export default function HomeMarketingPage() {
             </p>
           </div>
           
+          {/* Special Featured Ask Lumen Card - Full Width */}
+          <div className="mb-12 relative overflow-hidden rounded-xl border border-violet-100 bg-gradient-to-r from-violet-500 to-purple-600">
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxkZWZzPjxwYXR0ZXJuIGlkPSJncmlkIiB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiPjxwYXRoIGQ9Ik0gMjAgMCBMIDAgMCAwIDIwIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmZmZmYiIHN0cm9rZS1vcGFjaXR5PSIwLjA1IiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')]"></div>
+            <div className="absolute top-0 right-0 w-1/2 h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cmFkaWFsR3JhZGllbnQgaWQ9ImEiIGN4PSIwIiBjeT0iMCIgcj0iMSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPjxzdG9wIHN0b3AtY29sb3I9IiNmZmYiIHN0b3Atb3BhY2l0eT0iLjA1Ii8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjZmZmIiBzdG9wLW9wYWNpdHk9IjAiLz48L3JhZGlhbEdyYWRpZW50PjwvZGVmcz48Y2lyY2xlIGN4PSIzMDAiIGN5PSIzMDAiIHI9IjMwMCIgZmlsbD0idXJsKCNhKSIvPjwvc3ZnPg==')]"></div>
+            
+            <div className="relative p-8 md:p-10">
+              <div className="flex flex-col md:flex-row items-start gap-12">
+                {/* Content */}
+                <div className="flex-1">
+                  <div className="inline-flex items-center mb-4 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">
+                    <div className="bg-white text-violet-600 text-xs font-bold px-2 py-0.5 rounded mr-2">NEW</div>
+                    <span className="text-white text-sm font-medium">10-Minute Free Trial</span>
+                  </div>
+                  
+                  <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 tracking-tight">
+                    Ask Lumen™ AI Assistant
+                  </h2>
+                  
+                  <p className="text-violet-100 text-lg mb-6 max-w-xl">
+                    Your intelligent regulatory compliance coach trained on 200,000+ global submissions, FDA guidance, EMA regulations, and PMDA standards.
+                  </p>
+                  
+                  <div className="grid md:grid-cols-2 gap-4 mb-8">
+                    <div className="flex items-start">
+                      <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <CheckCircle className="h-4 w-4 text-white" />
+                      </div>
+                      <span className="text-white text-sm ml-3">Get real-time regulatory guidance</span>
+                    </div>
+                    <div className="flex items-start">
+                      <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <CheckCircle className="h-4 w-4 text-white" />
+                      </div>
+                      <span className="text-white text-sm ml-3">Industry best practices and standards</span>
+                    </div>
+                    <div className="flex items-start">
+                      <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <CheckCircle className="h-4 w-4 text-white" />
+                      </div>
+                      <span className="text-white text-sm ml-3">Multi-modal analysis of any document</span>
+                    </div>
+                    <div className="flex items-start">
+                      <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <CheckCircle className="h-4 w-4 text-white" />
+                      </div>
+                      <span className="text-white text-sm ml-3">GPT-4o powered recommendations</span>
+                    </div>
+                  </div>
+                  
+                  <Link to="/ask-lumen">
+                    <button className="bg-white text-violet-700 hover:bg-violet-50 px-6 py-3 rounded-lg font-medium text-base transition-colors flex items-center">
+                      Try Ask Lumen Free
+                      <ArrowRight className="ml-2 w-4 h-4" />
+                    </button>
+                  </Link>
+                </div>
+                
+                {/* Visual */}
+                <div className="hidden md:flex items-center justify-center md:w-1/3">
+                  <div className="w-40 h-40 bg-white/20 backdrop-blur-sm p-8 rounded-3xl">
+                    <Sparkles className="w-full h-full text-white" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div className="grid lg:grid-cols-3 gap-8">
             {/* IND Wizard */}
             <div className="group relative bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 flex flex-col">
