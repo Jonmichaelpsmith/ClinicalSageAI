@@ -17,7 +17,7 @@ import { AnimatePresence } from "framer-motion";
 
 // Import i18n initialization
 import "../i18n/i18n.js";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../utils/i18n-stub.js";
 
 export default function IndWizardLayout() {
   const { i18n, t } = useTranslation();

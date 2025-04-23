@@ -1,0 +1,111 @@
+import React, { useState } from "react";
+
+// In production, we would use axios
+// import axios from "axios";
+
+export default function Module32Form() {
+  const [formData, setFormData] = useState({
+    drug_name: "",
+    molecular_formula: "",
+    synthesis_steps: "",
+    formulation_details: "",
+    manufacturing_controls: "",
+    analytical_methods: ""
+  });
+
+  const [response, setResponse] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      // In production, this would call the real API
+      // const res = await axios.post("/api/generate/module32", formData);
+      // setResponse(res.data);
+      
+      // For demonstration, use a mock response with a delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Simulate response with export paths for both TXT and PDF
+      setResponse({
+        status: "success",
+        module32_draft: `# Module 3.2 CMC Document for ${formData.drug_name}
+
+## 3.2.S Drug Substance
+### 3.2.S.1 General Information
+#### 3.2.S.1.1 Nomenclature
+International Non-proprietary Name (INN): ${formData.drug_name}
+Chemical Name: [Chemical name based on IUPAC]
+CAS Registry Number: [CAS number]
+Molecular Formula: ${formData.molecular_formula}
+
+### 3.2.S.2 Manufacture
+${formData.synthesis_steps}
+
+### 3.2.S.4 Control of Drug Substance
+${formData.analytical_methods}
+
+## 3.2.P Drug Product
+### 3.2.P.1 Description and Composition
+${formData.formulation_details}
+
+### 3.2.P.3 Manufacture
+${formData.manufacturing_controls}`,
+        export_paths: {
+          txt: `generated_documents/module32_${formData.drug_name.replace(' ', '_')}_1234-5678-9012.txt`,
+          pdf: `generated_documents/module32_${formData.drug_name.replace(' ', '_')}_1234-5678-9012.pdf`
+        },
+        drug: formData.drug_name,
+        timestamp: new Date().toISOString()
+      });
+    } catch (err) {
+      alert("Error generating CMC document");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto p-6 space-y-6">
+      <h1 className="text-2xl font-bold">Generate ICH Module 3.2</h1>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {Object.entries(formData).map(([key, val]) => (
+          <div key={key}>
+            <label className="block font-medium mb-1 capitalize">{key.replace("_", " ")}</label>
+            <textarea
+              name={key}
+              value={val}
+              onChange={handleChange}
+              required
+              className="w-full border p-2 rounded shadow"
+              rows={key === "synthesis_steps" ? 5 : 3}
+            />
+          </div>
+        ))}
+        <button
+          type="submit"
+          disabled={loading}
+          className="bg-blue-600 text-white px-6 py-2 rounded shadow hover:bg-blue-700"
+        >
+          {loading ? "Generating..." : "Generate CMC Draft"}
+        </button>
+      </form>
+
+      {response && (
+        <div className="mt-6 bg-white p-4 border rounded shadow">
+          <h2 className="text-xl font-semibold mb-2">Generated Module 3.2 Draft</h2>
+          <pre className="whitespace-pre-wrap text-sm text-gray-800">{response.module32_draft}</pre>
+          <div className="mt-4 space-x-4">
+            <a href={"/" + response.export_paths.txt} download className="text-blue-600 underline">Download TXT</a>
+            <a href={"/" + response.export_paths.pdf} download className="text-blue-600 underline">Download PDF</a>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
