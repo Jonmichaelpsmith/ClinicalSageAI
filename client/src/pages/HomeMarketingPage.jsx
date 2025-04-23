@@ -139,7 +139,9 @@ const platformDifferences = [
 export default function HomeMarketingPage() {
   const [activeTab, setActiveTab] = useState('problems');
   
-  return (
+  // Add error boundary
+  try {
+    return (
     <div className="min-h-screen bg-white text-[#1d1d1f]" style={{ fontFamily: "SF Pro Text, -apple-system, BlinkMacSystemFont, sans-serif" }}>
       {/* Apple-style navigation */}
       <header className="bg-white sticky top-0 z-50 border-b border-gray-200 shadow-sm">
@@ -216,6 +218,12 @@ export default function HomeMarketingPage() {
               Get Started
             </Link>
             
+            <Link to="/team-signup" 
+              className="hidden md:flex text-[#1d1d1f] hover:text-[#06c] text-sm font-medium ml-2">
+              <UserPlus className="h-4 w-4 mr-1 mt-0.5" />
+              Enterprise
+            </Link>
+            
             <button className="lg:hidden text-[#1d1d1f]">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -230,11 +238,11 @@ export default function HomeMarketingPage() {
         <div className="container mx-auto">
           <div className="flex flex-wrap items-center justify-between">
             <div className="flex items-center space-x-6 overflow-x-auto py-2 scrollbar-hide">
-              <Link to="/ind/wizard" className="flex items-center text-[#1d1d1f] hover:text-[#06c] whitespace-nowrap">
+              <Link to="/ind-wizard" className="flex items-center text-[#1d1d1f] hover:text-[#06c] whitespace-nowrap">
                 <FileCheck className="h-4 w-4 mr-2" />
                 <span className="text-sm font-medium">IND Wizard</span>
               </Link>
-              <Link to="/csr-intelligence" className="flex items-center text-[#1d1d1f] hover:text-[#06c] whitespace-nowrap">
+              <Link to="/enterprise-csr-intelligence" className="flex items-center text-[#1d1d1f] hover:text-[#06c] whitespace-nowrap">
                 <LayoutDashboard className="h-4 w-4 mr-2" />
                 <span className="text-sm font-medium">CSR Intelligence</span>
               </Link>
@@ -324,7 +332,7 @@ export default function HomeMarketingPage() {
           
           <div className="grid md:grid-cols-3 gap-8 mb-16 max-w-6xl mx-auto">
             {/* IND Wizard - Premium Card */}
-            <Link to="/ind/wizard" className="group">
+            <Link to="/ind-wizard" className="group">
               <div className="bg-white p-8 rounded-2xl shadow-md border border-[#e5e5e7] h-full flex flex-col hover:shadow-lg transition-all hover:border-[#0071e3] relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-[#f2f7ff] to-white rounded-bl-3xl"></div>
                 
@@ -373,7 +381,7 @@ export default function HomeMarketingPage() {
             </Link>
             
             {/* CSR Intelligence - Premium Card */}
-            <Link to="/csr-intelligence" className="group">
+            <Link to="/enterprise-csr-intelligence" className="group">
               <div className="bg-white p-8 rounded-2xl shadow-md border border-[#e5e5e7] h-full flex flex-col hover:shadow-lg transition-all hover:border-[#0071e3] relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-[#f2f7ff] to-white rounded-bl-3xl"></div>
                 
@@ -539,7 +547,7 @@ export default function HomeMarketingPage() {
                   Our team will guide you through every step.
                 </p>
                 <div className="flex flex-wrap gap-4">
-                  <Link to="/ind/wizard" 
+                  <Link to="/ind-wizard" 
                     className="bg-[#0071e3] hover:bg-[#0077ed] text-white px-5 py-2.5 rounded-xl text-base font-medium transition-all flex items-center gap-2">
                     Launch IND Wizard <ArrowRight size={16}/>
                   </Link>
@@ -1354,4 +1362,27 @@ export default function HomeMarketingPage() {
       </footer>
     </div>
   );
+  } catch (error) {
+    console.error("Error rendering HomeMarketingPage:", error);
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center p-4">
+        <div className="max-w-md mx-auto bg-white p-8 rounded-xl shadow-md border border-[#e5e5e7]">
+          <div className="mb-6 flex justify-center">
+            <div className="bg-gradient-to-r from-[#0071e3] to-[#2b8fff] rounded p-2">
+              <div className="text-white font-bold text-sm tracking-wide">C2C.AI</div>
+            </div>
+          </div>
+          <h1 className="text-xl font-semibold text-[#1d1d1f] mb-4 text-center">We're updating our platform</h1>
+          <p className="text-[#424245] mb-6 text-center">
+            Our team is currently refreshing the TrialSage experience. Please check back shortly.
+          </p>
+          <div className="flex justify-center">
+            <Link to="/solutions" className="bg-[#0071e3] hover:bg-[#0077ed] text-white px-5 py-2.5 rounded-xl text-base font-medium transition-all">
+              Browse Solutions
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 }

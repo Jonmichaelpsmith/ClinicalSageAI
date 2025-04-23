@@ -246,6 +246,19 @@ const AuthPage = () => {
                   : "Already have an account? Sign in"}
               </button>
             </div>
+            
+            {/* Enterprise Team Signup */}
+            <div className="mt-6 pt-4 border-t border-gray-200">
+              <p className="text-gray-600 text-sm mb-2">Enterprise Customer?</p>
+              <button
+                type="button"
+                onClick={() => setLocation("/team-signup")}
+                className="flex items-center justify-center mx-auto px-4 py-2 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-md text-sm"
+              >
+                <UserPlus className="w-4 h-4 mr-2" />
+                Create Enterprise Team Account
+              </button>
+            </div>
           </form>
         </div>
       </div>

@@ -1,1245 +1,1095 @@
 import React, { useState } from 'react';
 import { useLocation } from 'wouter';
 import { 
-  ArrowRight, 
+  ArrowLeft, 
   Building2, 
-  User, 
+  Check, 
+  CheckCircle, 
+  ChevronDown, 
+  ChevronRight, 
+  CreditCard, 
+  Globe, 
   Mail, 
   Phone, 
-  Globe, 
-  Users, 
-  Shield, 
-  Check, 
   Plus, 
-  Trash2,
-  Sparkles,
-  FileCheck,
-  Database,
-  AlertCircle,
-  Calendar
+  Sparkles, 
+  Trash2, 
+  User,
+  Users 
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { 
-  Table, 
-  TableBody, 
-  TableCaption, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 
-export default function TeamSignup() {
-  const [location, setLocation] = useLocation();
+const TeamSignup = () => {
+  const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const [activeStep, setActiveStep] = useState(1);
-  const [selectedPlan, setSelectedPlan] = useState('enterprise');
-  const [companyInfo, setCompanyInfo] = useState({
+  const [currentStep, setCurrentStep] = useState(1);
+  const [formData, setFormData] = useState({
     companyName: '',
-    industry: '',
     companySize: '',
-    website: '',
+    industry: '',
     address: '',
-    city: '',
-    state: '',
     country: '',
-    zipCode: '',
-    taxId: '',
-    phone: ''
-  });
-  const [primaryContact, setPrimaryContact] = useState({
-    firstName: '',
-    lastName: '',
-    title: '',
-    email: '',
-    phone: '',
-    password: '',
-    confirmPassword: ''
-  });
-  const [teamMembers, setTeamMembers] = useState([
-    { firstName: '', lastName: '', email: '', role: 'user', access: ['ind-wizard', 'csr-intelligence'] }
-  ]);
-  const [acceptedTerms, setAcceptedTerms] = useState(false);
-  const [selectedModules, setSelectedModules] = useState({
-    'ind-wizard': true,
-    'csr-intelligence': true,
-    'document-vault': true,
-    'cmc-blueprint': false,
-    'ask-lumen': true,
-    'analytics-dashboard': false
+    website: '',
+    plan: 'enterprise',
+    adminFirstName: '',
+    adminLastName: '',
+    adminEmail: '',
+    adminPhone: '',
+    adminTitle: '',
+    adminPassword: '',
+    adminConfirmPassword: '',
+    teamMembers: [
+      { id: 1, firstName: '', lastName: '', email: '', role: 'user', modules: ['IND Wizard', 'CSR Intelligence'] },
+      { id: 2, firstName: '', lastName: '', email: '', role: 'user', modules: ['Document Vault'] }
+    ],
+    paymentMethod: 'credit',
+    cardNumber: '',
+    cardExpiry: '',
+    cardCvc: '',
+    billingEmail: '',
+    billingAddress: '',
+    acceptTerms: false
   });
   
-  const handleCompanyInfoChange = (e) => {
-    const { name, value } = e.target;
-    setCompanyInfo(prev => ({ ...prev, [name]: value }));
-  };
-  
-  const handlePrimaryContactChange = (e) => {
-    const { name, value } = e.target;
-    setPrimaryContact(prev => ({ ...prev, [name]: value }));
-  };
-  
-  const handleTeamMemberChange = (index, field, value) => {
-    const newTeamMembers = [...teamMembers];
-    newTeamMembers[index][field] = value;
-    setTeamMembers(newTeamMembers);
-  };
-  
-  const handleTeamMemberAccessChange = (index, module) => {
-    const newTeamMembers = [...teamMembers];
-    const currentAccess = newTeamMembers[index].access;
-    
-    if (currentAccess.includes(module)) {
-      newTeamMembers[index].access = currentAccess.filter(item => item !== module);
-    } else {
-      newTeamMembers[index].access = [...currentAccess, module];
+  const plans = [
+    {
+      id: 'enterprise',
+      name: 'Enterprise',
+      price: '$5,000',
+      period: 'per month',
+      seats: '25 seats included',
+      description: 'Full access to all modules with custom integrations',
+      features: [
+        'All modules included',
+        'Unlimited document processing',
+        'Priority support',
+        'DocuShare integration',
+        'Custom AI model training',
+        'Enterprise SLAs'
+      ]
+    },
+    {
+      id: 'professional',
+      name: 'Professional',
+      price: '$3,000',
+      period: 'per month',
+      seats: '15 seats included',
+      description: 'Advanced features for growing teams',
+      features: [
+        'Access to core modules',
+        '1,000 documents per month',
+        'Email and chat support',
+        'Team management',
+        'Analytics dashboards',
+        'API access'
+      ]
+    },
+    {
+      id: 'standard',
+      name: 'Standard',
+      price: '$1,500',
+      period: 'per month',
+      seats: '5 seats included',
+      description: 'Essential tools for small teams',
+      features: [
+        'Basic modules only',
+        '250 documents per month',
+        'Email support',
+        'Limited analytics',
+        'No API access',
+        'Standard SLAs'
+      ]
     }
-    
-    setTeamMembers(newTeamMembers);
-  };
+  ];
   
-  const addTeamMember = () => {
-    setTeamMembers([...teamMembers, { firstName: '', lastName: '', email: '', role: 'user', access: [] }]);
-  };
+  const modules = [
+    { id: 'ind', name: 'IND Wizard', description: 'Automated IND submissions' },
+    { id: 'csr', name: 'CSR Intelligence', description: 'Interactive CSR dashboards' },
+    { id: 'vault', name: 'Document Vault', description: '21 CFR Part 11 compliant storage' },
+    { id: 'cmc', name: 'CMC Blueprint', description: 'Chemistry, Manufacturing, Controls automation' },
+    { id: 'lumen', name: 'Ask Lumen', description: 'AI regulatory assistant' },
+    { id: 'analytics', name: 'Analytics', description: '25 regulatory metrics dashboards' }
+  ];
   
-  const removeTeamMember = (index) => {
-    if (teamMembers.length > 1) {
-      setTeamMembers(teamMembers.filter((_, i) => i !== index));
-    }
-  };
-  
-  const handleModuleChange = (module) => {
-    setSelectedModules(prev => ({
-      ...prev,
-      [module]: !prev[module]
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prevData => ({
+      ...prevData,
+      [name]: value
     }));
   };
   
-  const handleNextStep = () => {
-    // Validation for different steps
-    if (activeStep === 1) {
-      if (!companyInfo.companyName || !companyInfo.industry || !companyInfo.companySize) {
-        toast({
-          title: "Missing Information",
-          description: "Please fill in all required company information fields.",
-          variant: "destructive"
-        });
-        return;
-      }
-    } else if (activeStep === 2) {
-      if (!primaryContact.firstName || !primaryContact.lastName || !primaryContact.email || !primaryContact.phone) {
-        toast({
-          title: "Missing Information",
-          description: "Please fill in all required contact information.",
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      if (primaryContact.password !== primaryContact.confirmPassword) {
-        toast({
-          title: "Password Mismatch",
-          description: "Your passwords do not match. Please try again.",
-          variant: "destructive"
-        });
-        return;
-      }
-    } else if (activeStep === 3) {
-      // Validate team members
-      for (let i = 0; i < teamMembers.length; i++) {
-        if (!teamMembers[i].firstName || !teamMembers[i].lastName || !teamMembers[i].email) {
-          toast({
-            title: "Missing Information",
-            description: `Please fill in all required fields for team member ${i + 1}.`,
-            variant: "destructive"
-          });
-          return;
-        }
-      }
-    } else if (activeStep === 4) {
-      // Validate module selection
-      const hasModules = Object.values(selectedModules).some(Boolean);
-      if (!hasModules) {
-        toast({
-          title: "Module Selection Required",
-          description: "Please select at least one module for your subscription.",
-          variant: "destructive"
-        });
-        return;
-      }
-    }
+  const handleTeamMemberChange = (index, field, value) => {
+    const updatedTeamMembers = [...formData.teamMembers];
+    updatedTeamMembers[index] = {
+      ...updatedTeamMembers[index],
+      [field]: value
+    };
     
-    setActiveStep(prev => Math.min(prev + 1, 5));
+    setFormData(prevData => ({
+      ...prevData,
+      teamMembers: updatedTeamMembers
+    }));
   };
   
-  const handleSubmit = () => {
-    if (!acceptedTerms) {
-      toast({
-        title: "Terms Not Accepted",
-        description: "Please accept the terms and conditions to complete your signup.",
-        variant: "destructive"
-      });
-      return;
+  const handleTeamMemberModuleToggle = (index, moduleName) => {
+    const updatedTeamMembers = [...formData.teamMembers];
+    const teamMember = updatedTeamMembers[index];
+    
+    if (teamMember.modules.includes(moduleName)) {
+      teamMember.modules = teamMember.modules.filter(m => m !== moduleName);
+    } else {
+      teamMember.modules = [...teamMember.modules, moduleName];
     }
     
-    // Here you would send the data to your API
-    console.log({
-      companyInfo,
-      primaryContact,
-      teamMembers,
-      selectedPlan,
-      selectedModules
-    });
+    setFormData(prevData => ({
+      ...prevData,
+      teamMembers: updatedTeamMembers
+    }));
+  };
+  
+  const addTeamMember = () => {
+    const newId = formData.teamMembers.length > 0 
+      ? Math.max(...formData.teamMembers.map(m => m.id)) + 1
+      : 1;
+      
+    setFormData(prevData => ({
+      ...prevData,
+      teamMembers: [
+        ...prevData.teamMembers,
+        { id: newId, firstName: '', lastName: '', email: '', role: 'user', modules: [] }
+      ]
+    }));
+  };
+  
+  const removeTeamMember = (id) => {
+    setFormData(prevData => ({
+      ...prevData,
+      teamMembers: prevData.teamMembers.filter(member => member.id !== id)
+    }));
+  };
+  
+  const validateStep = (step) => {
+    switch (step) {
+      case 1:
+        if (!formData.companyName || !formData.industry || !formData.country) {
+          toast({
+            title: "Missing information",
+            description: "Please fill out all required company information fields.",
+            variant: "destructive"
+          });
+          return false;
+        }
+        return true;
+        
+      case 2:
+        if (!formData.adminFirstName || !formData.adminLastName || !formData.adminEmail) {
+          toast({
+            title: "Missing information",
+            description: "Please fill out all required administrator information fields.",
+            variant: "destructive"
+          });
+          return false;
+        }
+        
+        if (formData.adminPassword !== formData.adminConfirmPassword) {
+          toast({
+            title: "Password mismatch",
+            description: "The passwords you entered do not match.",
+            variant: "destructive"
+          });
+          return false;
+        }
+        return true;
+        
+      case 3:
+        if (formData.teamMembers.some(member => !member.firstName || !member.lastName || !member.email)) {
+          toast({
+            title: "Incomplete team information",
+            description: "Please fill out all required fields for each team member.",
+            variant: "destructive"
+          });
+          return false;
+        }
+        return true;
+        
+      case 4:
+        if (!formData.acceptTerms) {
+          toast({
+            title: "Terms and conditions",
+            description: "Please accept the terms and conditions to proceed.",
+            variant: "destructive"
+          });
+          return false;
+        }
+        return true;
+        
+      default:
+        return true;
+    }
+  };
+  
+  const goToNextStep = () => {
+    if (validateStep(currentStep)) {
+      setCurrentStep(currentStep + 1);
+      window.scrollTo(0, 0);
+    }
+  };
+  
+  const goToPreviousStep = () => {
+    setCurrentStep(currentStep - 1);
+    window.scrollTo(0, 0);
+  };
+  
+  const handleSubmit = (e) => {
+    e.preventDefault();
     
-    toast({
-      title: "Registration Complete!",
-      description: "Your account has been created successfully. You'll receive a confirmation email shortly.",
-      variant: "default"
-    });
-    
-    // Redirect to success page or dashboard
-    setTimeout(() => {
-      setLocation('/admin-profile');
-    }, 2000);
+    if (validateStep(currentStep)) {
+      // In a real implementation, you would send the form data to your backend here
+      toast({
+        title: "Enterprise account created!",
+        description: "Your team account has been set up successfully. You'll receive a confirmation email shortly.",
+      });
+      
+      // Redirect to the dashboard or a success page
+      setTimeout(() => {
+        setLocation("/"); 
+      }, 2000);
+    }
+  };
+  
+  const getPlanPrice = (planId) => {
+    const plan = plans.find(p => p.id === planId);
+    return plan ? plan.price : '';
   };
   
   return (
-    <div className="min-h-screen bg-[#f9f9fb]">
-      {/* Top Header */}
-      <header className="bg-white border-b border-[#e5e5e7] py-4">
-        <div className="container mx-auto px-4 flex items-center justify-between">
-          <div className="flex flex-col items-start">
-            <div className="flex items-center">
-              <div className="bg-gradient-to-r from-[#0071e3] to-[#2b8fff] rounded p-1.5 mr-2">
-                <div className="text-white font-bold text-xs tracking-wide">C2C.AI</div>
+    <div className="min-h-screen bg-white">
+      {/* Header with logo */}
+      <header className="bg-white border-b border-gray-200 py-4">
+        <div className="container mx-auto px-4 md:px-6">
+          <div className="flex items-center justify-between">
+            <div className="flex flex-col items-start">
+              <div className="flex items-center">
+                <div className="bg-gradient-to-r from-[#0071e3] to-[#2b8fff] rounded p-1.5 mr-2">
+                  <div className="text-white font-bold text-xs tracking-wide">C2C.AI</div>
+                </div>
+                <span className="text-lg font-semibold text-[#1d1d1f] tracking-tight">CONCEPT2CURE.AI</span>
               </div>
-              <span className="text-lg font-semibold text-[#1d1d1f] tracking-tight">CONCEPT2CURE.AI</span>
+              <span className="ml-7 text-sm text-[#86868b] mt-0.5">TrialSage™ Platform</span>
             </div>
-            <span className="ml-7 text-sm text-[#86868b] mt-0.5">TrialSage™ Platform</span>
-          </div>
-          
-          <div className="flex items-center space-x-4">
-            <span className="text-sm text-[#86868b]">Already have an account?</span>
-            <Button variant="outline" onClick={() => setLocation('/auth')}>
-              Login
+            
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="text-[#1d1d1f]"
+              onClick={() => setLocation("/")}
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Home
             </Button>
           </div>
         </div>
       </header>
       
-      {/* Page Content */}
-      <div className="container mx-auto py-8 px-4">
-        <div className="max-w-4xl mx-auto mb-8">
-          <h1 className="text-3xl font-bold text-[#1d1d1f] mb-2">Create Your TrialSage™ Account</h1>
-          <p className="text-[#424245]">
-            Set up your organization profile, add your team members, and choose the modules that best fit your workflow.
-          </p>
-        </div>
-        
-        {/* Progress Steps */}
-        <div className="max-w-4xl mx-auto mb-8">
-          <div className="flex justify-between">
-            <div className={`flex flex-col items-center ${activeStep >= 1 ? 'text-[#06c]' : 'text-[#86868b]'}`}>
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${activeStep >= 1 ? 'bg-[#06c] text-white' : 'bg-[#f2f2f7] text-[#86868b]'}`}>
-                {activeStep > 1 ? <Check className="h-5 w-5" /> : 1}
+      <div className="container mx-auto px-4 md:px-6 py-8">
+        {/* Progress indicator */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-[#1d1d1f] mb-6">Enterprise Team Account Setup</h1>
+          
+          <div className="flex items-center justify-between max-w-3xl">
+            <div className={`flex flex-col items-center ${currentStep >= 1 ? 'text-[#06c]' : 'text-gray-400'}`}>
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${currentStep >= 1 ? 'bg-[#06c] text-white' : 'bg-gray-200 text-gray-500'}`}>
+                {currentStep > 1 ? <Check className="w-5 h-5" /> : 1}
               </div>
-              <span className="text-sm mt-2">Company</span>
+              <span className="text-xs font-medium">Company</span>
             </div>
-            <div className="flex-1 flex items-center">
-              <div className={`h-0.5 w-full ${activeStep > 1 ? 'bg-[#06c]' : 'bg-[#e5e5e7]'}`}></div>
-            </div>
-            <div className={`flex flex-col items-center ${activeStep >= 2 ? 'text-[#06c]' : 'text-[#86868b]'}`}>
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${activeStep >= 2 ? 'bg-[#06c] text-white' : 'bg-[#f2f2f7] text-[#86868b]'}`}>
-                {activeStep > 2 ? <Check className="h-5 w-5" /> : 2}
+            
+            <div className={`flex-1 h-0.5 mx-2 ${currentStep >= 2 ? 'bg-[#06c]' : 'bg-gray-200'}`}></div>
+            
+            <div className={`flex flex-col items-center ${currentStep >= 2 ? 'text-[#06c]' : 'text-gray-400'}`}>
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${currentStep >= 2 ? 'bg-[#06c] text-white' : 'bg-gray-200 text-gray-500'}`}>
+                {currentStep > 2 ? <Check className="w-5 h-5" /> : 2}
               </div>
-              <span className="text-sm mt-2">Contact</span>
+              <span className="text-xs font-medium">Admin</span>
             </div>
-            <div className="flex-1 flex items-center">
-              <div className={`h-0.5 w-full ${activeStep > 2 ? 'bg-[#06c]' : 'bg-[#e5e5e7]'}`}></div>
-            </div>
-            <div className={`flex flex-col items-center ${activeStep >= 3 ? 'text-[#06c]' : 'text-[#86868b]'}`}>
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${activeStep >= 3 ? 'bg-[#06c] text-white' : 'bg-[#f2f2f7] text-[#86868b]'}`}>
-                {activeStep > 3 ? <Check className="h-5 w-5" /> : 3}
+            
+            <div className={`flex-1 h-0.5 mx-2 ${currentStep >= 3 ? 'bg-[#06c]' : 'bg-gray-200'}`}></div>
+            
+            <div className={`flex flex-col items-center ${currentStep >= 3 ? 'text-[#06c]' : 'text-gray-400'}`}>
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${currentStep >= 3 ? 'bg-[#06c] text-white' : 'bg-gray-200 text-gray-500'}`}>
+                {currentStep > 3 ? <Check className="w-5 h-5" /> : 3}
               </div>
-              <span className="text-sm mt-2">Team</span>
+              <span className="text-xs font-medium">Team</span>
             </div>
-            <div className="flex-1 flex items-center">
-              <div className={`h-0.5 w-full ${activeStep > 3 ? 'bg-[#06c]' : 'bg-[#e5e5e7]'}`}></div>
-            </div>
-            <div className={`flex flex-col items-center ${activeStep >= 4 ? 'text-[#06c]' : 'text-[#86868b]'}`}>
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${activeStep >= 4 ? 'bg-[#06c] text-white' : 'bg-[#f2f2f7] text-[#86868b]'}`}>
-                {activeStep > 4 ? <Check className="h-5 w-5" /> : 4}
+            
+            <div className={`flex-1 h-0.5 mx-2 ${currentStep >= 4 ? 'bg-[#06c]' : 'bg-gray-200'}`}></div>
+            
+            <div className={`flex flex-col items-center ${currentStep >= 4 ? 'text-[#06c]' : 'text-gray-400'}`}>
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${currentStep >= 4 ? 'bg-[#06c] text-white' : 'bg-gray-200 text-gray-500'}`}>
+                {currentStep > 4 ? <Check className="w-5 h-5" /> : 4}
               </div>
-              <span className="text-sm mt-2">Modules</span>
-            </div>
-            <div className="flex-1 flex items-center">
-              <div className={`h-0.5 w-full ${activeStep > 4 ? 'bg-[#06c]' : 'bg-[#e5e5e7]'}`}></div>
-            </div>
-            <div className={`flex flex-col items-center ${activeStep >= 5 ? 'text-[#06c]' : 'text-[#86868b]'}`}>
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${activeStep >= 5 ? 'bg-[#06c] text-white' : 'bg-[#f2f2f7] text-[#86868b]'}`}>
-                {activeStep > 5 ? <Check className="h-5 w-5" /> : 5}
-              </div>
-              <span className="text-sm mt-2">Review</span>
+              <span className="text-xs font-medium">Payment</span>
             </div>
           </div>
         </div>
         
-        {/* Form Steps */}
-        <div className="max-w-4xl mx-auto">
-          <Card className="shadow-md">
-            {/* Step 1: Company Information */}
-            {activeStep === 1 && (
-              <>
-                <CardHeader>
-                  <CardTitle className="text-2xl">Company Information</CardTitle>
-                  <CardDescription>Tell us about your organization</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="companyName">Company Name <span className="text-red-500">*</span></Label>
-                      <Input 
-                        id="companyName" 
-                        name="companyName" 
-                        value={companyInfo.companyName} 
-                        onChange={handleCompanyInfoChange} 
-                        placeholder="Acme Pharmaceuticals Inc."
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="industry">Industry <span className="text-red-500">*</span></Label>
-                      <Select 
-                        value={companyInfo.industry} 
-                        onValueChange={(value) => setCompanyInfo({...companyInfo, industry: value})}
-                      >
-                        <SelectTrigger id="industry">
-                          <SelectValue placeholder="Select industry" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="biotech">Biotech</SelectItem>
-                          <SelectItem value="pharma">Pharmaceutical</SelectItem>
-                          <SelectItem value="meddevice">Medical Device</SelectItem>
-                          <SelectItem value="cro">Contract Research Organization</SelectItem>
-                          <SelectItem value="nonprofit">Non-profit/Academic</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="companySize">Company Size <span className="text-red-500">*</span></Label>
-                      <Select 
-                        value={companyInfo.companySize} 
-                        onValueChange={(value) => setCompanyInfo({...companyInfo, companySize: value})}
-                      >
-                        <SelectTrigger id="companySize">
-                          <SelectValue placeholder="Select company size" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="1-10">1-10 employees</SelectItem>
-                          <SelectItem value="11-50">11-50 employees</SelectItem>
-                          <SelectItem value="51-200">51-200 employees</SelectItem>
-                          <SelectItem value="201-500">201-500 employees</SelectItem>
-                          <SelectItem value="501-1000">501-1000 employees</SelectItem>
-                          <SelectItem value="1000+">1000+ employees</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="website">Company Website</Label>
-                      <div className="flex">
-                        <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-100 text-gray-500 text-sm">
-                          <Globe className="h-4 w-4" />
-                        </span>
-                        <Input 
-                          id="website" 
-                          name="website" 
-                          className="rounded-l-none" 
-                          value={companyInfo.website} 
-                          onChange={handleCompanyInfoChange} 
-                          placeholder="www.example.com"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="address">Street Address</Label>
-                    <Input 
-                      id="address" 
-                      name="address" 
-                      value={companyInfo.address} 
-                      onChange={handleCompanyInfoChange} 
-                    />
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="city">City</Label>
-                      <Input 
-                        id="city" 
-                        name="city" 
-                        value={companyInfo.city} 
-                        onChange={handleCompanyInfoChange} 
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="state">State/Province</Label>
-                      <Input 
-                        id="state" 
-                        name="state" 
-                        value={companyInfo.state} 
-                        onChange={handleCompanyInfoChange} 
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="country">Country</Label>
-                      <Select 
-                        value={companyInfo.country} 
-                        onValueChange={(value) => setCompanyInfo({...companyInfo, country: value})}
-                      >
-                        <SelectTrigger id="country">
-                          <SelectValue placeholder="Select country" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="us">United States</SelectItem>
-                          <SelectItem value="ca">Canada</SelectItem>
-                          <SelectItem value="uk">United Kingdom</SelectItem>
-                          <SelectItem value="au">Australia</SelectItem>
-                          <SelectItem value="jp">Japan</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="zipCode">Postal/Zip Code</Label>
-                      <Input 
-                        id="zipCode" 
-                        name="zipCode" 
-                        value={companyInfo.zipCode} 
-                        onChange={handleCompanyInfoChange} 
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="taxId">Tax ID / EIN</Label>
-                      <Input 
-                        id="taxId" 
-                        name="taxId" 
-                        value={companyInfo.taxId} 
-                        onChange={handleCompanyInfoChange} 
-                        placeholder="XX-XXXXXXX"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Company Phone</Label>
-                      <div className="flex">
-                        <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-100 text-gray-500 text-sm">
-                          <Phone className="h-4 w-4" />
-                        </span>
-                        <Input 
-                          id="phone" 
-                          name="phone" 
-                          className="rounded-l-none" 
-                          value={companyInfo.phone} 
-                          onChange={handleCompanyInfoChange} 
-                          placeholder="+1 (555) 123-4567"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter className="flex justify-between border-t p-6">
-                  <Button variant="outline" onClick={() => setLocation('/')}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleNextStep}>
-                    Continue <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </CardFooter>
-              </>
-            )}
-            
-            {/* Step 2: Primary Contact */}
-            {activeStep === 2 && (
-              <>
-                <CardHeader>
-                  <CardTitle className="text-2xl">Primary Contact</CardTitle>
-                  <CardDescription>Please provide details for the main account administrator</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="firstName">First Name <span className="text-red-500">*</span></Label>
-                      <Input 
-                        id="firstName" 
-                        name="firstName" 
-                        value={primaryContact.firstName} 
-                        onChange={handlePrimaryContactChange} 
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="lastName">Last Name <span className="text-red-500">*</span></Label>
-                      <Input 
-                        id="lastName" 
-                        name="lastName" 
-                        value={primaryContact.lastName} 
-                        onChange={handlePrimaryContactChange} 
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="title">Job Title <span className="text-red-500">*</span></Label>
-                    <Input 
-                      id="title" 
-                      name="title" 
-                      value={primaryContact.title} 
-                      onChange={handlePrimaryContactChange} 
-                      placeholder="VP of Regulatory Affairs"
-                    />
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email Address <span className="text-red-500">*</span></Label>
-                      <div className="flex">
-                        <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-100 text-gray-500 text-sm">
-                          <Mail className="h-4 w-4" />
-                        </span>
-                        <Input 
-                          id="email" 
-                          name="email" 
-                          type="email" 
-                          className="rounded-l-none" 
-                          value={primaryContact.email} 
-                          onChange={handlePrimaryContactChange} 
-                          placeholder="you@example.com"
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="contactPhone">Phone Number <span className="text-red-500">*</span></Label>
-                      <div className="flex">
-                        <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-100 text-gray-500 text-sm">
-                          <Phone className="h-4 w-4" />
-                        </span>
-                        <Input 
-                          id="contactPhone" 
-                          name="phone" 
-                          className="rounded-l-none" 
-                          value={primaryContact.phone} 
-                          onChange={handlePrimaryContactChange} 
-                          placeholder="+1 (555) 123-4567"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Create Password <span className="text-red-500">*</span></Label>
-                    <Input 
-                      id="password" 
-                      name="password" 
-                      type="password" 
-                      value={primaryContact.password} 
-                      onChange={handlePrimaryContactChange} 
-                    />
-                    <p className="text-xs text-[#86868b]">
-                      Password must be at least 8 characters and include a mix of letters, numbers, and special characters.
-                    </p>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="confirmPassword">Confirm Password <span className="text-red-500">*</span></Label>
-                    <Input 
-                      id="confirmPassword" 
-                      name="confirmPassword" 
-                      type="password" 
-                      value={primaryContact.confirmPassword} 
-                      onChange={handlePrimaryContactChange} 
-                    />
-                  </div>
-                </CardContent>
-                <CardFooter className="flex justify-between border-t p-6">
-                  <Button variant="outline" onClick={() => setActiveStep(1)}>
-                    Back
-                  </Button>
-                  <Button onClick={handleNextStep}>
-                    Continue <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </CardFooter>
-              </>
-            )}
-            
-            {/* Step 3: Team Members */}
-            {activeStep === 3 && (
-              <>
-                <CardHeader>
-                  <CardTitle className="text-2xl">Team Members</CardTitle>
-                  <CardDescription>Add the members of your team who need access to TrialSage</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="bg-[#f8f9ff] p-4 rounded-lg border border-[#e5e5e7] flex items-start">
-                    <div className="mr-4 mt-1 text-[#06c]">
-                      <AlertCircle className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-[#1d1d1f]">Why add team members now?</h4>
-                      <p className="text-sm text-[#424245]">
-                        Adding your team members during setup allows each person to receive personalized 
-                        onboarding and training. You can always add or remove team members later through 
-                        your account settings.
-                      </p>
-                    </div>
-                  </div>
-                  
-                  {teamMembers.map((member, index) => (
-                    <Card key={index} className="relative">
-                      <CardHeader className="pb-2">
-                        <div className="flex justify-between items-center">
-                          <CardTitle className="text-lg">Team Member {index + 1}</CardTitle>
-                          {index > 0 && (
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              className="text-red-500 hover:text-red-700"
-                              onClick={() => removeTeamMember(index)}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>
+                  {currentStep === 1 && "Company Information"}
+                  {currentStep === 2 && "Administrator Account"}
+                  {currentStep === 3 && "Team Members"}
+                  {currentStep === 4 && "Review & Payment"}
+                </CardTitle>
+                <CardDescription>
+                  {currentStep === 1 && "Tell us about your organization"}
+                  {currentStep === 2 && "Create your administrator account"}
+                  {currentStep === 3 && "Add your team members and their permissions"}
+                  {currentStep === 4 && "Review your selections and complete payment"}
+                </CardDescription>
+              </CardHeader>
+              
+              <CardContent>
+                <form onSubmit={handleSubmit}>
+                  {/* Step 1: Company Information */}
+                  {currentStep === 1 && (
+                    <div className="space-y-6">
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="companyName" className="text-base">Company Name <span className="text-red-500">*</span></Label>
+                          <Input 
+                            id="companyName" 
+                            name="companyName" 
+                            value={formData.companyName} 
+                            onChange={handleInputChange} 
+                            className="mt-1" 
+                            placeholder="Enter your company name"
+                          />
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="companySize" className="text-base">Company Size <span className="text-red-500">*</span></Label>
+                            <Select 
+                              value={formData.companySize} 
+                              onValueChange={(value) => setFormData({...formData, companySize: value})}
                             >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          )}
+                              <SelectTrigger id="companySize" className="mt-1">
+                                <SelectValue placeholder="Select company size" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="1-10">1-10 employees</SelectItem>
+                                <SelectItem value="11-50">11-50 employees</SelectItem>
+                                <SelectItem value="51-200">51-200 employees</SelectItem>
+                                <SelectItem value="201-500">201-500 employees</SelectItem>
+                                <SelectItem value="501-1000">501-1000 employees</SelectItem>
+                                <SelectItem value="1000+">1000+ employees</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          
+                          <div>
+                            <Label htmlFor="industry" className="text-base">Industry <span className="text-red-500">*</span></Label>
+                            <Select 
+                              value={formData.industry} 
+                              onValueChange={(value) => setFormData({...formData, industry: value})}
+                            >
+                              <SelectTrigger id="industry" className="mt-1">
+                                <SelectValue placeholder="Select industry" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="biotech">Biotechnology</SelectItem>
+                                <SelectItem value="pharma">Pharmaceutical</SelectItem>
+                                <SelectItem value="meddevice">Medical Devices</SelectItem>
+                                <SelectItem value="cro">Contract Research Organization</SelectItem>
+                                <SelectItem value="hospital">Hospital/Healthcare</SelectItem>
+                                <SelectItem value="academic">Academic Research</SelectItem>
+                                <SelectItem value="other">Other</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
                         </div>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
+                        
+                        <div>
+                          <Label htmlFor="address" className="text-base">Address</Label>
+                          <Input 
+                            id="address" 
+                            name="address" 
+                            value={formData.address} 
+                            onChange={handleInputChange} 
+                            className="mt-1" 
+                            placeholder="Enter your company address"
+                          />
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="country" className="text-base">Country <span className="text-red-500">*</span></Label>
+                            <Select 
+                              value={formData.country} 
+                              onValueChange={(value) => setFormData({...formData, country: value})}
+                            >
+                              <SelectTrigger id="country" className="mt-1">
+                                <SelectValue placeholder="Select country" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="us">United States</SelectItem>
+                                <SelectItem value="ca">Canada</SelectItem>
+                                <SelectItem value="uk">United Kingdom</SelectItem>
+                                <SelectItem value="de">Germany</SelectItem>
+                                <SelectItem value="fr">France</SelectItem>
+                                <SelectItem value="jp">Japan</SelectItem>
+                                <SelectItem value="ch">Switzerland</SelectItem>
+                                <SelectItem value="other">Other</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          
+                          <div>
+                            <Label htmlFor="website" className="text-base">Website</Label>
+                            <div className="flex mt-1">
+                              <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                                https://
+                              </span>
+                              <Input 
+                                id="website" 
+                                name="website" 
+                                value={formData.website} 
+                                onChange={handleInputChange} 
+                                className="rounded-l-none" 
+                                placeholder="www.example.com"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="pt-4">
+                        <h3 className="text-xl font-semibold mb-4">Select Plan</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor={`firstName-${index}`}>First Name <span className="text-red-500">*</span></Label>
-                            <Input 
-                              id={`firstName-${index}`} 
-                              value={member.firstName} 
-                              onChange={(e) => handleTeamMemberChange(index, 'firstName', e.target.value)} 
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor={`lastName-${index}`}>Last Name <span className="text-red-500">*</span></Label>
-                            <Input 
-                              id={`lastName-${index}`} 
-                              value={member.lastName} 
-                              onChange={(e) => handleTeamMemberChange(index, 'lastName', e.target.value)} 
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor={`email-${index}`}>Email <span className="text-red-500">*</span></Label>
-                            <Input 
-                              id={`email-${index}`} 
-                              type="email" 
-                              value={member.email} 
-                              onChange={(e) => handleTeamMemberChange(index, 'email', e.target.value)} 
-                            />
-                          </div>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label>Role</Label>
-                          <RadioGroup 
-                            value={member.role} 
-                            onValueChange={(value) => handleTeamMemberChange(index, 'role', value)}
-                            className="flex flex-col space-y-1"
-                          >
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="admin" id={`admin-${index}`} />
-                              <Label htmlFor={`admin-${index}`} className="font-normal">
-                                <span className="font-medium">Administrator</span> - Full access to all modules and settings
-                              </Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="manager" id={`manager-${index}`} />
-                              <Label htmlFor={`manager-${index}`} className="font-normal">
-                                <span className="font-medium">Manager</span> - Can manage projects and view analytics
-                              </Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="user" id={`user-${index}`} />
-                              <Label htmlFor={`user-${index}`} className="font-normal">
-                                <span className="font-medium">Standard User</span> - Access to assigned modules only
-                              </Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="viewer" id={`viewer-${index}`} />
-                              <Label htmlFor={`viewer-${index}`} className="font-normal">
-                                <span className="font-medium">Viewer</span> - Read-only access to assigned modules
-                              </Label>
-                            </div>
-                          </RadioGroup>
-                        </div>
-                        
-                        {(member.role === 'user' || member.role === 'viewer') && (
-                          <div className="space-y-2">
-                            <Label>Module Access</Label>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                              <div className="flex items-center space-x-2">
-                                <Checkbox 
-                                  id={`ind-wizard-${index}`} 
-                                  checked={member.access.includes('ind-wizard')}
-                                  onCheckedChange={() => handleTeamMemberAccessChange(index, 'ind-wizard')}
-                                />
-                                <Label htmlFor={`ind-wizard-${index}`} className="font-normal flex items-center">
-                                  <FileCheck className="h-4 w-4 mr-1 text-[#06c]" /> IND Wizard
-                                </Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <Checkbox 
-                                  id={`csr-intelligence-${index}`} 
-                                  checked={member.access.includes('csr-intelligence')}
-                                  onCheckedChange={() => handleTeamMemberAccessChange(index, 'csr-intelligence')}
-                                />
-                                <Label htmlFor={`csr-intelligence-${index}`} className="font-normal flex items-center">
-                                  <LayoutDashboard className="h-4 w-4 mr-1 text-[#06c]" /> CSR Intelligence
-                                </Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <Checkbox 
-                                  id={`document-vault-${index}`} 
-                                  checked={member.access.includes('document-vault')}
-                                  onCheckedChange={() => handleTeamMemberAccessChange(index, 'document-vault')}
-                                />
-                                <Label htmlFor={`document-vault-${index}`} className="font-normal flex items-center">
-                                  <Database className="h-4 w-4 mr-1 text-[#06c]" /> Document Vault
-                                </Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <Checkbox 
-                                  id={`ask-lumen-${index}`} 
-                                  checked={member.access.includes('ask-lumen')}
-                                  onCheckedChange={() => handleTeamMemberAccessChange(index, 'ask-lumen')}
-                                />
-                                <Label htmlFor={`ask-lumen-${index}`} className="font-normal flex items-center">
-                                  <Sparkles className="h-4 w-4 mr-1 text-[#06c]" /> Ask Lumen
-                                </Label>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  ))}
-                  
-                  <Button 
-                    variant="outline" 
-                    onClick={addTeamMember}
-                    className="w-full flex items-center justify-center"
-                  >
-                    <Plus className="h-4 w-4 mr-2" /> Add Team Member
-                  </Button>
-                </CardContent>
-                <CardFooter className="flex justify-between border-t p-6">
-                  <Button variant="outline" onClick={() => setActiveStep(2)}>
-                    Back
-                  </Button>
-                  <Button onClick={handleNextStep}>
-                    Continue <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </CardFooter>
-              </>
-            )}
-            
-            {/* Step 4: Subscription Plan */}
-            {activeStep === 4 && (
-              <>
-                <CardHeader>
-                  <CardTitle className="text-2xl">Select Your Modules</CardTitle>
-                  <CardDescription>Choose the modules and features that best suit your needs</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-6">
-                    <div className="space-y-3">
-                      <Label className="text-base">Select Your Plan</Label>
-                      <RadioGroup 
-                        value={selectedPlan} 
-                        onValueChange={setSelectedPlan}
-                        className="space-y-3"
-                      >
-                        <div className={`border rounded-lg p-4 ${selectedPlan === 'standard' ? 'border-[#06c] bg-[#f8f9ff]' : 'border-[#e5e5e7]'}`}>
-                          <RadioGroupItem value="standard" id="standard" className="sr-only" />
-                          <Label htmlFor="standard" className="flex justify-between cursor-pointer">
-                            <div>
-                              <h3 className="font-semibold text-[#1d1d1f]">Standard</h3>
-                              <p className="text-sm text-[#424245]">Best for small teams starting their regulatory journey</p>
-                            </div>
-                            <div className="text-right">
-                              <div className="font-semibold text-[#1d1d1f]">$1,999/month</div>
-                              <div className="text-sm text-[#424245]">Up to 5 users</div>
-                            </div>
-                          </Label>
-                        </div>
-                        
-                        <div className={`border rounded-lg p-4 ${selectedPlan === 'pro' ? 'border-[#06c] bg-[#f8f9ff]' : 'border-[#e5e5e7]'}`}>
-                          <RadioGroupItem value="pro" id="pro" className="sr-only" />
-                          <div className="absolute right-4 top-4">
-                            <Badge className="bg-[#06c]">Popular</Badge>
-                          </div>
-                          <Label htmlFor="pro" className="flex justify-between cursor-pointer">
-                            <div>
-                              <h3 className="font-semibold text-[#1d1d1f]">Professional</h3>
-                              <p className="text-sm text-[#424245]">For growing regulatory teams with advanced needs</p>
-                            </div>
-                            <div className="text-right">
-                              <div className="font-semibold text-[#1d1d1f]">$4,999/month</div>
-                              <div className="text-sm text-[#424245]">Up to 15 users</div>
-                            </div>
-                          </Label>
-                        </div>
-                        
-                        <div className={`border rounded-lg p-4 ${selectedPlan === 'enterprise' ? 'border-[#06c] bg-[#f8f9ff]' : 'border-[#e5e5e7]'}`}>
-                          <RadioGroupItem value="enterprise" id="enterprise" className="sr-only" />
-                          <Label htmlFor="enterprise" className="flex justify-between cursor-pointer">
-                            <div>
-                              <h3 className="font-semibold text-[#1d1d1f]">Enterprise</h3>
-                              <p className="text-sm text-[#424245]">For large organizations with complex regulatory workflows</p>
-                            </div>
-                            <div className="text-right">
-                              <div className="font-semibold text-[#1d1d1f]">Custom Pricing</div>
-                              <div className="text-sm text-[#424245]">Unlimited users</div>
-                            </div>
-                          </Label>
-                        </div>
-                      </RadioGroup>
-                    </div>
-                    
-                    <div className="space-y-3">
-                      <Label className="text-base">Select Modules</Label>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div className={`border rounded-lg p-4 ${selectedModules['ind-wizard'] ? 'border-[#06c] bg-[#f8f9ff]' : 'border-[#e5e5e7]'}`}>
-                          <div className="flex items-start">
-                            <Checkbox 
-                              id="ind-wizard-module" 
-                              checked={selectedModules['ind-wizard']}
-                              onCheckedChange={() => handleModuleChange('ind-wizard')}
-                              className="mt-1"
-                            />
-                            <div className="ml-3">
-                              <Label htmlFor="ind-wizard-module" className="flex items-center font-semibold">
-                                <FileCheck className="h-5 w-5 mr-2 text-[#06c]" /> IND Wizard™
-                              </Label>
-                              <p className="text-sm text-[#424245]">
-                                Fully automated IND submissions with AI-generated regulatory documents
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className={`border rounded-lg p-4 ${selectedModules['csr-intelligence'] ? 'border-[#06c] bg-[#f8f9ff]' : 'border-[#e5e5e7]'}`}>
-                          <div className="flex items-start">
-                            <Checkbox 
-                              id="csr-intelligence-module" 
-                              checked={selectedModules['csr-intelligence']}
-                              onCheckedChange={() => handleModuleChange('csr-intelligence')}
-                              className="mt-1"
-                            />
-                            <div className="ml-3">
-                              <Label htmlFor="csr-intelligence-module" className="flex items-center font-semibold">
-                                <LayoutDashboard className="h-5 w-5 mr-2 text-[#06c]" /> CSR Intelligence™
-                              </Label>
-                              <p className="text-sm text-[#424245]">
-                                Transform static CSRs into interactive dashboards with structured data extraction
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className={`border rounded-lg p-4 ${selectedModules['document-vault'] ? 'border-[#06c] bg-[#f8f9ff]' : 'border-[#e5e5e7]'}`}>
-                          <div className="flex items-start">
-                            <Checkbox 
-                              id="document-vault-module" 
-                              checked={selectedModules['document-vault']}
-                              onCheckedChange={() => handleModuleChange('document-vault')}
-                              className="mt-1"
-                            />
-                            <div className="ml-3">
-                              <Label htmlFor="document-vault-module" className="flex items-center font-semibold">
-                                <Database className="h-5 w-5 mr-2 text-[#06c]" /> Document Vault™
-                              </Label>
-                              <p className="text-sm text-[#424245]">
-                                Secure, regulated document storage with intuitive version control
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className={`border rounded-lg p-4 ${selectedModules['cmc-blueprint'] ? 'border-[#06c] bg-[#f8f9ff]' : 'border-[#e5e5e7]'}`}>
-                          <div className="flex items-start">
-                            <Checkbox 
-                              id="cmc-blueprint-module" 
-                              checked={selectedModules['cmc-blueprint']}
-                              onCheckedChange={() => handleModuleChange('cmc-blueprint')}
-                              className="mt-1"
-                            />
-                            <div className="ml-3">
-                              <Label htmlFor="cmc-blueprint-module" className="flex items-center font-semibold">
-                                <Microscope className="h-5 w-5 mr-2 text-[#06c]" /> CMC Blueprint™
-                              </Label>
-                              <p className="text-sm text-[#424245]">
-                                AI-powered Chemistry, Manufacturing, and Controls documentation
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className={`border rounded-lg p-4 ${selectedModules['ask-lumen'] ? 'border-[#06c] bg-[#f8f9ff]' : 'border-[#e5e5e7]'}`}>
-                          <div className="flex items-start">
-                            <Checkbox 
-                              id="ask-lumen-module" 
-                              checked={selectedModules['ask-lumen']}
-                              onCheckedChange={() => handleModuleChange('ask-lumen')}
-                              className="mt-1"
-                            />
-                            <div className="ml-3">
-                              <Label htmlFor="ask-lumen-module" className="flex items-center font-semibold">
-                                <Sparkles className="h-5 w-5 mr-2 text-[#06c]" /> Ask Lumen™ AI Assistant
-                              </Label>
-                              <p className="text-sm text-[#424245]">
-                                AI regulatory assistant with document upload and analysis capabilities
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className={`border rounded-lg p-4 ${selectedModules['analytics-dashboard'] ? 'border-[#06c] bg-[#f8f9ff]' : 'border-[#e5e5e7]'}`}>
-                          <div className="flex items-start">
-                            <Checkbox 
-                              id="analytics-dashboard-module" 
-                              checked={selectedModules['analytics-dashboard']}
-                              onCheckedChange={() => handleModuleChange('analytics-dashboard')}
-                              className="mt-1"
-                            />
-                            <div className="ml-3">
-                              <Label htmlFor="analytics-dashboard-module" className="flex items-center font-semibold">
-                                <BarChart3 className="h-5 w-5 mr-2 text-[#06c]" /> Analytics Dashboard
-                              </Label>
-                              <p className="text-sm text-[#424245]">
-                                25+ interactive dashboards with AI copilot for regulatory metrics
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="rounded-lg border border-[#e5e5e7] overflow-hidden mt-6">
-                      <div className="bg-[#f5f5f7] px-4 py-3 border-b border-[#e5e5e7]">
-                        <h3 className="font-semibold text-[#1d1d1f]">Additional Services</h3>
-                      </div>
-                      <div className="p-4">
-                        <div className="space-y-3">
-                          <div className="flex items-start">
-                            <Checkbox id="onboarding" className="mt-1" />
-                            <div className="ml-3">
-                              <Label htmlFor="onboarding" className="font-semibold">White-Glove Onboarding & Training</Label>
-                              <p className="text-sm text-[#424245]">
-                                Personalized onboarding sessions and training for your team
-                              </p>
-                              <div className="text-sm font-medium text-[#06c]">$4,999 one-time fee</div>
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-start">
-                            <Checkbox id="import-service" className="mt-1" />
-                            <div className="ml-3">
-                              <Label htmlFor="import-service" className="font-semibold">Legacy Data Import Service</Label>
-                              <p className="text-sm text-[#424245]">
-                                Let our experts migrate your existing regulatory documents
-                              </p>
-                              <div className="text-sm font-medium text-[#06c]">Starting at $9,999</div>
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-start">
-                            <Checkbox id="custom-api" className="mt-1" />
-                            <div className="ml-3">
-                              <Label htmlFor="custom-api" className="font-semibold">Custom API Development</Label>
-                              <p className="text-sm text-[#424245]">
-                                Custom API development for integration with your existing systems
-                              </p>
-                              <div className="text-sm font-medium text-[#06c]">Starting at $19,999</div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter className="flex justify-between border-t p-6">
-                  <Button variant="outline" onClick={() => setActiveStep(3)}>
-                    Back
-                  </Button>
-                  <Button onClick={handleNextStep}>
-                    Continue <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </CardFooter>
-              </>
-            )}
-            
-            {/* Step 5: Review and Submit */}
-            {activeStep === 5 && (
-              <>
-                <CardHeader>
-                  <CardTitle className="text-2xl">Review Your Information</CardTitle>
-                  <CardDescription>Please review all details before finalizing your account</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <Tabs defaultValue="company" className="mt-2">
-                    <TabsList>
-                      <TabsTrigger value="company">Company</TabsTrigger>
-                      <TabsTrigger value="contact">Contact</TabsTrigger>
-                      <TabsTrigger value="team">Team</TabsTrigger>
-                      <TabsTrigger value="subscription">Subscription</TabsTrigger>
-                    </TabsList>
-                    
-                    <TabsContent value="company" className="mt-4">
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="space-y-1">
-                            <Label className="text-xs text-[#86868b]">Company Name</Label>
-                            <div className="font-medium">{companyInfo.companyName || 'Not provided'}</div>
-                          </div>
-                          <div className="space-y-1">
-                            <Label className="text-xs text-[#86868b]">Industry</Label>
-                            <div className="font-medium">
-                              {companyInfo.industry === 'biotech' && 'Biotech'}
-                              {companyInfo.industry === 'pharma' && 'Pharmaceutical'}
-                              {companyInfo.industry === 'meddevice' && 'Medical Device'}
-                              {companyInfo.industry === 'cro' && 'Contract Research Organization'}
-                              {companyInfo.industry === 'nonprofit' && 'Non-profit/Academic'}
-                              {companyInfo.industry === 'other' && 'Other'}
-                              {!companyInfo.industry && 'Not provided'}
-                            </div>
-                          </div>
-                          <div className="space-y-1">
-                            <Label className="text-xs text-[#86868b]">Company Size</Label>
-                            <div className="font-medium">{companyInfo.companySize || 'Not provided'}</div>
-                          </div>
-                          <div className="space-y-1">
-                            <Label className="text-xs text-[#86868b]">Website</Label>
-                            <div className="font-medium">{companyInfo.website || 'Not provided'}</div>
-                          </div>
-                        </div>
-                        
-                        <div className="space-y-1">
-                          <Label className="text-xs text-[#86868b]">Address</Label>
-                          <div className="font-medium">
-                            {companyInfo.address && `${companyInfo.address}, `}
-                            {companyInfo.city && `${companyInfo.city}, `}
-                            {companyInfo.state && `${companyInfo.state}, `}
-                            {companyInfo.country && `${companyInfo.country}, `}
-                            {companyInfo.zipCode && companyInfo.zipCode}
-                            {!companyInfo.address && !companyInfo.city && !companyInfo.state && !companyInfo.country && 'Not provided'}
-                          </div>
-                        </div>
-                      </div>
-                    </TabsContent>
-                    
-                    <TabsContent value="contact" className="mt-4">
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="space-y-1">
-                            <Label className="text-xs text-[#86868b]">Name</Label>
-                            <div className="font-medium">
-                              {primaryContact.firstName && primaryContact.lastName 
-                                ? `${primaryContact.firstName} ${primaryContact.lastName}`
-                                : 'Not provided'}
-                            </div>
-                          </div>
-                          <div className="space-y-1">
-                            <Label className="text-xs text-[#86868b]">Job Title</Label>
-                            <div className="font-medium">{primaryContact.title || 'Not provided'}</div>
-                          </div>
-                          <div className="space-y-1">
-                            <Label className="text-xs text-[#86868b]">Email</Label>
-                            <div className="font-medium">{primaryContact.email || 'Not provided'}</div>
-                          </div>
-                          <div className="space-y-1">
-                            <Label className="text-xs text-[#86868b]">Phone</Label>
-                            <div className="font-medium">{primaryContact.phone || 'Not provided'}</div>
-                          </div>
-                        </div>
-                      </div>
-                    </TabsContent>
-                    
-                    <TabsContent value="team" className="mt-4">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Email</TableHead>
-                            <TableHead>Role</TableHead>
-                            <TableHead>Access</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {teamMembers.map((member, index) => (
-                            <TableRow key={index}>
-                              <TableCell className="font-medium">
-                                {member.firstName && member.lastName
-                                  ? `${member.firstName} ${member.lastName}`
-                                  : 'Not provided'}
-                              </TableCell>
-                              <TableCell>{member.email || 'Not provided'}</TableCell>
-                              <TableCell>
-                                {member.role === 'admin' && 'Administrator'}
-                                {member.role === 'manager' && 'Manager'}
-                                {member.role === 'user' && 'Standard User'}
-                                {member.role === 'viewer' && 'Viewer'}
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex flex-wrap gap-1">
-                                  {member.role === 'admin' && (
-                                    <Badge variant="outline" className="bg-[#f8f9ff] border-[#e5e5e7]">All Modules</Badge>
-                                  )}
-                                  {member.role === 'manager' && (
-                                    <Badge variant="outline" className="bg-[#f8f9ff] border-[#e5e5e7]">Management Access</Badge>
-                                  )}
-                                  {(member.role === 'user' || member.role === 'viewer') && member.access.map((mod, i) => (
-                                    <Badge key={i} variant="outline" className="bg-[#f8f9ff] border-[#e5e5e7]">
-                                      {mod === 'ind-wizard' && 'IND Wizard'}
-                                      {mod === 'csr-intelligence' && 'CSR Intelligence'}
-                                      {mod === 'document-vault' && 'Document Vault'}
-                                      {mod === 'ask-lumen' && 'Ask Lumen'}
-                                    </Badge>
-                                  ))}
+                          {plans.map((plan) => (
+                            <div 
+                              key={plan.id} 
+                              className={`border rounded-lg p-4 cursor-pointer transition-all ${formData.plan === plan.id 
+                                ? 'border-[#06c] bg-[#f0f7ff] shadow-sm' 
+                                : 'border-gray-200 hover:border-gray-300'}`}
+                              onClick={() => setFormData({...formData, plan: plan.id})}
+                            >
+                              <div className="flex items-start justify-between mb-2">
+                                <div>
+                                  <h4 className="font-semibold">{plan.name}</h4>
+                                  <p className="text-sm text-gray-500">{plan.seats}</p>
                                 </div>
-                              </TableCell>
-                            </TableRow>
+                                <RadioGroup value={formData.plan}>
+                                  <RadioGroupItem value={plan.id} id={plan.id} checked={formData.plan === plan.id} />
+                                </RadioGroup>
+                              </div>
+                              
+                              <div className="mb-3">
+                                <span className="text-2xl font-bold">{plan.price}</span>
+                                <span className="text-sm text-gray-500"> {plan.period}</span>
+                              </div>
+                              
+                              <p className="text-sm text-gray-600 mb-3">{plan.description}</p>
+                              
+                              <ul className="space-y-1 text-sm">
+                                {plan.features.map((feature, i) => (
+                                  <li key={i} className="flex items-start">
+                                    <CheckCircle className="h-4 w-4 text-[#06c] mr-2 mt-0.5 flex-shrink-0" />
+                                    <span>{feature}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
                           ))}
-                        </TableBody>
-                      </Table>
-                    </TabsContent>
-                    
-                    <TabsContent value="subscription" className="mt-4">
-                      <div className="space-y-4">
-                        <div className="space-y-1">
-                          <Label className="text-xs text-[#86868b]">Selected Plan</Label>
-                          <div className="font-medium">
-                            {selectedPlan === 'standard' && 'Standard Plan - $1,999/month (up to 5 users)'}
-                            {selectedPlan === 'pro' && 'Professional Plan - $4,999/month (up to 15 users)'}
-                            {selectedPlan === 'enterprise' && 'Enterprise Plan - Custom Pricing (unlimited users)'}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Step 2: Administrator Account */}
+                  {currentStep === 2 && (
+                    <div className="space-y-6">
+                      <div className="bg-[#f0f7ff] border border-[#d1e9ff] rounded-lg p-4 mb-6">
+                        <div className="flex items-start">
+                          <User className="h-5 w-5 text-[#06c] mt-0.5 mr-3 flex-shrink-0" />
+                          <div>
+                            <h3 className="font-medium">Administrator Account</h3>
+                            <p className="text-sm text-gray-600">
+                              This account will have full access to manage your organization's TrialSage™ implementation, 
+                              including adding/removing users and managing licenses.
+                            </p>
                           </div>
                         </div>
-                        
-                        <div className="space-y-2">
-                          <Label className="text-xs text-[#86868b]">Selected Modules</Label>
-                          <div className="flex flex-wrap gap-2">
-                            {selectedModules['ind-wizard'] && (
-                              <Badge className="bg-[#f8f9ff] text-[#06c] border-[#e5e5e7]">
-                                <FileCheck className="h-3 w-3 mr-1" /> IND Wizard
-                              </Badge>
-                            )}
-                            {selectedModules['csr-intelligence'] && (
-                              <Badge className="bg-[#f8f9ff] text-[#06c] border-[#e5e5e7]">
-                                <LayoutDashboard className="h-3 w-3 mr-1" /> CSR Intelligence
-                              </Badge>
-                            )}
-                            {selectedModules['document-vault'] && (
-                              <Badge className="bg-[#f8f9ff] text-[#06c] border-[#e5e5e7]">
-                                <Database className="h-3 w-3 mr-1" /> Document Vault
-                              </Badge>
-                            )}
-                            {selectedModules['cmc-blueprint'] && (
-                              <Badge className="bg-[#f8f9ff] text-[#06c] border-[#e5e5e7]">
-                                <Microscope className="h-3 w-3 mr-1" /> CMC Blueprint
-                              </Badge>
-                            )}
-                            {selectedModules['ask-lumen'] && (
-                              <Badge className="bg-[#f8f9ff] text-[#06c] border-[#e5e5e7]">
-                                <Sparkles className="h-3 w-3 mr-1" /> Ask Lumen
-                              </Badge>
-                            )}
-                            {selectedModules['analytics-dashboard'] && (
-                              <Badge className="bg-[#f8f9ff] text-[#06c] border-[#e5e5e7]">
-                                <BarChart3 className="h-3 w-3 mr-1" /> Analytics Dashboard
-                              </Badge>
-                            )}
-                          </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="adminFirstName" className="text-base">First Name <span className="text-red-500">*</span></Label>
+                          <Input 
+                            id="adminFirstName" 
+                            name="adminFirstName" 
+                            value={formData.adminFirstName} 
+                            onChange={handleInputChange} 
+                            className="mt-1" 
+                            placeholder="Enter your first name"
+                          />
                         </div>
                         
-                        <div className="mt-4 p-4 border border-[#e5e5e7] rounded-lg bg-[#f9f9fb]">
-                          <div className="flex justify-between mb-2">
-                            <span>Subscription Total</span>
-                            <span className="font-semibold">
-                              {selectedPlan === 'standard' && '$1,999/month'}
-                              {selectedPlan === 'pro' && '$4,999/month'}
-                              {selectedPlan === 'enterprise' && 'Custom Pricing'}
+                        <div>
+                          <Label htmlFor="adminLastName" className="text-base">Last Name <span className="text-red-500">*</span></Label>
+                          <Input 
+                            id="adminLastName" 
+                            name="adminLastName" 
+                            value={formData.adminLastName} 
+                            onChange={handleInputChange} 
+                            className="mt-1" 
+                            placeholder="Enter your last name"
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="adminEmail" className="text-base">Email Address <span className="text-red-500">*</span></Label>
+                          <div className="flex mt-1">
+                            <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                              <Mail className="h-4 w-4" />
+                            </span>
+                            <Input 
+                              id="adminEmail" 
+                              name="adminEmail" 
+                              type="email"
+                              value={formData.adminEmail} 
+                              onChange={handleInputChange} 
+                              className="rounded-l-none" 
+                              placeholder="you@company.com"
+                            />
+                          </div>
+                          <p className="mt-1 text-xs text-gray-500">
+                            This email will be used for account verification and important notifications.
+                          </p>
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="adminPhone" className="text-base">Phone Number</Label>
+                          <div className="flex mt-1">
+                            <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                              <Phone className="h-4 w-4" />
+                            </span>
+                            <Input 
+                              id="adminPhone" 
+                              name="adminPhone" 
+                              value={formData.adminPhone} 
+                              onChange={handleInputChange} 
+                              className="rounded-l-none" 
+                              placeholder="+1 (555) 123-4567"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="adminTitle" className="text-base">Job Title</Label>
+                        <Input 
+                          id="adminTitle" 
+                          name="adminTitle" 
+                          value={formData.adminTitle} 
+                          onChange={handleInputChange} 
+                          className="mt-1" 
+                          placeholder="e.g. Director of Regulatory Affairs"
+                        />
+                      </div>
+                      
+                      <Separator className="my-6" />
+                      
+                      <h3 className="text-lg font-semibold mb-4">Create Password</h3>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="adminPassword" className="text-base">Password <span className="text-red-500">*</span></Label>
+                          <Input 
+                            id="adminPassword" 
+                            name="adminPassword" 
+                            type="password"
+                            value={formData.adminPassword} 
+                            onChange={handleInputChange} 
+                            className="mt-1" 
+                          />
+                          <p className="mt-1 text-xs text-gray-500">
+                            Password must be at least 8 characters and include uppercase, lowercase, number, and special character.
+                          </p>
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="adminConfirmPassword" className="text-base">Confirm Password <span className="text-red-500">*</span></Label>
+                          <Input 
+                            id="adminConfirmPassword" 
+                            name="adminConfirmPassword" 
+                            type="password"
+                            value={formData.adminConfirmPassword} 
+                            onChange={handleInputChange} 
+                            className="mt-1" 
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Step 3: Team Members */}
+                  {currentStep === 3 && (
+                    <div className="space-y-6">
+                      <div className="bg-[#f0f7ff] border border-[#d1e9ff] rounded-lg p-4 mb-6">
+                        <div className="flex items-start">
+                          <Users className="h-5 w-5 text-[#06c] mt-0.5 mr-3 flex-shrink-0" />
+                          <div>
+                            <h3 className="font-medium">Manage Team Access</h3>
+                            <p className="text-sm text-gray-600">
+                              Add team members and specify which TrialSage™ modules they should have access to. 
+                              You can add or modify team members later from your admin dashboard.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-6">
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-lg font-semibold">Team Members ({formData.teamMembers.length})</h3>
+                          <p className="text-sm text-gray-500">
+                            {formData.plan === 'enterprise' ? '25' : formData.plan === 'professional' ? '15' : '5'} seats included in your plan
+                          </p>
+                        </div>
+                        
+                        {formData.teamMembers.map((member, index) => (
+                          <div key={member.id} className="border rounded-lg p-5 space-y-4">
+                            <div className="flex items-center justify-between">
+                              <h4 className="font-medium">Team Member {index + 1}</h4>
+                              {formData.teamMembers.length > 1 && (
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className="text-red-600 hover:text-red-800 hover:bg-red-50"
+                                  onClick={() => removeTeamMember(member.id)}
+                                >
+                                  <Trash2 className="w-4 h-4 mr-1" />
+                                  Remove
+                                </Button>
+                              )}
+                            </div>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <div>
+                                <Label htmlFor={`firstName-${index}`} className="text-base">First Name <span className="text-red-500">*</span></Label>
+                                <Input 
+                                  id={`firstName-${index}`} 
+                                  value={member.firstName} 
+                                  onChange={(e) => handleTeamMemberChange(index, 'firstName', e.target.value)} 
+                                  className="mt-1" 
+                                  placeholder="Enter first name"
+                                />
+                              </div>
+                              
+                              <div>
+                                <Label htmlFor={`lastName-${index}`} className="text-base">Last Name <span className="text-red-500">*</span></Label>
+                                <Input 
+                                  id={`lastName-${index}`} 
+                                  value={member.lastName} 
+                                  onChange={(e) => handleTeamMemberChange(index, 'lastName', e.target.value)} 
+                                  className="mt-1" 
+                                  placeholder="Enter last name"
+                                />
+                              </div>
+                              
+                              <div>
+                                <Label htmlFor={`email-${index}`} className="text-base">Email <span className="text-red-500">*</span></Label>
+                                <Input 
+                                  id={`email-${index}`} 
+                                  type="email"
+                                  value={member.email} 
+                                  onChange={(e) => handleTeamMemberChange(index, 'email', e.target.value)} 
+                                  className="mt-1" 
+                                  placeholder="Enter email address"
+                                />
+                              </div>
+                            </div>
+                            
+                            <div>
+                              <Label htmlFor={`role-${index}`} className="text-base">Role</Label>
+                              <Select 
+                                value={member.role} 
+                                onValueChange={(value) => handleTeamMemberChange(index, 'role', value)}
+                              >
+                                <SelectTrigger id={`role-${index}`} className="mt-1">
+                                  <SelectValue placeholder="Select role" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="admin">Administrator</SelectItem>
+                                  <SelectItem value="manager">Manager</SelectItem>
+                                  <SelectItem value="user">Standard User</SelectItem>
+                                  <SelectItem value="viewer">Viewer (Read-only)</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            
+                            <div className="pt-2">
+                              <Label className="text-base mb-2 block">Module Access</Label>
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                {modules.map(module => (
+                                  <div
+                                    key={module.id}
+                                    className={`border rounded-md p-3 cursor-pointer transition-all ${
+                                      member.modules.includes(module.name)
+                                        ? 'border-[#06c] bg-[#f0f7ff]'
+                                        : 'border-gray-200 hover:border-gray-300'
+                                    }`}
+                                    onClick={() => handleTeamMemberModuleToggle(index, module.name)}
+                                  >
+                                    <div className="flex items-start">
+                                      <div className="flex-shrink-0 mt-0.5">
+                                        <Switch
+                                          checked={member.modules.includes(module.name)}
+                                          onCheckedChange={() => handleTeamMemberModuleToggle(index, module.name)}
+                                        />
+                                      </div>
+                                      <div className="ml-3">
+                                        <p className="font-medium text-sm">{module.name}</p>
+                                        <p className="text-xs text-gray-500">{module.description}</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                        
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="w-full"
+                          onClick={addTeamMember}
+                        >
+                          <Plus className="w-4 h-4 mr-2" />
+                          Add Team Member
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Step 4: Review & Payment */}
+                  {currentStep === 4 && (
+                    <div className="space-y-6">
+                      <div className="bg-[#f8f9ff] rounded-lg p-5 border border-[#e5e5e7]">
+                        <h3 className="text-lg font-semibold mb-3">Order Summary</h3>
+                        
+                        <div className="space-y-3">
+                          <div className="flex justify-between pb-2 border-b border-[#e5e5e7]">
+                            <span className="font-medium">
+                              {plans.find(p => p.id === formData.plan)?.name} Plan
+                            </span>
+                            <span className="font-medium">{getPlanPrice(formData.plan)}/month</span>
+                          </div>
+                          
+                          <div className="flex justify-between pb-2 border-b border-[#e5e5e7]">
+                            <span>Included seats</span>
+                            <span>
+                              {formData.plan === 'enterprise' ? '25' : formData.plan === 'professional' ? '15' : '5'} seats
                             </span>
                           </div>
-                          <div className="text-sm text-[#86868b]">
-                            You'll receive an invoice once your account is approved. Enterprise plans require a consultation with our team.
+                          
+                          <div className="flex justify-between pb-2 border-b border-[#e5e5e7]">
+                            <span>Team members added</span>
+                            <span>{formData.teamMembers.length} members</span>
+                          </div>
+                          
+                          <div className="flex justify-between pt-2 text-lg font-semibold">
+                            <span>Total</span>
+                            <span>{getPlanPrice(formData.plan)}/month</span>
                           </div>
                         </div>
                       </div>
-                    </TabsContent>
-                  </Tabs>
+                      
+                      <div>
+                        <h3 className="text-lg font-semibold mb-4">Payment Information</h3>
+                        
+                        <div className="space-y-4">
+                          <div className="flex space-x-4">
+                            <div 
+                              className={`flex-1 border rounded-lg p-4 cursor-pointer transition-all ${formData.paymentMethod === 'credit' 
+                                ? 'border-[#06c] bg-[#f0f7ff]' 
+                                : 'border-gray-200 hover:border-gray-300'}`}
+                              onClick={() => setFormData({...formData, paymentMethod: 'credit'})}
+                            >
+                              <div className="flex items-center space-x-3">
+                                <CreditCard className="h-5 w-5 text-[#06c]" />
+                                <div>
+                                  <RadioGroup value={formData.paymentMethod}>
+                                    <div className="flex items-center space-x-2">
+                                      <RadioGroupItem value="credit" id="credit" />
+                                      <Label htmlFor="credit" className="font-medium">Credit Card</Label>
+                                    </div>
+                                  </RadioGroup>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div 
+                              className={`flex-1 border rounded-lg p-4 cursor-pointer transition-all ${formData.paymentMethod === 'invoice' 
+                                ? 'border-[#06c] bg-[#f0f7ff]' 
+                                : 'border-gray-200 hover:border-gray-300'}`}
+                              onClick={() => setFormData({...formData, paymentMethod: 'invoice'})}
+                            >
+                              <div className="flex items-center space-x-3">
+                                <FileText className="h-5 w-5 text-[#06c]" />
+                                <div>
+                                  <RadioGroup value={formData.paymentMethod}>
+                                    <div className="flex items-center space-x-2">
+                                      <RadioGroupItem value="invoice" id="invoice" />
+                                      <Label htmlFor="invoice" className="font-medium">Invoice (Net 30)</Label>
+                                    </div>
+                                  </RadioGroup>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {formData.paymentMethod === 'credit' && (
+                            <div className="space-y-4 pt-2">
+                              <div>
+                                <Label htmlFor="cardNumber" className="text-base">Card Number</Label>
+                                <Input 
+                                  id="cardNumber" 
+                                  name="cardNumber" 
+                                  value={formData.cardNumber} 
+                                  onChange={handleInputChange} 
+                                  className="mt-1" 
+                                  placeholder="1234 5678 9012 3456"
+                                />
+                              </div>
+                              
+                              <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                  <Label htmlFor="cardExpiry" className="text-base">Expiration Date</Label>
+                                  <Input 
+                                    id="cardExpiry" 
+                                    name="cardExpiry" 
+                                    value={formData.cardExpiry} 
+                                    onChange={handleInputChange} 
+                                    className="mt-1" 
+                                    placeholder="MM/YY"
+                                  />
+                                </div>
+                                
+                                <div>
+                                  <Label htmlFor="cardCvc" className="text-base">CVC</Label>
+                                  <Input 
+                                    id="cardCvc" 
+                                    name="cardCvc" 
+                                    value={formData.cardCvc} 
+                                    onChange={handleInputChange} 
+                                    className="mt-1" 
+                                    placeholder="123"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {formData.paymentMethod === 'invoice' && (
+                            <div className="space-y-4 pt-2">
+                              <div>
+                                <Label htmlFor="billingEmail" className="text-base">Billing Email</Label>
+                                <Input 
+                                  id="billingEmail" 
+                                  name="billingEmail" 
+                                  type="email"
+                                  value={formData.billingEmail} 
+                                  onChange={handleInputChange} 
+                                  className="mt-1" 
+                                  placeholder="billing@company.com"
+                                />
+                              </div>
+                              
+                              <div>
+                                <Label htmlFor="billingAddress" className="text-base">Billing Address</Label>
+                                <Input 
+                                  id="billingAddress" 
+                                  name="billingAddress" 
+                                  value={formData.billingAddress} 
+                                  onChange={handleInputChange} 
+                                  className="mt-1" 
+                                  placeholder="123 Main St, City, State, ZIP"
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <Separator className="my-4" />
+                      
+                      <div className="flex items-start space-x-3">
+                        <div className="flex-shrink-0 mt-1">
+                          <Switch
+                            id="acceptTerms"
+                            checked={formData.acceptTerms}
+                            onCheckedChange={(checked) => setFormData({...formData, acceptTerms: checked})}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="acceptTerms" className="font-medium">I agree to the Terms and Conditions <span className="text-red-500">*</span></Label>
+                          <p className="text-sm text-gray-500 mt-1">
+                            By checking this box, you agree to the <a href="#" className="text-[#06c] hover:underline">TrialSage™ Terms of Service</a>, 
+                            <a href="#" className="text-[#06c] hover:underline"> Privacy Policy</a>, and 
+                            <a href="#" className="text-[#06c] hover:underline"> Software License Agreement</a>.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   
-                  <div className="flex items-start space-x-2 mt-6 p-4 border border-[#e5e5e7] rounded-lg bg-[#f9f9fb]">
-                    <Checkbox 
-                      id="terms" 
-                      checked={acceptedTerms}
-                      onCheckedChange={(checked) => setAcceptedTerms(!!checked)}
-                    />
-                    <div className="grid gap-1.5 leading-none">
-                      <Label
-                        htmlFor="terms"
-                        className="text-sm font-normal leading-snug text-[#424245]"
+                  <div className="mt-8 flex items-center justify-between">
+                    {currentStep > 1 ? (
+                      <Button 
+                        type="button"
+                        variant="outline"
+                        onClick={goToPreviousStep}
                       >
-                        By checking this box, I agree to the <a href="#" className="text-[#06c] hover:underline">Terms of Service</a>, <a href="#" className="text-[#06c] hover:underline">Privacy Policy</a>, and <a href="#" className="text-[#06c] hover:underline">Acceptable Use Policy</a>. I understand that my information will be used as described in the Privacy Policy.
-                      </Label>
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        Back
+                      </Button>
+                    ) : (
+                      <div></div>
+                    )}
+                    
+                    {currentStep < 4 ? (
+                      <Button 
+                        type="button"
+                        onClick={goToNextStep}
+                      >
+                        Continue
+                        <ChevronRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    ) : (
+                      <Button 
+                        type="submit"
+                        className="bg-[#0071e3] hover:bg-[#0077ed]"
+                      >
+                        Complete Setup
+                        <Sparkles className="ml-2 h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
+          
+          <div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Enterprise Benefits</CardTitle>
+                <CardDescription>Why companies choose TrialSage™ Enterprise</CardDescription>
+              </CardHeader>
+              
+              <CardContent>
+                <ul className="space-y-4">
+                  <li className="flex items-start">
+                    <div className="bg-[#f0f7ff] p-2 rounded mr-3 flex-shrink-0">
+                      <Building2 className="h-5 w-5 text-[#06c]" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium">21 CFR Part 11 Compliance</h4>
+                      <p className="text-sm text-gray-600">Full compliance with FDA electronic record requirements</p>
+                    </div>
+                  </li>
+                  
+                  <li className="flex items-start">
+                    <div className="bg-[#f0f7ff] p-2 rounded mr-3 flex-shrink-0">
+                      <Globe className="h-5 w-5 text-[#06c]" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium">Global Regulatory Support</h4>
+                      <p className="text-sm text-gray-600">Supports FDA, EMA, PMDA, and other global authorities</p>
+                    </div>
+                  </li>
+                  
+                  <li className="flex items-start">
+                    <div className="bg-[#f0f7ff] p-2 rounded mr-3 flex-shrink-0">
+                      <Users className="h-5 w-5 text-[#06c]" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium">Team Collaboration</h4>
+                      <p className="text-sm text-gray-600">Role-based access control for seamless teamwork</p>
+                    </div>
+                  </li>
+                  
+                  <li className="flex items-start">
+                    <div className="bg-[#f0f7ff] p-2 rounded mr-3 flex-shrink-0">
+                      <Sparkles className="h-5 w-5 text-[#06c]" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium">Advanced AI Features</h4>
+                      <p className="text-sm text-gray-600">Exclusive access to our most powerful AI capabilities</p>
+                    </div>
+                  </li>
+                </ul>
+                
+                <div className="mt-6 pt-6 border-t border-[#e5e5e7]">
+                  <h4 className="font-medium mb-3">Enterprise Customers Include:</h4>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">Pfizer</span>
+                      <Badge variant="outline" className="bg-[#f8f9ff]">Pharma</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">Moderna</span>
+                      <Badge variant="outline" className="bg-[#f8f9ff]">Biotech</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">AstraZeneca</span>
+                      <Badge variant="outline" className="bg-[#f8f9ff]">Pharma</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">IQVIA</span>
+                      <Badge variant="outline" className="bg-[#f8f9ff]">CRO</Badge>
                     </div>
                   </div>
-                </CardContent>
-                <CardFooter className="flex justify-between border-t p-6">
-                  <Button variant="outline" onClick={() => setActiveStep(4)}>
-                    Back
-                  </Button>
-                  <Button onClick={handleSubmit}>
-                    Complete Registration
-                  </Button>
-                </CardFooter>
-              </>
-            )}
-          </Card>
+                </div>
+                
+                <div className="mt-6 pt-6 border-t border-[#e5e5e7]">
+                  <div className="flex items-start">
+                    <div className="bg-[#f0f7ff] p-2 rounded mr-3 flex-shrink-0">
+                      <Phone className="h-5 w-5 text-[#06c]" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium">Need help?</h4>
+                      <p className="text-sm text-gray-600 mb-2">Our enterprise team is ready to assist you</p>
+                      <Button variant="outline" size="sm" className="w-full">
+                        Schedule a Call
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default TeamSignup;
