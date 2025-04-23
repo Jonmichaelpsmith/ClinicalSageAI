@@ -3,25 +3,24 @@ FastAPI application runner script
 
 This script launches the RegIntel validation API service.
 """
-import uvicorn
-import os
 import logging
+import uvicorn
+from app.main import app
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
-    # Configure logging
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s [%(levelname)s] %(message)s",
-        handlers=[
-            logging.StreamHandler(),
-            logging.FileHandler("validator_api.log")
-        ]
-    )
-    logger = logging.getLogger(__name__)
-    
-    # Get port from environment or use default
-    port = int(os.getenv("PORT", 8000))
-    
-    # Start server
-    logger.info(f"Starting RegIntel API server on port {port}")
-    uvicorn.run("app.main:app", host="0.0.0.0", port=port, reload=True)
+    logger.info("Starting RegIntel API server on port 8000")
+    try:
+        uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
+        logger.info("RegIntel API started")
+    except Exception as e:
+        logger.error(f"Error starting RegIntel API: {str(e)}")
