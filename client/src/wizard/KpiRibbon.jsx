@@ -27,15 +27,27 @@ const Sparkline = ({ data, color = "#1e88e5" }) => {
   );
 };
 
-const KpiRibbon = ({ metrics }) => {
+const KpiRibbon = ({ kpi }) => {
   const { t } = useTranslation();
+  
+  // Extract metrics from kpi object or use an empty array as fallback
+  const metrics = kpi?.metrics || [];
+  
+  // If there are no metrics, return a placeholder
+  if (!metrics || metrics.length === 0) {
+    return (
+      <div className="kpi-ribbon flex justify-center items-center h-16 bg-slate-100 border-t border-slate-200">
+        <span className="text-slate-500">Loading metrics...</span>
+      </div>
+    );
+  }
 
   return (
-    <div className="kpi-ribbon">
+    <div className="kpi-ribbon flex justify-around items-center h-16 bg-slate-100 border-t border-slate-200">
       {metrics.map((metric, index) => (
-        <div key={index} className="kpi-card">
-          <div className="kpi-title">{t(metric.title)}</div>
-          <div className="kpi-value">
+        <div key={index} className="kpi-card flex flex-col items-center">
+          <div className="kpi-title text-xs font-medium text-slate-500">{t(metric.title)}</div>
+          <div className="kpi-value text-lg font-bold text-slate-800">
             <Counter 
               value={metric.value}
               prefix={metric.prefix || ''}

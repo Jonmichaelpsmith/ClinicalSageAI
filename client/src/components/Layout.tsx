@@ -7,6 +7,39 @@ interface LayoutProps {
   children: ReactNode;
 }
 
+interface NavLinkProps {
+  to: string;
+  children: React.ReactNode;
+  className?: string;
+  onClick?: () => void;
+}
+
+/**
+ * NavLink component to handle navigation consistently
+ * This component ensures proper rendering of navigation links with wouter
+ */
+const NavLink: React.FC<NavLinkProps> = ({ to, children, className, onClick }) => {
+  const [location] = useLocation();
+  const isActive = location === to;
+  
+  const handleClick = (e: React.MouseEvent) => {
+    if (onClick) {
+      onClick();
+    }
+  };
+  
+  return (
+    <Link href={to}>
+      <div 
+        onClick={handleClick} 
+        className={className}
+      >
+        {children}
+      </div>
+    </Link>
+  );
+};
+
 /**
  * Main Layout component for the TrialSage application
  * Provides responsive navigation with dropdown menus
@@ -64,11 +97,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const userInfo = getUserInfo();
   
   // Handle navigation to avoid React warnings and close menus
-  const handleNavigate = (path: string) => {
-    // Close any open menus
+  const closeMenus = () => {
     setModulesMenuOpen(false);
     setMobileMenuOpen(false);
   };
+  
+  // Keep this for backward compatibility with existing code
+  const handleNavigate = closeMenus;
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -79,7 +114,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex-shrink-0 flex items-center">
-              <Link to="/">
+              <Link href="/">
                 <div className="flex items-center cursor-pointer">
                   <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg p-1.5 mr-2">
                     <div className="w-6 h-6 flex items-center justify-center text-white font-bold text-sm">C2C</div>
@@ -119,102 +154,142 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   {modulesMenuOpen && (
                     <div className="absolute left-0 mt-2 w-64 rounded-md shadow-lg bg-slate-800 ring-1 ring-slate-700 ring-opacity-5 z-50">
                       <div className="py-1">
-                        <Link to="/ind-wizard">
-                          <div onClick={() => handleNavigate('/ind-wizard')} className={`flex items-center px-4 py-2 text-sm ${location === '/ind-wizard' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>
-                            <FileText className="mr-2 h-4 w-4" />
-                            IND Wizard
-                          </div>
-                        </Link>
-                        <Link to="/csr-library">
-                          <a onClick={() => handleNavigate('/csr-library')} className={`flex items-center px-4 py-2 text-sm ${location === '/csr-library' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>
-                            <FileText className="mr-2 h-4 w-4" />
-                            CSR Deep Intelligence
-                          </a>
-                        </Link>
-                        <Link to="/protocol-optimization">
-                          <a onClick={() => handleNavigate('/protocol-optimization')} className={`flex items-center px-4 py-2 text-sm ${location === '/protocol-optimization' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>
-                            <FileText className="mr-2 h-4 w-4" />
-                            Protocol Optimization & Design
-                          </a>
-                        </Link>
-                        <Link to="/study-design">
-                          <a onClick={() => handleNavigate('/study-design')} className={`flex items-center px-4 py-2 text-sm ${location === '/study-design' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>
-                            <FileText className="mr-2 h-4 w-4" />
-                            Study Design Genie
-                          </a>
-                        </Link>
-                        <Link to="/cer-generator">
-                          <a onClick={() => handleNavigate('/cer-generator')} className={`flex items-center px-4 py-2 text-sm ${location === '/cer-generator' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>
-                            <FileText className="mr-2 h-4 w-4" />
-                            CER Generator
-                          </a>
-                        </Link>
-                        <Link to="/cmc-module">
-                          <a onClick={() => handleNavigate('/cmc-module')} className={`flex items-center px-4 py-2 text-sm ${location === '/cmc-module' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>
-                            <FileText className="mr-2 h-4 w-4" />
-                            CMC Insights
-                          </a>
-                        </Link>
-                        <Link to="/document-vault">
-                          <a onClick={() => handleNavigate('/document-vault')} className={`flex items-center px-4 py-2 text-sm ${location === '/document-vault' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>
-                            <Database className="mr-2 h-4 w-4" />
-                            TrialSage DM Vault
-                          </a>
-                        </Link>
-                        <Link to="/ai-cmc-blueprint">
-                          <a onClick={() => handleNavigate('/ai-cmc-blueprint')} className={`flex items-center px-4 py-2 text-sm ${location === '/ai-cmc-blueprint' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>
-                            <FileText className="mr-2 h-4 w-4" />
-                            AI-CMC Blueprint
-                          </a>
-                        </Link>
+                        <NavLink 
+                          to="/ind-wizard" 
+                          onClick={closeMenus}
+                          className={`flex items-center px-4 py-2 text-sm cursor-pointer ${location === '/ind-wizard' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
+                        >
+                          <FileText className="mr-2 h-4 w-4" />
+                          IND Wizard
+                        </NavLink>
+                        
+                        <NavLink 
+                          to="/csr-library" 
+                          onClick={closeMenus}
+                          className={`flex items-center px-4 py-2 text-sm cursor-pointer ${location === '/csr-library' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
+                        >
+                          <FileText className="mr-2 h-4 w-4" />
+                          CSR Deep Intelligence
+                        </NavLink>
+                        
+                        <NavLink 
+                          to="/protocol-optimization" 
+                          onClick={closeMenus}
+                          className={`flex items-center px-4 py-2 text-sm cursor-pointer ${location === '/protocol-optimization' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
+                        >
+                          <FileText className="mr-2 h-4 w-4" />
+                          Protocol Optimization & Design
+                        </NavLink>
+                        
+                        <NavLink 
+                          to="/study-design" 
+                          onClick={closeMenus}
+                          className={`flex items-center px-4 py-2 text-sm cursor-pointer ${location === '/study-design' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
+                        >
+                          <FileText className="mr-2 h-4 w-4" />
+                          Study Design Genie
+                        </NavLink>
+                        
+                        <NavLink 
+                          to="/cer-generator" 
+                          onClick={closeMenus}
+                          className={`flex items-center px-4 py-2 text-sm cursor-pointer ${location === '/cer-generator' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
+                        >
+                          <FileText className="mr-2 h-4 w-4" />
+                          CER Generator
+                        </NavLink>
+                        
+                        <NavLink 
+                          to="/cmc-module" 
+                          onClick={closeMenus}
+                          className={`flex items-center px-4 py-2 text-sm cursor-pointer ${location === '/cmc-module' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
+                        >
+                          <FileText className="mr-2 h-4 w-4" />
+                          CMC Insights
+                        </NavLink>
+                        
+                        <NavLink 
+                          to="/document-vault" 
+                          onClick={closeMenus}
+                          className={`flex items-center px-4 py-2 text-sm cursor-pointer ${location === '/document-vault' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
+                        >
+                          <Database className="mr-2 h-4 w-4" />
+                          TrialSage DM Vault
+                        </NavLink>
+                        
+                        <NavLink 
+                          to="/ai-cmc-blueprint" 
+                          onClick={closeMenus}
+                          className={`flex items-center px-4 py-2 text-sm cursor-pointer ${location === '/ai-cmc-blueprint' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
+                        >
+                          <FileText className="mr-2 h-4 w-4" />
+                          AI-CMC Blueprint
+                        </NavLink>
+                        
                         <div className="border-t border-slate-600 my-1"></div>
-                        <Link to="/versions">
-                          <a onClick={() => handleNavigate('/versions')} className={`flex items-center px-4 py-2 text-sm ${location === '/versions' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>
-                            <FileText className="mr-2 h-4 w-4" />
-                            Document Versions
-                          </a>
-                        </Link>
+                        
+                        <NavLink 
+                          to="/versions" 
+                          onClick={closeMenus}
+                          className={`flex items-center px-4 py-2 text-sm cursor-pointer ${location === '/versions' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
+                        >
+                          <FileText className="mr-2 h-4 w-4" />
+                          Document Versions
+                        </NavLink>
                       </div>
                     </div>
                   )}
                 </div>
                 
                 {/* Quick access nav links */}
-                <Link to="/ind-wizard">
-                  <a onClick={() => handleNavigate('/ind-wizard')} className={`inline-flex items-center px-3 py-2 text-sm font-medium cursor-pointer ${
+                <NavLink 
+                  to="/ind-wizard"
+                  onClick={closeMenus}
+                  className={`inline-flex items-center px-3 py-2 text-sm font-medium cursor-pointer ${
                     location === '/ind-wizard' ? 'text-white border-b-2 border-blue-400' : 'text-slate-300 hover:text-white'
-                  }`}>
-                    IND
-                  </a>
-                </Link>
-                <Link to="/csr-library">
-                  <a onClick={() => handleNavigate('/csr-library')} className={`inline-flex items-center px-3 py-2 text-sm font-medium cursor-pointer ${
+                  }`}
+                >
+                  IND
+                </NavLink>
+                
+                <NavLink 
+                  to="/csr-library"
+                  onClick={closeMenus}
+                  className={`inline-flex items-center px-3 py-2 text-sm font-medium cursor-pointer ${
                     location === '/csr-library' ? 'text-white border-b-2 border-blue-400' : 'text-slate-300 hover:text-white'
-                  }`}>
-                    CSR
-                  </a>
-                </Link>
-                <Link to="/cer-generator">
-                  <a onClick={() => handleNavigate('/cer-generator')} className={`inline-flex items-center px-3 py-2 text-sm font-medium cursor-pointer ${
+                  }`}
+                >
+                  CSR
+                </NavLink>
+                
+                <NavLink 
+                  to="/cer-generator"
+                  onClick={closeMenus}
+                  className={`inline-flex items-center px-3 py-2 text-sm font-medium cursor-pointer ${
                     location === '/cer-generator' ? 'text-white border-b-2 border-blue-400' : 'text-slate-300 hover:text-white'
-                  }`}>
-                    CER
-                  </a>
-                </Link>
-                <Link to="/cmc-module">
-                  <a onClick={() => handleNavigate('/cmc-module')} className={`inline-flex items-center px-3 py-2 text-sm font-medium cursor-pointer ${
+                  }`}
+                >
+                  CER
+                </NavLink>
+                
+                <NavLink 
+                  to="/cmc-module"
+                  onClick={closeMenus}
+                  className={`inline-flex items-center px-3 py-2 text-sm font-medium cursor-pointer ${
                     location === '/cmc-module' ? 'text-white border-b-2 border-blue-400' : 'text-slate-300 hover:text-white'
-                  }`}>
-                    CMC
-                  </a>
-                </Link>
+                  }`}
+                >
+                  CMC
+                </NavLink>
               </div>
               
-              <Link to="/ask-lumen">
-                <a onClick={() => handleNavigate('/ask-lumen')} className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-md px-4 py-2 text-sm font-medium cursor-pointer flex items-center">
-                  Ask Lumen
-                </a>
-              </Link>
+              <NavLink 
+                to="/ask-lumen"
+                onClick={closeMenus}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-md px-4 py-2 text-sm font-medium cursor-pointer flex items-center"
+              >
+                Ask Lumen
+              </NavLink>
               
               {/* User Menu */}
               <div className="relative" ref={userMenuRef}>
@@ -261,62 +336,91 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </div>
       </header>
 
-      {/* Page Content */}
       {/* Mobile menu */}
       {mobileMenuOpen && (
         <div className="md:hidden">
           <div className="bg-slate-800 py-2 space-y-1">
-            <Link to="/ind-wizard">
-              <a onClick={() => handleNavigate('/ind-wizard')} className={`block px-4 py-2 text-sm ${location === '/ind-wizard' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>
-                IND Wizard
-              </a>
-            </Link>
-            <Link to="/csr-library">
-              <a onClick={() => handleNavigate('/csr-library')} className={`block px-4 py-2 text-sm ${location === '/csr-library' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>
-                CSR Deep Intelligence
-              </a>
-            </Link>
-            <Link to="/protocol-optimization">
-              <a onClick={() => handleNavigate('/protocol-optimization')} className={`block px-4 py-2 text-sm ${location === '/protocol-optimization' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>
-                Protocol Optimization & Design
-              </a>
-            </Link>
-            <Link to="/study-design">
-              <a onClick={() => handleNavigate('/study-design')} className={`block px-4 py-2 text-sm ${location === '/study-design' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>
-                Study Design Genie
-              </a>
-            </Link>
-            <Link to="/cer-generator">
-              <a onClick={() => handleNavigate('/cer-generator')} className={`block px-4 py-2 text-sm ${location === '/cer-generator' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>
-                CER Generator
-              </a>
-            </Link>
-            <Link to="/cmc-module">
-              <a onClick={() => handleNavigate('/cmc-module')} className={`block px-4 py-2 text-sm ${location === '/cmc-module' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>
-                CMC Insights
-              </a>
-            </Link>
-            <Link to="/document-vault">
-              <a onClick={() => handleNavigate('/document-vault')} className={`block px-4 py-2 text-sm ${location === '/document-vault' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>
-                TrialSage DM Vault
-              </a>
-            </Link>
-            <Link to="/ai-cmc-blueprint">
-              <a onClick={() => handleNavigate('/ai-cmc-blueprint')} className={`block px-4 py-2 text-sm ${location === '/ai-cmc-blueprint' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>
-                AI-CMC Blueprint
-              </a>
-            </Link>
+            <NavLink 
+              to="/ind-wizard"
+              onClick={closeMenus}
+              className={`block px-4 py-2 text-sm cursor-pointer ${location === '/ind-wizard' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
+            >
+              IND Wizard
+            </NavLink>
+            
+            <NavLink 
+              to="/csr-library"
+              onClick={closeMenus}
+              className={`block px-4 py-2 text-sm cursor-pointer ${location === '/csr-library' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
+            >
+              CSR Deep Intelligence
+            </NavLink>
+            
+            <NavLink 
+              to="/protocol-optimization"
+              onClick={closeMenus}
+              className={`block px-4 py-2 text-sm cursor-pointer ${location === '/protocol-optimization' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
+            >
+              Protocol Optimization & Design
+            </NavLink>
+            
+            <NavLink 
+              to="/study-design"
+              onClick={closeMenus}
+              className={`block px-4 py-2 text-sm cursor-pointer ${location === '/study-design' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
+            >
+              Study Design Genie
+            </NavLink>
+            
+            <NavLink 
+              to="/cer-generator"
+              onClick={closeMenus}
+              className={`block px-4 py-2 text-sm cursor-pointer ${location === '/cer-generator' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
+            >
+              CER Generator
+            </NavLink>
+            
+            <NavLink 
+              to="/cmc-module"
+              onClick={closeMenus}
+              className={`block px-4 py-2 text-sm cursor-pointer ${location === '/cmc-module' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
+            >
+              CMC Insights
+            </NavLink>
+            
+            <NavLink 
+              to="/document-vault"
+              onClick={closeMenus}
+              className={`block px-4 py-2 text-sm cursor-pointer ${location === '/document-vault' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
+            >
+              TrialSage DM Vault
+            </NavLink>
+            
+            <NavLink 
+              to="/ai-cmc-blueprint"
+              onClick={closeMenus}
+              className={`block px-4 py-2 text-sm cursor-pointer ${location === '/ai-cmc-blueprint' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
+            >
+              AI-CMC Blueprint
+            </NavLink>
+            
             <div className="border-t border-slate-600 pt-1"></div>
-            <Link to="/versions">
-              <a onClick={() => handleNavigate('/versions')} className={`block px-4 py-2 text-sm ${location === '/versions' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>
-                Document Versions
-              </a>
-            </Link>
-            <Link to="/ask-lumen">
-              <a onClick={() => handleNavigate('/ask-lumen')} className="block px-4 py-2 text-sm text-indigo-400 hover:text-indigo-300 hover:bg-slate-700">
-                Ask Lumen
-              </a>
-            </Link>
+            
+            <NavLink 
+              to="/versions"
+              onClick={closeMenus}
+              className={`block px-4 py-2 text-sm cursor-pointer ${location === '/versions' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
+            >
+              Document Versions
+            </NavLink>
+            
+            <NavLink 
+              to="/ask-lumen"
+              onClick={closeMenus}
+              className="block px-4 py-2 text-sm text-indigo-400 hover:text-indigo-300 hover:bg-slate-700 cursor-pointer"
+            >
+              Ask Lumen
+            </NavLink>
           </div>
         </div>
       )}

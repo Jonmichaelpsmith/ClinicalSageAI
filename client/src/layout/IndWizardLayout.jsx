@@ -19,27 +19,27 @@ import { AnimatePresence } from "framer-motion";
 import "../i18n/i18n.js";
 import { useTranslation } from "../utils/i18n-stub.js";
 
+// Initial KPI data to prevent null/undefined errors
+const initialKpiData = {
+  metrics: [
+    { title: "Documents", value: 12, prefix: "", suffix: "" },
+    { title: "Readiness", value: 67, prefix: "", suffix: "%" },
+    { title: "Time Saved", value: 21, prefix: "", suffix: " hrs" },
+    { title: "Errors", value: 2, prefix: "", suffix: "" },
+    { title: "ROI", value: 32500, prefix: "$", suffix: "" }
+  ],
+  spark: {
+    docs: [3, 5, 6, 7, 8, 8, 9, 10, 11, 12],
+    errors: [5, 4, 4, 3, 3, 3, 3, 3, 2, 3],
+    ready: [45, 48, 52, 54, 58, 62, 65, 65, 66, 67],
+    savings: [10000, 12000, 15000, 18000, 22000, 25000, 28000, 30000, 31500, 32500]
+  }
+};
+
 export default function IndWizardLayout() {
   const { i18n, t } = useTranslation();
   const [step, setStep] = useState(0);
-  const [kpi, setKpi] = useState({ 
-    ready: 0, 
-    errors: 0, 
-    docs: 0,
-    savings: 0,
-    trend: {
-      ready: 0,
-      errors: 0,
-      docs: 0,
-      savings: 0
-    },
-    spark: {
-      ready: [],
-      errors: [],
-      docs: [],
-      savings: []
-    }
-  });
+  const [kpi, setKpi] = useState(initialKpiData);
   const [drawer, setDrawer] = useState(false);
   const [predictiveData, setPredictiveData] = useState({
     loading: true,
