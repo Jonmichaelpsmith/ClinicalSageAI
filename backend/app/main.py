@@ -1,80 +1,72 @@
 """
-Main FastAPI application for TrialSage RegIntel Validator
+RegIntel API Main Application
 
-This module sets up the FastAPI application with middleware, 
-routers, and static file serving.
+This module defines the FastAPI application and its middleware.
 """
-from fastapi import FastAPI, Request
+import logging
+import os
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-import os
-import logging
 
-from .routers import validation, explanation
-from .dependencies import get_token_header
+from app.routers import validation, explanation
 
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
     handlers=[
-        logging.StreamHandler(),
-        logging.FileHandler("validation.log")
+        logging.StreamHandler()
     ]
 )
 logger = logging.getLogger(__name__)
 
 # Create FastAPI app
-app = FastAPI(title="TrialSage RegIntel API", version="1.0.0")
+app = FastAPI(
+    title="RegIntel API",
+    description="RegIntel provides document validation and explanation services for regulatory document compliance",
+    version="1.0.0"
+)
 
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins
+    allow_origins=["*"],  # In production, specify actual origins
     allow_credentials=True,
-    allow_methods=["*"],  # Allows all methods
-    allow_headers=["*"],  # Allows all headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
-
-# Create upload and output directories if they don't exist
-os.makedirs("backend/uploads", exist_ok=True)
-os.makedirs("backend/validation_logs", exist_ok=True)
-os.makedirs("backend/define_outputs", exist_ok=True)
-
-# Mount static files for downloads
-app.mount("/downloads", StaticFiles(directory="backend/validation_logs"), name="validation_logs")
-app.mount("/define", StaticFiles(directory="backend/define_outputs"), name="define_outputs")
-
-# Health check endpoint
-@app.get("/health", include_in_schema=False)
-async def health_check():
-    return {"status": "ok"}
 
 # Include routers
-app.include_router(
-    validation.router,
-    prefix="/validate",
-    tags=["validation"],
-    dependencies=[],
-)
+app.include_router(validation.router, prefix="/validate", tags=["validation"])
+app.include_router(explanation.router, prefix="/explain", tags=["explanation"])
 
-app.include_router(
-    explanation.router,
-    prefix="/regintel",
-    tags=["explanation"],
-    dependencies=[],
-)
+# Health check endpoint
+@app.get("/health", tags=["system"])
+async def health_check():
+    """
+    Health check endpoint to verify the API is running.
+    """
+    return {"status": "healthy", "api": "RegIntel"}
+    
+# Mount static files
+uploads_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads")
+os.makedirs(uploads_dir, exist_ok=True)
 
-# Startup event
+app.mount("/uploads", StaticFiles(directory=uploads_dir), name="uploads")
+
+# Startup event handler
 @app.on_event("startup")
 async def startup_event():
+    """
+    Actions to perform on application startup.
+    """
     logger.info("RegIntel API started")
 
-# Request middleware for logging
-@app.middleware("http")
-async def log_requests(request: Request, call_next):
-    """Log all requests and responses"""
-    logger.info(f"Request: {request.method} {request.url.path}")
-    response = await call_next(request)
-    logger.info(f"Response: {response.status_code}")
-    return response
+# Shutdown event handler
+@app.on_event("shutdown")
+async def shutdown_event():
+    """
+    Actions to perform on application shutdown.
+    """
+    logger.info("RegIntel API shutting down")

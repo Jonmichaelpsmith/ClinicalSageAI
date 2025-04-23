@@ -1,31 +1,43 @@
 """
-Configuration settings for the TrialSage RegIntel Validator backend.
-"""
+RegIntel API Configuration
 
+This module contains configuration settings for the RegIntel API.
+"""
 import os
 from pydantic import BaseSettings
 
 class Settings(BaseSettings):
-    # JWT Authentication
-    JWT_SECRET_KEY: str
-    ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    """
+    API configuration settings
+    """
+    API_VERSION: str = "1.0.0"
+    API_NAME: str = "RegIntel API"
+    API_DESCRIPTION: str = "RegIntel provides document validation and explanation services for regulatory document compliance"
     
-    # OpenAI (for explanations and fixes)
-    OPENAI_API_KEY: str
+    # JWT settings
+    JWT_SECRET_KEY: str = os.getenv("JWT_SECRET_KEY", "regintel_development_key")
+    JWT_ALGORITHM: str = "HS256"
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 1 day
     
-    # RegIntel Validator
-    REGINTEL_ENGINE_PATH: str
+    # Validation engine settings
+    VALIDATION_ENGINE_PATH: str = os.getenv("REGINTEL_ENGINE_PATH", "")
     
-    # File paths
-    BASE_DIR: str = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    UPLOAD_DIR: str = os.path.join(BASE_DIR, "uploads")
-    VALIDATION_REPORT_DIR: str = os.path.join(BASE_DIR, "validation_logs")
-    DEFINE_XML_DIR: str = os.path.join(BASE_DIR, "define_outputs")
+    # File upload settings
+    MAX_UPLOAD_SIZE: int = 50 * 1024 * 1024  # 50 MB
+    ALLOWED_EXTENSIONS: list = ["pdf", "docx", "doc", "xml"]
+    
+    # Path settings
+    UPLOAD_DIR: str = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads")
+    VALIDATION_LOGS_DIR: str = os.path.join(os.path.dirname(os.path.dirname(__file__)), "validation_logs")
+    DEFINE_OUTPUT_DIR: str = os.path.join(os.path.dirname(os.path.dirname(__file__)), "define_outputs")
     
     class Config:
         env_file = ".env"
-        case_sensitive = True
+        env_file_encoding = "utf-8"
 
-# Initialize settings
+# Create settings instance
 settings = Settings()
+
+# Ensure directories exist
+for directory in [settings.UPLOAD_DIR, settings.VALIDATION_LOGS_DIR, settings.DEFINE_OUTPUT_DIR]:
+    os.makedirs(directory, exist_ok=True)
