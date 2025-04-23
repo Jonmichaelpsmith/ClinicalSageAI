@@ -57,16 +57,46 @@ export default function HomeMarketingPage() {
   try {
     // Return the main UI
     return (
-    <div className="min-h-screen bg-white text-gray-900" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Inter', sans-serif" }}>
+    <div className="min-h-screen bg-white text-gray-900" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', sans-serif" }}>
+      {/* Certara-style top utility banner */}
+      <div className="bg-[#004f9f] text-white text-sm">
+        <div className="max-w-7xl mx-auto px-6 py-2 flex justify-between items-center">
+          <div className="flex space-x-6">
+            <a href="tel:+18007235372" className="hover:text-blue-100 flex items-center">
+              <Phone className="w-3.5 h-3.5 mr-1.5" />
+              <span className="hidden sm:inline">1-800-723-5372</span>
+            </a>
+            <a href="mailto:info@concept2cure.ai" className="hover:text-blue-100 flex items-center">
+              <Mail className="w-3.5 h-3.5 mr-1.5" />
+              <span className="hidden sm:inline">info@concept2cure.ai</span>
+            </a>
+          </div>
+          <div className="hidden md:flex space-x-4 text-xs items-center">
+            <a href="#" className="hover:text-blue-100 px-2 py-0.5">About</a>
+            <span className="mx-0.5 text-blue-300">|</span>
+            <a href="#" className="hover:text-blue-100 px-2 py-0.5">Investors</a>
+            <span className="mx-0.5 text-blue-300">|</span>
+            <a href="#" className="hover:text-blue-100 px-2 py-0.5">News</a>
+            <span className="mx-0.5 text-blue-300">|</span>
+            <a href="#" className="hover:text-blue-100 px-2 py-0.5">Careers</a>
+            <span className="mx-0.5 text-blue-300">|</span>
+            <button className="bg-white/10 rounded px-2 py-0.5 hover:bg-white/20 transition-colors flex items-center">
+              <Globe className="w-3 h-3 mr-1" />
+              EN
+            </button>
+          </div>
+        </div>
+      </div>
+      
       {/* Enterprise-grade navigation */}
-      <header className="bg-white sticky top-0 z-50 py-4 shadow-sm border-b border-gray-100">
+      <header className="bg-white sticky top-0 z-50 py-3 shadow-sm border-b border-gray-100">
         <div className="max-w-7xl mx-auto flex justify-between items-center px-6">
           <div className="flex items-center space-x-3">
             <Link to="/" className="flex items-center">
-              <div className="bg-gradient-to-r from-blue-600 to-blue-500 text-white font-bold text-sm p-2 rounded">
+              <div className="bg-[#004f9f] text-white font-bold text-sm p-2 rounded mr-3">
                 C2C.AI
               </div>
-              <div className="ml-3 flex flex-col">
+              <div className="ml-0 flex flex-col">
                 <span className="font-semibold tracking-tight text-gray-900 text-xl">CONCEPT2CURE.AI</span>
                 <span className="text-xs text-gray-500 -mt-1">TrialSage™ Platform</span>
               </div>
@@ -82,61 +112,61 @@ export default function HomeMarketingPage() {
               <div className="absolute invisible group-hover:visible opacity-0 group-hover:opacity-100 left-0 top-full w-[550px] bg-white shadow-lg rounded-md border border-gray-100 transition-all duration-200 z-50">
                 <div className="grid grid-cols-2 gap-2 p-6">
                   <Link to="/ind-wizard" className="flex p-3 hover:bg-gray-50 rounded-lg group/item">
-                    <div className="w-10 h-10 flex items-center justify-center bg-blue-600 rounded-lg shrink-0">
+                    <div className="w-10 h-10 flex items-center justify-center bg-[#004f9f] rounded-lg shrink-0">
                       <FileCheck className="w-5 h-5 text-white" />
                     </div>
                     <div className="ml-4">
-                      <h4 className="font-medium text-gray-900 group-hover/item:text-blue-600">IND Wizard™</h4>
+                      <h4 className="font-medium text-gray-900 group-hover/item:text-[#004f9f]">IND Wizard™</h4>
                       <p className="text-sm text-gray-500 mt-0.5">Complete IND assembly & submission</p>
                     </div>
                   </Link>
                   <Link to="/enterprise-csr-intelligence" className="flex p-3 hover:bg-gray-50 rounded-lg group/item">
-                    <div className="w-10 h-10 flex items-center justify-center bg-blue-600 rounded-lg shrink-0">
+                    <div className="w-10 h-10 flex items-center justify-center bg-[#004f9f] rounded-lg shrink-0">
                       <LayoutDashboard className="w-5 h-5 text-white" />
                     </div>
                     <div className="ml-4">
-                      <h4 className="font-medium text-gray-900 group-hover/item:text-blue-600">CSR Intelligence™</h4>
+                      <h4 className="font-medium text-gray-900 group-hover/item:text-[#004f9f]">CSR Intelligence™</h4>
                       <p className="text-sm text-gray-500 mt-0.5">Extract & analyze CSR data</p>
                     </div>
                   </Link>
                   <Link to="/versions" className="flex p-3 hover:bg-gray-50 rounded-lg group/item">
-                    <div className="w-10 h-10 flex items-center justify-center bg-blue-600 rounded-lg shrink-0">
+                    <div className="w-10 h-10 flex items-center justify-center bg-[#004f9f] rounded-lg shrink-0">
                       <Database className="w-5 h-5 text-white" />
                     </div>
                     <div className="ml-4">
-                      <h4 className="font-medium text-gray-900 group-hover/item:text-blue-600">Document Vault™</h4>
+                      <h4 className="font-medium text-gray-900 group-hover/item:text-[#004f9f]">Document Vault™</h4>
                       <p className="text-sm text-gray-500 mt-0.5">21 CFR Part 11 compliant storage</p>
                     </div>
                   </Link>
                   <Link to="/cmc-blueprint-generator" className="flex p-3 hover:bg-gray-50 rounded-lg group/item">
-                    <div className="w-10 h-10 flex items-center justify-center bg-blue-600 rounded-lg shrink-0">
+                    <div className="w-10 h-10 flex items-center justify-center bg-[#004f9f] rounded-lg shrink-0">
                       <Microscope className="w-5 h-5 text-white" />
                     </div>
                     <div className="ml-4">
-                      <h4 className="font-medium text-gray-900 group-hover/item:text-blue-600">CMC Blueprint™</h4>
+                      <h4 className="font-medium text-gray-900 group-hover/item:text-[#004f9f]">CMC Blueprint™</h4>
                       <p className="text-sm text-gray-500 mt-0.5">Chemistry & manufacturing controls</p>
                     </div>
                   </Link>
                 </div>
                 <div className="bg-gray-50 p-3 rounded-b-md flex items-center justify-between">
                   <span className="text-sm text-gray-600 font-medium">Need a custom solution?</span>
-                  <Link to="/contact" className="text-sm text-blue-600 font-medium hover:underline flex items-center">
+                  <Link to="/contact" className="text-sm text-[#004f9f] font-medium hover:underline flex items-center">
                     Talk to our team <ArrowRight className="w-3.5 h-3.5 ml-1" />
                   </Link>
                 </div>
               </div>
             </div>
             
-            <Link to="/ind-wizard" className="text-gray-800 hover:text-blue-600 font-medium transition-colors">
+            <Link to="/ind-wizard" className="text-gray-800 hover:text-[#004f9f] font-medium transition-colors">
               IND Wizard
             </Link>
-            <Link to="/enterprise-csr-intelligence" className="text-gray-800 hover:text-blue-600 font-medium transition-colors">
+            <Link to="/enterprise-csr-intelligence" className="text-gray-800 hover:text-[#004f9f] font-medium transition-colors">
               CSR Intelligence
             </Link>
-            <Link to="/versions" className="text-gray-800 hover:text-blue-600 font-medium transition-colors">
+            <Link to="/versions" className="text-gray-800 hover:text-[#004f9f] font-medium transition-colors">
               Document Vault
             </Link>
-            <Link to="/analytics-dashboard" className="text-gray-800 hover:text-blue-600 font-medium transition-colors">
+            <Link to="/analytics-dashboard" className="text-gray-800 hover:text-[#004f9f] font-medium transition-colors">
               Analytics
             </Link>
             <Link to="/ask-lumen" className="text-violet-700 hover:text-violet-800 bg-violet-50 px-3 py-1 rounded-md font-medium transition-colors flex items-center">
@@ -152,19 +182,19 @@ export default function HomeMarketingPage() {
               </button>
             </div>
             
-            <Link to="/auth" className="hidden md:block text-gray-800 hover:text-blue-600 font-medium">
+            <Link to="/auth" className="hidden md:block text-gray-800 hover:text-[#004f9f] font-medium">
               Log in
             </Link>
             
             <Link to="/auth" 
-              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md font-medium transition-colors">
+              className="bg-[#004f9f] hover:bg-blue-800 text-white px-5 py-2 rounded-md font-medium transition-colors">
               Get Started
             </Link>
             
             <div className="border-l border-gray-200 h-6 hidden xl:block"></div>
             
             <Link to="/team-signup" 
-              className="hidden xl:flex items-center text-gray-800 hover:text-blue-600 font-medium">
+              className="hidden xl:flex items-center text-gray-800 hover:text-[#004f9f] font-medium">
               <UserPlus className="w-4 h-4 mr-2" />
               For Enterprise
             </Link>
@@ -177,7 +207,7 @@ export default function HomeMarketingPage() {
       </header>
 
       {/* Ask Lumen prominent feature banner */}
-      <div className="bg-gradient-to-r from-blue-700 to-blue-600 text-white">
+      <div className="bg-gradient-to-r from-violet-700 to-purple-600 text-white border-b border-violet-800">
         <div className="max-w-7xl mx-auto px-6 py-3 flex flex-col md:flex-row items-center justify-between">
           <div className="flex items-center mb-3 md:mb-0">
             <div className="bg-white/20 p-2 rounded-lg mr-4">
@@ -185,13 +215,13 @@ export default function HomeMarketingPage() {
             </div>
             <div>
               <h3 className="font-bold text-lg">Ask Lumen™ AI Assistant</h3>
-              <p className="text-sm text-blue-100">
+              <p className="text-sm text-violet-100">
                 Regulatory compliance coach trained on 200k+ submissions and global regulations
               </p>
             </div>
           </div>
           <Link to="/ask-lumen">
-            <button className="bg-white text-blue-700 hover:bg-blue-50 font-medium py-2 px-5 rounded-md transition-colors whitespace-nowrap flex items-center">
+            <button className="bg-white text-violet-700 hover:bg-violet-50 font-medium py-2 px-5 rounded-md transition-colors whitespace-nowrap flex items-center">
               Try 10-Minute Free Trial <ArrowRight className="ml-2 w-4 h-4" />
             </button>
           </Link>
