@@ -16,21 +16,31 @@ export default function HomeMarketingPage() {
   try {
     return (
       <div className="min-h-screen bg-white font-sans antialiased">
+        {/* Soft gradient element at top */}
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-300 via-green-300 to-blue-300 z-50"></div>
+        
         {/* Certara-style header */}
-        <header className="relative z-50">
+        <header className="relative z-40">
           {/* Top utility bar (matches Certara exactly) */}
           <div className="bg-[#003057] text-white">
             <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-end space-x-6">
-              <a href="#" className="text-[11px] text-white hover:text-gray-200 transition">News</a>
-              <a href="#" className="text-[11px] text-white hover:text-gray-200 transition">Resources</a>
-              <a href="#" className="text-[11px] text-white hover:text-gray-200 transition">Contact</a>
-              <a href="#" className="text-[11px] flex items-center text-white hover:text-gray-200 transition">
-                <span>English</span>
-                <ChevronDown className="ml-1 h-3 w-3" />
-              </a>
-              <button className="text-white hover:text-gray-200">
+              <Link to="/enterprise-csr-intelligence" className="text-[11px] text-white hover:text-gray-200 transition">News</Link>
+              <Link to="/document-management" className="text-[11px] text-white hover:text-gray-200 transition">Resources</Link>
+              <Link to="/team-signup" className="text-[11px] text-white hover:text-gray-200 transition">Contact</Link>
+              <div className="relative group">
+                <a className="text-[11px] flex items-center text-white hover:text-gray-200 transition cursor-pointer">
+                  <span>English</span>
+                  <ChevronDown className="ml-1 h-3 w-3" />
+                </a>
+                <div className="absolute right-0 mt-1 w-24 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 bg-white shadow-lg border border-gray-200 z-50 py-1">
+                  <a className="block px-4 py-1 text-[11px] text-[#444] hover:bg-gray-50">English</a>
+                  <a className="block px-4 py-1 text-[11px] text-[#444] hover:bg-gray-50">French</a>
+                  <a className="block px-4 py-1 text-[11px] text-[#444] hover:bg-gray-50">German</a>
+                </div>
+              </div>
+              <Link to="/enterprise-csr-intelligence" className="text-white hover:text-gray-200">
                 <Search className="h-4 w-4" />
-              </button>
+              </Link>
             </div>
           </div>
           
@@ -129,9 +139,13 @@ export default function HomeMarketingPage() {
           </div>
         </header>
 
-        {/* Hero Section - Certara style */}
-        <section className="bg-[#f7f7f7] border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 py-16 md:py-24">
+        {/* Hero Section - Certara style with soft orange/green gradient */}
+        <section className="relative bg-[#f7f7f7] border-b border-gray-200 overflow-hidden">
+          {/* Soft gradient background elements */}
+          <div className="absolute -top-32 -left-32 w-64 h-64 rounded-full bg-orange-100 opacity-30 blur-3xl"></div>
+          <div className="absolute top-10 right-10 w-96 h-96 rounded-full bg-green-100 opacity-30 blur-3xl"></div>
+          
+          <div className="max-w-7xl mx-auto px-4 py-16 md:py-24 relative z-10">
             <div className="flex flex-col md:flex-row items-center">
               <div className="w-full md:w-1/2 pr-0 md:pr-16 mb-10 md:mb-0">
                 <h1 className="text-4xl font-light text-[#003057] leading-tight mb-6">
@@ -144,7 +158,7 @@ export default function HomeMarketingPage() {
                 
                 <div className="space-y-4 sm:space-y-0 sm:flex sm:space-x-4">
                   <Link to="/ind-wizard">
-                    <button className="w-full sm:w-auto bg-[#0078d4] hover:bg-[#005fa6] text-white px-6 py-3 text-[14px] font-medium transition flex items-center justify-center">
+                    <button className="w-full sm:w-auto bg-gradient-to-r from-[#0078d4] to-[#0063af] hover:from-[#0063af] hover:to-[#005696] text-white px-6 py-3 text-[14px] font-medium transition flex items-center justify-center shadow-sm">
                       Launch IND Wizard™
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </button>
@@ -333,9 +347,13 @@ export default function HomeMarketingPage() {
           </div>
         </section>
         
-        {/* Stats Section - Certara style */}
-        <section className="bg-[#f7f7f7] py-16 border-y border-gray-200">
-          <div className="max-w-7xl mx-auto px-4">
+        {/* Stats Section - with soft gradient backgrounds */}
+        <section className="relative bg-[#f7f7f7] py-16 border-y border-gray-200 overflow-hidden">
+          {/* Soft gradient background elements */}
+          <div className="absolute bottom-0 right-0 w-80 h-80 rounded-full bg-orange-50 opacity-40 blur-3xl"></div>
+          <div className="absolute top-20 left-10 w-72 h-72 rounded-full bg-green-50 opacity-40 blur-3xl"></div>
+          
+          <div className="max-w-7xl mx-auto px-4 relative z-10">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-light text-[#003057] mb-3">Proven Results</h2>
               <p className="text-[#666] max-w-3xl mx-auto">
@@ -344,20 +362,20 @@ export default function HomeMarketingPage() {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="bg-white p-8 border border-gray-200 shadow-sm text-center">
-                <div className="text-4xl font-bold text-[#0078d4] mb-2">55%</div>
+              <div className="bg-white p-8 border border-gray-200 shadow-sm hover:shadow-md transition-shadow text-center rounded-sm">
+                <div className="text-4xl font-bold bg-gradient-to-r from-[#0078d4] to-[#005fa6] bg-clip-text text-transparent mb-2">55%</div>
                 <p className="text-lg font-medium text-[#003057] mb-3">Faster Submissions</p>
                 <p className="text-sm text-[#666]">Complete IND preparation in 5-7 months instead of 14+ months with traditional methods.</p>
               </div>
               
-              <div className="bg-white p-8 border border-gray-200 shadow-sm text-center">
-                <div className="text-4xl font-bold text-[#0078d4] mb-2">61%</div>
+              <div className="bg-white p-8 border border-gray-200 shadow-sm hover:shadow-md transition-shadow text-center rounded-sm">
+                <div className="text-4xl font-bold bg-gradient-to-r from-orange-400 to-orange-500 bg-clip-text text-transparent mb-2">61%</div>
                 <p className="text-lg font-medium text-[#003057] mb-3">Fewer Amendments</p>
                 <p className="text-sm text-[#666]">AI-guided protocol design reduces amendments from 2.3 to 0.9 per study.</p>
               </div>
               
-              <div className="bg-white p-8 border border-gray-200 shadow-sm text-center">
-                <div className="text-4xl font-bold text-[#0078d4] mb-2">100%</div>
+              <div className="bg-white p-8 border border-gray-200 shadow-sm hover:shadow-md transition-shadow text-center rounded-sm">
+                <div className="text-4xl font-bold bg-gradient-to-r from-green-500 to-green-600 bg-clip-text text-transparent mb-2">100%</div>
                 <p className="text-lg font-medium text-[#003057] mb-3">Compliance</p>
                 <p className="text-sm text-[#666]">Enterprise-grade platform meets 21 CFR Part 11 compliance requirements with full audit trails.</p>
               </div>
@@ -408,10 +426,10 @@ export default function HomeMarketingPage() {
                   Company
                 </h5>
                 <ul className="space-y-2">
-                  <li><a href="#" className="text-sm text-[#666] hover:text-[#0078d4] transition">About</a></li>
-                  <li><a href="#" className="text-sm text-[#666] hover:text-[#0078d4] transition">Leadership</a></li>
-                  <li><a href="#" className="text-sm text-[#666] hover:text-[#0078d4] transition">Careers</a></li>
-                  <li><a href="#" className="text-sm text-[#666] hover:text-[#0078d4] transition">Contact</a></li>
+                  <li><Link to="/solutions" className="text-sm text-[#666] hover:text-[#0078d4] transition">About</Link></li>
+                  <li><Link to="/analytics-dashboard" className="text-sm text-[#666] hover:text-[#0078d4] transition">Leadership</Link></li>
+                  <li><Link to="/team-signup" className="text-sm text-[#666] hover:text-[#0078d4] transition">Careers</Link></li>
+                  <li><Link to="/team-signup" className="text-sm text-[#666] hover:text-[#0078d4] transition">Contact</Link></li>
                 </ul>
               </div>
               
@@ -420,10 +438,10 @@ export default function HomeMarketingPage() {
                   Resources
                 </h5>
                 <ul className="space-y-2">
-                  <li><a href="#" className="text-sm text-[#666] hover:text-[#0078d4] transition">Documentation</a></li>
-                  <li><a href="#" className="text-sm text-[#666] hover:text-[#0078d4] transition">Regulatory Resources</a></li>
-                  <li><a href="#" className="text-sm text-[#666] hover:text-[#0078d4] transition">Blog</a></li>
-                  <li><a href="#" className="text-sm text-[#666] hover:text-[#0078d4] transition">Events</a></li>
+                  <li><Link to="/document-management" className="text-sm text-[#666] hover:text-[#0078d4] transition">Documentation</Link></li>
+                  <li><Link to="/enterprise-csr-intelligence" className="text-sm text-[#666] hover:text-[#0078d4] transition">Regulatory Resources</Link></li>
+                  <li><Link to="/enterprise-csr-intelligence" className="text-sm text-[#666] hover:text-[#0078d4] transition">Blog</Link></li>
+                  <li><Link to="/team-signup" className="text-sm text-[#666] hover:text-[#0078d4] transition">Events</Link></li>
                 </ul>
               </div>
               
@@ -432,10 +450,10 @@ export default function HomeMarketingPage() {
                   Legal
                 </h5>
                 <ul className="space-y-2">
-                  <li><a href="#" className="text-sm text-[#666] hover:text-[#0078d4] transition">Privacy Policy</a></li>
-                  <li><a href="#" className="text-sm text-[#666] hover:text-[#0078d4] transition">Terms of Service</a></li>
-                  <li><a href="#" className="text-sm text-[#666] hover:text-[#0078d4] transition">Cookie Policy</a></li>
-                  <li><a href="#" className="text-sm text-[#666] hover:text-[#0078d4] transition">GDPR</a></li>
+                  <li><Link to="/team-signup" className="text-sm text-[#666] hover:text-[#0078d4] transition">Privacy Policy</Link></li>
+                  <li><Link to="/team-signup" className="text-sm text-[#666] hover:text-[#0078d4] transition">Terms of Service</Link></li>
+                  <li><Link to="/team-signup" className="text-sm text-[#666] hover:text-[#0078d4] transition">Cookie Policy</Link></li>
+                  <li><Link to="/team-signup" className="text-sm text-[#666] hover:text-[#0078d4] transition">GDPR</Link></li>
                 </ul>
               </div>
             </div>
