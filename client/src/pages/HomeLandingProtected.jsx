@@ -148,12 +148,12 @@ export default function HomeLandingProtected() {
           
           <nav className="hidden md:flex items-center space-x-8">
             <div className="relative group">
-              <span className="text-gray-700 font-medium cursor-pointer flex items-center">
+              <button className="text-gray-700 font-medium cursor-pointer flex items-center bg-transparent border-none p-0 m-0 focus:outline-none">
                 Solutions
                 <svg className="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
-              </span>
+              </button>
               <div className="absolute top-full left-0 mt-2 w-64 rounded-md shadow-lg bg-white py-2 z-50 hidden group-hover:block">
                 <Link to="/ind-architect" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">
                   Global IND Architect
