@@ -1,6 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useToast } from '../hooks/use-toast';
-import { Beaker, FileText, Download, PlusCircle, MinusCircle, Loader2, FlaskConical, Dna, BarChart3 } from 'lucide-react';
+import { 
+  Beaker, FileText, Download, PlusCircle, MinusCircle, Loader2, 
+  FlaskConical, Dna, BarChart3, Upload, Zap, BookCopy, 
+  FileCheck, GitBranch, Microscope, ChevronRight, HelpCircle,
+  ArrowRight, Check, AlertCircle, RefreshCw
+} from 'lucide-react';
 import { useLumenAssistant } from '../components/assistant';
 
 // Tabs and sections for the generated blueprint
@@ -8,33 +13,69 @@ const TABS = [
   { id: 'input', label: 'Molecular Input', icon: Beaker },
   { id: 'drug-substance', label: 'Drug Substance (S)', icon: FlaskConical },
   { id: 'drug-product', label: 'Drug Product (P)', icon: FileText },
-  { id: 'visualizations', label: 'Visualizations', icon: BarChart3 }
+  { id: 'visualizations', label: 'Visualizations', icon: BarChart3 },
+  { id: 'export', label: 'Export & Format', icon: FileCheck },
+  { id: 'citations', label: 'Regulatory Citations', icon: BookCopy }
 ];
 
 const SUBSTANCE_SECTIONS = [
   { id: 's.1', label: 'S.1 General Information' },
   { id: 's.2', label: 'S.2 Manufacture' },
   { id: 's.3', label: 'S.3 Characterisation' },
-  { id: 's.4', label: 'S.4 Control of Drug Substance' }
+  { id: 's.4', label: 'S.4 Control of Drug Substance' },
+  { id: 's.5', label: 'S.5 Reference Standards' },
+  { id: 's.6', label: 'S.6 Container Closure System' },
+  { id: 's.7', label: 'S.7 Stability' }
 ];
 
 const PRODUCT_SECTIONS = [
   { id: 'p.1', label: 'P.1 Description and Composition' },
-  { id: 'p.2', label: 'P.2 Pharmaceutical Development' }
+  { id: 'p.2', label: 'P.2 Pharmaceutical Development' },
+  { id: 'p.3', label: 'P.3 Manufacture' },
+  { id: 'p.4', label: 'P.4 Control of Excipients' },
+  { id: 'p.5', label: 'P.5 Control of Drug Product' },
+  { id: 'p.6', label: 'P.6 Reference Standards' },
+  { id: 'p.7', label: 'P.7 Container Closure System' },
+  { id: 'p.8', label: 'P.8 Stability' }
+];
+
+const EXPORT_FORMATS = [
+  { id: 'word', label: 'Microsoft Word (.docx)', icon: FileText },
+  { id: 'pdf', label: 'PDF Document (.pdf)', icon: FileText },
+  { id: 'ectd', label: 'eCTD Format (.xml + PDF)', icon: GitBranch },
+  { id: 'json', label: 'JSON Data (.json)', icon: BarChart3 }
+];
+
+const TEMPLATE_TYPES = [
+  { id: 'fda', label: 'FDA (US)' },
+  { id: 'ema', label: 'EMA (EU)' },
+  { id: 'pmda', label: 'PMDA (Japan)' },
+  { id: 'nmpa', label: 'NMPA (China)' },
+  { id: 'hc', label: 'Health Canada' },
+  { id: 'global', label: 'Global (ICH)' }
 ];
 
 export default function CMCBlueprintGenerator() {
   const { toast } = useToast();
   const { openAssistant } = useLumenAssistant();
+  const fileInputRef = useRef(null);
   
   // UI state
   const [activeTab, setActiveTab] = useState('input');
   const [activeSection, setActiveSection] = useState({
     'drug-substance': 's.1',
-    'drug-product': 'p.1'
+    'drug-product': 'p.1',
+    'export': 'word',
+    'citations': 'recent'
   });
   const [isGenerating, setIsGenerating] = useState(false);
   const [showFormulation, setShowFormulation] = useState(false);
+  const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState('global');
+  const [exportFormat, setExportFormat] = useState('word');
+  const [includeReferences, setIncludeReferences] = useState(true);
+  const [includeVisualizations, setIncludeVisualizations] = useState(true);
+  const [isLoadingStructure, setIsLoadingStructure] = useState(false);
   
   // Form state
   const [molecularData, setMolecularData] = useState({
@@ -51,11 +92,27 @@ export default function CMCBlueprintGenerator() {
       ingredients: [
         { name: '', function: '', amount: '' }
       ]
+    },
+    processDevelopment: {
+      flowDiagram: null,
+      criticalSteps: [],
+      impurities: [],
+      controlStrategy: ''
+    },
+    analyticalData: {
+      spectra: [],
+      purity: '',
+      solubility: '',
+      stability: ''
     }
   });
   
   // Results state
   const [blueprintResults, setBlueprintResults] = useState(null);
+  const [processDiagram, setProcessDiagram] = useState(null);
+  const [regulatoryCitations, setRegulatoryCitations] = useState([]);
+  const [exportStatus, setExportStatus] = useState({ inProgress: false, progress: 0, format: null });
+  const [riskAnalysisResults, setRiskAnalysisResults] = useState(null);
   
   // Handlers
   const handleTabChange = (tabId) => {
