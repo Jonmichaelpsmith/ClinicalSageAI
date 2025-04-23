@@ -4,6 +4,7 @@ import Navigation from "../components/Navigation";
 import ReactDiffViewer from "react-diff-viewer-continued";
 import withAuthGuard from "../utils/withAuthGuard";
 import api from "../utils/api";
+import { toast } from "../hooks/use-toast";
 
 // Versions page displays document history with view, download, and diff capabilities
 function VersionsPage() {
@@ -39,6 +40,13 @@ function VersionsPage() {
       } catch (err) {
         console.error("Failed to fetch version history:", err);
         setError("Failed to load document history. Please try again later.");
+        
+        // Show error toast
+        toast({
+          title: "Failed to load document history",
+          description: "Please check your connection and try again.",
+          variant: "destructive",
+        });
       } finally {
         setLoading(false);
       }

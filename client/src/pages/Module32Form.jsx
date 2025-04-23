@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import withAuthGuard from '../utils/withAuthGuard';
 import api from '../utils/api';
+import { toast } from '../hooks/use-toast';
 
 const Module32Form = () => {
   const [formData, setFormData] = useState({
@@ -31,50 +32,28 @@ const Module32Form = () => {
     setResult(null);
     
     try {
-      // In a real implementation, this would use axios to call the backend API
-      // const response = await axios.post('/api/generate/module32', formData);
-      // setResult(response.data);
+      // Use our API utility to make the authenticated request
+      const response = await api.post('/generate/module32', formData);
       
-      // For demonstration, use a mock response
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Show success toast
+      toast({
+        title: "Document Generated",
+        description: `Module 3.2 document for ${formData.drug_name} created successfully.`,
+        variant: "default",
+      });
       
-      // Mock successful response with PDF export paths
-      const mockResponse = {
-        status: "success",
-        module32_draft: `# Module 3.2 CMC Document for ${formData.drug_name}
-
-## 3.2.S Drug Substance
-### 3.2.S.1 General Information
-#### 3.2.S.1.1 Nomenclature
-International Non-proprietary Name (INN): ${formData.drug_name}
-Chemical Name: [Chemical name based on IUPAC]
-CAS Registry Number: [CAS number]
-Molecular Formula: ${formData.molecular_formula}
-
-### 3.2.S.2 Manufacture
-${formData.synthesis_steps}
-
-### 3.2.S.4 Control of Drug Substance
-${formData.analytical_methods}
-
-## 3.2.P Drug Product
-### 3.2.P.1 Description and Composition
-${formData.formulation_details}
-
-### 3.2.P.3 Manufacture
-${formData.manufacturing_controls}
-`,
-        export_paths: {
-          txt: `generated_documents/module32_${formData.drug_name.replace(' ', '_')}_1234-5678-9012.txt`,
-          pdf: `generated_documents/module32_${formData.drug_name.replace(' ', '_')}_1234-5678-9012.pdf`
-        },
-        drug: formData.drug_name,
-        timestamp: new Date().toISOString()
-      };
-      
-      setResult(mockResponse);
+      // Set the result from the API response
+      setResult(response.data);
     } catch (err) {
+      // Set error state
       setError(err.message || "An error occurred during the API call");
+      
+      // Show error toast
+      toast({
+        title: "Generation Failed",
+        description: err.message || "An error occurred while generating the document.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
