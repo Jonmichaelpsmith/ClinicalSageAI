@@ -1,6 +1,6 @@
 import React, { ReactNode, useEffect, useState } from 'react';
 import { Link, useLocation } from 'wouter';
-import { LogOut, User, ChevronDown, Settings, Shield, FileText, Database, Home, Menu, X, Search } from 'lucide-react';
+import { LogOut, User, ChevronDown, Settings, Shield, FileText, Database, Home, Menu, X, Search, Grid, LayoutGrid, Package } from 'lucide-react';
 import axiosWithToken from '../utils/axiosWithToken';
 
 interface LayoutProps {
@@ -47,10 +47,12 @@ const NavLink: React.FC<NavLinkProps> = ({ to, children, className, onClick }) =
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [location] = useLocation();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [solutionsMenuOpen, setSolutionsMenuOpen] = useState(false);
   const [modulesMenuOpen, setModulesMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const userMenuRef = React.useRef<HTMLDivElement>(null);
+  const solutionsMenuRef = React.useRef<HTMLDivElement>(null);
   const modulesMenuRef = React.useRef<HTMLDivElement>(null);
   
   // Apple-style scroll effect
@@ -73,6 +75,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     function handleClickOutside(event: MouseEvent) {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
         setUserMenuOpen(false);
+      }
+      if (solutionsMenuRef.current && !solutionsMenuRef.current.contains(event.target as Node)) {
+        setSolutionsMenuOpen(false);
       }
       if (modulesMenuRef.current && !modulesMenuRef.current.contains(event.target as Node)) {
         setModulesMenuOpen(false);
@@ -114,9 +119,49 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   
   // Handle navigation to avoid React warnings and close menus
   const closeMenus = () => {
+    setSolutionsMenuOpen(false);
     setModulesMenuOpen(false);
     setMobileMenuOpen(false);
   };
+  
+  // Solutions menu data - links to dedicated module use case pages
+  const solutionsData = [
+    { 
+      name: "IND Wizard™", 
+      path: "/ind-wizard-use-case",
+      description: "Expedite IND submissions with AI-powered regulatory writing"
+    },
+    { 
+      name: "CSR Intelligence™", 
+      path: "/csr-intelligence-use-case",
+      description: "Extract insights from clinical study reports to inform study design"
+    },
+    { 
+      name: "Protocol Design™", 
+      path: "/protocol-design-use-case",
+      description: "Optimize protocol development with precedent-based AI modeling"
+    },
+    { 
+      name: "CMC Insights™", 
+      path: "/cmc-insights-use-case",
+      description: "Streamline Chemistry, Manufacturing, and Controls documentation"
+    },
+    { 
+      name: "Document Vault™", 
+      path: "/document-vault-use-case",
+      description: "Secure, 21 CFR Part 11 compliant document management"
+    },
+    { 
+      name: "AI Copilot™", 
+      path: "/ai-copilot-use-case",
+      description: "Regulatory intelligence assistant with advanced knowledge"
+    },
+    { 
+      name: "CER Generator™", 
+      path: "/cer-generator-use-case",
+      description: "Automated Clinical Evaluation Report generation for devices"
+    }
+  ];
   
   // Keep this for backward compatibility with existing code
   const handleNavigate = closeMenus;
@@ -157,6 +202,57 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 Home
               </NavLink>
 
+              {/* Solutions Dropdown Menu */}
+              <div className="relative" ref={solutionsMenuRef}>
+                <button
+                  onClick={() => setSolutionsMenuOpen(!solutionsMenuOpen)}
+                  className={`flex items-center px-2 py-1 text-xs font-medium cursor-pointer transition-colors ${
+                    solutionsMenuOpen ? 'text-white' : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  <span>Solutions</span>
+                  <ChevronDown className={`ml-1 h-3 w-3 transition-transform duration-200 ${solutionsMenuOpen ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {solutionsMenuOpen && (
+                  <div className="absolute left-0 mt-2 w-80 rounded-lg overflow-hidden shadow-xl bg-black/90 backdrop-blur-lg z-50 border border-gray-800">
+                    <div className="py-2">
+                      <div className="px-4 py-2 border-b border-gray-800">
+                        <h3 className="text-sm font-medium text-white">TrialSage™ Solutions</h3>
+                        <p className="text-xs text-gray-400 mt-1">Enterprise solutions for regulatory excellence</p>
+                      </div>
+                      
+                      <div className="max-h-[450px] overflow-y-auto">
+                        {solutionsData.map((solution, index) => (
+                          <NavLink
+                            key={index}
+                            to={solution.path}
+                            onClick={closeMenus}
+                            className="flex items-start px-4 py-3 text-sm hover:bg-gray-800/50 transition-colors"
+                          >
+                            <div className="flex-1">
+                              <div className="font-medium text-white">{solution.name}</div>
+                              <div className="text-xs text-gray-400 mt-1">{solution.description}</div>
+                            </div>
+                          </NavLink>
+                        ))}
+                      </div>
+                      
+                      <div className="px-4 py-2 mt-1 border-t border-gray-800">
+                        <NavLink
+                          to="/all-solutions"
+                          onClick={closeMenus}
+                          className="flex items-center text-xs font-medium text-blue-400 hover:text-blue-300"
+                        >
+                          <LayoutGrid className="h-3 w-3 mr-1" />
+                          <span>View all solutions</span>
+                        </NavLink>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <NavLink 
                 to="/ind-wizard"
                 onClick={closeMenus}
@@ -187,16 +283,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 Protocol Design™
               </NavLink>
               
-              <NavLink 
-                to="/cmc-module"
-                onClick={closeMenus}
-                className={`px-2 py-1 text-xs font-medium cursor-pointer transition-colors ${
-                  location === '/cmc-module' ? 'text-white' : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                CMC Insights™
-              </NavLink>
-
               <NavLink 
                 to="/versions"
                 onClick={closeMenus}
