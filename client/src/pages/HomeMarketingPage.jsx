@@ -72,10 +72,10 @@ export default function HomeMarketingPage() {
                 <nav className="hidden lg:flex">
                   <ul className="flex items-center space-x-6">
                     <li className="group relative">
-                      <a className="inline-flex items-center px-4 py-2 text-[14px] font-medium text-[#333] hover:text-[#0078d4] transition">
-                        <span>Solutions</span>
+                      <button className="inline-flex items-center px-4 py-2 text-[14px] font-medium text-[#333] hover:text-[#0078d4] transition bg-transparent border-none cursor-pointer">
+                        Solutions
                         <ChevronDown className="ml-1 h-3 w-3 transition group-hover:rotate-180" />
-                      </a>
+                      </button>
                       
                       {/* Dropdown with delay to make it easier to click */}
                       <div className="absolute left-0 mt-2 w-[240px] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 bg-white shadow-lg border border-gray-200 z-50 py-4"
