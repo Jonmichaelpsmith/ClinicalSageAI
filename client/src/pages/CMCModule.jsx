@@ -1251,4 +1251,5 @@ const CMCModule = () => {
   );
 };
 
-export default CMCModule;
+// Export the component wrapped with the auth guard
+export default withAuthGuard(CMCModule);

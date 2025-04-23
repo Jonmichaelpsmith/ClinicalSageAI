@@ -3,7 +3,7 @@ import { FileText, Download, Clock, Eye, X, GitCompare, RefreshCw } from "lucide
 import Navigation from "../components/Navigation";
 import ReactDiffViewer from "react-diff-viewer-continued";
 import withAuthGuard from "../utils/withAuthGuard";
-import api from "../utils/api";
+import axiosWithToken from "../utils/axiosWithToken";
 import { toast } from "../hooks/use-toast";
 
 // Versions page displays document history with view, download, and diff capabilities
@@ -33,8 +33,8 @@ function VersionsPage() {
     const fetchVersions = async () => {
       try {
         setLoading(true);
-        // Use the authenticated API instance instead of axios directly
-        const res = await api.get("/versions");
+        // Use the authenticated axiosWithToken instance for security
+        const res = await axiosWithToken.get("/versions");
         setVersions(res.data);
         setError(null);
       } catch (err) {
