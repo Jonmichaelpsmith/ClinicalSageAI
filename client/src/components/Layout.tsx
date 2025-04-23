@@ -62,7 +62,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex-shrink-0 flex items-center">
-              <Link href="/">
+              <Link to="/">
                 <div className="flex items-center cursor-pointer">
                   <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg p-1.5 mr-2">
                     <div className="w-6 h-6 flex items-center justify-center text-white font-bold text-sm">C2C</div>
@@ -78,35 +78,35 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             
             <div className="flex items-center space-x-4">
               <nav className="hidden md:flex space-x-4">
-                <Link href="/ind-wizard">
+                <Link to="/ind-wizard">
                   <div className={`inline-flex items-center px-3 py-2 text-sm font-medium cursor-pointer ${
                     location === '/ind-wizard' ? 'text-white border-b-2 border-blue-400' : 'text-slate-300 hover:text-white'
                   }`}>
                     IND Wizard
                   </div>
                 </Link>
-                <Link href="/csr-library">
+                <Link to="/csr-library">
                   <div className={`inline-flex items-center px-3 py-2 text-sm font-medium cursor-pointer ${
                     location === '/csr-library' ? 'text-white border-b-2 border-blue-400' : 'text-slate-300 hover:text-white'
                   }`}>
                     CSR Library
                   </div>
                 </Link>
-                <Link href="/cer-generator">
+                <Link to="/cer-generator">
                   <div className={`inline-flex items-center px-3 py-2 text-sm font-medium cursor-pointer ${
                     location === '/cer-generator' ? 'text-white border-b-2 border-blue-400' : 'text-slate-300 hover:text-white'
                   }`}>
                     CER Generator
                   </div>
                 </Link>
-                <Link href="/cmc-module">
+                <Link to="/cmc-module">
                   <div className={`inline-flex items-center px-3 py-2 text-sm font-medium cursor-pointer ${
                     location === '/cmc-module' ? 'text-white border-b-2 border-blue-400' : 'text-slate-300 hover:text-white'
                   }`}>
                     CMC Module
                   </div>
                 </Link>
-                <Link href="/versions">
+                <Link to="/versions">
                   <div className={`inline-flex items-center px-3 py-2 text-sm font-medium cursor-pointer ${
                     location === '/versions' ? 'text-white border-b-2 border-blue-400' : 'text-slate-300 hover:text-white'
                   }`}>
@@ -115,7 +115,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 </Link>
               </nav>
               
-              <Link href="/ask-lumen">
+              <Link to="/ask-lumen">
                 <div className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-md px-4 py-2 text-sm font-medium cursor-pointer flex items-center">
                   Ask Lumen
                 </div>
