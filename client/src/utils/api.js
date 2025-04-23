@@ -1,97 +1,61 @@
 import axios from 'axios';
 
-// Create axios instance with base URL and default headers
+/**
+ * Pre-configured axios instance for API requests
+ * - Automatically includes authentication token if present
+ * - Handles common error scenarios
+ */
+
+const baseURL = process.env.NODE_ENV === 'production' 
+  ? '/api' 
+  : 'http://localhost:8000/api';
+
 const api = axios.create({
-  baseURL: '/api', // Assuming all our API routes start with /api
+  baseURL,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Request interceptor to add auth token to requests
-api.interceptors.request.use(
-  (config) => {
-    // Get token from localStorage
-    const token = localStorage.getItem('token');
-    
-    // If token exists, add it to the Authorization header
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
+// Add token from localStorage to requests if available
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
-);
+  
+  return config;
+});
 
-// Response interceptor to handle auth errors
+// Handle common API error scenarios
 api.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   (error) => {
-    // Handle 401 Unauthorized errors by redirecting to login
-    if (error.response && error.response.status === 401) {
-      console.log('Unauthorized access detected. Redirecting to login...');
-      // Clear token from localStorage
-      localStorage.removeItem('token');
-      // Redirect to login page
-      window.location.href = '/login';
+    if (error.response) {
+      // Handle authentication errors
+      if (error.response.status === 401) {
+        // If token is invalid or expired, clear it
+        localStorage.removeItem('token');
+        
+        // Only redirect to login if not already on the login page
+        if (window.location.pathname !== '/auth') {
+          window.location.href = '/auth';
+        }
+      }
+      
+      // Server returned an error response
+      console.error('API Error:', error.response.data);
+    } else if (error.request) {
+      // Request was made but no response was received
+      console.error('Network Error:', error.request);
+    } else {
+      // Something else caused the error
+      console.error('Request Error:', error.message);
     }
     
     return Promise.reject(error);
   }
 );
 
-// Export the configured axios instance
 export default api;
-
-// Common API functions
-export const fetchVersions = async () => {
-  try {
-    const response = await api.get('/versions');
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching versions:', error);
-    throw error;
-  }
-};
-
-export const generateModule32 = async (formData) => {
-  try {
-    const response = await api.post('/generate/module32', formData);
-    return response.data;
-  } catch (error) {
-    console.error('Error generating Module 3.2:', error);
-    throw error;
-  }
-};
-
-export const exportToPdf = async (versionId) => {
-  try {
-    const response = await api.get(`/export/pdf/${versionId}`, {
-      responseType: 'blob', // Important for binary data like PDFs
-    });
-    
-    // Create a URL for the blob
-    const url = window.URL.createObjectURL(new Blob([response.data]));
-    
-    // Create a temporary link and click it to download the file
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `module32_${versionId}.pdf`);
-    document.body.appendChild(link);
-    link.click();
-    
-    // Clean up
-    link.parentNode.removeChild(link);
-    window.URL.revokeObjectURL(url);
-    
-    return true;
-  } catch (error) {
-    console.error('Error exporting to PDF:', error);
-    throw error;
-  }
-};

@@ -89,22 +89,10 @@ class SimpleErrorBoundary extends React.Component<
 
 // Import TopNav component
 import TopNav from './components/TopNav';
-
-// Route guards for protected routes
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  // Check if user is authenticated
-  const token = localStorage.getItem("token");
-  
-  // If not authenticated, redirect to /start page
-  if (!token) {
-    // Use wouter's Redirect component (useLocation hook pattern)
-    window.location.href = "/start";
-    return null;
-  }
-  
-  // If authenticated, render the protected component
-  return <>{children}</>;
-};
+// Import auth components and context providers
+import { AuthProvider } from './hooks/use-auth';
+import AuthPage from './pages/auth-page';
+import { ProtectedRoute } from './components/ProtectedRoute';
 // Import NotFound page
 const LazyNotFound = React.lazy(() => import('./pages/NotFound'));
 // Currently using a fallback for DemoStart page until we implement it fully
@@ -134,7 +122,8 @@ export default function App() {
   return (
     <SimpleErrorBoundary>
       <ToastProvider>
-        <LumenAssistantProvider>
+        <AuthProvider>
+          <LumenAssistantProvider>
           <React.Suspense fallback={<div className="flex items-center justify-center h-screen">Loading application...</div>}>
             <TopNav />
             <div className="pt-12"> {/* Add padding for the fixed TopNav */}
@@ -245,6 +234,11 @@ export default function App() {
                   <LazyWalkthroughs />
                 </SimpleErrorBoundary>
               </Route>
+              <Route path="/auth">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Login" />}>
+                  <AuthPage />
+                </SimpleErrorBoundary>
+              </Route>
               <Route path="/start">
                 <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Demo Start" />}>
                   <LazyDemoStart />
@@ -307,6 +301,7 @@ export default function App() {
           </React.Suspense>
           <LumenAssistant />
         </LumenAssistantProvider>
+        </AuthProvider>
       </ToastProvider>
     </SimpleErrorBoundary>
   );
