@@ -116,6 +116,7 @@ async def validate_openai_key():
 
 # Register routers
 app.include_router(module32_router, prefix="/api")
+app.include_router(versions_router, prefix="/api")
 
 # Startup event handler
 @app.on_event("startup")
