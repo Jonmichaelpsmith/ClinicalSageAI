@@ -64,53 +64,122 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <div className="flex-shrink-0 flex items-center">
               <Link href="/">
                 <div className="flex items-center cursor-pointer">
-                  <span className="text-xl font-bold text-white">TrialSage</span>
+                  <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg p-1.5 mr-2">
+                    <div className="w-6 h-6 flex items-center justify-center text-white font-bold text-sm">C2C</div>
+                  </div>
+                  <div className="text-base font-semibold tracking-tight text-white">
+                    Concept2Cure.AI
+                    <span className="ml-2 text-sm text-slate-400">|</span>
+                    <span className="ml-2 text-blue-400 text-lg">TrialSage™</span>
+                  </div>
                 </div>
               </Link>
             </div>
             
             <div className="flex items-center space-x-4">
-              <nav className="hidden md:flex space-x-4">
+              <div className="relative" ref={React.useRef<HTMLDivElement>(null)}>
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    const element = document.getElementById('modules-dropdown');
+                    if (element) {
+                      element.classList.toggle('hidden');
+                    }
+                  }}
+                  className="flex items-center space-x-1 text-sm font-medium text-slate-300 hover:text-white transition duration-150 px-3 py-2"
+                >
+                  <span>Modules</span>
+                  <ChevronDown className="h-4 w-4 text-slate-400" />
+                </button>
+                
+                <div id="modules-dropdown" className="hidden origin-top-right absolute left-0 mt-2 w-64 rounded-md shadow-lg bg-slate-800 ring-1 ring-slate-700 ring-opacity-5 z-50">
+                  <div className="py-1">
+                    <Link href="/ind-wizard">
+                      <div className={`flex items-center px-4 py-2 text-sm ${location === '/ind-wizard' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>
+                        <FileText className="mr-2 h-4 w-4" />
+                        IND Wizard
+                      </div>
+                    </Link>
+                    <Link href="/csr-library">
+                      <div className={`flex items-center px-4 py-2 text-sm ${location === '/csr-library' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>
+                        <FileText className="mr-2 h-4 w-4" />
+                        CSR Deep Intelligence
+                      </div>
+                    </Link>
+                    <Link href="/protocol-optimization">
+                      <div className={`flex items-center px-4 py-2 text-sm ${location === '/protocol-optimization' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>
+                        <FileText className="mr-2 h-4 w-4" />
+                        Protocol Optimization & Design
+                      </div>
+                    </Link>
+                    <Link href="/study-design">
+                      <div className={`flex items-center px-4 py-2 text-sm ${location === '/study-design' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>
+                        <FileText className="mr-2 h-4 w-4" />
+                        Study Design Genie
+                      </div>
+                    </Link>
+                    <Link href="/cer-generator">
+                      <div className={`flex items-center px-4 py-2 text-sm ${location === '/cer-generator' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>
+                        <FileText className="mr-2 h-4 w-4" />
+                        CER Generator
+                      </div>
+                    </Link>
+                    <Link href="/cmc-module">
+                      <div className={`flex items-center px-4 py-2 text-sm ${location === '/cmc-module' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>
+                        <FileText className="mr-2 h-4 w-4" />
+                        CMC Insights
+                      </div>
+                    </Link>
+                    <Link href="/document-vault">
+                      <div className={`flex items-center px-4 py-2 text-sm ${location === '/document-vault' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>
+                        <Database className="mr-2 h-4 w-4" />
+                        TrialSage DM Vault
+                      </div>
+                    </Link>
+                    <Link href="/ai-cmc-blueprint">
+                      <div className={`flex items-center px-4 py-2 text-sm ${location === '/ai-cmc-blueprint' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>
+                        <FileText className="mr-2 h-4 w-4" />
+                        AI-CMC Blueprint
+                      </div>
+                    </Link>
+                    <div className="border-t border-slate-600 my-1"></div>
+                    <Link href="/versions">
+                      <div className={`flex items-center px-4 py-2 text-sm ${location === '/versions' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>
+                        <FileText className="mr-2 h-4 w-4" />
+                        Document Versions
+                      </div>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+              
+              <nav className="hidden md:flex space-x-1">
                 <Link href="/ind-wizard">
-                  <div className={`inline-flex items-center px-3 py-2 text-sm font-medium cursor-pointer ${
+                  <div className={`inline-flex items-center px-2 py-2 text-sm font-medium cursor-pointer ${
                     location === '/ind-wizard' ? 'text-white border-b-2 border-blue-400' : 'text-slate-300 hover:text-white'
                   }`}>
-                    IND Wizard
+                    IND
                   </div>
                 </Link>
                 <Link href="/csr-library">
-                  <div className={`inline-flex items-center px-3 py-2 text-sm font-medium cursor-pointer ${
+                  <div className={`inline-flex items-center px-2 py-2 text-sm font-medium cursor-pointer ${
                     location === '/csr-library' ? 'text-white border-b-2 border-blue-400' : 'text-slate-300 hover:text-white'
                   }`}>
-                    CSR Library
+                    CSR
                   </div>
                 </Link>
                 <Link href="/cer-generator">
-                  <div className={`inline-flex items-center px-3 py-2 text-sm font-medium cursor-pointer ${
+                  <div className={`inline-flex items-center px-2 py-2 text-sm font-medium cursor-pointer ${
                     location === '/cer-generator' ? 'text-white border-b-2 border-blue-400' : 'text-slate-300 hover:text-white'
                   }`}>
-                    CER Generator
+                    CER
                   </div>
                 </Link>
                 <Link href="/cmc-module">
-                  <div className={`inline-flex items-center px-3 py-2 text-sm font-medium cursor-pointer ${
+                  <div className={`inline-flex items-center px-2 py-2 text-sm font-medium cursor-pointer ${
                     location === '/cmc-module' ? 'text-white border-b-2 border-blue-400' : 'text-slate-300 hover:text-white'
                   }`}>
-                    CMC Module
-                  </div>
-                </Link>
-                <Link href="/document-vault">
-                  <div className={`inline-flex items-center px-3 py-2 text-sm font-medium cursor-pointer ${
-                    location === '/document-vault' ? 'text-white border-b-2 border-blue-400' : 'text-slate-300 hover:text-white'
-                  }`}>
-                    Document Vault
-                  </div>
-                </Link>
-                <Link href="/versions">
-                  <div className={`inline-flex items-center px-3 py-2 text-sm font-medium cursor-pointer ${
-                    location === '/versions' ? 'text-white border-b-2 border-blue-400' : 'text-slate-300 hover:text-white'
-                  }`}>
-                    Versions
+                    CMC
                   </div>
                 </Link>
               </nav>
