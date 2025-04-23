@@ -132,6 +132,13 @@ export default function AppPackagesBanner({ currentPath }) {
       color: "bg-blue-600 hover:bg-blue-700"
     },
     {
+      label: "CMC Module",
+      description: "Chemistry, Manufacturing & Controls",
+      to: "/cmc-module",
+      icon: <Sparkles size={18} />,
+      color: "bg-blue-500 hover:bg-blue-600"
+    },
+    {
       label: "CER Module",
       description: "Clinical evaluation reports",
       to: "/cer-generator",
@@ -169,6 +176,13 @@ export default function AppPackagesBanner({ currentPath }) {
       to: "/csr-intelligence",
       icon: <Database size={18} />,
       color: "bg-emerald-600 hover:bg-emerald-700"
+    },
+    {
+      label: "CMC Module",
+      description: "Chemistry, Manufacturing & Controls",
+      to: "/cmc-module",
+      icon: <Sparkles size={18} />,
+      color: "bg-blue-500 hover:bg-blue-600"
     },
     {
       label: "CER Module",
@@ -263,6 +277,12 @@ export default function AppPackagesBanner({ currentPath }) {
                       <div className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
                         <Database size={16} className="mr-2 text-emerald-500" />
                         CSR Repository
+                      </div>
+                    </Link>
+                    <Link to="/cmc-module">
+                      <div className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                        <Sparkles size={16} className="mr-2 text-blue-500" />
+                        CMC Module
                       </div>
                     </Link>
                     <Link to="/cer-generator">
