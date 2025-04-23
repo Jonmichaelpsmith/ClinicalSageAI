@@ -95,6 +95,8 @@ import AuthPage from './pages/auth-page';
 import { ProtectedRoute } from './components/ProtectedRoute';
 // Import NotFound page
 const LazyNotFound = React.lazy(() => import('./pages/NotFound'));
+// Import Versions page
+const LazyVersions = React.lazy(() => import('./pages/versions'));
 // Currently using a fallback for DemoStart page until we implement it fully
 const LazyDemoStart = () => {
   // Redirects user to home if they're not logged in
@@ -288,6 +290,11 @@ export default function App() {
                   <ProtectedRoute>
                     <LazyCMCBlueprintGenerator />
                   </ProtectedRoute>
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/versions">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Document Versions" />}>
+                  <LazyVersions />
                 </SimpleErrorBoundary>
               </Route>
               <Route path="/">

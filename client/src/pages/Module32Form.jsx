@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import withAuthGuard from '../utils/withAuthGuard';
-import api from '../utils/api';
-import { toast } from '../hooks/use-toast';
+import axiosWithToken from '../utils/axiosWithToken';
+import { Link } from 'wouter';
+import { ExternalLink, History } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const Module32Form = () => {
   const [formData, setFormData] = useState({
@@ -31,29 +33,45 @@ const Module32Form = () => {
     setError(null);
     setResult(null);
     
+    // Dismiss any existing toasts
+    toast.dismiss();
+    
     try {
-      // Use our API utility to make the authenticated request
-      const response = await api.post('/generate/module32', formData);
+      // Use axiosWithToken to make the authenticated request
+      const response = await axiosWithToken.post('/generate/module32', formData);
       
       // Show success toast
-      toast({
-        title: "Document Generated",
-        description: `Module 3.2 document for ${formData.drug_name} created successfully.`,
-        variant: "default",
-      });
+      toast.success(`Module 3.2 document for ${formData.drug_name} created successfully`);
       
       // Set the result from the API response
       setResult(response.data);
     } catch (err) {
+      // Determine specific error message based on response code
+      let errorMessage = "An error occurred while generating the document";
+      
+      if (err.response) {
+        const status = err.response.status;
+        
+        if (status === 401 || status === 403) {
+          errorMessage = "Authentication failed. Please log in again.";
+        } else if (status === 400) {
+          errorMessage = err.response.data?.detail || "Invalid input data. Please check your form entries.";
+        } else if (status === 404) {
+          errorMessage = "Required API endpoint not found. Please contact support.";
+        } else if (status === 500) {
+          errorMessage = "Server error occurred. Our team has been notified.";
+        } else if (err.response.data?.detail) {
+          errorMessage = err.response.data.detail;
+        }
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
       // Set error state
-      setError(err.message || "An error occurred during the API call");
+      setError(errorMessage);
       
       // Show error toast
-      toast({
-        title: "Generation Failed",
-        description: err.message || "An error occurred while generating the document.",
-        variant: "destructive",
-      });
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -186,6 +204,9 @@ const Module32Form = () => {
               href={'/' + (result.export_paths?.pdf || '')} 
               className="download-btn"
               download
+              onClick={() => {
+                toast.success('PDF download started');
+              }}
             >
               Download as PDF
             </a>
@@ -193,6 +214,9 @@ const Module32Form = () => {
               href={'/' + (result.export_paths?.txt || result.export_path || '')} 
               className="download-btn"
               download
+              onClick={() => {
+                toast.success('Text file download started');
+              }}
             >
               Download as Text
             </a>
