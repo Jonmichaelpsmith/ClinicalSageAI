@@ -1,0 +1,53 @@
+// frontend/pages/versions.tsx
+import React, { useEffect, useState } from "react"
+import axios from "axios"
+import { FileText, Download } from "lucide-react"
+
+export default function VersionsPage() {
+  const [versions, setVersions] = useState<any[]>([])
+
+  useEffect(() => {
+    const fetchVersions = async () => {
+      try {
+        const res = await axios.get("/api/versions")
+        setVersions(res.data)
+      } catch (err) {
+        console.error("Failed to fetch version history")
+      }
+    }
+    fetchVersions()
+  }, [])
+
+  return (
+    <div className="min-h-screen bg-white py-12 px-6 max-w-5xl mx-auto">
+      <h1 className="text-3xl font-bold text-blue-800 mb-8">Document Version History</h1>
+      <div className="space-y-4">
+        {versions.length === 0 ? (
+          <p className="text-gray-500">No documents generated yet.</p>
+        ) : (
+          versions.map((v, index) => (
+            <div key={v.version_id} className="border border-gray-200 p-4 rounded-lg shadow-sm bg-blue-50">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-lg font-semibold text-blue-900">{v.drug_name}</h2>
+                  <p className="text-xs text-gray-500">Generated: {new Date(v.created_at).toLocaleString()}</p>
+                </div>
+                <div className="flex gap-4">
+                  <a href={`/${v.txt_path}`} download className="text-blue-600 hover:underline flex items-center gap-1">
+                    <FileText className="w-4 h-4" /> TXT
+                  </a>
+                  <a href={`/${v.pdf_path}`} download className="text-blue-600 hover:underline flex items-center gap-1">
+                    <Download className="w-4 h-4" /> PDF
+                  </a>
+                </div>
+              </div>
+              <pre className="mt-4 text-sm text-gray-800 whitespace-pre-wrap max-h-64 overflow-auto bg-white p-3 rounded">
+                {v.draft_text.slice(0, 200)}...
+              </pre>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  )
+}
