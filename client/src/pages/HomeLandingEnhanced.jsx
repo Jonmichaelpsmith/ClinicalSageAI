@@ -108,10 +108,8 @@ const DisruptionCard = ({ icon, title, legacy, summary, caseStudies }) => {
   );
 };
 
-import AppPackagesBanner from '../components/AppPackagesBanner';
 // SimpleSolutionBundles section removed as requested
 import AdvancedFeatureCards from '../components/AdvancedFeatureCards';
-{/* Removed CSRLibraryMetrics import - now integrated in AppPackagesBanner */}
 
 
 const TAGLINES = [
@@ -192,10 +190,7 @@ export default function HomeLandingEnhanced() {
 
   return (
     <Layout>
-      <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800">
-        {/* Application Packages Banner */}
-        <AppPackagesBanner currentPath={location} />
-      
+      <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800">      
       {/* Hero Section - Enhanced with Animated Gradient Blobs (No Video) */}
       <section className="relative overflow-hidden bg-gradient-to-b from-indigo-900 via-blue-900 to-blue-800 text-white">
         {/* Animated gradient blobs */}
