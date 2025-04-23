@@ -1,719 +1,949 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import { 
-  Shield, 
-  Users, 
-  LayoutDashboard, 
-  Settings, 
-  FileText, 
-  Database, 
-  BarChart3, 
-  Microscope,
-  LogOut,
-  User,
+  BarChart3,
   Building2,
-  FileCheck,
-  Sparkles,
-  ChevronDown,
-  Home,
+  CheckCircle,
+  LogOut,
+  Settings,
+  Shield,
+  User,
+  UserCog,
+  Users,
+  Key
 } from 'lucide-react';
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardFooter, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 
 export default function AdminProfile() {
   const [, setLocation] = useLocation();
-  const [activeTab, setActiveTab] = useState('admin');
-  const [userRole, setUserRole] = useState('admin'); // 'admin', 'client', 'regulator'
+  const { toast } = useToast();
+  const [experienceMode, setExperienceMode] = useState('admin');
+  const [activeTab, setActiveTab] = useState('profile');
+  const [adminSettings, setAdminSettings] = useState({
+    emailNotifications: true,
+    twoFactorAuth: false,
+    darkMode: false,
+    dataRetention: '90'
+  });
 
-  const handleRoleSwitch = (role) => {
-    setUserRole(role);
+  const user = {
+    name: "Sarah Johnson, Ph.D.",
+    email: "sarah.johnson@concept2cure.ai",
+    role: "Administrator",
+    company: "Concept2Cure.AI",
+    avatar: "/avatars/admin-avatar.png",
+    teams: [
+      { id: 1, name: "Regulatory Affairs", role: "Admin" },
+      { id: 2, name: "Clinical Operations", role: "Viewer" },
+      { id: 3, name: "Executive Strategy", role: "Admin" }
+    ],
+    recentActivity: [
+      { id: 1, action: "Generated CSR Report", date: "Today, 10:23 AM", module: "CSR Intelligence" },
+      { id: 2, action: "Reviewed IND Application", date: "Yesterday, 3:45 PM", module: "IND Wizard" },
+      { id: 3, action: "Updated team permissions", date: "Apr 21, 2025", module: "Admin Panel" },
+      { id: 4, action: "Uploaded reference documents", date: "Apr 20, 2025", module: "Document Vault" }
+    ],
+    permissions: [
+      { id: 1, name: "IND Wizard", access: "Full" },
+      { id: 2, name: "CSR Intelligence", access: "Full" },
+      { id: 3, name: "Document Vault", access: "Full" },
+      { id: 4, name: "CMC Blueprint", access: "Full" },
+      { id: 5, name: "Ask Lumen", access: "Full" }
+    ],
+    clientInfo: {
+      companyName: "MediNova Therapeutics",
+      plan: "Enterprise",
+      seats: 25,
+      usedSeats: 18,
+      subscriptionRenewal: "January 15, 2026",
+      modules: ["IND Wizard", "CSR Intelligence", "Document Vault", "CMC Blueprint", "Ask Lumen", "Analytics"]
+    }
   };
-  
+
+  const handleAdminSettingChange = (setting, value) => {
+    setAdminSettings(prev => ({
+      ...prev,
+      [setting]: value
+    }));
+
+    toast({
+      title: "Setting Updated",
+      description: `The ${setting} setting has been updated.`,
+    });
+  };
+
+  const toggleExperienceMode = () => {
+    const newMode = experienceMode === 'admin' ? 'client' : 'admin';
+    setExperienceMode(newMode);
+    
+    toast({
+      title: `Switched to ${newMode === 'admin' ? 'Admin' : 'Client'} View`,
+      description: `You are now viewing the platform as a ${newMode === 'admin' ? 'system administrator' : 'client user'}.`,
+    });
+  };
+
   return (
-    <div className="bg-[#f9f9fb] min-h-screen">
-      {/* Top Navigation Bar - Apple inspired */}
-      <header className="bg-white border-b border-[#e5e5e7] sticky top-0 z-40">
-        <div className="container mx-auto flex items-center justify-between py-3 px-4">
-          <div className="flex items-center">
-            <Link to="/">
-              <div className="flex flex-col items-start">
-                <div className="flex items-center">
-                  <div className="bg-gradient-to-r from-[#0071e3] to-[#2b8fff] rounded p-1.5 mr-2">
-                    <div className="text-white font-bold text-xs tracking-wide">C2C.AI</div>
-                  </div>
-                  <span className="text-lg font-semibold text-[#1d1d1f] tracking-tight">CONCEPT2CURE.AI</span>
-                </div>
-                <span className="ml-7 text-sm text-[#86868b] mt-0.5">TrialSage™ Platform</span>
+    <div className="min-h-screen bg-[#f9f9fb]">
+      {/* Top Header */}
+      <header className="bg-white border-b border-[#e5e5e7] py-4">
+        <div className="container mx-auto px-4 flex items-center justify-between">
+          <div className="flex flex-col items-start">
+            <div className="flex items-center">
+              <div className="bg-gradient-to-r from-[#0071e3] to-[#2b8fff] rounded p-1.5 mr-2">
+                <div className="text-white font-bold text-xs tracking-wide">C2C.AI</div>
               </div>
-            </Link>
+              <span className="text-lg font-semibold text-[#1d1d1f] tracking-tight">CONCEPT2CURE.AI</span>
+            </div>
+            <span className="ml-7 text-sm text-[#86868b] mt-0.5">TrialSage™ Platform</span>
           </div>
           
           <div className="flex items-center space-x-4">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative" size="icon">
-                  <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] text-white">3</span>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                  </svg>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-80">
-                <DropdownMenuLabel>Notifications</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <div className="max-h-80 overflow-y-auto space-y-2 p-2">
-                  <div className="flex items-start space-x-3 p-2 bg-slate-50 rounded-md">
-                    <div className="bg-blue-100 rounded-full p-2 text-blue-600">
-                      <FileText className="h-4 w-4" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-sm font-medium">IND Submission Update</div>
-                      <div className="text-xs text-slate-500">FDA has acknowledged receipt of your IND submission</div>
-                      <div className="text-xs text-slate-400 mt-1">10 minutes ago</div>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3 p-2 bg-slate-50 rounded-md">
-                    <div className="bg-yellow-100 rounded-full p-2 text-yellow-600">
-                      <Users className="h-4 w-4" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-sm font-medium">Team Collaboration</div>
-                      <div className="text-xs text-slate-500">Dr. Sarah Johnson shared a document with you</div>
-                      <div className="text-xs text-slate-400 mt-1">1 hour ago</div>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3 p-2 bg-slate-50 rounded-md">
-                    <div className="bg-green-100 rounded-full p-2 text-green-600">
-                      <Microscope className="h-4 w-4" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-sm font-medium">Regulatory Alert</div>
-                      <div className="text-xs text-slate-500">New FDA guidance published for your therapeutic area</div>
-                      <div className="text-xs text-slate-400 mt-1">Yesterday</div>
-                    </div>
-                  </div>
-                </div>
-                <DropdownMenuSeparator />
-                <div className="p-2">
-                  <Button variant="outline" size="sm" className="w-full">View All Notifications</Button>
-                </div>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center gap-2">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src="/assets/avatars/admin-avatar.jpg" alt="Admin" />
-                    <AvatarFallback className="bg-[#0071e3] text-white">SA</AvatarFallback>
-                  </Avatar>
-                  <div className="flex flex-col items-start">
-                    <span className="text-sm font-medium">Sam Adams</span>
-                    <div className="flex items-center">
-                      <Badge variant="outline" className="h-5 px-1 text-xs bg-[#0071e3] text-white border-0">
-                        {userRole === 'admin' && 'Admin'}
-                        {userRole === 'client' && 'Client View'}
-                        {userRole === 'regulator' && 'Regulator View'}
-                      </Badge>
-                      <ChevronDown className="h-3 w-3 ml-1" />
-                    </div>
-                  </div>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="flex items-center gap-2" onClick={() => setLocation('/settings')}>
-                  <Settings className="h-4 w-4" />
-                  <span>Settings</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuLabel>Switch Role</DropdownMenuLabel>
-                <DropdownMenuItem className="flex items-center gap-2" onClick={() => handleRoleSwitch('admin')}>
-                  <Shield className="h-4 w-4" />
-                  <span>Administrator</span>
-                  {userRole === 'admin' && <Badge className="ml-auto h-5 px-1 text-xs">Active</Badge>}
-                </DropdownMenuItem>
-                <DropdownMenuItem className="flex items-center gap-2" onClick={() => handleRoleSwitch('client')}>
-                  <Building2 className="h-4 w-4" />
-                  <span>Client View</span>
-                  {userRole === 'client' && <Badge className="ml-auto h-5 px-1 text-xs">Active</Badge>}
-                </DropdownMenuItem>
-                <DropdownMenuItem className="flex items-center gap-2" onClick={() => handleRoleSwitch('regulator')}>
-                  <FileText className="h-4 w-4" />
-                  <span>Regulator View</span>
-                  {userRole === 'regulator' && <Badge className="ml-auto h-5 px-1 text-xs">Active</Badge>}
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="flex items-center gap-2 text-red-600" onClick={() => setLocation('/auth')}>
-                  <LogOut className="h-4 w-4" />
-                  <span>Log Out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Link to="/">
+              <Button variant="outline" size="sm">
+                Back to Dashboard
+              </Button>
+            </Link>
           </div>
         </div>
       </header>
 
+      {/* Experience Mode Toggle */}
+      <div className="bg-white border-b border-[#e5e5e7] py-3">
+        <div className="container mx-auto px-4">
+          <div className="flex justify-between items-center">
+            <div className="text-sm text-[#424245]">
+              <span className="font-medium">Current View:</span> {experienceMode === 'admin' ? 'Administrator' : 'Client'} Experience
+            </div>
+            
+            <div className="flex items-center space-x-3">
+              <span className={`text-sm ${experienceMode === 'admin' ? 'text-[#06c] font-medium' : 'text-[#86868b]'}`}>Admin</span>
+              <Switch 
+                checked={experienceMode === 'client'} 
+                onCheckedChange={toggleExperienceMode}
+              />
+              <span className={`text-sm ${experienceMode === 'client' ? 'text-[#06c] font-medium' : 'text-[#86868b]'}`}>Client</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Main Content */}
       <div className="container mx-auto py-8 px-4">
-        <div className="flex flex-col md:flex-row gap-6">
-          {/* Left sidebar with profile info and navigation */}
-          <div className="md:w-1/4">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Sidebar */}
+          <div className="lg:w-1/4">
             <Card>
-              <CardHeader className="pb-4">
-                <div className="flex flex-col items-center">
-                  <Avatar className="h-20 w-20 mb-3">
-                    <AvatarImage src="/assets/avatars/admin-avatar.jpg" alt="Admin" />
-                    <AvatarFallback className="bg-[#0071e3] text-white text-xl">SA</AvatarFallback>
+              <CardHeader className="pb-3">
+                <div className="flex justify-between items-start">
+                  <Avatar className="h-16 w-16 border-2 border-white shadow-md">
+                    <AvatarImage src={user.avatar} />
+                    <AvatarFallback>{user.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
                   </Avatar>
-                  <CardTitle>Sam Adams</CardTitle>
-                  <CardDescription>Administrator</CardDescription>
-                  <Badge variant="outline" className="mt-2 bg-[#0071e3] text-white border-0">
-                    {userRole === 'admin' && 'Admin Mode'}
-                    {userRole === 'client' && 'Client Mode'}
-                    {userRole === 'regulator' && 'Regulator Mode'}
+                  
+                  <Badge className={experienceMode === 'admin' ? 'bg-purple-600' : 'bg-[#06c]'}>
+                    {experienceMode === 'admin' ? 'Admin' : 'Client'}
                   </Badge>
                 </div>
+                <CardTitle className="mt-2">{user.name}</CardTitle>
+                <CardDescription>{user.email}</CardDescription>
               </CardHeader>
+              
               <CardContent>
-                <div className="space-y-1 mb-6">
-                  <div className="text-sm text-slate-500">sam.adams@concept2cure.ai</div>
-                  <div className="text-sm text-slate-500">VP, Regulatory Operations</div>
-                  <div className="text-sm text-slate-500">Concept2Cure.AI</div>
+                <nav className="space-y-1">
+                  <Button 
+                    variant={activeTab === 'profile' ? 'secondary' : 'ghost'} 
+                    className="w-full justify-start"
+                    onClick={() => setActiveTab('profile')}
+                  >
+                    <User className="mr-2 h-4 w-4" />
+                    Profile
+                  </Button>
+                  
+                  <Button 
+                    variant={activeTab === 'teams' ? 'secondary' : 'ghost'} 
+                    className="w-full justify-start"
+                    onClick={() => setActiveTab('teams')}
+                  >
+                    <Users className="mr-2 h-4 w-4" />
+                    Teams & Licenses
+                  </Button>
+                  
+                  {experienceMode === 'admin' && (
+                    <Button 
+                      variant={activeTab === 'system' ? 'secondary' : 'ghost'} 
+                      className="w-full justify-start"
+                      onClick={() => setActiveTab('system')}
+                    >
+                      <Settings className="mr-2 h-4 w-4" />
+                      System Settings
+                    </Button>
+                  )}
+                  
+                  {experienceMode === 'client' && (
+                    <Button 
+                      variant={activeTab === 'analytics' ? 'secondary' : 'ghost'} 
+                      className="w-full justify-start"
+                      onClick={() => setActiveTab('analytics')}
+                    >
+                      <BarChart3 className="mr-2 h-4 w-4" />
+                      Usage Analytics
+                    </Button>
+                  )}
+                  
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                    onClick={() => setLocation('/auth')}
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Logout
+                  </Button>
+                </nav>
+                
+                <div className="mt-6 pt-6 border-t border-[#e5e5e7]">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-sm font-medium text-[#1d1d1f]">Assigned Modules</span>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-1">
+                    {user.permissions.map(permission => (
+                      <Badge key={permission.id} variant="outline" className="bg-[#f8f9ff]">
+                        {permission.name}
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
-                
-                <Tabs defaultValue="admin" value={activeTab} onValueChange={setActiveTab}>
-                  <TabsList className="w-full">
-                    <TabsTrigger value="admin" className="flex-1">Admin</TabsTrigger>
-                    <TabsTrigger value="client" className="flex-1">Client</TabsTrigger>
-                  </TabsList>
-                </Tabs>
               </CardContent>
-              
-              <div className="px-6 py-2">
-                {activeTab === 'admin' && (
-                  <div className="space-y-4">
-                    <div>
-                      <h3 className="text-sm font-medium mb-2 text-slate-500">Admin Navigation</h3>
-                      <ul className="space-y-1">
-                        <li>
-                          <Link href="/admin">
-                            <a className="flex items-center gap-2 p-2 rounded-md hover:bg-slate-100 text-sm font-medium">
-                              <Shield className="h-4 w-4 text-[#0071e3]" />
-                              <span>Admin Dashboard</span>
-                            </a>
-                          </Link>
-                        </li>
-                        <li>
-                          <Link href="/admin/users">
-                            <a className="flex items-center gap-2 p-2 rounded-md hover:bg-slate-100 text-sm font-medium">
-                              <Users className="h-4 w-4 text-[#0071e3]" />
-                              <span>User Management</span>
-                            </a>
-                          </Link>
-                        </li>
-                        <li>
-                          <Link href="/admin/analytics">
-                            <a className="flex items-center gap-2 p-2 rounded-md hover:bg-slate-100 text-sm font-medium">
-                              <BarChart3 className="h-4 w-4 text-[#0071e3]" />
-                              <span>Analytics</span>
-                            </a>
-                          </Link>
-                        </li>
-                        <li>
-                          <Link href="/admin/database">
-                            <a className="flex items-center gap-2 p-2 rounded-md hover:bg-slate-100 text-sm font-medium">
-                              <Database className="h-4 w-4 text-[#0071e3]" />
-                              <span>Database Management</span>
-                            </a>
-                          </Link>
-                        </li>
-                      </ul>
-                    </div>
-                    
-                    <div>
-                      <h3 className="text-sm font-medium mb-2 text-slate-500">System Settings</h3>
-                      <ul className="space-y-1">
-                        <li>
-                          <Link href="/admin/settings/system">
-                            <a className="flex items-center gap-2 p-2 rounded-md hover:bg-slate-100 text-sm font-medium">
-                              <Settings className="h-4 w-4 text-[#0071e3]" />
-                              <span>System Settings</span>
-                            </a>
-                          </Link>
-                        </li>
-                        <li>
-                          <Link href="/admin/settings/api">
-                            <a className="flex items-center gap-2 p-2 rounded-md hover:bg-slate-100 text-sm font-medium">
-                              <Database className="h-4 w-4 text-[#0071e3]" />
-                              <span>API Configuration</span>
-                            </a>
-                          </Link>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                )}
-                
-                {activeTab === 'client' && (
-                  <div className="space-y-4">
-                    <div>
-                      <h3 className="text-sm font-medium mb-2 text-slate-500">Client Navigation</h3>
-                      <ul className="space-y-1">
-                        <li>
-                          <Link href="/">
-                            <a className="flex items-center gap-2 p-2 rounded-md hover:bg-slate-100 text-sm font-medium">
-                              <Home className="h-4 w-4 text-[#0071e3]" />
-                              <span>Home Dashboard</span>
-                            </a>
-                          </Link>
-                        </li>
-                        <li>
-                          <Link href="/ind/wizard">
-                            <a className="flex items-center gap-2 p-2 rounded-md hover:bg-slate-100 text-sm font-medium">
-                              <FileCheck className="h-4 w-4 text-[#0071e3]" />
-                              <span>IND Wizard</span>
-                            </a>
-                          </Link>
-                        </li>
-                        <li>
-                          <Link href="/enterprise-csr-intelligence">
-                            <a className="flex items-center gap-2 p-2 rounded-md hover:bg-slate-100 text-sm font-medium">
-                              <LayoutDashboard className="h-4 w-4 text-[#0071e3]" />
-                              <span>CSR Intelligence</span>
-                            </a>
-                          </Link>
-                        </li>
-                        <li>
-                          <Link href="/versions">
-                            <a className="flex items-center gap-2 p-2 rounded-md hover:bg-slate-100 text-sm font-medium">
-                              <Database className="h-4 w-4 text-[#0071e3]" />
-                              <span>Document Vault</span>
-                            </a>
-                          </Link>
-                        </li>
-                        <li>
-                          <Link href="/ask-lumen">
-                            <a className="flex items-center gap-2 p-2 rounded-md hover:bg-slate-100 text-sm font-medium">
-                              <Sparkles className="h-4 w-4 text-[#0071e3]" />
-                              <span>Ask Lumen</span>
-                            </a>
-                          </Link>
-                        </li>
-                      </ul>
-                    </div>
-                    
-                    <div>
-                      <h3 className="text-sm font-medium mb-2 text-slate-500">User Settings</h3>
-                      <ul className="space-y-1">
-                        <li>
-                          <Link href="/settings">
-                            <a className="flex items-center gap-2 p-2 rounded-md hover:bg-slate-100 text-sm font-medium">
-                              <User className="h-4 w-4 text-[#0071e3]" />
-                              <span>Profile Settings</span>
-                            </a>
-                          </Link>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                )}
-              </div>
-              
-              <CardFooter className="flex justify-center pt-2 pb-6">
-                <Button variant="outline" size="sm" onClick={() => setLocation('/auth')}>
-                  <LogOut className="h-4 w-4 mr-2" />
-                  <span>Log Out</span>
-                </Button>
-              </CardFooter>
             </Card>
           </div>
           
-          {/* Main content area */}
-          <div className="md:w-3/4">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-2xl">Admin Profile</CardTitle>
-                    <CardDescription>
-                      Manage your profile and system preferences
-                    </CardDescription>
-                  </div>
-                  <Badge className="bg-green-100 text-green-800 hover:bg-green-200 border-0">
-                    Active
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <Tabs defaultValue="overview">
-                  <TabsList className="mb-4">
-                    <TabsTrigger value="overview">Overview</TabsTrigger>
-                    <TabsTrigger value="activity">Recent Activity</TabsTrigger>
-                    <TabsTrigger value="permissions">Permissions</TabsTrigger>
-                    <TabsTrigger value="security">Security</TabsTrigger>
-                  </TabsList>
+          {/* Main Content Area */}
+          <div className="lg:w-3/4">
+            {/* Profile Tab */}
+            {activeTab === 'profile' && (
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Personal Information</CardTitle>
+                    <CardDescription>Manage your account details and preferences</CardDescription>
+                  </CardHeader>
                   
-                  <TabsContent value="overview" className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <Card>
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-lg">System Status</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="space-y-2">
-                            <div className="flex justify-between items-center">
-                              <span className="text-sm text-slate-500">Database Connection</span>
-                              <Badge className="bg-green-100 text-green-800 hover:bg-green-200 border-0">
-                                Connected
-                              </Badge>
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <span className="text-sm text-slate-500">OpenAI API</span>
-                              <Badge className="bg-green-100 text-green-800 hover:bg-green-200 border-0">
-                                Connected
-                              </Badge>
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <span className="text-sm text-slate-500">Document Storage</span>
-                              <Badge className="bg-green-100 text-green-800 hover:bg-green-200 border-0">
-                                Online
-                              </Badge>
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <span className="text-sm text-slate-500">Analytics Pipeline</span>
-                              <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200 border-0">
-                                Processing
-                              </Badge>
-                            </div>
+                  <CardContent>
+                    <div className="grid gap-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="fullName">Full Name</Label>
+                          <div className="py-2 px-3 bg-[#f5f5f7] rounded-md text-[#1d1d1f]">
+                            {user.name}
                           </div>
-                        </CardContent>
-                      </Card>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="email">Email Address</Label>
+                          <div className="py-2 px-3 bg-[#f5f5f7] rounded-md text-[#1d1d1f]">
+                            {user.email}
+                          </div>
+                        </div>
+                      </div>
                       
-                      <Card>
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-lg">Quick Actions</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="grid grid-cols-2 gap-2">
-                            <Button variant="outline" size="sm" className="justify-start">
-                              <Users className="h-4 w-4 mr-2" />
-                              <span>Add User</span>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="role">Role</Label>
+                          <div className="py-2 px-3 bg-[#f5f5f7] rounded-md text-[#1d1d1f]">
+                            {user.role}
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="company">Company</Label>
+                          <div className="py-2 px-3 bg-[#f5f5f7] rounded-md text-[#1d1d1f]">
+                            {experienceMode === 'admin' ? user.company : user.clientInfo.companyName}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="twoFactor">Two-Factor Authentication</Label>
+                        <div className="flex items-center justify-between">
+                          <div className="text-sm text-[#424245]">
+                            {adminSettings.twoFactorAuth 
+                              ? "Two-factor authentication is enabled for your account" 
+                              : "Enable two-factor authentication for added security"}
+                          </div>
+                          <Switch 
+                            id="twoFactor"
+                            checked={adminSettings.twoFactorAuth} 
+                            onCheckedChange={(checked) => handleAdminSettingChange('twoFactorAuth', checked)}
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="notifications">Email Notifications</Label>
+                        <div className="flex items-center justify-between">
+                          <div className="text-sm text-[#424245]">
+                            Receive email notifications for important updates and alerts
+                          </div>
+                          <Switch 
+                            id="notifications"
+                            checked={adminSettings.emailNotifications} 
+                            onCheckedChange={(checked) => handleAdminSettingChange('emailNotifications', checked)}
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="border-t border-[#e5e5e7] pt-4 mt-2">
+                        <h3 className="text-lg font-semibold mb-3">Recent Activity</h3>
+                        <div className="space-y-3">
+                          {user.recentActivity.map(activity => (
+                            <div key={activity.id} className="flex justify-between py-2 border-b border-[#e5e5e7] last:border-0">
+                              <div>
+                                <div className="font-medium">{activity.action}</div>
+                                <div className="text-sm text-[#86868b]">{activity.module}</div>
+                              </div>
+                              <div className="text-sm text-[#86868b]">{activity.date}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+            
+            {/* Teams Tab */}
+            {activeTab === 'teams' && (
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Teams & License Management</CardTitle>
+                    <CardDescription>
+                      {experienceMode === 'admin' 
+                        ? "Manage organization teams and license assignments" 
+                        : "Manage your team members and license allocations"}
+                    </CardDescription>
+                  </CardHeader>
+                  
+                  <CardContent>
+                    {experienceMode === 'admin' ? (
+                      <div className="space-y-6">
+                        <div className="bg-[#f8f9ff] p-4 rounded-lg border border-[#e5e5e7]">
+                          <h3 className="text-lg font-semibold mb-2">Admin Tools</h3>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <Button variant="outline" className="justify-start">
+                              <UserCog className="mr-2 h-4 w-4" />
+                              User Management
                             </Button>
-                            <Button variant="outline" size="sm" className="justify-start">
-                              <Database className="h-4 w-4 mr-2" />
-                              <span>Backup DB</span>
+                            <Button variant="outline" className="justify-start">
+                              <Key className="mr-2 h-4 w-4" />
+                              License Administration
                             </Button>
-                            <Button variant="outline" size="sm" className="justify-start">
-                              <FileText className="h-4 w-4 mr-2" />
-                              <span>System Log</span>
-                            </Button>
-                            <Button variant="outline" size="sm" className="justify-start">
-                              <Settings className="h-4 w-4 mr-2" />
-                              <span>Config</span>
+                            <Button variant="outline" className="justify-start">
+                              <Shield className="mr-2 h-4 w-4" />
+                              Permission Templates
                             </Button>
                           </div>
-                        </CardContent>
-                      </Card>
+                        </div>
+                        
+                        <div>
+                          <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-semibold">Client Companies</h3>
+                            <Button size="sm">Add Company</Button>
+                          </div>
+                          
+                          <div className="space-y-4">
+                            <Card>
+                              <CardContent className="p-4">
+                                <div className="flex justify-between items-center">
+                                  <div className="flex items-center">
+                                    <Avatar className="h-10 w-10 mr-3">
+                                      <AvatarFallback>MT</AvatarFallback>
+                                    </Avatar>
+                                    <div>
+                                      <h4 className="font-semibold">{user.clientInfo.companyName}</h4>
+                                      <div className="text-sm text-[#86868b]">
+                                        Enterprise Plan · {user.clientInfo.usedSeats}/{user.clientInfo.seats} Seats Used
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Badge variant="outline" className="bg-[#f8f9ff]">Active</Badge>
+                                    <Button size="sm" variant="outline">Manage</Button>
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                            
+                            <Card>
+                              <CardContent className="p-4">
+                                <div className="flex justify-between items-center">
+                                  <div className="flex items-center">
+                                    <Avatar className="h-10 w-10 mr-3">
+                                      <AvatarFallback>BP</AvatarFallback>
+                                    </Avatar>
+                                    <div>
+                                      <h4 className="font-semibold">BioPhase Therapeutics</h4>
+                                      <div className="text-sm text-[#86868b]">
+                                        Professional Plan · 12/15 Seats Used
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Badge variant="outline" className="bg-[#f8f9ff]">Active</Badge>
+                                    <Button size="sm" variant="outline">Manage</Button>
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                            
+                            <Card>
+                              <CardContent className="p-4">
+                                <div className="flex justify-between items-center">
+                                  <div className="flex items-center">
+                                    <Avatar className="h-10 w-10 mr-3">
+                                      <AvatarFallback>GL</AvatarFallback>
+                                    </Avatar>
+                                    <div>
+                                      <h4 className="font-semibold">GenLabs Inc.</h4>
+                                      <div className="text-sm text-[#86868b]">
+                                        Standard Plan · 5/5 Seats Used
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Badge variant="outline" className="bg-[#f8f9ff]">Active</Badge>
+                                    <Button size="sm" variant="outline">Manage</Button>
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-6">
+                        <div className="bg-[#f8f9ff] p-4 rounded-lg border border-[#e5e5e7]">
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <h3 className="text-lg font-semibold mb-1">License Information</h3>
+                              <p className="text-[#424245]">
+                                {user.clientInfo.plan} Plan · {user.clientInfo.usedSeats}/{user.clientInfo.seats} Seats Used
+                              </p>
+                              <p className="text-sm text-[#86868b]">
+                                Renewal Date: {user.clientInfo.subscriptionRenewal}
+                              </p>
+                            </div>
+                            <div>
+                              <Button variant="secondary" size="sm">
+                                Upgrade Plan
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-semibold">Your Team Members</h3>
+                            <Button size="sm">Add Team Member</Button>
+                          </div>
+                          
+                          <div className="bg-white border rounded-md overflow-hidden">
+                            <div className="grid grid-cols-4 gap-4 p-4 border-b bg-[#f9f9fb] font-medium">
+                              <div>Name</div>
+                              <div>Email</div>
+                              <div>Role</div>
+                              <div>Actions</div>
+                            </div>
+                            
+                            <div className="divide-y">
+                              <div className="grid grid-cols-4 gap-4 p-4 items-center">
+                                <div className="font-medium">Sarah Johnson, Ph.D.</div>
+                                <div className="text-[#424245]">{user.email}</div>
+                                <div>
+                                  <Badge>Administrator</Badge>
+                                </div>
+                                <div className="flex gap-2">
+                                  <Button size="sm" variant="outline">Edit</Button>
+                                </div>
+                              </div>
+                              
+                              <div className="grid grid-cols-4 gap-4 p-4 items-center">
+                                <div className="font-medium">Michael Chen</div>
+                                <div className="text-[#424245]">michael.chen@medinova.com</div>
+                                <div>
+                                  <Badge variant="outline">Manager</Badge>
+                                </div>
+                                <div className="flex gap-2">
+                                  <Button size="sm" variant="outline">Edit</Button>
+                                </div>
+                              </div>
+                              
+                              <div className="grid grid-cols-4 gap-4 p-4 items-center">
+                                <div className="font-medium">Emily Rodriguez</div>
+                                <div className="text-[#424245]">emily.r@medinova.com</div>
+                                <div>
+                                  <Badge variant="outline">Standard</Badge>
+                                </div>
+                                <div className="flex gap-2">
+                                  <Button size="sm" variant="outline">Edit</Button>
+                                </div>
+                              </div>
+                              
+                              <div className="grid grid-cols-4 gap-4 p-4 items-center">
+                                <div className="font-medium">David Park</div>
+                                <div className="text-[#424245]">d.park@medinova.com</div>
+                                <div>
+                                  <Badge variant="outline">Viewer</Badge>
+                                </div>
+                                <div className="flex gap-2">
+                                  <Button size="sm" variant="outline">Edit</Button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <h3 className="text-lg font-semibold mb-4">Module Access Management</h3>
+                          
+                          <div className="bg-white border rounded-md overflow-hidden">
+                            <div className="grid grid-cols-4 gap-4 p-4 border-b bg-[#f9f9fb] font-medium">
+                              <div>Module</div>
+                              <div>Seats Allocated</div>
+                              <div>Status</div>
+                              <div>Actions</div>
+                            </div>
+                            
+                            <div className="divide-y">
+                              {user.clientInfo.modules.map((module, index) => (
+                                <div key={module} className="grid grid-cols-4 gap-4 p-4 items-center">
+                                  <div className="font-medium">{module}</div>
+                                  <div className="text-[#424245]">{Math.min(user.clientInfo.seats, 5 + index)}</div>
+                                  <div>
+                                    <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Active</Badge>
+                                  </div>
+                                  <div className="flex gap-2">
+                                    <Button size="sm" variant="outline">Manage Access</Button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+            
+            {/* System Settings Tab - Admin Only */}
+            {activeTab === 'system' && experienceMode === 'admin' && (
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>System Settings</CardTitle>
+                    <CardDescription>Manage global system configuration settings</CardDescription>
+                  </CardHeader>
+                  
+                  <CardContent className="space-y-6">
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold">Security Settings</h3>
+                      
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <Label htmlFor="enforceMultiFactor" className="text-base font-medium">Enforce Multi-Factor Authentication</Label>
+                            <p className="text-sm text-[#86868b]">Require all users to set up MFA for their accounts</p>
+                          </div>
+                          <Switch id="enforceMultiFactor" />
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <Label htmlFor="passwordPolicy" className="text-base font-medium">Enhanced Password Policy</Label>
+                            <p className="text-sm text-[#86868b]">Require 12+ character passwords with special characters</p>
+                          </div>
+                          <Switch id="passwordPolicy" defaultChecked />
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <Label htmlFor="sessionTimeout" className="text-base font-medium">Session Timeout</Label>
+                            <p className="text-sm text-[#86868b]">How long until inactive users are logged out</p>
+                          </div>
+                          <Select defaultValue="30">
+                            <SelectTrigger className="w-[180px]">
+                              <SelectValue placeholder="Select timeout" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="15">15 minutes</SelectItem>
+                              <SelectItem value="30">30 minutes</SelectItem>
+                              <SelectItem value="60">60 minutes</SelectItem>
+                              <SelectItem value="120">2 hours</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
                     </div>
                     
-                    <Card>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-lg">User Statistics</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                          <div className="bg-slate-50 p-4 rounded-md">
-                            <div className="text-sm text-slate-500">Total Users</div>
-                            <div className="text-2xl font-semibold">156</div>
-                            <div className="text-xs text-green-600 flex items-center mt-1">
-                              <svg className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
-                              </svg>
-                              <span>+12% this month</span>
-                            </div>
+                    <div className="space-y-4 border-t border-[#e5e5e7] pt-6">
+                      <h3 className="text-lg font-semibold">Data Management</h3>
+                      
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <Label htmlFor="dataRetention" className="text-base font-medium">Data Retention Period</Label>
+                            <p className="text-sm text-[#86868b]">How long to keep audit logs and system data</p>
                           </div>
-                          <div className="bg-slate-50 p-4 rounded-md">
-                            <div className="text-sm text-slate-500">Active Projects</div>
-                            <div className="text-2xl font-semibold">24</div>
-                            <div className="text-xs text-green-600 flex items-center mt-1">
-                              <svg className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
-                              </svg>
-                              <span>+3 this week</span>
-                            </div>
-                          </div>
-                          <div className="bg-slate-50 p-4 rounded-md">
-                            <div className="text-sm text-slate-500">INDs Generated</div>
-                            <div className="text-2xl font-semibold">43</div>
-                            <div className="text-xs text-green-600 flex items-center mt-1">
-                              <svg className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
-                              </svg>
-                              <span>+5 this month</span>
-                            </div>
-                          </div>
-                          <div className="bg-slate-50 p-4 rounded-md">
-                            <div className="text-sm text-slate-500">API Requests</div>
-                            <div className="text-2xl font-semibold">8.2k</div>
-                            <div className="text-xs text-green-600 flex items-center mt-1">
-                              <svg className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
-                              </svg>
-                              <span>+18% this week</span>
-                            </div>
-                          </div>
+                          <Select 
+                            value={adminSettings.dataRetention}
+                            onValueChange={(value) => handleAdminSettingChange('dataRetention', value)}
+                          >
+                            <SelectTrigger className="w-[180px]">
+                              <SelectValue placeholder="Select period" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="30">30 days</SelectItem>
+                              <SelectItem value="90">90 days</SelectItem>
+                              <SelectItem value="180">180 days</SelectItem>
+                              <SelectItem value="365">1 year</SelectItem>
+                              <SelectItem value="unlimited">Unlimited</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
+                        
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <Label htmlFor="backupFrequency" className="text-base font-medium">Backup Frequency</Label>
+                            <p className="text-sm text-[#86868b]">How often to back up system data</p>
+                          </div>
+                          <Select defaultValue="daily">
+                            <SelectTrigger className="w-[180px]">
+                              <SelectValue placeholder="Select frequency" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="hourly">Hourly</SelectItem>
+                              <SelectItem value="daily">Daily</SelectItem>
+                              <SelectItem value="weekly">Weekly</SelectItem>
+                              <SelectItem value="monthly">Monthly</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-4 border-t border-[#e5e5e7] pt-6">
+                      <h3 className="text-lg font-semibold">Compliance Settings</h3>
+                      
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <Label htmlFor="cfr11Compliance" className="text-base font-medium">21 CFR Part 11 Compliance Mode</Label>
+                            <p className="text-sm text-[#86868b]">Enable full FDA 21 CFR Part 11 compliance features</p>
+                          </div>
+                          <Switch id="cfr11Compliance" defaultChecked />
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <Label htmlFor="auditTrails" className="text-base font-medium">Extended Audit Trails</Label>
+                            <p className="text-sm text-[#86868b]">Track detailed user actions for regulatory compliance</p>
+                          </div>
+                          <Switch id="auditTrails" defaultChecked />
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <Label htmlFor="gdprMode" className="text-base font-medium">GDPR Compliance Mode</Label>
+                            <p className="text-sm text-[#86868b]">Enable enhanced privacy features for EU regulations</p>
+                          </div>
+                          <Switch id="gdprMode" defaultChecked />
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+            
+            {/* Analytics Tab - Client Only */}
+            {activeTab === 'analytics' && experienceMode === 'client' && (
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Usage Analytics</CardTitle>
+                    <CardDescription>Track your team's usage of TrialSage platform</CardDescription>
+                  </CardHeader>
                   
-                  <TabsContent value="activity">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Recent Activity Log</CardTitle>
-                        <CardDescription>System events and user actions</CardDescription>
-                      </CardHeader>
-                      <CardContent>
+                  <CardContent>
+                    <Tabs defaultValue="module">
+                      <TabsList className="mb-4">
+                        <TabsTrigger value="module">Module Usage</TabsTrigger>
+                        <TabsTrigger value="users">User Activity</TabsTrigger>
+                        <TabsTrigger value="documents">Documents</TabsTrigger>
+                      </TabsList>
+                      
+                      <TabsContent value="module" className="space-y-4">
+                        <div className="bg-[#f8f9ff] p-4 rounded-lg border border-[#e5e5e7] mb-6">
+                          <div className="font-medium mb-2">Usage Period</div>
+                          <Select defaultValue="30">
+                            <SelectTrigger className="w-[180px]">
+                              <SelectValue placeholder="Select period" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="7">Last 7 days</SelectItem>
+                              <SelectItem value="30">Last 30 days</SelectItem>
+                              <SelectItem value="90">Last 90 days</SelectItem>
+                              <SelectItem value="365">Last year</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
                         <div className="space-y-4">
-                          <div className="flex items-start gap-3">
-                            <div className="bg-blue-100 p-2 rounded-full">
-                              <User className="h-4 w-4 text-blue-600" />
-                            </div>
-                            <div>
-                              <div className="text-sm font-medium">New user registered</div>
-                              <div className="text-xs text-slate-500">Dr. Michael Chen (michael.chen@pharma.com)</div>
-                              <div className="text-xs text-slate-400 mt-1">Today, 9:32 AM</div>
-                            </div>
-                          </div>
-                          <div className="flex items-start gap-3">
-                            <div className="bg-green-100 p-2 rounded-full">
-                              <FileCheck className="h-4 w-4 text-green-600" />
-                            </div>
-                            <div>
-                              <div className="text-sm font-medium">IND Submission Completed</div>
-                              <div className="text-xs text-slate-500">Project CARD-01: Cardiomyopathy Gene Therapy</div>
-                              <div className="text-xs text-slate-400 mt-1">Yesterday, 4:15 PM</div>
-                            </div>
-                          </div>
-                          <div className="flex items-start gap-3">
-                            <div className="bg-purple-100 p-2 rounded-full">
-                              <Settings className="h-4 w-4 text-purple-600" />
-                            </div>
-                            <div>
-                              <div className="text-sm font-medium">System Update Completed</div>
-                              <div className="text-xs text-slate-500">TrialSage Platform v2.4.1 deployed</div>
-                              <div className="text-xs text-slate-400 mt-1">Yesterday, 2:00 AM</div>
-                            </div>
-                          </div>
-                          <div className="flex items-start gap-3">
-                            <div className="bg-yellow-100 p-2 rounded-full">
-                              <Database className="h-4 w-4 text-yellow-600" />
-                            </div>
-                            <div>
-                              <div className="text-sm font-medium">Database Backup Completed</div>
-                              <div className="text-xs text-slate-500">Automated weekly backup (size: 4.2GB)</div>
-                              <div className="text-xs text-slate-400 mt-1">Apr 22, 2025, 1:00 AM</div>
-                            </div>
-                          </div>
-                          <div className="flex items-start gap-3">
-                            <div className="bg-red-100 p-2 rounded-full">
-                              <Shield className="h-4 w-4 text-red-600" />
-                            </div>
-                            <div>
-                              <div className="text-sm font-medium">Security Alert</div>
-                              <div className="text-xs text-slate-500">Failed login attempts detected (IP: 203.0.113.45)</div>
-                              <div className="text-xs text-slate-400 mt-1">Apr 21, 2025, 8:14 PM</div>
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                      <CardFooter>
-                        <Button variant="outline" size="sm" className="w-full">
-                          View All Activity
-                        </Button>
-                      </CardFooter>
-                    </Card>
-                  </TabsContent>
-                  
-                  <TabsContent value="permissions">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Roles and Permissions</CardTitle>
-                        <CardDescription>Manage access controls for user roles</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-6">
-                          <div>
-                            <h3 className="text-lg font-medium mb-2">Admin Permissions</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                              <div className="flex items-center justify-between p-3 bg-slate-50 rounded-md">
-                                <div className="flex items-center gap-2">
-                                  <Shield className="h-4 w-4 text-slate-500" />
-                                  <span className="text-sm">Full System Access</span>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <Card>
+                              <CardContent className="pt-6">
+                                <div className="text-center">
+                                  <div className="text-4xl font-bold text-[#06c]">87%</div>
+                                  <div className="text-sm text-[#86868b] mt-1">License Utilization</div>
                                 </div>
-                                <Badge className="bg-green-100 text-green-800 hover:bg-green-200 border-0">
-                                  Enabled
-                                </Badge>
-                              </div>
-                              <div className="flex items-center justify-between p-3 bg-slate-50 rounded-md">
-                                <div className="flex items-center gap-2">
-                                  <Users className="h-4 w-4 text-slate-500" />
-                                  <span className="text-sm">User Management</span>
+                              </CardContent>
+                            </Card>
+                            
+                            <Card>
+                              <CardContent className="pt-6">
+                                <div className="text-center">
+                                  <div className="text-4xl font-bold text-[#06c]">34</div>
+                                  <div className="text-sm text-[#86868b] mt-1">Documents Generated</div>
                                 </div>
-                                <Badge className="bg-green-100 text-green-800 hover:bg-green-200 border-0">
-                                  Enabled
-                                </Badge>
-                              </div>
-                              <div className="flex items-center justify-between p-3 bg-slate-50 rounded-md">
-                                <div className="flex items-center gap-2">
-                                  <Database className="h-4 w-4 text-slate-500" />
-                                  <span className="text-sm">Database Management</span>
+                              </CardContent>
+                            </Card>
+                            
+                            <Card>
+                              <CardContent className="pt-6">
+                                <div className="text-center">
+                                  <div className="text-4xl font-bold text-[#06c]">128</div>
+                                  <div className="text-sm text-[#86868b] mt-1">AI Assistant Queries</div>
                                 </div>
-                                <Badge className="bg-green-100 text-green-800 hover:bg-green-200 border-0">
-                                  Enabled
-                                </Badge>
-                              </div>
-                              <div className="flex items-center justify-between p-3 bg-slate-50 rounded-md">
-                                <div className="flex items-center gap-2">
-                                  <Settings className="h-4 w-4 text-slate-500" />
-                                  <span className="text-sm">System Configuration</span>
-                                </div>
-                                <Badge className="bg-green-100 text-green-800 hover:bg-green-200 border-0">
-                                  Enabled
-                                </Badge>
-                              </div>
-                            </div>
+                              </CardContent>
+                            </Card>
                           </div>
                           
-                          <div>
-                            <h3 className="text-lg font-medium mb-2">Client View Permissions</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                              <div className="flex items-center justify-between p-3 bg-slate-50 rounded-md">
-                                <div className="flex items-center gap-2">
-                                  <FileCheck className="h-4 w-4 text-slate-500" />
-                                  <span className="text-sm">IND Wizard Access</span>
+                          <Card>
+                            <CardHeader>
+                              <CardTitle>Module Usage Distribution</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="space-y-4">
+                                <div className="space-y-2">
+                                  <div className="flex justify-between">
+                                    <div className="flex items-center">
+                                      <div className="w-3 h-3 rounded-full bg-[#0071e3] mr-2"></div>
+                                      <span>IND Wizard</span>
+                                    </div>
+                                    <span className="font-medium">42%</span>
+                                  </div>
+                                  <div className="w-full bg-[#f5f5f7] rounded-full h-2">
+                                    <div className="bg-[#0071e3] h-2 rounded-full" style={{ width: '42%' }}></div>
+                                  </div>
                                 </div>
-                                <Badge className="bg-green-100 text-green-800 hover:bg-green-200 border-0">
-                                  Enabled
-                                </Badge>
-                              </div>
-                              <div className="flex items-center justify-between p-3 bg-slate-50 rounded-md">
-                                <div className="flex items-center gap-2">
-                                  <LayoutDashboard className="h-4 w-4 text-slate-500" />
-                                  <span className="text-sm">CSR Intelligence</span>
+                                
+                                <div className="space-y-2">
+                                  <div className="flex justify-between">
+                                    <div className="flex items-center">
+                                      <div className="w-3 h-3 rounded-full bg-[#34c759] mr-2"></div>
+                                      <span>CSR Intelligence</span>
+                                    </div>
+                                    <span className="font-medium">25%</span>
+                                  </div>
+                                  <div className="w-full bg-[#f5f5f7] rounded-full h-2">
+                                    <div className="bg-[#34c759] h-2 rounded-full" style={{ width: '25%' }}></div>
+                                  </div>
                                 </div>
-                                <Badge className="bg-green-100 text-green-800 hover:bg-green-200 border-0">
-                                  Enabled
-                                </Badge>
-                              </div>
-                              <div className="flex items-center justify-between p-3 bg-slate-50 rounded-md">
-                                <div className="flex items-center gap-2">
-                                  <Database className="h-4 w-4 text-slate-500" />
-                                  <span className="text-sm">Document Vault</span>
+                                
+                                <div className="space-y-2">
+                                  <div className="flex justify-between">
+                                    <div className="flex items-center">
+                                      <div className="w-3 h-3 rounded-full bg-[#5856d6] mr-2"></div>
+                                      <span>Document Vault</span>
+                                    </div>
+                                    <span className="font-medium">18%</span>
+                                  </div>
+                                  <div className="w-full bg-[#f5f5f7] rounded-full h-2">
+                                    <div className="bg-[#5856d6] h-2 rounded-full" style={{ width: '18%' }}></div>
+                                  </div>
                                 </div>
-                                <Badge className="bg-green-100 text-green-800 hover:bg-green-200 border-0">
-                                  Enabled
-                                </Badge>
-                              </div>
-                              <div className="flex items-center justify-between p-3 bg-slate-50 rounded-md">
-                                <div className="flex items-center gap-2">
-                                  <Sparkles className="h-4 w-4 text-slate-500" />
-                                  <span className="text-sm">Ask Lumen</span>
+                                
+                                <div className="space-y-2">
+                                  <div className="flex justify-between">
+                                    <div className="flex items-center">
+                                      <div className="w-3 h-3 rounded-full bg-[#ff9500] mr-2"></div>
+                                      <span>Ask Lumen</span>
+                                    </div>
+                                    <span className="font-medium">15%</span>
+                                  </div>
+                                  <div className="w-full bg-[#f5f5f7] rounded-full h-2">
+                                    <div className="bg-[#ff9500] h-2 rounded-full" style={{ width: '15%' }}></div>
+                                  </div>
                                 </div>
-                                <Badge className="bg-green-100 text-green-800 hover:bg-green-200 border-0">
-                                  Enabled
-                                </Badge>
                               </div>
-                            </div>
-                          </div>
+                            </CardContent>
+                          </Card>
                         </div>
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-                  
-                  <TabsContent value="security">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Security Settings</CardTitle>
-                        <CardDescription>Manage account security and authentication</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-6">
-                          <div>
-                            <h3 className="text-lg font-medium mb-4">Two-Factor Authentication</h3>
-                            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-md mb-4">
+                      </TabsContent>
+                      
+                      <TabsContent value="users">
+                        <div className="bg-white border rounded-md overflow-hidden">
+                          <div className="grid grid-cols-5 gap-4 p-4 border-b bg-[#f9f9fb] font-medium">
+                            <div>User</div>
+                            <div>Activity Level</div>
+                            <div>Most Used Module</div>
+                            <div>Actions</div>
+                            <div>Last Active</div>
+                          </div>
+                          
+                          <div className="divide-y">
+                            <div className="grid grid-cols-5 gap-4 p-4 items-center">
+                              <div className="font-medium">Sarah Johnson</div>
                               <div>
-                                <div className="font-medium">Two-Factor Authentication</div>
-                                <div className="text-sm text-slate-500">Add an extra layer of security to your account</div>
+                                <Badge className="bg-green-100 text-green-800">High</Badge>
                               </div>
-                              <Badge className="bg-green-100 text-green-800 hover:bg-green-200 border-0">
-                                Enabled
-                              </Badge>
+                              <div>IND Wizard</div>
+                              <div>42 documents, 68 queries</div>
+                              <div className="text-[#86868b]">Today, 10:23 AM</div>
                             </div>
-                            <Button variant="outline" size="sm">Manage 2FA Settings</Button>
-                          </div>
-                          
-                          <div className="pt-4 border-t border-slate-200">
-                            <h3 className="text-lg font-medium mb-4">Password</h3>
-                            <div className="space-y-2 mb-4">
-                              <div className="flex items-center justify-between">
-                                <div className="text-sm text-slate-500">Last password change</div>
-                                <div className="text-sm font-medium">30 days ago</div>
+                            
+                            <div className="grid grid-cols-5 gap-4 p-4 items-center">
+                              <div className="font-medium">Michael Chen</div>
+                              <div>
+                                <Badge className="bg-green-100 text-green-800">High</Badge>
                               </div>
-                              <div className="flex items-center justify-between">
-                                <div className="text-sm text-slate-500">Password strength</div>
-                                <div className="text-sm font-medium text-green-600">Strong</div>
-                              </div>
+                              <div>CSR Intelligence</div>
+                              <div>38 documents, 42 queries</div>
+                              <div className="text-[#86868b]">Today, 9:45 AM</div>
                             </div>
-                            <Button variant="outline" size="sm">Change Password</Button>
-                          </div>
-                          
-                          <div className="pt-4 border-t border-slate-200">
-                            <h3 className="text-lg font-medium mb-4">API Keys</h3>
-                            <div className="space-y-2 mb-4">
-                              <div className="flex items-center justify-between p-3 bg-slate-50 rounded-md">
-                                <div>
-                                  <div className="font-medium text-sm">Production API Key</div>
-                                  <div className="text-xs text-slate-500">Created on Apr 1, 2025</div>
-                                </div>
-                                <Button variant="ghost" size="sm">Manage</Button>
+                            
+                            <div className="grid grid-cols-5 gap-4 p-4 items-center">
+                              <div className="font-medium">Emily Rodriguez</div>
+                              <div>
+                                <Badge className="bg-yellow-100 text-yellow-800">Medium</Badge>
                               </div>
-                              <div className="flex items-center justify-between p-3 bg-slate-50 rounded-md">
-                                <div>
-                                  <div className="font-medium text-sm">Development API Key</div>
-                                  <div className="text-xs text-slate-500">Created on Mar 15, 2025</div>
-                                </div>
-                                <Button variant="ghost" size="sm">Manage</Button>
-                              </div>
+                              <div>Document Vault</div>
+                              <div>22 documents, 18 queries</div>
+                              <div className="text-[#86868b]">Yesterday, 4:12 PM</div>
                             </div>
-                            <Button variant="outline" size="sm">Generate New API Key</Button>
+                            
+                            <div className="grid grid-cols-5 gap-4 p-4 items-center">
+                              <div className="font-medium">David Park</div>
+                              <div>
+                                <Badge className="bg-yellow-100 text-yellow-800">Medium</Badge>
+                              </div>
+                              <div>Ask Lumen</div>
+                              <div>8 documents, 36 queries</div>
+                              <div className="text-[#86868b]">Yesterday, 2:30 PM</div>
+                            </div>
                           </div>
                         </div>
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-                </Tabs>
-              </CardContent>
-            </Card>
+                      </TabsContent>
+                      
+                      <TabsContent value="documents">
+                        <div className="space-y-4">
+                          <Card>
+                            <CardHeader>
+                              <CardTitle>Document Analytics</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                                <div className="p-4 bg-[#f8f9ff] rounded-lg border border-[#e5e5e7]">
+                                  <div className="text-2xl font-bold">{user.clientInfo.usedSeats * 4}</div>
+                                  <div className="text-sm text-[#86868b]">Total Documents</div>
+                                </div>
+                                
+                                <div className="p-4 bg-[#f8f9ff] rounded-lg border border-[#e5e5e7]">
+                                  <div className="text-2xl font-bold">16</div>
+                                  <div className="text-sm text-[#86868b]">Created This Month</div>
+                                </div>
+                                
+                                <div className="p-4 bg-[#f8f9ff] rounded-lg border border-[#e5e5e7]">
+                                  <div className="text-2xl font-bold">8</div>
+                                  <div className="text-sm text-[#86868b]">Pending Review</div>
+                                </div>
+                              </div>
+                              
+                              <div className="space-y-4">
+                                <h3 className="text-lg font-semibold">Document Types</h3>
+                                
+                                <div className="space-y-2">
+                                  <div className="flex justify-between">
+                                    <div className="flex items-center">
+                                      <div className="w-3 h-3 rounded-full bg-[#0071e3] mr-2"></div>
+                                      <span>IND Applications</span>
+                                    </div>
+                                    <span className="font-medium">35%</span>
+                                  </div>
+                                  <div className="w-full bg-[#f5f5f7] rounded-full h-2">
+                                    <div className="bg-[#0071e3] h-2 rounded-full" style={{ width: '35%' }}></div>
+                                  </div>
+                                </div>
+                                
+                                <div className="space-y-2">
+                                  <div className="flex justify-between">
+                                    <div className="flex items-center">
+                                      <div className="w-3 h-3 rounded-full bg-[#34c759] mr-2"></div>
+                                      <span>Clinical Study Reports</span>
+                                    </div>
+                                    <span className="font-medium">28%</span>
+                                  </div>
+                                  <div className="w-full bg-[#f5f5f7] rounded-full h-2">
+                                    <div className="bg-[#34c759] h-2 rounded-full" style={{ width: '28%' }}></div>
+                                  </div>
+                                </div>
+                                
+                                <div className="space-y-2">
+                                  <div className="flex justify-between">
+                                    <div className="flex items-center">
+                                      <div className="w-3 h-3 rounded-full bg-[#5856d6] mr-2"></div>
+                                      <span>Protocols</span>
+                                    </div>
+                                    <span className="font-medium">20%</span>
+                                  </div>
+                                  <div className="w-full bg-[#f5f5f7] rounded-full h-2">
+                                    <div className="bg-[#5856d6] h-2 rounded-full" style={{ width: '20%' }}></div>
+                                  </div>
+                                </div>
+                                
+                                <div className="space-y-2">
+                                  <div className="flex justify-between">
+                                    <div className="flex items-center">
+                                      <div className="w-3 h-3 rounded-full bg-[#ff9500] mr-2"></div>
+                                      <span>Other</span>
+                                    </div>
+                                    <span className="font-medium">17%</span>
+                                  </div>
+                                  <div className="w-full bg-[#f5f5f7] rounded-full h-2">
+                                    <div className="bg-[#ff9500] h-2 rounded-full" style={{ width: '17%' }}></div>
+                                  </div>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </div>
+                      </TabsContent>
+                    </Tabs>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
           </div>
         </div>
       </div>
