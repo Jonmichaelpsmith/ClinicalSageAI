@@ -268,7 +268,7 @@ export default function HomeMarketingPage() {
               <div className="bg-white p-8 rounded-2xl shadow-md border border-[#e5e5e7] h-full flex flex-col hover:shadow-lg transition-all hover:border-[#0071e3] relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-[#f2f7ff] to-white rounded-bl-3xl"></div>
                 
-                <div className="w-16 h-16 flex items-center justify-center gradient-bg rounded-2xl shadow-sm mb-6 relative z-10">
+                <div className="w-16 h-16 flex items-center justify-center bg-gradient-to-br from-[#0071e3] to-[#2b8fff] rounded-2xl shadow-sm mb-6 relative z-10">
                   <FileCheck className="h-8 w-8 text-white" />
                 </div>
                 
@@ -317,7 +317,7 @@ export default function HomeMarketingPage() {
               <div className="bg-white p-8 rounded-2xl shadow-md border border-[#e5e5e7] h-full flex flex-col hover:shadow-lg transition-all hover:border-[#0071e3] relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-[#f2f7ff] to-white rounded-bl-3xl"></div>
                 
-                <div className="w-16 h-16 flex items-center justify-center gradient-bg rounded-2xl shadow-sm mb-6 relative z-10">
+                <div className="w-16 h-16 flex items-center justify-center bg-gradient-to-br from-[#0071e3] to-[#2b8fff] rounded-2xl shadow-sm mb-6 relative z-10">
                   <LayoutDashboard className="h-8 w-8 text-white" />
                 </div>
                 
@@ -363,7 +363,7 @@ export default function HomeMarketingPage() {
               <div className="bg-white p-8 rounded-2xl shadow-md border border-[#e5e5e7] h-full flex flex-col hover:shadow-lg transition-all hover:border-[#0071e3] relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-[#f2f7ff] to-white rounded-bl-3xl"></div>
                 
-                <div className="w-16 h-16 flex items-center justify-center gradient-bg rounded-2xl shadow-sm mb-6 relative z-10">
+                <div className="w-16 h-16 flex items-center justify-center bg-gradient-to-br from-[#0071e3] to-[#2b8fff] rounded-2xl shadow-sm mb-6 relative z-10">
                   <Database className="h-8 w-8 text-white" />
                 </div>
                 
@@ -405,47 +405,66 @@ export default function HomeMarketingPage() {
             </Link>
           </div>
           
-          <div className="flex justify-center mb-12">
-            <div className="relative">
-              <button className="inline-flex items-center px-6 py-3 bg-[#f5f5f7] hover:bg-[#e5e5e7] rounded-full text-[#1d1d1f] text-base font-medium transition-colors">
-                View All Modules <ArrowRight className="ml-2 w-5 h-5" />
-              </button>
-              
-              <div className="absolute left-0 right-0 top-full mt-4 grid grid-cols-3 gap-4 p-6 bg-white rounded-xl shadow-xl border border-[#e5e5e7] z-50 hidden group-hover:block">
-                {/* CER Generator */}
-                <Link to="/cer-generator" className="flex items-start p-3 hover:bg-[#f5f5f7] rounded-lg">
-                  <div className="p-2 bg-[#f5f5f7] rounded-lg mr-3">
-                    <Target className="h-5 w-5 text-[#06c]" />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium text-[#1d1d1f]">CER Generator™</h4>
-                    <p className="text-xs text-[#86868b]">Automated clinical evaluation reports</p>
-                  </div>
-                </Link>
-                
-                {/* CMC Blueprint */}
-                <Link to="/cmc-blueprint-generator" className="flex items-start p-3 hover:bg-[#f5f5f7] rounded-lg">
-                  <div className="p-2 bg-[#f5f5f7] rounded-lg mr-3">
-                    <Beaker className="h-5 w-5 text-[#06c]" />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium text-[#1d1d1f]">CMC Blueprint™</h4>
-                    <p className="text-xs text-[#86868b]">Chemistry & manufacturing controls</p>
-                  </div>
-                </Link>
-                
-                {/* Ask Lumen */}
-                <Link to="/chat" className="flex items-start p-3 hover:bg-[#f5f5f7] rounded-lg">
-                  <div className="p-2 bg-[#f5f5f7] rounded-lg mr-3">
-                    <Sparkles className="h-5 w-5 text-[#06c]" />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium text-[#1d1d1f]">Ask Lumen™</h4>
-                    <p className="text-xs text-[#86868b]">AI regulatory assistant</p>
-                  </div>
-                </Link>
+          <div className="grid grid-cols-3 gap-6 max-w-6xl mx-auto mb-10">
+            {/* CER Generator Card */}
+            <Link to="/cer-generator" className="bg-white p-6 rounded-xl shadow-sm border border-[#e5e5e7] hover:shadow-md transition-all hover:border-[#0071e3] group flex flex-col">
+              <div className="flex items-center mb-4">
+                <div className="p-3 bg-[#f5f5f7] rounded-lg group-hover:bg-[#f0f7ff]">
+                  <Target className="h-6 w-6 text-[#06c]" />
+                </div>
+                <h3 className="ml-3 text-lg font-medium text-[#1d1d1f] group-hover:text-[#06c]">
+                  CER Generator™
+                </h3>
               </div>
-            </div>
+              <p className="text-sm text-[#86868b] mb-auto">
+                Clinical evaluation reports with intelligent data extraction from regulatory sources.
+              </p>
+              <div className="flex items-center justify-end mt-4 pt-3 border-t border-[#e5e5e7]">
+                <span className="text-[#06c] text-sm font-medium group-hover:underline flex items-center">
+                  Launch <ArrowRight className="ml-1 w-3 h-3" />
+                </span>
+              </div>
+            </Link>
+            
+            {/* CMC Blueprint */}
+            <Link to="/cmc-blueprint-generator" className="bg-white p-6 rounded-xl shadow-sm border border-[#e5e5e7] hover:shadow-md transition-all hover:border-[#0071e3] group flex flex-col">
+              <div className="flex items-center mb-4">
+                <div className="p-3 bg-[#f5f5f7] rounded-lg group-hover:bg-[#f0f7ff]">
+                  <Beaker className="h-6 w-6 text-[#06c]" />
+                </div>
+                <h3 className="ml-3 text-lg font-medium text-[#1d1d1f] group-hover:text-[#06c]">
+                  CMC Blueprint™
+                </h3>
+              </div>
+              <p className="text-sm text-[#86868b] mb-auto">
+                Chemistry, manufacturing and controls AI assistant for regulatory submissions.
+              </p>
+              <div className="flex items-center justify-end mt-4 pt-3 border-t border-[#e5e5e7]">
+                <span className="text-[#06c] text-sm font-medium group-hover:underline flex items-center">
+                  Launch <ArrowRight className="ml-1 w-3 h-3" />
+                </span>
+              </div>
+            </Link>
+            
+            {/* Ask Lumen */}
+            <Link to="/chat" className="bg-white p-6 rounded-xl shadow-sm border border-[#e5e5e7] hover:shadow-md transition-all hover:border-[#0071e3] group flex flex-col">
+              <div className="flex items-center mb-4">
+                <div className="p-3 bg-[#f5f5f7] rounded-lg group-hover:bg-[#f0f7ff]">
+                  <Sparkles className="h-6 w-6 text-[#06c]" />
+                </div>
+                <h3 className="ml-3 text-lg font-medium text-[#1d1d1f] group-hover:text-[#06c]">
+                  Ask Lumen™
+                </h3>
+              </div>
+              <p className="text-sm text-[#86868b] mb-auto">
+                AI regulatory assistant with expert guidance and compliance insights in seconds.
+              </p>
+              <div className="flex items-center justify-end mt-4 pt-3 border-t border-[#e5e5e7]">
+                <span className="text-[#06c] text-sm font-medium group-hover:underline flex items-center">
+                  Launch <ArrowRight className="ml-1 w-3 h-3" />
+                </span>
+              </div>
+            </Link>
           </div>
           
           <div className="max-w-4xl mx-auto bg-[#f8f8fc] rounded-2xl p-8 md:p-10 border border-[#e5e5e7] shadow-sm">
@@ -505,12 +524,6 @@ export default function HomeMarketingPage() {
               </div>
             </div>
           </div>
-          
-          <style jsx>{`
-            .gradient-bg {
-              background: linear-gradient(135deg, #0071e3 0%, #2b8fff 100%);
-            }
-          `}</style>
           
           <div className="mt-12 flex items-center justify-center">
             <p className="text-sm text-[#86868b] mr-2">Trusted by leading biotechs and pharma companies</p>
