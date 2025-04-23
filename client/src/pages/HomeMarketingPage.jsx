@@ -18,7 +18,7 @@ import {
   Wand2
 } from 'lucide-react';
 
-// Apple-style modern hero component - exactly matching Apple's website
+// Apple-style modern hero component
 const AppleHero = () => {
   const [scrollY, setScrollY] = useState(0);
   const heroRef = useRef(null);
@@ -181,354 +181,77 @@ const AppleHero = () => {
   );
 };
 
-// Apple-style product showcase component
-const ProductShowcase = ({ title, description, features, reversed }) => {
+// Simple Feature Section
+const SimpleFeatureSection = () => {
   return (
-    <section className="py-32 bg-white relative overflow-hidden">
-      <div className="container mx-auto px-6 relative z-10 max-w-6xl">
-        {/* Section title */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7 }}
-          className={`text-${reversed ? 'right' : 'left'} mb-12`}
-        >
-          <h3 className="text-[#06c] mb-3 text-lg font-medium">{title}</h3>
-          <h2 className="text-4xl md:text-5xl font-semibold text-[#1d1d1f] tracking-tight">{description}</h2>
-        </motion.div>
-        
-        {/* Feature grid - Apple style with clean UI */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12 mt-20">
-          {features.map((feature, index) => (
-            <motion.div 
-              key={index} 
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="relative"
-            >
-              {/* Apple-style feature card */}
-              <div className="relative bg-[#f5f5f7] rounded-3xl overflow-hidden group">
-                {/* Feature top color bar - different color per feature */}
-                <div className={`h-1.5 w-full ${
-                  index % 4 === 0 ? 'bg-[#06c]' : 
-                  index % 4 === 1 ? 'bg-[#ac39ff]' : 
-                  index % 4 === 2 ? 'bg-[#00b9e6]' : 
-                  'bg-[#66bf4f]'
-                }`}></div>
-                
-                <div className="p-8">
-                  <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center mb-6 shadow-sm">
-                    <CheckCircle2 className={`w-5 h-5 ${
-                      index % 4 === 0 ? 'text-[#06c]' : 
-                      index % 4 === 1 ? 'text-[#ac39ff]' : 
-                      index % 4 === 2 ? 'text-[#00b9e6]' : 
-                      'text-[#66bf4f]'
-                    }`} />
-                  </div>
-                  
-                  <h3 className="text-xl font-semibold text-[#1d1d1f] mb-3">{feature.title}</h3>
-                  <p className="text-[#86868b] leading-relaxed">{feature.description}</p>
-                  
-                  {/* Feature visualization - stylized */}
-                  <div className="mt-8 h-32 bg-white rounded-xl overflow-hidden shadow-sm">
-                    <div className="h-full w-full flex items-center justify-center">
-                      <div className={`w-5/6 h-4/6 ${
-                        index % 4 === 0 ? 'bg-[#e9f0fd]' : 
-                        index % 4 === 1 ? 'bg-[#f5edff]' : 
-                        index % 4 === 2 ? 'bg-[#e5f6fb]' : 
-                        'bg-[#e8f5e3]'
-                      } rounded-lg flex items-center justify-center`}>
-                        <div className={`h-2 w-20 rounded-full ${
-                          index % 4 === 0 ? 'bg-[#06c]' : 
-                          index % 4 === 1 ? 'bg-[#ac39ff]' : 
-                          index % 4 === 2 ? 'bg-[#00b9e6]' : 
-                          'bg-[#66bf4f]'
-                        } opacity-60`}></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-        
-        {/* Learn more link - Apple style */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7, delay: 0.6 }}
-          className="mt-12 text-center"
-        >
-          <Link to={`/${title.toLowerCase().replace(/\s+/g, '-')}`} 
-            className="group inline-flex items-center text-[#06c] font-medium hover:underline">
-            <span>Learn more about {title}</span>
-            <ArrowRight className="ml-1 w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </Link>
-        </motion.div>
-      </div>
-    </section>
-  );
-};
-
-// Apple-style metrics display component
-const MetricsDisplay = () => {
-  const metrics = [
-    { value: '60%', label: 'Time Savings', description: 'Average reduction in document preparation' },
-    { value: '98%', label: 'First-time Approval Rate', description: 'For submissions using TrialSage' },
-    { value: '$2M+', label: 'Cost Savings', description: 'Average per regulatory submission' },
-    { value: '42%', label: 'Increased Productivity', description: 'For regulatory affairs teams' },
-  ];
-  
-  return (
-    <section className="py-32 bg-[#f5f5f7]">
+    <section className="py-24 bg-white">
       <div className="container mx-auto px-6 max-w-6xl">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7 }}
-          className="text-center mb-24"
-        >
-          <h3 className="text-[#06c] font-medium mb-3">Results that matter</h3>
+        <div className="text-center mb-16">
+          <h3 className="text-[#06c] text-lg font-medium mb-3">Features</h3>
           <h2 className="text-4xl md:text-5xl font-semibold text-[#1d1d1f] max-w-3xl mx-auto">
-            Measurable impact for regulatory teams
-          </h2>
-        </motion.div>
-        
-        <motion.div 
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7 }}
-          className="relative rounded-3xl overflow-hidden bg-white shadow-xl mx-auto"
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-            {metrics.map((metric, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className={`p-10 text-center ${index !== metrics.length - 1 ? 'border-r border-[#e5e5e7] lg:border-r md:border-b lg:border-b-0' : ''} ${index < metrics.length - (metrics.length % 2) ? 'border-b border-[#e5e5e7]' : ''}`}
-              >
-                <div className="inline-block">
-                  <h3 className="text-5xl font-semibold text-[#1d1d1f] mb-3">{metric.value}</h3>
-                  <div className={`h-1 w-16 mx-auto ${
-                    index % 4 === 0 ? 'bg-[#06c]' : 
-                    index % 4 === 1 ? 'bg-[#ac39ff]' : 
-                    index % 4 === 2 ? 'bg-[#00b9e6]' : 
-                    'bg-[#66bf4f]'
-                  } mb-4`}></div>
-                </div>
-                <p className="text-xl font-medium text-[#1d1d1f] mb-2">{metric.label}</p>
-                <p className="text-[#86868b]">{metric.description}</p>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-        
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.6 }}
-          className="mt-10 text-center"
-        >
-          <p className="text-[#86868b] text-sm max-w-2xl mx-auto">
-            Based on aggregated customer experience data. Individual results may vary depending on implementation scope and regulatory context.
-          </p>
-        </motion.div>
-      </div>
-    </section>
-  );
-};
-
-// Apple-style CTA section
-const CTASection = () => {
-  return (
-    <section className="py-32 bg-[#f5f5f7] relative overflow-hidden">
-      {/* Apple-style gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-white to-[#f5f5f7]"></div>
-      
-      <div className="container mx-auto px-6 relative z-10 max-w-6xl">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="max-w-4xl mx-auto text-center"
-        >
-          <h3 className="text-[#06c] font-medium mb-3">Ready to get started?</h3>
-          <h2 className="text-4xl md:text-6xl font-semibold text-[#1d1d1f] mb-6 tracking-tight">
-            Transform your regulatory strategy
-          </h2>
-          <p className="text-xl text-[#86868b] mb-10 max-w-2xl mx-auto leading-relaxed">
-            Join leading pharmaceutical companies accelerating approvals and ensuring compliance with TrialSage.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row justify-center gap-5 mt-12">
-            <Link to="/contact" className="bg-[#0071e3] hover:bg-[#0077ed] text-white px-8 py-4 rounded-full font-medium text-lg transition-all">
-              Request a Demo
-            </Link>
-            <Link to="/ask-lumen" className="bg-[#f5f5f7] hover:bg-[#e5e5e7] text-[#1d1d1f] border border-[#d2d2d7] px-8 py-4 rounded-full font-medium text-lg transition-all">
-              Try Ask Lumen
-            </Link>
-          </div>
-          
-          <div className="mt-20 max-w-3xl mx-auto border-t border-[#d2d2d7] pt-10">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="text-center">
-                <div className="flex justify-center mb-3">
-                  <Shield className="w-6 h-6 text-[#06c]" />
-                </div>
-                <p className="text-[#1d1d1f] font-medium mb-1">21 CFR Part 11 Compliant</p>
-                <p className="text-[#86868b] text-sm">Complete audit trails and E-signatures</p>
-              </div>
-              <div className="text-center">
-                <div className="flex justify-center mb-3">
-                  <Award className="w-6 h-6 text-[#06c]" />
-                </div>
-                <p className="text-[#1d1d1f] font-medium mb-1">SOC 2 Type II Certified</p>
-                <p className="text-[#86868b] text-sm">Enterprise-grade security</p>
-              </div>
-              <div className="text-center">
-                <div className="flex justify-center mb-3">
-                  <Globe className="w-6 h-6 text-[#06c]" />
-                </div>
-                <p className="text-[#1d1d1f] font-medium mb-1">Global Support</p>
-                <p className="text-[#86868b] text-sm">FDA, EMA, and PMDA compliant</p>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      </div>
-    </section>
-  );
-};
-
-// Apple-style products grid - fully matches Apple.com design language
-const ProductCards = () => {
-  const products = [
-    {
-      title: "IND Wizard™",
-      description: "Build, validate and submit INDs twice as fast with intelligent automation and templates.",
-      icon: <Wand2 className="w-6 h-6" />,
-      bgColor: "#d1e4ff",
-      iconColor: "#06c",
-      route: "/ind-wizard"
-    },
-    {
-      title: "CSR Intelligence™",
-      description: "Extract insights from thousands of clinical study reports to optimize trial designs.",
-      icon: <Sparkles className="w-6 h-6" />,
-      bgColor: "#e8ecfd",
-      iconColor: "#5e5ce6",
-      route: "/csr-library"
-    },
-    {
-      title: "Document Vault™",
-      description: "Securely store, manage, and collaborate on regulatory documents with 21 CFR Part 11 compliance.",
-      icon: <Database className="w-6 h-6" />,
-      bgColor: "#f5e6ff",
-      iconColor: "#bf5af2",
-      route: "/versions"
-    },
-    {
-      title: "Protocol Design™",
-      description: "Create optimized protocols using AI-powered insights from successful trials.",
-      icon: <FileText className="w-6 h-6" />,
-      bgColor: "#d9f8ff",
-      iconColor: "#00c7be",
-      route: "/protocol-optimization"
-    },
-    {
-      title: "CMC Insights™",
-      description: "Streamline Chemistry, Manufacturing, and Controls documentation with intelligent templates.",
-      icon: <Bookmark className="w-6 h-6" />,
-      bgColor: "#e3f5e3",
-      iconColor: "#34c759",
-      route: "/cmc-module"
-    },
-    {
-      title: "Ask Lumen",
-      description: "Get instant answers to regulatory questions from our specialized AI assistant.",
-      icon: <Globe className="w-6 h-6" />,
-      bgColor: "#fff8e3",
-      iconColor: "#ff9f0a", 
-      route: "/ask-lumen"
-    }
-  ];
-  
-  return (
-    <section className="py-36 bg-white">
-      <div className="container mx-auto px-6 max-w-6xl">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7 }}
-          className="text-center mb-20"
-        >
-          <h3 className="text-[#06c] mb-3 text-lg font-medium">Features</h3>
-          <h2 className="text-4xl md:text-5xl font-semibold text-[#1d1d1f] max-w-2xl mx-auto">
             Everything you need for regulatory excellence
           </h2>
-        </motion.div>
+        </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {products.map((product, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-            >
-              <Link to={product.route} className="block">
-                <div className="group">
-                  {/* Card with Apple-style subtle styling */}
-                  <div className="bg-white rounded-2xl shadow-sm border border-[#e5e5e7] overflow-hidden hover:shadow-md transition-all duration-300">
-                    {/* Top colored section with icon */}
-                    <div 
-                      className="p-6 flex items-center"
-                      style={{ backgroundColor: product.bgColor }}
-                    >
-                      <div 
-                        className="w-12 h-12 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center shadow-sm"
-                        style={{ color: product.iconColor }}
-                      >
-                        {product.icon}
-                      </div>
-                    </div>
-                    
-                    {/* Content section */}
-                    <div className="p-6">
-                      <h3 className="text-xl font-semibold text-[#1d1d1f] mb-2 group-hover:text-[#06c] transition-colors">
-                        {product.title}
-                      </h3>
-                      <p className="text-[#86868b]">
-                        {product.description}
-                      </p>
-                    </div>
-                    
-                    {/* Footer with arrow link - Apple style */}
-                    <div className="px-6 pb-6">
-                      <div className="flex items-center text-[#06c] font-medium">
-                        <span>Learn more</span>
-                        <ArrowRight className="ml-1 w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {[
+            {
+              title: "IND Wizard™",
+              description: "Build, validate and submit INDs twice as fast with intelligent automation.",
+              icon: <Wand2 className="text-[#06c]" />,
+              route: "/ind-wizard"
+            },
+            {
+              title: "Document Vault™",
+              description: "Securely store and manage all regulatory documents with compliance built-in.",
+              icon: <Database className="text-[#5e5ce6]" />,
+              route: "/versions"
+            },
+            {
+              title: "Ask Lumen",
+              description: "Your AI guide to regulatory questions and document preparation.",
+              icon: <Globe className="text-[#ff9f0a]" />,
+              route: "/ask-lumen"
+            }
+          ].map((feature, index) => (
+            <div key={index} className="bg-[#f5f5f7] rounded-2xl p-8 hover:shadow-lg transition-shadow">
+              <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center mb-6">
+                {feature.icon}
+              </div>
+              <h3 className="text-xl font-semibold text-[#1d1d1f] mb-3">{feature.title}</h3>
+              <p className="text-[#86868b] mb-6">{feature.description}</p>
+              <Link to={feature.route} className="text-[#06c] font-medium flex items-center">
+                Learn more
+                <ArrowRight className="ml-1 w-4 h-4" />
               </Link>
-            </motion.div>
+            </div>
           ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// Simple CTA section
+const SimpleCTA = () => {
+  return (
+    <section className="py-24 bg-[#f5f5f7]">
+      <div className="container mx-auto px-6 max-w-4xl text-center">
+        <h2 className="text-4xl md:text-5xl font-semibold text-[#1d1d1f] mb-6">
+          Ready to transform your regulatory strategy?
+        </h2>
+        <p className="text-xl text-[#86868b] mb-10 max-w-2xl mx-auto">
+          Join leading pharmaceutical companies accelerating approvals with TrialSage™.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <Link to="/contact" 
+            className="bg-[#0071e3] hover:bg-[#0077ed] text-white px-6 py-3 rounded-full text-lg font-medium">
+            Request a Demo
+          </Link>
+          <Link to="/ask-lumen" 
+            className="bg-white hover:bg-[#f5f5f7] text-[#1d1d1f] border border-[#d2d2d7] px-6 py-3 rounded-full text-lg font-medium">
+            Try Ask Lumen
+          </Link>
         </div>
       </div>
     </section>
@@ -545,41 +268,9 @@ export default function HomeMarketingPage() {
   return (
     <Layout>
       <div className="bg-white text-[#1d1d1f]">
-        {/* Apple-style hero section */}
         <AppleHero />
-        
-        {/* Product showcase sections */}
-        <ProductShowcase 
-          title="IND Wizard™" 
-          description="Streamline the IND preparation process with AI-powered tools."
-          features={[
-            { title: "Rapid Document Creation", description: "Generate compliant IND documents in minutes, not weeks" },
-            { title: "Intelligent Validation", description: "Real-time error checking and compliance validation" },
-            { title: "Pre-IND Planning", description: "Strategic guidance based on thousands of successful submissions" },
-            { title: "Auto-Assembly", description: "One-click compilation of complete submission packages" }
-          ]}
-        />
-        
-        <ProductShowcase 
-          title="Document Vault™" 
-          description="Securely store and manage all your regulatory documents."
-          features={[
-            { title: "21 CFR Part 11 Compliant", description: "Secure electronic signatures and audit trails" },
-            { title: "Version Control", description: "Track changes and maintain document history" },
-            { title: "Collaborative Workflow", description: "Streamlined review and approval processes" },
-            { title: "Global Accessibility", description: "Access your documents securely from anywhere" }
-          ]}
-          reversed={true}
-        />
-        
-        {/* Metrics display */}
-        <MetricsDisplay />
-        
-        {/* Product cards grid */}
-        <ProductCards />
-        
-        {/* CTA section */}
-        <CTASection />
+        <SimpleFeatureSection />
+        <SimpleCTA />
       </div>
     </Layout>
   );
