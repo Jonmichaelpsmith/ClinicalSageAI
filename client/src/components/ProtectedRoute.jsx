@@ -1,19 +1,22 @@
-import React, { useEffect } from "react";
-import { Redirect, Route } from "wouter";
-import { useAuth } from "../hooks/use-auth";
+import React, { useEffect, useState } from "react";
+import { Redirect } from "wouter";
 
-const ProtectedRoute = ({ component: Component, ...rest }) => {
-  const { isAuthenticated, loading, checkTokenValidity } = useAuth();
+/**
+ * ProtectedRoute component for guarding routes that require authentication
+ * Checks for token in localStorage and redirects to login if not present
+ */
+export const ProtectedRoute = ({ children }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Verify token validity on mount
-    if (isAuthenticated) {
-      checkTokenValidity();
-    }
-  }, [isAuthenticated, checkTokenValidity]);
+    // Check for authentication token
+    const token = localStorage.getItem("token");
+    setIsAuthenticated(!!token);
+    setIsLoading(false);
+  }, []);
 
-  // Show loading spinner while checking authentication
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-700"></div>
@@ -21,18 +24,13 @@ const ProtectedRoute = ({ component: Component, ...rest }) => {
     );
   }
 
-  return (
-    <Route
-      {...rest}
-      render={(props) =>
-        isAuthenticated ? (
-          <Component {...props} />
-        ) : (
-          <Redirect to="/auth" />
-        )
-      }
-    />
-  );
+  // Redirect to login if not authenticated
+  if (!isAuthenticated) {
+    return <Redirect to="/auth" />;
+  }
+
+  // Render children if authenticated
+  return <>{children}</>;
 };
 
 export default ProtectedRoute;

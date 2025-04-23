@@ -5,7 +5,8 @@ import ReactDiffViewer from "react-diff-viewer-continued";
 import withAuthGuard from "../utils/withAuthGuard";
 import api from "../utils/api";
 
-export default function VersionsPage() {
+// Versions page displays document history with view, download, and diff capabilities
+function VersionsPage() {
   const [versions, setVersions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -189,3 +190,6 @@ export default function VersionsPage() {
     </div>
   );
 }
+
+// Export the component wrapped with the auth guard
+export default withAuthGuard(VersionsPage);

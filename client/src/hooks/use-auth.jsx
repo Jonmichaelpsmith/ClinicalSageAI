@@ -1,174 +1,152 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
-import axios from "axios";
+import { createContext, useContext, useState, useEffect } from "react";
+import api from "../utils/api";
+import { useToast } from "./use-toast";
 
-// Create context
-const AuthContext = createContext();
+// Create a context for authentication data and functions
+const AuthContext = createContext(null);
 
-// Auth provider component
-export function AuthProvider({ children }) {
+// AuthProvider component will wrap the app and provide auth state
+export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { toast } = useToast();
 
-  // Initialize auth state from localStorage on mount
+  // Check if user is logged in on initial load
   useEffect(() => {
-    const initializeAuth = () => {
-      try {
-        const token = localStorage.getItem("authToken");
-        const storedUser = localStorage.getItem("user");
-        
-        if (token && storedUser) {
-          // Set up axios interceptor for authentication
-          setupAuthInterceptor(token);
-          setUser(JSON.parse(storedUser));
+    const checkLoggedIn = async () => {
+      const token = localStorage.getItem("token");
+      
+      if (token) {
+        try {
+          // Validate token and get user data
+          const response = await api.get("/user");
+          setUser(response.data);
+        } catch (error) {
+          console.error("Auth token validation error:", error);
+          // If token is invalid, remove it
+          localStorage.removeItem("token");
         }
-      } catch (err) {
-        console.error("Error initializing auth:", err);
-        // Clear potentially corrupted data
-        localStorage.removeItem("authToken");
-        localStorage.removeItem("user");
-      } finally {
-        setLoading(false);
       }
+      
+      setLoading(false);
     };
-
-    initializeAuth();
+    
+    checkLoggedIn();
   }, []);
 
-  // Set up axios interceptor to include the auth token in requests
-  const setupAuthInterceptor = (token) => {
-    axios.interceptors.request.use(
-      (config) => {
-        // Don't add token to auth endpoints
-        if (!config.url.includes("/auth/token") && !config.url.includes("/auth/register")) {
-          config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-      },
-      (error) => Promise.reject(error)
-    );
-  };
-
   // Login function
-  const login = async (username, password) => {
-    setLoading(true);
-    setError(null);
-    
+  const login = async (credentials) => {
     try {
-      // For login, use URLSearchParams to mimic form data (OAuth2 requirement)
-      const params = new URLSearchParams();
-      params.append("username", username);
-      params.append("password", password);
+      const response = await api.post("/login", credentials);
+      const { token, user } = response.data;
       
-      const response = await axios.post("/api/auth/token", params);
-      const { access_token, user_id, username: userName, role } = response.data;
+      // Save token to localStorage
+      localStorage.setItem("token", token);
       
-      // Save token and user info
-      localStorage.setItem("authToken", access_token);
+      // Update user state
+      setUser(user);
       
-      const userData = { userId: user_id, username: userName, role };
-      localStorage.setItem("user", JSON.stringify(userData));
+      // Set token on the API instance
+      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
       
-      // Set up axios interceptor
-      setupAuthInterceptor(access_token);
+      toast({
+        title: "Login successful",
+        description: `Welcome back, ${user.username}!`,
+        variant: "default",
+      });
       
-      // Update state
-      setUser(userData);
-      return userData;
-    } catch (err) {
-      setError(err.response?.data?.detail || "Login failed. Please check your credentials.");
-      throw err;
-    } finally {
-      setLoading(false);
+      return true;
+    } catch (error) {
+      console.error("Login error:", error);
+      
+      toast({
+        title: "Login failed",
+        description: error.response?.data?.detail || "Invalid username or password",
+        variant: "destructive",
+      });
+      
+      return false;
     }
   };
 
   // Register function
   const register = async (userData) => {
-    setLoading(true);
-    setError(null);
-    
     try {
-      const response = await axios.post("/api/auth/register", userData);
-      const { access_token, user_id, username, role } = response.data;
+      const response = await api.post("/register", userData);
+      const { token, user } = response.data;
       
-      // Save token and user info
-      localStorage.setItem("authToken", access_token);
+      // Save token to localStorage
+      localStorage.setItem("token", token);
       
-      const userInfo = { userId: user_id, username, role };
-      localStorage.setItem("user", JSON.stringify(userInfo));
+      // Update user state
+      setUser(user);
       
-      // Set up axios interceptor
-      setupAuthInterceptor(access_token);
+      // Set token on the API instance
+      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
       
-      // Update state
-      setUser(userInfo);
-      return userInfo;
-    } catch (err) {
-      setError(err.response?.data?.detail || "Registration failed. Please try again.");
-      throw err;
-    } finally {
-      setLoading(false);
+      toast({
+        title: "Registration successful",
+        description: `Welcome, ${user.username}!`,
+        variant: "default",
+      });
+      
+      return true;
+    } catch (error) {
+      console.error("Registration error:", error);
+      
+      toast({
+        title: "Registration failed",
+        description: error.response?.data?.detail || "Registration failed. Please try again.",
+        variant: "destructive",
+      });
+      
+      return false;
     }
   };
 
   // Logout function
   const logout = () => {
-    // Clear localStorage
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("user");
+    // Remove token from localStorage
+    localStorage.removeItem("token");
     
-    // Reset state
+    // Clear user data
     setUser(null);
-    setError(null);
     
-    // Remove axios interceptor (in a real app, you'd need to eject the interceptor)
-    // For simplicity, we'll allow the page to refresh on logout
-    window.location.href = "/auth";
+    // Remove auth header
+    delete api.defaults.headers.common["Authorization"];
+    
+    toast({
+      title: "Logged out",
+      description: "You have been successfully logged out.",
+    });
   };
 
-  // Verify token validity (could be expanded for token refresh)
-  const checkTokenValidity = async () => {
-    const token = localStorage.getItem("authToken");
-    if (!token) return false;
-    
-    try {
-      // Make a request to a protected endpoint
-      await axios.get("/api/auth/me", {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      return true;
-    } catch (err) {
-      if (err.response?.status === 401) {
-        // Token is invalid, log out
-        logout();
-      }
-      return false;
-    }
-  };
-
-  // Context value
-  const value = {
+  // Create the auth context value
+  const contextValue = {
     user,
     loading,
-    error,
     login,
     register,
     logout,
-    checkTokenValidity,
-    isAuthenticated: !!user
+    isAuthenticated: !!user,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
+  return (
+    <AuthContext.Provider value={contextValue}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
 
-// Custom hook to use the auth context
-export function useAuth() {
+// Custom hook for using the auth context
+export const useAuth = () => {
   const context = useContext(AuthContext);
+  
   if (!context) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
+  
   return context;
-}
+};
 
 export default useAuth;
