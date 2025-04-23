@@ -167,6 +167,13 @@ export default function App() {
                   </React.Suspense>
                 </SimpleErrorBoundary>
               </Route>
+              <Route path="/ind-wizard">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="IND Wizard" />}>
+                  <React.Suspense fallback={<EmergencyFallback pageName="IND Wizard" />}>
+                    <LazyINDWizard />
+                  </React.Suspense>
+                </SimpleErrorBoundary>
+              </Route>
               <Route path="/ind-architect">
                 <SimpleErrorBoundary fallback={<EmergencyFallback pageName="IND Accelerator" />}>
                   <React.Suspense fallback={<EmergencyFallback pageName="IND Accelerator" />}>
