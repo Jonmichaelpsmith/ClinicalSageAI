@@ -141,7 +141,7 @@ export default function HomeMarketingPage() {
       <header className="bg-black/90 backdrop-blur-md sticky top-0 z-50 border-b border-gray-800">
         <div className="container mx-auto flex justify-between items-center h-12">
           <div className="flex items-center ml-5">
-            <Link href="/" className="flex items-center">
+            <Link to="/" className="flex items-center">
               <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-md p-1.5 mr-2">
                 <div className="text-white font-bold text-xs tracking-wide">C2C</div>
               </div>
@@ -156,14 +156,14 @@ export default function HomeMarketingPage() {
             <Link to="/ind-wizard" className="px-2 py-1 text-xs font-medium text-gray-400 hover:text-white cursor-pointer transition-colors">
               IND Wizard™
             </Link>
-            <Link to="/csr-library" className="px-2 py-1 text-xs font-medium text-gray-400 hover:text-white cursor-pointer transition-colors">
+            <Link to="/enterprise-csr-intelligence" className="px-2 py-1 text-xs font-medium text-gray-400 hover:text-white cursor-pointer transition-colors">
               CSR Intelligence™
             </Link>
             <Link to="/versions" className="px-2 py-1 text-xs font-medium text-gray-400 hover:text-white cursor-pointer transition-colors">
               Document Vault™
             </Link>
-            <Link to="/store" className="px-2 py-1 text-xs font-medium text-gray-400 hover:text-white cursor-pointer transition-colors">
-              Store
+            <Link to="/auth" className="px-2 py-1 text-xs font-medium text-gray-400 hover:text-white cursor-pointer transition-colors">
+              Login
             </Link>
           </nav>
           
@@ -191,21 +191,21 @@ export default function HomeMarketingPage() {
               Introducing
             </p>
             
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold text-[#1d1d1f] mb-4 leading-tight"
+            <h1 className="text-3xl md:text-4xl font-medium text-[#1d1d1f] mb-4 leading-tight"
                 style={{ fontFamily: "SF Pro Display, -apple-system, BlinkMacSystemFont, sans-serif" }}>
               The Clinical Intelligence System
               <span className="block mt-2">
-                That Thinks Like a Biotech Founder
+                that thinks like a biotech founder
               </span>
             </h1>
             
-            <p className="text-xl md:text-2xl text-[#86868b] mb-10 max-w-3xl mx-auto">
-              Not a better document manager. Not another AI chatbot. Not a clinical trial plugin. 
-              A category-defining Clinical Intelligence System that gets your science to patients.
+            <p className="text-lg text-[#86868b] mb-10 max-w-3xl mx-auto">
+              A sophisticated platform that transforms clinical data and regulatory workflows into 
+              actionable intelligence, accelerating your path to market.
             </p>
             
             <div className="flex flex-wrap justify-center gap-4">
-              <Link to="/ind/wizard" 
+              <Link to="/ind-wizard" 
                 className="bg-[#0071e3] hover:bg-[#0077ed] text-white px-[22px] py-[12px] rounded-full text-[17px] font-normal transition-all flex items-center gap-2">
                 Explore IND Wizard <ArrowRight size={16}/>
               </Link>
@@ -225,11 +225,11 @@ export default function HomeMarketingPage() {
             <p className="text-[#06c] font-medium mb-2 tracking-tight text-[17px]">
               The Problem
             </p>
-            <h2 className="text-3xl md:text-4xl font-semibold mb-6 text-[#1d1d1f]"
+            <h2 className="text-2xl md:text-3xl font-medium mb-4 text-[#1d1d1f]"
                 style={{ fontFamily: "SF Pro Display, -apple-system, BlinkMacSystemFont, sans-serif" }}>
               The Legacy Approach is Holding You Back
             </h2>
-            <p className="text-xl text-[#86868b]">
+            <p className="text-base text-[#86868b]">
               Current industry-standard platforms and processes waste your time, budget, and competitive edge.
               TrialSage changes everything.
             </p>
@@ -272,11 +272,11 @@ export default function HomeMarketingPage() {
             <p className="text-[#06c] font-medium mb-2 tracking-tight text-[17px]">
               The Results
             </p>
-            <h2 className="text-3xl md:text-4xl font-semibold mb-6 text-[#1d1d1f]"
+            <h2 className="text-2xl md:text-3xl font-medium mb-4 text-[#1d1d1f]"
                 style={{ fontFamily: "SF Pro Display, -apple-system, BlinkMacSystemFont, sans-serif" }}>
               Game-Changing ROI That Legacy Vendors Cannot Match
             </h2>
-            <p className="text-xl text-[#86868b]">
+            <p className="text-base text-[#86868b]">
               What does upgrading to an intelligent, integrated platform mean for your organization?
               Tangible results that translate directly to your bottom line.
             </p>
@@ -347,11 +347,11 @@ export default function HomeMarketingPage() {
             <p className="text-[#06c] font-medium mb-2 tracking-tight text-[17px]">
               The Solution
             </p>
-            <h2 className="text-3xl md:text-4xl font-semibold mb-6 text-[#1d1d1f]"
+            <h2 className="text-2xl md:text-3xl font-medium mb-4 text-[#1d1d1f]"
                 style={{ fontFamily: "SF Pro Display, -apple-system, BlinkMacSystemFont, sans-serif" }}>
               The Core Systems That Power TrialSage
             </h2>
-            <p className="text-xl text-[#86868b]" style={{ fontFamily: "SF Pro Text, -apple-system, BlinkMacSystemFont, sans-serif" }}>
+            <p className="text-base text-[#86868b]" style={{ fontFamily: "SF Pro Text, -apple-system, BlinkMacSystemFont, sans-serif" }}>
               TrialSage is a real-time, AI-powered platform that automates the parts of clinical and regulatory development 
               that don't need to be manual anymore—and enhances the parts that do, with precision insight and smart, embedded copilots.
             </p>
@@ -366,7 +366,7 @@ export default function HomeMarketingPage() {
                     <div className="bg-[#f5f5f7] p-3 rounded-full">
                       <FileCheck className="h-6 w-6 text-[#06c]" />
                     </div>
-                    <h3 className="ml-3 text-2xl font-semibold text-[#1d1d1f]" 
+                    <h3 className="ml-3 text-xl font-medium text-[#1d1d1f]" 
                         style={{ fontFamily: "SF Pro Display, -apple-system, BlinkMacSystemFont, sans-serif" }}>
                       IND Wizard™
                     </h3>
@@ -457,7 +457,7 @@ export default function HomeMarketingPage() {
                     <div className="bg-[#f5f5f7] p-3 rounded-full">
                       <LayoutDashboard className="h-6 w-6 text-[#06c]" />
                     </div>
-                    <h3 className="ml-3 text-2xl font-semibold text-[#1d1d1f]"
+                    <h3 className="ml-3 text-xl font-medium text-[#1d1d1f]"
                         style={{ fontFamily: "SF Pro Display, -apple-system, BlinkMacSystemFont, sans-serif" }}>
                       CSR Intelligence™
                     </h3>
@@ -499,7 +499,7 @@ export default function HomeMarketingPage() {
                     <div className="bg-[#f5f5f7] p-3 rounded-full">
                       <Database className="h-6 w-6 text-[#06c]" />
                     </div>
-                    <h3 className="ml-3 text-2xl font-semibold text-[#1d1d1f]"
+                    <h3 className="ml-3 text-xl font-medium text-[#1d1d1f]"
                         style={{ fontFamily: "SF Pro Display, -apple-system, BlinkMacSystemFont, sans-serif" }}>
                       Document Vault™
                     </h3>
