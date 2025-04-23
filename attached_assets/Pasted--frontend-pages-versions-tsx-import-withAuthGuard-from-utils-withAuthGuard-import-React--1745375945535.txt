@@ -1,0 +1,95 @@
+// frontend/pages/versions.tsx
+import withAuthGuard from "../utils/withAuthGuard"
+import React, { useEffect, useState } from "react"
+import axiosWithToken from "../utils/axiosWithToken"
+import { FileText, Download, Eye, Diff } from "lucide-react"
+import ReactDiffViewer from "react-diff-viewer-continued"
+
+function VersionsPage() {
+  const [versions, setVersions] = useState<any[]>([])
+  const [selected, setSelected] = useState<any | null>(null)
+  const [compare, setCompare] = useState<any | null>(null)
+
+  useEffect(() => {
+    const fetchVersions = async () => {
+      try {
+        const res = await axiosWithToken.get("/api/versions")
+        setVersions(res.data)
+      } catch (err) {
+        console.error("Failed to fetch version history")
+      }
+    }
+    fetchVersions()
+  }, [])
+
+  return (
+    <div className="min-h-screen bg-white py-12 px-6 max-w-5xl mx-auto">
+      <h1 className="text-3xl font-bold text-blue-800 mb-8">Document Version History</h1>
+      <div className="space-y-4">
+        {versions.length === 0 ? (
+          <p className="text-gray-500">No documents generated yet.</p>
+        ) : (
+          versions.map((v, index) => (
+            <div key={v.version_id} className="border border-gray-200 p-4 rounded-lg shadow-sm bg-blue-50">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-lg font-semibold text-blue-900">{v.drug_name}</h2>
+                  <p className="text-xs text-gray-500">Generated: {new Date(v.created_at).toLocaleString()}</p>
+                </div>
+                <div className="flex gap-4 items-center">
+                  <button onClick={() => setSelected(v)} className="text-blue-600 hover:underline flex items-center gap-1">
+                    <Eye className="w-4 h-4" /> View
+                  </button>
+                  {index > 0 && (
+                    <button onClick={() => setCompare({ current: v, previous: versions[index - 1] })} className="text-blue-600 hover:underline flex items-center gap-1">
+                      <Diff className="w-4 h-4" /> Compare
+                    </button>
+                  )}
+                  <a href={`/${v.txt_path}`} download className="text-blue-600 hover:underline flex items-center gap-1">
+                    <FileText className="w-4 h-4" /> TXT
+                  </a>
+                  <a href={`/${v.pdf_path}`} download className="text-blue-600 hover:underline flex items-center gap-1">
+                    <Download className="w-4 h-4" /> PDF
+                  </a>
+                </div>
+              </div>
+              <pre className="mt-4 text-sm text-gray-800 whitespace-pre-wrap max-h-64 overflow-auto bg-white p-3 rounded">
+                {v.draft_text.slice(0, 200)}...
+              </pre>
+            </div>
+          ))
+        )}
+      </div>
+
+      {selected && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start pt-20 z-50">
+          <div className="bg-white w-full max-w-4xl p-6 rounded shadow-lg relative">
+            <button className="absolute top-4 right-4 text-gray-500 hover:text-black" onClick={() => setSelected(null)}>✕</button>
+            <h2 className="text-xl font-bold text-blue-800 mb-4">{selected.drug_name} – Full Module 3.2</h2>
+            <pre className="whitespace-pre-wrap text-sm text-gray-800 max-h-[75vh] overflow-auto border p-4 rounded">
+              {selected.draft_text}
+            </pre>
+          </div>
+        </div>
+      )}
+
+      {compare && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-start pt-10 z-50">
+          <div className="bg-white w-full max-w-6xl p-6 rounded shadow-xl relative">
+            <button className="absolute top-4 right-4 text-gray-500 hover:text-black" onClick={() => setCompare(null)}>✕</button>
+            <h2 className="text-xl font-bold text-blue-800 mb-4">Compare: {compare.current.drug_name}</h2>
+            <ReactDiffViewer
+              oldValue={compare.previous.draft_text}
+              newValue={compare.current.draft_text}
+              splitView={true}
+              showDiffOnly={false}
+              styles={{ variables: { light: { diffViewerBackground: "#f9fafb" } } }}
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default withAuthGuard(VersionsPage)
