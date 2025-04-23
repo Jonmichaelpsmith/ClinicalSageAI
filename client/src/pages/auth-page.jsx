@@ -20,7 +20,7 @@ const AuthPage = () => {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      setLocation("/");
+      setLocation("/account/subscribed-solutions");
     }
   }, [isAuthenticated, setLocation]);
 
@@ -93,7 +93,8 @@ const AuthPage = () => {
       }
       
       if (success) {
-        // Redirect will happen automatically due to useEffect
+        // Manual redirect instead of relying on useEffect
+        setLocation("/account/subscribed-solutions");
       }
     } catch (error) {
       console.error("Authentication error:", error);
@@ -247,48 +248,7 @@ const AuthPage = () => {
               </button>
             </div>
             
-            {/* Founder Login */}
-            <div className="mt-6 pt-4 border-t border-gray-200">
-              <p className="text-gray-600 text-sm mb-2">Founder Access</p>
-              <button
-                type="button"
-                onClick={async () => {
-                  // Set credentials
-                  const founderCredentials = {
-                    username: "Founder",
-                    password: "Brielle12s!"
-                  };
-                  
-                  setCredentials(founderCredentials);
-                  setErrors({});
-                  
-                  // Submit the form immediately with founder credentials
-                  setIsSubmitting(true);
-                  try {
-                    await login(founderCredentials);
-                    // Redirect will happen automatically due to useEffect
-                  } catch (error) {
-                    console.error("Authentication error:", error);
-                  } finally {
-                    setIsSubmitting(false);
-                  }
-                }}
-                className="flex items-center justify-center mx-auto px-4 py-2 bg-[#003057] hover:bg-[#004370] text-white rounded-md text-sm mb-2"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                ) : (
-                  <>
-                    <LogIn className="w-4 h-4 mr-2" />
-                    Founder Login
-                  </>
-                )}
-              </button>
-              <p className="text-xs text-gray-500 text-center">
-                Username: Founder | Password: Brielle12s!
-              </p>
-            </div>
+
             
             {/* Enterprise Team Signup */}
             <div className="mt-6 pt-4 border-t border-gray-200">
