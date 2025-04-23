@@ -4,10 +4,12 @@ import React, { useState } from 'react';
 import { Link } from 'wouter';
 import { 
   ArrowRight, Clock, DollarSign, ShieldCheck, Brain, 
-  FileText, FileCheck, BarChart2, Zap, 
+  FileText, FileCheck, BarChart2, BarChart3, Zap, 
   CheckCircle, X, ArrowUpRight, BookOpen,
   LayoutDashboard, Beaker, Sparkles, Database,
-  Target, SearchCheck, Combine, LineChart, CalendarClock
+  Target, SearchCheck, Combine, LineChart, CalendarClock,
+  Microscope, Phone, Mail, User, Globe, 
+  Building2, Users, Calendar, Shield, Check, Plus, Trash2, AlertCircle
 } from 'lucide-react';
 
 // The Status Quo Problems - based on customer pain points
@@ -222,6 +224,63 @@ export default function HomeMarketingPage() {
           </div>
         </div>
       </header>
+
+      {/* Quick Module Access Bar - Non-gated top modules */}
+      <div className="bg-[#fbfbfd] border-b border-[#e5e5e7] py-2 px-4">
+        <div className="container mx-auto">
+          <div className="flex flex-wrap items-center justify-between">
+            <div className="flex items-center space-x-6 overflow-x-auto py-2 scrollbar-hide">
+              <Link to="/ind/wizard" className="flex items-center text-[#1d1d1f] hover:text-[#06c] whitespace-nowrap">
+                <FileCheck className="h-4 w-4 mr-2" />
+                <span className="text-sm font-medium">IND Wizard</span>
+              </Link>
+              <Link to="/csr-intelligence" className="flex items-center text-[#1d1d1f] hover:text-[#06c] whitespace-nowrap">
+                <LayoutDashboard className="h-4 w-4 mr-2" />
+                <span className="text-sm font-medium">CSR Intelligence</span>
+              </Link>
+              <Link to="/versions" className="flex items-center text-[#1d1d1f] hover:text-[#06c] whitespace-nowrap">
+                <Database className="h-4 w-4 mr-2" />
+                <span className="text-sm font-medium">Document Vault</span>
+              </Link>
+              <Link to="/cmc-blueprint-generator" className="flex items-center text-[#1d1d1f] hover:text-[#06c] whitespace-nowrap">
+                <Microscope className="h-4 w-4 mr-2" />
+                <span className="text-sm font-medium">CMC Blueprint</span>
+              </Link>
+              <Link to="/analytics-dashboard" className="flex items-center text-[#1d1d1f] hover:text-[#06c] whitespace-nowrap">
+                <BarChart3 className="h-4 w-4 mr-2" />
+                <span className="text-sm font-medium">Analytics</span>
+              </Link>
+            </div>
+            <Link to="/ask-lumen" className="flex items-center bg-[#f8f9ff] hover:bg-[#f2f7ff] px-3 py-1.5 rounded-full text-[#06c] transition-all">
+              <Sparkles className="h-4 w-4 mr-2" />
+              <span className="text-sm font-medium">Try Ask Lumen Free</span>
+              <span className="ml-2 text-xs py-0.5 px-1.5 bg-[#06c] text-white rounded-full">10 min</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Free Ask Lumen Highlight */}
+      <section className="bg-gradient-to-r from-[#f8f9ff] to-[#f0f7ff] py-4 border-b border-[#e5e5e7]">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <div className="bg-white p-2 rounded-full shadow-sm mr-4">
+                <Sparkles className="h-8 w-8 text-[#06c]" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-[#1d1d1f]">Ask Lumen™ AI Assistant</h3>
+                <p className="text-sm text-[#424245]">Try our regulatory AI assistant free for 10 minutes - no credit card required</p>
+              </div>
+            </div>
+            <Link to="/ask-lumen">
+              <button className="bg-[#0071e3] hover:bg-[#0077ed] text-white px-4 py-2 rounded-full text-sm font-medium transition-all">
+                Start Free Trial
+              </button>
+            </Link>
+          </div>
+        </div>
+      </section>
 
       {/* Hero Section - Bold, Clear Value Proposition */}
       <section className="relative py-16 md:py-20 bg-white overflow-hidden">

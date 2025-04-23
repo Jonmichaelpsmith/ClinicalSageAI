@@ -63,6 +63,8 @@ const LazyCMCBlueprintGenerator = React.lazy(() => import('./pages/CMCBlueprintG
 const LazyLumenBioDashboard = React.lazy(() => import('./pages/LumenBioDashboard'));
 const LazyLumenBioReports = React.lazy(() => import('./pages/LumenBioReports'));
 const LazySimpleLearningInterface = React.lazy(() => import('./components/SimpleLearningInterface'));
+// Admin Profile with role-switching capabilities
+const LazyAdminProfile = React.lazy(() => import('./pages/AdminProfile'));
 
 // Simple error boundary component
 class SimpleErrorBoundary extends React.Component<
@@ -103,6 +105,8 @@ import { OnboardingProvider } from './contexts/OnboardingContext';
 const LazyNotFound = React.lazy(() => import('./pages/NotFound'));
 // Import Versions page
 const LazyVersions = React.lazy(() => import('./pages/versions'));
+// Team signup page with detailed profile and license management
+const LazyTeamSignup = React.lazy(() => import('./pages/TeamSignup'));
 // Currently using a fallback for DemoStart page until we implement it fully
 const LazyDemoStart = () => {
   // Redirects user to home if they're not logged in
@@ -257,6 +261,11 @@ export default function App() {
                   <AuthPage />
                 </SimpleErrorBoundary>
               </Route>
+              <Route path="/team-signup">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Team Signup" />}>
+                  <LazyTeamSignup />
+                </SimpleErrorBoundary>
+              </Route>
               <Route path="/start">
                 <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Demo Start" />}>
                   <LazyDemoStart />
@@ -316,6 +325,11 @@ export default function App() {
               <Route path="/versions">
                 <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Document Versions" />}>
                   <LazyVersions />
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/admin-profile">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Admin Profile" />}>
+                  <LazyAdminProfile />
                 </SimpleErrorBoundary>
               </Route>
               <Route path="/">
