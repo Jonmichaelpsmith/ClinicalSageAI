@@ -9,10 +9,8 @@ export default function NotFound() {
         <p className="text-[#86868b] mb-8">
           The page you're looking for doesn't exist or has been moved.
         </p>
-        <Link to="/">
-          <a className="inline-flex items-center px-5 py-2.5 bg-[#0071e3] text-white rounded-lg font-medium">
-            Back to Home
-          </a>
+        <Link to="/" className="inline-flex items-center px-5 py-2.5 bg-[#0071e3] text-white rounded-lg font-medium">
+          Back to Home
         </Link>
       </div>
     </div>

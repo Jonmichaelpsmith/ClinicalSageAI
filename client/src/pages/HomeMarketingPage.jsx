@@ -208,7 +208,7 @@ export default function HomeMarketingPage() {
               Login
             </Link>
             
-            <Link to="/get-started" 
+            <Link to="/auth" 
               className="hidden md:flex bg-[#0071e3] hover:bg-[#0077ed] text-white px-4 py-2 rounded-md text-sm font-medium transition-all">
               Get Started
             </Link>
