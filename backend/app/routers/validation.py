@@ -1,242 +1,224 @@
 """
-Validation Router for RegIntel API
+Validation Router
 
-This module handles file uploads and validation processing.
+This module handles document validation requests.
 """
-from fastapi import APIRouter, UploadFile, File, Form, Depends, HTTPException
-from fastapi.responses import JSONResponse
-from typing import List, Dict, Any, Optional
 import os
 import uuid
 import json
 import logging
+from typing import List, Optional
+from fastapi import APIRouter, Depends, File, Form, UploadFile, HTTPException, status
+from fastapi.responses import JSONResponse
 import shutil
 from datetime import datetime
-import subprocess
-from ..dependencies import get_token_header
+
+from app.models import ValidationResult, ValidationRequest, ValidationStatus, ValidationRule, ValidationResultSummary, ResultStatus
+from app.dependencies import get_current_user
+from app.config import settings
+from app.models import User
 
 # Configure logging
 logger = logging.getLogger(__name__)
 
+# Create router
 router = APIRouter()
 
-# Engine configurations
-VALIDATION_ENGINES = [
-    {
-        "id": "regintel-ectd",
-        "name": "RegIntel eCTD Validator",
-        "description": "Validates eCTD submissions against FDA & EMA standards",
-        "fileTypes": [".xml", ".pdf", ".doc", ".docx", ".zip"]
-    },
-    {
+# Define supported validation engines
+VALIDATION_ENGINES = {
+    "regintel-protocol": {
         "id": "regintel-protocol",
         "name": "Protocol Validator",
-        "description": "Validates clinical trial protocols against ICH guidelines",
-        "fileTypes": [".pdf", ".doc", ".docx"]
+        "description": "Validates clinical protocol documents",
+        "fileTypes": ["pdf", "docx"]
     },
-    {
-        "id": "regintel-csr",
+    "regintel-csr": {
+        "id": "regintel-csr", 
         "name": "CSR Validator",
-        "description": "Validates clinical study reports against ICH E3 guidelines",
-        "fileTypes": [".pdf", ".doc", ".docx"]
+        "description": "Validates Clinical Study Report documents",
+        "fileTypes": ["pdf", "docx"]
     },
-    {
-        "id": "regintel-ind",
-        "name": "IND Validator", 
-        "description": "Validates Investigational New Drug (IND) submissions",
-        "fileTypes": [".pdf", ".doc", ".docx", ".xml"]
+    "regintel-define": {
+        "id": "regintel-define",
+        "name": "Define.xml Validator",
+        "description": "Validates Define.xml files for CDISC compliance",
+        "fileTypes": ["xml"]
     }
-]
+}
 
-# Paths
-UPLOAD_DIR = os.path.abspath("backend/uploads")
-LOGS_DIR = os.path.abspath("backend/validation_logs")
+@router.get("/engines", response_model=List[dict])
+async def get_validation_engines(current_user: User = Depends(get_current_user)):
+    """
+    Get available validation engines.
+    """
+    return list(VALIDATION_ENGINES.values())
 
-@router.get("/engines")
-async def get_engines():
-    """Get available validation engines"""
-    return VALIDATION_ENGINES
-
-@router.post("/file")
+@router.post("/file", status_code=status.HTTP_202_ACCEPTED)
 async def validate_file(
     file: UploadFile = File(...),
     engine_id: str = Form(...),
-    tenant_id: Optional[str] = Form(None),
-    user_token: Dict[str, Any] = Depends(get_token_header)
+    current_user: User = Depends(get_current_user)
 ):
     """
-    Upload and validate a file using the specified engine
-    
-    Args:
-        file: The file to validate
-        engine_id: The ID of the validation engine to use
-        tenant_id: Optional tenant ID for multi-tenant isolation
-        
-    Returns:
-        JSONResponse: The validation results
+    Upload and validate a document.
     """
+    # Validate engine exists
+    if engine_id not in VALIDATION_ENGINES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Validation engine '{engine_id}' not found"
+        )
+        
+    # Validate file extension
+    file_ext = file.filename.split(".")[-1].lower()
+    if file_ext not in VALIDATION_ENGINES[engine_id]["fileTypes"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unsupported file type '{file_ext}'. Supported types: {VALIDATION_ENGINES[engine_id]['fileTypes']}"
+        )
+        
+    # Generate a validation ID
+    validation_id = str(uuid.uuid4())
+    
+    # Save file to upload directory
+    tenant_dir = os.path.join(settings.UPLOAD_DIR, current_user.tenant_id)
+    os.makedirs(tenant_dir, exist_ok=True)
+    
+    file_path = os.path.join(tenant_dir, f"{validation_id}_{file.filename}")
+    
     try:
-        # Verify the engine exists
-        engine = next((e for e in VALIDATION_ENGINES if e["id"] == engine_id), None)
-        if not engine:
-            logger.error(f"Unknown engine ID: {engine_id}")
-            raise HTTPException(status_code=400, detail=f"Unknown engine ID: {engine_id}")
-        
-        # Create ID and prepare paths
-        validation_id = str(uuid.uuid4())
-        file_extension = os.path.splitext(file.filename)[1].lower()
-        
-        # Check file type
-        if file_extension not in engine["fileTypes"]:
-            logger.error(f"Unsupported file type {file_extension} for engine {engine_id}")
-            raise HTTPException(
-                status_code=400, 
-                detail=f"Unsupported file type. Allowed types: {', '.join(engine['fileTypes'])}"
-            )
-        
-        # Create directories
-        os.makedirs(UPLOAD_DIR, exist_ok=True)
-        os.makedirs(LOGS_DIR, exist_ok=True)
-        
-        if tenant_id:
-            tenant_upload_dir = os.path.join(UPLOAD_DIR, tenant_id)
-            tenant_logs_dir = os.path.join(LOGS_DIR, tenant_id)
-            os.makedirs(tenant_upload_dir, exist_ok=True)
-            os.makedirs(tenant_logs_dir, exist_ok=True)
-            file_path = os.path.join(tenant_upload_dir, f"{validation_id}{file_extension}")
-            log_path = os.path.join(tenant_logs_dir, f"{validation_id}.json")
-        else:
-            file_path = os.path.join(UPLOAD_DIR, f"{validation_id}{file_extension}")
-            log_path = os.path.join(LOGS_DIR, f"{validation_id}.json")
-            
-        # Save the file
         with open(file_path, "wb") as f:
             shutil.copyfileobj(file.file, f)
-            
-        logger.info(f"File uploaded successfully: {file.filename} -> {file_path}")
-        
-        # Run validation process
-        try:
-            # In a real environment, this would call a validation service or library
-            # For now, we'll generate sample validation results
-            
-            # Sample results structure (would come from actual validation tool)
-            validation_time = datetime.now().isoformat()
-            
-            # Initialize with success results
-            results = {
-                "id": validation_id,
-                "filename": file.filename,
-                "engineId": engine_id,
-                "engineName": engine["name"],
-                "timestamp": validation_time,
-                "status": "completed",
-                "validations": [
-                    {
-                        "id": "REG001",
-                        "rule": "Document structure validation",
-                        "status": "success",
-                        "message": "Document structure meets requirements"
-                    },
-                    {
-                        "id": "REG002",
-                        "rule": "Regulatory header verification",
-                        "status": "success",
-                        "message": "Headers contain required information"
-                    },
-                    {
-                        "id": "REG003",
-                        "rule": "Section completeness check",
-                        "status": "success",
-                        "message": "All required sections present"
-                    }
-                ],
-                "summary": {
-                    "success": 3,
-                    "warning": 0,
-                    "error": 0
-                }
-            }
-            
-            # For some files, add warning or error to demonstrate capabilities
-            # In real implementation, this would be based on actual validation
-            if "sample" in file.filename.lower() or "test" in file.filename.lower():
-                results["validations"].append({
-                    "id": "REG004",
-                    "rule": "Format consistency validation",
-                    "status": "warning",
-                    "message": "Inconsistent formatting detected in section 3.2"
-                })
-                results["validations"].append({
-                    "id": "REG005",
-                    "rule": "Cross-reference validation",
-                    "status": "error",
-                    "message": "Missing cross-references in section 4.1",
-                    "path": "Section 4.1",
-                    "lineNumber": 42
-                })
-                results["summary"]["warning"] = 1
-                results["summary"]["error"] = 1
-                
-            # For PDF files, add sample PDF-specific validation
-            if file_extension == ".pdf":
-                results["validations"].append({
-                    "id": "PDF001",
-                    "rule": "PDF/A compliance check",
-                    "status": "warning",
-                    "message": "Document is not PDF/A compliant"
-                })
-                results["summary"]["warning"] += 1
-                
-            # Save results to log file
-            with open(log_path, "w") as f:
-                json.dump(results, f, indent=2)
-                
-            logger.info(f"Validation completed: {validation_id}")
-            return results
-            
-        except Exception as e:
-            logger.error(f"Validation failed: {str(e)}")
-            raise HTTPException(status_code=500, detail=f"Validation processing error: {str(e)}")
-            
     except Exception as e:
-        logger.error(f"File upload failed: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"File upload failed: {str(e)}")
+        logger.error(f"Failed to save file: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to save file"
+        )
+    finally:
+        file.file.close()
+        
+    # Create initial validation result
+    result = ValidationResult(
+        id=validation_id,
+        filename=file.filename,
+        engineId=engine_id,
+        engineName=VALIDATION_ENGINES[engine_id]["name"],
+        timestamp=datetime.now(),
+        status=ValidationStatus.VALIDATING,
+        validations=[],
+        summary=ValidationResultSummary()
+    )
+    
+    # Create validation results directory for tenant
+    tenant_results_dir = os.path.join(settings.VALIDATION_LOGS_DIR, current_user.tenant_id)
+    os.makedirs(tenant_results_dir, exist_ok=True)
+    
+    # Save initial validation result
+    result_path = os.path.join(tenant_results_dir, f"{validation_id}.json")
+    
+    with open(result_path, "w") as f:
+        f.write(result.json())
+        
+    # In a real implementation, we would start a background task to run the validation
+    # For this example, we're simulating a successful validation synchronously
+    
+    # Return validation ID
+    return {"id": validation_id, "status": "validating"}
 
-@router.get("/result/{validation_id}")
-async def get_validation_result(
+@router.get("/status/{validation_id}", response_model=ValidationResult)
+async def get_validation_status(
     validation_id: str,
-    tenant_id: Optional[str] = None,
-    user_token: Dict[str, Any] = Depends(get_token_header)
+    current_user: User = Depends(get_current_user)
 ):
     """
-    Get validation results by ID
-    
-    Args:
-        validation_id: The validation ID
-        tenant_id: Optional tenant ID for multi-tenant isolation
-        
-    Returns:
-        JSONResponse: The validation results
+    Get the status of a validation.
     """
-    try:
-        # Construct the log path
-        if tenant_id:
-            log_path = os.path.join(LOGS_DIR, tenant_id, f"{validation_id}.json")
+    # Build path to validation result file
+    tenant_results_dir = os.path.join(settings.VALIDATION_LOGS_DIR, current_user.tenant_id)
+    result_path = os.path.join(tenant_results_dir, f"{validation_id}.json")
+    
+    # Check if validation exists
+    if not os.path.exists(result_path):
+        # Check in default directory as well (for shared test validations)
+        default_path = os.path.join(settings.VALIDATION_LOGS_DIR, f"{validation_id}.json")
+        if os.path.exists(default_path):
+            result_path = default_path
         else:
-            log_path = os.path.join(LOGS_DIR, f"{validation_id}.json")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Validation '{validation_id}' not found"
+            )
             
-        # Check if the file exists
-        if not os.path.exists(log_path):
-            logger.error(f"Validation result not found: {validation_id}")
-            raise HTTPException(status_code=404, detail="Validation result not found")
+    # Read validation result
+    try:
+        with open(result_path, "r") as f:
+            result_data = json.load(f)
+        
+        # Convert to ValidationResult model
+        result = ValidationResult(**result_data)
+        
+        # If status is still "validating", check if results have been updated
+        # In a real application, this would check a database or task queue
+        # For this example, we'll simulate completion after a short time
+        if result.status == ValidationStatus.VALIDATING:
+            # Set to "completed" with sample results
+            result.status = ValidationStatus.COMPLETED
+            result.validations = [
+                ValidationRule(
+                    id="REG001",
+                    rule="Document structure validation",
+                    status=ResultStatus.SUCCESS,
+                    message="Document structure meets requirements"
+                ),
+                ValidationRule(
+                    id="REG002",
+                    rule="Regulatory header verification",
+                    status=ResultStatus.SUCCESS,
+                    message="Headers contain required information"
+                ),
+                ValidationRule(
+                    id="REG003",
+                    rule="Section completeness check",
+                    status=ResultStatus.SUCCESS,
+                    message="All required sections present"
+                ),
+                ValidationRule(
+                    id="REG004",
+                    rule="Format consistency validation",
+                    status=ResultStatus.WARNING,
+                    message="Inconsistent formatting detected in section 3.2"
+                ),
+                ValidationRule(
+                    id="REG005",
+                    rule="Cross-reference validation",
+                    status=ResultStatus.ERROR,
+                    message="Missing cross-references in section 4.1",
+                    path="Section 4.1",
+                    lineNumber=42
+                ),
+                ValidationRule(
+                    id="PDF001",
+                    rule="PDF/A compliance check",
+                    status=ResultStatus.WARNING,
+                    message="Document is not PDF/A compliant"
+                )
+            ]
+            result.summary = ValidationResultSummary(
+                success=3,
+                warning=2,
+                error=1
+            )
             
-        # Read and return the results
-        with open(log_path, "r") as f:
-            return json.load(f)
-            
-    except HTTPException:
-        raise
+            # Save updated result
+            with open(result_path, "w") as f:
+                f.write(result.json())
+                
+        return result
+        
     except Exception as e:
-        logger.error(f"Error retrieving validation result: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error retrieving validation result: {str(e)}")
+        logger.error(f"Failed to get validation status: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to get validation status"
+        )
