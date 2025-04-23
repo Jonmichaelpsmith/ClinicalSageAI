@@ -9,7 +9,11 @@
 import { z } from 'zod';
 import { OpenAI } from 'openai';
 import rateLimit from 'express-rate-limit';
+import multer from 'multer';
+import path from 'path';
 import { sanitizeInput, logApiUsage, handleApiError } from '../utils/api-security.js';
+import { promises as fs } from 'fs';
+import { createDocx, createPDF } from '../utils/document-generator.js';
 
 // Ensure OpenAI API key is configured
 if (!process.env.OPENAI_API_KEY) {
@@ -29,6 +33,51 @@ const blueprintRateLimiter = rateLimit({
   legacyHeaders: false,
   message: { error: 'Too many blueprint generation requests. Please try again later.' }
 });
+
+// Rate limiter for file uploads (even stricter)
+const uploadRateLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour window
+  max: 20, // 20 uploads per hour
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many file uploads. Please try again later.' }
+});
+
+// Configure file upload storage
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = path.join(process.cwd(), 'uploads');
+    fs.mkdir(uploadDir, { recursive: true })
+      .then(() => cb(null, uploadDir))
+      .catch(err => cb(err));
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const ext = path.extname(file.originalname);
+    cb(null, file.fieldname + '-' + uniqueSuffix + ext);
+  }
+});
+
+// File filter to only allow certain file types
+const fileFilter = (req, file, cb) => {
+  const allowedExtensions = ['.mol', '.sdf', '.pdb', '.cif', '.smi', '.png', '.jpg', '.jpeg'];
+  const ext = path.extname(file.originalname).toLowerCase();
+  
+  if (allowedExtensions.includes(ext)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Unsupported file type. Please upload a valid structure file or image.'), false);
+  }
+};
+
+// Configure multer upload middleware
+const upload = multer({
+  storage,
+  fileFilter,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB size limit
+  }
+}).single('file'); // 'file' is the field name for file upload
 
 // Input validation schemas
 const formulationSchema = z.object({
@@ -63,6 +112,48 @@ const molecularStructureSchema = z.object({
  * @param {Express} app - Express app instance
  */
 export function registerCMCBlueprintRoutes(app) {
+  /**
+   * Upload and process molecular structure files
+   */
+  app.post('/api/cmc-blueprint-generator/upload', uploadRateLimiter, async (req, res) => {
+    try {
+      // Check if file upload middleware is configured
+      if (!req.files || Object.keys(req.files).length === 0) {
+        return res.status(400).json({ error: 'No files were uploaded.' });
+      }
+
+      const file = req.files.file;
+      const fileExtension = file.name.split('.').pop().toLowerCase();
+      
+      // Process different file types
+      let extractedData = {};
+      
+      if (['mol', 'sdf', 'pdb', 'cif', 'smi'].includes(fileExtension)) {
+        // Chemistry file formats
+        extractedData = await processChemistryFile(file);
+      } else if (['png', 'jpg', 'jpeg'].includes(fileExtension)) {
+        // Image files - use OpenAI Vision to extract chemical structure
+        extractedData = await processStructureImage(file);
+      } else {
+        return res.status(400).json({ 
+          error: 'Unsupported file format. Please upload .mol, .sdf, .pdb, .cif, .smi, .png, .jpg, or .jpeg files.' 
+        });
+      }
+      
+      // Log successful upload
+      logApiUsage(req, 'cmc-blueprint-generator-upload', true, { fileType: fileExtension });
+      
+      // Return the extracted data
+      return res.json({ 
+        success: true, 
+        message: 'File processed successfully',
+        extractedData
+      });
+    } catch (error) {
+      return handleApiError(error, res, 'Failed to process uploaded file');
+    }
+  });
+
   /**
    * Generate CMC blueprint from molecular structure
    */
@@ -106,6 +197,177 @@ export function registerCMCBlueprintRoutes(app) {
     }
   });
   
+  /**
+   * Generate regulatory citations for CMC sections
+   */
+  app.post('/api/cmc-blueprint-generator/citations', blueprintRateLimiter, async (req, res) => {
+    try {
+      // Sanitize and validate input
+      const sanitizedInput = sanitizeInput(req.body);
+      const { moleculeType, regulatoryRegion, sections } = sanitizedInput;
+      
+      if (!moleculeType || !regulatoryRegion || !sections || !Array.isArray(sections)) {
+        return res.status(400).json({ 
+          error: 'Invalid request data',
+          details: 'moleculeType, regulatoryRegion, and sections array are required'
+        });
+      }
+      
+      // Log the API request
+      logApiUsage(req, 'cmc-blueprint-citations', true, { 
+        moleculeType, 
+        regulatoryRegion,
+        sectionCount: sections.length
+      });
+      
+      // Generate citations using OpenAI
+      const citations = await generateRegulatoryCitations(moleculeType, regulatoryRegion, sections);
+      
+      // Return the citations
+      res.json({
+        citations,
+        metadata: {
+          generatedAt: new Date().toISOString(),
+          moleculeType,
+          regulatoryRegion
+        }
+      });
+      
+    } catch (error) {
+      handleApiError(req, res, error, 'cmc-blueprint-citations');
+    }
+  });
+
+  /**
+   * Generate manufacturing process diagram from synthesis pathway
+   */
+  app.post('/api/cmc-blueprint-generator/diagram', blueprintRateLimiter, async (req, res) => {
+    try {
+      // Sanitize and validate input
+      const sanitizedInput = sanitizeInput(req.body);
+      const { moleculeName, molecularFormula, synthesisPathway } = sanitizedInput;
+      
+      if (!moleculeName || !molecularFormula || !synthesisPathway) {
+        return res.status(400).json({ 
+          error: 'Missing required data',
+          details: 'moleculeName, molecularFormula, and synthesisPathway are required'
+        });
+      }
+      
+      // Log the API request
+      logApiUsage(req, 'cmc-blueprint-diagram', true, { 
+        moleculeName, 
+        molecularFormula
+      });
+      
+      // Generate the process diagram
+      const diagram = await generateProcessDiagram({
+        moleculeName,
+        molecularFormula,
+        synthesisPathway
+      });
+      
+      // Return the generated diagram URL
+      res.json(diagram);
+      
+    } catch (error) {
+      handleApiError(req, res, error, 'cmc-blueprint-diagram');
+    }
+  });
+
+  /**
+   * Perform risk analysis for manufacturing process
+   */
+  app.post('/api/cmc-blueprint-generator/risk-analysis', blueprintRateLimiter, async (req, res) => {
+    try {
+      // Sanitize and validate input
+      const sanitizedInput = sanitizeInput(req.body);
+      const { molecularData, targetMarkets } = sanitizedInput;
+      
+      if (!molecularData || !targetMarkets || !Array.isArray(targetMarkets)) {
+        return res.status(400).json({ 
+          error: 'Invalid request data',
+          details: 'molecularData object and targetMarkets array are required'
+        });
+      }
+      
+      // Log the API request
+      logApiUsage(req, 'cmc-blueprint-risk-analysis', true, { 
+        moleculeName: molecularData.moleculeName, 
+        targetMarkets: targetMarkets.join(',')
+      });
+      
+      // Perform risk analysis
+      const riskAnalysis = await performRiskAnalysis(molecularData, targetMarkets);
+      
+      // Return the risk analysis results
+      res.json(riskAnalysis);
+      
+    } catch (error) {
+      handleApiError(req, res, error, 'cmc-blueprint-risk-analysis');
+    }
+  });
+
+  /**
+   * Export CMC blueprint to formatted document
+   */
+  app.post('/api/cmc-blueprint-generator/export', blueprintRateLimiter, async (req, res) => {
+    try {
+      // Sanitize and validate input
+      const sanitizedInput = sanitizeInput(req.body);
+      const { format, template, moleculeName, blueprintId } = sanitizedInput;
+      
+      if (!format || !template || !moleculeName || !blueprintId) {
+        return res.status(400).json({ 
+          error: 'Missing required export parameters',
+          details: 'format, template, moleculeName, and blueprintId are required'
+        });
+      }
+      
+      // Log the API request
+      logApiUsage(req, 'cmc-blueprint-export', true, { 
+        format, 
+        template,
+        moleculeName
+      });
+      
+      // Generate the document based on format
+      let documentData;
+      let contentType;
+      
+      switch (format) {
+        case 'word':
+          documentData = await exportToWord(template, moleculeName, blueprintId);
+          contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+          break;
+        case 'pdf':
+          documentData = await exportToPDF(template, moleculeName, blueprintId);
+          contentType = 'application/pdf';
+          break;
+        case 'ectd':
+          documentData = await exportToECTD(template, moleculeName, blueprintId);
+          contentType = 'application/zip';
+          break;
+        case 'json':
+          documentData = await exportToJSON(template, moleculeName, blueprintId);
+          contentType = 'application/json';
+          break;
+        default:
+          return res.status(400).json({ error: 'Unsupported export format' });
+      }
+      
+      // Set the appropriate headers for the response
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('Content-Disposition', `attachment; filename="${moleculeName}-CMC-Module3.${format}"`);
+      
+      // Send the document data
+      res.send(documentData);
+      
+    } catch (error) {
+      handleApiError(req, res, error, 'cmc-blueprint-export');
+    }
+  });
+
   /**
    * Fetch molecular property information from external databases
    */
@@ -309,6 +571,380 @@ async function generateProcessDiagram(molecularData) {
  * @param {string} identifierType - Type of identifier (name, smiles, inchi)
  * @returns {Promise<Object>} Molecular properties
  */
+/**
+ * Process a chemistry file format to extract molecular data
+ * @param {Object} file - The uploaded chemistry file
+ * @returns {Promise<Object>} Extracted molecular data
+ */
+async function processChemistryFile(file) {
+  try {
+    // Read file content
+    const fileContent = file.data.toString('utf8');
+    
+    // Use OpenAI to analyze the file content and extract data
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o', // the newest OpenAI model is "gpt-4o" which was released May 13, 2024
+      messages: [
+        {
+          role: 'system',
+          content: 'You are an expert computational chemist specializing in molecular file formats and structure analysis.'
+        },
+        {
+          role: 'user',
+          content: `Analyze this molecular structure file and extract key information in JSON format:\n\n${fileContent.substring(0, 4000)}`
+        }
+      ],
+      temperature: 0.3,
+      response_format: { type: "json_object" }
+    });
+    
+    // Parse the response
+    const extractedData = JSON.parse(response.choices[0].message.content);
+    
+    // Ensure minimum required fields
+    return {
+      moleculeName: extractedData.moleculeName || extractedData.name || "Unknown Compound",
+      molecularFormula: extractedData.molecularFormula || extractedData.formula || "",
+      smiles: extractedData.smiles || "",
+      inchi: extractedData.inchi || "",
+      molecularWeight: extractedData.molecularWeight || extractedData.weight || ""
+    };
+    
+  } catch (error) {
+    console.error('Error processing chemistry file:', error);
+    throw new Error(`Failed to process chemistry file: ${error.message}`);
+  }
+}
+
+/**
+ * Process an image file to extract molecular structure using OpenAI Vision
+ * @param {Object} file - The uploaded image file
+ * @returns {Promise<Object>} Extracted molecular data
+ */
+async function processStructureImage(file) {
+  try {
+    // Convert file to base64
+    const base64Image = file.data.toString('base64');
+    
+    // Use OpenAI Vision to analyze the image
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o', // the newest OpenAI model is "gpt-4o" which was released May 13, 2024
+      messages: [
+        {
+          role: 'system',
+          content: 'You are an expert chemist specializing in molecular structure identification from images.'
+        },
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'text',
+              text: 'Analyze this chemical structure image and extract the following information in JSON format: moleculeName, molecularFormula, smiles (if possible), and a brief description of the compound or its class.'
+            },
+            {
+              type: 'image_url',
+              image_url: {
+                url: `data:image/jpeg;base64,${base64Image}`
+              }
+            }
+          ]
+        }
+      ],
+      temperature: 0.3,
+      response_format: { type: "json_object" }
+    });
+    
+    // Parse the response
+    const extractedData = JSON.parse(response.choices[0].message.content);
+    
+    // Ensure minimum required fields
+    return {
+      moleculeName: extractedData.moleculeName || "Unknown Compound",
+      molecularFormula: extractedData.molecularFormula || "",
+      smiles: extractedData.smiles || "",
+      description: extractedData.description || ""
+    };
+    
+  } catch (error) {
+    console.error('Error processing structure image:', error);
+    throw new Error(`Failed to process structure image: ${error.message}`);
+  }
+}
+
+/**
+ * Generate regulatory citations for CMC sections
+ * @param {string} moleculeType - Type of molecule (small-molecule, biological, etc.)
+ * @param {string} regulatoryRegion - Target regulatory region (fda, ema, pmda, etc.)
+ * @param {Array<string>} sections - Array of CTD section IDs
+ * @returns {Promise<Array<Object>>} Generated citations
+ */
+async function generateRegulatoryCitations(moleculeType, regulatoryRegion, sections) {
+  try {
+    // Create a detailed prompt
+    const prompt = `
+      Generate a list of key regulatory citations and references for ICH CTD Module 3 sections for a ${moleculeType} pharmaceutical.
+      Target regulatory region: ${regulatoryRegion.toUpperCase()}
+      Sections to cover: ${sections.join(', ')}
+      
+      For each citation, provide:
+      1. Title of the guideline or reference
+      2. Source (e.g., FDA, EMA, ICH)
+      3. Date of publication/latest revision
+      4. Brief text excerpt that highlights key requirements
+      5. The specific CTD section it applies to
+      6. The regulatory authority (e.g., FDA, EMA, PMDA)
+      
+      Focus on the most important and up-to-date guidelines that would be essential for regulatory compliance.
+      Format as a JSON array of citation objects, each with these keys: title, source, date, text, section, authority
+    `;
+    
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o', // the newest OpenAI model is "gpt-4o" which was released May 13, 2024
+      messages: [
+        {
+          role: 'system',
+          content: 'You are an expert regulatory affairs specialist with deep knowledge of global pharmaceutical regulations and guidelines for Chemistry, Manufacturing, and Controls.'
+        },
+        {
+          role: 'user',
+          content: prompt
+        }
+      ],
+      temperature: 0.7,
+      response_format: { type: "json_object" }
+    });
+    
+    // Parse the response
+    const result = JSON.parse(response.choices[0].message.content);
+    return result.citations || [];
+    
+  } catch (error) {
+    console.error('Error generating regulatory citations:', error);
+    return [
+      {
+        title: "Error generating citations",
+        source: "Internal system",
+        date: new Date().toISOString().split('T')[0],
+        text: `An error occurred: ${error.message}. Please try again.`,
+        section: sections[0] || "all",
+        authority: regulatoryRegion.toUpperCase()
+      }
+    ];
+  }
+}
+
+/**
+ * Perform risk analysis on manufacturing process
+ * @param {Object} molecularData - Molecular and manufacturing data
+ * @param {Array<string>} targetMarkets - Array of target markets for risk analysis
+ * @returns {Promise<Object>} Risk analysis results
+ */
+async function performRiskAnalysis(molecularData, targetMarkets) {
+  try {
+    const prompt = `
+      Perform a comprehensive risk analysis for the manufacturing process of ${molecularData.moleculeName} (${molecularData.molecularFormula}).
+      
+      Target markets: ${targetMarkets.join(', ')}
+      
+      Based on the following information about the molecule and its synthesis, identify:
+      
+      1. Overall risk score (0-10 scale) with rationale
+      2. Specific risk factors, their severity (low/medium/high), and descriptions
+      3. A summary risk assessment statement suitable for regulatory documentation
+      
+      Molecular details:
+      - Name: ${molecularData.moleculeName}
+      - Formula: ${molecularData.molecularFormula}
+      - Synthesis pathway: ${molecularData.synthesisPathway || "Not provided"}
+      ${molecularData.formulation ? `- Dosage form: ${molecularData.formulation.dosageForm}` : ''}
+      ${molecularData.formulation ? `- Route of administration: ${molecularData.formulation.routeOfAdministration}` : ''}
+      
+      Format response as a JSON object with these exact keys: overallRiskScore, riskSummary, riskFactors (array of objects with severity and description)
+    `;
+    
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o', // the newest OpenAI model is "gpt-4o" which was released May 13, 2024
+      messages: [
+        {
+          role: 'system',
+          content: 'You are an expert in pharmaceutical manufacturing risk assessment with extensive knowledge of global regulatory requirements.'
+        },
+        {
+          role: 'user',
+          content: prompt
+        }
+      ],
+      temperature: 0.7,
+      response_format: { type: "json_object" }
+    });
+    
+    // Parse the response
+    const analysis = JSON.parse(response.choices[0].message.content);
+    
+    // Add metadata
+    return {
+      ...analysis,
+      metadata: {
+        generatedAt: new Date().toISOString(),
+        moleculeName: molecularData.moleculeName,
+        targetMarkets,
+        model: 'gpt-4o'
+      }
+    };
+    
+  } catch (error) {
+    console.error('Error performing risk analysis:', error);
+    return {
+      overallRiskScore: 5,
+      riskSummary: `Error performing risk analysis: ${error.message}. Using default medium risk score.`,
+      riskFactors: [
+        {
+          severity: 'medium',
+          description: 'Analysis error - unable to assess specific risks.'
+        }
+      ],
+      metadata: {
+        error: true,
+        errorMessage: error.message,
+        generatedAt: new Date().toISOString()
+      }
+    };
+  }
+}
+
+/**
+ * Export blueprint data to Word document format
+ * @param {string} template - Regulatory template to use (fda, ema, etc.)
+ * @param {string} moleculeName - Name of the molecule
+ * @param {string} blueprintId - ID of the blueprint to export
+ * @returns {Promise<Buffer>} Word document as buffer
+ */
+async function exportToWord(template, moleculeName, blueprintId) {
+  try {
+    // In a production system, this would:
+    // 1. Retrieve the blueprint data from a database using blueprintId
+    // 2. Use a document generation library to create a properly formatted Word document
+    // 3. Apply the correct template based on target regulatory authority
+    
+    // For demonstration, we'll create a simple document with placeholder structure
+    const docData = {
+      title: `CMC Documentation for ${moleculeName}`,
+      template: template.toUpperCase(),
+      sections: [
+        { heading: 'S.1 General Information', content: 'Placeholder content for S.1' },
+        { heading: 'S.2 Manufacture', content: 'Placeholder content for S.2' },
+        { heading: 'S.3 Characterisation', content: 'Placeholder content for S.3' },
+        { heading: 'S.4 Control of Drug Substance', content: 'Placeholder content for S.4' },
+        { heading: 'P.1 Description and Composition', content: 'Placeholder content for P.1' },
+        { heading: 'P.2 Pharmaceutical Development', content: 'Placeholder content for P.2' }
+      ],
+      metadata: {
+        author: 'TrialSage AI-CMC Blueprint Generator',
+        createdDate: new Date().toISOString(),
+        id: blueprintId
+      }
+    };
+    
+    // Generate a Word document using the document generation utility
+    // In a real implementation, this would use a library like docx
+    const docBuffer = await createDocx(docData);
+    return docBuffer;
+    
+  } catch (error) {
+    console.error('Error exporting to Word:', error);
+    throw new Error(`Failed to export to Word: ${error.message}`);
+  }
+}
+
+/**
+ * Export blueprint data to PDF format
+ * @param {string} template - Regulatory template to use (fda, ema, etc.)
+ * @param {string} moleculeName - Name of the molecule
+ * @param {string} blueprintId - ID of the blueprint to export
+ * @returns {Promise<Buffer>} PDF document as buffer
+ */
+async function exportToPDF(template, moleculeName, blueprintId) {
+  try {
+    // Similar to Word export, but generates PDF
+    // In production, would use PDF generation library
+    const pdfBuffer = await createPDF({
+      title: `CMC Documentation for ${moleculeName}`,
+      template: template.toUpperCase(),
+      id: blueprintId
+    });
+    
+    return pdfBuffer;
+    
+  } catch (error) {
+    console.error('Error exporting to PDF:', error);
+    throw new Error(`Failed to export to PDF: ${error.message}`);
+  }
+}
+
+/**
+ * Export blueprint data to eCTD format (XML + PDF)
+ * @param {string} template - Regulatory template to use (fda, ema, etc.)
+ * @param {string} moleculeName - Name of the molecule
+ * @param {string} blueprintId - ID of the blueprint to export
+ * @returns {Promise<Buffer>} Zip file containing eCTD submission as buffer
+ */
+async function exportToECTD(template, moleculeName, blueprintId) {
+  try {
+    // In production, this would:
+    // 1. Generate properly formatted XML backbone
+    // 2. Create PDFs for each section
+    // 3. Organize files according to eCTD structure
+    // 4. Package everything in a zip file
+    
+    // For demo purposes, create a simple ZIP buffer
+    // This would be replaced with actual eCTD generation code
+    const buffer = Buffer.from('Placeholder for eCTD ZIP file');
+    return buffer;
+    
+  } catch (error) {
+    console.error('Error exporting to eCTD:', error);
+    throw new Error(`Failed to export to eCTD: ${error.message}`);
+  }
+}
+
+/**
+ * Export blueprint data to JSON format
+ * @param {string} template - Regulatory template to use (fda, ema, etc.)
+ * @param {string} moleculeName - Name of the molecule
+ * @param {string} blueprintId - ID of the blueprint to export
+ * @returns {Promise<Buffer>} JSON data as buffer
+ */
+async function exportToJSON(template, moleculeName, blueprintId) {
+  try {
+    // Simply return the JSON data
+    // In production, would fetch from database
+    const jsonData = JSON.stringify({
+      title: `CMC Documentation for ${moleculeName}`,
+      template: template.toUpperCase(),
+      id: blueprintId,
+      generatedAt: new Date().toISOString(),
+      sections: {
+        drugSubstance: {
+          's.1': { title: 'S.1 General Information', content: 'Placeholder content' },
+          's.2': { title: 'S.2 Manufacture', content: 'Placeholder content' },
+          's.3': { title: 'S.3 Characterisation', content: 'Placeholder content' },
+          's.4': { title: 'S.4 Control of Drug Substance', content: 'Placeholder content' }
+        },
+        drugProduct: {
+          'p.1': { title: 'P.1 Description and Composition', content: 'Placeholder content' },
+          'p.2': { title: 'P.2 Pharmaceutical Development', content: 'Placeholder content' }
+        }
+      }
+    }, null, 2);
+    
+    return Buffer.from(jsonData);
+    
+  } catch (error) {
+    console.error('Error exporting to JSON:', error);
+    throw new Error(`Failed to export to JSON: ${error.message}`);
+  }
+}
+
 async function fetchMolecularProperties(identifier, identifierType) {
   try {
     // In production, this would call PubChem, ChEMBL, or similar APIs
