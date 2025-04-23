@@ -1,4 +1,5 @@
 // HomeMarketingPage.jsx - Category-Defining Platform for Clinical Intelligence with Apple-inspired design
+// Last update: Fixed module showcase with premium card design
 import React, { useState } from 'react';
 import { Link } from 'wouter';
 import { 
@@ -244,163 +245,272 @@ export default function HomeMarketingPage() {
         </div>
       </section>
       
-      {/* Module Showcase - All Products Highlighted */}
-      <section className="py-12 bg-white border-y border-[#e5e5e7]">
+      {/* Module Showcase - Premium Display */}
+      <section className="py-16 bg-gradient-to-b from-white to-[#f5f5f7]">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl md:text-3xl font-semibold mb-4 text-[#1d1d1f]"
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center px-4 py-1.5 bg-[#f2f7ff] rounded-full mb-5">
+              <span className="text-[#06c] text-sm font-semibold">Modular AI-Driven Platform</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold mb-6 text-[#1d1d1f]"
                 style={{ fontFamily: "SF Pro Display, -apple-system, BlinkMacSystemFont, sans-serif" }}>
               Complete Regulatory AI Suite
             </h2>
-            <p className="text-base text-[#86868b] max-w-3xl mx-auto">
-              Click any module to see detailed capabilities, use cases, and how it outperforms legacy approaches
+            <p className="text-lg text-[#424245] max-w-3xl mx-auto">
+              Seamlessly connected modules with a unified regulatory knowledge base.
+              Each module outperforms legacy systems while working harmoniously together.
             </p>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
-            {/* IND Wizard */}
+          <div className="grid md:grid-cols-3 gap-8 mb-16 max-w-6xl mx-auto">
+            {/* IND Wizard - Premium Card */}
             <Link to="/ind/wizard" className="group">
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-[#e5e5e7] h-full flex flex-col hover:shadow-md transition-all hover:border-[#0071e3]">
-                <div className="flex items-center justify-center mb-4">
-                  <div className="p-3 bg-[#f5f5f7] rounded-full group-hover:bg-[#f0f7ff]">
-                    <FileCheck className="h-7 w-7 text-[#06c]" />
-                  </div>
+              <div className="bg-white p-8 rounded-2xl shadow-md border border-[#e5e5e7] h-full flex flex-col hover:shadow-lg transition-all hover:border-[#0071e3] relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-[#f2f7ff] to-white rounded-bl-3xl"></div>
+                
+                <div className="w-16 h-16 flex items-center justify-center gradient-bg rounded-2xl shadow-sm mb-6 relative z-10">
+                  <FileCheck className="h-8 w-8 text-white" />
                 </div>
-                <h3 className="text-center text-lg font-medium text-[#1d1d1f] mb-2 group-hover:text-[#06c]">
-                  IND Wizard™
-                </h3>
-                <p className="text-center text-xs text-[#86868b] flex-grow">
-                  Automated submissions with AI-generated regulatory documents
-                </p>
-                <div className="mt-4 flex justify-center">
-                  <span className="text-[#06c] text-xs font-medium group-hover:underline flex items-center">
-                    Learn more <ArrowRight className="ml-1 w-3 h-3" />
+                
+                <div className="flex-grow">
+                  <div className="flex items-start mb-4">
+                    <h3 className="text-xl font-semibold text-[#1d1d1f] group-hover:text-[#06c] transition-colors"
+                        style={{ fontFamily: "SF Pro Display, -apple-system, BlinkMacSystemFont, sans-serif" }}>
+                      IND Wizard™
+                    </h3>
+                    <div className="ml-auto px-2 py-1 bg-[#f2f7ff] rounded text-xs font-medium text-[#06c]">Most Popular</div>
+                  </div>
+                  
+                  <p className="text-[#424245] mb-5">
+                    Fully automated IND submissions with AI-generated regulatory documents that reduce time to submission by 55%.
+                  </p>
+                  
+                  <ul className="space-y-3 mb-8">
+                    <li className="flex items-start gap-2 text-sm">
+                      <CheckCircle className="h-5 w-5 mt-0.5 text-[#06c] flex-shrink-0" />
+                      <span className="text-[#424245]">Auto-generate Modules 1-5</span>
+                    </li>
+                    <li className="flex items-start gap-2 text-sm">
+                      <CheckCircle className="h-5 w-5 mt-0.5 text-[#06c] flex-shrink-0" />
+                      <span className="text-[#424245]">FDA, EMA, PMDA submission-ready</span>
+                    </li>
+                    <li className="flex items-start gap-2 text-sm">
+                      <CheckCircle className="h-5 w-5 mt-0.5 text-[#06c] flex-shrink-0" />
+                      <span className="text-[#424245]">Beats Certara with 3x faster output</span>
+                    </li>
+                  </ul>
+                </div>
+                
+                <div className="flex items-center justify-between mt-auto pt-5 border-t border-[#e5e5e7]">
+                  <span className="flex items-center text-[#06c] text-sm font-medium group-hover:underline">
+                    View Details <ArrowRight className="ml-1 w-4 h-4" />
                   </span>
+                  <div className="bg-[#0071e3] text-white text-xs font-medium px-3 py-1.5 rounded-md">
+                    Launch
+                  </div>
                 </div>
               </div>
             </Link>
             
-            {/* CSR Intelligence */}
+            {/* CSR Intelligence - Premium Card */}
             <Link to="/csr-intelligence" className="group">
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-[#e5e5e7] h-full flex flex-col hover:shadow-md transition-all hover:border-[#0071e3]">
-                <div className="flex items-center justify-center mb-4">
-                  <div className="p-3 bg-[#f5f5f7] rounded-full group-hover:bg-[#f0f7ff]">
-                    <LayoutDashboard className="h-7 w-7 text-[#06c]" />
-                  </div>
+              <div className="bg-white p-8 rounded-2xl shadow-md border border-[#e5e5e7] h-full flex flex-col hover:shadow-lg transition-all hover:border-[#0071e3] relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-[#f2f7ff] to-white rounded-bl-3xl"></div>
+                
+                <div className="w-16 h-16 flex items-center justify-center gradient-bg rounded-2xl shadow-sm mb-6 relative z-10">
+                  <LayoutDashboard className="h-8 w-8 text-white" />
                 </div>
-                <h3 className="text-center text-lg font-medium text-[#1d1d1f] mb-2 group-hover:text-[#06c]">
-                  CSR Intelligence™
-                </h3>
-                <p className="text-center text-xs text-[#86868b] flex-grow">
-                  Interactive dashboards and structured data extraction from CSRs
-                </p>
-                <div className="mt-4 flex justify-center">
-                  <span className="text-[#06c] text-xs font-medium group-hover:underline flex items-center">
-                    Learn more <ArrowRight className="ml-1 w-3 h-3" />
+                
+                <div className="flex-grow">
+                  <h3 className="text-xl font-semibold text-[#1d1d1f] mb-4 group-hover:text-[#06c] transition-colors"
+                      style={{ fontFamily: "SF Pro Display, -apple-system, BlinkMacSystemFont, sans-serif" }}>
+                    CSR Intelligence™
+                  </h3>
+                  
+                  <p className="text-[#424245] mb-5">
+                    Transform static CSRs into interactive dashboards with structured data extraction that legacy systems can't match.
+                  </p>
+                  
+                  <ul className="space-y-3 mb-8">
+                    <li className="flex items-start gap-2 text-sm">
+                      <CheckCircle className="h-5 w-5 mt-0.5 text-[#06c] flex-shrink-0" />
+                      <span className="text-[#424245]">Extract structured data from any CSR</span>
+                    </li>
+                    <li className="flex items-start gap-2 text-sm">
+                      <CheckCircle className="h-5 w-5 mt-0.5 text-[#06c] flex-shrink-0" />
+                      <span className="text-[#424245]">Compare across trials by any parameter</span>
+                    </li>
+                    <li className="flex items-start gap-2 text-sm">
+                      <CheckCircle className="h-5 w-5 mt-0.5 text-[#06c] flex-shrink-0" />
+                      <span className="text-[#424245]">Natural language search across trials</span>
+                    </li>
+                  </ul>
+                </div>
+                
+                <div className="flex items-center justify-between mt-auto pt-5 border-t border-[#e5e5e7]">
+                  <span className="flex items-center text-[#06c] text-sm font-medium group-hover:underline">
+                    View Details <ArrowRight className="ml-1 w-4 h-4" />
                   </span>
+                  <div className="bg-[#0071e3] text-white text-xs font-medium px-3 py-1.5 rounded-md">
+                    Launch
+                  </div>
                 </div>
               </div>
             </Link>
             
-            {/* Document Vault */}
+            {/* Document Vault - Premium Card */}
             <Link to="/versions" className="group">
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-[#e5e5e7] h-full flex flex-col hover:shadow-md transition-all hover:border-[#0071e3]">
-                <div className="flex items-center justify-center mb-4">
-                  <div className="p-3 bg-[#f5f5f7] rounded-full group-hover:bg-[#f0f7ff]">
-                    <Database className="h-7 w-7 text-[#06c]" />
-                  </div>
+              <div className="bg-white p-8 rounded-2xl shadow-md border border-[#e5e5e7] h-full flex flex-col hover:shadow-lg transition-all hover:border-[#0071e3] relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-[#f2f7ff] to-white rounded-bl-3xl"></div>
+                
+                <div className="w-16 h-16 flex items-center justify-center gradient-bg rounded-2xl shadow-sm mb-6 relative z-10">
+                  <Database className="h-8 w-8 text-white" />
                 </div>
-                <h3 className="text-center text-lg font-medium text-[#1d1d1f] mb-2 group-hover:text-[#06c]">
-                  Document Vault™
-                </h3>
-                <p className="text-center text-xs text-[#86868b] flex-grow">
-                  21 CFR Part 11 compliant storage with intelligent versioning
-                </p>
-                <div className="mt-4 flex justify-center">
-                  <span className="text-[#06c] text-xs font-medium group-hover:underline flex items-center">
-                    Learn more <ArrowRight className="ml-1 w-3 h-3" />
+                
+                <div className="flex-grow">
+                  <h3 className="text-xl font-semibold text-[#1d1d1f] mb-4 group-hover:text-[#06c] transition-colors"
+                      style={{ fontFamily: "SF Pro Display, -apple-system, BlinkMacSystemFont, sans-serif" }}>
+                    Document Vault™
+                  </h3>
+                  
+                  <p className="text-[#424245] mb-5">
+                    Secure, regulated document storage with intuitive version control and DocuShare integration.
+                  </p>
+                  
+                  <ul className="space-y-3 mb-8">
+                    <li className="flex items-start gap-2 text-sm">
+                      <CheckCircle className="h-5 w-5 mt-0.5 text-[#06c] flex-shrink-0" />
+                      <span className="text-[#424245]">21 CFR Part 11 compliant storage</span>
+                    </li>
+                    <li className="flex items-start gap-2 text-sm">
+                      <CheckCircle className="h-5 w-5 mt-0.5 text-[#06c] flex-shrink-0" />
+                      <span className="text-[#424245]">Versioning, approvals, and audit trails</span>
+                    </li>
+                    <li className="flex items-start gap-2 text-sm">
+                      <CheckCircle className="h-5 w-5 mt-0.5 text-[#06c] flex-shrink-0" />
+                      <span className="text-[#424245]">AI-powered document classification</span>
+                    </li>
+                  </ul>
+                </div>
+                
+                <div className="flex items-center justify-between mt-auto pt-5 border-t border-[#e5e5e7]">
+                  <span className="flex items-center text-[#06c] text-sm font-medium group-hover:underline">
+                    View Details <ArrowRight className="ml-1 w-4 h-4" />
                   </span>
-                </div>
-              </div>
-            </Link>
-            
-            {/* CER Generator */}
-            <Link to="/cer-generator" className="group">
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-[#e5e5e7] h-full flex flex-col hover:shadow-md transition-all hover:border-[#0071e3]">
-                <div className="flex items-center justify-center mb-4">
-                  <div className="p-3 bg-[#f5f5f7] rounded-full group-hover:bg-[#f0f7ff]">
-                    <Target className="h-7 w-7 text-[#06c]" />
+                  <div className="bg-[#0071e3] text-white text-xs font-medium px-3 py-1.5 rounded-md">
+                    Launch
                   </div>
-                </div>
-                <h3 className="text-center text-lg font-medium text-[#1d1d1f] mb-2 group-hover:text-[#06c]">
-                  CER Generator™
-                </h3>
-                <p className="text-center text-xs text-[#86868b] flex-grow">
-                  Clinical evaluation reports with intelligent data extraction
-                </p>
-                <div className="mt-4 flex justify-center">
-                  <span className="text-[#06c] text-xs font-medium group-hover:underline flex items-center">
-                    Learn more <ArrowRight className="ml-1 w-3 h-3" />
-                  </span>
-                </div>
-              </div>
-            </Link>
-            
-            {/* CMC Blueprint */}
-            <Link to="/cmc-blueprint-generator" className="group">
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-[#e5e5e7] h-full flex flex-col hover:shadow-md transition-all hover:border-[#0071e3]">
-                <div className="flex items-center justify-center mb-4">
-                  <div className="p-3 bg-[#f5f5f7] rounded-full group-hover:bg-[#f0f7ff]">
-                    <Beaker className="h-7 w-7 text-[#06c]" />
-                  </div>
-                </div>
-                <h3 className="text-center text-lg font-medium text-[#1d1d1f] mb-2 group-hover:text-[#06c]">
-                  CMC Blueprint™
-                </h3>
-                <p className="text-center text-xs text-[#86868b] flex-grow">
-                  Chemistry, manufacturing and controls AI assistant
-                </p>
-                <div className="mt-4 flex justify-center">
-                  <span className="text-[#06c] text-xs font-medium group-hover:underline flex items-center">
-                    Learn more <ArrowRight className="ml-1 w-3 h-3" />
-                  </span>
-                </div>
-              </div>
-            </Link>
-            
-            {/* Ask Lumen */}
-            <Link to="/chat" className="group">
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-[#e5e5e7] h-full flex flex-col hover:shadow-md transition-all hover:border-[#0071e3]">
-                <div className="flex items-center justify-center mb-4">
-                  <div className="p-3 bg-[#f5f5f7] rounded-full group-hover:bg-[#f0f7ff]">
-                    <Sparkles className="h-7 w-7 text-[#06c]" />
-                  </div>
-                </div>
-                <h3 className="text-center text-lg font-medium text-[#1d1d1f] mb-2 group-hover:text-[#06c]">
-                  Ask Lumen™
-                </h3>
-                <p className="text-center text-xs text-[#86868b] flex-grow">
-                  AI regulatory assistant with expert guidance in seconds
-                </p>
-                <div className="mt-4 flex justify-center">
-                  <span className="text-[#06c] text-xs font-medium group-hover:underline flex items-center">
-                    Learn more <ArrowRight className="ml-1 w-3 h-3" />
-                  </span>
                 </div>
               </div>
             </Link>
           </div>
           
-          <div className="flex flex-wrap justify-center gap-4 pt-4">
-            <Link to="/ind/wizard" 
-              className="bg-[#0071e3] hover:bg-[#0077ed] text-white px-6 py-3 rounded-lg text-lg font-medium transition-all flex items-center gap-2">
-              Launch IND Wizard <ArrowRight size={16}/>
-            </Link>
-            <Link to="/solutions" 
-              className="bg-white hover:bg-[#f5f5f7] text-[#0071e3] border border-[#d2d2d7] px-6 py-3 rounded-lg text-lg font-medium transition-all flex items-center gap-2">
-              View Full Platform
-            </Link>
+          <div className="flex justify-center mb-12">
+            <div className="relative">
+              <button className="inline-flex items-center px-6 py-3 bg-[#f5f5f7] hover:bg-[#e5e5e7] rounded-full text-[#1d1d1f] text-base font-medium transition-colors">
+                View All Modules <ArrowRight className="ml-2 w-5 h-5" />
+              </button>
+              
+              <div className="absolute left-0 right-0 top-full mt-4 grid grid-cols-3 gap-4 p-6 bg-white rounded-xl shadow-xl border border-[#e5e5e7] z-50 hidden group-hover:block">
+                {/* CER Generator */}
+                <Link to="/cer-generator" className="flex items-start p-3 hover:bg-[#f5f5f7] rounded-lg">
+                  <div className="p-2 bg-[#f5f5f7] rounded-lg mr-3">
+                    <Target className="h-5 w-5 text-[#06c]" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium text-[#1d1d1f]">CER Generator™</h4>
+                    <p className="text-xs text-[#86868b]">Automated clinical evaluation reports</p>
+                  </div>
+                </Link>
+                
+                {/* CMC Blueprint */}
+                <Link to="/cmc-blueprint-generator" className="flex items-start p-3 hover:bg-[#f5f5f7] rounded-lg">
+                  <div className="p-2 bg-[#f5f5f7] rounded-lg mr-3">
+                    <Beaker className="h-5 w-5 text-[#06c]" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium text-[#1d1d1f]">CMC Blueprint™</h4>
+                    <p className="text-xs text-[#86868b]">Chemistry & manufacturing controls</p>
+                  </div>
+                </Link>
+                
+                {/* Ask Lumen */}
+                <Link to="/chat" className="flex items-start p-3 hover:bg-[#f5f5f7] rounded-lg">
+                  <div className="p-2 bg-[#f5f5f7] rounded-lg mr-3">
+                    <Sparkles className="h-5 w-5 text-[#06c]" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium text-[#1d1d1f]">Ask Lumen™</h4>
+                    <p className="text-xs text-[#86868b]">AI regulatory assistant</p>
+                  </div>
+                </Link>
+              </div>
+            </div>
           </div>
+          
+          <div className="max-w-4xl mx-auto bg-[#f8f8fc] rounded-2xl p-8 md:p-10 border border-[#e5e5e7] shadow-sm">
+            <div className="flex flex-col md:flex-row items-center md:items-start justify-between md:space-x-8">
+              <div className="md:max-w-sm mb-8 md:mb-0">
+                <h3 className="text-2xl font-semibold text-[#1d1d1f] mb-4"
+                    style={{ fontFamily: "SF Pro Display, -apple-system, BlinkMacSystemFont, sans-serif" }}>
+                  Ready to transform your regulatory operations?
+                </h3>
+                <p className="text-[#424245] mb-6">
+                  Get started with a focused implementation or deploy the full platform.
+                  Our team will guide you through every step.
+                </p>
+                <div className="flex flex-wrap gap-4">
+                  <Link to="/ind/wizard" 
+                    className="bg-[#0071e3] hover:bg-[#0077ed] text-white px-5 py-2.5 rounded-xl text-base font-medium transition-all flex items-center gap-2">
+                    Launch IND Wizard <ArrowRight size={16}/>
+                  </Link>
+                  <Link to="/solutions" 
+                    className="bg-white hover:bg-[#f5f5f7] text-[#0071e3] border border-[#d2d2d7] px-5 py-2.5 rounded-xl text-base font-medium transition-all flex items-center gap-2">
+                    View Full Platform
+                  </Link>
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-xl p-6 shadow-sm border border-[#e5e5e7] md:min-w-[280px]">
+                <h4 className="text-lg font-medium text-[#1d1d1f] mb-4">Success Metrics</h4>
+                <div className="space-y-5">
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm text-[#424245]">IND Preparation Time</span>
+                      <span className="text-sm font-semibold text-[#06c]">-54%</span>
+                    </div>
+                    <div className="w-full h-2 bg-[#f5f5f7] rounded-full overflow-hidden">
+                      <div className="h-full bg-[#06c] rounded-full" style={{ width: "54%" }}></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm text-[#424245]">Protocol Amendments</span>
+                      <span className="text-sm font-semibold text-[#06c]">-61%</span>
+                    </div>
+                    <div className="w-full h-2 bg-[#f5f5f7] rounded-full overflow-hidden">
+                      <div className="h-full bg-[#06c] rounded-full" style={{ width: "61%" }}></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm text-[#424245]">First-pass Approval Rate</span>
+                      <span className="text-sm font-semibold text-[#06c]">97%</span>
+                    </div>
+                    <div className="w-full h-2 bg-[#f5f5f7] rounded-full overflow-hidden">
+                      <div className="h-full bg-[#06c] rounded-full" style={{ width: "97%" }}></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <style jsx>{`
+            .gradient-bg {
+              background: linear-gradient(135deg, #0071e3 0%, #2b8fff 100%);
+            }
+          `}</style>
           
           <div className="mt-12 flex items-center justify-center">
             <p className="text-sm text-[#86868b] mr-2">Trusted by leading biotechs and pharma companies</p>
