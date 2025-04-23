@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import withAuthGuard from '../utils/withAuthGuard';
 import axiosWithToken from '../utils/axiosWithToken';
 import { Link } from 'wouter';
-import { ExternalLink, History } from 'lucide-react';
+import { ExternalLink, History, FileText, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
+import Layout from '../components/Layout';
 
 const Module32Form = () => {
   const [formData, setFormData] = useState({
@@ -78,21 +79,22 @@ const Module32Form = () => {
   };
   
   return (
-    <div className="module32-form-container">
-      <div className="form-header">
-        <h1>Generate Module 3.2 Documentation</h1>
-        <p>Enter the drug substance and product details to generate a CMC document draft.</p>
-      </div>
+    <Layout>
+      <div className="module32-form-container py-12 px-6 max-w-5xl mx-auto">
+        <div className="form-header">
+          <h1 className="text-3xl font-bold text-blue-800 mb-4">Generate Module 3.2 Documentation</h1>
+          <p className="text-gray-600 mb-8">Enter the drug substance and product details to generate a CMC document draft.</p>
+        </div>
       
       {error && (
-        <div className="error-message">
-          <p>{error}</p>
+        <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
+          <p className="text-red-700">{error}</p>
         </div>
       )}
       
-      <form onSubmit={handleSubmit} className="module32-form">
-        <div className="form-group">
-          <label htmlFor="drug_name">Drug Name</label>
+      <form onSubmit={handleSubmit} className="bg-white shadow-md rounded-lg p-6 mb-8">
+        <div className="mb-4">
+          <label htmlFor="drug_name" className="block text-sm font-medium text-gray-700 mb-1">Drug Name</label>
           <input 
             type="text" 
             id="drug_name" 
@@ -101,11 +103,12 @@ const Module32Form = () => {
             onChange={handleChange}
             required
             placeholder="Enter drug name"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
         
-        <div className="form-group">
-          <label htmlFor="molecular_formula">Molecular Formula</label>
+        <div className="mb-4">
+          <label htmlFor="molecular_formula" className="block text-sm font-medium text-gray-700 mb-1">Molecular Formula</label>
           <input 
             type="text" 
             id="molecular_formula" 
@@ -114,6 +117,7 @@ const Module32Form = () => {
             onChange={handleChange}
             required
             placeholder="E.g., C21H23NO5"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
         
@@ -223,7 +227,8 @@ const Module32Form = () => {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </Layout>
   );
 };
 
