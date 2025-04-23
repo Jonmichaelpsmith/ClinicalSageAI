@@ -61,7 +61,7 @@ function VersionsPage() {
     <Layout>
       <VersionsTour />
       <div className="py-12 px-6 max-w-5xl mx-auto">
-        <h1 className="text-3xl font-bold text-blue-800 mb-8">Document Version History</h1>
+        <h1 id="version-header" className="text-3xl font-bold text-blue-800 mb-8">Document Version History</h1>
         {loading ? (
         <div className="flex justify-center items-center py-20 text-blue-600">
           <Loader2 className="animate-spin w-6 h-6 mr-2" /> Loading documents...
@@ -81,15 +81,24 @@ function VersionsPage() {
                     <p className="text-xs text-gray-500">Generated: {new Date(v.created_at).toLocaleString()}</p>
                   </div>
                   <div className="flex gap-4 items-center">
-                    <button onClick={() => setSelected(v)} className="text-blue-600 hover:underline flex items-center gap-1">
+                    <button 
+                      data-tour="view-version"
+                      onClick={() => setSelected(v)} 
+                      className="text-blue-600 hover:underline flex items-center gap-1"
+                    >
                       <Eye className="w-4 h-4" /> View
                     </button>
                     {index > 0 && (
-                      <button onClick={() => setCompare({ current: v, previous: versions[index - 1] })} className="text-blue-600 hover:underline flex items-center gap-1">
+                      <button 
+                        data-tour="compare-version"
+                        onClick={() => setCompare({ current: v, previous: versions[index - 1] })} 
+                        className="text-blue-600 hover:underline flex items-center gap-1"
+                      >
                         <Diff className="w-4 h-4" /> Compare
                       </button>
                     )}
                     <a 
+                      data-tour="download-txt"
                       href={`/${v.txt_path}`} 
                       download 
                       className="text-blue-600 hover:underline flex items-center gap-1"
@@ -120,6 +129,7 @@ function VersionsPage() {
                       <FileText className="w-4 h-4" /> TXT
                     </a>
                     <a 
+                      data-tour="download-pdf"
                       href={`/${v.pdf_path}`} 
                       download 
                       className="text-blue-600 hover:underline flex items-center gap-1"
