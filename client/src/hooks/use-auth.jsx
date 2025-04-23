@@ -85,8 +85,21 @@ export const AuthProvider = ({ children }) => {
   // Register function
   const register = async (userData) => {
     try {
-      const response = await api.post("/register", userData);
-      const { token, user } = response.data;
+      // Use the correct API endpoint with /api prefix
+      const response = await fetch('/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Registration failed');
+      }
+      
+      const data = await response.json();
+      const { token, user } = data;
       
       // Save token to localStorage
       localStorage.setItem("token", token);
