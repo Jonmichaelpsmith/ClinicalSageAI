@@ -8,7 +8,7 @@
 import { Gauge, ShieldCheck, UploadCloud, ChevronUp, ChevronDown, DollarSign } from "lucide-react";
 import clsx from "clsx";
 import { useState, useEffect } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "../utils/i18n-stub.js";
 import { Sparklines, SparklinesLine } from "react-sparklines";
 import { ResponsiveContainer, ComposedChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
 

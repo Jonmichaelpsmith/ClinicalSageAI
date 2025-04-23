@@ -1,0 +1,47 @@
+// frontend/pages/index.tsx
+import React from "react";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+
+export default function Home() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 text-gray-800">
+      <header className="bg-white shadow-md p-6 flex justify-between items-center">
+        <div className="flex items-center space-x-2">
+          <span className="text-3xl font-extrabold text-blue-700">TrialSage</span>
+          <span className="text-sm font-medium text-blue-400 uppercase tracking-wide">AI-CMC Suite</span>
+        </div>
+        <nav className="space-x-8">
+          <Link href="/module32" className="text-blue-700 font-semibold hover:underline">Generate</Link>
+          <Link href="/versions" className="text-blue-700 font-semibold hover:underline">Version History</Link>
+        </nav>
+      </header>
+
+      <main className="max-w-5xl mx-auto py-24 px-6 text-center">
+        <h1 className="text-5xl font-bold mb-6 text-blue-900">AI-Powered Chemistry, Manufacturing & Controls</h1>
+        <p className="text-lg text-gray-600 max-w-3xl mx-auto mb-10">
+          TrialSage™ transforms complex CMC authoring and regulatory strategy into an intuitive, intelligent,
+          and automated experience. Built for biotechs who move fast, scale smart, and file globally.
+        </p>
+
+        <div className="flex justify-center space-x-6">
+          <Link href="/module32">
+            <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-lg shadow-lg flex items-center space-x-2">
+              <span>Start Generating</span>
+              <ArrowRight className="w-5 h-5" />
+            </button>
+          </Link>
+          <Link href="/versions">
+            <button className="bg-white hover:bg-gray-100 border border-blue-300 text-blue-800 font-medium px-8 py-3 rounded-lg shadow">
+              View History
+            </button>
+          </Link>
+        </div>
+      </main>
+
+      <footer className="text-sm text-center text-gray-400 py-6">
+        &copy; {new Date().getFullYear()} TrialSage by Concept2Cures.AI — All rights reserved.
+      </footer>
+    </div>
+  );
+}

@@ -6,7 +6,7 @@
  */
 
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../utils/i18n-stub.js';
 import { Globe } from 'lucide-react';
 import clsx from 'clsx';
 
