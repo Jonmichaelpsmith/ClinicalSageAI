@@ -1,36 +1,39 @@
-import React, { useEffect, useState } from "react";
-import { Redirect } from "wouter";
+import React, { useEffect } from 'react';
+import { useLocation } from 'wouter';
+import { useAuth } from '../hooks/use-auth';
 
 /**
- * ProtectedRoute component for guarding routes that require authentication
- * Checks for token in localStorage and redirects to login if not present
+ * Protected Route Component
+ * 
+ * Ensures the user is authenticated before rendering children components.
+ * Redirects to the login page if not authenticated.
  */
 export const ProtectedRoute = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
+  const { isAuthenticated, loading } = useAuth();
+  const [location, setLocation] = useLocation();
+  
   useEffect(() => {
-    // Check for authentication token
-    const token = localStorage.getItem("token");
-    setIsAuthenticated(!!token);
-    setIsLoading(false);
-  }, []);
-
-  if (isLoading) {
+    // Only redirect after we've checked authentication status
+    if (!loading && !isAuthenticated) {
+      // Store the attempted URL for redirecting back after login
+      sessionStorage.setItem('redirectAfterLogin', location);
+      
+      // Redirect to login
+      setLocation('/auth');
+    }
+  }, [isAuthenticated, loading, location, setLocation]);
+  
+  // Show loading state while checking authentication
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-700"></div>
+        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
       </div>
     );
   }
-
-  // Redirect to login if not authenticated
-  if (!isAuthenticated) {
-    return <Redirect to="/auth" />;
-  }
-
-  // Render children if authenticated
-  return <>{children}</>;
+  
+  // Only render children if authenticated
+  return isAuthenticated ? children : null;
 };
 
 export default ProtectedRoute;

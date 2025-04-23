@@ -107,6 +107,10 @@ import { OnboardingProvider } from './contexts/OnboardingContext';
 const LazyNotFound = React.lazy(() => import('./pages/NotFound'));
 // Import Versions page
 const LazyVersions = React.lazy(() => import('./pages/versions'));
+// Import Subscribed Solutions page
+const LazySubscribedSolutions = React.lazy(() => import('./pages/SubscribedSolutions'));
+// Import Client Portal Dashboard
+const LazyClientPortal = React.lazy(() => import('./pages/ClientPortal'));
 // Team signup page with detailed profile and license management
 const LazyTeamSignup = React.lazy(() => import('./pages/TeamSignup'));
 // Case Studies page with authentic customer success stories
@@ -353,6 +357,13 @@ export default function App() {
               <Route path="/versions">
                 <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Document Versions" />}>
                   <LazyVersions />
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/account/subscribed-solutions">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Subscribed Solutions" />}>
+                  <ProtectedRoute>
+                    <LazySubscribedSolutions />
+                  </ProtectedRoute>
                 </SimpleErrorBoundary>
               </Route>
               <Route path="/admin-profile">
