@@ -259,7 +259,7 @@ export default function HomeMarketingPage() {
           
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
             {/* IND Wizard */}
-            <Link to="/ind-wizard" className="group">
+            <Link to="/ind/wizard" className="group">
               <div className="bg-white p-6 rounded-xl shadow-sm border border-[#e5e5e7] h-full flex flex-col hover:shadow-md transition-all hover:border-[#0071e3]">
                 <div className="flex items-center justify-center mb-4">
                   <div className="p-3 bg-[#f5f5f7] rounded-full group-hover:bg-[#f0f7ff]">
@@ -281,7 +281,7 @@ export default function HomeMarketingPage() {
             </Link>
             
             {/* CSR Intelligence */}
-            <Link to="/enterprise-csr-intelligence" className="group">
+            <Link to="/csr-intelligence" className="group">
               <div className="bg-white p-6 rounded-xl shadow-sm border border-[#e5e5e7] h-full flex flex-col hover:shadow-md transition-all hover:border-[#0071e3]">
                 <div className="flex items-center justify-center mb-4">
                   <div className="p-3 bg-[#f5f5f7] rounded-full group-hover:bg-[#f0f7ff]">
@@ -324,8 +324,8 @@ export default function HomeMarketingPage() {
               </div>
             </Link>
             
-            {/* Protocol Optimizer */}
-            <Link to="/protocol-optimization" className="group">
+            {/* CER Generator */}
+            <Link to="/cer-generator" className="group">
               <div className="bg-white p-6 rounded-xl shadow-sm border border-[#e5e5e7] h-full flex flex-col hover:shadow-md transition-all hover:border-[#0071e3]">
                 <div className="flex items-center justify-center mb-4">
                   <div className="p-3 bg-[#f5f5f7] rounded-full group-hover:bg-[#f0f7ff]">
@@ -333,10 +333,10 @@ export default function HomeMarketingPage() {
                   </div>
                 </div>
                 <h3 className="text-center text-lg font-medium text-[#1d1d1f] mb-2 group-hover:text-[#06c]">
-                  Protocol Optimizer™
+                  CER Generator™
                 </h3>
                 <p className="text-center text-xs text-[#86868b] flex-grow">
-                  Data-driven protocol design with 61% fewer amendments
+                  Clinical evaluation reports with intelligent data extraction
                 </p>
                 <div className="mt-4 flex justify-center">
                   <span className="text-[#06c] text-xs font-medium group-hover:underline flex items-center">
@@ -347,7 +347,7 @@ export default function HomeMarketingPage() {
             </Link>
             
             {/* CMC Blueprint */}
-            <Link to="/cmc-blueprint" className="group">
+            <Link to="/cmc-blueprint-generator" className="group">
               <div className="bg-white p-6 rounded-xl shadow-sm border border-[#e5e5e7] h-full flex flex-col hover:shadow-md transition-all hover:border-[#0071e3]">
                 <div className="flex items-center justify-center mb-4">
                   <div className="p-3 bg-[#f5f5f7] rounded-full group-hover:bg-[#f0f7ff]">
@@ -369,7 +369,7 @@ export default function HomeMarketingPage() {
             </Link>
             
             {/* Ask Lumen */}
-            <Link to="/ask-lumen" className="group">
+            <Link to="/chat" className="group">
               <div className="bg-white p-6 rounded-xl shadow-sm border border-[#e5e5e7] h-full flex flex-col hover:shadow-md transition-all hover:border-[#0071e3]">
                 <div className="flex items-center justify-center mb-4">
                   <div className="p-3 bg-[#f5f5f7] rounded-full group-hover:bg-[#f0f7ff]">
@@ -392,11 +392,11 @@ export default function HomeMarketingPage() {
           </div>
           
           <div className="flex flex-wrap justify-center gap-4 pt-4">
-            <Link to="/ind-wizard" 
+            <Link to="/ind/wizard" 
               className="bg-[#0071e3] hover:bg-[#0077ed] text-white px-6 py-3 rounded-lg text-lg font-medium transition-all flex items-center gap-2">
               Launch IND Wizard <ArrowRight size={16}/>
             </Link>
-            <Link to="/platform-overview" 
+            <Link to="/solutions" 
               className="bg-white hover:bg-[#f5f5f7] text-[#0071e3] border border-[#d2d2d7] px-6 py-3 rounded-lg text-lg font-medium transition-all flex items-center gap-2">
               View Full Platform
             </Link>
