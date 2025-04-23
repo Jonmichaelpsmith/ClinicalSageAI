@@ -3,49 +3,67 @@ import { setupRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { scheduleDataUpdates, findLatestDataFile, importTrialsFromJson } from "./data-importer";
 
-// Import the fastapi_bridge module
-import registerFastapiProxy from "./fastapi_bridge";
+// Try to load the fastapi_bridge module if available
+let registerFastapiProxy: any = () => {
+  console.warn("Using fallback FastAPI initialization (no-op)");
+};
+
+// Use dynamic import pattern for ES modules
+import('./fastapi_bridge.js').then(module => {
+  if (module && module.default) {
+    registerFastapiProxy = module.default;
+    console.log("FastAPI bridge module loaded successfully via dynamic import");
+  }
+}).catch(error => {
+  console.warn(`FastAPI bridge module could not be loaded: ${error instanceof Error ? error.message : String(error)}`);
+});
 
 // Initialize WebSocket services with graceful degradation
 let initWs: (server: any) => any;
 
-// Try to dynamically load WebSocket module with graceful error handling
+// Set default no-op function for WebSocket initialization
+initWs = (server) => {
+  console.warn("Using fallback WebSocket initialization (no-op)");
+  return null;
+};
+
+// Try to dynamically load WebSocket module
 try {
-  // @ts-ignore - using dynamic import for resilience
-  const wsModule = require("./ws.js");
-  if (wsModule && typeof wsModule.initWs === 'function') {
-    initWs = wsModule.initWs;
-    console.log("WebSocket module loaded successfully");
-  } else {
-    throw new Error("WebSocket module found but initWs function is missing");
-  }
+  import('./ws.js').then(module => {
+    if (module && typeof module.initWs === 'function') {
+      initWs = module.initWs;
+      console.log("WebSocket module loaded successfully via dynamic import");
+    }
+  }).catch(err => {
+    console.warn(`WebSocket module could not be loaded: ${err}`);
+  });
 } catch (error) {
   console.warn(`WebSocket module could not be loaded: ${error instanceof Error ? error.message : String(error)}`);
-  // Provide a no-op fallback function
-  initWs = (server) => {
-    console.warn("Using fallback WebSocket initialization (no-op)");
-    return null;
-  };
 }
 
 // Import v11.1 services - handle import errors gracefully
-// @ts-ignore - using dynamic imports for resilience
-let voiceCopilotService: any, regIntelService: any;
-try {
-  // @ts-ignore - using dynamic import
-  voiceCopilotService = require("./services/voiceCopilot.js");
-} catch (error: unknown) {
-  const errorMessage = error instanceof Error ? error.message : String(error);
-  console.warn("Voice Copilot service not available:", errorMessage);
-}
+// Using optional services with default no-ops
+let voiceCopilotService: any = { 
+  initVoiceServer: null 
+};
+let regIntelService: any = null;
 
-try {
-  // @ts-ignore - using dynamic import
-  regIntelService = require("./services/regIntel.js");
-} catch (error: unknown) {
-  const errorMessage = error instanceof Error ? error.message : String(error);
-  console.warn("RegIntel service not available:", errorMessage);
-}
+// Try dynamic imports for v11 services
+Promise.all([
+  import('./services/voiceCopilot.js').catch(() => null),
+  import('./services/regIntel.js').catch(() => null)
+]).then(([voiceModule, regIntelModule]) => {
+  if (voiceModule) {
+    voiceCopilotService = voiceModule;
+    console.log("Voice Copilot service loaded successfully");
+  }
+  if (regIntelModule) {
+    regIntelService = regIntelModule;
+    console.log("RegIntel service loaded successfully");
+  }
+}).catch(error => {
+  console.warn("Error loading v11 services:", error);
+});
 
 // Import AI backfill functionality for nightly scheduled re-embedding
 // Temporarily commented out due to dependency issues

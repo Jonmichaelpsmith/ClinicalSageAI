@@ -1,16 +1,13 @@
 /**
- * RegIntel Validation API 
+ * RegIntel Validation API Module
  * 
- * This module provides document validation services directly in the Express application
- * instead of using a separate FastAPI service. This improves stability and simplifies
- * the architecture.
+ * This module provides document validation services within the Express application.
  */
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
-const { authenticateToken } = require('../../auth');
 
 // Create router
 const router = express.Router();
@@ -60,16 +57,15 @@ const VALIDATION_ENGINES = {
 };
 
 // Get validation engines
-router.get('/engines', authenticateToken, (req, res) => {
+router.get('/engines', (req, res) => {
   res.json(Object.values(VALIDATION_ENGINES));
 });
 
 // Validate a file
-router.post('/file', authenticateToken, upload.single('file'), (req, res) => {
+router.post('/file', upload.single('file'), (req, res) => {
   try {
     const { file } = req;
     const engineId = req.body.engine_id;
-    const userId = req.user.id;
     const validationId = req.validationId;
 
     // Validate engine exists
@@ -124,7 +120,7 @@ router.post('/file', authenticateToken, upload.single('file'), (req, res) => {
 });
 
 // Get validation status
-router.get('/status/:validationId', authenticateToken, (req, res) => {
+router.get('/status/:validationId', (req, res) => {
   try {
     const { validationId } = req.params;
     const logsDir = path.join(__dirname, '../../../validation_logs');
@@ -200,7 +196,7 @@ router.get('/status/:validationId', authenticateToken, (req, res) => {
 });
 
 // Explain a validation rule
-router.post('/explain', authenticateToken, express.json(), (req, res) => {
+router.post('/explain', express.json(), (req, res) => {
   try {
     const { ruleId } = req.body;
 
@@ -281,7 +277,7 @@ router.post('/explain', authenticateToken, express.json(), (req, res) => {
 });
 
 // Suggest a fix for a validation issue
-router.post('/suggest-fix', authenticateToken, express.json(), (req, res) => {
+router.post('/suggest-fix', express.json(), (req, res) => {
   try {
     const { validationId, ruleId } = req.body;
 
