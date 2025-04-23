@@ -1,0 +1,80 @@
+// frontend/components/Module32Form.tsx
+import React, { useState } from "react"
+import axiosWithToken from "../utils/axiosWithToken"
+import { toast } from "react-hot-toast"
+import Layout from "./Layout"
+
+export default function Module32Form() {
+  const [formData, setFormData] = useState({
+    drug_name: "",
+    molecular_formula: "",
+    synthesis_steps: "",
+    formulation_details: "",
+    manufacturing_controls: "",
+    analytical_methods: ""
+  })
+
+  const [response, setResponse] = useState<any>(null)
+  const [loading, setLoading] = useState(false)
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value })
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    toast.dismiss()
+    const loadingToast = toast.loading("Generating Module 3.2 draft...")
+    try {
+      const res = await axiosWithToken.post("/api/generate/module32", formData)
+      setResponse(res.data)
+      toast.success("Draft generated successfully", { id: loadingToast })
+    } catch (err) {
+      toast.error("Error generating document", { id: loadingToast })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <Layout>
+      <div className="min-h-screen bg-white py-12 px-6 max-w-5xl mx-auto">
+        <h1 className="text-3xl font-bold text-blue-800 mb-8">Generate ICH Module 3.2</h1>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {Object.entries(formData).map(([key, val]) => (
+            <div key={key}>
+              <label className="block font-medium mb-1 capitalize">{key.replace("_", " ")}</label>
+              <textarea
+                name={key}
+                value={val}
+                onChange={handleChange}
+                required
+                className="w-full border p-2 rounded shadow"
+                rows={key === "synthesis_steps" ? 5 : 3}
+              />
+            </div>
+          ))}
+          <button
+            type="submit"
+            disabled={loading}
+            className="bg-blue-600 text-white px-6 py-2 rounded shadow hover:bg-blue-700"
+          >
+            {loading ? "Submitting..." : "Generate CMC Draft"}
+          </button>
+        </form>
+
+        {response && (
+          <div className="mt-6 bg-white p-4 border rounded shadow">
+            <h2 className="text-xl font-semibold mb-2">Generated Module 3.2 Draft</h2>
+            <pre className="whitespace-pre-wrap text-sm text-gray-800">{response.module32_draft}</pre>
+            <div className="mt-4 space-x-4">
+              <a href={`/${response.export_paths.txt}`} download className="text-blue-600 underline" onClick={() => toast("TXT downloaded")}>Download TXT</a>
+              <a href={`/${response.export_paths.pdf}`} download className="text-blue-600 underline" onClick={() => toast("PDF downloaded")}>Download PDF</a>
+            </div>
+          </div>
+        )}
+      </div>
+    </Layout>
+  )
+}
