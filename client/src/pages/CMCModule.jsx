@@ -108,6 +108,9 @@ import {
   simulateOpenAIResponse
 } from '../services/openaiService';
 
+// Import authentication guard
+import withAuthGuard from '../utils/withAuthGuard';
+
 // Status badge component with hover details
 const StatusBadge = ({ status, text, details }) => {
   const getStatusColor = () => {
