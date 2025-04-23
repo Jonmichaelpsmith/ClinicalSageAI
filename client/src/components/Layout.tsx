@@ -107,234 +107,240 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      {/* Toast notifications handled by the app-level toast container */}
-
-      {/* Top Navigation Bar */}
-      <header className="bg-slate-800 text-white border-b border-slate-700 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex-shrink-0 flex items-center">
+      {/* Single Apple-style navigation bar with backdrop blur */}
+      <header className="bg-slate-900/95 backdrop-blur-md sticky top-0 z-50 border-b border-slate-800/80">
+        <div className="mx-auto px-4">
+          <div className="flex items-center justify-between h-14">
+            {/* Logo and brand */}
+            <div className="flex items-center">
               <Link href="/">
                 <div className="flex items-center cursor-pointer">
-                  <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg p-1.5 mr-2">
-                    <div className="w-6 h-6 flex items-center justify-center text-white font-bold text-sm">C2C</div>
+                  <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-md p-1 mr-2">
+                    <div className="w-5 h-5 flex items-center justify-center text-white font-bold text-xs">C2C</div>
                   </div>
                   <div>
-                    <span className="text-xl font-semibold text-white">TrialSage</span>
+                    <span className="text-base font-medium text-white">TrialSage</span>
                     <span className="text-blue-400">™</span>
-                    <span className="ml-1 text-sm text-slate-400">by C2C.AI</span>
+                    <span className="ml-1 text-xs text-slate-400">by C2C.AI</span>
                   </div>
                 </div>
               </Link>
             </div>
             
-            <div className="flex items-center space-x-4">
+            {/* Center navigation - Apple style */}
+            <nav className="hidden md:flex items-center space-x-8">
+              {/* Primary navigation */}
+              <div className="relative" ref={modulesMenuRef}>
+                <button
+                  onClick={() => setModulesMenuOpen(!modulesMenuOpen)}
+                  className="flex items-center space-x-1 text-xs font-medium text-slate-300 hover:text-white transition-colors px-3 py-1"
+                >
+                  <span>Modules</span>
+                  <ChevronDown className={`h-3 w-3 text-slate-400 ${modulesMenuOpen ? 'transform rotate-180' : ''}`} />
+                </button>
+                
+                {modulesMenuOpen && (
+                  <div className="absolute left-0 mt-1 w-56 rounded-lg overflow-hidden shadow-lg bg-slate-800/95 backdrop-blur-sm z-50 border border-slate-700/50">
+                    <div className="py-1">
+                      <NavLink 
+                        to="/ind-wizard" 
+                        onClick={closeMenus}
+                        className={`flex items-center px-4 py-1.5 text-xs cursor-pointer ${location === '/ind-wizard' ? 'bg-slate-700/50 text-white' : 'text-slate-300 hover:bg-slate-700/30 hover:text-white'}`}
+                      >
+                        <FileText className="mr-2 h-3 w-3" />
+                        IND Wizard
+                      </NavLink>
+                      
+                      <NavLink 
+                        to="/csr-library" 
+                        onClick={closeMenus}
+                        className={`flex items-center px-4 py-1.5 text-xs cursor-pointer ${location === '/csr-library' ? 'bg-slate-700/50 text-white' : 'text-slate-300 hover:bg-slate-700/30 hover:text-white'}`}
+                      >
+                        <FileText className="mr-2 h-3 w-3" />
+                        CSR Deep Intelligence
+                      </NavLink>
+                      
+                      <NavLink 
+                        to="/protocol-optimization" 
+                        onClick={closeMenus}
+                        className={`flex items-center px-4 py-1.5 text-xs cursor-pointer ${location === '/protocol-optimization' ? 'bg-slate-700/50 text-white' : 'text-slate-300 hover:bg-slate-700/30 hover:text-white'}`}
+                      >
+                        <FileText className="mr-2 h-3 w-3" />
+                        Protocol Optimization
+                      </NavLink>
+                      
+                      <NavLink 
+                        to="/study-design" 
+                        onClick={closeMenus}
+                        className={`flex items-center px-4 py-1.5 text-xs cursor-pointer ${location === '/study-design' ? 'bg-slate-700/50 text-white' : 'text-slate-300 hover:bg-slate-700/30 hover:text-white'}`}
+                      >
+                        <FileText className="mr-2 h-3 w-3" />
+                        Study Design Genie
+                      </NavLink>
+                      
+                      <NavLink 
+                        to="/cer-generator" 
+                        onClick={closeMenus}
+                        className={`flex items-center px-4 py-1.5 text-xs cursor-pointer ${location === '/cer-generator' ? 'bg-slate-700/50 text-white' : 'text-slate-300 hover:bg-slate-700/30 hover:text-white'}`}
+                      >
+                        <FileText className="mr-2 h-3 w-3" />
+                        CER Generator
+                      </NavLink>
+                      
+                      <NavLink 
+                        to="/cmc-module" 
+                        onClick={closeMenus}
+                        className={`flex items-center px-4 py-1.5 text-xs cursor-pointer ${location === '/cmc-module' ? 'bg-slate-700/50 text-white' : 'text-slate-300 hover:bg-slate-700/30 hover:text-white'}`}
+                      >
+                        <FileText className="mr-2 h-3 w-3" />
+                        CMC Insights
+                      </NavLink>
+                      
+                      <NavLink 
+                        to="/document-vault" 
+                        onClick={closeMenus}
+                        className={`flex items-center px-4 py-1.5 text-xs cursor-pointer ${location === '/document-vault' ? 'bg-slate-700/50 text-white' : 'text-slate-300 hover:bg-slate-700/30 hover:text-white'}`}
+                      >
+                        <Database className="mr-2 h-3 w-3" />
+                        TrialSage DM Vault
+                      </NavLink>
+                      
+                      <NavLink 
+                        to="/ai-cmc-blueprint" 
+                        onClick={closeMenus}
+                        className={`flex items-center px-4 py-1.5 text-xs cursor-pointer ${location === '/ai-cmc-blueprint' ? 'bg-slate-700/50 text-white' : 'text-slate-300 hover:bg-slate-700/30 hover:text-white'}`}
+                      >
+                        <FileText className="mr-2 h-3 w-3" />
+                        AI-CMC Blueprint
+                      </NavLink>
+                      
+                      <div className="border-t border-slate-700/50 my-1"></div>
+                      
+                      <NavLink 
+                        to="/versions" 
+                        onClick={closeMenus}
+                        className={`flex items-center px-4 py-1.5 text-xs cursor-pointer ${location === '/versions' ? 'bg-slate-700/50 text-white' : 'text-slate-300 hover:bg-slate-700/30 hover:text-white'}`}
+                      >
+                        <FileText className="mr-2 h-3 w-3" />
+                        Document Versions
+                      </NavLink>
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              <NavLink 
+                to="/ind-wizard"
+                onClick={closeMenus}
+                className={`px-2 py-1 text-xs font-medium cursor-pointer transition-colors ${
+                  location === '/ind-wizard' ? 'text-white' : 'text-slate-300 hover:text-white'
+                }`}
+              >
+                IND
+              </NavLink>
+              
+              <NavLink 
+                to="/csr-library"
+                onClick={closeMenus}
+                className={`px-2 py-1 text-xs font-medium cursor-pointer transition-colors ${
+                  location === '/csr-library' ? 'text-white' : 'text-slate-300 hover:text-white'
+                }`}
+              >
+                CSR
+              </NavLink>
+              
+              <NavLink 
+                to="/cer-generator"
+                onClick={closeMenus}
+                className={`px-2 py-1 text-xs font-medium cursor-pointer transition-colors ${
+                  location === '/cer-generator' ? 'text-white' : 'text-slate-300 hover:text-white'
+                }`}
+              >
+                CER
+              </NavLink>
+              
+              <NavLink 
+                to="/cmc-module"
+                onClick={closeMenus}
+                className={`px-2 py-1 text-xs font-medium cursor-pointer transition-colors ${
+                  location === '/cmc-module' ? 'text-white' : 'text-slate-300 hover:text-white'
+                }`}
+              >
+                CMC
+              </NavLink>
+
+              <NavLink 
+                to="/document-vault"
+                onClick={closeMenus}
+                className={`px-2 py-1 text-xs font-medium cursor-pointer transition-colors ${
+                  location === '/document-vault' ? 'text-white' : 'text-slate-300 hover:text-white'
+                }`}
+              >
+                DM Vault
+              </NavLink>
+
+              <NavLink 
+                to="/versions"
+                onClick={closeMenus}
+                className={`px-2 py-1 text-xs font-medium cursor-pointer transition-colors ${
+                  location === '/versions' ? 'text-white font-bold' : 'text-slate-300 hover:text-white'
+                }`}
+              >
+                Vault View
+              </NavLink>
+            </nav>
+            
+            {/* Right side items */}
+            <div className="flex items-center space-x-3">
               {/* Mobile menu button */}
               <div className="md:hidden">
                 <button
                   onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                  className="inline-flex items-center justify-center p-2 rounded-md text-slate-300 hover:text-white hover:bg-slate-700 focus:outline-none"
+                  className="inline-flex items-center justify-center p-1 text-slate-300 hover:text-white"
                 >
-                  {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+                  {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
                 </button>
-              </div>
-              
-              {/* Desktop navigation */}
-              <div className="hidden md:flex items-center space-x-4">
-                {/* Modules dropdown */}
-                <div className="relative" ref={modulesMenuRef}>
-                  <button
-                    onClick={() => setModulesMenuOpen(!modulesMenuOpen)}
-                    className="flex items-center space-x-1 text-sm font-medium text-slate-300 hover:text-white transition duration-150 px-3 py-2"
-                  >
-                    <span>Modules</span>
-                    <ChevronDown className={`h-4 w-4 text-slate-400 ${modulesMenuOpen ? 'transform rotate-180' : ''}`} />
-                  </button>
-                  
-                  {modulesMenuOpen && (
-                    <div className="absolute left-0 mt-2 w-64 rounded-md shadow-lg bg-slate-800 ring-1 ring-slate-700 ring-opacity-5 z-50">
-                      <div className="py-1">
-                        <NavLink 
-                          to="/ind-wizard" 
-                          onClick={closeMenus}
-                          className={`flex items-center px-4 py-2 text-sm cursor-pointer ${location === '/ind-wizard' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
-                        >
-                          <FileText className="mr-2 h-4 w-4" />
-                          IND Wizard
-                        </NavLink>
-                        
-                        <NavLink 
-                          to="/csr-library" 
-                          onClick={closeMenus}
-                          className={`flex items-center px-4 py-2 text-sm cursor-pointer ${location === '/csr-library' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
-                        >
-                          <FileText className="mr-2 h-4 w-4" />
-                          CSR Deep Intelligence
-                        </NavLink>
-                        
-                        <NavLink 
-                          to="/protocol-optimization" 
-                          onClick={closeMenus}
-                          className={`flex items-center px-4 py-2 text-sm cursor-pointer ${location === '/protocol-optimization' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
-                        >
-                          <FileText className="mr-2 h-4 w-4" />
-                          Protocol Optimization & Design
-                        </NavLink>
-                        
-                        <NavLink 
-                          to="/study-design" 
-                          onClick={closeMenus}
-                          className={`flex items-center px-4 py-2 text-sm cursor-pointer ${location === '/study-design' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
-                        >
-                          <FileText className="mr-2 h-4 w-4" />
-                          Study Design Genie
-                        </NavLink>
-                        
-                        <NavLink 
-                          to="/cer-generator" 
-                          onClick={closeMenus}
-                          className={`flex items-center px-4 py-2 text-sm cursor-pointer ${location === '/cer-generator' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
-                        >
-                          <FileText className="mr-2 h-4 w-4" />
-                          CER Generator
-                        </NavLink>
-                        
-                        <NavLink 
-                          to="/cmc-module" 
-                          onClick={closeMenus}
-                          className={`flex items-center px-4 py-2 text-sm cursor-pointer ${location === '/cmc-module' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
-                        >
-                          <FileText className="mr-2 h-4 w-4" />
-                          CMC Insights
-                        </NavLink>
-                        
-                        <NavLink 
-                          to="/document-vault" 
-                          onClick={closeMenus}
-                          className={`flex items-center px-4 py-2 text-sm cursor-pointer ${location === '/document-vault' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
-                        >
-                          <Database className="mr-2 h-4 w-4" />
-                          TrialSage DM Vault
-                        </NavLink>
-                        
-                        <NavLink 
-                          to="/ai-cmc-blueprint" 
-                          onClick={closeMenus}
-                          className={`flex items-center px-4 py-2 text-sm cursor-pointer ${location === '/ai-cmc-blueprint' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
-                        >
-                          <FileText className="mr-2 h-4 w-4" />
-                          AI-CMC Blueprint
-                        </NavLink>
-                        
-                        <div className="border-t border-slate-600 my-1"></div>
-                        
-                        <NavLink 
-                          to="/versions" 
-                          onClick={closeMenus}
-                          className={`flex items-center px-4 py-2 text-sm cursor-pointer ${location === '/versions' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
-                        >
-                          <FileText className="mr-2 h-4 w-4" />
-                          Document Versions
-                        </NavLink>
-                      </div>
-                    </div>
-                  )}
-                </div>
-                
-                {/* Quick access nav links */}
-                <NavLink 
-                  to="/ind-wizard"
-                  onClick={closeMenus}
-                  className={`inline-flex items-center px-3 py-2 text-sm font-medium cursor-pointer ${
-                    location === '/ind-wizard' ? 'text-white border-b-2 border-blue-400' : 'text-slate-300 hover:text-white'
-                  }`}
-                >
-                  IND
-                </NavLink>
-                
-                <NavLink 
-                  to="/csr-library"
-                  onClick={closeMenus}
-                  className={`inline-flex items-center px-3 py-2 text-sm font-medium cursor-pointer ${
-                    location === '/csr-library' ? 'text-white border-b-2 border-blue-400' : 'text-slate-300 hover:text-white'
-                  }`}
-                >
-                  CSR
-                </NavLink>
-                
-                <NavLink 
-                  to="/cer-generator"
-                  onClick={closeMenus}
-                  className={`inline-flex items-center px-3 py-2 text-sm font-medium cursor-pointer ${
-                    location === '/cer-generator' ? 'text-white border-b-2 border-blue-400' : 'text-slate-300 hover:text-white'
-                  }`}
-                >
-                  CER
-                </NavLink>
-                
-                <NavLink 
-                  to="/cmc-module"
-                  onClick={closeMenus}
-                  className={`inline-flex items-center px-3 py-2 text-sm font-medium cursor-pointer ${
-                    location === '/cmc-module' ? 'text-white border-b-2 border-blue-400' : 'text-slate-300 hover:text-white'
-                  }`}
-                >
-                  CMC
-                </NavLink>
-
-                <NavLink 
-                  to="/document-vault"
-                  onClick={closeMenus}
-                  className={`inline-flex items-center px-3 py-2 text-sm font-medium cursor-pointer ${
-                    location === '/document-vault' ? 'text-white border-b-2 border-blue-400' : 'text-slate-300 hover:text-white'
-                  }`}
-                >
-                  DM Vault
-                </NavLink>
               </div>
               
               <NavLink 
                 to="/ask-lumen"
                 onClick={closeMenus}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-md px-4 py-2 text-sm font-medium cursor-pointer flex items-center"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full px-3 py-1 text-xs font-medium transition-colors"
               >
                 Ask Lumen
               </NavLink>
               
-              {/* User Menu */}
+              {/* User Menu - minimal style */}
               <div className="relative" ref={userMenuRef}>
                 <button
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center text-sm font-medium text-white rounded-full hover:bg-slate-700 focus:outline-none p-2 transition duration-150 ease-in-out"
+                  className="flex items-center text-white hover:bg-slate-800 rounded-full p-1"
                 >
-                  <div className="flex items-center justify-center h-8 w-8 rounded-full bg-slate-700 text-white">
-                    <User className="h-4 w-4" />
-                  </div>
-                  <ChevronDown className={`ml-1 h-4 w-4 text-slate-400 ${userMenuOpen ? 'transform rotate-180' : ''}`} />
+                  <User className="h-4 w-4" />
                 </button>
                 
                 {userMenuOpen && (
-                  <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-slate-800 ring-1 ring-slate-700 ring-opacity-5 z-50">
+                  <div className="absolute right-0 mt-1 w-48 rounded-lg overflow-hidden shadow-lg bg-slate-800/95 backdrop-blur-sm z-50 border border-slate-700/50">
                     <div className="py-1">
-                      <div className="block px-4 py-2 text-sm text-slate-300 border-b border-slate-700">
+                      <div className="block px-4 py-2 text-xs text-slate-300 border-b border-slate-700/50">
                         Signed in as <span className="font-bold text-white">{userInfo.name}</span>
                       </div>
                       
-                      <a href="#settings" className="flex items-center px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white">
-                        <Settings className="mr-2 h-4 w-4" />
+                      <a href="#settings" className="flex items-center px-4 py-2 text-xs text-slate-300 hover:bg-slate-700/50 hover:text-white">
+                        <Settings className="mr-2 h-3 w-3" />
                         Settings
                       </a>
                       
-                      <a href="#security" className="flex items-center px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white">
-                        <Shield className="mr-2 h-4 w-4" />
+                      <a href="#security" className="flex items-center px-4 py-2 text-xs text-slate-300 hover:bg-slate-700/50 hover:text-white">
+                        <Shield className="mr-2 h-3 w-3" />
                         Security
                       </a>
                       
                       <button
                         onClick={handleLogout}
-                        className="w-full text-left flex items-center px-4 py-2 text-sm text-red-400 hover:bg-slate-700 hover:text-red-300"
+                        className="w-full text-left flex items-center px-4 py-2 text-xs text-red-400 hover:bg-slate-700/50"
                       >
-                        <LogOut className="mr-2 h-4 w-4" />
+                        <LogOut className="mr-2 h-3 w-3" />
                         Sign out
                       </button>
                     </div>

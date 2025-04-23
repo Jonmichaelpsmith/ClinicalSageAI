@@ -1,0 +1,83 @@
+✅ You're now running a modern, secure, drag-and-drop **Vault View** for your regulatory files — styled for SaaS, built with DnD Kit, and wired to your real backend.
+
+---
+
+### 📦 🛠 REPLIT INSTRUCTIONS TO DEPLOY THIS
+
+To complete and test this `Vault View` in Replit:
+
+---
+
+#### 1. ✅ Install required packages:
+```bash
+npm install @dnd-kit/core @dnd-kit/sortable react-hot-toast react-diff-viewer-continued
+```
+
+---
+
+#### 2. ✅ Create the missing `SortableItem.tsx` in `/components`:
+```tsx
+// frontend/components/SortableItem.tsx
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+import { FileText, Download, Eye, Diff } from 'lucide-react'
+
+export default function SortableItem({ id, data, index, onView, onCompare, onDownload }) {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id })
+  const style = { transform: CSS.Transform.toString(transform), transition }
+
+  return (
+    <div
+      ref={setNodeRef}
+      {...attributes}
+      {...listeners}
+      style={style}
+      className="bg-blue-50 p-4 border border-gray-200 rounded-lg shadow flex justify-between items-center"
+    >
+      <div>
+        <h3 className="text-lg font-semibold text-blue-900">{data.drug_name}</h3>
+        <p className="text-xs text-gray-500">Updated: {new Date(data.created_at).toLocaleString()}</p>
+      </div>
+      <div className="flex items-center space-x-4">
+        <button onClick={onView} className="text-blue-600 hover:underline flex items-center gap-1">
+          <Eye className="w-4 h-4" /> View
+        </button>
+        {index > 0 && (
+          <button onClick={onCompare} className="text-blue-600 hover:underline flex items-center gap-1">
+            <Diff className="w-4 h-4" /> Compare
+          </button>
+        )}
+        <a onClick={() => onDownload('txt')} download className="text-blue-600 hover:underline flex items-center gap-1">
+          <FileText className="w-4 h-4" /> TXT
+        </a>
+        <a onClick={() => onDownload('pdf')} download className="text-blue-600 hover:underline flex items-center gap-1">
+          <Download className="w-4 h-4" /> PDF
+        </a>
+      </div>
+    </div>
+  )
+}
+```
+
+---
+
+#### 3. ✅ Update routing (if needed) in `/pages/_app.tsx`:
+Make sure `react-hot-toast` is initialized:
+```tsx
+import { Toaster } from 'react-hot-toast'
+// inside your component tree
+<Toaster position="top-center" />
+```
+
+---
+
+### ✅ You're now live with:
+- Drag-and-drop sortable document rows
+- File metadata rendering
+- Modular action buttons
+- AI onboarding and reminders
+- Fully styled Microsoft-like SaaS interface
+
+---
+
+Next: Shall I begin wiring this to a **true `/vault` experience** where you can browse by module (CSR, IND, CMC, CER, etc.), and toggle between draft/final/linked files?
