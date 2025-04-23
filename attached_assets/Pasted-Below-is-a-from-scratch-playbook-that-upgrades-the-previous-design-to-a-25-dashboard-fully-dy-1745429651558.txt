@@ -1,0 +1,203 @@
+Below is a **from-scratch playbook** that upgrades the previous design to a **25-dashboard, fully dynamic, AI-augmented analytics layer** for TrialSage.AI.  It is broken into the same nine sections—but every piece has been expanded, hardened, or automated for scale.
+
+---
+
+## 0  │ Updated architecture - “BI Mesh”
+
+```
+Metabase OSS  ──┐
+                ├─ 25 materialised-view feeds (Postgres)
+TrialSage API ──┤  - auto-refreshed by pg_cron
+                └─ OpenAI Copilot micro-service (per dashboard)
+```
+
+*Key change:* each dashboard now pulls from its **own materialised view** (rather than shared views) so refresh latency stays <2 s even as you add tenants.
+
+---
+
+## 1  │ Metabase deployment (unchanged JAR but with autoscaler)
+
+*Steps identical to the prior guide.*  
+**Addition:** set Replit’s “Autoscale” slider to *min 1 – max 3* instances so Metabase can burst under demo traffic.
+
+---
+
+## 2  │ Postgres analytics schema — 25 MVs
+
+Add **19 new views** (total 25).  Example snippet ↓
+
+```sql
+-- 09_protocol_deviation_freq.sql
+create materialized view analytics.protocol_deviation_freq as
+select
+  study_id,
+  count(*) filter (where deviation_severity='critical')        as crit_dev,
+  count(*)                                                     as all_dev,
+  (count(*) filter (where deviation_severity='critical'))::float /
+  nullif(count(*),0) * 100                                     as crit_pct
+from protocol_deviations
+group by study_id;
+
+-- 17_ai_writer_hallucination_rate.sql  (benchmarks vs CoAuthor’s RAG claim) citeturn0file1
+create materialized view analytics.ai_writer_hallucination_rate as
+select
+  doc_id,
+  sum(is_hallucination::int)::float / count(*)*100 as halluc_pct
+from ai_writer_qc
+group by doc_id;
+```
+
+`pg_cron` rules:
+
+```sql
+select cron.schedule('*/5 * * * *', $$refresh materialized view concurrently analytics.protocol_deviation_freq$$);
+```
+
+---
+
+## 3  │ Metabase auto-seeder v2 — 25 dashboards + smart “insight hooks”
+
+**dashSpec.json** now defines 25 objects, each with:
+
+```jsonc
+{
+  "name": "Protocol Deviation Monitor",
+  "desc": "Critical vs non-critical deviations — drillable to subject level.",
+  "sourceView": "analytics.protocol_deviation_freq",
+  "cards": [
+    { "name":"Critical %", "dataset_query":{ /* auto-generated */ }, "visualization_settings":{ "chart_type":"progress" } },
+    { "name":"Deviations over time", /* … */ },
+    { "name":"Top offending sites",   /* … */ }
+  ],
+  "copilotPrompt": "Summarise deviation hotspots and suggest CAPA."
+}
+```
+
+### Seeding script additions
+
+* Generates the **dataset_query JSON** automatically from `sourceView`’s column list.  
+* Stores `dash_id → copilotPrompt` in table `analytics.dashboard_prompts` so the OpenAI endpoint can fetch the right prompt per dashboard.
+
+Run:
+
+```bash
+node scripts/metabaseSeed.js  --create-views   # one-time
+node scripts/metabaseSeed.js  --sync           # each deploy
+```
+
+---
+
+## 4  │ TrialSage API upgrades
+
+```js
+// new helper: pulls prompt from DB
+const promptFor = async dashId =>
+  (await db.one("select prompt from analytics.dashboard_prompts where dash_id=$1", [dashId])).prompt;
+
+router.get("/insight/:dashId", async(req,res)=>{
+  const kpis = await db.any("select * from analytics.kpi_json($1)", [req.params.dashId]);
+  const prompt = `${await promptFor(req.params.dashId)}\nDATA:\n${JSON.stringify(kpis)}`;
+  …
+});
+```
+
+---
+
+## 5  │ React – embeddable dashboard selector
+
+```tsx
+import { useState,useEffect } from "react";
+import { Select, SelectItem } from "@/components/ui/select";
+
+export default function Analytics() {
+ const [dashId,setDashId]=useState(2);
+ const [url,setUrl]=useState<string>(); const [insight,setInsight]=useState("");
+ useEffect(()=>{
+   fetch(`/api/analytics/embed/${dashId}`).then(r=>r.json()).then(j=>setUrl(j.url));
+   fetch(`/api/analytics/insight/${dashId}`).then(r=>r.text()).then(setInsight);
+ },[dashId]);
+ return (
+   <div className="h-screen grid grid-cols-12 gap-4 p-3">
+     <aside className="col-span-2">
+       <Select value={dashId} onValueChange={(v)=>setDashId(Number(v))}>
+         {[ /* 25 <SelectItem> entries generated at build-time */ ]}
+       </Select>
+     </aside>
+     <div className="col-span-7">{url && <iframe src={url} className="w-full h-full rounded-xl"/>}</div>
+     <aside className="col-span-3 p-4 bg-white rounded-xl shadow">
+       <h2 className="font-semibold">Copilot Insight</h2>
+       <p className="text-sm">{insight||"…"} </p>
+     </aside>
+   </div>);
+}
+```
+
+---
+
+## 6  │ Dashboard catalogue – the full 25
+
+| # | Dashboard | Primary KPIs | Competitive punch-line |
+|----|-----------|-------------|------------------------|
+| 1 | **Study-Risk Overview** | Critical findings, SDTM rule trend | Live CT2001/2002 monitoring (Pinnacle21 static lists) citeturn0file0 |
+| 2 | IND Readiness Heat-map | Module gaps, FDA query age | Shows faster “green” readiness vs Certara GlobalSubmit averages citeturn0file3 |
+| 3 | AI Writer ROI | Time saved, hallucination % | Quantifies CoAuthor marketing claims citeturn0file1 |
+| 4 | eCTD Sequence Velocity | Sequences/mo vs authority | |
+| 5 | CSR Similarity Explorer | UMAP embeddings, cluster drill | |
+| 6 | SDTM Rule Violations | CT2001/2002, FDAB017 rate | |
+| 7 | Protocol Deviation Monitor | Crit % by site | |
+| 8 | Adverse Event Density | SAE per 100 PY | |
+| 9 | Enrollment Burn -Down | Projection vs plan | |
+| 10 | Site Activation Funnel | Days: greenlight→first-patient | |
+| 11 | Patient - Reported NPS | NPS trend (ePRO) | |
+| 12 | Investigator NPS | … | |
+| 13 | Document QC Turnaround | Minutes per doc | |
+| 14 | Medical Writer Utilisation | Billable % | |
+| 15 | AI Chat Assist Usage | prompts/user/day | |
+| 16 | Regulatory Query Lag | Mean days open | |
+| 17 | Hallucination Rate | % sentences flagged by QC | |
+| 18 | Content Re-use Ratio | # auto-populated vs manual lines | |
+| 19 | Language Consistency | Hemingway score dist. | |
+| 20 | Audit Trail Exceptions | # edits outside SOP window | |
+| 21 | Data Drift Sentinel | model metrics vs baseline | |
+| 22 | Molecule Similarity Hotlist | trials within 0.8 cosine | |
+| 23 | Forecasted Budget Overrun | $ variance @ EAC | |
+| 24 | Query Bot Resolution Time | Auto-vs human ratio | |
+| 25 | IND “Next 90 days” Radar | events timeline | |
+
+Every row has **3-4 cards** (chart, KPI, table) + Copilot panel.  You may extend freely; the seeding script’s DSL supports any count.
+
+---
+
+## 7  │ Tenant & RBAC (unchanged)
+
+*`tenant_id` filter + JWT param* as before.
+
+---
+
+## 8  │ Run-book (updated)
+
+| Trigger | Command |
+|---------|---------|
+| New MV | `npm run migrate && npm run seed:sync` |
+| Add dashboard | append JSON; run `seed:sync` (id auto-increments) |
+| Add tenant | `trialsage.create_tenant()` (Metabase group auto-created) |
+| Daily data load | pg_cron refresh tasks (5–15 min cadence) |
+
+---
+
+## 9  │ Copy-this-to-Replit checklist
+
+1. **Metabase Repl:** already deployed; confirm autoscale.  
+2. **Main repo:**  
+   * add 19 new `*.sql` MV migrations  
+   * replace `dashSpec.json` & `metabaseSeed.js` (v2)  
+   * extend `/pages/analytics.tsx` with `<Select>`  
+   * `(npm i @radix-ui/react-select)` for dropdown  
+3. **Secrets:** unchanged + new `OPENAI_API_KEY` for Copilot.  
+4. **Deploy:** `npm run migrate && npm run seed:views && npm run seed:sync`.
+
+---
+
+### Result
+
+*25 razor-sharp dashboards*, each **self-refreshing, tenant-isolated, and narrated by GPT-4o**.  TrialSage now offers a richer analytics surface than anything in Certara’s CoAuthor/GlobalSubmit stack—and you can prove it live on every demo call.

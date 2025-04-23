@@ -10,11 +10,9 @@ export default function CMCBlueprintGenerator() {
       <header className="border-b border-gray-200 bg-white">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center">
-            <Link to="/">
-              <a className="flex items-center text-[#0071e3] font-medium">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Home
-              </a>
+            <Link to="/" className="flex items-center text-[#0071e3] font-medium">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Home
             </Link>
             <h1 className="text-xl font-semibold text-[#1d1d1f] ml-6">CMC Blueprint™ Generator</h1>
           </div>

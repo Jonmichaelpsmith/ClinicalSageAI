@@ -51,6 +51,8 @@ const LazyEnterpriseDocumentVault = React.lazy(() => import('./pages/EnterpriseD
 const LazyChatPanel = React.lazy(() => import('./pages/ChatPanel'));
 // Add Ask Lumen Chat interface
 const LazyAskLumen = React.lazy(() => import('./pages/Chat'));
+// Add Analytics Dashboard with Metabase integration
+const LazyAnalyticsDashboard = React.lazy(() => import('./pages/AnalyticsDashboard'));
 // Add Enterprise CSR Intelligence module
 import EnterpriseCSRIntelligence from './pages/EnterpriseCSRIntelligence';
 const LazyCSRIntelligence = EnterpriseCSRIntelligence;
@@ -290,6 +292,11 @@ export default function App() {
               <Route path="/enterprise-vault">
                 <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Enterprise Document Vault" />}>
                   <LazyEnterpriseDocumentVault />
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/analytics-dashboard">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Analytics Dashboard" />}>
+                  <LazyAnalyticsDashboard />
                 </SimpleErrorBoundary>
               </Route>
               <Route path="/cmc-module">
