@@ -1,6 +1,6 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 import { Link, useLocation } from 'wouter';
-import { LogOut, User, ChevronDown, Settings, Shield, FileText, Database, Home, Menu, X } from 'lucide-react';
+import { LogOut, User, ChevronDown, Settings, Shield, FileText, Database, Home, Menu, X, Search } from 'lucide-react';
 import axiosWithToken from '../utils/axiosWithToken';
 
 interface LayoutProps {
@@ -46,11 +46,27 @@ const NavLink: React.FC<NavLinkProps> = ({ to, children, className, onClick }) =
  */
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [location] = useLocation();
-  const [userMenuOpen, setUserMenuOpen] = React.useState(false);
-  const [modulesMenuOpen, setModulesMenuOpen] = React.useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [modulesMenuOpen, setModulesMenuOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const userMenuRef = React.useRef<HTMLDivElement>(null);
   const modulesMenuRef = React.useRef<HTMLDivElement>(null);
+  
+  // Apple-style scroll effect
+  useEffect(() => {
+    const handleScroll = () => {
+      const isScrolled = window.scrollY > 10;
+      if (isScrolled !== scrolled) {
+        setScrolled(isScrolled);
+      }
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [scrolled]);
 
   // Close menus when clicking outside
   React.useEffect(() => {
@@ -107,241 +123,163 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      {/* Single Apple-style navigation bar with backdrop blur */}
-      <header className="bg-slate-900/95 backdrop-blur-md sticky top-0 z-50 border-b border-slate-800/80">
-        <div className="mx-auto px-4">
-          <div className="flex items-center justify-between h-14">
-            {/* Logo and brand */}
+      {/* Apple-style premium navigation bar with backdrop blur and scroll effects */}
+      <header className={`${scrolled ? 'bg-black/80' : 'bg-black/90'} backdrop-blur-md sticky top-0 z-50 transition-all duration-200`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-12">
+            {/* Apple-style logo */}
             <div className="flex items-center">
               <Link href="/">
-                <div className="flex items-center cursor-pointer">
-                  <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-md p-1 mr-2">
-                    <div className="w-5 h-5 flex items-center justify-center text-white font-bold text-xs">C2C</div>
+                <div className="flex items-center cursor-pointer group">
+                  <div className="relative mr-2">
+                    <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-md p-1.5 relative overflow-hidden">
+                      <div className="text-white font-bold text-xs tracking-wide">C2C</div>
+                      <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    </div>
                   </div>
                   <div>
-                    <span className="text-base font-medium text-white">TrialSage</span>
-                    <span className="text-blue-400">™</span>
-                    <span className="ml-1 text-xs text-slate-400">by C2C.AI</span>
+                    <span className="text-sm font-medium text-white tracking-tight">TrialSage</span>
+                    <span className="text-blue-400 text-xs align-super">™</span>
                   </div>
                 </div>
               </Link>
             </div>
             
-            {/* Center navigation - Apple style */}
-            <nav className="hidden md:flex items-center space-x-8">
-              {/* Primary navigation */}
-              <div className="relative" ref={modulesMenuRef}>
-                <button
-                  onClick={() => setModulesMenuOpen(!modulesMenuOpen)}
-                  className="flex items-center space-x-1 text-xs font-medium text-slate-300 hover:text-white transition-colors px-3 py-1"
-                >
-                  <span>Modules</span>
-                  <ChevronDown className={`h-3 w-3 text-slate-400 ${modulesMenuOpen ? 'transform rotate-180' : ''}`} />
-                </button>
-                
-                {modulesMenuOpen && (
-                  <div className="absolute left-0 mt-1 w-56 rounded-lg overflow-hidden shadow-lg bg-slate-800/95 backdrop-blur-sm z-50 border border-slate-700/50">
-                    <div className="py-1">
-                      <NavLink 
-                        to="/ind-wizard" 
-                        onClick={closeMenus}
-                        className={`flex items-center px-4 py-1.5 text-xs cursor-pointer ${location === '/ind-wizard' ? 'bg-slate-700/50 text-white' : 'text-slate-300 hover:bg-slate-700/30 hover:text-white'}`}
-                      >
-                        <FileText className="mr-2 h-3 w-3" />
-                        IND Wizard
-                      </NavLink>
-                      
-                      <NavLink 
-                        to="/csr-library" 
-                        onClick={closeMenus}
-                        className={`flex items-center px-4 py-1.5 text-xs cursor-pointer ${location === '/csr-library' ? 'bg-slate-700/50 text-white' : 'text-slate-300 hover:bg-slate-700/30 hover:text-white'}`}
-                      >
-                        <FileText className="mr-2 h-3 w-3" />
-                        CSR Deep Intelligence
-                      </NavLink>
-                      
-                      <NavLink 
-                        to="/protocol-optimization" 
-                        onClick={closeMenus}
-                        className={`flex items-center px-4 py-1.5 text-xs cursor-pointer ${location === '/protocol-optimization' ? 'bg-slate-700/50 text-white' : 'text-slate-300 hover:bg-slate-700/30 hover:text-white'}`}
-                      >
-                        <FileText className="mr-2 h-3 w-3" />
-                        Protocol Optimization
-                      </NavLink>
-                      
-                      <NavLink 
-                        to="/study-design" 
-                        onClick={closeMenus}
-                        className={`flex items-center px-4 py-1.5 text-xs cursor-pointer ${location === '/study-design' ? 'bg-slate-700/50 text-white' : 'text-slate-300 hover:bg-slate-700/30 hover:text-white'}`}
-                      >
-                        <FileText className="mr-2 h-3 w-3" />
-                        Study Design Genie
-                      </NavLink>
-                      
-                      <NavLink 
-                        to="/cer-generator" 
-                        onClick={closeMenus}
-                        className={`flex items-center px-4 py-1.5 text-xs cursor-pointer ${location === '/cer-generator' ? 'bg-slate-700/50 text-white' : 'text-slate-300 hover:bg-slate-700/30 hover:text-white'}`}
-                      >
-                        <FileText className="mr-2 h-3 w-3" />
-                        CER Generator
-                      </NavLink>
-                      
-                      <NavLink 
-                        to="/cmc-module" 
-                        onClick={closeMenus}
-                        className={`flex items-center px-4 py-1.5 text-xs cursor-pointer ${location === '/cmc-module' ? 'bg-slate-700/50 text-white' : 'text-slate-300 hover:bg-slate-700/30 hover:text-white'}`}
-                      >
-                        <FileText className="mr-2 h-3 w-3" />
-                        CMC Insights
-                      </NavLink>
-                      
-                      <NavLink 
-                        to="/document-vault" 
-                        onClick={closeMenus}
-                        className={`flex items-center px-4 py-1.5 text-xs cursor-pointer ${location === '/document-vault' ? 'bg-slate-700/50 text-white' : 'text-slate-300 hover:bg-slate-700/30 hover:text-white'}`}
-                      >
-                        <Database className="mr-2 h-3 w-3" />
-                        TrialSage DM Vault
-                      </NavLink>
-                      
-                      <NavLink 
-                        to="/ai-cmc-blueprint" 
-                        onClick={closeMenus}
-                        className={`flex items-center px-4 py-1.5 text-xs cursor-pointer ${location === '/ai-cmc-blueprint' ? 'bg-slate-700/50 text-white' : 'text-slate-300 hover:bg-slate-700/30 hover:text-white'}`}
-                      >
-                        <FileText className="mr-2 h-3 w-3" />
-                        AI-CMC Blueprint
-                      </NavLink>
-                      
-                      <div className="border-t border-slate-700/50 my-1"></div>
-                      
-                      <NavLink 
-                        to="/versions" 
-                        onClick={closeMenus}
-                        className={`flex items-center px-4 py-1.5 text-xs cursor-pointer ${location === '/versions' ? 'bg-slate-700/50 text-white' : 'text-slate-300 hover:bg-slate-700/30 hover:text-white'}`}
-                      >
-                        <FileText className="mr-2 h-3 w-3" />
-                        Document Versions
-                      </NavLink>
-                    </div>
-                  </div>
-                )}
-              </div>
-              
+            {/* Apple-style center navigation with unified categories */}
+            <nav className="hidden lg:flex items-center justify-center space-x-6 flex-1 px-12">
+              <NavLink 
+                to="/"
+                onClick={closeMenus}
+                className={`px-2 py-1 text-xs font-medium cursor-pointer transition-colors ${
+                  location === '/' ? 'text-white' : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                Home
+              </NavLink>
+
               <NavLink 
                 to="/ind-wizard"
                 onClick={closeMenus}
                 className={`px-2 py-1 text-xs font-medium cursor-pointer transition-colors ${
-                  location === '/ind-wizard' ? 'text-white' : 'text-slate-300 hover:text-white'
+                  location === '/ind-wizard' ? 'text-white' : 'text-gray-400 hover:text-white'
                 }`}
               >
-                IND
+                IND Wizard™
               </NavLink>
               
               <NavLink 
                 to="/csr-library"
                 onClick={closeMenus}
                 className={`px-2 py-1 text-xs font-medium cursor-pointer transition-colors ${
-                  location === '/csr-library' ? 'text-white' : 'text-slate-300 hover:text-white'
+                  location === '/csr-library' ? 'text-white' : 'text-gray-400 hover:text-white'
                 }`}
               >
-                CSR
+                CSR Intelligence™
               </NavLink>
               
               <NavLink 
-                to="/cer-generator"
+                to="/protocol-optimization"
                 onClick={closeMenus}
                 className={`px-2 py-1 text-xs font-medium cursor-pointer transition-colors ${
-                  location === '/cer-generator' ? 'text-white' : 'text-slate-300 hover:text-white'
+                  location === '/protocol-optimization' ? 'text-white' : 'text-gray-400 hover:text-white'
                 }`}
               >
-                CER
+                Protocol Design™
               </NavLink>
               
               <NavLink 
                 to="/cmc-module"
                 onClick={closeMenus}
                 className={`px-2 py-1 text-xs font-medium cursor-pointer transition-colors ${
-                  location === '/cmc-module' ? 'text-white' : 'text-slate-300 hover:text-white'
+                  location === '/cmc-module' ? 'text-white' : 'text-gray-400 hover:text-white'
                 }`}
               >
-                CMC
-              </NavLink>
-
-              <NavLink 
-                to="/document-vault"
-                onClick={closeMenus}
-                className={`px-2 py-1 text-xs font-medium cursor-pointer transition-colors ${
-                  location === '/document-vault' ? 'text-white' : 'text-slate-300 hover:text-white'
-                }`}
-              >
-                DM Vault
+                CMC Insights™
               </NavLink>
 
               <NavLink 
                 to="/versions"
                 onClick={closeMenus}
                 className={`px-2 py-1 text-xs font-medium cursor-pointer transition-colors ${
-                  location === '/versions' ? 'text-white font-bold' : 'text-slate-300 hover:text-white'
+                  location === '/versions' ? 'text-white' : 'text-gray-400 hover:text-white'
                 }`}
               >
-                Vault View
+                Document Vault™
+              </NavLink>
+
+              <NavLink 
+                to="/store"
+                onClick={closeMenus}
+                className={`px-2 py-1 text-xs font-medium cursor-pointer transition-colors ${
+                  location === '/store' ? 'text-white' : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                Store
               </NavLink>
             </nav>
             
-            {/* Right side items */}
-            <div className="flex items-center space-x-3">
+            {/* Right side items - Apple-style minimal */}
+            <div className="flex items-center space-x-4">
+              {/* Search - Apple style */}
+              <button className="text-gray-400 hover:text-white transition-colors">
+                <Search className="h-4 w-4" />
+              </button>
+              
               {/* Mobile menu button */}
-              <div className="md:hidden">
+              <div className="lg:hidden">
                 <button
                   onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                  className="inline-flex items-center justify-center p-1 text-slate-300 hover:text-white"
+                  className="text-gray-400 hover:text-white"
                 >
                   {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
                 </button>
               </div>
               
+              {/* Ask Lumen - Premium style */}
               <NavLink 
                 to="/ask-lumen"
                 onClick={closeMenus}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full px-3 py-1 text-xs font-medium transition-colors"
+                className="hidden sm:flex items-center space-x-1 text-xs font-medium text-blue-400 hover:text-blue-300 transition-colors"
               >
-                Ask Lumen
+                <span>Ask</span>
+                <span className="font-semibold">Lumen</span>
               </NavLink>
               
-              {/* User Menu - minimal style */}
+              {/* User Menu - Apple style */}
               <div className="relative" ref={userMenuRef}>
                 <button
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center text-white hover:bg-slate-800 rounded-full p-1"
+                  className="text-gray-400 hover:text-white transition-colors"
                 >
                   <User className="h-4 w-4" />
                 </button>
                 
                 {userMenuOpen && (
-                  <div className="absolute right-0 mt-1 w-48 rounded-lg overflow-hidden shadow-lg bg-slate-800/95 backdrop-blur-sm z-50 border border-slate-700/50">
-                    <div className="py-1">
-                      <div className="block px-4 py-2 text-xs text-slate-300 border-b border-slate-700/50">
-                        Signed in as <span className="font-bold text-white">{userInfo.name}</span>
+                  <div className="absolute right-0 mt-2 w-64 rounded-lg overflow-hidden shadow-xl bg-black/90 backdrop-blur-lg z-50 border border-gray-800">
+                    <div className="py-2 px-4">
+                      <div className="flex items-center border-b border-gray-800 pb-2 mb-2">
+                        <div className="bg-blue-500 rounded-full h-8 w-8 flex items-center justify-center text-xs font-medium text-white">
+                          {userInfo.name.charAt(0)}
+                        </div>
+                        <div className="ml-3">
+                          <div className="text-sm font-medium text-white">{userInfo.name}</div>
+                          <div className="text-xs text-gray-400">Enterprise Account</div>
+                        </div>
                       </div>
                       
-                      <a href="#settings" className="flex items-center px-4 py-2 text-xs text-slate-300 hover:bg-slate-700/50 hover:text-white">
-                        <Settings className="mr-2 h-3 w-3" />
-                        Settings
+                      <a href="#settings" className="block py-2 text-sm text-gray-400 hover:text-white transition-colors">
+                        Account Settings
                       </a>
                       
-                      <a href="#security" className="flex items-center px-4 py-2 text-xs text-slate-300 hover:bg-slate-700/50 hover:text-white">
-                        <Shield className="mr-2 h-3 w-3" />
-                        Security
+                      <a href="#security" className="block py-2 text-sm text-gray-400 hover:text-white transition-colors">
+                        Security & Privacy
                       </a>
                       
                       <button
                         onClick={handleLogout}
-                        className="w-full text-left flex items-center px-4 py-2 text-xs text-red-400 hover:bg-slate-700/50"
+                        className="block w-full text-left py-2 text-sm text-gray-400 hover:text-white transition-colors mt-2 border-t border-gray-800 pt-2"
                       >
-                        <LogOut className="mr-2 h-3 w-3" />
-                        Sign out
+                        Sign Out
                       </button>
                     </div>
                   </div>
@@ -352,88 +290,84 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </div>
       </header>
 
-      {/* Mobile menu */}
+      {/* Mobile menu - Apple style */}
       {mobileMenuOpen && (
-        <div className="md:hidden">
-          <div className="bg-slate-800 py-2 space-y-1">
+        <div className="lg:hidden">
+          <div className="bg-black/95 backdrop-blur-md py-2 space-y-0 border-b border-gray-800">
+            <NavLink 
+              to="/"
+              onClick={closeMenus}
+              className={`block px-6 py-3 text-sm font-medium cursor-pointer transition-colors ${
+                location === '/' ? 'text-white' : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              Home
+            </NavLink>
+            
+            <NavLink 
+              to="/store"
+              onClick={closeMenus}
+              className={`block px-6 py-3 text-sm font-medium cursor-pointer transition-colors ${
+                location === '/store' ? 'text-white' : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              Store
+            </NavLink>
+            
             <NavLink 
               to="/ind-wizard"
               onClick={closeMenus}
-              className={`block px-4 py-2 text-sm cursor-pointer ${location === '/ind-wizard' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
+              className={`block px-6 py-3 text-sm font-medium cursor-pointer transition-colors ${
+                location === '/ind-wizard' ? 'text-white' : 'text-gray-400 hover:text-white'
+              }`}
             >
-              IND Wizard
+              IND Wizard™
             </NavLink>
             
             <NavLink 
               to="/csr-library"
               onClick={closeMenus}
-              className={`block px-4 py-2 text-sm cursor-pointer ${location === '/csr-library' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
+              className={`block px-6 py-3 text-sm font-medium cursor-pointer transition-colors ${
+                location === '/csr-library' ? 'text-white' : 'text-gray-400 hover:text-white'
+              }`}
             >
-              CSR Deep Intelligence
+              CSR Intelligence™
             </NavLink>
             
             <NavLink 
               to="/protocol-optimization"
               onClick={closeMenus}
-              className={`block px-4 py-2 text-sm cursor-pointer ${location === '/protocol-optimization' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
+              className={`block px-6 py-3 text-sm font-medium cursor-pointer transition-colors ${
+                location === '/protocol-optimization' ? 'text-white' : 'text-gray-400 hover:text-white'
+              }`}
             >
-              Protocol Optimization & Design
-            </NavLink>
-            
-            <NavLink 
-              to="/study-design"
-              onClick={closeMenus}
-              className={`block px-4 py-2 text-sm cursor-pointer ${location === '/study-design' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
-            >
-              Study Design Genie
-            </NavLink>
-            
-            <NavLink 
-              to="/cer-generator"
-              onClick={closeMenus}
-              className={`block px-4 py-2 text-sm cursor-pointer ${location === '/cer-generator' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
-            >
-              CER Generator
+              Protocol Design™
             </NavLink>
             
             <NavLink 
               to="/cmc-module"
               onClick={closeMenus}
-              className={`block px-4 py-2 text-sm cursor-pointer ${location === '/cmc-module' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
+              className={`block px-6 py-3 text-sm font-medium cursor-pointer transition-colors ${
+                location === '/cmc-module' ? 'text-white' : 'text-gray-400 hover:text-white'
+              }`}
             >
-              CMC Insights
+              CMC Insights™
             </NavLink>
-            
-            <NavLink 
-              to="/document-vault"
-              onClick={closeMenus}
-              className={`block px-4 py-2 text-sm cursor-pointer ${location === '/document-vault' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
-            >
-              TrialSage DM Vault
-            </NavLink>
-            
-            <NavLink 
-              to="/ai-cmc-blueprint"
-              onClick={closeMenus}
-              className={`block px-4 py-2 text-sm cursor-pointer ${location === '/ai-cmc-blueprint' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
-            >
-              AI-CMC Blueprint
-            </NavLink>
-            
-            <div className="border-t border-slate-600 pt-1"></div>
             
             <NavLink 
               to="/versions"
               onClick={closeMenus}
-              className={`block px-4 py-2 text-sm cursor-pointer ${location === '/versions' ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
+              className={`block px-6 py-3 text-sm font-medium cursor-pointer transition-colors ${
+                location === '/versions' ? 'text-white' : 'text-gray-400 hover:text-white'
+              }`}
             >
-              Document Versions
+              Document Vault™
             </NavLink>
             
             <NavLink 
               to="/ask-lumen"
               onClick={closeMenus}
-              className="block px-4 py-2 text-sm text-indigo-400 hover:text-indigo-300 hover:bg-slate-700 cursor-pointer"
+              className="block px-6 py-3 text-sm font-medium text-blue-400 hover:text-blue-300 transition-colors"
             >
               Ask Lumen
             </NavLink>
@@ -445,18 +379,22 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         {children}
       </main>
 
-      {/* Footer */}
-      <footer className="bg-slate-900 border-t border-slate-800 py-4">
+      {/* Apple-style minimalist footer */}
+      <footer className="bg-black/95 backdrop-blur-md py-6 text-center text-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div className="text-sm text-slate-400">
-              © {new Date().getFullYear()} TrialSage™ by C2C.AI. All rights reserved.
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="text-gray-500 flex flex-wrap justify-center gap-x-6 gap-y-2 md:gap-x-8">
+              <span>Privacy Policy</span>
+              <span>Terms of Use</span>
+              <span>Legal</span>
+              <span>Site Map</span>
             </div>
-            <div className="text-sm text-slate-400">
-              <span className="inline-flex items-center">
-                <Shield className="h-3 w-3 mr-1" />
-                21 CFR Part 11 Compliant
-              </span>
+            <div className="text-gray-500 flex items-center">
+              <Shield className="h-3 w-3 mr-1.5" />
+              <span>21 CFR Part 11 Compliant</span>
+            </div>
+            <div className="text-gray-500">
+              © {new Date().getFullYear()} TrialSage™ by C2C.AI. All rights reserved.
             </div>
           </div>
         </div>
