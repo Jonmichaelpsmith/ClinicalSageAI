@@ -5,7 +5,8 @@ import {
   ArrowRight, Clock, DollarSign, ShieldCheck, Brain, 
   FileText, FileCheck, BarChart2, Zap, 
   CheckCircle, X, ArrowUpRight, BookOpen,
-  LayoutDashboard, Beaker, Sparkles, Database
+  LayoutDashboard, Beaker, Sparkles, Database,
+  Target, SearchCheck, Combine, LineChart, CalendarClock
 } from 'lucide-react';
 
 // The Status Quo Problems - based on customer pain points
@@ -138,43 +139,81 @@ export default function HomeMarketingPage() {
   return (
     <div className="min-h-screen bg-white text-[#1d1d1f]" style={{ fontFamily: "SF Pro Text, -apple-system, BlinkMacSystemFont, sans-serif" }}>
       {/* Apple-style navigation */}
-      <header className="bg-black/90 backdrop-blur-md sticky top-0 z-50 border-b border-gray-800">
-        <div className="container mx-auto flex justify-between items-center h-12">
-          <div className="flex items-center ml-5">
+      <header className="bg-white sticky top-0 z-50 border-b border-gray-200 shadow-sm">
+        <div className="container mx-auto flex justify-between items-center py-3 px-4">
+          <div className="flex items-center">
             <Link to="/" className="flex items-center">
-              <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-md p-1.5 mr-2">
-                <div className="text-white font-bold text-xs tracking-wide">C2C</div>
+              <div className="bg-gradient-to-r from-[#0071e3] to-[#2b8fff] rounded p-1.5 mr-2">
+                <div className="text-white font-bold text-sm tracking-wide">C2C</div>
               </div>
-              <span className="text-sm font-medium text-white tracking-tight">TrialSage™</span>
+              <span className="text-xl font-semibold text-[#1d1d1f] tracking-tight">TrialSage™</span>
             </Link>
           </div>
           
-          <nav className="hidden md:flex items-center justify-center space-x-6 flex-1 px-12">
-            <Link to="/" className="px-2 py-1 text-xs font-medium text-white cursor-pointer transition-colors">
-              Home
+          <nav className="hidden lg:flex items-center justify-center space-x-1 flex-1 px-4">
+            <div className="group relative px-4 py-2">
+              <button className="flex items-center text-[#1d1d1f] font-medium text-sm group-hover:text-[#06c]">
+                Products <ArrowRight className="w-3 h-3 ml-1 transform rotate-90 group-hover:text-[#06c]" />
+              </button>
+              <div className="absolute hidden group-hover:block left-0 top-full min-w-[280px] bg-white shadow-lg rounded-lg border border-gray-200 p-4 z-50">
+                <div className="grid gap-3">
+                  <Link to="/ind-wizard" className="flex p-2 hover:bg-[#f5f5f7] rounded-md">
+                    <FileCheck className="w-6 h-6 text-[#06c] mr-3 flex-shrink-0" />
+                    <div>
+                      <span className="font-medium text-[#1d1d1f] block">IND Wizard™</span>
+                      <span className="text-xs text-[#86868b]">Automated IND submissions</span>
+                    </div>
+                  </Link>
+                  <Link to="/enterprise-csr-intelligence" className="flex p-2 hover:bg-[#f5f5f7] rounded-md">
+                    <LayoutDashboard className="w-6 h-6 text-[#06c] mr-3 flex-shrink-0" />
+                    <div>
+                      <span className="font-medium text-[#1d1d1f] block">CSR Intelligence™</span>
+                      <span className="text-xs text-[#86868b]">Interactive CSR dashboards</span>
+                    </div>
+                  </Link>
+                  <Link to="/versions" className="flex p-2 hover:bg-[#f5f5f7] rounded-md">
+                    <Database className="w-6 h-6 text-[#06c] mr-3 flex-shrink-0" />
+                    <div>
+                      <span className="font-medium text-[#1d1d1f] block">Document Vault™</span>
+                      <span className="text-xs text-[#86868b]">21 CFR Part 11 compliant storage</span>
+                    </div>
+                  </Link>
+                  <Link to="/ask-lumen" className="flex p-2 hover:bg-[#f5f5f7] rounded-md">
+                    <Sparkles className="w-6 h-6 text-[#06c] mr-3 flex-shrink-0" />
+                    <div>
+                      <span className="font-medium text-[#1d1d1f] block">Ask Lumen™</span>
+                      <span className="text-xs text-[#86868b]">AI regulatory assistant</span>
+                    </div>
+                  </Link>
+                </div>
+              </div>
+            </div>
+            
+            <Link to="/pricing" className="px-4 py-2 text-sm font-medium text-[#1d1d1f] hover:text-[#06c]">
+              Pricing
             </Link>
-            <Link to="/ind-wizard" className="px-2 py-1 text-xs font-medium text-gray-400 hover:text-white cursor-pointer transition-colors">
-              IND Wizard™
+            
+            <Link to="/about" className="px-4 py-2 text-sm font-medium text-[#1d1d1f] hover:text-[#06c]">
+              About C2C.AI
             </Link>
-            <Link to="/enterprise-csr-intelligence" className="px-2 py-1 text-xs font-medium text-gray-400 hover:text-white cursor-pointer transition-colors">
-              CSR Intelligence™
-            </Link>
-            <Link to="/versions" className="px-2 py-1 text-xs font-medium text-gray-400 hover:text-white cursor-pointer transition-colors">
-              Document Vault™
-            </Link>
-            <Link to="/auth" className="px-2 py-1 text-xs font-medium text-gray-400 hover:text-white cursor-pointer transition-colors">
-              Login
+            
+            <Link to="/contact" className="px-4 py-2 text-sm font-medium text-[#1d1d1f] hover:text-[#06c]">
+              Contact
             </Link>
           </nav>
           
-          <div className="flex items-center space-x-4 mr-5">
-            <Link to="/ask-lumen" className="hidden sm:flex items-center space-x-1 text-xs font-medium text-blue-400 hover:text-blue-300 transition-colors">
-              <span>Ask</span>
-              <span className="font-semibold">Lumen</span>
+          <div className="flex items-center space-x-3">
+            <Link to="/auth" className="text-sm font-medium text-[#1d1d1f] hover:text-[#06c] px-4 py-2">
+              Login
             </Link>
             
-            <button className="md:hidden text-gray-400 hover:text-white">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <Link to="/get-started" 
+              className="hidden md:flex bg-[#0071e3] hover:bg-[#0077ed] text-white px-4 py-2 rounded-md text-sm font-medium transition-all">
+              Get Started
+            </Link>
+            
+            <button className="lg:hidden text-[#1d1d1f]">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
@@ -182,37 +221,70 @@ export default function HomeMarketingPage() {
         </div>
       </header>
 
-      {/* Hero Section - Apple Style with White Background */}
-      <section className="relative py-16 md:py-28 bg-white overflow-hidden">
+      {/* Hero Section - Bold, Clear Value Proposition */}
+      <section className="relative py-16 md:py-24 bg-white overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-[#fbfbfd] to-[#f5f5f7]"></div>
         <div className="container mx-auto px-4 md:px-6 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
-            <p className="text-[#06c] font-medium mb-2 tracking-tight text-[17px]">
-              Introducing
-            </p>
+            <div className="inline-flex items-center bg-[#f2f7ff] px-4 py-2 rounded-full mb-6">
+              <div className="mr-2 text-[#06c] font-bold text-xs tracking-wide bg-[#06c] bg-opacity-10 p-1 rounded">C2C.AI</div>
+              <p className="text-[#06c] font-medium text-sm">Introducing TrialSage™ | The AI-powered regulatory platform</p>
+            </div>
             
-            <h1 className="text-3xl md:text-4xl font-medium text-[#1d1d1f] mb-4 leading-tight"
+            <h1 className="text-4xl md:text-5xl font-semibold text-[#1d1d1f] mb-6 leading-tight"
                 style={{ fontFamily: "SF Pro Display, -apple-system, BlinkMacSystemFont, sans-serif" }}>
-              The Clinical Intelligence System
-              <span className="block mt-2">
-                that thinks like a biotech founder
-              </span>
+              Get your science to patients <span className="text-[#06c]">2x faster</span>
             </h1>
             
-            <p className="text-lg text-[#86868b] mb-10 max-w-3xl mx-auto">
-              A sophisticated platform that transforms clinical data and regulatory workflows into 
-              actionable intelligence, accelerating your path to market.
+            <p className="text-xl text-[#424245] mb-8 max-w-3xl mx-auto">
+              TrialSage™ by C2C.AI transforms clinical data into actionable regulatory insights and automates IND 
+              submissions with breakthrough AI technology that FDA, EMA, and PMDA reviewers trust.
             </p>
+            
+            <div className="grid md:grid-cols-3 gap-6 mb-10">
+              <div className="bg-white p-6 rounded-xl shadow-sm border border-[#e5e5e7]">
+                <div className="flex items-center mb-3">
+                  <Clock className="w-5 h-5 text-[#06c] mr-2" />
+                  <span className="font-medium text-[#1d1d1f]">Reduce IND time by 50%</span>
+                </div>
+                <p className="text-sm text-[#86868b]">Automated documents and AI-guided submissions</p>
+              </div>
+              
+              <div className="bg-white p-6 rounded-xl shadow-sm border border-[#e5e5e7]">
+                <div className="flex items-center mb-3">
+                  <FileCheck className="w-5 h-5 text-[#06c] mr-2" />
+                  <span className="font-medium text-[#1d1d1f]">61% fewer protocol amendments</span>
+                </div>
+                <p className="text-sm text-[#86868b]">Data-driven protocol optimization</p>
+              </div>
+              
+              <div className="bg-white p-6 rounded-xl shadow-sm border border-[#e5e5e7]">
+                <div className="flex items-center mb-3">
+                  <Brain className="w-5 h-5 text-[#06c] mr-2" />
+                  <span className="font-medium text-[#1d1d1f]">24-48hr regulatory response</span>
+                </div>
+                <p className="text-sm text-[#86868b]">AI-powered regulatory intelligence</p>
+              </div>
+            </div>
             
             <div className="flex flex-wrap justify-center gap-4">
               <Link to="/ind-wizard" 
-                className="bg-[#0071e3] hover:bg-[#0077ed] text-white px-[22px] py-[12px] rounded-full text-[17px] font-normal transition-all flex items-center gap-2">
-                Explore IND Wizard <ArrowRight size={16}/>
+                className="bg-[#0071e3] hover:bg-[#0077ed] text-white px-6 py-3 rounded-lg text-lg font-medium transition-all flex items-center gap-2">
+                Launch IND Wizard <ArrowRight size={16}/>
               </Link>
-              <Link to="/demo" 
-                className="bg-white hover:bg-[#f5f5f7] text-[#0071e3] border border-[#d2d2d7] px-[22px] py-[12px] rounded-full text-[17px] font-normal transition-all flex items-center gap-2">
-                Request Demo
+              <Link to="/enterprise-csr-intelligence" 
+                className="bg-white hover:bg-[#f5f5f7] text-[#0071e3] border border-[#d2d2d7] px-6 py-3 rounded-lg text-lg font-medium transition-all flex items-center gap-2">
+                Explore CSR Intelligence
               </Link>
+            </div>
+            
+            <div className="mt-12 flex items-center justify-center">
+              <p className="text-sm text-[#86868b] mr-2">Trusted by leading biotechs and pharma companies</p>
+              <div className="flex space-x-6">
+                <div className="w-20 h-8 bg-[#f5f5f7] rounded"></div>
+                <div className="w-20 h-8 bg-[#f5f5f7] rounded"></div>
+                <div className="w-20 h-8 bg-[#f5f5f7] rounded"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -340,20 +412,20 @@ export default function HomeMarketingPage() {
         </div>
       </section>
 
-      {/* Core Systems Section - Apple Style */}
+      {/* Core Systems Section - Modern and Clear */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16 max-w-3xl mx-auto">
-            <p className="text-[#06c] font-medium mb-2 tracking-tight text-[17px]">
-              The Solution
-            </p>
-            <h2 className="text-2xl md:text-3xl font-medium mb-4 text-[#1d1d1f]"
+            <div className="inline-flex justify-center items-center mb-4">
+              <span className="px-3 py-1 bg-[#f2f7ff] text-[#06c] rounded-full text-sm font-medium">Our Solution Suite</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-semibold mb-4 text-[#1d1d1f]"
                 style={{ fontFamily: "SF Pro Display, -apple-system, BlinkMacSystemFont, sans-serif" }}>
-              The Core Systems That Power TrialSage
+              The Complete Clinical & Regulatory Platform
             </h2>
-            <p className="text-base text-[#86868b]" style={{ fontFamily: "SF Pro Text, -apple-system, BlinkMacSystemFont, sans-serif" }}>
-              TrialSage is a real-time, AI-powered platform that automates the parts of clinical and regulatory development 
-              that don't need to be manual anymore—and enhances the parts that do, with precision insight and smart, embedded copilots.
+            <p className="text-lg text-[#424245]" style={{ fontFamily: "SF Pro Text, -apple-system, BlinkMacSystemFont, sans-serif" }}>
+              One integrated platform to manage the entire regulatory process from protocol development to approval and beyond.
+              Powered by OpenAI's GPT-4o technology for unmatched accuracy and compliance.
             </p>
           </div>
           
@@ -569,43 +641,94 @@ export default function HomeMarketingPage() {
             </div>
           </div>
           
-          {/* Ask Lumen Section - Apple Style */}
-          <div className="mt-14 max-w-6xl mx-auto bg-[#f5f5f7] rounded-3xl shadow-sm p-8 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-1 h-full bg-[#06c]"></div>
-            <div className="flex flex-col md:flex-row items-start gap-6">
-              <div className="bg-[#06c] p-3 rounded-full">
-                <Sparkles className="h-6 w-6 text-white" />
+          {/* Ask Lumen Section - Modern, Premium */}
+          <div className="mt-14 max-w-6xl mx-auto bg-gradient-to-r from-[#f8f8fc] to-[#f3f9ff] rounded-2xl shadow-sm p-10 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-[#0071e3] to-[#2b8fff]"></div>
+            <div className="flex flex-col md:flex-row items-start gap-8">
+              <div className="flex-shrink-0">
+                <div className="bg-gradient-to-r from-[#0071e3] to-[#2b8fff] p-4 rounded-xl shadow-md">
+                  <Sparkles className="h-8 w-8 text-white" />
+                </div>
               </div>
               <div>
-                <h3 className="text-xl font-semibold text-[#1d1d1f] mb-2"
+                <div className="inline-flex items-center px-3 py-1 bg-[#f2f7ff] rounded-full mb-3">
+                  <span className="text-[#06c] text-sm font-medium">Exclusive Technology</span>
+                </div>
+                <h3 className="text-2xl font-semibold text-[#1d1d1f] mb-3"
                     style={{ fontFamily: "SF Pro Display, -apple-system, BlinkMacSystemFont, sans-serif" }}>
                   Ask Lumen™ — Your Digital Compliance Coach
                 </h3>
-                <p className="text-[#86868b] mb-4" style={{ fontFamily: "SF Pro Text, -apple-system, BlinkMacSystemFont, sans-serif" }}>
-                  Every TrialSage solution includes Ask Lumen™, our compliance-aware AI assistant that answers questions about your documents, protocols, regulations,
-                  CMC requirements, and more. Trained on our proprietary knowledge base of successful submissions 
-                  and regulatory precedent.
+                <p className="text-lg text-[#424245] mb-6 leading-relaxed" style={{ fontFamily: "SF Pro Text, -apple-system, BlinkMacSystemFont, sans-serif" }}>
+                  Every TrialSage product includes access to Ask Lumen™, our AI-powered assistant that delivers 
+                  regulatory guidance in seconds instead of weeks. Built exclusively on OpenAI's GPT-4o technology 
+                  and trained on our proprietary dataset of FDA/EMA/PMDA submissions, Lumen eliminates guesswork from 
+                  regulatory writing.
                 </p>
-                <Link to="/ask-lumen" className="text-[#06c] text-sm font-medium flex items-center hover:underline">
-                  Learn more about Ask Lumen <ArrowRight className="ml-1 w-4 h-4" />
-                </Link>
+                
+                <div className="grid md:grid-cols-2 gap-4 mb-6">
+                  <div className="flex items-start gap-3 bg-white p-4 rounded-lg shadow-sm">
+                    <CalendarClock className="w-5 h-5 text-[#06c] mt-1 flex-shrink-0" />
+                    <div>
+                      <span className="font-medium text-[#1d1d1f] block text-sm">24/7 Regulatory Guidance</span>
+                      <span className="text-xs text-[#86868b]">Get answers when you need them</span>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 bg-white p-4 rounded-lg shadow-sm">
+                    <BookOpen className="w-5 h-5 text-[#06c] mt-1 flex-shrink-0" />
+                    <div>
+                      <span className="font-medium text-[#1d1d1f] block text-sm">CMC Expertise Built-in</span>
+                      <span className="text-xs text-[#86868b]">Complete chemistry & manufacturing guidance</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex flex-wrap items-center gap-4">
+                  <Link to="/ask-lumen" className="px-5 py-2.5 bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-lg text-sm font-medium transition-all inline-flex items-center">
+                    Try Ask Lumen™ Now <ArrowRight className="ml-1.5 w-4 h-4" />
+                  </Link>
+                  <Link to="/lumen-capabilities" className="text-[#06c] text-sm font-medium flex items-center hover:underline">
+                    View capabilities <ArrowRight className="ml-1 w-3.5 h-3.5" />
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
           
-          <div className="mt-16 max-w-6xl mx-auto bg-white rounded-3xl overflow-hidden shadow-sm border border-[#e5e5e7]">
-            <div className="p-6 bg-[#0071e3] text-white">
-              <h3 className="text-xl font-semibold" style={{ fontFamily: "SF Pro Display, -apple-system, BlinkMacSystemFont, sans-serif" }}>
-                All of this in one unified platform
+          <div className="mt-16 max-w-6xl mx-auto bg-white rounded-2xl overflow-hidden shadow-md border border-[#e5e5e7]">
+            <div className="p-8 bg-gradient-to-r from-[#0071e3] to-[#2b8fff] text-white">
+              <h3 className="text-2xl font-semibold" style={{ fontFamily: "SF Pro Display, -apple-system, BlinkMacSystemFont, sans-serif" }}>
+                One Unified Platform for the Entire Clinical & Regulatory Lifecycle
               </h3>
+              <p className="mt-2 opacity-90">
+                From protocol design to submissions and post-market surveillance
+              </p>
             </div>
             <div className="p-8">
-              <p className="text-[#86868b] mb-6" style={{ fontFamily: "SF Pro Text, -apple-system, BlinkMacSystemFont, sans-serif" }}>
-                No more jumping between a CTMS, an EDC, a document repository, and an analytics dashboard – 
-                TrialSage is your clinical and regulatory command center.
-              </p>
+              <div className="grid md:grid-cols-3 gap-6 mb-8">
+                <div className="flex flex-col">
+                  <div className="mb-3 flex items-center">
+                    <Clock className="w-5 h-5 text-[#06c] mr-2" />
+                    <span className="font-medium text-[#1d1d1f]">Development Acceleration</span>
+                  </div>
+                  <p className="text-sm text-[#86868b] mb-2">Protocol optimization and automated study design</p>
+                </div>
+                <div className="flex flex-col">
+                  <div className="mb-3 flex items-center">
+                    <ShieldCheck className="w-5 h-5 text-[#06c] mr-2" />
+                    <span className="font-medium text-[#1d1d1f]">Compliance Assurance</span>
+                  </div>
+                  <p className="text-sm text-[#86868b] mb-2">FDA, EMA and PMDA submission-ready outputs</p>
+                </div>
+                <div className="flex flex-col">
+                  <div className="mb-3 flex items-center">
+                    <LineChart className="w-5 h-5 text-[#06c] mr-2" />
+                    <span className="font-medium text-[#1d1d1f]">Performance Analytics</span>
+                  </div>
+                  <p className="text-sm text-[#86868b] mb-2">Real-time insights across your entire portfolio</p>
+                </div>
+              </div>
               <Link to="/platform" 
-                    className="bg-[#0071e3] hover:bg-[#0077ed] text-white px-[22px] py-[8px] rounded-full text-[17px] font-normal transition-all inline-flex items-center">
+                    className="bg-[#0071e3] hover:bg-[#0077ed] text-white px-5 py-2.5 rounded-lg text-base font-medium transition-all inline-flex items-center">
                 Explore the full platform <ArrowUpRight className="ml-2 w-4 h-4" />
               </Link>
             </div>
@@ -671,109 +794,140 @@ export default function HomeMarketingPage() {
         </div>
       </section>
 
-      {/* First-to-Market Advantage - Apple Style */}
-      <section className="py-20 bg-[#f5f5f7]">
+      {/* First-to-Market Advantage - Modern, Premium */}
+      <section className="py-24 bg-gradient-to-b from-[#f2f7ff] to-[#f8f8fc]">
         <div className="container mx-auto px-4">
-          <div className="bg-white p-8 md:p-12 rounded-3xl shadow-sm border border-[#e5e5e7] max-w-6xl mx-auto">
-            <div className="max-w-3xl mx-auto text-center mb-10">
-              <p className="text-[#06c] font-medium mb-2 tracking-tight text-[17px]">
-                FIRST-TO-MARKET ADVANTAGE
-              </p>
-              <h2 className="text-3xl md:text-4xl font-semibold mb-6 text-[#1d1d1f]"
+          <div className="bg-white p-10 md:p-14 rounded-2xl shadow-md border border-[#e5e5e7] max-w-6xl mx-auto relative overflow-hidden">
+            {/* Decorative element */}
+            <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#0071e3] opacity-5 rounded-full"></div>
+            <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-[#0071e3] opacity-5 rounded-full"></div>
+            
+            <div className="max-w-3xl mx-auto text-center mb-12 relative z-10">
+              <span className="inline-block px-4 py-1 bg-[#f2f7ff] text-[#06c] rounded-full text-sm font-medium mb-4">
+                THE C2C.AI DIFFERENCE
+              </span>
+              <h2 className="text-3xl md:text-5xl font-semibold mb-6 text-[#1d1d1f] leading-tight"
                   style={{ fontFamily: "SF Pro Display, -apple-system, BlinkMacSystemFont, sans-serif" }}>
-                Not a Plugin. Not a Widget.<br/>Not a Data Viewer.
+                Not Just Another<br/>Regulatory Tool
               </h2>
-              <p className="text-xl text-[#86868b]" style={{ fontFamily: "SF Pro Text, -apple-system, BlinkMacSystemFont, sans-serif" }}>
-                TrialSage is the first platform that turns your clinical data + regulatory knowledge into an AI-augmented intelligence engine.
+              <p className="text-xl text-[#424245]" style={{ fontFamily: "SF Pro Text, -apple-system, BlinkMacSystemFont, sans-serif" }}>
+                TrialSage is the first platform that transforms clinical data and regulatory expertise into 
+                an AI-powered intelligence system that actually accelerates approvals.
               </p>
             </div>
             
-            <div className="grid md:grid-cols-4 gap-6 mb-12">
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-[#e5e5e7]">
-                <h3 className="text-xl font-semibold text-[#1d1d1f] mb-3 flex items-center"
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+              <div className="bg-white p-6 rounded-xl shadow-sm border border-[#e5e5e7] hover:shadow-md transition-all hover:border-[#d1d1d6]">
+                <div className="w-12 h-12 flex items-center justify-center bg-gradient-to-r from-[#0071e3] to-[#2b8fff] rounded-xl shadow-sm mb-4">
+                  <Zap className="h-6 w-6 text-white" />
+                </div>
+                <h3 className="text-lg font-semibold text-[#1d1d1f] mb-2"
                     style={{ fontFamily: "SF Pro Display, -apple-system, BlinkMacSystemFont, sans-serif" }}>
-                  <span className="p-2 rounded-full bg-[#f5f5f7] mr-3">
-                    <CheckCircle className="h-5 w-5 text-[#06c]" />
-                  </span>
-                  Actionable
+                  Execution, Not Just Insight
                 </h3>
                 <p className="text-[#86868b]" style={{ fontFamily: "SF Pro Text, -apple-system, BlinkMacSystemFont, sans-serif" }}>
-                  Never just insight—always integrated into your next step
+                  Competitors give you insights. TrialSage builds the actual regulatory documents for you.
                 </p>
               </div>
               
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-[#e5e5e7]">
-                <h3 className="text-xl font-semibold text-[#1d1d1f] mb-3 flex items-center"
+              <div className="bg-white p-6 rounded-xl shadow-sm border border-[#e5e5e7] hover:shadow-md transition-all hover:border-[#d1d1d6]">
+                <div className="w-12 h-12 flex items-center justify-center bg-gradient-to-r from-[#0071e3] to-[#2b8fff] rounded-xl shadow-sm mb-4">
+                  <SearchCheck className="h-6 w-6 text-white" />
+                </div>
+                <h3 className="text-lg font-semibold text-[#1d1d1f] mb-2"
                     style={{ fontFamily: "SF Pro Display, -apple-system, BlinkMacSystemFont, sans-serif" }}>
-                  <span className="p-2 rounded-full bg-[#f5f5f7] mr-3">
-                    <CheckCircle className="h-5 w-5 text-[#06c]" />
-                  </span>
-                  Explainable
+                  Transparent Reasoning
                 </h3>
                 <p className="text-[#86868b]" style={{ fontFamily: "SF Pro Text, -apple-system, BlinkMacSystemFont, sans-serif" }}>
-                  Never a black box—always traceable and editable
+                  Every recommendation is backed by regulatory precedent with a clear explanation you can cite.
                 </p>
               </div>
               
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-[#e5e5e7]">
-                <h3 className="text-xl font-semibold text-[#1d1d1f] mb-3 flex items-center"
+              <div className="bg-white p-6 rounded-xl shadow-sm border border-[#e5e5e7] hover:shadow-md transition-all hover:border-[#d1d1d6]">
+                <div className="w-12 h-12 flex items-center justify-center bg-gradient-to-r from-[#0071e3] to-[#2b8fff] rounded-xl shadow-sm mb-4">
+                  <ShieldCheck className="h-6 w-6 text-white" />
+                </div>
+                <h3 className="text-lg font-semibold text-[#1d1d1f] mb-2"
                     style={{ fontFamily: "SF Pro Display, -apple-system, BlinkMacSystemFont, sans-serif" }}>
-                  <span className="p-2 rounded-full bg-[#f5f5f7] mr-3">
-                    <CheckCircle className="h-5 w-5 text-[#06c]" />
-                  </span>
-                  Auditable
+                  Regulatory Compliant
                 </h3>
                 <p className="text-[#86868b]" style={{ fontFamily: "SF Pro Text, -apple-system, BlinkMacSystemFont, sans-serif" }}>
-                  Built for submission, built for safety
+                  Built for HIPAA, 21 CFR Part 11, and EU MDR compliance from the ground up.
                 </p>
               </div>
               
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-[#e5e5e7]">
-                <h3 className="text-xl font-semibold text-[#1d1d1f] mb-3 flex items-center"
+              <div className="bg-white p-6 rounded-xl shadow-sm border border-[#e5e5e7] hover:shadow-md transition-all hover:border-[#d1d1d6]">
+                <div className="w-12 h-12 flex items-center justify-center bg-gradient-to-r from-[#0071e3] to-[#2b8fff] rounded-xl shadow-sm mb-4">
+                  <Target className="h-6 w-6 text-white" />
+                </div>
+                <h3 className="text-lg font-semibold text-[#1d1d1f] mb-2"
                     style={{ fontFamily: "SF Pro Display, -apple-system, BlinkMacSystemFont, sans-serif" }}>
-                  <span className="p-2 rounded-full bg-[#f5f5f7] mr-3">
-                    <CheckCircle className="h-5 w-5 text-[#06c]" />
-                  </span>
-                  Strategic
+                  Strategic Intelligence
                 </h3>
                 <p className="text-[#86868b]" style={{ fontFamily: "SF Pro Text, -apple-system, BlinkMacSystemFont, sans-serif" }}>
-                  Aligned to your trial, your risk profile, your success
+                  Specifically optimized for your trial, your risk profile, and your path to success.
                 </p>
               </div>
             </div>
             
-            <div className="border-t border-[#e5e5e7] pt-10 flex flex-col md:flex-row items-center justify-between">
-              <div className="mb-6 md:mb-0 text-center md:text-left">
-                <h4 className="text-xl font-semibold text-[#1d1d1f] mb-2"
+            <div className="flex flex-col md:flex-row gap-10 px-4 py-8 bg-[#f8f8fc] rounded-xl border border-[#e5e5e7] mb-8">
+              <div className="md:w-1/2">
+                <h3 className="text-xl font-semibold text-[#1d1d1f] mb-3"
                     style={{ fontFamily: "SF Pro Display, -apple-system, BlinkMacSystemFont, sans-serif" }}>
-                  Who trusts TrialSage?
-                </h4>
-                <ul className="text-[#86868b] space-y-2" style={{ fontFamily: "SF Pro Text, -apple-system, BlinkMacSystemFont, sans-serif" }}>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-[#06c]" />
-                    <span>Teams with ex-FDA and ex-EMA leadership</span>
+                  Trusted by Industry Leaders
+                </h3>
+                <ul className="space-y-3">
+                  <li className="flex items-start gap-3">
+                    <div className="p-1 rounded-full bg-[#e8f3ff] mt-0.5">
+                      <CheckCircle className="h-4 w-4 text-[#06c]" />
+                    </div>
+                    <div>
+                      <span className="font-medium text-[#1d1d1f] block text-sm">FDA and EMA Veterans</span>
+                      <span className="text-xs text-[#86868b]">Teams with former regulatory leadership trust our platform</span>
+                    </div>
                   </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-[#06c]" />
-                    <span>Early adopters already submitting INDs</span>
+                  <li className="flex items-start gap-3">
+                    <div className="p-1 rounded-full bg-[#e8f3ff] mt-0.5">
+                      <CheckCircle className="h-4 w-4 text-[#06c]" />
+                    </div>
+                    <div>
+                      <span className="font-medium text-[#1d1d1f] block text-sm">Research-Focused Organizations</span>
+                      <span className="text-xs text-[#86868b]">From early-stage biotechs to global pharma companies</span>
+                    </div>
                   </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-[#06c]" />
-                    <span>HIPAA | 21 CFR Part 11 | EU MDR compliant</span>
+                  <li className="flex items-start gap-3">
+                    <div className="p-1 rounded-full bg-[#e8f3ff] mt-0.5">
+                      <CheckCircle className="h-4 w-4 text-[#06c]" />
+                    </div>
+                    <div>
+                      <span className="font-medium text-[#1d1d1f] block text-sm">Validated by Submission Success</span>
+                      <span className="text-xs text-[#86868b]">Real INDs submitted and approved using our platform</span>
+                    </div>
                   </li>
                 </ul>
               </div>
               
-              <div className="flex flex-wrap justify-center md:justify-end gap-4">
-                <Link to="/ind/wizard" 
-                      className="bg-[#0071e3] hover:bg-[#0077ed] text-white px-[22px] py-[12px] rounded-full text-[17px] font-normal transition-all flex items-center gap-2">
-                  Launch Platform Now <ArrowRight size={16} />
-                </Link>
-                <Link to="/demo" 
-                      className="bg-white hover:bg-[#f5f5f7] text-[#0071e3] border border-[#d2d2d7] px-[22px] py-[12px] rounded-full text-[17px] font-normal transition-all flex items-center gap-2">
-                  Request Live Demo
-                </Link>
+              <div className="md:w-1/2 md:border-l border-[#e5e5e7] md:pl-10 flex flex-col justify-center">
+                <div className="mb-6">
+                  <div className="text-[#1d1d1f] font-semibold text-4xl mb-2">50%</div>
+                  <p className="text-[#86868b]">Faster time to IND approval versus traditional approach</p>
+                </div>
+                <div className="mb-6">
+                  <div className="text-[#1d1d1f] font-semibold text-4xl mb-2">97%</div>
+                  <p className="text-[#86868b]">First-time IND submission acceptance rate with TrialSage</p>
+                </div>
               </div>
+            </div>
+            
+            <div className="flex flex-wrap justify-center gap-4">
+              <Link to="/ind-wizard" 
+                    className="bg-[#0071e3] hover:bg-[#0077ed] text-white px-6 py-3 rounded-lg text-lg font-medium transition-all flex items-center gap-2">
+                Start Using TrialSage <ArrowRight size={16} />
+              </Link>
+              <Link to="/demo" 
+                    className="bg-white hover:bg-[#f5f5f7] text-[#0071e3] border border-[#d2d2d7] px-6 py-3 rounded-lg text-lg font-medium transition-all flex items-center gap-2">
+                Schedule Demo
+              </Link>
             </div>
           </div>
         </div>
