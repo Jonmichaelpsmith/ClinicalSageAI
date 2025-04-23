@@ -93,6 +93,8 @@ import TopNav from './components/TopNav';
 import { AuthProvider } from './hooks/use-auth';
 import AuthPage from './pages/auth-page';
 import { ProtectedRoute } from './components/ProtectedRoute';
+// Import onboarding context provider
+import { OnboardingProvider } from './contexts/OnboardingContext';
 // Import NotFound page
 const LazyNotFound = React.lazy(() => import('./pages/NotFound'));
 // Import Versions page
@@ -125,7 +127,8 @@ export default function App() {
     <SimpleErrorBoundary>
       <ToastProvider>
         <AuthProvider>
-          <LumenAssistantProvider>
+          <OnboardingProvider>
+            <LumenAssistantProvider>
           <React.Suspense fallback={<div className="flex items-center justify-center h-screen">Loading application...</div>}>
             <TopNav />
             <div className="pt-12"> {/* Add padding for the fixed TopNav */}
@@ -312,6 +315,7 @@ export default function App() {
           </React.Suspense>
           <LumenAssistant />
         </LumenAssistantProvider>
+          </OnboardingProvider>
         </AuthProvider>
       </ToastProvider>
     </SimpleErrorBoundary>

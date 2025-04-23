@@ -5,6 +5,7 @@ import { Link } from 'wouter';
 import { ExternalLink, History, FileText, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
+import Module32Tour from '../components/Module32Tour';
 
 const Module32Form = () => {
   const [formData, setFormData] = useState({
@@ -80,6 +81,7 @@ const Module32Form = () => {
   
   return (
     <Layout>
+      <Module32Tour />
       <div className="module32-form-container py-12 px-6 max-w-5xl mx-auto">
         <div className="form-header">
           <h1 className="text-3xl font-bold text-blue-800 mb-4">Generate Module 3.2 Documentation</h1>

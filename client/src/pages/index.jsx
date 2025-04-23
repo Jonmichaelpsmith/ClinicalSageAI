@@ -2,26 +2,37 @@ import React from "react";
 import { Link } from "wouter";
 import { Sparkles, FileText, ArrowRight } from "lucide-react";
 import Layout from "../components/Layout";
+import OnboardingTour from "../components/OnboardingTour";
 
 export default function Home() {
   return (
     <Layout>
+      <OnboardingTour />
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 text-gray-800">
         <main className="max-w-6xl mx-auto py-24 px-6 text-center animate-fadeIn">
           <h1 className="text-5xl font-bold mb-6 text-blue-900 leading-tight">
             AI-Powered Chemistry, Manufacturing & Controls
           </h1>
-          <p className="text-lg text-gray-600 max-w-4xl mx-auto mb-10">
+          <p className="text-lg text-gray-600 max-w-4xl mx-auto mb-4">
             TrialSage™ eliminates manual bottlenecks in regulatory document creation by using AI to generate, analyze,
             and version ICH-compliant CMC documentation. Speed up IND, CTA, NDA, and global filing timelines with the only
             platform built for biotech execution speed.
           </p>
+          <p className="text-md font-semibold text-blue-700 mb-10">
+            One platform. Three modules. Total control:
+            <span className="animate-pulse"> Generate ➝ Compare ➝ Export</span>
+          </p>
 
           <div className="flex justify-center space-x-6 mb-12">
             <Link href="/module32">
-              <a className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-lg shadow-lg flex items-center space-x-2 transition duration-150 ease-in-out">
+              <a className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-lg shadow-lg flex items-center space-x-2 transition duration-150 ease-in-out cta-pulse">
                 <Sparkles className="w-5 h-5" />
-                <span>Start Generating</span>
+                <span className="relative group">
+                  Start Generating
+                  <span className="absolute -top-10 left-1/2 -translate-x-1/2 w-max px-2 py-1 text-xs bg-blue-800 text-white rounded shadow opacity-0 group-hover:opacity-100 transition duration-300">
+                    Instantly draft ICH Module 3.2
+                  </span>
+                </span>
               </a>
             </Link>
             <Link href="/versions">
