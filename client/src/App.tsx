@@ -39,6 +39,8 @@ const LazyCERGeneration = React.lazy(() => import('./pages/CERGeneration'));
 const LazyStreamingCERGenerator = React.lazy(() => import('./pages/CERGenerator'));
 // Add JP Validation Hub
 const LazyValidationHub = React.lazy(() => import('./pages/ValidationHub'));
+// Add Enhanced Validation Hub with Microsoft 365 UI
+const LazyValidationHubEnhanced = React.lazy(() => import('./pages/ValidationHubEnhanced'));
 // Add Adaptive Learning interface
 const LazyAdaptiveLearning = React.lazy(() => import('./pages/AdaptiveLearning'));
 // Add Document Risk Prediction with AI-powered insights
@@ -230,6 +232,11 @@ export default function App() {
               <Route path="/validation-hub">
                 <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Validation Hub" />}>
                   <LazyValidationHub />
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/validation-hub-enhanced">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Enhanced Validation Hub" />}>
+                  <LazyValidationHubEnhanced />
                 </SimpleErrorBoundary>
               </Route>
               <Route path="/cmc-blueprint-generator">

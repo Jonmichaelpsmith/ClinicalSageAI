@@ -164,6 +164,9 @@ export default function HomeLandingProtected() {
                 <Link to="/document-suite" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">
                   SmartDoc Suite: CER + Narratives
                 </Link>
+                <Link to="/validation-hub-enhanced" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                  RegIntel Validator
+                </Link>
                 <Link to="/portal" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">
                   Insight360 Vault & Dashboard
                 </Link>
