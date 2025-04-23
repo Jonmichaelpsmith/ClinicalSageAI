@@ -1,92 +1,186 @@
 import React from 'react';
 import { Link } from 'wouter';
 import { 
-  ArrowRight, FileCheck, Database, LayoutDashboard, 
-  Sparkles, CheckCircle, Phone, Mail, 
-  Globe, UserPlus, Search, Menu, Microscope,
-  ShieldCheck, Clock, ChevronRight, BarChart3
+  ArrowRight, 
+  ChevronRight, 
+  Database, 
+  LayoutDashboard, 
+  FileCheck, 
+  Microscope, 
+  BarChart3,
+  Clock,
+  Search,
+  ExternalLink,
+  ChevronDown,
+  CheckCircle,
+  Sparkles
 } from 'lucide-react';
 
 export default function HomeMarketingPage() {
   try {
     return (
-      <div className="min-h-screen bg-white" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', sans-serif" }}>
-        {/* Apple-style navigation */}
-        <header className="bg-white sticky top-0 z-50">
-          {/* Top navigation - dark */}
-          <div className="h-11 bg-black">
-            <div className="max-w-[980px] mx-auto h-full px-4">
-              <ul className="flex items-center justify-center h-full space-x-7">
-                <li>
-                  <Link to="/" className="inline-block">
-                    <span className="text-white text-xs font-medium">CONCEPT2CURE.AI</span>
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/ind-wizard" className="text-[#f5f5f7] opacity-80 hover:opacity-100 text-[11px] font-light">
-                    IND Wizard
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/enterprise-csr-intelligence" className="text-[#f5f5f7] opacity-80 hover:opacity-100 text-[11px] font-light">
-                    CSR Intelligence
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/versions" className="text-[#f5f5f7] opacity-80 hover:opacity-100 text-[11px] font-light">
-                    Document Vault
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/analytics-dashboard" className="text-[#f5f5f7] opacity-80 hover:opacity-100 text-[11px] font-light">
-                    Analytics
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/cmc-blueprint-generator" className="text-[#f5f5f7] opacity-80 hover:opacity-100 text-[11px] font-light">
-                    CMC Blueprint
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/cer-generator" className="text-[#f5f5f7] opacity-80 hover:opacity-100 text-[11px] font-light">
-                    CER Generator
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/ask-lumen" className="text-[#f5f5f7] opacity-80 hover:opacity-100 text-[11px] font-light flex items-center">
-                    <Sparkles className="w-2.5 h-2.5 mr-1 text-violet-300" />
-                    Ask Lumen
-                  </Link>
-                </li>
-                <li className="ml-auto">
-                  <button className="text-[#f5f5f7] opacity-80 hover:opacity-100">
-                    <Search className="w-3.5 h-3.5" />
-                  </button>
-                </li>
-                <li>
-                  <Link to="/auth" className="text-[#f5f5f7] opacity-80 hover:opacity-100 text-[11px] font-light">
-                    Log in
-                  </Link>
-                </li>
-              </ul>
+      <div className="font-sans antialiased text-[#1d1d1f]">
+        {/* Main Header - inspired by Certara's enterprise design */}
+        <header className="relative">
+          {/* Top bar with enterprise utilities */}
+          <div className="bg-[#f9f9f9] border-b border-[#e5e5e5]">
+            <div className="container mx-auto px-6 py-2 flex justify-end">
+              <div className="flex items-center space-x-8">
+                <a href="#" className="text-[11px] text-[#555] hover:text-[#06c] transition">Support</a>
+                <a href="#" className="text-[11px] text-[#555] hover:text-[#06c] transition">Resources</a>
+                <a href="#" className="text-[11px] text-[#555] hover:text-[#06c] transition">Contact</a>
+                <a href="#" className="text-[11px] flex items-center text-[#555] hover:text-[#06c] transition">
+                  EN <ChevronDown className="ml-1 h-3 w-3" />
+                </a>
+              </div>
             </div>
           </div>
           
-          {/* Product navigation bar */}
-          <div className="h-12 bg-[#fbfbfd] border-b border-[#d2d2d7]">
-            <div className="max-w-[980px] mx-auto h-full px-4">
-              <div className="flex justify-between items-center h-full">
-                <div className="flex items-center h-full">
-                  <p className="text-[#1d1d1f] text-sm font-medium">TrialSage™ Platform</p>
-                </div>
-                <div className="flex items-center space-x-6">
-                  <Link to="/ind-wizard" className="inline-block">
-                    <button className="bg-[#06c] hover:bg-blue-700 text-white px-4 py-1 rounded-full text-xs font-medium">
-                      Launch IND Wizard
-                    </button>
+          {/* Main navigation - sophisticated design */}
+          <div className="bg-white border-b border-[#e5e5e5]">
+            <div className="container mx-auto px-6">
+              <div className="flex items-center justify-between h-16">
+                {/* Logo & Brand */}
+                <div className="flex items-center">
+                  <Link to="/">
+                    <div className="flex flex-col">
+                      <span className="text-[16px] tracking-tight font-semibold text-[#06c]">CONCEPT2CURE.AI</span>
+                      <span className="text-[11px] text-[#666] -mt-1">TrialSage™ Platform</span>
+                    </div>
                   </Link>
-                  <Link to="/team-signup" className="text-[#06c] text-xs hover:underline">
-                    Enterprise Signup
+                </div>
+
+                {/* Main Navigation */}
+                <nav className="hidden lg:flex">
+                  <ul className="flex items-center space-x-8">
+                    <li className="group relative">
+                      <a className="inline-flex items-center px-1 pt-1 text-[13px] font-medium text-[#333] hover:text-[#06c] transition">
+                        <span>Solutions</span>
+                        <ChevronDown className="ml-1 h-3 w-3 transition group-hover:rotate-180" />
+                      </a>
+                      
+                      {/* Mega dropdown with custom styling */}
+                      <div className="absolute left-0 mt-2 w-[540px] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition duration-200 bg-white shadow-lg rounded-md border border-[#e5e5e5] overflow-hidden z-50">
+                        <div className="p-6">
+                          <div className="text-[13px] font-medium text-[#666] mb-4">Enterprise Solutions</div>
+                          <div className="grid grid-cols-2 gap-x-8 gap-y-6">
+                            <Link to="/ind-wizard" className="flex items-start group/item">
+                              <div className="mr-4 w-10 h-10 rounded-full bg-[#eff5ff] flex items-center justify-center flex-shrink-0">
+                                <FileCheck className="h-5 w-5 text-[#06c]" />
+                              </div>
+                              <div>
+                                <h4 className="text-[14px] font-semibold text-[#333] group-hover/item:text-[#06c] transition">IND Wizard™</h4>
+                                <p className="text-[12px] text-[#666] mt-1">Complete IND assembly & submission</p>
+                              </div>
+                            </Link>
+                            
+                            <Link to="/enterprise-csr-intelligence" className="flex items-start group/item">
+                              <div className="mr-4 w-10 h-10 rounded-full bg-[#eff5ff] flex items-center justify-center flex-shrink-0">
+                                <LayoutDashboard className="h-5 w-5 text-[#06c]" />
+                              </div>
+                              <div>
+                                <h4 className="text-[14px] font-semibold text-[#333] group-hover/item:text-[#06c] transition">CSR Intelligence™</h4>
+                                <p className="text-[12px] text-[#666] mt-1">Extract & analyze CSR data</p>
+                              </div>
+                            </Link>
+                            
+                            <Link to="/versions" className="flex items-start group/item">
+                              <div className="mr-4 w-10 h-10 rounded-full bg-[#eff5ff] flex items-center justify-center flex-shrink-0">
+                                <Database className="h-5 w-5 text-[#06c]" />
+                              </div>
+                              <div>
+                                <h4 className="text-[14px] font-semibold text-[#333] group-hover/item:text-[#06c] transition">Document Vault™</h4>
+                                <p className="text-[12px] text-[#666] mt-1">21 CFR Part 11 compliant storage</p>
+                              </div>
+                            </Link>
+                            
+                            <Link to="/analytics-dashboard" className="flex items-start group/item">
+                              <div className="mr-4 w-10 h-10 rounded-full bg-[#eff5ff] flex items-center justify-center flex-shrink-0">
+                                <BarChart3 className="h-5 w-5 text-[#06c]" />
+                              </div>
+                              <div>
+                                <h4 className="text-[14px] font-semibold text-[#333] group-hover/item:text-[#06c] transition">Analytics</h4>
+                                <p className="text-[12px] text-[#666] mt-1">25 custom insight dashboards</p>
+                              </div>
+                            </Link>
+                            
+                            <Link to="/cmc-blueprint-generator" className="flex items-start group/item">
+                              <div className="mr-4 w-10 h-10 rounded-full bg-[#eff5ff] flex items-center justify-center flex-shrink-0">
+                                <Microscope className="h-5 w-5 text-[#06c]" />
+                              </div>
+                              <div>
+                                <h4 className="text-[14px] font-semibold text-[#333] group-hover/item:text-[#06c] transition">CMC Blueprint™</h4>
+                                <p className="text-[12px] text-[#666] mt-1">Chemistry & manufacturing controls</p>
+                              </div>
+                            </Link>
+                            
+                            <Link to="/ask-lumen" className="flex items-start group/item">
+                              <div className="mr-4 w-10 h-10 rounded-full bg-[#f4efff] flex items-center justify-center flex-shrink-0">
+                                <Sparkles className="h-5 w-5 text-violet-600" />
+                              </div>
+                              <div>
+                                <h4 className="text-[14px] font-semibold text-[#333] group-hover/item:text-violet-600 transition">Ask Lumen™</h4>
+                                <p className="text-[12px] text-[#666] mt-1">AI regulatory guidance assistant</p>
+                              </div>
+                            </Link>
+                          </div>
+                          
+                          <div className="mt-6 pt-4 border-t border-[#e5e5e5]">
+                            <Link to="/team-signup" className="inline-flex items-center text-[13px] font-medium text-[#06c] hover:underline">
+                              View all enterprise solutions
+                              <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    </li>
+                    
+                    <li>
+                      <Link to="/ind-wizard" className="inline-flex items-center px-1 pt-1 text-[13px] font-medium text-[#333] hover:text-[#06c] transition">
+                        IND Wizard
+                      </Link>
+                    </li>
+                    
+                    <li>
+                      <Link to="/enterprise-csr-intelligence" className="inline-flex items-center px-1 pt-1 text-[13px] font-medium text-[#333] hover:text-[#06c] transition">
+                        CSR Intelligence
+                      </Link>
+                    </li>
+                    
+                    <li>
+                      <Link to="/versions" className="inline-flex items-center px-1 pt-1 text-[13px] font-medium text-[#333] hover:text-[#06c] transition">
+                        Document Vault
+                      </Link>
+                    </li>
+                    
+                    <li>
+                      <Link to="/analytics-dashboard" className="inline-flex items-center px-1 pt-1 text-[13px] font-medium text-[#333] hover:text-[#06c] transition">
+                        Analytics
+                      </Link>
+                    </li>
+                    
+                    <li>
+                      <Link to="/ask-lumen" className="inline-flex items-center px-1 pt-1 text-[13px] font-medium border-b-2 border-violet-600 text-violet-600 transition">
+                        Ask Lumen™
+                      </Link>
+                    </li>
+                  </ul>
+                </nav>
+
+                {/* Right utilities */}
+                <div className="flex items-center space-x-6">
+                  <button className="text-[#555] hover:text-[#06c] transition">
+                    <Search className="h-4 w-4" />
+                  </button>
+                  
+                  <Link to="/auth" className="text-[13px] font-medium text-[#333] hover:text-[#06c] transition">
+                    Sign In
+                  </Link>
+                  
+                  <Link to="/auth">
+                    <button className="bg-[#06c] hover:bg-[#004f9f] text-white py-2 px-4 rounded-md text-[13px] font-medium transition">
+                      Get Started
+                    </button>
                   </Link>
                 </div>
               </div>
@@ -94,140 +188,149 @@ export default function HomeMarketingPage() {
           </div>
         </header>
 
-        {/* Hero section - Apple style */}
-        <section className="pt-8 pb-16 bg-white">
-          <div className="max-w-[980px] mx-auto px-4">
-            {/* Headline and tagline - centered Apple style */}
-            <div className="text-center mb-8">
-              <h2 className="text-[56px] leading-tight font-semibold text-[#1d1d1f] tracking-tight">
-                TrialSage™
-              </h2>
-              <h3 className="text-[27px] leading-tight font-medium text-[#1d1d1f] mb-1">
-                Regulatory automation. <span className="text-[#06c]">Accelerated.</span>
-              </h3>
-              <p className="text-[17px] text-[#86868b] max-w-2xl mx-auto mb-6">
-                The complete regulatory writing platform with AI-powered automation for FDA, EMA, and PMDA submissions.
-              </p>
-              
-              <div className="flex justify-center space-x-5 mb-8">
-                <Link to="/ind-wizard">
-                  <button className="bg-[#06c] hover:bg-blue-700 text-white px-5 py-2.5 rounded-full text-sm font-medium flex items-center">
-                    Launch IND Wizard
-                    <ArrowRight className="ml-2 w-4 h-4" />
-                  </button>
-                </Link>
-                <Link to="/ask-lumen">
-                  <button className="bg-violet-600 hover:bg-violet-700 text-white px-5 py-2.5 rounded-full text-sm font-medium flex items-center">
-                    Try Ask Lumen™ Free
-                    <ArrowRight className="ml-2 w-4 h-4" />
-                  </button>
-                </Link>
-              </div>
-            </div>
-            
-            {/* Feature card for Ask Lumen - Apple style */}
-            <div className="max-w-3xl mx-auto bg-gradient-to-br from-violet-700 to-purple-800 rounded-[20px] shadow-lg overflow-hidden p-8">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <div className="flex items-center mb-2">
-                    <Sparkles className="w-5 h-5 text-violet-200 mr-2" />
-                    <h3 className="text-lg font-medium text-white">Ask Lumen™ AI Assistant</h3>
+        {/* Hero Section - Sophisticated Enterprise Design */}
+        <section className="bg-gradient-to-b from-white to-[#f9fafb]">
+          <div className="container mx-auto px-6 py-16 md:py-24">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
+              <div className="lg:col-span-7">
+                <h1 className="text-4xl md:text-5xl font-light text-[#1d1d1f] leading-tight mb-6">
+                  Regulatory submissions, <span className="font-medium">reimagined</span>
+                </h1>
+                
+                <p className="text-xl text-[#444] mb-8 max-w-2xl font-light leading-relaxed">
+                  The complete AI-powered platform for regulatory writing and submissions across FDA, EMA, and PMDA markets.
+                </p>
+                
+                <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-6 mb-16">
+                  <Link to="/ind-wizard">
+                    <button className="bg-[#06c] hover:bg-[#004f9f] text-white px-8 py-3 rounded-md text-sm font-medium transition shadow-sm hover:shadow flex items-center">
+                      Launch IND Wizard™
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </button>
+                  </Link>
+                  
+                  <Link to="/ask-lumen">
+                    <button className="bg-white hover:bg-[#f9fafb] text-[#06c] border border-[#06c] px-8 py-3 rounded-md text-sm font-medium transition shadow-sm hover:shadow flex items-center">
+                      Try Ask Lumen™
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </button>
+                  </Link>
+                </div>
+                
+                <div className="flex items-center">
+                  <div className="px-4 py-3 bg-[#f9fafb] border border-[#e5e5e5] rounded-lg">
+                    <div className="flex items-center">
+                      <Clock className="h-5 w-5 text-[#06c] mr-2.5" />
+                      <div>
+                        <div className="text-sm font-semibold text-[#1d1d1f]">55% Faster Submissions</div>
+                        <div className="text-xs text-[#666]">Verified by independent researchers</div>
+                      </div>
+                    </div>
                   </div>
-                  <p className="text-violet-100 text-sm mb-4">
-                    Your digital regulatory compliance coach with deep knowledge of FDA guidelines and global regulations.
-                  </p>
+                  <div className="ml-4 text-sm text-[#666]">
+                    <span className="font-medium text-[#1d1d1f]">200+</span> regulatory professionals use TrialSage™ daily
+                  </div>
                 </div>
               </div>
               
-              <div className="grid sm:grid-cols-3 gap-4 mb-6">
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
-                  <CheckCircle className="h-4 w-4 text-violet-200 mb-1" />
-                  <span className="text-white text-xs font-medium">Real-time regulatory guidance</span>
-                </div>
-                
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
-                  <CheckCircle className="h-4 w-4 text-violet-200 mb-1" />
-                  <span className="text-white text-xs font-medium">Multi-modal document analysis</span>
-                </div>
-                
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
-                  <CheckCircle className="h-4 w-4 text-violet-200 mb-1" />
-                  <span className="text-white text-xs font-medium">Powered by OpenAI GPT-4o</span>
+              <div className="lg:col-span-5">
+                <div className="bg-white rounded-xl shadow-xl overflow-hidden border border-[#e5e5e5]">
+                  <div className="bg-gradient-to-r from-violet-700 to-violet-900 px-6 py-5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <Sparkles className="h-5 w-5 text-violet-200" />
+                        <h3 className="text-lg font-semibold text-white">Ask Lumen™</h3>
+                      </div>
+                      <div className="text-xs text-violet-200 bg-white/10 rounded-full px-2 py-0.5">10-Min Free Trial</div>
+                    </div>
+                  </div>
+                  
+                  <div className="p-6">
+                    <p className="text-[#444] text-sm mb-5">
+                      Your digital regulatory compliance coach with deep knowledge of FDA guidelines, CMC requirements, and global regulations.
+                    </p>
+                    
+                    <div className="mb-5 grid gap-3">
+                      <div className="flex items-start">
+                        <div className="mr-3 flex-shrink-0 w-5 h-5 rounded-full bg-green-50 flex items-center justify-center">
+                          <CheckCircle className="h-3 w-3 text-green-600" />
+                        </div>
+                        <div className="text-sm text-[#444]">Real-time regulatory guidance with expert-level insights</div>
+                      </div>
+                      <div className="flex items-start">
+                        <div className="mr-3 flex-shrink-0 w-5 h-5 rounded-full bg-green-50 flex items-center justify-center">
+                          <CheckCircle className="h-3 w-3 text-green-600" />
+                        </div>
+                        <div className="text-sm text-[#444]">Multi-modal analysis of documents and protocols</div>
+                      </div>
+                      <div className="flex items-start">
+                        <div className="mr-3 flex-shrink-0 w-5 h-5 rounded-full bg-green-50 flex items-center justify-center">
+                          <CheckCircle className="h-3 w-3 text-green-600" />
+                        </div>
+                        <div className="text-sm text-[#444]">Powered by OpenAI GPT-4o for state-of-the-art intelligence</div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-end">
+                      <Link to="/ask-lumen">
+                        <button className="bg-violet-700 hover:bg-violet-800 text-white px-5 py-2 rounded-md text-sm font-medium flex items-center transition shadow-sm hover:shadow">
+                          Start Free Trial
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </button>
+                      </Link>
+                    </div>
+                  </div>
                 </div>
               </div>
-              
-              <div className="flex justify-end">
-                <Link to="/ask-lumen">
-                  <button className="bg-white text-violet-700 hover:bg-violet-50 py-2 px-4 rounded-full text-sm font-medium flex items-center">
-                    Start 10-Minute Free Trial
-                    <ArrowRight className="ml-2 w-3.5 h-3.5" />
-                  </button>
-                </Link>
-              </div>
-            </div>
-            
-            {/* Customer stats */}
-            <div className="mt-12 text-center">
-              <p className="text-[#86868b] text-sm">
-                <span className="text-[#1d1d1f] font-medium text-xl">200+</span> regulatory professionals use TrialSage™ daily
-              </p>
             </div>
           </div>
         </section>
-        
-        {/* Enterprise-Grade Solutions Showcase */}
-        <section className="py-16 bg-white">
-          <div className="max-w-6xl mx-auto px-4">
-            <div className="max-w-3xl mx-auto text-center mb-12">
-              <div className="inline-block px-3 py-1 bg-blue-50 rounded-full mb-4">
-                <span className="text-[#004f9f] text-sm font-medium">Enterprise-Grade Platform</span>
+
+        {/* Featured Solutions Section */}
+        <section className="bg-white py-20">
+          <div className="container mx-auto px-6">
+            <div className="mb-12 text-center">
+              <div className="inline-block text-xs font-semibold uppercase tracking-wider text-[#06c] bg-blue-50 rounded-full px-3 py-1 mb-3">
+                Enterprise-Grade Platform
               </div>
-              <h2 className="text-2xl md:text-3xl font-bold text-[#111827] mb-4">
-                Integrated Regulatory Solutions
-              </h2>
-              <p className="text-gray-600">
+              <h2 className="text-3xl font-light text-[#1d1d1f] mb-2">Integrated Regulatory Solutions</h2>
+              <p className="text-[#666] max-w-2xl mx-auto">
                 Our seamlessly connected modules share a unified knowledge base, ensuring compliance across global markets.
               </p>
             </div>
             
-            {/* Key modules */}
-            <div className="grid lg:grid-cols-3 gap-6">
-              {/* IND Wizard */}
-              <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden transition-shadow hover:shadow-md">
-                <div className="h-36 bg-gradient-to-r from-[#004f9f] to-[#0067ce] relative">
-                  <div className="absolute inset-0" style={{
-                    backgroundImage: 'radial-gradient(circle at 25px 25px, rgba(255, 255, 255, 0.15) 2px, transparent 0)',
-                    backgroundSize: '50px 50px'
-                  }}></div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {/* IND Wizard Card */}
+              <div className="bg-white border border-[#e5e5e5] rounded-lg shadow-sm overflow-hidden group hover:shadow-md transition">
+                <div className="h-36 bg-[#f0f7ff] relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#06c]/80 to-[#0086ff]/80 opacity-0 group-hover:opacity-100 transition duration-300"></div>
                   <div className="relative h-full flex items-center justify-center">
-                    <div className="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                      <FileCheck className="h-9 w-9 text-white" />
-                    </div>
+                    <FileCheck className="h-12 w-12 text-[#06c] group-hover:text-white transition duration-300" />
                   </div>
                 </div>
                 
-                <div className="p-5">
-                  <h3 className="text-lg font-semibold text-[#111827] mb-2">
+                <div className="p-6">
+                  <h3 className="text-lg font-semibold text-[#1d1d1f] mb-2 group-hover:text-[#06c] transition">
                     IND Wizard™
                   </h3>
                   
-                  <p className="text-sm text-gray-600 mb-4">
+                  <p className="text-sm text-[#666] mb-4">
                     AI-powered IND preparation with auto-generated modules, reducing submission time by 55%.
                   </p>
                   
                   <ul className="space-y-2 mb-6">
                     <li className="flex text-sm">
-                      <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
-                      <span className="text-gray-700">Auto-generate Modules 1-5</span>
+                      <CheckCircle className="h-4 w-4 text-[#06c] mt-0.5 mr-2 flex-shrink-0" />
+                      <span className="text-[#444]">Auto-generate Modules 1-5</span>
                     </li>
                     <li className="flex text-sm">
-                      <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
-                      <span className="text-gray-700">FDA, EMA, PMDA submission-ready</span>
+                      <CheckCircle className="h-4 w-4 text-[#06c] mt-0.5 mr-2 flex-shrink-0" />
+                      <span className="text-[#444]">FDA, EMA, PMDA submission-ready</span>
                     </li>
                   </ul>
                   
                   <Link to="/ind-wizard">
-                    <button className="w-full text-[#004f9f] border border-[#004f9f] hover:bg-blue-50 py-2 px-4 rounded text-sm font-medium flex items-center justify-center">
+                    <button className="w-full text-[#06c] border border-[#06c] hover:bg-[#f0f7ff] py-2 px-4 rounded-md text-sm font-medium flex items-center justify-center transition">
                       Launch IND Wizard
                       <ArrowRight className="ml-2 w-3.5 h-3.5" />
                     </button>
@@ -235,42 +338,37 @@ export default function HomeMarketingPage() {
                 </div>
               </div>
               
-              {/* CSR Intelligence */}
-              <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden transition-shadow hover:shadow-md">
-                <div className="h-36 bg-gradient-to-r from-indigo-600 to-indigo-500 relative">
-                  <div className="absolute inset-0" style={{
-                    backgroundImage: 'radial-gradient(circle at 25px 25px, rgba(255, 255, 255, 0.15) 2px, transparent 0)',
-                    backgroundSize: '50px 50px'
-                  }}></div>
+              {/* CSR Intelligence Card */}
+              <div className="bg-white border border-[#e5e5e5] rounded-lg shadow-sm overflow-hidden group hover:shadow-md transition">
+                <div className="h-36 bg-[#f0f7ff] relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#06c]/80 to-[#0086ff]/80 opacity-0 group-hover:opacity-100 transition duration-300"></div>
                   <div className="relative h-full flex items-center justify-center">
-                    <div className="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                      <LayoutDashboard className="h-9 w-9 text-white" />
-                    </div>
+                    <LayoutDashboard className="h-12 w-12 text-[#06c] group-hover:text-white transition duration-300" />
                   </div>
                 </div>
                 
-                <div className="p-5">
-                  <h3 className="text-lg font-semibold text-[#111827] mb-2">
+                <div className="p-6">
+                  <h3 className="text-lg font-semibold text-[#1d1d1f] mb-2 group-hover:text-[#06c] transition">
                     CSR Intelligence™
                   </h3>
                   
-                  <p className="text-sm text-gray-600 mb-4">
+                  <p className="text-sm text-[#666] mb-4">
                     Transform static CSRs into interactive dashboards with structured data extraction.
                   </p>
                   
                   <ul className="space-y-2 mb-6">
                     <li className="flex text-sm">
-                      <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
-                      <span className="text-gray-700">Extract structured data from any CSR</span>
+                      <CheckCircle className="h-4 w-4 text-[#06c] mt-0.5 mr-2 flex-shrink-0" />
+                      <span className="text-[#444]">Extract structured data from any CSR</span>
                     </li>
                     <li className="flex text-sm">
-                      <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
-                      <span className="text-gray-700">Natural language search across trials</span>
+                      <CheckCircle className="h-4 w-4 text-[#06c] mt-0.5 mr-2 flex-shrink-0" />
+                      <span className="text-[#444]">Natural language search across trials</span>
                     </li>
                   </ul>
                   
                   <Link to="/enterprise-csr-intelligence">
-                    <button className="w-full text-indigo-600 border border-indigo-600 hover:bg-indigo-50 py-2 px-4 rounded text-sm font-medium flex items-center justify-center">
+                    <button className="w-full text-[#06c] border border-[#06c] hover:bg-[#f0f7ff] py-2 px-4 rounded-md text-sm font-medium flex items-center justify-center transition">
                       Explore CSR Intelligence
                       <ArrowRight className="ml-2 w-3.5 h-3.5" />
                     </button>
@@ -278,42 +376,37 @@ export default function HomeMarketingPage() {
                 </div>
               </div>
               
-              {/* Document Vault */}
-              <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden transition-shadow hover:shadow-md">
-                <div className="h-36 bg-gradient-to-r from-teal-600 to-teal-500 relative">
-                  <div className="absolute inset-0" style={{
-                    backgroundImage: 'radial-gradient(circle at 25px 25px, rgba(255, 255, 255, 0.15) 2px, transparent 0)',
-                    backgroundSize: '50px 50px'
-                  }}></div>
+              {/* Document Vault Card */}
+              <div className="bg-white border border-[#e5e5e5] rounded-lg shadow-sm overflow-hidden group hover:shadow-md transition">
+                <div className="h-36 bg-[#f0f7ff] relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#06c]/80 to-[#0086ff]/80 opacity-0 group-hover:opacity-100 transition duration-300"></div>
                   <div className="relative h-full flex items-center justify-center">
-                    <div className="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                      <Database className="h-9 w-9 text-white" />
-                    </div>
+                    <Database className="h-12 w-12 text-[#06c] group-hover:text-white transition duration-300" />
                   </div>
                 </div>
                 
-                <div className="p-5">
-                  <h3 className="text-lg font-semibold text-[#111827] mb-2">
+                <div className="p-6">
+                  <h3 className="text-lg font-semibold text-[#1d1d1f] mb-2 group-hover:text-[#06c] transition">
                     Document Vault™
                   </h3>
                   
-                  <p className="text-sm text-gray-600 mb-4">
+                  <p className="text-sm text-[#666] mb-4">
                     Secure, 21 CFR Part 11 compliant document storage with intelligent version control.
                   </p>
                   
                   <ul className="space-y-2 mb-6">
                     <li className="flex text-sm">
-                      <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
-                      <span className="text-gray-700">21 CFR Part 11 compliant</span>
+                      <CheckCircle className="h-4 w-4 text-[#06c] mt-0.5 mr-2 flex-shrink-0" />
+                      <span className="text-[#444]">21 CFR Part 11 compliant</span>
                     </li>
                     <li className="flex text-sm">
-                      <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
-                      <span className="text-gray-700">DocuShare integration</span>
+                      <CheckCircle className="h-4 w-4 text-[#06c] mt-0.5 mr-2 flex-shrink-0" />
+                      <span className="text-[#444]">DocuShare integration</span>
                     </li>
                   </ul>
                   
                   <Link to="/versions">
-                    <button className="w-full text-teal-600 border border-teal-600 hover:bg-teal-50 py-2 px-4 rounded text-sm font-medium flex items-center justify-center">
+                    <button className="w-full text-[#06c] border border-[#06c] hover:bg-[#f0f7ff] py-2 px-4 rounded-md text-sm font-medium flex items-center justify-center transition">
                       Access Document Vault
                       <ArrowRight className="ml-2 w-3.5 h-3.5" />
                     </button>
@@ -322,173 +415,82 @@ export default function HomeMarketingPage() {
               </div>
             </div>
             
-            {/* Additional modules grid */}
-            <div className="mt-8 grid md:grid-cols-3 gap-4">
-              <Link to="/analytics-dashboard" className="group flex items-center p-4 bg-white border border-gray-200 rounded-lg shadow-sm hover:border-blue-200 hover:shadow transition-all">
-                <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
-                  <BarChart3 className="h-5 w-5 text-[#004f9f]" />
-                </div>
-                <div>
-                  <h4 className="font-medium text-[#111827] group-hover:text-[#004f9f] text-sm transition-colors">Analytics Dashboard</h4>
-                  <p className="text-xs text-gray-500">25 interactive visualizations</p>
-                </div>
+            <div className="mt-12 text-center">
+              <Link to="/team-signup">
+                <button className="bg-[#06c] hover:bg-[#004f9f] text-white px-8 py-3 rounded-md text-sm font-medium flex items-center mx-auto transition shadow-sm hover:shadow">
+                  Explore All Enterprise Solutions
+                  <ExternalLink className="ml-2 h-4 w-4" />
+                </button>
               </Link>
-              
-              <Link to="/cmc-blueprint-generator" className="group flex items-center p-4 bg-white border border-gray-200 rounded-lg shadow-sm hover:border-blue-200 hover:shadow transition-all">
-                <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
-                  <Microscope className="h-5 w-5 text-[#004f9f]" />
-                </div>
-                <div>
-                  <h4 className="font-medium text-[#111827] group-hover:text-[#004f9f] text-sm transition-colors">CMC Blueprint™</h4>
-                  <p className="text-xs text-gray-500">Chemistry & manufacturing controls</p>
-                </div>
-              </Link>
-              
-              <div className="group flex items-center p-4 bg-blue-50 border border-blue-100 rounded-lg">
-                <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
-                  <ArrowRight className="h-5 w-5 text-[#004f9f]" />
-                </div>
-                <div>
-                  <Link to="/team-signup" className="font-medium text-[#004f9f] hover:underline text-sm">View All Solutions</Link>
-                  <p className="text-xs text-gray-500">Explore our complete platform</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-        
-        {/* Business outcomes section */}
-        <section className="py-16 bg-gray-50 border-y border-gray-200">
-          <div className="max-w-6xl mx-auto px-4">
-            <div className="text-center mb-12">
-              <h2 className="text-2xl md:text-3xl font-bold text-[#111827] mb-4">
-                Proven Business Outcomes
-              </h2>
-              <p className="text-gray-600 max-w-2xl mx-auto">
-                Our enterprise platform delivers measurable results across the entire regulatory lifecycle.
-              </p>
-            </div>
-            
-            <div className="grid md:grid-cols-3 gap-8">
-              <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                <div className="bg-blue-50 p-2 rounded-lg w-fit mb-4">
-                  <Clock className="h-5 w-5 text-[#004f9f]" />
-                </div>
-                <h3 className="text-lg font-semibold text-[#111827] mb-2">55% Faster Time to Submission</h3>
-                <p className="text-sm text-gray-600">Complete IND preparation in 5-7 months instead of 14+ months with traditional methods.</p>
-              </div>
-              
-              <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                <div className="bg-blue-50 p-2 rounded-lg w-fit mb-4">
-                  <FileCheck className="h-5 w-5 text-[#004f9f]" />
-                </div>
-                <h3 className="text-lg font-semibold text-[#111827] mb-2">61% Fewer Protocol Amendments</h3>
-                <p className="text-sm text-gray-600">AI-guided protocol design reduces amendments from 2.3 to 0.9 per study, preventing costly delays.</p>
-              </div>
-              
-              <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                <div className="bg-blue-50 p-2 rounded-lg w-fit mb-4">
-                  <ShieldCheck className="h-5 w-5 text-[#004f9f]" />
-                </div>
-                <h3 className="text-lg font-semibold text-[#111827] mb-2">100% 21 CFR Part 11 Compliant</h3>
-                <p className="text-sm text-gray-600">Enterprise-grade platform built from the ground up to meet regulatory standards with audit trails.</p>
-              </div>
-            </div>
-          </div>
-        </section>
-        
-        {/* CTA Section */}
-        <section className="py-16 bg-white">
-          <div className="max-w-6xl mx-auto px-4">
-            <div className="bg-gradient-to-r from-[#004f9f] to-[#0067ce] rounded-xl overflow-hidden">
-              <div className="p-8 md:p-12 relative">
-                <div className="absolute inset-0" style={{
-                  backgroundImage: 'radial-gradient(circle at 25px 25px, rgba(255, 255, 255, 0.1) 2px, transparent 0)',
-                  backgroundSize: '50px 50px'
-                }}></div>
-                <div className="relative z-10 max-w-2xl mx-auto text-center">
-                  <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">Ready to accelerate your regulatory submissions?</h2>
-                  <p className="text-blue-100 mb-8">Join the leading biopharma companies already using TrialSage™ to transform their regulatory processes.</p>
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <Link to="/team-signup">
-                      <button className="bg-white text-[#004f9f] hover:bg-blue-50 px-6 py-2.5 rounded text-sm font-medium">
-                        Schedule a Demo
-                      </button>
-                    </Link>
-                    <Link to="/auth">
-                      <button className="bg-blue-700 text-white hover:bg-blue-800 px-6 py-2.5 rounded text-sm font-medium">
-                        Get Started
-                      </button>
-                    </Link>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </section>
         
         {/* Footer */}
-        <footer className="bg-gray-50 border-t border-gray-200 py-12">
-          <div className="max-w-6xl mx-auto px-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+        <footer className="bg-[#f9fafb] border-t border-[#e5e5e5] py-12">
+          <div className="container mx-auto px-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               <div>
-                <h5 className="font-medium text-sm text-[#111827] mb-4">
+                <h5 className="text-sm font-semibold text-[#1d1d1f] mb-4">
                   Solutions
                 </h5>
-                <ul className="space-y-2 text-sm">
-                  <li><Link to="/ind-wizard" className="text-gray-500 hover:text-[#004f9f]">IND Wizard™</Link></li>
-                  <li><Link to="/enterprise-csr-intelligence" className="text-gray-500 hover:text-[#004f9f]">CSR Intelligence™</Link></li>
-                  <li><Link to="/versions" className="text-gray-500 hover:text-[#004f9f]">Document Vault™</Link></li>
-                  <li><Link to="/cmc-blueprint-generator" className="text-gray-500 hover:text-[#004f9f]">CMC Blueprint™</Link></li>
+                <ul className="space-y-2">
+                  <li><Link to="/ind-wizard" className="text-[13px] text-[#666] hover:text-[#06c] transition">IND Wizard™</Link></li>
+                  <li><Link to="/enterprise-csr-intelligence" className="text-[13px] text-[#666] hover:text-[#06c] transition">CSR Intelligence™</Link></li>
+                  <li><Link to="/versions" className="text-[13px] text-[#666] hover:text-[#06c] transition">Document Vault™</Link></li>
+                  <li><Link to="/cmc-blueprint-generator" className="text-[13px] text-[#666] hover:text-[#06c] transition">CMC Blueprint™</Link></li>
                 </ul>
               </div>
+              
               <div>
-                <h5 className="font-medium text-sm text-[#111827] mb-4">
-                  Resources
-                </h5>
-                <ul className="space-y-2 text-sm">
-                  <li><a href="#" className="text-gray-500 hover:text-[#004f9f]">Documentation</a></li>
-                  <li><a href="#" className="text-gray-500 hover:text-[#004f9f]">Regulatory Resources</a></li>
-                  <li><a href="#" className="text-gray-500 hover:text-[#004f9f]">ROI Calculator</a></li>
-                  <li><a href="#" className="text-gray-500 hover:text-[#004f9f]">API Access</a></li>
-                </ul>
-              </div>
-              <div>
-                <h5 className="font-medium text-sm text-[#111827] mb-4">
+                <h5 className="text-sm font-semibold text-[#1d1d1f] mb-4">
                   Company
                 </h5>
-                <ul className="space-y-2 text-sm">
-                  <li><a href="#" className="text-gray-500 hover:text-[#004f9f]">About Us</a></li>
-                  <li><a href="#" className="text-gray-500 hover:text-[#004f9f]">Leadership</a></li>
-                  <li><a href="#" className="text-gray-500 hover:text-[#004f9f]">Careers</a></li>
-                  <li><a href="#" className="text-gray-500 hover:text-[#004f9f]">Contact</a></li>
+                <ul className="space-y-2">
+                  <li><a href="#" className="text-[13px] text-[#666] hover:text-[#06c] transition">About</a></li>
+                  <li><a href="#" className="text-[13px] text-[#666] hover:text-[#06c] transition">Leadership</a></li>
+                  <li><a href="#" className="text-[13px] text-[#666] hover:text-[#06c] transition">Careers</a></li>
+                  <li><a href="#" className="text-[13px] text-[#666] hover:text-[#06c] transition">News</a></li>
                 </ul>
               </div>
+              
               <div>
-                <h5 className="font-medium text-sm text-[#111827] mb-4">
-                  Contact Us
+                <h5 className="text-sm font-semibold text-[#1d1d1f] mb-4">
+                  Resources
                 </h5>
-                <ul className="space-y-2 text-sm">
-                  <li className="flex items-center">
-                    <Mail className="w-3.5 h-3.5 text-gray-400 mr-2" />
-                    <a href="mailto:info@concept2cure.ai" className="text-gray-500 hover:text-[#004f9f]">info@concept2cure.ai</a>
-                  </li>
-                  <li className="flex items-center">
-                    <Phone className="w-3.5 h-3.5 text-gray-400 mr-2" />
-                    <a href="tel:+18007235372" className="text-gray-500 hover:text-[#004f9f]">1-800-723-5372</a>
-                  </li>
+                <ul className="space-y-2">
+                  <li><a href="#" className="text-[13px] text-[#666] hover:text-[#06c] transition">Documentation</a></li>
+                  <li><a href="#" className="text-[13px] text-[#666] hover:text-[#06c] transition">Regulatory Resources</a></li>
+                  <li><a href="#" className="text-[13px] text-[#666] hover:text-[#06c] transition">Customer Stories</a></li>
+                  <li><a href="#" className="text-[13px] text-[#666] hover:text-[#06c] transition">Blog</a></li>
+                </ul>
+              </div>
+              
+              <div>
+                <h5 className="text-sm font-semibold text-[#1d1d1f] mb-4">
+                  Legal
+                </h5>
+                <ul className="space-y-2">
+                  <li><a href="#" className="text-[13px] text-[#666] hover:text-[#06c] transition">Privacy</a></li>
+                  <li><a href="#" className="text-[13px] text-[#666] hover:text-[#06c] transition">Terms</a></li>
+                  <li><a href="#" className="text-[13px] text-[#666] hover:text-[#06c] transition">Cookie Policy</a></li>
+                  <li><a href="#" className="text-[13px] text-[#666] hover:text-[#06c] transition">GDPR</a></li>
                 </ul>
               </div>
             </div>
             
-            <div className="pt-6 border-t border-gray-200 flex flex-wrap justify-between items-center">
-              <div className="text-gray-500 text-xs">
-                © {new Date().getFullYear()} Concept2Cure.AI. All rights reserved.
+            <div className="mt-12 pt-8 border-t border-[#e5e5e5] flex flex-col md:flex-row justify-between items-center">
+              <div className="mb-4 md:mb-0">
+                <Link to="/">
+                  <div className="flex flex-col">
+                    <span className="text-sm font-semibold text-[#06c]">CONCEPT2CURE.AI</span>
+                    <span className="text-[10px] text-[#666] -mt-0.5">TrialSage™ Platform</span>
+                  </div>
+                </Link>
               </div>
-              <div className="flex space-x-6 text-xs">
-                <a href="#" className="text-gray-500 hover:text-[#004f9f]">Terms</a>
-                <a href="#" className="text-gray-500 hover:text-[#004f9f]">Privacy</a>
-                <a href="#" className="text-gray-500 hover:text-[#004f9f]">Security</a>
+              
+              <div className="text-[13px] text-[#666]">
+                © {new Date().getFullYear()} Concept2Cure.AI. All rights reserved.
               </div>
             </div>
           </div>
@@ -500,17 +502,12 @@ export default function HomeMarketingPage() {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center p-4">
         <div className="max-w-md mx-auto bg-white p-8 rounded-lg shadow-md border border-gray-200">
-          <div className="mb-6 flex justify-center">
-            <div className="bg-[#004f9f] rounded p-2">
-              <div className="text-white font-bold text-sm">C2C.AI</div>
-            </div>
-          </div>
           <h1 className="text-xl font-semibold text-gray-900 mb-4 text-center">We're updating our platform</h1>
           <p className="text-gray-600 mb-6 text-center">
             Our team is currently refreshing the TrialSage experience. Please check back shortly.
           </p>
           <div className="flex justify-center">
-            <Link to="/solutions" className="bg-[#004f9f] hover:bg-blue-800 text-white px-5 py-2.5 rounded text-sm font-medium">
+            <Link to="/solutions" className="bg-[#06c] hover:bg-[#004f9f] text-white px-5 py-2.5 rounded-md text-sm font-medium">
               Browse Solutions
             </Link>
           </div>
