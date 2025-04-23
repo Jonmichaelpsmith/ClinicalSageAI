@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useToast } from '../hooks/use-toast-context';
+import { useToast } from '../hooks/use-toast';
 import { Beaker, FileText, Download, PlusCircle, MinusCircle, Loader2, FlaskConical, Dna, BarChart3 } from 'lucide-react';
 import { useLumenAssistant } from '../components/assistant';
 
