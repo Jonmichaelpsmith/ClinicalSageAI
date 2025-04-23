@@ -8,7 +8,8 @@
 
 import { z } from 'zod';
 import { OpenAI } from 'openai';
-import { sanitizeInput, logApiUsage, handleApiError, shouldRateLimit } from '../utils/api-security.js';
+import rateLimit from 'express-rate-limit';
+import { sanitizeInput, logApiUsage, handleApiError } from '../utils/api-security.js';
 
 // Ensure OpenAI API key is configured
 if (!process.env.OPENAI_API_KEY) {
@@ -20,20 +21,14 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// Simple rate limiting middleware for blueprint generation
-const blueprintRateLimiter = (req, res, next) => {
-  const clientIp = req.ip || req.connection.remoteAddress;
-  const key = `blueprint_${clientIp}`;
-  
-  if (shouldRateLimit(key, 10, 60 * 60 * 1000)) { // 10 requests per hour
-    return res.status(429).json({ 
-      error: 'Too many blueprint generation requests. Please try again later.',
-      retryAfter: '60 minutes'
-    });
-  }
-  
-  next();
-};
+// Rate limiter specific to blueprint generation (stricter limits due to high resource usage)
+const blueprintRateLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour window
+  max: 10, // 10 requests per hour
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many blueprint generation requests. Please try again later.' }
+});
 
 // Input validation schemas
 const formulationSchema = z.object({
