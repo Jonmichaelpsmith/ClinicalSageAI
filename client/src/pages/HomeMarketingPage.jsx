@@ -18,7 +18,7 @@ import {
   Wand2
 } from 'lucide-react';
 
-// Apple-style modern hero component
+// Apple-style modern hero component - exactly matching Apple's website
 const AppleHero = () => {
   const [scrollY, setScrollY] = useState(0);
   const heroRef = useRef(null);
@@ -36,80 +36,86 @@ const AppleHero = () => {
   return (
     <section 
       ref={heroRef} 
-      className="relative min-h-screen w-full overflow-hidden bg-white flex items-center justify-center"
+      className="relative min-h-[90vh] w-full overflow-hidden bg-white flex items-center justify-center"
       style={{
-        paddingTop: Math.max(120 - scrollY * 0.5, 30) + 'px',
-        paddingBottom: Math.max(120 - scrollY * 0.5, 30) + 'px',
+        paddingTop: Math.max(100 - scrollY * 0.4, 20) + 'px',
+        paddingBottom: Math.max(100 - scrollY * 0.4, 20) + 'px',
       }}
     >
-      <div className="absolute inset-0 w-full h-full bg-[#FAFAFA]"></div>
+      {/* Apple-style extremely subtle gradient background */}
+      <div className="absolute inset-0 w-full h-full bg-gradient-to-b from-[#fbfbfd] to-[#f5f5f7]"></div>
       
       {/* Content container */}
-      <div className="container mx-auto px-6 z-10 max-w-6xl">
+      <div className="container mx-auto px-6 z-10 max-w-[980px]">
         <div className="text-center mb-16">
-          <motion.h5 
+          <motion.p 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8 }}
-            className="text-[#06c] font-medium mb-4 tracking-tight"
+            className="text-[#06c] font-medium mb-1 tracking-tight text-[17px]"
           >
             Introducing
-          </motion.h5>
+          </motion.p>
           
           <motion.h1 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-5xl md:text-7xl font-semibold tracking-tight text-[#1d1d1f] mb-6"
+            className="text-[40px] md:text-[56px] font-semibold tracking-tight leading-[1.1] text-[#1d1d1f] mb-1"
+            style={{ fontFamily: "SF Pro Display, -apple-system, BlinkMacSystemFont, sans-serif" }}
           >
             TrialSage™
           </motion.h1>
           
-          <motion.p 
+          <motion.h2 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-2xl md:text-3xl font-medium text-[#1d1d1f] mb-4 max-w-3xl mx-auto"
+            className="text-[21px] md:text-[27px] font-semibold leading-tight text-[#1d1d1f] mb-3 max-w-2xl mx-auto"
+            style={{ fontFamily: "SF Pro Display, -apple-system, BlinkMacSystemFont, sans-serif" }}
           >
-            Regulatory intelligence.
-            <span className="block">Reimagined.</span>
-          </motion.p>
+            Regulatory intelligence. Reimagined.
+          </motion.h2>
           
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
-            className="text-lg text-[#86868b] mb-12 max-w-2xl mx-auto"
+            className="text-[17px] leading-[1.47059] text-[#86868b] mb-8 max-w-[600px] mx-auto"
+            style={{ fontFamily: "SF Pro Text, -apple-system, BlinkMacSystemFont, sans-serif" }}
           >
-            The complete AI-powered platform for regulatory excellence.
+            The complete AI-powered platform that transforms how pharmaceutical companies create, manage, and submit regulatory documents.
           </motion.p>
         </div>
         
-        {/* Hero image */}
+        {/* Hero image - Apple Style */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.8 }}
-          className="relative mx-auto max-w-4xl"
+          className="relative mx-auto max-w-3xl"
         >
-          <div className="rounded-2xl overflow-hidden shadow-2xl">
-            <div className="relative aspect-[16/9] bg-gradient-to-br from-[#f5f5f7] to-[#fafafa]">
+          <div className="rounded-[20px] overflow-hidden shadow-[0_8px_42px_rgba(0,0,0,0.12)]">
+            <div className="relative aspect-[16/9] bg-gradient-to-br from-[#f5f5f7] to-[#fff]">
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-4/5 h-4/5 bg-white rounded-xl shadow-lg overflow-hidden flex flex-col">
-                  <div className="h-10 bg-[#f5f5f7] border-b border-[#e5e5e7] flex items-center px-4">
+                <div className="w-[85%] h-[85%] bg-white rounded-[18px] shadow-[0_4px_30px_rgba(0,0,0,0.09)] overflow-hidden flex flex-col">
+                  <div className="h-[38px] bg-[#f2f2f7] border-b border-[#d2d2d7] flex items-center px-4">
                     <div className="flex space-x-2">
                       <div className="w-3 h-3 rounded-full bg-[#ff5f57]"></div>
                       <div className="w-3 h-3 rounded-full bg-[#febc2e]"></div>
                       <div className="w-3 h-3 rounded-full bg-[#28c840]"></div>
                     </div>
+                    <div className="flex-1 flex justify-center">
+                      <div className="text-[13px] text-[#86868b] font-medium">TrialSage™ IND Wizard</div>
+                    </div>
                   </div>
                   <div className="flex-1 p-6 flex">
                     {/* Left panel - Document structure */}
-                    <div className="w-1/4 border-r border-[#e5e5e7] pr-4">
-                      <div className="mb-3 text-sm font-medium text-[#1d1d1f]">IND Structure</div>
+                    <div className="w-[25%] border-r border-[#e5e5e7] pr-4">
+                      <div className="mb-3 text-[13px] font-medium text-[#1d1d1f]">IND Structure</div>
                       <div className="space-y-2">
                         {['Module 1', 'Module 2', 'Module 3', 'Module 4', 'Module 5'].map((module, idx) => (
-                          <div key={idx} className={`py-1 px-2 rounded-md text-sm ${idx === 2 ? 'bg-[#0066cc1a] text-[#0066cc]' : 'text-[#4b4b4f]'}`}>
+                          <div key={idx} className={`py-1 px-2 rounded-md text-[13px] ${idx === 2 ? 'bg-[#0066cc1a] text-[#0066cc]' : 'text-[#4b4b4f]'}`}>
                             {module}
                           </div>
                         ))}
@@ -119,18 +125,18 @@ const AppleHero = () => {
                     {/* Right panel - Document editor */}
                     <div className="flex-1 pl-6">
                       <div className="flex justify-between mb-4">
-                        <div className="text-lg font-medium text-[#1d1d1f]">Module 3: Quality</div>
-                        <div className="bg-[#0066cc] text-white text-sm py-1 px-3 rounded-full">AI Assistance</div>
+                        <div className="text-[15px] font-medium text-[#1d1d1f]">Module 3: Quality</div>
+                        <div className="bg-[#0071e3] text-white text-[12px] py-1 px-3 rounded-full">AI Assistance</div>
                       </div>
                       <div className="space-y-2">
-                        <div className="bg-[#f5f5f7] h-4 rounded w-full"></div>
-                        <div className="bg-[#f5f5f7] h-4 rounded w-5/6"></div>
-                        <div className="bg-[#f5f5f7] h-4 rounded w-4/5"></div>
-                        <div className="bg-[#f5f5f7] h-4 rounded w-full"></div>
-                        <div className="bg-[#f5f5f7] h-4 rounded w-3/4"></div>
+                        <div className="bg-[#f5f5f7] h-4 rounded-[4px] w-full"></div>
+                        <div className="bg-[#f5f5f7] h-4 rounded-[4px] w-5/6"></div>
+                        <div className="bg-[#f5f5f7] h-4 rounded-[4px] w-4/5"></div>
+                        <div className="bg-[#f5f5f7] h-4 rounded-[4px] w-full"></div>
+                        <div className="bg-[#f5f5f7] h-4 rounded-[4px] w-3/4"></div>
                         <div className="mt-6 flex items-center text-[#0066cc]">
                           <Sparkles className="w-4 h-4 mr-2" />
-                          <span className="text-sm">AI is generating compliant CMC content...</span>
+                          <span className="text-[13px]">AI is generating compliant CMC content...</span>
                         </div>
                       </div>
                     </div>
@@ -141,29 +147,35 @@ const AppleHero = () => {
           </div>
         </motion.div>
         
-        {/* Action buttons */}
+        {/* Action buttons - Exact Apple style */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 1.2 }}
-          className="flex flex-col sm:flex-row gap-5 justify-center mt-12"
+          className="flex flex-col sm:flex-row gap-4 justify-center mt-12"
         >
-          <Link to="/versions" className="bg-[#0071e3] hover:bg-[#0077ed] text-white px-8 py-3 rounded-full font-medium text-lg transition-all">
-            Try Document Vault
+          <Link to="/versions" 
+            className="bg-[#0071e3] hover:bg-[#0077ed] text-white px-[22px] py-[8px] rounded-full text-[17px] font-normal transition-all"
+            style={{ fontFamily: "SF Pro Text, -apple-system, BlinkMacSystemFont, sans-serif" }}
+          >
+            See the Document Vault
           </Link>
-          <Link to="/ind-wizard" className="bg-transparent border border-[#0071e3] hover:bg-[#0071e3]/5 text-[#0071e3] px-8 py-3 rounded-full font-medium text-lg transition-all">
+          <Link to="/ind-wizard" 
+            className="bg-white hover:bg-[#f5f5f7] text-[#0071e3] border border-[#d2d2d7] px-[22px] py-[8px] rounded-full text-[17px] font-normal transition-all"
+            style={{ fontFamily: "SF Pro Text, -apple-system, BlinkMacSystemFont, sans-serif" }}
+          >
             Explore IND Wizard
           </Link>
         </motion.div>
       </div>
       
-      {/* Scroll indicator */}
+      {/* Scroll indicator - Apple subtle style */}
       <motion.div 
         className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
         animate={{ y: [0, 10, 0] }}
         transition={{ duration: 1.5, repeat: Infinity }}
       >
-        <ChevronDown className="w-6 h-6 text-[#86868b]" />
+        <ChevronDown className="w-5 h-5 text-[#86868b]" />
       </motion.div>
     </section>
   );
@@ -532,28 +544,25 @@ export default function HomeMarketingPage() {
 
   return (
     <Layout>
-      <div className="bg-black text-white">
+      <div className="bg-white text-[#1d1d1f]">
         {/* Apple-style hero section */}
         <AppleHero />
         
         {/* Product showcase sections */}
         <ProductShowcase 
           title="IND Wizard™" 
-          description="Streamline the IND preparation process with AI-powered tools that automatically generate, validate, and compile submission-ready documents."
-          imageSrc="https://i.imgur.com/2cE17xz.jpg"
+          description="Streamline the IND preparation process with AI-powered tools."
           features={[
             { title: "Rapid Document Creation", description: "Generate compliant IND documents in minutes, not weeks" },
             { title: "Intelligent Validation", description: "Real-time error checking and compliance validation" },
             { title: "Pre-IND Planning", description: "Strategic guidance based on thousands of successful submissions" },
             { title: "Auto-Assembly", description: "One-click compilation of complete submission packages" }
           ]}
-          primaryColor="blue"
         />
         
         <ProductShowcase 
           title="Document Vault™" 
-          description="Securely store, manage, and track all your regulatory documents with powerful version control and collaboration features."
-          imageSrc="https://i.imgur.com/yMY3q50.jpg"
+          description="Securely store and manage all your regulatory documents."
           features={[
             { title: "21 CFR Part 11 Compliant", description: "Secure electronic signatures and audit trails" },
             { title: "Version Control", description: "Track changes and maintain document history" },
@@ -561,7 +570,6 @@ export default function HomeMarketingPage() {
             { title: "Global Accessibility", description: "Access your documents securely from anywhere" }
           ]}
           reversed={true}
-          primaryColor="indigo"
         />
         
         {/* Metrics display */}
