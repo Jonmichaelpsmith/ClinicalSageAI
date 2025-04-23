@@ -1763,21 +1763,53 @@ const TrialSimulator = () => {
 
 // Metrics display component
 const EnterpriseMetricsDisplay = () => {
-  const [metrics, setMetrics] = useState(demoCSRStatistics);
+  const [metrics, setMetrics] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   
   // In a real implementation, this would fetch actual metrics
   useEffect(() => {
     const fetchMetrics = async () => {
       try {
+        setIsLoading(true);
         const data = await fetchCSRStatistics();
         setMetrics(data);
       } catch (error) {
         console.error("Failed to fetch CSR statistics:", error);
+        // Default to demo data to prevent app from breaking
+        setMetrics(demoCSRStatistics);
+      } finally {
+        setIsLoading(false);
       }
     };
     
     fetchMetrics();
   }, []);
+  
+  // Safe access to metrics with fallbacks
+  const safeMetrics = metrics || demoCSRStatistics;
+  
+  // Safe formatting function that won't break on undefined/null
+  const formatNumber = (num) => {
+    return num ? num.toLocaleString() : "Loading...";
+  };
+  
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {[...Array(4)].map((_, i) => (
+          <Card key={i}>
+            <CardHeader className="pb-2">
+              <div className="h-4 bg-gray-200 rounded animate-pulse w-24"></div>
+            </CardHeader>
+            <CardContent>
+              <div className="h-8 bg-gray-200 rounded animate-pulse w-16 mb-2"></div>
+              <div className="h-3 bg-gray-200 rounded animate-pulse w-32"></div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  }
   
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -1786,7 +1818,7 @@ const EnterpriseMetricsDisplay = () => {
           <CardTitle className="text-sm text-gray-500">CSR Library Size</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{metrics.totalCSRs.toLocaleString()}</div>
+          <div className="text-2xl font-bold">{formatNumber(safeMetrics?.totalCSRs)}</div>
           <p className="text-xs text-green-600 mt-1">+324 in the last 90 days</p>
         </CardContent>
       </Card>
@@ -1797,18 +1829,18 @@ const EnterpriseMetricsDisplay = () => {
         </CardHeader>
         <CardContent>
           <div className="flex space-x-2 items-center">
-            <div className="text-lg font-bold text-green-600">{metrics.successfulTrials.toLocaleString()}</div>
+            <div className="text-lg font-bold text-green-600">{formatNumber(safeMetrics?.successfulTrials)}</div>
             <div className="text-gray-400">|</div>
-            <div className="text-lg font-bold text-red-600">{metrics.failedTrials.toLocaleString()}</div>
+            <div className="text-lg font-bold text-red-600">{formatNumber(safeMetrics?.failedTrials)}</div>
           </div>
           <div className="mt-1 w-full h-2 bg-gray-200 rounded-full overflow-hidden">
             <div 
               className="h-full bg-green-500" 
-              style={{ width: `${metrics.regulatorySuccessRate}%` }}
+              style={{ width: `${safeMetrics?.regulatorySuccessRate || 0}%` }}
             ></div>
           </div>
           <p className="text-xs text-gray-600 mt-1">
-            {metrics.regulatorySuccessRate}% success rate
+            {safeMetrics?.regulatorySuccessRate || 0}% success rate
           </p>
         </CardContent>
       </Card>
@@ -1819,11 +1851,11 @@ const EnterpriseMetricsDisplay = () => {
         </CardHeader>
         <CardContent>
           <div className="flex space-x-2 items-center">
-            <div className="text-lg font-bold text-purple-600">{metrics.aiRecommendations.toLocaleString()}</div>
+            <div className="text-lg font-bold text-purple-600">{formatNumber(safeMetrics?.aiRecommendations)}</div>
             <div className="text-xs text-gray-500">recommendations</div>
           </div>
           <p className="text-xs text-purple-600 mt-1">
-            {metrics.aiCorrectedDesignFlaws} design flaws prevented
+            {safeMetrics?.aiCorrectedDesignFlaws || 0} design flaws prevented
           </p>
         </CardContent>
       </Card>
@@ -1835,11 +1867,11 @@ const EnterpriseMetricsDisplay = () => {
         <CardContent>
           <div className="flex space-x-4 items-center">
             <div>
-              <div className="text-lg font-bold text-blue-600">{metrics.costSavingsEstimate}</div>
+              <div className="text-lg font-bold text-blue-600">{safeMetrics?.costSavingsEstimate || "$0"}</div>
               <p className="text-xs text-gray-600 mt-0">Est. savings</p>
             </div>
             <div>
-              <div className="text-lg font-bold text-amber-600">{metrics.timeToMarketImprovement}</div>
+              <div className="text-lg font-bold text-amber-600">{safeMetrics?.timeToMarketImprovement || "0 months"}</div>
               <p className="text-xs text-gray-600 mt-0">Time saved</p>
             </div>
           </div>
@@ -1911,7 +1943,7 @@ const ProtocolComparisonDashboard = () => {
             Protocol Comparison Engine
           </h2>
           <p className="text-gray-600 mt-1">
-            Compare your protocol against our database of {demoCSRStatistics.totalCSRs.toLocaleString()} clinical study reports
+            Compare your protocol against our comprehensive database of clinical study reports
           </p>
         </div>
       </div>
