@@ -12,8 +12,18 @@ import {
   Sparkles
 } from 'lucide-react';
 
+// HomeMarketingPage.jsx - Main landing page with Certara-inspired design
+// IMPORTANT: This file contains the main marketing page design.
+// For maximum stability:
+// 1. Always test changes in a safe environment before deploying
+// 2. Keep error boundaries in place
+// 3. Avoid removing the core layout structure
+// 4. Maintain fallback error handling
+
 export default function HomeMarketingPage() {
+  // Error protection wrapper ensures graceful fallbacks
   try {
+    // Main rendering with comprehensive error handling
     return (
       <div className="min-h-screen bg-white font-sans antialiased">
         {/* Soft gradient element at top */}

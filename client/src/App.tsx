@@ -351,9 +351,36 @@ export default function App() {
                   <LazyAdminProfile />
                 </SimpleErrorBoundary>
               </Route>
+              {/* Protected root route with enhanced error handling for marketing page */}
               <Route path="/">
-                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Home" />}>
-                  <React.Suspense fallback={<EmergencyFallback pageName="Marketing" />}>
+                <SimpleErrorBoundary 
+                  fallback={
+                    <div className="min-h-screen bg-white flex items-center justify-center p-4">
+                      <div className="max-w-md mx-auto bg-white p-8 rounded shadow-md border border-gray-200 text-center">
+                        <h1 className="text-xl font-semibold text-[#003057] mb-4">Welcome to TrialSage™</h1>
+                        <p className="text-[#666] mb-6">
+                          Our marketing page is currently loading. You can explore our solutions while you wait.
+                        </p>
+                        <div className="flex flex-col sm:flex-row justify-center space-y-3 sm:space-y-0 sm:space-x-3">
+                          <a href="/solutions" className="bg-[#0078d4] hover:bg-[#005fa6] text-white px-5 py-2.5 rounded text-sm font-medium">
+                            Browse Solutions
+                          </a>
+                          <a href="/auth" className="bg-white border border-[#0078d4] text-[#0078d4] hover:bg-gray-50 px-5 py-2.5 rounded text-sm font-medium">
+                            Sign In
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  }
+                >
+                  <React.Suspense 
+                    fallback={
+                      <div className="flex flex-col items-center justify-center h-screen bg-white">
+                        <div className="w-16 h-16 border-t-4 border-blue-500 border-solid rounded-full animate-spin"></div>
+                        <p className="mt-4 text-lg text-[#003057]">Loading TrialSage™ Platform...</p>
+                      </div>
+                    }
+                  >
                     <LazyHomeMarketingPage />
                   </React.Suspense>
                 </SimpleErrorBoundary>
