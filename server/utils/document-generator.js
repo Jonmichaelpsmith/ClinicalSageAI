@@ -1,131 +1,83 @@
 /**
- * Document Generator Utility for TrialSage CMC Blueprint Generator
+ * Document Generator Utilities for TrialSage
  * 
- * This module provides functions to generate Word and PDF documents for CMC content.
- * In a production environment, these functions would utilize libraries like docx, pdfkit, etc.
- * For the purposes of this implementation, we provide simplified document generation.
+ * This module provides functions for generating various document formats
+ * from structured data, including Word, PDF, eCTD, and JSON exports.
  */
 
 import fs from 'fs';
 import path from 'path';
-import { promises as fsPromises } from 'fs';
+import { OpenAI } from 'openai';
 
-// Ensure the exports directory exists
-const EXPORTS_DIR = path.join(process.cwd(), 'exports', 'cmc-blueprints');
+// Ensure outputs directory exists
+const OUTPUTS_DIR = path.join(process.cwd(), 'output');
+fs.mkdirSync(OUTPUTS_DIR, { recursive: true });
 
-// Initialize exports directory
-async function ensureExportsDir() {
-  try {
-    await fsPromises.mkdir(EXPORTS_DIR, { recursive: true });
-  } catch (error) {
-    console.error('Error creating exports directory:', error);
-  }
-}
-
-// Initialize directory on module load
-ensureExportsDir();
-
-/**
- * Create a Word document (.docx) from the provided data
- * @param {Object} docData - Document data including title, sections, etc.
- * @returns {Promise<Buffer>} Buffer containing the generated document
- */
-export async function createDocx(docData) {
-  try {
-    // In a production implementation, this would use a library like 'docx'
-    // to generate a proper Word document with formatting, styles, etc.
-    
-    // For this implementation, we'll create a placeholder file
-    const docContent = JSON.stringify(docData, null, 2);
-    const fileName = `${docData.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${Date.now()}.json`;
-    const filePath = path.join(EXPORTS_DIR, fileName);
-    
-    // Write the file
-    await fsPromises.writeFile(filePath, docContent, 'utf8');
-    
-    // Read it back as a buffer
-    return await fsPromises.readFile(filePath);
-    
-  } catch (error) {
-    console.error('Error creating Word document:', error);
-    throw new Error(`Failed to create Word document: ${error.message}`);
-  }
+// Initialize OpenAI client if API key is available
+let openai;
+if (process.env.OPENAI_API_KEY) {
+  openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
 }
 
 /**
- * Create a PDF document from the provided data
- * @param {Object} docData - Document data including title, sections, etc.
- * @returns {Promise<Buffer>} Buffer containing the generated PDF
+ * Create a Word document (.docx) from template and data
+ * @param {string} template - Template name/ID to use
+ * @param {string} moleculeName - Molecule name for the document
+ * @param {string} blueprintId - ID of the blueprint data
+ * @returns {Buffer} Document as buffer
  */
-export async function createPDF(docData) {
-  try {
-    // In a production implementation, this would use a library like 'pdfkit'
-    // to generate a proper PDF document with formatting, styles, etc.
-    
-    // For this implementation, we'll create a placeholder file
-    const docContent = JSON.stringify(docData, null, 2);
-    const fileName = `${docData.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${Date.now()}.json`;
-    const filePath = path.join(EXPORTS_DIR, fileName);
-    
-    // Write the file
-    await fsPromises.writeFile(filePath, docContent, 'utf8');
-    
-    // Read it back as a buffer
-    return await fsPromises.readFile(filePath);
-    
-  } catch (error) {
-    console.error('Error creating PDF document:', error);
-    throw new Error(`Failed to create PDF document: ${error.message}`);
-  }
+async function createDocx(template, moleculeName, blueprintId) {
+  // This would use a library like docxtemplater or similar
+  // For now, return a simple placeholder buffer
+  return Buffer.from(`Mock Word document for ${moleculeName} using template ${template}`);
 }
 
 /**
- * Create a ZIP archive for eCTD submission
- * @param {Object} docData - Document data including title, sections, etc.
- * @returns {Promise<Buffer>} Buffer containing the generated ZIP
+ * Create a PDF document from template and data
+ * @param {string} template - Template name/ID to use
+ * @param {string} moleculeName - Molecule name for the document
+ * @param {string} blueprintId - ID of the blueprint data
+ * @returns {Buffer} Document as buffer
  */
-export async function createECTD(docData) {
-  try {
-    // In a production implementation, this would generate proper eCTD structure
-    // and bundle all files into a ZIP archive
-    
-    // For this implementation, we'll create a placeholder file
-    const docContent = JSON.stringify(docData, null, 2);
-    const fileName = `${docData.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_ectd_${Date.now()}.json`;
-    const filePath = path.join(EXPORTS_DIR, fileName);
-    
-    // Write the file
-    await fsPromises.writeFile(filePath, docContent, 'utf8');
-    
-    // Read it back as a buffer
-    return await fsPromises.readFile(filePath);
-    
-  } catch (error) {
-    console.error('Error creating eCTD package:', error);
-    throw new Error(`Failed to create eCTD package: ${error.message}`);
-  }
+async function createPDF(template, moleculeName, blueprintId) {
+  // This would use a library like pdf-lib, pdfkit, or similar
+  // For now, return a simple placeholder buffer
+  return Buffer.from(`Mock PDF document for ${moleculeName} using template ${template}`);
 }
 
 /**
- * Create a JSON export of the CMC blueprint data
- * @param {Object} docData - Document data including title, sections, etc.
- * @returns {Promise<Buffer>} Buffer containing the generated JSON
+ * Create an eCTD-compliant document package
+ * @param {string} template - Template name/ID to use
+ * @param {string} moleculeName - Molecule name for the document
+ * @param {string} blueprintId - ID of the blueprint data
+ * @returns {Buffer} Document package as buffer (typically ZIP)
  */
-export async function createJSONExport(docData) {
-  try {
-    // Format the JSON data with proper indentation
-    const docContent = JSON.stringify(docData, null, 2);
-    const fileName = `${docData.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${Date.now()}.json`;
-    const filePath = path.join(EXPORTS_DIR, fileName);
-    
-    // Write the file
-    await fsPromises.writeFile(filePath, docContent, 'utf8');
-    
-    // Read it back as a buffer
-    return await fsPromises.readFile(filePath);
-    
-  } catch (error) {
-    console.error('Error creating JSON export:', error);
-    throw new Error(`Failed to create JSON export: ${error.message}`);
-  }
+async function createECTD(template, moleculeName, blueprintId) {
+  // This would generate the various required eCTD components and package them
+  // For now, return a simple placeholder buffer
+  return Buffer.from(`Mock eCTD package for ${moleculeName} using template ${template}`);
 }
+
+/**
+ * Create a JSON export of the blueprint data
+ * @param {string} template - Template name/ID to use
+ * @param {string} moleculeName - Molecule name for the document
+ * @param {string} blueprintId - ID of the blueprint data
+ * @returns {string} JSON document as string
+ */
+async function createJSONExport(template, moleculeName, blueprintId) {
+  // This would fetch the blueprint data and format it according to template
+  // For now, return a simple placeholder JSON
+  return JSON.stringify({
+    blueprint: blueprintId,
+    molecule: moleculeName,
+    template,
+    exportTime: new Date().toISOString(),
+    format: 'JSON'
+  }, null, 2);
+}
+
+// Export utility functions
+export { createDocx, createPDF, createECTD, createJSONExport };
