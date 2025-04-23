@@ -445,50 +445,32 @@ const ValidatorRunner: React.FC = () => {
       f.id === file.id ? { ...f, status: 'validating' } : f
     ));
     
-    // Create a FormData object to send the files
+    // Create a FormData object to send the file
     const formData = new FormData();
-    formData.append('files', file.file);
+    formData.append('file', file.file);
+    formData.append('engine_id', selectedEngine.id);
     
     try {
-      // Call the backend validation API
-      const response = await axiosWithToken.post('/api/validate', formData, {
+      // Call the new FastAPI validation endpoint
+      const response = await axiosWithToken.post('/validate/file', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         }
       });
       
-      // Convert the API response to our ValidationResult format
+      // Get the validation result from the response
       const apiResponse = response.data;
       
-      // Transform the errors from API to our validation format
-      const validations = apiResponse.errors.map((error: any, index: number) => ({
-        id: `val-${Date.now()}-${index}`,
-        rule: error.rule,
-        status: error.severity || 'error',
-        message: error.message,
-        path: error.path || file.file.name,
-        lineNumber: error.line || (Math.floor(Math.random() * 100) + 1),
-      }));
-      
-      // Create the result with empty summary
+      // The response already has the correct format for our ValidationResult
       const result: ValidationResult = {
-        validations,
-        summary: {
-          success: 0,
-          warning: 0,
-          error: 0,
-        },
+        validations: apiResponse.validations,
+        summary: apiResponse.summary,
         timestamp: Date.now(),
       };
       
-      // Calculate summary counts
-      result.validations.forEach(v => {
-        result.summary[v.status as keyof typeof result.summary]++;
-      });
-      
-      // Store the report and define XML URLs for download
-      const reportUrl = apiResponse.reportUrl;
-      const defineXmlUrl = apiResponse.defineXmlUrl;
+      // Create report and define XML URLs for download
+      const reportUrl = `/downloads/${apiResponse.id}.json`;
+      const defineXmlUrl = `/define/${apiResponse.id}.xml`;
       
       // Update file with results
       setFiles(prev => prev.map(f => 
