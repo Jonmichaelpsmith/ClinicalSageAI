@@ -2277,15 +2277,42 @@ export default function EnterpriseCSRIntelligence() {
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-3">
-                          {demoTherapeuticAreas.slice(0, 5).map((area) => (
-                            <div key={area.name}>
-                              <div className="flex justify-between items-center text-sm mb-1">
-                                <span>{area.name}</span>
-                                <span className="font-medium">{area.count}</span>
-                              </div>
-                              <Progress value={30} className="h-2" />
+                          {/* Static therapeutic area data */}
+                          <div>
+                            <div className="flex justify-between items-center text-sm mb-1">
+                              <span>Oncology</span>
+                              <span className="font-medium">845</span>
                             </div>
-                          ))}
+                            <Progress value={30} className="h-2" />
+                          </div>
+                          <div>
+                            <div className="flex justify-between items-center text-sm mb-1">
+                              <span>Neurology</span>
+                              <span className="font-medium">612</span>
+                            </div>
+                            <Progress value={25} className="h-2" />
+                          </div>
+                          <div>
+                            <div className="flex justify-between items-center text-sm mb-1">
+                              <span>Cardiology</span>
+                              <span className="font-medium">594</span>
+                            </div>
+                            <Progress value={20} className="h-2" />
+                          </div>
+                          <div>
+                            <div className="flex justify-between items-center text-sm mb-1">
+                              <span>Immunology</span>
+                              <span className="font-medium">487</span>
+                            </div>
+                            <Progress value={15} className="h-2" />
+                          </div>
+                          <div>
+                            <div className="flex justify-between items-center text-sm mb-1">
+                              <span>Infectious Disease</span>
+                              <span className="font-medium">412</span>
+                            </div>
+                            <Progress value={10} className="h-2" />
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
@@ -2299,24 +2326,74 @@ export default function EnterpriseCSRIntelligence() {
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-4">
-                          {demoPhaseDistribution.map((phase) => (
-                            <div key={phase.phase}>
-                              <div className="flex justify-between items-center text-sm mb-1">
-                                <span>{phase.phase}</span>
-                                <span>
-                                  <span className="text-green-600 font-medium">{100 - phase.failRate}%</span>
-                                  {' / '}
-                                  <span className="text-red-600 font-medium">{phase.failRate}%</span>
-                                </span>
-                              </div>
-                              <div className="w-full h-2 bg-red-100 rounded-full overflow-hidden">
-                                <div 
-                                  className="h-full bg-green-500" 
-                                  style={{ width: `${100 - phase.failRate}%` }}
-                                ></div>
-                              </div>
+                          {/* Static phase distribution data */}
+                          <div>
+                            <div className="flex justify-between items-center text-sm mb-1">
+                              <span>Phase 1</span>
+                              <span>
+                                <span className="text-green-600 font-medium">77.7%</span>
+                                {' / '}
+                                <span className="text-red-600 font-medium">22.3%</span>
+                              </span>
                             </div>
-                          ))}
+                            <div className="w-full h-2 bg-red-100 rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-green-500" 
+                                style={{ width: `77.7%` }}
+                              ></div>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <div className="flex justify-between items-center text-sm mb-1">
+                              <span>Phase 2</span>
+                              <span>
+                                <span className="text-green-600 font-medium">57.9%</span>
+                                {' / '}
+                                <span className="text-red-600 font-medium">42.1%</span>
+                              </span>
+                            </div>
+                            <div className="w-full h-2 bg-red-100 rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-green-500" 
+                                style={{ width: `57.9%` }}
+                              ></div>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <div className="flex justify-between items-center text-sm mb-1">
+                              <span>Phase 3</span>
+                              <span>
+                                <span className="text-green-600 font-medium">67.4%</span>
+                                {' / '}
+                                <span className="text-red-600 font-medium">32.6%</span>
+                              </span>
+                            </div>
+                            <div className="w-full h-2 bg-red-100 rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-green-500" 
+                                style={{ width: `67.4%` }}
+                              ></div>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <div className="flex justify-between items-center text-sm mb-1">
+                              <span>Phase 4</span>
+                              <span>
+                                <span className="text-green-600 font-medium">91.5%</span>
+                                {' / '}
+                                <span className="text-red-600 font-medium">8.5%</span>
+                              </span>
+                            </div>
+                            <div className="w-full h-2 bg-red-100 rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-green-500" 
+                                style={{ width: `91.5%` }}
+                              ></div>
+                            </div>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
@@ -2533,17 +2610,23 @@ export default function EnterpriseCSRIntelligence() {
                     <div className="w-64">
                       <select className="w-full rounded-md border border-gray-300 p-2 text-sm">
                         <option>All Therapeutic Areas</option>
-                        {demoTherapeuticAreas.map(area => (
-                          <option key={area.name}>{area.name}</option>
-                        ))}
+                        <option>Oncology</option>
+                        <option>Neurology</option>
+                        <option>Cardiology</option>
+                        <option>Immunology</option>
+                        <option>Infectious Disease</option>
+                        <option>Metabolic Disorders</option>
+                        <option>Respiratory</option>
+                        <option>Rare Diseases</option>
                       </select>
                     </div>
                     <div className="w-40">
                       <select className="w-full rounded-md border border-gray-300 p-2 text-sm">
                         <option>All Phases</option>
-                        {demoPhaseDistribution.map(phase => (
-                          <option key={phase.phase}>{phase.phase}</option>
-                        ))}
+                        <option>Phase 1</option>
+                        <option>Phase 2</option>
+                        <option>Phase 3</option>
+                        <option>Phase 4</option>
                       </select>
                     </div>
                     <div className="w-48">
