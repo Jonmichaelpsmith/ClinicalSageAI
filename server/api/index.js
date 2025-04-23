@@ -7,7 +7,7 @@ const cerRoutes = cerRoutesModule.default || cerRoutesModule;
 // Register API routes
 router.use('/cer', cerRoutes);
 
-// Register CMC Blueprint Generator routes
+// Register CMC Blueprint Generator routes (legacy method - will be deprecated)
 (async () => {
   try {
     // Try to dynamically import the CMC Blueprint Generator routes
@@ -20,6 +20,19 @@ router.use('/cer', cerRoutes);
     }
   } catch (error) {
     console.warn('Failed to load CMC Blueprint Generator routes:', error.message);
+  }
+})();
+
+// Register comprehensive CMC module routes
+(async () => {
+  try {
+    // Try to dynamically import the CMC module routes
+    const cmcModule = await import('./cmc/index.js');
+    const cmcRoutes = cmcModule.default || cmcModule;
+    router.use('/cmc', cmcRoutes);
+    console.log('Successfully registered CMC Module routes');
+  } catch (error) {
+    console.warn('Failed to load CMC Module routes:', error.message);
   }
 })();
 
