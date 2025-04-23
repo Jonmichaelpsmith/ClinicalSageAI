@@ -1614,7 +1614,7 @@ const TrialSimulator = () => {
                   </div>
                   <h3 className="text-lg font-medium">Running Trial Simulation</h3>
                   <p className="text-gray-500 mt-2 mb-8">
-                    Analyzing {demoCSRStatistics.totalCSRs} clinical study reports for predictive insights...
+                    Analyzing clinical study reports for predictive insights...
                   </p>
                   <div className="w-64 mx-auto space-y-4">
                     <Progress value={45} className="h-2" />
@@ -1633,7 +1633,7 @@ const TrialSimulator = () => {
                   </Badge>
                 </div>
                 <CardDescription>
-                  Based on analysis of {demoCSRStatistics.analyzedProtocols} similar studies in our database
+                  Based on analysis of similar studies in our database
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -2086,7 +2086,7 @@ const ProtocolComparisonDashboard = () => {
                   </div>
                   <h3 className="text-lg font-medium">Analyzing Protocol</h3>
                   <p className="text-gray-500 mt-2 mb-6">
-                    Comparing against {demoCSRStatistics.analyzedProtocols.toLocaleString()} analyzed protocols in our database...
+                    Comparing against analyzed protocols in our database...
                   </p>
                   <div className="w-64 mx-auto space-y-4">
                     <Progress value={65} className="h-2" />
@@ -2208,7 +2208,7 @@ export default function EnterpriseCSRIntelligence() {
             </div>
             <h1 className="text-4xl font-bold tracking-tight">CSR Intelligence Platform</h1>
             <p className="text-gray-600 mt-2 max-w-3xl">
-              Enterprise-grade analytics derived from our proprietary database of {demoCSRStatistics.totalCSRs.toLocaleString()} clinical study reports across {demoTherapeuticAreas.length} therapeutic areas.
+              Enterprise-grade analytics derived from our proprietary database of clinical study reports across multiple therapeutic areas.
             </p>
           </div>
           <div className="flex space-x-2">
@@ -2283,7 +2283,7 @@ export default function EnterpriseCSRIntelligence() {
                                 <span>{area.name}</span>
                                 <span className="font-medium">{area.count}</span>
                               </div>
-                              <Progress value={(area.count / demoCSRStatistics.totalCSRs) * 100} className="h-2" />
+                              <Progress value={30} className="h-2" />
                             </div>
                           ))}
                         </div>
@@ -2506,7 +2506,7 @@ export default function EnterpriseCSRIntelligence() {
                     CSR Library
                   </h2>
                   <p className="text-gray-600 mt-1">
-                    Comprehensive database of {demoCSRStatistics.totalCSRs.toLocaleString()} clinical study reports with advanced search capabilities
+                    Comprehensive database of clinical study reports with advanced search capabilities
                   </p>
                 </div>
                 <div className="flex space-x-2">
