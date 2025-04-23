@@ -1,0 +1,22 @@
+# Module 3.2 CMC Document for Test Drug
+
+## 3.2.S Drug Substance
+### 3.2.S.1 General Information
+#### 3.2.S.1.1 Nomenclature
+International Non-proprietary Name (INN): Test Drug
+Chemical Name: Test Chemical Name
+CAS Registry Number: 12345-67-8
+Molecular Formula: C10H15N5O10P2
+
+### 3.2.S.2 Manufacture
+Test synthesis steps information.
+
+### 3.2.S.4 Control of Drug Substance
+Test analytical methods information.
+
+## 3.2.P Drug Product
+### 3.2.P.1 Description and Composition
+Test formulation details.
+
+### 3.2.P.3 Manufacture
+Test manufacturing controls information.

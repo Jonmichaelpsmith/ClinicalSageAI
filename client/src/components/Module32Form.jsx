@@ -49,38 +49,45 @@ export default function Module32Form() {
       <div className="max-w-4xl mx-auto p-6 space-y-6 pt-8">
         <h1 className="text-2xl font-bold text-blue-800">Generate ICH Module 3.2</h1>
         <form onSubmit={handleSubmit} className="space-y-4">
-        {Object.entries(formData).map(([key, val]) => (
-          <div key={key}>
-            <label className="block font-medium mb-1 capitalize">{key.replace("_", " ")}</label>
-            <textarea
-              name={key}
-              value={val}
-              onChange={handleChange}
-              required
-              className="w-full border p-2 rounded shadow"
-              rows={key === "synthesis_steps" ? 5 : 3}
-            />
+          {Object.entries(formData).map(([key, val]) => (
+            <div key={key}>
+              <label className="block font-medium mb-1 capitalize">{key.replace("_", " ")}</label>
+              <textarea
+                name={key}
+                value={val}
+                onChange={handleChange}
+                required
+                className="w-full border p-2 rounded shadow"
+                rows={key === "synthesis_steps" ? 5 : 3}
+              />
+            </div>
+          ))}
+          <button
+            type="submit"
+            disabled={loading}
+            className="bg-blue-600 text-white px-6 py-2 rounded shadow hover:bg-blue-700"
+          >
+            {loading ? "Generating..." : "Generate CMC Draft"}
+          </button>
+        </form>
+        
+        {error && (
+          <div className="mt-6 bg-red-50 p-4 border border-red-200 rounded shadow text-red-600">
+            {error}
           </div>
-        ))}
-        <button
-          type="submit"
-          disabled={loading}
-          className="bg-blue-600 text-white px-6 py-2 rounded shadow hover:bg-blue-700"
-        >
-          {loading ? "Generating..." : "Generate CMC Draft"}
-        </button>
-      </form>
+        )}
 
-      {response && (
-        <div className="mt-6 bg-white p-4 border rounded shadow">
-          <h2 className="text-xl font-semibold mb-2">Generated Module 3.2 Draft</h2>
-          <pre className="whitespace-pre-wrap text-sm text-gray-800">{response.module32_draft}</pre>
-          <div className="mt-4 space-x-4">
-            <a href={"/" + response.export_paths.txt} download className="text-blue-600 underline">Download TXT</a>
-            <a href={"/" + response.export_paths.pdf} download className="text-blue-600 underline">Download PDF</a>
+        {response && (
+          <div className="mt-6 bg-white p-4 border rounded shadow">
+            <h2 className="text-xl font-semibold mb-2">Generated Module 3.2 Draft</h2>
+            <pre className="whitespace-pre-wrap text-sm text-gray-800">{response.module32_draft}</pre>
+            <div className="mt-4 space-x-4">
+              <a href={"/" + response.export_paths.txt} download className="text-blue-600 underline">Download TXT</a>
+              <a href={"/" + response.export_paths.pdf} download className="text-blue-600 underline">Download PDF</a>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

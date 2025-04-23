@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { FileText, Download, Clock } from "lucide-react";
+import Navigation from "../components/Navigation";
 
 export default function VersionsPage() {
   const [versions, setVersions] = useState([]);
@@ -26,8 +27,10 @@ export default function VersionsPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-6 max-w-5xl mx-auto">
-      <div className="bg-white p-8 rounded-lg shadow-md">
+    <div className="min-h-screen bg-gray-50">
+      <Navigation />
+      <div className="max-w-5xl mx-auto py-10 px-6">
+        <div className="bg-white p-8 rounded-lg shadow-md">
         <div className="flex items-center mb-8">
           <h1 className="text-3xl font-bold text-blue-800">Document Version History</h1>
           <div className="ml-auto flex items-center text-gray-500 text-sm">
@@ -103,6 +106,7 @@ export default function VersionsPage() {
             ))}
           </div>
         )}
+      </div>
       </div>
     </div>
   );
