@@ -1,0 +1,112 @@
+Instructions for the Replit Agent
+
+Backup & Detect
+
+Commit your latest state before changes:
+
+bash
+Copy
+Edit
+git add . && git commit -m "pre-CMDR-enhancement snapshot"
+Check for existing CMDR routes to avoid duplicates:
+
+bash
+Copy
+Edit
+ls backend/routes | grep metadata_repository.py
+grep -R "metadata_repository" -n backend
+If the file exists, merge these new endpoints into it rather than overwriting.
+
+Add the Enhanced CMDR Router
+
+Create backend/routes/metadata_repository.py (if not already present) with the full code provided above.
+
+Ensure each endpoint depends on get_current_user for tenant scoping.
+
+Verify folder structure includes backend/routes/__init__.py and backend/__init__.py.
+
+Register the Router in Main
+
+In backend/main.py, add:
+
+python
+Copy
+Edit
+from backend.routes.metadata_repository import router as metadata_router
+
+app.include_router(
+    metadata_router,
+    prefix="/api",
+    dependencies=[Depends(get_current_user)],
+    tags=["Metadata Repository"]
+)
+Place this alongside your existing routers (e.g. csr_router, study_router).
+
+Implement Service Layer
+
+Scaffold backend/services/metadata_repository.py with the following function signatures:
+
+async def create_asset(tenant_id, asset_type, payload): ...
+
+async def update_asset(tenant_id, asset_type, asset_id, payload): ...
+
+async def delete_asset(tenant_id, asset_type, asset_id): ...
+
+async def list_assets(tenant_id, asset_type): ...
+
+async def get_asset_versions(tenant_id, asset_type, asset_id): ...
+
+async def get_asset_audit(tenant_id, asset_type, asset_id): ...
+
+async def semantic_search_assets(tenant_id, query, module, type_filter, limit): ...
+
+async def impact_analysis(tenant_id, asset_id): ...
+
+async def export_edc_blueprint(tenant_id, form_id): ...
+
+async def preview_asset_file(tenant_id, asset_id): ...
+
+Install & Configure Dependencies
+
+bash
+Copy
+Edit
+pip install fastapi pydantic tesserocr pytesseract transformers pinecone-client openai
+pip install python-multipart
+Ensure Replit Secrets include:
+
+PINECONE_API_KEY, PINECONE_ENVIRONMENT
+
+OPENAI_API_KEY
+
+Run & Verify
+
+Restart your FastAPI process (uvicorn/gunicorn).
+
+Use curl or Postman to exercise each new endpoint under /api/metadata/....
+
+Confirm proper multitenant isolation: one tenant’s assets are not visible to another.
+
+End-to-End Testing
+
+Hook your frontend CMDR UI components (FormsList, TerminologiesList, MetadataSearchBar, ImpactVisualizer) to these endpoints.
+
+Validate CRUD flows, semantic search, version history, audit trail, EDC export, and file previews.
+
+By following these steps—and first detecting if CMDR code already exists—you’ll dramatically enhance the Clinical Metadata Repository into an enterprise-grade, AI-driven governance engine without disrupting your existing platform.
+
+
+
+
+
+
+
+
+
+
+
+Search
+
+Deep research
+
+Creat
