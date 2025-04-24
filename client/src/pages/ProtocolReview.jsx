@@ -1327,6 +1327,9 @@ const ProtocolReview = () => {
   
   return (
     <div className="container py-8 max-w-7xl mx-auto">
+      {/* Detailed scientific alignment dialog */}
+      {renderAlignmentDetailsDialog()}
+      
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Protocol Review & Optimization</h1>
         <p className="text-gray-600">
