@@ -46,7 +46,6 @@ import {
   BookOpen,
   FileSymlink,
   ChevronsRight,
-  Boxes,
   BarChart,
   Share,
   Paperclip,
@@ -58,14 +57,15 @@ import {
   Eye,
   Tag,
   Folders,
-  Combine,
   Sparkles,
   ArrowRightLeft,
   MessageSquare,
   GitMerge,
   Workflow,
   Settings,
-  Zap
+  Zap,
+  Calendar,
+  Circle
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -662,7 +662,7 @@ const SubmissionPreparator = () => {
                 
                 <div className="text-sm">
                   <div className="flex items-center gap-2 mb-1">
-                    <CalendarRange className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                    <Calendar className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                     <span>Due: <span className="font-medium">{new Date(currentSubmission.dueDate).toLocaleDateString()}</span></span>
                   </div>
                   
