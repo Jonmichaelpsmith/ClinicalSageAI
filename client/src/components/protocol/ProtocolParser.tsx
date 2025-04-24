@@ -52,13 +52,7 @@ export function ProtocolParser({ onParseComplete }: ProtocolParserProps) {
     onSuccess: (data) => {
       console.log('Protocol file successfully parsed:', data);
       onParseComplete(data);
-      // toast call replaced
-  // Original: toast({
-        title: "Protocol parsed successfully",
-        description: "Your protocol has been processed",
-        variant: "default",
-      })
-  console.log('Toast would show:', {
+      console.log('Toast would show:', {
         title: "Protocol parsed successfully",
         description: "Your protocol has been processed",
         variant: "default",
@@ -66,13 +60,7 @@ export function ProtocolParser({ onParseComplete }: ProtocolParserProps) {
     },
     onError: (error: any) => {
       console.error('Error parsing protocol file:', error);
-      // toast call replaced
-  // Original: toast({
-        title: "Error parsing protocol",
-        description: error.response?.data?.message || "Failed to parse protocol file",
-        variant: "destructive",
-      })
-  console.log('Toast would show:', {
+      console.log('Toast would show:', {
         title: "Error parsing protocol",
         description: error.response?.data?.message || "Failed to parse protocol file",
         variant: "destructive",
@@ -89,13 +77,7 @@ export function ProtocolParser({ onParseComplete }: ProtocolParserProps) {
     onSuccess: (data) => {
       console.log('Protocol text successfully parsed:', data);
       onParseComplete(data);
-      // toast call replaced
-  // Original: toast({
-        title: "Protocol text parsed successfully",
-        description: "Your protocol has been processed",
-        variant: "default",
-      })
-  console.log('Toast would show:', {
+      console.log('Toast would show:', {
         title: "Protocol text parsed successfully",
         description: "Your protocol has been processed",
         variant: "default",
@@ -103,13 +85,7 @@ export function ProtocolParser({ onParseComplete }: ProtocolParserProps) {
     },
     onError: (error: any) => {
       console.error('Error parsing protocol text:', error);
-      // toast call replaced
-  // Original: toast({
-        title: "Error parsing protocol text",
-        description: error.response?.data?.message || "Failed to parse protocol text",
-        variant: "destructive",
-      })
-  console.log('Toast would show:', {
+      console.log('Toast would show:', {
         title: "Error parsing protocol text",
         description: error.response?.data?.message || "Failed to parse protocol text",
         variant: "destructive",
@@ -126,13 +102,7 @@ export function ProtocolParser({ onParseComplete }: ProtocolParserProps) {
     onSuccess: (data) => {
       console.log('Protocol deeply analyzed:', data);
       onParseComplete(data);
-      // toast call replaced
-  // Original: toast({
-        title: "Deep analysis complete",
-        description: "Advanced protocol insights are ready",
-        variant: "default",
-      })
-  console.log('Toast would show:', {
+      console.log('Toast would show:', {
         title: "Deep analysis complete",
         description: "Advanced protocol insights are ready",
         variant: "default",
@@ -140,13 +110,7 @@ export function ProtocolParser({ onParseComplete }: ProtocolParserProps) {
     },
     onError: (error: any) => {
       console.error('Error analyzing protocol text:', error);
-      // toast call replaced
-  // Original: toast({
-        title: "Error in deep analysis",
-        description: error.response?.data?.message || "Failed to perform deep analysis",
-        variant: "destructive",
-      })
-  console.log('Toast would show:', {
+      console.log('Toast would show:', {
         title: "Error in deep analysis",
         description: error.response?.data?.message || "Failed to perform deep analysis",
         variant: "destructive",
@@ -166,13 +130,7 @@ export function ProtocolParser({ onParseComplete }: ProtocolParserProps) {
     if (protocolText.trim()) {
       parseTextMutation.mutate(protocolText);
     } else {
-      // toast call replaced
-  // Original: toast({
-        title: "Empty input",
-        description: "Please enter protocol text to parse",
-        variant: "destructive",
-      })
-  console.log('Toast would show:', {
+      console.log('Toast would show:', {
         title: "Empty input",
         description: "Please enter protocol text to parse",
         variant: "destructive",
@@ -185,13 +143,7 @@ export function ProtocolParser({ onParseComplete }: ProtocolParserProps) {
     if (protocolText.trim()) {
       analyzeMutation.mutate(protocolText);
     } else {
-      // toast call replaced
-  // Original: toast({
-        title: "Empty input",
-        description: "Please enter protocol text to analyze",
-        variant: "destructive",
-      })
-  console.log('Toast would show:', {
+      console.log('Toast would show:', {
         title: "Empty input",
         description: "Please enter protocol text to analyze",
         variant: "destructive",
@@ -202,21 +154,21 @@ export function ProtocolParser({ onParseComplete }: ProtocolParserProps) {
   const isPending = uploadMutation.isPending || parseTextMutation.isPending || analyzeMutation.isPending;
 
   return (
-    <Card className="w-full max-w-3xl mx-auto p-4"> {/* Reduced padding */}
-      <CardHeader className="p-2"> {/* Reduced padding */}
-        <CardTitle className="text-lg">Protocol Intelligence Engine</CardTitle> {/* Reduced font size */}
+    <Card className="w-full max-w-3xl mx-auto p-4">
+      <CardHeader className="p-2">
+        <CardTitle className="text-lg">Protocol Intelligence Engine</CardTitle>
         <CardDescription className="text-sm">
           Upload your protocol document or paste text to extract key insights
         </CardDescription>
       </CardHeader>
-      <CardContent className="p-2"> {/* Reduced padding */}
+      <CardContent className="p-2">
         <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-          <TabsList className="grid grid-cols-2 mb-2"> {/* Reduced margin */}
+          <TabsList className="grid grid-cols-2 mb-2">
             <TabsTrigger value="upload">Upload File</TabsTrigger>
             <TabsTrigger value="text">Paste Text</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="upload" className="space-y-2"> {/* Reduced spacing */}
+          <TabsContent value="upload" className="space-y-2">
             <FileUploader 
               accept="application/pdf"
               maxFiles={1}
@@ -224,19 +176,19 @@ export function ProtocolParser({ onParseComplete }: ProtocolParserProps) {
               onUpload={handleFileUpload}
               disabled={isPending}
               uploadMessage="Drag & drop your protocol file here or click to browse"
-              className="h-48" /* Reduced height */
+              className="h-48"
             />
-            <div className="text-xs text-muted-foreground mt-1" /* Reduced margin */>
+            <div className="text-xs text-muted-foreground mt-1">
               Supported formats: PDF (max 10MB)
             </div>
           </TabsContent>
 
-          <TabsContent value="text" className="space-y-2" /* Reduced spacing */>
+          <TabsContent value="text" className="space-y-2">
             <Textarea 
               placeholder="Paste your protocol text here..."
               value={protocolText}
               onChange={(e) => setProtocolText(e.target.value)}
-              className="min-h-[200px] font-mono text-sm" /* Reduced height */
+              className="min-h-[200px] font-mono text-sm"
               disabled={isPending}
             />
             <div className="flex space-x-2">
@@ -281,7 +233,7 @@ export function ProtocolParser({ onParseComplete }: ProtocolParserProps) {
       </CardContent>
 
       {isPending && (
-        <CardFooter className="border-t pt-2 pb-2"> {/* Reduced padding */}
+        <CardFooter className="border-t pt-2 pb-2">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" />
             {uploadMutation.isPending 
