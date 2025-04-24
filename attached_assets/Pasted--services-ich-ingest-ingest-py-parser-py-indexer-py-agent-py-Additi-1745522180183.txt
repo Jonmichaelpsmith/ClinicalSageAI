@@ -1,0 +1,210 @@
+# services/ich_ingest/
+# ├── ingest.py
+# ├── parser.py
+# ├── indexer.py
+# └── agent.py
+# Additionally integrates ICH intelligence into all TrialSage modules
+
+# File: ingest.py
+import os
+import time
+import json
+import logging
+import requests
+from bs4 import BeautifulSoup
+from parser import extract_text
+from indexer import index_document
+
+# Logging setup
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s: %(message)s')
+
+# Config
+ICH_BASE_URL = os.getenv("ICH_BASE_URL", "https://www.ich.org/page/articles-procedures")
+CSR_DIR = os.getenv("CSR_UPLOAD_DIR", "csr_uploads/")
+PROCESSED_LOG = os.getenv("PROCESSED_LOG", "services/ich_ingest/processed.json")
+
+# Ensure processed log exists
+if not os.path.exists(PROCESSED_LOG):
+    with open(PROCESSED_LOG, 'w') as f:
+        json.dump({"guidelines": [], "csrs": []}, f)
+
+
+def load_processed():
+    with open(PROCESSED_LOG, 'r') as f:
+        return json.load(f)
+
+
+def save_processed(data):
+    with open(PROCESSED_LOG, 'w') as f:
+        json.dump(data, f, indent=2)
+
+
+def fetch_guidelines():
+    logging.info("Fetching ICH guidelines")
+    resp = requests.get(ICH_BASE_URL)
+    resp.raise_for_status()
+    soup = BeautifulSoup(resp.text, "html.parser")
+    links = [a['href'] for a in soup.select('.download-links a') if a['href'].endswith('.pdf')]
+    data = load_processed()
+    for url in links:
+        name = os.path.basename(url)
+        if name in data['guidelines']:
+            continue
+        path = f"services/ich_ingest/guidelines/{name}"
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, 'wb') as out:
+            out.write(requests.get(url).content)
+        index_and_log(path, 'ICH Guideline')
+        data['guidelines'].append(name)
+        save_processed(data)
+
+
+def watch_csrs(interval=60):
+    logging.info("Watching CSR uploads for new files")
+    data = load_processed()
+    while True:
+        files = set(os.listdir(CSR_DIR))
+        new = files - set(data['csrs'])
+        for f in sorted(new):
+            path = os.path.join(CSR_DIR, f)
+            index_and_log(path, 'CSR')
+            data['csrs'].append(f)
+            save_processed(data)
+        time.sleep(interval)
+
+
+def index_and_log(filepath, doc_type):
+    try:
+        text = extract_text(filepath)
+        metadata = {'source': os.path.basename(filepath), 'type': doc_type}
+        index_document(text, metadata)
+        logging.info(f"Indexed {doc_type}: {filepath}")
+    except Exception as e:
+        logging.error(f"Error indexing {filepath}: {e}")
+
+
+if __name__ == '__main__':
+    fetch_guidelines()
+    watch_csrs()
+
+
+# File: parser.py
+import os
+import pdfplumber
+from tika import parser as tika_parser
+import pytesseract
+from PIL import Image
+import logging
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s: %(message)s')
+
+def extract_text(path: str) -> str:
+    ext = os.path.splitext(path)[1].lower()
+    text = ''
+    try:
+        if ext == '.pdf':
+            with pdfplumber.open(path) as pdf:
+                for p in pdf.pages:
+                    t = p.extract_text() or ''
+                    text += t + '\n'
+        else:
+            raw = tika_parser.from_file(path)
+            text = raw.get('content', '')
+    except Exception:
+        raw = tika_parser.from_file(path)
+        text = raw.get('content', '')
+
+    if len(text.strip()) < 200:
+        logging.info(f"OCR fallback on {path}")
+        im = Image.open(path)
+        text += pytesseract.image_to_string(im)
+    return text
+
+
+# File: indexer.py
+import os
+import openai
+import pinecone
+import logging
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s: %(message)s')
+
+# Env setup
+openai.api_key = os.getenv('OPENAI_API_KEY')
+pinecone.init(api_key=os.getenv('PINECONE_API_KEY'), environment=os.getenv('PINECONE_ENV', 'us-west1-gcp'))
+INDEX = os.getenv('PINECONE_INDEX', 'ich-specialist')
+if INDEX not in pinecone.list_indexes():
+    pinecone.create_index(INDEX, dimension=1536)
+vector_index = pinecone.Index(INDEX)
+
+
+def index_document(text: str, metadata: dict):
+    paras = [p for p in text.split('\n\n') if len(p) > 100]
+    for i, p in enumerate(paras):
+        try:
+            emb = openai.Embedding.create(input=p, model='text-embedding-ada-002')['data'][0]['embedding']
+            vector_index.upsert([(f"{metadata['source']}_{i}", emb, {**metadata, 'text': p})])
+        except Exception as e:
+            logging.error(f"Embedding error: {e}")
+
+
+def query_similar(q: str, k=5):
+    emb = openai.Embedding.create(input=q, model='text-embedding-ada-002')['data'][0]['embedding']
+    return vector_index.query(emb, top_k=k, include_metadata=True)
+
+
+# File: agent.py
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+import openai
+import os
+import logging
+from indexer import query_similar
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s: %(message)s')
+openai.api_key = os.getenv('OPENAI_API_KEY')
+app = FastAPI(title='ICH Specialist & PM Co-Pilot')
+
+class Query(BaseModel):
+    question: str
+    module: str  # e.g. 'protocol', 'csr_review', 'cmc'
+
+@app.post('/api/ich-agent')
+async def ich_agent(q: Query):
+    try:
+        hits = query_similar(q.question)
+        contexts = [f"[{m['metadata']['source']}] {m['metadata']['text'][:150]}..." for m in hits['matches']]
+        prompt = (
+            f"You are TrialSage's ICH expert and project manager. "
+            f"Module: {q.module}. Question: {q.question}\n\n" + "\n".join(contexts)
+        )
+        resp = openai.ChatCompletion.create(
+            model='gpt-4o',
+            messages=[
+                {'role': 'system', 'content': 'You guide users through ICH, protocol, CSR, CMC and project tasks.'},
+                {'role': 'user', 'content': prompt}
+            ]
+        )
+        answer = resp.choices[0].message.content
+        # Attach project tasks if relevant
+        tasks = generate_tasks(answer, q.module)
+        return {'answer': answer, 'tasks': tasks, 'sources': [m['metadata']['source'] for m in hits['matches'][:3]]}
+    except Exception as e:
+        logging.error(f"Agent error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+def generate_tasks(answer: str, module: str) -> list:
+    """
+    Based on the agent's answer and module context,
+    suggest project management tasks (e.g., review, validation, follow-up)
+    """
+    tasks = []
+    if 'validate' in answer.lower():
+        tasks.append({'title': 'Validate ICH compliance', 'module': module})
+    if 'review' in answer.lower():
+        tasks.append({'title': 'Review suggested edits', 'module': module})
+    tasks.append({'title': f'Follow up on {module} action items', 'module': module})
+    return tasks
+
+# Hook into other TrialSage services by importing ich_agent from frameworks like protocol_builder, csr_review, cmc_module, etc.
