@@ -11,7 +11,8 @@ import {
   BarChart3,
   FileCheck,
   Shield,
-  FileText
+  FileText,
+  BrainCircuit
 } from 'lucide-react';
 
 // CSR Counter component to fetch real CSR data
@@ -88,6 +89,42 @@ export default function HomeMarketingPage() {
               <Link to="/cer-module" className="text-[13px] font-bold text-[#000000] hover:text-[#0055aa] px-2">
                 CER
               </Link>
+              <div className="relative group">
+                <button className="text-[13px] font-bold text-[#000000] hover:text-[#0055aa] px-2 flex items-center">
+                  Monte Carlo <ChevronDown className="h-3 w-3 ml-0.5" />
+                </button>
+                <div className="absolute top-full left-0 w-64 mt-1 bg-white shadow-lg border border-gray-200 rounded-md p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                  <div className="mb-2">
+                    <h4 className="text-[12px] font-bold text-blue-700 mb-1">Statistical Design Tools</h4>
+                    <p className="text-[11px] text-gray-600">AI-powered simulation for optimized study design</p>
+                  </div>
+                  <div className="grid grid-cols-1 gap-2">
+                    <Link to="/study-planner" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
+                      <div className="w-7 h-7 rounded bg-blue-100 flex items-center justify-center mr-2">
+                        <BrainCircuit className="h-3 w-3 text-blue-700" />
+                      </div>
+                      <div>
+                        <div className="text-[12px] font-bold text-[#000000]">Study Architect™</div>
+                        <div className="text-[10px] text-gray-500">Protocol & study design studio</div>
+                      </div>
+                    </Link>
+                    <Link to="/protocol-review" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
+                      <div className="w-7 h-7 rounded bg-green-100 flex items-center justify-center mr-2">
+                        <Database className="h-3 w-3 text-green-700" />
+                      </div>
+                      <div>
+                        <div className="text-[12px] font-bold text-[#000000]">Vector Intelligence</div>
+                        <div className="text-[10px] text-gray-500">Similar trial recommendations</div>
+                      </div>
+                    </Link>
+                  </div>
+                  <div className="mt-3 pt-2 border-t border-gray-100">
+                    <Link to="/study-planner" className="text-[11px] font-bold text-blue-700 hover:text-blue-800 flex items-center">
+                      Open Monte Carlo Simulation <ArrowRight className="h-3 w-3 ml-1" />
+                    </Link>
+                  </div>
+                </div>
+              </div>
             </div>
             
             {/* Right side utilities */}
