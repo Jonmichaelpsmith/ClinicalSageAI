@@ -69,6 +69,7 @@ import {
   Settings,
   Info,
   Sparkles,
+  Globe,
   Edit,
   Trash2,
   Link,
@@ -892,22 +893,39 @@ const CMCModule = () => {
     { requirement: 'Elemental Impurities Assessment', status: 'non-compliant', region: 'ICH Q3D', details: 'Risk assessment does not address potential catalyst residues adequately' }
   ];
 
+  // Function to open the high contrast version in a new window
+  const openHighContrastView = () => {
+    window.open('/high-contrast.html', '_blank');
+  };
+
   return (
     <div className="container mx-auto py-6 max-w-7xl">
+      {/* Accessibility Controls - Fixed Position */}
+      <div className="fixed top-4 right-4 z-50 flex gap-2">
+        <Button 
+          onClick={openHighContrastView}
+          variant="outline" 
+          className="bg-black text-white hover:bg-gray-800 border-2 border-white font-bold"
+        >
+          <Eye className="mr-2 h-4 w-4" />
+          High Contrast View
+        </Button>
+      </div>
+
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">CMC Management Suite</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">
+          <h1 className="text-3xl font-bold tracking-tight text-black dark:text-white">CMC Management Suite</h1>
+          <p className="text-black dark:text-white mt-1 font-medium">
             Comprehensive Chemistry, Manufacturing, and Controls management system
           </p>
         </div>
         <div className="flex items-center gap-3">
           <div className="relative w-64">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-400" />
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-black dark:text-white" />
             <Input
               type="search"
               placeholder="Search CMC documents..."
-              className="pl-9"
+              className="pl-9 text-black dark:text-white border-2 border-black dark:border-white"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -1144,6 +1162,11 @@ const CMCModule = () => {
             <Sparkles className="h-4 w-4" />
             <span>AI Insights</span>
           </TabsTrigger>
+          <TabsTrigger value="global-readiness" className="flex items-center gap-2 relative">
+            <Globe className="h-4 w-4" />
+            <span>Global Readiness</span>
+            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-medium text-white">3</span>
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="sections" className="mt-0">
@@ -1311,6 +1334,255 @@ const CMCModule = () => {
                 setShowNewSubmissionDialog(true);
               }}
             />
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="global-readiness" className="mt-0">
+          <div className="grid grid-cols-1 gap-6">
+            <div className="bg-white dark:bg-gray-900 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-800 shadow-sm">
+              <div className="p-4 bg-indigo-50 dark:bg-indigo-950/30 border-b border-indigo-100 dark:border-indigo-900">
+                <h3 className="font-semibold text-lg text-black dark:text-white flex items-center gap-2">
+                  <Globe className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                  Global Regulatory Readiness Dashboard
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Track CMC documentation readiness for submissions across major global markets
+                </p>
+              </div>
+              
+              <div className="p-6">
+                <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-6">
+                  {/* Market readiness cards */}
+                  <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border-2 border-black dark:border-white shadow-sm">
+                    <div className="flex items-center justify-between">
+                      <div className="font-bold text-md text-black dark:text-white">FDA (US)</div>
+                      <Badge className="bg-green-600 text-white">82%</Badge>
+                    </div>
+                    <Progress value={82} className="h-2 mt-2 mb-1" />
+                    <div className="flex justify-between text-xs">
+                      <span className="text-green-700 dark:text-green-400">36 requirements met</span>
+                      <span className="text-red-700 dark:text-red-400">8 pending</span>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border-2 border-black dark:border-white shadow-sm">
+                    <div className="flex items-center justify-between">
+                      <div className="font-bold text-md text-black dark:text-white">EMA (EU)</div>
+                      <Badge className="bg-amber-600 text-white">65%</Badge>
+                    </div>
+                    <Progress value={65} className="h-2 mt-2 mb-1" />
+                    <div className="flex justify-between text-xs">
+                      <span className="text-green-700 dark:text-green-400">28 requirements met</span>
+                      <span className="text-red-700 dark:text-red-400">15 pending</span>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border-2 border-black dark:border-white shadow-sm">
+                    <div className="flex items-center justify-between">
+                      <div className="font-bold text-md text-black dark:text-white">PMDA (Japan)</div>
+                      <Badge className="bg-red-600 text-white">43%</Badge>
+                    </div>
+                    <Progress value={43} className="h-2 mt-2 mb-1" />
+                    <div className="flex justify-between text-xs">
+                      <span className="text-green-700 dark:text-green-400">19 requirements met</span>
+                      <span className="text-red-700 dark:text-red-400">25 pending</span>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border-2 border-black dark:border-white shadow-sm">
+                    <div className="flex items-center justify-between">
+                      <div className="font-bold text-md text-black dark:text-white">NMPA (China)</div>
+                      <Badge className="bg-amber-600 text-white">51%</Badge>
+                    </div>
+                    <Progress value={51} className="h-2 mt-2 mb-1" />
+                    <div className="flex justify-between text-xs">
+                      <span className="text-green-700 dark:text-green-400">22 requirements met</span>
+                      <span className="text-red-700 dark:text-red-400">21 pending</span>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border-2 border-black dark:border-white shadow-sm">
+                    <div className="flex items-center justify-between">
+                      <div className="font-bold text-md text-black dark:text-white">Health Canada</div>
+                      <Badge className="bg-green-600 text-white">78%</Badge>
+                    </div>
+                    <Progress value={78} className="h-2 mt-2 mb-1" />
+                    <div className="flex justify-between text-xs">
+                      <span className="text-green-700 dark:text-green-400">32 requirements met</span>
+                      <span className="text-red-700 dark:text-red-400">9 pending</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="border-2 border-black dark:border-white rounded-lg overflow-hidden mb-6">
+                  <div className="bg-black text-white dark:bg-white dark:text-black p-3 font-bold">
+                    Critical Action Items (3)
+                  </div>
+                  <div className="p-0">
+                    <div className="p-4 border-b-2 border-dashed border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/30">
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex items-center gap-2">
+                          <ShieldAlert className="h-5 w-5 text-red-600 dark:text-red-500" />
+                          <span className="font-semibold text-black dark:text-white">API Starting Material Documentation (PMDA)</span>
+                        </div>
+                        <Badge variant="outline" className="text-red-700 dark:text-red-400 border-red-300 dark:border-red-800">High Priority</Badge>
+                      </div>
+                      <p className="text-sm text-black dark:text-white ml-7 mb-2">
+                        Additional documentation required for API starting material selection and justification, including synthetic route options and impurity profiles.
+                      </p>
+                      <div className="flex justify-between ml-7">
+                        <span className="text-xs text-black dark:text-white">Due: 15 May 2025</span>
+                        <Button variant="outline" size="sm" className="h-7 text-xs text-black dark:text-white border-black dark:border-white">
+                          <PlusCircle className="h-3.5 w-3.5 mr-1" />
+                          Assign Task
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <div className="p-4 border-b-2 border-dashed border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/30">
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex items-center gap-2">
+                          <ShieldAlert className="h-5 w-5 text-red-600 dark:text-red-500" />
+                          <span className="font-semibold text-black dark:text-white">Elemental Impurities Assessment (EMA)</span>
+                        </div>
+                        <Badge variant="outline" className="text-red-700 dark:text-red-400 border-red-300 dark:border-red-800">High Priority</Badge>
+                      </div>
+                      <p className="text-sm text-black dark:text-white ml-7 mb-2">
+                        Elemental impurities assessment does not meet ICH Q3D requirements for risk assessment of potential catalyst residues.
+                      </p>
+                      <div className="flex justify-between ml-7">
+                        <span className="text-xs text-black dark:text-white">Due: 3 June 2025</span>
+                        <Button variant="outline" size="sm" className="h-7 text-xs text-black dark:text-white border-black dark:border-white">
+                          <PlusCircle className="h-3.5 w-3.5 mr-1" />
+                          Assign Task
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <div className="p-4 bg-red-50 dark:bg-red-950/30">
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex items-center gap-2">
+                          <ShieldAlert className="h-5 w-5 text-red-600 dark:text-red-500" />
+                          <span className="font-semibold text-black dark:text-white">Manufacturing Process Validation (NMPA)</span>
+                        </div>
+                        <Badge variant="outline" className="text-red-700 dark:text-red-400 border-red-300 dark:border-red-800">High Priority</Badge>
+                      </div>
+                      <p className="text-sm text-black dark:text-white ml-7 mb-2">
+                        Additional process validation data required for critical manufacturing steps, with specific focus on NMPA requirements for sterilization validation.
+                      </p>
+                      <div className="flex justify-between ml-7">
+                        <span className="text-xs text-black dark:text-white">Due: 22 May 2025</span>
+                        <Button variant="outline" size="sm" className="h-7 text-xs text-black dark:text-white border-black dark:border-white">
+                          <PlusCircle className="h-3.5 w-3.5 mr-1" />
+                          Assign Task
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="border-2 border-black dark:border-white rounded-lg overflow-hidden">
+                    <div className="bg-black text-white dark:bg-white dark:text-black p-3 font-bold">
+                      CMC Preparation Checklist
+                    </div>
+                    <div className="p-4">
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3">
+                          <Checkbox id="item1" className="border-2 border-black data-[state=checked]:bg-black data-[state=checked]:text-white dark:border-white dark:data-[state=checked]:bg-white dark:data-[state=checked]:text-black" checked={true} />
+                          <Label htmlFor="item1" className="text-black dark:text-white">API Specifications (ICH Q6A)</Label>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Checkbox id="item2" className="border-2 border-black data-[state=checked]:bg-black data-[state=checked]:text-white dark:border-white dark:data-[state=checked]:bg-white dark:data-[state=checked]:text-black" checked={true} />
+                          <Label htmlFor="item2" className="text-black dark:text-white">Drug Product Specifications</Label>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Checkbox id="item3" className="border-2 border-black data-[state=checked]:bg-black data-[state=checked]:text-white dark:border-white dark:data-[state=checked]:bg-white dark:data-[state=checked]:text-black" checked={true} />
+                          <Label htmlFor="item3" className="text-black dark:text-white">Container Closure System</Label>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Checkbox id="item4" className="border-2 border-black data-[state=checked]:bg-black data-[state=checked]:text-white dark:border-white dark:data-[state=checked]:bg-white dark:data-[state=checked]:text-black" checked={false} />
+                          <Label htmlFor="item4" className="text-black dark:text-white">Process Validation Summary Report</Label>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Checkbox id="item5" className="border-2 border-black data-[state=checked]:bg-black data-[state=checked]:text-white dark:border-white dark:data-[state=checked]:bg-white dark:data-[state=checked]:text-black" checked={false} />
+                          <Label htmlFor="item5" className="text-black dark:text-white">Stability Data (Long-term & Accelerated)</Label>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Checkbox id="item6" className="border-2 border-black data-[state=checked]:bg-black data-[state=checked]:text-white dark:border-white dark:data-[state=checked]:bg-white dark:data-[state=checked]:text-black" checked={false} />
+                          <Label htmlFor="item6" className="text-black dark:text-white">Analytical Method Validation</Label>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Checkbox id="item7" className="border-2 border-black data-[state=checked]:bg-black data-[state=checked]:text-white dark:border-white dark:data-[state=checked]:bg-white dark:data-[state=checked]:text-black" checked={false} />
+                          <Label htmlFor="item7" className="text-black dark:text-white">Reference Standards Information</Label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="border-2 border-black dark:border-white rounded-lg overflow-hidden">
+                    <div className="bg-black text-white dark:bg-white dark:text-black p-3 font-bold flex items-center justify-between">
+                      <span>Market-Specific Requirements</span>
+                      <Select defaultValue="fda">
+                        <SelectTrigger className="w-[140px] h-7 text-xs bg-transparent border-white dark:border-black">
+                          <SelectValue placeholder="Select market" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="fda">FDA (US)</SelectItem>
+                          <SelectItem value="ema">EMA (EU)</SelectItem>
+                          <SelectItem value="pmda">PMDA (Japan)</SelectItem>
+                          <SelectItem value="nmpa">NMPA (China)</SelectItem>
+                          <SelectItem value="hc">Health Canada</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="p-4">
+                      <div className="space-y-3">
+                        <div className="rounded-lg p-3 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900">
+                          <div className="flex items-start gap-2">
+                            <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-500 mt-0.5" />
+                            <div>
+                              <p className="font-medium text-black dark:text-white">Comparability Protocols</p>
+                              <p className="text-xs text-black dark:text-white">FDA-specific requirement for post-approval changes management</p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="rounded-lg p-3 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900">
+                          <div className="flex items-start gap-2">
+                            <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-500 mt-0.5" />
+                            <div>
+                              <p className="font-medium text-black dark:text-white">Drug Master File Cross-References</p>
+                              <p className="text-xs text-black dark:text-white">Documentation of authorized cross-references to DMFs</p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="rounded-lg p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900">
+                          <div className="flex items-start gap-2">
+                            <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-500 mt-0.5" />
+                            <div>
+                              <p className="font-medium text-black dark:text-white">Nitrosamine Risk Assessment</p>
+                              <p className="text-xs text-black dark:text-white">FDA-specific control strategy for potential nitrosamine impurities</p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="rounded-lg p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900">
+                          <div className="flex items-start gap-2">
+                            <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-500 mt-0.5" />
+                            <div>
+                              <p className="font-medium text-black dark:text-white">Quality Overall Summary (QOS)</p>
+                              <p className="text-xs text-black dark:text-white">Comprehensive summary following CTD format - requires updates</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </TabsContent>
         
