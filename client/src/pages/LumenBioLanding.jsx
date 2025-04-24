@@ -813,6 +813,29 @@ const LumenBioLanding = () => {
                     </Link>
                   </CardFooter>
                 </Card>
+
+                <Card className="border border-gray-200 shadow-sm">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg font-medium flex items-center">
+                      <Database className="h-5 w-5 mr-2 text-blue-600" />
+                      Clinical Metadata Repository
+                    </CardTitle>
+                    <CardDescription>Centralized Metadata Management</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pb-4 pt-0">
+                    <p className="text-sm text-slate-600">
+                      Centrally manage, version, and govern forms, terminologies, and datasets across your clinical trials.
+                    </p>
+                  </CardContent>
+                  <CardFooter>
+                    <Link href="/cmdr">
+                      <Button variant="outline" className="w-full text-blue-600 border-blue-200 hover:bg-blue-50">
+                        Access CMDR
+                        <ArrowRight className="h-4 w-4 ml-2" />
+                      </Button>
+                    </Link>
+                  </CardFooter>
+                </Card>
               </div>
             </TabsContent>
             
