@@ -219,23 +219,12 @@ export default function ProtocolOptimizer() {
           setProtocolSummary(response.extractedSummary);
         }
         
-        // toast call replaced
-  // Original: toast({
-          title: "Analysis Complete",
-          description: `Successfully analyzed protocol ${protocolFile ? 'file' : 'summary'} and found ${response.matchedCsrInsights?.length || 0} similar CSRs.`,
-        })
-  console.log('Toast would show:', {
+        toast({
           title: "Analysis Complete",
           description: `Successfully analyzed protocol ${protocolFile ? 'file' : 'summary'} and found ${response.matchedCsrInsights?.length || 0} similar CSRs.`,
         });
       } else {
-        // toast call replaced
-  // Original: toast({
-          title: "Analysis Failed",
-          description: response.error || "Failed to analyze protocol. Please try again.",
-          variant: "destructive"
-        })
-  console.log('Toast would show:', {
+        toast({
           title: "Analysis Failed",
           description: response.error || "Failed to analyze protocol. Please try again.",
           variant: "destructive"
@@ -243,13 +232,7 @@ export default function ProtocolOptimizer() {
       }
     } catch (error) {
       console.error("Protocol analysis error:", error);
-      // toast call replaced
-  // Original: toast({
-        title: "Error",
-        description: "An unexpected error occurred during analysis.",
-        variant: "destructive"
-      })
-  console.log('Toast would show:', {
+      toast({
         title: "Error",
         description: "An unexpected error occurred during analysis.",
         variant: "destructive"
@@ -293,12 +276,7 @@ export default function ProtocolOptimizer() {
         // Remove the temporary header after PDF generation
         content.removeChild(header);
         
-        // toast call replaced
-  // Original: toast({
-          title: "Export Complete",
-          description: "Protocol optimization report has been exported as PDF",
-        })
-  console.log('Toast would show:', {
+        toast({
           title: "Export Complete",
           description: "Protocol optimization report has been exported as PDF",
         });
@@ -308,13 +286,7 @@ export default function ProtocolOptimizer() {
   // Save optimization to dossier
   const saveOptimizationToDossier = async () => {
     if (!dossierId || !generatedContent) {
-      // toast call replaced
-  // Original: toast({
-        title: "Cannot Save",
-        description: dossierId ? "No optimization to save." : "No dossier selected.",
-        variant: "destructive"
-      })
-  console.log('Toast would show:', {
+      toast({
         title: "Cannot Save",
         description: dossierId ? "No optimization to save." : "No dossier selected.",
         variant: "destructive"
@@ -339,23 +311,12 @@ export default function ProtocolOptimizer() {
           setSavedMessageVisible(false);
         }, 3000);
         
-        // toast call replaced
-  // Original: toast({
-          title: "Saved Successfully",
-          description: "Optimization saved to dossier.",
-        })
-  console.log('Toast would show:', {
+        toast({
           title: "Saved Successfully",
           description: "Optimization saved to dossier.",
         });
       } else {
-        // toast call replaced
-  // Original: toast({
-          title: "Save Failed",
-          description: response.error || "Failed to save optimization.",
-          variant: "destructive"
-        })
-  console.log('Toast would show:', {
+        toast({
           title: "Save Failed",
           description: response.error || "Failed to save optimization.",
           variant: "destructive"
@@ -465,12 +426,7 @@ export default function ProtocolOptimizer() {
                       if (file) {
                         setProtocolFile(file);
                         setUploadedFileName(file.name);
-                        // toast call replaced
-  // Original: toast({
-                          title: "File Selected",
-                          description: `${file.name} ready for analysis`,
-                        })
-  console.log('Toast would show:', {
+                        toast({
                           title: "File Selected",
                           description: `${file.name} ready for analysis`,
                         });
