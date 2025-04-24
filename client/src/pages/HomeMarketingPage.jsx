@@ -173,20 +173,20 @@ export default function HomeMarketingPage() {
                   </li>
                   
                   <li>
-                    <Link to="/team-signup" className="text-[14px] font-semibold text-[#111] hover:text-[#0078d4] transition">
+                    <Link to="/team-signup" className="text-[14px] font-bold text-[#000000] hover:text-[#0055aa] transition">
                       Contact
                     </Link>
                   </li>
                   
                   <li className="relative group">
-                    <a className="text-[14px] flex items-center font-semibold text-[#111] hover:text-[#0078d4] transition cursor-pointer">
+                    <a className="text-[14px] flex items-center font-bold text-[#000000] hover:text-[#0055aa] transition cursor-pointer">
                       English
                       <ChevronDown className="ml-1 h-3 w-3" />
                     </a>
                     <div className="absolute right-0 mt-1 w-24 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 bg-white shadow-lg border border-gray-200 z-50 py-1 rounded">
-                      <a className="block px-4 py-1 text-[12px] font-medium text-[#222] hover:bg-gray-50">English</a>
-                      <a className="block px-4 py-1 text-[12px] font-medium text-[#222] hover:bg-gray-50">French</a>
-                      <a className="block px-4 py-1 text-[12px] font-medium text-[#222] hover:bg-gray-50">German</a>
+                      <a className="block px-4 py-1 text-[12px] font-bold text-[#000000] hover:bg-blue-50">English</a>
+                      <a className="block px-4 py-1 text-[12px] font-bold text-[#000000] hover:bg-blue-50">French</a>
+                      <a className="block px-4 py-1 text-[12px] font-bold text-[#000000] hover:bg-blue-50">German</a>
                     </div>
                   </li>
                 </ul>
@@ -194,12 +194,12 @@ export default function HomeMarketingPage() {
 
               {/* Right utilities - Improved contrast */}
               <div className="flex items-center space-x-4">
-                <Link to="/auth" className="text-[14px] font-semibold text-[#111] hover:text-[#0078d4] transition pr-4">
+                <Link to="/auth" className="text-[14px] font-bold text-[#000000] hover:text-[#0055aa] transition pr-4">
                   Sign In
                 </Link>
                 
                 <Link to="/auth">
-                  <button className="bg-[#0066bb] hover:bg-[#005299] text-white py-2 px-4 text-[14px] font-semibold transition">
+                  <button className="bg-[#0055aa] hover:bg-[#003c77] text-white py-2 px-4 text-[14px] font-bold transition">
                     Get Started
                   </button>
                 </Link>
@@ -242,7 +242,7 @@ export default function HomeMarketingPage() {
               </div>
               <div className="flex space-x-3">
                 <Link to="/ind-wizard">
-                  <button className="bg-[#0066bb] hover:bg-[#005299] text-white py-2 px-4 text-sm font-semibold rounded-md transition">
+                  <button className="bg-[#0055aa] hover:bg-[#003c77] text-white py-2 px-4 text-sm font-bold rounded-md transition">
                     Start IND Wizard™
                   </button>
                 </Link>
