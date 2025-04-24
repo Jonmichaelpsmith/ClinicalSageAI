@@ -1,0 +1,276 @@
+International Council for Harmonisation of Technical Requirements
+for Pharmaceuticals for Human UseICH Q1: Stability Testing of Drug Substances 
+and Drug Products
+Step 2 document –to be released for comments
+11 April 2025
+2ICH Q1: Stability Testing for Drug Substances and Drug Products
+•This presentation is protected by copyright and may, with the exception of the ICH
+logo, be used, reproduced, incorporated into other works, adapted, modified,
+translated or distributed under a public license provided that ICH's copyright in the
+presentation is acknowledged at all times. In case of any adaption, modification or
+translation of the presentation, reasonable steps must be taken to clearly label,
+demarcate or otherwise identify that changes were made to or based on the
+original presentation. Any impression that the adaption, modification or translation
+of the original presentation is endorsed or sponsored by the ICH must be avoided.
+•The presentation is provided "as is" without warranty of any kind. In no event shall
+the ICH or the authors of the original presentation be liable for any claim, damages
+or other liability arising from the use of the presentation.
+•The above-mentioned permissions do not apply to content supplied by third
+parties. Therefore, for documents where the copyright vests in a third party,
+permission for reproduction must be obtained from this copyright holder.Legal Notice
+3HistoryICH Q1: Stability Testing for Drug Substances and Drug Products
+•This document has been signed off as a Step 2
+document (11 April 2025) to be issued by the ICH 
+Regulatory Members for public consultation 
+•This document was developed based on a Concept 
+Paper (15 November 2022) and a Business Plan (15 
+November 2022)
+4Outline
+These slides are intended to orient the reader/commentor with the revised 
+stability guideline and provide guidance on commenting.  The slides are 
+organised as follows:
+Background on Revision
+Milestones
+Key Considerations
+Recommendations for Guideline Review
+Table of Contents for Draft Technical Document
+Summary of Draft Guideline Content
+Recommendations for Commenting
+Instructions for CommentingICH Q1: Stability Testing for Drug Substances and Drug Products
+Background on Revision
+Revision of the ICH Stability Guideline Series Q1A-
+F and Q5C was recommended to:
+a) Streamline the series by combining the various
+guidelines into a single guideline focused on core
+stability principles;
+b) Promote harmonised interpretation by
+addressing potential gaps and areas of ambiguity;
+c) Address additional technical issues, including
+relevant stability strategies and innovative tools
+that strengthen the application of risk
+management;
+d) Consider inclusion of new topics, such as
+stability considerations for advanced therapies.
+The result will be a combined guideline, ICH Q1,
+with integrated annexes that address specific topics
+beyond the core principles on stability
+recommendations and to address product type
+specific recommendations.
+ICH Q1: Stability Testing for Drug Substances and Drug Products
+ICH Q1 Revision Milestones
+Page 6Nov 2022
+EWG Formation and 
+Concept paper 
+endorsed Jun 2023
+Aligned upon critical 
+comments on Early 
+DraftMar 2024 
+Send Step 1 draft for 
+2.5-month 
+constituency review
+May 2023
+Issued “Early Draft” 
+for constituency 
+Review/FeedbackOct 2023
+Review and 
+alignment, identify 
+remaining gaps for 
+Step 1 DraftJun 2024 
+Start addressing 
+comments to 
+finalize Step 1
+guideline2023Nov 2024 
+Final 
+Alignment March 2025  
+Step 1 
+2022 2024 2025
+April 2025 
+Step 2 Public 
+Commenting 
+Step 3
+The Step 3 document is a draft technical document for public comment. Revisions will occur based on public commenting
+Note: The Step 2 document is a draft Guideline for public comment. 
+Revisions will occur based on public commenting.  
+The document will undergo changes through Step 4 and should not be used 
+or referenced as the final Guideline.ICH Q1: Stability Testing for Drug Substances and Drug Products
+7Key Considerations
+combines and modernizes the content of ICH Q1A-F series and ICH Q5C into one 
+comprehensive stability guideline, addressing a range of product types 
+should be considered in its entirety for a comprehensive approach to stability studies
+exemplifies the standard stability data package for regulatory submission for a range of 
+product types and includes recommendations for studies managed within the 
+Pharmaceutical Quality System (PQS)
+provides new content (e.g., in-use studies, short-term stability studies, processing and 
+holding times, adjuvant and reference standard studies, product lifecycle and modelling)
+enables science-and risk-based approaches and addresses new technologies and modern 
+strategies as part of enhanced product understandingThe Q1 Draft Guideline:ICH Q1: Stability Testing for Drug Substances and Drug Products
+8Recommendations for Draft Guideline Review
+Read the entire Draft Guideline .  The EWG recommends that reviewers read the Draft 
+Guideline in its entirety before providing detailed comments. The organisation of this 
+guideline is different from the existing ICH stability guidelines. Content that may initially 
+appear to be missing may be provided in a different section.
+Keep guideline scope in mind. The scope of product types that this Draft Guideline 
+covers is broad.  Guidance on all product-specific scenarios cannot be provided within the 
+guideline.
+The guideline exemplifies the standard approach , with strategies for alternative 
+approaches . The core Draft Guideline focuses on assessing product stability using the 
+concepts established within the ICH Q1 series and ICH Q5C.  Alternative approaches 
+may be applied to any part of the guideline, when scientifically justified.  
+Recognise that enhanced stability modelling is an evolving space . The guidance on 
+this topic is written to enable application of current tools and future advancements.ICH Q1: Stability Testing for Drug Substances and Drug Products
+9ICH Q1 Step 2 Draft Guideline - Table of ContentsICH Q1: Stability Testing for Drug Substances and Drug Products
+1. Introduction
+2. Development Stability Studies Under Stress and Forced Conditions
+3. Protocol Design for Formal Stability Studies
+4. Selection of Batches
+5. Container Closure System
+6. Testing Frequency
+7. Storage Conditions
+8. Photostability
+9. Stability Considerations for Processing and Holding Times for Intermediates
+10. Short-Term Storage Conditions
+11. In-Use Stability
+12. Reference Materials, Novel Excipients and Adjuvants
+13. Data Evaluation
+14. Labelling
+15. Stability Considerations for Commitments and Product Lifecycle Management
+16. Glossary
+17. References
+18. Annexes
+Annex 1:  Reduced Stability Protocol Design
+Annex 2:  Stability Modelling
+Annex 3:  Stability of Advanced Therapy Medicinal Products (ATMPs)
+10Summary of ICH Q1 Draft Guideline Content
+•Section 1 provides an introduction and is important for
+understanding the scope of this guideline and how it differs in
+format from existing stability guidelines. It is recommended to
+read this section first and refer to it as needed throughout the
+guideline review.
+•Section 2 provides guidance on how data that is often
+generated early in development (e.g., to understand intrinsic
+stability, potential degradation products/pathways, confirm
+method suitability, and enable method validation) may be used
+to inform stability protocol design and support long term
+storage. This section aims to consolidate content on stressed
+stability and forced degradation currently existing in ICH Q1A
+and/or ICH Q5C.ICH Q1: Stability Testing for Drug Substances and Drug Products
+11Summary of ICH Q1 Draft Guideline Content
+•Sections 3-7 are intended to be used together to establish a long-
+term stability protocol. These sections combine, align, clarify and
+modernise content from ICH Q1A and ICH Q5C for primary stability
+studies. The sections provide:
+Specific guidance for primary stability protocols
+Guidance on minimum data recommendations at submission,
+attribute selection and identification of representative batches
+Guidance on long-term and accelerated storage conditions
+Clarity on where principles are applicable to other protocols,
+such as stability commitments or those to support post-
+approval changes.ICH Q1: Stability Testing for Drug Substances and Drug Products
+12Summary of Draft Guideline Content
+Sections 8-11 provide guidance on stability studies intended to
+supplement the primary stability study.
+•Section 8 provides guidance on photostability that aligns with ICH Q1B
+and informs the recommended storage conditions for the drug product.
+The guidance in this section should be used in conjunction with the
+guidance in Section 2.
+•Section 9 provides stability recommendations for processing and
+holding times for intermediates. Content in this section is new guidance
+and articulates when data should be included in a regulatory
+submission and when it may be managed within the PQS.ICH Q1: Stability Testing for Drug Substances and Drug Products
+13Summary of Draft Guideline Content
+Sections 8-11 provide guidance on stability studies intended to supplement
+the primary stability study.
+•Section 10 is new content and provides guidance on studies to support
+short-term storage conditions (which differ from in-use conditions) for
+products that include this on the label. This section is not applicable to all
+drug products.
+•Section 11 is new content and provides guidance on studies to support
+the in-use period and storage conditions for drug products.ICH Q1: Stability Testing for Drug Substances and Drug Products
+14Summary of Draft Guideline Content
+•Section 12 is new content and provides guidance on how to
+use the other sections of the ICH Q1 Draft Guideline with
+respect to reference materials, novel excipients and
+adjuvants.
+•Section 13 provides guidance on data evaluation, including:
+General considerations for assigning re-test period
+and shelf life
+Statistical evaluation, extrapolation and presentation of
+data
+Content is aligned with current ICH Q1E and should be
+used in conjunction with Annex 2 when statistical
+approaches are applied.ICH Q1: Stability Testing for Drug Substances and Drug Products
+15Summary of Draft Guideline Content
+•Section 14 provides guidance on labelling and storage
+statements and excursions outside of the labelling claim derived
+from stability studies described throughout the guideline.
+•Section 15 provides guidance on stability commitments for
+product lifecycle management, including new guidance for post-
+approval changes. Content on commitments is consistent with
+ICH Q1A. Content on the introduction of new dosage forms is
+consistent with ICH Q1C.
+•Sections 16 & 17 are the glossary and referencesICH Q1: Stability Testing for Drug Substances and Drug Products
+16Summary of Draft Guideline Content
+Section 18 includes 3 Annexes:
+•Annex 1 includes guidance on bracketing and matrixing
+currently captured in ICH Q1D. New guidance is provided on
+knowledge and risk-based protocol reductions.
+•Annex 2 provides guidance on stability modelling. It includes
+guidance currently provided in ICH Q1E and new guidance on
+using enhanced stability modelling.
+•Annex 3 provides stability guidance on ATMPs (Advanced
+Therapy Medicinal Products) which are new to ICH. This annex
+is supplemental to the core ICH Q1 Draft Guideline and is not a
+stand-alone guideline for ATMPs.ICH Q1: Stability Testing for Drug Substances and Drug Products
+17Recommendations for Commenting
+Please do not provide duplicate 
+comments through multiple 
+organizations.Every comment requires resolution, and 
+duplicate comments prolong the resolution 
+process.
+If a comment is considered critical, 
+please indicate this within the 
+comment (Column F) and provide a 
+rationale.Reserve the classification of ‘critical’ for 
+items that cannot be addressed through 
+training or simple text revisions.
+Please include recommendations for 
+training material where a concern is 
+too specific for the guideline or where 
+further explanation is needed.Guideline recommendations address a 
+wide range of product types and 
+scenarios. Training may also address 
+specific situations likely to be commonly 
+encountered.ICH Q1: Stability Testing for Drug Substances and Drug Products
+18CommentingProcess
+The reviewer should follow the commenting process either per the ICH site or 
+the regional authority they are sending their comments through.
+Column B “Name of organisation or individual*”: this is set up as free text and is 
+mandatory
+Column C “Line from*”: this is set up to allow numbers only. If you want to 
+submit a general comment, please enter 0 (zero).  This field is mandatory
+Column D “Line to*”: If your comment applies to a single line, repeat the number 
+of column C. This field is mandatory.
+ICH Q1: Stability Testing for Drug Substances and Drug Products
+19Commenting Process
+Column E “section number”: this is set up to allow numbers only. This is not 
+mandatory but strongly encouraged.
+Column F “Comment and rationale”: It is not possible to fill in this column if 
+columns B, C and/or D are not filled in. An error message will appear if B, C 
+and/or D are empty. This column has been set up as wide as possible to allow 
+long comments (up to 32,767 characters).
+Column G “Proposed changes/recommendation (if applicable)”: See column F.
+
+Useful links
+Page 20ICH Q1/Q5C Concept Paper:
+https://database.ich.org/sites/default/files/ICH_Q1Q5C_ConceptPaper_Final_2022_1114.pdf
+ICH Q1/Q5C Business Plan:
+https://database.ich.org/sites/default/files/ICH_Q1Q5C_BusinessPaper_Final_2022_1028.pdf
+ICH Q1/Q5C Work Plan: ICH_Q1Q5C_EWG_WorkPlan_2024_0930.pdf
+ICH Quality Discussion Group (QDG) Reflection Paper  “ Future Opportunities & 
+Modernization of ICH Quality Guidelines: Implementation of the ICH Quality Vision from 
+the ICH Quality Reflection Paper ”
+https://database.ich.org/sites/default/files/ICH_QDG_Recommendation_2021_1012.pdf
+21Contact
+•For any questions, please contact the ICH Secretariat: 
+admin@ich.org ICH Q1: Stability Testing for Drug Substances 
+and Drug Products

@@ -1,0 +1,415 @@
+Jumping into Statistics: 
+Introduction to Study Design and 
+Statistical Analysis for Medical 
+Research Using JMP Pro 
+Statistical Software
+FALL 2022/SPRING 2023
+DR. TERRIE VASILOPOULOS , DR. CYNDI GARVAN, 
+& DR . PENNY REYNOLDS
+Meet the Instructors
+CYNTHIA GARVAN, PHD
+Research Professor in 
+AnesthesiologyPENNY REYNOLDS, PHD
+Research Associate Professor in 
+Anesthesiology and Orthopaedics 
+and Rehabilitation
+TERRIE VASILOPOULOS, PHD
+Research Assistant Professor in 
+Anesthesiology and Veterinary 
+Medicine
+Course Objectives
+Review fundamentals of study design and 
+research methodology
+Understand how to choose best statistical test for 
+your research question
+Practice basic statistical analysis use JMP Pro 
+Software
+Course Topics
+Life Cycle of Research and Asking a 
+Good Research Question
+Choosing the Right Study Design 
+for Your Research
+Clinical Trial Design
+Populations, Samples, and 
+Hypothesis Testing in Medical 
+Research
+Introduction to Data Types
+Best Practices in Data Collection 
+and Database Management: 
+Getting Started with SAS JMP ProSummarizing and Visualizing Data
+Statistical Methods and How to 
+Choose Them
+Risk Assessment Methods
+Introduction to Regression and 
+Correlation
+Time -to-Event (Survival) Analysis
+Methods for Clinical Diagnostic 
+Testing
+Choosing the 
+Right Study Design 
+for Your Research
+9/21/2022
+Learning Objectives
+Participants will be able to:
+1) Identify appropriate study designs for 
+different type of research questions 
+2) Distinguish between different levels of 
+evidence 
+3) Recognize threats to study validity and 
+sources of bias
+Why is this topic important?
+It is truth we seek.
+SYDNEY AGE 14 –Soccer or Dance Team?
+Research Designs
+Design
+Explanatory
+Experimental
+ Observational
+Researcher 
+controls X
+Researcher 
+observes X
+Descriptive
+Catalog of 
+experiences
+(Case study is 
+example)
+
+Experimental Designs
+•No control group
+•Example: Pre-post design (Quality 
+Improvement)
+Pre-
+experimental
+•No randomization to intervention
+•Example: Groups already exist -say patients at 
+two hospitals.
+Quasi -
+experimental
+•Control group
+•Randomization to intervention
+•Example: Randomized Control Trial
+True 
+experiment
+Common study 
+design types
+Case Series and Case Reports
+•Either collection of reports (same condition) or a report on a single patient
+•Illustrate condition, treatment, reactions to treatment
+•No study design
+
+What kind of design is Case 
+Report/Case Series?
+Case Study and 
+Series
+A case study is a descriptive analysis of a single patient with a disease. A case series is a 
+descriptive a nalysis of a series of people with the disease (there is no comparison group in 
+case series). Case studies illustrate a condition, a treatment, and reactions to treatment.
+
+Case Control Studies
+•Patients with condition compared to those without
+•Retrospective
+•Relationship between condition and risk factor (odds ratio)
+•Quick studies and good for rare diseases
+•Less reliable than cohort or RCTs
+•Not a direct measure of incidence
+
+What kind of design is Case Control 
+Study?
+Case -control Study
+A case -control study design is a study design that examines a group of people 
+who have experienced an event (usually an adverse event) and a group of 
+people who have not experienced the same event, and looks at how exposure to 
+suspect (usually noxious) agents differed between the two groups. 
+https://bestpractice.bmj.com/info/us/toolkit/ebm -tools/a -glossary -of-ebm -terms
+Cohort Studies
+•Defined population (risk factor) 
+followed over time
+•Compared to group without risk 
+factor
+•Prospective, longitudinal, or historical 
+retrospective•Relationship between risk factor and 
+incidence of condition/disease 
+(absolute/relative risk)
+•Can provide evidence for causation
+•Typically need large samples and time
+
+What kind of design is a Cohort 
+Study?
+Cohort Study
+A cohort study is a study design that follows a group of people, a cohort,  
+prospectively in time, and then looks at how events differ among people within 
+the group. A study that examines a cohort, which differs in respect to exposure to 
+some suspected risk factor (e.g., smoking), is useful for trying to ascertain 
+whether exposure is likely to cause specified events (e.g., lung cancer).
+https://bestpractice.bmj.com/info/us/toolkit/ebm -tools/a -glossary -of-ebm -terms
+Cross -sectional Studies
+•One point in time
+•Quick studies
+•Good way to estimate characteristics (such as risk or disease prevalence) in a population
+•Can compare patients with condition to those without
+•Cannot measure of incidence
+Draw conclusionsTake histories
+What kind of design is a Cross -
+sectional  Study?
+Cross -sectional 
+Study
+A cross -sectional study design is a study design that involves surveying a population 
+about exposure, or condition, or both, at one point in time. It can be used for assessing 
+the prevalence of a condition in the population. Cross -sectional studies should never be 
+used for assessing causality of a treatment .
+https://bestpractice.bmj.com/info/us/toolkit/ebm -tools/a -glossary -of-ebm -terms
+Randomized Control Trials
+•Treatment group versus control groups
+•Compare to placebo/standard treatment
+•Patients randomly assigned to groups and followed; prospective
+•Gold Standard
+•Can have non -random trials (not as high level of evidence)
+
+What kind of design is Randomized 
+Control Trial?
+Randomized Control 
+Trials
+A randomized control trial (RCT) in an experimental study design which participants are 
+randomly assigned to two or more groups: at least one (the experimental group) 
+receiving an intervention that is being tested and another (the comparison or control 
+group) receiving an alternative treatment or placebo. This design allows assessment of 
+the relative effects of interventions.
+https://bestpractice.bmj.com/info/us/toolkit/ebm -tools/a -glossary -of-ebm -terms
+Meta -analyses
+•Combination of data from several studies 
+•Pooled estimate of effects
+•Not a review, involves statistical analysis
+•High level of evidence
+•Can be affected by publication bias
+•Studies with little or no effects are often not published or less visible to 
+the research community
+
+Systematic Review
+•Comprehensive survey of specific topic
+•Unbiased synthesis of findings
+•More rigorous than just a literature review
+•Included published and unpublished work
+•Formal process
+•High level of evidence
+•Systematic reviews qualitative
+
+Comparing designs 
+Let’s consider three goals that drive medical 
+research:
+1.Efficiency. Is the result obtained with minimal 
+time, cost and resources (e.g., number of 
+subjects required)?
+2.Validity. Is the result likely to be true? (Internal 
+validity)
+3.Generalizability. Is the result widely applicable? 
+(External validity)
+Efficient Valid Generalizable
+Case report/Case 
+series
+Case -control study
+Cohort study
+Randomized control 
+trial (RCT)
+
+Rules of Evidence to establish causality
+that “X” causes “Y”
+1.X is related to Y
+2.X precedes Y
+3.Other variables don’t explain Y
+Validity and 
+threats*
+*Threats come from bias –there are 
+many sources of bias!
+Assessing Research Quality: Validity
+•Validity is the soundness or rigor of a study.
+•Research quality is the degree to which study 
+measures and evaluates what it intended to.
+•Internal validity is the extent to which a piece of 
+evidence supports a claim about cause and effect, 
+within the context of a particular study.
+•External validity is the validity of applying the 
+conclusions of a scientific study outside the context 
+of that study. If a study has external validity it is said 
+to be generalizable.
+What are potential sources of bias in 
+doing a valid history and physical on a 
+patient undergoing elective surgery?
+Linking to what you know 
+
+Potential sources of bias in doing a 
+valid history and physical on a patient 
+undergoing elective surgery
+•If the surgeon is doing the history and physical he 
+would inherently concentrate only on his area of 
+expertise. And he will often miss other physical signs 
+and symptoms.
+•The patient may lie about smoking history to appear 
+more “socially acceptable.”
+•Incomplete or inaccurate blood work may miss a 
+diagnosis of diabetes in a patient.
+•Incomplete or inaccurate self -report information due 
+to a patient’s low literacy level.
+•And many more
+
+Major Types of Validity
+Internal validity
+◦Can we infer that differences in the outcome can be attributed 
+to the exposure/intervention?
+External validity
+◦Can we infer that the relationship observed between variables 
+is similar across different settings (generalizability)?
+Statistical conclusion validity
+◦Are conclusions from the research study founded in 
+adequate/sound analysis of the data and interpretation of the 
+results?
+
+Threats to Validity
+Name X is the focus variable –Y is the outcome
+History Spurious event causes change in Y , not X
+Testing Taking pre -test alters result of post -test
+Maturation Changes occur in subjects not due to X
+Instrumentation Measuring instrument changes during study or is unreliable
+Selection •Study sample does not fairly represent population of interest
+•Change in Y due to group differences at baseline
+Regression to 
+meanSubjects with extreme scores tend to score less extremely in 
+subsequent testing
+Mortality Loss of subjects from study connected to X
+Placebo group
+Reaction to interventionTreatment group
+Follow -up 
+testing
+Name that bias!
+Sample is 
+randomized 
+to treatment 
+or placebo 
+group
+
+Math education study
+•High school kids meet every Saturday during 
+the school year for study session and pizza.
+•Test scores significantly improve by the end of 
+the year.
+Is the Saturday Math Social an effective 
+intervention?
+Name that bias!
+
+A RESEARCHER IS HAVING RECRUITMENT 
+PROBLEMS WITH AN ANXIETY STUDY OF 
+CHILDREN WHICH REQUIRES TAKING 
+BLOOD SAMPLES. WHICH TYPE OF BIAS 
+MAY BE AFFECTING THIS STUDY?
+Name that bias!
+
+Confounding
+Confounding obscures the 'real' effect of an 
+exposure on outcome.
+To be a potential confounder of a “focus” variable 
+X, a confounding variable Z must: 
+1)have an association with the outcome Y
+2)have an association with X
+3)not be an effect of X
+A
+AB
+BCan you identify a problem in this design? 
+Windows of 
+greenhouse
+Ais one type of fertilizer, Bis another type of fertilizer. 
+Which one is better?
+True experimental design (e.g., RCT) 
+controls for most, but not all, 
+threats.
+KEY POINT
+A few basic ways to reduce bias
+Sampling : Ensure your sample is representative of the population 
+you are interested in studying.
+Randomization : Ensure a rigorous randomization scheme.
+Blinding : A technique which reduces sources of participant and 
+research bias.
+1.Single blinded : participant cannot figure out his assignment
+2.Double blinded : neither participant nor research observer can figure 
+out participant assignment
+3.Triple blinded : participant, research observer, and data analyst can not 
+figure out participant assignment
+For more detail, please see: Pannucci , C.J. and Wilkins, E.G., 2010. 
+Identifying and avoiding bias in research. Plastic and 
+reconstructive surgery, 126(2), p.619.
+Levels of evidence
+The notion of quality of evidence or 
+level of evidence is based on the 
+premise that multiple studies which 
+are rigorously reviewed through meta -
+analysis and systematic reviews 
+provide the highest overall quality of 
+evidence to inform clinical practice. 
+https://ncu.libguides.com/researchprocess/systematicreviews
+At each level, 
+quality depends 
+on the quality of 
+the levels below.
+Randomized 
+Control Trials
+Cohort Studies
+Case Control Studies
+Case Reports/Case Series
+Expert Opinions, Editorials
+Animal and Laboratory StudiesLevels of Evidence for Study Designs
+Quality of EvidenceSystematic Reviews & Meta Analysis
+REALLY???
+How was AIDS discovered?
+The HIV/AIDS epidemic was revealed 
+through a case series published in the 
+Lancet in 1981 (and other such studies).
+Bottom line: CASE STUDIES AND CASE SERIES ARE IMPORTANT!
+
+Wrong results from clinical trials occur because of (1) 
+mistakes by researchers in the planning and execution of 
+clinical trials, (2) the complex and inexact nature of 
+information researchers require and (3) factors that are 
+beyond the control of the researcher. Chapter 7 in “It’s 
+Great, Oops, No It Isn’t”  examines the last element and 
+identifies seven fatal flaws that are inherent in the 
+methodology of clinical trial.
+Factors that are beyond the control of 
+the researcher
+1.The unknown population
+2.The imperfect sample
+3.The unequal treatment groups
+4.The uncontrolled experimental setting
+5.The breakdown of blinding
+6.The impractical result
+7.The insufficient sample size
+Reporting 
+Guidelines
+
+Background of Equator Network
+Enhancing the QUAlity and Transparency 
+Of health Research
+The EQUATOR Network is an “umbrella” organisation that brings 
+together researchers, medical journal editors, peer reviewers, developers 
+of reporting guidelines, research funding bodies and other collaborators 
+with mutual interest in improving the quality of research publications and 
+of research itself.
+
+-
+
+
+Summary Tips
+Understand study types
+Be aware of threats to validity
+Familiarize yourself with reporting guidelines  
+(https:// www.equator -network.org/reporting -guidelines)
+
+References
+Gauch R. It’s Great! Oops, No It Isn’t: Why Clinical Research Can’t Guarantee The 
+Right Medical Answers. Springer Science & Business Media; 2008 Oct 26 .
+Jager KJ, Zoccali C, Macleod A, Dekker FW. Confounding: what it is and how to 
+deal with it. Kidney international. 2008 Feb 1;73(3):256 -60.
+Mara CA, Peugh JL. Validity of Data Collected from Randomized Behavioral 
+Clinical Trials During the COVID -19 Pandemic. J Pediatr Psychol. 2020 Oct 
+1;45(9):971 -976. doi: 10.1093/ jpepsy /jsaa078. PMID: 32968774; PMCID: 
+PMC7797740 .
+Pannucci , C.J. and Wilkins, E.G., 2010. Identifying and avoiding bias in 
+research. Plastic and reconstructive surgery, 126(2), p.619.

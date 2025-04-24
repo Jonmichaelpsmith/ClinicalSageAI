@@ -1,0 +1,1052 @@
+Human Factors Studies and Related 
+Clinical Study Considerations in 
+Combination Product Design and 
+Development 
+ 
+ 
+Draft Guidance for Industry and  
+FDA Staff  
+ 
+  
+This guidance document is for comment purposes only.  
+   Submit one set of either electronic or written comments on this draft guidance by the date provided in the Federal Register  notice announcing the availability of the draft guidance.  
+Submit electronic comments to http://www.regulations.gov
+.  Submit written comments to the 
+Division of Dockets Management (HFA-305), Food and Drug Administration, 5630 Fishers Lane, Rm. 1061, Rockville, MD 20852.  You should identify all comments with the docket number listed in the notice of availability that publishes in the Federal Register . 
+ Additional copies of this guidance are available from the Office of Combination Products website at http://www.fda.gov/CombinationProducts/default.htm
+.   
+ For questions on the content of this guidance, contact the Office of Combination Products at 
+combination@fda.gov or patricia.love@fda.hhs.gov
+. 
+ 
+ 
+U.S. Department of He alth and Human Services  
+Food and Drug Administration 
+Center for Devices and Radiological Health,  
+Center for Drug Evaluation Research,  
+Center for Biologics Evaluation and Research, and 
+Office of Combination Products in the Office of the Commissioner  
+ 
+Februa ry 2016 
+Contains Nonbinding Recommendations 
+i 
+ Table of Contents  
+ 
+ 
+I. INTRODUCTION............................................................................................................. 2  
+II. BACKGROUND  ............................................................................................................... 3  
+III. HUMAN FACTORS  ......................................................................................................... 5  
+A. Glossary and Concepts  ......................................................................................... 5  
+B. Evaluation of Use- Related Risk  ........................................................................... 6  
+1. Critical Tasks  ........................................................................................................ 7  
+2. Intended Users and Use Environment  ................................................................ 8  
+3. Training  ................................................................................................................. 8  
+C. Human Factors -Formative Studies  ..................................................................... 9  
+D. Human Factors Knowledge Task Studies  ......................................................... 12  
+E. Human Factors Validation Studies  ................................................................... 10  
+1. Human Factors -Simulated Use Validation Studies  ......................................... 10  
+2. Human Factors -Actual Use Valida tion Studies  ............................................... 10  
+IV. PROCESS CONSIDERATIONS  ................................................................................... 12  
+A. Considerations on Whether to Submit Combination Product Human Factors 
+Study Dat a ........................................................................................................... 12  
+B. Considerations for Design Changes After HF -Validation  .............................. 14  
+C. Human Factors Information to Submit in a Combination Product  
+Investigational Application  ................................................................................ 14  
+D. Marketing Application Review of HF Studies and Certain Labeling  ............ 15  
+V. RELATIONSHIP OF HUMAN F ACTORS AND MAJOR CLINICAL STUDIES 
+OF THE COMBINATION PRODUCT  ........................................................................ 16  
+VI. HOW TO OBTAIN ADDITIONAL INFORMATION ............................................... 17  
+APPENDIX A:  USER TASK FAILURE EXAMPLES  ........................................................ 18  
+Contains Nonbinding Recommendations 
+2 
+ Human Factors Studies and Related Clinical Study Considerations 1 
+in Combination Product Design and Development1 2 
+ 3 
+ 4 
+Draft Guidance for Industry and FDA Staff  5 
+ 6 
+This draft guidance, when finalized, will represent the current thinking of the Food and Drug 7 
+Administration (FDA or Agency) on this topic.  It does not establish any rights for any person 8 
+and is not binding on FDA or the public.  You can use an alternative approach if it satisfies the 9 
+requirements of the applicable statutes and regulations.  To discuss an alternative approach, 10 
+contact the FDA staff responsible for this guidance as listed on the title page.  11 
+ 12 
+ 13 
+I. INTRODUCTION AND SCO PE 14 
+ 15 
+This document provides guidance to industry and FDA Staff on the underlying principles of 16 
+human factors (HF) studies during the development of combination products as defined under 21 17 
+CFR Part 3.  This guidance describes Agency recommendations regarding HF information in a 18 
+combination product investigational or marketing application and clarifies the different types of 19 
+HF studies; the recommended timing and sequencing of HF studies; and how HF studies are part 20 
+of the process to maximize the likelihood that the combination product user interface is safe and 21 
+effective for us e by the intended users, uses, and environments.  In addition, the guidance 22 
+describes how HF studies relate to other clinical studies.  The guidance also provides process 23 
+considerations for HF information in investigational or marketing applications to promote 24 
+development and timely review of safe and effective combination products.   25 
+ 26 
+This guidance focuses on HF issues related to combination products that are comprised of a drug 27 
+or biological product and a device (also referred to in this guidance as medic al device) for review 28 
+in an investigational or marketing application submitted to the Center for Biologics Evaluation 29 
+and Research (CBER), the Center for Devices and Radiological Health (CDRH), or the Center 30 
+for Drug Evaluation and Research (CDER).  The ap plication types include an investigational 31 
+device exemption application (IDE), an investigational new drug application (IND), biologics 32 
+license application (BLA), new drug application (NDA), or premarket approval application 33 
+(PMA).  However, the principles and recommendations may be applicable to combination 34 
+products reviewed under other types of applications (e.g., premarket notification (510(k)) or 35 
+abbreviated new drug application (ANDA)) as appropriate.2    36 
+                                                           
+1 This guidance has been prepared by the Office of Combination Products in the Office of Special Medical Programs 
+in the Office of the Commissioner in association with the Center for Biologics Evaluation and Research, the Center 
+for Dru g Evaluation and Research, and the Center for Devic es and Radiologic Health . 
+2 The applicabi lity of HF  studies for certain combination product design changes under the 510(k) or ANDA 
+program are beyond the scope of this document.  Applicants who are considering whether the combination product 
+design change would change the center assignment shoul d contact the Office of Combination Products 
+(combination@fda.gov ) for questions on the center assignment.  For information on the  application types  within a 
+center, contact the respective center jurisdiction officers at CDERproductjurisdiction@fda.hhs.gov  , 
+CDRHproductjurisction@fda.hhs.gov , or cberombu smana@fda.hhs.gov .  Applicants preparing to submit a 
+combination product for review under an ANDA that may include HF studies should contact the CDER Office of 
+Contains Nonbinding Recommendations 
+3 
+ Related information is available in the Agency Guidance Applying Human Factors and Usability 37 
+Engineering to Optimize Medical Device Design3 and the Agency Draft Guidance Safety 38 
+Considerations for Product Design to Minimize Medication Errors.4  Additionally, this guidance 39 
+supplements other existing guid ance documents developed by CBER, CDRH, CDER, and the 40 
+Office of Combination Products (OCP) that describe other aspects of product development.  (See 41 
+Section VI  for a list of some additional guidance documents.)  42 
+ 43 
+FDA’s guidance documents, including this guidance, do not establish legally enforceable 44 
+responsibilities.  Instead, guidances describe the FDA’s current thinking on a topic and should be 45 
+viewed only as recommendations, unless specific regulatory or statut ory requirements are cited.  46 
+The use of the word should in FDA’s guidances means that something is suggested or 47 
+recommended, but not required. 48 
+ 49 
+II. BACKGROUND  50 
+ 51 
+Combination products, as described in 21 CFR Part 3, are comprised of any combination of a 52 
+drug and a device; a device and a biological product; a biological product and a drug; or a drug, a 53 
+device, and a biological product.5  The constituent parts of a combination product retain their 54 
+regulatory status (as a drug, device, or biological product) after they are combined.  Accordingly, 55 
+a combination product remains subject to the regulatory requirements associated with its 56 
+constituent parts.   57 
+ 58 
+Generally, HF studies are conducted to evaluate the user interface of a product.  FDA often 59 
+receives requests to clarify how HF concepts apply to the development of a combination product 60 
+when one of the constituent parts is a device.  Inquiries include: 61 
+ 62 
+• What types of HF studies might need to be conducted for the combination product? 63 
+• When is the appropriate time to pe rform HF Validation studies?  64 
+• What is the role of HF studies as compared to other types of clinical studies? 65 
+• Are additional HF studies necessary when the design of the combination product 66 
+changes?  67 
+ 68 
+Other general inquiries relate to regulatory considerations  for combination products such as 69 
+when a HF study is subject to review and approval by an institutional review board (IRB),6 and 70 
+how HF studies are considered in User Fee determinations.7    71 
+                                                                                                                                                                                           
+Generic Drugs at GenericDrugs@fda.hhs.gov  regar ding controlled correspondence subject to the Generic Drug User 
+Fee Act (GDUFA) performance goals to discuss considerations related  to HF studies.   
+3 Guidance for Industry and FDA Staff, Applying Human Factors and Usability Engineering to Optimize Medical  
+Device Design , accessible at  
+http://www.fda.gov/downloads/MedicalDevices/DeviceRegulationandGuidance/GuidanceDocuments/UCM259760.
+pdf.    
+4 Draft Guidance Safety Considerations for Product Design to Minimize Medication Errors, accessible at 
+http://www.fda.gov/downloads/Drugs/ GuidanceComplianceRegulatoryInformation/Guidances/UCM331810.pdf .   
+FDA’s draft guidance documents represent FDA’s proposed approach on the topics . 
+5 For purposes of this document the term “drug” also refers to biological product s unless otherwise indicate d. 
+6 Clinical studies regulated under 21 CFR Part 312 (IND requirements) or Part 812 (IDE requirements) and clinical 
+studies intended to support an investigational or marketing application are subject to applicable requirements under 
+21 CFR Parts 50 and 56.  See 21 CFR 50.1(a) , 50.20, 56.101(a) , and  56.103.   As used in this document, clinical 
+Contains Nonbinding Recommendations 
+4 
+ For medical devices, the use of human factors and usability engineering (e.g., applying the 72 
+knowledge of human behavior, abilities, and limitations to the design of a medical device) plays 73 
+a key role in maximizing the likelihood that the device will be safe and effective for use by the 74 
+intended users, for the intended uses, and for the intended use environments.  Under the medical 75 
+device design control requirements described in 21 CFR 820.30, design validation must include a 76 
+risk analysis where appropriate.  As part of the risk analysis, device manufacturers should 77 
+identify and analyze potential use-related hazards, including lessons learned from reported errors 78 
+with similar products, and as appropriate, incorporate and validate design features that mitigate 79 
+or eliminate these hazards.  This assessment informs the device design development to eliminate 80 
+or minimize use errors that could cause harm or compromise medical treatment.  81 
+ 82 
+For a drug product, goals for reducing use- related hazards are reflected in the process and data 83 
+that support selection of the drug formulation, assurance of product quality,8 drug risk 84 
+management activities,9 and in pharmaceutical quality system principles.10  Drug development 85 
+should take into account the user interface and factors that can reduce the risk for medication 86 
+errors; i.e., features to e nhance patient safety.  Such features include product appearance, 87 
+identification markings (such as imprint codes on solid oral dosage forms), container closure, 88 
+packaging configurations, labeling (including labels on containers and cartons), and 89 
+nomenclature.11  The Prescription Drug User Fee Act  IV (PDUFA IV)12 provides that one of the 90 
+development goals is to ensure drug safety by prospectively designing a drug that minimizes the 91 
+risk for errors made by intended end users.13   92 
+ 93 
+                                                                                                                                                                                           
+study has the same meaning as investigation or clinical investigation as defined in Parts 50, 56, 312, and 812, as 
+applicable.  
+7 For information on user fee assessment  under the Prescription Drug User Fee Act ( PDUFA ) for applications 
+containing clinical studies , see FDA Guidance  Submitting Separate Marketing Applications and Clinical Data for 
+Purposes of Assessing User Fees  accessible at 
+http://www.fda.gov/downloads/Drugs/GuidanceComplianceRegulatoryInformation/Guidances/UCM079320.pdf .  
+As described in that document the term “ clinical data , for purposes of a ssessing user fees, encompasses a broad 
+range of studies that are purported to be adequate and well -controlled investigations submitted in support of 
+approval.  This includes [1] study reports or literature of what are explicitly or implicitly represented by the 
+applicant to be adequate and well -controlled trials for safety or effectiveness; or [2] reports of comparative activity 
+(other than bioequivalence and bioavailability studies), immunogenicity, or efficacy, where those reports are 
+necessary to support a claim of comparable clinical effect.  As applicable, FDA will determine whether a HF study would meet these criteria.  
+ 
+8 See Guidance for Industry Q8(R2) Pharmaceutical Development  accessible at 
+http://www.fda.gov/downloads/drugs/guidancecomplianceregulatoryinformation/guidances/ucm073507.pdf  
+9See Guidance for Industry Q9 Quality Risk Management  accessible at 
+http://www.fda.gov/downloads/Drugs/GuidanceComplianceRegulatoryInformation/Guidances/UCM073511.pdf    .   
+10 See Guidance for industry Q10 Pharmaceutical Quality System  accessible at 
+http://www.fda.gov/downloads/Drugs/GuidanceComplianceRegulatoryInformation/Guidances/UCM073517.pdf .  
+11 As defined  in FD&C Act secti on 201(m),  “labeling ” means “all labels and other written, printed, or graphic 
+matters (1) upon any article or any of its containers or wrappers, or (2) accompanying such article. ”  As defined in  
+FD&C Act section 201(k) , “label ” means “a display of written , printed, or graphic matter upon the immediate 
+container of any article .” 
+12 See information under Item -IX accessible at 
+http://www.fda.gov/ForIndustry/UserFees/P rescriptionDrugUserFee/ucm119243.htm . 
+13 Measures for designing such a drug could address, among other things, concerns regarding:  look-alike and sound -
+alike proprietary names ; unclear label abbreviations, acronyms, and dose designations ; and other label and 
+packaging design that may lead to user error . 
+Contains Nonbinding Recommendations 
+5 
+ For a combination product that includes drug and device constituent parts, both the device design 94 
+control requirements and drug development expectations apply to the entire combination 95 
+product.14  Therefore, when evaluating a combination product, the design of the product user 96 
+interface should be assessed in HF studies if needed to ensure that use- related hazards associated 97 
+with the product are eliminated or mitigated to reduce patient adverse events and medication 98 
+errors attributable to use-related errors.  This document focuses on human factors considerations 99 
+for combination products to promote consistency in their design, development and review.   100 
+ 101 
+III.  HUMAN FACTORS  102 
+ 103 
+A. Glossary and Concepts  104 
+ 105 
+For purposes of this document, the following definitions and concepts apply to HF studies, the 106 
+final finished combination product, and the major clinical study.  For additional information on 107 
+these terms see the sections that follow the glossary.  For related definitions see Agency  108 
+guidance Applying Human Factors and Usability Engineering to Optimize Me dical Device 109 
+Design.3 110 
+ 111 
+1. Human Factors Study (or HF Study):  A study conducted with representative users to 112 
+assess the adequacy of the combination product user interface design to eliminate or 113 
+mitigate potential u se-related hazards.  Typically, HF studies are part of an iterative 114 
+design process that is driven by the complexity of the combination product and the nature 115 
+of the safety considerations.  The HF study evaluates: (i) the ability of the user to perform 116 
+critical tasks, and (ii) the ability of the user to understand the information in the 117 
+packaging and labeling, such as product labels or instructions for use, that inform the 118 
+user’s actions and that are critical to the safe and effective use of the combination product 119 
+(e.g., product preparation, administration, maintenance and disposal, or what actions to 120 
+take if an adverse reaction occurs).  Both types of evaluations may be part of the HF 121 
+Formative and HF Validation studies described below.   122 
+ 123 
+a. HF Formative Study: A study conducted on a combination product prototype user 124 
+interface at one or more stages during the iterative product development process to 125 
+assess user interaction with the product and identify potential use errors.  HF 126 
+Formative studies are iterative  and inform the need for user interface changes (e.g., 127 
+product design or labeling changes) and inform the content of the HF Validation 128 
+study.  For additional information on HF Formative studies see Section III.C. 129 
+  130 
+HF Validation Study:  A study conducted t o demonstrate that the final finished 131 
+combination product user interface can be used by intended users without serious use 132 
+errors or problems, for the product’s intended uses and under the expected use 133 
+conditions.  The study should demonstrate that use- related hazards for the final 134 
+finished combination product (see glossary item A.2 below) have been eliminated or 135 
+that the mitigation for residual risks is  acceptable; i.e., the benefit of product use 136 
+                                                           
+14 For combination products that include a device constituent part, design controls must be applied to the 
+combination product.  See 21 CFR 4.4; 78 FR 4307 (Jan. 27, 2013).  Current Good Manufacturing Practi ce 
+Requirements for Combination Products  is accessible at https://www.federalregister.gov/articles/2013/01/22/2013-
+01068/current -good- manufacturing- practice- requirements -for-combination -products .  
+Contains Nonbinding Recommendations 
+6 
+ outweigh the residual risk of the product.  The study parti cipants are representative of 137 
+the intended users and the study conditions are representative of expected use 138 
+conditions.   139 
+ 140 
+2. Final Finished Combination Product:  The final finished combination product is the 141 
+product intended for market and submitted in the m arketing application.  This term 142 
+applies to the combined final device, drug, and/or biological product configuration 143 
+including all product user interfaces (e.g., proposed packaging, labels and labeling , 144 
+including training programs ).   145 
+ 146 
+3. Major Clinical Study (or Major Clinical Trial):  As opposed to a HF study, a major 147 
+clinical study is a larger scale clinical study that occurs during a later phase of 148 
+combination product development.  Major clinical studies provide the primary support for 149 
+the safety and effect iveness of a product for a proposed indication (e.g., adequate and 150 
+well-controlled studies15).16  In addition to adequate and well-controlled studies, other 151 
+types of later phase larger scale clinical studies may also be considered major clinical 152 
+studies; e.g., a long-term extension study.  . 153 
+ 154 
+B. Evaluation of Use- Related Risk  155 
+ 156 
+Consistent with a risk -based design and development paradigm, the foundation for HF study 157 
+designs, testing and evaluation should be a use-related risk analysis of a combination product.  A 158 
+use-related risk analysis is a crucial step to help identify use- related hazards associated with the 159 
+combination product, as well as to characterize high-risk hazards so they can be mitigated or 160 
+eliminated through improved product interface design.  The use -related risk analysis will help 161 
+identify critical tasks that should be evaluated in a HF study, inform the priority of testing the 162 
+tasks in a HF study, and determine if there are specific use scenarios to include in testing.  A 163 
+variety of methods can be used to develop and analyze use-related hazards.  Two methods 164 
+frequently used are Failure Mode and Effects Analysis (FMEA) and Fault Tree Analysis 165 
+(FTA).17  166 
+ 167 
+The use-related risk analysis should take into account: all the intended uses, users, and use 168 
+environments; therapeutic or diagnostic procedures associated with the use of the combination 169 
+product; similar products used within the environments; and any associated medical factors that 170 
+may affect the safe use of the combination product.  In addition, if previous models of the same 171 
+or similar combination products exist, the risk analysis should incorporate information on known 172 
+use-related problems with those products.  This information can be obtained from the applicant’s 173 
+own experience as well as from publ ic sources such as literature, adverse event reports, and 174 
+product safety communications. 175 
+ 176 
+                                                           
+15 See CFR 314.126. 
+16 The term Major Clinical Study is consistent with other terms such as “phase -3 clinical study,”  “key clinical 
+study ,” and “pivotal studies or trials. ” 
+17 For more information on FMEA, FTA and other risk analysis methods, see Guidance for Industry and FDA Staff, 
+Applying Human Factors and Usability Engineering to Optimize Medical Device Design, accessible at 
+http://www.fda.gov/downloads/MedicalDevices/DeviceRegulationsandGuidance/Guidancedocuments/UCM259760.
+pdf.   
+Contains Nonbinding Recommendations 
+7 
+ 1. Critical Tasks  177 
+ 178 
+The use- related risk analysis should identify critical tasks.18  Critical tasks are user tasks that, if 179 
+performed incorrectly or not performed at all, would or could cause harm to the patient or user, 180 
+where harm is defined to include compromised medical care.   Thus, categorizing a task as 181 
+critical is dependent on the unique considerations for each combination product.  The Agency 182 
+expects the risk analysi s for the combination product to include an identification of all the critical 183 
+tasks required for using the combination product, the consequences for failing to perform each 184 
+critical task correctly, and the strategies that have been applied in the design of the user interface 185 
+to eliminate or reduce risks to acceptable levels.  Such an assessment should include 186 
+considerations of the indication, the users, the environment and other conditions that might 187 
+influence the importance of a particular task. Some exam ples of critical tasks to illustrate this 188 
+concept include: 189 
+ 190 
+• The patient being able to successfully self -administer a drug at the prescribed dose 191 
+identified in the labeling.  Failure to successfully perform this task could harm the patient 192 
+due to mis-dosing, under-dosing, overdosing, or inability to deliver a dose.   193 
+• The user being able to safely dispose of a used syringe.  Failure to successfully perform 194 
+this task could result in needle sticks. 195 
+• The patient being able to appropriately navigate the user interface for a patient -controlled 196 
+analgesia (PCA) delivery system.  Failure to successfully perform this task could result in 197 
+missed doses, inappropriate repeat doses, or overdoses.   198 
+• The user being able to understand instructions for inserting a capsule into an inhaler to 199 
+release the drug, and being able to insert the capsule.  Failure to successfully perform this 200 
+task could result in the patient swallowing the capsule instead of inhaling the contents, 201 
+lack of treatment effect, or medication related adverse ev ents.   202 
+• The user being able to distinguish a product from others of similar appearance.  Failure to 203 
+successfully perform this task could result in delivery of the wrong drug. 204 
+• The user being able to complete a series of several critical tasks required to prepare and 205 
+administer a reconstituted drug from a combination product kit containing a prefilled 206 
+diluent syringe, drug vial, empty syringe, needle, transfer device and infusion pump.  207 
+These tasks could include preparing the drug under sterile conditions, connecting the 208 
+system, and introducing the reconstituted drug solution into an infusion pump.  Failure to 209 
+successfully complete any of these tasks could result in medication errors and/or use- 210 
+related infection.  211 
+ 212 
+Appendix A identifies task failures that may  occur with general categories of combination 213 
+products such as injectors and inhalers.  The information can be used to guide the applicant when 214 
+conducting a risk analysis, which is recommended for any combination product being developed.  215 
+Additionally, these task failure examples may apply to other types of combination products, and 216 
+can be used as a reference to help identify and evaluate hazards for other combination products.   217 
+  218 
+                                                           
+18 For additional information on critical tasks, see Sections 7.3 a nd 7.4 of Applying Human Factors and Usability 
+Engineering to Optimize Medical Device Design  at 
+http://www.fda.gov/RegulatoryInformation/Guidances/ucm259748.htm .  
+Contains Nonbinding Recommendations 
+8 
+ 2. Intended Users and Use Environments  219 
+ 220 
+Prior to performing a risk analysis, it is important to identify all intended users and use 221 
+environments for the combination product.  Intended users may be categorized into distinct user 222 
+groups by their different characteristics (e.g., use responsibilities, tasks performed, age ranges, 223 
+skills,  or experience levels).  For combination products, distinct user groups generally are health 224 
+care professionals (HCPs) and lay users (non-health care professionals).  Within these two 225 
+groups there are likely further subgroups based on different tasks, roles, abilities and education.   226 
+Subgroups of the HCP user population can include those with significantly different roles (e.g., 227 
+nurses, pharmacists, physicians, emergency medical technicians, home health care providers).  228 
+Also, within the HCP user population there may be individuals that have experience with the use 229 
+of similar products and individuals that do not (e.g., injector-experienced vs naïve) or that do or 230 
+do not have experience with similar appearing products with different instructions for use or 231 
+different hazards.  In addition, both the professional role and experience of HCPs can influence 232 
+interactions with a product.  These various differences may justify treating HCPs as distinct user 233 
+groups that should be evaluated in the HF study as such. 234 
+ 235 
+Lay users (non- health care professionals) are those  who use the product for self- administration 236 
+(the patient) or those who administer the product to others as a caregiver (e.g.,  a family member, 237 
+sports coach).  Within this population, experience of individual users with similar products or 238 
+products under development may vary widely.  For example, when considering a drug- 239 
+autoinjector combination product, some lay users may be naïve to  the use of any autoinjector or 240 
+may be naïve to the use of certain types of au toinjectors; e.g., those for single dose disposable 241 
+versus single patient reusable products.  Also, lay users may have experience with a different 242 
+product that might influence their interaction.  As a result of these differences, there may be 243 
+distinct subgroups that should be considered in the use- related risk analysis.  As applicable, the 244 
+HF study should incorporate separate subgroups of lay users.  245 
+ 246 
+Environments of use can have diverse characteristics that affect the users’ interactions with the 247 
+product.  Thus, the intended environment of use is another important consideration in designing a 248 
+HF study.  Combination products may be used in various professional health care / clinical 249 
+settings that include emergency departments, intensive care units, inpatient bedsides, procedure 250 
+suites, outpatient clinics, mobile units, and stocking and storage locations.  Likewise, they can 251 
+also be used in non-clinical settings including homes, schools, offices, and various modes of 252 
+transportation (e.g., ambulances, airplanes).  These environments may vary with respect to 253 
+temperature, lighting and noise levels, ambient activity levels, number of people in the vicinity, 254 
+and the availability of associated/accessory medication or devices.  Also, a combination product 255 
+that is inte nded for home use may be confused with other family member or pet medications 256 
+stored in the same location.  Such environmental conditions may lead to use errors.  These 257 
+environmental factors should be considered in the use- related risk analysis, and includ ed within 258 
+the design of the HF study as appropriate when they present a use hazard.  259 
+ 260 
+3. Training  261 
+ 262 
+Training is often proposed as a way to mitigate or control risks.  However, before determining if 263 
+training is appropriate for the combination product, first it is important to eliminate risks that are 264 
+inherent to the product design.  If there are residual risks, the next step is to determine if training 265 
+Contains Nonbinding Recommendations 
+9 
+ is needed.  For example, for a new product that is developed as similar to or an alternative to a 266 
+currently mar keted product with use techniques that are well understood by the users, then 267 
+training may not be necessary.  Such an example might be a prefilled syringe with a staked 268 
+needle for use by a health care professional.  On the other hand, if there are residual  risks for 269 
+which training may be appropriate, the next step is to consider whether there is an opportunity 270 
+for training, and if so, whether there is an expectation that training will routinely and consistently 271 
+occur, before the first use of the combination product.  In cases where training would be 272 
+appropriate but is not expected to routinely or consistently occur, the HF study should evaluate 273 
+the user interface in the absence of training.19 274 
+ 275 
+For combination products when training is expected or needed to control or mitigate residual 276 
+use-related hazards, it is important to determine what the training is likely to encompass and how 277 
+it will be performed, who is responsible for conducting the training, and how to ensure 278 
+consistency in the training method.  Consider, for example, a combination product being 279 
+developed for a hospital- based surgical procedure.  A risk analysis might determine that HCP 280 
+training is required prior to the first use of the product to minimize the risk of errors related to 281 
+assembling all the combination product constituent parts, preparing the treatment area and the 282 
+surgical device constituent part before beginning the procedure, administering the drug 283 
+constituent part(s), monitoring patient responses after using the product, and/or managing 284 
+interactions across multiple users during the procedure.  Due to the nature of the product and its 285 
+use environment, all users would be expected to receive training before using the product.   The 286 
+HF study would evaluate the adequacy of the training in mi nimizing these potential risks.  In this 287 
+case, it is likely that FDA would not expect the HF study to evaluate the absence of training.  288 
+ 289 
+In addition, when considering training to mitigate residual risks associated with the user 290 
+interface, it is important to consider how frequently the training will occur, as well as the length 291 
+of time between the training session(s) and product use.  For some combination products, 292 
+training and first product use is separated by days, weeks, or months.  As such, a significant 293 
+amount of time may elapse between the training session and product use.  Retention of 294 
+information from the first, and possibly the only, training a user receives can decrease over time 295 
+(i.e., training decay).  For example, for a combination product desig ned for once a week self - 296 
+injection, post- training information retention one week later can be anticipated to be lower than it 297 
+would one hour later.  If the risk analysis shows that training decay is a source of use- related 298 
+error, then the HF study design s hould evaluate the effect of training decay.  The HF Validation 299 
+study should simulate the effect training decay may have on the users; e.g., simulate the training 300 
+decay by separating the training and simulated use testing by several hours or days.  The protocol 301 
+should justify the interval to simulate the training decay.  302 
+ 303 
+C. Human Factors Formative Studies  304 
+ 305 
+HF Formative studies are designed to evaluate early combination product prototypes, taking into 306 
+consideration the identified use- related hazards.  HF Format ive study results guide prototype 307 
+design changes to eliminate or mitigate use -related hazards identified during the product 308 
+development process.  The use of iterative HF Formative studies optimizes the design of the 309 
+                                                           
+19 As appropr iate, if user training is necessary, applicants should discuss what methods are appropriate to ensure the 
+provision of training.   
+Contains Nonbinding Recommendations 
+10 
+ combination product user interface for safety, and minimizes the risk of first discovering use 310 
+problems during late stages of development (e.g., during an HF Validation study, during a major 311 
+clinical study, or after finalizing commercial plans.).  312 
+ 313 
+Iterative HF Formative studies and related desig n modifications are performed until the user 314 
+interface design appears to be sufficiently optimized for safety and ready for HF Validation 315 
+testing.  Iterative modifications to the user interface may include changes to the physical design 316 
+attributes, changes  to the packaging and labeling (including instructions for use) and changes to a 317 
+training program.  The results of HF Formative studies should inform the design of the final 318 
+finished combination product.  None of the individual subjects in the HF Formative studies 319 
+should participate in the HF Validation studies to avoid the potential for bias.  For information 320 
+on HF Knowledge Task studies, see Section III.E; for information on HF Validation studies, see 321 
+Section III.D below.  322 
+ 323 
+D. Human Factors Validation Studie s 324 
+ 325 
+HF Validation studies demonstrate that the final finished combination product user interface 326 
+would maximize the likelihood that the product will be safely and effectively used by intended 327 
+users, for the intended uses in the intended use environments.  T here are two types of HF 328 
+Validation studies: HF Simulated -Use and HF Actual -Use Validation.  For most combination 329 
+products, FDA expects that a HF Simulated -Use Validation study will be sufficient to assess the 330 
+adequacy of the user interface. 331 
+ 332 
+1. Human Factors  Simulated -Use Validation Studies  333 
+ 334 
+The HF Simulated -Use Validation study focuses on confirming that the design of the 335 
+final finished combination product (i.e., after iterative prototype design changes) user 336 
+interface adequately mitigates or eliminates the identified use -related risks.  Simulation 337 
+methods for these studies vary and may include the use of a manikin, injection pads, 338 
+placebo, and other elements intended to simulate the patient, the procedure, or the 339 
+environment of use.   340 
+ 341 
+The conditions of the HF Simulated -Use Validation study should be sufficiently realistic 342 
+so that the results HF -Simulated -Use Validation represent relevant aspects of actual use 343 
+of the product once introduced into the market.  Tasks to be performed in the HF 344 
+Simulated -Use Valid ation study should include those critical tasks identified in a use - 345 
+related risk analysis that may be associated with user interface problems.  The study 346 
+design should provide for the identification of any unanticipated hazards or unexpected 347 
+use behaviors that were not previously identified.  348 
+  349 
+2. Human Factors Actual -Use Validation Studies  350 
+ 351 
+As noted above, FDA expects that for most combination products, a HF Simulated- Use 352 
+Validation study will be sufficient to assess the adequacy of the user interface design.   353 
+However, there are rare circumstances when it is difficult to simulate the conditions of 354 
+use, physical characteristics of the product, or environment of use.  Thus, a HF Actual- 355 
+Use Validation study may be needed to confirm the adequacy of the user interf ace design.  356 
+Contains Nonbinding Recommendations 
+11 
+ HF Actual -Use Validation studies either (1) use the final finished combination product 357 
+(including the drug, not a placebo) in a simulated use setting or (2) use the final finished 358 
+combination product in a real (not simulated) environment of us e.   359 
+ 360 
+• A HF Actual -Use Validation study of the combination product that includes the 361 
+actual drug in a simulated use setting may be necessary when the drug can affect 362 
+the user’s ability to perform a critical task.  For example, for a drug that causes 363 
+coughing on inhalation which could result in incomplete dosing, inhaler designs 364 
+to minimize the risk of not completing an inhalation could not be evaluated 365 
+without use of the actual drug.  This type of assessment using the drug- device 366 
+combination product would ot herwise occur in a simulated -use setting.   367 
+ 368 
+• The other type of HF Actual-Use Validation study in a real environment of use.  369 
+For example, based on the hazard analysis and results of an HF Simulated -Use 370 
+Validation, it may be appropriate to evaluate in a rea l environment of use use- 371 
+related risks associated with a complex combination product intended for use in  372 
+crisis/emergency settings or with a combination product that has a complex 373 
+operating procedure.  In these instances, the user’s tasks could be influenc ed by 374 
+the presence of noise, rapidly changing circumstances, distractions, etc.  375 
+Therefore, the need for a HF Actual -Use Validation study is determined on a 376 
+case- by-case basis.  FDA recommends that applicants for combination products 377 
+discuss with FDA the a vailability of simulation techniques and whether HF 378 
+Simulated -Use Validation and HF Actual -Use Validation studies are needed to 379 
+evaluate the user interface.20    380 
+ 381 
+Regardless of the type of HF Validation study, if use errors or problems (e.g., failures, “close 382 
+calls,” use difficulties, and/or new findings) are identified in an HF Validation study, these 383 
+should be evaluated to (1) identify the root cause(s), (2) determine the potential for harm 384 
+(including the clinical significance of such errors or problems and the potential for compromised 385 
+medical treatment), and (3) determine whether additional measures to eliminate or mitigate 386 
+hazards are necessary.  Regardless of the type of HF Validation study, if the HF Validation study 387 
+shows that additional measures are necessary to address the risk of failures that are deemed 388 
+clinically significant, then the HF Validation study will be considered failed.  Changes to the 389 
+user interface may be needed to eliminate or mitigate hazards and a new HF Validation study 390 
+should be performed to evaluate the changes, with the goal of demonstrating that the 391 
+modifications minimize the risk to acceptable levels without creating additional hazards.   392 
+ 393 
+Also, if the product design changes or the user population changes, then the completed H F 394 
+Validation study may or may not be applicable to the design change.  A use- related risk analysis 395 
+should be completed and, dependent upon the findings of the risk analysis, a new HF Validation 396 
+study may be advisable to support that the modifications conti nue to minimize the risk without 397 
+                                                           
+20 The term  “HF Actual -Use Validation study ” has a different meaning than  similar terms such as “user study ” or 
+“actual use stu dy”.  The term “HF Actual -Use Validation study” applies to only the evaluation of the user interface 
+and associated critical tasks.  In contrast, the terms “actual use ” or “user stud y” (without the “ HF” qualifier) often 
+refer to clinical studies  such as a major clinical study to evaluate safety and effectiveness of prolonged home use or 
+to an open label safety study.  Those studies have different purposes or mixed purposes and are outside the scope of 
+this document.  FDA recommends against  referring to thes e different or mixed purpose studies as HF studies.  
+Contains Nonbinding Recommendations 
+12 
+ creating additional hazards.  If the product design remains unchanged but the applicant seeks to 398 
+add a new user population, then as applicable, a new use- related risk analysis and new HF 399 
+Validation study should be performed.  See Section V for the relationship of the HF Validation 400 
+study to the major clinical study.  401 
+  402 
+E. Human Factors Knowledge Task Studies  403 
+ 404 
+In situations when the understanding of the information provided in a combination product’s 405 
+labels or labeling is a critical task to using a product safely and effectively, a study to assess the 406 
+user’s understanding of such information (Knowledge Task study) is appropriate.  Knowledge 407 
+Task studies may occur as part of the HF formative, or HF validation process.  However, in 408 
+comparison to other types of HF studies in which critical task performance is assessed by 409 
+observing user interaction with the product, Knowledge Task studies focus on the understanding 410 
+and interpretation of important information in the user interface that will be applied to make use- 411 
+related decisions.  The users’ understanding of the labeling is evaluated by questioning test 412 
+participants and assessing whether the information has been understood.   413 
+ 414 
+Knowledge Task studies may focus on particular aspects of labeling.  For example, a Knowledge 415 
+Task study could evaluate:  416 
+ 417 
+• HCP’s understanding of their roles and responsibilities when introducing a 418 
+combination product as part of a new procedure, or associated with complex 419 
+medical/surgical procedures that involve many different HCPs;  420 
+• The user’s ability to select the appropriate task from a lengthy set of instructions 421 
+that include different options;   422 
+• The user’s understanding of how to identify defective or expired product; 423 
+• The user’s awareness and understanding of the combination product’s pertinent 424 
+safety information provided in the instructions for use;  425 
+• The user’s ability to recognize clinical signs, identified in the instructions for use, 426 
+that would prompt medical attention; e.g., shortness of breath, allergic reaction, 427 
+weakness, signs of disease progression; or  428 
+• The user’s understanding of the diagrams provided in the labeling. 429 
+ 430 
+Certain types of Knowledge Task studies are also used in the development of non-prescription 431 
+products.21  Generally, these are quantitati ve studies that evaluate whether results are statistically 432 
+significant.  433 
+ 434 
+IV.  PROCESS CONSIDERATIONS  435 
+ 436 
+A. Considerations for Submission of Combination Product Human Factors 437 
+Study Data  438 
+ 439 
+For the following two groups of combination products, generally human factors data should be 440 
+submitted:  (1) products for use outside the health care environment or by laypersons (e.g., 441 
+                                                           
+21 For further information  about such studies for non -prescription drug products , see Guidance  to Industry Label 
+Comprehension Studies for Nonprescription Drug Products , accessible at 
+http://www.fda.gov/downloads/drugs/guidancecomplianceregulatoryinformation/guidances/ucm143834.pdf . 
+Contains Nonbinding Recommendations 
+13 
+ home-use products, products for self- administration by patients or lay -caregivers) and (2) 442 
+combination products having a device constituent part for which human factors data should be 443 
+submitted.  For combination products that do not fall within these two categories, a risk analysis 444 
+for the combination product should be completed and the use- related risks reviewed to assess the 445 
+need for HF studies (see section III.B).  If the use- related risk analysis identifies the need for HF 446 
+studies, then a HF Validation study should be conducted and the results submitted for review.  447 
+For example, a syringe is not on the list of high priority devices for human factors review, and 448 
+the following illustrates certain considerations for when a HF Validation study may be needed 449 
+for a prefilled syringe.  450 
+ 451 
+• A prefilled syringe with a staked  needle and needle guard for use by HCPs in an acute 452 
+care setting:   453 
+o If the syringe, needle and needle guard design is commonly used and well 454 
+understood (absent other use-related risk concerns for the combination product as 455 
+a whole), FDA would not expect a HF Validation study for such products.  During 456 
+the investigational phase when the applicant determines that a HF Validation 457 
+study may not be needed, the applicant  should submit its risk analysis and 458 
+justification to support the basis of the applicant’s conclusion, and seek Agency 459 
+comment on the assessment.   460 
+o If the syringe, needle and needle guard are of a unique/novel design, there are use 461 
+experience concerns with similar products, or there are other factors that increase 462 
+the use- related hazard, then an H F Validation study should be conducted.   463 
+ 464 
+• The same prefilled syringe with needle guard for use by patients with neuromuscular 465 
+disorder or visual impairment:   466 
+o Because the user characteristics and associated medical symptoms present unique 467 
+user profiles th at may affect safe use of the product, an HF Validation study 468 
+should be conducted to demonstrate that the product design adequately mitigates 469 
+the risks for its intended use in these patients, and use environments.   470 
+ 471 
+• The same prefilled syringe with needle guard and a unique application of color to 472 
+distinguish it from different drugs in similar prefilled syringes to help prevent medication 473 
+errors:   474 
+o Even if factors such as indications for use, intended users, and use environment 475 
+remain unchanged, based on the use-related risk analysis, an HF Validation study 476 
+may be necessary to ensure that HCPs can readily distinguish the new syringe 477 
+from similar prefilled syringes containing different drugs.  As appropriate, such a 478 
+study might focus on knowledge- based tasks.   479 
+ 480 
+• The same prefilled syringe with needle guard that is used with various tubing, connectors, 481 
+pumps and other device components in a high risk procedural setting:  482 
+o A HF Validation study is likely necessary to assess the entire system.  As 483 
+applicable, the H F Validation study may include detailed assessments of the 484 
+instructions, diagrams, training or other aspects that might become part of a 485 
+postmarket safety program.  486 
+ 487 
+Contains Nonbinding Recommendations 
+14 
+ Other scenarios and alternative approaches are possible.  As with all product development, FDA 488 
+encourages applicants to contact the Agency to discuss the specific product proposals. 489 
+ 490 
+B. Considerations for Design Changes After HF Validation 491 
+ 492 
+FDA recognizes that combination product design changes may occur premarket or postmarket 493 
+after HF Validation  studies have been completed.  For example, during premarket development 494 
+the results of a clinical trial may reveal design flaws that were not detected in HF Formative or 495 
+HF Validation studies.  Similarly, during postmarket development an applicant may pla n a 496 
+design change to the marketed combination product, for example, to respond to use- related 497 
+safety reports, complaints/problems, to address a manufacturer- initiated postmarket corrective 498 
+and preventative action plan, or to meet the needs of an expanded indication or user population.   499 
+ 500 
+Some modifications to a product’s internal design or to some of its external features may not 501 
+need validation in a HF study (e.g., a change in a material that does not affect user interface).  502 
+However, design changes made a fter HF Validation that relate to identified critical tasks or may 503 
+result in new use-related errors or hazards that could lead to harm should have new HF 504 
+Validation study assessments.   505 
+ 506 
+When making design changes, the applicant should conduct an updated use -related risk 507 
+assessment of the new design.  FDA encourages applicants to follow the HF principles outlined 508 
+in this document.  Conceptually, this analysis should consider such things as: 509 
+ 510 
+• Does the design change alter the user interface in any way (e.g., audible, tactile, color 511 
+recognition, user instructions, etc.)? 512 
+• Does the design change alter an existing critical task or add a new critical task?  513 
+• Does the design change alter the expected users or their knowledge base?  514 
+ 515 
+To facilitate discussion with FDA, the applicant should provide a proposal about what, if any, 516 
+additional HF testing is needed.  The proposal should include a detailed description of why the 517 
+change is being made, a description of what specifically is changing, a use -related risk analysis 518 
+of the new design, and where appropriate a proposal for evaluating potential risk mitigations of 519 
+the new design and the effects of the change.   520 
+ 521 
+When making a design change to a combination product, FDA encourages applicants to 522 
+expeditiously identify the change plans and to discuss with the Agency the types of HF and other 523 
+clinical or non-clinical studies that may be applicable before the applicant’s approval of the 524 
+design change.22  (Also, see Section IV.A for further information that may be useful in 525 
+considering the HF implications of a design change.) 526 
+ 527 
+C. Review of Human Factors Information in Combination Product 528 
+Investigational Applications 529 
+ 530 
+The combination product’s specific use- related risk analysis generally informs the Agency’s 531 
+expectations for whether HF information on a combination product should be submitted in an 532 
+                                                           
+22 The use of other types (i.e., non -HF) of studies (e.g., clin ical, pharmacokinetic, or non -clinical studies ) to evaluate 
+combination product design changes is  beyond the scope of this document.    
+Contains Nonbinding Recommendations 
+15 
+ investigational application.  The risk analysis itself should be submitted in the investigational 533 
+application for the combination product.  If the applicant determines from the risk analysis that a 534 
+HF study is not needed, the applicant should provide the use- related risk analysis along with the 535 
+justification for this conclusion.  If the use- related risk analysis indicates that a HF study is 536 
+necessary, FDA encourages applicants to submit the following HF information for feedback 537 
+before commencing the HF Validation study:  538 
+ 539 
+• Use-related risk analysis and any updated risk analysis of design changes;  540 
+• A summary of HF Formative study results and analysis;  541 
+• A summary of changes made to the product user i nterface after the HF Formative studies, 542 
+including how the results from the HF Formative studies were used to update the user 543 
+interface and use -related risk analysis;  544 
+• The draft HF Validation study protocol; and 545 
+• Intend- to-market labels and labeling (including instructions for use if any are proposed) 546 
+that will be tested in the HF Validation study.  547 
+ 548 
+When this information is submitted to the investigational application, FDA will review the 549 
+information, including the use- related risk analysis and the draft HF Validation study protocol, 550 
+and intends to provide comments or recommendations to increase the likelihood of an acceptable 551 
+HF study design that will adequately test for potential use failures.  Also, during Agency review 552 
+of draft HF Validation study protocols that include product labeling (e.g., instructions for use), 553 
+FDA intends to provide preliminary comments on the user interface labels and labeling being 554 
+However, final labeling is determined after review of the entire marketing application that 555 
+includes information beyond that in the HF Validation study.  556 
+   557 
+D. Review of HF Studies and Certain Labeling in Marketing Applications  558 
+ 559 
+As applicable, FDA will review HF Validation study results submitted in the marketing 560 
+application to assess whether the data confir m validation of the user interface and certain aspects 561 
+of the proposed labels and labeling (e.g., instructions for use).  FDA cautions applicants 562 
+leveraging a master file for HF data, that in some instances the master file data may suffice for 563 
+one constituent part alone, but not for the combination product as a whole (e.g., device with a 564 
+specific drug/biological product).  The applicant should determine whether sufficient information 565 
+would be available in the master file or whether the applicant should conduct and submit 566 
+additional HF studies for the combination product as a whole.   567 
+ 568 
+During FDA review of labeling23 in a marketing application, FDA may determine that the final 569 
+user interface labeling should differ from the HF Validated labeling.  This may occu r, for 570 
+example, based on the results of the major clinical trial, other safety data or medication error 571 
+data, new nomenclature considerations, and labeling content and format requirements.  The 572 
+labeling assessment also considers current postmarket experien ce with the same or similar 573 
+products, which might indicate that modification of the instructions for use is appropriate to 574 
+mitigate a risk.  After review of the marketing application, depending on the potential impact of 575 
+resulting labeling differences on performance of critical tasks, an additional HF Validation study 576 
+                                                           
+23 Labeling review includes consideration of labeling claims that might be provided by a HF study (e.g., user 
+preference or ease of use)  and whether the data support those claims .    
+Contains Nonbinding Recommendations 
+16 
+ may be needed to ensure that the changes minimize the use -related risks without creating 577 
+additional hazards. 578 
+ 579 
+V. RELATIONSHIP OF HUMAN FACTORS AND MAJOR CLINICAL STUDIES 580 
+OF THE COMBINATION PRODUCT 581 
+ 582 
+As explained in preceding sections of this document, HF studies of a combination product are 583 
+conducted as part of the product design controls process.  An appropriate HF development 584 
+program will maximize the likelihood that the combination product user interface is safe and 585 
+effective for use by the intended users, uses and use environments.  However, the HF Validation 586 
+study is not sufficient to establish the safety and effectiveness of the combination product for the 587 
+proposed indication.  Specifically, data from the major clinical study(ies) establish the 588 
+combination product’s safety and effectiveness for the proposed indication and the complete 589 
+labeling summarizes the essential scientific information needed for the safe and effective use of 590 
+the product.24   591 
+ 592 
+Therefore, ideally, before conducting the major clinical study(ies), the HF Validation study 593 
+should be conducted on the final finished combination product, including the user interface (e.g., 594 
+instructions for use, training materials, and any other user labeling, if applicable).  The HF 595 
+Validated product would then be ready for further evaluation in the major clinical study(ies) that 596 
+will be submitted in the marketing application.  Noting that in some cases it may be appropriate 597 
+to conduct your human fac tors studies in parallel to your major clinical studies or after your 598 
+clinical studies to address modifications to your product.  599 
+ 600 
+FDA recognizes that in some circumstances the data to support safety and efficacy of the 601 
+combination product may adequate without the inclusion of the final finished combination in a 602 
+major clinical trial.  For certain products, the sequencing of the HF study prior to the clinical 603 
+study may be less critical to inform our understanding of the product’s safety and efficacy, 604 
+allowing for greater flexibility in the timing of the human factors validation study relative to a 605 
+major clinical studies.  In other cases, a sponsor may encounter a need to change the combination 606 
+product design in the course of the development program, even afte r clinical studies have been 607 
+completed.  The type and extent of data to support such changes depend on the nature of change, 608 
+development stage, and other contextual factors, and FDA would consider the totality of the data 609 
+provided to support the approvability of the combination product in any such circumstances.   610 
+However, for certain combination products, we might expect or encourage you to use the final 611 
+finished combination product in your major clinical studies.  In such cases, we recommend that 612 
+you conduct the HF -Validation study on the final finished combination product prior to the major 613 
+clinical studies.    614 
+ 615 
+And, in all cases, we encourage you to discuss your combination product development plans with 616 
+the Agency as appropriate and consider such discussion as a component of your development 617 
+meeting, including the pre-IND, IDE and EOP2 meetings 618 
+   619 
+                                                           
+24 See 21CFR 201.56(a)(1) . 
+Contains Nonbinding Recommendations 
+17 
+ VI.  HOW TO OBTAIN ADDITIONAL INFORMATION 620 
+ 621 
+FDA encourages applicants to request early discussions with FDA regarding their HF program 622 
+and the type of HF studies that might be appropriate or necessary in the planned submission.  623 
+Additionally, if applicants anticipate design changes during product development before launch, 624 
+FDA strongly encourages meetings during the early planning stages.  Discussion topics might 625 
+include how to add a new configuration to the development plan and/or how to bridge to existing 626 
+data.  Such discussions should provide clarity on the applicant’s development plan and provide 627 
+transparency on FDA recommendations and expectations on HF studies a nd sequence of the 628 
+development program.  Where appropriate, the applicant may request focused meetings for more 629 
+detailed discussions.  For a combination product, applicants should submit meeting requests to 630 
+the lead center using the process and procedures of the lead center.  The meeting request should 631 
+indicate that the discussion is for a combination product and request participation of all relevant 632 
+centers and Office of Combination Products as appropriate.  Additional information on 633 
+requesting meetings is  provided in the last two guidance documents listed below. 634 
+ 635 
+The following FDA documents may be useful:  636 
+ 637 
+• Guidance for Industry and FDA Staff – Applying Human Factors and Usability 638 
+Engineering to Optimize Medical Device Design; 639 
+http://www.fda.gov/MedicalDevices/DeviceRegulationandGuidance/GuidanceDocument 640 
+s/ucm259748.htm  641 
+• Draft Guidance for Industry – Safety Considerations for Product Design to Minimi ze 642 
+Medication Errors; 643 
+http://www.fda.gov/downloads/Drugs/GuidanceComplianceRegulatoryInformation/Guid 644 
+ances/UCM331810.pdf  645 
+• Draft Guidance for Industry – Safety Considerations for Container Labels and Carton 646 
+Labeling Design to Minimize Medication Errors; 647 
+http://www.fda.gov/downloads/drugs/guidancecomplianceregulatoryinformation/guidanc 648 
+es/ucm349009.pdf   649 
+• Guidance for Industry – Label Comprehension Studies for Nonprescription Drug 650 
+Products;  651 
+http://www.fda.gov/downloads/drugs/guidancecomplianceregulatoryinformation/guidanc 652 
+es/ucm143834.pdf  653 
+• Draft Guidance for Industry – Format and Content of Proposed Risk Evaluation and 654 
+Mitigation Strategies (REMS), REMS Assessments, and Proposed REMS Modifications; 655 
+http://www.fda.gov/downloads/drugs/guidancecomplianceregulatoryinformation/guidanc 656 
+es/ucm184128.pdf  657 
+• Guidance for Indust ry – Formal Meetings Between FDA and Sponsors or Applicants; 658 
+http://www.fda.gov/downloads/drugs/guidancecomplianceregulatoryinformation/guidanc 659 
+es/ucm153222.pdf   660 
+• Guidance for Industry and FDA Staff – Requests for Feedback on Medical Device 661 
+Submissions: The Pre-Submission Program and Meetings with Food and Drug 662 
+Administration Staff; 663 
+http://www.fda.gov/downloads/medicaldevices/deviceregulationandguidance/guidancedo 664 
+cuments/ucm311176.pdf  665 
+ 666 
+Contains Nonbinding Recommendations 
+18 
+ APPENDIX A: USER TASK FAILURE EXAMPLES  667 
+ 668 
+Table 1 and Table 2 below provide examples of some use r task failures that typically apply to 669 
+injection and inhalation combination products.  Table 1 applies to combination products with 670 
+injectors (e.g., pen injectors, autoinjectors, prefilled syringes), and Table 2 applies to 671 
+combination products with certain inhalation systems (e.g., nebulizers and inhalers).   672 
+ 673 
+In addition to the examples in these tables, there may be knowledge tasks that require user 674 
+understanding of information that is not typically or easily evaluated through observation of 675 
+simulated use .  Knowledge tasks are derived from the product labeling (including user manual, 676 
+Medication Guide, labels on the device itself) and training package.   677 
+ 678 
+The tables do not present comprehensive all- inclusive lists.  If the combination product requires 679 
+users  to perform tasks not contained in the tables that could result in harm if not performed 680 
+correctly, then those tasks should be included in the HF Validation study.  Also, depending upon 681 
+the product design, only certain tasks may be applicable to a specific combination product.   The 682 
+critical tasks may change depending on the indications, use environments, user populations that 683 
+have unique or novel risks, and other characteristics and features of the combination product.  684 
+Therefore, a use- related risk analys is should be performed before identifying tasks for evaluation 685 
+in a HF Validation study.  Once identified, those tasks should be used to construct the HF 686 
+Validation study.    687 
+ 688 
+ 689 
+ 690 
+ 691 
+(Intentionally blank) 692 
+Contains Nonbinding Recommendations 
+19 
+ 693  
+Table 1: Examples of Critical Tasks for Combination  Products that Deliver Dose by Injection  
+User Task  Possible Task Failures and Use Errors  Possible Hazard / Harm Resulting 
+from Failures/Use Errors  
+Understand how to dose 
+the product   Misunderstanding dosing instructions  
+ Not aware of dosing instructions   Overdosing  
+ Under dosing 
+ Missed dose  
+Understand how to 
+administer the product   Improper technique while interacting 
+with the product during dosing 
+ Cannot complete injection   Overdosing  
+ Under dosing 
+ Missed dose  
+ Needlestick injury  
+ Accidental exposure to others  
+Product differentiation   Select incorrect product   Wrong drug delivered  
+Open packaging    Damage to device  
+ Loss of instructions or components  
+ Inability to open package   Delay of therapy  
+ Missed dose  
+ Over or under dosing 
+ User injury  
+Evaluate device and drug 
+prior to dosing   Failure to check injector window for 
+drug condition 
+ Expired or adulterated drug used   
+ Use device that is not functional for 
+dose delivery  
+ Use damaged needle   Painful injection  
+ Reduced drug efficacy  
+ Delay of therapy  
+ Missed dose  
+ Infection  
+Prepare injection site   Not cleaning/disinfecting injection site   Infection  
+Prepare/mix the dose for 
+injection    Mix or Measure the product incorrectly  
+ Wrong drug amount drawn into the 
+syringe   Reduced drug efficacy  
+ Under dosing 
+ Overdosing  
+Prime injector/ syringe 
+for injection.    Not priming at all or priming 
+incorrectly   Inaccurate dosing   
+ Under dosing   
+Select injection site  
+  Identify incorrect injection site  
+  Painful injection  
+ Lack of drug efficacy  
+ Local or systemic adverse events  
+Remove syringe needl e 
+cover   Do not remove needle cover or injector 
+cap  Missed dose  
+ Delay of therapy  
+Attach needle   Do not attach needle   Missed dose  
+ Delay of therapy  
+Remove injector cap   Do not remove injector cap   Missed dose  
+ Delay of therapy  
+Hold injector/syringe in 
+correct orientation   Hold injector/syringe incorrectly  
+ Inject upside down  Needle stick injuries  
+ Delay of therapy  
+ Reduced drug efficacy  
+Depress syringe plunger/ 
+activate autoinjector 
+(press injection button)    Unable to depress the plunger  
+ Unable to activate injector fully  
+ Unable to determine if dose delivered   No dose  
+ Under dosing 
+Hold syringe or injector 
+at injection site   Premature removal of syringe/injector  
+ Wet injection (drug solution on surface 
+of injection site)   Under dosing  
+ Missed dose  
+Verify dose deliv ery  Not verifying complete dose delivery   Under dosing  
+ Missed dose  
+Dispose/clean/store 
+syringe/injector   Improper disposal/storage  
+ Inject degraded product  
+ Do not clean reusable device   Needle stick injuries  
+ Contamination /transmission of 
+disease (infection ) 
+ Reduced drug efficacy  
+ Delay of therapy  
+ Drug diversion  
+ Exposure of non -users  
+Contains Nonbinding Recommendations 
+20 
+ 694  
+T
+able 2: Examples of Critical Tasks for Combination Products that Deliver Dose by Inhalation  
+User Task  Possible Task Failures and Use Errors  Possible Hazard / Harm Resulting 
+from Failures/Use Errors  
+Understand how to 
+administer the product   
+ Improper technique while using the 
+product during dosing 
+Cannot complete inhalation   
+ 
+ 
+ Overdosing  
+Under dose  
+Missed dose  
+Accidental exposure to others  
+Understand how 
+the product  to dose  
+ Misun derstanding dosing instructions  
+Not aware of dosing instructions   
+ 
+ Overdosing  
+Under dosing 
+Missed dose    
+Open packaging  
+  
+ 
+ Damage to device  
+Loss of instructions or components  
+Inability to open package   
+  
+ Delay of therapy  
+Missed dose  
+Wrong dose  
+User injury  
+Asse mble product   
+ Assembled incorrectly  
+Unable to assemble   
+ 
+ Choking on device components  
+Delay of therapy  
+Missed dose or dosing error  
+Evaluate device and drug 
+prior to dosing   
+ 
+ Expired or adulterated drug used  
+Use device that is not functional for dose delivery  
+Use damaged product   
+  Reduced drug efficacy  
+Delay of therapy  
+Missed dose or dosing error  
+Set up dose; prime 
+product   
+ Not preparing dose for inhalation  
+Not priming at all or priming incorrectly   
+ 
+ Under dosing or overdosing   
+Choking on dose capsule (if presen t)   
+Missed dose  
+Use device to deliver 
+dose   
+ Improper inhalation technique  
+Improper seal of mouth on mouthpiece   
+ 
+ Under dosing  or over -dosing   
+Missed dose  or dosing error  
+Coughing    
+Waiting a specific 
+amount of time between 
+doses for multiple breath 
+dosing   Not waiting long enough between doses   
+ Under dose  
+Lack of efficacy    
+Disassemble, maintain,  Failing to clean or maintain.   Delay of therap y 
+store, and clean reusable  Storing at wrong temperature or under  Under dosing or overdosing 
+device components  other incorrect conditions   
+ Infection  
+Reduced drug efficacy  
+Dispose of device as per 
+instructions.    Failing to properly dispose of device   
+ Diversion of drug  
+Exposure to non -users  
+695

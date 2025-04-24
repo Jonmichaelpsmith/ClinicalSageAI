@@ -1,0 +1,623 @@
+Einstein  Montefiore Institute for Clinical 
+and Translational  Research  
+Clinical  Research  Training  Program  
+MS in Clinical  Research  Methods 
+Catalog 202 4 
+1300 Morris Park Avenue 
+Jack & Pearl Resnick  Campus  
+Harold  & Muriel  Block  Building  5th Floor 
+Bronx, NY 10461  
+8 October 2024 Page 2 Contents  
+About  This Catalog  ...................................................................................................................................... 3  
+Educational  Mission of the Clinical Research  Training  Program  ................................................................. 3  
+Accreditation  ............................................................................................................................................... 3  
+Governance  of the Clinical Research  Training  Program  .............................................................................. 3  
+The CRTP  Executive Committee  .................................................................................................................. 4  
+The CRTP  Admissions Committee  ............................................................................................................... 4  
+The CRTP  Program  Administration .............................................................................................................. 4  
+Admissions  .................................................................................................................................................. 5  
+Application  Process  ..................................................................................................................................... 5  
+General Policies ........................................................................................................................................... 7  
+Syllabus  ....................................................................................................................................................... 9  
+List of Courses  (by semester)  .................................................................................................................... 11 
+Summer  Semester  – First  Year  ............................................................................................................ 11  
+Fall Semester  – First  Year  .................................................................................................................... 11  
+Spring Semester  – First  Year  ................................................................................................................ 11  
+Summer  Semester  – Second  Year  ....................................................................................................... 12  
+Fall Semester  – Second Year  ................................................................................................................ 12  
+Sp
+ring Semester  – Second  Year  ........................................................................................................... 13  
+CRTP  Electives  (Fall & Spring)  .............................................................................................................. 13  
+     Master’s  Thesis  ......................................................................................................................................... 15  
+Timetable  for Thesis  ............................................................................................................................ 20 
+Student  Evaluation  and Academic  Standards  ........................................................................................... 21 
+Official Transcript  ...................................................................................................................................... 21  
+8 October 2024 Page 3 About  This  Catalog  
+This online catalog describes the master's degree program in clinical research methods, which has been 
+offered  by the Clinical Research  Training  Program (CRTP)  of the Albert  Einstein  College of Medicine since 
+1998. The degree is awarded as an affirmation that the Scholar has acquired the fundamental  
+knowledge and skills required to conduct clinical research. This ability is achieved by completing a prescribed  curriculum  and a period  of research  supervised  by the Scholar's  mentor,  the Director,  and the 
+Associate Directors of the CRTP. The Academic Policies of the CRTP and a description of the course of study are detailed below. In addition to the guidelines presented within this document, Scholars are expected to meet the standards of professional behavior expected of all members of the College of Medicine.  
+Educational  Mission  of the Clinical  Research  Training  Program  
+The Clinical Research Training Program is an intensive two -year program designed for those pursuing a 
+career  in investigator- initiated,  hypothesis -driven  clinical research,  and is offered  through  the Institute  for 
+Clinical and Translational Research (ICTR) at Einstein and Montefiore.  
+Founded in 2007, the ICTR  promotes the collaboration  between Albert Einstein College  of Medicine and 
+Montefiore Medical Center. The ICTR is a member of the nationwide Clinical and Translational Science Awards (CTSA)  consortium,  funded by the  National Center for Advancing  Translational Sciences (NCATS) 
+of the National  Institutes  of Health  (NIH).  The CTSA  is designed  to break  down  barriers  that inhibit  cross - 
+disciplinary, bidirectional research from the laboratory to the clinic and back again. The CTSA Consortium aims to improve human health by transforming the research and training environment to enhance the efficiency and quality of clinical and translational research.  
+Accreditation  
+Einstein  is fully  accredited  by The Middle  States  Commission on Higher  Education  (MSCHE),  3624  Market 
+Street, Philadelphia, PA  19104, 1 -267-284-5000. MSCHE is one of six regional  accrediting agencies in the 
+United States, each of which accredits institutions of higher education within a specific geographic region. Middle States is recognized by the U.S. Department of Education, enabling eligibility to participate in federal student financial aid programs (e.g., federal loans, grants, and work -study) 
+administered by the U.S. Department of Education.  
+The MS in Clinical Research  Methods  is registered  with  the New  York  State  Education Department  under 
+program code 21439, HEGIS code 0419.00. Einstein holds an Absolute Charter from the State of New York to award the MD, PhD, and MS degrees.  
+Governance  of the Clinical  Research  Training  Program  
+The CRTP,  sponsored  by Albert  Einstein  College  of Medicine  under  the leadership  and advocacy  of Dean 
+Yaron Tomer is an educational program which operates under the auspices of the Einstein - Montefiore 
+Institute of Clinical Translational Research (ICTR) which is supported by the Clinical and Translational Science Award (CTSA) of which Marla Keller, MD is the Principal Investigator. Direct oversight is provided by A ileen McGinn, PhD, Director of the CRTP.  
+The CRTP  benefits  from  guidance  of the ICTR  External Advisory  Committee  (EAC),  which  comprises  a 
+group of nationally known leaders in academic medicine, research, and research education.  
+The committees  listed  below  are responsible  for assuring  the quality  of the academic  program,  uniform 
+implementation of CRTP policies, and fair treatment for the students and faculty of the CRTP.  
+8 October 2024 Page 4 The  CRTP Executive  Committee  
+Oversight  of curriculum,  mentoring,  research  activities  and Scholar progress  is provided  by an Executive 
+Committee, which meets monthly.  
+Aileen  P McGinn,  PhD 
+Professor,  Department  of Epidemiology  and Population  Health  
+Director,  Clinical Research  Training Program  
+Ja
+cqueline Achkar,  MD MS FIDSA  
+Professor,  Department  of Medicine  (Infectious  Disease)  and Microbiology  & Immunology  
+Associate  Director  for Bench to Bedside  Translational  Research  - CRTP  
+Johanna  Daily,  MD 
+Professor,  Department  of Medicine  (Infectious  Disease)  and Microbiology  & Immunology  
+Associate  Director  for Mentoring and Career  Development  - CRTP  
+De
+an Hosgood,  PhD 
+Associate  Professor,  Department  of Epidemiology  and Population  Health  
+Associate  Director  for Population and Clinical Sciences  Research  - CRTP  
+David Lounsbury,  PhD 
+Associate  Professor,  Department  of Epidemiology  and Population  Health  and Family  & Social Medicine  
+Associate  Director  for Patient  Centered  & Outcomes  Research - CRTP  
+Mel
+issa Fazzari , PhD 
+Associate  Professor,  Department of Epidemiology  and Population  Health  and Family  
+Statistical Advisor-CRTP  
+The  CRTP Admissions Committee 
+All members of the Executive Committee serve on the Admissions Committee in addition to members 
+selected by the Program Director. The Admissions Committee is responsible for making all admissions decisions.  Members  review  the candidates’  qualifications,  interview  candidates  and are responsible  for 
+making all admissions decisions.  
+The CRTP Program Administration  
+Aileen  P McGinn,  PhD 
+Director,  Clinical Research  Training  Program  
+Professor,  Department  of Epidemiology  and Population  Health  
+Nancy  Marte  
+Educational  Program  Manager  
+Gen
+eral contact:  crtp@einsteinmed.edu 
+8 October 2024 Page 5 Admissions  
+The Albert Einstein College of Medicine is committed to a policy of equal opportunity and non - 
+discrimination and encourages applications from qualified students regardless of race, color, religion, 
+national origin,  sex, age, handicap,  marital status,  or sexual  orientation  within  the meaning of applicable 
+law. 
+An applicant for enrollment in the CRTP should hold a doctoral degree (MD or PhD) or a degree from an allied health profession including dentistry or nursing. Alternatively, MD/MS applications are accepted from students who are currently matriculated in the Albert Einstein College of Medicine.  
+Eligibility  Criteria  
+•An academic  affiliation with  Albert  Einstein  College  of Medicine  prior to matriculation  into the CRTP
+•The program  considers  MD’s,  PhD’s,  sub-specialty  fellows,  medical  students  and faculty  members  of
+Einstein and Montefiore
+•Albert  Einstein  College  of Medicine’s  medical  students  have  the option  to apply  as a CRTP  MD/MS
+•Faculty  and Fellows  must  hold  an appointment  at Einstein  or an affiliated institution  for the two
+years enrolled in the CRTP
+•Strong interest  in, and aptitude  for, clinical research
+•Scholars  must  have  80%  protected  time  during the first summer  and 50%  protected  time  for the
+duration of the program. This protected time includes course work and research time.
+•A firm written commitment from the trainee's department (Chair, Division Head, or FellowshipDirector)  that all necessary resources  will be made  to the Trainee.  This includes  confirmation  of the
+protected time with demonstrable reductions in clinical, teaching, and administrativeresponsibilities, as needed, space, and a computer
+•Identification  of a research  project  and a mentor
+Application  Process  
+All application  materials  must  be submitted  through  the online  application  portal  as of January  1st but no 
+later than March 1st (including requests for all supporting letters) for consideration in the class that 
+commences the following July. The online application system allows for the uploading of the following required  materials:  
+Applicant  Information  Form  
+A Personal Statement that describes the applicant’s career goals and explains why they believe this 
+training  program  will help  them  achieve  those  goals. Not to exceed  one page  single -spaced  using 12- point 
+font 
+A Research  Pl
+ an that contains  a brief description of the applicant’s  study  question  and approach.  Not to 
+exceed two pages single-spaced using 12 -point font.  
+A Full Curriculum Vitae  
+Supporting  Letters:  The following  letters will be solicited  and submitted  by their  author  through the 
+online application system:  
+Mentor(s)  Letter:  Each  applicant  will need  to provide  an email address  for at least  one individual  who 
+will serve  as their  mentor  during the CRTP.  This individual will be asked  to submit  a letter  through  the 
+online application system, which will contain a mentoring plan, a description of the research environment they will provide the applicant, a research timeline and how they will advocate for the applicant to receive adequate time for research. The mentor will also be asked to submit their NIH 
+biosketch  and a list of former  trainees  (if applicable). If the scholar  will have  co-mentors,  one mentor 
+may submit a letter on behalf of the mentoring team.  
+8 October 2024 Page 6 Lette
+rs of Reference:  Each  applicant  needs  to provide  email  addresses  for two (2) individuals (who  are 
+different from proposed mentor(s)) who can provide letters addressing their potential for a career in 
+clinical research.  
+Letter Guaranteeing Protected Time (Faculty and Fellows only): Each applicant must provide an email 
+address for the appropriate individual who can guarantee their protected time while in the CRTP. This 
+letter may come from a Fellowship Director, Department Chair or Division Head. In instances where this 
+letter is signed by more than one individual, please designate only one -point person for submission of 
+this letter. The individual selected will be asked to submit a letter which includes their support of the 
+applicant’s  participation  in the Clinical Research  Training  Program  and their  guarantee  that the applicant 
+has the required protected time during the two years that they are enrolled in the program in which to attend classes, complete homework, prepare for examinations, conduct research, and develop and defend a thesis.  
+The letter  should  specifically  acknowledge  the following:  
+•The first summer requires 80% protected time (i.e., no more than 8 hours per week should becommitted  to non -CRTP activities). Classes are held four days a week for six weeks (i.e., Monday -
+Thursday  9:00- 12:50 and occasional afternoon  sessions). NB: During the first summer  the pace  of
+the program is particularly intense. Additionally, there is a take home exam due approximately 2weeks after the last summer class
+•After the first summer, Scholars require 50% protected time (i.e. absolutely no more than 20 hoursper week  should  be committed  to non-CRTP  activities).  Required  classes,  and most  electives,  for the
+remainder of the two -year program are held on Tuesdays & Thursdays from  9:00 -12:50
+•The trainee  must  have  appropriate  space  to pursue  their  studies  and perform  research  and have
+access to a computer capable of running up -to-date statistical and data management graphics
+software
+•That  this individual  will serve  as a liaison  between  the trainee,  the trainee’s  mentor,  and the
+director of the training program if the need should arise
+Interviews: Each applicant is interviewed by the Director of the CRTP and one or two additional 
+members  of the Admissions Committee.  Applications  will be held  over  to subsequent  years  only  at the 
+discretion of the Director. 
+Affirmation of Good Academic Standing (Medical Students only): After submission of the online 
+application  the Dean  of Students  will be contacted  to provide  affirmation  that medical school  applicants 
+are in good academic standing.  
+Official  Transcript  (Faculty  and Fellows  only):  In addition  to the online  application,  Faculty  and Fellows 
+only will need to have an official transcript directly from their doctoral degree institution sent to: 
+Clinical Research  Training  Program  Albert  Einstein  College  of Medicine  Jack and Pearl Resnick  Campus 
+1300 Morris Park Avenue, Block Building Bronx, NY 10461  
+Phone:  718-4
+ 30-4008 Fax: 718-430-2521  
+Questions  about  the application  process  can be addressed  to the Educational  Program  Manager: 
+Nancy Marte, nancy.marte@einsteinmed.edu  Phone: 718 -430-4008  
+8 October 2024 Page 7 Ge
+neral  Policies  
+The CRTP adheres to all Policies and Procedures endorsed by the Albert Einstein College of Medicine, 
+including but not limited  to the Computer  Policy  and Policy  on Non -Discrimination,  Affirmative  Action  & 
+Sexual Harassment.  
+Matriculation  
+The CRTP  operates  on the semester  system. The curriculum  schedule  is available  through  the CRTP  web 
+site:  https://einsteinmed.edu/centers/ictr/education/clinical -research -training -program/  
+First year Scholars of the MS program advance into the second -year contingent upon successful 
+completion  of all first-year courses  and approval of the thesis  proposal.  There will be clear  deadlines  for 
+submission of thesis abstracts and proposals.  
+Protected  Time  
+Scholars  must  have  a minimum  of 50%  protected  time  during their  matriculation  in the CRTP,  except  for 
+the intensive introductory summer course, which is a coordinated curriculum of epidemiology, biostatistics, data analysis, developing a research question and team science, requiring a minimum of 80% protected time.  
+Mentored  Research  
+Trainees will have identified a mentor and a research project prior to the initiation of training. The program can assist the Scholar with identifying mentors. The CRTP is an institutionally supported program,  seeking  to enhance  the academic  environment  in clinical research  through  training  and career 
+development activities.  The program requires  the active involvement of  the mentor,  and the support  of 
+the Scholar’s department. Effective communication among the Scholar, the mentor, the department, and the CRTP is critical to ensuring the Scholar’s success. Toward that end, the CRTP will communicate with the appropriate individuals supervising the Scholar, as necessary, in the event of academic difficulties or scientific or professional misconduct. A Scholar’s unsatisfactory progress in the CRTP may lead to changes in their research, mentor, clinical obligations, or other aspects of the Scholar’s 
+professional activities, as deemed necessary through consultations between the Program Director and 
+the Scholar’s supervisors. The goal of such consultations would be to enhance the likelihood for the Scholar’s successful completion of the CRTP.  
+Credit  Requirements 
+The didactic program meets or exceeds the state mandated 30 credit hour requirement over 2 years. The course work consists of credit for the CRTP required core courses, elective coursework, and the Master's  thesis. Current  curriculum  and course  descriptions  are available  in this document  and on the 
+CRTP web site.  
+Credit  Hour  Calculations  
+Credit Hour Definition for Courses: One (1) credit hour is earned for fifteen (15) 1 -hour (of 50 minutes 
+each) sessions of lecture or classroom instruction, with the expectation of two (2) additional hours of 
+outside study or reaching for each class session.  
+Credit  Hour  Definition  for Full-Time  Research:  One (1) credit  hour  is earned  for each  forty -five (45) 1- 
+hour session of academic activity. Forty -five hours of academic activity yields one (1) credit hour.  
+Attendance/Absenteeism/Leaves of Absence  
+In general, CRTP classes are scheduled during all months of the calendar year except for June and 
+January, during which time there are no classes. The CRTP adheres to the academic calendar of the School  of Medicine.  (Please  note:  Scholars  who  choose  an elective  offered  by Sue Golding Graduate 
+Division or any other institution should check the start date of those courses.)  
+8 October 2024 Page 8 At
+tendance for all scheduled classes is expected of all Scholars. No more than one missed class per 
+course  is permissible.  The CRTP  Executive  Committee  reserves  the right  to enforce  this rule considering 
+individual circumstances. Scholars are required to make -up any missed course work in the event of a 
+legitimate class absence. Clinical obligations, vacations, conferences, or other meetings are not 
+legitimate excuses for missed classes. In some instances, allowances will be considered in the event of documented illness of up to 2 weeks’ duration. If such an occurrence arises it is the Scholar’s responsibility to contact the Program leadership and discuss the feasibility of successful completion of course work.  
+Leaves of absence are adjudicated on a case -by-case basis by the Executive Committee. Any extended 
+leave of absence (e.g., due  to illness, pregnancy, etc.) for greater than two weeks’ duration will only be 
+granted  with  the approval  of the Director and must  be in  writing  on official  CRTP  letterhead.  A one-year 
+extension may be granted in order for a Scholar to successfully complete required coursework. In the event a Scholar needs a prolonged leave of absence, an additional year extension may be granted.  
+Scholars who complete requirements within the two -year extension will graduate without prejudice. 
+Unexplained  absences  are viewed  negatively  and may  result  in termination  of enrollment  in the CRTP.  
+Withdrawal  
+Scholars in good standing who are unable to return at the beginning of any semester or who find it necessary to discontinue  their  participation  in the CRTP  for any reason  during the academic  year,  may 
+be granted withdrawal from CRTP by the Director in writing on official CRTP letterhead.  
+Non -matriculated  Scholars  
+Non -matriculated enrollment in electives are permitted as space allows. Prior approval must be 
+obtained from  the Program  Director  and the course  leader.  If approved,  the Scholar  is responsible  for 
+supplying documentation that all prerequisites are met . Successful completion of a course will be 
+recorded by the CRTP office.  
+Policy  on Scientific  Conduct  
+The following  definition  from  the College's  Policy  on Scientific  Misconduct  will be used  to evaluate 
+whether a Scholar's research activities constitute “scientific misconduct”.  
+"Scientific misconduct includes fabrication, falsification, plagiarism or other practices that seriously deviate  from  those  commonly  accepted within  the scientific  community  for proposing,  conducting,  or 
+reporting research. It does not include honest differences in interpretation or judgments of data."  
+Instances of suspected scientific misconduct involving research by Scholars will be considered in accordance  with  the Policy  on Scientific  Misconduct  of the Albert  Einstein  College  of Medicine.  Instances 
+of professional misconduct by Scholars that do not fall within the guidelines of scientific misconduct will be considered in accord with the Policy on Professional Conduct presented below. The Executive Committee will have primary responsibility for determining the appropriate venue for investigation of 
+alleged misconduct and seeing that the allegations are thoroughly and fairly investigated.  
+Policy  on Professional  Conduct  
+The CRTP requires at all times the highest standards of professional conduct. Professional misconduct 
+includes, but is not limited to, plagiarism or cheating in academic courses offered by the CRTP and by 
+the Medical School, fabrication or falsification of academic work or data, intentionally damaging or 
+interfering  in the academic  activities  of other  members  of the College  of Medicine or  assisting  others  in 
+any of these acts and the failure to meet generally accepted standards of personal integrity and professional conduct. Inappropriate or disruptive behavior toward colleagues, faculty, or other College staff may constitute professional misconduct.  
+Ignorance  of the standards  of professional  conduct  will not excuse  a student  from  responsibility  for their 
+actions. Plagiarism or cheating will result in dismissal from the CRTP. References are available in the library to help Scholars evaluate the ethical implications of their actions.  
+8 October 2024 Page 9 Syllabus  
+The CRTP program enrolls up to 16 Scholars each year. Each Scholar is required to have a mentor, a 
+research project, and protected time for the full two years of the program. The program focus is on 
+developing clinical research  methodological skills. All matriculates  start  in July with  the Clinical Research - 
+Intensive Course with classes meeting Monday through Thursday from 9:00am -12:50pm. For the 
+remainder of the program, required classes are held on Tuesdays and Thursdays, 9:00am – 12:50pm.  
+Most,  but not all, electives  are also scheduled  on Tuesdays  and Thursdays,  9:00am -12:50pm.  There are no 
+CRTP classes during the months of January and June or on Jewish Holidays.   Registration  for all courses, 
+including electives,  should  be done  through  the CRTP  office. 
+For Faculty  and Fellows  (non- MD/MS  scholars)  
+In addition to the introductory material covered in the summer intensive course, the core curriculum includes intermediate courses in epidemiology and biostatistics with a data analysis component, research ethics, works -in-progress, an overview of translational science research methodologies, an 
+intensive  grant  writing  workshop  which  culminates  in a mock  study  section,  professional development 
+seminars, and elective course offerings. The program culminates with a written thesis, which is an 
+original hypothesis -driven first - author manuscript suitable for publication.  
+In total,  non-MD/MS  scholars  are required  to take 4 7.5 credits  (inclusive  of 16 thesis  credits)  plus a 
+minimum of 5 elective credits for a total of 5 2.5 credits.  
+For MD/MS Scholars  
+The five -year MD/MS track is designed for medical students interested in learning clinical research 
+methods. Students must have completed their clerkship year before enrolling in this program. Students 
+apply to the program during the third (clerkship) year of medical school. Accepted students will take a 
+gap- year off from medical school to participate in Einstein’s Clinical Research Training Program (CRTP) 
+courses while working on clinical research activities under a faculty mentor. Medical Students in the 
+CRTP are required to devote the entire gap year plus Blocks 1 -4 of their senior year to the CRTP 
+curriculum. During the remainder  of their  senior  year  in medical  school  CRTP  MD/MS  students  have the 
+option  of doing  a senior  research  fellowship  or spend  time during allotted  SP months  in their  senior  year 
+of medical school for completion of their papers or completing electives.  
+In addition  to the  introductory  material covered  in the summer  intensive course,  the core  curriculum for 
+the MD/MS  scholars  includes  intermediate  courses  in epidemiology  and biostatistics  with  a data  analysis 
+component, research ethics, an overview of translational science research methodologies, and a manuscript writing course series in which the MD/MS scholars write an original, first -author research 
+manuscript. This is in addition to the thesis manuscript, which is also an original hypothesis -driven first - 
+author manuscript suitable for publication. Thus, MD/MS scholars write two first -author original clinical 
+research papers which are suitable for publication.  
+In total  MD/MS  scholars  are required  to take 4 1.5 credits  (inclusive of  16 thesis  credits)  plus a minimum  
+of 4 elective credits for a total of 4 5.5 credit s. They are exempt from taking Professional Development 
+Seminars, Grant Writing I & II and Works -in-Progress I & II. However, they are required to present their 
+research during both the first spring semester and the second fall semester during a mutually  
+convenient  time  in the works -in-progress  courses. Time -permitting,  they  are encouraged  to attend  other 
+seminars and work -in-progress sessions.  
+Medical students pay only four years of medical school tuition for the five -ye
+ ar program (no additional 
+tuition  for the Master's  degree),  and fellowship  stipends  may  be available. Candidates  who  complete  the 
+CRTP successfully will receive both the MD degree and MS in Clinical Research Methods at graduation.  
+8 October 2024 Page 10 Clinical  Research  Training  Program  Schedule  
+First  Summer  First  Fall First  Spring  Second  Summer  Second  Fall Second  Spring  
+Clinical  Research 
+Intensive  
+(7.0 credits)  Multivariable  Regression 
+(5.5 credits)  Translational  Science 
+Research 
+Methodologies  
+(3.0 credits)  Research  Ethics 
+(2 credits)  *Grant  Writing  II
+(3.0 credits)
+**Manuscript  Writing  II
+(3.0 credits)*Professional
+Development
+Seminars
+(2.0 credits)
+Epidemiologic  Research 
+Methods  
+(3.0 credits)  *Works  in Progress  I
+(2.0 credits)*Grant  Writing  I
+(2.0 credits)
+**Manuscript  Writing  I
+(2.0 credits)*Works  in Progress  II
+(2.0 credits)
+Thesis  Research 
+(2.0 Credits)  Thesis  Research 
+(4.0 Credits)  Thesis  Research 
+(2.0 Credits)  Thesis  Research 
+(4.0 Credits)  Thesis  Research 
+(4.0 Credits)  
+Electives†  Electives†  Electives†  
+All courses required  except  as noted:  
+*Required  for non -MD/MS  Scholars
+**Required  for MD/MS  scholars  
+†Electives:  non -MD/MS  scholars  are required  to complete  a minimum of 5 elective credits;
+MD/MS scholars are required to complete a minimum of 4 elective credits  
+Page 11 8 October 2024 List  of Courses  (by semester)  
+Summer  Semester  – First  Year  
+CLRM  5840 Clinical  Research  Intensive  (7.0 credits)  
+This is an intensive introduction to clinical research which provides the fundamental concepts of 
+epidemiology  and biostatistics  that will provide  the foundation for more  advanced  work  in these  areas. 
+Additionally, students will learn how to critically evaluate the clinical research literature, understand how to develop a research question, and use statistical software to complete basic data management and statistical analyses.  
+Fall Semester  - First  Year  
+CLRM  5860  Multivariable Regression  (5.5 credits)  
+Multivariable  Regression  builds  on the knowledge of univariate  and bivariate  analyses  that were  learned 
+in the Clinical Research- Intensive course and introduces concepts related to multivariable model 
+building for multiple  linear regression, logistic regression, and survival  analysis. Both  the lecture and  the 
+data analysis portions will focus on multiple regression model building, interpretation, and diagnostic tests, assessing for interaction, and statistical adjustment for confounding.  
+CLRM  5820 Epidemiologic  Research  Methods  (3.0 credits)  
+This course  focuses  on the analytical  issues of epidemiological  studies:  biases,  confounding,  interaction, 
+statistical methods used in case -control and cohort studies, and sample size/statistical power. The in - 
+class exercises will reinforce these concepts. Students are expected to know the basic design issues of retrospective and prospective studies as well as clinical trials from Clinical Research -Intensive Course.  
+CLRM  5881 Thesis Research  Credits  (2.0 credits)  
+Spring Semester  - First  Year  
+CLRM  5846 Translational  Science  Research  Methodologies  (3.0 credits)  
+This course  is designed  to provide  a broad  exposure to research  methodologies  across  the translational 
+research  spectrum. Speakers have been  selected based on their  outstanding reputation for the area of 
+research they are speaking on and include both senior level faculty at Einstein/Montefiore as well as outside speakers from various Universities across the country. These seminars provide a unique opportunity to meet and hear from experts you may not have access to otherwise.  
+CLRM  5841 Works  in Progress  I (2.0  credits)  
+This is the first of two courses designed to enable the students to obtain feedback from their peers about challenging issues with their research. Scholars are often working on specific aims, feasibility issues or rudimentary analyses. These sessions are also opportunities to practice presenting research. Mentors are invited and CRTP leadership attends. MD/MS scholars are not required to take this course but are highly  encouraged  to enroll in it if their  schedule  allows;  however, it  does  not contribute  to their 
+elective credit requirement.  
+CLRM  5881 Thesis Research  Credits  (4.0 credits)  
+Page 12 8 October 2024 Summer  Semester  - Second  Year  
+CLRM  6870 Research Ethics  (2.0 credits)  
+The objective of this course is to enable the participants to recognize ethical issues in research with 
+human  subjects  and to conduct  an analysis  of problematic  situations  using ethical principles. This course 
+covers the main issues confronting researchers and members of IRBs: informed consent, risk -benefit 
+analysis, collection of biological samples and bio -banking, undue inducements, research integrity, 
+multinational research, public health research, and protections for vulnerable populations in research.  
+CLRM  6842 Manuscript  Writing  I (2.0 credits)  
+For MD/MS  scholars  only 
+This course is the first of a two -course sequence designed for MD/MS scholars in the CRTP to guide 
+them  in preparing  a mentor -guided  first –author  hypothesis  driven  research  paper  based  on their  own 
+analysis. This paper can be based on a secondary dataset which addresses the student and mentor’s research focus or can derive from data collected as part of the student thesis research.  
+Students attend seminars and have progress meetings with the course director and their mentors at regular intervals  in the summer  and continue  working  on their  paper  while  meeting  regularly  with  their 
+mentor  and the course  director through  the fall semester.  NOTE:  This clinical  research  paper  is distinct 
+from the thesis.  
+CLRM  6844 Grant  Writing  I (2.0 credits)  
+MD/MS scholars  are not permitted  to take  this course  
+The grant -writing course is designed for fellows and faculty in the CRTP to guide them in an intensive 
+experience designed to impart the skills necessary to produce a proposal for NIH (K -career 
+development), which starts in the summer and continues in the Fall Semester. The summer course consists of lectures  which  are dispersed  during the six-week  summer  semester  and include  an overview 
+of the NIH system, scientific writing for grants and papers and constructing specific  aims.  
+Also,  during the summer,  Scholars  will begin  meeting  in small,  assigned groups  with  an assigned  leader 
+during which time they will produce sections of grants. The critical function of the small group is to obtain  detailed  feedback from  the leader  and group  members on  each  scholar’s evolving  grant.  During 
+the Fall semester Scholars will continue meeting in their small groups with the goal of submitting a finished proposal by mid -November. The fall semester culminates in a mock NIH -style study section.  
+CLRM  5881 Thesis Research  Credits  (2.0 credits)  
+Fall Semester  - Second  Year  
+CLRM  6843 Manuscript  Writing  II (3.0 credits)  
+For MD/MS  scholars  only 
+This is a continuation o f the summer  course  where  MD/MS  scholars  complete  a mentor -guided  first- author 
+hypothesis  driven  research  paper  based on their  own  analysis. NOTE:  This clinical research paper is distinct 
+from the thesis.  
+CLRM  6845 Grant  Writing  II (3.0 credits)  
+MD/MS scholars  are not permitted  to take  this course.  
+This is a continuation of Grant  Writing I where Scholars continue working in small  groups to obtain 
+detailed  feedback  from  group  leaders  and members  on evolving  grant  work.  Students  produce  a grant 
+application and participate in an NIH style Mock Study Section at the culmination of this course.  
+Page 13  8 October 2024 CLRM  6841 Works  in Progress  II (2.0 credits)  
+A continuation of Works in Progress I, in this second session, the Scholar’s research work should be 
+farther along, but issues may remain. The student’s presentation can include an aim, hypothesis, approach, analytic plan with possibly a preliminary analysis, and a discussion of the results. Mentors are invited and CRTP leadership attends presentations by students preparing them for the final thesis presentation at the time of graduation. MD/MS scholars are not required to take this course but are highly  encouraged  to enroll in it if their  schedule  allows;  however,  it does  not contribute  to their  elective 
+credit requirement.  
+CLRM  5881 Thesis Research  Credits  (4.0 credits)  
+Spring Semester  - Second  Year  
+CLRM  6890 Professional  Development  Seminars  (2.0 credits ) 
+MD/MS  scholars  are not permitted  to take  this course  
+This course  is a series  of seminars  from  leadership  at Einstein -Montefiore,  and other  noted  individuals, 
+on various topics of professional development. Topics vary from year to year and range from learning how to effectively network and how to best negotiate for an academic faculty research position to planning for academic promotion.  
+CLRM  5881 Thesis Research  Credits  (4.0 credits)  
+Electives  (Fall  and  Spring Semesters)  
+MD/MS  scholars  in the CRTP  take  at least  four  elective  credits  throughout  the two years  of the program; 
+however, they are usually completed during the first four semesters of the CRTP before they go back into their 4
+th year of medical school. CRTP scholars who are not medical students need to earn a 
+minimum of 5 elective credits throughout the two years of the program. Possible elective credit can be earned via the following:  
+•A directed  study,  with  approval from  the CRTP  Executive  Committee
+•Any of the following  electives  offered  through  the CRTP
+CLRM  5822 Molecular  Epidemiology  (2.0 credits)  **Outside  normal  class  hours
+This course focuses on the design, methodological and analytical issues of molecular epidemiological studies: design strategies, strengthens, limitations, sample collection and processing, and biomarkers measurements and quality control considerations. The in -class exercises and homework will reinforce 
+these concepts. Students are expected to be proficient in designing, conducting, and interpreting retrospective and prospective  studies  as introduced  in Epidemiologic  Research  Methods.  Offered  in Fall 
+Semester.  
+CLRM  5821 Advanced  Epidemiologic  Research  (2.0 credits)  
+This course will introduce advanced topics in epidemiology with the primary goal of expanding knowledge  of evolving  methodological issues for epidemiological studies  and causality inference.  Topics 
+such as more efficient study designs (e.g., nested case -controls, case -cohort, case -crossover) in 
+epidemiological studies, causal diagrams and causal inference, propensity score and instrumental variable  analysis  to address  confounding and bias will be covered.  At the end of this course  students  will 
+have a better understanding of various epidemiological methods used in clinical and epidemiological 
+studies.  Offered in Spring Semester.  
+Page 14  8 October 2024 CLRM  5861 Design  and  Analysis  of Longitudinal  Data Studies  (2.0 credits)  
+This course presents modern approaches to the analysis of longitudinal data. Topics include design of 
+longitudinal studies, generalized linear models for correlated data (including generalized estimating equations, generalized linear mixed effects model), computational issues and methods for fitting models,  and missing  data  issues. STATA  statistical software  will be used  in the data  analysis  component 
+of this course where the students will learn how analyze and interpret linear models for repeated measure for continuous and discrete data.  Offered in Spring Semester.  
+CLRM 6895 Int ro to Implementation Science (1.5 credits)  
+Introduction to Implementation Science will present scholars with an overarching overview of fundamental concepts and emerging topics within the field of implementation research. The course will present key concepts such as adapting evidence -based interventions, understanding determinants of 
+implementation, designing implementation strategies, selecting pragmatic designs, organizing measures, and dissemination approaches. The concepts, tools and skills presented will support scholars that are focused on addressing the clinical Know -Do Gap, translating evidence -based interventions into real -world 
+clinical practice.  Scholars will utilize this course to produce key sections of developing/future grants 
+utilizing implementation science methodologies.  
+CLRM 5848 Stakeholder Engaged Methods Part I (1.0 credits) & Part II (2.0 credits)  
+Robust  methods  in stakeholder  engaged research  (SER) can lead  to discovery  of new  practices,  programs 
+and policies that improve health systems performance. It serves to align clinical and translational research 
+priorities with those of patients and their care givers by improving the relevance of research questions, increasing the transparency of research activities, and accelerating the dissemination and adoption of 
+evidence -based practices. SER can also be leveraged to establish and sustain partnerships, coalitions, and 
+other collaborative structures that support organizational and community change initiatives.  This course  
+is organized  in two parts.  In part one,  scholars  receive  an introduction  to methods for conducting 
+effective SER (Fall, 1 credit). In part two, scholars will work with the course leader to conduct a SER 
+activity of their choice, to gain hands -on SER experience (Spring, 2 credits). Part one is prerequisite to part 
+two. Part two is optional. 
+CLRM 5850 Bench to Bedside in Clinical Practice and Translational Science  (1.0)  
+This course will introduce standard and new laboratory approaches that are used in clinical practice to screen, diagnose and characterize diseases in Medicine across all disciplines.  The course will start by introducing some basic concepts in immunology, genetics, and human host responses at large and how these can be used in clinical practice and research. It will then be followed by introducing a range of the most frequently used bench tools and technologies in clinical practice and translational Medicine.  
+CLRM  5880 Directed  Study  (various  credits)  
+Under  special  circumstances,  scholars  in need  of a course  in a translational  research  methodology  that is 
+not currently provided in the CRTP curriculum may arrange for a directed study. Approval is granted on an individual basis by the CRTP Executive Committee and is a limited privilege. To be considered, the 
+scholar must submit in writing the need for a directed study, how it will benefit them in the current or 
+future research, identify an appropriate faculty sponsor and a proposed syllabus.  
+Page 15 8 October 2024 Master’s Thesis  
+To qualify  for the M.S.  degree in Clinical  Research  Methods  from  the Albert  Einstein  College  of Medicine, 
+each Scholar must complete a Master’s  Thesis. Satisfactory completion of the thesis requires a thesis 
+submitted with approval of the student’s mentor and will undergo a review process outlined below.  
+Goals  of the  Thesis 
+The Thesis is the capstone of the CRTP and the M.S. degree. The Clinical Research Training Program is 
+designed to combine didactic classroom learning with a hands -on, mentored research experience; the 
+Thesis  is the culmination  of that experience.  By successfully  defending the Thesis,  each  Scholar is expected 
+to demonstrate mastery of the knowledge and skills required to conduct clinical research.  
+Thesis Format  
+The thesis  is required to be  in the style of a manuscript that is  suitable  for publication  in a peer -reviewed 
+journal. The thesis must include an original analysis of data conducted or overseen by the Scholar of 
+either newly collected, existing from a parent study, or from secondary sources, which addresses a 
+clearly stated and justified hypotheses. A review paper is not acceptable, except for a meta- analysis 
+using appropriate statistical techniques. The manuscript must be written by the Scholar, who must be 
+the first author with the primary responsibility for its content in accordance with standard practice of 
+biomedical journals. The analysis and the preparation of the manuscript must take place while the Scholar is enrolled in the CRTP and must not represent work that has been done prior to CRTP enrollment. A  major peer -reviewed  journal  must be identified  by the Scholar and  approved  by the CRTP; 
+the thesis must conform to that journal's manuscript requirements. While it is not required that the 
+manuscript actually be submitted to a journal before  consideration as a Master's Thesis, it is hoped that 
+all such Thesis  will ultimately be submitted for publication.  
+Page 16 8 October 2024 General  Requirements  
+1.The Thesis must represent the Scholar’s own work. While clinical research is by its nature
+collaborative, the Scholar must be the  leader of the research  team. The Scholar’s contribution  must
+be that  of the first  author  with  the primary responsibility for its content in  accordance with
+standard practice of biomedical journals.
+2.The Thesis  project  must  involve  data  collection  or an original analysis  of existing  data.
+3.The Thesis  project  must  have  a hypothesis,  i.e., use appropriate epidemiologic  design  for
+the question and must include comparison groups. (Please note: Phase I drug studies arenot acceptable).
+4.The Thesis  must  be a clinical research  project,  as defined  by the NIH Director’s  Panel  on Clinical
+Research.
+Clinical Research  is research  with  human subjects  that  is: 
+•Patient -oriented  research.  Research  conducted with  human  subjects  (or on material of human  origin
+such as tissues, specimens, and cognitive phenomena) for which an investigator (or colleague)directly interacts with human subjects. Excluded from this definition are in vitro studies that utilizehuman tissues that  cannot  be linked to a  living individual. It includes  mechanisms  of human disease,
+therapeutic interventions, clinical trials, and development of new technologies.
+•Epidemiological  and behavioral studies.
+•Outcomes  research  and health  services  research.  Studies  falling  under  45 CFR part 46.101(b)  (4)
+(Exemption 4) are not considered clinical research by this  definition.
+Procedures  
+The Thesis  process  will be overseen  by the CRTP  Director,  Aileen  McGinn,  PhD.  
+The  Thesis Proposal  
+Thesis  Proposals  are due by February  1 of the first year.  Required  components  are: 
+•Title
+•Specific  Aims
+•Preliminary  Data/Analysis,  if available  (not required)
+•Description  of the project*
+•Mentor’s  name  and signature
+•Specific  peer -reviewed  journal  whose  format  will be used
+•A proposed  timetable  (for data  collection  and draft  submission)
+*The  project  description  should  indicate  what  research  question  will be addressed  and should identify  at
+least one testable hypothesis. A brief (1 -2 paragraphs) background should focus on justifying the
+importance of the research. It should indicate a sampling or subject recruitment strategy; a basic studydesign; an analytic strategy; and a sample size calculation or power analysis. The project descriptionshould be no more than 2 -3 pages (double -spaced).
+Changes  in thesis topic  after  submission  of the thesis  proposal  must  be made  in writing  and approved by
+the Scholar’s mentor and CRTP Executive Committee.
+Page 17 8 October 2024 Mentoring  Team  
+Every Scholar is admitted to the CRTP with an identified Mentor(s). Very often as their research 
+progresses the Scholar finds that he or she requires additional expertise. In fact, it is unusual for a clinical research project to progress without the help and advice of several faculty members with a variety of relevant specialized knowledge. An example of this would be a Scholar with a Mentor who may be highly knowledgeable about the disease the Scholar is studying and a very strong advocate for the Scholar’s  career  development  but whose  research  is translational or basic  science.  The Scholar  may 
+need a Co - Mentor with epidemiologic or health services research methodological skills that are more 
+closely aligned with the Scholar’s thesis or research interest. Sometimes the CRTP provides expertise such that a Scholar does not feel the need for additional Mentoring. Often there is a group of faculty 
+members that work together in a research program, such as a biostatistician, epidemiologist, and 
+physician - scientist, all of whom may provide Mentoring to the Scholar. It is increasingly common, 
+though not required, that Scholars have Mentoring Teams.  
+Statistical  Consultations  
+All Scholars  are required to obtain  statistical consultation  twice during the development  of the Thesis  as 
+detailed below. Formal consultation can be provided by Dr. Melissa Fazzari. To arrange a statistical consultation with  Dr. Fazzari  email her directly  (Melissa.Fazzari@einsteinmed.edu) indicating  you would 
+like to discuss your CRTP thesis project. Scholars must provide 2 examples of papers that discuss their topic and proposed design.  
+If a Scholar has another  statistician  involved  in the project,  that person  can serve  as the statistical 
+consultant with the approval  of the CRTP leadership.  
+Fall Year 1:  Each Scholar will meet individually with Dr. Melissa Fazzari or other approved 
+consultant to review their hypothesis, methodology, sample size estimate, and statistical analysis plan. This will be useful in the development of the Thesis Proposal.  
+Fall Year  2: Each  Scholar is required  to have  an individual follow -up meeting  with  Dr. Melissa 
+Fazzari or another approved consultant to go over the interim analysis of the thesis project.  
+Thesis Grading  Process  
+Thesis grading is pass/fail and is reviewed in a manner similar to a peer- reviewed journal submission. 
+Two  reviewers,  selected  by the CRTP,  will critique  each  thesis  and a consensus  decision  will be made  as 
+to whether the submission is accepted as is (“Pass”), needs minor revisions or needs major revisions (and re -evaluation for determination of grade) . Written critiques will be provided to the candidate.  
+Thesis Presentations  
+Each Scholar is required to present her/his thesis work during a series of seminars held in May of the second year. Scholars will have 30 minutes allotted: a 15 -minute presentation, followed by 15 minutes 
+of discussion.  They  are also required  to submit  on or before  the day of their  thesis  presentation  a poster 
+version of the thesis as a PowerPoint slide  
+Page 18 8 October 2024 M.S.  "with  distinction"
+The candidate  will be eligible  for an "MS  with  Distinction"  if a manuscript  is submitted  to a journal  prior 
+to graduation and is accepted for publication within the next 12 months.  
+For Scholars  who are first  author  on original  manuscripts  which  are based  on analyses  from  multicenter 
+or other studies that require final approval of a Study's Executive Committee as the last step prior to 
+submission to a journal  for peer  review  are eligible  for an MS "with  distinction"  if 1) the manuscript  was 
+submitted to the Executive Committee or equivalent prior to CRTP graduation and 2) the paper was accepted for publication within 12 months of CRTP graduation. If one of these criteria is met, the candidate will be considered for the award of an MS “with Distinction.”  
+The decision  will be made  by the CRTP  Executive  Committee  and will consider  the thesis  (including 
+publishing journal) and the candidate's academic performance throughout the CRTP.  
+Guidelines  for Grading  CRTP  Research  and  Thesis  
+Final  Objective:  The CRTP  Scholar should be able  to utilize  theoretical and practical aspects  of learning  to 
+design,  execute and  present the results  of hypothesis -driven  clinical research  consistent with  the mission 
+of CRTP: “to identify, educate, and  mentor clinician scientists for productive careers in clinical research.”  
+Enabling  Objectives:  The CRTP  Scholar should complete  a scholarly  thesis, which  will lead  to further 
+research activity in accordance with the following principles:  
+1.Hypothesis
+a.What  is/are  the specific  questions  to be answered?
+b. What  population  will be studied?
+c.What  is the setting,  e.g.,  academic  hospital -based,  outpatient -based,  community -based?
+d. What  final population  will the findings  be applicable?
+2.Study  Design
+a.What  will be the nature  of the study,  e.g.,  randomized  controlled  clinical  study,  case  control
+study, cross -sectional study, other?
+b. W hat w ill constitute  the control  group/s?
+c.Are inclusion  and exclusion  criteria clearly  defined?
+d.How  will the potential  for sample  selection  bias be minimized?
+e.Are primary  and secondary  end- points  justified  and clearly  defined?
+f. Will the study  have  sufficient  sample  size for adequate  statistical  power?
+3.Data collection
+a.Has the reliability  and reproducibility  of observations  been  assured?
+b.Are data  collection  methods  appropriate  with  adequate  sensitivity  and specificity  to analyze
+study end -points?
+4.Data analysis
+a.Are data  internally  consistent,  i.e., do the numbers  add up, are subgroups  reconciled,  are data
+tables correct?
+b.Are charts  and tables  utilized  appropriately?  Are data  amenable  to statistical  analysis?  Have
+relevant statistical methods been correctly applied? Have statistical methods used clearlyidentified for individual data sets?
+c.How  reliable  is the statistical significance  of data?  Have  additional statistical methods  been
+applied or comparisons made to verify whether differences hold up?
+d.Does  data  analysis  include  consideration  of the sensitivity  and specificity  of the findings?
+e.Does  data  analysis  consider  the possibility  of confounding variables,  including incompatibilities
+between control and experimental groups?
+Page 19 8 October 2024 5.Data interpretation and conclusions
+a.Are conclusions  justified  by the data  analysis?  Has the hypothesis  been  adequately  tested?
+b.Are findings  discussed appropriately  and placed  in proper  context with  the existing  literature?
+c.What are the limitations and weaknesses of the study? What further questions will be
+appropriate  to address?  How  will the studies  guide  or lead  to future  clinical research  of the
+scholar?
+6.Objective  evaluation of research
+a. Evaluation  of the specific  areas  indicated  above  will be appropriate  for determining  the quality
+of research and whether the goals of thesis work have been met.
+b. The  completed  thesis  should  provide  insights  into the overall breadth and depth  of the scholar’s
+knowledge in clinical research.
+Page 20 8 October 2024 Time
+table for Thesis  
+Year  One:  
+September  •Start /Continue  meeting  regularly  with  mentor(s)
+•Continue  to define  and develop  research  project
+•Obtain  and use reference software
+•Begin literature  search  on selected  research  topic
+October  – January  •Arrange  the first statistical  consultation  with  Dr. Melissa  Fazzari  by
+sending her an email ( Melissa.fazzari@einsteinmed.edu)
+•IRB submission  should  be underway
+•For scholars using secondary datasets from multicenter studies,
+concept  sheets  and other  required forms  should  be submitted  in
+order to obtain data
+February  – June  •February  1: Submission  deadline  for thesis  proposal
+•Works -In-Progress  Presentation,  go over  with  mentor  in advance
+•Work  on thesis  (Introduction  & Methods  can be written  in advance
+of final results)
+•Obtain  dataset  for those  who  are using secondary  datasets
+•IRB approval should be complete,  and data  collection  ongoing
+•Works -in-Progress  Presentation,  go over  with  mentor  in advance
+Year  Two:  
+July •First  draft  of thesis  should  be submitted  for comments  to mentor
+and co-mentors
+August  – December  •Second  statistical  consult  should  be arranged  in the fall
+•Works -in Progress
+January  •Penultimate  draft  of thesis  complete
+February  •February  1: Thesis  abstract  submitted
+March  •March  1: Final  thesis  submission
+•Review/grading  process  begins
+April -May  •Thesis  decisions  distributed  first week  of April
+•Thesis  revisions,  if indicated,  due by first week  of May
+•Thesis  presentations
+Page 21 8 October 2024 Student  Evaluation and  Academic  Standards  
+Scholars are expected to familiarize themselves and to comply with the rules of conduct, academic 
+regulations, and established practices of the Albert Einstein College of Medicine and the CRTP. The 
+admission of a Scholar, his/her continuation in any program of the College, the receipt of academic credits, graduation, and the conferring of any degree are entirely subject to the disciplinary powers of the CRTP and the College and to the Scholar's maintenance of high standards of ethical and Scholarly conduct.  The Director,  on the recommendation  of the CRTP  Executive  Committee,  may  dismiss Scholars 
+who are considered to be unfit for matriculation in the CRTP or for infringement of these policies and standards.  
+•Course  examinations:  Course  examinations  are a part of the evaluation  process  for most  courses.
+•Course  grades:  Scholars  enrolled  for credit  and attending  the entire  course,  will receive  a Grade  of
+Pass (P) or Fail (F). No credit is granted for courses with a grade of Fail. Scholars who fail a course
+may ask to be re- examined at the discretion of the Executive Committee.
+•Master’s  Thesis: The Thesis  is the capstone  project  of the CRTP,  and its successful completion  earns
+the Master’s candidate credit toward the degree.
+Official  Transcript  
+Course  and grade  records  will be maintained  for every  student  in the form  of a permanent  transcript  in 
+accordance with the policies described in the Student Evaluation and Academic Standards section, above. The College has formulated its Student Record Policy to guarantee the rights of privacy and access as provided by the Family Education Rights and Privacy Act of 1974 . This policy applies to all 
+Scholars. Copies of the Student Record Policy are available in the CRTP office. Scholars who wish to 
+review their records  may do so  on written  request  to the Director  of the CRTP.  Requests  for transcripts 
+should be made online at: https://www.einsteinmed.edu/alumni/resources/   
+Visiting  (International)  students  sponsored by Yeshiva  University  may  request  a transcript  online  at 
+http://www.yu.edu/transcript . 
+This online catalog supersedes all previous Catalogs and academic regulations and is binding on all 
+students.  It was prepared on the basis  of the best  information  available  at the time  of publication. The 
+Albert Einstein College  of Medicine  (referred  to as  ‘Einstein’)  reserves the  right  to change tuition, fees, 
+course offerings, regulations, and admission and graduation requirements at any time without prior notice. Changes are effective immediately, unless explicitly specified to the contrary.

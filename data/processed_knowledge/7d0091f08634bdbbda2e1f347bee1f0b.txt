@@ -1,0 +1,1254 @@
+Public Disclosure Synopsis
+Protocol A8851009 –09April 2014–Final
+Template version 1.0 Page 1PFIZER INC.
+These results are supplied for informational purposes only .
+Prescribing decisions should be made based o n the approved package insert.
+PROPRIETARY DRUG NAME®/GENERIC DRUG NAME:   Eraxis/Ecalta/
+Vfend/Anidulafungin /Voriconazole
+PROTOC OL NO. :A8851009
+PROTOCOL TITLE :A Prospective, Randomized Trial Comparing the Efficacy  of 
+Anidulafungin and Voriconazole in Combination to That of Voriconazole Alone When Used 
+for Primary  Therap y of Proven or Probable Invasive Aspergillosi s
+Study Center s:  Ninety -two(92)centers took part in the study and enrolled subjects ;16in
+the United States , 12 in German y, 8 in France , 7 in Italy, 5 each in the Korea Republic and
+Spain , 4each in Belgium , Canada , the Russian Federation ,3 each in Brazil and Thail and, 
+2each in Australia , Turkey , the Unite dKingdom , Poland , Portugal , Singapore , Switzerland
+and Taiwan , 1each in the Czech Republic , Greece, India , Netherlands and Peru.
+Study Initiation and Final Completion Dates:   09 July  2008 to 12 May  2011
+Primary Completion Date:   08 April 2011
+Phase of Development :  Phase 3b
+Study Objective s:
+Primary  Objective :  To compare all -cause mortality  at 6 weeks in subjects with hematologic 
+malignancy  or with allogeneic hematopoietic stem cell transplantation (HSCT )with a
+diagnosis of proven or probable invasive aspergillosis (IA)receiving voriconazole and 
+anidulafungin in combination versus voriconazole monotherap y.
+Secondary  Objectives:
+To compare global response at 6 weeks;
+To compare mortality  due to IA at 6 weeks;
+Tocompare all -cause mortality  at 6 weeks in subjects with hematologic malignancy  or 
+with allogeneic HSCT with a diagnosis of possible, proven, or probable IA 
+(Intent -to-Treat [ITT] population) receiving the combination of voriconazole and 
+anidulafungin to v oriconazole monotherapy ;
+090177e18544e5fa\Approved\Approved On: 25-Apr-2014 20:55 
+
+Public Disclosure Synopsis
+Protocol A8851009 –09April 2014–Final
+Template version 1.0 Page 2To compare all -cause mortality  at 12 weeks in subjects with hematologic malignancy  or 
+with allogeneic HSCT with a diagnosis of proven or probable IA receiving the 
+combination of voriconazole and anidulafungin to voriconazole monoth erapy ; 
+To compare time to death due to IA in subjects with hematologic malignancy  or with 
+allogeneic HSCT with a diagnosis of proven or probable IA receiving the combination of 
+voriconazole and anidulafungin to voriconazole monotherap y;
+To compare time to death (all cause) in subjects with hematologic malignancy  or with 
+allogeneic HSCT with a diagnosis of proven or probable IA receiving the combination of 
+voriconazole and anidulafungin to voriconazole monotherap y;
+To compare the safety  and tolerability  of voriconazole monotherapy  to that of 
+voriconazole in combination with anidulafungin.
+METHODS
+Study Design:   This double -blind, randomized study  compared the efficacy  and safet y of 
+voriconazole and anidulafungin in combination to voriconazole alone in alloge neic HSCT 
+recipients and subjects with hematologic malignancies with proven or probable IA.  Subjects 
+with possible I A were enrolled in the study .  However, these subjects were required to have a 
+proven or probable diagnosis established within 7 day s of en rollment.   Subjects were 
+stratified at study  entry  for host and transplant variables known to have an independent 
+impact on the probability of death due to IA; these included: 1) allogeneic HSCT versus 
+other; and 2) pulmonary  IA versus other.   
+Subjects were to receive a total of 6 weeks of therapy .  Subjects were randomized to 1 of 
+2treatment arms: voriconazole and placebo for anidulafungin or voriconazole and active 
+anidulafungin.  After 2 weeks, the Investigator had the option of either continuing the 
+subject’s initial treatment regimen or switching the subject to voriconazole monotherap y.  
+Subjects who were switched to voriconazole monotherap y had to demonstrate improvement 
+in presenting clinical signs and sy mptoms and stable or improved radiographic re sponse.  For 
+the final 2 weeks of treatment, all subjects received voriconazole monotherapy .
+Voriconazole was to be administered in the intravenous (IV)formulation for the first week of 
+therap y.  Subsequentl y, subjects could be switched between IV and ora l voricon azole at the 
+discretion of the I nvestigator.  Anidulafungin and anidulafungin placebo were administered 
+IV.
+Assessments of response to treatment were performed every  2 weeks during the study . 
+Outcomes were assessed after 6 weeks of antifungal the rapy.  All -cause mortality  was also 
+assessed at the 12 -week time point.  The comparative design enabled evaluation of efficacy , 
+safet y, and tolerability of the combination regimen in a blinded, unbiased fashion.   The 
+schedule of study  activities is present ed in Table 1.
+090177e18544e5fa\Approved\Approved On: 25-Apr-2014 20:55 
+
+Public Disclosure Synopsis
+Protocol A8851009 –09April 2014–Final
+Template version 1.0 Page 3Table 1.Schedule of Activities
+Baseline Treatm ent Period Follow -Up
+Weeks Week 1 Week 2 Week 3 Week 4 Week 6 or EOT Week 12
+Days 1 3 and 7 1 10 and 14 1 212 282 42+7 84+7
+Informed co nsent X - - - - - -
+Com plete medical history and physical examination X - - - - X -
+Assessment of clinical signs and symptoms X X X X X X -
+Targeted interim history and physical examination - X X X X - -
+Laboratory
+Hem atology X X X X X X -
+Blood chemistry X X X X X X -
+CYP 2C19 genotype testing X - - - - - -
+Galactomannan assayaXaX X X X X -
+Pharm acokinetics (1)bXcX X (Day 14) - - - -
+Pharm acokinetics for dosage adjustment (2)dXdXd
+Microbiology/histopathology X XeXeXeXeXeXf
+Pregnancy testgX - - - - X -
+Aspergillus PCR (optional) X - - - - - -
+CT scan X - X (Day 14) - X X -
+Visual acuity (distance vision) test X X (Day 7) X (Day 14) XhX XhXh
+Assessment of visual symptomsiX X X X X X Xj
+Ophthalmologic examination XkXlXlXlXlXlXl
+Registration/randomization X - - - - - -
+Study treatment
+Voriconazole monotherapy (Arm A) X X X X X X -
+Com bination treatment (Arm B) X X X X X X -
+Assessments
+Survival - - - - - X X
+Evaluation of global response - - X (Day 14) - X X -
+Adverse event assessment X X X X X X -
+Concomitant medications X X X X X X Xm
+Healthcare research utilization X X X X X X -
+090177e18544e5fa\Approved\Approved On: 25-Apr-2014 20:55 
+
+Public Disclosure Synopsis
+Protocol A8851009 –09April 2014–Final
+Template version 1.0 Page 4Table 1.Schedule of Activities
+CT = computed tomography ; CYP = cytochrome P450; EOT = end -of-treatment; PCR = polymerase chain reaction .
+a. Two specimens were to be collected at the baseline visit.
+b. In a subset of subjects (100 -150), tw o 3mL blood samples were to be collected at 4 occasions during the study for anidulafungin and voriconazole 
+measuremen t: Day 2: predose (just prior to the infusion of voriconazole in the morning); Day 3: postdose (ideally 0 -3 hours following the end of infusion 
+of voriconazole in the morning); Day 7: delayed postdose (ideally 6 -10 hours following the end of infusion of vo riconazole in the morning); Day 14: 
+predose (just prior to the infusion of anidulafungin).  Anidulafungin/placebo w as preferred to be administered ahead of voric onazole in this subset.
+c. For subjects who w ere receiving voriconazole prophylaxis only at the time of study entry (these subjects must have had proven or probable invasive 
+aspergillosis to be enrolled).  This specimen collected at the baseline visit (before the start of therapy) was to be used to assess prestudy voriconazole level 
+only and w as not included as part of the pharmacokinetic analysis.  The timing of the last dose of voriconazole prophylaxis r eceived w as to be recorded in 
+the c ase report form .
+d. Recommended for all subjects to facilitate voriconazole dose adjustment: a blood sample for voriconazole measurement was to be collected at the end of 
+intravenous voriconazole infusion on Day 3, and another blood sample was to be collected at approximately 1 to 2 hours after oral dosing on the third day 
+after switching to oral voriconazole therapy.  (Note: if the sample could not be collected on the recommended date due to a s cheduling conflict, it could be 
+collected at a later date).
+e. If clinically indicated.
+f. Culture collected, if clinically indicated.
+g. For w omen of child -bearing potential.  Pregnancy tests could alsobe repeated as per request of institutional review board /independent ethics committee or 
+if required by local regulations.
+h. Only if there had been a change in visual acuity or if new visual symptoms were reported by the subject.
+i. A questionnaire was used to facilitate the monitoring of visual symptoms.
+j. If visual symptoms were reported at Week 6.
+k. Only the color vision test was performed before the start of study treatment on Day 1.
+l. Color vision testing and dilated fundoscopic examination.  To be performed only if there was a change in visual acuity or if visual symptoms were 
+reported by the subject.  If either of these conditions applied, follow -up ha d tobe continued until symptoms resolved or Week 12, whichever occurred 
+earlier.
+m. Information regarding use of any systemic anti fungal agents betw een Weeks 6 and 12 w as collected.
+090177e18544e5fa\Approved\Approved On: 25-Apr-2014 20:55 
+
+Public Disclosure Synopsis
+Protocol A8851009 –09April 2014–Final
+Template version 1.0 Page 5Number of Subjects (Planned and Analyzed):   A total of 405 subjects were planned to be 
+enrolled to achieve a sample size of 250 evaluable subjects (125 per arm) completing the 
+study .  A total of 481 sub jects were screened for participation in the study ,of which 
+459subjects were randomized to receive stud y treatment .  A total of 454 subjects were 
+treated and anal yzed.
+Diagnosis and Main Criteria for Inclusion:   Male and female subjects aged16years and
+older who were in immunocompromised state due to either receipt of hematopoeitic stem cell 
+transplantation or hematologic malignancy  and who had been diagnos edwith proven , 
+probable, or p ossible IA.
+Study Treatment:   Voriconazole, which was administered o pen-label, was supplied by  local 
+sites or by  the study  sponsor.  Anidulafungin (l yophilized) and its companion diluents were 
+supplied by  the study  sponsor and administered in a blin ded manner.   Subjects randomized to 
+receive placebo for anidulafungin were infused IV with the contents of a stock infusion bag 
+or bottle provided b y each site .
+Overall, subjects received 6 weeks of antifungal therap y.  During the first 2 weeks of therapy , 
+subjects randomized to the combination treatment group received voriconazo le and 
+anidulafungin.  The dose for anidulafungin for all subjects was 200 mg IV on Day 1, 
+followed b y 100 mg IV once dail y (QD) thereafter.  Anidulafungin and placebo for 
+anidulafungin were administered IV.   During the first 2 weeks of therapy , subjects 
+randomized to the voriconazole treatment group received voriconazole and placebo for 
+anidulafungin.  The placebo for anidulafungin was administered QD during the initial 2 -week 
+treatment period.
+All subjects received IV or oral voriconazole and were treated with an initial loading dose 
+and a subsequent maintenance dose based on body weight .  IV voriconazole (200mg IV 
+infusion/vial) was required for all subjects during the first week of therap y.  Subjects could 
+subsequently  switch to oral voriconazole (40mg/mL suspension or 50 mg and 200 mg 
+tablets), at the discretion of the Investigator after the first week.  For subjects with estimated 
+creatinine clearance <50 mL /minute, oral voriconazole was recommended after the initial 
+1-week treatment with IV voriconaz ole.
+During the final 2 weeks of treatment, all subjects received maintenance voriconazole 
+monotherap y.
+Anidulafungin and anidulafungin placebo were to be administered within 2 hours before or 
+after the scheduled administration time. Voriconazole was to b e administered within 1 hour 
+before or after the scheduled administration time.   IV infusions of anidulafungin and 
+voriconazole were administered sequentiall y.
+Efficac y and Safety Endpoints :
+Primary  Endpoint :
+The primary  endpoint wa s all-cause mortality , measured 6 weeks after initiation of study  
+drug in subjects with proven or probable IA.
+090177e18544e5fa\Approved\Approved On: 25-Apr-2014 20:55 
+Public Disclosure Synopsis
+Protocol A8851009 –09April 2014–Final
+Template version 1.0 Page 6Secondary  Endpoints :
+Rate of global response at 6 weeks;
+All-cause mortalit y at 6 weeks in subjects with possible, probable or proven IA (ITT 
+population);
+All-cause mort ality at 12 weeks in subjects with probable or proven IA;
+Mortality  due to IA at 6 weeks; 
+Time to death (all -cause mortality );
+Time to death due to IA;
+Safety  and tolerability  of voriconazole monotherapy  compared to that of voriconazole in 
+combination wit h anidulafungin.
+Safety Evaluations:   Safety  evaluations included adverse events (AEs), laboratory  
+evaluations, and ophthalmological assessments.
+Statistical Methods:   The modified intent -to-treat (MITT) population was defined to be the 
+set of all randomiz ed subjects with proven or probable IA confirmed b y Day 7 following 
+enrollment, who had received at least 1 dose of study  medication.   The MITT population was 
+the primary  efficacy  analy sis population.  The ITT and Per -Protocol (PP) populations were 
+used in additional supportive anal yses of efficacy .
+The ITT anal ysis set consisted of the subjects in the MITT analy sis set plus subjects with 
+possible I A who could not be upgraded to probable or proven IA within 7 days and who had 
+received at least 1 dose of stu dy medication.   The PP analy sis set consisted of the subjects in 
+the MI TT population who had completed at least 2 weeks of study  therapy, and it excluded 
+those subjects with protocol violations that could have had an i mpact on the efficacy  
+endpoints .  Subj ects who died within 2 weeks of starting on stud y therap y were included in 
+the PP analy sis set.
+The primary  efficacy  endpoint was calculated using the Kaplan -Meier (KM) product limit 
+estimator on Day  42 (6 weeks) within each stratum and weighted by  the har monic mean of 
+the sample sizes in the strata .  Time to death (T) was measured from the first dose of study  
+medication in day s, where T = (date of death –first treatment date + 1).
+For secondary  endpoints, rate of global response, defined as the number of subjects with a 
+successful response (“complete” or “partial” global response as adjudicated by  the d ata 
+review committee [DRC]) , was calculated as a percentage of all subjects (including subjects 
+with “missing” response), at 6 weeks.   Investigators also re corded a global response.   Global 
+response was programmatically  determined as follows:
+Success: Asubject who achieved a “complete” or “partial” global response was categorized 
+as a successful response;  Failure: Asubject was categorized as an unsuccess ful response if 
+090177e18544e5fa\Approved\Approved On: 25-Apr-2014 20:55 
+Public Disclosure Synopsis
+Protocol A8851009 –09April 2014–Final
+Template version 1.0 Page 7global response was “stable” or “failure” or if there was either a clinical failure or 
+radiological failure.
+All-cause mortalit y at 6 weeks in subjects with possible, probable, or proven IA, was 
+calculated using the KM product lim it estimat or at Day  42 (Week 6) .  All-cause mortality  at 
+12 weeks in subjects with probable or proven IA , was calculated using the KM product limi t 
+estimator at Day  84 (Week 12).  Mortality  due to IA at 6 weeks in subjects with probable or 
+proven IA :  Cause of death for this analy sis was determined by  the DRC.  Subjects who died 
+for causes other than IA before 6 weeks were censored at their time of death in this analy sis.  
+The mortality  rates were calculated using the KM product limi t estimator at Day 42 
+(Week 6).  Time to death due to IA:  Cause of death for this analy sis was determined by  the 
+DRC.  Subjects who died for causes other than IA were defined as censored at time of death.
+The anal ysis of time -to-event endpoints was performed using the Cox proportional haz ards 
+model to calculate a meaningful summary  parameter (hazard ratio).  The model included 
+terms for treatment group and randomization stratum.
+The safet y analysis set consisted of randomized subjects who took at least 1 dose of study  
+medication.   No forma l statistical analy ses were planned for safet y data.  The safet y 
+endpoints were listed and summarized using descriptive statistics.
+RESULTS
+Subject Disposition and Demography:   A summary  of subject disposition is pr esented in 
+Table 2.
+090177e18544e5fa\Approved\Approved On: 25-Apr-2014 20:55 
+
+Public Disclosure Synopsis
+Protocol A8851009 –09April 2014–Final
+Template version 1.0 Page 8Table 2.Subject Disposition
+Number (%) of SubjectsVoriconazole/
+AnidulafunginVoriconazole/
+PlaceboTotal
+Screened (N= 481)
+Assigned to study treatment 230 229 459
+Treated 228 (100.0) 226 (100.0) 454 (10 0.0)
+Com pleted study 154 (67.5) 146 (64.6) 300 (66.1)
+Discontinued study 74 (32.5) 80 (35.4) 154 (33.9)
+Subject died 68 (29.8) 71 (31.4) -
+Not related to study drug 6 (2.6) 9 (4.0) -
+Lost to follow -up 0 2 (0.9) -
+Other 0 1 (0.4) -
+Subject no longer willing to participate 6 (2.6) 6 (2.7) -
+Com pleted treatment 101 (44.3) 98 (43.4) 199 (43.8)
+Discontinued treatment 127 (55.7) 128 (56.6) 255 (56.2)
+Subject died 15 (6.6) 15 (6.6) -
+Related to study drug 48 (21.1) 45 (19.9) -
+Adverse event 38 (16.7) 34 (15.0) -
+Lack of efficacy 10 (4.4) 11 (4.9) -
+Not related to study drug 64 (28.1) 68 (30.1) -
+Adverse event 0 1 (0.4) -
+Global deterioration of health status 3 (1.3) 4 (1.8) -
+Othera55 (24.1) 56(24.8) -
+Protocol violation 0 1 (0.4) -
+Subject no longer willing to participate 4 (1.8) 5 (2.2) -
+Subject refused continued treatment 
+for reason other than adverse event2 (0.9) 1 (0.4) -
+Discontinuations occurring outside of the lag period wereattributed to the last study treatment received.
+N=number of subjects .
+a.The majority of discontinuations due to “Other,” not related to study drug, were due to failure to confirm a 
+diagnosis of probable or proven invasive aspergillosis by Day 7.
+A summary  of data sets analy zed is pr esented in Table 3.
+090177e18544e5fa\Approved\Approved On: 25-Apr-2014 20:55 
+
+Public Disclosure Synopsis
+Protocol A8851009 –09April 2014–Final
+Template version 1.0 Page 9Table 3.Data Sets Analyzed
+Number (%) of SubjectsVoriconazole/
+AnidulafunginVoriconazole/
+PlaceboTotal
+Assigned to study treatment 230 229 459
+Treated 228 (100) 226 (100) 454 (100)
+Analyzed for efficacy
+ITT 215 (94.3) 207 (91.6) 422 (93.0)
+MITT 135 (59.2) 142 (62.8) 277 (61.0)
+PP 117 (51.3) 128 (56.6) 245 (54.0)
+Number of subjects excluded from efficacy analysis 3 (1.3) 0 -
+Excluded for site compliancea3 0 -
+Efficacy population 225 (98.7) 226 (100) -
+Number of subjects excluded from ITT population 10 (4.4) 19 (8.4 ) -
+Did not have possible, probable, or proven 
+aspergillosis10 19 -
+Number of subjects excluded from MITT population 90 (40.0) 84 (37.2) -
+Excluded from ITT population 10 (11.1) 19 (22.6) -
+Had possible aspergillosis 80 (88.9) 65 (77.4) -
+Number of subjects excluded from PP population 108 (48.0) 98 (43.4) -
+Excluded from MITT population 90 84 -
+Did not complete 2 w eeks of study therapy 18 14 -
+Analyzed for safety
+Adverse events 228 (100) 226 (100) 454 (100)
+Laboratory data 224 (98.2) 223 (98.7) 447 (98.5)
+Visual testing 199 (87.3) 197 (87.2) 396 (87.2)
+ITT = intent -to-treat; MITT = modified intent -to-treat; PP = per -protocol .
+a. Three subjects from one s ite were excluded from a ll efficacy analyses due to site compliance issues.
+A summary  of demographic and baseline characteristics for the MITT and ITT population is 
+presented in Table 4.
+Table 4.Demographic and B aseline Characteristics –Modified Intent -to-Treat 
+Population and Intent -to-Treat Population
+Modified Intent -to-Treat Population Intent -to-Treat Population
+Voriconazole/
+Anidulafungin
+N=135Voriconazole/
+Placebo
+N=142Voriconazole/
+Anidulafungin
+N=215Voriconazole/
+Placebo
+N=207
+Number of subjects, n
+Male 74 82 125 122
+Female 61 60 90 85
+Age, years
+Mean (SD) 52.2 (14.9) 51.6 (15.4) 51.6 (15.6) 51.2 (15.9)
+Range 18-79 18-83 18-83 17-83
+Race, n (%)
+White 99 (73.3) 98 (69.0) 158 (73.5) 142 (68.6)
+Black 3 (2.2) 3 (2.1) 5 (2.3) 3 (1.4)
+Asian 31 (23.0) 35 (24.6) 47 (21.9) 53 (25.6)
+Other 2 (1.5) 6 (4.2) 5 (2.3) 9 (4.3)
+Body mass index, kg/m2
+Mean (SD) 24.0 (5.1) 24.0 (4.8) 24.3 (5.0) 24.2 (4.8)
+Range 12.9-41.0 16.2-44.9 12.9-41.0 14.9-47.3
+Body mass index calculated as weight/(height *  0.01)2.
+N=number of subjects; n = number of subject in specified criteria; SD = standard deviation.
+090177e18544e5fa\Approved\Approved On: 25-Apr-2014 20:55 
+Public Disclosure Synopsis
+Protocol A8851009 –09April 2014–Final
+Template version 1.0 Page 10Efficacy Results:   
+Primary Efficacy  Anal ysis:  A summary  of the analy sis of all -cause mortali ty at Week 6 for 
+the MI TT population in subjects with proven or probable IA is pr esented in Table 5.  
+All-cause mortalit y rates at Week 6 for the voriconazole/anidulafungin and 
+voriconazole/placebo groups were 19.5 % and 27.8%, respectively , in the MITT population.  
+The difference in mortality  rate adjuste d for randomization strata was −8.74% (1 -sided 
+p=0.0434), with a 95% confidence interval of (−18.99%, 1.51%), with the 
+voriconazole/anidulafungin group having lower mortality .
+Table 5.Analysis of All -Cause Mortality at Week 6 –MITT Population
+Voriconazole/
+Anidulafungin
+N=135Voriconazole/
+Placebo
+N=142
+Number of deaths 26 39
+Number of subjects alive at last observed time point up to Wee k 6 109 103
+Alive at Week 6 106 101
+Withdrew consent prior to Week 6 3 1
+Discontinued prior to Week 6 (without follow -up date) 0 1
+Subjects ongoing (censored prior to Week 6) 0 0
+Unstratified analysis
+Mortality rate, % 19.5 27.8
+Estimated treatmen t differences, % -8.34
+95% CI for the differences -18.35, 1.67
+p-value 0.0512
+Stratified analysis
+Estimated treatment differences, % -8.74
+95% CI for the difference -18.99, 1.51
+p-value 0.0434
+Mortality rate was based on the KM product limit estima tor.  Treatment difference (stratified) was based on a weighted 
+difference in proportions.  The 95% CI was based on using Greenwood’s formula for the variance of the KM estimator.  The 
+p-value was based on a 1 -sided test and was tested against a 1 -sided al pha of 0.0223 to determine statistical significance.  
+Stratification variables were site of infection and host factors.
+CI = confidence interval; KM = Kaplan -Meier; MITT = modified intent -to-treat; N = number of subjects.
+Secondary  Efficacy  Analy sis:  Analysis of successful global response in the MI TT 
+population as determined by  the DRC at Week 6 with missin g data treated as failure is 
+presented in Table 6.
+090177e18544e5fa\Approved\Approved On: 25-Apr-2014 20:55 
+
+Public Disclosure Synopsis
+Protocol A8851009 –09April 2014–Final
+Template version 1.0 Page 11Table 6.Analysis of Successful Gl obal Response (DRC) at Week 6 (Missing Data 
+Treated as Failure) –MITT Population
+Voriconazole/
+Anidulafungin
+N=135Voriconazole/
+Placebo
+N=142
+Global response
+Number of successes 44 61
+Number of failures 91 81
+Unstratified analysis
+Success rate (%) 32.6 43.0
+Estimated treatment differences (%) -10.37
+95% CI for the differences -21.71, 0.98
+p-value 0.0367
+Stratified analysis
+Estimated treatment differences (%) -10.23
+95% CI for the differences -21.6, 1.15
+p-value 0.0391
+Treatment differe nce (stratified) was based on a weighted difference in proportions.  The 95% CI was based on the 
+difference in success rates using the binomial variance.  The p -value was based on a 1 -sided z -test for the difference in 
+response rates, adjusting for randomi zation strata, using the normal approximation to the binomial distribution.  
+Stratification variables were site of infection and host factors.
+CI = confidence interval; DRC = Data Review Committee; MITT = modified intent -to-treat; N = number of subjects.
+Asummary  of the analy sis of all -cause mortality  at Week s6 (ITT population) and 12 ( MITT 
+population )is presented inTable 7.
+Table 7.Analysis of All -Cause Mortality at Week 6 (ITT populat ion) and Week 12 
+(MITT population )
+Week 6 -ITT Population Week 12 -MITT Population
+Voriconazole/
+Anidulafungin
+N=215Voriconazole/
+Placebo
+N=207Voriconazole/
+Anidulafungin
+N=135Voriconazole/
+Placebo
+N=142
+Number of deaths 44 47 39 55
+Number of su bjects alive at last observed 
+time point up to Week 6171 160 96 87
+Alive at Week 6 166 154 93 84
+Withdrew consent prior to Week 6 5 4 3 1
+Discontinued prior to Week 6 (without 
+follow -up date)0 2 0 2
+Subjects ongoing (censored prior to 
+Week 6)0 0 0 0
+Unstratified analysis
+Mortality rate, % 20.7 23.1 29.3 39.4
+Estimated treatment differences, % -2.4 -10.01
+95% CI for the differences -10.36, 5.56 -21.22, 1.21
+p-value 0.2773 0.0402
+Stratified analysis
+Estimated treatment differences, % -2.6 -10.18
+95% CI for the difference -10.77, 5.56 -21.44, 1.09
+p-value 0.2611 0.0383
+Mortality rate was based on the KM product limit estimator.  Treatment difference (stratified) was based on a weighted 
+difference in proportions.  The 95% CI was based on u sing Greenwood’s formula for the variance of the KM estimator.  The 
+p-value was based on a 1 -sided test.  Stratification variables were site of infection and host factors.
+CI = confidence interval; ITT = intent -to-treat; KM = Kaplan -Meier; MITT = modified intent -to-treat; N = number of 
+subjects.
+090177e18544e5fa\Approved\Approved On: 25-Apr-2014 20:55 
+Public Disclosure Synopsis
+Protocol A8851009 –09April 2014–Final
+Template version 1.0 Page 12A summary  of the analy sis of mortality  due to IA at Week 6 for the MITT population (DRC 
+adjudicated) is pr esented in Table 8.
+Table 8.Analysis of M ortality Due to Invasive Aspergillosis (DRC Adjudicated) at 
+Week 6 –MITT Population
+Voriconazole/
+Anidulafungin
+N=135Voriconazole/
+Placebo
+N=142
+Number of deaths 23 33
+Number of subjects alive at last observed time point up to Week 6 112 109
+Alive a t Week 6 106 101
+Withdrew  consent prior to Week 6 3 2
+Discontinued prior to Week 6 (w ithout follow -up date) 3 6
+Subjects ongoing (censored prior to Week 6) 0 0
+Unstratified analysis
+Mortality rate, % 17.3 23.9
+Estimated treatment differences, % -6.61
+95% CI for the differences -16.21, 2.98
+p-value 0.0884
+Stratified analysis
+Estimated treatment differences, % -6.24
+95% CI for the difference -15.9, 3.42
+p-value 0.1029
+Mortality rate was based on the KM product limit estimator.  Treatment diffe rence (stratified) w as based on a 
+weighted difference in proportions.  The 95% CI w as based on using Greenwood’s formula for the variance of 
+the KM estimator.  The p -value w as based on a 1 -sided test.  Stratification variables were site of infection and 
+host factors.
+CI = confidence interval; DRC = Data Review Committee; KM = Kaplan -Meier; MITT = modified 
+intent -to-treat; N = number of subjects.
+The median survival time for the 39 subjects who died in the MI TT population from the start 
+of treatment (all ca uses) in the voriconazole/anidulafungin group was 30 day s and was also
+30days for the 55 subjects who died in the voriconazole/place bo group.   The hazard of death 
+in the voriconazole/anidulafungin group was lower than that in the voriconazole/placebo 
+group (hazard ratio=0.696; 2 -sided p= 0.083) .  
+A summary  of the analy sis of time to death due to IA from the start of treatment in the MI TT 
+population is pr esented in Table 9.
+090177e18544e5fa\Approved\Approved On: 25-Apr-2014 20:55 
+
+Public Disclosure Synopsis
+Protocol A8851009 –09April 2014–Final
+Template version 1.0 Page 13Table 9.Analysis of Time to Death Due to Invasive Aspergillosis From Start of 
+Treatment –MITT Population
+Voriconazole/
+Anidulafungin
+N=135Voriconazole/
+Placebo
+N=142
+Subjects who died, n (%) 23 (17.0) 34 (23.9)
+Median survival time, days 14.0 18.5
+Range of survival time, days 2–40 4–45
+Hazard ratio 0.687
+95% CI 0.40, 1.16
+p-value 0.164
+Analysis results based on Cox proportional hazards model.  Subjects who died beyond Day 84 w ere censored.
+CI = confidence interval; MITT = modified intent -to-treat; N = number of s ubjects.
+Safety Results:
+A summary  of all -causality  and treatment -related AEs is provided in Table 10.  The majority  
+of the AEs were considered to be unrelated to study treatment and were mild or moderate in 
+sever ity.  Treatment -emergent AEs that occurred in 5% of subjects in either treatment group 
+are presented in Table 11.
+090177e18544e5fa\Approved\Approved On: 25-Apr-2014 20:55 
+
+Public Disclosure Synopsis
+Protocol A8851009 –09April 2014–Final
+Template version 1.0 Page 14Table 10.Overview of Treatment -Emergent Adverse Events
+Number (%) of Subj ectsVoriconazole/
+AnidulafunginVoriconazole/
+Placebo
+All Causalities
+Subjects evaluable for AEs 228 226
+Number of AEs 1959 1877
+Subjects with AEs 219 (96.1) 219 (96.9)
+Subjects with SAEsa115 (50 .4) 104 (46.0)
+Subjects with severe AEs 130 (57.0) 118 (52.2)
+Subjects discontinued due to AEsb12 (5.3) 16 (7.1)
+Voriconazole Treatm ent-Relatedc
+Subjects evaluable for AEs 228 226
+Number of AEs 233 187
+Subjects with AEs 106 (46.5) 99 (43.8)
+Subjects with SAEs 20 (8.8) 12 (5.3)
+Subjects with severe AEs 34 (14.9) 16 (7.1)
+Subjects discontinued due to AEs 7 (3.1) 7 (3.1)
+Subjects discontinued voriconazole due to AEs 21 (9.2) 14 (6.2)
+Subjects discontinued anidulafungin/placebo due to AEs 17 (7.5) 10 (4.4)
+Subjects temporarily discontinued voriconazole due to AEs 5 (2.2) 3 (1.3)
+Subjects temporarily discontinued anidulafungin/placebo due to A Es 2 (0.9) 1 (0.4)
+Subjects with dose reduction of voriconazole due to AEs 24 (10.5) 12 (5.3)
+Subjects with dose reduction of anidulafungin/placebo due to AEs 0 0
+Anidulafungin/Placebo Treatm ent-Relatedd
+Subjects evaluable for AEs 228 226
+Number of AEs 120 65
+Subjects with AEs 53 (23.2) 42 (18.6)
+Subjects with SAEs 11 (4.8) 8 (3.5)
+Subjects with severe AEs 24 (10.5) 8 (3.5)
+Subjects discontinued due to AEs 3 (1.3) 5 (2.2)
+Subjects discontinued voriconazole due to AEs 10 (4.4) 8 (3.5)
+Subjects discontinued anidulafungin/placebo due to AEs 6 (2.6) 7 (3.1)
+Subjects temporarily discontinued voriconazole due to AEs 0 0
+Subjects temporarily discontinued anidulafungin/placebo due to AEs 3 (1.3) 0
+Subjects with dose reduction of voriconazole due to AEs 5 (2.2) 0
+Subjects with dose reduction of anidulafungin/placebo due to AEs 0 0
+Include sdata up to 30 days after the last dose of study drug.  Except for the number of AEs, subjects were 
+counted only once per treatment in each row .  SAEs were according to the Investigator’s assessment.
+MedDRA (v14.1) coding dictionary was applied .
+AE = adverse event; MedDRA = Medical Dictionary for Regulatory Activities ; SAE = serious adverse event.
+a.SAEs were reported in the safety database for 13 additional subjects due to the following reasons:  event 
+occurred prior to the administration of study drug; event occurred after the administration of study dr ug was 
+completed, which was within the reporting period for an SAE, but outside the reporting period for an AE; or 
+subject w as randomized but did not receive study drug.
+b.Investigators and s ites reported discontinuation information in 2 locations of the case report form : the 
+AE page, Treatment Action item, and the End ‑of‑Treatment Subject Summary pa ge, Reason for Withdraw al 
+item.
+c.Include sonly those AEs assessed by Investigator to be causally related to voriconazole treatment.  
+Causality assessments wer e made by Investigators in a blinded manner without knowledge of treatment group.
+d.Includes only those AEs assessed by Investigator to be causally related to anidulafungin treatment.  
+Causal ity assessments were made by Investigators in a blinded manner without knowledge of treatment group; 
+hence anidulafungin related AEs w ere recorded in the voriconazole/placebo treatment arm.
+090177e18544e5fa\Approved\Approved On: 25-Apr-2014 20:55 
+Public Disclosure Synopsis
+Protocol A8851009 –09April 2014–Final
+Template version 1.0 Page 15Table 11.Summary of Treatment -Emergent Adverse Events (All Causalities) in 5% 
+of Subjects in Either Treatment Group
+System  Organ Class
+Preferred TermVoriconazole/Anidulafungin
+N=228
+n (%)Voriconazole/Placebo
+N=226
+n (%)
+Blood and lymphatic system disorders 36 (15.8) 43 (19.0)
+Anemia 9 (3.9) 13 (5.8)
+Febrile neutropenia 6 (2.6) 14 (6.2)
+Cardiac disorders 43 (18.9) 45 (19.9)
+Tachycardia 14 (6.1) 21 (9.3)
+Eye disorders 49 (21.5) 58 (25.7)
+Vision blurred 14 (6.1) 11 (4.9)
+Gastrointestinal disorders 130 (57.0) 133 (58.8)
+Abdominal pain 14 (6.1) 13 (5.8)
+Abdominal pain upper 9 (3.9) 15 (6.6)
+Constipation 35 (15.4) 30 (13.3)
+Diarrhea 39 (17.1) 40 (17.7)
+Dyspepsia 6 (2.6) 12 (5.3)
+Nausea 38 (16.7) 42 (18.6)
+Vom iting 33 (14.5) 24 (10.6)
+General disorders and administration site conditions 120 (52.6) 127 (56.2)
+Chest pain 17 (7.5) 9 (4.0)
+Chills 13 (5.7) 10 (4.4)
+Fatigue 6 (2.6) 14 (6.2)
+Mucosal inflammation 10 (4.4) 15 (6.6)
+Edema 12 (5.3) 14 (6.2)
+Edema peripheral 34 (14.9) 34 (15.0)
+Pain 10 (4.4) 13 (5.8)
+Pyrexia 31 (13.6) 46 (20.4)
+Infections and infestations 105 (46.1) 99 (43.8)
+Pneumonia 10 (4.4) 12 (5.3)
+Sepsis 14 (6.1) 12 (5.3)
+Septic shock 11 (4.8) 16 (7.1)
+Injury, poisoning and procedural complications 35 (15.4) 22 (9.7)
+Fall 13 (5.7) 4 (1.8 )
+Investigations 78 (34.2) 67 (29.6)
+Aspartate aminotransferase increased 12 (5.3) 13 (5.8)
+Blood alkaline phosphatase increased 20 (8.8) 6 (2.7)
+Metabolism and nutrition disorders 91 (39.9) 82 (36.3)
+Decreased appetite 15 (6.6) 14 (6.2)
+Hypokale mia 37 (16.2) 31 (13.7)
+Hypomagnesemia 18 (7.9) 15 (6.6)
+Musculoskeletal and connective tissue disorders 50 (21.9) 44 (19.5)
+Back pain 13 (5.7) 12 (5.3)
+Pain in extremity 16 (7.0) 11 (4.9)
+Nervous system disorders 65 (28.5) 62 (27.9)
+Headache 16 (7.0) 26 (11.5)
+Psychiatric disorders 77 (33.8) 73 (32.3)
+Agitation 13 (5.7) 7 (3.1)
+Anxiety 12 (5.3) 15 (6.6)
+Confusional state 10 (4.4) 16 (7.1)
+Hallucination, visual 8 (3.5) 12 (5.3)
+Insomnia 29 (12.7) 22 (9.7)
+Respiratory, thoracic and medi astinal disorders 110 (48.2) 106 (46.9)
+090177e18544e5fa\Approved\Approved On: 25-Apr-2014 20:55 
+Public Disclosure Synopsis
+Protocol A8851009 –09April 2014–Final
+Template version 1.0 Page 16Table 11.Summary of Treatment -Emergent Adverse Events (All Causalities) in 5% 
+of Subjects in Either Treatment Group
+System  Organ Class
+Preferred TermVoriconazole/Anidulafungin
+N=228
+n (%)Voriconazole/Placebo
+N=226
+n (%)
+Cough 16 (7.0) 22 (9.7)
+Dyspnea 15 (6.6) 28 (12.4)
+Epistaxis 20 (8.8) 20 (8.8)
+Hem optysis 12 (5.3) 9 (4.0)
+Respiratory failure 13 (5.7) 15 (6.6)
+Skin and subcutaneous tissue disorders 83 (36.4) 79 (35.0)
+Petechiae 5 (2.2) 12 (5.3)
+Rash 30 (13.2) 31 (13.7)
+Vascular disorders 76 (33.3) 54 (23.9)
+Hypertension 32 (14.0) 21 (9.3)
+Hypotension 32 (14.0) 20 (8.8)
+AEs and SAEs are not separated out.
+If the same subject in a given treatment had more than 1 occurrence in the same preferred term event category, 
+only the most severe occurrence w as taken.  Subjects were counted only once per treatment in each row.  
+Includes data up to 30 days after the last dose of study drug.
+MedDRA (v14.1) coding dictionary wa s applied.
+AE = adverse event; MedDRA = Medical Dictionary for Regulatory Activities ; N = number of subjects; 
+n=number of subjects with specified AE; SAE =serious adverse event.
+Treatment -emergent AEs considered to be related to voriconazole and anidul afungin or 
+placebo that occurred in 2% of subjects in either treatment group are presented in Table 12.  
+The most common treatment emergent AEs considered to be related to study  treatment 
+included primaril y AEs from the system or gan class of investigations ( alanine 
+aminotransferase [ALT ]increased, aspartate aminotransferase [AST ]increased, blood 
+alkaline phosphatase increased, and gamma -glutamy l transpeptidase [GGT ]increased).
+090177e18544e5fa\Approved\Approved On: 25-Apr-2014 20:55 
+
+Public Disclosure Synopsis
+Protocol A8851009 –09April 2014–Final
+Template version 1.0 Page 17Table 12.Summary of Tr eatm ent-Emergent Treatment Related Adverse Events in 
+2% of Subjects in Either Treatment Group
+System  Organ Class
+Preferred TermVoriconazole/
+Anidulafungin
+N=228
+n (%)Voriconazole/
+Placebo
+N=226
+n (%)
+Voriconazole Treatm ent Related
+Eye disorders 21 (9.2) 30 (13.3)
+Vision blurred 6 (2.6) 9 (4.0)
+Visual impairment 7 (3.1) 10 (4.4)
+Gastrointestinal disorders 15 (6.6) 8 (3.5)
+Nausea 8 (3.5) 2 (0.9)
+Vom iting 6 (2.6) 1 (0.4)
+Hepatobiliary disorders 21 (9.2) 8 (3.5)
+Hyperbilirubinemia 8 (3.5) 1 (0.4)
+Investigations 42 (18.4) 32 (14.2)
+Alanine aminotransferase increased 11 (4.8) 7 (3.1)
+Aspartate aminotransferase increased 11 (4.8) 9 (4.0)
+Blood alkaline phosphatase increased 17 (7.5) 6 (2.7)
+Gamma glutamyl transferase increased 10 (4.4) 9 (4.0 )
+Liver function test abnormal 7 (3.1) 3 (1.3)
+Transaminases increased 7 (3.1) 2 (0.9)
+Metabolism and nutrition disorders 9 (3.9) 4 (1.8)
+Hypokalemia 5 (2.2) 1 (0.4)
+Psychiatric disorders 22 (9.6) 25 (11.1)
+Confusional state 3 (1.3) 5 (2.2)
+Hallucination 9 (3.9) 8 (3.5)
+Hallucination, visual 6 (2.6) 8 (3.5)
+Skin and subcutaneous tissue disorders 9 (3.9) 12 (5.3)
+Rash 6 (2.6) 6 (2.7)
+Anidulafungin/Placebo Treatm ent Related
+Gastrointestinal disorders 12 (5.3) 8 (3.5)
+Nausea 6 (2.6) 3 (1.3 )
+Investigations 22 (9.6) 15 (6.6)
+Alanine aminotransferase increased 7 (3.1) 1 (0.4)
+Aspartate aminotransferase increased 7 (3.1) 3 (1.3)
+Blood alkaline phosphatase increased 12 (5.3) 2 (0.9)
+Gamma glutamyl transferase increased 6 (2.6) 6 (2.7)
+Nervous system disorders 12 (5.3) 1 (0.4)
+Headache 5 (2.2) 0
+Skin and subcutaneous tissue disorders 7 (3.1) 5 (2.2)
+Rash 5 (2.2) 4 (1.8)
+AEs and SAEs are not separated out.
+If the same subject in a given treatment had more than 1 occurrence in the sa me preferred term event category, only the most 
+severe occurrence was taken.  Subjects were counted only once per treatment in each row.  Includes data up to 30 days after 
+the last dose of study drug.
+MedDRA (v14.1) coding dictionary was applied.
+AE = adve rse event; MedDRA = Medical Dictionary for Regulatory Activities; N = number of subjects; n=number of 
+subjects with specified AE; SAE =serious adverse event.
+Serious AEs ( SAEs )reported during the study are presented in Table 13.  The most 
+commonly  reported SAEs were aspergillosis, disease progression, febrile neutropenia, 
+respiratory  failure, sepsi s, and septic shock.  None of these SAEs were considered by  the 
+Investigator to be treatment related .
+090177e18544e5fa\Approved\Approved On: 25-Apr-2014 20:55 
+
+Public Disclosure Synopsis
+Protocol A8851009 –09April 2014–Final
+Template version 1.0 Page 18Table 13.Serious Adverse Events
+Number (%) of Subjects 
+MedDRA Preferred TermVoriconazole/
+Anidulafungin
+N=228Voriconazole/
+Placebo
+N=226
+Any number of subjects with serious adverse events 120 (52.6) 112 (49.6)
+Abdominal pain 1 (0.4) 1 (0.4)
+Acute leukemia 1 (0.4) 0
+Acute lung injury 0 1 (0.4)
+Acute lymphocytic leukemia 1 (0.4) 1 (0.4)
+Acute lymphocytic leukemia recurrent 1 (0.4) 0
+Acute myeloid leukemia 5 (2.2) 4 (1.8)
+Acute respiratory distress syndrome 2 (0.9) 4 (1.8)
+Acute respir atory failure 3 (1.3) 1 (0.4)
+Anemia 2 (0.9) 0
+Anaplastic large cell lymphoma T -and null -cell types 1 (0.4) 0
+Aortic occlusion 1 (0.4) 0
+Aphasia 0 1 (0.4)
+Arrhythmia 0 1 (0.4)
+Arthralgia 1 (0.4) 0
+Ascites 0 1 (0.4)
+Aspergillosis 7 (3.1) 7 (3.1)
+Asthenia 0 2 (0.9)
+Atrial fibrillation 5 (2.2) 3 (1.3)
+Bacteremia 2 (0.9) 0
+Bacterial sepsis 1 (0.4) 0
+Blast crisis in myelogenous leukemia 1 (0.4) 0
+Blindness 1 (0.4) 0
+Blindness unilateral 1 (0.4) 0
+Blood creatine phosphokinase increased 1 (0.4) 0
+Bradycardia 1 (0.4) 0
+Brain herniation 0 1 (0.4)
+Bronchopulmonary aspergillosis 1 (0.4) 0
+Bronchospasm 1 (0.4) 0
+C-reactive protein increased 1 (0.4) 1 (0.4)
+Cardiac arrest 2 (0.9) 1 (0.4)
+Cardio -respiratory arrest 0 1 (0.4)
+Cardiopulmonary failure 1 (0.4) 0
+Central nervous system lesion 0 1 (0.4)
+Central nervous system lymphoma 1 (0.4) 0
+Cerebral hemorrhage 2 (0.9) 1 (0.4)
+Cerebral infarction 1 (0.4) 1 (0.4)
+Chest pain 1 (0.4) 0
+Cholecystitis 0 1 (0.4)
+Cholecystitis acute 0 2 (0.9)
+Chronic lymphocytic leukemia 2 (0.9) 0
+Chronic lymphocytic leukemia recurrent 1 (0.4) 0
+Condition aggravated 1 (0.4) 2 (0.9)
+Confusional state 0 1 (0.4)
+Convulsion 4 (1.8) 3 (1.3)
+Cough 1 (0.4) 0
+Cystitis hemorrhagic 1 (0.4) 0
+Cytomegalovirus infection 1 (0.4) 1 (0.4)
+Cytomegalovirus test positive 1 (0.4) 0
+Death 1 (0.4) 2 (0.9)
+Device related infection 1 (0.4) 0
+090177e18544e5fa\Approved\Approved On: 25-Apr-2014 20:55 
+Public Disclosure Synopsis
+Protocol A8851009 –09April 2014–Final
+Template version 1.0 Page 19Table 13.Serious Adverse Events
+Number (%) of Subjects 
+MedDRA Preferred TermVoriconazole/
+Anidulafungin
+N=228Voriconazole/
+Placebo
+N=226
+Device related sepsis 0 1 (0.4)
+Diarrhea 0 3 (1.3)
+Disease progression 8 (3.5) 8 (3.5)
+Disseminated intravascular coagulation 1 (0.4) 0
+Disseminated tuberculosis 1 (0.4) 0
+Dizziness 1 (0.4) 0
+Drug interaction 1 (0.4) 0
+Duodenal ulcer hemorrhage 1 (0.4) 0
+Dyspnoea 3 (1.3) 4 (1.8)
+Electrocardiogram QT prolonged 1 (0.4) 0
+Encephalopathy 1 (0.4) 2 (0.9)
+Endocarditis 0 1 (0.4)
+Enterococcal bacteremia 1 (0.4) 0
+Enterococcal sepsis 1 (0.4) 0
+Escherichia sepsis 1 (0.4) 0
+Extrasystoles 1 (0.4) 0
+Fecaloma 1 (0.4) 0
+Fall 1 (0.4) 0
+Fatigue 1 (0.4) 0
+Febrile neutropenia 2 (0.9) 7 (3.1)
+Fungal infection 1 (0.4) 1 (0.4)
+Gastric hemorrhage 1 (0.4) 0
+Gastroenteritis 1 (0.4) 0
+Gastrointestinal hemorrhage 1 (0.4) 2 (0.9)
+General physical health deterioration 1 (0.4) 2 (0.9)
+Genital ulceration 0 1 (0.4)
+Graft versus host disease 0 1 (0.4)
+Grand mal convulsion 1 (0.4) 1 (0.4)
+Hem atemesis 1 (0.4) 0
+Hem atological malignancy 0 1 (0.4)
+Hem atoma 1 (0.4) 0
+Hem optysis 3 (1.3) 3 (1.3)
+Hallucination, visual 1 (0.4) 0
+Hallucinations, mixed 1 (0.4) 0
+Hepatic encephalopathy 1 (0.4) 0
+Hepatic enzyme increased 0 1 (0.4)
+Hepatic failure 1 (0.4) 0
+Hepatic function abnormal 0 1 (0.4)
+Hepatic infection fungal 1 (0.4) 0
+Hepatotoxicity 1 (0.4) 0
+Herpes zoster 2 (0.9) 0
+Hydronephrosis 1 (0.4) 0
+Hydropneumothorax 0 1 (0.4)
+Hyperbilirubinemia 1 (0.4) 0
+Hypercapnia 2 (0.9) 0
+Hypoesthesia 1 (0.4) 0
+Hypoglycaemia 0 1 (0.4)
+Hypokalemia 0 1 (0.4)
+Hyponatremia 0 1 (0.4)
+Hypotension 2 (0.9) 1 (0.4)
+Hypovolemia 1 (0.4) 0
+090177e18544e5fa\Approved\Approved On: 25-Apr-2014 20:55 
+Public Disclosure Synopsis
+Protocol A8851009 –09April 2014–Final
+Template version 1.0 Page 20Table 13.Serious Adverse Events
+Number (%) of Subjects 
+MedDRA Preferred TermVoriconazole/
+Anidulafungin
+N=228Voriconazole/
+Placebo
+N=226
+Hypoxia 2 (0.9) 4 (1.8)
+Ileitis 0 1 (0.4)
+Ileus paralytic 1 (0.4) 0
+Iliac artery thrombosis 0 1 (0.4)
+Infection 1 (0.4) 0
+Influe nza 1 (0.4) 0
+Ischemic stroke 0 1 (0.4)
+Klebsiella bacteremia 1 (0.4) 0
+Lactic acidosis 2 (0.9) 0
+Leukemia 1 (0.4) 1 (0.4)
+Leukemia plasmacytic 1 (0.4) 0
+Leukemia recurrent 0 1 (0.4)
+Lipase increased 0 1 (0.4)
+Liver disorder 1 (0.4) 0
+Liver functi on test abnormal 2 (0.9) 1 (0.4)
+Liver injury 1 (0.4) 0
+Loss of consciousness 0 1 (0.4)
+Lower respiratory tract infection 1 (0.4) 0
+Lung abscess 0 1 (0.4)
+Lung infiltration 0 1 (0.4)
+Lymphoma 4 (1.8) 1 (0.4)
+Megacolon 1 (0.4) 0
+Meningitis fungal 1 (0.4) 0
+Metabolic acidosis 2 (0.9) 0
+Multi -organ failure 5 (2.2) 4 (1.8)
+Multiple myeloma 0 2 (0.9)
+Myelody splastic syndrome 0 1 (0.4)
+Myocardial ischemia 0 1 (0.4)
+Nephritic syndrome 1 (0.4) 0
+Neuropathy peripheral 0 1 (0.4)
+Neutropenia 0 3 (1.3)
+Neutropenic colitis 1 (0.4) 0
+Neutropenic sepsis 1 (0.4) 0
+Non-Hodgkin’s lymphoma 1 (0.4) 0
+Non-Hodgkin’s lymphoma refractory 0 1 (0.4)
+Oliguria 1 (0.4) 1 (0.4)
+Oral herpes 0 1 (0.4)
+Oxygen saturation decreased 0 1 (0.4)
+Pancytopenia 0 3 (1.3)
+Pericardial effusion 1 (0.4) 0
+Pleural effusion 2 (0.9) 2 (0.9)
+Pneumocystis jiroveci pneumonia 0 1 (0.4)
+Pneumonia 5 (2.2) 5 (2.2)
+Pneumonia staphylococcal 0 1 (0.4)
+Pneumonitis 1 (0.4) 0
+Procalcitonin increased 0 1 (0.4)
+Prostate cancer 1 (0.4) 0
+Pulmonary alveolar hemorrhage 0 2 (0.9)
+Pulmonary embolism 1 (0.4) 1 (0.4)
+Pulmonary hemorrhage 2 (0.9) 0
+Pulmonary infarction 0 1 (0.4)
+090177e18544e5fa\Approved\Approved On: 25-Apr-2014 20:55 
+Public Disclosure Synopsis
+Protocol A8851009 –09April 2014–Final
+Template version 1.0 Page 21Table 13.Serious Adverse Events
+Number (%) of Subjects 
+MedDRA Preferred TermVoriconazole/
+Anidulafungin
+N=228Voriconazole/
+Placebo
+N=226
+Pulmonary edema 0 2 (0.9)
+Pulmonary sepsis 1 (0.4) 0
+Pulseless electrical activity 1 (0.4) 0
+Pyrexia 4 (1.8) 5 (2.2)
+Renal failure 2 (0.9) 1 (0.4)
+Renal failure acute 6 (2.6) 1 (0.4)
+Renal impairment 1 (0.4) 2 (0.9)
+Respiratory disorder 0 1 (0.4)
+Respiratory distress 3 (1.3) 6 (2.7)
+Respiratory failure 15 (6.6) 15 (6.6)
+Sepsis 9 (3.9) 10 (4.4)
+Septic shock 10 (4.4) 14 (6.2)
+Shock 2 (0.9) 1 (0.4)
+Shock hemorrhagic 1 (0.4) 0
+Sinusitis 0 1 (0.4)
+Small intestinal obstruction 0 1 (0.4)
+Staphylococcal bacteremia 0 1 (0.4)
+Staphylococcal infection 0 1 (0.4)
+Stomatitis 1 (0.4) 0
+Streptococcal sepsis 1 (0.4) 0
+Subclavian vein thrombosis 1 (0.4) 0
+Subdural hematoma 1 (0.4) 0
+Sudden cardiac death 0 1 (0.4)
+Supraventricular tachycardia 1 (0.4) 1 (0.4)
+Syncope 0 1 (0.4)
+Systemic candida 1 (0.4) 0
+Tachycardia 2 (0.9) 2 (0.9)
+Tachypnea 0 1 (0.4)
+Thrombotic mic roangiopathy 0 1 (0.4)
+Thrombotic thrombocytopenic purpura 2 (0.9) 0
+Transaminases increased 0 1 (0.4)
+Tuberculosis 1 (0.4) 0
+Upper gastrointestinal hemorrhage 1 (0.4) 0
+Vaginal hemorrhage 1 (0.4) 0
+Venoocclusive liver disease 1 (0.4) 0
+Ventricular fibrillation 1 (0.4) 0
+Vom iting 1 (0.4) 1 (0.4)
+Wound 1 (0.4) 0
+Zygomycosis 1 (0.4) 0
+MedDRA (v14.1) coding dictionary applied.
+MedDRA = Medical Dictionary for Regulatory Activities ; N=number of subjects.
+Seventy -two subjects in the voriconazole/ani dulafungin group and 73 subjects in the 
+voriconazole/placebo group died due to AEs during the study (Table 14).  Of the deaths
+reported , only those due to aspergillosis (2 events in the voriconazole/placebo group) and 
+pneumonia (1 event in the voriconazole/placebo group) wer e considered to be treatment 
+related .
+090177e18544e5fa\Approved\Approved On: 25-Apr-2014 20:55 
+
+Public Disclosure Synopsis
+Protocol A8851009 –09April 2014–Final
+Template version 1.0 Page 22Table 14.Deaths Due to Adverse Events
+Number (%) of Subjects
+Cause of Death
+MedDRA Preferred TermVoriconazole/
+Anidulafungin
+N=228Voriconazole/
+Placebo
+N=226
+Any number of subjects died due to serious adverse 
+events72 (31.6) 73 (32.3)
+Abdominal pain 1 (0.4) 0
+Acute leukemia 1 (0.4) 0
+Acute lung injury 0 1 (0.4)
+Acute lymphocytic leukemia 1 (0.4) 1 (0.4)
+Acute myeloid leukemia 5 (2.2) 4 (1.8)
+Acute respiratory distress syndrome 1 (0.4) 3 (1.3)
+Acute respiratory failure 3 (1.3) 0
+Anaemia 1 (0.4) 0
+Anaplastic large cell lymphoma T -and null -cell types 1 (0.4) 0
+Aortic occlusion 1 (0.4) 0
+Aphasia 0 1 (0.4)
+Arrhythmia 0 1 (0.4)
+Ascites 0 1 (0.4)
+Aspergillosis 6 (2.6) 6 (2.7)
+Asthenia 0 1 (0.4)
+Atrial fibrillation 2 (0.9) 2 (0.9)
+Bacteremia 2 (0.9) 0
+Bacterial sepsis 1 (0.4) 0
+Blast crisis in myelogenous leukemia 1 (0.4) 0
+Blindness 1 (0.4) 0
+Blindness unilateral 1 (0.4) 0
+Bradycardia 1 (0.4) 0
+Brain herniation 0 1 (0.4)
+Bronchopulmonary aspergillosis 1 (0.4) 0
+Bronchospasm 1 (0.4) 0
+Cardiac arrest 2 (0.9) 1 (0.4)
+Cardio -respiratory arrest 0 1 (0.4)
+Cardiopulmonary failure 1 (0.4) 0
+Central nervous system lesio n 0 1 (0.4)
+Central nervous system lymphoma 1 (0.4) 0
+Cerebral hemorrhage 1 (0.4) 1 (0.4)
+Cerebral infarction 0 1 (0.4)
+Chronic lymphocytic leukemia 2 (0.9) 0
+Chronic lymphocytic leukemia recurrent 1 (0.4) 0
+Condition aggravated 0 1 (0.4)
+Confusiona l state 0 1 (0.4)
+Convulsion 3 (1.3) 3 (1.3)
+Cytomegalovirus infection 0 1 (0.4)
+Death 1 (0.4) 2 (0.9)
+Device related infection 1 (0.4) 0
+Diarrhoea 0 2 (0.9)
+Disease progression 8 (3.5) 8 (3.5)
+Disseminated intravascular coagulation 1 (0.4) 0
+Dyspnea 1 (0.4) 3 (1.3)
+Encephalopathy 1 (0.4) 0
+Endocarditis 0 1 (0.4)
+Enterococcal bacteremia 1 (0.4) 0
+Enterococcal sepsis 1 (0.4) 0
+Escherichia sepsis 1 (0.4) 0
+090177e18544e5fa\Approved\Approved On: 25-Apr-2014 20:55 
+Public Disclosure Synopsis
+Protocol A8851009 –09April 2014–Final
+Template version 1.0 Page 23Table 14.Deaths Due to Adverse Events
+Number (%) of Subjects
+Cause of Death
+MedDRA Preferred TermVoriconazole/
+Anidulafungin
+N=228Voriconazole/
+Placebo
+N=226
+Fecaloma 1 (0.4) 0
+Febrile neutropenia 1 (0.4) 2 (0.9)
+Fungal infection 1 (0.4) 1 (0.4)
+Gastric hemorrhage 1 (0.4) 0
+Gastrointestinal hemorrhage 1 (0.4) 1 (0.4)
+General physical health deterioration 1 (0.4) 2 (0.9)
+Graft versus host disease 0 1 (0.4)
+Grand mal convulsion 1 (0.4) 0
+Hem atological malignancy 0 1 (0.4)
+Hem optysis 0 1 (0.4)
+Hallucination, visual 1 (0.4) 0
+Hepatic encephalopathy 1 (0.4) 0
+Hepatic enzyme increased 0 1 (0.4)
+Hepatic failure 1 (0.4) 0
+Hepatic function abnormal 0 1 (0.4)
+Hepatic infection fungal 1 (0.4) 0
+Hepatotoxicity 1 (0.4) 0
+Hyperbilirubinemia 1 (0.4 ) 0
+Hypercapnia 1 (0.4) 0
+Hypoglycemia 0 1 (0.4)
+Hypokalemia 0 1 (0.4)
+Hyponatremia 0 1 (0.4)
+Hypotension 1 (0.4) 1 (0.4)
+Hypoxia 1 (0.4) 2 (0.9)
+Ileitis 0 1 (0.4)
+Ileus paralytic 1 (0.4) 0
+Iliac artery thrombosis 0 1 (0.4)
+Infection 1 (0.4) 0
+Influenza 1 (0.4) 0
+Lactic acidosis - 0
+Leukemia 1 (0.4) 1 (0.4)
+Leukemia plasmacytic 1 (0.4) 0
+Leukemia recurrent 0 1 (0.4)
+Liver function test abnormal 2 (0.9) 1 (0.4)
+Liver injury 1 (0.4) 0
+Loss of consciousness 0 1 (0.4)
+Lung infiltration 0 1 (0.4)
+Lymphoma 4 (1.8) 1 (0.4)
+Megacolon 1 (0.4) 0
+Meningitis fungal 1 (0.4) 0
+Metabolic acidosis 2 (0.9) 0
+Multi -organ failure 5 (2.2) 4 (1.8)
+Multiple myeloma 0 2 (0.9)
+Myelody splastic syndrome 0 1 (0.4)
+Neutropenia 0 2 (0.9)
+Neutropenic colitis 1(0.4) 0
+Non-Hodgkin’s lymphoma 1 (0.4) 0
+Non-Hodgkin’s lymphoma refractory 0 1 (0.4)
+Oliguria 1 (0.4) 1 (0.4)
+Oxygen saturation decreased 0 1 (0.4)
+Pleural effusion 0 1 (0.4)
+090177e18544e5fa\Approved\Approved On: 25-Apr-2014 20:55 
+Public Disclosure Synopsis
+Protocol A8851009 –09April 2014–Final
+Template version 1.0 Page 24Table 14.Deaths Due to Adverse Events
+Number (%) of Subjects
+Cause of Death
+MedDRA Preferred TermVoriconazole/
+Anidulafungin
+N=228Voriconazole/
+Placebo
+N=226
+Pneumocystis jiroveci pneumonia 0 1 (0.4)
+Pneumonia 3 (1.3) 5 (2.2)
+Pneu monia staphylococcal 0 1 (0.4)
+Prostate cancer 1 (0.4) 0
+Pulmonary alveolar hemorrhage 0 1 (0.4)
+Pulmonary embolism 1 (0.4) 0
+Pulmonary hemorrhage 2 (0.9) 0
+Pulmonary edema 0 1 (0.4)
+Pulmonary sepsis 1 (0.4) 0
+Pulseless electricity activity 1 (0.4) 0
+Pyrexia 1 (0.4) 1 (0.4)
+Renal failure 2 (0.9) 1 (0.4)
+Renal failure acute 5 (2.2) 1 (0.4)
+Renal impairment 1 (0.4) 2 (0.9)
+Respiratory disorder 0 1 (0.4)
+Respiratory distress 2 (0.9) 3 (1.3)
+Respiratory failure 12 (5.3) 14 (6.2)
+Sepsis 5 (2.2) 6(2.7)
+Septic shock 6 (2.6) 10 (4.4)
+Shock 2 (0.9) 1 (0.4)
+Shock hemorrhagic 1 (0.4) 0
+Staphylococcal bacteremia 0 1 (0.4)
+Subclavian vein thrombosis 1 (0.4) 0
+Subdural hematoma 1 (0.4) 0
+Sudden cardiac death 0 1 (0.4)
+Supraventricular tachycardia 0 1 (0.4)
+Tachycardia 1 (0.4) 2 (0.9)
+Tachypnea 0 1 (0.4)
+Thrombotic microangiopathy 0 1 (0.4)
+Thrombotic thrombocytopenic purpura 1 (0.4) 0
+Transaminases increased 0 1 (0.4)
+Tuberculosis 1 (0.4) 0
+Upper gastrointestinal hemorrhage 1 (0.4) 0
+Vagina l hemorrhage 1 (0.4) 0
+Vom iting 0 1 (0.4)
+MedDRA (v14.1) coding dictionary applied.
+MedDRA = Medical Dictionary for Regulatory Activities ; N=number of subjects.
+The permanent subject discontinuations from treatment due to AEs are presented in Table 15.
+090177e18544e5fa\Approved\Approved On: 25-Apr-2014 20:55 
+
+Public Disclosure Synopsis
+Protocol A8851009 –09April 2014–Final
+Template version 1.0 Page 25Table 15.Adverse Events Leading to Discontinuation From Treatment
+Number (%) of Subjects
+MedDRA Preferred TermVoriconazole/
+Anidulafungin
+N=228Voriconazole/
+Placebo
+N=226
+Any number of subjects with adverse events leading to 
+discontinuation from treatment38 (16.7) 34 (15.0)
+Acute lymphocytic leukaemia 0 1 (0.4)
+Alanine aminotransferase abnormal 0 1 (0.4)
+Alanine aminotransferase increased 1 (0.4) 0
+Aphasia 0 1 (0.4)
+Arrhythmia 0 1 (0.4)
+Aspartate aminotransferase increased 1 (0.4) 0
+Aspergillosis 1 (0.4) 2 (0.9)
+Atrial fibrillation 1 (0.4) 0
+B-cell lymphoma refractory 0 1 (0.4)
+Blindness 1 (0.4) 0
+Blood bilirubin increased 0 1 (0.4)
+Blood creatine phosphokinase increased 1(0.4) 0
+Bronchopulmonary aspergillosis 1 (0.4) 0
+Candidiasis 0 1 (0.4)
+Confusional state 1 (0.4) 1 (0.4)
+Convulsion 0 1 (0.4)
+Disseminated intravascular coagulation 1 (0.4) 0
+Encephalopathy 0 1 (0.4)
+Endocarditis 0 1 (0.4)
+Epilepsy 0 1 (0.4)
+Fung al infection 0 1 (0.4)
+General physical health deterioration 1 (0.4) 0
+H1N1 influenza 1 (0.4) 0
+Hallucination 1 (0.4) 1 (0.4)
+Hallucination, auditory 0 1 (0.4)
+Hallucination, visual 1 (0.4) 0
+Hepatic enzyme increased 1 (0.4) 3 (1.3)
+Hepatic failure 1 (0.4) 0
+Hepatic function abnormal 1 (0.4) 0
+Hepatic vein occlusion 1 (0.4) 0
+Hepatitis toxic 1 (0.4) 0
+Hepatotoxicity 2 (0.9) 0
+Hyperbilirubinemia 1 (0.4) 0
+Hypoxia 0 1 (0.4)
+Lactic acidosis 1 (0.4) 0
+Leukemia plasmacytic 1 (0.4) 0
+Liver disorde r 1 (0.4) 0
+Liver function test abnormal 1 (0.4) 1 (0.4)
+Lung infiltration 0 1 (0.4)
+Mental status changes 1 (0.4) 0
+Multi -organ failure 0 1 (0.4)
+Nephritic syndrome 1 (0.4) 0
+Nephropathy toxic 0 1 (0.4)
+Oliguria 1 (0.4) 0
+Petit mal epilepsy 1 (0.4 ) 0
+Pneumonia 2 (0.9) 2 (0.9)
+Pneumonitis 1 (0.4) 0
+Pulmonary edema 0 1 (0.4)
+Rash 1 (0.4) 1 (0.4)
+090177e18544e5fa\Approved\Approved On: 25-Apr-2014 20:55 
+Public Disclosure Synopsis
+Protocol A8851009 –09April 2014–Final
+Template version 1.0 Page 26Table 15.Adverse Events Leading to Discontinuation From Treatment
+Number (%) of Subjects
+MedDRA Preferred TermVoriconazole/
+Anidulafungin
+N=228Voriconazole/
+Placebo
+N=226
+Renal failure acute 1 (0.4) 0
+Respiratory disorder 1 (0.4) 0
+Respiratory failure 0 1 (0.4)
+Restlessness 1 (0.4) 0
+Sepsis 1 (0.4) 0
+Septic shock 1 (0.4) 2 (0.9)
+Tachycardia 1 (0.4) 0
+Thrombotic thrombocytopenic purpura 1 (0.4) 0
+Transaminases increased 0 1 (0.4)
+Tuberculosis 1 (0.4) 0
+Zygomycosis 1 (0.4) 2 (0.9)
+MedDRA (v14.1) coding dictionary applied.
+MedDRA = Medical Dictionary for Regulatory Activities ; N = number of subjects.
+No subjects permanently  discontinued from the study  due to AEs .
+Thirty -five subjects in the voricona zole/anidulafungin group and 20 subjects in the 
+voriconazole/placebo group had dose reductions or temporaril y disconti nued the study  due t o 
+AEs.  The majorit y of AEs leading to dose reductions or temporary discontinuations were 
+moderate in severity  and resolved .
+Median changes from baseline in laboratory  parameters were generall y minimal and similar 
+between treatment grou ps.
+The majority  of subjects had no visual acuit y changes, changes in visual s ymptoms, changes 
+in color vision defects, or changes in fundoscop y assessments from baseline .
+CONCLUSION S:
+The rates of all -cause mortality  at Week 6 in the MI TT population were 19.5% and 
+27.8% in the voriconazole/anidulafungin and voriconazole/placebo groups, respectivel y.  
+The trend toward improved survival in the voriconazole/anidulafungin group did not 
+achieve the prespecified level of statistical significance.
+Additional mort ality analy ses generally  demonstrated survival advantages for the 
+voriconazole/anidulafungin group for all secondary endpoints, though none of them were 
+statistically  significant. Of the prespecified subgroup anal yses, statistically significant 
+lower mort ality in the voriconazole/anidulafungin group was observed in the subgroup of 
+subjects who were non -neutropenic at Baseline. For other subgroups, the differences 
+were not statisticall y significant.
+DRC -adjudicated global response in the MITT population at Week 6 was successful in 
+32.6% of the subjects in the voriconazole/anidulafungin group and 43.0% of the subjects 
+in the voriconazole/placebo group, with the trend in favor of monotherap y.  This was 
+090177e18544e5fa\Approved\Approved On: 25-Apr-2014 20:55 
+Public Disclosure Synopsis
+Protocol A8851009 –09April 2014–Final
+Template version 1.0 Page 27divergent from the trend toward a survival advantage in t he voriconazole/anidulafungin 
+group.
+Based on the safety  data, it wa s concluded that the combination of voriconazole and 
+anidulafungin has an acceptable safet y profile for the treatment of IA in adul t subjects 
+with allogeneic stem cell transplants and hematologic malignancies.
+090177e18544e5fa\Approved\Approved On: 25-Apr-2014 20:55

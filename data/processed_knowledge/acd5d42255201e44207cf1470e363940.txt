@@ -1,0 +1,640 @@
+Clinical study reports of randomised
+controlled trials: an exploratory review of
+previously con ﬁdential industry reports
+Peter Doshi,1Tom Jefferson2
+To cite: Doshi P, Jefferson T.
+Clinical study reports of
+randomised controlled trials:
+an exploratory review ofpreviously confidential industry
+reports. BMJ Open 2013; 3:
+e002496. doi:10.1136/bmjopen-2012-002496
+▸Prepublication history and
+additional material for this
+paper are available online. To
+view these files please visit
+the journal online(http://dx.doi.org/10.1136/
+bmjopen-2012-002496).
+Received 14 December 2012
+Revised 23 January 2013
+Accepted 24 January 2013
+This final article is available
+for use under the terms ofthe Creative Commons
+Attribution Non-Commercial
+2.0 Licence; seehttp://bmjopen.bmj.com
+1Divisions of General
+Pediatrics and GeneralInternal Medicine, Johns
+Hopkins University School of
+Medicine, Baltimore,
+Maryland, USA
+2The Cochrane Collaboration,
+Roma, Italy
+Correspondence to
+Dr Peter Doshi;
+pnd@jhu.eduABSTRACT
+Objective: To explore the structure and content of a
+non-random sample of clinical study reports (CSRs) to
+guide clinicians and systematic reviewers.
+Search strategy: We searched public sources and
+lodged Freedom of Information requests for previouslyconfidential CSRs primarily written by the industry forregulators.
+Selection criteria: CSRs reporting sufficient
+information for extraction ( ‘adequate ’).
+Primary outcome measures: Presence and length
+of essential elements of trial design and reporting andcompression factor (ratio of page length for CSRscompared to its published counterpart in a scientificjournal).
+Data extraction: Data were extracted on standard
+forms and crosschecked for accuracy.
+Results: We assembled a population of 78 CSRs
+(covering 90 randomised controlled trials; 144 610pages total) dated 1991 –2011 of 14 pharmaceuticals.
+Report synopses had a median length of 5 pages,efficacy evaluation 13.5 pages, safety evaluation17 pages, attached tables 337 pages, trial protocol62 pages, statistical analysis plan 15 pages andindividual efficacy and safety listings had a medianlength of 447 and 109.5 pages, respectively. While16 (21%) of CSRs contained completed case reportforms, these were accessible to us in only one case(765 pages representing 16 individuals). Compressionfactors ranged between 1 and 8805.
+Conclusions: Clinical study reports represent a
+hitherto mostly hidden and untapped source of detailed
+and exhaustive data on each trial. They should beconsulted by independent parties interested in adetailed record of a clinical trial, and should form thebasic unit for evidence synthesis as their use is likelyto minimise the problem of reporting bias. We cannotsay whether our sample is representative and whetherour conclusions are generalisable to an undefined andundefinable population of CSRs.
+INTRODUCTION
+Systematic reviews are thought to provide
+one of the most robust ways to evaluatethe effects of healthcare interventions. But
+the robustness of ﬁndings clearly rests upon
+reviewers having suf ﬁcient access to clinicaltrial information to critically evaluate and
+reproduce the original research. Research onreporting bias over the last decades has
+shown that trusting the published literature
+at face value, even peer-reviewed publica-tions, can be fraught with dif ﬁculty —a
+problem that spans drug classes.
+1–12
+Following the decision by the European
+regulator, the European Medicines Agency
+(EMA) on 30 November 2010, to make avail-
+able a broad spectrum of documents related tomedicinal products for human and veterinary
+use,
+13 14attention has focused on one particu-
+lar type of regulatory document —clinical study
+reports (CSRs).15–18CSRs are usually writtenARTICLE SUMMARY
+Article focus
+▪What are clinical study reports (CSRs)? What do
+they contain and how long are they?
+▪Can CSRs help address reporting biases asso-ciated with the published literature, and improvethe quality of evidence synthesis?
+Key messages
+▪CSRs represent a hitherto hidden and untappedsource of detailed randomised controlled trialdata (mean page length: 1854 pages), increas-ingly becoming publicly available, and shouldform the basic unit for evidence synthesis tominimise the problem of reporting bias.
+▪CSRs show that numerous individuals makeimportant technical contributions to the design,conduct and reporting of each trial, but journalpublications often fail to record these details,resulting in a loss in individual responsibility forwhat is reported.
+▪The ICH E3 guideline to which most CSRsconform was published in 1995, and needsupdating.
+Strengths and limitations of this study
+▪We cannot say whether our sample is represen-tative and whether our conclusions are generalis-able to an undefined and undefinable populationof CSRs.
+Doshi P, Jefferson T. BMJ Open 2013; 3:e002496. doi:10.1136/bmjopen-2012-002496 1Open Access ResearchProtected by copyright, including for uses related to text and data mining, AI training, and similar technologies. . by guest on April 9, 2025 http://bmjopen.bmj.com/ Downloaded from 26 February 2013. 10.1136/bmjopen-2012-002496 on BMJ Open: first published as 
+for regulators following guidelines developed by the
+industry regulatory collaborative effort ‘International
+Conference on Harmonisation of T echnical Requirementsfor Registration of Pharmaceuticals for Human Use ’
+(ICH). The ICH guidelines ‘structure and content of
+clinical study reports ’
+19(see online supplementary appen-
+dix 1) are known by the document code ‘E3’.T h e yw e r e
+formalised in 1995 ‘to assist sponsors in the development
+of a report that is complete, free from ambiguity, well orga-nised and easy [for regulators] to review ’.
+19E3 has not
+been edited or changed since 1995.
+CSRs are but one category of information that is trans-
+mitted from study sponsors to regulators ( ﬁgure 1), but
+are important as they contain substantially more informa-
+tion and detail on the intervention being tested than pub-
+lished versions of the same trial. The wealth of informationmay be sought with increasing frequency by researchers
+appraising single trials, entire trial programmes, or by
+those synthesising evidence.
+17 20We are aware of two
+recent examples of systematic reviews of the effects of phar-
+maceuticals carried out using CSRs and other regulatory
+material.12 21One group also concluded that journal publi-
+cations insuf ﬁciently report clinical trials.22
+Despite CSRs ’potential importance little is known
+about their structure and content outside of those indivi-duals with direct involvement in regulatory processes.
+This knowledge gap may hinder development of
+methods for fair and reliable appraisal of CSRs andtheir use in evidence synthesis. We are not aware of anyinstruments speciﬁ cally designed for appraising CSRs.
+Lack of visibility may also hinder understanding ofthe complexity of the organisation and the reporting ofclinical trials.
+We carried out an exploratory review to describe the
+structure and content of a non-random sample of CSRs.By describing the contents of CSRs, this research seeks
+to transform CSRs from an obscure document only
+known to regulators and industry into a more widelyknown and accessible document. Our long-term inten-
+tion is to improve the credibility of research synthesis by
+facilitating a move from the level of detail found injournal articles to the level of detail found in regulatory
+documents, thus guiding clinicians and other decision
+makers at all levels.
+METHODS
+We obtained CSRs from public sources, as follows:1. Requesting from EMA, under its Freedom of
+Information (FOI) policy, CSRs for manufacturer-sponsored trials of the 10 best-selling prescription-bound products in the USA in 2010.
+23
+2. Reusing CSRs from our own previous research (osel-
+tamivir and zanamivir).12
+3. Downloading CSRs openly available on the Internet.
+Search terms were not prede ﬁned, but sites searched
+Figure 1 Types of clinical trial
+data typically held within and
+transferred between three realms:trial sponsor, regulatory andpublic.
+2 Doshi P, Jefferson T. BMJ Open 2013; 3:e002496. doi:10.1136/bmjopen-2012-002496Clinical study reports of randomised controlled trialsProtected by copyright, including for uses related to text and data mining, AI training, and similar technologies. . by guest on April 9, 2025 http://bmjopen.bmj.com/ Downloaded from 26 February 2013. 10.1136/bmjopen-2012-002496 on BMJ Open: first published as 
+included Google (http://www.google.com), the Drug
+Industry Document Archive (http://dida.library.ucsf.
+edu/) and Institut für Qualität und Wirtschaftlichkeit
+im Gesundheitswesen (Institute for Quality andEfﬁciency in Healthcare) (IQWiG) ’s library of rebox-
+etine studies (https://www.iqwig.de/information-on-studies-of-reboxe tine.980.en.html).
+4. Corresponding with one researcher who obtained
+CSRs through an FOI request to Food and DrugAdministration (FDA) (epoetin alfa).
+5. Requesting manufacturers ﬁll any gaps in the com-
+pleteness of reports that we believe are legallyrequired to be publicly available (paroxetine).
+To create as broad a database as possible, we did not
+apply restrictions in drug type or family or sponsor. We didnot submit requests under the Freedom of InformationAct to the FDA, because such requests can take years to be
+fulﬁlled and —if fulﬁ lled—may be heavily redacted.
+24
+We did not draw a random sample of CSRs as there is
+no known sampling frame. No one knows how manyreports have been written by intervention category as
+there is no central register of CSRs. Through familiaritywith CSRs for oseltamivir and zanamivir, which were
+included in one of our Cochrane reviews,
+12we devel-
+oped and piloted a data extraction sheet designed to
+capture the salient characteristics of CSRs. We created a
+list of around 40 potential sections we expected to ﬁnd,
+generated directly from elements speci ﬁed in E3. For
+each element in the list, we checked whether theobtained CSRs included that section (conﬁ rmed either
+by direct identi ﬁcation of the section or an indication
+the section existed based on the CSRs ’table of con-
+tents), whether we had access to it and its page length.
+Because of previous dif ﬁculties we had accessing CSRs
+appendices, we also recorded whether sections were
+listed as appendices or not. The page length was calcu-
+lated either by directly counting the pages or by estimat-ing their size from the table of contents of each report,
+and was used as a crude proxy for the level of detail
+available. The page lengths were rounded up to the nextinteger, and were summarised by reporting medians and
+ranges. We also included questions relating to trial regis-
+tration and authorship. Our (blank) data extractionsheet is in online supplementary appendix 2.
+All variables from CSRs were ﬁrst extracted in single.
+We subsequently audited each other’ s extractions, check-
+ing the accurateness of the information. We chose to
+present elements analogous with those that typically
+appear in trials reported in scienti ﬁc journals including
+the study synopsis (a brief summary of the study), the
+study protocol (written prospectively, describing the study
+methods), ef ﬁcacy and safety evaluations (a narrative
+summary of the ef ﬁcacy and safety results of the study,
+including tables and ﬁgures), as well as attached tables.
+We also included elements rarely found in journal publi-cations: sample (blank) and completed case report forms
+(CRFs are paper or electronic forms designed to capture
+prespeci ﬁed ef ﬁcacy and safety related informationfor each study participant), the statistical analysis plan (aprospectively written narrative and/or statistical code
+indicating how trial data will be analysed) and individual
+participant ef ﬁcacy and safety listings. The corresponding
+E3 section numbers are listed in table 2. Disagreements
+were resolved by discussion.
+Our uncorrected (original) and corrected extraction
+sheets as well as audit records are available upon request
+from the corresponding author.
+We calculated a compression factor for published
+trials which we de ﬁned as the ratio of CSR page length
+compared to the page length of the same trial as pub-
+lished in scienti ﬁc journals. The objective of this metric
+was to convey a rough sense of how much information
+present in CSRs may be condensed ( ‘compressed ’)i n
+short journal publications, in consideration of CSRs ’far
+greater length and level of detail. The size (pagelength) re ﬂects the level of detail as well as the presence
+of many elements such as protocols and their amend-
+ments, randomisation lists, statistical analysis plans, certi-
+ﬁcates of analysis and extra data on subpopulations. We
+have demonstrated
+12that these elements are essential
+for understanding and appraising a trial. The compres-sion factor is a crude measure of how much is com-
+pressed or simply left out of each publication which willaffect the reliability of the appraisal and interpretation
+of trials. Trial publications were searched for in multiple
+sources —clinical trial registers, published systematic
+reviews and correspondence with sponsors. Because in
+most cases we could not access all parts of all CSRs (and
+therefore do not know their complete page length), wecalculated ‘conservative ’compression factors as well as
+‘realistic ’compression factors. ‘Conservative ’compres-
+sion factors were calculated on a trial by trial basis usingthe total number of pages in CSRs available to us
+divided by the length of journal reports for that same
+trial, whereas ‘realistic ’compression factors were based
+on the true total page length of the CSRs.
+RESULTS
+We identi ﬁed 84 documents believed to be CSRs for 14
+compounds. These covered therapeutic and biological
+interventions including antipsychotics, antidepressants,
+antivirals, natural antiarthritics, anti-in ﬂammatory
+agents, pandemic in ﬂuenza vaccines, statins, erythro-
+poietins and antiplatelet compounds. We includedEnglish-language summaries of two Japanese oseltamivir
+studies ( JV15823 and JV15824) as they had been pre-sented to EMA in this form. We excluded documents
+which were sections of CSRs that nonetheless contained
+insufﬁ cient information to understand the overall
+content of the CSRs (olanzapine F1D-LC-HGA V ,
+F1D-MC-HGAJ and F1D-MC-HGAO) and three docu-
+ments which we had originally classi ﬁed as CSRs but
+were not (reboxetine 14, 22 and 37). This left us with 78
+CSRs (144 610 pages) ( ﬁgure 2). The median pages
+obtained per CSR was 644 (range 9 –15 440). Only 4 of
+Doshi P, Jefferson T. BMJ Open 2013; 3:e002496. doi:10.1136/bmjopen-2012-002496 3Clinical study reports of randomised controlled trialsProtected by copyright, including for uses related to text and data mining, AI training, and similar technologies. . by guest on April 9, 2025 http://bmjopen.bmj.com/ Downloaded from 26 February 2013. 10.1136/bmjopen-2012-002496 on BMJ Open: first published as 
+78 CSRs (reboxetine 8, 16, 17 and 91) were written
+prior to 30 November 1995 when ICH E3 was approved.
+Table 1 summarises the pharmaceutical, manufacturer,
+date and provenance of the CSRs in our review. EMA
+reported not holding studies for esomeprazole magne-
+sium (Nexium), Advair Diskus, quetiapine fumarate
+(Seroquel), montelukast sodium (Singulair), epoetinalfa (Epogen) and simvastatin.
+All of the 78 included CSRs contained a synopsis
+(median page length 5 pages). The ef ﬁcacy evaluation
+was identi ﬁable and directly accessible in 76 (97%;
+median length 13.5 pages) and safety in 77 (99%;median length 17 pages). The attached tables were like-wise present in 63 (81%) CSRs, with a median of 337
+pages long (range 1– 3665). Seventy-three CSRs (94%)
+reported including the study protocol. In the 40 proto-
+cols we could access, the median page length was 62. We
+found blank CRFs included in 68 (87%) CSRs. Of the 33
+blank CRFs we could directly access, the median lengthwas 133 pages (range 14– 981). For completed CRFs, 16
+(21%) reports made direct mention of a section on com-pleted CRFs, but we had access to completed CRFs inonly 1 case (Arthronat; length 765 pages).
+Fifty-ﬁve (71%) of 78 included CSRs included a statis-
+tical analysis plan in some form. Of those for which wecould directly access the content (n=37), the median page
+length was 15 (range 3 –85). Individual ef ﬁcacy and safety
+listings were included in 53 (69%) and 62 (81%) CSRs,
+respectively. The median page length was 447 (range 15 –
+21 698) for ef ﬁcacy and 109.5 (range 2 –10 954) for safety.A summary is presented in table 2.
+All trial reports in our review were sponsored by the
+pharmaceutical industry.
+Median conservative compression factors ranged
+between 1 and 1221. The realistic compression factors
+calculated for the Arthronat, paroxetine and
+Clopidogrel versus Aspirin In Patients at Risk ofIschaemic Events (CAPRIE) trials were 379, 1021 and
+8805, respectively ( table 3).
+DISCUSSION
+We collected and described a sizeable number of CSRs
+written in the last two decades. All CSRs contained a table
+of contents (as speci ﬁed in E3 section 3); this, together
+with optical character recognition (to enable searching the
+full text of the scanned documents) and the occasional
+need to combine multiple ﬁles to create a single docu-
+ment, substantially improved the ease of navigating CSRs.
+Despite the size of our non-random sample, it is
+unclear whether our conclusions are generalisable to allother CSRs. This is because we have extremely limited
+knowledge about the total population of CSRs in regula-
+tors’and sponsors ’possession. Nevertheless, within our
+sample spanning different manufacturers, therapeutic
+classes and times, we found that the structure of CSRs
+was, within different house styles of presentation, strik-ingly similar, probably owing to the guidance by ICH
+E3.
+25This suggests that the structure and content of
+other CSRs is likely to be similar.Figure 2 Study flow.
+4 Doshi P, Jefferson T. BMJ Open 2013; 3:e002496. doi:10.1136/bmjopen-2012-002496Clinical study reports of randomised controlled trialsProtected by copyright, including for uses related to text and data mining, AI training, and similar technologies. . by guest on April 9, 2025 http://bmjopen.bmj.com/ Downloaded from 26 February 2013. 10.1136/bmjopen-2012-002496 on BMJ Open: first published as 
+Table 1 Pharmaceutical, trials, producers, dates and sources of CSRs in the review
+Pharmaceutical and
+number (n) of assessedtrial documents Trial IDs ManufacturerDate ofCSRs Provenance in our study
+Aripiprazole (Abilify) n=1 CN1368135 Bristol-Myers
+Squibb2007 Freedom of Information request to the EMA
+Arthronat n=1 MA-CT-10 –002 Rowtasha 2011 Manufacturer website http://arthronat.com/clinical-study.php
+Atorvastatin (Lipitor) n=1 981 –080 Pfizer 1999 Freedom of Information request to the EMA
+Clopidogrel (Plavix) n=5 CURE, CLARITY, COMMIT-CCS2, CAPRIE,
+PICOLOBristol-MyersSquibb1997 –2007 Freedom of Information request to the EMA
+Epoetin alfa (Epogen) n=1 930 107 Amgen 1996 Freedom of Information request to the FDAH5N1 influenza vaccinen=1H5N1 –008, H5N1 –011 EXT 008 GSK 2006 Freedom of Information request to the EMA
+H5N1 influenza vaccinesn=2V87P1, V87P6 Novartis 2008 –2009 Freedom of Information request to the EMA
+Olanzapine (Zyprexa) n=3 F1D-LC-HGAV*, F1D-MC-HGAO*,
+F1D-MC-HGAJ*Eli Lilly 1995 † Litigation http://www.furiousseasons.com/zyprexadocs.html
+Oseltamivir (Tamiflu) n=19 JV15823, JV15824, M76001, NP15757,
+NV16871, WP16263, WV15670, WV15671,WV15673, WV15697, WV15707, WV15708,WV15730, WV15758, WV15759, WV15871,WV15799, WV15812, WV15872, WV15819,WV15876, WV15978, WV15825, WV16193Roche 1999 –2004 Documents obtained as part of previous Cochrane review
+12
+Paroxetine (Paxil, Aropax,Pexeva, Seroxat,Sereupin) n=9329, 377, 453, 511, 676, 701, 704, 715, 716 GSK 1998 –2002 Litigation (2004 legal settlement mandated release of clinical
+study reports on manufacturer ’s website of 9 studies on
+paediatric and adolescent patients) http://www.gsk.com/media/paroxetine.htm
+Quetiapine (Seroquel) n=7 015, 041, 049, 125, 126, 127, 135 AstraZeneca 1996 –2007 Litigaton http://psychrights.org/research/Digest/NLPs/
+Seroquel/UnsealedSeroquelStudies/
+Reboxetine (Edronax,Norebox, Prolift, Solvex,Davedax, Vestra) n=248, 9, 13, 14*, 15, 16, 17, 22*, 32, 32a, 34,35, 37*, 43, 45, 46, 47, 49, 50, 52, 71, 83,91, 96Pfizer 1991 –2009 Health technology assessment website (The German IQWiG
+obtained CSRs as part of its health technology assessmentwork) https://www.iqwig.de/information-on-studies-of-reboxetine.980.en.html
+Rofecoxib (Vioxx) n=1 78 Merck 2003 Litigation http://dida.library.ucsf.edu/Zanamivir (Relenza) n=9 NAI30009, NAI300010, NAIA2005,
+NAIA3002, NAIA3005, NAIB2005,NAIB2007, NAIB3001, NAIB3002GSK 1998 –1999 Documents obtained as part of previous Cochrane review
+12
+*Subsequently excluded because of insufficient documentation.
+†H1D-MC-HGAO clinical study report date unknown.
+CSRs, clinical study reports; EMA, European Medicines Agency; FDA, Food and Drug Administration; GSK, GlaxoSmithKline; IQWiG, Institute for Quality and Efficiency in Healthcare;
+CAPRIE, Clopidogrel versus Aspirin In Patients at Risk of Ischaemic Events.
+Doshi P, Jefferson T. BMJ Open 2013; 3:e002496. doi:10.1136/bmjopen-2012-002496 5Clinical study reports of randomised controlled trialsProtected by copyright, including for uses related to text and data mining, AI training, and similar technologies. . by guest on April 9, 2025 http://bmjopen.bmj.com/ Downloaded from 26 February 2013. 10.1136/bmjopen-2012-002496 on BMJ Open: first published as 
+The future basic currency of research synthesis?
+The median length of 644 pages for reports in this
+study, as well as CSRs ’routine inclusion of trials’ proto-
+col, statistical analysis plans and blank case report forms,
+strongly suggests that CSRs are the most detailed and
+complete, integrated form of reporting of the design,conduct and results of clinical trials. In a study that dir-
+ectly compared the adequacy of reporting between
+journal articles and CSRs, the authors found that com-plete information regarding greater than 40% of
+methods items were only available in CSRs.
+22The level
+of detail found in CSRs thus far surpass the level of
+detail available in journal publications, and as such they
+are prime candidates for the next basic currency of evi-
+dence synthesis and appraisal of a trial. Given the EMA ’s
+new policy of making such documents publicly available,
+access to these documents is now relatively straightfor-
+ward.26However, including CSRs in systematic reviews is
+labor-intensive, given their size and complexity.12
+Accessing complete CSRsAlthough CSRs may trump other forms of trial reportingin the public domain (such as conference abstracts or
+journal publications), serious limitations remain. Despite
+obtaining 144 610 pages for 78 CSRs, in almost allinstances, we lacked complete access to the CSRs ’
+numerous appendices. Even for the sole complete CSRwe obtained (Arthronat MA-CT-10 –002), case report
+forms were provided for only 20% of participants. The
+Arthronat text does not provide a reason for this omis-
+sion, but it re ﬂects the vagueness of the relevant section
+of the E3 guidance (16.3.2) which does not de ﬁne
+‘other CRFs submitted ’. Also, we could only access the
+original trial protocol in 40 (51%) of 78 CSRs obtained.This is important because trial protocols, written prior
+to patient enrollment in a trial, are an important way to
+guard against reporting biases.
+27 28
+We could obtain individual patient listings in only a
+minority of cases despite con ﬁrming their inclusion in the
+majority of CSRs ( table 2 ). This may be a signi ﬁcantlimitation, as the E3 speci ﬁes that ‘the report with its
+appendices should also provide enough individual patientdata, including the demographic and baseline data, anddetails of analytical methods, to allow replication of the crit-
+ical analyses. ’
+19Unavailability was possibly owing to the fact
+that EMA allows manufacturers to submit CSRs omitting a
+number of appendices including individual patient data
+and case report forms (which EMA states should be avail-
+able within 48 h, if requested).29In the case of oseltamivir,
+the primary drug analysed in a Cochrane review we con-
+ducted,12the manufacturer refused to share with us report
+appendices not submitted to EMA,30and EMA declined
+requesting them on our behalf.8Although FDA likely pos-
+sesses more complete CSRs and patient-level data, it histor-
+ically has treated such data as trade secret and/orconﬁdential.
+31–33EMA is therefore at present the onlyTable 2 Key characteristics of the clinical study reports in the review
+Section of CSR (corresponding section of E3)Presence Length
+CSRs including
+section, nCSRs with sectionlength available, nMedian length(range), pages
+Synopsis (E3 section 2) 78 (100%) 78 5 (1 –15)
+Efficacy evaluation (E3 section 11) 76 (97%) 77 13.5 (2 –132)
+Safety evaluation (E3 section 12) 77 (99%) 58 17 (2 –188)
+Attached tables not in report text (E3 section 14) 63 (81%) 76 337 (1 –3665)
+Protocol (E3 section 16.1.1) 73 (94%) 41 62 (21 –139)
+Blank CRFs (E3 section 16.1.2) 68 (87%) 33 133 (14 –981)
+Statistical analysis plan (E3 section 16.1.9) 55 (71%) 37 15 (3 –85)
+Individual participant efficacy listings (E3 section 16.2.6) 53 (69%) 19 447 (15 –21698)
+Individual participant safety listings (E3 section 16.2.7) 62 (81%) 26 109.5 (2– 10954)
+Completed CRFs (E3 section 16.3.2) 16 (21%) 1 765
+CRFs, case report forms; CSRs, clinical study reports; E3, ICH E3.
+Table 3 Conservative and realistic compression factors
+PharmaceuticalStudiespublished injournals, nMeancompressionfactor (range)
+Conservative compression factors
+Aripiprazole 1 672Clopidogrel 5 11 (4 –19)
+Epoetin alfa 1 41
+Fluad 2 488 (367– 609)
+GSK H5N1 vaccine 1 19
+Oseltamivir 12 195 (1 –1221)
+Quetiapine 2 578 (352– 803)
+Reboxetine 5 88 (9 –245)
+Zanamivir 8 54 (28 –92)
+Realistic compression factors
+Arthronat* 1 379
+Clopidogrel 1 8805
+Paroxetine 9 1021 (50 –5473)
+A ratio of clinical study report page length to corresponding journal
+publication page length.*The Arthronat trial has not yet been published. Compression
+factor calculation is based on the page length of a draft
+manuscript ‘to be published soon, ’according to Arthronat.com.
+6 Doshi P, Jefferson T. BMJ Open 2013; 3:e002496. doi:10.1136/bmjopen-2012-002496Clinical study reports of randomised controlled trialsProtected by copyright, including for uses related to text and data mining, AI training, and similar technologies. . by guest on April 9, 2025 http://bmjopen.bmj.com/ Downloaded from 26 February 2013. 10.1136/bmjopen-2012-002496 on BMJ Open: first published as 
+reliable source of obtaining CSRs. As such, despite
+European regulators ’progressive stance —announcing that
+‘clinical trial data should not be considered commercial
+conﬁ dential information ’34—the completeness gap is
+unlikely to be ﬁlled any time soon.
+Another signi ﬁcant limitation is that CSRs are only
+written for therapeutic, prophylactic or diagnosticagents, and therefore inadequacies remain in evidence
+synthesis of other types of interventions such as surgical
+or behavioural interventions.
+Individual participant listings
+Individual participant listings —which identify partici-
+pants by a unique ID —were accessible in 29 of the 78
+CSRs we reviewed. But these data are dif ﬁcult to analyse
+because they are presented as database printouts ratherthan in the original computer data ﬁles. This is under-
+standable considering that CSRs are a written/archivalformat, but because EMA does not accept SAS formatdataﬁles,
+35 36the industry standard, third-party access to
+databases of patient-level data remains elusive. We seeno compelling reason why all regulators should notrequest these from sponsors and make them publicly
+available. Whether availability of individual listings
+and CRFs, with its attendant laborious analysis, wouldincrease our understanding of the trial and its results is
+unclear. But there is at least one case where the reanaly-
+sis of CRFs added invaluable knowledge to that alreadyavailable in CSRs.
+37
+The public –private debate
+One manufacturer has claimed that the non-release of
+case report forms is motivated by concerns over protect-
+ing participants ’conﬁdentiality.38Nothing we have seen
+so far corroborates this claim, however an ongoing EMA
+working group is speci ﬁcally discussing issues related to
+protecting participants ’conﬁdentiality. Based on current
+document releases and position statements, however, itappears that EMA has deemed case report forms and
+individual patient listings to be, in principle, releasablein their entirety (after a preliminary review).
+39
+Furthermore, individual patient listings are intended toduplicate information contained in ﬁlled case report
+forms. The release of case report forms would ensure
+the accuracy of individual patient listings with little add-
+itional risk to patient con ﬁdentiality. Moreover, extra
+checks such as registration of protocols by bona ﬁde
+research groups could deter any inappropriate use. Wealso believe that the sheer bulk of the forms act as adeterrent against malice.
+Size matters
+Our range of compression factors shows the scale of
+selection and synthesis which must (consciously or
+unconsciously) occur in the process of transformingCSRs into journal-length articles. We found a strong
+resemblance in detail, page length, structure and
+purpose between the short synopsis section of CSRs andreports of trials as published in scienti ﬁc journals. In
+some cases essential items of information such as the
+trial protocol and its subsequent amendments are simply
+not included in journal articles or are replaced bymethods written post facto. In other cases of items essen-
+tial for the interpretations of the trial results (such as
+the statistical analysis plan), tens of pages are reduced toa paragraph on sample size calculation in the journal
+report, underscoring the lack of detail (and its attendant
+problems) common to public forms of trial reporting.For example, the ratio of words in the protocol of the
+CSR for aripiprazole CN138135 to the methods section
+for published journal article of the same trial is 30.5(53 713 words in the CSR protocol vs 1763 words in the
+journal article). For the oseltamivir WP16263 trial, the
+ratio was 22.7 (26 761 words in the CSR protocol andamendments vs 1177 words in the journal article).
+This compression of information also occurs in databases
+not restricted by length, such as ClinicalTrials.gov.
+40
+Our study raises the question of why the medical com-
+munity has accepted the low (summary, aggregate) levelof detail found in most peer-reviewed journal publica-tions compared with the depth of detail available in
+CSRs. European regulators recently noted: ‘documents
+that provide critical information on a study, such as the
+protocol (16.1.1), statistical methods (16.1.9), list of
+investigators and study sites and sample case report
+forms, would always be needed by reviewers assessing astudy. ’
+41Why have those outside of the regulatory world
+tolerated journal publications lacking such details?
+One possibility may be that while the clinical trial
+enterprise has changed dramatically in the last half
+century, the scienti ﬁc journal publication model has not.
+Since the 1950s, there have been considerable transfor-
+mations in the political economy of clinical trials driven
+by the increasingly commercialised and global nature of
+the pharmaceutical industry, the rise in academic-industry ‘partnerships ’in medicine and increased com-
+munication among regulators. It is now common to ﬁnd
+trials with study centres scattered around the globe. Thisincreasing complexity and the need to provide an audit
+record is re ﬂected in the comprehensive tomes docu-
+menting the trials —CSRs —but trial reporting in scien-
+tiﬁc journals remains limited to summary and aggregate
+details. It should be noted, however, that many journals
+now have websites which enable them to make availableextended content beyond what traditionally appears in
+the printed journal.
+Authorship or contributorship?
+Examination of CSRs revealed scores of important tech-
+nical contributions to the design, conduct and reportingof each trial. These included contributions from data-
+base programmers, records of ﬁcers and CSR writers,
+often invisible in the published journal article. In some
+cases, we found no mention in CSRs of individuals
+who ﬁgured as authors of subsequent published trial
+reports while individuals named as CSR authors went
+Doshi P, Jefferson T. BMJ Open 2013; 3:e002496. doi:10.1136/bmjopen-2012-002496 7Clinical study reports of randomised controlled trialsProtected by copyright, including for uses related to text and data mining, AI training, and similar technologies. . by guest on April 9, 2025 http://bmjopen.bmj.com/ Downloaded from 26 February 2013. 10.1136/bmjopen-2012-002496 on BMJ Open: first published as 
+unacknowledged in journal publications. Current
+International Committee of Medical Journal Editors
+(ICMJE) guidelines on authorship and contributorship
+are largely focused on ensuring those placed on by-linesdeserve to be authors. But the guidelines also suggest
+that ‘all contributors who do not meet the criteria for
+authorship should be listed in an acknowledgements
+section ’.
+42Given the complexity of clinical trials, the
+ICMJE should call for itemised contributorship: thenames of all contributors to be speciﬁ ed along with
+their role in the design, conduct, analysis or reporting
+of the trial. If the contribution to the trial of most
+people goes unrecorded, so does their individualresponsibility for what is produced. Itemised contribu-
+torship records, to all phases of a trial, could be piloted
+in trial registers.
+E3 guidance
+The E3 guideline set an excellent standard, but it needsformal updating and further development. For example,
+there should be a self-standing set of de ﬁnitions for
+terms such as ‘CRFs ’and‘other CRFs submitted ’(section
+16.3.2) and a description of how a particular trial ﬁts
+within a sponsor ’s trial programme of pharmaceutical
+development. Apparently forgotten items such as certi ﬁ-
+cates of analysis (describing the appearance and contentof the interventions being tested) and post-1995 details
+such as trial registration numbers should be mentioned.
+We hope our review has given CSRs what they have
+lacked so far: visibility. CSRs represent a largelyuntapped source of detailed data that we believe canserve as a means of addressing the ravages of reporting
+bias in all its forms, leading to a more accurate under-
+standing of the effects of medicines.
+Acknowledgements We thank Dr Vallance and Dr Kraus of GlaxoSmithKline
+for making public selected report appendices from the nine paroxetine trials.
+We also thank Daniel Coyne for sharing the CSR that FDA sent him in
+response to his Freedom of Information request, and Iain Chalmers forguidance.
+Contributors PD and TJ both made substantial contributions to the
+conception and design of this study. Both authors acquired data analysed in
+this study, and were involved in the interpretation of the data. PD and TJ
+drafted and revised the article together, and both approve the final version.
+Funding Publication of this article was funded in part by the Open Access
+Promotion Fund of the Johns Hopkins University Libraries.Competing interests All authors have completed the Unified Competing
+Interest form at http://www.icmje.org/coi_disclosure.pdf (available on request
+from the corresponding author) and declare that: both authors are
+corecipients of a UK National Institute for Health Research grant to carry out a
+Cochrane review of neuraminidase inhibitors (http://www.hta.ac.uk/2352).
+TJ was an ad hoc consultant for F. Hoffman-La Roche Ltd in 1998 –1999.
+He receives royalties from his books published by Blackwells and Il Pensiero
+Scientifico Editore, none of which are on clinical study reports. He is
+occasionally interviewed by market research companies for anonymous
+interviews about Phase 1 or 2 products unrelated to products in this review.
+From 2011 to 2012 he has acted as an expert witness in a litigation case
+related to one of the compounds in the review (oseltamivir). He is on a legalretainer for expert advice on litigation for influenza vaccines in healthcare
+workers. PD received €1500 from the European Respiratory Society in
+support of his travel to the society ’s September 2012 annual congress wherehe gave an invited talk on oseltamivir. Peter Doshi is funded by aninstitutional training grant from the Agency for Healthcare Research and
+Quality #T32HS019488. AHRQ had no role in study design, data collection
+and analysis, decision to publish, or preparation of the manuscript. Both
+authors ’spouses and children have no financial relationships that may be
+relevant to the submitted work.
+Provenance and peer review Not commissioned; internally peer reviewed.
+Data sharing statement The original extraction forms and audit record are
+available on request from the corresponding author.
+REFERENCES
+1. Rising K, Bacchetti P, Bero L. Reporting bias in drug trials submitted
+to the Food and Drug Administration: review of publication and
+presentation. Ioannidis J, editor. PLoS Med 2008;5:e217.
+2. Doshi P, Jones M, Jefferson T. Rethinking credible evidence
+synthesis. BMJ 2012;344:d7898.
+3. Chan A-W, Hróbjartsson A, Haahr MT, et al. Empirical evidence for
+selective reporting of outcomes in randomized trials: comparison ofprotocols to published articles. JAMA 2004;291:2457 –65.
+4. Gøtzsche PC. Why we need easy access to all data from all clinical
+trials and how to accomplish it. Trials 2011;12:249.
+5. Turner EH, Matthews AM, Linardatos E, et al. Selective publication
+of antidepressant trials and its influence on apparent efficacy. N Engl
+J Med 2008;358:252 –60.
+6. Dickersin K, Min YI. Publication bias: the problem that won’ tg o
+away. Ann N Y Acad Sci 1993;703:135 –46.
+7. Hopewell S, Loudon K, Clarke MJ, et al. Publication bias in clinical
+trials due to statistical significance or direction of trial results.Cochrane Database Syst Rev 2009;(1):MR000006.
+8. Melander H. Evidence b(i)ased medicine —selective reporting from
+studies sponsored by pharmaceutical industry: review of studies innew drug applications. BMJ 2003;326:1171 –3.
+9. McGauran N, Wieseler B, Kreis J, et al. Reporting bias in medical
+research— a narrative review. Trials 2010;11:37.
+10. Sismondo S, Doucet M. Publication ethics and the ghost
+management of medical publication. Bioethics 2009;24:273–83.
+11. Vedula SS, Bero L, Scherer RW, et al. Outcome reporting in
+industry-sponsored trials of gabapentin for off-label use. N Engl J
+Med 2009;361:1963 –71.
+12. Jefferson T, Jones MA, Doshi P, et al. Neuraminidase inhibitors for
+preventing and treating influenza in healthy adults and children.
+Cochrane Database Syst Rev 2012;(1):CD008965.
+13. European Medicines Agency. European Medicines Agency policy on
+access to documents (related to medicinal products for human and
+veterinary use) POLICY/0043 (Internet). 2010. http://www.ema.europa.eu/docs/en_GB/document_library/Other/2010/11/WC500099473.pdf (accessed 14 May 2012).
+14. European Medicines Agency. Output of the European Medicines
+Agency policy on access to documents related to medicinal productsfor human and veterinary use [Internet]. 2010. http://www.ema.europa.eu/docs/en_GB/document_library/Regulatory_and_procedural_guideline/2010/11/WC500099472.pdf(accessed 25 Sept 2011).
+15. Gøtzsche PC, Jørgensen AW. Opening up data at the european
+medicines agency. BMJ 2011;342:d2686.
+16. Jefferson T, Doshi P, Thompson M, et al. Ensuring safe and
+effective drugs: who can do what it takes? BMJ 2011;342:c7258.
+17. Chan A-W. Out of sight but not out of mind: how to search for
+unpublished clinical trial evidence. BMJ 2012;344:d8013.
+18. Rodwin MA, Abramson JD. Clinical trial data as a public good.
+JAMA 2012;308:871 –2.
+19.
+International Conference on Harmonisation of TechnicalRequirements for Registration of Pharmaceuticals for Human Use.Structure and Content of Clinical Study Reports: E3 [Internet]. 1995http://www.ich.org/fileadmin/Public_Web_Site/ICH_Products/Guidelines/Efficacy/E3/E3_Guideline.pdf (accessed 8 July 2012).
+20. Grens K. Data diving. The scientist [Internet]. 2012 Apr. http://
+the-scientist.com/2012/05/01/data-diving/ (accessed 3 May 2012).
+21. Eyding D, Lelgemann M, Grouven U, et al. Reboxetine for acute
+treatment of major depression: systematic review and meta-analysisof published and unpublished placebo and selective serotoninreuptake inhibitor controlled trials. BMJ 2010;341:c4737 –7.
+22. Wieseler B, Kerekes MF, Vervoelgyi V, et al. Impact of document
+type on reporting quality of clinical drug trials: a comparison ofregistry reports, clinical study reports, and journal publications. BMJ
+2012;344:d8141.
+8 Doshi P, Jefferson T. BMJ Open 2013; 3:e002496. doi:10.1136/bmjopen-2012-002496Clinical study reports of randomised controlled trialsProtected by copyright, including for uses related to text and data mining, AI training, and similar technologies. . by guest on April 9, 2025 http://bmjopen.bmj.com/ Downloaded from 26 February 2013. 10.1136/bmjopen-2012-002496 on BMJ Open: first published as 
+23. IMS Institute for Healthcare Informatics. The use of medicines in the
+United States: review of 2010 [Internet]. 2011. http://www.imshealth.
+com/imshealth/Global/Content/IMS%20Institute/Documents/IHII_UseOfMed_report%20.pdf (accessed 30 Jul 2012).
+24. Coyne DW. The health-related quality of life was not improved by
+targeting higher hemoglobin in the Normal Hematocrit Trial. Kidney
+Int[Internet]. 2012 http://www.nature.com/ki/journal/vaop/ncurrent/
+full/ki201276a.html (accessed 13 Apr 2012).
+25. Molzon JA, Giaquinto A, Lindstrom L, et al. The value and benefits
+of the International Conference on Harmonisation to drug regulatory
+authorities: advancing harmonization for better public health. Clin
+Pharmacol Ther 2011;89:503 –12.
+26. Doshi P, Jefferson T. The first 2 years of the European Medicines
+Agency ’s policy on access to documents: secret no longer. Arch
+Intern Med 2012;1 –2.
+27. Chan A-W. Bias, spin, and misreporting: time for full access to trial
+protocols and results. PLoS Med 2008;5:e230.
+28. Miller JD. Registering clinical trial results: the next step. JAMA
+2010;303:773 –4.
+29. European Medicines Agency. Note for guidance on the inclusion of
+appendices to clinical study reports in marketing authorisation
+applications [Internet] 2004. http://www.ema.europa.eu/docs/en_GB/document_library/Scientific_guideline/2009/09/WC500003638.pdf(accessed 30 Jul 2012).
+30. Doshi P, Jefferson T, Del Mar C. The imperative to share clinical
+study reports: recommendations from the Tamiflu experience. PLoS
+Med 2012;9:e1001201.
+31. Ünlü M. It is time: why the FDA should start disclosing drug trial
+data. Mich Telecomm Tech L Rev 2010;16:511 –45.
+32. Kesselheim AS, Mello MM. Confidentiality laws and secrecy in
+medical research: improving public access to data on drug safety.Health Aff (Millwood) 2007;26:483 –91.
+33. Halperin RM. FDA disclosure of safety and effectiveness data: a
+legal and policy analysis. Duke Law J 1979;1979:286 –326.
+34. Eichler H-G, Abadie E, Breckenridge A, et al. Open clinical trial data
+for all? A view from regulators. PLoS Med 2012;9:e1001202.35. European Medicines Agency. EMEA implementation of
+electronic-only submission and eCTD submission: practicalguidelines relating to non-eCTD electronic submissions [Internet]2008. http://www.emea.europa.eu/docs/en_GB/document_library/Regulatory_and_procedural_guideline/2009/10/WC500004100.pdf(accessed 31 Jul 2012).
+36. European Medicines Agency. EMEA implementation of
+electronic-only submission and eCTD submission: questions andanswers relating to practical and technical aspects of theimplementation [Internet] 2008. http://www.ema.europa.eu/docs/
+en_GB/document_library/Regulatory_and_ procedural_guideline/
+2009/10/WC500004095.pdf (accessed 31 Jul 2012).
+37. Psaty BM, Prentice RL. Minimizing bias in randomized trials: the
+importance of blinding. JAMA 2010;304:793 –4.
+38. GlaxoSmithKline. Paroxetine and pediatric and adolescent patients
+[Internet]. 2012. http://www.gsk.com/media/paroxetine.htm(accessed 30 Jul 2012).
+39. HMA/EMA Working Group on Transparency. HMA/EMA guidance
+document on the identification of commercially confidentialinformation and personal data within the structure of the marketingauthorisation (MA) application —release of information after the
+granting of a marketing authorisation [Internet] 2012. http://www.ema.europa.eu/docs/en_GB/document_library/Other/2012/03/WC500124536.pdf (accessed 30 Jul 2012).
+40. Zarin DA, Tse T, Williams RJ, et al. The ClinicalTrials.gov
+Results Database —update and key issues. N Engl J Med
+2011;364:852 –60.
+41. European Medicines Agency. ICH guideline E3 —questions and
+answers (R1) [Internet] 2012. http://www.ema.europa.eu/docs/en_GB/document_library/Scientific_guideline/2012/07/WC500130356.pdf (accessed 30 Jul 2012).
+42. International Committee of Medical Journal Editors. Uniform
+requirements for manuscripts submitted to biomedical journals:
+ethical considerations in the conduct and reporting of research:autho
+rship and contributorship [Internet] 2009 http://www.icmje.org/
+ethical_1author.html (accessed 30 Jul 2012).
+Doshi P, Jefferson T. BMJ Open 2013; 3:e002496. doi:10.1136/bmjopen-2012-002496 9Clinical study reports of randomised controlled trialsProtected by copyright, including for uses related to text and data mining, AI training, and similar technologies. . by guest on April 9, 2025 http://bmjopen.bmj.com/ Downloaded from 26 February 2013. 10.1136/bmjopen-2012-002496 on BMJ Open: first published as

@@ -1,0 +1,640 @@
+The Qualitativ e Repor t The Qualitativ e Repor t 
+Volume 13 Number 4 Article 2 
+12-1-2008 
+Qualitativ e Case Study Methodology: Study Design and Qualitativ e Case Study Methodology: Study Design and 
+Implementation for No vice Resear chers Implementation for No vice Resear chers 
+Pamela Baxter 
+McMaster Univ ersity , baxterp@mcmaster .ca 
+Susan Jack 
+McMaster Univ ersity , jacksm@mcmaster .ca 
+Follow this and additional works at: https:/ /nsuworks.no va.edu/tqr 
+ Part of the Quantitativ e, Qualitativ e, Compar ative, and Hist orical Methodologies Commons , and the 
+Social Statistics Commons 
+Recommended AP A Citation Recommended AP A Citation 
+Baxter , P., & Jack, S. (2008). Qualitativ e Case Study Methodology: Study Design and Implementation for 
+Novice Resear chers. The Qualitativ e Repor t, 13(4), 544-559. https:/ /doi.or g/10.46743/2160-3715/
+2008.1573 
+This Ar ticle is br ought t o you for fr ee and open access b y the The Qualitativ e Repor t at NSUW orks. It has been 
+accepted for inclusion in The Qualitativ e Repor t by an authoriz ed administr ator of NSUW orks. F or mor e 
+information, please contact nsuworks@no va.edu . 
+Qualitativ e Case Study Methodology: Study Design and Implementation for Qualitativ e Case Study Methodology: Study Design and Implementation for 
+Novice Resear chers Novice Resear chers 
+Abstr act Abstr act 
+Qualitativ e case study methodology pr ovides t ools for r esear chers t o study complex phenomena within 
+their contexts. When the appr oach is applied corr ectly , it becomes a v aluable method for health science 
+resear ch to de velop theor y, evaluate pr ograms, and de velop inter ventions. The purpose of this paper is t o 
+guide the no vice r esear cher in identifying the k ey elements for designing and implementing qualitativ e 
+case study r esear ch pr ojects. An o verview of the types of case study designs is pr ovided along with 
+gener al recommendations for writing the r esear ch questions, de veloping pr opositions, determining the 
+“case ” under study , binding the case and a discussion of data sour ces and triangulation. T o facilitate 
+application of these principles, clear examples of r esear ch questions, study pr opositions and the diff erent 
+types of case study designs ar e provided 
+Keywor ds Keywor ds 
+Case Study and Qualitativ e Method 
+Creativ e Commons License Creativ e Commons License 
+This work is licensed under a Creativ e Commons A ttribution-Noncommer cial-Shar e Alik e 4.0 International 
+License . 
+This ar ticle is a vailable in The Qualitativ e Repor t: https:/ /nsuworks.no va.edu/tqr/v ol13/iss4/2 
+The Qualitative Report  Volume 13 Number 4 December 2008 544-559 
+http://www.nova.edu/ssss/ QR/QR13-4/baxter.pdf 
+ 
+Qualitative Case Study Meth odology: Study Design and 
+Implementation for Novice Researchers 
+ 
+Pamela Baxter and Susan Jack 
+McMaster University, West Hamilton, Ontario, Canada  
+ 
+Qualitative case study methodology prov ides tools for researchers to study 
+complex phenomena within  their contexts. When the approach is applied 
+correctly, it becomes a valuable method for health science research to develop theory, evaluate programs, and develop interventions. The purpose of this paper is to  guide the novice research er in identifying the 
+key elements for designing and implementing qualitative case study research projects. An overview of the types of case study designs is 
+provided along with general recomme ndations for writing the research 
+questions, developing propositions, determining the “case” under study, binding the case and a discussion of data sources and triangulation. To 
+facilitate application of these principles, clear examples of research questions, study propositions  and the different types of case study designs 
+are provided. Key Words: Case Study and Qualitative Methods 
+ 
+ 
+Introduction 
+ 
+To graduate students and research ers unfamiliar with case study methodology, 
+there is often misunderstanding about what a case study is and how it, as a form of 
+qualitative research, can inform professi onal practice or evidence-informed decision 
+making in both clinical and policy realms. In a graduate level introductory qualitative 
+research methods course, we have listened to  novice researchers describe their views of 
+case studies and their perceptions of it as a me thod only to be used to  study individuals or 
+specific historical events, or as a teachi ng strategy to holistically understand exemplary 
+“cases.” It has been a privilege to teach th ese students that rigo rous qualitative case 
+studies afford researchers opportunities to explore or describe a phenomenon in context 
+using a variety of data sources. It allows  the researcher to ex plore individuals or 
+organizations, simple through complex inte rventions, relationships, communities, or 
+programs (Yin, 2003) and supports the deconstr uction and the subsequent reconstruction 
+of various phenomena. This approach is valuab le for health science research to develop 
+theory, evaluate programs, and develop interventions because of its flexibility and rigor. 
+ 
+Background 
+ 
+ This qualitative case study is an approach to research that facilitates exploration 
+of a phenomenon within its  context using a variety of data  sources. This ensures that the 
+issue is not explored through one lens, but  rather a variety of le nses which allows for 
+multiple facets of the phenomenon to be revealed and understood. There are two key 
+approaches that guide case study methodology;  one proposed by Robert Stake (1995) and 
+545  The Qualitative Report  December 2008  
+the second by Robert Yin (2003, 2006). Both seek to ensure that the topic of interest is 
+well explored, and that the essence of the phenomenon is revealed, but the methods that 
+they each employ are quite different and ar e worthy of discussion. For a more lengthy 
+treatment of case study methods we encourage you to read Hancock and Algozzine’s, Doing case study research: A practic al guide for beginning researchers (2006). 
+ 
+Philosophical Underpinnings 
+ 
+ First, both Stake (1995) and Yin (2003)  base their approach to case study on a 
+constructivist paradigm. Constructivists claim that  truth is relative and that it is dependent 
+on one’s perspective. This paradigm “recogn izes the importance of the subjective human 
+creation of meaning, but doesn’t  reject outright some notion of objectivity. Pluralism, not 
+relativism, is stressed with focus on the ci rcular dynamic tension of subject and object” 
+(Miller & Crabtree, 1999, p. 10). Constructivis m is built upon the premise of a social 
+construction of reality (Searle, 1995). One of the advantages of  this approach is the close 
+collaboration between the researcher and the participant, while enabling participants to tell their stories (C rabtree & Miller, 1999).
+  Through these stories the participants are 
+able to describe their views of reality and this enables the researcher to better understand 
+the participants’ actions (Lathe r, 1992; Robottom & Hart, 1993). 
+ 
+When to Use a Case Study Approach 
+ 
+ So when should you use a case study approach? According to Yin (2003) a case 
+study design should be considered when: (a) the focus of the study is to answer “how” 
+and “why” questions; (b) you cannot manipulate the behaviour of those involved in the 
+study; (c) you want to cover contextual condi tions because you believe  they are relevant 
+to the phenomenon under study;  or (d) the boundaries ar e not clear between the 
+phenomenon and context. For instance, a study of the decision making of nursing 
+students conducted by Baxter (2006) sought to determine the types of decisions made by 
+nursing students and the factors that infl uenced the decision making. A case study was 
+chosen because the case was the decision ma king of nursing students, but the case could 
+not be considered without the context, the School of Nursing, and more specifically the 
+clinical and classroom settings. It was in these settings that th e decision making skills 
+were developed and utilized. It would have been  impossible for this author to have a true 
+picture of nursing student de cision making without consider ing the context within which 
+it occurred. 
+ 
+Determining the Case/Unit of Analysis 
+ 
+While you are considering what your rese arch question will be, you must also 
+consider what the case is. This may sound simple, but determining what the unit of 
+analysis (case) is can be a challenge for both novice and seasoned researchers alike. The 
+case is defined by Miles and Huberman (1994)  as, “a phenomenon of some sort occurring 
+in a bounded context. The case is, “in effect , your unit of analysis” (p. 25). Asking 
+yourself the following questions can help to determine what your case is; do I want to 
+“analyze” the individual? Do I want to “analy ze” a program? Do I want to “analyze” the 
+Pamela Baxter and Susan Jack  546 
+process? Do I want to “analyze” the diffe rence between organizations? Answering these 
+questions along with talking wi th a colleague can be effec tive strategies to further 
+delineate your case. For example, your quest ion might be, “How do women in their 30s 
+who have had breast cancer decide whether or not to have breast reconstruction?” In this 
+example, the case could be the decision maki ng process of women between the age of 30 
+and 40 years who have experienced breast cancer. However, it may be that you are less interested in the activity of decision making and more interest ed in focussing specifically 
+on the experiences of 30-40 year old women. In  the first example, the case would be the 
+decision making of this group of women and it would be a process being analyzed, but in 
+the second example the case would be focussi ng on an analysis of individuals or the 
+experiences of 30 year old wo men. What is examined has sh ifted in these examples (See 
+Case Examples #1 and #2 in Table 1).  
+ 
+Table 1 
+ 
+Developing Case Study Research Questions  
+Case Examples The Research Questions 
+1. The decision making process of women 
+between the age of 30 and 40 years  How do women between the ages of 30 and 
+40 years decide  whether or not to have 
+reconstructive surgery after a radical mastectomy? What factors influence their decision ?  
+ 
+2. The experiences of 30-40 year old women following radical mastectomy faced with the decision of whether or not to undergo reconstructive surgery How women (30-40 years of age) describe 
+their post-op (first 6 months) experiences  
+following a radical mastectomy? Do these experiences  influence their decisions 
+making related to breast reconstructive surgery? 
+3. The decision making process (related to breast reconstruction post-radical mastectomy) of women between the age of 30 and 40 years atte nding four cancer 
+centers in Ontario. How do women (ages 30-40) attending 
+four different cancer centers in Ontario describe their decision making related to breast reconstructive surgery following a radical mastectomy? 
+ 
+Binding the Case 
+ 
+ Once you have determined what your case will be, you will have to consider what 
+your case will NOT be. One of the common pitfa lls associated with case study is that 
+there is a tendency for researchers to attempt to answer a question that is too broad or a 
+topic that has too many objectives for one study . In order to avoid this problem, several 
+authors including Yin (2003) and Stake (1995 ) have suggested that placing boundaries on 
+a case can prevent this explosion from o ccurring. Suggestions on how to bind a case 
+include: (a) by time and place (C reswell, 2003); (b) time and act ivity (Stake); and (c) by 
+definition and context (Miles & Huberman, 1994). Binding the case will  ensure that your 
+547  The Qualitative Report  December 2008  
+study remains reasonable in scope. In th e example of the study involving women who 
+must decide whether or not to have recons tructive surgery, established boundaries would 
+need to include a concise definition of breas t cancer and reconstructive surgery. I would 
+have to indicate where these women were re ceiving care or where they were making 
+these decisions and the period of time that we wanted to learn about, for example within 
+six months of a radical mastectomy. It woul d be unreasonable for me to look at all 
+women in their 30s across Canada who had e xperienced breast cancer and their decisions 
+regarding reconstructive surger y. In contrast, I might want to look at single women in 
+their 30s who have received car e in a tertiary care center in  a specific hospital in South 
+Western Ontario. The boundaries indicate what w ill and will not be studied in the scope 
+of the research project. The establishment of  boundaries in a qualita tive case study design 
+is similar to the development of inclusion and exclusion criteria for sample selection in a quantitative study. The difference is that thes e boundaries also indi cate the breadth and 
+depth of the study and not simply  the sample to be included. 
+ 
+Determining the Type of Case Study 
+ 
+ Once you have determined that the resear ch question is best answered using a 
+qualitative case study and the case and its boundaries have been determined, then you 
+must consider what type of case study will be conducted. Th e selection of a specific type 
+of case study design will be guided by the overall study purpose. Are you looking to 
+describe a case, explore a cas e, or compare between cases ? Yin (2003) and Stake (1995) 
+use different terms to describe a variety of case studies. Yin  categorizes case studies as 
+explanatory, exploratory, or descriptive. He also differen tiates between single, holistic 
+case studies and multiple-case studies. Stake identifies case studies as intrinsic, instrumental, or collective. Definitions a nd published examples of these types of case 
+studies are provided in Table 2.  
+ Table 2  
+Definitions and Examples of Di fferent Types of Case Studies  
+Case Study Type Definition  Published Study Example 
+Explanatory This type of case study 
+would be used if you were seeking to answer a question that sought to explain the presumed causal links in real-life interventions that are too complex for the survey or experimental strategies. In evaluation language, the explanations would link program 
+implementation with 
+program effects (Yin, 2003). Joia (2002). Analysing a web-
+based e-commerce learning community: A case study in Brazil. Internet Research, 12 , 
+305-317. 
+Pamela Baxter and Susan Jack  548 
+ 
+Exploratory This t ype of case study is 
+used to explore those situations in which the intervention being evaluated has no clear, single set of outcomes (Yin, 2003). Lotzkar & Bottorff (2001). An 
+observational study of the development of a nurse-patient relationship. Clinical Nursing 
+Research, 10 , 275-294. 
+Descriptive This type of case study is 
+used to describe an intervention or phenomenon and the real-life context in which it occurred (Yin, 2003).  Tolson, Fleming, & Schartau 
+(2002). Coping with menstruation: Understanding the needs of women with Parkinson’s disease. Journal 
+of Advanced Nursing, 40 , 513-
+521. 
+Multiple-case studies A multiple case study 
+enables the researcher to explore differences within and between cases. The goal is to replicate findings across cases. Because comparisons will be drawn, it is imperative that the cases are chosen carefully so that the researcher can predict similar results across cases, or predict contrasting results based on a theory (Yin, 2003).  Campbell & Ahrens (1998). 
+Innovative community services for rape victims: An application of multiple case study methodology. American 
+Journal of Community 
+Psychology , 26, 537-571. 
+Intrinsic Stake (1995 ) uses the term 
+intrinsic and suggests that researchers who have a genuine interest in the case should use this approach when the intent is to better understand the case. It is not undertaken primarily because the case represents other cases or because it illustrates a particular trait or problem, but because in all its particularity and ordinariness, the case itself is of interest. The purpose is NOT to come to understand some abstract construct or generic phenomenon. The Hellström, Nolan, & Lundh 
+(2005). “We do things together” A case study of “couplehood” in dementia. Dementia, 4 (1), 7-22. 
+549  The Qualitative Report  December 2008  
+purpose is NOT to build 
+theory (although that is an option; Stake, 1995).  
+Instrumental Is used to accomplish 
+something other than understanding a particular situation. It provides insight into an issue or helps to refine a theory. The case is of secondary interest; it plays a supportive role, facilitating our understanding of something else. The case is often looked at in depth, its contexts scrutinized, its ordinary activities detailed, and because it helps the researcher pursue the external interest. The case may or may not be seen as typical of other cases (Stake, 1995).  Luck, Jackson, & Usher 
+(2007). STAMP: Components of observable behaviour that indicate potential for patient violence in emergency departments. Journal of 
+Advanced Nursing, 59 , 11-19.  
+Collective Collective case studies are 
+similar in nature and description to multiple case studies (Yin, 2003) Scheib (2003). Role stress in 
+the professional life of the school music teacher: A collective case study. Journal 
+of Research in Music 
+Education, 51 ,124-136. 
+ 
+Single or Multiple Case Study Designs 
+ Single Case 
+ 
+  In addition to identifying the “case” and the specific “type” of case study to be 
+conducted, researchers must consid er if it is prudent to conduct a single case study or if a 
+better understanding of the phenomenon will be  gained through conducting a multiple 
+case study. If we consider the topic of breast r econstruction surgery again we can begin to 
+discuss how to determine the “type” of case study and the necessary number of cases to 
+study. A single holistic case might be the d ecision making of one woman or a single 
+group of 30 year old women facing brea st reconstruction post-mastectomy. But 
+remember that you also have to take into c onsideration the context.  So, are you going to 
+look at these women in one envi ronment because it is a unique  or extreme situation? If 
+so, you can consider a holisti c single case study (Yin, 2003).  
+ 
+ 
+Pamela Baxter and Susan Jack  550 
+Single Case with Embedded Units 
+ 
+ If you were interested in looking at the same issue, but now were intrigued by the 
+different decisions made by women attending di fferent clinics within one hospital, then a 
+holistic case study with embedded units would enable the researcher  to explore the case 
+while considering the influence of the various  clinics and associated attributes on the 
+women’s decision making. The abilit y to look at sub-uni ts that are situated  within a larger 
+case is powerful when you consider that data can be analyzed within  the subunits 
+separately (within case analysis), between  the different subunits (between case analysis), 
+or across  all of the subunits (cross-case analysis).  The ability to engage in such rich 
+analysis only serves to better illuminate the case. The pitfall that novice researchers fall 
+into is that they analyze at the individual subunit level and fail to return to the global 
+issue that they initially se t out to address (Yin, 2003). 
+ 
+Multiple-Case Studies 
+ 
+ If a study contains more than a single case then a multiple-case study is required. 
+This is often equated with multiple experi ments. You might find yourself asking, but 
+what is the difference between a holistic ca se study with embedded units and a multiple-
+case study? Good question! The simp le answer is that the cont ext is different for each of 
+the cases. A multiple or collective case study w ill allow the researcher  to analyze within 
+each setting and across setti ngs. While a holistic case st udy with embedded units only 
+allows the researcher to understand one unique /extreme/critical case. In a multiple case 
+study, we are examining several cases to und erstand the similariti es and differences 
+between the cases. Yin (2003) describes how mu ltiple case studies can be used to either, 
+“(a) predicts similar results (a literal replicat ion) or (b) predicts c ontrasting results but for 
+predictable reasons (a theore tical replication)” (p. 47). This type of a design has its 
+advantages and disadvantages. Overall, the ev idence created from this type of study is 
+considered robust and reliable, but it can also be extremely time consuming and 
+expensive to conduct. Continuing with the same example, if you wanted to study women in various health care institutions across th e country, then a multip le or collective case 
+study would be indicated. The ca se would still be the decisi on making of women in their 
+30s, but you would be able to analyze the di fferent decision-making processes engaged in 
+by women in different centers (See Case Example #3 in Table 1).  
+ Stake (1995) uses three terms to describe  case studies; intrinsi c, instrumental, and 
+collective. If you are interested  in a unique situa tion according to Stake, conduct an 
+intrinsic case study. This simply means that you have an intrin sic interest in the subject 
+and you are aware that the results have limited transferability. If the intent is to gain 
+insight and understanding of a particular situation or phenomenon, then Stake would 
+suggest that you use an instrumental case study  to gain understanding. This author also 
+uses the term collective case study when mo re than one case is being examined. The 
+same example used to describe multi ple case studies can be applied here. 
+ Once the case has been determined and the boundaries placed on the case it is 
+important to consider the additional com ponents required for designing and implementing 
+a rigorous case study. These include: (a) proposi tions (which may or may not be present) 
+(Yin, 2003, Miles & Huberman, 1994); (b) the application of a conceptual framework 
+551  The Qualitative Report  December 2008  
+(Miles & Huberman); (c) development of the research questions (generally “how” and/or 
+“why” questions); (d) the lo gic linking data to propositio ns; and (e) the criteria for 
+interpreting findings (Yin).  
+Propositions 
+ 
+Propositions are helpful in any case study, but  they are not always present. When 
+a case study proposal includes specific propositions it increa ses the likelihood that the 
+researcher will be able to place limits on the scope of the study and increase the 
+feasibility of completi ng the project. The more a study co ntains specific propositions, the 
+more it will stay within f easible limits. So where do the propositions come from? 
+Propositions may come from the literature, personal/professional experience, theories, 
+and/or generalizations based on empirical data (Table 3).  
+ 
+Table 3 
+ 
+Case Study Propositions  
+Potential Propositions Source 
+**These are only examples of literature and 
+do not reflect a full literature review. 
+Women in their 30s most often decide not to have recons tructive surgery Professional experience and Literature 
+ 
+Handel, Silverstein, Waisman, Waisman, & 
+Gierson (1990). Reasons why mastectomy patients do not have breast reconstruction. Plastic Reconstruction 
+Surgery , 86(6), 1118-22. 
+Morrow, Scott, Menck, Mustoe, & 
+Winchester (2001). Factors influencing the use of breast reconstruction postmastectomy: a National Cancer Database Study. Journal of American 
+College of Surgeons , 192(1), 69-70. 
+Women choose not to have reconstructive 
+surgery post mastectomy due to the issues related to acute pain Literature - Wallace, Wallace, Lee, & 
+Dobke (1996). Pain after breast surgery: A survey of 282 women. Pain, 66 (2-3), 195-
+205. 
+Women face many personal and social barriers to breast reconstructive surgery. Professional experience and Literature 
+ 
+Reaby (1998). Reasons Why Women Who 
+Have Mastectomy Decide to Have or Not to Have Breast Reconstruction . Plastic & 
+Reconstructive Surgery. 101 (7), 1810-
+1818.   
+ 
+Pamela Baxter and Susan Jack  552 
+Staradub, YiChing Hsieh, Clauson, et al. 
+(2002). Factors that influence surgical choices in women with breast carcinoma. Cancer, 95 (6), 1185-1190. 
+Women are influenced by their health care 
+providers when making this decision Personal experience and literature 
+ 
+Wanzel, Brown, Anastakis, et al. (2002). 
+Reconstructive Breast Surgery: Referring physician knowledge and learning needs. Plastic and Reconstructive Surgery, 110 :6 
+Women in different regions of Canada 
+make different decisions about breast reconstructive surgery post mastectomy Literature 
+ 
+Polednak (2000). Geographic variation in 
+postmastectomy breast reconstruction rates. Plastic & Reconstructive Surgery, 106(2 ), 
+298-301. 
+ For example, one proposition included in a study on the development of nursing student decision making in a clinical setting stated th at “various factors in fluence nurse decision 
+making including the decision maker’s knowledge,  and experience, feelings of fear, and 
+degree of confidence” (Baxter, 2000, 2006). This  proposition was based on the literature 
+found on the topic of nurse decision maki ng. The researcher can have several 
+propositions to guide the study, but each must have a distinct focus and purpose. These 
+propositions later guide the data collection and discussion. Each proposition serves to focus the data collection, dete rmine direction and scope of  the study and together the 
+propositions form the foundation for a con ceptual structure/framework (Miles & 
+Huberman, 1994; Stake, 1995). It should be noted  that propositions may not be present in 
+exploratory holistic or intrinsi c case studies due to the fact that the researcher does not 
+have enough experience, knowledge, or inform ation from the literature upon which to 
+base propositions. For those of you more familiar with quantitative approaches to experimental studies, propositions can be equa ted with hypotheses in that they both make 
+an educated guess to the possible outcomes  of the experiment/research study. A common 
+pitfall for the novice case study researchers is  to include too many propositions and then 
+find that they are overwhelmed by the number of  propositions that must be returned to 
+when analyzing the data a nd reporting the findings.  
+ 
+Issues 
+ 
+ To contribute to the confusion that  exists surrounding the implementation of 
+different types of qualitative case study appr oaches, where Yin uses “propositions” to 
+guide the research process, Stake (1995) appl ies what he terms “issues.” Stake states, 
+“issues are not simple and clean, but intricatel y wired to political, so cial, historical, and 
+especially personal contexts. All these meani ngs are important in studying cases” (p. 17). 
+Both Yin and Stake suggest that the propositi ons and issues are necessary elements in 
+case study research in that both lead to the development of a conceptual framework that 
+guides the research.  
+553  The Qualitative Report  December 2008  
+Conceptual Framework  
+ 
+Both Stake and Yin refer to conceptual frameworks, but fail to fully describe them 
+or provide a model of a conceptual framewor k for reference. One resource that provides 
+examples of conceptual frameworks is Mi les and Huberman (1994). These authors note 
+that the conceptual framework serves seve ral purposes: (a) identifying who will and will 
+not be included in the study;  (b) describing what relations hips may be present based on 
+logic, theory and/or experien ce; and (c) providing the researcher with  the opportunity to 
+gather general constructs into intellect ual “bins” (Miles & Huberman, p. 18). The 
+conceptual framework serves as an anchor fo r the study and is referr ed at the stage of 
+data interpretation. For example an initial framework was developed by Baxter, 2003 in 
+her exploration of nursing st udent decision making. The framework was based on the 
+literature and her personal experiences. Th e major constructs were proposed in the 
+following manner: 
+ 
+(Adapted from Baxter, 2003 p. 28) 
+The reader will note that the framework does not display relationships between 
+the constructs. The framework should continue to develop and be completed as the study 
+progresses and the relationships between the proposed constructs will emerge as data are 
+analyzed. A final conceptual framework will include all the themes that emerged from 
+data analysis. Yin suggests that returning to the propositions that initially formed the 
+conceptual framework ensures that the analysis  is reasonable in scope and that it also 
+provides structure for the final report. One of the drawbacks of a conceptual framework is 
+that it may limit the inductive approach wh en exploring a phenomenon. To safeguard 
+against becoming deductive, researchers are encouraged to journal their thoughts and 
+decisions and discuss them with other researchers to determine if their thinking has become too driven by the framework. 
+  
+Types of decisions 
+Internal 
+influencing 
+factors External 
+influencing 
+factors Decision 
+making 
+   Time Clinical Setting 
+PBL setting 
+Pamela Baxter and Susan Jack  554 
+Data Sources 
+ 
+A hallmark of case study research is the use of multiple data sources, a strategy 
+which also enhances data credibility (P atton, 1990; Yin, 2003). Potential data sources 
+may include, but are not limited to: documentati on, archival records, interviews, physical 
+artifacts, direct observations, and participan t-observation. Unique in comparison to other 
+qualitative approaches, within  case study research, investigat ors can collect and integrate 
+quantitative survey data, which facilita tes reaching a holistic understanding of the 
+phenomenon being studied. In case study, data from these multiple sources are then converged in the analysis process rather than  handled individually. Ea ch data source is 
+one piece of the “puzzle,” with each piece cont ributing to the researcher’s understanding 
+of the whole phenomenon. This convergence adds  strength to the findings as the various 
+strands of data are braided together to promote a greater understanding of the case. 
+Although the opportunity to gather data  from various sources is extremely 
+attractive because of the rigor that can be associated with this approach, there are dangers. One of them is the collection of overwhelming amounts of data that require 
+management and analysis. Often, researchers find  themselves “lost” in the data. In order 
+to bring some order to the data collection a co mputerized data base is often necessary to 
+organize and manage the voluminous amount of data. 
+ 
+Database 
+ 
+Both Yin and Stake recognize the importanc e of effectively organizing data. The 
+advantage of using a database to accomplish this task is that raw data are available for independent inspection. Using a database improves the reliability of the case study as it enables the researcher to track and organi ze data sources including notes, key documents, 
+tabular materials, narratives, photographs, and a udio files can be stored in a database for 
+easy retrieval at a later date. Computer Aided Qualitative Data Analysis Software (CAQDAS) provides unlimited “bins” into wh ich data can be collected and then 
+organized. In addition to the creation of bins these programs facilitate the recording of source detail, the time and date of the data collection, storage, and search capabilities. These are all important when developing a case study database (Wickham & Woods, 
+2005). The advantages and disadv antages of such a database have been described in the 
+literature (Richards & Richards, 1994, 1998) one of the greatest drawbacks is the 
+distancing of the researcher from the data.  
+ 
+Analysis 
+ 
+As in any other qualitative study the data collection and analysis occur 
+concurrently. The type of anal ysis engaged in will depend on the type of case study. Yin 
+briefly describes five tec hniques for analysis: patter n matching, linking data to 
+propositions, explanation build ing, time-series analysis, lo gic models, and cross-case 
+synthesis. In contrast, Stake describes categorical aggregation and direct interpretation as 
+types of analysis. Explaining each of these t echniques is beyond the scope of this paper. 
+As a novice researcher, it is important to review various types of analysis and to 
+determine which approach you are most comfortable with.  
+555  The Qualitative Report  December 2008  
+Yin (2003) notes that one important practi ce during the analysis phase of any case 
+study is the return to the propositions (if used ); there are several re asons for this. First, 
+this practice leads to a focused analysis when the temptation is to analyze data that are outside the scope of the research questions . Second, exploring rival propositions is an 
+attempt to provide an alternate explanation of  a phenomenon. Third, by engaging in this 
+iterative process the confidence in the findings is increased as the number of propositions 
+and rival propositions are addre ssed and accepted or rejected.  
+One danger associated with the analysis phase is that each data source would be 
+treated independently and the findings reported separately. This is not the purpose of a 
+case study. Rather, the researcher must ensure that th e data are converged in an attempt to 
+understand the overall case, not the various part s of the case, or the contributing factors 
+that influence the case. As a novice research er, one strategy that will ensure that you 
+remain true to the original ca se is to involve othe r research team memb ers in the analysis 
+phase and to ask them to provide feedback on yo ur ability to integrate the data sources in 
+an attempt to answer the research questions. 
+ 
+Reporting a Case Study 
+ 
+ Reporting a case study can be a difficult task for any researcher due to the 
+complex nature of this approach. It is difficult to report the findings in a concise manner, and yet it is the researcher’s responsibi lity to convert a co mplex phenomenon into a 
+format that is readily unders tood by the reader. The goal of the report is to describe the 
+study in such a comprehensive manner as to enable  the reader to feel as if they had been 
+an active participant in the research and can determine wh ether or not the study findings 
+could be applied to their own situation. It is  important that the researcher describes the 
+context within which the phenomenon is oc curring as well as the phenomenon itself. 
+There is no one correct way to  report a case study. However, some suggested ways are by 
+telling the reader a story, by providing a chronological report, or by addressing each 
+proposition. Addressing the propositions ensu res that the report remains focused and 
+deals with the research question. The pitf all in the report writing that many novice 
+researchers fall into is bei ng distracted by the mounds of interesting data that are 
+superfluous to the research question. Returnin g to the propositions or issues ensures that 
+the researcher avoids this pi tfall. In order to  fully understand the findings they are 
+compared and contrasted to what can be f ound in published literature in order to situate 
+the new data into preexisting data. Yin ( 2003) suggests six methods  for reporting a case 
+study. These include: linear, comparative, ch ronological, theory bu ilding, suspense, and 
+unsequenced (Refer to Yin for full descriptions).   
+Strategies for Achieving Trustworthiness in Case Study Research 
+ 
+ Numerous frameworks have been develope d to evaluate the rigor or assess the 
+trustworthiness of qualita tive data (e.g., Guba, 1981; Lincoln & Guba, 1985) and 
+strategies for establishing credibility, tr ansferability, dependability, and confirmability 
+have been extensively written about acro ss fields (e.g., Krefti ng, 1991; Sandelowski, 
+1986, 1993). General guidelines for critically a ppraising qualitative research have also 
+been published (e.g., Forchuk & Roberts, 1993; Mays & Pope, 2000).  
+Pamela Baxter and Susan Jack  556 
+For the novice researcher, designing and implementing a case study project, there 
+are several basic key elements to the study design that can be integrated to enhance 
+overall study quality or trus tworthiness. Researchers usi ng this method will want to 
+ensure enough detail is provide d so that readers can assess th e validity or credibility of 
+the work. As a basic foundation to achieve th is, novice researchers have a responsibility 
+to ensure that: (a) the case study research  question is clearly written, propositions (if 
+appropriate to the case study t ype) are provided, and the question is substantiated; (b) 
+case study design is appropriate for the re search question; (c) purposeful sampling 
+strategies appropriate for cas e study have been applied; (d) data are collected and 
+managed systematically; and (e) the data are analyzed correctly (Russell, Gregory, Ploeg, 
+DiCenso, & Guyatt, 2005). Case study research design princi ples lend themselves to 
+including numerous strategies that prom ote data credibility or “truth value.” 
+Triangulation of data sources, data types or re searchers is a primary strategy that can be 
+used and would support the principle in ca se study research that the phenomena be 
+viewed and explored from multiple perspectives. The collection and comparison of this data enhances data quality based on the principles of idea convergence and the 
+confirmation of findings (Knafl & Breitmay er, 1989). Novice researchers should also 
+plan for opportunities to have  either a prolonged or inte nse exposure to the phenomenon 
+under study within its context so that rapport with participants can be established and so 
+that multiple perspectives can be collected and understood and to reduce potential for social desirability responses in interviews  (Krefting, 1991). As data are collected and 
+analyzed, researchers may also wish to in tegrate a process of member checking, where 
+the researchers’ interpretations of the data  are shared with the participants, and the 
+participants have the opportuni ty to discuss and clarify the interpretation, and contribute 
+new or additional perspectives on the issu e under study. Additional strategies commonly 
+integrated into qualitative studies to establis h credibility include the use of reflection or 
+the maintenance of field notes and peer examination of the data. At the analysis stage, the 
+consistency of the findings or “dependability ” of the data can be promoted by having 
+multiple researchers independently code a set of  data and then meet together to come to 
+consensus on the emerging codes and categories. Researchers may also choose to implement a process of double coding where a set of data are code d, and then after a 
+period of time the researcher returns and code s the same data set and compares the results 
+(Krefting). 
+ 
+Conclusion 
+ 
+ Case study research is more than simply conducting research on a single 
+individual or situation. This  approach has the potential to deal with simple through 
+complex situations. It enables the researcher to answer “how” and “why” type questions, while taking into consideration how a pheno menon is influenced by the context within 
+which it is situated. For the novice research a case study is  an excellent opportunity to 
+gain tremendous insight into a case. It enables the researcher to  gather data from a variety 
+of sources and to converge the data to illuminate the case.  
+ 
+557  The Qualitative Report  December 2008  
+References 
+Baxter, P. (2000). An exploration of student decision making as experienced by second 
+year baccalaureate nursing students in a surgical clinical setting.  Unpublished 
+master’s thesis, McMaster University, Hamilton, ON. 
+Baxter, P. (2003).  The development of nurse decision maki ng: A case study of a four year 
+baccalaureate nursing programme . Unpublished doctoral thesis, McMaster 
+University, Hamilton, ON. 
+Baxter, P., & Rideout, L. (2006). Decision ma king of 2nd year baccalaureate nursing 
+students. Journal of Nursing Education , 45(4), 121-128. 
+Campbell, R., & Ahrens, C. E. (1998). Innovati ve community services for rape victims: 
+An application of multiple case study methodology. American Journal of 
+Community Psychology , 26, 537-571. 
+Creswell, J. (1998). Research design: Qualitative,  quantitative, and mixed methods 
+approaches  (2nd ed.). Thousand Oaks, CA: Sage. 
+Forchuk, C., & Roberts, J. (1993). How to critique qualitative research articles. Canadian 
+Journal of Nursing Research , 25, 47-55.  
+Guba, E. (1981). Criteria for assessing the trustworthiness of na turalistic inquiries. 
+Educational Resources Informati on Center Annual Review Paper , 29, 75-91.  
+Hancock, D. R., & Algozzine, B. (2006).  Doing case study research: A practical guide 
+for beginning researchers.  New York: Teachers College Press. 
+Handel, N., Silverstein, M., Waisman, E., Waisman, J., & Gierson, E. (1990). Reasons 
+why mastectomy patients do not have breast reconstruction. Plastic 
+Reconstruction Surgery , 86(6), 1118-22. 
+Hellström, I., Nolan, M., & Lundh, U. (2005). “We do things together.” A case study of 
+“couplehood” in dementia. Dementia , 4(1), 7-22. 
+Joia, L. A. (2002). Analysing a web-base d e-commerce learning community: A case 
+study in Brazil. Internet Research , 12, 305-317. 
+Knafl, K., & Breitmayer, B. J. (1989). Trian gulation in qualitative research: Issues of 
+conceptual clarity and purpose. In J. Morse (Ed.), Qualitative nursing research: A 
+contemporary dialogue (pp. 193-203). Rockville, MD: Aspen. 
+Krefting, L. (1991). Rigor in qualitative res earch: The assessment of  trustworthiness. 
+American Journal of Occupational Therapy , 45, 214-222. 
+Lather, P. (1992). Critical frames in educat ional research: Feminist and post-structural 
+perspectives.  Theory into Practice , 31(2), 87-99.  
+Lincoln, Y. S., & Guba, E. A. (1985).  Naturalistic inquiry . Beverly Hills, CA: Sage. 
+Lotzkar, M., & Bottorff, J. (2001). An obser vational study of the development of a nurse-
+patient relationship. Clinical Nursing Research , 10, 275-294. 
+Luck, L., Jackson, D., & Usher, K. ( 2007). STAMP: Components of observable 
+behaviour that indicate pot ential for patient violence in emergency departments. 
+Journal of Advanced Nursing , 59, 11-19. 
+Mays, N., & Pope, C. (2000). Qualitative rese arch in health care: Assessing quality in 
+qualitative research. BMJ , 320, 50-52.  
+Miles, M. B., & Huberman, A. M. (1994). Qualitative data analys is: An expanded source 
+book  (2nd ed.). Thousand Oaks, CA: Sage. 
+Pamela Baxter and Susan Jack  558 
+Morrow, M., Scott, S., Menck, H., Mustoe , T., & Winchester, D. (2001). Factors 
+influencing the use of breast reconstr uction postmastectomy: A national cancer 
+database study . Journal of American  College of Surgeons,  192(1), 69-70. 
+Patton, M. (1990). Qualitative evaluation and research methods  (2nd ed.). Newbury 
+Park, CA: Sage. 
+Polednak, A. (2000). Geographic variation in postmastectomy breast r econstruction rates. 
+Plastic & Reconstructive Surgery , 106(2), 298-301. 
+Reaby, L. (1998). Reasons why women who have  mastectomy decide to have or not to 
+have breast reconstruction. Plastic & Reconstructive Surgery, 101 (7), 1810-1818,  
+Richards, L., & Richards, T. (1994). From fili ng cabinet to computer. In A. Bryman & R. 
+G. Burgess (Eds.), Analysing qualitative data (pp. 146-172). London: Routledge. 
+Richards, T. J., & Richards, L.  (1998). Using comput ers in qualitative research. In N. K. 
+Denzin & Y. S. Lincoln (Eds.), Collecting and interpretin g qualitative materials 
+(pp. 445-462). London: Sage.  
+Russell, C., Gregory, D., Ploeg, J., DiCens o, A., & Guyatt, G. (2005). Qualitative 
+research. In A. DiCenso, G. Guyatt, & D. Ciliska (Eds.), Evidence-based nursing: 
+A guide to clinical practice  (pp. 120-135). St. Louis, MO: Elsevier Mosby. 
+Sandelowski, M. (1986). The problem of rigor in qualitative research. Advances in 
+Nursing Science , 8(3), 27-37. 
+Sandelowski, M. (1993). Rigor or rigor mor tis: The problem of rigor in qualitative 
+research revisited.  Advances in Nursing Science,  16(1), 1-8. 
+Scanlon, C. (2000). A professional code of ethics provides guidance for genetic nursing 
+practice. Nursing Ethics , 7(3), 262-268. 
+Scheib, J. W. (2003). Role st ress in the professional life of  the school music teacher: A 
+collective case study. Journal of Research in Music Education , 51,124-136. 
+Stake, R. E. (1995). The art of case study research . Thousand Oaks, CA: Sage. 
+Staradub, V., YiChing Hsieh, M., Clauson, J., et al. (2002). Factors that influence 
+surgical choices in women with breast carcinoma. Cancer,  95(6), 1185-1190. 
+Tolson, D., Fleming, V., & Schartau, E.  (2002). Coping with menstruation: 
+Understanding the needs of women with Parkinson’s disease. Journal of 
+Advanced Nursing , 40, 513-521. 
+Wallace, M., Wallace, H., Lee, J., & Dobke, M. (1996). Pain after breast surgery: A 
+survey of 282 women. Pain, 66 (2-3), 195-205. 
+Wanzel, K., Brown, M., Anastakis, D., et al. (2002). Reconstruc tive breast surgery: 
+Referring physician knowledge and learning needs. Plastic and Reconstructive 
+Surgery,  110(6), xx-xx. 
+Wickham, M., & Woods, M. (2005). Refl ecting on the strategic use of CAQDAS to 
+manage and report on the qualitative research process. The Qualitative Report,  
+10(4), 687-702. 
+Yin, R. K. (2003). Case study research: Design and methods  (3rd ed.). Thousand Oaks, 
+CA: Sage. 
+ 
+559  The Qualitative Report  December 2008  
+ 
+ 
+Author Note 
+ 
+Dr. Pamela Baxter is an assistant prof essor at McMaster University. Contact 
+information: McMaster University, 1200 Ma in St. W., HSB- 3N28C, Hamilton, ON, L8N 
+3Z5; Phone: 905-525-9140 x 22290; Fax: 905-52 1-8834; E-mail: baxterp@mcmaster.ca 
+Dr. Susan Jack is an assistant professo r at McMaster University. 1200 Main St. 
+W. Hamilton, ON L8N 3Z5; E-mail: jacksm@mcmaster.ca  
+ Copyright 2008: Pamela Baxter, Susan J ack, and Nova Southeastern University 
+ 
+Article Citation 
+ 
+Baxter, P., & Jack, S. (2008). Qualita tive case study methodology: Study design and 
+implementation for novice researchers. The Qualitative Report , 13(4), 544-559. 
+Retrieved from http://www.nova .edu/ssss/QR/QR13-4/baxter.pdf

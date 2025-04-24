@@ -1,0 +1,547 @@
+Research and Scholarly Methods: Pragmatic Clinical Trials
+Onyeche Oche, BPharm, MBA-HCA1, Chaorong Wu, Ph.D.2, Logan T. Murry, Pharm.D.1, 
+Korey A. Kennelty, Pharm.D., Ph.D.1,3
+1University of Iowa, College of Pharmacy, Department of Pharmacy Practice and Science, Iowa 
+City, Iowa, USA
+2University of Iowa, Institute for Clinical and Translational Science, Iowa City, Iowa, USA
+3University of Iowa, Carver College of Medicine, Department of Family Medicine, Iowa City, Iowa, 
+USA
+Pragmatic clinical trials (PCTs) have received increased attention within health services and 
+pharmacy practice research due to their ability to test interventions in the real world, with 
+emphasis on implementation and scalability in diverse practice environments. The purpose 
+of this article is to introduce the PCT research design to health service and pharmacy 
+practice researchers, followed by considerations and recommendations for conducting 
+successful PCT research. It is organized into three parts, including a definition of PCTs, 
+the process of selecting a PCT design, and general considerations and recommendations 
+of PCTs. We conclude with the applications and trends in the use of PCTs in pharmacy 
+research.
+Part 1. Defining Pragmatic Trials
+PCTs are conducted to answer the important question of how a treatment or intervention 
+works in a normal, “real-world scenario” using a heterogeneous “real-world population” 
+to test the effects ( Gamerman et al. 2019 ). While no consistent definition exists in the 
+literature, there are a number of study elements that are often used to define PCTs. 
+First, study participant eligibility requires little selection outside the clinical indication 
+of interest. PCTs have minimal subject inclusion and exclusion criteria since the design 
+is meant to reflect the population for which the intervention or treatment is intended. 
+Second, it is important that the study setting, including clinicians, clinical staff, patients, and 
+other stakeholders involved in the intervention or treatment, are reflective of the naturally 
+occurring environment and organizational structure. Finally, PCTs can be identified by the 
+types of outcomes and endpoints of interest, focusing on the data that is readily available and 
+collected within the context of routine care.
+Correspondence: Korey A. Kennelty, Pharm.D., Ph.D., College of Pharmacy, Carver College of Medicine, University of Iowa, Iowa 
+City, Iowa, 52242, Phone: 319-335-8862, Fax: 319-353-5646, korey-kennelty@uiowa.edu. 
+Disclosures: The authors declare no conflicts of interest.
+HHS Public Access
+Author manuscript
+J Am Coll Clin Pharm . Author manuscript; available in PMC 2023 January 01.
+Published in final edited form as:
+J Am Coll Clin Pharm . 2022 January ; 5(1): 99–106. doi:10.1002/jac5.1557.
+Author Manuscript Author Manuscript Author Manuscript Author Manuscript
+Differences between Pragmatic and Explanatory Trials
+Two statisticians, Daniel Schwartz and Joseph Lellouch, designated the two types of 
+randomized clinical trials (RCTs) as ‘explanatory’ and ‘pragmatic’ ( Schwartz & Lellouch 
+1967 ). In their 1967 paper, they described the explanatory approach to clinical trials as 
+one which focuses on determining if a difference exists between two treatments, and the 
+pragmatic approach as one focused on providing results that are more applicable to clinical 
+practice and decision making ( Schwartz & Lellouch 1967 ).
+While an explanatory study is highly controlled in terms of the research environment as 
+well as what groups of individuals are exposed to the treatment or intervention, a pragmatic 
+trial depicts more normal or ‘real life’ conditions ( McMahon 2002 ). General differences 
+between traditional, explanatory RCTs and PCTs are presented in Table 1 (Weinfurt 2021). 
+Explanatory studies focus results on outcomes or endpoints that are relatively unaffected by 
+the context and health systems that patients may be exposed to. As a result, explanatory 
+trials often lack generalizability to routine clinical practice ( Sedgwick 2014 ), whereas 
+pragmatic trials, which are undertaken in the typical conditions of the healthcare system 
+in which stakeholders work ( Zwarenstein 2017 ), are generalizable to clinical practice.
+Contextualizing pragmatic trials within a broader spectrum of possible 
+research designs
+Research designs often used in pharmacy practice research include, but are not limited 
+to, experimental, quasi-experimental, observational, qualitative, and mixed method designs 
+(Awaisu et al. 2019 ). Experimental research designs are used to evaluate cause and effect 
+relationships between a set of independent and dependent variables as shown in Figure 
+1 below ( Portney 2020 ). PCTs largely fall within the category of experimental research 
+designs, characterized by the random assignment of participants to at least two comparison 
+groups ( Portney 2020 ). Some may also fall within the category of exploratory trials, which 
+are observational and seek to find relationships between variables ( Portney 2020 ).
+Differentiating Experimental Research Designs (Pragmatic Clinical Trials) 
+from other Research Designs Used in Pharmacy Practice Research
+Experimental research designs, including PCTs, differ from other research designs used in 
+pharmacy practice. Quasi-experimental designs, for instance, are similar to experimental 
+designs in structure, but do not involve randomization, making them useful when 
+randomization is either impossible or unethical ( Portney 2020 ). Observational designs, 
+unlike experimental and quasi-experimental designs, do not involve any experimentation 
+but may be used to find relationships among variables and develop hypotheses which can 
+be tested using PCTs ( National Institutes of Health 2016 ). Mixed method designs integrate 
+both qualitative (descriptive) and quantitative elements, making them a good study design 
+for conducting experiments quantitatively and describing populations qualitatively.
+In pharmacy practice research, commonly used mixed method designs include the 
+concurrent or convergent parallel design, exploratory sequential design, explanatory Oche et al. Page 2
+J Am Coll Clin Pharm . Author manuscript; available in PMC 2023 January 01.
+Author Manuscript Author Manuscript Author Manuscript Author Manuscript
+sequential design, and the embedded design ( Hadi et al. 2013 , Pluye & Hong 2014 ). The 
+choice of one type of mixed methods design over another depends on the research question 
+being answered or the outcome that is desired. For instance, where a research question 
+requires first collecting data using a quantitative method, followed by an explanation of 
+that data using a qualitative method, an explanatory sequential design will be the design of 
+choice ( Creswell 2014 ).
+Important standards to know when conducting pragmatic trials
+The Pragmatic–Explanatory Continuum Indicator Summary tool (PRECIS-2)
+Although clinical trials can be pragmatic or explanatory, most are a continuum and tend 
+to have components of both elements in varying degrees ( Williams et al. 2015 ). The 
+nine-domain PRECIS tool (PRECIS-2 wheel) was developed to guide researchers into 
+prospectively determining the extent to which their trials are pragmatic or explanatory in 
+nature ( Loudon et al. 2015 ).
+According to the article by Loudon and others ( Loudon et al. 2015 ), these domains 
+include eligibility (the basis for trial participant selection), recruitment (manner of recruiting 
+participants), setting (trial location), organization (expertise and resources required for 
+intervention delivery), flexibility-delivery (manner of intervention delivery), flexibility-
+adherence (ways to ensure adherence to the intervention), follow-up (close monitoring), 
+primary outcome (the extent of relevance), and primary analysis (the extent of data 
+inclusion). In the PRECIS-2 wheel, each domain is scored on an explanatory-pragmatic 
+scale from 1 (very explanatory) to 5 (very pragmatic).
+The Consolidated Standards of Reporting Trials (CONSORT)
+The CONSORT Group developed the CONSORT Statement to address challenges 
+associated with the inadequate reporting of randomized controlled trials (RCTs). The focus 
+of the statement is on reducing bias (internal validity), while improving a trial result’s 
+applicability, that is, generalizability or external validity ( Zwarenstein et al. 2008 ).
+According to the article by Schulz and others ( Schulz et al. 2010 ), the statement consists of 
+minimum recommendations for trial reporting in a complete and clear manner, facilitating 
+thorough analysis and subsequent interpretation. The evidence-based CONSORT statement 
+consists of a 25-item checklist and a flow diagram with information on the design, analysis, 
+and interpretation of a trial (found in the checklist), as well as the progress of all participants 
+through the trial (found in the flow diagram). Often, journals require authors to include the 
+CONSORT diagram and checklist when submitting a manuscript for RCTs.
+Part 2. Selecting A PCT Design
+Clinical trial study designs include parallel group, cross-over, factorial, cluster randomized 
+trial, equivalence trial, and adaptive trial designs ( Greenberg 2015 ). In addition, the stepped 
+wedge design has become increasingly used in pharmacy practice research. A brief but 
+concise description of these designs, including their use, advantages, and disadvantages is 
+illustrated in Table 2.Oche et al. Page 3
+J Am Coll Clin Pharm . Author manuscript; available in PMC 2023 January 01.
+Author Manuscript Author Manuscript Author Manuscript Author Manuscript
+Important factors that guide the choice of a study design include the type of research 
+question or research hypothesis, expertise of the investigator, availability of data, and 
+funding opportunities ( Awaisu et al. 2019 ). In pharmacy practice research clinical trials, 
+factors to consider when selecting a study design include the number and characteristics 
+of treatments to be compared, characteristics of the disease under study, study objectives, 
+timeframe, treatment course and duration, carry over effects, duration of the study, cost and 
+logistics, patient convenience, ethical considerations, statistical considerations, study subject 
+availability, and inter and intra subject variability ( Nair 2019 ).
+Although many different study designs can be used to conduct PCTs as shown in Table 2, 
+it is important that their characteristics help to answer the research question in the mind of 
+a researcher determining which one to use. For instance, where two or more interventions 
+can be given concurrently, the factorial or parallel arm design would be deemed appropriate 
+(Nair 2019 ). On the other hand, when the time between inclusion of subjects into a study 
+and assessment of the results is short compared with the time taken to recruit study subjects, 
+the adaptive design would be considered suitable ( Nair 2019 ).
+Part 3: General Considerations and Recommendations of PCTs
+When conducting PCTs in pharmacy practice research, recognizing certain considerations 
+and recommendations from successful PCT researchers or studies can be invaluable. 
+Gamerman and others ( Gamerman et al. 2019 ), describe the 4 key design elements that 
+should be considered minimum requirements of a PCT, including: 1) enrolling a real-world 
+population; 2) conducting the trial in a real-world setting; 3) capturing relevant outcomes 
+important to inform optimal healthcare treatment decisions; and 4) using an appropriate 
+comparison arm ( Gamerman et al. 2019 ).
+1) Enrolling a real-world population
+An ideal PCT is described as one which reflects the population for which the treatment is 
+intended, is conducted at a high standard of quality, has a control group which receives an 
+acceptable standard of care, and produces outcomes that are meaningful ( Ford & Norrie 
+2016 ; Godwin et al. 2003 ).
+2) Conducting the trial in a real-world setting
+According to Margolis and others ( Margolis et al. 2020 ), important design elements of 
+a PCT include broad eligibility with few exclusions, an intention-to-treat analysis (which 
+means that all participants are analyzed on the basis of the group to which they were 
+randomized and not on the basis of their treatment adherence), and recruitment through 
+usual clinic appointments.
+Also, in their 2016 article ( Ford and Norrie 2016 ), the authors draw attention to the 
+challenges of enrolling trial participants, as many clinical trial subjects are comparatively 
+healthier than the general population, making generalizing the results quite futile. To 
+increase the number and representativeness of the sample, they suggest using financial 
+incentives, minimizing inclusion and exclusion criteria, and reducing the number and 
+complexity of study visits, procedures, and questionnaire burden.Oche et al. Page 4
+J Am Coll Clin Pharm . Author manuscript; available in PMC 2023 January 01.
+Author Manuscript Author Manuscript Author Manuscript Author Manuscript
+3) Capturing relevant outcomes important to inform optimal healthcare treatment 
+decisions
+Outcomes of interest in clinical trials include morbidity, mortality, functional status, quality 
+of life, and resource use and costs ( Welsing et al. 2017 ). Consideration should be given 
+to the appropriate selection of outcomes considered relevant for stakeholders (including 
+administration, patients, and providers), and supportive of clinical decision-making.
+4) Using an appropriate comparison arm
+In PCTs, arms refer to groups of participants that either receive or do not receive 
+an intervention. Experimental arms, which receive the intervention, are compared to 
+control arms which might be active (receiving an active therapy) or placebo (receiving 
+an inactive therapy). Selecting an appropriate comparison arm is important because it 
+provides information that allows relevant treatment decisions to be made for patients 
+seen subsequently ( Gamerman et al. 2019 ). To ensure comparability in treatment arms, 
+and maximize external validity (generalizability), while not compromising internal validity, 
+randomization is often used ( Godwin et al. 2003 ).
+Statistical Considerations— In addition to the general considerations discussed above, 
+there are also statistical considerations that researchers in pharmacy practice research should 
+recognize when conducting PCTs. These include the determination of an end point, the 
+establishment of an effect size, and the determination of power, error rates, and sample size 
+(Zabor et al. 2020 ). These are briefly discussed below.
+End point:  In selecting an end point, it is important to consider outcomes that can be 
+measured objectively to enable comparison between control and experimental groups ( Zabor 
+et al. 2020 ). The end point can be routinely obtained from usual practice such as Electronic 
+Health Records ( Gamerman et al. 2019 ). Examples of end points include morbidity and 
+survival.
+Effect Size:  Effect sizes represent the difference between the present result and the desired 
+outcome. They can also be used to estimate the sample size and hypothesis required for 
+the study. Although the hypothesis can either be one or two-sided, a two-sided hypothesis 
+(which identifies the difference from a hypothesized value in either direction), gives a good 
+measure of the effect of the intervention, but may require a larger sample size, unlike the 
+one-sided hypothesis (which identifies the difference from a hypothesized value in one 
+direction only) for which a smaller sample size may be sufficient ( Zabor et al. 2020 ).
+Power and Error rates:  Statistical Power is defined as the probability of detecting a 
+treatment effect or the ability of a study to detect a true difference between groups when the 
+treatment really works ( Waning & Montagne 2000 ). It is given by 1-Beta ( β) where Beta is a 
+type II error (when a study does not find a difference between treatment groups, although a 
+difference actually exists).
+Power calculation can be done prospectively or retrospectively, and is determined by certain 
+factors, including the statistical test in use, the effect size, sample attributes, and the level of Oche et al. Page 5
+J Am Coll Clin Pharm . Author manuscript; available in PMC 2023 January 01.
+Author Manuscript Author Manuscript Author Manuscript Author Manuscript
+power considered acceptable ( Houser 2007 ). The conventional standard for power in clinical 
+trials is 80 percent (0.8), with Beta at 20 percent ( Prajapati et al. 2010 ).
+Sample size:  An adequate sample size is important in pragmatic trials for the results to 
+be generalizable and for long-term follow-up to account for patients who drop out of the 
+study ( MacPherson 2004 ). According to Kirby and others ( Kirby et al. 2002 ), the factors 
+influencing sample size calculation in a clinical study include i) power (usually set at 80% 
+but could be set at 90% for large trials), ii) significance level (the 1% or 5% chance of 
+reporting a significant effect in error), iii) the rate of event occurrence in the population (this 
+can be estimated from previous studies), and iv) the treatment effect size (the difference 
+in the event rate with and without the intervention). The sample size increases at smaller 
+significance levels and higher power, and is inversely proportional to the square of the 
+intervention-induced difference ( Kirby et al. 2002 ).
+Applications and trends in the use of PCTs in Pharmacy
+PCTs have been used in different types of pharmacy studies as shown in Table 3. One 
+particular study design, the stepped-wedge cluster randomized trial, has been used in 
+pharmacy practice research in areas such as medication safety and adherence, as well as 
+in evaluation, comparative, and intervention studies ( Hemming et al. 2015 ). Although still 
+a relatively new design, it is becoming quite popular as it has several advantages over the 
+parallel cluster randomized trial design, including its usefulness where there are political, 
+ethical, and logistical concerns ( Hemming et al. 2015 ).
+The following examples (medication adherence, comparative, and intervention) show studies 
+in pharmacy practice research that have utilized a pragmatic approach. In a medication 
+adherence study by Gong and others ( Gong et al. 2016 ), telephone-based enhanced 
+pharmacy care was compared to usual care for smoking cessation. The study design 
+involved randomizing qualified participants - patients recently prescribed smoking cessation 
+medication) into two groups - enhanced pharmacy care (EPC) and usual care (UC) and 
+utilizing pharmacists to provide telephone counseling sessions to only the EPC group. 
+The study results indicated that a pharmacist-enhanced program may benefit smokers by 
+increasing adherence to prescription medications for smoking cessation.
+In a comparative PCT study by Radley and others, ( Radley et al. 2020 ), the clinical 
+effectiveness of a pharmacist-led antiviral treatment for hepatitis C virus was tested against 
+conventionally delivered treatment in patients receiving opioid substitution therapy. This 
+study used a cluster-randomized trial design in which pharmacies were randomized into the 
+two groups (with patients receiving either a pharmacist-led intervention or conventionally 
+delivered treatment). The study results found more accessible testing and high treatment 
+success rates were obtained when pharmacists were used.
+An intervention PCT study by Evans and others ( Evans et al. 2010 ) evaluated the impact 
+of a community pharmacy intervention on statin adherence, through the integration of a 
+cluster randomization and an outcome evaluation design. The study combined the rigor of a 
+randomized trial with the pragmatism of collecting results in community pharmacy settings, Oche et al. Page 6
+J Am Coll Clin Pharm . Author manuscript; available in PMC 2023 January 01.
+Author Manuscript Author Manuscript Author Manuscript Author Manuscript
+a novel idea which could set a precedent for future research study designs in the area of 
+medication adherence, and possibly other areas of pharmacy practice research.
+Conclusion
+PCTs are useful in health services and pharmacy practice research because of their real-
+world applicability. In our paper, we have presented an overview of the utility of PCTs in 
+pharmacy practice research. Our recommendations and considerations for PCT designs are 
+not exhaustive, however, and are meant to introduce these concepts to the health services and 
+pharmacy practice research audience while providing additional resources to further guide 
+PCT research.
+Acknowledgements
+Funding source: NIH NHLBI, R01 HL116311; CDC National Center for Injury Prevention and Control 
+U01CE002961
+References
+Awaisu A, Mukhalalati B, Mohamed Ibrahim MI. Research Designs and Methodologies Related to 
+Pharmacy Practice. Encyclopedia of Pharmacy Practice and Clinical Pharmacy. 2019:7–21. doi: 
+10.1016/B978-0-12-812735-3.00602-6. Epub 2019 Jul 23.
+Brown CA, & Lilford RJ. The stepped wedge trial design: a systematic review. Medical Research 
+Methodology. 2006; 6:54 doi:10.1186/1471-2288-6-54 [PubMed: 17092344] 
+Carter BL, Levy B, Gryzlak B, Xu Y , Chrischilles E, Dawson J, Vander Weg M, Christensen A, James 
+P, Polgreen L. Cluster-Randomized Trial to Evaluate a Centralized Clinical Pharmacy Service in 
+Private Family Medicine Offices. Circ Cardiovasc Qual Outcomes. 2018 Jun;11(6):e004188. doi: 
+10.1161/CIRCOUTCOMES.117.004188. [PubMed: 29884657] 
+Choudhry NK, Isaac T, Lauffenburger JC, Gopalakrishnan C, Lee M, Vachon A, Iliadis TL, Hollands 
+W, Elman S, Kraft JM, Naseem S, Doheny S, Lee J, Barberio J, Patel L, Khan NF, Gagne JJ, 
+Jackevicius CA, Fischer MA, Solomon DH, Sequist TD. Effect of a Remotely Delivered Tailored 
+Multicomponent Approach to Enhance Medication Taking for Patients With Hyperlipidemia, 
+Hypertension, and Diabetes: The STIC2IT Cluster Randomized Clinical Trial. JAMA Intern Med. 
+2018 Sep 1;178(9):1182–1189. doi: 10.1001/jamainternmed.2018.3189. [PubMed: 30083727] 
+Cook AJ, Delong E, Murray DM, V ollmer WM, Heagerty PJ. Statistical lessons learned 
+for designing cluster randomized pragmatic clinical trials from the NIH Health Care 
+Systems Collaboratory Biostatistics and Design Core. Clin Trials. 2016 Oct;13(5):504–12. doi: 
+10.1177/1740774516646578. Epub 2016 May 13. [PubMed: 27179253] 
+Copas AJ, Lewis JJ, Thompson JA, Davey C, Baio G, Hargreaves JR. Designing a stepped wedge trial: 
+three main designs, carry-over effects and randomisation approaches. Trials. 2015 Aug 17;16:352. 
+doi: 10.1186/s13063-015-0842-7. [PubMed: 26279154] 
+Creswell JW. A concise introduction to mixed methods research: SAGE Publications; 2014. 152 p.
+Evans CD, Eurich DT, Taylor JG, Remillard AJ, Shevchuk YM, Blackburn DF. A pragmatic cluster 
+randomized trial evaluating the impact of a community pharmacy intervention on statin adherence: 
+rationale and design of the Community Pharmacy Assisting in Total Cardiovascular Health 
+(CPATCH) study. Trials. 2010 Jul 8;11:76. doi: 10.1186/1745-6215-11-76. [PubMed: 20615235] 
+Ford I, Norrie J. Pragmatic Trials. N Engl J Med. 2016 Aug 4;375(5):454–63. doi: 10.1056/
+NEJMra1510059. [PubMed: 27518663] 
+Gamerman V , Cai T, Elsäßer A. Pragmatic randomized clinical trials: best practices and statistical 
+guidance. Health Serv Outcome Res Methodol. 2019;19: 23–35.
+Godwin M, Ruhland L, Casson I, MacDonald S, Delva D, Birtwhistle R, Lam M, Seguin R. Pragmatic 
+controlled clinical trials in primary care: the struggle between external and internal validity. BMC 
+Med Res Methodol. 2003 Dec 22;3:28. doi: 10.1186/1471-2288-3-28. [PubMed: 14690550] Oche et al. Page 7
+J Am Coll Clin Pharm . Author manuscript; available in PMC 2023 January 01.
+Author Manuscript Author Manuscript Author Manuscript Author Manuscript
+Gong J, Baker CL, Zou KH, Bruno M, Jumadilova Z, Lawrence D, Wilson B, Ewel C. A Pragmatic 
+Randomized Trial Comparing Telephone-Based Enhanced Pharmacy Care and Usual Care to 
+Support Smoking Cessation. J Manag Care Spec Pharm. 2016 Dec;22(12):1417–1425. doi: 
+10.18553/jmcp.2016.22.12.1417. [PubMed: 27882838] 
+Greenberg RS. Medical Epidemiology: Population Health and Effective Health Care. 5th ed. New 
+York: McGraw-Hill Professional Publishing; 2015. 304 p.th
+Hadi MA, Alldred DP, Closs SJ, Briggs M. Mixed-methods research in pharmacy practice: basics and 
+beyond (part 1). Int J Pharm Pract. 2013 Oct;21(5):341–5. doi: 10.1111/ijpp.12010. Epub 2012 
+Dec 11. [PubMed: 23418918] 
+Hahn S Understanding noninferiority trials. Korean J Pediatr. 2012 Nov;55(11):403–7. doi: 10.3345/
+kjp.2012.55.11.403. Epub 2012 Nov 23. [PubMed: 23227058] 
+Hemming K, Haines TP, Chilton PJ, Girling AJ, Lilford RJ. The stepped wedge cluster randomised 
+trial: rationale, design, analysis, and reporting. BMJ. 2015 Feb 6;350:h391. doi: 10.1136/
+bmj.h391. [PubMed: 25662947] 
+Houser J How many are enough? Statistical power analysis and sample size estimation in clinical 
+research. J Clin Res Best Pract. 2007; 3.1–5.
+Kane-Gill SL, Wong A, Culley CM, Perera S, Reynolds MD, Handler SM, Kellum JA, Aspinall 
+MB, Pellett ME, Long KE, Nace DA, Boyce RD. Transforming the Medication Regimen Review 
+Process Using Telemedicine to Prevent Adverse Events. J Am Geriatr Soc. 2021 Feb;69(2):530–
+538. doi: 10.1111/jgs.16946. Epub 2020 Nov 24. [PubMed: 33233016] 
+Kennelty KA, Engblom NJ, Carter BL, Hollingworth L, Levy BT, Finkelstein RJ, Parker CP, Xu Y , 
+Jackson KL, Dawson JD, Dorsey KK. Dissemination of a telehealth cardiovascular risk service: 
+The CVRS live protocol. Contemp Clin Trials. 2021 Mar;102:106282. [PubMed: 33444781] 
+Kirby A, Gebski V , Keech AC. Determining the sample size in a clinical trial. Med J Aust. 2002 Sep 
+2;177(5):256–7. doi: 10.5694/j.1326-5377.2002.tb04759.x. [PubMed: 12197821] 
+Loudon K, Treweek S, Sullivan F, Donnan P, Thorpe KE, Zwarenstein M. The PRECIS-2 tool: 
+designing trials that are fit for purpose. BMJ. 2015 May 8;350:h2147. doi: 10.1136/bmj.h2147. 
+[PubMed: 25956159] 
+MacPherson H. “Pragmatic clinical trials”. Complementary Therapies in Medicine. 2004; 12: 134–140
+Margolis KL, Asche SE, Bergdall AR, Dehmer SP, Groen SE, Kadrmas HM, Kerby TJ, Klotzle 
+KJ, Maciosek MV , Michels RD, O’Connor PJ, Pritchard RA, Sekenski JL, Sperl-Hillen JM, 
+Trower NK. Effect of home blood pressure telemonitoring and pharmacist management on 
+blood pressure control: a cluster randomized clinical trial. JAMA. 2013 Jul 3;310(1):46–56. doi: 
+10.1001/jama.2013.6549. [PubMed: 23821088] 
+Margolis KL, Crain AL, Bergdall AR, Beran M, Anderson JP, Solberg LI, O’Connor PJ, Sperl-Hillen 
+JM, Pawloski PA, Ziegenfuss JY , Rehrauer D, Norton C, Haugen P, Green BB, McKinney 
+Z, Kodet A, Appana D, Sharma R, Trower NK, Williams R, Crabtree BF. Design of a 
+pragmatic cluster-randomized trial comparing telehealth care and best practice clinic-based care 
+for uncontrolled high blood pressure. Contemp Clin Trials. 2020 May;92:105939. doi: 10.1016/
+j.cct.2020.105939. Epub 2020 Jan 22. [PubMed: 31981712] 
+McMahon AD. Study control, violators, inclusion criteria and defining explanatory and pragmatic 
+trials. Statist. Med. 2002; 21:1365–1376.
+Minneci PC, Deans KJ. Pragmatic Clinical Trials. In: Pawlik T, Sosa J (eds) Clinical Trials. Success in 
+Academic Surgery. 1st ed. Cham, Switzerland: Springer; 2020. p.187–194.st
+Nair B Clinical Trial Designs. Indian Dermatol Online J. 2019 Mar-Apr;10(2):193–201. doi: 10.4103/
+idoj.IDOJ_475_18. [PubMed: 30984604] 
+National Institutes of Health. Why do researchers do different kinds of clinical studies? Bethesda, 
+MD: National Institutes of Health; 2016 Oct 18. Available from: https://www.nih.gov/about-nih/
+what-we-do/science-health-public-trust/perspectives/understanding-clinical-studies .
+Pluye P, Hong QN. Combining the power of stories and the power of numbers: mixed methods 
+research and mixed studies reviews. Annu Rev Public Health. 2014;35:29–45. doi: 10.1146/
+annurev-publhealth-032013-182440. Epub 2013 Oct 30. [PubMed: 24188053] 
+Portney LG. Foundations of Clinical Research: Applications to Evidence-Based Practice. (4th ed.). 
+Philadelphia: F.A. Davis Company; 2020. 696 p.Oche et al. Page 8
+J Am Coll Clin Pharm . Author manuscript; available in PMC 2023 January 01.
+Author Manuscript Author Manuscript Author Manuscript Author Manuscript
+Prajapati B, Dunne MCM, Armstrong RA. Sample size estimation and statistical power analyses. 
+Optometry Today. 2010 Jul 16;2010(July).
+Radley A, de Bruin M, Inglis SK, Donnan PT, Hapca A, Barclay ST, Fraser A, Dillon JF. Clinical 
+effectiveness of pharmacist-led versus conventionally delivered antiviral treatment for hepatitis 
+C virus in patients receiving opioid substitution therapy: a pragmatic, cluster-randomised trial. 
+Lancet Gastroenterol Hepatol. 2020 Sep;5(9):809–818. doi: 10.1016/S2468-1253(20)30120-5. 
+Epub 2020 Jun 8. [PubMed: 32526210] 
+Schulz KF, Altman DG, Moher D. CONSORT 2010 Statement: updated guidelines for reporting 
+parallel group randomised trials BMJ. 2010;340:c332 [PubMed: 20332509] 
+Schwartz D, Lellouch J. Explanatory and pragmatic attitudes in therapeutical trials. J Chronic Dis. 
+1967 Aug;20(8):637–48. doi: 10.1016/0021-9681(67)90041-0. [PubMed: 4860352] 
+Sedgwick P Explanatory trials versus pragmatic trials. BMJ. 2014 Nov 13;349:g6694. doi: 10.1136/
+bmj.g6694. [PubMed: 25395503] 
+Waning B, Montagne M Pharmacoepidemiology: Principles and Practice. Chapter 4. experimental 
+study designs. 1st ed. New York: McGraw Hill; 2000. 209 p.st
+Weinfurt K What is a Pragmatic Clinical Trial: Differentiating Between RCTs, PCTs, 
+and Quality Improvement Activities. In: Rethinking Clinical Trials: A Living Textbook 
+of Pragmatic Clinical Trials. Bethesda, MD: NIH Health Care Systems Research 
+Collaboratory. Available from: https://rethinkingclinicaltrials.org/chapters/pragmatic-clinical-trial/
+what-is-a-pragmatic-clinical-trial-3/ . Updated May 14, 2020. DOI: 10.28929/091.
+Welsing PM, Oude Rengerink K, Collier S, Eckert L, van Smeden M, Ciaglia A, Nachbaur G, Trelle S, 
+Taylor AJ, Egger M, Goetz I; Work Package 3 of the GetReal Consortium. Series: Pragmatic trials 
+and real world evidence: Paper 6. Outcome measures in the real world. J Clin Epidemiol. 2017 
+Oct;90:99–107. doi: 10.1016/j.jclinepi.2016.12.022. Epub 2017 May 11. [PubMed: 28502810] 
+Williams HC, Burden-Teh E, Nunn AJ. What is a pragmatic clinical trial? J Invest Dermatol. 2015 
+Jun;135(6):1–3. doi: 10.1038/jid.2015.134.
+Zabor EC, Kaizer AM, Hobbs BP. Randomized Controlled Trials. Chest. 2020 Jul;158(1S):S79–S87. 
+doi: 10.1016/j.chest.2020.03.013. [PubMed: 32658656] 
+Zwarenstein M, Treweek S, Gagnier JJ, et al. Improving the reporting of pragmatic trials: an extension 
+of the CONSORT statement. BMJ (Clinical Research ed.). 2008 Nov;337:a2390. DOI: 10.1136/
+bmj.a2390.
+Zwarenstein M ‘Pragmatic’ and ‘explanatory’ attitudes to randomised trials. J R Soc Med. 2017 
+May;110(5):208–218. doi: 10.1177/0141076817706303. [PubMed: 28504072] Oche et al. Page 9
+J Am Coll Clin Pharm . Author manuscript; available in PMC 2023 January 01.
+Author Manuscript Author Manuscript Author Manuscript Author Manuscript
+Figure 1: 
+Contextualizing PCTs and RCTs in the descriptive – explanatory continuum. Adapted from 
+Portney 2020 .Oche et al. Page 10
+J Am Coll Clin Pharm . Author manuscript; available in PMC 2023 January 01.
+Author Manuscript Author Manuscript Author Manuscript Author Manuscript
+Author Manuscript Author Manuscript Author Manuscript Author ManuscriptOche et al. Page 11
+Table 1.
+General Differences between Randomized Controlled Trials (RCT) and Pragmatic Clinical Trials (PCT)
+Study Design Attribute PCT RCT
+Who develops the study 
+questions?Collaborative process between researchers/clinicians Researchers
+What is the purpose? To improve intervention processes and inform clinical and 
+policy decisionsTo determine treatment causes and effects
+What question does it 
+answer?Does the intervention work under usual conditions? Does the intervention work under ideal 
+conditions?
+Who is enrolled? Heterogeneous groups to accommodate real-world 
+populationsGroups that meet explicit inclusion and 
+exclusion criteria
+What is studied? The effect of an intervention or treatment within and 
+across a variety of institutional settings and heterogeneous 
+populationsEffect of intervention or treatment on biological 
+or biomarker outcomes in a more rigorously 
+controlled environment
+Adherence to Intervention Flexible, reflective of real-world practice Strictly enforced for continued study 
+participation
+Outcomes Directly relevant to the patients, providers, and other 
+stakeholders involved in the study, collected within routine 
+care processesMay be surrogates or other outcomes 
+deliberately collected for the purpose of the 
+study
+Table adapted from the Weinfurt article (Weinfurt 2021)
+J Am Coll Clin Pharm . Author manuscript; available in PMC 2023 January 01.
+Author Manuscript Author Manuscript Author Manuscript Author ManuscriptOche et al. Page 12Table 2:
+Description, use, advantages, and disadvantages of different types of study design used in PCTs
+Design Type Description Use Advantages Disadvantages
+Parallel group Randomization of participants to one or more 
+study arms, with each study arm allocated a 
+different intervention ( Nair 2019 )Situations where experiments can be run 
+simultaneously in a number of groups 
+(Nair 2019 )Can be used to study many diseases 
+(Nair 2019 )Contamination may occur if unplanned 
+co-interventions or cross-overs occur 
+(Nair 2019 )
+Cross-over Participants serve as their own control, but 
+are randomized to sequences of treatments 
+(Greenberg 2015 )Where performance of control and 
+intervention activities is required.Since each subject is its own control, 
+a smaller sample size can be studied 
+(Greenberg 2015 )Result validity may be affected if subjects 
+drop-out before the second treatment 
+period ( Greenberg 2015 )
+Factorial (2 × 2) Evaluation of two interventions compared 
+with a control within a single trial ( Greenberg 
+2015 )Appropriate for:
+Studying two or more interventions 
+in various combinations in one study 
+setting.
+Studying the interactive effects resulting 
+from combination of interventions ( Nair 
+2019 )Can answer many research questions 
+with a single trial and delivers more 
+value when sample size is small ( Nair 
+2019 )Trial complexity, including statistical 
+analytical complexities, inability to 
+combine two incompatible interventions, 
+and complex protocols ( Nair 2019 )
+Cluster 
+randomizedRandomization of groups of subjects into 
+treatment and control groups, as opposed to 
+individual subjects ( Zabor et al 2020 )When practical issues make individual 
+randomization difficult ( Cook et al 
+2016 )Avoidance of contamination which 
+occurs when aspects of an intervention 
+are adopted by participants of the study 
+who were randomized to not receive that 
+intervention ( Minneci & Deans 2020 )Contamination may occur ( Cook et al 
+2016 )
+Equivalence 
+(non-inferiority 
+trials)Assessment of the equivalence of a new 
+intervention to one that is already established 
+(Greenberg 2015 )Useful where there are ethical issues 
+associated with assigning patients to a 
+placebo ( Hahn 2012 )Non-inferiority can be established with a 
+much smaller sample than that required 
+for superiority trials ( Hahn 2012 )Not useful where the control or standard 
+therapy lacks established efficacy 
+(Greenberg 2015 )
+Adaptive Predefined design adaptations are made to 
+trial procedures of ongoing clinical trials 
+(Greenberg 2015 )To adjust different adaptations during 
+the course of the trial as evidence 
+accumulates ( Greenberg 2015 )Has the potential to accelerate 
+therapeutic
+development ( Greenberg 2015 )Can lead to unequal group sizes, which 
+could affect statistical power negatively 
+(Greenberg 2015 )
+Stepped wedge Cross over (switching of treatments) of one 
+or several clusters at different time points 
+(called periods) and in a randomized manner, 
+from the control treatment to the intervention 
+treatment ( Ford & Norrie 2016 )Where there are ethical concerns about 
+withholding a treatment from some of 
+the participants ( Brown & Lilford 2006 )When the treatment cannot be started 
+concurrently in all participants ( Nair 
+2019 )Carry-over effects i.e., when the effects 
+of the first treatment are not allowed to 
+completely clear away before treatment 
+is received for the next or second period 
+(Copas et al 2015 )
+J Am Coll Clin Pharm . Author manuscript; available in PMC 2023 January 01.
+Author Manuscript Author Manuscript Author Manuscript Author ManuscriptOche et al. Page 13Table 3:
+Studies showing the latest trends in the use of PCTs in Pharmacy
+Studies Where conducted Purpose Outcomes
+Medication Adherence
+(Choudhry et al 2018 )Multispecialty 
+group practiceTo enhance medication adherence for patients 
+suffering from chronic conditionsIncrease in adherence
+Significant increase in patients achieving disease control
+Non-significantly improved disease control for all eligible conditions
+Evaluation study
+(Carter et al 2018 )Private Family 
+Medicine officesTo evaluate a centralized clinical pharmacy service Statistically significant improvement in the intervention group from 63.3% at baseline to 
+67.8% at 12 months (p = 0.02) with an estimated benefit of the intervention of 5.0% ± 2.4% 
+(95% CI = −0.5 to 10.4%, p=0.07)
+Intervention study
+(Margolis et al 2013 )Primary Care clinics a) To determine whether an intervention combining 
+home blood pressure (BP) telemonitoring with 
+pharmacist case management improves control 
+compared with usual care b) To determine whether 
+BP control is maintained after the intervention stopsAfter 6 months: BP was controlled in 71.8 % (95% CI, 65.6% – 77.3%) of Telemonitoring 
+Intervention patients and 45.2% (95% CI, 39.2% – 51.3%) of Usual Care patients, P < 0.0001
+At 12 months BP was controlled in 71.2% (95% CI, 62.0% – 78.9%) of Telemonitoring 
+Intervention patients and 52.8% (95% CI, 45.4% – 60.2%) of Usual Care patients, P=0.005
+Comparative study
+(Margolis et al 2020 )Primary care clinics To inform health systems about the benefits, 
+strengths, and limitations of implementing home 
+BP telemonitoring with pharmacist managementControl of systolic BP to less than 140 mm Hg and diastolic BP to less than 90 mm Hg 
+(<130/80 mm Hg in patients with diabetes or chronic kidney disease) at 6 and 12 months. 
+Secondary outcomes were change in BP, patient satisfaction, and BP control at 18 months
+Medication safety
+(Kane-Gill et al 2020)Nursing homes 
+(NHs)a) To transform the medication regimen review 
+process using telemedicine to prevent adverse drug 
+events (ADEs)
+b) To assess the impact of pharmacist-led and 
+patient-centered telemedicine services in high-risk 
+medication managementThe number of ADEs for NH 1 declined while that of NH 2 and NH 3 did not. In NH 1, the 
+decline was attributed to an increase in the willingness by physicians to heed pharmacists’ 
+recommendations. Also, when compared to usual care, there was a lower incidence of ADEs 
+in the intervention group.
+Implementation
+(Kennelty et al 2021 )Primary care clinics Examine implementation of sustainment of a 
+remote, centralized cardiovascular risk service 
+in organizational and culturally diverse medical 
+centersBarriers to intervention implementation
+Real-world effectiveness of blood pressure and diabetes control between patients in the usual 
+care vs intervention group
+Sustainment and adaptation of the intervention in primary care clinics
+J Am Coll Clin Pharm . Author manuscript; available in PMC 2023 January 01.

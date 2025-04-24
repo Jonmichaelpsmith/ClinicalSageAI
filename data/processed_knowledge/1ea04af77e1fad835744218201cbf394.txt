@@ -1,0 +1,151 @@
+Building Smarter Drug Development
+with the Patient at the Center
+Patient Portals
+Online Marketing & Analytics
+Patient Journey Mapping
+(SEO, Education, Layman Summaries)
+(Surveys, Interviews, Networks)Patient
+Engagement
+Tools & Methods
+Wemedoo Technical SolutionPatient Engagement
+Organize Data Process Data Collect DataAnalyse &
+Visualize Data
+ePRO, eConsent, eCOA
+Patient Diaries and Interviews
+Collaboration with Advocacy GroupsTransforming raw inputs into
+clean, consistent, and usable
+dataDashboards and
+graph-based analytics
+to support decision-makingAI-powered data intelligence,
+guided by human expertise
+Patient Portal oopus oomniaDrug development often misses the mark because it 
+overlooks the most important voice: the patient’s. Timelines 
+stretch. Trials stall. Treatments fail to deliver . At Wemedoo, 
+we ﬁx that.
+We bring patients into the development process using 
+structured tools and clean data pipelines. Our approach 
+helps research teams focus on real needs, improve study 
+design, streamline recruitment, and strengthen regulatory 
+and market outcomes.
+Wemedoo delivers modular tools and expert services that support patient-centered R&D:
+Contact Us For More
+Wemedoo is scaling. Our roadmap includes:
+We have built the infrastructure. We have the 
+expertise. We are aligned with where the 
+industry is going: faster , smarter , patient-ﬁrst 
+development.Wemedoo directly addresses ineﬃciencies in 
+the pharmaceutical value chain, from trial 
+failure to slow approvals to weak uptake.
+We help deﬁne unmet clinical needs by engaging directly with 
+patients and caregivers. Our tools uncover insights into disease 
+burden and support the identiﬁcation of promising therapeutic 
+targets early in the development cycle.Research & Discovery
+We capture patient preferences regarding drug delivery methods 
+to inform the study design. This helps evaluate the likely impact 
+on adherence and deﬁne meaningful endpoints that matter to 
+the people who will use the drug.Preclinical Development
+Our approach supports patient-centered trial design. We work to 
+deﬁne patient-driven endpoints, diversify recruitment 
+populations, and identify the most suitable regions and trial sites 
+using real-world input and regional analytics.Clinical Development
+We facilitate patient involvement throughout the regulatory 
+process. This includes preparing patient testimonies for hearings, 
+gathering preference data, organizing patient-focused 
+development meetings, and involving patient representatives on 
+advisory committees.Regulatory Approval
+We help integrate patient experience into communication 
+strategies. This includes real stories and testimonials, pricing 
+models that reﬂect patient aﬀordability concerns, and 
+educational materials developed with patient understanding in 
+mind.Marketing & Sales
+We continue gathering patient feedback after launch. 
+Testimonials, aﬀordability concerns, and lived experiences help 
+reﬁne messaging, support ongoing education, and improve 
+long-term treatment adherence and access.Post-Marketing ActivitiesData value chain in
+biopharmaceutical industry
+Expanded trial site targeting
+using social network data
+Longitudinal insights via
+connected patient registries
+Advanced analytics for
+submission-ready visualizations
+Robust
+InfrastructureDeep
+Expertise
+Future-Ready
+Vision
+Contact Us For More
+Contact Us For More
+Wemedoo A G  |  Sump fstrasse 24  |  6312 S teinhausen  |  S witzerlandinfo@w emedoo.com
++41 41 740 0124
+www .wemedoo.com
+Technical Framework for
+Patient Data Flow and Decision Support
+1 2 3 4 5
+Conversational agents and LLMs handle 
+ﬁrst-line screening of patient eligibility. If 
+criteria are met, a human (study nurse) 
+takes over for onboarding and further 
+processing.Techniques can be applied to evaluate 
+how professionals make decisions. Patient 
+perspectives and choices may be 
+compared with professional 
+decision-making mechanisms.The system connects to hospital EHRs 
+to extract and structure data 
+automatically, extending functionality 
+for smoother interoperability and data 
+ﬂow.
+Patient Onboarding &
+Eligibility Screening
+Hospital Connectivity &
+Data Structuring
+Acts as a continuous data collection 
+system within hospitals, supports 
+registries and quality assurance eﬀorts to 
+monitor and improve care delivery.
+Registry & Quality
+Assurance System (oopus)
+Decision-Making
+Analysis & Comparison
+We bring deep expertise and smart technology to unlock the full potential of clinical data, advancing 
+patient-ﬁrst, eﬃcient research. We seamlessly connect people, processes, and data to drive real impact 
+across the clinical landscape.Patients upload scans or images of their 
+medical records. These are automatically 
+structured and aligned with ideal clinical 
+pathways for streamlined analysis and 
+integration.
+Patient Clinical
+Documentation Support
+
+Modular Architecture Overview:
+Connected Health Modules
+• Title and abstract screening for literature reviews using large language models: an exploratory study in the biomedical domain, Fabio Dennstädt, Nikola Cihoric et. al. 
+Systematic reviews, Volume 13, Issue 1, Pages 158, BioMed central
+• Decision making criteria in oncology, Markus Glatzer , Paul Martin Putora et. al. Oncology, Volume 98, Issue 6 , Pages 370-378
+• Creation of a CDE-based data structure for radiotherapeutic decision-making in breast cancer, Fabio Dennstädt, Nikola Cihoric et. al. Volume 155, Pages 82-83
+• Application of a general LLM-based classiﬁcation system to retrieve information about oncological trials, Fabio Dennstädt, Janna Hastings et. al. medRxiv, Pages: 2024.12. 
+03.24318390
+Science Behind:
+Contact Us For More
+Wemedoo A G  |  Sump fstrasse 24  |  6312 S teinhausen  |  S witzerlandinfo@w emedoo.com
++41 41 740 0124
+www .wemedoo.comPatient
+RecruitmentAnalysisBiomarker
+OutcomePublicationAdverse
+Event
+ObservationStudyIntervention
+Protocol
+TreatmentMedical
+History
+Advanced
+Analytics
+Data
+Capture
+Clinical Pathway
+System
+Patient Hub
+Data Extraction
+Engine
+Common
+Semantic
+Data Model

@@ -1,0 +1,19 @@
+TrialSage Study Design Summary - study_design_2024_phase2
+Indication
+Obesity
+Phase
+Phase 2
+Recommended Primary Endpoint
+BMI reduction >=5% at 24 weeks
+Historical Success Rate
+62%
+Recommended Sample Size
+250 per arm
+Dropout Risk
+Moderate (18%)
+Regulatory Precedent
+EMA-approved in 3 obesity trials since 2022
+Top Matched Trials
+NCT01234567 - Success - 300 patients - BMI reduction
+NCT02345678 - Failed - 150 patients - Weight loss %
+NCT03456789 - Success - 260 patients - BMI + quality of life

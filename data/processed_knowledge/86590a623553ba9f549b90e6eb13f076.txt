@@ -1,0 +1,753 @@
+Public Disclosure Synopsis
+Protocol A6111137 –11April 2014 –Final
+Template version 1.0 Page 1PFIZER INC.
+These results are supplied for informational purposes only .
+Prescribing decisions should be made based o n the approved package insert.
+PROPRIETARY DRUG NAME®/GENERIC DRUG NAME: Xalatan®/ Latanoprost
+PROTOCOL NO. : A6111137
+PROTOCOL TITLE :APhase 3 Prospective, Randomized, Double -Masked, 12 -Week, 
+Parallel Group Study  Evaluating the Efficacy  and Safety  of Latanoprost and Timolol in 
+Pediatric Subjects With Glaucoma
+Study Center s:  A total of 42centers took part in the study  and randomize dsubjects; 5 each 
+in the Unites States, Portugal , and the Ukraine ,3each in Spain and France , 2each in 
+German y, Italy, Poland, the Philippines , the Russian Federation and the United Kingdom , 
+1each in Belgium , Colombia, the Czech Republic , India, Romania, Se rbia, Slovakia, 
+Slovenia and South Africa .  
+Study Initiation Date and Final Completion Date :  30July 2008 to 11 November 2009
+Phase of Development :  Phase 3
+Study Objective s:  
+Primary  Objective : To assess the relative effectiveness of latanoprost 0.005% ophthalmic 
+solution dosed once daily and timolol (0.5% or optionally  0.25% for subjects y ounger than 
+3years old) dosed twice daily  in pediatric subjects ≤18years of age who were diagnosed 
+with pediatric glaucoma.  Specificall y, to demonstrate that latan oprost is not inferior to 
+timolol (0.5% or optionally  0.25% for subjects younger than 3 years old) within a 
+noninferiority  margin of 3 mmHg, with an option of switching to superiority , in the event 
+that the lower limit of the 95% confidence interval (CI) f or the treatment difference not onl y 
+lies above the noninferiority  margin but also above zero.  
+Secondary  Objective s: 
+To evaluate the safet y of latanoprost 0.005% ophthalmic solution dosed once dail y and 
+timolol (0.5% or optionally  0.25% for subjects younger than 3 years old) dosed twice 
+daily  in pediatric subjects ≤18 y ears of age who were diagnosed with pediatric glaucoma.  
+To compare latanoprost 0.005% ophthalmic solution dosed once dail y and timolol (0.5% 
+or optionally  0.25% for subjects y ounger than 3 years old) dosed twice daily  in pediatric 
+subjects ≤18 y ears of age who were diagnosed with pediatric glaucoma, with respect to 
+the proportion of subjects with at least a 15% lowering of baseline intraocular pressure 
+(IOP) [responder anal ysis].  
+090177e18544dd98\Approved\Approved On: 25-Apr-2014 19:38 
+Public Disclosure Synopsis
+Protocol A6111137 –11April 2014 –Final
+Template version 1.0 Page 2METHOD S
+Study Design:   This was a prospective, randomized, double masked, 12 -week, parallel group 
+study  of latanoprost and timolol in pediatric subjects wi th glaucoma.  Approximately  
+120subjects were planned to be enrolled.   
+The Baseline visit was conducted 0 to 28 day s (4 weeks) after the Screening visit.  At the 
+morning (before midday ) Baseline visit, a subject’s I OP had to be 22 mmHg in at least 
+1eye.  To ensure that s ystemic exposure was not too high in this pediatric population, 
+enrollment was staged b y age groups (0 to <3, 3 to <12, and 12 to 18 years old).  
+Randomization was stratified by  age (0 to <3, 3 to <12, and 12 to 18 years old), diagnosis 
+(2levels: primary  congenital glaucoma [PCG] or non -PCG) and IOP value of the study  eye 
+(3levels: <27, 27 to 31, and >31 mmHg) at the Baseline visit.   Subjects were randoml y 
+assigned in a 1:1 ratio to 1 of the 2 treatment groups (latanoprost or timolol) .
+Following randomization, follow -up visits occurred at Weeks 1, 4 ,and 12.  If during the 
+study  the Investiga tor determined that the IOP was not controlled (eg, IOP ≥36mmHg), 
+therap y could be switched to open -label concomitant therap y of latanoprost 0.005% at 
+approximately  8PM ( 30 minutes) and timolol 0.5% (or optionally  0.25% for subjects 
+younger than 3 y ears old) twice daily at approximately 8 AM ( 30 minutes) and 8 PM 
+(30minutes). If the therapy  was changed to t he concomitant therap y at Weeks 1 or 4, the 
+subject was asked to return to the clinic for a visit at Week 2or 5 respectively .  If at Week 2 
+or 5 IOP was not adequately  controlled (eg,IOP ≥36 mmHg), the subject was discontinued .  
+The IOP measurements for all follow -up visits occu rredat 10 AM (1.5hours ).  
+The schedule of activities is presented in Table 1.  
+090177e18544dd98\Approved\Approved On: 25-Apr-2014 19:38 
+
+Public Disclosure Synopsis
+Protocol A6111137 –11April 2014 –Final
+Template version 1.0 Page 3Table 1.Schedule of Activities
+Protocol Activity Screen Day 0 
+(Baseline)Wk 1 Wk 2aWk 4 Wk 5aWeek 12/
+End of 
+Treat mentWeek 13
+Follow -Up; 
+End of 
+Study
+Informed 
+Consent, demographics , 
+med history , & 
+inclusion /exclusion 
+criteriabX
+Physical examination X
+Change in medications X X X X X X X
+Randomization X
+Resting pulse and BPcX X X X X X X
+Alertness X X X X X X X
+Refraction (cycloplegic 
+where appropriate)X Xd
+Visual acuityeX X X X X X X Xf
+Visual fieldseXgX Xf
+Hyperemia assessmenthX X X X X X
+Pupil Diameter X X X X X
+Corneal Diameter X X X X
+Biomicroscopy (anterior
+segment)hX X X X X X X Xf
+Pachymetrye,iX X X
+Gonioscopy XgXf
+IOP measurementjX X X X X X X Xf
+Ophthalmoscopy 
+(posterior segment)X X X Xf
+Discontinue Previous 
+Ocular Antihypertensive 
+MedsX
+Dispense study 
+medicationX X
+Retrieve study 
+medicationX X
+Dispense open label 
+concomitant medication 
+(if applicable)X X
+Retrieve open label 
+concomitant medication 
+(if applicable)X X
+Adverse events X X X X X X X
+All visits allowed 2 day window  after Baseline.  All ocular examinations were performed for both eyes, 
+with the right eye preceding the left eye .  
+BP = blood pressure ; IOP = i ntraocular pressure ; Med=medical ; Wk = w eek.  
+a. If a change in therapy was required at Weeks 1 or 4, the subject w as asked to return to the clinic for 
+visits at Week 2 or 5, respectively.  If at Week 2 or 5 IOP was not adequately controlled (eg, IOP 
+≥36mmHg), the subject w asdiscontinued .  
+b. To include all concomitant medication(s) within the previous month and previous IOP -lowering 
+medications within the previous 3 months.  
+c. If the Investigator could not determine the blood pressure, the subject w as to see a prim ary care 
+provider within 2 days of the visit andthe measurements were obtained and recorded in the manner 
+according to the protocol.  
+d. Performed for children under 3 years old and used cycloplegic refraction (retinoscopy) at Baseline.   
+e. Performed only if the Investigator believed the child could cooperate for a full quantitative 
+examination.  
+f. Performed at the Investigator’s discretion.  
+090177e18544dd98\Approved\Approved On: 25-Apr-2014 19:38 
+Public Disclosure Synopsis
+Protocol A6111137 –11April 2014 –Final
+Template version 1.0 Page 4Table 1.Schedule of Activities
+g. A visual field exam and gonioscopy at Screening were not required if they were already performed 
+within 6 months prior to the Screening visit and w ere docu mented in the subject’s chart.  
+h. Assessed by slit-lamp examination or fixation li ght with 20 -diopter lens according to a reference 
+scale.  
+i. Anultrasonic pachymeter was used to measure corneal thickness.  
+j. Consistent timing and methodology fo r the IOP measurements was maintained across visit days for 
+a given s ubject .  
+Number of Subjects (Planned and Analyzed):   A total of 120 subjects were planned for the 
+study (including 60 PCG subjects and 60 non -PCG subjects) .  A total of 139subjects were 
+assigned to stud y treatment and 137 subjects (68in the latanoprost group and 69 in the 
+timolol group) were treated.  Subject enrollment by country  is summarized in Table 2.  
+Table 2.Subject Enrollment by Country
+Region Country Number of Subjects Enrolled
+0-<3 Yrs O ld
+n 3-<12 Yrs Old
+n 12-18 Yrs Old
+n Total
+n
+EU Belgium - 1 1 2
+Czech Republic - 3 2 5
+France 2 6 1 9 
+Germ any - 4 7 11
+Italy 1 4 2 7
+Poland - 1 2 3
+Portugal - 6 7 13
+Rom ania 1 - - 1
+Slovakia 6 3 4 13
+Slovenia - 1 1 2
+Spain 3 6 - 9
+UK 1 3 1 5
+Non-EU Colombia 2 1 - 3
+India - - 2 2
+Philippines 6 2 2 10
+Russia - - 4 4
+Serbia - 2 3 5
+South Africa - - 1 1
+Ukraine 11 7 6 24
+United States 1 6 3 10
+EU = European Union ; n = number of subjects with pre -specified criteria ; UK = United Kingdom; Yrs = years .  
+Diagnosis and Main Criteria for Inclusion :  Male or female subjects aged 36 weeks to 
+18years with a diagnosis of glaucoma andIOPof ≥22mmHg in at least 1 eye.  
+Exclusion Criteria :  Subjects who require dsurgery  for acute angle closure , had prior 
+cyclodestructive procedures ,or hada history  of ocular trauma or surgery  in either ey e within 
+3months of the Baseline visit were excluded from the study .  
+Study Treatment:   Study  treatments were provided in identical bottl es and indistinguishable 
+between latanoprost solution and timolol solution .  Vehicle of Xalatan solution was used to 
+090177e18544dd98\Approved\Approved On: 25-Apr-2014 19:38 
+Public Disclosure Synopsis
+Protocol A6111137 –11April 2014 –Final
+Template version 1.0 Page 5make both treatments undistinguishable as timolol treatment was dosed twice daily and 
+latanoprost was dosed once dail y(double dumm y).  
+Within each stratum subjects were randoml y assigned in a 1:1 ratio to 1 of the 2 treatment 
+groups (latanoprost or timolol): Group 1 received latanop rost vehicle at approximately  8AM 
+(30minutes) and latanop rost0.005% at approximately  8PM (30minutes), and Group 2 
+received timolol 0.5% (or optionally  0.25% for subjects y ounger than 3 years old) twice dail y 
+at approximately  8AM (30minutes) and 8 PM (30minutes).  Parents or legal guardians 
+(primary  caretaker) of subjects administered 1 drop of stud y medication in each ey e once 
+daily  in the morning and once dail y in the evening for the 84 day treatment duration 
+(administration was to occur at consistent times throughout the stud y).  
+Efficac y Endpoints :
+Primary  Endpoint : 
+Mean change from baseli ne IOP in the study  eye at Week 12.  
+Secondary  Endpoint s: 
+Mean IOP change from baseline in the study  at each visit (Week 1, Week 4, Week 12and 
+Weeks 2 or 5 when applicable) .  
+Mean IOP level in the study  eye at each visit (Baseline, Week 1, Week 4, Week 12and 
+Weeks 2 or 5 when applicable) .  
+Proportion of subject s with at least a 15% IOP reduction from baseline in the study  eye 
+(for responder anal ysis).  
+Proportion of subjects discontinuing therap y due to a drug-related adverse experience .  
+Safety Evaluat ions:   Safety  evaluations included assessment of adverse events (AEs), visual 
+acuity  and refraction, conjunctival hy peremia, pachy metry , pupil diameter, corneal diameter, 
+biomicroscopy  (anterior segment), gonioscopy , biomicroscop y posterior segment 
+(ophtha lmoscopy ), visual field, vital signs measurements, and a measurement of alertness.  
+Statistical Methods:   The intention to treat ( ITT)population wasdefined as all subject s who 
+were randomized into the study  and received at least 1 dose of study  medicati on.  
+The per protocol ( PP)population wasrestricted to subjects with no major protocol violations 
+who received at least 1 week of study  medication and h ad at least Week 1 IOP measurements 
+during the 12 -week treatment period .  
+The prim ary efficacy  endpoi nt was the mean IOP change from baseline in the study  eye at 
+Week 12.  For subjects who switched to open -label concomitant therapy  or discontinued 
+study  prior to Week 12, their last IOP measurements prior to the switch or study  
+discontinuation was used to impute the I OP value at Week 12 using the Last Observation 
+Carried Forward (LOCF) method. This applied to both the PP and I TT populations.  
+090177e18544dd98\Approved\Approved On: 25-Apr-2014 19:38 
+Public Disclosure Synopsis
+Protocol A6111137 –11April 2014 –Final
+Template version 1.0 Page 6For the primary  endpoint, an anal ysis of covariance (ANCOVA) model with treatment and 
+baseline diagnosis as factor s and baseline IOP as a covariate was used to estimate the 
+difference in IOP reduction at Week 12 between latanoprost and timolol.  The corresponding 
+p-value and 95% CI of the mean difference were also calculated.   
+Before the ANCOVA model was fitted for t he primary  efficacy  endpoint, a test for 
+parallelism was performed to ensure the ANCOVA model without the interaction terms 
+among treatment group, baseline diagnosis and baseline IOP was appropriate for the primary  
+efficacy  data anal ysis.  Note: The result s indicated that a statistical model with heterogeneous 
+regression slopes for different treatment groups within different diagnosis subgroups would 
+be a better fit to the study data.
+The primary  efficacy  analy sis population for determination of non -infer iority was based on 
+the PP population and the primary efficacy analy sis population for determination of 
+superiority was based on the ITT population.
+Secondary  Endpoint Analy ses:
+The same ANCOVA model with treatment and baseline diagnosis as factors and baseline 
+IOP as a covariate was used to estimate the difference in IOP reduction at each visit between 
+latanoprost and timolol.  The corresponding p -value and 95% CI of the mean difference was 
+also calculated.   
+If a subject’s IOP reduction in the study  eye was greater than or equal to a 15% reduction 
+from baseline at both Weeks 4 and 12, then this subject was classified as a responder.  A 
+subject with an IOP reduction in the study  eye less than 15% reduction was classified as a 
+nonresponder.   
+Subgroup Ana lyses:  All efficacy  anal yses were also performed for the PCG and non -PCG 
+subgroups within the PP and ITT populations.   
+For the subgroup anal yses within the baseline diagnosis groups (PCG and non -PCG ), the 
+ANCOVA model had only  treatment as the factor and baseline IOP as a covariate.  For the 
+responder anal ysis, a Pea rson’s chi -square test was used to evaluate the treatment difference.   
+RESULTS
+Subject Disposition and Demography: Subject disposition is summarized in Table 3.  All 
+137of the subjects treated in this study  were evaluable for inclusion in the I TT population 
+and the safety  population; 77% of the subjects assigned to study  treatment were included in 
+the PP population.  
+090177e18544dd98\Approved\Approved On: 25-Apr-2014 19:38 
+
+Public Disclosure Synopsis
+Protocol A6111137 –11April 2014 –Final
+Template version 1.0 Page 7Table 3.Subject Disposi tion and Subject sAnalyzed
+Variable Latanoprost
+n (%)Timolol
+n (%)Total
+n (%)
+Screened 158
+Assigned to Study Treatment 69 70 139
+Treated 68 69 137
+Received open -label therapy 8 (11.6) 9 (12.9) 17 (12.2)
+Did not receive open -label therapy 60 (87 .0) 60 (85.7) 120 (86.3)
+Com pleted 64 (92.8) 61 (87.1) 125 (89.9)
+Analyzed for Efficacy
+PP 53 (76.8) 54 (77.1) 107 (77.0)
+ITT 68 (98.6) 69 (98.6) 137 (98.6)
+Analyzed for Safety
+Adverse events 68 (98.6) 69 (98.6) 137 (98.6)
+Percentages were calculated using the number of subjects assigned to study treatment as the denominator.   
+ITT = intent -to-treat; n = number of subjects included in assessment; PP = per protocol .  
+Most subjects treated completed the study .  In the l atanoprost group, none of the 4 subject 
+discontinuations were considered b y the Investigator as being related to study  drug treatment.  
+Approximately  12% of subjects switched to open -label treatment. While 3 subjects in the 
+timolol group discontinued due to lack of efficacy, n o subject in the latanoprost group 
+discontinued for this reason ( Table 4).  
+Table 4.Subject Discontinuation (ITT Population)
+Variable Latanoprost
+n (%)Timolol
+n (%)
+Discontinued 4 (5.9) 8 (11. 6)
+Discontinuations related to study drug 0 4 (5.8)
+Adverse event 0 1 (1.4)
+Lack of efficacy 0 3 (4.3)
+Discontinuations not related to study drug 4 (5.9) 4 (5.8)
+Adverse event 1 (1.5) 3 (4.3)
+Subject no longer willing to participate 3 (4.4) 1 (1.4)
+Percent ages were calculated using the number of subjects treated as the denominator.  Discontinuations 
+occurring outside the lag period w ere attributed to the last study treatment received.  
+ITT = intent -to-treat; n = number of subjects included in assessment.  
+Demographic characteristics and diagnosis are presented in Table 5.  
+090177e18544dd98\Approved\Approved On: 25-Apr-2014 19:38 
+
+Public Disclosure Synopsis
+Protocol A6111137 –11April 2014 –Final
+Template version 1.0 Page 8Table 5.Demographic Characteristics (ITT Population) 
+Variable Latanoprost
+N=68Timolol
+N=69
+Age (years) , n (%)
+12–18 25 (36.8) 23 (33.3)
+3–<12 26 (38.2) 29 (42.0)
+0–<3 17 (25.0) 17 (24.6)
+Mean (SD) 9.3 (5.4) 8.3 (5.6)
+Range 0.17–18 0.33–18
+Sex, n (%)
+Male 34(50.0) 32(46.4)
+Female 34(50.0) 37(53.6)
+Race , n (%)
+White 54 (79.4) 53 (76.8)
+Black 3 (4.4) 6 (8.7)
+Asian 6 (8.8) 7 (10.1)
+Other 5 (7.4) 3 (4.3)
+Weight (kg) n=68
+Mean (SD) 38.1 (20.6) 33.0 (22.3)
+Range 5.8–80.0 6.0–116.0
+Height (cm) n=67 n=66
+Mean (SD) 134.3 (34.3) 128.7 (34.9)
+Range 57.0–180.0 65.0–195.0
+Diagnosis
+PCG 31 (45.6) 31 (44.9)
+Non-PCG 37 (54.4) 38 (55.1)
+ITT = intent -to-treat; n = number of subjects included in assessment; N = number of subjects in population; 
+PCG = primary congenital glaucoma; SD = standard deviation .  
+Efficacy Results :  
+The least -square s(LS) mean of IOP reduct ion was 7.2mmHg in the latanoprost treated 
+group and 5.7 mmHg in the timolol group.  The LS mean difference was 1.5 mmHg in favor 
+of latanoprost.  The lower bound of the 95% CI of the difference between the L S means was 
+-0.81 mmHg, which was above the pre -specified non -inferiorit y margin of -3 mmHg
+demonstrating the noninferiority  of latanoprost to timolol.  The L S mean difference 
+(1.5mmHg in favor of latanoprost) was also similar to the arithmetic mean difference 
+(1.3mmHg in favor of latanoprost).   Resu lts from this primary  efficacy  endpoint analy sis are 
+presented in Table 6for the study  eye in the PP population .  
+090177e18544dd98\Approved\Approved On: 25-Apr-2014 19:38 
+
+Public Disclosure Synopsis
+Protocol A6111137 –11April 2014 –Final
+Template version 1.0 Page 9Table 6.ANCOVA Model for IOP Reduction (mmHg) at Week 12 (LOCF), Study 
+Eye, PP Population
+Variable Latanoprost
+N=53Timolol
+N=54
+Baseline -raw value
+Mean (SD) 27.3 (5.46) 27.8 (6.18)
+Median ( range ) 26.0 (22.0, 53.5) 25.8 (22.0, 46.0)
+Week 12 ( LOCF) -raw value
+Mean (SD) 20.2 (6.32) 21.9 (7.20)
+Median ( range ) 20.0 (10.0, 38.0) 20.3 (12.5, 52.0)
+Reductiona
+Mean (SD) 7.1 (6.38) 5.8 (6.37)
+Median ( range ) 7.0 (-5.4, 32.0) 6.8 (-26.0, 20.0)
+LS Mean ( standard error ) 7.18 (0.81) 5.72 (0.81)
+Versus timolol
+LS mean difference 1.46
+95% CI LS mean difference (-0.81, 3.74)
+p-valueb0.2056
+ANCOVA = analysis of covariance; CI = confidence interval; IOP = intraocular pressure; LOCF = last 
+observation carried forw ard; LS = le ast squares; mmHg = millimeters of mercury; N = number of subjects in 
+population; PCG = primary congenital glaucoma; PP = per protocol; SD = standard deviation.  
+a. IOP reduction = baseline I OP minus post -baseline IOP .  
+b. p-value from an ANCOVA model w ith IOP reduction ( baseline IOP m inus post -baseline IOP) as the 
+dependent variable, treatment (latanoprost vs timolol) and basel ine diagnosis (PCG vs non -PCG) as 
+factors and baseline IOP as a covariate .  
+Results from primary  efficacy  endpoint anal ysis in the ITT population are presented in
+Table 7.  The LS mean difference was 1.07 mmHg in favor of latano prost.  Although this 
+difference was less than that achieved for the PP pop ulation the same trend was noted.  The 
+lower bound of the 95% CI  of the difference between the LS means was -0.89 mmHg, which 
+is consistent with the results analy zed in PP populatio n and is also above the pre -specified 
+noninferiority  margin of -3mmHg.   
+090177e18544dd98\Approved\Approved On: 25-Apr-2014 19:38 
+
+Public Disclosure Synopsis
+Protocol A6111137 –11April 2014 –Final
+Template version 1.0 Page 10Table 7.ANCOVA Model for IOP Reduction (mmHg) at Week 12 (LOCF), Study 
+Eye, ITT Population
+Variable Latanoprost
+N=68Timolol
+N=69
+Baseline -raw value
+Mean (SD) 27.6 (6.09) 27.8 (6.29)
+Median (Range) 25.8 (22.0, 53.5) 26.0 (22.0, 48.5)
+Week 12 (LOCF) -raw value
+Mean (SD) 20.6 (7.19) 21.8 (7.56)
+Median ( range ) 19.0 (10.0, 48.0) 20.0 (12.0, 52.0)
+Reductiona
+Mean (SD) 7.0 (5.93) 6.0 (6.12)
+Median ( range ) 7.0 (-5.4, 32.0) 6.5 (-26.0, 20.0)
+LS mean (standard error ) 6.96 (0.71) 5.89 (0.70)
+Versus timolol
+LS mean difference 1.07
+95% CI LS mean difference (-0.89, 3.04)
+p-valueb0.2806
+ANCOVA = analysis of covariance; CI = confidence interval; IOP = intraocular pressure; ITT = intent -to-treat; 
+LOCF = last observation carried forw ard; LS = least squares; mmHg = millimeters of mercury; N = number of 
+subjects in population; PCG = primary congenital glaucoma; SD = standard deviation .  
+a. IOP reduction = baseline IOP minus post -baseline IOP.  
+b. p-value from an ANCOVA model w ith IOP reduction (baseline IOP minus post -baseline IOP) as the 
+dependent variable, treatment (latanoprost vs timolol) and baseline diagnosis (PCG vs non -PCG) as 
+factors and baseline IOP as a covariate .  
+Secondary  Anal yses: 
+IOP Reduction :  Mean IOP and IOP reduction (without LOCF imputation) in the study  eye at 
+each visit (Week s1, 4, and 12), excluding observations co llected after switching to 
+open -label concomitant therap y, are summarize d in Table 8for the PP pop ulation .  Mean IOP 
+reduction in the latanoprost group was similar to or numericall y greater than the timolol 
+group at each study  visit (Weeks 1, 4 ,and 12). Results at Week 12 (missing data not 
+imputed) were supportive of results achieved at Week 12 for the primary  endpoint using a 
+LOCF approach.   
+090177e18544dd98\Approved\Approved On: 25-Apr-2014 19:38 
+
+Public Disclosure Synopsis
+Protocol A6111137 –11April 2014 –Final
+Template version 1.0 Page 11Table 8.Summary of IOP (mmHg) and IOP Reduction From Baseline (mmHg) by 
+Study Visit, Study Eye, PP Population (Excluding Observations Collected 
+After Switching to Open -Label Concomitant Therapy)
+Variable Latanoprost
+N=53Timolol
+N=54
+Baseline (Raw value) n=53 n=54
+Mean (SD) 27.3 (5.46) 27.8 (6.18)
+Median (Range) 26.0 (22.0, 53.5) 25.8 (22.0, 46.0)
+Week 1 
+Raw value n=53 n=54
+Mean (SD) 20.6 (6.38) 21.7 (7.99)
+Median (Range) 20.0 (11.0, 50.5) 20.0 (12.5, 62.5)
+Reductionan=53 n=54
+Mean (SD) 6.7 (4.85) 6.1 (7.57)
+Median (Range) 6.0 (-12.0, 22.0) 7.0 (-36.5, 20.5)
+LS Mean ( Standard Error) 6.70 (0.84) 6.02 (0.83
+Versus timolol
+LS Mean Difference 0.68
+95% CI LS Mean Difference (-1.66, 3.02)
+p-valueb0.5639
+Week 4
+Raw value n=49 n=47
+Mean (SD) 20.1 (6.82) 21.5 (7.49)
+Median (Range) 18.5 (11.0, 47.0) 19.5 (11.0, 52.0)
+Reductionan=49 n=47
+Mean (SD) 7.0 (5.34) 5.3 (7.92)
+Median (Range) 7.0 (-14.0, 16.0) 6.8 (-26.0, 21.5)
+LS Mean (Standard Error) 6.99 (0 .92) 5.37 (0.94)
+Versus timolol
+LS Mean Difference 1.62
+95% CI LS Mean Difference (-1.00, 4.25)
+p-valueb0.2219
+Week 12
+Raw value n=46 n=43
+Mean (SD) 19.2 (5.87) 19.8 (3.50)
+Median (Rang e) 17.0 (10.0, 38.0) 19.0 (14.0, 29.0)
+Reductionan=46 n=43
+Mean (SD) 7.8 (6.27) 6.9 (4.44)
+Median (Range) 7.5 (-5.0, 32.0) 7.0 (0.5, 20.0)
+LS Mean (Standard Error) 7.75 (0.66) 6.96 (0.68)
+Versus timolol
+LS Mean Difference 0.79
+95% CI LS Mean Difference (-1.10, 2.67)
+p-valueb0.4085
+ANCOVA = analysis of covariance; CI = confidence interval; IOP = intraocular pressure; LS = least square s; 
+mmHg = millimeters of mercury; n = number of subjects included in assessment; N = number of subjects in 
+population; PCG = primary congenital glaucoma; PP = per protocol; SD = standard deviation .  
+a. IOP reduction = baseline IOP minus post -baseline IOP .  
+b. p-value from an ANCOVA model w ith IOP reduction (baseline IOP minus post -baseline IOP) as the 
+dependent variable, treatme nt (latanoprost vs timolol) and baseline diagnosis (PCG vs non -PCG) as 
+factors and baseline IOP as a covariate .  
+Responder Anal yses:The proportion of responders (subjects whose IOP reduction in the 
+study  eye was greater than or equal to a 15% reduction from Baseline at both Weeks 4 
+090177e18544dd98\Approved\Approved On: 25-Apr-2014 19:38 
+Public Disclosure Synopsis
+Protocol A6111137 –11April 2014 –Final
+Template version 1.0 Page 12and12) excluding observations collected after switching to open -label therapy  in the PP 
+population is summarized in Table 9.  The proportion of responders was 60% in the 
+latanoprost group and 52% in the timolol group .  
+Table 9.Proportion of Responders (Minimum 15% IOP Reduction at Both 
+Weeks 4and12), Study Eye, PP Population
+Variable Latanoprost
+N=53Timolol
+N=54
+Responderan (%) 32 (60) 28 (52)
+95% CI of the proportion of responders (46, 74) (38, 66)
+p-valueb0.3315
+CI = confidence interval; CMH = Cochran -Mantel -Haenszel ; IOP = intraocular pressure; n = numbe r of subje cts 
+included in assessment; N =number of subjects in population; PCG = primary congenital glaucoma; PP = per 
+protocol .  
+a. A responder was a subject w ho has at least a 15% reductio n in IOP fr om baseline at both Weeks 4 
+and12.  
+b. p-value from CMH chi-square test stratified by baseline diagnosis (PCG vs non -PCG) .  
+Diagnosis Subgroup s: PCG versus non -PCG :
+IOP reducti on: The mean IOP reduction at Week 12 for the PCG subgroup was 5.9mmHg in 
+the latanoprost group and 5.3 mmHg in the timolol group (Table 10); for the non -PCG 
+subgr oup the mean reductions at Week 12 were 8.4 and 6.3 mmHg, respecti vely (Table 11).  
+The lower bounds of the 95% CI  of the difference between the LS means in both di agnosis 
+subgroups were above -3mmHg.
+Table 10.ANCOVA Model for IOP Reduction (mmHg) at Week 12 (LOCF), S tudy 
+Eye, PP Population, PCG Subgroup
+Variable Latanoprost
+N=28Timolol
+N=26
+Baseline , raw  value
+Mean (SD) 26.5 (3.81) 26.3 (4.84)
+Median (range) 25.3 (22.0, 35.0) 24.5 (22.0, 46.0)
+Week 12 (LOCF)
+Raw value
+Mean (SD) 20.6 (7.66) 21.0 (5.77)
+Median (range) 20.0 (10.0, 38.0) 20.0 (12.5, 37.0)
+Reductiona
+Mean (SD) 5.9 (5.90) 5.3 (4.15)
+Median (range) 7.0 (-5.4, 20.0) 6.3 (-6.0, 11.5)
+LS mean (standard error) 5.90 (0.98) 5.34 (1.02)
+Vers us timolol
+LS mean difference 0.56
+95% CI LS mean difference (-2.28, 3.39)
+p-valueb0.6957
+ANCOVA = analysis of covariance; CI = confidence interval; IOP = intraocular pressure; LOCF = last 
+observation carried forw ard; LS = least squares; mmHg = millimeters of mercury; N = number of subjects in 
+population; PCG = primary congenital glaucoma; PP = per protocol; SD = standard deviation .  
+a. IOP reduction = baseline IOP minus post -baseline IOP .  
+b. p-value from an ANCOVA model w ith IOP reduction (baseline IOP minus post -baseline IOP) as the 
+dependent variable, treatment (la tanoprost vs timolol) as the factor, and baseline IOP as a covariate.   
+090177e18544dd98\Approved\Approved On: 25-Apr-2014 19:38 
+Public Disclosure Synopsis
+Protocol A6111137 –11April 2014 –Final
+Template version 1.0 Page 13Table 11.ANCOVA Model for IOP Reduction (mmHg) at Week 12 (LOCF), Study 
+Eye, PP Population, Non -PCG Subgroup 
+Variable Latanoprost
+N=25Timolol
+N=28
+Baseli ne, Raw value
+Mean (SD) 28.2 (6.84) 29.1 (7.02)
+Median ( range ) 26.0 (22.0, 53.5) 26.0 (22.0, 46.0)
+Week 12 (LOCF), Raw value
+Mean (SD) 19.8 (4.49) 22.8 (8.31)
+Median ( range ) 19.0 (12.0, 28.0) 20.8 (14.0, 52.0)
+Reductiona
+Mean (SD) 8.4 (6.76) 6.3 (7.96)
+Median ( range ) 8.0 (-5.0, 32.0) 6.8 (-26.0, 20.0)
+LS Mean ( standard error ) 8.66 (1.25) 6.02 (1.18)
+Versus timolol
+LS mean difference 2.64
+95% CI LS mean difference (-0.82, 6.09)
+p-valueb0.1317
+ANCOVA = analysis of covariance; CI = confidence interval; IOP = intraocular pressure; LOCF = last 
+observation carried forw ard; LS = least squares; mmHg = millimeters of mercury; N = num ber of subjects in 
+population; PCG = primary congenital glaucoma; PP = per protocol; SD = standard deviation.  
+a. IOP reduction = baseline IOP minus post -baseline IOP.  
+b. p-value from an ANCOVA model w ith IOP reduction (baseline IOP minus post -baseline IOP) as the 
+dependent variable, treatment (latanoprost vs timolol) as the factor, and baseline IOP as a covariate .  
+Responder Anal ysis: The proportion of responders for the PCG subgroup was 50% in the 
+latanoprost group and 46% in the timolol group; for the non -PCG subgroup the proportion of 
+responders was 72% and 57%, respectively (Table 12).  
+Table 12.Proportion of Responders (Minimum 15% IOP Reduction at Both 
+Weeks 4and12) in PCG and Non -PCG Subgroups, Study Eye, PP 
+Population
+VariablePCG Non-PCG
+Latanoprost
+N=28Timolol
+N=26Latanoprost
+N=25Timolol
+N=28
+Respondera,n (%) 14 (50) 12 (46) 18 (72) 16 (57)
+95% CI of the proportion of responders (31, 69) (27, 67) (51, 88) (37, 76)
+p-valueb0.7775 0.2602
+CI = confidence interval; IOP = intraocular pressure; n = number of subjects included in assessment; 
+N=number of subjects in population; PCG = primary congenital glaucoma; PP = per protocol.   
+a. A responder was a subject w ho had at least a 15% reduction in IOP from baseline at both Weeks 4 and 
+12.  
+b. p-value from a Chi -square test .  
+Safety Results:   The most common AEs were nasophary ngitis and headache.  The incidence 
+of conjunctival h yperemia (both eyes and study eye) was low . Non serious AEs experienced 
+by 2% of subjects are presented in Table 13.  
+090177e18544dd98\Approved\Approved On: 25-Apr-2014 19:38 
+
+Public Disclosure Synopsis
+Protocol A6111137 –11April 2014 –Final
+Template version 1.0 Page 14Table 13.Treatme nt-Emergent Non Serious Adverse Events (All Causalities)  
+Experienced by 2% of Subjects
+System  Organ Class and MedDRA 
+Preferred TermLatanoprost
+N=68
+n (%)Timolol 
+N=69
+n (%)
+Subjects w ith AEs 12(17.6) 20(29.0)
+Eye disorders, both eyes 1(1.5) 5(7.2)
+Conjunctival disorder, both eyes 0 2(2.9)
+Conjunctival hyperaemia, both eyes 1(1.5) 3(4.3)
+Eye disorders, study eye 2(2.9) 4(5.8)
+Conjunctival hyperaemia, study eye 2(2.9) 3(4.3)
+Visual acuity reduced, study eye 0 2(2.9)
+General disorder s and administration site 
+conditions2(2.9) 2(2.9)
+Pyrexia 2(2.9) 2(2.9)
+Infections and infestations 6(8.8) 12(17.4)
+Influenza 0 4(5.8)
+Nasopharyngitis 4(5.9) 5(7.2)
+Rhinitis 2(2.9) 1(1.4)
+Viral infection 1(1.5) 2(2.9)
+Nervous system di sorders 2(2.9) 4(5.8)
+Headache 2(2.9) 4(5.8)
+Subjects w ereonly counted once per treatment for each row.   
+Included data up to 30 days after last dose of study drug.   
+MedDRA (v ersion 12.1) coding dictionary applied.   
+AE = adverse events; MedDRA = Medical Dictionary for Regulatory Activities ; n = number of subjects w ith 
+pre-specified criteria ; N = total number of subject in a population .  
+Most treatment -related AEs were onl y noted for 1 subject each; conjunctival hy peremia was 
+the only  treatment -related AE reported for >1 subject (0 in the latanoprost group and 
+3subjects in the timolol group ).  Treatment related AEs are presented in Table 14.  
+090177e18544dd98\Approved\Approved On: 25-Apr-2014 19:38 
+
+Public Disclosure Synopsis
+Protocol A6111137 –11April 2014 –Final
+Template version 1.0 Page 15Table 14.Treatment -Emergent Adverse Events (Treatment Related)
+System  Organ Class and 
+MedDRA Preferred TermLatanoprost
+N=68
+n (%)Timolol
+N=69
+n (%)
+Congenital, familial and genetic disorders, both 
+eyes0 1 (1.4)
+Developmental glaucoma, both eyes 0 1 (1.4)
+Eye disorders, both eyes 0 3 (4.3)
+Abnorm al sensation in eye, both eyes 0 1 (1.4)
+Conjunctival disorder, both eyes 0 1 (1.4)
+Conjunctival hyperaemia, both eyes 0 1 (1.4)
+Photophobia, both eyes 0 1 (1.4)
+Eye disorders, study eye 2 (2.9) 5 (7.2)
+Anterior chamber disorder, study eye 1 (1.5) 0
+Conj unctival hyperaemia, study eye 0 3 (4.3)
+Corneal pigmentation, study eye 0 1 (1.4)
+Eye haemorrhage, study eye 0 1 (1.4)
+Grow th of eyelashes, study eye 1 (1.5) 0
+Lenticular pigmentation, study eye 1 (1.5) 0
+Punctate keratitis, study eye 0 1 (1.4)
+Visu al acuity reduced, study eye 0 1 (1.4)
+General disorders and administration site 
+conditions, study eye2 (2.9) 0
+Instillation site pain, study eye 1 (1.5) 0
+Therapeutic response unexpected, study eye 1 (1.5) 0
+General disorders and administration site 
+conditions, treated fellow eye1 (1.5) 0
+Therapeutic response unexpected, fellow  eye 1 (1.5) 0
+Infections and infestations 0 1 (1.4)
+Pneumonia 0 1 (1.4)
+Investigations, both eyes 0 1 (1.4)
+Intraocular pressure increased, both eyes 0 1 (1.4)
+Nervous s ystem disorders 0 1 (1.4)
+Headache 0 1 (1.4)
+Total preferred term events 6 15
+AE/SAE results are not separated out.
+Subjects w erecounted only once per treatment in each row .
+Included data up to 30 days after last dose of study drug (including open -label therapy).   
+MedDRA (v ersion 12.1) coding dictionary applied.   
+AE = adverse events; MedDRA = Medical Dictionary for Regulatory Activities ; N = total number of subject 
+in a population; n = number of subjects with pre -specified criteria.  
+A total of 9 subjects experienced serious adverse events ( SAEs ): 2subjects (2.9%) in the 
+latanoprost group and 7 subjects (10.1%) in the timolol group .  Three of these events 
+(development alglaucoma and eye hemorrhage in 1 subject and pneumonia in a second 
+subject), w ere considered by  the Investigator as being at least possibly  related to study  
+medication and thesubjects were withdrawn from the study .  Treatment emergent SAE sare 
+presented in Table 15.  
+090177e18544dd98\Approved\Approved On: 25-Apr-2014 19:38 
+
+Public Disclosure Synopsis
+Protocol A6111137 –11April 2014 –Final
+Template version 1.0 Page 16Table 15.Treatment -Emergent Serious Adverse Events (All Causalities)
+System  Organ Class and MedDRA
+Preferred TermLatanoprost
+N=68
+n (%)Timolol
+N=69
+n (%)
+Subjects with AEs 2(2.9) 7(10.1)
+Congenital, familial and genetic disorders, both 
+eyes0 1(1.4)
+Developm ental glaucoma, both eyes 0 1(1.4)a
+Eye disorders, both eyes 0 2(2.9)
+Angle closure glaucoma, both eyes 0 1(1.4)
+Glaucoma, both eyes 0 1(1.4)
+Eye disorders, study eye 1(1.5) 1(1.4)
+Eye haemorr hage, study eye 0 1(1.4)a
+Lens dislocation, study eye 1(1.5) 0
+Eye disorders, treated fellow  eye 0 1(1.4)
+Corneal perforation, fellow  eye 0 1(1.4)
+Infections and infestations 1(1.5) 2(2.9)
+Acute tonsillitis 0 1(1.4)
+Bronchitis 0 1(1.4)
+Bronchopneumonia 1(1.5) 0
+Gastroenteritis 1(1.5) 0
+Pneumonia 0 1(1.4)a
+Pneumonia viral 1(1.5) 0
+Nervous system disorders 0 1(1.4)
+Epilepsy 0 1(1.4)
+Surgical and medical procedures, both eyes 0 1(1.4)
+Trabeculectomy, both eyes 0 1(1.4)
+Subjects w ereonly counted once per treatment for each row.  
+Included data up to 30 days after last dose of study drug.  
+MedDRA (v ersion 12.1) coding dictiona ry applied.  
+AE = adverse events; MedDRA = Medical Dictionary for Regulatory Activities .  
+a. Considered possibly related to treatment by the Investigator.   
+Discontinuations: Five subjects (1subject in the latanoprost group and 4 subjects in the 
+timolol group) discontinued the study  due to AEs.  One of these discontinuations due to an 
+AE (visual acuit y reduced) was considered b y the Investigator as being possibly  related to 
+study  drug (timolo l) treatment (Table 16).  There were no dose reductions or temporary  
+discontinuations due to AEs during this stud y.  
+090177e18544dd98\Approved\Approved On: 25-Apr-2014 19:38 
+
+Public Disclosure Synopsis
+Protocol A6111137 –11April 2014 –Final
+Template version 1.0 Page 17Table 16.Subjects who Discontinued due to Adverse Events
+Serial
+NumberAge/Sex Preferr ed Term
+(MedDRA)Causality Study Start/ 
+Stop DayaSeverity Outcom e
+Latanoprost
+1 31 months/M Lens dislocation, study 
+eyebOther illness :
+eye trauma47/56 Severe Resolved
+Timolol
+2 3 years/F Conjunctival bleb, study 
+eyeDisease under 
+study6/13 Moderate Resolved
+3 14 years/F Visual acuity reduced, 
+study eyeRelated 29/[>29] Moderate Still present
+4 16 years/M Angle closure glaucoma, 
+both eyesbOther: 
+unknown19/20 Moderate Resolved
+5 13 months/M Glaucoma, both eyesbDisease under 
+study44/65 Moderate Resolved
+[ ] Values in brackets were imputed from incomplete dates and times.   
+F = female; M = male; MedDRA = Medical Dictionary for Regulatory Activities .  
+a. Day relative to start of study treatment.  First day of study treatment = D ay1.  
+b. Serious adverse event .  
+Deaths : Ther ewere nodeaths during the study .  
+Most subjects had normal conjunctival hyperemia scores in the study  eye at baseline and in 
+most cases scores were unchanged from baseline .  No clinically  meaningful changes from 
+baseline results were noted for other safet y parameters including visual acuity ,central 
+corneal thickness levels , pupil diameter, c orneal diameter, visual field testing, biomicroscopy  
+(anterior segment), angle gradings measured via gonioscopy , aqueous flare, cells in the 
+anterior chamber, or ophthalmoscopy  (posterior segment), vital signs, or alertness scores.  
+CONCLUSION S:  In this prospective , randomized, double -masked, 12 -week, parallel -group 
+study  of latanoprost and timolol in pediatric subjects with glaucoma 18years old:
+Latanoprost 0.005% ophthalmic solution dosed once dail y was not inferior (within a 
+noninferiority  margin of 3mmHg in IOP measurement) totimolol 0.5% (or optionally  
+0.25% for subjects younger than 3 years old) dosed twice dail y.  
+There was no statistically significant differen ce in t he proportion of subjects with a 15% 
+or more IOP reduction at both Weeks 4 and 12 (responders) ; response rates in the 
+latanoprost and timolol groups in the PP population were 60% and 52%, respectivel y, 
+with a p -value of 0.33. 
+Latanoprost demonstrated IOP reduction in both the PCG and non -PCG subgroups.  
+When comparing the proporti on of responders between the treatment groups the response 
+rates in the PCG subgroup were 50% in the latanoprost group and 46 %in the timolol
+group; in the non -PCG subgroup the response rate swere72% and 5 7%, respectively .  
+Latanoprost 0.005% ophthalmic solution was well -tolerated and the safet y profile was 
+favorable.  
+090177e18544dd98\Approved\Approved On: 25-Apr-2014 19:38

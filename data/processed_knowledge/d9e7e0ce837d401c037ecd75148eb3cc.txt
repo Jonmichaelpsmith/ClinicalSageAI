@@ -1,0 +1,323 @@
+Presentation Name Here (Arial Bold)
+Date XX, 2018 (Arial)
+What is 
+Clinicaltrials.gov, 
+and do you need 
+to register your 
+study?
+Anu Mathur, MS, CIP
+EQUIP Administrator
+PRS Administrator
+949-824-9819
+anuradhm@uci.edu
+What is clinicaltrials.gov ?
+•It is a resource that provides access to information on clinical trials studying a 
+wide range of diseases, conditions and interventions.
+•Studies listed in the database are conducted in all 50 States and in 220 countries.
+•Each ClinicalTrials.gov record includes summary information about studies such 
+as:
+•Study design and Intervention
+•Disease or condition
+•Requirements for participation (eligibility criteria )
+•Locations and Contact information 
+•Some records may include outcomes of the study
+Sources: 1) CITI Program -Transparency in Clinical Research: ClinicalTrials.gov in context –Tim Bacon. 2) ClinicalTrials.gov
+Summary of requirements:
+Source: Clinicaltrials.gov enforcement: an update. Anthony Keys. January 18, 2022Entity Registration Results Reporting Penalties
+Health and Human 
+Services
+(HHS)Within 21 days of 
+enrollmentWithin 365 days of primary completion date for ACTs•$12,316/study/day
+•Criminal proceedings
+•Loss of grant funding
+National Institutes 
+of Health 
+(NIH)Within 21 days of enrollmentWithin 365 days of primary completion date for clinical trials receiving NIH fundingLoss of grant funding (to 
+include the institution)
+National Cancer Institute 
+(NCI)Within 21 days of enrollmentWithin 365 days of primary completion date of 
+NCI-supported clinical trials (in a peer -reviewed 
+journal and/ or
+ClinicalTrials.gov)Loss of grant funding
+Veterans Health Administration
+(VHA)Prior to release of 
+funding. Prior to 
+enrollmentWithin 365 days of primary completion date Loss of grant funding
+Summary of requirements:
+Source: Clinicaltrials.gov enforcement: an update. Anthony Keys. January 18, 2022Entity Registration Results Reporting Penalties
+Centers for Medicare & 
+Medicaid Services 
+(CMS)All qualifying clinical trials Study- specific •Coverage denial
+•Costs and fraud 
+investigations
+Patient- Centered 
+Outcomes Research 
+Institute 
+(PCORI)All Clinical studies 
+(including observational)Expected of all PCORI Clinical studies –500 word abstract 
+published on PCORI website•Loss of grant funding
+International Committee of 
+Medical Journal Editors 
+(ICMJE)Prior to enrollment Ineligibility to publish
+Department of Defense
+(DoD)Prior to enrollment.
+Prior to release of funding. Study- specific •$12,103/study/day
+•Withholding or recovery of award funds
+Registration may be required if one (or more) of the following 
+is true:
+1.The study is funded by the National Institutes of Health 
+(NIH) AND meets the NIH definition of a clinical trial
+2.The study involves drugs, devices, or biologics that are regulated by 
+the Food and Drug Administration (FDA)
+3.There is a plan to publish the results in a medical journal AND the 
+study meets the International Committee of Medical Journal Editors 
+(ICMJE) definition of a clinical trial
+4.If your clinical trial will bill routine costs to Medicare , the study must be 
+registered on ClinicalTrials.gov 
+5.If you have a clinical trial that includes a drug that available via expanded access
+.
+6.If your clinical trial receives funding from Department of Defense 
+(check with program Officer), PCORI , National Cancer Institute , 
+Veterans Affairs
+
+NIH funded clinical trials are required to be registered :
+•If your study is NIH funded and meets the NIH definition of a clinical trial ,then 
+clinicaltrials.gov registration is required.
+•For NIH funded research, use the following four questions to determine the difference
+between a clinical study and a clinical trial :
+Does the study involve human participants ?
+Are the participants prospectively assigned to one or more interventions ?
+Is the study designed to evaluate the effect of the intervention on the 
+participants?
+Is the effect being evaluated a health -related biomedical or behavioral 
+outcome ?
+•If the answers to ALL 4 questions are “yes” , your study meets the NIH definition of a 
+clinical trial.
+NIH Definition of an “INTERVENTION”:
+An "intervention" is defined as a manipulation of the subject or subject’s 
+environment for the purpose of modifying one or more health- related 
+biomedical or behavioral processes and/or endpoints. 
+Examples include: 
+•drugs/small molecules/compounds; 
+•biologics; devices; 
+•procedures (e.g., surgical techniques); 
+•delivery systems (e.g., telemedicine, face -to-face interviews); 
+•strategies to change health-related behavior (e.g., diet, cognitive therapy, exercise, 
+development of new habits); 
+•treatment strategies; prevention strategies; and diagnostic strategies.
+This includes 
+–studies with healthy participants
+–Phase 1 trials of FDA -regulated drugs 
+and biological products
+–Small feasibility studies of FDA 
+regulated device products
+–studies with no comparison group 
+(placebo or control)
+–studies designed to assess the 
+pharmacokinetics / safety of an investigational drug
+–Studies where only one aim or sub -aim 
+meets the clinical trial definition .
+Source: https://grants.nih.gov/policy/clinical -trials/definition.htm
+Some NIH funded Basic experimental studies involving humans are 
+also required to be registered:
+Basic experimental studies involving humans ( BESH ) 
+are studies that meet both the definition of basic 
+research and the NIH definition of a clinical trial .
+Basic research uses a range of probes or experimental 
+manipulations to perturb a physiological process 
+(including cognitive and perceptual processes). 
+NIH published clinical trial case studies with examples 
+of BESH (cases 9, 14, 40 & 41). 
+Example: healthy volunteers randomized to 
+different durations of sleep deprivation where the dependent variable is stress hormone levels.
+Source: https://grants.nih.gov/policy/clinical -trials/besh.htm
+Registration is also required if your study meets 
+the DHHS definition of an Applicable Clinical 
+Trial (ACT). These include:
+•Controlled clinical investigations (other than phase 1 
+investigations) of any U.S. Food and Drug 
+Administration (FDA) -regulated drug or biological 
+product for any disease or condition
+•It also includes certain studies of FDA-regulated 
+medical devices, and FDA-required pediatric post 
+market surveillances of a device product
+
+applicable clinical 
+trials (ACT’s):
+The Food and Drug Administration Amendments Act of 
+2007 ( FDAAA ) established legal requirements for 
+sponsors and designated principal investigators (i.e., 
+responsible parties) to report specified clinical trial 
+information for certain ACT’s to ClinicalTrials.gov .
+The requirements are designed to 
+provide potential participants with information about 
+trials of interest , 
+reduce publication bias, 
+help institutional review boards (IRBs) determine the 
+appropriateness of a research study , 
+and promote more efficient allocation of research funds.
+Checklist for Evaluating 
+Whether a Clinical Trial or 
+Study is an Applicable 
+Clinical Trial
+Researchers can use the 
+following tools to determine if their trial meets the DHHS definition of an ACT:
+Identifying an ACT 
+under FDAAA 
+(flowchart)
+Identifying an Applicable clinical trial: 
+
+ACT – important definitions:
+Is the study interventional (a clinical trial)?
+Interventional is defined in the final rule to mean, with respect to a clinical study or a clinical investigation, that 
+participants are assigned prospectively to an intervention or interventions according to a protocol to evaluate the 
+effect of the intervention(s) on biomedical or other health -related outcomes. [Source: 42 CFR 11.10(a); 81 FR 
+65140-41] 
+Does the study evaluate at least one U.S. FDA-regulated drug, biological, or device product?
+A device product is considered to be subject to section 510(k), 515, or 520(m) of the FD&C Act if any of the 
+following is required before it may be legally marketed in the United States : (1) a finding of substantial equivalence 
+under section 510(k) of the FD&C Act, (2) an order under section 515 of the FD&C Act approving a premarket approval 
+application ( PMA ) for the device product, or (3) an HDE under section 520(m) of the FD&C Act. 
+Device products that are considered to be subject to section 510(k), 515, or 520(m) of the FD&C Act include significant 
+risk devices for which approval of an IDE is required, non-significant risk devices that are considered to have an 
+approved IDE in accordance with 21 CFR 812.2(b), or device products that are exempt from the submission requirements 
+of 21 CFR part 812. [Source: 81 FR 65012] 
+Registration Requirements per International Committee of Medical 
+Journal Editors (ICMJE ):
+In 2005 , the ICMJE defined trials that must be registered in order to be 
+considered for publication in journals that adhere to ICMJE standards. 
+“we will consider a trial for publication only if it has been registered before the enrollment of the first patient. This 
+policy applies to trials that start recruiting on or after July 1, 2005. Because many ongoing trials were not registered 
+at inception, we will consider for publication ongoing trials that are registered before September 13, 2005. ”
+In 2007 , the ICMJE expanded the definition of trials that must be 
+registered. 
+Many journals (not limited to medical journals) have adopted the registration 
+policy.
+Source: http://www.icmje.org/
+ICMJE DEFINITION OF CLINICAL TRIAL
+In June 2007 the ICMJE adopted the WHO's definition of clinical trial: " any research study that prospectively 
+assigns human participants or groups of humans to one or more health -related interventions to evaluate the 
+effects on health outcomes .”  
+with or without concurrent comparison or control groups,  
+Health -related interventions are those used to modify a biomedical or health-related outcome; examples include 
+drugs, surgical procedures , devices, behavioral treatments , educational programs , dietary interventions, 
+quality improvement interventions, and process -of-care changes. 
+Health outcomes are any biomedical or health -related measures obtained in patients or participants, including 
+pharmacokinetic measures and adverse events. 
+Purely observational studies (those in which the assignment of the medical intervention is not at the discretion of the 
+investigator) will not require registration.
+The ICMJE …
+…encourages registration of research with non-trial designs (e.g., observational studies)
+…journals will consider trials beginning on or after July 1, 2005 only if registration occurred before the 
+first patient was enrolled ("prospective registration").
+…does not define the timing of first participant enrollment, but best practice dictates registration by the 
+time of first participant consent.
+An acceptable registry must include the minimum 24-item trial registration data set at the time of 
+registration.
+**Those who are uncertain whether their trial meets the expanded ICMJE definition should 
+err on the side of registration if they wish to seek publication in an ICMJE journal**
+Required for Medicare Billing:
+If your study will bill routine costs to Medicare or any other insurer, the study must be registered on 
+ClinicalTrials.gov to obtain the NCT#.
+•AQualifying Clinical Trial (QCT) is a trial that meets the requirements set forth in the Clinical Trial 
+Policy (NCD 310.1) by the Centers for Medicare and Medicaid Service (CMS) .  
+•Once a trial has been determined to be a QCT, the routine costs associated with it are billable to and reimbursable by Medicare and third -party payors. 
+•CMS requires a clinical trial identifier (NCT#) be reported on all billing claims for items/ services 
+related to a qualifying clinical trial . 
+Expanded access use:
+•Under FDA regulations (21 CFR 312.300), expanded access allows for the use of 
+unapproved drugs and biologics outside of a clinical trial for patients with serious 
+diseases or conditions when there is no satisfactory alternative therapy to treat the 
+patient’s disease or condition. This is sometimes referred to as compassionate use or 
+treatment use.
+•Expanded access records which describe the procedure for obtaining an experimental 
+drug or device outside of a clinical trial are required to be submitted to 
+theClinicalTrials.gov database.
+Other Funding Entities Requiring CT.gov Registration:
+Registration may be required if your clinical trial receives funding 
+from:
+Department of Defense (check with program Officer)
+PCORI
+National Cancer Institute
+Veterans Affairs
+Why Do I Need to Register My Trial and Submit Results to 
+ClinicalTrials.gov? here are just some of the reasons…
+Required by Law: Section 801 of the Food and Drug Administration Amendments Act (FDAAA 801) requires 
+responsible parties to register clinical trials and submit summary results to ClinicalTrials.gov. 
+Required for Journal Publication: The International Committee of Medical Journal Editors (ICMJE) requires trial 
+registration as a condition of the publication of research results generated by a clinical trial.
+All NIH -funded clinical trials are expected to register and submit results information to Clinicaltrials.gov , as per the 
+"NIH Policy on Dissemination of NIH -Funded Clinical Trial Information "for competing applications and contract 
+proposals.
+WMA Declaration of Helsinki -Ethical Principles for Medical Research Involving Human Subjects : "Every 
+research study involving human subjects must be registered in a publicly accessible database before recruitment of 
+the first subject" (para. 35).
+What is the penalty for non -compliance?
+Under NIH Policy: Noncompliance with the terms and conditions of the NIH 
+award may provide a basis for enforcement actions, such as withholding 
+current and future funding [ 45 CFR 75.371 ,42 CFR 11.66 ]
+Under Final Rule , responsible parties could be held accountable 
+fornoncompliance , with the potential for substantial civil monetary 
+penalties , the withholding of grant funding from HHS agencies, and 
+criminal proceedings .[2016 NEJM article ]
+Case in point:
+On 28 April 2021 , the FDA issued its first Notice of Noncompliance to Georgia -based 
+Accuitis who failed to submit required summary results information. The company could 
+be “subject to a civil monetary penalty of $10,000 for each day of the violation” until 
+the noncompliance is corrected.
+ICMJE: authors failing to prospectively register a trial risk its inadmissibility 
+to journals following the ICMJE’s trial registration policy.
+
+My study does not meet the CT.gov registration criteria…but can I register anyway?
+Source: Final Rule 42 CFR Part 11: https://www.govinfo.gov/content/pkg/FR -2016 -09-21/pdf/2016 -22129.pdfIn 2015: 19,170 clinical trials were registered. 7,400 were applicable clinical trials, the remainder 11,770 trials, can be considered 
+voluntary or to not fall under the rule. Of these, 526 were NIH funded. This leaves an estimated 11,244 trials that do not fall under either 
+the rule or the NIH policy!
+DHHS expects that these clinical trials will:
+•submit the same clinical trial registration information as is submitted for applicable clinical trials that are subject to the rule. 
+•expects that information submitted for such clinical trials will be updated as frequently as information for applicable clinical trials 
+that are subject to the rule. 
+•Estimated annual burden of 269,856 hours (almost 90,000 hours initial registration, rest from updates)
+Voluntary registration places a burden on the responsible party to comply with all registration and update requirements . Any 
+ongoing non- compliance with these requirements on the part of the responsible party.
+Who is responsible for registering and Submitting Results to ClinicalTrials.gov? 
+The “Responsible Party” refers to the entity or individual who is 
+responsible for registering a trial on ClinicalTrials.gov. 
+The Responsible Party is responsible for the initial release of the record, all future updates and ensuring the trial registration stays 
+accurate and up -to-date. 
+For studies registered by UCI, the PI serves as the responsible party if they meet all the following criteria:
+1.They are responsible for conducting the clinical trial .
+2.They have access to and control over the data
+3.They have the right to publish the results of the trial
+4.They can meet all the requirements for the submission of clinical trial information.
+[Source: Elaboration of Definitions of Responsible Party and Applicable Clinical Trial .]
+
+Submission process:
+1. A ClinicalTrials.gov staff member will review 
+the study record after it is submitted and before 
+it is published on ClinicalTrials.gov. 
+2. The review process may take up to a few 
+days . Ensuring that the record is consistent with 
+the ClinicalTrials.gov Protocol Review 
+Criteria (PDF) before releasing it will expedite 
+publication on the site.
+3. After it is accepted by review staff for publication, the record, including its NCT 
+Number, will be available on ClinicalTrials.gov within 2 –5 business days.
+
+Obligations of 
+the 
+Responsible 
+Party once 
+registered 
+Source: https://clinicaltrials.gov/ct2/manage -recs/faq
+
+27Applies to clinical 
+trials conducted or 
+supported by a Federal department or agency using the Common Rule 
+(e.g., 
+NIH, DOD, DVA)The consent form must have been used 
+in enrolling participantsShould be uploaded no later than 60 days after the last study visit by any subject, 
+as required by the protocolMust be uploaded to 
+either 
+ClinicalTrials.gov or 
+a docket folder on Regulations.govNEW: Uploading the Consent Form per revised Common Rule
+[Source: §46.116   General requirements for informed consent.]Effective January 21, 2019. Important considerations regarding the uploading of the informed consent form:

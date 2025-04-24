@@ -1,0 +1,1088 @@
+{
+  "timestamp": "2025-04-24T18:25:03.699641",
+  "total_files_processed": 108,
+  "total_files_failed": 0,
+  "processed_files": [
+    {
+      "id": "dbf0afb34f5b82b35c3a43b33a5ea98d",
+      "filename": "NQ8-01-02-013_Follow-up_3s.pdf",
+      "source_path": "attached_assets/NQ8-01-02-013_Follow-up_3s.pdf",
+      "extraction_date": "2025-04-24T18:23:55.978274",
+      "file_size_bytes": 147525,
+      "file_modified_date": "2025-04-09T18:51:11.163573",
+      "content_length": 24166,
+      "content_type": "PDF"
+    },
+    {
+      "id": "898ff362c291452d9e232f060cc00d1c",
+      "filename": "A6181120_20Final_20Public_20Disclosure_20Synopsis_2.pdf",
+      "source_path": "attached_assets/A6181120_20Final_20Public_20Disclosure_20Synopsis_2.pdf",
+      "extraction_date": "2025-04-24T18:23:57.041233",
+      "file_size_bytes": 219394,
+      "file_modified_date": "2025-04-09T18:51:11.595572",
+      "content_length": 68705,
+      "content_type": "PDF"
+    },
+    {
+      "id": "c55948a59120fd1b2d7428df645d5554",
+      "filename": "A8851009_20Final_20Public_20Disclosure_20Synopsis_2.pdf",
+      "source_path": "attached_assets/A8851009_20Final_20Public_20Disclosure_20Synopsis_2.pdf",
+      "extraction_date": "2025-04-24T18:23:57.455429",
+      "file_size_bytes": 192537,
+      "file_modified_date": "2025-04-09T18:51:12.271572",
+      "content_length": 56716,
+      "content_type": "PDF"
+    },
+    {
+      "id": "86590a623553ba9f549b90e6eb13f076",
+      "filename": "A6111137_20Final_20Public_20Disclosure_20Synopsis_2.pdf",
+      "source_path": "attached_assets/A6111137_20Final_20Public_20Disclosure_20Synopsis_2.pdf",
+      "extraction_date": "2025-04-24T18:23:57.749313",
+      "file_size_bytes": 168604,
+      "file_modified_date": "2025-04-09T18:51:12.290572",
+      "content_length": 37880,
+      "content_type": "PDF"
+    },
+    {
+      "id": "0d45c2928ff220774fee4c731cd4ae5d",
+      "filename": "A0081186_20Final_20Public_20Disclosure_20Synopsis_2.pdf",
+      "source_path": "attached_assets/A0081186_20Final_20Public_20Disclosure_20Synopsis_2.pdf",
+      "extraction_date": "2025-04-24T18:23:58.591444",
+      "file_size_bytes": 314414,
+      "file_modified_date": "2025-04-09T18:51:12.773571",
+      "content_length": 90954,
+      "content_type": "PDF"
+    },
+    {
+      "id": "ae5555e573c8244ccd484c70ccea6d31",
+      "filename": "NQ8-01-02-013_Follow-up_3.pdf",
+      "source_path": "attached_assets/NQ8-01-02-013_Follow-up_3.pdf",
+      "extraction_date": "2025-04-24T18:23:59.029513",
+      "file_size_bytes": 147525,
+      "file_modified_date": "2025-04-09T18:51:12.796571",
+      "content_length": 24166,
+      "content_type": "PDF"
+    },
+    {
+      "id": "c3311f1d82d24572926c7e124bc14eff",
+      "filename": "PharmaSUG-2017-PO24.pdf",
+      "source_path": "attached_assets/PharmaSUG-2017-PO24.pdf",
+      "extraction_date": "2025-04-24T18:23:59.173423",
+      "file_size_bytes": 72837,
+      "file_modified_date": "2025-04-09T18:51:13.001571",
+      "content_length": 12634,
+      "content_type": "PDF"
+    },
+    {
+      "id": "acd5d42255201e44207cf1470e363940",
+      "filename": "e002496.full.pdf",
+      "source_path": "attached_assets/e002496.full.pdf",
+      "extraction_date": "2025-04-24T18:23:59.369122",
+      "file_size_bytes": 447068,
+      "file_modified_date": "2025-04-09T18:51:13.136571",
+      "content_length": 45649,
+      "content_type": "PDF"
+    },
+    {
+      "id": "0548a1038e8b73ba64ff30b3e6c701ef",
+      "filename": "NCT01561027-Synopsis.pdf",
+      "source_path": "attached_assets/NCT01561027-Synopsis.pdf",
+      "extraction_date": "2025-04-24T18:23:59.573501",
+      "file_size_bytes": 501323,
+      "file_modified_date": "2025-04-09T18:51:13.480571",
+      "content_length": 19258,
+      "content_type": "PDF"
+    },
+    {
+      "id": "15dcd6a78b9bb35e82ed3c85c46fb86c",
+      "filename": "aflibc06561_summary.pdf",
+      "source_path": "attached_assets/aflibc06561_summary.pdf",
+      "extraction_date": "2025-04-24T18:23:59.781592",
+      "file_size_bytes": 201762,
+      "file_modified_date": "2025-04-09T18:51:13.543571",
+      "content_length": 28371,
+      "content_type": "PDF"
+    },
+    {
+      "id": "abb2667b8d360e407a1629ce2621d044",
+      "filename": "A0221058_3.pdf",
+      "source_path": "attached_assets/A0221058_3.pdf",
+      "extraction_date": "2025-04-24T18:24:00.116400",
+      "file_size_bytes": 747128,
+      "file_modified_date": "2025-04-09T18:51:13.859571",
+      "content_length": 34215,
+      "content_type": "PDF"
+    },
+    {
+      "id": "ed8d8c92de43e851bfdf13a2bd39d358",
+      "filename": "A0221045_20_20Public_20Disclosure_20Synopsis_20Final_2.pdf",
+      "source_path": "attached_assets/A0221045_20_20Public_20Disclosure_20Synopsis_20Final_2.pdf",
+      "extraction_date": "2025-04-24T18:24:01.275043",
+      "file_size_bytes": 626351,
+      "file_modified_date": "2025-04-09T18:51:13.860571",
+      "content_length": 82375,
+      "content_type": "PDF"
+    },
+    {
+      "id": "33c1e83298235d873236b95267adff6f",
+      "filename": "A3051095_3.pdf",
+      "source_path": "attached_assets/A3051095_3.pdf",
+      "extraction_date": "2025-04-24T18:24:01.565650",
+      "file_size_bytes": 740293,
+      "file_modified_date": "2025-04-09T18:51:13.924571",
+      "content_length": 29380,
+      "content_type": "PDF"
+    },
+    {
+      "id": "c591421d1a6819450f5e0ad0b3cb09c5",
+      "filename": "draftgfi_processesandpracticesapplicabletobioresearchmonitoringinspections-frdts2023-363op5-10-24_final.pdf",
+      "source_path": "attached_assets/draftgfi_processesandpracticesapplicabletobioresearchmonitoringinspections-frdts2023-363op5-10-24_final.pdf",
+      "extraction_date": "2025-04-24T18:24:01.942507",
+      "file_size_bytes": 528914,
+      "file_modified_date": "2025-04-09T18:51:14.109571",
+      "content_length": 40398,
+      "content_type": "PDF"
+    },
+    {
+      "id": "a6384fab2c49ababd7b996b3f9033603",
+      "filename": "navigating-clinical-study-report.pdf",
+      "source_path": "attached_assets/navigating-clinical-study-report.pdf",
+      "extraction_date": "2025-04-24T18:24:02.991485",
+      "file_size_bytes": 1449420,
+      "file_modified_date": "2025-04-09T18:51:14.753570",
+      "content_length": 4777,
+      "content_type": "PDF"
+    },
+    {
+      "id": "583aa90c9a8ecafedee58e7a76afadfe",
+      "filename": "Research_methods.pdf",
+      "source_path": "attached_assets/Research_methods.pdf",
+      "extraction_date": "2025-04-24T18:24:03.148427",
+      "file_size_bytes": 194071,
+      "file_modified_date": "2025-04-10T19:40:12.878834",
+      "content_length": 42456,
+      "content_type": "PDF"
+    },
+    {
+      "id": "0d51e9890fa517e0b1cec6b11a07b346",
+      "filename": "PIIS0012369220304645.pdf",
+      "source_path": "attached_assets/PIIS0012369220304645.pdf",
+      "extraction_date": "2025-04-24T18:24:03.304547",
+      "file_size_bytes": 163263,
+      "file_modified_date": "2025-04-10T19:40:12.905833",
+      "content_length": 29265,
+      "content_type": "PDF"
+    },
+    {
+      "id": "5debf9f774caffbd078bb66abe667cf9",
+      "filename": "experimental_nonexperimental_study_final.pdf",
+      "source_path": "attached_assets/experimental_nonexperimental_study_final.pdf",
+      "extraction_date": "2025-04-24T18:24:03.580933",
+      "file_size_bytes": 433066,
+      "file_modified_date": "2025-04-10T19:40:13.188830",
+      "content_length": 130303,
+      "content_type": "PDF"
+    },
+    {
+      "id": "70d754d9f4730c7a2b974db1c2ee0aad",
+      "filename": "Pediatric Investigation - 2019 - Chidambaram - Clinical research study designs  The essentials.pdf",
+      "source_path": "attached_assets/Pediatric Investigation - 2019 - Chidambaram - Clinical research study designs  The essentials.pdf",
+      "extraction_date": "2025-04-24T18:24:03.723810",
+      "file_size_bytes": 550962,
+      "file_modified_date": "2025-04-10T19:40:14.141818",
+      "content_length": 38417,
+      "content_type": "PDF"
+    },
+    {
+      "id": "bbe5592832df709e26ee91c9b627ed9a",
+      "filename": "7.19.13.Miller-Clinical-Trials.pdf",
+      "source_path": "attached_assets/7.19.13.Miller-Clinical-Trials.pdf",
+      "extraction_date": "2025-04-24T18:24:05.737200",
+      "file_size_bytes": 1014184,
+      "file_modified_date": "2025-04-10T19:40:14.284817",
+      "content_length": 24081,
+      "content_type": "PDF"
+    },
+    {
+      "id": "019696f83ec05af7abf840a91fc854ab",
+      "filename": "Clinical-Trials.pdf",
+      "source_path": "attached_assets/Clinical-Trials.pdf",
+      "extraction_date": "2025-04-24T18:24:06.430914",
+      "file_size_bytes": 1302786,
+      "file_modified_date": "2025-04-10T19:40:14.346816",
+      "content_length": 65297,
+      "content_type": "PDF"
+    },
+    {
+      "id": "e22790a06b7e42fbf1cc8991cdfa0165",
+      "filename": "efpia-position-paper-innovation-in-clinical-trial-design-white-paper.pdf",
+      "source_path": "attached_assets/efpia-position-paper-innovation-in-clinical-trial-design-white-paper.pdf",
+      "extraction_date": "2025-04-24T18:24:09.179418",
+      "file_size_bytes": 1793976,
+      "file_modified_date": "2025-04-10T19:40:14.949808",
+      "content_length": 179759,
+      "content_type": "PDF"
+    },
+    {
+      "id": "d9c631cacd72a8dbba3910d50db2f9e3",
+      "filename": "Designingclinicalresearch_4th-edition.pdf",
+      "source_path": "attached_assets/Designingclinicalresearch_4th-edition.pdf",
+      "extraction_date": "2025-04-24T18:24:13.864333",
+      "file_size_bytes": 8523929,
+      "file_modified_date": "2025-04-10T19:40:17.855773",
+      "content_length": 1255075,
+      "content_type": "PDF"
+    },
+    {
+      "id": "1c6774f857b50f27eedfa83663e3a740",
+      "filename": "28545126fnl.pdf",
+      "source_path": "attached_assets/28545126fnl.pdf",
+      "extraction_date": "2025-04-24T18:24:14.805396",
+      "file_size_bytes": 313787,
+      "file_modified_date": "2025-04-10T19:44:01.748588",
+      "content_length": 119081,
+      "content_type": "PDF"
+    },
+    {
+      "id": "0bf19eb398a89bebad456f19f0059a4e",
+      "filename": "PIIS0016510715024347.pdf",
+      "source_path": "attached_assets/PIIS0016510715024347.pdf",
+      "extraction_date": "2025-04-24T18:24:14.914935",
+      "file_size_bytes": 109571,
+      "file_modified_date": "2025-04-10T19:44:01.957587",
+      "content_length": 20837,
+      "content_type": "PDF"
+    },
+    {
+      "id": "49c9470dbdb383ff660abc619d105a47",
+      "filename": "bld_Clinical_Trials_Scope_Blood_Journal.pdf",
+      "source_path": "attached_assets/bld_Clinical_Trials_Scope_Blood_Journal.pdf",
+      "extraction_date": "2025-04-24T18:24:15.013206",
+      "file_size_bytes": 119138,
+      "file_modified_date": "2025-04-10T19:44:02.171585",
+      "content_length": 7548,
+      "content_type": "PDF"
+    },
+    {
+      "id": "733b88dfa947ebc195320c48c07382cc",
+      "filename": "Guidelinesfordesigningaclinicalstudyprotocoldoc.pdf",
+      "source_path": "attached_assets/Guidelinesfordesigningaclinicalstudyprotocoldoc.pdf",
+      "extraction_date": "2025-04-24T18:24:15.056917",
+      "file_size_bytes": 25673,
+      "file_modified_date": "2025-04-10T19:44:02.179585",
+      "content_length": 6856,
+      "content_type": "PDF"
+    },
+    {
+      "id": "55409bda9b9212672bfee131f63cb320",
+      "filename": "fmed-11-1400585.pdf",
+      "source_path": "attached_assets/fmed-11-1400585.pdf",
+      "extraction_date": "2025-04-24T18:24:15.669062",
+      "file_size_bytes": 656823,
+      "file_modified_date": "2025-04-10T19:44:03.548574",
+      "content_length": 137485,
+      "content_type": "PDF"
+    },
+    {
+      "id": "2336fc5901d870e2c9dbcede0ee7a501",
+      "filename": "IPDJ_0401_04.pdf",
+      "source_path": "attached_assets/IPDJ_0401_04.pdf",
+      "extraction_date": "2025-04-24T18:24:16.143344",
+      "file_size_bytes": 609319,
+      "file_modified_date": "2025-04-10T19:44:03.646574",
+      "content_length": 74910,
+      "content_type": "PDF"
+    },
+    {
+      "id": "c5d9661667fca70f0ffb6dd1212b00b9",
+      "filename": "PIIS1526590022003911.pdf",
+      "source_path": "attached_assets/PIIS1526590022003911.pdf",
+      "extraction_date": "2025-04-24T18:24:17.211799",
+      "file_size_bytes": 1373820,
+      "file_modified_date": "2025-04-10T19:44:04.104570",
+      "content_length": 65375,
+      "content_type": "PDF"
+    },
+    {
+      "id": "04eb46272ba77430d6415369eef1f2ba",
+      "filename": "opportunities-for-innovation-in-the-design-and-execution-of-clinical-trials.pdf",
+      "source_path": "attached_assets/opportunities-for-innovation-in-the-design-and-execution-of-clinical-trials.pdf",
+      "extraction_date": "2025-04-24T18:24:18.041687",
+      "file_size_bytes": 1391690,
+      "file_modified_date": "2025-04-10T19:44:04.568567",
+      "content_length": 16836,
+      "content_type": "PDF"
+    },
+    {
+      "id": "d6f40345459974dbf2c9766f2e2cfe21",
+      "filename": "Choosing-the-Right-Study-Design-for-Your-Research-20220921.pdf",
+      "source_path": "attached_assets/Choosing-the-Right-Study-Design-for-Your-Research-20220921.pdf",
+      "extraction_date": "2025-04-24T18:24:18.285343",
+      "file_size_bytes": 3097994,
+      "file_modified_date": "2025-04-10T19:44:05.873557",
+      "content_length": 13883,
+      "content_type": "PDF"
+    },
+    {
+      "id": "85a7639de4d7d9e0ba771cbac3100971",
+      "filename": "2022-JCS-MediaPack.pdf",
+      "source_path": "attached_assets/2022-JCS-MediaPack.pdf",
+      "extraction_date": "2025-04-24T18:24:19.179239",
+      "file_size_bytes": 8213281,
+      "file_modified_date": "2025-04-10T19:44:08.025541",
+      "content_length": 27918,
+      "content_type": "PDF"
+    },
+    {
+      "id": "4f1b76b456d1e9e2e0105f893c08e807",
+      "filename": "449782ff-f6b4-4fc2-82e1-9f4740b8ec7e_23135_-_ayesha_siddiqui_v2 (1).pdf",
+      "source_path": "attached_assets/449782ff-f6b4-4fc2-82e1-9f4740b8ec7e_23135_-_ayesha_siddiqui_v2 (1).pdf",
+      "extraction_date": "2025-04-24T18:24:19.611871",
+      "file_size_bytes": 413929,
+      "file_modified_date": "2025-04-10T19:46:21.340665",
+      "content_length": 44222,
+      "content_type": "PDF"
+    },
+    {
+      "id": "910bb07e9c94b9cd242c7168c571ea45",
+      "filename": "449782ff-f6b4-4fc2-82e1-9f4740b8ec7e_23135_-_ayesha_siddiqui_v2.pdf",
+      "source_path": "attached_assets/449782ff-f6b4-4fc2-82e1-9f4740b8ec7e_23135_-_ayesha_siddiqui_v2.pdf",
+      "extraction_date": "2025-04-24T18:24:19.989385",
+      "file_size_bytes": 413929,
+      "file_modified_date": "2025-04-10T19:46:21.478664",
+      "content_length": 44222,
+      "content_type": "PDF"
+    },
+    {
+      "id": "7b6ca3becece6a433603368e9b8d0a30",
+      "filename": "cdc_115437_DS1.pdf",
+      "source_path": "attached_assets/cdc_115437_DS1.pdf",
+      "extraction_date": "2025-04-24T18:24:20.138767",
+      "file_size_bytes": 502025,
+      "file_modified_date": "2025-04-10T19:46:21.648664",
+      "content_length": 39668,
+      "content_type": "PDF"
+    },
+    {
+      "id": "b4c7b98794c289e03a1a0671be64e327",
+      "filename": "Article-Journal-Clinical-Studies-Orphan-Suceess-20190618.pdf",
+      "source_path": "attached_assets/Article-Journal-Clinical-Studies-Orphan-Suceess-20190618.pdf",
+      "extraction_date": "2025-04-24T18:24:20.270084",
+      "file_size_bytes": 2403334,
+      "file_modified_date": "2025-04-10T19:46:24.067650",
+      "content_length": 12690,
+      "content_type": "PDF"
+    },
+    {
+      "id": "6991450be6b05b84e73b2fc25e656ba1",
+      "filename": "9789240097711-eng.pdf",
+      "source_path": "attached_assets/9789240097711-eng.pdf",
+      "extraction_date": "2025-04-24T18:24:22.159030",
+      "file_size_bytes": 6123951,
+      "file_modified_date": "2025-04-10T19:46:25.573641",
+      "content_length": 240903,
+      "content_type": "PDF"
+    },
+    {
+      "id": "edd39d2e3a8c761ea483c560f607f8e7",
+      "filename": "f61666f9e4a58471aceda57948e0eb696e25.pdf",
+      "source_path": "attached_assets/f61666f9e4a58471aceda57948e0eb696e25.pdf",
+      "extraction_date": "2025-04-24T18:24:22.276073",
+      "file_size_bytes": 83002,
+      "file_modified_date": "2025-04-10T19:49:46.350731",
+      "content_length": 26412,
+      "content_type": "PDF"
+    },
+    {
+      "id": "aff7bb1726e8c15c2fc89ddd078ba927",
+      "filename": "Qualitative Case Study Methodology_ Study Design and Implementati.pdf",
+      "source_path": "attached_assets/Qualitative Case Study Methodology_ Study Design and Implementati.pdf",
+      "extraction_date": "2025-04-24T18:24:22.399623",
+      "file_size_bytes": 309639,
+      "file_modified_date": "2025-04-10T19:49:46.454731",
+      "content_length": 46341,
+      "content_type": "PDF"
+    },
+    {
+      "id": "e499a3b33cabf24bd7e7b30481d58cd2",
+      "filename": "AO_2508_2023_1-3.pdf",
+      "source_path": "attached_assets/AO_2508_2023_1-3.pdf",
+      "extraction_date": "2025-04-24T18:24:22.522259",
+      "file_size_bytes": 258053,
+      "file_modified_date": "2025-04-10T19:49:46.539730",
+      "content_length": 18048,
+      "content_type": "PDF"
+    },
+    {
+      "id": "87bb973e52367b4a1639d58abc102e0c",
+      "filename": "SSDCENTRAL68696v2DRAFTWhitePaperConductingClinic__.pdf",
+      "source_path": "attached_assets/SSDCENTRAL68696v2DRAFTWhitePaperConductingClinic__.pdf",
+      "extraction_date": "2025-04-24T18:24:22.776154",
+      "file_size_bytes": 154173,
+      "file_modified_date": "2025-04-10T19:49:46.591730",
+      "content_length": 72738,
+      "content_type": "PDF"
+    },
+    {
+      "id": "8842311be0340fa34c92363bcd797405",
+      "filename": "hta_clinical-studies-validity_guidance_en.pdf",
+      "source_path": "attached_assets/hta_clinical-studies-validity_guidance_en.pdf",
+      "extraction_date": "2025-04-24T18:24:23.713598",
+      "file_size_bytes": 490759,
+      "file_modified_date": "2025-04-10T19:49:46.927729",
+      "content_length": 107113,
+      "content_type": "PDF"
+    },
+    {
+      "id": "1f2aca617c29caa75add27a6dd624d55",
+      "filename": "pierolai,+30.pdf",
+      "source_path": "attached_assets/pierolai,+30.pdf",
+      "extraction_date": "2025-04-24T18:24:23.868900",
+      "file_size_bytes": 494144,
+      "file_modified_date": "2025-04-10T19:49:47.267728",
+      "content_length": 57450,
+      "content_type": "PDF"
+    },
+    {
+      "id": "dce3faa01f33eee67f43ba9a3e98b217",
+      "filename": "PIIS259005952100176X.pdf",
+      "source_path": "attached_assets/PIIS259005952100176X.pdf",
+      "extraction_date": "2025-04-24T18:24:24.431321",
+      "file_size_bytes": 1443068,
+      "file_modified_date": "2025-04-10T19:49:50.348717",
+      "content_length": 75046,
+      "content_type": "PDF"
+    },
+    {
+      "id": "dee37b914edbc5e07851f906cdc1c115",
+      "filename": "uxae104.pdf",
+      "source_path": "attached_assets/uxae104.pdf",
+      "extraction_date": "2025-04-24T18:24:24.692290",
+      "file_size_bytes": 1399866,
+      "file_modified_date": "2025-04-10T19:49:50.631716",
+      "content_length": 77754,
+      "content_type": "PDF"
+    },
+    {
+      "id": "c535faeee53c5381a13339fcc247263c",
+      "filename": "DI_Intelligent-clinical-trials.pdf",
+      "source_path": "attached_assets/DI_Intelligent-clinical-trials.pdf",
+      "extraction_date": "2025-04-24T18:24:25.269562",
+      "file_size_bytes": 1525102,
+      "file_modified_date": "2025-04-10T19:49:50.791715",
+      "content_length": 104171,
+      "content_type": "PDF"
+    },
+    {
+      "id": "eefa287d312853c0f289a7972e40a8be",
+      "filename": "48_161.pdf",
+      "source_path": "attached_assets/48_161.pdf",
+      "extraction_date": "2025-04-24T18:24:26.918748",
+      "file_size_bytes": 1941278,
+      "file_modified_date": "2025-04-10T19:49:51.266713",
+      "content_length": 33412,
+      "content_type": "PDF"
+    },
+    {
+      "id": "cb417854e72782ee4df3ef76917329e9",
+      "filename": "Trial-Complexity_Intelligent-Trials.pdf",
+      "source_path": "attached_assets/Trial-Complexity_Intelligent-Trials.pdf",
+      "extraction_date": "2025-04-24T18:24:27.044818",
+      "file_size_bytes": 163542,
+      "file_modified_date": "2025-04-10T19:52:34.774233",
+      "content_length": 33854,
+      "content_type": "PDF"
+    },
+    {
+      "id": "1c6d6824168c6610d2c777acfdae1ace",
+      "filename": "disclosure-of-clinical-trial-information-policy.pdf",
+      "source_path": "attached_assets/disclosure-of-clinical-trial-information-policy.pdf",
+      "extraction_date": "2025-04-24T18:24:27.242091",
+      "file_size_bytes": 231106,
+      "file_modified_date": "2025-04-10T19:52:35.031232",
+      "content_length": 16150,
+      "content_type": "PDF"
+    },
+    {
+      "id": "91d3c37f634baa68fb4683fe8ef89b87",
+      "filename": "J-03-POL-01.pdf",
+      "source_path": "attached_assets/J-03-POL-01.pdf",
+      "extraction_date": "2025-04-24T18:24:27.440150",
+      "file_size_bytes": 256771,
+      "file_modified_date": "2025-04-10T19:52:35.118232",
+      "content_length": 22938,
+      "content_type": "PDF"
+    },
+    {
+      "id": "ab6a0b25d3a6b4b19168d9d79eec3c2d",
+      "filename": "Course Syllabus Study Design in Clinical Research K1F2980.pdf",
+      "source_path": "attached_assets/Course Syllabus Study Design in Clinical Research K1F2980.pdf",
+      "extraction_date": "2025-04-24T18:24:27.473603",
+      "file_size_bytes": 211553,
+      "file_modified_date": "2025-04-10T19:52:36.062229",
+      "content_length": 4238,
+      "content_type": "PDF"
+    },
+    {
+      "id": "ee345359d5b1ca88b74b3688a04628f3",
+      "filename": "200513_Factsheet_publication_of_clinical_trial_results.pdf",
+      "source_path": "attached_assets/200513_Factsheet_publication_of_clinical_trial_results.pdf",
+      "extraction_date": "2025-04-24T18:24:27.667474",
+      "file_size_bytes": 460679,
+      "file_modified_date": "2025-04-10T19:52:36.568228",
+      "content_length": 20047,
+      "content_type": "PDF"
+    },
+    {
+      "id": "2fd94609af3c6344dd61f87b5a7d20c9",
+      "filename": "Human-Factors-Studies-and-Related-Clinical-Study-Considerations-in-Combination-Product-Design-and-Development.pdf",
+      "source_path": "attached_assets/Human-Factors-Studies-and-Related-Clinical-Study-Considerations-in-Combination-Product-Design-and-Development.pdf",
+      "extraction_date": "2025-04-24T18:24:28.212958",
+      "file_size_bytes": 344288,
+      "file_modified_date": "2025-04-10T19:52:36.680228",
+      "content_length": 70724,
+      "content_type": "PDF"
+    },
+    {
+      "id": "46e89d9bd84cd3710a4a0a67426889d4",
+      "filename": "00024665-202103000-00004.pdf",
+      "source_path": "attached_assets/00024665-202103000-00004.pdf",
+      "extraction_date": "2025-04-24T18:24:28.510540",
+      "file_size_bytes": 770769,
+      "file_modified_date": "2025-04-10T19:52:37.288227",
+      "content_length": 34330,
+      "content_type": "PDF"
+    },
+    {
+      "id": "dd1d0045252abd3932c9799f19f755ff",
+      "filename": "IPDJ_0401_04 (1).pdf",
+      "source_path": "attached_assets/IPDJ_0401_04 (1).pdf",
+      "extraction_date": "2025-04-24T18:24:28.999665",
+      "file_size_bytes": 609319,
+      "file_modified_date": "2025-04-10T19:52:37.309227",
+      "content_length": 74910,
+      "content_type": "PDF"
+    },
+    {
+      "id": "8c6a4f9b8a5983dcc2640df5abdbd118",
+      "filename": "crtp-academic-catalog-2024.pdf",
+      "source_path": "attached_assets/crtp-academic-catalog-2024.pdf",
+      "extraction_date": "2025-04-24T18:24:29.643718",
+      "file_size_bytes": 915531,
+      "file_modified_date": "2025-04-10T19:52:37.441226",
+      "content_length": 59371,
+      "content_type": "PDF"
+    },
+    {
+      "id": "66ab884e23dcd822a48e7a439852ab01",
+      "filename": "FDORA-enhancing-clincal-study-diversity-workshop-report.pdf",
+      "source_path": "attached_assets/FDORA-enhancing-clincal-study-diversity-workshop-report.pdf",
+      "extraction_date": "2025-04-24T18:24:30.023241",
+      "file_size_bytes": 639039,
+      "file_modified_date": "2025-04-10T19:52:37.477226",
+      "content_length": 67907,
+      "content_type": "PDF"
+    },
+    {
+      "id": "fc44265e35c7c807a3929e1192095601",
+      "filename": "jmir-2024-1-e57750.pdf",
+      "source_path": "attached_assets/jmir-2024-1-e57750.pdf",
+      "extraction_date": "2025-04-24T18:24:30.538461",
+      "file_size_bytes": 1256645,
+      "file_modified_date": "2025-04-10T19:52:38.015225",
+      "content_length": 56449,
+      "content_type": "PDF"
+    },
+    {
+      "id": "aa12299129d0bc39c0f354e2a003d0e3",
+      "filename": "ICER_Acute-Pain_Evidence-Report_For-Publication_020525.pdf",
+      "source_path": "attached_assets/ICER_Acute-Pain_Evidence-Report_For-Publication_020525.pdf",
+      "extraction_date": "2025-04-24T18:24:33.840107",
+      "file_size_bytes": 1532878,
+      "file_modified_date": "2025-04-10T19:52:38.231224",
+      "content_length": 257790,
+      "content_type": "PDF"
+    },
+    {
+      "id": "d9e7e0ce837d401c037ecd75148eb3cc",
+      "filename": "ClinicalTrials-CT.gov-Presentation-V-4.0-May-2022.pdf",
+      "source_path": "attached_assets/ClinicalTrials-CT.gov-Presentation-V-4.0-May-2022.pdf",
+      "extraction_date": "2025-04-24T18:24:34.148570",
+      "file_size_bytes": 2180818,
+      "file_modified_date": "2025-04-10T19:52:39.129222",
+      "content_length": 17784,
+      "content_type": "PDF"
+    },
+    {
+      "id": "66ea9dba1e71dde80fd2575ec2151750",
+      "filename": "DNDi-Clinical-Trial-Protocol-BENDITA-V5.pdf",
+      "source_path": "attached_assets/DNDi-Clinical-Trial-Protocol-BENDITA-V5.pdf",
+      "extraction_date": "2025-04-24T18:24:36.135261",
+      "file_size_bytes": 2465923,
+      "file_modified_date": "2025-04-10T19:52:39.430222",
+      "content_length": 193396,
+      "content_type": "PDF"
+    },
+    {
+      "id": "116b2df142794b5e518dfd1a87459805",
+      "filename": "Patient-engagement-in-clinical-trial-protocol-design.pdf",
+      "source_path": "attached_assets/Patient-engagement-in-clinical-trial-protocol-design.pdf",
+      "extraction_date": "2025-04-24T18:24:36.694813",
+      "file_size_bytes": 2753986,
+      "file_modified_date": "2025-04-10T19:52:39.532221",
+      "content_length": 108910,
+      "content_type": "PDF"
+    },
+    {
+      "id": "6e45f16e2d263068bdb0529daeb1ba24",
+      "filename": "Study_Design_Recommendations_1744341802.pdf",
+      "source_path": "attached_assets/Study_Design_Recommendations_1744341802.pdf",
+      "extraction_date": "2025-04-24T18:24:36.697878",
+      "file_size_bytes": 1538,
+      "file_modified_date": "2025-04-11T03:24:05.167017",
+      "content_length": 492,
+      "content_type": "PDF"
+    },
+    {
+      "id": "52bedbd8f5b74f1fcd11c0795c49bfad",
+      "filename": "Obesity POC Study Protocol (Australia) v1.1c 07MAR25 (1).pdf",
+      "source_path": "attached_assets/Obesity POC Study Protocol (Australia) v1.1c 07MAR25 (1).pdf",
+      "extraction_date": "2025-04-24T18:24:37.804401",
+      "file_size_bytes": 755207,
+      "file_modified_date": "2025-04-14T04:43:52.833482",
+      "content_length": 106253,
+      "content_type": "PDF"
+    },
+    {
+      "id": "dfb0c3ac29e5bd275928b47e9c78642d",
+      "filename": "978-3-7643-8362-6_6.pdf",
+      "source_path": "attached_assets/978-3-7643-8362-6_6.pdf",
+      "extraction_date": "2025-04-24T18:24:37.838343",
+      "file_size_bytes": 47286,
+      "file_modified_date": "2025-04-14T17:47:07.242973",
+      "content_length": 5113,
+      "content_type": "PDF"
+    },
+    {
+      "id": "df91bc09ea2b8f9a3d13657b2128310a",
+      "filename": "E3_Guideline.pdf",
+      "source_path": "attached_assets/E3_Guideline.pdf",
+      "extraction_date": "2025-04-24T18:24:38.190605",
+      "file_size_bytes": 482932,
+      "file_modified_date": "2025-04-14T17:47:07.742973",
+      "content_length": 117183,
+      "content_type": "PDF"
+    },
+    {
+      "id": "865a2cbf85447a7f62501a7af9b5f62a",
+      "filename": "E3-Structure-and-Content-of-Clinical-Study-Reports.pdf",
+      "source_path": "attached_assets/E3-Structure-and-Content-of-Clinical-Study-Reports.pdf",
+      "extraction_date": "2025-04-24T18:24:38.783342",
+      "file_size_bytes": 245478,
+      "file_modified_date": "2025-04-14T17:47:07.885973",
+      "content_length": 107687,
+      "content_type": "PDF"
+    },
+    {
+      "id": "f57ba83a92bbb6c7333e7365e5f721f7",
+      "filename": "quick-guide-clinical-study-reports-submission-ctis-training-programme-module-13_en.pdf",
+      "source_path": "attached_assets/quick-guide-clinical-study-reports-submission-ctis-training-programme-module-13_en.pdf",
+      "extraction_date": "2025-04-24T18:24:39.032168",
+      "file_size_bytes": 766888,
+      "file_modified_date": "2025-04-14T17:47:07.946973",
+      "content_length": 17135,
+      "content_type": "PDF"
+    },
+    {
+      "id": "527d1a5f85301d6f1483975f03894730",
+      "filename": "clinical-study-reports.pdf",
+      "source_path": "attached_assets/clinical-study-reports.pdf",
+      "extraction_date": "2025-04-24T18:24:39.231849",
+      "file_size_bytes": 778283,
+      "file_modified_date": "2025-04-14T17:47:08.065973",
+      "content_length": 23024,
+      "content_type": "PDF"
+    },
+    {
+      "id": "d03d5dd59732c13df7ad128617c34ada",
+      "filename": "Format-and-Content-of-the-Clinical-and-Statistical-Sections-of-an-Application.pdf",
+      "source_path": "attached_assets/Format-and-Content-of-the-Clinical-and-Statistical-Sections-of-an-Application.pdf",
+      "extraction_date": "2025-04-24T18:24:41.150570",
+      "file_size_bytes": 1142133,
+      "file_modified_date": "2025-04-14T17:47:08.690973",
+      "content_length": 224937,
+      "content_type": "PDF"
+    },
+    {
+      "id": "5ad1e84f5f3cd1f8375719ec9b3d779d",
+      "filename": "SAP_001.pdf",
+      "source_path": "attached_assets/SAP_001.pdf",
+      "extraction_date": "2025-04-24T18:24:44.897064",
+      "file_size_bytes": 1846694,
+      "file_modified_date": "2025-04-14T17:47:08.861973",
+      "content_length": 171758,
+      "content_type": "PDF"
+    },
+    {
+      "id": "a29dce093a13d6bbf646bb9dc7f4b5f1",
+      "filename": "7_structure_and_content_of_clinical_study_reports.pdf",
+      "source_path": "attached_assets/7_structure_and_content_of_clinical_study_reports.pdf",
+      "extraction_date": "2025-04-24T18:24:45.058751",
+      "file_size_bytes": 242308,
+      "file_modified_date": "2025-04-15T04:30:53.860260",
+      "content_length": 3401,
+      "content_type": "PDF"
+    },
+    {
+      "id": "46a7ca6db5a8cce3c69003fe3cf29930",
+      "filename": "Prot_000.pdf",
+      "source_path": "attached_assets/Prot_000.pdf",
+      "extraction_date": "2025-04-24T18:24:45.353202",
+      "file_size_bytes": 293334,
+      "file_modified_date": "2025-04-16T02:59:29.431620",
+      "content_length": 48684,
+      "content_type": "PDF"
+    },
+    {
+      "id": "a1f27bce22dc714ffcb2be5fddd260c8",
+      "filename": "16.1.2-sample-case-report-form.pdf",
+      "source_path": "attached_assets/16.1.2-sample-case-report-form.pdf",
+      "extraction_date": "2025-04-24T18:24:46.016121",
+      "file_size_bytes": 252870,
+      "file_modified_date": "2025-04-16T02:59:29.666620",
+      "content_length": 72465,
+      "content_type": "PDF"
+    },
+    {
+      "id": "065e46a1970b05e2a02aa0cb35f03475",
+      "filename": "SAMPLE-Mantra_Systems-Clinical_Evaluation_Report_Template-Edition_4.0.pdf",
+      "source_path": "attached_assets/SAMPLE-Mantra_Systems-Clinical_Evaluation_Report_Template-Edition_4.0.pdf",
+      "extraction_date": "2025-04-24T18:24:48.280827",
+      "file_size_bytes": 726457,
+      "file_modified_date": "2025-04-16T02:59:30.241619",
+      "content_length": 27711,
+      "content_type": "PDF"
+    },
+    {
+      "id": "9631c87feb987b68d230361fc89b8193",
+      "filename": "Prot_SAP_000.pdf",
+      "source_path": "attached_assets/Prot_SAP_000.pdf",
+      "extraction_date": "2025-04-24T18:24:51.755731",
+      "file_size_bytes": 2289017,
+      "file_modified_date": "2025-04-16T02:59:31.002619",
+      "content_length": 292787,
+      "content_type": "PDF"
+    },
+    {
+      "id": "ee18f1046b8373b7a33386578ca4f194",
+      "filename": "ENVIA_Whitepaper_SOTApdf.pdf",
+      "source_path": "attached_assets/ENVIA_Whitepaper_SOTApdf.pdf",
+      "extraction_date": "2025-04-24T18:24:52.171687",
+      "file_size_bytes": 8659216,
+      "file_modified_date": "2025-04-16T02:59:34.000616",
+      "content_length": 51419,
+      "content_type": "PDF"
+    },
+    {
+      "id": "9254a6626cf8730a4d9b7971f8dcda80",
+      "filename": "Celegence_RAPS_Pharmaceutical_Regulatory_Readiness_Resources_2024_Sur.pdf",
+      "source_path": "attached_assets/Celegence_RAPS_Pharmaceutical_Regulatory_Readiness_Resources_2024_Sur.pdf",
+      "extraction_date": "2025-04-24T18:24:52.658987",
+      "file_size_bytes": 1837643,
+      "file_modified_date": "2025-04-16T03:04:46.521386",
+      "content_length": 19779,
+      "content_type": "PDF"
+    },
+    {
+      "id": "098ada1c1721f1c5b4b04f60ac63422f",
+      "filename": "Checklist___Lean_Authoring___16_Sept_final.pdf",
+      "source_path": "attached_assets/Checklist___Lean_Authoring___16_Sept_final.pdf",
+      "extraction_date": "2025-04-24T18:24:53.115132",
+      "file_size_bytes": 1317850,
+      "file_modified_date": "2025-04-16T03:06:45.270298",
+      "content_length": 73441,
+      "content_type": "PDF"
+    },
+    {
+      "id": "1dd4e7ac0b2f9d49e6cd311e5aceec71",
+      "filename": "20250424_CST_AOR Enyzmax Forte Preliminary Study Design and Sample Size Estimation v1.0 (1).pdf",
+      "source_path": "attached_assets/20250424_CST_AOR Enyzmax Forte Preliminary Study Design and Sample Size Estimation v1.0 (1).pdf",
+      "extraction_date": "2025-04-24T18:24:53.366825",
+      "file_size_bytes": 1004709,
+      "file_modified_date": "2025-04-24T17:08:42.157928",
+      "content_length": 14759,
+      "content_type": "PDF"
+    },
+    {
+      "id": "b7ab0973d4214c38cfac5448542b4830",
+      "filename": "the_eCTD_Change_Control_Process_v1_9.pdf",
+      "source_path": "attached_assets/the_eCTD_Change_Control_Process_v1_9.pdf",
+      "extraction_date": "2025-04-24T18:24:53.478420",
+      "file_size_bytes": 80371,
+      "file_modified_date": "2025-04-24T17:46:59.588370",
+      "content_length": 14742,
+      "content_type": "PDF"
+    },
+    {
+      "id": "27770bcf13201e8dea4f0916befaa707",
+      "filename": "ICH_Q3E_EWG_WorkPlan_2024_0214.pdf",
+      "source_path": "attached_assets/ICH_Q3E_EWG_WorkPlan_2024_0214.pdf",
+      "extraction_date": "2025-04-24T18:24:53.532068",
+      "file_size_bytes": 270105,
+      "file_modified_date": "2025-04-24T18:21:14.669298",
+      "content_length": 2212,
+      "content_type": "PDF"
+    },
+    {
+      "id": "dcb3a6abbe7a0f0563bf860fc201c3ca",
+      "filename": "Annex 4 - Maintenance Procedure for Q3C, Q3D, and M7_0.pdf",
+      "source_path": "attached_assets/Annex 4 - Maintenance Procedure for Q3C, Q3D, and M7_0.pdf",
+      "extraction_date": "2025-04-24T18:24:53.584169",
+      "file_size_bytes": 139709,
+      "file_modified_date": "2025-04-24T18:21:14.671298",
+      "content_length": 5932,
+      "content_type": "PDF"
+    },
+    {
+      "id": "aba6755c7a86b2dbd555e439d5563835",
+      "filename": "ICH_Q3D(R2)_Step4Presentation_2022_0527.pdf",
+      "source_path": "attached_assets/ICH_Q3D(R2)_Step4Presentation_2022_0527.pdf",
+      "extraction_date": "2025-04-24T18:24:53.716449",
+      "file_size_bytes": 356930,
+      "file_modified_date": "2025-04-24T18:21:14.686298",
+      "content_length": 13436,
+      "content_type": "PDF"
+    },
+    {
+      "id": "4f4be724fc0851c8324e8e1b5d51a2eb",
+      "filename": "Annex 4 - Maintenance Procedure for Q3C, Q3D, and M7.pdf",
+      "source_path": "attached_assets/Annex 4 - Maintenance Procedure for Q3C, Q3D, and M7.pdf",
+      "extraction_date": "2025-04-24T18:24:53.766562",
+      "file_size_bytes": 139709,
+      "file_modified_date": "2025-04-24T18:21:14.707298",
+      "content_length": 5932,
+      "content_type": "PDF"
+    },
+    {
+      "id": "cdf5fa33f8ff3f012b7a03b7d57a31e6",
+      "filename": "Q3C Concept Paper_0_0.pdf",
+      "source_path": "attached_assets/Q3C Concept Paper_0_0.pdf",
+      "extraction_date": "2025-04-24T18:24:53.792820",
+      "file_size_bytes": 9619,
+      "file_modified_date": "2025-04-24T18:21:14.707298",
+      "content_length": 2507,
+      "content_type": "PDF"
+    },
+    {
+      "id": "1922ddd44728ee39fff2971a49b405d5",
+      "filename": "Q3B(R2) Concept Paper.pdf",
+      "source_path": "attached_assets/Q3B(R2) Concept Paper.pdf",
+      "extraction_date": "2025-04-24T18:24:53.820007",
+      "file_size_bytes": 8735,
+      "file_modified_date": "2025-04-24T18:21:14.775298",
+      "content_length": 1635,
+      "content_type": "PDF"
+    },
+    {
+      "id": "e9c34d7d69906948bb98d86e32e4a586",
+      "filename": "Q3A(R2) Guideline.pdf",
+      "source_path": "attached_assets/Q3A(R2) Guideline.pdf",
+      "extraction_date": "2025-04-24T18:24:54.065989",
+      "file_size_bytes": 219429,
+      "file_modified_date": "2025-04-24T18:21:14.810298",
+      "content_length": 29695,
+      "content_type": "PDF"
+    },
+    {
+      "id": "4657f36ac2cbf58ffd2b5d7630a91884",
+      "filename": "Q2R2-Q14_EWG_Concept_Paper.pdf",
+      "source_path": "attached_assets/Q2R2-Q14_EWG_Concept_Paper.pdf",
+      "extraction_date": "2025-04-24T18:24:54.140637",
+      "file_size_bytes": 94067,
+      "file_modified_date": "2025-04-24T18:21:15.042297",
+      "content_length": 9228,
+      "content_type": "PDF"
+    },
+    {
+      "id": "b81c4a5be6a6f6e709076a6b9a180f5f",
+      "filename": "ICH_Q1Q5C_ConceptPaper_Final_2022_1114.pdf",
+      "source_path": "attached_assets/ICH_Q1Q5C_ConceptPaper_Final_2022_1114.pdf",
+      "extraction_date": "2025-04-24T18:24:54.302723",
+      "file_size_bytes": 199866,
+      "file_modified_date": "2025-04-24T18:21:15.218297",
+      "content_length": 13130,
+      "content_type": "PDF"
+    },
+    {
+      "id": "6aa341c86a4a8fa5d5bf3cb3180af98f",
+      "filename": "Q2_Q14 ICH_Step_4_Presentation_2023_1106_0.pdf",
+      "source_path": "attached_assets/Q2_Q14 ICH_Step_4_Presentation_2023_1106_0.pdf",
+      "extraction_date": "2025-04-24T18:24:54.783610",
+      "file_size_bytes": 906385,
+      "file_modified_date": "2025-04-24T18:21:16.061295",
+      "content_length": 24381,
+      "content_type": "PDF"
+    },
+    {
+      "id": "691cdf402fcdc5511bd053e3dbc92d41",
+      "filename": "ICH_Q2(R2)_Guideline_2023_1130.pdf",
+      "source_path": "attached_assets/ICH_Q2(R2)_Guideline_2023_1130.pdf",
+      "extraction_date": "2025-04-24T18:24:56.913450",
+      "file_size_bytes": 767752,
+      "file_modified_date": "2025-04-24T18:21:16.066295",
+      "content_length": 80509,
+      "content_type": "PDF"
+    },
+    {
+      "id": "476ff55511bd4db8f922138a288d2d5f",
+      "filename": "ICH_Q1_Step2_Presentation_2025_0411_0.pdf",
+      "source_path": "attached_assets/ICH_Q1_Step2_Presentation_2025_0411_0.pdf",
+      "extraction_date": "2025-04-24T18:24:57.250983",
+      "file_size_bytes": 1029139,
+      "file_modified_date": "2025-04-24T18:21:16.147295",
+      "content_length": 14095,
+      "content_type": "PDF"
+    },
+    {
+      "id": "66ad72d7c22fcecb72b701c6d04edf49",
+      "filename": "ICH_Q1EWG_Step2_Draft_Guideline_2025_0411.pdf",
+      "source_path": "attached_assets/ICH_Q1EWG_Step2_Draft_Guideline_2025_0411.pdf",
+      "extraction_date": "2025-04-24T18:25:00.250043",
+      "file_size_bytes": 1576911,
+      "file_modified_date": "2025-04-24T18:21:16.509294",
+      "content_length": 304117,
+      "content_type": "PDF"
+    },
+    {
+      "id": "1ea04af77e1fad835744218201cbf394",
+      "filename": "Patient Value Chain Edit Version_NC_Feedback_24.04.2024.pdf",
+      "source_path": "attached_assets/Patient Value Chain Edit Version_NC_Feedback_24.04.2024.pdf",
+      "extraction_date": "2025-04-24T18:25:00.434359",
+      "file_size_bytes": 55908307,
+      "file_modified_date": "2025-04-24T18:23:15.943058",
+      "content_length": 6012,
+      "content_type": "PDF"
+    },
+    {
+      "id": "bbce85be7cfd197c459150c3f6852552",
+      "filename": "strategic_portfolio_analysis.pdf",
+      "source_path": "attached_assets/example_reports/ceo/strategic_portfolio_analysis.pdf",
+      "extraction_date": "2025-04-24T18:25:00.558564",
+      "file_size_bytes": 242308,
+      "file_modified_date": "2025-04-19T03:17:44.727339",
+      "content_length": 3401,
+      "content_type": "PDF"
+    },
+    {
+      "id": "c44fdd52c27da0da09d9650a4b71b441",
+      "filename": "investment_risk_report.pdf",
+      "source_path": "attached_assets/example_reports/ceo/investment_risk_report.pdf",
+      "extraction_date": "2025-04-24T18:25:00.670594",
+      "file_size_bytes": 258053,
+      "file_modified_date": "2025-04-19T03:17:44.740339",
+      "content_length": 18048,
+      "content_type": "PDF"
+    },
+    {
+      "id": "9d4f8528fcbf79c5a5354976e3e406a9",
+      "filename": "regulatory_submission.pdf",
+      "source_path": "attached_assets/example_reports/regulatory/regulatory_submission.pdf",
+      "extraction_date": "2025-04-24T18:25:00.710952",
+      "file_size_bytes": 25673,
+      "file_modified_date": "2025-04-19T03:17:44.718339",
+      "content_length": 6856,
+      "content_type": "PDF"
+    },
+    {
+      "id": "7d0091f08634bdbbda2e1f347bee1f0b",
+      "filename": "trial_success_prediction.pdf",
+      "source_path": "attached_assets/example_reports/clinical/trial_success_prediction.pdf",
+      "extraction_date": "2025-04-24T18:25:01.084129",
+      "file_size_bytes": 192537,
+      "file_modified_date": "2025-04-19T03:17:44.678339",
+      "content_length": 56716,
+      "content_type": "PDF"
+    },
+    {
+      "id": "ca820a2f9b80d69311d7a22eff36d0a0",
+      "filename": "protocol_optimization.pdf",
+      "source_path": "attached_assets/example_reports/clinical/protocol_optimization.pdf",
+      "extraction_date": "2025-04-24T18:25:01.576959",
+      "file_size_bytes": 219394,
+      "file_modified_date": "2025-04-19T03:17:44.675339",
+      "content_length": 68705,
+      "content_type": "PDF"
+    },
+    {
+      "id": "d765f1afc80e58e1c24fd52f9e863a65",
+      "filename": "endpoint_selection.pdf",
+      "source_path": "attached_assets/example_reports/clinical/endpoint_selection.pdf",
+      "extraction_date": "2025-04-24T18:25:01.861288",
+      "file_size_bytes": 168604,
+      "file_modified_date": "2025-04-19T03:17:44.681339",
+      "content_length": 37880,
+      "content_type": "PDF"
+    },
+    {
+      "id": "b50065093bdf735a417afb76434eefe4",
+      "filename": "adalimumab_cer.pdf",
+      "source_path": "attached_assets/example_reports/clinical/adalimumab_cer.pdf",
+      "extraction_date": "2025-04-24T18:25:02.593951",
+      "file_size_bytes": 314414,
+      "file_modified_date": "2025-04-19T03:17:44.690339",
+      "content_length": 90954,
+      "content_type": "PDF"
+    },
+    {
+      "id": "e75c5eaff91788eb7d995959bc4824a4",
+      "filename": "semaglutide_post_market.pdf",
+      "source_path": "attached_assets/example_reports/clinical/semaglutide_post_market.pdf",
+      "extraction_date": "2025-04-24T18:25:02.784190",
+      "file_size_bytes": 501323,
+      "file_modified_date": "2025-04-19T03:17:44.695339",
+      "content_length": 19258,
+      "content_type": "PDF"
+    },
+    {
+      "id": "6453fe548f913c2753982b4a17363dcb",
+      "filename": "pembrolizumab_cer.pdf",
+      "source_path": "attached_assets/example_reports/clinical/pembrolizumab_cer.pdf",
+      "extraction_date": "2025-04-24T18:25:02.978919",
+      "file_size_bytes": 447068,
+      "file_modified_date": "2025-04-19T03:17:44.698339",
+      "content_length": 45649,
+      "content_type": "PDF"
+    },
+    {
+      "id": "a395611e3cf261d9e0d2f611253bb2ae",
+      "filename": "infliximab_compliance.pdf",
+      "source_path": "attached_assets/example_reports/clinical/infliximab_compliance.pdf",
+      "extraction_date": "2025-04-24T18:25:03.116977",
+      "file_size_bytes": 72837,
+      "file_modified_date": "2025-04-19T03:17:44.702339",
+      "content_length": 12634,
+      "content_type": "PDF"
+    },
+    {
+      "id": "68cd6261bfaee516c3adb50c4994ca7a",
+      "filename": "ustekinumab_annual.pdf",
+      "source_path": "attached_assets/example_reports/clinical/ustekinumab_annual.pdf",
+      "extraction_date": "2025-04-24T18:25:03.317833",
+      "file_size_bytes": 201762,
+      "file_modified_date": "2025-04-19T03:17:44.705339",
+      "content_length": 28371,
+      "content_type": "PDF"
+    },
+    {
+      "id": "7343c8f7a81c0749b09cd997a4154ebe",
+      "filename": "apixaban_comparative.pdf",
+      "source_path": "attached_assets/example_reports/clinical/apixaban_comparative.pdf",
+      "extraction_date": "2025-04-24T18:25:03.699072",
+      "file_size_bytes": 147525,
+      "file_modified_date": "2025-04-19T03:17:44.709339",
+      "content_length": 24166,
+      "content_type": "PDF"
+    }
+  ],
+  "failed_files": []
+}
