@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet';
-import { SplitPane } from 'react-multi-split-pane';
 import { useToast } from '@/hooks/use-toast';
 
 import { 
@@ -55,7 +54,9 @@ const GuidelineComplianceCard = ({ guideline, compliance, details }) => {
         <Progress 
           value={compliance} 
           className="h-2 mb-4" 
-          indicatorClassName={compliance >= 90 ? "bg-green-500" : compliance >= 70 ? "bg-amber-500" : "bg-red-500"}
+          style={{
+            '--progress-indicator-color': compliance >= 90 ? '#22c55e' : compliance >= 70 ? '#f59e0b' : '#ef4444'
+          }}
         />
         <ul className="space-y-2 text-sm">
           {details.map((item, index) => (
@@ -215,6 +216,93 @@ const GuidelineItem = ({ id, title, date, summary, category, compliance }) => {
   );
 };
 
+// Trial Summary Card for Mobile
+const TrialSummaryCard = () => {
+  return (
+    <Card className="mb-4">
+      <CardHeader>
+        <CardTitle className="text-lg">Trial Summary</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-2 text-sm">
+          <div className="flex justify-between">
+            <span className="text-slate-500 dark:text-slate-400">Trial ID:</span>
+            <span className="font-medium">LB-301</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-slate-500 dark:text-slate-400">Program:</span>
+            <span className="font-medium">Gastroenteritis</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-slate-500 dark:text-slate-400">Phase:</span>
+            <span className="font-medium">Phase 2</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-slate-500 dark:text-slate-400">Status:</span>
+            <Badge variant="outline">Ongoing</Badge>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-slate-500 dark:text-slate-400">Product:</span>
+            <span className="font-medium">Spirulina-based Antibody Cocktail</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-slate-500 dark:text-slate-400">Start Date:</span>
+            <span className="font-medium">Jan 15, 2024</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-slate-500 dark:text-slate-400">End Date:</span>
+            <span className="font-medium">Jul 30, 2025 (Est.)</span>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+// Compliance Metrics Card for Mobile
+const ComplianceMetricsCard = () => {
+  return (
+    <Card className="mb-4">
+      <CardHeader>
+        <CardTitle className="text-lg">Compliance Metrics</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div>
+          <div className="flex justify-between mb-1 text-sm">
+            <span>Overall Compliance</span>
+            <span className="font-medium">86%</span>
+          </div>
+          <Progress value={86} className="h-2" />
+        </div>
+        
+        <div>
+          <div className="flex justify-between mb-1 text-sm">
+            <span>Protocol Adherence</span>
+            <span className="font-medium">92%</span>
+          </div>
+          <Progress value={92} className="h-2" />
+        </div>
+        
+        <div>
+          <div className="flex justify-between mb-1 text-sm">
+            <span>Documentation</span>
+            <span className="font-medium">78%</span>
+          </div>
+          <Progress value={78} className="h-2" />
+        </div>
+        
+        <div>
+          <div className="flex justify-between mb-1 text-sm">
+            <span>Safety Reporting</span>
+            <span className="font-medium">94%</span>
+          </div>
+          <Progress value={94} className="h-2" />
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
 const LumenBioReportDemo = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const { toast } = useToast();
@@ -346,445 +434,274 @@ const LumenBioReportDemo = () => {
   ];
 
   return (
-    <div className="h-screen flex flex-col bg-slate-50 dark:bg-slate-900">
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-900">
       <Helmet>
         <title>Lumen Biosciences | Compliance Report</title>
       </Helmet>
       
-      <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-4">
-        <div className="flex justify-between items-center">
+      {/* Header */}
+      <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-4 py-3">
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-2">
           <div>
-            <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Lumen Biosciences - Regulatory Compliance Dashboard</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400">LB-301 Phase 2 Trial - Spirulina-based Antibody Cocktail for Gastroenteritis</p>
+            <h1 className="text-xl md:text-2xl font-semibold text-slate-900 dark:text-white">Lumen Biosciences - Regulatory Dashboard</h1>
+            <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400">LB-301 Phase 2 - Spirulina-based Antibody Cocktail</p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={handleExport}>
-              <Download className="h-4 w-4 mr-2" />
+            <Button variant="outline" size="sm" onClick={handleExport} className="text-xs md:text-sm">
+              <Download className="h-3.5 w-3.5 mr-1.5" />
               Export
             </Button>
-            <Button onClick={handleGenerateReport}>
-              <FileText className="h-4 w-4 mr-2" />
-              Generate Report
+            <Button size="sm" onClick={handleGenerateReport} className="text-xs md:text-sm">
+              <FileText className="h-3.5 w-3.5 mr-1.5" />
+              Report
             </Button>
           </div>
         </div>
       </header>
       
-      <div className="flex-1 overflow-hidden">
-        <SplitPane split="vertical" defaultSizes={[300, 700]}>
-          <div className="h-full p-4 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col">
-            <div className="px-2 py-4">
-              <h2 className="text-lg font-medium mb-4">Trial Summary</h2>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-slate-500 dark:text-slate-400">Trial ID:</span>
-                  <span className="font-medium">LB-301</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500 dark:text-slate-400">Program:</span>
-                  <span className="font-medium">Gastroenteritis</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500 dark:text-slate-400">Phase:</span>
-                  <span className="font-medium">Phase 2</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500 dark:text-slate-400">Status:</span>
-                  <Badge variant="outline">Ongoing</Badge>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500 dark:text-slate-400">Product:</span>
-                  <span className="font-medium">Spirulina-based Antibody Cocktail</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500 dark:text-slate-400">Start Date:</span>
-                  <span className="font-medium">Jan 15, 2024</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500 dark:text-slate-400">End Date:</span>
-                  <span className="font-medium">Jul 30, 2025 (Est.)</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500 dark:text-slate-400">Subjects:</span>
-                  <span className="font-medium">72/120 (60%)</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500 dark:text-slate-400">Sites:</span>
-                  <span className="font-medium">8 active</span>
-                </div>
-              </div>
-            </div>
-            
-            <Separator className="my-4" />
-            
-            <div className="px-2 py-2">
-              <h2 className="text-lg font-medium mb-4">Compliance Status</h2>
-              <div className="space-y-4">
-                <div>
-                  <div className="flex justify-between mb-1 text-sm">
-                    <span>Overall Compliance</span>
-                    <span className="font-medium">86%</span>
-                  </div>
-                  <Progress value={86} className="h-2" />
-                </div>
-                
-                <div>
-                  <div className="flex justify-between mb-1 text-sm">
-                    <span>Protocol Adherence</span>
-                    <span className="font-medium">92%</span>
-                  </div>
-                  <Progress value={92} className="h-2" />
-                </div>
-                
-                <div>
-                  <div className="flex justify-between mb-1 text-sm">
-                    <span>Documentation</span>
-                    <span className="font-medium">78%</span>
-                  </div>
-                  <Progress value={78} className="h-2" />
-                </div>
-                
-                <div>
-                  <div className="flex justify-between mb-1 text-sm">
-                    <span>Safety Reporting</span>
-                    <span className="font-medium">94%</span>
-                  </div>
-                  <Progress value={94} className="h-2" />
-                </div>
-                
-                <div>
-                  <div className="flex justify-between mb-1 text-sm">
-                    <span>Data Quality</span>
-                    <span className="font-medium">82%</span>
-                  </div>
-                  <Progress value={82} className="h-2" />
-                </div>
-              </div>
-            </div>
-            
-            <Separator className="my-4" />
-            
-            <div className="px-2 py-2">
-              <h2 className="text-lg font-medium mb-4">Key Metrics</h2>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-slate-500 dark:text-slate-400">Protocol Deviations:</span>
-                  <span className="font-medium">8 (2 major, 6 minor)</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500 dark:text-slate-400">SAEs Reported:</span>
-                  <span className="font-medium">3 (all resolved)</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500 dark:text-slate-400">Query Rate:</span>
-                  <span className="font-medium">0.4 per subject</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500 dark:text-slate-400">Data Entry Backlog:</span>
-                  <span className="font-medium">3 days (avg)</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500 dark:text-slate-400">ICH Guideline Updates:</span>
-                  <span className="font-medium">4 pending review</span>
-                </div>
-              </div>
-            </div>
-            
-            <div className="mt-auto pt-4">
-              <Button variant="outline" className="w-full">
-                <Share2 className="h-4 w-4 mr-2" />
-                Share Dashboard
-              </Button>
-            </div>
-          </div>
+      {/* Main Content */}
+      <div className="flex-1 overflow-auto p-4">
+        <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="w-full mb-4">
+            <TabsTrigger value="overview" className="flex-1">
+              <BarChart3 className="h-4 w-4 mr-2 hidden md:inline" />
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="documents" className="flex-1">
+              <FileText className="h-4 w-4 mr-2 hidden md:inline" />
+              Documents
+            </TabsTrigger>
+            <TabsTrigger value="guidelines" className="flex-1">
+              <CheckCircle2 className="h-4 w-4 mr-2 hidden md:inline" />
+              Guidelines
+            </TabsTrigger>
+          </TabsList>
           
-          <div className="h-full flex flex-col overflow-auto">
-            <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-              <div className="border-b border-slate-200 dark:border-slate-700 px-6">
-                <TabsList className="h-14">
-                  <TabsTrigger value="overview" className="data-[state=active]:bg-slate-100 dark:data-[state=active]:bg-slate-800">
-                    <BarChart3 className="h-4 w-4 mr-2" />
-                    Overview
-                  </TabsTrigger>
-                  <TabsTrigger value="documents" className="data-[state=active]:bg-slate-100 dark:data-[state=active]:bg-slate-800">
-                    <FileText className="h-4 w-4 mr-2" />
-                    Documents
-                  </TabsTrigger>
-                  <TabsTrigger value="guidelines" className="data-[state=active]:bg-slate-100 dark:data-[state=active]:bg-slate-800">
-                    <CheckCircle2 className="h-4 w-4 mr-2" />
-                    Guidelines
-                  </TabsTrigger>
-                  <TabsTrigger value="reports" className="data-[state=active]:bg-slate-100 dark:data-[state=active]:bg-slate-800">
-                    <FileBarChart className="h-4 w-4 mr-2" />
-                    Reports
-                  </TabsTrigger>
-                </TabsList>
+          {/* Overview Tab */}
+          <TabsContent value="overview" className="space-y-4">
+            {/* Mobile Summary Cards */}
+            <div className="md:hidden">
+              <TrialSummaryCard />
+              <ComplianceMetricsCard />
+            </div>
+            
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+              <DataPoint 
+                label="Overall Compliance" 
+                value="86%" 
+                trend="+5% vs. last month" 
+                positive={true}
+                icon={<BarChart3 className="h-4 w-4 text-blue-500" />}
+              />
+              <DataPoint 
+                label="Documents Pending" 
+                value="7" 
+                trend="-2 from last week" 
+                positive={true}
+                icon={<FileText className="h-4 w-4 text-purple-500" />}
+              />
+              <DataPoint 
+                label="Key Findings" 
+                value="12" 
+                trend="+3 new issues" 
+                positive={false}
+                icon={<AlertTriangle className="h-4 w-4 text-amber-500" />}
+              />
+              <DataPoint 
+                label="Upcoming Deadlines" 
+                value="4" 
+                trend="Nearest: 8 days" 
+                positive={true}
+                icon={<Clock className="h-4 w-4 text-slate-500" />}
+              />
+            </div>
+            
+            {/* Desktop Layout */}
+            <div className="hidden md:grid md:grid-cols-2 gap-6">
+              <div>
+                <h3 className="text-lg font-medium mb-4">Trial Summary</h3>
+                <Card className="mb-6">
+                  <CardContent className="pt-6">
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-slate-500 dark:text-slate-400">Trial ID:</span>
+                        <span className="font-medium">LB-301</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500 dark:text-slate-400">Program:</span>
+                        <span className="font-medium">Gastroenteritis</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500 dark:text-slate-400">Phase:</span>
+                        <span className="font-medium">Phase 2</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500 dark:text-slate-400">Status:</span>
+                        <Badge variant="outline">Ongoing</Badge>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500 dark:text-slate-400">Product:</span>
+                        <span className="font-medium">Spirulina-based Antibody Cocktail</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500 dark:text-slate-400">Start Date:</span>
+                        <span className="font-medium">Jan 15, 2024</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500 dark:text-slate-400">End Date:</span>
+                        <span className="font-medium">Jul 30, 2025 (Est.)</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500 dark:text-slate-400">Subjects:</span>
+                        <span className="font-medium">72/120 (60%)</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <h3 className="text-lg font-medium mb-4">Compliance Status</h3>
+                <Card>
+                  <CardContent className="pt-6 space-y-4">
+                    <div>
+                      <div className="flex justify-between mb-1 text-sm">
+                        <span>Overall Compliance</span>
+                        <span className="font-medium">86%</span>
+                      </div>
+                      <Progress value={86} className="h-2" />
+                    </div>
+                    
+                    <div>
+                      <div className="flex justify-between mb-1 text-sm">
+                        <span>Protocol Adherence</span>
+                        <span className="font-medium">92%</span>
+                      </div>
+                      <Progress value={92} className="h-2" />
+                    </div>
+                    
+                    <div>
+                      <div className="flex justify-between mb-1 text-sm">
+                        <span>Documentation</span>
+                        <span className="font-medium">78%</span>
+                      </div>
+                      <Progress value={78} className="h-2" />
+                    </div>
+                    
+                    <div>
+                      <div className="flex justify-between mb-1 text-sm">
+                        <span>Safety Reporting</span>
+                        <span className="font-medium">94%</span>
+                      </div>
+                      <Progress value={94} className="h-2" />
+                    </div>
+                    
+                    <div>
+                      <div className="flex justify-between mb-1 text-sm">
+                        <span>Data Quality</span>
+                        <span className="font-medium">82%</span>
+                      </div>
+                      <Progress value={82} className="h-2" />
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
               
-              <TabsContent value="overview" className="flex-1 p-6 space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <DataPoint 
-                    label="Overall Compliance" 
-                    value="86%" 
-                    trend="+5% vs. last month" 
-                    positive={true}
-                    icon={<BarChart3 className="h-4 w-4 text-blue-500" />}
-                  />
-                  <DataPoint 
-                    label="Documents Pending Review" 
-                    value="7" 
-                    trend="-2 from last week" 
-                    positive={true}
-                    icon={<FileText className="h-4 w-4 text-purple-500" />}
-                  />
-                  <DataPoint 
-                    label="Key Findings" 
-                    value="12" 
-                    trend="+3 new issues" 
-                    positive={false}
-                    icon={<AlertTriangle className="h-4 w-4 text-amber-500" />}
-                  />
-                  <DataPoint 
-                    label="Upcoming Deadlines" 
-                    value="4" 
-                    trend="Nearest: 8 days" 
-                    positive={true}
-                    icon={<Clock className="h-4 w-4 text-slate-500" />}
-                  />
-                </div>
-                
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <div>
-                    <h3 className="text-lg font-medium mb-4">Guideline Compliance</h3>
-                    <div className="space-y-4">
-                      {mockGuidelineCompliance.map((item, index) => (
-                        <GuidelineComplianceCard 
-                          key={index}
-                          guideline={item.guideline}
-                          compliance={item.compliance}
-                          details={item.details}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <h3 className="text-lg font-medium mb-4">Recent Documents</h3>
-                    <div className="space-y-4">
-                      {mockDocuments.slice(0, 3).map((doc, index) => (
-                        <DocumentStatusCard 
-                          key={index}
-                          title={doc.title}
-                          status={doc.status}
-                          date={doc.date}
-                          owner={doc.owner}
-                          dueDate={doc.dueDate}
-                          progress={doc.progress}
-                          issueCount={doc.issueCount}
-                          warningCount={doc.warningCount}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="documents" className="flex-1 p-6">
-                <div className="mb-6 flex justify-between items-center">
-                  <h3 className="text-lg font-medium">Document Tracker</h3>
-                  <Button size="sm">
-                    <Eye className="h-4 w-4 mr-2" />
-                    View All Documents
-                  </Button>
-                </div>
-                
+              <div>
+                <h3 className="text-lg font-medium mb-4">Guideline Compliance</h3>
                 <div className="space-y-4">
-                  {mockDocuments.map((doc, index) => (
-                    <DocumentStatusCard 
+                  {mockGuidelineCompliance.map((item, index) => (
+                    <GuidelineComplianceCard 
                       key={index}
-                      title={doc.title}
-                      status={doc.status}
-                      date={doc.date}
-                      owner={doc.owner}
-                      dueDate={doc.dueDate}
-                      progress={doc.progress}
-                      issueCount={doc.issueCount}
-                      warningCount={doc.warningCount}
+                      guideline={item.guideline}
+                      compliance={item.compliance}
+                      details={item.details}
                     />
                   ))}
                 </div>
-              </TabsContent>
-              
-              <TabsContent value="guidelines" className="flex-1 p-6">
-                <div className="mb-6 flex justify-between items-center">
-                  <h3 className="text-lg font-medium">ICH Guideline Tracker</h3>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
-                      <Table className="h-4 w-4 mr-2" />
-                      View All
-                    </Button>
-                    <Button size="sm">
-                      <CheckCircle2 className="h-4 w-4 mr-2" />
-                      Run Compliance Check
-                    </Button>
-                  </div>
-                </div>
-                
-                <div className="space-y-6">
-                  <div>
-                    <h4 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-3">
-                      Recently Updated Guidelines
-                    </h4>
-                    <div>
-                      {mockGuidelines.map((guideline, index) => (
-                        <GuidelineItem 
-                          key={index}
-                          id={guideline.id}
-                          title={guideline.title}
-                          date={guideline.date}
-                          summary={guideline.summary}
-                          category={guideline.category}
-                          compliance={guideline.compliance}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="reports" className="flex-1 p-6">
-                <div className="mb-6 flex justify-between items-center">
-                  <h3 className="text-lg font-medium">Compliance Reports</h3>
-                  <Button size="sm">
-                    <FileBarChart className="h-4 w-4 mr-2" />
-                    Generate New Report
-                  </Button>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-base">Monthly Compliance Summary</CardTitle>
-                      <CardDescription>April 2025</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-slate-500 dark:text-slate-400">Generated:</span>
-                          <span>April 22, 2025</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-500 dark:text-slate-400">Status:</span>
-                          <Badge variant="success">Approved</Badge>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-500 dark:text-slate-400">Key Findings:</span>
-                          <span>3 items</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                    <CardFooter>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm" className="text-xs">
-                          <Eye className="h-3 w-3 mr-1.5" />
-                          View
-                        </Button>
-                        <Button variant="outline" size="sm" className="text-xs">
-                          <Download className="h-3 w-3 mr-1.5" />
-                          Download
-                        </Button>
-                        <Button variant="outline" size="sm" className="text-xs">
-                          <Printer className="h-3 w-3 mr-1.5" />
-                          Print
-                        </Button>
-                      </div>
-                    </CardFooter>
-                  </Card>
-                  
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-base">ICH Compliance Audit</CardTitle>
-                      <CardDescription>Q1 2025</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-slate-500 dark:text-slate-400">Generated:</span>
-                          <span>March 31, 2025</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-500 dark:text-slate-400">Status:</span>
-                          <Badge variant="success">Completed</Badge>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-500 dark:text-slate-400">Key Findings:</span>
-                          <span>7 items</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                    <CardFooter>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm" className="text-xs">
-                          <Eye className="h-3 w-3 mr-1.5" />
-                          View
-                        </Button>
-                        <Button variant="outline" size="sm" className="text-xs">
-                          <Download className="h-3 w-3 mr-1.5" />
-                          Download
-                        </Button>
-                        <Button variant="outline" size="sm" className="text-xs">
-                          <Printer className="h-3 w-3 mr-1.5" />
-                          Print
-                        </Button>
-                      </div>
-                    </CardFooter>
-                  </Card>
-                </div>
-                
+              </div>
+            </div>
+            
+            {/* Mobile Guidelines */}
+            <div className="md:hidden mt-6">
+              <h3 className="text-lg font-medium mb-4">Guideline Compliance</h3>
+              <div className="space-y-4">
+                {mockGuidelineCompliance.map((item, index) => (
+                  <GuidelineComplianceCard 
+                    key={index}
+                    guideline={item.guideline}
+                    compliance={item.compliance}
+                    details={item.details}
+                  />
+                ))}
+              </div>
+            </div>
+          </TabsContent>
+          
+          {/* Documents Tab */}
+          <TabsContent value="documents">
+            <div className="mb-4 flex justify-between items-center">
+              <h3 className="text-lg font-medium">Document Tracker</h3>
+              <Button size="sm">
+                <Eye className="h-4 w-4 mr-2" />
+                View All
+              </Button>
+            </div>
+            
+            <div className="space-y-4">
+              {mockDocuments.map((doc, index) => (
+                <DocumentStatusCard 
+                  key={index}
+                  title={doc.title}
+                  status={doc.status}
+                  date={doc.date}
+                  owner={doc.owner}
+                  dueDate={doc.dueDate}
+                  progress={doc.progress}
+                  issueCount={doc.issueCount}
+                  warningCount={doc.warningCount}
+                />
+              ))}
+            </div>
+          </TabsContent>
+          
+          {/* Guidelines Tab */}
+          <TabsContent value="guidelines">
+            <div className="mb-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+              <h3 className="text-lg font-medium">ICH Guideline Tracker</h3>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm">
+                  <Table className="h-4 w-4 mr-2" />
+                  View All
+                </Button>
+                <Button size="sm">
+                  <CheckCircle2 className="h-4 w-4 mr-2" />
+                  Run Compliance Check
+                </Button>
+              </div>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
                 <h4 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-3">
-                  Archived Reports
+                  Recently Updated Guidelines
                 </h4>
-                
-                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
-                  <div className="divide-y divide-slate-200 dark:divide-slate-700">
-                    {[1, 2, 3, 4].map((_, index) => (
-                      <div key={index} className="flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/60">
-                        <div className="flex items-center">
-                          <FileText className="h-5 w-5 text-slate-400 mr-3" />
-                          <div>
-                            <p className="text-sm font-medium">
-                              {index === 0 ? "Monthly Compliance Report" : 
-                               index === 1 ? "ICH E6(R2) Assessment" :
-                               index === 2 ? "Protocol Adherence Audit" :
-                               "Documentation Quality Review"}
-                            </p>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">
-                              {index === 0 ? "March 2025" : 
-                               index === 1 ? "February 2025" :
-                               index === 2 ? "January 2025" :
-                               "December 2024"}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button variant="ghost" size="sm" className="text-xs h-8 px-2">
-                            <Eye className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button variant="ghost" size="sm" className="text-xs h-8 px-2">
-                            <Download className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button variant="ghost" size="sm" className="text-xs h-8 px-2">
-                            <Share2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                <div className="space-y-3">
+                  {mockGuidelines.map((guideline, index) => (
+                    <GuidelineItem 
+                      key={index}
+                      id={guideline.id}
+                      title={guideline.title}
+                      date={guideline.date}
+                      summary={guideline.summary}
+                      category={guideline.category}
+                      compliance={guideline.compliance}
+                    />
+                  ))}
                 </div>
-              </TabsContent>
-            </Tabs>
-          </div>
-        </SplitPane>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
