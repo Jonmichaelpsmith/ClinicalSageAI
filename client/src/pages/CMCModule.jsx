@@ -651,9 +651,9 @@ const CMCModule = () => {
               <div className="space-y-4 my-2">
                 {assistantResponse && (
                   <div className="space-y-2 mt-4">
-                    <div className="p-4 bg-indigo-50 dark:bg-indigo-950/30 rounded-lg">
+                    <div className="p-4 bg-white dark:bg-gray-800 border border-indigo-200 dark:border-indigo-700 rounded-lg">
                       <ScrollArea className="h-48">
-                        <div className="whitespace-pre-wrap text-sm">
+                        <div className="whitespace-pre-wrap text-sm text-gray-900 dark:text-gray-200">
                           {assistantResponse.response}
                         </div>
                       </ScrollArea>
@@ -750,45 +750,45 @@ const CMCModule = () => {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    <div className="p-4 rounded-lg border border-indigo-200 dark:border-indigo-900 bg-indigo-50 dark:bg-indigo-950/30">
-                      <h3 className="font-medium mb-2 flex items-center gap-2">
-                        <Factory className="h-4 w-4 text-indigo-600" />
+                    <div className="p-4 rounded-lg border border-indigo-200 bg-white dark:border-indigo-700 dark:bg-gray-800">
+                      <h3 className="font-medium mb-2 flex items-center gap-2 text-black dark:text-white">
+                        <Factory className="h-4 w-4 text-indigo-600 dark:text-indigo-500" />
                         Equipment Identification
                       </h3>
                       <div className="space-y-1 pl-6">
-                        <p className="text-sm"><span className="font-medium">Type:</span> {imageAnalysisResult.equipment.type}</p>
-                        <p className="text-sm"><span className="font-medium">Model:</span> {imageAnalysisResult.equipment.model}</p>
-                        <p className="text-sm"><span className="font-medium">Components:</span></p>
+                        <p className="text-sm text-gray-900 dark:text-gray-200"><span className="font-medium">Type:</span> {imageAnalysisResult.equipment.type}</p>
+                        <p className="text-sm text-gray-900 dark:text-gray-200"><span className="font-medium">Model:</span> {imageAnalysisResult.equipment.model}</p>
+                        <p className="text-sm text-gray-900 dark:text-gray-200"><span className="font-medium">Components:</span></p>
                         <ul className="list-disc pl-5 text-xs space-y-1">
                           {imageAnalysisResult.equipment.components.map((component, i) => (
-                            <li key={i}>{component}</li>
+                            <li key={i} className="text-gray-900 dark:text-gray-300">{component}</li>
                           ))}
                         </ul>
                       </div>
                     </div>
                     
-                    <div className="p-4 rounded-lg border border-yellow-200 dark:border-yellow-900 bg-yellow-50 dark:bg-yellow-950/30">
-                      <h3 className="font-medium mb-2 flex items-center gap-2">
-                        <ShieldAlert className="h-4 w-4 text-yellow-600" />
+                    <div className="p-4 rounded-lg border border-yellow-200 bg-white dark:border-yellow-700 dark:bg-gray-800">
+                      <h3 className="font-medium mb-2 flex items-center gap-2 text-black dark:text-white">
+                        <ShieldAlert className="h-4 w-4 text-yellow-600 dark:text-yellow-500" />
                         GMP Compliance Assessment
                       </h3>
-                      <p className="text-sm mb-2"><span className="font-medium">Status:</span> {imageAnalysisResult.compliance.gmpStatus}</p>
+                      <p className="text-sm mb-2 text-gray-900 dark:text-gray-200"><span className="font-medium">Status:</span> {imageAnalysisResult.compliance.gmpStatus}</p>
                       <div className="space-y-1">
-                        <p className="text-sm font-medium">Concerns:</p>
+                        <p className="text-sm font-medium text-gray-900 dark:text-gray-200">Concerns:</p>
                         <ul className="list-disc pl-5 text-xs space-y-1">
                           {imageAnalysisResult.compliance.concerns.map((concern, i) => (
-                            <li key={i} className="text-yellow-700 dark:text-yellow-400">{concern}</li>
+                            <li key={i} className="text-gray-900 dark:text-gray-300">{concern}</li>
                           ))}
                         </ul>
                       </div>
                     </div>
                     
-                    <div className="p-4 rounded-lg border border-green-200 dark:border-green-900 bg-green-50 dark:bg-green-950/30">
-                      <h3 className="font-medium mb-2 flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-green-600" />
+                    <div className="p-4 rounded-lg border border-green-200 bg-white dark:border-green-700 dark:bg-gray-800">
+                      <h3 className="font-medium mb-2 flex items-center gap-2 text-black dark:text-white">
+                        <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-500" />
                         Recommendations
                       </h3>
-                      <ul className="list-disc pl-5 text-sm space-y-1">
+                      <ul className="list-disc pl-5 text-sm space-y-1 text-gray-900 dark:text-gray-300">
                         {imageAnalysisResult.recommendations.map((rec, i) => (
                           <li key={i}>{rec}</li>
                         ))}
@@ -954,19 +954,19 @@ const CMCModule = () => {
                   <div className="space-y-2">
                     <Label htmlFor="regions">Target Regions</Label>
                     <div className="flex flex-wrap gap-2">
-                      <Badge variant="outline" className="cursor-pointer bg-indigo-50 border-indigo-200 dark:bg-indigo-900/20 dark:border-indigo-800">
+                      <Badge variant="outline" className="cursor-pointer bg-white border-indigo-300 text-indigo-800 dark:bg-gray-800 dark:border-indigo-600 dark:text-indigo-300">
                         FDA (US)
                       </Badge>
-                      <Badge variant="outline" className="cursor-pointer">
+                      <Badge variant="outline" className="cursor-pointer text-gray-700 dark:text-gray-300">
                         EMA (EU)
                       </Badge>
-                      <Badge variant="outline" className="cursor-pointer">
+                      <Badge variant="outline" className="cursor-pointer text-gray-700 dark:text-gray-300">
                         PMDA (Japan)
                       </Badge>
-                      <Badge variant="outline" className="cursor-pointer">
+                      <Badge variant="outline" className="cursor-pointer text-gray-700 dark:text-gray-300">
                         NMPA (China)
                       </Badge>
-                      <Badge variant="outline" className="cursor-pointer bg-indigo-50 border-indigo-200 dark:bg-indigo-900/20 dark:border-indigo-800">
+                      <Badge variant="outline" className="cursor-pointer bg-white border-indigo-300 text-indigo-800 dark:bg-gray-800 dark:border-indigo-600 dark:text-indigo-300">
                         Health Canada
                       </Badge>
                     </div>
