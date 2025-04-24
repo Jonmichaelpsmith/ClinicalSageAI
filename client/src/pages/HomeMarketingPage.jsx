@@ -69,7 +69,7 @@ export default function HomeMarketingPage() {
             </div>
             <nav>
               <ul className="flex items-center space-x-8">
-                <li><Link to="/solutions" className="text-white hover:text-gray-200">Solutions</Link></li>
+                <li><Link to="/use-case-library" className="text-white hover:text-gray-200">Solutions</Link></li>
                 <li><Link to="/ind-wizard" className="text-white hover:text-gray-200">IND Wizard</Link></li>
                 <li><Link to="/csr-intelligence" className="text-white hover:text-gray-200">CSR Intelligence</Link></li>
                 <li><Link to="/auth" className="text-white hover:text-gray-200">Sign In</Link></li>
@@ -79,56 +79,61 @@ export default function HomeMarketingPage() {
         </div>
       </header>
 
-      {/* Main dashboard section */}
+      {/* Main content section */}
       <main>
-        <section className="py-12 bg-gray-50">
+        <section className="py-16 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4">
-            <div className="flex justify-between items-center mb-8">
-              <h1 className="text-3xl font-bold text-[#003057]">CSR Intelligence™ Dashboard</h1>
-              <div className="bg-white p-3 rounded-md shadow-sm flex items-center space-x-3">
-                <CSRCounter />
-              </div>
+            <div className="text-center mb-12">
+              <h1 className="text-4xl font-bold text-[#003057] mb-4">Regulatory Document Intelligence</h1>
+              <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+                TrialSage™ accelerates pharmaceutical regulatory workflows with advanced AI-powered tools and analytics.
+              </p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-white p-6 rounded-lg shadow-sm">
-                <div className="flex items-center mb-4">
-                  <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
-                    <FileCheck className="h-5 w-5 text-blue-600" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-100 transition-all hover:shadow-md">
+                <div className="flex items-center mb-6">
+                  <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mr-4">
+                    <FileCheck className="h-6 w-6 text-blue-600" />
                   </div>
-                  <h3 className="font-semibold text-[#003057]">Document Analysis</h3>
+                  <h3 className="text-xl font-semibold text-[#003057]">IND Wizard™</h3>
                 </div>
-                <p className="text-gray-600 text-sm">Automated intelligence for regulatory documents</p>
+                <p className="text-gray-600">Streamline FDA IND submissions with AI-powered document generation and validation.</p>
+                <div className="mt-6">
+                  <Link to="/ind-wizard" className="text-blue-600 hover:text-blue-800 font-medium inline-flex items-center">
+                    Learn more <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </div>
               </div>
               
-              <div className="bg-white p-6 rounded-lg shadow-sm">
-                <div className="flex items-center mb-4">
-                  <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mr-3">
-                    <Database className="h-5 w-5 text-green-600" />
+              <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-100 transition-all hover:shadow-md">
+                <div className="flex items-center mb-6">
+                  <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mr-4">
+                    <Sparkles className="h-6 w-6 text-green-600" />
                   </div>
-                  <h3 className="font-semibold text-[#003057]">Data Collection</h3>
+                  <h3 className="text-xl font-semibold text-[#003057]">CSR Intelligence™</h3>
                 </div>
-                <p className="text-gray-600 text-sm">Comprehensive data across multiple sources</p>
+                <p className="text-gray-600">Extract actionable insights from CSRs with deep understanding of regulatory context.</p>
+                <div className="mt-6">
+                  <Link to="/csr-intelligence" className="text-green-600 hover:text-green-800 font-medium inline-flex items-center">
+                    Learn more <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </div>
               </div>
               
-              <div className="bg-white p-6 rounded-lg shadow-sm">
-                <div className="flex items-center mb-4">
-                  <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center mr-3">
-                    <LayoutDashboard className="h-5 w-5 text-purple-600" />
+              <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-100 transition-all hover:shadow-md">
+                <div className="flex items-center mb-6">
+                  <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mr-4">
+                    <Shield className="h-6 w-6 text-purple-600" />
                   </div>
-                  <h3 className="font-semibold text-[#003057]">25 Dashboards</h3>
+                  <h3 className="text-xl font-semibold text-[#003057]">TrialSage.AI Solutions</h3>
                 </div>
-                <p className="text-gray-600 text-sm">Enterprise analytics for regulatory insights</p>
-              </div>
-              
-              <div className="bg-white p-6 rounded-lg shadow-sm">
-                <div className="flex items-center mb-4">
-                  <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center mr-3">
-                    <Shield className="h-5 w-5 text-orange-600" />
-                  </div>
-                  <h3 className="font-semibold text-[#003057]">Compliance</h3>
+                <p className="text-gray-600">Enterprise-grade regulatory automation with 21 CFR Part 11 compliance.</p>
+                <div className="mt-6">
+                  <Link to="/use-case-library" className="text-purple-600 hover:text-purple-800 font-medium inline-flex items-center">
+                    View solutions <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
                 </div>
-                <p className="text-gray-600 text-sm">21 CFR Part 11 compliant system</p>
               </div>
             </div>
           </div>
