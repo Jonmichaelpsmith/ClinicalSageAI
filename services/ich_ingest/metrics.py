@@ -1,177 +1,134 @@
 """
-Prometheus metrics for the ICH Specialist service.
+Metrics module for the ICH Specialist service
 
-This module defines metrics that will be exposed via the /metrics endpoint
-for monitoring service health, performance, and usage.
+This module defines Prometheus metrics for the ICH Specialist service
+using the prometheus_client library.
 """
-from prometheus_client import Counter, Gauge, Histogram
-from functools import wraps
+import prometheus_client
+from typing import Callable
 import time
-import asyncio
-from .config import settings
 
-# Define metrics with the configurable prefix
+from services.ich_ingest.config import settings
+
+# Prefix for all metrics
 PREFIX = settings.METRICS_PREFIX
 
-# Document processing metrics
-DOCUMENTS_PROCESSED = Counter(
-    f"{PREFIX}documents_processed_total",
-    "Total number of documents processed by the ingestion service",
-    ["doc_type", "status"]
+# Define metrics
+REQUESTS = prometheus_client.Counter(
+    f"{PREFIX}requests_total", 
+    "Total number of requests received",
+    ["endpoint", "method"]
 )
 
-DOCUMENT_PROCESSING_TIME = Histogram(
-    f"{PREFIX}document_processing_seconds",
-    "Time spent processing documents",
-    ["doc_type", "operation"],
-    buckets=(0.1, 0.5, 1.0, 2.5, 5.0, 10.0, 30.0, 60.0, 120.0, 300.0)
+RESPONSES = prometheus_client.Counter(
+    f"{PREFIX}responses_total", 
+    "Total number of responses sent",
+    ["endpoint", "status_code"]
 )
 
-# Retrieval metrics
-RETRIEVAL_LATENCY = Histogram(
-    f"{PREFIX}retrieval_latency_seconds",
-    "Time to retrieve documents from vector store",
-    buckets=(0.01, 0.05, 0.1, 0.5, 1.0, 2.5, 5.0, 10.0)
-)
-
-RETRIEVED_CHUNKS = Histogram(
-    f"{PREFIX}retrieved_chunks_count",
-    "Number of chunks retrieved per query",
-    buckets=(1, 3, 5, 10, 20, 50, 100)
-)
-
-# API metrics
-API_REQUESTS = Counter(
-    f"{PREFIX}api_requests_total",
-    "Total number of API requests",
-    ["endpoint", "method", "status"]
-)
-
-API_LATENCY = Histogram(
-    f"{PREFIX}api_latency_seconds",
-    "API request latency in seconds",
+PROCESSING_TIME = prometheus_client.Histogram(
+    f"{PREFIX}request_processing_seconds", 
+    "Time spent processing requests",
     ["endpoint"],
-    buckets=(0.01, 0.05, 0.1, 0.5, 1.0, 2.5, 5.0, 10.0)
+    buckets=(0.1, 0.25, 0.5, 0.75, 1.0, 2.5, 5.0, 7.5, 10.0, 15.0, 30.0, 60.0)
 )
 
-# Service metrics
-INGEST_QUEUE_SIZE = Gauge(
-    f"{PREFIX}ingest_queue_size",
-    "Current number of documents waiting to be processed"
+EMBEDDING_TIME = prometheus_client.Histogram(
+    f"{PREFIX}embedding_processing_seconds", 
+    "Time spent generating embeddings",
+    ["operation"],
+    buckets=(0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0, 30.0)
 )
 
-EMBEDDING_REQUESTS = Counter(
-    f"{PREFIX}embedding_requests_total",
-    "Total OpenAI embedding API requests made",
-    ["status"]
+TOKEN_USAGE = prometheus_client.Counter(
+    f"{PREFIX}token_usage_total", 
+    "Total number of tokens used",
+    ["model", "operation"]
 )
 
-EMBEDDING_TOKENS = Counter(
-    f"{PREFIX}embedding_tokens_total",
-    "Total number of tokens used for embeddings"
-)
-
-OPENAI_COMPLETION_TOKENS = Counter(
-    f"{PREFIX}openai_completion_tokens_total",
-    "Total OpenAI completion tokens used",
+EMBEDDING_COUNT = prometheus_client.Counter(
+    f"{PREFIX}embeddings_total", 
+    "Total number of embeddings generated",
     ["model"]
 )
 
-OPENAI_PROMPT_TOKENS = Counter(
-    f"{PREFIX}openai_prompt_tokens_total",
-    "Total OpenAI prompt tokens used",
-    ["model"]
+DOCUMENT_CHUNKS = prometheus_client.Counter(
+    f"{PREFIX}document_chunks_total", 
+    "Total number of document chunks processed",
+    ["operation"]
 )
 
-OPENAI_REQUESTS = Counter(
-    f"{PREFIX}openai_requests_total",
-    "Total OpenAI API requests made",
-    ["operation", "status"]
-)
-
-OPENAI_LATENCY = Histogram(
-    f"{PREFIX}openai_latency_seconds",
-    "OpenAI API request latency in seconds",
+INDEXING_TIME = prometheus_client.Histogram(
+    f"{PREFIX}indexing_processing_seconds", 
+    "Time spent indexing documents",
     ["operation"],
-    buckets=(0.1, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0)
+    buckets=(0.5, 1.0, 5.0, 10.0, 30.0, 60.0, 300.0, 600.0)
 )
 
-VECTOR_DB_OPERATIONS = Counter(
-    f"{PREFIX}vector_db_operations_total",
-    "Vector database operations",
-    ["operation", "status"]
-)
-
-VECTOR_DB_LATENCY = Histogram(
-    f"{PREFIX}vector_db_latency_seconds",
-    "Vector database operation latency in seconds",
+RETRIEVAL_TIME = prometheus_client.Histogram(
+    f"{PREFIX}retrieval_processing_seconds", 
+    "Time spent retrieving documents",
     ["operation"],
-    buckets=(0.01, 0.05, 0.1, 0.5, 1.0, 2.5, 5.0, 10.0)
+    buckets=(0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0)
 )
 
-# Decorator for measuring function execution time with metrics
-def time_and_count(metric_name, labels=None):
+ERROR_COUNT = prometheus_client.Counter(
+    f"{PREFIX}errors_total", 
+    "Total number of errors encountered",
+    ["operation", "error_type"]
+)
+
+CACHE_HITS = prometheus_client.Counter(
+    f"{PREFIX}cache_hits_total", 
+    "Total number of cache hits",
+    ["cache_type"]
+)
+
+CACHE_MISSES = prometheus_client.Counter(
+    f"{PREFIX}cache_misses_total", 
+    "Total number of cache misses",
+    ["cache_type"]
+)
+
+ACTIVE_REQUESTS = prometheus_client.Gauge(
+    f"{PREFIX}active_requests", 
+    "Number of active requests being processed",
+    ["endpoint"]
+)
+
+def timing_decorator(metric: prometheus_client.Histogram) -> Callable:
     """
-    Decorator to measure function execution time and increment a counter.
+    Decorator to measure execution time of a function
     
     Args:
-        metric_name: The name of the metric to use (must be defined above)
-        labels: Dict of label values to use
+        metric: The Prometheus Histogram to update
+        
+    Returns:
+        Decorated function
     """
-    def decorator(func):
-        @wraps(func)
-        async def async_wrapper(*args, **kwargs):
-            labels_dict = labels.copy() if labels else {}
+    def decorator(func: Callable) -> Callable:
+        def wrapper(*args, **kwargs):
             start_time = time.time()
-            try:
-                result = await func(*args, **kwargs)
-                # Set status to success on counters if not specified
-                if "status" in labels_dict and not labels_dict.get("status"):
-                    labels_dict["status"] = "success"
-                return result
-            except Exception as e:
-                # Set status to error on counters
-                if "status" in labels_dict:
-                    labels_dict["status"] = "error"
-                raise e
-            finally:
-                duration = time.time() - start_time
-                # Record metrics
-                if metric_name.endswith("_seconds"):
-                    # It's a histogram for timing
-                    label_values = [labels_dict.get(label, "") for label in globals()[metric_name]._labelnames]
-                    globals()[metric_name].labels(*label_values).observe(duration)
-                elif metric_name.endswith("_total"):
-                    # It's a counter
-                    label_values = [labels_dict.get(label, "") for label in globals()[metric_name]._labelnames]
-                    globals()[metric_name].labels(*label_values).inc()
-        
-        @wraps(func)
-        def sync_wrapper(*args, **kwargs):
-            labels_dict = labels.copy() if labels else {}
-            start_time = time.time()
-            try:
-                result = func(*args, **kwargs)
-                # Set status to success on counters if not specified
-                if "status" in labels_dict and not labels_dict.get("status"):
-                    labels_dict["status"] = "success"
-                return result
-            except Exception as e:
-                # Set status to error on counters
-                if "status" in labels_dict:
-                    labels_dict["status"] = "error"
-                raise e
-            finally:
-                duration = time.time() - start_time
-                # Record metrics
-                if metric_name.endswith("_seconds"):
-                    # It's a histogram for timing
-                    label_values = [labels_dict.get(label, "") for label in globals()[metric_name]._labelnames]
-                    globals()[metric_name].labels(*label_values).observe(duration)
-                elif metric_name.endswith("_total"):
-                    # It's a counter
-                    label_values = [labels_dict.get(label, "") for label in globals()[metric_name]._labelnames]
-                    globals()[metric_name].labels(*label_values).inc()
-        
-        return async_wrapper if asyncio.iscoroutinefunction(func) else sync_wrapper
+            result = func(*args, **kwargs)
+            execution_time = time.time() - start_time
+            metric.observe(execution_time)
+            return result
+        return wrapper
     return decorator
+
+def init_metrics_endpoint() -> None:
+    """Initialize metrics endpoint"""
+    # Create a registry
+    registry = prometheus_client.CollectorRegistry()
+    
+    # Add all metrics to registry
+    for metric in [
+        REQUESTS, RESPONSES, PROCESSING_TIME, EMBEDDING_TIME,
+        TOKEN_USAGE, EMBEDDING_COUNT, DOCUMENT_CHUNKS,
+        INDEXING_TIME, RETRIEVAL_TIME, ERROR_COUNT,
+        CACHE_HITS, CACHE_MISSES, ACTIVE_REQUESTS
+    ]:
+        registry.register(metric)
+    
+    # Start HTTP server for metrics
+    prometheus_client.start_http_server(8000, registry=registry)
