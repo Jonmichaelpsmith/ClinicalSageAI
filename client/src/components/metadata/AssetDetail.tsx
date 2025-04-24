@@ -1,465 +1,420 @@
-import React from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import axiosWithToken from '../../utils/axiosWithToken';
-import { useToast } from '@/hooks/use-toast';
-import { Timeline, TimelineItem } from 'vertical-timeline-component-for-react';
-import { 
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader, 
-  CardTitle 
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from '@/components/ui/badge';
-import { 
-  Download, 
-  History, 
-  ClipboardList, 
-  FileText, 
-  Info, 
-  Users,
-  Loader2,
-  AlertCircle,
-  File,
-  CheckCircle2
-} from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Badge } from "@/components/ui/badge";
+import { Timeline, TimelineItem } from 'vertical-timeline-component-for-react';
+import { FileText, Calendar, Download, Edit, History, Info, Code, ArrowLeft, Tags, Lock, CheckCircle, Users, BookOpen, Database, BellRing } from 'lucide-react';
+import { useToast } from "../../hooks/use-toast";
 
-interface AssetVersion {
-  id: string;
-  version: string;
-  status: string;
-  updated_at: string;
-  updated_by: string;
-  changes?: string;
-}
-
-interface AuditEntry {
-  user: string;
-  action: string;
-  timestamp: string;
-  details?: string;
-}
-
-interface AssetDetail {
-  id: string;
-  name: string;
-  description?: string;
-  version: string;
-  status: string;
-  updated_at: string;
-  created_at: string;
-  created_by: string;
-  associated_studies?: string[];
-  attributes?: Record<string, any>;
-}
-
-interface AssetDetailProps { 
-  assetType: string; 
-  assetId: string; 
-}
-
-export default function AssetDetail({ assetType, assetId }: AssetDetailProps) {
-  const { toast } = useToast();
-
-  // Fetch asset details
-  const { data: assetData, isLoading: isLoadingAsset, error: assetError } = useQuery({
-    queryKey: ['assetDetail', assetType, assetId],
-    queryFn: () => 
-      axiosWithToken.get<AssetDetail>(`/api/metadata/${assetType}/${assetId}`)
-        .then(res => res.data),
-  });
-
-  // Fetch version history
-  const { data: versionsData, isLoading: isLoadingVersions } = useQuery({
-    queryKey: ['assetVersions', assetType, assetId],
-    queryFn: () => 
-      axiosWithToken.get<AssetVersion[]>(`/api/metadata/${assetType}/${assetId}/versions`)
-        .then(res => res.data),
-  });
-
-  // Fetch audit trail
-  const { data: auditData, isLoading: isLoadingAudit } = useQuery({
-    queryKey: ['assetAudit', assetType, assetId],
-    queryFn: () => 
-      axiosWithToken.get<AuditEntry[]>(`/api/metadata/${assetType}/${assetId}/audit`)
-        .then(res => res.data),
-  });
-
-  // Export mutation
-  const exportMutation = useMutation({
-    mutationFn: () => 
-      axiosWithToken.post(`/api/metadata/export-edc`, { form_id: assetId }),
-    onSuccess: (res) => {
-      toast({
-        title: "Export Successful",
-        description: "EDC package is ready for download",
-      });
-      
-      // Open the download URL in a new tab
-      if (res.data?.packageUrl) {
-        window.open(res.data.packageUrl, '_blank');
-      }
+// Mock metadata detail
+const mockMetadataDetail = {
+  id: "1",
+  name: "SDTM Demographics Domain",
+  type: "Domain",
+  source: "CDISC",
+  version: "3.2",
+  description: "The Demographics domain (DM) contains demographic data and other identifying characteristics that are constant over the course of the clinical study. This domain should include a record for every subject who entered the study.",
+  lastUpdated: "2025-03-15",
+  createdBy: "John Smith",
+  status: "Active",
+  tags: ["Demographics", "SDTM", "Patient Data", "Core Domain"],
+  schemaDefinition: `{
+  "type": "object",
+  "properties": {
+    "USUBJID": {
+      "type": "string",
+      "description": "Unique Subject Identifier"
     },
-    onError: (error: any) => {
-      toast({
-        title: "Export Failed",
-        description: error.message || "An error occurred during export",
-        variant: "destructive"
-      });
+    "SUBJID": {
+      "type": "string",
+      "description": "Subject Identifier for the Study"
+    },
+    "SITEID": {
+      "type": "string",
+      "description": "Study Site Identifier"
+    },
+    "AGE": {
+      "type": "number",
+      "description": "Age"
+    },
+    "AGEU": {
+      "type": "string",
+      "enum": ["YEARS", "MONTHS", "DAYS"],
+      "description": "Age Units"
+    },
+    "SEX": {
+      "type": "string",
+      "enum": ["M", "F", "U", "UNDIFFERENTIATED"],
+      "description": "Sex"
+    },
+    "RACE": {
+      "type": "string",
+      "description": "Race"
+    },
+    "ETHNIC": {
+      "type": "string",
+      "description": "Ethnicity"
+    },
+    "COUNTRY": {
+      "type": "string",
+      "description": "Country"
+    },
+    "DMDTC": {
+      "type": "string",
+      "format": "date",
+      "description": "Date/Time of Collection"
     }
-  });
+  },
+  "required": ["USUBJID", "SUBJID", "SITEID", "AGE", "AGEU", "SEX"]
+}`,
+  relatedAssets: [
+    { id: "2", name: "SDTM Adverse Events Domain", type: "Domain" },
+    { id: "7", name: "CRF Standard Library", type: "Library" },
+    { id: "9", name: "Study Data Tabulation Model", type: "Model" }
+  ],
+  changeHistory: [
+    {
+      date: "2025-03-15",
+      version: "3.2",
+      author: "John Smith",
+      changes: "Added ETHNIC field as recommended by FDA guidance"
+    },
+    {
+      date: "2024-11-10",
+      version: "3.1",
+      author: "Jane Doe",
+      changes: "Updated RACE field to align with latest ICH recommendations"
+    },
+    {
+      date: "2024-06-22",
+      version: "3.0",
+      author: "Alex Johnson",
+      changes: "Major version update to align with CDISC SDTM v3.3"
+    }
+  ],
+  usage: [
+    { studyId: "STUDY-001", sponsor: "Pharma Corp", date: "2025-02-10" },
+    { studyId: "ONCO-452", sponsor: "BioTech Inc", date: "2025-01-05" },
+    { studyId: "CARD-123", sponsor: "MedDevice Co", date: "2024-12-15" }
+  ],
+  validationRules: [
+    "USUBJID must be unique within the study",
+    "AGE must be a positive number",
+    "SEX must be one of: M, F, U, UNDIFFERENTIATED",
+    "DMDTC must be a valid ISO date format"
+  ]
+};
 
-  const handleExport = () => {
-    exportMutation.mutate();
+interface AssetDetailProps {
+  assetId: string;
+  onBack?: () => void;
+}
+
+export default function AssetDetail({ assetId, onBack }: AssetDetailProps) {
+  const [activeTab, setActiveTab] = useState("overview");
+  const { toast } = useToast();
+  
+  // In a real application, you would fetch the asset details based on the assetId
+  // For this example, we'll just use the mock data
+  const metadata = mockMetadataDetail;
+  
+  const handleDownload = () => {
+    toast({
+      title: "Download started",
+      description: "Metadata definition is being prepared for download.",
+    });
+  };
+  
+  const handleEdit = () => {
+    toast({
+      title: "Edit mode",
+      description: "Edit mode will be available in the next release.",
+    });
   };
 
-  if (isLoadingAsset) {
-    return (
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-6 w-48" />
-          <Skeleton className="h-4 w-72" />
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-48 w-full" />
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (assetError) {
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex flex-col items-center justify-center text-center">
-            <AlertCircle className="h-10 w-10 text-red-500 mb-3" />
-            <h3 className="text-lg font-medium">Failed to load asset details</h3>
-            <p className="text-sm text-gray-500 mt-1">
-              {(assetError as any).message || "An error occurred while loading this asset"}
-            </p>
-            <Button 
-              variant="outline" 
-              className="mt-4"
-              onClick={() => window.history.back()}
-            >
-              Go Back
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (!assetData) {
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex flex-col items-center justify-center text-center">
-            <Info className="h-10 w-10 text-amber-500 mb-3" />
-            <h3 className="text-lg font-medium">Asset Not Found</h3>
-            <p className="text-sm text-gray-500 mt-1">
-              The requested asset could not be found or may have been deleted
-            </p>
-            <Button 
-              variant="outline" 
-              className="mt-4"
-              onClick={() => window.history.back()}
-            >
-              Go Back
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
-    <Card className="w-full">
-      <CardHeader>
+    <Card className="h-full flex flex-col">
+      <CardHeader className="pb-4">
         <div className="flex justify-between items-start">
-          <div>
-            <CardTitle className="text-xl font-bold">{assetData.name}</CardTitle>
-            <CardDescription className="mt-1">
-              {assetData.description || `${assetType} asset for clinical trials`}
-            </CardDescription>
+          <div className="flex-1">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="mb-2 -ml-2 text-muted-foreground"
+              onClick={onBack}
+            >
+              <ArrowLeft className="mr-1 h-4 w-4" />
+              Back to repository
+            </Button>
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-xl">{metadata.name}</CardTitle>
+              <Badge>{metadata.version}</Badge>
+              <Badge className={metadata.status === "Active" ? "bg-green-100 text-green-800 border-green-300" : "bg-amber-100 text-amber-800 border-amber-300"}>
+                {metadata.status}
+              </Badge>
+            </div>
+            <div className="flex gap-2 mt-1 flex-wrap">
+              {metadata.tags.map((tag, index) => (
+                <Badge key={index} variant="outline" className="text-xs">
+                  {tag}
+                </Badge>
+              ))}
+            </div>
           </div>
-          <Badge variant={assetData.status.toLowerCase() === 'active' ? 'default' : 'outline'}>
-            {assetData.status}
-          </Badge>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={handleDownload}>
+              <Download className="mr-1 h-4 w-4" />
+              Download
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleEdit}>
+              <Edit className="mr-1 h-4 w-4" />
+              Edit
+            </Button>
+          </div>
         </div>
+        <CardDescription className="mt-2">
+          {metadata.description}
+        </CardDescription>
       </CardHeader>
       
-      <CardContent>
-        <Tabs defaultValue="details">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="details" className="flex items-center gap-1">
-              <Info className="h-4 w-4" /> Details
+      <CardContent className="flex-grow overflow-hidden">
+        <Tabs
+          defaultValue="overview"
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="h-full flex flex-col"
+        >
+          <TabsList className="grid grid-cols-5 w-full">
+            <TabsTrigger value="overview">
+              <Info className="h-4 w-4 mr-1" />
+              Overview
             </TabsTrigger>
-            <TabsTrigger value="versions" className="flex items-center gap-1">
-              <History className="h-4 w-4" /> Versions
+            <TabsTrigger value="schema">
+              <Code className="h-4 w-4 mr-1" />
+              Schema
             </TabsTrigger>
-            <TabsTrigger value="audit" className="flex items-center gap-1">
-              <ClipboardList className="h-4 w-4" /> Audit Trail
+            <TabsTrigger value="history">
+              <History className="h-4 w-4 mr-1" />
+              History
             </TabsTrigger>
-            <TabsTrigger value="studies" className="flex items-center gap-1">
-              <FileText className="h-4 w-4" /> Associated Studies
+            <TabsTrigger value="usage">
+              <Users className="h-4 w-4 mr-1" />
+              Usage
+            </TabsTrigger>
+            <TabsTrigger value="validation">
+              <CheckCircle className="h-4 w-4 mr-1" />
+              Validation
             </TabsTrigger>
           </TabsList>
           
-          {/* Details Tab */}
-          <TabsContent value="details" className="mt-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <TabsContent value="overview" className="flex-grow overflow-auto">
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-4">
-                <div className="rounded-md bg-gray-50 p-4">
-                  <h3 className="text-sm font-medium text-gray-900 mb-2">Asset Information</h3>
-                  <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                    <dt className="text-gray-500">ID</dt>
-                    <dd className="text-gray-900 font-mono text-xs">{assetData.id}</dd>
-                    <dt className="text-gray-500">Version</dt>
-                    <dd className="text-gray-900">v{assetData.version}</dd>
-                    <dt className="text-gray-500">Status</dt>
-                    <dd className="text-gray-900">{assetData.status}</dd>
-                    <dt className="text-gray-500">Created</dt>
-                    <dd className="text-gray-900">{new Date(assetData.created_at).toLocaleDateString()}</dd>
-                    <dt className="text-gray-500">Last Updated</dt>
-                    <dd className="text-gray-900">{new Date(assetData.updated_at).toLocaleDateString()}</dd>
-                    <dt className="text-gray-500">Created By</dt>
-                    <dd className="text-gray-900">{assetData.created_by}</dd>
+                <div>
+                  <h3 className="text-sm font-medium mb-2 flex items-center">
+                    <Info className="h-4 w-4 mr-1 text-muted-foreground" />
+                    Basic Information
+                  </h3>
+                  <dl className="grid grid-cols-3 gap-1 text-sm">
+                    <dt className="text-muted-foreground">Type:</dt>
+                    <dd className="col-span-2">{metadata.type}</dd>
+                    
+                    <dt className="text-muted-foreground">Source:</dt>
+                    <dd className="col-span-2">{metadata.source}</dd>
+                    
+                    <dt className="text-muted-foreground">Version:</dt>
+                    <dd className="col-span-2">{metadata.version}</dd>
+                    
+                    <dt className="text-muted-foreground">Status:</dt>
+                    <dd className="col-span-2">
+                      <Badge className={metadata.status === "Active" ? "bg-green-100 text-green-800 border-green-300" : "bg-amber-100 text-amber-800 border-amber-300"}>
+                        {metadata.status}
+                      </Badge>
+                    </dd>
                   </dl>
                 </div>
                 
                 <div>
-                  <h3 className="text-sm font-medium text-gray-900 mb-2">Attributes</h3>
-                  {assetData.attributes ? (
-                    <Accordion type="single" collapsible>
-                      {Object.entries(assetData.attributes).map(([key, value], index) => (
-                        <AccordionItem key={index} value={key}>
-                          <AccordionTrigger className="text-sm">
-                            {key}
-                          </AccordionTrigger>
-                          <AccordionContent>
-                            <div className="bg-gray-50 p-3 rounded-md overflow-auto">
-                              <pre className="text-xs">
-                                {typeof value === 'object' 
-                                  ? JSON.stringify(value, null, 2) 
-                                  : String(value)}
-                              </pre>
-                            </div>
-                          </AccordionContent>
-                        </AccordionItem>
-                      ))}
-                    </Accordion>
-                  ) : (
-                    <p className="text-sm text-gray-500">No additional attributes available</p>
-                  )}
+                  <h3 className="text-sm font-medium mb-2 flex items-center">
+                    <Calendar className="h-4 w-4 mr-1 text-muted-foreground" />
+                    Dates & Authors
+                  </h3>
+                  <dl className="grid grid-cols-3 gap-1 text-sm">
+                    <dt className="text-muted-foreground">Last Updated:</dt>
+                    <dd className="col-span-2">{metadata.lastUpdated}</dd>
+                    
+                    <dt className="text-muted-foreground">Created By:</dt>
+                    <dd className="col-span-2">{metadata.createdBy}</dd>
+                  </dl>
+                </div>
+                
+                <div>
+                  <h3 className="text-sm font-medium mb-2 flex items-center">
+                    <Lock className="h-4 w-4 mr-1 text-muted-foreground" />
+                    Permissions
+                  </h3>
+                  <Badge variant="outline" className="mr-1">Read: All Users</Badge>
+                  <Badge variant="outline" className="mr-1">Write: Admin, Metadata Specialists</Badge>
                 </div>
               </div>
               
               <div className="space-y-4">
-                {/* EDC Export Functionality */}
-                <div className="rounded-md border border-gray-200 p-4">
-                  <h3 className="text-sm font-medium text-gray-900 mb-2">Export Options</h3>
-                  <p className="text-sm text-gray-500 mb-4">
-                    Export this {assetType === 'forms' ? 'form' : 'metadata asset'} for use in EDC systems
-                  </p>
-                  
-                  <div className="space-y-3">
-                    <Button 
-                      onClick={handleExport}
-                      disabled={exportMutation.isPending}
-                      className="w-full flex items-center"
-                    >
-                      {exportMutation.isPending ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Generating...
-                        </>
-                      ) : (
-                        <>
-                          <Download className="h-4 w-4 mr-2" />
-                          Export EDC Blueprint
-                        </>
-                      )}
-                    </Button>
-                    
-                    <Button variant="outline" className="w-full flex items-center">
-                      <File className="h-4 w-4 mr-2" />
-                      Download as JSON
-                    </Button>
-                  </div>
-                  
-                  {exportMutation.isSuccess && (
-                    <div className="mt-3 p-2 bg-green-50 text-green-800 text-sm rounded-md flex items-start">
-                      <CheckCircle2 className="h-4 w-4 text-green-600 mr-1.5 mt-0.5 flex-shrink-0" />
-                      <span>Export successful. Your package is ready for download.</span>
-                    </div>
-                  )}
-                  
-                  {exportMutation.isError && (
-                    <div className="mt-3 p-2 bg-red-50 text-red-800 text-sm rounded-md flex items-start">
-                      <AlertCircle className="h-4 w-4 text-red-600 mr-1.5 mt-0.5 flex-shrink-0" />
-                      <span>{(exportMutation.error as any)?.message || "Export failed"}</span>
-                    </div>
-                  )}
+                <div>
+                  <h3 className="text-sm font-medium mb-2 flex items-center">
+                    <Database className="h-4 w-4 mr-1 text-muted-foreground" />
+                    Related Assets
+                  </h3>
+                  <ul className="space-y-1">
+                    {metadata.relatedAssets.map((asset, index) => (
+                      <li key={index} className="text-sm flex items-center">
+                        <FileText className="h-3 w-3 mr-1 text-blue-500" />
+                        <span className="hover:underline cursor-pointer">{asset.name}</span>
+                        <Badge className="ml-1 text-xs" variant="outline">{asset.type}</Badge>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
                 
-                {/* Compliance Information */}
-                <div className="rounded-md border border-gray-200 p-4">
-                  <h3 className="text-sm font-medium text-gray-900 mb-2">Compliance Status</h3>
-                  
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">CDISC Compliance</span>
-                      <Badge variant="outline" className="bg-green-50 text-green-800 hover:bg-green-50">
-                        Compliant
+                <div>
+                  <h3 className="text-sm font-medium mb-2 flex items-center">
+                    <Tags className="h-4 w-4 mr-1 text-muted-foreground" />
+                    Tags
+                  </h3>
+                  <div className="flex flex-wrap gap-1">
+                    {metadata.tags.map((tag, index) => (
+                      <Badge key={index} variant="outline" className="text-xs">
+                        {tag}
                       </Badge>
-                    </div>
-                    
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">FDA 21 CFR Part 11</span>
-                      <Badge variant="outline" className="bg-green-50 text-green-800 hover:bg-green-50">
-                        Validated
-                      </Badge>
-                    </div>
-                    
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">ICH Guidelines</span>
-                      <Badge variant="outline" className="bg-green-50 text-green-800 hover:bg-green-50">
-                        Compliant
-                      </Badge>
-                    </div>
+                    ))}
                   </div>
+                  <Button variant="ghost" size="sm" className="mt-2 h-7 text-xs">
+                    <Tags className="h-3 w-3 mr-1" />
+                    Manage Tags
+                  </Button>
+                </div>
+                
+                <div>
+                  <h3 className="text-sm font-medium mb-2 flex items-center">
+                    <BellRing className="h-4 w-4 mr-1 text-muted-foreground" />
+                    Notifications
+                  </h3>
+                  <Button variant="outline" size="sm" className="h-7 text-xs">
+                    Subscribe to Updates
+                  </Button>
                 </div>
               </div>
             </div>
           </TabsContent>
           
-          {/* Versions Tab */}
-          <TabsContent value="versions" className="mt-4">
-            {isLoadingVersions ? (
-              <div className="flex items-center justify-center py-6">
-                <Loader2 className="h-6 w-6 text-blue-600 animate-spin mr-2" />
-                <span>Loading version history...</span>
+          <TabsContent value="schema" className="flex-grow overflow-auto">
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-sm font-medium mb-2">Schema Definition</h3>
+                <pre className="bg-muted p-4 rounded-md overflow-auto text-xs whitespace-pre">
+                  {metadata.schemaDefinition}
+                </pre>
               </div>
-            ) : versionsData && versionsData.length > 0 ? (
-              <Timeline lineColor="#e5e7eb">
-                {versionsData.map((version, index) => (
-                  <TimelineItem
-                    key={version.id || index}
-                    dateText={`v${version.version}`}
-                    dateInnerStyle={{ background: '#f3f4f6', color: '#4b5563' }}
-                    style={{ color: '#4b5563' }}
-                  >
-                    <div className="bg-white p-4 rounded-md border border-gray-200">
-                      <div className="flex justify-between items-center mb-2">
-                        <Badge 
-                          variant={version.status.toLowerCase() === 'active' ? 'default' : 'outline'}
-                        >
-                          {version.status}
-                        </Badge>
-                        <span className="text-sm text-gray-500">
-                          {new Date(version.updated_at).toLocaleString()}
-                        </span>
-                      </div>
-                      
-                      <p className="text-sm">
-                        <span className="font-medium">Updated by:</span> {version.updated_by}
-                      </p>
-                      
-                      {version.changes && (
-                        <div className="mt-2">
-                          <p className="text-sm font-medium">Changes:</p>
-                          <p className="text-sm mt-1 text-gray-700">{version.changes}</p>
-                        </div>
-                      )}
-                    </div>
-                  </TimelineItem>
-                ))}
-              </Timeline>
-            ) : (
-              <div className="text-center py-6">
-                <p className="text-gray-500">No version history available</p>
+              
+              <div className="flex mt-4">
+                <Button variant="outline" size="sm" className="mr-2">
+                  <Download className="h-4 w-4 mr-1" />
+                  Download Schema
+                </Button>
+                <Button variant="outline" size="sm">
+                  <BookOpen className="h-4 w-4 mr-1" />
+                  View Documentation
+                </Button>
               </div>
-            )}
+            </div>
           </TabsContent>
           
-          {/* Audit Trail Tab */}
-          <TabsContent value="audit" className="mt-4">
-            {isLoadingAudit ? (
-              <div className="flex items-center justify-center py-6">
-                <Loader2 className="h-6 w-6 text-blue-600 animate-spin mr-2" />
-                <span>Loading audit trail...</span>
-              </div>
-            ) : auditData && auditData.length > 0 ? (
-              <div className="rounded-md border border-gray-200 divide-y">
-                {auditData.map((entry, index) => (
-                  <div key={index} className="p-3 hover:bg-gray-50">
-                    <div className="flex justify-between items-start">
-                      <div className="flex items-start">
-                        <Users className="h-4 w-4 text-gray-500 mt-0.5 mr-2" />
-                        <div>
-                          <p className="text-sm font-medium">
-                            {entry.user} <span className="font-normal text-gray-500">{entry.action}</span>
-                          </p>
-                          {entry.details && (
-                            <p className="text-xs text-gray-500 mt-1">{entry.details}</p>
-                          )}
-                        </div>
-                      </div>
-                      <span className="text-xs text-gray-500">
-                        {new Date(entry.timestamp).toLocaleString()}
-                      </span>
-                    </div>
+          <TabsContent value="history" className="flex-grow overflow-auto">
+            <Timeline lineColor="#ddd">
+              {metadata.changeHistory.map((change, index) => (
+                <TimelineItem
+                  key={index}
+                  dateText={change.date}
+                  style={{ color: "#333" }}
+                  dateInnerStyle={{ background: "#f3f4f6", color: "#374151" }}
+                >
+                  <div className="bg-white p-4 rounded-md border border-gray-200">
+                    <h3 className="text-sm font-medium">Version {change.version}</h3>
+                    <p className="text-xs text-muted-foreground">Author: {change.author}</p>
+                    <p className="text-sm mt-2">{change.changes}</p>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-6">
-                <p className="text-gray-500">No audit trail available</p>
-              </div>
-            )}
+                </TimelineItem>
+              ))}
+            </Timeline>
           </TabsContent>
           
-          {/* Associated Studies Tab */}
-          <TabsContent value="studies" className="mt-4">
-            {assetData.associated_studies && assetData.associated_studies.length > 0 ? (
-              <div className="rounded-md border border-gray-200 divide-y">
-                {assetData.associated_studies.map((study, index) => (
-                  <div key={index} className="p-3 hover:bg-gray-50">
-                    <div className="flex items-center">
-                      <FileText className="h-4 w-4 text-gray-500 mr-2" />
-                      <span className="text-sm">{study}</span>
-                    </div>
-                  </div>
+          <TabsContent value="usage" className="flex-grow overflow-auto">
+            <div className="space-y-4">
+              <h3 className="text-sm font-medium">Recent Usage</h3>
+              <div className="overflow-hidden rounded-md border">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-muted/50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Study ID</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sponsor</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {metadata.usage.map((item, index) => (
+                      <tr key={index}>
+                        <td className="px-4 py-3 text-sm">{item.studyId}</td>
+                        <td className="px-4 py-3 text-sm">{item.sponsor}</td>
+                        <td className="px-4 py-3 text-sm">{item.date}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              
+              <div className="mt-4">
+                <Button variant="outline" size="sm">
+                  View Complete Usage Analytics
+                </Button>
+              </div>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="validation" className="flex-grow overflow-auto">
+            <div className="space-y-4">
+              <h3 className="text-sm font-medium">Validation Rules</h3>
+              <ul className="space-y-2">
+                {metadata.validationRules.map((rule, index) => (
+                  <li key={index} className="flex items-start bg-muted/30 p-3 rounded-md">
+                    <CheckCircle className="h-4 w-4 mr-2 text-green-500 mt-0.5" />
+                    <span className="text-sm">{rule}</span>
+                  </li>
                 ))}
+              </ul>
+              
+              <div className="mt-4">
+                <Button variant="outline" size="sm">
+                  Add Custom Validation Rule
+                </Button>
               </div>
-            ) : (
-              <div className="text-center py-6">
-                <p className="text-gray-500">
-                  No studies are currently associated with this {assetType === 'forms' ? 'form' : 'metadata asset'}
-                </p>
-              </div>
-            )}
+            </div>
           </TabsContent>
         </Tabs>
       </CardContent>
       
-      <CardFooter className="border-t pt-6">
-        <div className="flex justify-between w-full">
-          <Button variant="outline" onClick={() => window.history.back()}>
-            Back to List
+      <CardFooter className="border-t pt-4 flex justify-between">
+        <div className="text-xs text-muted-foreground">
+          Last updated: {metadata.lastUpdated} by {metadata.createdBy}
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm">
+            <Edit className="h-4 w-4 mr-1" />
+            Edit
           </Button>
-          
-          <div className="space-x-2">
-            <Button variant="outline">Edit</Button>
-            <Button variant="default">Approve</Button>
-          </div>
+          <Button size="sm">
+            <Download className="h-4 w-4 mr-1" />
+            Export
+          </Button>
         </div>
       </CardFooter>
     </Card>
