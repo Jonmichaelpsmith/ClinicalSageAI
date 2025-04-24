@@ -269,7 +269,7 @@ const LumenBioReportDemo = () => {
   
   const mockDocuments = [
     {
-      title: "Interim Clinical Study Report - LB-24-001",
+      title: "Interim Clinical Study Report - LB-301 (Gastroenteritis)",
       status: "In Review",
       date: "Apr 18, 2025",
       owner: "Dr. Sarah Chen",
@@ -279,7 +279,7 @@ const LumenBioReportDemo = () => {
       warningCount: 3
     },
     {
-      title: "Protocol Amendment 2 - LB-24-001",
+      title: "Protocol Amendment 2 - LB-201 (Obesity Program)",
       status: "Completed",
       date: "Apr 10, 2025",
       owner: "Dr. Sarah Chen",
@@ -289,7 +289,7 @@ const LumenBioReportDemo = () => {
       warningCount: 0
     },
     {
-      title: "Investigator's Brochure - Lumizyme",
+      title: "Investigator's Brochure - Spirulina-based Antibody Cocktail",
       status: "In Progress",
       date: "Apr 5, 2025",
       owner: "Dr. James Wilson",
@@ -299,7 +299,7 @@ const LumenBioReportDemo = () => {
       warningCount: 5
     },
     {
-      title: "Statistical Analysis Plan - LB-24-001",
+      title: "Statistical Analysis Plan - LB-301 (Phase 2 Trial)",
       status: "In Progress",
       date: "Mar 28, 2025",
       owner: "Dr. Anna Lopez",
@@ -355,7 +355,7 @@ const LumenBioReportDemo = () => {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Lumen Biosciences - Regulatory Compliance Dashboard</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400">LB-24-001 Phase 2 Trial - Lumizyme for IBS Treatment</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">LB-301 Phase 2 Trial - Spirulina-based Antibody Cocktail for Gastroenteritis</p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={handleExport}>
@@ -378,7 +378,11 @@ const LumenBioReportDemo = () => {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-slate-500 dark:text-slate-400">Trial ID:</span>
-                  <span className="font-medium">LB-24-001</span>
+                  <span className="font-medium">LB-301</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500 dark:text-slate-400">Program:</span>
+                  <span className="font-medium">Gastroenteritis</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500 dark:text-slate-400">Phase:</span>
@@ -387,6 +391,10 @@ const LumenBioReportDemo = () => {
                 <div className="flex justify-between">
                   <span className="text-slate-500 dark:text-slate-400">Status:</span>
                   <Badge variant="outline">Ongoing</Badge>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500 dark:text-slate-400">Product:</span>
+                  <span className="font-medium">Spirulina-based Antibody Cocktail</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500 dark:text-slate-400">Start Date:</span>
