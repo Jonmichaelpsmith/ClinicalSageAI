@@ -15,7 +15,7 @@ const CSRCounter = ({ className = "" }) => {
     const fetchCSRCount = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch('/api/csr-count');
+        const response = await fetch('/api/csr/count');
         
         if (!response.ok) {
           throw new Error('Failed to fetch CSR count');

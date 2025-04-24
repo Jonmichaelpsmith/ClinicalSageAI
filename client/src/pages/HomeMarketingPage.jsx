@@ -207,7 +207,7 @@ export default function HomeMarketingPage() {
                 <span className="font-semibold">AI-Powered</span> Regulatory Document Intelligence
               </h1>
               <p className="text-[15px] text-[#444] mb-5">
-                TrialSage™ slashes regulatory submission time by 67% with deep semantic understanding of clinical trial data across 3,217+ CSRs and 58 therapeutic areas.
+                TrialSage™ slashes regulatory submission time by 67% with deep semantic understanding of clinical trial data across <CSRCounter /> and 58 therapeutic areas.
               </p>
               <div className="flex flex-wrap space-x-3 mb-5">
                 <div className="flex items-center">
@@ -246,7 +246,7 @@ export default function HomeMarketingPage() {
                   </div>
                   <div className="flex items-center">
                     <div className="bg-blue-600 rounded-full h-2 w-2 mr-2"></div>
-                    <span className="text-sm">3,217+ CSRs analyzed with proprietary AI models</span>
+                    <span className="text-sm"><CSRCounter /> analyzed with proprietary AI models</span>
                   </div>
                   <div className="flex items-center">
                     <div className="bg-blue-600 rounded-full h-2 w-2 mr-2"></div>
@@ -312,7 +312,7 @@ export default function HomeMarketingPage() {
               </div>
               <div className="ml-11">
                 <div className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 mb-2">
-                  3,217+ CSRs Analyzed
+                  <CSRCounter /> Analyzed
                 </div>
                 <p className="text-[13px] text-gray-700 mb-3">
                   Deep semantic analysis of clinical study reports revealing patterns impossible to detect with traditional methods.
