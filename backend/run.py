@@ -1,26 +1,46 @@
+#!/usr/bin/env python3
 """
-FastAPI application runner script
-
-This script launches the RegIntel validation API service.
+Launcher script for the TrialSage Study Architect API server.
 """
-import logging
-import uvicorn
-from app.main import app
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[
-        logging.StreamHandler()
+import os
+import sys
+import subprocess
+import argparse
+
+def run_server(host="0.0.0.0", port=8000, reload=True):
+    """
+    Run the FastAPI server using uvicorn.
+    
+    Args:
+        host: Host to bind to
+        port: Port to bind to
+        reload: Whether to enable auto-reload
+    """
+    # Ensure we're in the correct directory
+    backend_dir = os.path.dirname(os.path.abspath(__file__))
+    os.chdir(backend_dir)
+    
+    # Build the command
+    cmd = [
+        sys.executable, "-m", "uvicorn", "main:app", 
+        "--host", host, 
+        "--port", str(port)
     ]
-)
-logger = logging.getLogger(__name__)
+    
+    if reload:
+        cmd.append("--reload")
+    
+    # Run the server
+    print(f"Starting TrialSage Study Architect API on {host}:{port}")
+    subprocess.run(cmd)
 
 if __name__ == "__main__":
-    logger.info("Starting RegIntel API server on port 8000")
-    try:
-        uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
-        logger.info("RegIntel API started")
-    except Exception as e:
-        logger.error(f"Error starting RegIntel API: {str(e)}")
+    parser = argparse.ArgumentParser(description="Run the TrialSage Study Architect API server")
+    parser.add_argument("--host", default="0.0.0.0", help="Host to bind to")
+    parser.add_argument("--port", type=int, default=8000, help="Port to bind to")
+    parser.add_argument("--no-reload", action="store_true", help="Disable auto-reload")
+    
+    args = parser.parse_args()
+    
+    run_server(host=args.host, port=args.port, reload=not args.no_reload)
