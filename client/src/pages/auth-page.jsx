@@ -94,7 +94,7 @@ const AuthPage = () => {
       
       if (success) {
         // Manual redirect instead of relying on useEffect
-        setLocation("/client-portal");
+        setLocation("/account/subscribed-solutions");
       }
     } catch (error) {
       console.error("Authentication error:", error);

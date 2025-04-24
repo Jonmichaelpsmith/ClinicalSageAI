@@ -293,13 +293,6 @@ export default function App() {
                   <AuthPage />
                 </SimpleErrorBoundary>
               </Route>
-              <Route path="/client-portal">
-                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Client Portal" />}>
-                  <ProtectedRoute>
-                    <LazyClientPortal />
-                  </ProtectedRoute>
-                </SimpleErrorBoundary>
-              </Route>
               <Route path="/team-signup">
                 <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Team Signup" />}>
                   <LazyTeamSignup />
