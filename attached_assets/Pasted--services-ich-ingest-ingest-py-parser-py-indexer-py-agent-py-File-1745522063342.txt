@@ -1,0 +1,227 @@
+# services/ich_ingest/
+# ├── ingest.py
+# ├── parser.py
+# ├── indexer.py
+# └── agent.py
+
+# File: ingest.py
+import os
+import time
+import json
+import logging
+import requests
+from bs4 import BeautifulSoup
+from datetime import datetime
+from parser import extract_text
+from indexer import index_document
+
+# Setup logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s: %(message)s')
+
+# Configuration via env vars
+ICH_BASE_URL = os.getenv("ICH_BASE_URL", "https://www.ich.org/page/articles-procedures")
+CSR_DIR = os.getenv("CSR_UPLOAD_DIR", "csr_uploads/")
+PROCESSED_LOG = os.getenv("PROCESSED_LOG", "services/ich_ingest/processed.json")
+
+# Ensure processed log exists
+if not os.path.exists(PROCESSED_LOG):
+    with open(PROCESSED_LOG, 'w') as f:
+        json.dump({"guidelines": [], "csrs": []}, f)
+
+
+def load_processed():
+    with open(PROCESSED_LOG, 'r') as f:
+        return json.load(f)
+
+
+def save_processed(data):
+    with open(PROCESSED_LOG, 'w') as f:
+        json.dump(data, f, indent=2)
+
+
+def fetch_guidelines():
+    logging.info("Fetching ICH guidelines from %s", ICH_BASE_URL)
+    resp = requests.get(ICH_BASE_URL)
+    resp.raise_for_status()
+    soup = BeautifulSoup(resp.text, "html.parser")
+    # Example selector for PDF links
+    links = [a["href"] for a in soup.select(".download-links a") if a.get("href", "").endswith('.pdf')]
+    processed = load_processed()
+
+    for url in links:
+        filename = os.path.basename(url)
+        if filename in processed['guidelines']:
+            continue
+        local_dir = os.path.join("services/ich_ingest/guidelines")
+        os.makedirs(local_dir, exist_ok=True)
+        local_path = os.path.join(local_dir, filename)
+        logging.info("Downloading guideline %s", filename)
+        r = requests.get(url)
+        r.raise_for_status()
+        with open(local_path, "wb") as f:
+            f.write(r.content)
+        process_file(local_path, type="ICH Guideline")
+        processed['guidelines'].append(filename)
+        save_processed(processed)
+
+
+def watch_csrs(poll_interval=60):
+    logging.info("Watching CSR uploads in %s", CSR_DIR)
+    processed = load_processed()
+    while True:
+        try:
+            current = set(os.listdir(CSR_DIR))
+            new = current - set(processed['csrs'])
+            for fname in sorted(new):
+                path = os.path.join(CSR_DIR, fname)
+                logging.info("Processing new CSR: %s", fname)
+                process_file(path, type="CSR")
+                processed['csrs'].append(fname)
+                save_processed(processed)
+            time.sleep(poll_interval)
+        except Exception as e:
+            logging.error("Error watching CSRs: %s", e)
+            time.sleep(poll_interval)
+
+
+def process_file(path, type="Document"):
+    try:
+        text = extract_text(path)
+        metadata = {"source": os.path.basename(path), "type": type}
+        index_document(text, metadata)
+        logging.info("Indexed %s: %s", type, os.path.basename(path))
+    except Exception as e:
+        logging.error("Failed to process %s: %s", path, e)
+
+
+if __name__ == "__main__":
+    fetch_guidelines()
+    watch_csrs()
+
+
+# File: parser.py
+import os
+import pdfplumber
+import pytesseract
+import logging
+from tika import parser as tika_parser
+from PIL import Image
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s: %(message)s')
+
+
+def extract_text(file_path: str) -> str:
+    ext = os.path.splitext(file_path)[1].lower()
+    text = ""
+    try:
+        if ext == ".pdf":
+            with pdfplumber.open(file_path) as pdf:
+                for page in pdf.pages:
+                    page_text = page.extract_text()
+                    if page_text:
+                        text += page_text + "\n"
+        else:
+            raw = tika_parser.from_file(file_path)
+            text = raw.get("content", "") or ""
+    except Exception as e:
+        logging.warning("Primary parse failed for %s, error: %s", file_path, e)
+        raw = tika_parser.from_file(file_path)
+        text = raw.get("content", "") or ""
+
+    # Fallback OCR if essential
+    if len(text.strip()) < 200:
+        logging.info("Running OCR on %s", file_path)
+        image = Image.open(file_path)
+        text += pytesseract.image_to_string(image)
+
+    return text
+
+
+# File: indexer.py
+import os
+import openai
+import pinecone
+import logging
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s: %(message)s')
+
+# Env config
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
+PINECONE_ENV = os.getenv("PINECONE_ENV", "us-west1-gcp")
+INDEX_NAME = os.getenv("PINECONE_INDEX", "ich-specialist")
+
+# Init clients
+openai.api_key = OPENAI_API_KEY
+pinecone.init(api_key=PINECONE_API_KEY, environment=PINECONE_ENV)
+
+if INDEX_NAME not in pinecone.list_indexes():
+    logging.info("Creating Pinecone index: %s", INDEX_NAME)
+    pinecone.create_index(INDEX_NAME, dimension=1536)
+index = pinecone.Index(INDEX_NAME)
+
+
+def index_document(text: str, metadata: dict):
+    paragraphs = [p.strip() for p in text.split("\n\n") if len(p.strip()) > 100]
+    for i, paragraph in enumerate(paragraphs):
+        try:
+            emb_resp = openai.Embedding.create(input=paragraph, model="text-embedding-ada-002")
+            emb = emb_resp["data"][0]["embedding"]
+            id_str = f"{metadata['source']}_{i}"
+            index.upsert([(id_str, emb, {**metadata, "text": paragraph})])
+        except Exception as e:
+            logging.error("Embedding/index error for %s paragraph %d: %s", metadata['source'], i, e)
+
+
+def query_similar(query: str, top_k: int = 5):
+    emb_resp = openai.Embedding.create(input=query, model="text-embedding-ada-002")
+    q_emb = emb_resp["data"][0]["embedding"]
+    res = index.query(q_emb, top_k=top_k, include_metadata=True)
+    return res
+
+
+# File: agent.py
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+import os
+import openai
+from indexer import query_similar
+import logging
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s: %(message)s')
+
+# Init
+openai.api_key = os.getenv("OPENAI_API_KEY")
+app = FastAPI(title="ICH Specialist Agent")
+
+class Query(BaseModel):
+    question: str
+    context: str = None
+
+@app.post("/api/ich-agent")
+def ich_agent(q: Query):
+    try:
+        hits = query_similar(q.question)
+        # Build prompt
+        source_texts = []
+        for match in hits['matches']:
+            meta = match['metadata']
+            source_texts.append(f"[{meta['source']}]: {meta['text'][:200]}...")
+        prompt = (
+            "You are an expert on ICH guidelines. "
+            f"Question: {q.question}\n\n" + "\n".join(source_texts)
+        )
+        resp = openai.ChatCompletion.create(
+            model="gpt-4o", messages=[
+                {"role": "system", "content": "You are an ICH compliance expert."},
+                {"role": "user", "content": prompt}
+            ]
+        )
+        answer = resp.choices[0].message.content
+        return {
+            "answer": answer,
+            "sources": [m['metadata']['source'] for m in hits['matches'][:3]]
+        }
+    except Exception as e:
+        logging.error("Agent error: %s", e)
+        raise HTTPException(status_code=500, detail=str(e))

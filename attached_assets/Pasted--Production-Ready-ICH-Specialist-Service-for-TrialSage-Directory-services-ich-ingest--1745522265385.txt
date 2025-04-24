@@ -1,0 +1,251 @@
+# Production-Ready ICH Specialist Service for TrialSage
+# Directory: services/ich_ingest/
+# ├── __init__.py
+# ├── config.py
+# ├── ingestion.py
+# ├── parser.py
+# ├── indexer.py
+# └── agent.py
+
+# File: config.py
+import os
+from pydantic import BaseSettings, Field, validator
+
+class Settings(BaseSettings):
+    # Source URLs & Paths
+    ICH_BASE_URL: str = Field("https://www.ich.org/page/articles-procedures", env="ICH_BASE_URL")
+    CSR_DIR: str = Field("csr_uploads/", env="CSR_UPLOAD_DIR")
+    GUIDELINES_DIR: str = Field("services/ich_ingest/guidelines/", env="GUIDELINES_DIR")
+    PROCESSED_LOG: str = Field("services/ich_ingest/processed.json", env="PROCESSED_LOG")
+
+    # OpenAI & Vector Store
+    OPENAI_API_KEY: str = Field(..., env="OPENAI_API_KEY")
+    PINECONE_API_KEY: str = Field(..., env="PINECONE_API_KEY")
+    PINECONE_ENV: str = Field("us-west1-gcp", env="PINECONE_ENV")
+    PINECONE_INDEX: str = Field("ich-specialist", env="PINECONE_INDEX")
+
+    # Scheduler
+    INGEST_INTERVAL_SEC: int = Field(86400, env="INGEST_INTERVAL_SEC")
+    CSR_POLL_INTERVAL_SEC: int = Field(60, env="CSR_POLL_INTERVAL_SEC")
+
+    class Config:
+        env_file = ".env"
+        case_sensitive = True
+
+    @validator("CSR_DIR", "GUIDELINES_DIR")
+    def ensure_dir_format(cls, v):
+        return v if v.endswith('/') else v + '/'
+
+settings = Settings()
+
+
+# File: ingestion.py
+import json
+import logging
+import os
+import time
+from pathlib import Path
+import requests
+from bs4 import BeautifulSoup
+from .config import settings
+from .parser import extract_text
+from .indexer import index_document
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s: %(message)s')
+
+# Initialize processed log
+Path(settings.GUIDELINES_DIR).mkdir(parents=True, exist_ok=True)
+if not Path(settings.PROCESSED_LOG).exists():
+    with open(settings.PROCESSED_LOG, 'w') as f:
+        json.dump({"guidelines": [], "csrs": []}, f)
+
+
+def load_processed():
+    with open(settings.PROCESSED_LOG) as f:
+        return json.load(f)
+
+
+def save_processed(data):
+    with open(settings.PROCESSED_LOG, 'w') as f:
+        json.dump(data, f, indent=2)
+
+
+def fetch_and_index_guidelines():
+    logging.info("Starting ICH guideline fetch")
+    resp = requests.get(settings.ICH_BASE_URL)
+    resp.raise_for_status()
+    soup = BeautifulSoup(resp.text, 'html.parser')
+    links = [a['href'] for a in soup.select('a') if a.get('href', '').endswith('.pdf')]
+    data = load_processed()
+
+    for url in links:
+        fname = os.path.basename(url)
+        if fname in data['guidelines']:
+            continue
+        local_path = os.path.join(settings.GUIDELINES_DIR, fname)
+        logging.info(f"Downloading {url} to {local_path}")
+        r = requests.get(url)
+        r.raise_for_status()
+        with open(local_path, 'wb') as f:
+            f.write(r.content)
+        _process_file(local_path, 'ICH Guideline')
+        data['guidelines'].append(fname)
+        save_processed(data)
+    logging.info("Completed guideline fetch")
+
+
+def watch_and_index_csrs():
+    logging.info("Starting CSR watch loop")
+    data = load_processed()
+    while True:
+        try:
+            all_files = set(os.listdir(settings.CSR_DIR))
+            new_files = all_files - set(data['csrs'])
+            for fname in sorted(new_files):
+                path = os.path.join(settings.CSR_DIR, fname)
+                logging.info(f"Indexing new CSR {path}")
+                _process_file(path, 'CSR')
+                data['csrs'].append(fname)
+                save_processed(data)
+            time.sleep(settings.CSR_POLL_INTERVAL_SEC)
+        except Exception as e:
+            logging.error(f"Error in CSR watch loop: {e}")
+            time.sleep(settings.CSR_POLL_INTERVAL_SEC)
+
+
+def _process_file(filepath: str, doc_type: str):
+    try:
+        text = extract_text(filepath)
+        metadata = {'source': os.path.basename(filepath), 'type': doc_type}
+        index_document(text, metadata)
+        logging.info(f"Successfully indexed {doc_type}: {filepath}")
+    except Exception as e:
+        logging.error(f"Failed to process {filepath}: {e}")
+
+
+# Optional: run ingestion as standalone
+if __name__ == '__main__':
+    while True:
+        fetch_and_index_guidelines()
+        watch_and_index_csrs()
+
+
+# File: parser.py (unchanged except imports)
+import os
+import logging
+from tika import parser as tika_parser
+import pdfplumber
+import pytesseract
+from PIL import Image
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s: %(message)s')
+
+def extract_text(path: str) -> str:
+    ext = os.path.splitext(path)[1].lower()
+    text = ''
+    try:
+        if ext == '.pdf':
+            with pdfplumber.open(path) as pdf:
+                for p in pdf.pages:
+                    text += (p.extract_text() or '') + '\n'
+        else:
+            raw = tika_parser.from_file(path)
+            text = raw.get('content', '')
+    except Exception:
+        raw = tika_parser.from_file(path)
+        text = raw.get('content', '')
+
+    if len(text.strip()) < 200:
+        logging.info(f"OCR fallback on {path}")
+        img = Image.open(path)
+        text += pytesseract.image_to_string(img)
+    return text
+
+
+# File: indexer.py (enhanced error reporting)
+import logging
+from .config import settings
+import openai
+import pinecone
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s: %(message)s')
+
+openai.api_key = settings.OPENAI_API_KEY
+pinecone.init(api_key=settings.PINECONE_API_KEY, environment=settings.PINECONE_ENV)
+if settings.PINECONE_INDEX not in pinecone.list_indexes():
+    pinecone.create_index(settings.PINECONE_INDEX, dimension=1536)
+index = pinecone.Index(settings.PINECONE_INDEX)
+
+
+def index_document(text: str, metadata: dict):
+    paras = [p.strip() for p in text.split('\n\n') if len(p.strip()) > 100]
+    for i, p in enumerate(paras):
+        try:
+            resp = openai.Embedding.create(input=p, model='text-embedding-ada-002')
+            embedding = resp['data'][0]['embedding']
+            entry_id = f"{metadata['source']}_{i}"
+            index.upsert([(entry_id, embedding, {**metadata, 'text': p})])
+        except Exception as e:
+            logging.error(f"Error indexing paragraph {i} of {metadata['source']}: {e}")
+
+
+def query_similar(query: str, top_k: int = 5):
+    resp = openai.Embedding.create(input=query, model='text-embedding-ada-002')
+    q_emb = resp['data'][0]['embedding']
+    return index.query(q_emb, top_k=top_k, include_metadata=True)
+
+
+# File: agent.py (async, production-ready)
+import logging
+import openai
+import os
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from .indexer import query_similar
+from .config import settings
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s: %(message)s')
+app = FastAPI(
+    title='TrialSage ICH Specialist & Project Co-Pilot',
+    description='Provides ICH guideline retrieval, compliance validation, and project task suggestions.',
+    version='1.0.0'
+)
+openai.api_key = settings.OPENAI_API_KEY
+
+class ICHQuery(BaseModel):
+    question: str
+    module: str  # E.g., 'protocol', 'csr_review', 'cmc'
+
+@app.post('/api/ich-agent', tags=['ich'])
+async def ich_agent(q: ICHQuery):
+    try:
+        hits = query_similar(q.question)
+        snippets = [f"[{m['metadata']['source']}] {m['metadata']['text'][:150]}..." for m in hits['matches']]
+        system_msg = 'You are TrialSage’s ICH compliance expert and project manager.'
+        user_msg = (
+            f"Module: {q.module}\nQuestion: {q.question}\n\n" + "\n".join(snippets)
+        )
+        resp = await openai.ChatCompletion.acreate(
+            model='gpt-4o',
+            messages=[
+                {'role': 'system', 'content': system_msg},
+                {'role': 'user', 'content': user_msg}
+            ]
+        )
+        answer = resp.choices[0].message.content
+        tasks = _generate_tasks(answer, q.module)
+        return {'answer': answer, 'tasks': tasks, 'sources': [m['metadata']['source'] for m in hits['matches'][:3]]}
+    except Exception as e:
+        logging.error(f"ICH agent error: {e}")
+        raise HTTPException(status_code=500, detail='Internal server error')
+
+
+def _generate_tasks(answer: str, module: str):
+    tasks = []
+    lower = answer.lower()
+    if 'validate' in lower:
+        tasks.append({'title': 'Validate ICH compliance', 'module': module})
+    if 'review' in lower:
+        tasks.append({'title': 'Review suggested edits', 'module': module})
+    tasks.append({'title': f'Follow up on {module} action items', 'module': module})
+    return tasks
