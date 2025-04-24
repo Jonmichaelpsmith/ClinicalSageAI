@@ -81,7 +81,7 @@ export default function HomeMarketingPage() {
                     <p className="text-[11px] text-gray-600">Enterprise-grade document intelligence</p>
                   </div>
                   <div className="grid grid-cols-1 gap-2">
-                    <Link to="/INDWizard" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
+                    <Link to="/ind/wizard" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
                       <div className="w-7 h-7 rounded bg-blue-100 flex items-center justify-center mr-2">
                         <FileCheck className="h-3 w-3 text-blue-700" />
                       </div>
@@ -155,7 +155,7 @@ export default function HomeMarketingPage() {
                     <p className="text-[11px] text-gray-600">FDA, EMA, and PMDA compliance tools</p>
                   </div>
                   <div className="grid grid-cols-1 gap-2">
-                    <Link to="/INDWizard" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
+                    <Link to="/ind/wizard" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
                       <div className="w-7 h-7 rounded bg-blue-100 flex items-center justify-center mr-2">
                         <FileCheck className="h-3 w-3 text-blue-700" />
                       </div>
