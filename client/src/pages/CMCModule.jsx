@@ -98,7 +98,7 @@ import {
   Layers,
   RotateCw,
   Share2,
-  Workflow,
+  GitMerge as Workflow,
   ListChecks
 } from 'lucide-react';
 import {
