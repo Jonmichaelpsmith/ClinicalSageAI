@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import SpecificationAnalyzer from '../components/cmc/SpecificationAnalyzer';
+import MethodValidationGenerator from '../components/cmc/MethodValidationGenerator';
+import BatchRecordGenerator from '../components/cmc/BatchRecordGenerator';
+import FormulationPredictor from '../components/cmc/FormulationPredictor';
+import CMCDocumentHub from '../components/cmc/CMCDocumentHub';
+import SubmissionPreparator from '../components/cmc/SubmissionPreparator';
+import RegulatoryIntelligence from '../components/cmc/RegulatoryIntelligence';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -1598,22 +1605,22 @@ const CMCModule = () => {
             
             {/* Import SpecificationAnalyzer */}
             <div className="my-4">
-              {React.createElement(require('../components/cmc/SpecificationAnalyzer').default)}
+              <SpecificationAnalyzer />
             </div>
             
             {/* Import MethodValidationGenerator */}
             <div className="my-4">
-              {React.createElement(require('../components/cmc/MethodValidationGenerator').default)}
+              <MethodValidationGenerator />
             </div>
             
             {/* Import BatchRecordGenerator */}
             <div className="my-4">
-              {React.createElement(require('../components/cmc/BatchRecordGenerator').default)}
+              <BatchRecordGenerator />
             </div>
             
             {/* Import FormulationPredictor */}
             <div className="my-4">
-              {React.createElement(require('../components/cmc/FormulationPredictor').default)}
+              <FormulationPredictor />
             </div>
             
             <Card className="shadow-sm">

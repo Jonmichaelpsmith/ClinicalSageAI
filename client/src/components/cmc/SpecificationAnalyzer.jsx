@@ -4,419 +4,307 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from '@/components/ui/progress';
-import { RefreshCw, Check, X, AlertTriangle, ChevronRight, Download, Copy, Microscope, FileText } from 'lucide-react';
+import { 
+  RefreshCw, 
+  Upload, 
+  FileText, 
+  CheckCircle, 
+  AlertTriangle, 
+  XCircle,
+  BarChart,
+  Download,
+  Search,
+  ArrowRight
+} from 'lucide-react';
 import { assessRegulatoryCompliance, simulateOpenAIResponse } from '../../services/openaiService';
 import { useToast } from '@/hooks/use-toast';
 
 /**
- * SpecificationAnalyzer component
+ * SpecificationAnalyzer
  * 
- * This component uses GPT-4o to analyze drug product specifications against
- * global regulatory requirements, providing real-time feedback and suggestions
- * for improvements based on latest regulatory expectations.
+ * Component that analyzes pharmaceutical specifications for regulatory compliance
+ * using OpenAI's GPT-4o capabilities.
  */
 const SpecificationAnalyzer = () => {
   const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState('upload');
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('input');
-  const [specType, setSpecType] = useState('drug-product');
-  const [selectedRegions, setSelectedRegions] = useState(['FDA']);
-  const [specJSON, setSpecJSON] = useState('');
+  const [specificationText, setSpecificationText] = useState('');
+  const [fileName, setFileName] = useState('');
   const [productName, setProductName] = useState('');
-  const [results, setResults] = useState(null);
-
-  // Market regions
-  const regions = [
-    { id: 'FDA', name: 'FDA (US)' },
-    { id: 'EMA', name: 'EMA (EU)' },
-    { id: 'PMDA', name: 'PMDA (Japan)' },
-    { id: 'NMPA', name: 'NMPA (China)' },
-    { id: 'HC', name: 'Health Canada' }
-  ];
-
-  // Specification templates by type
-  const specTemplates = {
-    'drug-product': `{
-  "product_name": "Example Tablet",
-  "dosage_form": "Film-coated tablet",
-  "strength": "10 mg",
-  "tests": [
-    {
-      "name": "Description",
-      "acceptance_criteria": "White to off-white, oval-shaped, film-coated tablet debossed with '10' on one side",
-      "method": "Visual"
-    },
-    {
-      "name": "Identification",
-      "acceptance_criteria": "Retention time of the main peak corresponds to that of the reference standard",
-      "method": "HPLC"
-    },
-    {
-      "name": "Assay",
-      "acceptance_criteria": "95.0-105.0% of labeled amount",
-      "method": "HPLC"
-    },
-    {
-      "name": "Dissolution",
-      "acceptance_criteria": "NLT 80% (Q) dissolved in 30 minutes",
-      "method": "USP <711>"
-    },
-    {
-      "name": "Related Substances",
-      "acceptance_criteria": "Any individual impurity: NMT 0.2%; Total impurities: NMT 1.0%",
-      "method": "HPLC"
-    }
-  ]
-}`,
-    'drug-substance': `{
-  "substance_name": "Example API",
-  "tests": [
-    {
-      "name": "Description",
-      "acceptance_criteria": "White to off-white crystalline powder",
-      "method": "Visual"
-    },
-    {
-      "name": "Identification",
-      "acceptance_criteria": "IR spectrum of the sample corresponds to that of the reference standard",
-      "method": "IR Spectroscopy"
-    },
-    {
-      "name": "Assay",
-      "acceptance_criteria": "98.0-102.0% (on dried basis)",
-      "method": "HPLC"
-    },
-    {
-      "name": "Related Substances",
-      "acceptance_criteria": "Any individual specified impurity: NMT 0.15%; Any individual unspecified impurity: NMT 0.10%; Total impurities: NMT 0.5%",
-      "method": "HPLC"
-    },
-    {
-      "name": "Residual Solvents",
-      "acceptance_criteria": "Methanol: NMT 3000 ppm; Acetone: NMT 5000 ppm",
-      "method": "GC"
-    },
-    {
-      "name": "Water Content",
-      "acceptance_criteria": "NMT 0.5%",
-      "method": "Karl Fischer"
-    }
-  ]
-}`,
-    'analytical-method': `{
-  "method_name": "HPLC Assay Method",
-  "parameters": {
-    "column": "C18, 150 mm × 4.6 mm, 5 μm",
-    "mobile_phase": "Phosphate buffer pH 3.5:Acetonitrile (65:35)",
-    "flow_rate": "1.0 mL/min",
-    "detection": "UV at 254 nm",
-    "injection_volume": "20 μL",
-    "run_time": "15 minutes"
-  },
-  "validation_characteristics": [
-    {
-      "parameter": "Specificity",
-      "acceptance_criteria": "No interference at the retention time of analyte"
-    },
-    {
-      "parameter": "Linearity",
-      "acceptance_criteria": "r² ≥ 0.99 over 70-130% of test concentration"
-    },
-    {
-      "parameter": "Accuracy",
-      "acceptance_criteria": "Recovery 98.0-102.0% for 80%, 100%, and 120% of test concentration"
-    },
-    {
-      "parameter": "Precision",
-      "acceptance_criteria": "RSD ≤ 2.0% for 6 replicates"
-    }
-  ]
-}`
+  const [targetRegions, setTargetRegions] = useState(['FDA', 'EMA', 'ICH']);
+  const [analysisResult, setAnalysisResult] = useState(null);
+  
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    setFileName(file.name);
+    
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setSpecificationText(event.target.result);
+    };
+    reader.readAsText(file);
   };
-
-  const handleTemplateLoad = () => {
-    setSpecJSON(specTemplates[specType] || '');
-    toast({
-      title: "Template Loaded",
-      description: `${specType.replace('-', ' ')} specification template loaded successfully.`,
-    });
-  };
-
-  const toggleRegion = (regionId) => {
-    setSelectedRegions(prev => 
-      prev.includes(regionId)
-        ? prev.filter(r => r !== regionId)
-        : [...prev, regionId]
-    );
-  };
-
+  
   const handleAnalyze = async () => {
-    if (!specJSON.trim()) {
+    if (!specificationText.trim()) {
       toast({
-        title: "Input Required",
-        description: "Please enter specification data to analyze.",
+        title: "No Content to Analyze",
+        description: "Please upload or paste specification content.",
         variant: "destructive"
       });
       return;
     }
-
-    if (selectedRegions.length === 0) {
-      toast({
-        title: "Region Required",
-        description: "Please select at least one regulatory region.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setLoading(true);
-    setActiveTab('results');
-
+    
     try {
-      // Parse JSON to validate format
-      let specData;
-      try {
-        specData = JSON.parse(specJSON);
-      } catch (e) {
-        throw new Error("Invalid JSON format. Please check your input.");
-      }
-
-      // In a real implementation, we would call the API
-      // For demo purposes, we're using the simulation
-      // const response = await assessRegulatoryCompliance({
-      //   specification: specData,
-      //   productName: productName || specData.product_name || specData.substance_name,
-      //   type: specType,
-      //   regions: selectedRegions
-      // });
-
-      // Use simulated response for development
-      const mockData = {
-        type: specType,
-        regions: selectedRegions,
-        specificationData: specData
+      setLoading(true);
+      setActiveTab('results');
+      
+      // In a real implementation, this would call the OpenAI API through a backend endpoint
+      const request = {
+        documentType: 'specification',
+        content: specificationText,
+        productName: productName,
+        targetRegions: targetRegions
       };
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2500));
+      // Simulate API call for demo purposes
+      await new Promise(resolve => setTimeout(resolve, 3000));
       
-      // Generate a realistic assessment response
-      const analysisResults = {
-        overall: {
-          complianceScore: 83,
-          summary: "The specification is generally compliant with regulatory requirements, but has some areas that need attention before submission.",
-          criticalIssues: 2,
-          minorIssues: 5
-        },
-        regionalAssessments: {
-          FDA: {
-            score: 88,
-            compliant: true,
-            issues: [
-              {
-                severity: "critical",
-                test: "Related Substances",
-                description: "Individual unspecified impurities limit of 0.2% exceeds the FDA recommended threshold of 0.10% for this class of compound.",
-                recommendation: "Consider tightening the specification to NMT 0.10% for unspecified impurities to align with ICH Q3A(R2) guidelines and current FDA expectations."
-              },
-              {
-                severity: "minor",
-                test: "Dissolution",
-                description: "The dissolution method lacks sufficient detail on the dissolution medium and apparatus.",
-                recommendation: "Specify the dissolution medium composition, pH, and apparatus type (USP 1 or 2) to ensure method reproducibility."
-              }
-            ],
-            strengths: [
-              "Assay limits are appropriately tight for this dosage form",
-              "Identification methods are suitable for regulatory submission"
-            ]
-          },
-          EMA: {
-            score: 79,
-            compliant: false,
-            issues: [
-              {
-                severity: "critical",
-                test: "Elemental Impurities",
-                description: "Missing required test for elemental impurities according to ICH Q3D.",
-                recommendation: "Add elemental impurities testing according to ICH Q3D requirements, which is mandatory for EMA submissions."
-              },
-              {
-                severity: "minor",
-                test: "Related Substances",
-                description: "Specification does not include individual reporting thresholds for impurities.",
-                recommendation: "Add reporting threshold (typically 0.05%) for related substances to comply with EMA expectations."
-              },
-              {
-                severity: "minor",
-                test: "Description",
-                description: "Description is not specific enough about color variation accepted.",
-                recommendation: "Provide more specific acceptance criteria for the color range to align with EMA expectations for precise specifications."
-              }
-            ],
-            strengths: [
-              "Assay limits are appropriate for this type of product",
-              "Overall format is consistent with EMA expectations"
-            ]
-          }
-        },
-        methodAssessment: {
-          adequacy: 85,
-          suggestions: [
-            "Consider adding forced degradation studies to further demonstrate specificity",
-            "For HPLC methods, include system suitability parameters with acceptance criteria"
-          ]
-        },
-        compendialAlignment: {
-          compliant: true,
-          notes: "Methods reference appropriate pharmacopeial procedures where applicable."
-        },
-        recommendedUpdates: [
+      // Generate analysis with a simulation of what OpenAI would return
+      const result = {
+        issues: [
           {
-            test: "Related Substances",
-            currentCriteria: "Any individual impurity: NMT 0.2%; Total impurities: NMT 1.0%",
-            recommendedCriteria: "Any individual specified impurity: NMT 0.2%; Any individual unspecified impurity: NMT 0.10%; Total impurities: NMT 1.0%",
-            justification: "To align with ICH Q3A(R2) guidelines and current global regulatory expectations."
+            severity: 'Critical',
+            description: 'Acceptance criteria for dissolution test does not include time point',
+            location: 'Section 3.2.P.5.1',
+            recommendation: 'Add specific time point (e.g., "Q=80% in 30 minutes") to dissolution acceptance criteria'
           },
           {
-            test: "Elemental Impurities",
-            currentCriteria: "Not included",
-            recommendedCriteria: "As per ICH Q3D: Cd: NMT 0.5 ppm; Pb: NMT 0.5 ppm; As: NMT 1.5 ppm; Hg: NMT 3 ppm; Other Class 1/2A as applicable",
-            justification: "Required for EMA submissions and increasingly expected by other regulatory authorities."
+            severity: 'Major',
+            description: 'Missing validation data for analytical method',
+            location: 'Section 3.2.P.5.3',
+            recommendation: 'Include method validation data including linearity, precision, accuracy, and specificity'
+          },
+          {
+            severity: 'Minor',
+            description: 'Inconsistent terminology used for excipients',
+            location: 'Throughout document',
+            recommendation: 'Standardize terminology according to pharmacopoeial nomenclature'
           }
+        ],
+        regulatoryAlignment: {
+          FDA: 92,
+          EMA: 85,
+          ICH: 90,
+          WHO: 88
+        },
+        overallScore: 88,
+        summary: "The specification is generally well-structured but contains some regulatory gaps. The document follows ICH Q6A format but lacks some details required by FDA and EMA. Critical issues include incomplete dissolution criteria and missing validation data for analytical methods. Addressing these issues would improve regulatory compliance significantly.",
+        improvementRecommendations: [
+          "Add specific time points to all dissolution criteria",
+          "Include complete analytical method validation data",
+          "Standardize excipient terminology across the document",
+          "Add detailed stability protocol with specific sampling points",
+          "Include reference to pharmacopoeial methods where applicable"
         ]
       };
-
-      setResults(analysisResults);
+      
+      setAnalysisResult(result);
+      
+      toast({
+        title: "Analysis Complete",
+        description: "The specification has been analyzed successfully."
+      });
     } catch (error) {
       toast({
         title: "Analysis Failed",
         description: error.message || "An error occurred during analysis.",
         variant: "destructive"
       });
+      setActiveTab('upload');
     } finally {
       setLoading(false);
     }
   };
-
-  // Helper function to get color based on compliance score
-  const getScoreColor = (score) => {
-    if (score >= 90) return "text-green-600 dark:text-green-400";
-    if (score >= 75) return "text-amber-600 dark:text-amber-400";
-    return "text-red-600 dark:text-red-400";
+  
+  const getSeverityColor = (severity) => {
+    switch (severity) {
+      case 'Critical':
+        return 'text-red-800 dark:text-red-300 bg-red-100 dark:bg-red-950/30 border-red-200 dark:border-red-900';
+      case 'Major':
+        return 'text-orange-800 dark:text-orange-300 bg-orange-100 dark:bg-orange-950/30 border-orange-200 dark:border-orange-900';
+      case 'Minor':
+        return 'text-yellow-800 dark:text-yellow-300 bg-yellow-100 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-900';
+      default:
+        return 'text-gray-800 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700';
+    }
   };
-
-  // Helper function to get color class for progress bar
-  const getProgressColor = (score) => {
-    if (score >= 90) return "bg-green-600";
-    if (score >= 75) return "bg-amber-600";
-    return "bg-red-600";
-  };
-
-  // Helper to copy text to clipboard
-  const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text).then(() => {
-      toast({
-        title: "Copied",
-        description: "Content copied to clipboard."
-      });
-    });
-  };
-
+  
   return (
     <Card className="w-full shadow-md border-2 border-black dark:border-white">
       <CardHeader className="bg-black text-white dark:bg-white dark:text-black">
         <CardTitle className="text-xl flex items-center gap-2">
-          <Microscope className="h-5 w-5" />
+          <Search className="h-5 w-5" />
           Specification Analyzer (GPT-4o Powered)
         </CardTitle>
         <CardDescription className="text-gray-300 dark:text-gray-700">
-          Analyze product specifications against global regulatory requirements
+          Analyze pharmaceutical specifications for regulatory compliance and improvement opportunities
         </CardDescription>
       </CardHeader>
       <CardContent className="p-0">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="w-full rounded-none">
-            <TabsTrigger value="input" className="flex-1">Input</TabsTrigger>
-            <TabsTrigger value="results" className="flex-1" disabled={!results && !loading}>Results</TabsTrigger>
+            <TabsTrigger value="upload" className="flex-1">Upload Specification</TabsTrigger>
+            <TabsTrigger value="results" className="flex-1" disabled={!analysisResult && !loading}>Analysis Results</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="input" className="p-4 space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="spec-type">Specification Type</Label>
-              <Select value={specType} onValueChange={setSpecType}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="drug-product">Drug Product Specification</SelectItem>
-                  <SelectItem value="drug-substance">Drug Substance (API) Specification</SelectItem>
-                  <SelectItem value="analytical-method">Analytical Method</SelectItem>
-                </SelectContent>
-              </Select>
+          <TabsContent value="upload" className="p-6 space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="product-name">Product Name</Label>
+                  <Input 
+                    id="product-name" 
+                    placeholder="Enter product name"
+                    value={productName}
+                    onChange={(e) => setProductName(e.target.value)}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Target Regions</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {['FDA', 'EMA', 'ICH', 'WHO', 'PMDA', 'NMPA'].map(region => (
+                      <Badge 
+                        key={region}
+                        variant={targetRegions.includes(region) ? "default" : "outline"}
+                        className="cursor-pointer"
+                        onClick={() => {
+                          if (targetRegions.includes(region)) {
+                            setTargetRegions(targetRegions.filter(r => r !== region));
+                          } else {
+                            setTargetRegions([...targetRegions, region]);
+                          }
+                        }}
+                      >
+                        {region}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="file-upload">Upload Specification Document</Label>
+                  <div className="flex items-center justify-center w-full">
+                    <label
+                      htmlFor="file-upload"
+                      className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-900 hover:bg-gray-100 dark:border-gray-600"
+                    >
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <Upload className="w-8 h-8 mb-2 text-gray-500 dark:text-gray-400" />
+                        <p className="mb-1 text-sm text-gray-500 dark:text-gray-400">
+                          <span className="font-semibold">Click to upload</span> or drag and drop
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          PDF, DOCX, or TXT (Max 10MB)
+                        </p>
+                      </div>
+                      <input
+                        id="file-upload"
+                        type="file"
+                        className="hidden"
+                        accept=".pdf,.docx,.txt"
+                        onChange={handleFileChange}
+                      />
+                    </label>
+                  </div>
+                  {fileName && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Selected file: {fileName}
+                    </p>
+                  )}
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="specification-text">Or Paste Specification Text</Label>
+                <Textarea
+                  id="specification-text"
+                  placeholder="Paste specification content here..."
+                  className="min-h-[200px]"
+                  value={specificationText}
+                  onChange={(e) => setSpecificationText(e.target.value)}
+                />
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Paste the specification text directly or upload a file above. The AI will analyze the content for regulatory compliance.
+                </p>
+              </div>
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="product-name">Product/Material Name (Optional)</Label>
-              <Input
-                id="product-name"
-                placeholder="Enter product or material name"
-                value={productName}
-                onChange={(e) => setProductName(e.target.value)}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <Label htmlFor="regions">Target Regulatory Regions</Label>
-                <span className="text-xs text-gray-500 dark:text-gray-400">Select all that apply</span>
+            <div className="space-y-2 mt-4">
+              <Label>Example Specification</Label>
+              <div className="border p-4 rounded bg-gray-50 dark:bg-gray-900 text-sm text-gray-700 dark:text-gray-300">
+                <p className="font-medium mb-2">Example Tablet Specification Format:</p>
+                <pre className="whitespace-pre-wrap text-xs">
+                  {`Product Name: [Your Product]
+Dosage Form: Tablets
+Strength: [X] mg
+
+1. Description
+   - White to off-white, round, biconvex tablets debossed with "[X]" on one side and plain on the other side.
+
+2. Identification
+   - Test A: IR Spectroscopy - The spectrum of the sample preparation exhibits maxima at the same wavelengths as that of the standard preparation.
+   - Test B: HPLC Retention Time - The retention time of the major peak in the chromatogram of the assay preparation corresponds to that in the chromatogram of the standard preparation.
+
+3. Assay
+   - HPLC Method
+   - Acceptance Criteria: 95.0% - 105.0% of the labeled amount
+
+4. Dissolution
+   - USP Apparatus 2 (Paddle), 50 rpm
+   - Medium: 900 mL of 0.1 N HCl
+   - Acceptance Criteria: NLT 80% (Q) dissolved
+
+5. Uniformity of Dosage Units
+   - USP <905>
+   - Acceptance Criteria: L1 = 15.0, L2 = 25.0
+
+6. Related Substances
+   - HPLC Method
+   - Acceptance Criteria:
+     * Any individual impurity: NMT 0.2%
+     * Total impurities: NMT 1.0%
+
+7. Water Content
+   - USP <921> Method I
+   - Acceptance Criteria: NMT 5.0%
+
+8. Residual Solvents
+   - USP <467>
+   - Acceptance Criteria: Per ICH Q3C
+
+9. Microbial Limits
+   - USP <61> and <62>
+   - Acceptance Criteria:
+     * Total aerobic microbial count: NMT 1000 CFU/g
+     * Total combined yeasts and molds: NMT 100 CFU/g
+     * Absence of Escherichia coli
+
+10. Packaging and Storage
+    - Store at controlled room temperature, 20°C to 25°C (68°F to 77°F).
+    - Protect from moisture.`}
+                </pre>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {regions.map(region => (
-                  <Badge
-                    key={region.id}
-                    variant="outline"
-                    className={`cursor-pointer ${
-                      selectedRegions.includes(region.id) 
-                        ? 'bg-indigo-100 dark:bg-indigo-900 border-indigo-300 dark:border-indigo-700 text-indigo-800 dark:text-indigo-200' 
-                        : ''
-                    }`}
-                    onClick={() => toggleRegion(region.id)}
-                  >
-                    {selectedRegions.includes(region.id) && (
-                      <Check className="mr-1 h-3 w-3" />
-                    )}
-                    {region.name}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <Label htmlFor="spec-json">Specification JSON</Label>
-                <Button variant="outline" size="sm" onClick={handleTemplateLoad} className="text-xs">
-                  Load Template
-                </Button>
-              </div>
-              <Textarea
-                id="spec-json"
-                className="font-mono h-60 text-sm"
-                placeholder='Enter specification in JSON format'
-                value={specJSON}
-                onChange={(e) => setSpecJSON(e.target.value)}
-              />
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Enter your product specification in JSON format. Include test names, acceptance criteria, and methods.
-              </p>
             </div>
           </TabsContent>
           
@@ -425,157 +313,156 @@ const SpecificationAnalyzer = () => {
               <div className="flex flex-col items-center justify-center p-12 space-y-4">
                 <RefreshCw className="h-10 w-10 text-indigo-600 animate-spin" />
                 <div className="text-center">
-                  <p className="font-medium">Analyzing with GPT-4o...</p>
+                  <p className="font-medium">Analyzing Specification with GPT-4o...</p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Evaluating specifications against {selectedRegions.join(', ')} requirements
+                    The AI is reviewing your specification for regulatory compliance and improvement opportunities.
                   </p>
                 </div>
               </div>
-            ) : results ? (
-              <div className="p-0">
-                <div className="bg-indigo-50 dark:bg-indigo-950/30 p-4 border-b border-indigo-100 dark:border-indigo-900">
-                  <div className="flex flex-col md:flex-row justify-between gap-4">
-                    <div>
-                      <h3 className="font-semibold text-black dark:text-white">Overall Compliance Assessment</h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {results.overall.summary}
-                      </p>
+            ) : analysisResult ? (
+              <div className="p-6 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h3 className="text-lg font-medium mb-2 text-black dark:text-white">Analysis Summary</h3>
+                    <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">
+                      {analysisResult.summary}
+                    </p>
+                    
+                    <div className="space-y-4">
+                      <div>
+                        <h4 className="text-sm font-medium mb-2 text-black dark:text-white">Overall Compliance Score</h4>
+                        <div className="flex items-center gap-2">
+                          <Progress value={analysisResult.overallScore} className="h-2.5 flex-1" />
+                          <span className="text-sm font-medium">{analysisResult.overallScore}%</span>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <h4 className="text-sm font-medium mb-2 text-black dark:text-white">Regulatory Alignment</h4>
+                        <div className="space-y-3">
+                          {Object.entries(analysisResult.regulatoryAlignment).map(([agency, score]) => (
+                            <div key={agency} className="space-y-1">
+                              <div className="flex justify-between text-xs">
+                                <span>{agency}</span>
+                                <span>{score}%</span>
+                              </div>
+                              <Progress value={score} className="h-1.5" />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex flex-col items-center">
-                      <div className={`text-xl font-bold ${getScoreColor(results.overall.complianceScore)}`}>
-                        {results.overall.complianceScore}%
-                      </div>
-                      <div className="w-24 mt-1">
-                        <Progress value={results.overall.complianceScore} className={`h-2 ${getProgressColor(results.overall.complianceScore)}`} />
-                      </div>
-                      <div className="flex gap-4 mt-2 text-xs">
-                        <div className="flex items-center">
-                          <AlertTriangle className="h-3 w-3 text-red-500 mr-1" />
-                          <span className="text-black dark:text-white">{results.overall.criticalIssues} critical</span>
-                        </div>
-                        <div className="flex items-center">
-                          <AlertTriangle className="h-3 w-3 text-amber-500 mr-1" />
-                          <span className="text-black dark:text-white">{results.overall.minorIssues} minor</span>
-                        </div>
-                      </div>
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-lg font-medium mb-2 text-black dark:text-white">Identified Issues</h3>
+                    <div className="space-y-3">
+                      {analysisResult.issues.map((issue, index) => (
+                        <Alert key={index} className={getSeverityColor(issue.severity)}>
+                          <div className="flex justify-between">
+                            <div className="flex gap-2 items-start">
+                              {issue.severity === 'Critical' ? (
+                                <XCircle className="h-4 w-4 mt-0.5" />
+                              ) : issue.severity === 'Major' ? (
+                                <AlertTriangle className="h-4 w-4 mt-0.5" />
+                              ) : (
+                                <CheckCircle className="h-4 w-4 mt-0.5" />
+                              )}
+                              <div>
+                                <AlertTitle className="text-sm">{issue.description}</AlertTitle>
+                                <AlertDescription className="text-xs mt-1">
+                                  <strong>Location:</strong> {issue.location}
+                                  <br />
+                                  <strong>Recommendation:</strong> {issue.recommendation}
+                                </AlertDescription>
+                              </div>
+                            </div>
+                            <Badge variant="outline" className="h-fit">
+                              {issue.severity}
+                            </Badge>
+                          </div>
+                        </Alert>
+                      ))}
                     </div>
                   </div>
                 </div>
                 
-                <ScrollArea className="h-[400px] p-4">
-                  <div className="space-y-6">
-                    {/* Regional Assessments */}
-                    {Object.entries(results.regionalAssessments).map(([region, assessment]) => (
-                      <div key={region} className="border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden">
-                        <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800">
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-medium text-black dark:text-white">{regions.find(r => r.id === region)?.name || region}</h3>
-                            <Badge className={assessment.compliant ? 'bg-green-600' : 'bg-amber-600'}>
-                              {assessment.score}%
-                            </Badge>
-                          </div>
-                          <Badge variant="outline" className={assessment.compliant ? 'text-green-600 border-green-300 dark:border-green-700' : 'text-red-600 border-red-300 dark:border-red-700'}>
-                            {assessment.compliant ? 'Compliant' : 'Non-Compliant'}
-                          </Badge>
-                        </div>
-                        
-                        <div className="p-3">
-                          {assessment.issues.length > 0 && (
-                            <div className="mb-3">
-                              <h4 className="text-sm font-medium mb-2 text-black dark:text-white">Issues</h4>
-                              <div className="space-y-2">
-                                {assessment.issues.map((issue, idx) => (
-                                  <div 
-                                    key={idx} 
-                                    className={`p-2 rounded-sm text-sm ${
-                                      issue.severity === 'critical' 
-                                        ? 'bg-red-50 dark:bg-red-950/30 border-l-2 border-red-500' 
-                                        : 'bg-amber-50 dark:bg-amber-950/30 border-l-2 border-amber-500'
-                                    }`}
-                                  >
-                                    <div className="flex items-start gap-2">
-                                      <AlertTriangle className={`h-4 w-4 mt-0.5 ${
-                                        issue.severity === 'critical' ? 'text-red-500' : 'text-amber-500'
-                                      }`} />
-                                      <div>
-                                        <p className="font-medium text-black dark:text-white">{issue.test}</p>
-                                        <p className="text-xs text-gray-700 dark:text-gray-300">{issue.description}</p>
-                                        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 italic">
-                                          Recommendation: {issue.recommendation}
-                                        </p>
-                                      </div>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                          
-                          {assessment.strengths.length > 0 && (
-                            <div>
-                              <h4 className="text-sm font-medium mb-2 text-black dark:text-white">Strengths</h4>
-                              <ul className="list-disc pl-5 text-xs space-y-1 text-gray-700 dark:text-gray-300">
-                                {assessment.strengths.map((strength, idx) => (
-                                  <li key={idx}>{strength}</li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
-                        </div>
-                      </div>
+                <div className="border rounded p-4 space-y-3 bg-gray-50 dark:bg-gray-900">
+                  <h3 className="text-lg font-medium text-black dark:text-white">Improvement Recommendations</h3>
+                  <ul className="space-y-2 pl-5 list-disc">
+                    {analysisResult.improvementRecommendations.map((rec, index) => (
+                      <li key={index} className="text-sm text-gray-700 dark:text-gray-300">{rec}</li>
                     ))}
-                    
-                    {/* Recommended Updates */}
-                    <div>
-                      <h3 className="font-semibold mb-3 text-black dark:text-white">Recommended Specification Updates</h3>
-                      <div className="border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden">
-                        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                          <thead className="bg-gray-50 dark:bg-gray-800">
-                            <tr>
-                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Test</th>
-                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Current</th>
-                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Recommended</th>
-                            </tr>
-                          </thead>
-                          <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
-                            {results.recommendedUpdates.map((update, idx) => (
-                              <tr key={idx}>
-                                <td className="px-4 py-2 text-sm text-gray-900 dark:text-gray-100">{update.test}</td>
-                                <td className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">{update.currentCriteria}</td>
-                                <td className="px-4 py-2 text-sm text-green-600 dark:text-green-400">{update.recommendedCriteria}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                  </ul>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg">Compliance Gaps by Authority</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Regulatory Authority</TableHead>
+                            <TableHead>Score</TableHead>
+                            <TableHead>Status</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {Object.entries(analysisResult.regulatoryAlignment).map(([agency, score]) => (
+                            <TableRow key={agency}>
+                              <TableCell className="font-medium">{agency}</TableCell>
+                              <TableCell>{score}%</TableCell>
+                              <TableCell>
+                                <Badge variant={score >= 90 ? "default" : score >= 80 ? "outline" : "destructive"}>
+                                  {score >= 90 ? "Compliant" : score >= 80 ? "Minor Gaps" : "Major Gaps"}
+                                </Badge>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg">Issue Severity Distribution</CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex items-center justify-center">
+                      <div className="text-center w-full space-y-3">
+                        <BarChart className="h-8 w-8 mx-auto text-gray-600 dark:text-gray-400" />
+                        <div className="flex justify-between items-center gap-3">
+                          <div className="flex-1 bg-gray-100 dark:bg-gray-800 p-3 rounded">
+                            <div className="text-red-600 dark:text-red-400 text-xl font-semibold">
+                              {analysisResult.issues.filter(i => i.severity === 'Critical').length}
+                            </div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">Critical</div>
+                          </div>
+                          <div className="flex-1 bg-gray-100 dark:bg-gray-800 p-3 rounded">
+                            <div className="text-orange-600 dark:text-orange-400 text-xl font-semibold">
+                              {analysisResult.issues.filter(i => i.severity === 'Major').length}
+                            </div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">Major</div>
+                          </div>
+                          <div className="flex-1 bg-gray-100 dark:bg-gray-800 p-3 rounded">
+                            <div className="text-yellow-600 dark:text-yellow-400 text-xl font-semibold">
+                              {analysisResult.issues.filter(i => i.severity === 'Minor').length}
+                            </div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">Minor</div>
+                          </div>
+                        </div>
                       </div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                        These updates are recommended to improve global regulatory compliance.
-                      </p>
-                    </div>
-                    
-                    {/* Method Assessment */}
-                    <div className="border border-gray-200 dark:border-gray-700 rounded-md p-4">
-                      <h3 className="font-semibold mb-2 text-black dark:text-white">Analytical Method Assessment</h3>
-                      <div className="flex items-center mb-3">
-                        <div className="font-medium mr-2 text-black dark:text-white">Method Adequacy:</div>
-                        <Badge className={getProgressColor(results.methodAssessment.adequacy)}>
-                          {results.methodAssessment.adequacy}%
-                        </Badge>
-                      </div>
-                      <h4 className="text-sm font-medium mb-1 text-black dark:text-white">Suggestions for Improvement:</h4>
-                      <ul className="list-disc pl-5 text-xs space-y-1 text-gray-700 dark:text-gray-300">
-                        {results.methodAssessment.suggestions.map((suggestion, idx) => (
-                          <li key={idx}>{suggestion}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                </ScrollArea>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
             ) : (
               <div className="p-6 text-center">
                 <p className="text-gray-500 dark:text-gray-400">
-                  Enter specification data and click "Analyze" to see results.
+                  Upload a specification to see analysis results.
                 </p>
               </div>
             )}
@@ -583,11 +470,11 @@ const SpecificationAnalyzer = () => {
         </Tabs>
       </CardContent>
       <CardFooter className="flex justify-between p-4 border-t border-gray-200 dark:border-gray-800">
-        {activeTab === 'input' ? (
+        {activeTab === 'upload' ? (
           <>
-            <Button variant="outline" onClick={() => setSpecJSON('')}>Clear</Button>
+            <Button variant="outline" onClick={() => setSpecificationText('')}>Clear</Button>
             <Button
-              disabled={loading}
+              disabled={loading || !specificationText.trim()}
               onClick={handleAnalyze}
               className="bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"
             >
@@ -598,7 +485,7 @@ const SpecificationAnalyzer = () => {
                 </>
               ) : (
                 <>
-                  <Microscope className="mr-2 h-4 w-4" />
+                  <Search className="mr-2 h-4 w-4" />
                   Analyze Specification
                 </>
               )}
@@ -606,19 +493,13 @@ const SpecificationAnalyzer = () => {
           </>
         ) : (
           <>
-            <Button variant="outline" onClick={() => setActiveTab('input')}>
-              Back to Input
+            <Button variant="outline" onClick={() => setActiveTab('upload')}>
+              Back to Upload
             </Button>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => copyToClipboard(JSON.stringify(results, null, 2))}>
-                <Copy className="mr-2 h-4 w-4" />
-                Copy Results
-              </Button>
-              <Button className="bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200">
-                <Download className="mr-2 h-4 w-4" />
-                Export Report
-              </Button>
-            </div>
+            <Button className="bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200">
+              <Download className="mr-2 h-4 w-4" />
+              Export Report
+            </Button>
           </>
         )}
       </CardFooter>
