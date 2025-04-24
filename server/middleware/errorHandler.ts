@@ -1,125 +1,161 @@
 /**
- * Global Error Handler Middleware
+ * Error Handling Middleware for TrialSage
  * 
- * This middleware provides centralized error handling for the Express application,
- * ensuring consistent error responses and proper logging.
+ * Provides consistent error handling, logging, and response formatting
+ * for all application errors.
  */
-
 import { Request, Response, NextFunction } from 'express';
-import { logger } from '../utils/logger';
+import { createContextLogger } from '../utils/logger';
 
-// Define error types for better categorization
-export enum ErrorType {
-  VALIDATION = 'VALIDATION_ERROR',
-  AUTHENTICATION = 'AUTHENTICATION_ERROR',
-  AUTHORIZATION = 'AUTHORIZATION_ERROR',
-  NOT_FOUND = 'NOT_FOUND_ERROR',
-  CONFLICT = 'CONFLICT_ERROR',
-  INTERNAL = 'INTERNAL_SERVER_ERROR',
-  EXTERNAL_SERVICE = 'EXTERNAL_SERVICE_ERROR',
-  RATE_LIMIT = 'RATE_LIMIT_ERROR',
-  INPUT = 'INPUT_ERROR'
-}
+const logger = createContextLogger({ module: 'error-handler' });
 
-// Custom error class for application errors
-export class AppError extends Error {
-  statusCode: number;
-  type: ErrorType;
-  details?: any;
-
+// Custom error class with status code
+export class ApiError extends Error {
   constructor(
-    message: string, 
-    statusCode: number = 500, 
-    type: ErrorType = ErrorType.INTERNAL, 
-    details?: any
+    public statusCode: number,
+    message: string,
+    public code?: string,
+    public details?: any
   ) {
     super(message);
-    this.statusCode = statusCode;
-    this.type = type;
-    this.details = details;
-    this.name = this.constructor.name;
-    Error.captureStackTrace(this, this.constructor);
+    this.name = 'ApiError';
+    
+    // Ensure stack trace preserves prototype chain for proper instanceof checks
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, ApiError);
+    }
   }
 }
 
 /**
- * Format error for consistent API responses
+ * Formats HTTP error responses consistently
  */
-function formatError(err: any) {
+function formatError(error: any, req: Request) {
+  // Default values
+  const statusCode = error.statusCode || 500;
+  const message = error.message || 'Internal server error';
+  const errorCode = error.code || 'UNKNOWN_ERROR';
+  
+  // Return formatted error response
   return {
     error: {
-      message: err.message || 'An unexpected error occurred',
-      type: err.type || ErrorType.INTERNAL,
-      ...(process.env.NODE_ENV !== 'production' && { stack: err.stack }),
-      ...(err.details && { details: err.details })
+      status: statusCode,
+      code: errorCode,
+      message,
+      path: req.path,
+      method: req.method,
+      timestamp: new Date().toISOString(),
+      request_id: (req as any).id,
+      details: error.details || undefined
     }
   };
-}
-
-/**
- * Not found handler - for undefined routes
- */
-export function notFoundHandler(req: Request, res: Response, next: NextFunction) {
-  const err = new AppError(
-    `Route not found: ${req.method} ${req.path}`, 
-    404, 
-    ErrorType.NOT_FOUND
-  );
-  next(err);
 }
 
 /**
  * Main error handler middleware
  */
-export function errorHandler(err: any, req: Request, res: Response, next: NextFunction) {
-  // Set default values if not provided
-  const statusCode = err.statusCode || 500;
-  const errorType = err.type || ErrorType.INTERNAL;
-  
-  // Log the error with proper context
-  const logMethod = statusCode >= 500 ? logger.error : logger.warn;
-  
-  logMethod(`${req.method} ${req.path} - ${statusCode} ${err.message}`, {
-    error: {
-      type: errorType,
-      message: err.message,
-      stack: err.stack,
-      details: err.details
-    },
-    request: {
-      method: req.method,
-      path: req.path,
-      query: req.query,
-      headers: {
-        'user-agent': req.headers['user-agent'],
-        'content-type': req.headers['content-type'],
-        'accept': req.headers['accept']
-      }
-    }
-  });
-  
-  // Prevent leaking error details in production
-  const errorResponse = formatError(err);
-  
-  // Handle various error types with appropriate fallback messages
-  let responseMessage = err.message;
-  if (statusCode === 500 && process.env.NODE_ENV === 'production') {
-    responseMessage = 'An unexpected error occurred. Our team has been notified.';
-    delete errorResponse.error.stack;
+export function errorHandler(error: any, req: Request, res: Response, next: NextFunction) {
+  // Skip if headers already sent
+  if (res.headersSent) {
+    return next(error);
   }
   
-  // Update the message for the response
-  errorResponse.error.message = responseMessage;
+  // Determine status code
+  const statusCode = error.statusCode || 500;
+  const errorResponse = formatError(error, req);
   
-  // Send error response
+  // Log error with appropriate level based on severity
+  if (statusCode >= 500) {
+    logger.error(`Server error in ${req.method} ${req.path}`, {
+      statusCode,
+      error: error.message,
+      stack: error.stack,
+      request_id: (req as any).id,
+      details: error.details || undefined
+    });
+  } else if (statusCode >= 400) {
+    logger.warn(`Client error in ${req.method} ${req.path}`, {
+      statusCode,
+      error: error.message,
+      request_id: (req as any).id
+    });
+  }
+  
+  // Send consistent response format
   res.status(statusCode).json(errorResponse);
 }
 
 /**
- * Safe async route wrapper to handle promise rejections
+ * Not found handler middleware
  */
-export function asyncHandler(fn: Function) {
+export function notFoundHandler(req: Request, res: Response) {
+  const error = new ApiError(404, `Resource not found: ${req.path}`, 'NOT_FOUND');
+  errorHandler(error, req, res, () => {});
+}
+
+/**
+ * Async handler wrapper to catch Promise rejections
+ */
+export function asyncHandler(fn: (req: Request, res: Response, next: NextFunction) => Promise<any>) {
   return (req: Request, res: Response, next: NextFunction) => {
     Promise.resolve(fn(req, res, next)).catch(next);
   };
 }
+
+/**
+ * Create a validation error
+ */
+export function createValidationError(message: string, details: any) {
+  return new ApiError(400, message, 'VALIDATION_ERROR', details);
+}
+
+/**
+ * Create an authorization error
+ */
+export function createAuthError(message = 'Unauthorized access') {
+  return new ApiError(401, message, 'UNAUTHORIZED');
+}
+
+/**
+ * Create a forbidden error
+ */
+export function createForbiddenError(message = 'Access forbidden') {
+  return new ApiError(403, message, 'FORBIDDEN');
+}
+
+/**
+ * Create a not found error
+ */
+export function createNotFoundError(resource = 'Resource') {
+  return new ApiError(404, `${resource} not found`, 'NOT_FOUND');
+}
+
+/**
+ * Create a conflict error
+ */
+export function createConflictError(message: string) {
+  return new ApiError(409, message, 'CONFLICT');
+}
+
+/**
+ * Create a rate limit error
+ */
+export function createRateLimitError(message = 'Too many requests') {
+  return new ApiError(429, message, 'RATE_LIMIT_EXCEEDED');
+}
+
+/**
+ * Create a server error
+ */
+export function createServerError(message = 'Internal server error') {
+  return new ApiError(500, message, 'SERVER_ERROR');
+}
+
+/**
+ * Create a service unavailable error
+ */
+export function createServiceUnavailableError(message = 'Service temporarily unavailable') {
+  return new ApiError(503, message, 'SERVICE_UNAVAILABLE');
+}
+
+export default errorHandler;

@@ -1,218 +1,160 @@
 /**
- * Structured Logging Utility
+ * Structured Logging System for TrialSage
  * 
- * This module provides standardized logging with structured metadata
- * to improve observability and debugging capabilities.
+ * Features:
+ * - Context-aware logging with automatic metadata
+ * - Configurable log levels and transport destinations
+ * - Log rotation for production environments
+ * - Request logging middleware for HTTP API access
  */
+import winston, { format, transports, Logger } from 'winston';
+import { Request, Response, NextFunction } from 'express';
+import path from 'path';
 
-import * as fs from 'fs';
-import * as path from 'path';
-import * as os from 'os';
-import { Request, Response } from 'express';
-
-// Log levels enum for type safety
-export enum LogLevel {
-  DEBUG = 'debug',
-  INFO = 'info',
-  WARN = 'warn',
-  ERROR = 'error',
-  CRITICAL = 'critical'
-}
-
-// Interface for structured log entries
-interface LogEntry {
-  timestamp: string;
-  level: LogLevel;
-  message: string;
-  context?: Record<string, any>;
-  service: string;
-  hostname: string;
-  pid: number;
-  [key: string]: any;
-}
-
-// Configurable log settings
-const LOG_SETTINGS = {
-  serviceName: 'trialsage',
-  minLevel: process.env.NODE_ENV === 'production' ? LogLevel.INFO : LogLevel.DEBUG,
-  logToConsole: true,
-  logToFile: true,
-  logDirectory: path.join(process.cwd(), 'logs'),
-  maxFileSize: 10 * 1024 * 1024, // 10 MB
-  maxFiles: 10
+// Define log levels and colors
+const LOG_LEVELS = {
+  error: 0,   // Errors that require immediate attention
+  warn: 1,    // Warning conditions 
+  info: 2,    // Informational messages
+  http: 3,    // HTTP request logs
+  debug: 4,   // Detailed debug information
+  trace: 5    // Very detailed tracing information
 };
 
-// Ensure log directory exists
-if (LOG_SETTINGS.logToFile) {
-  if (!fs.existsSync(LOG_SETTINGS.logDirectory)) {
-    try {
-      fs.mkdirSync(LOG_SETTINGS.logDirectory, { recursive: true });
-    } catch (err) {
-      console.error(`Failed to create log directory: ${err}`);
-      LOG_SETTINGS.logToFile = false;
-    }
-  }
+// Determine environment
+const isDevelopment = process.env.NODE_ENV !== 'production';
+
+// Configure log level based on environment
+const level = () => {
+  return isDevelopment ? 'debug' : 'info';
+};
+
+// Define custom format for console output
+const consoleFormat = format.combine(
+  format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss.SSS' }),
+  format.colorize({ all: true }),
+  format.printf((info) => {
+    const { timestamp, level, message, ...metadata } = info;
+    
+    // Extract context for cleaner logs
+    const { module, service, endpoint, ...otherMeta } = metadata;
+    
+    // Format context parts
+    const contextParts = [];
+    if (module) contextParts.push(`[${module}]`);
+    if (service) contextParts.push(`<${service}>`);
+    if (endpoint) contextParts.push(`${endpoint}`);
+    
+    const context = contextParts.length > 0 ? contextParts.join(' ') + ' ' : '';
+    
+    // Format metadata if present
+    const metaStr = Object.keys(otherMeta).length > 0 
+      ? '\n' + JSON.stringify(otherMeta, null, 2)
+      : '';
+    
+    return `${timestamp} ${level}: ${context}${message}${metaStr}`;
+  })
+);
+
+// Define JSON format for file output
+const fileFormat = format.combine(
+  format.timestamp(),
+  format.json()
+);
+
+// Define transports
+const logTransports = [
+  // Console transport (for all environments)
+  new transports.Console({
+    format: consoleFormat,
+    level: isDevelopment ? 'debug' : 'info',
+  }),
+];
+
+// Add file transport in production
+if (!isDevelopment) {
+  // Add rotating file transport for production
+  logTransports.push(
+    new transports.File({
+      filename: path.join(process.cwd(), 'logs', 'error.log'),
+      level: 'error',
+      format: fileFormat,
+      maxsize: 5242880, // 5MB
+      maxFiles: 5,
+    }),
+    new transports.File({
+      filename: path.join(process.cwd(), 'logs', 'combined.log'),
+      format: fileFormat,
+      maxsize: 5242880, // 5MB
+      maxFiles: 5,
+    })
+  );
 }
 
-// Hostname for distributed tracing
-const hostname = os.hostname();
+// Create logger instance
+export const logger = winston.createLogger({
+  level: level(),
+  levels: LOG_LEVELS,
+  format: fileFormat,
+  transports: logTransports,
+  // Don't exit on uncaught error
+  exitOnError: false,
+});
 
-/**
- * Format log entry as JSON string
- */
-function formatLogEntry(level: LogLevel, message: string, context?: Record<string, any>): string {
-  const logEntry: LogEntry = {
-    timestamp: new Date().toISOString(),
-    level,
-    message,
-    context: context || {},
-    service: LOG_SETTINGS.serviceName,
-    hostname,
-    pid: process.pid
+// Create a context logger with metadata
+export function createContextLogger(context: Record<string, any>): Logger {
+  return logger.child(context);
+}
+
+// Request logging middleware
+export function requestLogger(req: Request, res: Response, next: NextFunction) {
+  // Add unique ID to the request for tracking
+  const id = `${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+  (req as any).id = id;
+  
+  // Log request start
+  const requestLogger = createContextLogger({
+    module: 'http', 
+    method: req.method,
+    path: req.path,
+    ip: req.ip,
+    id
+  });
+  
+  // Skip health checks in logs to reduce noise
+  if (!req.path.includes('/health')) {
+    requestLogger.http(`${req.method} ${req.path} - Start`, { 
+      query: req.query,
+      headers: req.headers,
+      body: req.method !== 'GET' ? req.body : undefined
+    });
+  }
+  
+  // Track response time
+  const start = Date.now();
+  
+  // Capture original end function
+  const originalEnd = res.end;
+  
+  // Override end function to log response
+  res.end = function(...args: any[]): any {
+    const duration = Date.now() - start;
+    
+    // Skip health checks in logs to reduce noise
+    if (!req.path.includes('/health')) {
+      const level = res.statusCode >= 500 ? 'error' : 
+                    res.statusCode >= 400 ? 'warn' : 
+                    'http';
+      
+      requestLogger.log(level, `${req.method} ${req.path} - ${res.statusCode} (${duration}ms)`);
+    }
+    
+    // Call original end
+    return originalEnd.apply(res, args);
   };
   
-  return JSON.stringify(logEntry);
+  next();
 }
 
-/**
- * Write log to file with rotation
- */
-function writeToFile(formattedLog: string): void {
-  if (!LOG_SETTINGS.logToFile) return;
-  
-  const today = new Date().toISOString().split('T')[0];
-  const logFile = path.join(LOG_SETTINGS.logDirectory, `trialsage-${today}.log`);
-  
-  try {
-    // Check if file exists and needs rotation
-    if (fs.existsSync(logFile)) {
-      const stats = fs.statSync(logFile);
-      if (stats.size >= LOG_SETTINGS.maxFileSize) {
-        // Rotate file by adding timestamp to filename
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-        fs.renameSync(logFile, `${logFile}.${timestamp}`);
-        
-        // Clean up old logs if exceeding maxFiles
-        const logFiles = fs.readdirSync(LOG_SETTINGS.logDirectory)
-          .filter(file => file.startsWith('trialsage-'))
-          .sort((a, b) => {
-            const statsA = fs.statSync(path.join(LOG_SETTINGS.logDirectory, a));
-            const statsB = fs.statSync(path.join(LOG_SETTINGS.logDirectory, b));
-            return statsB.mtime.getTime() - statsA.mtime.getTime();
-          });
-          
-        if (logFiles.length > LOG_SETTINGS.maxFiles) {
-          logFiles.slice(LOG_SETTINGS.maxFiles).forEach(file => {
-            fs.unlinkSync(path.join(LOG_SETTINGS.logDirectory, file));
-          });
-        }
-      }
-    }
-    
-    // Append log to file
-    fs.appendFileSync(logFile, formattedLog + '\n');
-  } catch (err) {
-    console.error(`Failed to write to log file: ${err}`);
-  }
-}
-
-/**
- * Write to console with appropriate color and formatting
- */
-function writeToConsole(level: LogLevel, formattedLog: string): void {
-  if (!LOG_SETTINGS.logToConsole) return;
-  
-  const logObj = JSON.parse(formattedLog);
-  const timestamp = logObj.timestamp;
-  const message = logObj.message;
-  const context = JSON.stringify(logObj.context);
-  
-  let consoleMethod: 'log' | 'info' | 'warn' | 'error';
-  let prefix: string;
-  
-  switch (level) {
-    case LogLevel.DEBUG:
-      consoleMethod = 'log';
-      prefix = '\x1b[34mDEBUG\x1b[0m'; // Blue
-      break;
-    case LogLevel.INFO:
-      consoleMethod = 'info';
-      prefix = '\x1b[32mINFO\x1b[0m'; // Green
-      break;
-    case LogLevel.WARN:
-      consoleMethod = 'warn';
-      prefix = '\x1b[33mWARN\x1b[0m'; // Yellow
-      break;
-    case LogLevel.ERROR:
-    case LogLevel.CRITICAL:
-      consoleMethod = 'error';
-      prefix = level === LogLevel.ERROR 
-        ? '\x1b[31mERROR\x1b[0m' // Red
-        : '\x1b[41m\x1b[37mCRITICAL\x1b[0m'; // White on red background
-      break;
-    default:
-      consoleMethod = 'log';
-      prefix = '\x1b[37mLOG\x1b[0m'; // White
-  }
-  
-  console[consoleMethod](`${timestamp} ${prefix} ${message}${context !== '{}' ? ` ${context}` : ''}`);
-}
-
-/**
- * Checks if the log level should be processed
- */
-function shouldLog(level: LogLevel): boolean {
-  const levels = Object.values(LogLevel);
-  const minLevelIndex = levels.indexOf(LOG_SETTINGS.minLevel);
-  const currentLevelIndex = levels.indexOf(level);
-  
-  return currentLevelIndex >= minLevelIndex;
-}
-
-/**
- * Main logging function
- */
-function log(level: LogLevel, message: string, context?: Record<string, any>): void {
-  if (!shouldLog(level)) return;
-  
-  const formattedLog = formatLogEntry(level, message, context);
-  
-  if (LOG_SETTINGS.logToConsole) {
-    writeToConsole(level, formattedLog);
-  }
-  
-  if (LOG_SETTINGS.logToFile) {
-    writeToFile(formattedLog);
-  }
-}
-
-// Exported logger object
-export const logger = {
-  debug: (message: string, context?: Record<string, any>) => log(LogLevel.DEBUG, message, context),
-  info: (message: string, context?: Record<string, any>) => log(LogLevel.INFO, message, context),
-  warn: (message: string, context?: Record<string, any>) => log(LogLevel.WARN, message, context),
-  error: (message: string, context?: Record<string, any>) => log(LogLevel.ERROR, message, context),
-  critical: (message: string, context?: Record<string, any>) => log(LogLevel.CRITICAL, message, context),
-  
-  // Track API requests with timing
-  request: (req: Request, res: Response, startTime: number) => {
-    const duration = Date.now() - startTime;
-    const context = {
-      method: req.method,
-      path: req.path,
-      status: res.statusCode,
-      duration: `${duration}ms`,
-      ip: req.ip || req.headers['x-forwarded-for'] || 'unknown',
-      userAgent: req.headers['user-agent'] || 'unknown'
-    };
-    
-    // Log at different levels based on response status
-    if (res.statusCode >= 500) {
-      log(LogLevel.ERROR, `API Request ${req.method} ${req.path} failed with ${res.statusCode}`, context);
-    } else if (res.statusCode >= 400) {
-      log(LogLevel.WARN, `API Request ${req.method} ${req.path} returned ${res.statusCode}`, context);
-    } else {
-      log(LogLevel.INFO, `API Request ${req.method} ${req.path} completed successfully`, context);
-    }
-  }
-};
+// Export default logger
+export default logger;
