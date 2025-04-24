@@ -1,0 +1,186 @@
+# TrialSage ICH Specialist Service — Production-Ready, Replit & Kubernetes Deployment
+
+## Overview
+This microservice ingests ICH guidelines and CSR documents, indexes them for semantic retrieval, and exposes an AI-driven FastAPI endpoint to provide compliance guidance and project task suggestions. It integrates seamlessly with all TrialSage modules (protocol builder, CSR review, CMC, CER) and supports both Replit and Kubernetes deployments, offering robust development workflows, observability, and secure operations.
+
+**End-to-End Data Flow**
+```mermaid
+sequenceDiagram
+    participant Ingest as Ingestion Service
+    participant Index as Vector Indexer
+    participant Agent as ICH AI Agent
+    participant UI as TrialSage UI
+    Ingest->>Index: Fetch & parse docs, generate embeddings
+    Index->>Agent: Retrieve top-N passages
+    Agent->>UI: Return guidance, citations & tasks
+```
+
+---
+
+## Project Layout
+```plaintext
+/ (root)
+├── .replit                      # Replit configuration
+├── Dockerfile                   # Container build
+├── docker-compose.yml           # Local multi-service dev
+├── Makefile                     # CLI & CI tasks
+├── Procfile                     # Foreman/Procfile for Replit
+├── start.sh                     # Launch script for Replit
+├── charts/                      # Helm chart for Kubernetes
+│   └── ich-agent/
+├── k8s/                         # Raw Kubernetes manifests
+├── services/
+│   └── ich_ingest/
+│       ├── config.py            # Settings & validation
+│       ├── ingestion.py         # Fetch & watcher loops
+│       ├── parser.py            # PDF + OCR extraction
+│       ├── indexer.py           # Embedding & vector store
+│       ├── agent.py             # FastAPI app + routers + auth + metrics
+│       └── metrics.py           # Prometheus metrics definitions
+├── tests/                       # Unit & integration tests
+├── requirements.txt             # Python dependencies
+└── README.md
+```
+
+---
+
+## Replit Deployment
+1. **Configure `.replit`**:
+   ```ini
+   run = "bash start.sh"
+   onBoot = "./start.sh"
+   ```
+2. **Procfile** (for tmux/foreman):
+   ```procfile
+   web: uvicorn services.ich_ingest.agent:app --host=0.0.0.0 --port=$PORT
+   worker: python services/ich_ingest.ingestion
+   ```
+3. **start.sh**:
+   ```bash
+   #!/usr/bin/env bash
+   set -e
+   # Install dependencies
+   pip install --upgrade pip
+   pip install -r requirements.txt
+   # Launch processes
+   pm2 start --name ingest --interpreter python --services-startup-delay 2 "python services/ich_ingest/ingestion.py"
+   pm2 start --name api --interpreter bash -- "uvicorn services.ich_ingest.agent:app --host 0.0.0.0 --port=${PORT:-8000}"
+   pm2 logs
+   ```
+4. **Secrets & Environment**:
+   - In Replit, go to the **Secrets** settings panel.
+   - Add each key/value pair below:
+     ```
+     OPENAI_API_KEY      <your_openai_key>
+     PINECONE_API_KEY    <your_pinecone_key>
+     ICH_BASE_URL        https://www.ich.org/page/articles-procedures
+     CSR_UPLOAD_DIR      /mnt/data/csr_uploads
+     API_KEY             <your_internal_api_key_for_agent>
+     ```
+   - This ensures the ingestion service and AI agent can authenticate with external services.
+5. **Persistent Storage**. **Persistent Storage**: Map CSR uploads and guidelines directories to `/mnt/data/` in Replit for persistence.
+6. **Always-On**: Enable Replit’s Always-On option to keep the ingestion worker running continuously.
+
+---
+
+## Production Dockerfile
+*(Also used for local and Kubernetes deployments)*
+```dockerfile
+FROM python:3.11-slim
+ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
+WORKDIR /app
+
+# System deps
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    tesseract-ocr libsm6 libxext6 libxrender1 git curl && rm -rf /var/lib/apt/lists/*
+
+# Copy & install
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+COPY . .
+
+EXPOSE 8000
+HEALTHCHECK --interval=30s --timeout=5s CMD curl -f http://localhost:8000/health || exit 1
+
+CMD ["uvicorn", "services.ich_ingest.agent:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+
+---
+
+## Makefile
+```makefile
+.PHONY: install lint test build push up down helm deploy replit
+
+install:
+	pip install --upgrade pip
+	pip install -r requirements.txt
+
+lint:
+	flake8 .
+	isort --check-only .
+	mypy services/ich_ingest
+
+test:
+	pytest --maxfail=1 -q
+
+build:
+	docker build -t trialsage/ich-agent:latest .
+
+push:
+	docker push trialsage/ich-agent:latest
+
+up:
+	docker-compose up --build -d
+
+down:
+	docker-compose down
+
+helm:
+	helm upgrade --install ich-agent charts/ich-agent -f charts/ich-agent/values.yaml
+
+deploy:
+	kubectl apply -f k8s/
+
+# Replit-specific
+replit:
+	bash start.sh
+```
+
+---
+
+## Replit CI/CD Pipeline
+```mermaid
+flowchart LR
+    A["Push to Replit Git"] --> B["Replit Build & Install"]
+    B --> C["Start Worker & API via pm2"]
+    C --> D["Healthcheck OK? -> Deploy"]
+    D --> E["Production Swap & DNS Update"]
+```  
+*(Leverage Replit’s Deploy Hooks to trigger builds and updates automatically)*
+
+---
+
+## Kubernetes & Helm
+Similar to Replit but uses Helm: run `make helm` or `make deploy`.
+
+---
+
+## Integration with TrialSage Modules
+*(same as above, all modules call the `/api/ich-agent` endpoint)*
+```mermaid
+flowchart TD
+    UI["TrialSage UI"] --> AgentAPI["ICH Agent API"]
+    subgraph Modules
+      Prot["Protocol Builder"]
+      CSR["CSR Review Panel"]
+      CMC["CMC Module"]
+      CER["CER Module"]
+    end
+    Prot & CSR & CMC & CER --> AgentAPI
+    AgentAPI --> IndexSvc["Index & Retrieval Service"]
+    IndexSvc --> IngestSvc["Ingestion Service"]
+```  
+
+---
+
+With Replit’s Always-On, Secrets, and pm2 process management, plus full Docker & Helm support, this plan ensures TrialSage’s ICH Specialist is reliable, scalable, and instantly available across all modules. Let me know if any other use case or deployment detail is needed!```
