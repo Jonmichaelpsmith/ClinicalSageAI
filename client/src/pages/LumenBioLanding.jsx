@@ -22,6 +22,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import { 
   FileText, 
   BarChart3, 
@@ -39,7 +40,8 @@ import {
   FileUp,
   FileQuestion,
   Settings,
-  Users
+  Users,
+  Info as InfoIcon
 } from 'lucide-react';
 
 const LumenBioLanding = () => {
@@ -94,15 +96,27 @@ const LumenBioLanding = () => {
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-md bg-gradient-to-b from-green-50 to-white">
                   <DialogHeader>
-                    <DialogTitle>Upload Draft Protocol</DialogTitle>
+                    <DialogTitle>Protocol Intelligence Engine</DialogTitle>
                     <DialogDescription>
-                      Upload your protocol document for AI-driven analysis and optimization
+                      Upload your protocol draft for comprehensive AI-driven analysis, optimization, and redesign using our complete regulatory knowledge base, CSR Deep Learning insights, and ICH guideline compliance engine
                     </DialogDescription>
                   </DialogHeader>
                   <div className="grid gap-4 py-4">
                     <div className="grid gap-2">
                       <Label htmlFor="protocol-name">Protocol Name</Label>
                       <Input id="protocol-name" placeholder="e.g., LB-405 Phase 1 Protocol" className="bg-white" />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="target-indication">Target Indication</Label>
+                      <Input id="target-indication" placeholder="e.g., Clostridium Difficile Infection" className="bg-white" />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="study-objectives">Study Objectives</Label>
+                      <Textarea 
+                        id="study-objectives" 
+                        placeholder="Brief description of primary and secondary objectives" 
+                        className="bg-white resize-none h-20"
+                      />
                     </div>
                     <div className="grid gap-2">
                       <Label htmlFor="protocol-file">Protocol File</Label>
@@ -150,21 +164,27 @@ const LumenBioLanding = () => {
                       {uploadSuccess && (
                         <div className="flex items-center mr-4 text-green-600">
                           <CheckCircle2 className="h-4 w-4 mr-1" />
-                          <span className="text-sm">Uploaded successfully!</span>
+                          <span className="text-sm">Processing complete! View protocol enhancements.</span>
+                        </div>
+                      )}
+                      {!uploadSuccess && !uploading && (
+                        <div className="flex items-center text-gray-500 text-xs">
+                          <Info className="h-3.5 w-3.5 mr-1" />
+                          <span>Comprehensive AI with ICH Guidelines, CSR Deep Learning, and statistical modeling</span>
                         </div>
                       )}
                     </div>
                     <Button 
                       onClick={handleUpload} 
                       disabled={!selectedFile || uploading || uploadSuccess}
-                      className="bg-blue-600 hover:bg-blue-700"
+                      className="bg-green-600 hover:bg-green-700"
                     >
                       {uploading ? (
                         <>
                           <div className="animate-spin mr-2 h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
-                          Uploading...
+                          Processing with AI...
                         </>
-                      ) : 'Upload Protocol'}
+                      ) : 'Optimize & Generate Protocol'}
                     </Button>
                   </DialogFooter>
                 </DialogContent>
