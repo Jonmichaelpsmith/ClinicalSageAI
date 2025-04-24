@@ -68,7 +68,29 @@ export default function HomeMarketingPage() {
               <Link to="/" className="text-[14px] font-bold text-[#000000]">CONCEPT2CURE.AI</Link>
             </div>
             
-            {/* Right side utilities - Simplified */}
+            {/* Banner navigation buttons */}
+            <div className="hidden md:flex items-center space-x-3 mx-4">
+              <Link to="/solutions" className="text-[13px] font-bold text-[#000000] hover:text-[#0055aa] px-2">
+                Solutions
+              </Link>
+              <Link to="/use-cases" className="text-[13px] font-bold text-[#000000] hover:text-[#0055aa] px-2">
+                Use Cases
+              </Link>
+              <Link to="/regulatory-module" className="text-[13px] font-bold text-[#000000] hover:text-[#0055aa] px-2">
+                Regulatory
+              </Link>
+              <Link to="/document-management" className="text-[13px] font-bold text-[#000000] hover:text-[#0055aa] px-2">
+                Documents
+              </Link>
+              <Link to="/cmc-module" className="text-[13px] font-bold text-[#000000] hover:text-[#0055aa] px-2">
+                CMC
+              </Link>
+              <Link to="/cer-module" className="text-[13px] font-bold text-[#000000] hover:text-[#0055aa] px-2">
+                CER
+              </Link>
+            </div>
+            
+            {/* Right side utilities */}
             <div className="flex items-center space-x-6">
               <Link to="/enterprise-csr-intelligence" className="text-[#000000] hover:text-[#0055aa]">
                 <Search className="h-4 w-4" />
