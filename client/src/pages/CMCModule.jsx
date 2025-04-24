@@ -63,7 +63,7 @@ import {
   Beaker,
   FlaskConical,
   Microscope,
-  ShieldAlert,
+  Shield as ShieldAlert,
   BarChart3,
   Shield,
   Activity,
