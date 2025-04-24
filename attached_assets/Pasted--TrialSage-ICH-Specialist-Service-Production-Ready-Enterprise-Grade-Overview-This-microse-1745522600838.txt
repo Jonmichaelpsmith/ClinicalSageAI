@@ -1,0 +1,267 @@
+# TrialSage ICH Specialist Service — Production-Ready, Enterprise-Grade
+
+## Overview
+This microservice ingests ICH guidelines and CSR documents, indexes them for semantic retrieval, and exposes an AI-driven FastAPI endpoint to provide compliance guidance and project task suggestions. It integrates seamlessly with all TrialSage modules (protocol builder, CSR review, CMC, CER) and is built for containerized deployment, scalable orchestration, observability, and secure operations.
+
+**End-to-End Data Flow**
+```mermaid
+sequenceDiagram
+    participant Ingest as Ingestion Service
+    participant Index as Vector Indexer
+    participant Agent as ICH AI Agent
+    participant UI as TrialSage UI
+    Ingest->>Index: Fetch & parse docs, generate embeddings
+    Index->>Agent: Retrieve top-N passages
+    Agent->>UI: Return guidance, citations & tasks
+```
+
+---
+
+## Project Layout
+```plaintext
+/ (root)
+├── charts/                       # Helm chart for Kubernetes deployment
+│   └── ich-agent/
+│       ├── Chart.yaml
+│       ├── values.yaml
+│       └── templates/
+│           ├── deployment.yaml
+│           ├── service.yaml
+│           ├── ingress.yaml
+│           └── configmap.yaml
+├── k8s/                          # Raw Kubernetes manifests
+│   ├── deployment.yaml
+│   ├── service.yaml
+│   └── ingress.yaml
+├── Dockerfile                    # Build container image
+├── docker-compose.yml            # Local multi-service dev
+├── .dockerignore
+├── Makefile                      # CLI & CI tasks
+├── .env.example
+├── .github/ci.yml                # GitHub Actions pipeline
+├── services/
+│   └── ich_ingest/
+│       ├── __init__.py
+│       ├── config.py             # Pydantic settings & validation
+│       ├── ingestion.py          # Fetch, watch loops with scheduler support
+│       ├── parser.py             # PDF + OCR extraction
+│       ├── indexer.py            # OpenAI + Pinecone client + metrics
+│       ├── agent.py              # FastAPI app with routers, auth, metrics, Swagger
+│       └── metrics.py            # Prometheus metrics definitions
+├── tests/                        # Unit & integration tests
+│   ├── test_ingestion.py
+│   ├── test_parser.py
+│   ├── test_indexer.py
+│   └── test_agent.py
+├── requirements.txt
+└── README.md
+```
+
+---
+
+## Key Features
+- **Full ICH & CSR ingestion**: Cron or event-based fetch of all ICH guidelines plus watched CSR upload directory.
+- **Robust parsing**: PDF, Word, OCR fallback; ensures text extraction from any file type.
+- **Semantic index**: Chunking, OpenAI embeddings, Pinecone vector store for high-recall RAG.
+- **AI Agent**: FastAPI endpoint `/api/ich-agent` with GPT-4o, returns compliance guidance, source citations, and suggested project tasks.
+- **Observability**: `/health`, `/metrics` endpoints; integrated Prometheus metrics and logging (JSON format).
+- **Security**: Optional API key auth or OAuth middleware; secret management via Kubernetes secrets or env.
+- **Deployment**: Docker, Docker Compose, Helm chart, Kubernetes manifests.
+
+---
+
+## Production Dockerfile
+```dockerfile
+FROM python:3.11-slim
+ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
+WORKDIR /app
+
+# System deps
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        tesseract-ocr \
+        libsm6 libxext6 libxrender1 \
+        git curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Python deps
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+# App code
+COPY . .
+
+EXPOSE 8000
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+CMD ["uvicorn", "services.ich_ingest.agent:app", "--host", "0.0.0.0", "--port", "8000", "--log-config", "python:logging"]
+```
+
+---
+
+## Makefile
+```makefile
+.PHONY: install lint test build push up down helm deploy
+
+install:
+	pip install --upgrade pip
+	pip install -r requirements.txt
+
+lint:
+	flake8 .
+	isort --check-only .
+	mypy services/ich_ingest
+
+test:
+	pytest --maxfail=1 --disable-warnings -q
+
+build:
+	docker build -t trialsage/ich-agent:latest .
+
+push:
+	docker push trialsage/ich-agent:latest
+
+up:
+	docker-compose up --build -d
+
+down:
+	docker-compose down
+
+helm:
+	helm upgrade --install ich-agent charts/ich-agent -f charts/ich-agent/values.yaml
+
+deploy:
+	kubectl apply -f k8s/
+```
+
+---
+
+## Helm Chart Snippet (`charts/ich-agent/values.yaml`)
+```yaml
+replicaCount: 2
+image:
+  repository: trialsage/ich-agent
+  tag: latest
+service:
+  type: ClusterIP
+  port: 8000
+ingress:
+  enabled: true
+  hosts:
+    - host: ich-agent.example.com
+      paths: ['/']
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 256Mi
+env:
+  ICH_BASE_URL: https://www.ich.org/page/articles-procedures
+  CSR_UPLOAD_DIR: /data/csr_uploads
+  OPENAI_API_KEY: {{ .Values.openaiKey }}
+  PINECONE_API_KEY: {{ .Values.pineconeKey }}
+``` 
+
+---
+
+## FastAPI Agent Highlights (`agent.py`)
+```python
+from fastapi import FastAPI, Depends, HTTPException, Security
+from fastapi.security.api_key import APIKeyHeader
+from prometheus_fastapi_instrumentator import Instrumentator
+
+app = FastAPI(
+    title='TrialSage ICH Specialist',
+    description='ICH compliance, semantic search, and project management co-pilot'
+)
+# Auth
+api_key_header = APIKeyHeader(name='X-API-KEY')
+
+def get_api_key(api_key: str = Security(api_key_header)):
+    if api_key != settings.API_KEY:
+        raise HTTPException(status_code=403)
+    return api_key
+
+# Metrics
+Instrumentator().instrument(app).expose(app)
+
+@app.get('/health')
+async def health():
+    return {'status':'ok'}
+
+@app.post('/api/ich-agent', dependencies=[Depends(get_api_key)])
+async def ich_agent(query: ICHQuery):
+    # RAG & GPT-4o logic...
+    return response
+```
+
+---
+
+## Observability
+- **Prometheus**: `/metrics` endpoint via `prometheus_fastapi_instrumentator`.  
+- **Logging**: JSON-formatted logs via `structlog` or builtin `logging` with custom formatter.  
+- **Tracing**: Optional OpenTelemetry integration.  
+
+---
+
+## Deployment Topology
+```mermaid
+flowchart TD
+    subgraph K8s_Cluster[Kubernetes Cluster]
+      IngestPod["ICH Ingestion Pod"]
+      AgentPod["ICH Agent Pod"]
+      VectorStore["Pinecone Vector Store"]
+      PrometheusSvc["Prometheus Operator"]
+      GrafanaSvc["Grafana Dashboard"]
+      IngestPod --> VectorStore
+      AgentPod --> VectorStore
+      AgentPod --> PrometheusSvc
+      PrometheusSvc --> GrafanaSvc
+    end
+    subgraph Storage[Persistent Volumes]
+      CSRVol[/"CSR Uploads PVC"/]
+      GuidelineVol[/"Guidelines PVC"/]
+    end
+    CSRVol --> IngestPod
+    GuidelineVol --> IngestPod
+```  
+
+---
+
+## CI/CD Pipeline
+```mermaid
+flowchart LR
+    A["Code Commit / PR"] --> B["GitHub Actions CI"]
+    B --> C["Lint & Test"]
+    C --> D["Build & Scan Docker Image"]
+    D --> E["Push to Docker Registry"]
+    E --> F["Deploy via Helm"]
+    F --> G["Kubernetes Environment"]
+```  
+
+---
+
+## Integration with TrialSage Modules
+```mermaid
+flowchart TD
+    UI["TrialSage UI"] -->|"calls"| AgentAPI["ICH Agent API"]
+    subgraph Modules
+      Prot["Protocol Builder"]
+      CSR["CSR Review Panel"]
+      CMC["CMC Module"]
+      CER["CER Module"]
+    end
+    Prot --> AgentAPI
+    CSR --> AgentAPI
+    CMC --> AgentAPI
+    CER --> AgentAPI
+    AgentAPI --> IndexSvc["Index & Retrieval Service"]
+    IndexSvc --> IngestSvc["Ingestion Service"]
+```  
+
+---
+
+With this, we cover all use cases: dev, QA, staging, production, security, monitoring, scaling, and integration with TrialSage modules. Let me know if any scenario or component is still missing!
