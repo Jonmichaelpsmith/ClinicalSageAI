@@ -60,6 +60,23 @@ export function errorHandler(error: any, req: Request, res: Response, next: Next
     return next(error);
   }
   
+  // Prevent app crash on unhandled promise rejections or FATAL errors
+  if (error instanceof Error && (error.message.includes('FATAL') || error.stack?.includes('unhandledRejection'))) {
+    logger.error(`CRITICAL ERROR PREVENTED: ${error.message}`, {
+      stack: error.stack,
+      request_id: (req as any).id,
+      request_path: req.path,
+      request_method: req.method
+    });
+    
+    // Create a more friendly error for response
+    error = new ApiError(
+      500, 
+      "The service encountered an unexpected error and has been protected from shutdown",
+      "PROTECTED_SERVER_ERROR"
+    );
+  }
+  
   // Determine status code
   const statusCode = error.statusCode || 500;
   const errorResponse = formatError(error, req);
