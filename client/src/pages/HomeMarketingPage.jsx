@@ -102,7 +102,7 @@ export default function HomeMarketingPage() {
                 {/* Primary Navigation Items */}
                 <ul className="flex items-center space-x-4">
                   <li className="group relative">
-                    <Link to="/use-case-library" className="inline-flex items-center px-3 py-2 text-[14px] font-semibold text-[#111] hover:text-[#0078d4] transition">
+                    <Link to="/use-case-library" className="inline-flex items-center px-3 py-2 text-[14px] font-bold text-[#000000] hover:text-[#0055aa] transition">
                       Solutions
                       <ChevronDown className="ml-1 h-3 w-3 transition" />
                     </Link>
@@ -128,19 +128,19 @@ export default function HomeMarketingPage() {
                   </li>
                   
                   <li className="group relative">
-                    <Link to="/ind-wizard" className="inline-flex items-center px-3 py-2 text-[14px] font-semibold text-[#111] hover:text-[#0078d4] transition">
+                    <Link to="/ind-wizard" className="inline-flex items-center px-3 py-2 text-[14px] font-bold text-[#000000] hover:text-[#0055aa] transition">
                       IND Wizard
                     </Link>
                   </li>
                   
                   <li className="group relative">
-                    <Link to="/enterprise-csr-intelligence" className="inline-flex items-center px-3 py-2 text-[14px] font-semibold text-[#111] hover:text-[#0078d4] transition">
+                    <Link to="/enterprise-csr-intelligence" className="inline-flex items-center px-3 py-2 text-[14px] font-bold text-[#000000] hover:text-[#0055aa] transition">
                       CSR Intelligence
                     </Link>
                   </li>
                   
                   <li className="group relative">
-                    <Link to="/versions" className="inline-flex items-center px-3 py-2 text-[14px] font-semibold text-[#0078d4] hover:text-[#0078d4] transition bg-blue-50 rounded">
+                    <Link to="/versions" className="inline-flex items-center px-3 py-2 text-[14px] font-bold text-[#003057] hover:text-[#0055aa] transition bg-blue-50 rounded">
                       TrialSage.AI Solutions
                     </Link>
                   </li>
@@ -149,25 +149,25 @@ export default function HomeMarketingPage() {
                 {/* Secondary Navigation Items (Moved from top bar) */}
                 <ul className="flex items-center space-x-4">
                   <li>
-                    <Link to="/analytics-dashboard" className="inline-flex items-center px-3 py-2 text-[14px] font-semibold text-[#111] hover:text-[#0078d4] transition">
+                    <Link to="/analytics-dashboard" className="inline-flex items-center px-3 py-2 text-[14px] font-bold text-[#000000] hover:text-[#0055aa] transition">
                       Analytics
                     </Link>
                   </li>
                   
                   <li>
-                    <Link to="/ask-lumen" className="inline-flex items-center px-3 py-2 text-[14px] font-semibold text-[#111] hover:text-[#0078d4] transition">
+                    <Link to="/ask-lumen" className="inline-flex items-center px-3 py-2 text-[14px] font-bold text-[#000000] hover:text-[#0055aa] transition">
                       Ask Lumen™
                     </Link>
                   </li>
                   
                   <li>
-                    <Link to="/enterprise-csr-intelligence" className="text-[14px] font-semibold text-[#111] hover:text-[#0078d4] transition">
+                    <Link to="/enterprise-csr-intelligence" className="text-[14px] font-bold text-[#000000] hover:text-[#0055aa] transition">
                       News
                     </Link>
                   </li>
                   
                   <li>
-                    <Link to="/document-management" className="text-[14px] font-semibold text-[#111] hover:text-[#0078d4] transition">
+                    <Link to="/document-management" className="text-[14px] font-bold text-[#000000] hover:text-[#0055aa] transition">
                       Resources
                     </Link>
                   </li>
