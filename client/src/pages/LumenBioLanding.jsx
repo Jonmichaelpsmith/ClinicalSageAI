@@ -41,7 +41,8 @@ import {
   FileQuestion,
   Settings,
   Users,
-  Info as InfoIcon
+  Info,
+  Search
 } from 'lucide-react';
 
 const LumenBioLanding = () => {
@@ -75,10 +76,46 @@ const LumenBioLanding = () => {
   return (
     <div className="min-h-screen bg-white">
       <Helmet>
-        <title>Lumen Biosciences | Regulatory Documentation Platform</title>
+        <title>CONCEPT2CURE.AI | TrialSage™ Platform</title>
       </Helmet>
       
-      {/* Header with gradient background */}
+      {/* Top navigation banner */}
+      <header className="bg-gradient-to-r from-amber-50 to-amber-100 py-3 px-4">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <div>
+            <h1 className="text-xl font-bold text-slate-900">CONCEPT2CURE.AI</h1>
+          </div>
+          <div className="flex items-center space-x-4">
+            <Button variant="ghost" size="sm" className="text-slate-700 hover:text-slate-900">
+              <Search className="h-4 w-4 mr-2" />
+            </Button>
+            <Button variant="outline" size="sm" className="bg-amber-50 border-amber-200 text-slate-800">
+              Sign In
+            </Button>
+          </div>
+        </div>
+      </header>
+      
+      {/* Main header with brand and navigation */}
+      <div className="border-b border-slate-200 bg-white py-4 px-4 md:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between">
+          <div className="flex items-center mb-4 md:mb-0">
+            <div className="bg-amber-100 h-14 w-14 flex items-center justify-center rounded-lg mr-3 text-amber-800 font-bold">
+              C2C
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-slate-900">CONCEPT2CURE.AI</h1>
+              <p className="text-sm text-slate-600">TrialSage™ Platform</p>
+            </div>
+          </div>
+          <div className="flex space-x-3">
+            <Button variant="outline" className="border-blue-200 text-blue-700">Sign In</Button>
+            <Button className="bg-blue-600 hover:bg-blue-700">Get Started</Button>
+          </div>
+        </div>
+      </div>
+      
+      {/* Main content header */}
       <header className="bg-gradient-to-b from-blue-50 to-white pt-6 pb-12 px-4 md:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
@@ -186,6 +223,20 @@ const LumenBioLanding = () => {
                         </>
                       ) : 'Optimize & Generate Protocol'}
                     </Button>
+                    <div className="grid grid-cols-3 gap-2 mt-4" style={{display: uploadSuccess ? 'grid' : 'none'}}>
+                      <Button variant="outline" size="sm" className="bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100">
+                        <BookOpen className="h-4 w-4 mr-1" />
+                        Design Study
+                      </Button>
+                      <Button variant="outline" size="sm" className="bg-green-50 text-green-700 border-green-200 hover:bg-green-100">
+                        <FileUp className="h-4 w-4 mr-1" />
+                        Enhance Protocol
+                      </Button>
+                      <Button variant="outline" size="sm" className="bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100">
+                        <ChevronRight className="h-4 w-4 mr-1" />
+                        Analyze
+                      </Button>
+                    </div>
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
