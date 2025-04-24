@@ -371,9 +371,7 @@ export default function App() {
               </Route>
               <Route path="/solutions/cmc-insights">
                 <SimpleErrorBoundary fallback={<EmergencyFallback pageName="CMC Insights" />}>
-                  <ProtectedRoute>
-                    <LazyCMCModule />
-                  </ProtectedRoute>
+                  <LazyCMCModule />
                 </SimpleErrorBoundary>
               </Route>
               <Route path="/cmc-blueprint-generator">
