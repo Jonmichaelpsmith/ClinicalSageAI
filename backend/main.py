@@ -12,6 +12,7 @@ import uvicorn
 from routes.study import router as study_router
 from routes.enzymax_study import router as enzymax_router
 from routes.simulation import router as simulation_router
+from routes.metadata_repository import router as metadata_router
 
 # Configure logging
 logging.basicConfig(
@@ -41,6 +42,13 @@ app.include_router(study_router)
 app.include_router(enzymax_router)
 app.include_router(simulation_router)
 
+# Register the Clinical Metadata Repository (CMDR) router
+app.include_router(
+    metadata_router,
+    prefix="/api",
+    tags=["Metadata Repository"]
+)
+
 @app.get("/")
 async def root():
     """Root endpoint providing API information."""
@@ -58,7 +66,15 @@ async def root():
             "/api/enzymax/sample-scenarios",
             "/api/simulation/monte-carlo",
             "/api/simulation/adaptive-design",
-            "/api/simulation/methods"
+            "/api/simulation/methods",
+            "/api/metadata/forms",
+            "/api/metadata/terminologies",
+            "/api/metadata/datasets",
+            "/api/metadata/mappings",
+            "/api/metadata/files",
+            "/api/metadata/search",
+            "/api/metadata/impact",
+            "/api/metadata/export-edc"
         ]
     }
 
