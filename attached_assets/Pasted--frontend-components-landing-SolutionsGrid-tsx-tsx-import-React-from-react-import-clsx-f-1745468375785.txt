@@ -1,0 +1,80 @@
+# frontend/components/landing/SolutionsGrid.tsx
+
+```tsx
+import React from 'react';
+import clsx from 'clsx';
+import {
+  AiOutlineFileText,
+  AiOutlineSwap,
+  AiOutlineTable,
+  AiOutlineFolderOpen,
+  AiOutlineRocket,
+  AiOutlineBulb
+} from 'react-icons/ai';
+
+const solutions = [
+  {
+    title: 'CSR Intelligence',
+    description: 'Semantic NLP to mine safety signals, compare endpoints, and auto-summarize CSRs.',
+    icon: AiOutlineFileText,
+  },
+  {
+    title: 'IND Accelerator',
+    description: 'Protocol-to-Module 2 & 5 wizards with one-click eCTD packaging.',
+    icon: AiOutlineRocket,
+  },
+  {
+    title: 'RegIntel Validator',
+    description: 'Zero-install SDTM/ADaM validation with GPT-4 explanations & auto-fix.',
+    icon: AiOutlineSwap,
+  },
+  {
+    title: 'CMC Blueprint',
+    description: 'ICH Module 3 generator from process inputs with global change impact simulation.',
+    icon: AiOutlineTable,
+  },
+  {
+    title: 'CER Composer',
+    description: 'AI-draft Clinical Evaluation Reports with MedDRA & LOINC validation.',
+    icon: AiOutlineBulb,
+  },
+  {
+    title: 'Vault Workspace',
+    description: 'Microsoft-style explorer with version history, audit trails & DocuShare sync.',
+    icon: AiOutlineFolderOpen,
+  },
+];
+
+export default function SolutionsGrid() {
+  return (
+    <div className="max-w-6xl mx-auto px-6 py-16">
+      <h2 className="text-3xl font-semibold text-gray-900 mb-8 text-center">
+        Comprehensive AI-Driven Solutions
+      </h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        {solutions.map(({ title, description, icon: Icon }) => (
+          <div
+            key={title}
+            className="relative group bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden h-full"
+          >
+            {/* Front of card */}
+            <div className="p-6 flex flex-col items-center justify-center h-full">
+              <Icon className="text-green-500 group-hover:text-blue-600 w-12 h-12 transition-colors" />
+              <h3 className="mt-4 text-xl font-semibold text-gray-900 group-hover:text-blue-600 text-center">
+                {title}
+              </h3>
+            </div>
+            {/* Hover overlay */}
+            <div
+              className={clsx(
+                'absolute inset-0 bg-gradient-to-t from-green-400 to-blue-500 opacity-0 group-hover:opacity-95 transition-opacity flex items-center justify-center p-6 text-center'
+              )}
+            >
+              <p className="text-white text-sm leading-relaxed">{description}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
