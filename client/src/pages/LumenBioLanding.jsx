@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,18 @@ import {
   CardHeader, 
   CardTitle 
 } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   FileText, 
   BarChart3, 
@@ -18,10 +30,46 @@ import {
   FileBarChart, 
   Microscope, 
   BookOpen,
-  ChevronRight
+  ChevronRight,
+  Upload,
+  Database,
+  Brain,
+  Layout,
+  Folder,
+  FileUp,
+  FileQuestion,
+  Settings,
+  Users
 } from 'lucide-react';
 
 const LumenBioLanding = () => {
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+
+  const handleFileChange = (e) => {
+    if (e.target.files.length > 0) {
+      setSelectedFile(e.target.files[0]);
+    }
+  };
+
+  const handleUpload = () => {
+    if (!selectedFile) return;
+    
+    setUploading(true);
+    
+    // Simulate upload process
+    setTimeout(() => {
+      setUploading(false);
+      setUploadSuccess(true);
+      // Reset after showing success message
+      setTimeout(() => {
+        setUploadSuccess(false);
+        setSelectedFile(null);
+      }, 3000);
+    }, 1500);
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <Helmet>
@@ -36,7 +84,92 @@ const LumenBioLanding = () => {
               <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Welcome to Lumen Biosciences</h1>
               <p className="text-slate-600 mt-2">Regulatory compliance documentation platform</p>
             </div>
-            <div className="mt-4 md:mt-0">
+            <div className="mt-4 md:mt-0 flex space-x-3">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="bg-white border-blue-200 text-blue-700 hover:bg-blue-50">
+                    <Upload className="h-4 w-4 mr-2" />
+                    Upload Protocol
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Upload Draft Protocol</DialogTitle>
+                    <DialogDescription>
+                      Upload your protocol document for AI-driven analysis and optimization
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="protocol-name">Protocol Name</Label>
+                      <Input id="protocol-name" placeholder="e.g., LB-405 Phase 1 Protocol" />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="protocol-file">Protocol File</Label>
+                      <div className="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center">
+                        {selectedFile ? (
+                          <div className="flex flex-col items-center">
+                            <FileText className="h-8 w-8 text-blue-500 mb-2" />
+                            <p className="text-sm font-medium text-gray-700">{selectedFile.name}</p>
+                            <p className="text-xs text-gray-500 mt-1">
+                              {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
+                            </p>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="mt-2 text-red-500 hover:text-red-700"
+                              onClick={() => setSelectedFile(null)}
+                            >
+                              Remove
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col items-center">
+                            <Upload className="h-8 w-8 text-gray-400 mb-2" />
+                            <p className="text-sm font-medium text-gray-500">Drag and drop or click to upload</p>
+                            <p className="text-xs text-gray-400 mt-1">Supports DOC, DOCX, PDF (Max 10MB)</p>
+                            <Input 
+                              id="protocol-file" 
+                              type="file" 
+                              className="hidden" 
+                              accept=".doc,.docx,.pdf"
+                              onChange={handleFileChange}
+                            />
+                            <Label htmlFor="protocol-file">
+                              <Button variant="ghost" size="sm" className="mt-2">
+                                Select File
+                              </Button>
+                            </Label>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <DialogFooter className="sm:justify-between">
+                    <div className="flex items-center">
+                      {uploadSuccess && (
+                        <div className="flex items-center mr-4 text-green-600">
+                          <CheckCircle2 className="h-4 w-4 mr-1" />
+                          <span className="text-sm">Uploaded successfully!</span>
+                        </div>
+                      )}
+                    </div>
+                    <Button 
+                      onClick={handleUpload} 
+                      disabled={!selectedFile || uploading || uploadSuccess}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      {uploading ? (
+                        <>
+                          <div className="animate-spin mr-2 h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                          Uploading...
+                        </>
+                      ) : 'Upload Protocol'}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+              
               <Button className="bg-blue-600 hover:bg-blue-700">
                 <FileText className="h-4 w-4 mr-2" />
                 New Document
@@ -267,7 +400,7 @@ const LumenBioLanding = () => {
           </div>
         </div>
         
-        <div>
+        <div className="mb-10">
           <h2 className="text-xl font-semibold text-slate-900 mb-4">Quick Access</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <Button variant="outline" className="h-auto py-3 px-4 flex justify-between items-center text-left bg-white border-gray-200 shadow-sm hover:bg-blue-50 hover:border-blue-200">
@@ -296,14 +429,395 @@ const LumenBioLanding = () => {
               </Button>
             </Link>
             
-            <Button variant="outline" className="h-auto py-3 px-4 flex justify-between items-center text-left bg-white border-gray-200 shadow-sm hover:bg-blue-50 hover:border-blue-200">
-              <div className="flex items-center">
-                <BookOpen className="h-5 w-5 text-blue-600 mr-3" />
-                <span className="font-medium text-slate-900">ICH Guidelines</span>
-              </div>
-              <ChevronRight className="h-5 w-5 text-slate-400" />
-            </Button>
+            <Link href="/ich-wiz">
+              <Button variant="outline" className="h-auto py-3 px-4 flex justify-between items-center text-left bg-white border-gray-200 shadow-sm hover:bg-blue-50 hover:border-blue-200 w-full">
+                <div className="flex items-center">
+                  <BookOpen className="h-5 w-5 text-blue-600 mr-3" />
+                  <span className="font-medium text-slate-900">ICH Guidelines</span>
+                </div>
+                <ChevronRight className="h-5 w-5 text-slate-400" />
+              </Button>
+            </Link>
           </div>
+        </div>
+
+        <div className="mb-10">
+          <h2 className="text-xl font-semibold text-slate-900 mb-6">All Modules & Features</h2>
+          
+          <Tabs defaultValue="regulatory" className="w-full">
+            <TabsList className="mb-6 w-full justify-start bg-slate-50 p-1">
+              <TabsTrigger value="regulatory" className="text-sm">Regulatory Intelligence</TabsTrigger>
+              <TabsTrigger value="documents" className="text-sm">Document Management</TabsTrigger>
+              <TabsTrigger value="ai-agents" className="text-sm">AI Agents & Tools</TabsTrigger>
+              <TabsTrigger value="trials" className="text-sm">Clinical Trials</TabsTrigger>
+              <TabsTrigger value="settings" className="text-sm">Admin Settings</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="regulatory" className="border-none p-0">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <Card className="border border-gray-200 shadow-sm">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg font-medium flex items-center">
+                      <BookOpen className="h-5 w-5 mr-2 text-blue-600" />
+                      ICH Wiz
+                    </CardTitle>
+                    <CardDescription>Digital Compliance Coach with ICH Guidelines</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pb-4 pt-0">
+                    <p className="text-sm text-slate-600">
+                      Access comprehensive ICH Guidelines with AI-powered interpretation and regulatory insights.
+                    </p>
+                  </CardContent>
+                  <CardFooter>
+                    <Link href="/ich-wiz">
+                      <Button variant="outline" className="w-full text-blue-600 border-blue-200 hover:bg-blue-50">
+                        Access ICH Wiz
+                        <ArrowRight className="h-4 w-4 ml-2" />
+                      </Button>
+                    </Link>
+                  </CardFooter>
+                </Card>
+                
+                <Card className="border border-gray-200 shadow-sm">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg font-medium flex items-center">
+                      <FileBarChart className="h-5 w-5 mr-2 text-blue-600" />
+                      Validation Hub
+                    </CardTitle>
+                    <CardDescription>eCTD Submission Validation</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pb-4 pt-0">
+                    <p className="text-sm text-slate-600">
+                      Validate your eCTD submissions against FDA, EMA, and global regulatory standards.
+                    </p>
+                  </CardContent>
+                  <CardFooter>
+                    <Link href="/validation-hub-enhanced">
+                      <Button variant="outline" className="w-full text-blue-600 border-blue-200 hover:bg-blue-50">
+                        Open Validation Hub
+                        <ArrowRight className="h-4 w-4 ml-2" />
+                      </Button>
+                    </Link>
+                  </CardFooter>
+                </Card>
+                
+                <Card className="border border-gray-200 shadow-sm">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg font-medium flex items-center">
+                      <BarChart3 className="h-5 w-5 mr-2 text-blue-600" />
+                      Compliance Analytics
+                    </CardTitle>
+                    <CardDescription>Regulatory Compliance Dashboard</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pb-4 pt-0">
+                    <p className="text-sm text-slate-600">
+                      Get real-time insights and analytics on your regulatory compliance across all documents.
+                    </p>
+                  </CardContent>
+                  <CardFooter>
+                    <Link href="/analytics-dashboard">
+                      <Button variant="outline" className="w-full text-blue-600 border-blue-200 hover:bg-blue-50">
+                        View Analytics
+                        <ArrowRight className="h-4 w-4 ml-2" />
+                      </Button>
+                    </Link>
+                  </CardFooter>
+                </Card>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="documents" className="border-none p-0">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <Card className="border border-gray-200 shadow-sm">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg font-medium flex items-center">
+                      <Folder className="h-5 w-5 mr-2 text-blue-600" />
+                      Document Vault
+                    </CardTitle>
+                    <CardDescription>Secure Document Management</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pb-4 pt-0">
+                    <p className="text-sm text-slate-600">
+                      Centralized storage with version control for all your regulatory documentation.
+                    </p>
+                  </CardContent>
+                  <CardFooter>
+                    <Link href="/enterprise-vault">
+                      <Button variant="outline" className="w-full text-blue-600 border-blue-200 hover:bg-blue-50">
+                        Access Vault
+                        <ArrowRight className="h-4 w-4 ml-2" />
+                      </Button>
+                    </Link>
+                  </CardFooter>
+                </Card>
+                
+                <Card className="border border-gray-200 shadow-sm">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg font-medium flex items-center">
+                      <FileUp className="h-5 w-5 mr-2 text-blue-600" />
+                      Document Upload
+                    </CardTitle>
+                    <CardDescription>Batch Upload & Processing</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pb-4 pt-0">
+                    <p className="text-sm text-slate-600">
+                      Upload and automatically process multiple regulatory documents with AI analysis.
+                    </p>
+                  </CardContent>
+                  <CardFooter>
+                    <Link href="/document-management">
+                      <Button variant="outline" className="w-full text-blue-600 border-blue-200 hover:bg-blue-50">
+                        Upload Documents
+                        <ArrowRight className="h-4 w-4 ml-2" />
+                      </Button>
+                    </Link>
+                  </CardFooter>
+                </Card>
+                
+                <Card className="border border-gray-200 shadow-sm">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg font-medium flex items-center">
+                      <FileQuestion className="h-5 w-5 mr-2 text-blue-600" />
+                      Document Risk Analysis
+                    </CardTitle>
+                    <CardDescription>AI-powered Risk Assessment</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pb-4 pt-0">
+                    <p className="text-sm text-slate-600">
+                      Identify potential compliance risks and issues in your regulatory documentation.
+                    </p>
+                  </CardContent>
+                  <CardFooter>
+                    <Link href="/document-risk/analysis">
+                      <Button variant="outline" className="w-full text-blue-600 border-blue-200 hover:bg-blue-50">
+                        Analyze Risk
+                        <ArrowRight className="h-4 w-4 ml-2" />
+                      </Button>
+                    </Link>
+                  </CardFooter>
+                </Card>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="ai-agents" className="border-none p-0">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <Card className="border border-gray-200 shadow-sm">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg font-medium flex items-center">
+                      <Brain className="h-5 w-5 mr-2 text-blue-600" />
+                      ICH Wiz Agent
+                    </CardTitle>
+                    <CardDescription>Regulatory Intelligence AI</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pb-4 pt-0">
+                    <p className="text-sm text-slate-600">
+                      Interact with our AI specialist for regulatory guidance and interpretation of ICH standards.
+                    </p>
+                  </CardContent>
+                  <CardFooter>
+                    <Link href="/lumen-bio/ich-wiz">
+                      <Button variant="outline" className="w-full text-blue-600 border-blue-200 hover:bg-blue-50">
+                        Chat with ICH Wiz
+                        <ArrowRight className="h-4 w-4 ml-2" />
+                      </Button>
+                    </Link>
+                  </CardFooter>
+                </Card>
+                
+                <Card className="border border-gray-200 shadow-sm">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg font-medium flex items-center">
+                      <FileText className="h-5 w-5 mr-2 text-blue-600" />
+                      Protocol Optimizer
+                    </CardTitle>
+                    <CardDescription>AI-driven Protocol Review</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pb-4 pt-0">
+                    <p className="text-sm text-slate-600">
+                      Upload and analyze clinical protocols with AI recommendations for optimization and compliance.
+                    </p>
+                  </CardContent>
+                  <CardFooter>
+                    <Link href="/protocol-review">
+                      <Button variant="outline" className="w-full text-blue-600 border-blue-200 hover:bg-blue-50">
+                        Optimize Protocol
+                        <ArrowRight className="h-4 w-4 ml-2" />
+                      </Button>
+                    </Link>
+                  </CardFooter>
+                </Card>
+                
+                <Card className="border border-gray-200 shadow-sm">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg font-medium flex items-center">
+                      <Layout className="h-5 w-5 mr-2 text-blue-600" />
+                      IND Wizard
+                    </CardTitle>
+                    <CardDescription>IND Submission Builder</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pb-4 pt-0">
+                    <p className="text-sm text-slate-600">
+                      Create comprehensive IND submissions with AI-guided workflows and templates.
+                    </p>
+                  </CardContent>
+                  <CardFooter>
+                    <Link href="/ind-wizard">
+                      <Button variant="outline" className="w-full text-blue-600 border-blue-200 hover:bg-blue-50">
+                        Launch IND Wizard
+                        <ArrowRight className="h-4 w-4 ml-2" />
+                      </Button>
+                    </Link>
+                  </CardFooter>
+                </Card>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="trials" className="border-none p-0">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <Card className="border border-gray-200 shadow-sm">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg font-medium flex items-center">
+                      <Database className="h-5 w-5 mr-2 text-blue-600" />
+                      CSR Intelligence
+                    </CardTitle>
+                    <CardDescription>Clinical Study Report Analysis</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pb-4 pt-0">
+                    <p className="text-sm text-slate-600">
+                      Access and analyze over 3,000 clinical study reports for cross-trial benchmarking.
+                    </p>
+                  </CardContent>
+                  <CardFooter>
+                    <Link href="/csr-intelligence">
+                      <Button variant="outline" className="w-full text-blue-600 border-blue-200 hover:bg-blue-50">
+                        Access CSR Intelligence
+                        <ArrowRight className="h-4 w-4 ml-2" />
+                      </Button>
+                    </Link>
+                  </CardFooter>
+                </Card>
+                
+                <Card className="border border-gray-200 shadow-sm">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg font-medium flex items-center">
+                      <Microscope className="h-5 w-5 mr-2 text-blue-600" />
+                      Study Architect
+                    </CardTitle>
+                    <CardDescription>AI-driven Study Design</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pb-4 pt-0">
+                    <p className="text-sm text-slate-600">
+                      Design and optimize clinical trials with AI-powered statistical simulation capabilities.
+                    </p>
+                  </CardContent>
+                  <CardFooter>
+                    <Link href="/study-planner">
+                      <Button variant="outline" className="w-full text-blue-600 border-blue-200 hover:bg-blue-50">
+                        Design Study
+                        <ArrowRight className="h-4 w-4 ml-2" />
+                      </Button>
+                    </Link>
+                  </CardFooter>
+                </Card>
+                
+                <Card className="border border-gray-200 shadow-sm">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg font-medium flex items-center">
+                      <FileBarChart className="h-5 w-5 mr-2 text-blue-600" />
+                      Trial Reports
+                    </CardTitle>
+                    <CardDescription>Enhanced Trial Reporting</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pb-4 pt-0">
+                    <p className="text-sm text-slate-600">
+                      Access detailed reports and analytics for your active and completed clinical trials.
+                    </p>
+                  </CardContent>
+                  <CardFooter>
+                    <Link href="/lumen-bio/reports">
+                      <Button variant="outline" className="w-full text-blue-600 border-blue-200 hover:bg-blue-50">
+                        View Trial Reports
+                        <ArrowRight className="h-4 w-4 ml-2" />
+                      </Button>
+                    </Link>
+                  </CardFooter>
+                </Card>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="settings" className="border-none p-0">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <Card className="border border-gray-200 shadow-sm">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg font-medium flex items-center">
+                      <Users className="h-5 w-5 mr-2 text-blue-600" />
+                      User Management
+                    </CardTitle>
+                    <CardDescription>Team Access & Permissions</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pb-4 pt-0">
+                    <p className="text-sm text-slate-600">
+                      Manage user accounts, roles, and permissions for your organization.
+                    </p>
+                  </CardContent>
+                  <CardFooter>
+                    <Link href="/portal/client?tab=users">
+                      <Button variant="outline" className="w-full text-blue-600 border-blue-200 hover:bg-blue-50">
+                        Manage Users
+                        <ArrowRight className="h-4 w-4 ml-2" />
+                      </Button>
+                    </Link>
+                  </CardFooter>
+                </Card>
+                
+                <Card className="border border-gray-200 shadow-sm">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg font-medium flex items-center">
+                      <Settings className="h-5 w-5 mr-2 text-blue-600" />
+                      Account Settings
+                    </CardTitle>
+                    <CardDescription>Preferences & Configuration</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pb-4 pt-0">
+                    <p className="text-sm text-slate-600">
+                      Configure your account settings, notifications, and integration preferences.
+                    </p>
+                  </CardContent>
+                  <CardFooter>
+                    <Link href="/portal/client?tab=settings">
+                      <Button variant="outline" className="w-full text-blue-600 border-blue-200 hover:bg-blue-50">
+                        Access Settings
+                        <ArrowRight className="h-4 w-4 ml-2" />
+                      </Button>
+                    </Link>
+                  </CardFooter>
+                </Card>
+                
+                <Card className="border border-gray-200 shadow-sm">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg font-medium flex items-center">
+                      <BarChart3 className="h-5 w-5 mr-2 text-blue-600" />
+                      Usage Analytics
+                    </CardTitle>
+                    <CardDescription>System Usage & Metrics</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pb-4 pt-0">
+                    <p className="text-sm text-slate-600">
+                      View detailed analytics on system usage, document access, and AI interactions.
+                    </p>
+                  </CardContent>
+                  <CardFooter>
+                    <Link href="/portal/client?tab=analytics">
+                      <Button variant="outline" className="w-full text-blue-600 border-blue-200 hover:bg-blue-50">
+                        View Usage Analytics
+                        <ArrowRight className="h-4 w-4 ml-2" />
+                      </Button>
+                    </Link>
+                  </CardFooter>
+                </Card>
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
       </main>
     </div>
