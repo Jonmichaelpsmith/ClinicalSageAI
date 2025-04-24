@@ -1,765 +1,210 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link } from 'wouter';
-import {
-  ChevronDown,
-  Search,
-  LayoutDashboard,
-  ArrowRight,
-  Database,
-  CheckCircle,
-  Sparkles,
-  BarChart3,
-  FileCheck,
-  Shield,
-  FileText,
-  BrainCircuit
-} from 'lucide-react';
+import { Helmet } from 'react-helmet';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { CheckCircle, Database, FileText, Brain, BarChart, Lock, Beaker, FileSpreadsheet } from 'lucide-react';
 
-// CSR Counter component to fetch real CSR data
-const CSRCounter = () => {
-  const [csrCount, setCsrCount] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchCSRCount = async () => {
-      try {
-        // Fetch the actual count from the CSR API
-        const response = await fetch('/api/csr/count');
-        
-        if (response.ok) {
-          const data = await response.json();
-          setCsrCount(data.count);
-        } else {
-          console.warn('Falling back to default CSR count');
-          setCsrCount(3217);
-        }
-      } catch (error) {
-        console.error('Error fetching CSR count:', error);
-        setCsrCount(3217);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCSRCount();
-  }, []);
-
+const HomeMarketingPage = () => {
   return (
-    <span className="inline-flex items-baseline">
-      <span className="text-xs font-semibold text-blue-800">{loading ? "..." : csrCount?.toLocaleString() || "3,217"}</span>
-      <span className="text-[10px] text-[#444] ml-1">CSR Intelligence™ records</span>
-    </span>
-  );
-};
+    <div className="min-h-screen bg-white">
+      <Helmet>
+        <title>TrialSage™ - AI-Powered Regulatory Document Management</title>
+        <meta name="description" content="TrialSage™ is an advanced AI-powered SaaS platform revolutionizing clinical and pharmaceutical document workflows" />
+      </Helmet>
 
-// HomeMarketingPage.jsx - Main landing page with Certara-inspired design
-export default function HomeMarketingPage() {
-  return (
-    <div className="min-h-screen bg-white font-sans antialiased">
-      {/* Soft gradient element at top */}
-      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-300 via-green-300 to-blue-300 z-50"></div>
-      
-      {/* Certara-style header */}
-      <header className="relative z-40">
-        {/* Top utility bar with solutions alongside other nav items */}
-        <div className="bg-gradient-to-r from-orange-50 via-orange-100 to-orange-50 text-black">
-          <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between">
-            {/* Company info */}
-            <div className="flex items-center">
-              <Link to="/" className="text-[14px] font-bold text-[#000000]">CONCEPT2CURE.AI</Link>
-            </div>
-            
-            {/* Banner navigation buttons */}
-            <div className="hidden md:flex items-center space-x-3 mx-4">
-              <div className="relative group">
-                <button className="text-[13px] font-bold text-[#000000] hover:text-[#0055aa] px-2 flex items-center">
-                  Solutions <ChevronDown className="h-3 w-3 ml-0.5" />
-                </button>
-                <div className="absolute top-full left-0 w-64 mt-1 bg-white shadow-lg border border-gray-200 rounded-md p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                  <div className="mb-2">
-                    <h4 className="text-[12px] font-bold text-blue-700 mb-1">TrialSage Solutions</h4>
-                    <p className="text-[11px] text-gray-600">Enterprise-grade document intelligence</p>
-                  </div>
-                  <div className="grid grid-cols-1 gap-2">
-                    <Link to="/ind/wizard" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
-                      <div className="w-7 h-7 rounded bg-blue-100 flex items-center justify-center mr-2">
-                        <FileCheck className="h-3 w-3 text-blue-700" />
-                      </div>
-                      <div>
-                        <div className="text-[12px] font-bold text-[#000000]">IND Wizard™</div>
-                        <div className="text-[10px] text-gray-500">Guided IND/CTA submission</div>
-                      </div>
-                    </Link>
-                    <Link to="/enterprise-csr-intelligence" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
-                      <div className="w-7 h-7 rounded bg-green-100 flex items-center justify-center mr-2">
-                        <BarChart3 className="h-3 w-3 text-green-700" />
-                      </div>
-                      <div>
-                        <div className="text-[12px] font-bold text-[#000000]">CSR Intelligence™</div>
-                        <div className="text-[10px] text-gray-500">3,217+ analyzed study reports</div>
-                      </div>
-                    </Link>
-                  </div>
-                  <div className="mt-3 pt-2 border-t border-gray-100">
-                    <Link to="/solutions" className="text-[11px] font-bold text-blue-700 hover:text-blue-800 flex items-center">
-                      View All Solutions <ArrowRight className="h-3 w-3 ml-1" />
-                    </Link>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="relative group">
-                <button className="text-[13px] font-bold text-[#000000] hover:text-[#0055aa] px-2 flex items-center">
-                  Use Cases <ChevronDown className="h-3 w-3 ml-0.5" />
-                </button>
-                <div className="absolute top-full left-0 w-64 mt-1 bg-white shadow-lg border border-gray-200 rounded-md p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                  <div className="mb-2">
-                    <h4 className="text-[12px] font-bold text-blue-700 mb-1">Industry Applications</h4>
-                    <p className="text-[11px] text-gray-600">Real-world customer success stories</p>
-                  </div>
-                  <div className="grid grid-cols-1 gap-2">
-                    <Link to="/use-case-library" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
-                      <div className="w-7 h-7 rounded bg-purple-100 flex items-center justify-center mr-2">
-                        <FileText className="h-3 w-3 text-purple-700" />
-                      </div>
-                      <div>
-                        <div className="text-[12px] font-bold text-[#000000]">Case Studies</div>
-                        <div className="text-[10px] text-gray-500">Client success stories</div>
-                      </div>
-                    </Link>
-                    <Link to="/protocol-design-use-case" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
-                      <div className="w-7 h-7 rounded bg-orange-100 flex items-center justify-center mr-2">
-                        <BrainCircuit className="h-3 w-3 text-orange-700" />
-                      </div>
-                      <div>
-                        <div className="text-[12px] font-bold text-[#000000]">Protocol Design</div>
-                        <div className="text-[10px] text-gray-500">Design optimization impact</div>
-                      </div>
-                    </Link>
-                  </div>
-                  <div className="mt-3 pt-2 border-t border-gray-100">
-                    <Link to="/use-cases" className="text-[11px] font-bold text-blue-700 hover:text-blue-800 flex items-center">
-                      View All Use Cases <ArrowRight className="h-3 w-3 ml-1" />
-                    </Link>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="relative group">
-                <button className="text-[13px] font-bold text-[#000000] hover:text-[#0055aa] px-2 flex items-center">
-                  Regulatory <ChevronDown className="h-3 w-3 ml-0.5" />
-                </button>
-                <div className="absolute top-full left-0 w-64 mt-1 bg-white shadow-lg border border-gray-200 rounded-md p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                  <div className="mb-2">
-                    <h4 className="text-[12px] font-bold text-blue-700 mb-1">Regulatory Solutions</h4>
-                    <p className="text-[11px] text-gray-600">FDA, EMA, and PMDA compliance tools</p>
-                  </div>
-                  <div className="grid grid-cols-1 gap-2">
-                    <Link to="/ind/wizard" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
-                      <div className="w-7 h-7 rounded bg-blue-100 flex items-center justify-center mr-2">
-                        <FileCheck className="h-3 w-3 text-blue-700" />
-                      </div>
-                      <div>
-                        <div className="text-[12px] font-bold text-[#000000]">IND Wizard™</div>
-                        <div className="text-[10px] text-gray-500">Auto-draft Module 2/5</div>
-                      </div>
-                    </Link>
-                    <Link to="/ValidationHub" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
-                      <div className="w-7 h-7 rounded bg-red-100 flex items-center justify-center mr-2">
-                        <Shield className="h-3 w-3 text-red-700" />
-                      </div>
-                      <div>
-                        <div className="text-[12px] font-bold text-[#000000]">Validation Hub</div>
-                        <div className="text-[10px] text-gray-500">ICH/FDA/EMA validation</div>
-                      </div>
-                    </Link>
-                  </div>
-                  <div className="mt-3 pt-2 border-t border-gray-100">
-                    <Link to="/regulatory-module" className="text-[11px] font-bold text-blue-700 hover:text-blue-800 flex items-center">
-                      View Regulatory Tools <ArrowRight className="h-3 w-3 ml-1" />
-                    </Link>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="relative group">
-                <button className="text-[13px] font-bold text-[#000000] hover:text-[#0055aa] px-2 flex items-center">
-                  Documents <ChevronDown className="h-3 w-3 ml-0.5" />
-                </button>
-                <div className="absolute top-full left-0 w-64 mt-1 bg-white shadow-lg border border-gray-200 rounded-md p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                  <div className="mb-2">
-                    <h4 className="text-[12px] font-bold text-blue-700 mb-1">Document Solutions</h4>
-                    <p className="text-[11px] text-gray-600">Enterprise-grade document intelligence</p>
-                  </div>
-                  <div className="grid grid-cols-1 gap-2">
-                    <Link to="/DocumentManagement" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
-                      <div className="w-7 h-7 rounded bg-blue-100 flex items-center justify-center mr-2">
-                        <FileText className="h-3 w-3 text-blue-700" />
-                      </div>
-                      <div>
-                        <div className="text-[12px] font-bold text-[#000000]">Vault™ Workspace</div>
-                        <div className="text-[10px] text-gray-500">Version history & audit</div>
-                      </div>
-                    </Link>
-                    <Link to="/EnterpriseDocumentVault" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
-                      <div className="w-7 h-7 rounded bg-green-100 flex items-center justify-center mr-2">
-                        <LayoutDashboard className="h-3 w-3 text-green-700" />
-                      </div>
-                      <div>
-                        <div className="text-[12px] font-bold text-[#000000]">Enterprise Version</div>
-                        <div className="text-[10px] text-gray-500">Team collaboration suite</div>
-                      </div>
-                    </Link>
-                  </div>
-                  <div className="mt-3 pt-2 border-t border-gray-100">
-                    <Link to="/document-management" className="text-[11px] font-bold text-blue-700 hover:text-blue-800 flex items-center">
-                      View Document Tools <ArrowRight className="h-3 w-3 ml-1" />
-                    </Link>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="relative group">
-                <button className="text-[13px] font-bold text-[#000000] hover:text-[#0055aa] px-2 flex items-center">
-                  CMC <ChevronDown className="h-3 w-3 ml-0.5" />
-                </button>
-                <div className="absolute top-full left-0 w-64 mt-1 bg-white shadow-lg border border-gray-200 rounded-md p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                  <div className="mb-2">
-                    <h4 className="text-[12px] font-bold text-blue-700 mb-1">CMC Toolset</h4>
-                    <p className="text-[11px] text-gray-600">Chemistry, Manufacturing & Controls</p>
-                  </div>
-                  <div className="grid grid-cols-1 gap-2">
-                    <Link to="/CMCModule" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
-                      <div className="w-7 h-7 rounded bg-orange-100 flex items-center justify-center mr-2">
-                        <Database className="h-3 w-3 text-orange-700" />
-                      </div>
-                      <div>
-                        <div className="text-[12px] font-bold text-[#000000]">CMC Module</div>
-                        <div className="text-[10px] text-gray-500">Auto-generated module 3</div>
-                      </div>
-                    </Link>
-                    <Link to="/CMCBlueprintGenerator" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
-                      <div className="w-7 h-7 rounded bg-blue-100 flex items-center justify-center mr-2">
-                        <Sparkles className="h-3 w-3 text-blue-700" />
-                      </div>
-                      <div>
-                        <div className="text-[12px] font-bold text-[#000000]">Blueprint Generator</div>
-                        <div className="text-[10px] text-gray-500">CMC compliance plans</div>
-                      </div>
-                    </Link>
-                  </div>
-                  <div className="mt-3 pt-2 border-t border-gray-100">
-                    <Link to="/cmc-module" className="text-[11px] font-bold text-blue-700 hover:text-blue-800 flex items-center">
-                      Open CMC Module <ArrowRight className="h-3 w-3 ml-1" />
-                    </Link>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="relative group">
-                <button className="text-[13px] font-bold text-[#000000] hover:text-[#0055aa] px-2 flex items-center">
-                  CER <ChevronDown className="h-3 w-3 ml-0.5" />
-                </button>
-                <div className="absolute top-full left-0 w-64 mt-1 bg-white shadow-lg border border-gray-200 rounded-md p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                  <div className="mb-2">
-                    <h4 className="text-[12px] font-bold text-blue-700 mb-1">Clinical Evaluation Reports</h4>
-                    <p className="text-[11px] text-gray-600">AI-powered CER generation in 5 minutes</p>
-                  </div>
-                  <div className="grid grid-cols-1 gap-2">
-                    <Link to="/CERGenerator" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
-                      <div className="w-7 h-7 rounded bg-green-100 flex items-center justify-center mr-2">
-                        <FileText className="h-3 w-3 text-green-700" />
-                      </div>
-                      <div>
-                        <div className="text-[12px] font-bold text-[#000000]">CER Module</div>
-                        <div className="text-[10px] text-gray-500">Standard CER builder</div>
-                      </div>
-                    </Link>
-                    <Link to="/EnterpriseGradeCERGenerator" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
-                      <div className="w-7 h-7 rounded bg-blue-100 flex items-center justify-center mr-2">
-                        <Sparkles className="h-3 w-3 text-blue-700" />
-                      </div>
-                      <div>
-                        <div className="text-[12px] font-bold text-[#000000]">Enterprise CER</div>
-                        <div className="text-[10px] text-gray-500">Advanced MedDRA integration</div>
-                      </div>
-                    </Link>
-                  </div>
-                  <div className="mt-3 pt-2 border-t border-gray-100">
-                    <Link to="/cer-module" className="text-[11px] font-bold text-blue-700 hover:text-blue-800 flex items-center">
-                      Open CER Generator <ArrowRight className="h-3 w-3 ml-1" />
-                    </Link>
-                  </div>
-                </div>
-              </div>
-              <div className="relative group">
-                <button className="text-[13px] font-bold text-[#000000] hover:text-[#0055aa] px-2 flex items-center">
-                  Monte Carlo <ChevronDown className="h-3 w-3 ml-0.5" />
-                </button>
-                <div className="absolute top-full left-0 w-64 mt-1 bg-white shadow-lg border border-gray-200 rounded-md p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                  <div className="mb-2">
-                    <h4 className="text-[12px] font-bold text-blue-700 mb-1">Statistical Design Tools</h4>
-                    <p className="text-[11px] text-gray-600">AI-powered simulation for optimized study design</p>
-                  </div>
-                  <div className="grid grid-cols-1 gap-2">
-                    <Link to="/study-planner" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
-                      <div className="w-7 h-7 rounded bg-blue-100 flex items-center justify-center mr-2">
-                        <BrainCircuit className="h-3 w-3 text-blue-700" />
-                      </div>
-                      <div>
-                        <div className="text-[12px] font-bold text-[#000000]">Study Architect™</div>
-                        <div className="text-[10px] text-gray-500">Protocol & study design studio</div>
-                      </div>
-                    </Link>
-                    <Link to="/protocol-review" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
-                      <div className="w-7 h-7 rounded bg-green-100 flex items-center justify-center mr-2">
-                        <Database className="h-3 w-3 text-green-700" />
-                      </div>
-                      <div>
-                        <div className="text-[12px] font-bold text-[#000000]">Vector Intelligence</div>
-                        <div className="text-[10px] text-gray-500">Similar trial recommendations</div>
-                      </div>
-                    </Link>
-                  </div>
-                  <div className="mt-3 pt-2 border-t border-gray-100">
-                    <Link to="/study-planner" className="text-[11px] font-bold text-blue-700 hover:text-blue-800 flex items-center">
-                      Open Monte Carlo Simulation <ArrowRight className="h-3 w-3 ml-1" />
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            {/* Right side utilities */}
-            <div className="flex items-center space-x-6">
-              <Link to="/enterprise-csr-intelligence" className="text-[#000000] hover:text-[#0055aa]">
-                <Search className="h-4 w-4" />
-              </Link>
-              <Link to="/auth" className="text-[12px] bg-orange-200/50 rounded px-3 py-1 text-[#000000] font-bold hover:bg-orange-200/70 transition">
-                Sign In
-              </Link>
-            </div>
+      {/* Navigation */}
+      <nav className="px-4 sm:px-6 lg:px-8 py-4 border-b bg-white">
+        <div className="container mx-auto flex justify-between items-center">
+          <div className="flex items-center space-x-2">
+            <FileText className="h-6 w-6 text-green-600" />
+            <span className="text-xl font-bold tracking-tight">TrialSage™</span>
+          </div>
+          <div className="hidden md:flex items-center space-x-6">
+            <Link href="/features" className="text-gray-600 hover:text-gray-900">Features</Link>
+            <Link href="/solutions" className="text-gray-600 hover:text-gray-900">Solutions</Link>
+            <Link href="/pricing" className="text-gray-600 hover:text-gray-900">Pricing</Link>
+            <Link href="/resources" className="text-gray-600 hover:text-gray-900">Resources</Link>
+          </div>
+          <div className="flex items-center space-x-3">
+            <Link href="/auth">
+              <Button variant="outline">Log In</Button>
+            </Link>
+            <Link href="/auth?signup=true">
+              <Button>Sign Up</Button>
+            </Link>
           </div>
         </div>
-        
-        {/* Main navigation - exactly like Certara */}
-        <div className="bg-white shadow">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="flex items-center justify-between h-20">
-              {/* Logo & Brand - Enhanced contrast */}
-              <div className="flex items-center">
-                <Link to="/" className="inline-flex items-center group hover:opacity-90 transition-opacity">
-                  <div className="bg-gradient-to-r from-orange-100 to-orange-200 rounded-md p-1.5 mr-2 border border-orange-300">
-                    <span className="text-[#000000] font-bold text-xs">C2C</span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-[18px] font-bold text-[#003057]">CONCEPT2CURE.AI</span>
-                    <span className="text-[12px] font-medium text-[#333] -mt-1">TrialSage™ Platform</span>
-                  </div>
-                </Link>
-              </div>
-
-              {/* Main Navigation - Improved Layout */}
-              <nav className="hidden lg:flex justify-between flex-grow mx-8">
-                {/* Primary Navigation Items */}
-                <ul className="flex items-center space-x-4">
-                  <li className="group relative">
-                    <Link to="/use-case-library" className="inline-flex items-center px-3 py-2 text-[14px] font-bold text-[#000000] hover:text-[#0055aa] transition">
-                      Solutions
-                      <ChevronDown className="ml-1 h-3 w-3 transition" />
-                    </Link>
-                    <div className="absolute top-full left-0 mt-1 w-64 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 bg-white shadow-lg border border-gray-200 z-50 py-2 rounded">
-                      <Link to="/ind-wizard" className="block px-4 py-2 text-[13px] font-medium text-[#222] hover:bg-gray-50 flex justify-between items-center">
-                        <span>IND Wizard™</span>
-                        <span className="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-bold">New</span>
-                      </Link>
-                      <Link to="/enterprise-csr-intelligence" className="block px-4 py-2 text-[13px] font-medium text-[#222] hover:bg-gray-50">
-                        CSR Intelligence™
-                      </Link>
-                      <Link to="/protocol-design-use-case" className="block px-4 py-2 text-[13px] font-medium text-[#222] hover:bg-gray-50">
-                        Protocol Design™
-                      </Link>
-                      <Link to="/cmc-insights-use-case" className="block px-4 py-2 text-[13px] font-medium text-[#222] hover:bg-gray-50">
-                        CMC Insights™
-                      </Link>
-                      <div className="border-t border-gray-100 my-1"></div>
-                      <Link to="/use-case-library" className="block px-4 py-2 text-[13px] font-semibold text-[#003057] hover:bg-blue-50">
-                        View All Solutions
-                      </Link>
-                    </div>
-                  </li>
-                  
-                  <li className="group relative">
-                    <Link to="/ind-wizard" className="inline-flex items-center px-3 py-2 text-[14px] font-bold text-[#000000] hover:text-[#0055aa] transition">
-                      IND Wizard
-                    </Link>
-                  </li>
-                  
-                  <li className="group relative">
-                    <Link to="/enterprise-csr-intelligence" className="inline-flex items-center px-3 py-2 text-[14px] font-bold text-[#000000] hover:text-[#0055aa] transition">
-                      CSR Intelligence
-                    </Link>
-                  </li>
-                  
-                  <li className="group relative">
-                    <Link to="/versions" className="inline-flex items-center px-3 py-2 text-[14px] font-bold text-[#003057] hover:text-[#0055aa] transition bg-blue-50 rounded">
-                      TrialSage.AI Solutions
-                    </Link>
-                  </li>
-                </ul>
-                
-                {/* Secondary Navigation Items (Moved from top bar) */}
-                <ul className="flex items-center space-x-4">
-                  <li>
-                    <Link to="/analytics-dashboard" className="inline-flex items-center px-3 py-2 text-[14px] font-bold text-[#000000] hover:text-[#0055aa] transition">
-                      Analytics
-                    </Link>
-                  </li>
-                  
-                  <li>
-                    <Link to="/ask-lumen" className="inline-flex items-center px-3 py-2 text-[14px] font-bold text-[#000000] hover:text-[#0055aa] transition">
-                      Ask Lumen™
-                    </Link>
-                  </li>
-                  
-                  <li>
-                    <Link to="/enterprise-csr-intelligence" className="text-[14px] font-bold text-[#000000] hover:text-[#0055aa] transition">
-                      News
-                    </Link>
-                  </li>
-                  
-                  <li>
-                    <Link to="/document-management" className="text-[14px] font-bold text-[#000000] hover:text-[#0055aa] transition">
-                      Resources
-                    </Link>
-                  </li>
-                  
-                  <li>
-                    <Link to="/team-signup" className="text-[14px] font-bold text-[#000000] hover:text-[#0055aa] transition">
-                      Contact
-                    </Link>
-                  </li>
-                  
-                  <li className="relative group">
-                    <a className="text-[14px] flex items-center font-bold text-[#000000] hover:text-[#0055aa] transition cursor-pointer">
-                      English
-                      <ChevronDown className="ml-1 h-3 w-3" />
-                    </a>
-                    <div className="absolute right-0 mt-1 w-24 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 bg-white shadow-lg border border-gray-200 z-50 py-1 rounded">
-                      <a className="block px-4 py-1 text-[12px] font-bold text-[#000000] hover:bg-blue-50">English</a>
-                      <a className="block px-4 py-1 text-[12px] font-bold text-[#000000] hover:bg-blue-50">French</a>
-                      <a className="block px-4 py-1 text-[12px] font-bold text-[#000000] hover:bg-blue-50">German</a>
-                    </div>
-                  </li>
-                </ul>
-              </nav>
-
-              {/* Right utilities - Improved contrast */}
-              <div className="flex items-center space-x-4">
-                <Link to="/auth" className="text-[14px] font-bold text-[#000000] hover:text-[#0055aa] transition pr-4">
-                  Sign In
-                </Link>
-                
-                <Link to="/auth">
-                  <button className="bg-[#0055aa] hover:bg-[#003c77] text-white py-2 px-4 text-[14px] font-bold transition">
-                    Get Started
-                  </button>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      </nav>
 
       {/* Hero Section */}
-      <section className="relative bg-[#f7f7f7] overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 py-14 relative z-10">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-            <div>
-              <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mb-4">
-                Regulatory Intelligence—Reimagined.
-              </div>
-              <h1 className="text-3xl md:text-4xl font-light text-[#003057] mb-3 leading-tight">
-                <span className="font-semibold">AI-Powered</span> Regulatory Document Intelligence
-              </h1>
-              <p className="text-[15px] text-[#444] mb-2">
-                TrialSage™ slashes regulatory submission time by 67% with deep semantic understanding of clinical trial data across <CSRCounter /> and 58 therapeutic areas.
-              </p>
-              <p className="text-[13px] text-blue-600 font-medium mb-4">
-                From Protocol to Product Approval—One Platform.
-              </p>
-              <div className="flex flex-wrap space-x-3 mb-5">
-                <div className="flex items-center">
-                  <CheckCircle className="h-4 w-4 text-green-500 mr-1" />
-                  <span className="text-xs text-[#444]">21 CFR Part 11</span>
-                </div>
-                <div className="flex items-center">
-                  <CheckCircle className="h-4 w-4 text-green-500 mr-1" />
-                  <span className="text-xs text-[#444]">FDA/EMA/PMDA Compliant</span>
-                </div>
-                <div className="flex items-center">
-                  <CheckCircle className="h-4 w-4 text-green-500 mr-1" />
-                  <span className="text-xs text-[#444]">92% First-Pass Success</span>
-                </div>
-              </div>
-              <div className="flex space-x-3">
-                <Link to="/ind-wizard">
-                  <button className="bg-[#0055aa] hover:bg-[#003c77] text-white py-2 px-4 text-sm font-bold rounded-md transition">
-                    Start IND Wizard™
-                  </button>
+      <section className="pt-16 pb-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white to-green-50">
+        <div className="container mx-auto">
+          <div className="max-w-6xl mx-auto text-center mb-12">
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4 text-gray-900">
+              Revolutionize Your Regulatory Document Workflow with AI
+            </h1>
+            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+              The all-in-one platform for pharmaceutical R&D teams, offering intelligent submission building, validation, and compliance checking.
+            </p>
+            
+            {/* Solutions and Entry Points Banner */}
+            <div className="bg-white p-6 rounded-lg shadow-md mb-8 max-w-4xl mx-auto">
+              <h3 className="text-lg font-semibold text-green-800 mb-4">Solutions & Entry Points</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <Link href="/ind-wizard" className="flex flex-col items-center p-3 bg-green-50 rounded-md hover:bg-green-100 transition-colors">
+                  <Brain className="h-8 w-8 text-purple-600 mb-2" />
+                  <span className="text-sm font-medium text-center">IND Wizard™</span>
                 </Link>
-                <Link to="/use-case-library">
-                  <button className="bg-white hover:bg-gray-50 text-[#111] border border-gray-300 py-2 px-4 text-sm font-semibold rounded-md transition">
-                    View Solutions
-                  </button>
+                <Link href="/clinical-metadata" className="flex flex-col items-center p-3 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors">
+                  <Database className="h-8 w-8 text-blue-600 mb-2" />
+                  <span className="text-sm font-medium text-center">Metadata Repository</span>
+                </Link>
+                <Link href="/study-architect" className="flex flex-col items-center p-3 bg-amber-50 rounded-md hover:bg-amber-100 transition-colors">
+                  <Beaker className="h-8 w-8 text-amber-600 mb-2" />
+                  <span className="text-sm font-medium text-center">Study Architect™</span>
+                </Link>
+                <Link href="/csr-intelligence" className="flex flex-col items-center p-3 bg-green-50 rounded-md hover:bg-green-100 transition-colors">
+                  <FileText className="h-8 w-8 text-green-600 mb-2" />
+                  <span className="text-sm font-medium text-center">CSR Intelligence™</span>
                 </Link>
               </div>
-            </div>
-            <div className="hidden md:block">
-              <div className="bg-white rounded-lg shadow-xl p-4 border border-blue-100">
-                <div className="text-[#003057] font-bold text-lg mb-2">Why TrialSage™?</div>
-                <div className="space-y-2">
-                  <div className="flex items-start">
-                    <div className="bg-blue-600 rounded-full h-2 w-2 mt-1.5 mr-2 flex-shrink-0"></div>
-                    <span className="text-sm">Build & Submit with Confidence: Intelligently draft INDs, NDAs, and CTAs with one-click validation</span>
-                  </div>
-                  <div className="flex items-start">
-                    <div className="bg-blue-600 rounded-full h-2 w-2 mt-1.5 mr-2 flex-shrink-0"></div>
-                    <span className="text-sm">Data to Regulatory-Ready Outputs: AI-driven CSR Intelligence across <CSRCounter /> documents</span>
-                  </div>
-                  <div className="flex items-start">
-                    <div className="bg-blue-600 rounded-full h-2 w-2 mt-1.5 mr-2 flex-shrink-0"></div>
-                    <span className="text-sm">Single Source of Truth: Vault™ Workspace for CMC, CER, protocols and submissions</span>
-                  </div>
-                  <div className="flex items-start">
-                    <div className="bg-blue-600 rounded-full h-2 w-2 mt-1.5 mr-2 flex-shrink-0"></div>
-                    <span className="text-sm">AI Co-Pilot: Ask natural-language questions, get GPT-4o explanations, and fix validation errors</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Featured Solutions */}
-      <section className="py-10 bg-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-[#003057]">Enterprise-Grade Regulatory AI Solutions</h2>
-            <p className="text-sm text-blue-600 mt-1">AI-Powered Document Drafting. Global-Ready Compliance.</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {/* IND Wizard */}
-            <div className="bg-gradient-to-br from-blue-50 to-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition">
-              <div className="flex items-start mb-3">
-                <div className="w-8 h-8 rounded-md bg-blue-100 flex items-center justify-center mr-3">
-                  <FileCheck className="h-4 w-4 text-blue-600" />
-                </div>
-                <h3 className="text-lg font-bold text-[#003057]">IND Wizard™</h3>
-              </div>
-              <div className="ml-11">
-                <div className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 mb-2">
-                  67% Faster Submissions
-                </div>
-                <p className="text-[13px] text-gray-700 mb-3">
-                  Guided questionnaire autopopulates Module 2 & 5 narratives with one-click eCTD packaging, validation, and health authority delivery.
-                </p>
-                <div className="mb-4">
-                  <div className="flex items-center mb-1">
-                    <div className="bg-green-500 rounded-full h-1.5 w-1.5 mr-1.5"></div>
-                    <span className="text-xs text-gray-600">Semantic protocol understanding</span>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="bg-green-500 rounded-full h-1.5 w-1.5 mr-1.5"></div>
-                    <span className="text-xs text-gray-600">Real-time FDA guidance sync</span>
-                  </div>
-                </div>
-                <Link to="/ind-wizard" className="text-[13px] font-bold text-[#003057] hover:text-[#0066bb] inline-flex items-center">
-                  Learn more <ArrowRight className="ml-1 h-3 w-3" />
-                </Link>
-              </div>
-            </div>
-
-            {/* CSR Intelligence */}
-            <div className="bg-gradient-to-br from-green-50 to-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition">
-              <div className="flex items-start mb-3">
-                <div className="w-8 h-8 rounded-md bg-green-100 flex items-center justify-center mr-3">
-                  <BarChart3 className="h-4 w-4 text-green-600" />
-                </div>
-                <h3 className="text-lg font-bold text-[#003057]">CSR Intelligence™</h3>
-              </div>
-              <div className="ml-11">
-                <div className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 mb-2">
-                  <CSRCounter /> Analyzed
-                </div>
-                <p className="text-[13px] text-gray-700 mb-3">
-                  Semantic NLP analysis of clinical study reports for cross-trial endpoint comparisons and safety signal detection with AI-powered risk mitigation.
-                </p>
-                <div className="mb-4">
-                  <div className="flex items-center mb-1">
-                    <div className="bg-green-500 rounded-full h-1.5 w-1.5 mr-1.5"></div>
-                    <span className="text-xs text-gray-600">25 enterprise analytics dashboards</span>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="bg-green-500 rounded-full h-1.5 w-1.5 mr-1.5"></div>
-                    <span className="text-xs text-gray-600">Protocol success predictors</span>
-                  </div>
-                </div>
-                <Link to="/enterprise-csr-intelligence" className="text-[13px] font-bold text-[#003057] hover:text-[#0066bb] inline-flex items-center">
-                  Learn more <ArrowRight className="ml-1 h-3 w-3" />
-                </Link>
-              </div>
-            </div>
-
-            {/* Ask Lumen */}
-            <div className="bg-gradient-to-br from-purple-50 to-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition">
-              <div className="flex items-start mb-3">
-                <div className="w-8 h-8 rounded-md bg-purple-100 flex items-center justify-center mr-3">
-                  <Sparkles className="h-4 w-4 text-purple-600" />
-                </div>
-                <h3 className="text-lg font-bold text-[#003057]">Ask Lumen™</h3>
-              </div>
-              <div className="ml-11">
-                <div className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800 mb-2">
-                  Your Clinical, CMC, & CER Co-Pilot
-                </div>
-                <p className="text-[13px] text-gray-700 mb-3">
-                  GPT-4o powered assistant with specialized knowledge of CMC requirements, global regulatory standards, and context-aware document assistance.
-                </p>
-                <div className="mb-4">
-                  <div className="flex items-center mb-1">
-                    <div className="bg-green-500 rounded-full h-1.5 w-1.5 mr-1.5"></div>
-                    <span className="text-xs text-gray-600">FDA/EMA/PMDA guidance</span>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="bg-green-500 rounded-full h-1.5 w-1.5 mr-1.5"></div>
-                    <span className="text-xs text-gray-600">Context-aware document help</span>
-                  </div>
-                </div>
-                <Link to="/ask-lumen" className="text-[13px] font-bold text-[#003057] hover:text-[#0066bb] inline-flex items-center">
-                  Learn more <ArrowRight className="ml-1 h-3 w-3" />
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Additional Solutions */}
-      <section className="py-8 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-            {/* CRC Module */}
-            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition">
-              <h3 className="text-[15px] font-bold text-[#003057] mb-2 flex items-center">
-                <span className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center mr-2">
-                  <span className="block h-1.5 w-1.5 bg-blue-600 rounded-full"></span>
-                </span>
-                CRC Module
-              </h3>
-              <p className="text-xs text-gray-700 mb-2">
-                AI-powered study management with predictive enrollment models and deviation tracking.
-              </p>
-              <Link to="/crc-module" className="text-xs font-bold text-[#003057] hover:text-[#0066bb] inline-flex items-center">
-                Explore <ArrowRight className="ml-1 h-3 w-3" />
-              </Link>
             </div>
             
-            {/* CER Module */}
-            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition">
-              <h3 className="text-[15px] font-bold text-[#003057] mb-2 flex items-center">
-                <span className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center mr-2">
-                  <span className="block h-1.5 w-1.5 bg-green-600 rounded-full"></span>
-                </span>
-                CER Module
-              </h3>
-              <p className="text-xs text-gray-700 mb-2">
-                "Clinical Evaluation Report in 5 minutes" with AI-drafted sections and integrated safety data validation via MedDRA.
-              </p>
-              <Link to="/cer-module" className="text-xs font-bold text-[#003057] hover:text-[#0066bb] inline-flex items-center">
-                Explore <ArrowRight className="ml-1 h-3 w-3" />
+            <div className="flex flex-col sm:flex-row items-center justify-center space-y-3 sm:space-y-0 sm:space-x-4">
+              <Link href="/auth?signup=true">
+                <Button size="lg" className="w-full sm:w-auto">
+                  Start Free Trial
+                </Button>
               </Link>
-            </div>
-            
-            {/* Intelligent Doc Management */}
-            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition">
-              <h3 className="text-[15px] font-bold text-[#003057] mb-2 flex items-center">
-                <span className="w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center mr-2">
-                  <span className="block h-1.5 w-1.5 bg-orange-600 rounded-full"></span>
-                </span>
-                Vault™ Document Hub
-              </h3>
-              <p className="text-xs text-gray-700 mb-2">
-                Microsoft-style file explorer with drag-and-drop, folder tree, version history, and audit-ready logs.
-              </p>
-              <Link to="/document-management" className="text-xs font-bold text-[#003057] hover:text-[#0066bb] inline-flex items-center">
-                Explore <ArrowRight className="ml-1 h-3 w-3" />
-              </Link>
-            </div>
-            
-            {/* All Solutions */}
-            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition">
-              <h3 className="text-[15px] font-bold text-[#003057] mb-2 flex items-center">
-                <span className="w-5 h-5 rounded-full bg-purple-100 flex items-center justify-center mr-2">
-                  <span className="block h-1.5 w-1.5 bg-purple-600 rounded-full"></span>
-                </span>
-                All Solutions
-              </h3>
-              <p className="text-xs text-gray-700 mb-2">
-                Explore our complete regulatory intelligence suite with 25 enterprise dashboards.
-              </p>
-              <Link to="/use-case-library" className="text-xs font-bold text-[#003057] hover:text-[#0066bb] inline-flex items-center">
-                View All <ArrowRight className="ml-1 h-3 w-3" />
+              <Link href="/demo">
+                <Button variant="outline" size="lg" className="w-full sm:w-auto">
+                  Request Demo
+                </Button>
               </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-10 bg-white border-t border-gray-100">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-[#003057]">Measurable ROI</h2>
-            <p className="text-sm text-gray-600 max-w-2xl mx-auto">
-              Our deep semantic layer with FDA, EMA, PMDA, and NMPA compliance delivers quantifiable time and cost savings
+      {/* Features Section */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
+        <div className="container mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold mb-4">Transforming Regulatory Documentation</h2>
+            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+              Our AI-powered platform optimizes every aspect of the regulatory documentation process.
             </p>
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600">67%</div>
-              <p className="text-xs text-gray-600">Faster IND submissions</p>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600">58%</div>
-              <p className="text-xs text-gray-600">Faster document creation</p>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600">92%</div>
-              <p className="text-xs text-gray-600">First-pass approval rate</p>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            <Card>
+              <CardHeader>
+                <FileText className="h-10 w-10 text-green-600 mb-2" />
+                <CardTitle>ICH Wiz™</CardTitle>
+                <CardDescription>Comprehensive regulatory knowledge</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">
+                  Our Digital Compliance Coach has expert knowledge of global regulatory guidelines, helping you navigate complex requirements.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <Brain className="h-10 w-10 text-purple-600 mb-2" />
+                <CardTitle>IND Wizard™</CardTitle>
+                <CardDescription>Guided regulatory document creation</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">
+                  Quickly generate Module 2 and 5 narratives through intuitive questionnaires that autopopulate with compliant content.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <Database className="h-10 w-10 text-blue-600 mb-2" />
+                <CardTitle>CSR Intelligence™</CardTitle>
+                <CardDescription>3,217+ parsed study reports</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">
+                  Access a vast repository of clinical study reports to benchmark your trials against industry standards.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-green-600 text-white">
+        <div className="container mx-auto text-center">
+          <h2 className="text-3xl font-bold mb-6">Ready to Transform Your Document Workflows?</h2>
+          <p className="text-xl opacity-90 mb-8 max-w-3xl mx-auto">
+            Join the hundreds of pharmaceutical companies already benefiting from TrialSage™'s AI-powered platform.
+          </p>
+          <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-6">
+            <Link href="/auth?signup=true">
+              <Button size="lg" variant="secondary">
+                Start Free Trial
+              </Button>
+            </Link>
+            <Link href="/demo">
+              <Button size="lg" variant="outline" className="bg-transparent border-white text-white hover:bg-green-700">
+                Schedule a Demo
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-gradient-to-r from-orange-50 via-orange-100 to-orange-50 text-black py-8">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="mb-4 md:mb-0">
-              <p className="text-[#000000] font-bold text-sm">© 2025 CONCEPT2CURE.AI. All rights reserved.</p>
+      <footer className="bg-gray-900 text-gray-300 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="container mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div className="col-span-2">
+              <div className="flex items-center space-x-2 mb-4">
+                <FileText className="h-6 w-6 text-green-400" />
+                <span className="text-xl font-bold tracking-tight text-white">TrialSage™</span>
+              </div>
+              <p className="text-gray-400 mb-4 max-w-md">
+                Advanced AI-powered SaaS platform revolutionizing clinical and pharmaceutical document workflows.
+              </p>
             </div>
-            <div className="flex space-x-6">
-              <Link to="/privacy" className="text-[#000000] hover:text-[#0055aa] font-bold text-sm">Privacy Policy</Link>
-              <Link to="/terms" className="text-[#000000] hover:text-[#0055aa] font-bold text-sm">Terms of Service</Link>
-              <Link to="/compliance" className="text-[#000000] hover:text-[#0055aa] font-bold text-sm">Compliance</Link>
+            <div>
+              <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Solutions</h3>
+              <ul className="space-y-3">
+                <li><a href="#" className="text-gray-400 hover:text-white">IND Wizard</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white">Study Architect</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white">CSR Intelligence</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white">Clinical MDR</a></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Resources</h3>
+              <ul className="space-y-3">
+                <li><a href="#" className="text-gray-400 hover:text-white">Documentation</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white">Regulatory Blog</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white">Case Studies</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white">Support</a></li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
+            <p className="text-gray-400">© 2025 TrialSage™. All rights reserved.</p>
+            <div className="flex space-x-6 mt-4 md:mt-0">
+              <a href="#" className="text-gray-400 hover:text-white">Privacy Policy</a>
+              <a href="#" className="text-gray-400 hover:text-white">Terms of Service</a>
             </div>
           </div>
         </div>
       </footer>
     </div>
   );
-}
+};
+
+export default HomeMarketingPage;
