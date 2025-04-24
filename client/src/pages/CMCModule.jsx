@@ -7,6 +7,8 @@ import FormulationPredictor from '../components/cmc/FormulationPredictor';
 import CMCDocumentHub from '../components/cmc/CMCDocumentHub';
 import SubmissionPreparator from '../components/cmc/SubmissionPreparator';
 import RegulatoryIntelligence from '../components/cmc/RegulatoryIntelligence';
+import TaskManagementSystem from '../components/cmc/TaskManagementSystem';
+import RegulatoryWorkflowManager from '../components/cmc/RegulatoryWorkflowManager';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -95,7 +97,9 @@ import {
   ArrowRight,
   Layers,
   RotateCw,
-  Share2
+  Share2,
+  Workflow,
+  ListChecks
 } from 'lucide-react';
 import {
   HoverCard,
@@ -1144,18 +1148,26 @@ const CMCModule = () => {
       </div>
 
       <Tabs defaultValue="sections" className="w-full" onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-6 mb-6">
+        <TabsList className="grid w-full grid-cols-8 mb-6">
           <TabsTrigger value="sections" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
             <span>CMC Sections</span>
+          </TabsTrigger>
+          <TabsTrigger value="documents" className="flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            <span>Documents</span>
           </TabsTrigger>
           <TabsTrigger value="processes" className="flex items-center gap-2">
             <Factory className="h-4 w-4" />
             <span>Manufacturing</span>
           </TabsTrigger>
-          <TabsTrigger value="risk-analysis" className="flex items-center gap-2">
-            <Activity className="h-4 w-4" />
-            <span>Risk Analysis</span>
+          <TabsTrigger value="workflows" className="flex items-center gap-2">
+            <Workflow className="h-4 w-4" />
+            <span>Workflows</span>
+          </TabsTrigger>
+          <TabsTrigger value="tasks" className="flex items-center gap-2">
+            <ListChecks className="h-4 w-4" />
+            <span>Tasks</span>
           </TabsTrigger>
           <TabsTrigger value="regulatory" className="flex items-center gap-2">
             <Landmark className="h-4 w-4" />
@@ -1168,11 +1180,6 @@ const CMCModule = () => {
           <TabsTrigger value="visualizations" className="flex items-center gap-2">
             <Sparkles className="h-4 w-4" />
             <span>AI Insights</span>
-          </TabsTrigger>
-          <TabsTrigger value="global-readiness" className="flex items-center gap-2 relative">
-            <Globe className="h-4 w-4" />
-            <span>Global Readiness</span>
-            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-medium text-white">3</span>
           </TabsTrigger>
         </TabsList>
 
@@ -1589,6 +1596,54 @@ const CMCModule = () => {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="workflows" className="mt-0">
+          <div className="grid grid-cols-1 gap-6">
+            <Alert className="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900">
+              <Workflow className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              <AlertTitle className="text-blue-800 dark:text-blue-300">Intelligent Regulatory Workflow Management</AlertTitle>
+              <AlertDescription className="text-blue-700 dark:text-blue-300">
+                Manage workflows that follow regulatory processes and procedures, with built-in compliance for 21 CFR Part 11, GxP, ICH guidelines, and more. All workflows include audit trails, electronic signatures, and validation steps.
+              </AlertDescription>
+            </Alert>
+            
+            <div className="my-4">
+              <RegulatoryWorkflowManager />
+            </div>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="tasks" className="mt-0">
+          <div className="grid grid-cols-1 gap-6">
+            <Alert className="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900">
+              <ListChecks className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              <AlertTitle className="text-blue-800 dark:text-blue-300">AI-Driven Task Management</AlertTitle>
+              <AlertDescription className="text-blue-700 dark:text-blue-300">
+                Intelligent task management with regulatory compliance features, automatic prioritization, deadline tracking, and integration with document workflows. Task analytics help optimize workload and identify bottlenecks.
+              </AlertDescription>
+            </Alert>
+            
+            <div className="my-4">
+              <TaskManagementSystem />
+            </div>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="documents" className="mt-0">
+          <div className="grid grid-cols-1 gap-6">
+            <Alert className="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900">
+              <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              <AlertTitle className="text-blue-800 dark:text-blue-300">Document Management System</AlertTitle>
+              <AlertDescription className="text-blue-700 dark:text-blue-300">
+                Centralized document management for CMC regulatory submissions with intelligent organization, version control, and AI-powered document analysis. All documents are managed in compliance with regulatory requirements.
+              </AlertDescription>
+            </Alert>
+            
+            <div className="my-4">
+              <CMCDocumentHub />
             </div>
           </div>
         </TabsContent>
