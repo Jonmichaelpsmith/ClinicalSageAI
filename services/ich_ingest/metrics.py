@@ -1,104 +1,177 @@
 """
 Prometheus metrics for the ICH Specialist service.
-"""
-import time
-from fastapi import FastAPI
-from prometheus_client import Counter, Histogram, Gauge
-from prometheus_fastapi_instrumentator import Instrumentator
 
-# Define metrics
-DOCUMENTS_INGESTED = Counter(
-    'ich_documents_ingested_total',
-    'Total number of documents ingested',
-    ['type', 'status']
+This module defines metrics that will be exposed via the /metrics endpoint
+for monitoring service health, performance, and usage.
+"""
+from prometheus_client import Counter, Gauge, Histogram
+from functools import wraps
+import time
+import asyncio
+from .config import settings
+
+# Define metrics with the configurable prefix
+PREFIX = settings.METRICS_PREFIX
+
+# Document processing metrics
+DOCUMENTS_PROCESSED = Counter(
+    f"{PREFIX}documents_processed_total",
+    "Total number of documents processed by the ingestion service",
+    ["doc_type", "status"]
+)
+
+DOCUMENT_PROCESSING_TIME = Histogram(
+    f"{PREFIX}document_processing_seconds",
+    "Time spent processing documents",
+    ["doc_type", "operation"],
+    buckets=(0.1, 0.5, 1.0, 2.5, 5.0, 10.0, 30.0, 60.0, 120.0, 300.0)
+)
+
+# Retrieval metrics
+RETRIEVAL_LATENCY = Histogram(
+    f"{PREFIX}retrieval_latency_seconds",
+    "Time to retrieve documents from vector store",
+    buckets=(0.01, 0.05, 0.1, 0.5, 1.0, 2.5, 5.0, 10.0)
+)
+
+RETRIEVED_CHUNKS = Histogram(
+    f"{PREFIX}retrieved_chunks_count",
+    "Number of chunks retrieved per query",
+    buckets=(1, 3, 5, 10, 20, 50, 100)
+)
+
+# API metrics
+API_REQUESTS = Counter(
+    f"{PREFIX}api_requests_total",
+    "Total number of API requests",
+    ["endpoint", "method", "status"]
+)
+
+API_LATENCY = Histogram(
+    f"{PREFIX}api_latency_seconds",
+    "API request latency in seconds",
+    ["endpoint"],
+    buckets=(0.01, 0.05, 0.1, 0.5, 1.0, 2.5, 5.0, 10.0)
+)
+
+# Service metrics
+INGEST_QUEUE_SIZE = Gauge(
+    f"{PREFIX}ingest_queue_size",
+    "Current number of documents waiting to be processed"
 )
 
 EMBEDDING_REQUESTS = Counter(
-    'ich_embedding_requests_total',
-    'Total number of embedding requests',
-    ['status']
+    f"{PREFIX}embedding_requests_total",
+    "Total OpenAI embedding API requests made",
+    ["status"]
 )
 
-EMBEDDING_LATENCY = Histogram(
-    'ich_embedding_latency_seconds',
-    'Latency of embedding requests',
-    buckets=[0.1, 0.5, 1.0, 2.0, 5.0, 10.0]
+EMBEDDING_TOKENS = Counter(
+    f"{PREFIX}embedding_tokens_total",
+    "Total number of tokens used for embeddings"
 )
 
-AGENT_QUERIES = Counter(
-    'ich_agent_queries_total',
-    'Total number of agent queries',
-    ['module', 'status']
+OPENAI_COMPLETION_TOKENS = Counter(
+    f"{PREFIX}openai_completion_tokens_total",
+    "Total OpenAI completion tokens used",
+    ["model"]
 )
 
-AGENT_LATENCY = Histogram(
-    'ich_agent_latency_seconds',
-    'Latency of agent queries',
-    buckets=[0.1, 0.5, 1.0, 2.0, 5.0, 10.0, 30.0]
+OPENAI_PROMPT_TOKENS = Counter(
+    f"{PREFIX}openai_prompt_tokens_total",
+    "Total OpenAI prompt tokens used",
+    ["model"]
 )
 
-DOCUMENT_COUNT = Gauge(
-    'ich_document_count',
-    'Number of documents in the system',
-    ['type']
+OPENAI_REQUESTS = Counter(
+    f"{PREFIX}openai_requests_total",
+    "Total OpenAI API requests made",
+    ["operation", "status"]
 )
 
-VECTOR_COUNT = Gauge(
-    'ich_vector_count',
-    'Number of vectors in the index'
+OPENAI_LATENCY = Histogram(
+    f"{PREFIX}openai_latency_seconds",
+    "OpenAI API request latency in seconds",
+    ["operation"],
+    buckets=(0.1, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0)
 )
 
-class MetricsMiddleware:
-    """Middleware for tracking agent query metrics."""
+VECTOR_DB_OPERATIONS = Counter(
+    f"{PREFIX}vector_db_operations_total",
+    "Vector database operations",
+    ["operation", "status"]
+)
+
+VECTOR_DB_LATENCY = Histogram(
+    f"{PREFIX}vector_db_latency_seconds",
+    "Vector database operation latency in seconds",
+    ["operation"],
+    buckets=(0.01, 0.05, 0.1, 0.5, 1.0, 2.5, 5.0, 10.0)
+)
+
+# Decorator for measuring function execution time with metrics
+def time_and_count(metric_name, labels=None):
+    """
+    Decorator to measure function execution time and increment a counter.
     
-    async def __call__(self, request, call_next):
-        if request.url.path == "/api/ich-agent" and request.method == "POST":
-            module = "unknown"
-            try:
-                body = await request.json()
-                module = body.get("module", "unknown")
-            except:
-                pass
-            
+    Args:
+        metric_name: The name of the metric to use (must be defined above)
+        labels: Dict of label values to use
+    """
+    def decorator(func):
+        @wraps(func)
+        async def async_wrapper(*args, **kwargs):
+            labels_dict = labels.copy() if labels else {}
             start_time = time.time()
-            response = await call_next(request)
-            duration = time.time() - start_time
-            
-            status = "success" if response.status_code < 400 else "error"
-            AGENT_QUERIES.labels(module=module, status=status).inc()
-            AGENT_LATENCY.observe(duration)
-            
-            return response
-        return await call_next(request)
-
-def setup_metrics(app: FastAPI):
-    """Set up metrics for the FastAPI application."""
-    # Add request metrics via instrumentator
-    Instrumentator().instrument(app).expose(app)
-    
-    # Add custom metrics middleware
-    app.middleware("http")(MetricsMiddleware())
-    
-    # Initialize document counts to zero
-    DOCUMENT_COUNT.labels(type="guideline").set(0)
-    DOCUMENT_COUNT.labels(type="csr").set(0)
-    VECTOR_COUNT.set(0)
-
-def track_ingestion(doc_type: str, success: bool):
-    """Track document ingestion."""
-    status = "success" if success else "error"
-    DOCUMENTS_INGESTED.labels(type=doc_type, status=status).inc()
-
-def track_embedding(success: bool, duration: float):
-    """Track embedding request."""
-    status = "success" if success else "error"
-    EMBEDDING_REQUESTS.labels(status=status).inc()
-    EMBEDDING_LATENCY.observe(duration)
-
-def update_document_count(doc_type: str, count: int):
-    """Update document count gauge."""
-    DOCUMENT_COUNT.labels(type=doc_type).set(count)
-
-def update_vector_count(count: int):
-    """Update vector count gauge."""
-    VECTOR_COUNT.set(count)
+            try:
+                result = await func(*args, **kwargs)
+                # Set status to success on counters if not specified
+                if "status" in labels_dict and not labels_dict.get("status"):
+                    labels_dict["status"] = "success"
+                return result
+            except Exception as e:
+                # Set status to error on counters
+                if "status" in labels_dict:
+                    labels_dict["status"] = "error"
+                raise e
+            finally:
+                duration = time.time() - start_time
+                # Record metrics
+                if metric_name.endswith("_seconds"):
+                    # It's a histogram for timing
+                    label_values = [labels_dict.get(label, "") for label in globals()[metric_name]._labelnames]
+                    globals()[metric_name].labels(*label_values).observe(duration)
+                elif metric_name.endswith("_total"):
+                    # It's a counter
+                    label_values = [labels_dict.get(label, "") for label in globals()[metric_name]._labelnames]
+                    globals()[metric_name].labels(*label_values).inc()
+        
+        @wraps(func)
+        def sync_wrapper(*args, **kwargs):
+            labels_dict = labels.copy() if labels else {}
+            start_time = time.time()
+            try:
+                result = func(*args, **kwargs)
+                # Set status to success on counters if not specified
+                if "status" in labels_dict and not labels_dict.get("status"):
+                    labels_dict["status"] = "success"
+                return result
+            except Exception as e:
+                # Set status to error on counters
+                if "status" in labels_dict:
+                    labels_dict["status"] = "error"
+                raise e
+            finally:
+                duration = time.time() - start_time
+                # Record metrics
+                if metric_name.endswith("_seconds"):
+                    # It's a histogram for timing
+                    label_values = [labels_dict.get(label, "") for label in globals()[metric_name]._labelnames]
+                    globals()[metric_name].labels(*label_values).observe(duration)
+                elif metric_name.endswith("_total"):
+                    # It's a counter
+                    label_values = [labels_dict.get(label, "") for label in globals()[metric_name]._labelnames]
+                    globals()[metric_name].labels(*label_values).inc()
+        
+        return async_wrapper if asyncio.iscoroutinefunction(func) else sync_wrapper
+    return decorator
