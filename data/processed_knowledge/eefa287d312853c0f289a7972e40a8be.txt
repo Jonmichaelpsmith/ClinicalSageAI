@@ -1,0 +1,588 @@
+161Introduction
+The results of clinical trials provide the best  
+evidence of the ef/f_icacy and safety of drugs and 
+are essential to progress e
+vidence based medicine 
+(EBM).1, 2) Clinical trials have been conducted in 
+large numbers all over the world, and the number is growing every year according to the Clinical -
+Trials.gov (https://clinicaltrials.gov/ct2/resources/trends, 
+March 25, 2021). Clinical trial design is 
+one of the factors that de/f_ine the level of evidence. 
+Randomized controlled trials (RCTs) are normally 
+performed to compare efficacy and safety be -
+ ＊ 5-9-1, Shirokane, Minato-ku, Tokyo 108-8641, JapanJpn J Pharm Health Care Sci
+48(4) 161―171 (2022)
+Investigation of the Relationship between Clinical Trial Design of 
+Randomized Controlled Trials and Scientific Influence of  
+the Trial Outcome in Non-small Cell Lung Cancer
+Yutaka Noguchi＊ and Mamoru Narukawa
+Department of Clinical Medicine (Pharmaceutical Medicine), Graduate School of  
+Pharmaceutical Sciences, Kitasato University
+Received October 5, 2021
+Accepted March 7, 2022
+ɹThe results of clinical trials are essential for the advancement of evidence-based medicine (EBM). Our previous  
+research using the Relative Citation Ratio (RCR), article-based citation metric developed by the National Institutes of 
+H
+ealth (NIH), identi/f_ied that the outcomes of clinical trials designed to have a high evidence level, such as large sized 
+randomized trials, and those with novel interventions have higher scienti/f_ic in/f_luence. In the present study, aiming to further investigate the factors that improve the scienti/f_ic in/f_luence of clinical study results, we focused on randomized controlled trial (RCT) and evaluated the relationship between study design and RCR of drug intervention RCTs in  
+patients with non-small cell lung cancer (NSCLC). Publications of drug intervention RCTs for NSCLC patients published 
+b
+etween 2007 and 2016 were included. Clinical trial design factors were compared among three RCR categories with 50 
+trials in each: lowest RCR (LOW50), median RCR (50 NIH percentile [50NIH ˋile]), and highest RCR (TOP50) group. 
+The numbers of Phase 3, multi-country, for-pro/f_it company sponsored/supported, and statistically powered RCTs, which confirmed pre-defined differences between/among interventions, increased by more than 30 ˋ from 50NIH ˋile to 
+TOP50. The number of novel interventions such as EGFR-TKI and Immune checkpoint inhibitors were also increased as 
+RCR increased. Our results indicate quantitatively that the clinical trial design is an important factor that affects scienti/f_ic 
+in/f_luence of the RCT outcome. RCTs should be suf/f_iciently large to generate statistically con/f_irmatory outcomes, be  
+conducted in multiple countries, and use newer drugs in order to better contribute to the progress of EBM. 
+ɹKe
+y words  ʕʕ   clinical trial design, randomized controlled trial, bibliometric analysis, non-small cell lung cancer,  
+evidence-based medicine
+tween/among different interventions and are 
+known to have the lowest biases and provide 
+stronger evidence compared to other trial designs.2, 3)
+Some research has investigated the relationship 
+between clinical trial characteristics and scienti/f_ic influence of the trial outcome by bibliometric  
+approach.
+4-7) Bibliometrics is a quantitative analysis 
+of published papers. The Journal Impact Factor (JIF), h-index, and number of citations of the publication are well-known indicators and have been used to assess productivity of researchers/institutions or used for researches assessing  
+scientific influence of published clinical trials. Note
+162
+Jpn J Pharm Health Care SciPrevious evidence using the above indices sug -
+gested publications of positive outcome tended to 
+ha
+ve higher scienti/f_ic impact, and higher impact 
+factor journals tended to have higher sample size and used lower bias methodologies in clinical  
+trials.
+4-7) However, the existing bibliometric indices 
+are not appropriate when assessing individual publications.
+8) In order to overcome this disadvan-
+tage, NIH developed the Relative Citation Ratio (
+RCR) in 2015. The RCR is a /f_ield-adjusted and 
+time-adjusted index based on the number of  
+citations. RCR is calculated by dividing the num -
+ber of citations per year by the expected number of
+ citations per year. It has been validated by  
+experts and quantifies the scientific influence of indi
+vidual publications.9) Publications from differ -
+ent disciplines can be compared by defining the discipline of the tar
+get publications using a new 
+method, named the co-citation network. Articles funded by the NIH Research Project Grant Pro -
+gram R01 (NIH-R01) were benchmarked and 
+R
+CR = 1.0 is the median RCR of NIH-funded  
+research publications (50 NIH percentile [50NIH 
+ˋile]) in any /f_ield. Currently, the RCR is used not 
+o
+nly in the NIH, but also outside of the NIH.10-12)
+Our previous research, the first research  
+focused on the study design of drug intervention 
+clinical trial including all study phases and
+  
+assessed the scientific influence of the outcome using the RCR, identi/f_ied drug interv
+ention clini -
+cal trials designed to have a high evidence level, such as lar
+ge sized randomized trials have higher 
+scientific influence of the outcome, and novel  
+interventions also improve the in/f_luence of clinical 
+trial outcomes. Ho
+wever, we could not identify 
+the definitive factors to increase the scientific  
+influence due to a certain degree of correlation between v
+ariables.13) In the present study, aiming 
+to further investigate the factors that improve the scientific influence of clinical study results, we narrowed our focus on RCTs, which is known to provide the most reliable clinical evidence, and evaluated the relationship between study design and RCR of drug intervention RCTs in patients with non-small cell lung cancer (NSCLC) pub -
+lished between 2007 and 2016.
+In the pre
+vious and present research, we  
+focused on NSCLC to minimize variations in c
+linical trial design patterns by disease areas. 
+Lung cancer is one of the most common cancers globally and the leading cause of cancer death. In 2020, approximately 1.8 million people died due to lung cancer worldwide.
+14) NSCLC accounts for 
+around 85ˋ of all lung cancers. Cytotoxic che -
+motherapy has been the main treatment option for NSCLC in the last 10 years; ho
+wever, in recent 
+years, the therapeutic algorithm and treatment  
+options have changed drastically due to emerging molecular
+-target drugs. Predictive biomarker tests 
+have enabled the identification of highly effica -
+cious treatment options, and the prognosis has been greatly impro
+ved compared to chemotherapy.15) 
+Meanwhile, the unmet medical need remains high because most patients will experience disease progression despite the use of these highly ef/f_ica -
+cious drugs, and thus, various drug intervention c
+linical trials are being actively conducted today. 
+NSCLC is, therefore, considered appropriate for 
+this research because there were a significant 
+number of clinical trials due to high unmet medical 
+needs, the EBM was well established, and innovative new drugs have emerged in recent years.
+Materials and Methods
+1. Publication sear ch
+We used PubMed to search for publications on 
+clinical trials for NSCLC because RCR was avail -
+163
+Vol 48ɼNo 4ʢ2022ʣable for PubMed indexed publications.9) On May 
+6, 2019, we performed a PubMed search by refer -
+ring the National Comprehensive Cancer Network 
+(NCCN) guideline for NSCLC (https://www
+.
+nccn.org/professionals/physician_gls/pdf/nscl.pdf, March 25, 2021). The search term was lnon-small cell lung cancer.z  The search results were 
+narrowed by l studies in humansz  in the Species 
+category, lpublished in Englishz in the Language 
+category, and l Clinical Trial,z  lClinical Trial 
+Phase 1 to 4,z or l RCTz in the Article type cate -
+gory. In addition, the publications were narrowed to l
+Published from 20070101 to 20161231z in the 
+Publication date category to assess the changes over time during the most recent 10 years, specif -
+ically in publications for which the RCR was a
+vailable at the time of research initiation.13, 16-18) 
+The PubMed identifier (PMID) of the matched publications were downloaded.
+2. RCR and NIH per centile (NIH ˋile)
+RCR and NIHˋile, percentile rank of each pa -
+per`s RCR compared to NIH publications, are  
+publicly available in website, named iCite (https://icite.od.nih.gov/analysis, May 6, 2019). We per -
+formed an iCite search on May 6, 2019 by using t
+he downloaded PMID, and obtained the RCR 
+and NIHˋile of each publication.
+3. Identification of eligible publications
+Because the number of PubMed-searched pub -
+lications exceeded 3,100, we set three categories, each with 50 publications, to in
+vestigate the trend 
+between the clinical trial characteristics and the RCR. Fifty publications were used in several  
+bibliometrics analyses to investigate the top in/f_lu -
+ential publications, and thus considered suf/f_icient when comparing the dif
+ference of study design 
+factors among the three RCR categories.19-21) The three categories were: (1) LOW50, 50 publica -
+tions of the lowest RCR; (2) 50NIHˋile, 25 pub -
+lications below and above the median RCR; and (3) 
+TOP50, 50 publications in the highest RCR. 
+We screened publications until 50 eligible publi -
+cations were found for each category. We included 
+original publications that reported the outcome of primary objecti
+ves/endpoints of drug intervention 
+RCT in NSCLC patients. A study was de/f_ined as an RCT if participants observed in the trial were assigned prospectively to one of two or more  
+interventions using random allocation, as de/f_ined by the Cochrane Library (www
+.training.cochrane.
+org/handbook, March 25, 2021). We excluded publications reporting: i) trial results including other tumor types/disease other than NSCLC  
+patients; ii) non-drug interventions, procedures, and biomark
+ers (eg, supplements, surgical proce -
+dures, radiation, chemoradiation, diagnostic pro -
+cedures, biomarker assay, and validations); iii) retrospecti
+ve or Phase 4 trials; iv) non-primary 
+outcomes ( eg, data updates, sub-analyses, and 
+pooled analyses of multiple trials); v) non-ran -
+domized trials; and vi) others ( eg, study design,  
+conference abstracts, commentaries, reviews, and FDA approval letters).
+4. Identification of clinical trials
+For all research, we searched corresponding 
+clinical trials in clinical trial registries (ClinTrials.gov, Japan Pharmaceutical Information Center Clinical Trial Information, University Hospital Medical Information Network Clinical Trials Registry, and European Union Drug Regulating Authorities Clinical Trials Database) to /f_ind data not provided in the publication, if available. A unique trial name, trial identifier, and/or other study characteristics such as indication, interven -
+tions, number of subjects, and study outcomes 
+164
+Jpn J Pharm Health Care Sciwere used to identify the matched critical trial.
+5. Data extraction
+The following data were extracted from the 
+publications or registries: trial phase, blinding 
+status, trial sponsorship/support (for-profit com -
+pany sponsored/supported or others), trial center (multi-center
+, single-center, or unknown), trial 
+country (multi-country or single-country, with country name), number of enrolled subjects, pri -
+mary endpoints (survival-related, disease progres -
+sion/recurrence-related, response-related, and other), 
+statistical considerations (statistically 
+powered to test the hypothesis of pre-de/f_ined dif -
+ferences between/among interventions directly [statistically po
+wered] or not), trial outcome of 
+the statistically powered trial (positive: met pri -
+mary endpoint; negative: did not meet primary endpoint), and interv
+entions. In terms of trial 
+sponsorship/support, a trial was classified as for-pro/f_it company sponsored/supported if: i) ex -
+plicit acknowledgement of sponsorship/support from 
+a for-pro/f_it company was provided in the ar -
+ticle or trial registry; or ii) at least one author was an emplo
+yee of a for-pro/f_it company.22, 23) In cases 
+where the trial center information was not provided 
+in the publication or trial registry, a trial was  
+classi/f_ied as a single-center trial if all authors be -
+longed to the same af/f_iliation and as a multi-center 
+trial 
+if there were multiple author af/f_iliations and 
+multiple institutional review boards (IRBs) men -
+tioned; otherwise, it was classi/f_ied as unknown.13) 
+In cases where the trial country information was not provided in the publication or trial registry, a trial was classi/f_ied as single-country if all author institutions belonged to a single country; other -
+wise, a trial was classi/f_ied as multi-country.6. Statistical analysis
+A Fisher`s exact test was used to determine the 
+differences in the proportion of each clinical trial design factor among LOW50, 50NIH ˋile and 
+TOP50. A Kruskal-Wallis test was used to deter -
+mine differences in the number of subjects among LO
+W50, 50NIHˋile and TOP50. For all analy -
+sis, StatsDirect 3 (StatsDirect Ltd, Merseyside, UK) w
+as used, with P < 0.05 considered statisti -
+cally signi/f_icant.
+Results
+1.  RCR of the publications in the thr ee 
+RCR categories
+The flow diagram of the publication selection 
+process is shown in Fig 1 . Among the 3,100 pub -
+lications published between 2007 to 2016, a total of 
+1,021 publications (32.9ˋ) were screened to 
+identify the 50 eligible publications in each cate -
+gory. Figur e 2 shows the relationship between the 
+RCR and NIHˋile of the 3,100 publications and the publications of the three RCR categories. The median RCRs of the LOW50, 50NIHˋile, and TOP50 publications were 0.14, 1.01, and 19.01, respectively.
+2. Clinical trial design characteristics
+Figure 3  shows the differences in the clinical 
+trial design factors among the three RCR catego -
+ries. For the trial phase ( Fig 3A), the number of 
+Phase 3 trials increased from LOW50 (/f_ive trials, 10.0ˋ) to TOP50 (42 trials, 84.0ˋ). The number of Phase 2 trials was the same in the LOW50 and 50NIHˋile (33 trials, 66.0ˋ) publications, but decreased from 50NIHˋile to TOP50 (eight  
+trials, 16.0ˋ). In terms of blinding ( Fig 3B ), the 
+n
+umber of blinded trials increased from LOW50 
+165
+Vol 48ɼNo 4ʢ2022ʣ(three trials, 6.0ˋ) to TOP50 (19 trials, 38.0ˋ). 
+In terms of the number of trial centers ( Fig 3C ), 
+the number of multi-center trials increased as the RCR increased from LOW50 (32 trials, 64.0ˋ) to TOP50 (50 trials, 100ˋ). Regarding the trial country ( Fig 3D ), the number of multi-country 
+trials increased as the RCR increased from LOW50 (four trials, 8.0ˋ) to TOP50 (39 trials, 78ˋ). The number of single-country trial was highest in LOW50 (46 trials, 92ˋ), whilst most of the trials in TOP50 were multi-country trials. For trial sponsorship/support ( Fig 3E ), the num -
+ber of for-profit company sponsored/supported trials w
+as similar in LOW50 (24 trials, 48.0ˋ) Fig 1　Flow diagram of the publication selection
+RCTs for the comparison of three RCR categories.
+Fig 2　 Relative Citation Ratio (RCR) and National Institutes of Health percentile 
+(NIH％ile) of the searched 3,100 publications and the eligible publications for 
+the research
+X shows the publications of RCT in the three RCR categories. The gray dot/line shows the publications 
+not included in the three RCR categories.
+166
+Jpn J Pharm Health Care Sciand 50NIHˋile (28 trials, 56.0ˋ), and then in -
+creased in TOP50 (46 trials, 92.0ˋ). Regarding 
+t
+he primary endpoint ( Fig 3F ), important end -
+points for NSCLC treatment, such as survival- and disease progression/recurrence-related end -points, increased as RCR increased.
+Figur
+e 4 shows the subject number for each 
+RCR category. The number of subjects increased 
+as the RCR increased, with a difference of approxi -
+mately 6-fold between LOW50 (median = 74.5 
+Fig 3　Clinical trial characteristics by the Relative Citation Ratio (RCR) category
+A: Trial phase, B: Blinding status, C: Trial center, D: Trial country, E: Trial sponsorship/support, F: Primary endpoint.
+167
+Vol 48ɼNo 4ʢ2022ʣsubjects) and TOP50 (median = 434 subjects).
+Figure 5  shows the proportion of statistically 
+powered trials and their study outcomes. The 
+number of statistically powered trials increased as RCR increased. The number of positive trials in -
+creased from 50 NIHˋile (six trials, 21.4ˋ) to T
+OP50 (33 trials, 67.3ˋ), but 16 trials (32.7ˋ) 
+in TOP50 were negative.3. T ypes of intervention
+The types of interventions in each RCR category 
+are shown in Table 1 . The most common inter -
+vention in LOW50 was chemotherapy-only (38 trials, 
+76.0ˋ), and the number of chemotherapy-  
+only trials decreased as the RCR increased from LO
+W50 to TOP50 (nine trials, 18.0ˋ). The inter -
+vention of 39 trials (78.0ˋ) in TOP50 included molecular tar
+get drugs for NSCLC, and the number 
+decreased from TOP50 to LOW50 (six trials, 12.0ˋ).
+Discussion
+It is known that RCTs provide stronger evi -
+dence compared to non-randomized trials due to their lo
+wer bias.2,3) In this study, the results 
+showed that the number of non-randomized trials excluded during the publication screening de -
+creased as the RCR increased: LOW50, 190 pub -
+lications; 50NIHˋile, 69 publications; and T
+OP50, 22 publications ( Fig 1 ). Moreover, the 
+median RCR of LOW50 improved from 0.03 in the previous research, which included both RCT and non-RCTs, to 0.14 in this research only with RCT.
+13) These results support that RCTs tend to 
+Fig 4　 The number of subjects in each Relative Citation 
+Ratio (RCR) category
+Box-and-whisker plot: triangle: median, box: 25th–75th percentiles, 
+whiskers: minimum-maximum excluding outliers, ○ outliers above 
+the 75th percentile + 1.5 interquartile range, ● outliers above the 75th 
+percentile + 3.0 interquartile range.
+Fig 5　Statistical characteristics by the Relative Citation Ratio (RCR) category
+A: Statistical power, B: Outcome of primary endpoint.
+168
+Jpn J Pharm Health Care Scihave higher scienti/f_ic in/f_luence compared to non-
+RCTs because of their stronger evidence.
+The present research showed that the propor -
+tion of each trial design factor changed as the RCR cate
+gory changed. Especially, the proportion 
+of Phase 3, multi-country, for-profit company sponsored/supported, and statistically powered 
+RCTs increased more than 30 ˋ from 50NIH ˋile 
+to TOP50, the subject number increased approxi -
+mately four-fold from 50NIHˋile to TOP50, and 9
+4ˋ of trials in TOP50 used important primary 
+endpoints ( eg, overall survival or progression free 
+survival). These observations indicate that the 
+outcome of con/f_irmatory Phase 3 RCTs conducted 
+globally by pharmaceutical companies tend to have higher scienti/f_ic in/f_luence. In new oncology drug development, a Phase 3 trial normally be -
+comes a large-sized trial due to the subject num -
+bers required to con/f_irm statistically pre-de/f_ined ef
+ficacy differences against standard treatment. 
+Moreover, global collaboration is a key to expe -
+diting subject recruitment for early completion, test drugs in di
+verse populations, and facilitate 
+new drug applications in as many countries/  regions as possible.24) Trial outcomes derived from 
+con/f_irmatory global trials represent the best evi -
+dence in many regions for choosing a better treat -
+ment option, and thus, the scienti/f_ic in/f_luence of the 
+trial outcome would increase. In addition,  
+molecular target drug interventions increased as RCR increased opposed to chemotherap
+y-only 
+interventions. Seventy-eight percent of interven -
+tions were molecular target drugs in the TOP50, 
+a
+nd immune checkpoint inhibitors and ALK/ROS1 
+inhibitors were tested only in the TOP50. This  
+indicates that newly developed and highly effica -
+cious drugs can increase the scientific influence of the trial outcome.
+There were 49 (98.0
+ˋ) statistically powered 
+trials in TOP 50. Of them, 16 trials did not meet the primary endpoint. This result suggests, from  
+a statistical perspective, that a positive outcome  
+is not always required to gain higher scientific  
+in/f_luence. Rather, the statistical power to con/f_irm a pre-de/f_ined dif
+ference will be equally important or 
+more important to gain higher scienti/f_ic in/f_luence. It is reported that the success rate of oncology RCTs was approximately 30ˋ, and in 82ˋ of negative Intervention LOW50 50NIH％ile TOP50
+Chemotherapy-only 38 15  9
+Molecular target drug included*  6 24 39
+-　　EGFR-TKI  3  8 21
+-　　Immune checkpoint inhibitor  0  0  7
+-　　ALK inhibitor  0  0  2
+-　　VEGF/VEGFR-mAb  3  4  3
+-　　EGFR-mAb  0  1  3
+-　　Other  0 14  7
+Other  6 11  2
+＊If multiple type of molecular-target drugs were tested in a trial, each molecular-target 
+drug was counted for each type.Abbreviations: ALK: anaplastic lymphoma kinase, EGFR-TKI: epidermal growth factor receptor-tyrosine kinase inhibitor, LOW50: 50 publications with the lowest RCR, mAb: monoclonal antibody, RCR: Relative Citation Ratio, TOP50: 50 publications with the highest RCR, VEGF: vascular endothelial growth factor, VEGFR: vascular endothelial growth factor receptor, 50NIH％ile: 25 publications just below and just above the median RCR (50 publications in total).Table 1　The type of intervention(s) of the trial in each RCR category
+169
+Vol 48ɼNo 4ʢ2022ʣtrials, the result was due to lack of efficacy.25-27) 
+Because a negative outcome is not equal to l no 
+evidence,z  and in fact generates important  
+insights for the next hypothesis, statistical measures 
+t
+hat lead to conclusive outcomes will contribute 
+to the progress of drug development and EBM, 
+regardless of outcomes.
+In contrast, most of the trials in LOW50 were 
+non-Phase 3 (90.0ˋ), single-country (92.0ˋ), involved non-important endpoints ( eg, response 
+rate, safety, feasibility: 74.0ˋ), and were not sta -
+tistically powered for direct comparison between the interv
+entions (78.0ˋ). These RCTs were de -
+signed for exploratory purposes, such as to select 
+b
+etter doses/regimens, estimate ef/f_icacy differences 
+between the interventions for the next con/f_irmatory trials, or just to compare interventions descriptively. While this type of study provides important  
+information to proceed to later phase trials, or  
+answers some clinical questions which physicians may ha
+ve, they do not provide statistically  
+conclusive results. Thus, the utility of the trial out -
+come is limited, and that would limit the scienti/f_ic 
+in/f_luence of the outcome.
+Mos
+t published TOP50 trials were sponsored/
+supported by pharmaceutical companies, and some other trials were supported by the NIH or led by oncology cooperative trial groups. It has been reported that the proportion of global trials funded by industry is 10-fold higher than non-in -
+dustry sponsored trials (30.3ˋ and 3.2ˋ, respec -
+tively), and the lack of funding is the most critical barrier for academic clinical cancer researchers to conduct clinical research.
+28, 29) Funding support 
+from for-pro/f_it companies or non-pro/f_it organiza -
+tions will be important for academic researchers t
+o conduct large-sized, con/f_irmatory trials which 
+will lead to highly in/f_luential outcomes.
+Our research had several limitations. First, while several measures have been taken to en -
+hance the publication of clinical trial results, not a
+ll clinical trials publish their results in journals 
+and there is a risk of publication bias.30, 31) This is 
+an inevitable limitation of bibliometric analysis; however, it is expected that this bias will be smaller in future because advanced efforts to im -
+prove the clinical trial transparency including trial 
+re
+gistry, result reporting and data sharing are ongo -
+ing globally (https://www.jpma.or.jp/basis/rinsyo/
+lofurc0000001vkc-att/polic
+y18.pdf, December 13, 
+2021). Second, RCR is one of the citations based 
+bibliometric index, and does not directly indicate the degree of contributions to the progression  
+of EBM. However, RCR is a better available  
+indicator to assess the influence of individual publications compared to JIF or citation numbers. The de
+velopment of better article-based biblio -
+metric indicator capable of evaluating usefulness o
+f the research outcome and its contribution to 
+the progress of EBM is expected. Third, it was not possible to assess the degree of contribution of each factor to the increase in RCR due to cor -
+relations among the study design factors. Rather than our comprehensi
+ve analysis, the research  
+focused on more fragmented study design or  
+disease area could reveal de/f_initive factor which impact on the scienti/f_ic in/f_luence of the outcome. Finally
+, our /f_indings might not be directly appli -
+cable to other disease areas or interventions since w
+e focused on drug intervention clinical trials in 
+NSCLC patients to maintain consistency of base -
+line characteristics of the study design. The re-
+search by using our bibliometric approach would 
+be v
+aluable to identify the factors that impact on 
+the scientific outcome of clinical trial in each  
+disease area or intervention.
+In conclusion, our research sho
+wed quantita -
+tively that the clinical trial design would have ef -
+170
+Jpn J Pharm Health Care Scifect on the scientific influence of the RCT out -
+come. The trial results of large-sized, multi-  
+country, statistically powered con/f_irmatory RCTs 
+with no
+vel interventions have higher scientific  
+in/f_luence. Statistical power is an equally important 
+or more 
+important factor than a positive RCT  
+outcome to gain high scientific influence of the outcome. Outcomes of small-sized, e
+xploratory, 
+chemotherapy-only, and single-country RCTs tend to have lower scientific influence. Besides new drug development by pharmaceutical company, use of clinical study collaborative groups capable of conducting multi-center/country studies, acquisition of research funding from the government, and  
+investigator-initiated clinical trial by collaborating 
+with pharmaceutical compa
+ny are one of the  
+solutions to conduct highly in/f_luential trial. Phar -
+maceutical companies can contribute to the con -
+duct of highly influential trials by developing no
+vel compounds and supporting researchers with 
+funding.
+Acknowledgments
+The authors acknowledge Masayuki Kaneko 
+(Showa University) and Yumiko Asami (CSL Behring) for their useful advice on this study. We would like to thank Editage (www.editage.com) for English language editing.
+Conflict of Interests
+None of the authors have any con/f_licts of interest 
+that are directly relevant to this research. Yutaka Noguchi is an employee of Daiichi Sankyo Co., Ltd.References
+ 1) Sackett DL, Rosenberg WM, Gray JA, Haynes RB, 
+Richardson WS, Evidence based medicine: what it is 
+and what it isn`t, BMJ , 1996, 312, 71-72.
+ 2) Burns PB, Rohrich RJ, Chung KC, The levels of evi -
+dence and their role in evidence-based medicine, 
+Plast Reconstr Sur
+g, 2011, 128, 305-310.
+ 3) Merlin T, Weston A, Tooher R, Extending an evi -
+dence hierarchy to include topics other than treat-
+ment: revising the Australian ble vels of evidence` , 
+BMC Med Res Methodol , 2009, 9, 34. doi: 10.1186/  
+1471-2288-9-34.
+ 
+4) Unger JM, Barlow WE, Ramsey SD, LeBlanc M, 
+Blanke CD, Hershman DL, The Scienti/f_ic Impact of 
+Positive and Negative Phase 3 Cancer Clinical Trials, 
+JAMA Oncol , 2016, 2, 875-881.
+ 5) Bala MM, Akl EA, Sun X, Bassler D, Mertz D,  
+Mejza F, Vandvik PO, Malaga G, Johnston BC, 
+Dahm P
+, Alonso-Coello P, Diaz-Granados N,  
+Srinathan SK, Hassouneh B, Briel M, Busse JW, You JJ, 
+Walter SD, Altman DG, Guyatt GH, Randomized 
+trials published in higher vs. lower impact journals differ in design, conduct, and analysis, J Clin  
+Epidemiol , 2013, 66, 286-295.
+ 
+6) Kuroki LM, Allsworth JE, Peipert JF, Methodology 
+and analytic techniques used in clinical research:  
+associations with journal impact factor, Obstet   
+Gynecol , 2009, 114, 877-884.
+ 
+7) Gluud LL, Sørensen TIA, Gøtzsche PC, Gluud C, 
+The journal impact factor as a predictor of trial  
+quality and outcomes: cohort study of hepatobiliary randomized clinical trials, Am J Gastr 
+oenterol , 2005, 
+100, 2431-2435.
+ 8) Moed HF, New developments in the use of citation 
+analysis in research evaluation, Arch Immunol Ther 
+Exp (Warsz) , 2009, 57, 13-18.
+ 9) Hutchins BI, Yuan X, Anderson JM, Santangelo GM, 
+Relative Citation Ratio (RCR): A new metric that uses citation rates to measure in/f_luence at the article level, PLoS Biol , 2016, 14, e1002541. doi: 10.1371/
+journal.pbio.1002541.
+ 10) Rock CB, Prabhu A V , Fuller CD, Thomas CR Jr, 
+Holliday EB, Evaluation of the Relative Citation  
+Ratio, a new National Institutes of Health-supported bibliometric measure of research producti
+vity, 
+among academic radiation oncologists, J Am Coll 
+Radiol , 2018, 15, 469-474.
+ 11) Reddy V , Gupta A, White MD, Gupta R, Agarwal P, 
+Prabhu A V , Assessment of the NIH-supported  
+171
+Vol 48ɼNo 4ʢ2022ʣrelative citation ratio as a measure of research  
+productivity among 1687 academic neurological  
+surgeons, J Neur osurg , 2020, 31, 1-8.
+ 12) Surkis A, Spore S, The relative citation ratio: what is 
+it and why should medical librarians care?, J Med 
+Libr Assoc , 2018, 106, 508-513.
+ 13) Noguchi Y , Kaneko M, Narukawa M, Characteristics 
+of drug intervention clinical trials and scientific  
+impact of the trial outcome: A bibliometric analysis 
+using the relati
+ve citation ratio in non-small cell lung 
+cancer from 2007 to 2016, Ther Innov Regul Sci , 
+2020, 54, 1501-1511.
+ 14) Sung H, Ferlay J, Siegel RL, Laversanne M,  
+Soerjomataram I, Jemal A, Bray F, Global cancer statistics 2020: GLOBOCAN estimates of incidence and mortality w
+orldwide for 36 cancers in 185 coun -
+tries, CA Cancer J Clin , 2021, 71, 209-249.
+ 
+15) Howlader N, Forjaz G, Mooradian MJ, Meza R, 
+Kong CY , Cronin KA, Mariotto AB, Lowy DR, Feuer EJ, The Effect of Advances in Lung-Cancer Treatment on Population Mortality, N Engl J Med , 
+2020, 383, 640-649.
+ 16) Rifkin WJ, Yang JH, DeMitchell-Rodriguez E,  
+Kantar RS, Diaz-Siso JR, Rodriguez ED, Levels of e
+vidence in plastic surgery research: A 10-year  
+bibliometric analysis of 18,889 publications from 4 major journals, Aesthet Sur 
+g J, 2020, 40, 220-227.
+ 17) Wang Z, He X, Qiao H, Chen P, Global trends of  
+organoid and organ-on-a-chip in the past decade: A bibliometric and comparati
+ve study, Tissue Eng Part 
+A, 2020, 26, 656-671.
+ 18) Cai X, Zhou C, Zhou L, Xu Q, A bibliometric analy -
+sis of IL-35 research from 2009 to 2018, P eer J , 
+2019, 7, e7992. doi: 10.7717/peerj.7992.
+ 19) Malik AT, Jain N, Yu E, Khan SN, The top 50 most-  
+cited articles on cervical spondylotic myelopathy, 
+W
+orld Neurosurg , 2018, 116, e1168-e1180. doi: 
+10.1016/j.wneu.2018.05.191.
+ 20) Alan N, Cohen J, Ozpinar A, Agarwal N, Kanter AS, 
+Okonkwo DO, Hamilton DK, Top 50 most cited arti -
+cles on primary tumors of the spine, J Clin Neur osci, 
+2017, 42, 19-27.
+ 21) Ankomah F, Ikpeze T, Mes/f_in A, The top 50 most-  
+cited articles on thoracolumbar fractures, W orld  
+Neurosurg , 2018, 118, e699-e706. doi: 10.1016/  
+j.wneu.2018.07.022.
+ 
+22) Flacco ME, Manzoli L, Boccia S, Capasso L, Aleksovska K, Rosso A, Scaioli G, De Vito C,  
+Siliquini R, Villari P, Ioannidis JP, Head-to-head  
+randomized trials are mostly industry sponsored and 
+a
+lmost always favor the industry sponsor, J Clin  
+Epidemiol , 2015, 68, 811-820.
+ 
+23) Lexchin J, Bero LA, Djulbegovic B, Clark O,  
+Pharmaceutical industry sponsorship and research outcome 
+and quality: systematic review, BMJ , 2003, 
+326, 1167-1170.
+ 24) Tang M, Joensuu H, Simes RJ, Price TJ, Yip S, 
+Hague W, Sjoquist KM, Zalcberg J, Challenges of international oncology trial collaboration–a call to action, Br J Cancer , 2019, 121, 515-521.
+ 25) DiMasi JA, Feldman L, Seckler A, Wilson A, Trends 
+in risks associated with new drug development: suc -
+cess rates for investigational drugs, Clin Pharmacol
+  
+Ther , 2020, 87, 272-277.
+ 26) Djulbegovic B, Kumar A, Soares HP, Hozo I, Bepler 
+G, Clarke M, Bennett CL, Treatment success in  
+cancer: new cancer treatment successes identi/f_ied in phase 3 randomized controlled trials conducted by
+ 
+the National Cancer Institute-sponsored cooperative oncology groups, 1955 to 2006, Arch Intern Med , 
+2008, 168, 632-642.
+ 27) Jardim DL, Groves ES, Breitfeld PP, Kurzrock R, 
+Factors associated with failure of oncology drugs in late-stage clinical development: A systematic review, 
+Cancer Treat Rev , 2017, 52, 12-21.
+ 28) Atal I, Trinquart L, Porcher R, and Ravaud P, Differ -
+ential Globalization of Industry- and Non-Industry 
+S
+ponsored Clinical Trials, PLoS One , 2015, 10, 
+e0145122. doi: 10.1371/journal.pone.0145122.
+ 29) Seruga B, Sadikov A, Cazap EL, Delgado LB, 
+Digumarti R, Leighl NB, Meshref MM, Minami H, Robinson E, Yamaguchi NH, Pyle D, Cufer T,  
+Barriers and Challenges to Global Clinical Cancer Research, Oncolo
+gist, 2014, 19, 61-67.
+ 30) Hakala A, Kimmelman J, Carlisle B, Freeman G, 
+Fergusson D, Accessibility of trial reports for drugs stalling in development: a systematic assessment of 
+registered trials, BMJ , 2015, 350, h1116. doi: 10.1136/  
+bmj.h1116.
+ 
+31) Ross JS, Tse T, Zarin DA, Xu H, Zhou L, Krumholz 
+HM, Publication of NIH funded trials registered in ClinicalTrials.gov: cross sectional analysis, BMJ , 
+2012, 344, d7292. doi: 10.1136/bmj.d7292.

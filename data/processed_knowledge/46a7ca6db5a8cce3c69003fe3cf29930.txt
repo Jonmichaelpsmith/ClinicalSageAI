@@ -1,0 +1,775 @@
+Clinical Development
+QVJ499
+CQVJ499A2404 / NCT03150160
+A 6-week, Double Masked, Placebo -Controlled Study to 
+Evaluate the Efficacy and Safety of Tw ice-daily 
+Brinzolamide 1% / Brimonidine 0.2% Fixed Dose 
+Combination as an A djunctiv e Therapy to Travoprost 
+0.004% in Reducing Intraocular Pressure in Patients With 
+Normal Tension Glaucoma
+Document type: Abbreviated Clinical Study Report 
+Development phase: IV 
+Property of Novartis
+Confidentia l
+May not be used, divulged, published or otherwise disclosed
+without the consent of Novartis
+Template version 6.1 Jan 20, 2014
+1 Study  information
+Study  title: A 6 -week, Double Masked, Placebo -Controlled Study  to Evaluate the Efficacy  and 
+Safety  of Twice -daily  Brinzolamide 1% / Brimonidine 0.2% Fixed Dose Combination as an 
+Adjunctive Therap y to Travoprost 0.004% in Reducing Intraocular Pressure in Patients With 
+Normal Tension Glaucoma 
+Test drug/investigational product: Brinzolamide 1%/Brimonidine 0.2% / QVJ499
+Indication studied: Normal tension glaucoma 
+Study  design: See study  title
+Sponsor: Novartis
+Protocol identification : Protocol no. CQVJ499A240 4
+Development phase of study : IV
+Study  initiation date: 21 -Sep- 2017 (first patient first visit)
+Early termination date: 09 -Nov-
+2017
+Study  completion date: 04 -Dec-2017 (last patient last visit)
+Principal I nvestigator: Professor 
+Company /Sponsor signatory : , M.Sc , Novartis Pharmaceuticals Corporation, 
+Statement: This study  was conducted in compliance with Good Clinical Practice (GCP), 
+including the archiving of essential documents. 
+Report date(s): 09- Apr-2018 (content final)
+Earlier reports from the same study : None
+
+2 Synopsis
+3 Table of contents
+1Study  information ................................ ................................ ................................ ................ 2
+2Synopsis ................................ ................................ ................................ ............................... 3
+3Table of contents ................................ ................................ ................................ ................. 4
+List of tables ................................ ................................ ................................ ........................ 7
+List of figures ................................ ................................ ................................ ...................... 7
+4List of abbreviations and definition of terms ................................ ................................ ......8
+5Ethics ................................ ................................ ................................ ................................ ...9
+5.1 Independent ethics committee or institutional review board................................ ...9
+5.2 Ethical conduct of the study ................................ ................................ .................... 9
+5.3 Patient information and consent ................................ ................................ .............. 9
+6Investigators and stud y administrative structure ................................ ................................ .9
+7Introduction ................................ ................................ ................................ ......................... 9
+7.1 Background ................................ ................................ ................................ .............. 9
+7.2 Purpose ................................ ................................ ................................ .................. 10
+8Study  objectives ................................ ................................ ................................ ................. 10
+8.1 Primary  objective and related endpoint ................................ ................................ .10
+8.2 Secondary  objectives and related endpoint............................................................ 10
+8.3 Exploratory  objectives and related endpoints........................................................ 11
+9Investigational plan ................................ ................................ ................................ ........... 11
+9.1 Study  design ................................ ................................ ................................ ........... 11
+9.2 Discussion of study  design, including the choice of control groups ..................... 11
+9.3 Population ................................ ................................ ................................ .............. 12
+9.3.1 Inclusion criteria ................................ ................................ .................... 12
+9.3.2 Exclusi on criteria ................................ ................................ .................. 12
+9.4 Treatment ................................ ................................ ................................ ............... 13
+9.4.1 Investigational and control treatment ................................ .................... 13
+9.4.2 Treatment arms ................................ ................................ ...................... 13
+9.4.3 Treatment assignment ................................ ................................ ........... 13
+9.4.4 Treatment masking ................................ ................................ ................ 13
+9.4.5 Treating the patient ................................ ................................ ............... 14
+9.4.6 Concomitant treatment ................................ ................................ .......... 15
+9.4.7 Discontinuation of study  treatment and premature patient 
+withdrawal ................................ ................................ ............................. 15
+9.4.8 Emergency  unmasking of treatment assignment................................ ...15
+9.4.9 Early study termination ................................ ................................ ......... 15
+9.4.10 Treatment exposure and compliance ................................ ..................... 16
+9.5 Efficacy  and safet y assessments ................................ ................................ ............ 16
+9.5.1 Visit schedule........................................................................................ 16
+9.5.2 Efficacy  assessments ............................................................................. 16
+9.5.3 Safety  assessments ................................................................................ 17
+9.5.4 Other assessments ................................................................................. 17
+9.6 Data qualit y assurance ........................................................................................... 17
+9.6.1 Monitoring
+............................................................................................. 17
+9.6.2 Data collection ...................................................................................... 17
+9.6.3 Database management and quality  control ........................................... 17
+9.6.4 Quality  assurance and auditing ............................................................. 18
+9.7 Statistical methods ................................................................................................. 18
+9.7.1 Data analy sis......................................................................................... 18
+9.7.2 Analy sis sets .......................................................................................... 18
+9.7.3
+Patient disposition, demographics and other baseline characteristics ...18
+9.7.4 Treatments (stud y drug, rescue medication, other concomitant 
+therapies, compliance) ........................................................................... 19
+9.7.5 Analy sis of the primary  variable ........................................................... 19
+9.7.6 Analy sis of secondary  efficacy  variables
+.............................................. 19
+9.7.7 Safety  anal yses...................................................................................... 19
+9.7.8 Handling of missing values/censoring/discontinuations ....................... 20
+9.7.9
+Sample size calculation......................................................................... 20
+9.7.10 Power for anal ysis of key secondary  variables
+..................................... 20
+9.7.11 Interim anal ysis..................................................................................... 20
+9.8 Changes in the conduct of the study  or planned analy ses..................................... 20
+9.8.1 Protocol amendments ............................................................................ 20
+9.8.2 Other changes in study  conduct ............................................................ 20
+9.8.3 Changes in planned analysis ................................................................. 20
+10Study  patients .................................................................................................................... 21
+10.1 Disposition of patients ........................................................................................... 21
+10.2
+Protocol deviations ................................................................................................ 21
+11Efficacy  evaluation ............................................................................................................ 21
+11.1 Data sets analy zed.................................................................................................. 21
+21
+11.3 Measurements of treatment compliance ................................................................ 22
+11.4 Efficacy  results and tabulations of individual patient data .................................... 22
+11.4.1 Analy
+sis of efficacy ............................................................................... 22
+11.4.2 Statistical and analy tical issues ............................................................. 23
+
+11.4.3 Tabulation of in dividual response data ................................ ................. 23
+11.4.4 Drug dose, drug concentration and relationships to response ............... 23
+11.4.5 Drug -drug and drug -disease interactions ................................ .............. 23
+11.4.6 By-patient display s................................ ................................ ................ 23
+11.4.7 Summary  of efficacy  results ................................ ................................ ..23
+12Safety  evaluation ................................ ................................ ................................ ............... 23
+12.1 Extent of exposure ................................ ................................ ................................ .23
+12.1.1 Dosage ................................ ................................ ................................ ...23
+12.1.2 Patient exposure ................................ ................................ .................... 24
+12.1.3 Concomitant medication ....................................................................... 24
+12.2 Adverse events ................................ ................................ ................................ .......24
+12.2.1 Display  of adverse events ................................ ................................ ......24
+12.2.2 Analy sis of adverse events ................................ ................................ ....24
+12.2.3 Listing of adverse events by  patient ................................ ...................... 24
+12.3 Deaths, other serious adverse events and other significant adverse events........... 24
+12.4 Clinical laboratory  evaluation ................................ ................................ ................ 24
+12.5 Vital signs, ph ysical findings and other observations related to safety................. 25
+12.5.1 Vital signs ................................ ................................ .............................. 25
+12.5.2 Electrocardiogram ................................ ................................ ................. 25
+12.5.3 Best corrected visual acuity  (BCVA) ................................ .................... 25
+12.5.4 Special safet y topics ................................ ................................ .............. 25
+12.6 Summary  of safet y results ................................ ................................ ..................... 25
+13 Discussion and overall conclusions................................ ................................ ................... 26
+List of tables
+Table 9-1 Study  medication formulation and batch numbers ................................ 13
+22
+Table 11-2 IOP measurements at each visit for patient .......... 22
+Table 12-1 Vital signs measurements at ea ch visit for patient 
+..................................................................................................... 25
+Table 12
+-2 BCVA measurements at each visit for patient ......25
+List of figures
+Figure 9 -1 Study  design .......................................................................................... 11
+
+4 List of abbreviations and definition of terms
+AE Adverse Event
+BCVA Best Corrected Visual Acuity
+BID bis in die (twice a day )
+CFB Change from baseline
+CRF Case Report Form (paper or electronic)
+DSM Drug Supply Management
+EDC Electronic Data Capture
+ETDRS Early Treated ofDiabetic Retinopathy Study
+FAS Full Analysis Set
+GCP Good Clinical Practice
+ICF Informed Consent Form
+IEC Independent Ethics Committee
+IOP Intraocular Pressure
+IRB Institutional Review Board
+IRT Interactive Response Technology
+MedDRA Medical Dictionar y for Regulatory Activities 
+OAG Open Angle Glaucoma
+PGA Prostaglandin Analogue
+PPS Per Protocol analysis set
+QD quaque die (once a day)
+RDC Remote Data Capture
+SAE Serious Adverse Event
+SAP Statistical Analysis Plan
+WHO World Health Organization 
+5 Ethics
+5.1 Independent ethics committee or institutional review board
+The study  protocol and all amendments were reviewed by the Independent Ethics Committee 
+(IEC) or Institutional Review Board (IRB) for each center, as listed in Appendix 16.1.3.
+5.2 Ethical conduct of the study
+The study  was conducted according to the ethical p rinciples of the Declaration of Helsinki.
+5.3 Patient information and consent
+Informed consent was obtained from each patient in writing at the screening visit. The study  
+was described by the Investigator or designee, who answered any questions, and written 
+information was also provided. 
+Samples of the written information given to each patient and the consent form are presented in 
+Appendix 16.1.3.
+6 Investigators and study  administrative structure
+The administrative structure of the study , including internal and external participants, is 
+described in Appendix 16.1.4-Section 1.
+A list of Investigators, their affiliations and their qualifications, plus that of other important staff 
+is provided in Appendix 16.1.4-Section 2 .
+Novartis staff analyzed this study  and authored this report. The signatures of the Principal or 
+Coordinating Investigator, the Sponsor’s Responsible Medical Officer, and the report authors 
+are provided in Appendix 16.1.5.
+7 Introduction
+7.1 Background 
+Glaucoma is a group of progressive optic neuropathies, caused by the degeneration and death 
+of retinal ganglion cells and the axons that form the optic nerve, which may lead to visual field 
+deterioration if left untreated ( Weinreb and Khaw 2004).
+Prostaglandin analogues (PGAs) are often preferred as initia l monotherapy  because of their 
+intraocular pressure (IOP) –lowering efficacy , low frequency  of systemic side effects, and lower 
+frequency  of instillation compared with older therapies such as beta-blockers 
+(Nasser and Stewart 2006 , Stewart et al 2005, Stew art et al 2008 ). One of the commonly  used 
+topical IOP lowering PGAs used to treat elevated IOP is travoprost. Travoprost 0.004% solution 
+is marketed b y Novartis under trade names Travatan®and Travatan Z®. 
+Despite the efficacy  of the PGAs, a significant proportion of patients require more than one 
+medication to reach target IOPs. Clinicians must often add medications or switch to more 
+powerful fixed dose combination drops in order to reach target pressures and manage the disease, 
+after initiation of a prostaglandin analogue (PGA ).
+The fixed dose combination of brinzolamide 1% and brimonidine 0.2% is marketed under the 
+trade name Simbrinza®. In two pivotal studies, Simbrinza, dosed twice daily  (BID), has been 
+shown to lower IOP ~ 27 -38% from untreated baselines (Aung et al 2014 , Gandolfi et al 2014 ). 
+The mechanisms by which brinzolamide 1% and brimonidine 0.2% lowers IOP differs from 
+PGAs and thus Simbrinza may be a suitable adjunctive therap y for patients on a PGA that 
+require further IOP lowering . Hence, the combination of PGA + Simbrinza should be evaluated 
+to understand the IOP lowering effect further .
+7.2 Purpose
+The purpose of this study was to determine the incremental IOP lowering that is achieved when 
+Simbrinza, BID, is used adjunctively to Travatan in patients with normal tension glaucoma that 
+may benefit from further IOP lowering. Data from this study  was intended for publications and 
+to provide health care practitioners with important treatment guidance on the use of Simbrinza 
+in this clinical set ting.
+The study  was prematurely  terminated on 09 -Nov-2017 due to administrative reasons, and not 
+based on an y safet y  or efficacy concerns (see further details in Section 9.4. 9). All participating 
+sites we re promptl y notified to stop enrollment and to discontinue ongoing patients. 
+8 Study  objectives
+8.1 Primary  objective and related endpoint
+Primary Objective Endpoint for primary objective
+To demonstrate that Simbrinza is superior to 
+placebo in lowering diurnal IOP when added to 
+baseline Travatan therapyChange from baseline (on Travatan) in diurnal 
+IOP in the study eye at W eek 6
+8.2 Secondary  objectives and related endpoint
+Secondary Objectives Endpoints for secondary objectives
+To evaluate the differences between Simbrinza 
+and placebo in diurnal IOP percentage change 
+from a Travatan baseline therapyPercentage IOP change from baseline (on 
+Travatan) in diurnal IOP at W eek 6
+To evaluate the differences between Simbrinz a 
+and placebo in diurnal IOP, from a Travatan 
+baseline therapyDiurnal IOP at Week 6
+To evaluate the differences between Simbrinza 
+and placebo in IOP change at each time point, 
+from a Travatan baseline therapyChange from baseline in IOP for each time 
+point at Week 6
+To evaluate the differences between Simbrinza 
+and placebo in IOP percentage change at each 
+time point, from a Travatan baseline therapyPercentage change from baseline in IOP for 
+each time point at W eek 6
+8.3 Exploratory  objectives and related endpoints
+Refer to Appendix 16.1.1- Protocol -Section 2.1 for exploratory  objectives and related endpoints.
+9 Investigational plan
+9.1 Stud y design
+Figure 9-1 Study  design
+BID: tw ice a day, QD: once a day.
+This was a multicenter, randomized, double -masked, two-arm, placebo -controlled, parallel -
+group study  in patients with normal tension glaucoma who were insufficiently  controlled on 
+travoprost 0.004% (Travatan) monotherap y.Approximately  200 patients were planned to be 
+randomized and treated for up to 11 weeks, whilst they were to receive double -masked study 
+medication for 6 weeks.
+The study  was divided into 2 sequential phases for a total of 5 visits:
+Phase I :a Screening/Eligibility  phase
+Phase II :the Masked Treatment Phase
+For full details of stud y design refer to Appendix 16.1.1- Protocol -Section 3.1
+9.2 Discussion of study  design, including the choice of control 
+groups
+Normal tension glaucoma patients are a difficult to manage sub- group of open angle glaucoma 
+(OAG) patients that have lower baseline pressures than OAG patients with elevated IOP. This 
+study  was designed to investigate the incremental IOP lowering that is achieved when Visit 5
+(Day  42)Travatan (QD)Simbrinza (BID)
+Travatan (QD)
+Placebo (BID)
+Visit 4
+(Day  14)First Dose
+RandomizationLast Dose
+Primary  Endpoint
+Visit 3
+Eligibility  2Visit 2
+Eligibility  1
+3-8 DaysTravatan (QD)
+Visit 1
+Screening
+42 Day s Up to 29 Day s
+Washout/Run -inPhase I :
+Screening/EligibilityPhase II:
+Masked Treatment
+Simbrinza is added to Travatan (a PGA) which is often used as initial therapy  to lower IOP. 
+Understanding the magnitude of further IOP lowering that could be achieved by the addition of 
+Simbrinza to Travatan in a low baseline setting, could only be achieved with a placebo 
+comparator and could provide essential data to health care practitioners.
+The study  was designed to minimize the study  length and assessments, while ensuring scientific 
+validity : the two eligibility  visits were to minimize regression to the mean and increase the 
+likelihood of stable IOP entry data; the Day 14 visit allowed patient safety  to be monitored 
+during the masked treatment phase; the primary  assessments were at 42 days to minimize patient 
+time in the trial. IOP assessme nts at 09:00 and 11:00 allowed collection of a trough IOP 
+(12hours post dose) and a peak IOP (2 hours post dose), respectivel y.
+Selection bias was reduced by  randomization and ascertainment bias by  masking of the patient 
+and the Investigator / study  staff who made the study  assessments.
+The placebo control allowed for assessment of the additive effects of Simbrinza, adjunctive to 
+Travatan, with a minimization of bias through masking the patients and the study  personnel 
+who conducted the assessments. 
+9.3 Popul ation
+The study  population consisted of adult and elderly  patients 18 years of age or older, with 
+previously  documented normal tension glaucoma (IOP < 22 mmHg and glaucomatous damage) 
+and had inadequatel y controlled IOP while on a Travatan monotherapy  (IOP ≥ 16 and < 22 
+mmHg in the study  eye).
+9.3.1 Inclusion criteria
+Key inclusion criteria
+Mean IOP measurements in at least 1 ey e ≥ 16 and < 22 mmHg at 09:00 while on a 
+Travatan monotherap y at two consecutive visits (same ey e at Visits 2 & 3 to be eligible 
+for the study ).  
+Mean IOP must be < 25 mmHg in the other ey e at any  time point up to randomization. 
+Inclusion criteria are described in details in Appendix 16.1.1- Protocol -Section 4.1
+9.3.2 Exclusion criteria
+Key exclusion criteria
+Patients with a central cornea thick ness < 500 µm and > 600 µm as measured by  
+pach ymetry in either ey e.
+Patients with Schaffer angle Grade < 2 in either eye, as measured by  gonioscopy  (extreme 
+narrow angle with complete or partial closure).
+Patients with a cup/disc ratio greater than 0.80 in either ey e. 
+Patients with severe central visual field loss in either ey e or field loss threatening fixation 
+in either ey e. Severe central visual field loss is defined as a sensitivity  of less than or equal 
+to 10 dB in at least 2 of the 4 visual field tes t points closest to the point of fixation. 
+Chronic, recurrent or severe inflammatory  eye disease in either ey e (from screening).  
+Clinically  significant or progressive retinal disease such as retinal degeneration, diabetic 
+retinopathy , or retinal detachm ent in either ey e. 
+Exclusion criteria are described in details in Appendix 16.1.1- Protocol -Section 4.2
+9.4 Treatment
+9.4.1 Investigational and control treatment
+Simbrinza (brinzolamide 1%/brimonidine 0.2%) eye -drops suspension was supplied in opaque 
+DROP -TAINER® bottle with a masked label indicating that the product is for investigational 
+use only. Placebo eye-drops solution (identical to Simbrinza but did not have active ingredients) 
+was supplied in opaque DROP -TAINER® bottle with a masked label indicating that the product 
+is for investigational use only. Travatan (travoprost 0.004%) eye-drops solution was supplied 
+in a DROP -TAINER® bottle and was unmasked (open label) product.
+All test materials were supplied by  Novartis Drug Supply  Management (DSM). The batch and 
+formulation numbers of Simbrinza, Travatan and placebo are provided in Table 9-1.
+A listing of patients receiving each batch of test mater
+ial is provided in Appendix 16.1.6.
+Table 9
+-1 Study  medication formulation and batch numbers
+Study drug and strength Formulation control 
+numberBatch number
+Simbrinza (brinzolamide 1%/brimonidine 0.2%)
+Placebo
+Travatan (travoprost 0.004%)
+9.4.2 Treatment arms
+Patients were assigned at Visit 3 (Eligibility  2) to one of the following two treatment arms in a 
+ratio of 1:1:
+Arm 1: Simbrinza (ey e drops dosed in the morning and in the evening) + Travatan (ey e 
+drops dosed in the evening)
+Arm 2: Placebo (ey e drops dosed in the morning and in the evening) + Travatan (ey e 
+drops dosed in the evening) 
+9.4.3 Treatment assignment
+Refer to Appendix 16.1.1 -Protocol -Section 5.3 for details of randomization procedures.
+The randomization scheme for patients was reviewed and approved by a member of the Novartis 
+Randomization Office. The randomization list is provided in Appendix 16.1.7.
+9.4.4 Treatment masking
+Patients, investigator staff, persons performing the assessments, anddata analysts remained 
+masked to the identity  of the treatment from the time of randomization until database lock, using 
+the following methods: (1) Randomization data were kept strictl y confidential until the time of 
+unmasking, and were not accessible by anyone else involved in the study . (2) The identity  of 
+
+the treatments was concealed by the use of masked study  drugs that were identical in packaging, 
+labeling, and schedule of administration.
+Unmasking was only permitted in the case of patient emergencies (see
+Appendix 16.1.1 -Protocol -Section 5.5.9) and at the conclusion of the stud y.
+Refer to Appendix 16.1.1 -Protocol -Section 5.4 for further details on treatment masking.
+9.4.5 Treating the patient
+9.4.5.1 Patient numbering
+Each patient was uniquely  identified in the study by a combination of his/her center number 
+and a 5-digit Patient Number. Refer to Appendix 16.1.1- Protocol -Section 5.5.1 for full details 
+on patient numbering.
+9.4.5.2 Dispensing the study treatment
+Each study  site was supplied with masked study  drug (Simbrinza or placebo) in packaging of 
+identical appearance labeled with the protocol and kit numbers. Travatan was provided open 
+label containing the protocol and unique kit number. 
+The masked study drug and Travatan were dispensed as described in 
+Appendix 16.1.1 -Protocol -Section 5.5.2.
+9.4.5.3 Supply , storage and tracking of study  treatment
+For details on handling of study  treatment, refer to Appendix 16.1.1- Protocol -Section 5.5.3.1.
+9.4.5.4 Instructions for prescribing and taking study treatment
+General instructions:
+Patients wearing contact lenses had to remove the lenses before instillation of either 
+medication. Following instillation of the study medications, the patient had to wait 
+approximately  15 minutes after the last dose before re -inserting lenses.
+Patients had to shak e masked study  medication before use.
+Patients were not allowed to discard an y unused or empty bottles and bring all Travatan 
+and masked stud y medication bottles to the study  visit.
+Appendix 16.1.1- Protocol -Section 5.5.4 describes the detailed instructions for Travatan 
+administration during screening/eligibility  phase, and Travatan and masked study  medication 
+administration during masked treatment phase.
+All kits of investigational treatment assigned by the Interactive Response Technology  (IRT)
+were recorde d in the IRT sy stem.
+The investigator promoted compliance by instructing the patient to apply  the study  drug exactl y 
+as prescribed and by stating that compliance is necessary  for the patient’s safety  and the validity 
+of the study . The patient was instructed to contact the investigator if he/she was unable for an y 
+reason to appl y the stud y drug as prescribed.
+9.4.5.5 Permitted dose adjustments and interruptions of study  treatment
+Study  drug dose adjustments and/or interruptions were not permitted.
+9.4.5.6 Rescue me dication
+Rescue medication was not permitted in this study . If an Investigator felt a patient was not 
+adequatel y controlled on study  medications, they were discontinued from receiving the study 
+treatment and were managed accordingly  to usual care.
+9.4.6 Concomit ant treatment
+The Investigator instructed the patient to notify  the study  site about any new medications he/she 
+took after the start of the study  drug.
+All medications and significant non-drug therapies (including physical therapy  and blood 
+transfusions) administered after the patient was enrolled into the study  were required to be 
+recorded on the Concomitant medications/Significant non-drug therapies after start of study 
+drug Case Report Form (CRF ). All anti-IOP medications administered at the time of the 
+Screening Visit were recorded on the Ocular Anti -Hypertensive Medications CRF.
+Use of the treatments display ed in Appendi x 16.1.1 -Protocol -Section 5.5.8- Table 5-1 were not 
+allowed after screening.
+9.4.7 Discontinuation of study treatment and premature patient wi thdrawal
+Patients could voluntarily  withdraw from the study  for any reason at any  time. A patient could 
+be considered withdrawn if he or she stated an intention to withdraw, failed to return for visits, 
+or became lost to follow -up for an y other reason.
+The Investigator was obliged to discontinue study  drug for a given patient or withdraw the 
+patient from the stud y if, on balance, he/she believed that continuation would be detrimental to 
+the patient’s well -being.
+Refer to Appendix 16.1.1 -Protocol -Section 5.6.2 for details on discontinuation of study  
+treatment, Appendix 16.1.1 -Protocol -Section 5.6.3 for details on withdrawal of informed 
+consent and Appendix 16.1.1- Protocol -Section 5.6.4 for details on patients lost to follow -up.
+9.4.8 Emergency  unmasking of treatment assignment
+Refer to Appendix 16.1.1 -Protocol -Section 5.5.9 for emergency  code br eaking details.
+9.4.9 Early  study termination
+According toAppendix 16.1.1- Protocol -Section 5.6.5, t he study  could be terminated by 
+Novartis at any time for any reason. This could include reasons related to the benefit risk 
+assessment of participating in the study , practical reasons, or for regulatory or medical reasons 
+(including slow enrollment). If this was necessary , the patient was to be seen as soon as possible 
+and treated as a prematurely  withdrawn patient. The Investigator could be informed of 
+additional procedures to be followed in order to ensure that adequate consideration was given 
+to the protection of the patient’s interests. The Investigator was responsible for informin g the 
+Institutional Review Board/I ndependent Ethics Committee (IRBs/IECs) of the early termination 
+of the study .
+This study  was terminated early due to administrative reasons, and not based on any safet y or 
+efficacy  concerns. Investigators were instructed to bring the ongoing patients for an Exit Visit 
+as soon as possible. Study  medications were stopped at the time of the Exit Visits. The 
+Investigators informed the IECs of the earl y termination of the trial.
+9.4.10 Treatment exposure and compliance
+All Travatan and masked study  treatment dispensed and returned were recorded in the Drug 
+Accountability  Log.
+Refer to Appendix 16.1.1 -Protocol -Section 6.3 for further details.
+9.5 Efficacy  and safety  assessments
+9.5.1 Visit schedule
+The study visits and procedures are presented in Appendix 16.1.1 -Protocol Section 6 -Table 6-1
+which lists all of the assessments and indicates with an “X” the visits at which they were 
+performed.
+All activities performed during eligibility  visits E1 (Visit 2) and E2 (Visit 3) are listed in 
+Appendix 16.1.1 -Protocol Section 6 -Table6-2.
+All activities performed during week 2 (V isit 4) and week 6 (V isit 5, exit) are listed in 
+Appendix 16.1.1 -Protocol Section 6 -Table6-3.
+Refer to Appendix 16.1.1 -Protocol -Section 6 for additional details of visit schedule and 
+assessment.
+9.5.2 Efficacy  assessments
+9.5.2.1 Assessment of efficacy
+Intraocular pressure (IOP) measurement
+All IOP measurements were to be performed in both eyes at each visit with a Goldmann 
+applanation tonometer as described in Appendix 16.1.1- Protocol -Section 6.4.1.
+Two consecutive IOP measurements were taken for each eye. The applanation probe was 
+withdrawn from the ey e between the two measurements.
+Time of first IOP measurement was recorded in the source document and in Electronic Data 
+Capture (EDC). The same procedure was repeated on the contralateral ey e.
+9.5.2.2 Appropriateness of efficacy  assessments
+Assessments described in the protocol are standard ophthalmic assessments for this indication 
+and patient population.
+9.5.3 Safety  assessments
+9.5.3.1 Assessment of safety
+Safety  assessments consisted of collecting all adverse events (AEs), serious adverse events 
+(SAEs), with their severity and relationship to study drug. Safet y evaluation included vital signs 
+(blood pressure and pulse rate), ophthalmic examinations (automat ed perimetry , slit-lamp exam, 
+dilated fundus examination, and best corrected visual acuit y) and pregnancy test (for women of 
+childbearing potential). 
+Full information about the definition of AEs and SAEs, the procedures for reporting them is 
+given in the Appendix 16.1.1- Protocol -Section 7 .
+Refer to Appendix 16.1.1 -Protocol -Section 6.5 for details of all safet y assessments.
+9.5.3.2 Appropriateness of safety  assessments
+The safet y assessments selected are standard for this indication/patient population.
+9.5.4 Other assess ments
+Gonioscopy  and Pach ymetry were not part of safety  assessments, and were only performed at 
+Screening Visit. Refer to Appendix 16.1.1- Protocol -Section 6.6 for details of these assessments.
+9.6 Data quality  assurance
+9.6.1 Monitoring
+The responsibility  for site monitoring resided with the Novartis field monitors . Details of the 
+monitoring procedures are described in Appendix 16.1.1 -Protocol -Section 8.1
+9.6.2 Data collection
+Designated Investigator staff entered the data required by the protocol into iMedidata Remote 
+Data Capture (RDC) system. They  were not given access to the system until adequatel y trained. 
+Documented training on RDC system was completed by the designated Investigator site staff 
+before their access was granted. 
+9.6.3 Database management and quality  control
+Novartis staff reviewed the data entered into the CRFs by investigational staff for completeness 
+and accuracy  and instructed the site personnel to make any required corrections or additions. 
+Queries were sent to the investigational site using an electronic data query . Designated 
+Investigator site staff were required to respond to each query  and confirm or correct the data.
+Concomitant medications entered into the database were coded using the World Health 
+Organization (WHO) Drug Reference List, which employ s the Anatomical Therapeutic 
+Chemical classification system. Concomitant procedures, non-drug therapies and adverse 
+events were coded using Medical Dictionary  for Regulatory  Activities (MedDRA) version 19.0 
+terminology .
+Randomization codes and data about all study  treatment dispensed to the patient and all IRT 
+recorded dosage changes were tracked using an IRT. 
+9.6.4 Quality  assurance and auditing
+There were no audits or Health Authority  inspections conducted at sites participating in this 
+study .
+9.7 Statistical methods
+This section describes the statistical analy ses that were planned as per the protocol and statistical 
+analysis plan (SAP). See Section 9.8.3 where the changes in planned analyses and the reason 
+for them are detailed.
+9.7.1 Data analy sis
+9.7.2 Analysis sets
+The anal ysis sets defined as per the protocol and SAP were:
+All enrolled analysis setincluded all patients who signed an Informed Consent Form (ICF) 
+and were assigned patient numbers. This analy sis set was used to summarize patient disposition 
+and pre -treatment AEs.
+All randomized analysis set included all enrolled patients who were rando mized to treatment.
+Safety analysis set: included all patients exposed to at least one dose of any study therap y. 
+Patients in the safety  analy sis set were anal yzed according to the treatment received.
+Full Analysis Set (FAS) included all randomized patient s with IOP measurement at baseline 
+who had at least one on-treatment assessment. This analysis set was primary  analysis set for 
+IOP endpoints. Patients in the FAS were anal yzed according to randomized treatment.
+Per protocol analysis set (PPS) a subset of all patients in the FAS and excluded all data which 
+met any of the critical deviation criteria identified in the SAP. In addition, individual patient 
+visits and data points that did not satisfy  protocol criteria could be excluded from the PPS.
+The final patient evaluability  was determined prior to breaking the code for masked treatment 
+assignment and locking the database.
+9.7.3 Patient disposition, demographics and other baseline characteristics
+All patients who signed informed consent were accounted in patient d isposition.
+Patient disposition table were to present the number and percentage of patients for the following:
+Screened/Run in 
+Screen/ Run in Failure
+Entered the double -masked phase 
+Completed the double -masked phase
+Discontinued the double -masked phase 
+Reason for discontinuation
+Details of the planned data anal ysis for patient demographics and other baseline characteristics 
+are presented in Appendix 16.1.1- Protocol -Section 9.2.
+9.7.4 Treatments (study  drug, rescue medication, other concomitant 
+therapies, compl iance)
+Data for study  drug administration and concomitant therapies were to be listed by treatment 
+group and patient. Extent of exposure, as a continuous variable and categorically , was to be 
+analyzed with summary  statistics, using the Safet y Analysis Set.
+9.7.5 Analysis of the primary  variable
+9.7.5.1 Variable
+The primary efficacy  endpoint in this study  was the change from baseline (CFB) to week 6 in 
+diurnal IOP.
+CFB Diurnal IOP = average of change from baseline at 9:00 and 11:00 time points, with 
+baseline being the average of the E1 and E2 IOP by time point.
+The primary analysis set for the efficacy  analy sis was the FAS.
+9.7.5.2 Statistical hy pothesis, model, and method of analy sis
+Refer to Appendix 16.1.1- Protocol Section 9.4.2 .
+9.7.5.3 Supportive analy ses
+The primary anal ysis was planned to be repeated using the per protocol set in order to assess its 
+robustness in regard to deviations.
+9.7.6 Analysis of secondary efficacy  variables
+9.7.6.1 Efficacy
+Analyses of treatment differences of secondary  endpoints was planned to use the same methods 
+as those for the primary  endpoint. Hypothesis tests were to use the same null and alternative 
+hypotheses as in Appendix 16.1.1 -Protocol Section 9.4.2 , with µ represe nting the mean for the 
+variable being tested.
+See Appendix 16.1.1- Protocol -Section 9.5.1 for details of the planned statistical analysis of 
+secondary  efficacy  endpoints.
+9.7.7 Safety  analy ses
+The planned safety  analyses consisted of descriptive summaries of the data as relevant to the 
+scale of data, e.g., frequency  and percent for adverse events, and mean changes from baseline 
+as appropriate.
+Frequency  and percentage of patients were to be provided for each categorical variable by 
+treatment group.
+9.7.8 Handling of mis sing values/censoring/discontinuations
+Missing observations were not to be imputed. The statistical models that were employ ed and 
+the associated anal yses were robust under the missing completel y at random and the missing at 
+random assumptions.
+9.7.9 Sample size calculation
+With 90 evaluable patients per treatment group in the primary  efficacy  analysis, there was 
+approximately  80% power to detect a difference in mean change from baseline in diurnal IOP 
+at Week 6 of 1.5 mmHg between the treatment groups. This calcu lation was based on the 
+assumption of a common standard deviation for mean IOP of 3.5 mmHg and the use of a two -
+sample two- sided t -test performed at the α = 0.05 level of significance. 
+Assuming a drop-out rate of 10%, approximately  100 patients per treatm ent group were to be 
+randomized to ensure the required number of evaluable patients in the final efficacy  anal ysis.
+9.7.10 Power for analy sis of key  secondary  variables
+Not applicable
+9.7.11 Interim analy sis
+No formal interim anal ysis was planned for this study .
+9.8 Changes in the conduct of the study  or planned analy ses
+9.8.1 Protocol amendments
+The study  protocol was amended once. The original protocol and amendment are provided in 
+Appendix 16.1.1 . Previous sections of this report describe the study  conduct as amended. The 
+key features of Amendment 1 (12- Apr-2017) are given below:
+Amendment 1 introduced the following changes:
+Section 4.2 Exclusion criteria: to clarify that it is not clinically  relevant to measure both 
+horizontal and vertical cup/disc ratio to exclude patients (exclusion criteria)
+Section 9.5.2 Safety  variables: Data for fundus parameters and slit -lamp exam will no 
+longer be collected
+Other editorial changes
+9.8.2 Other changes in study  conduct
+See Section 9.4.9.
+9.8.3 Changes in planned analy sis
+At the time of the premature termination of this study , only one patient was randomized. 
+Therefore, the planned efficacy  and safety  anal yses could not be performed. 
+The patient data reports generated from the clinical database reporting efficacy  measure and key 
+safet y data are the only results presented in this report.
+10 Study  patients
+10.1 Disposition of patients
+At the time of the premature termination of this study , four patients at three participating centers 
+in Republic of Korea had signed the Informed Consent Form. Of these four patients:
+One patient ( ) did not complete the screening visit and did not receive 
+any study  medication. ( Appendix 16.3 )
+Two patients ( ) completed screening and were 
+in the run- in phase, taking open -label Travatan run -in medication. ( Appendix 16.3 )
+One patient ( ) was randomized, taking open -label Travatan me dication 
+plus masked Placebo. ( Appendix 16.3 )
+10.2 Protocol deviations
+No protocol deviations were reported ( Appendix 16.3 ).
+11 Efficacy  evaluation
+11.1 Data sets analy zed
+Not applicable.
+
+11.3 Measurements of treatment compliance
+Not applicable.
+11.4 Efficacy  results and tabulations of indiv idual patient data
+11.4.1 Analysis of efficacy  
+The IOP measurements at each visit for the one patient who was randomized to placebo (
+) are provided in Table 11-2 below.
+Table 11
+-2 IOP measurements at each visit for patient 
+Eye Visit 2 IOP (mmHg) Visit 3 IOP (mmHg) Visit 4 IOP (mmHg) Exit Visit
+IOP (mmHg)09:00 11:00 09:00 11:00 09:00 11:00
+Right FR: 20 
+SR: 19 FR: 19 
+SR: 19 FR: 19 
+SR: 19 FR: 16 
+SR: 16 FR: 16 
+SR: 14 FR: 16 
+SR: 15 FR: 18 
+SR: 19 
+Left FR: 16 
+SR: 17 FR: 20 
+SR: 20 FR: 18 
+SR: 19 FR: 16 
+SR: 16 FR: 15 
+SR: 14 FR: 15 
+SR: 15 FR: 17 
+SR: 18 
+FR: First Reading; SR: Second Reading.
+Source: Appendix 16.3
+
+11.4.1.1 Primary  efficacy  results
+Not applicable.
+11.4.1.2 Secondary  efficacy  results
+Not applicable.
+11.4.1.3 Exploratory  efficacy  results
+Not applicable.
+11.4.2 Statistical and analy tical issues
+Not applicable.
+11.4.3 Tabulation of individual response data
+Not applicable
+11.4.4 Drug dose, drug concentration and relationships to response
+Not applicable
+11.4.5 Drug- drug and drug -disease interactions
+Not applicable
+11.4.6 By-patient display s
+Individual patient data generated from clinical database for all patients are provided in 
+Appendix 16.3 .
+11.4.7 Summary  of efficacy  results
+The IOP measurements at each study  visit for the one patient who was randomized to placebo ,
+can be found in Table 11 -2.
+12 Safety  evaluation
+12.1 Extent of exposure
+12.1.1 Dosage
+The planned doses in the study  were:
+Phase I (Run -in period) : One drop of Travatan applied topically  to the affected eye(s) once 
+daily  (evening).
+Phase II (Masked Treatment Phase) : Eligible patients were assigned to one of the following 
+two treatment arms in a ratio of 1:1
+Arm 1 : One drop of Simbrinza applied topically  to the affected ey e(s) in the morning and 
+evening + one drop of Travatan applied topically  to the affected ey e(s) in the evening. 
+Arm 2 : One drop of Placebo applied topicall y to the affected eye(s) in the morning and 
+evening + one drop of Travatan applied topically  to the affected ey e(s) in the evening.  
+12.1.2 Patient exposure
+Patient  did not receive any  study  medication (Appendix 16.3 ).
+Patient  received open label Travatan from  to 
+ (Appendix 16.3 ) .
+Patient  received open label Travatan from  to 
+ (Appendix 16.3 ) .
+Patient  received open label Travatan from  to 
+ (the date of last dose of open label Travatan was inadvertently  captured as 
+ on the ‘Exposure’ page of eCRF; however, the actual date was ) 
+and masked placebo from  to  (Appendix 16.3 ) .
+12.1.3 Concomitant medication
+Concomitant medications taken by the one patient who was randomized to placebo (
+) included diltiazem HCL 90 mg, losartan potassium 100 mg and apixaban 
+10 mg 
+for h ypertension (Appendix 16.3 ).
+No concomitant medications data were reported for the other patients ( Appendix 16.3 ).
+12.2 Adverse events
+12.2.1 Display  of adverse events
+One non-serious AE (common cold) was reported by the one patient who was randomized to 
+placebo ( ) (Appendix 16.3 ). 
+12.2.2 Analysis of adverse events
+The reported AE of common cold was mild in severit y and was not related to the study 
+medication ( Appendix 16.3 ).
+12.2.3 Listing of adverse events by  patient
+No AE listing was generated as there was onl y one AE reported.
+12.3 Deaths, other serious adverse events and other significant 
+adverse events
+There were no deaths, serious adverse events and other significant adverse events reported in 
+the study . Therefore no listings were generated, and no narratives were required.
+12.4 Clinical laboratory  evaluation
+No laboratory  evaluations (hematology , clinical chemistry  and urinal ysis) were performed in 
+this study .
+
+12.5 Vital signs, phy sical findings and other observations related to 
+safet y
+12.5.1 Vital signs
+The vital signs measurements at visit for the one patient who was randomized to placebo
+( ) are provided in Table 12-1 below.
+Table 12-1 Vital signs measurements at each visit for patient 
+Vital 
+SignVisit 2 Visit 3 Visit 4 Early Exit 
+Visit
+09:00 11:00 09:00 11:00 09:00 11:00
+PR 72 bpm 74 bpm 94 bpm 84 bpm 84 bpm 76 bpm 94 bpm
+SBP 135mmHg 132 mmHg 138 mmHg 135 mmHg 132 mmHg 124 mmHg 140mmHg
+DBP 83 mmHg 81 mmHg 82 mmHg 83 mmHg 82 mmHg 79 mmHg 93 mmHg
+PR: pulse rate; SBP: s ystolic blood pressure; DBP: diastolic blood pressure
+Source: Appendix 16.3
+12.5.2 Electrocardiogram
+Not applicable
+12.5.3 Best corrected visual acuity  (BCV A)
+The Early  Treated of Diabetic Retinopath y Study (ETDRS )visual acuit y score at each visit for 
+the one patient who was randomized to placebo ( ) are provided in 
+Table 12-2 below.
+Table 12
+-2 BCV A measurements at each visit for patient 
+Eye Visit 2
+09:00Visit 3
+09:00Visit 4
+09:00Early Exit 
+Visit
+Right eye 69 74 73 72
+Left eye 75 69 72 65
+Source: Appendix 16.3
+12.5.4 Special safety  topics
+None.
+12.6 Summary  of safety  results
+There were no deaths or SAEs reported during the study .
+One non-serious AE (common cold) was reported by the one patient who was randomized to 
+placebo ( ). The 
+AE of common cold was mild in severity  andwas not related 
+to the study  medication.
+There were no AEs leading to discontinuation reported during the study .
+
+The vital signs measurements and ETDRS visual acuity  scores at each study  visit for the one 
+patient who was randomized to placebo ( ), can be found in Table 12 -1and 
+Table 12-2, respectivel y.
+13 Discussion and overall conclusions
+This was a phase IV study  with the objective of evaluating the efficacy  (incremental IOP 
+lowering that could be achieved) and safet y of Simbrinza (brinzolamide 1% / brimonidine 0.2% 
+fixed dose combination) BID when used as an adjunctive therap y to Travatan (travoprost 
+0.004%) in patients with normal tension glaucoma, that may benefit from further IOP lowering. 
+The study  was terminated prematurel y with only one patient randomized at that time. The 
+reason for premature termination was administrative, and not based on any safet y or efficacy 
+concerns.
+Conclusion s:
+Due to the early study  termination and limited data, efficacy  and overall safety  profile of 
+Simbrinza as an adjunctive therapy  to Travatan could not be analy zed; therefore, this study 
+could not report an yconclusion .

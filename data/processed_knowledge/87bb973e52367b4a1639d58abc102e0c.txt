@@ -1,0 +1,880 @@
+Squire, Sanders & Dempsey L.L.P. 1 www.ssd.com 
+ 
+ 
+ 
+Conducting Clinical Trials in the US and Abroad: Navigating the 
+Rising Tide of Regulation and Risk1 
+By Maureen Bennett and Jan Murray 
+I. Introduction: Legal Framework and Regulatory Guidance for the Conduct of Clinical Trials  
+This section overviews the legal framework for conducti ng clinical trials in the US and abroad for clinical 
+trials involving Food and Drug Administration (FDA) -regulated trials and those that are launched by US 
+entities such as academic medical ce nters (AMC) that are not subject to  FDA regulation. Other laws that 
+also affect certain as pects of the clinical trial implementation w ill also be considered. Also included in the 
+overview is information about major regulatory guidelin es set forth by international bodies such as the 
+International Conference on the Harmonisation of Technical Requirements for the Registration of 
+Pharmaceuticals for Human Use (ICH). 
+A.  Legal Framework for Conduct of Clin ical Trials in the US and Abroad for 
+FDA-regulated products  
+Clinical trials are conducted by US pharmaceutic al and medical device companies in support of an 
+application to the FDA for authorization to market a drug or device. Pharmaceuticals and biologics are 
+regulated under a different set of laws and regulat ions than apply to medical devices but both are 
+regulated by the FDA. This subsection will focus on Investigational New Drug applications (INDs) that 
+must be completed to file a New Drug Application (NDA) because most clinic al trials conducted by 
+pharmaceutical and biotech companies ar e undertaken pursuant to an IND.  
+The level of regulation imposed on medical devices before and after their introduction into the market 
+place depends upon the classification of the device. Medical device companies seeking to bring to market 
+a Class I or Class II medical device mu st simply file a pre-market notific ation, known as 510(k), unless the 
+device is exempted from this require ment. A Class III device, those that  are subjected to the strictest 
+                                                 
+1 Parts 1 and 3 were authored by Jan Murray, Deputy Chief Legal Officer, Cleveland Clinic, who gratefully 
+acknowledges the assistance of Jessi ca MacKeigan, Law Clerk, Cleveland C linic in the preparation of this 
+document. Maureen Bennett, Partner and Chair, Global Life Science Practice, Squire, Sanders & Dempsey L.L.P. who authored Parts 2 and 4, gratefully acknowledges the a ssistance of Elizabeth Seals, Associate, Squire, Sanders & 
+Dempsey L.L.P. 
+ 
+Squire, Sanders & Dempsey L.L.P. 2 www.ssd.com 
+ regulation, must be tested in clinical trials that  are conducted pursuant to an Investigational Drug 
+Exemption (IDE) in support of a Pre- Market Approval application (PMA). Differences in the regulation of 
+clinical trials conducted pursuant to  IND and IDE regulations will be noted. 
+i. Applicable Federal Law and Regulation Governing Clinical Trials  
+The federal Food Drug and Cosmetic Act (FD&C) (21 U.S.C. §§ 301-392) was passed in 1938 after a 
+tragedy involving a deadly sulfanilamide elixir; it required  FDA testing for safety for the first time. In 1962, 
+Congress passed significant amendments to the Act adding a requirement for proof of efficacy before 
+marketing of drugs in response to the thalidomide tr agedy. While the 1938 FD&C included devices, it was 
+not until the passage of the Medical Device Amendments to the FD&C in 1976 that the classification of 
+devices that provides the framework for FD A regulation of these devices was created.2 
+Section 505 of the FD&C (21 U.S.C.  § 355) provides that no perso n may introduce a new drug into 
+interstate commerce without first filing an application wi th the FDA. This section of the law specifies the 
+general content of such an application. The FDA promul gated regulations implement ing this section of the 
+FD&C at 21 C.F.R . § 312. In 1991, the FDA and the Department of Health and Human Services (DHHS) 
+adopted the so-called “Common Rule” intended to protec t the rights of human subjects enrolled in clinical 
+trials. This is codified at 45 C.F.R. Part 46 Subpart A for those clinical studies conducted by or with the 
+support of federal agency or department and at 21 C. F.R. Parts 50 and 56 for those products subject to 
+FDA regulation; the former are discussed in gr eater detail in a later section of this paper. 
+21 C.F.R. Part 312 describes  the requirement for an IND before any clinical in vestigation of a new drug 
+can take place. Generally, clinical trials in suppor t of an NDA are divided into three phases that typically 
+occur sequentially. An IND may apply to one or more of the clinical phases and must include detailed 
+information about the design of the clinical investigat ion, the investigators who will conduct the trials and 
+how the data will be gathered, maintained and analyzed. If a foreign clinical trial site is included in the 
+IND, then the data gathered from that site is in cluded in the NDA. Upon completion of the IND, if 
+warranted, the sponsor will submit an NDA pursuant to 21 C.F.R. Part 314. 
+Medical devices subject to an IDE which will be tested  in humans are regulated by  21 C.F.R. Part 812. An 
+IDE is required for those devices that may not simply be introduced in the market by filing a 510(k) or pre-
+market notice and require a PMA. The manufacturer of the device must conduct tr ials to demonstrate the 
+device’s safety and efficacy and these are conducted pursuant to Part 812. 
+                                                 
+2 Other significant federal legislation has been passed in this decade that affects the way the regulatory framework is 
+administered—i.e., the Medical Device Us er Fee and Modernization Act of 2002, P.L. 107-250, 116 Stat. 1588 
+(codified as amended in scattered sections of 21 U.S.C.), which permits the FDA to levee fees on applicants seeking 
+product review. Also, the Pediatric Research Equity Act of 2003, P.L. 108-155, 117 Stat. 1936 (codified as amended in scattered sections of 21 U.S.C. and 42 U.S.C.) encourages drug companies to perform clinical trials. A discussion 
+of these laws is beyond the scope of this paper. 
+ 
+Squire, Sanders & Dempsey L.L.P. 3 www.ssd.com 
+ All clinical trials conducted to secure FDA marketin g authorization must adhere to 21 C.F.R. Parts 50 and 
+56 which are regulations designed to protect the rights of human subjects. Part 50 governs the 
+requirement for securing informed consent from human subjects who participate in clinical trials. This 
+requirement applies not only to drug trials but to any c linical investigation that involves other substances 
+(e.g., food, additives) or medical devices.3 The general requirement for informed consent is set forth in 21 
+C.F.R. § 50.20: 
+[N]o investigator may involve a human being as  a subject in research covered by these 
+regulations unless the investigator has obtained the legally effective informed consent of the 
+subject or the subject's legally authorized represen tative. An investigator shall seek such consent 
+only under circumstances that provide the prospe ctive subject or the representative sufficient 
+opportunity to consider whether or not to partici pate and that minimize the possibility of coercion 
+or undue influence. The information that is given to the subject or the representative shall be in 
+language understandable to the subject or the repr esentative. No informed consent, whether oral 
+or written, may include any exculpatory language through which the subject or the representative 
+is made to waive or appear to waive any of the subject's legal rights, or releases or appears to release the investigator, the sponsor, the instit ution, or its agents from liability for negligence. 
+ 
+Part 50 also includes requirements for documentation of consent and exceptions for the requirement, as 
+well as special safeguards for children and other vu lnerable populations. Further guidance on the FDA’s 
+view of informed consent is provided in its Guide to Informed Consent .
+4 The FDA has also adopted 
+additional guidance in the form of the ICH Good Clinical Practices  (GCP) which are discussed in greater 
+detail below. FDA publishes guidance and information sheets to provide industry and researchers with 
+more information about the agency’s views on application of regulations among other topics.5 The 
+guidance is not binding on the agency but is very helpf ul to those seeking to conform to the regulations. 
+21 C.F.R. Part 56 sets forth the legal obligation to secu re review of any clinical investigation subject to 
+FDA regulation by an independent body known as an Institutional Review Board (IRB).6 Under the 
+requirements set forth in 21 C.F.R. Part 56, the IRB must not only approve the in vestigation before it can 
+commence but also must monitor it and ensure that it  is conducted in accordance with the approval given 
+by the IRB. Part 56 also sets forth requirements fo r the composition and operation of the IRB. IRBs must 
+meet these requirements to be qualified by the FDA. If the FDA determines that a registered IRB is not 
+adhering to the regulations and that the lack of complia nce may adversely affect the rights or safety of 
+                                                 
+3 21 C.F.R. § 50.1 
+4 FDA, Guide to Informed Consent , April 30, 2009, 
+http://www.fda.gov/ScienceResearch/Sp ecialTopics/RunningClinicalTrials/GuidancesInformationSheetsandNotices/
+ucm116333.htm. 
+5 21 C.F.R. § 10.115 describes the agency’s guidance issuance practices. 
+6 21 C.F.R. § 56.101.  Under newly implemented regulations, IRBs that oversee research conducted involving FDA 
+regulated products must now be registered with the FDA. 21 CFR §56.106. 
+ 
+Squire, Sanders & Dempsey L.L.P. 4 www.ssd.com 
+ human subjects, it may disqualify the IRB. In this ca se, the IRB may not oversee clinical investigations 
+that support FDA marketing authorization or other action.7 
+21 C.F.R. § 56.105 permits waiver of  the requirement for IRB review upon application by the sponsor to 
+the FDA; a waiver may be granted by the FDA in circumstances where the agency determines that the 
+rights of the human subjects can be protected by other mechanisms. These alternative mechanisms 
+include review by an independent ethics committee operated under the regulatory framework of another 
+country that adheres to international standards of clinical practice, which are described in the next 
+section. 
+21 C.F.R. Part 54 requires certain disclosures rega rding financial relationships between sponsors and 
+investigators as a financial relationship may create a c onflict of interest for an investigator that could 
+adversely affect the trial outcome. 
+ii. Good Clinical Practices 
+Good Clinical Practice guidelines (GCPs) were formulated by the ICH, which was established in 1990 and 
+is a partnership between government regulators and industry brought together to rationalize and 
+harmonize regulation of pharmaceuticals. ICH founding members were industry and government 
+representatives of the European Commission, the United States and Japan—these countries are the 
+originators of most new drug development. In addi tion, others participat e as observers—Canada, 
+European Free Trade Area and the World Health Organization.8 
+The GCPs were prepared by the ICH’s expert wo rking group (EWG) on efficacy and were endorsed by 
+the ICH Steering Committee in 1996. The EWGs have al so developed other guidance pertinent to clinical 
+trials and have contributed other important tools to the regulatory regime including MeDRA, the Medical 
+Dictionary for Regulatory Activities, a compilation of medical terminology. 
+The GCPs reflect the US regulatory scheme codified  at 21 C.F.R. Parts 312, 50 and 56 described above. 
+The FDA has also adopted the GCPs as guidance.9 GCPs are: 
+a standard for the design, conduct, performance,  monitoring, auditing, recording, analysis and 
+reporting of clinical trials in a way that provid es assurance that the dat a and reported results are 
+credible and accurate and that the rights, safety  and well-being of trials subjects are protected.10 
+                                                 
+7 21 C.F.R. § 56.121 
+8 ICH.org, Structure of ICH , http://www.ich.org, (last visited September 14, 2009). 
+9 International Conference on Harmonisation; Good Clinical Practice: Consolidated Guid eline, 62 Fed Reg. 25692 
+(May 9, 1997). 
+10 Human Subject Protection; Foreign Clinical Studies Not Conducted Under an Investigational New Drug 
+Application, 69 Fed Reg. 32469 (June 10, 2004). 
+ 
+Squire, Sanders & Dempsey L.L.P. 5 www.ssd.com 
+ While reflecting the US regulatory sc heme, the GCPs provide greater deta il on the roles, responsibilities 
+and methodologies of designing, conducting and analyzing clinical trials. The GCPs incorporate many of 
+the principles enunciated in the Declaration of Helsinki , a document that is one of the foundations of 
+modern thinking on ethics in human experimentation.11 The Declaration of Helsinki was adopted by the 
+World Medical Association in 1964 and has since bee n amended several times, most recently in 2008.12 
+ The general principles incorporated into the GCPs include: 
+Identifying and weighing the risks against anticipat ed benefits; the primacy of rights, safety and 
+well-being of the individual over the interest s of science and society; the necessity for a 
+scientifically sound design reduced to writing in a clear detailed protocol; IRB or Ethics Committee 
+review; use of qualified investigators to conduct the trial and qualified persons to provide medical 
+care; the importance of freely given consent; ac curate and verifiable recording and reporting of 
+clinical trial information; preservation of su bjects’ confidentiality; observation of Good 
+Manufacturing Practices in manufacturing, handlin g and storage of the drug and administration of 
+the drug in accordance with the protocol.13 
+The GCPs in several sections det ail the roles and resp onsibilities of sponso rs, investigators and 
+requirements for data collection and analysis and record retention, among many other matters.  
+The GCPs have been widely adopted international ly and are the standard recognized by the legal 
+authorities of many countries wher e clinical trials are conducted. The GCPs have been adopted as 
+regulation or guidance in the founding ICH government s of the European Union, US and Japan, as well 
+as other Commonwealth countries (e.g., Au stralia, Canada), Asia and South America.14 
+The Global Harmonization Task Force (GHTF) was found ed in 1992 with a purpose similar to the ICH but 
+for the medical device industry. The GHTF was fou nded by the regulatory author ities of 5 governments: 
+European Union, Canada, Australia, United States and Japan.15 Its work groups have proposed the 
+adoption of standards formulated by t he ISO for certain aspects of clinical investigations. The FDA has 
+sought public comment regarding these proposals  in advance of further guidance in the area.16 However, 
+                                                 
+11 World Medical Assoc., Declaration of Helsinki: Ethi cal Principles for Medical Research Involving Human 
+Subjects (as amended Oct. 2008), http://www.wma.net/e/policy/pdf/17c.pdf. 
+12 There are other statements of ethical  principles that have been adopted by world bodies (e.g., Counsel for 
+International Organizations of Medical Sciences that has adopted the International Ethical Guidelines for 
+Biomedical Research Involving Human Subjects ) or by national authorities such as the “Belmont Report,” a product 
+of the US National Commission for the Protection of Human Subjects of Biomedical and Behavioral Research. 
+13 Murray, J; “Legal Issues in the Conduct Of Multinationa l Clinical Trials by US Entities,” in Steiner, J., ed., 
+Clinical Research Law and Compliance Handbook , Jones and Bartlett Publishers, 2005 
+14 See, eg., the work of the Pan Ameri can Health Organization and the Association of Southeast Asian Nations that 
+have used the GCPs to harmonize regulatory efforts among its neighbors. 
+15 http://www.ghtf.org/ 
+16 73 Fed Reg 39968, July 11, 2008 
+ 
+Squire, Sanders & Dempsey L.L.P. 6 www.ssd.com 
+ those conducting clinical trials to gather data on me dical devices for regulatory purposes are subject to 
+the regulations enshrined in 21 CFR Parts 812, 50, 54 and 56. 
+B. Legal Framework for Conduct of Clinic al Trials in the US and Abroad by US 
+Academic Medical Centers (AMCs)  Not Subject to FDA Regulation  
+A regulatory regime is imposed on all persons and entities receiving federal funding for human subjects 
+research through 45 C.F.R. Part 46; compliance with these regulations is overseen by the Health and 
+Human Services Office for Human Research Protecti on (OHRP). 45 C.F.R. Part 46 includes subparts A 
+through D; Subpart A is the heart of the Common Rule, while Subparts B through D address protections 
+for special populations. Federal departments and agen cies that fund or oversee research involving 
+human subjects must adhere to the Common Rule even though the agencies may have different 
+regulations or additional policies that reflect their mi ssion but are still consistent with the Common Rule. 
+As described earlier, the FDA’s “Common Rule” regulati ons include requirements that relate to its mission 
+to approve marketing of drugs and devices, but also see the National Science Foundation and National 
+Institutes of Health (NIH) for additional policies and pr ocedures related to research. It is critical to be 
+aware of the requirements of t he agency funding the research that  will be performed outside the US. 
+Generally, all non-US sites conductin g research that is funded or su pported by a federal agency must 
+meet the requirements of 45 C.F.R. Part 46. DHHS requires that all institutions that receive federal 
+funding in support of research complete a Federal-wi de Assurance (FWA) for approval by the OHRP that 
+documents that the institution complies with the requirem ents of 45 C.F.R. Part 46, including identification 
+of the IRB that meets the requirements.17 Any institution outside of the US that is engaged in federally 
+conducted or funded research involving human subjec ts must complete an International FWA that 
+indicates the human rights protection standards to which it adheres and that such standards comply with 
+45 C.F.R. Part 46.1819 Engagement in research involving human subjects means that an institution will 
+                                                 
+17 IRBs must also be registered with OHRP and also w ith the FDA if overseeing resear ch involving FDA-regulated 
+products; see 21 CFR §56.106. 
+18 71 Fed Reg 38646, July 7, 2006 wherein DHHS clarified that  although several international standards are listed on 
+the FWA for international sites, any such standa rd must still comply with 45 CFR Part 46. 
+19 The heads of agencies that fund human subjects research and are subject to the Common Rule may undertake the 
+following: “When research covered by this policy takes place in foreign countries, proced ures normally followed in 
+the foreign countries to protect human subjects may differ from those set forth in this policy. [An example is a 
+foreign institution which complies with guidelines cons istent with the World Medical Assembly Declaration 
+(Declaration of Helsinki amended 1989) issued either by sovereign states or by an organization whose function for the protection of human research subjects is internationall y recognized.] In these circumstances, if a department or 
+agency head determines that the procedures prescribed by the institution afford protections that are at least 
+equivalent to those provided in this policy, the department or agency head may approve the substitution of the foreign procedures in lieu of the proc edural requirements provided in this policy.” See also discussion of OHRP’s 
+responsibility. 
+ 
+Squire, Sanders & Dempsey L.L.P. 7 www.ssd.com 
+ intervene or interact with living individuals for resear ch purposes or obtain individually identifiable private 
+information for research purposes. 
+NIH will also make some grants to foreign institutions typically as consortia mem bers or subcontractors to 
+US institutions. All grants that support research involving human subjects, wherever conducted, must 
+adhere to the Common Rule, and foreign sites where research is conducted mu st have been the subject 
+of an FWA filed with OHRP. 
+An international compilation of global national laws go verning protection of human subjects is available on 
+the Office of Human Research Protections (OHRP) website.20 
+C. Other Laws Applicable to US Entiti es Conducting Research in the US and 
+Abroad  
+i. In the US: State Law 
+State law shapes certain fundamental as pects of human rights protection for participants in clinical trials 
+and may directly regulate the conduct of the trials. Fo r example, state law defines who is legally capable 
+of giving consent and may provide additional protec tions for clinical trial participants or special 
+populations.21 State tort law also defines legal liabilities and  limits that affect rights of compensation for 
+clinical trial participants as well as the exposure of  those conducting the trial. Some states are more 
+actively regulating clinical trials to ensure accessib ility by mandating insurance coverage of costs of trials 
+by Medicaid programs or private insurers.22 While a review of all state laws are beyond the scope of this 
+presentation, it is important for a ll entities conducting clinical trials  to understand applicable state law. 
+GCPs require that sponsors observe all applicable laws and the federal Common Rule does not preempt state regulation of clinical trials where it provides greater rights.
+23 
+ii. Ex-US: Federal Law Applicable to In ternational Activity by US Entities 
+Both AMCs and industry should be aware of certain federal law that applies to  all US entities doing 
+business internationally. Although commercial activity  outside the US is governed by myriad laws and 
+                                                 
+20 Office for Human Research Protections U.S. Department of Health and Human Services, International 
+Compilation of Human Research Protections (Nov. 5, 2008), 
+http://www.hhs.gov/ohrp/interna tional/HSPcompilation.pdf.  
+21 See e.g., 12 V.S.A§ 7151 for a definition of Emancipated Minor; CA Health and Safety Code §24172 for 
+California’s Experimental Research Subjects’ Bill of Rights. 
+22 See National Conference of State Legislatures, “Clinical Trials: What are States Do ing,” August 2009 Update 
+found at http://www.ncsl.org/default.aspx?tabid=14331 for a table of state laws mandating insurance coverage of 
+clinical trials. 
+23 45 CFR §46.101(f) 
+ 
+Squire, Sanders & Dempsey L.L.P. 8 www.ssd.com 
+ treaties, this subsection highlights a few that may direct ly affect clinical trials and apply to both AMCs and 
+industry. However, a thorough review of all applicable law should be undertaken before engaging in 
+research outside the US. If the entity is relying on a th ird party, such as a contract research organization 
+(CRO), it should be sure that the CRO makes ap propriate assurance regardi ng compliance with these 
+and other laws. 
+Federal law (Foreign Corrupt Practices Act, “FCPA”) prohi bits the offering or payment of anything of value 
+to a foreign official for the purpose of influencing that  official in the exercise of non-ministerial duties.24 
+The language of the law includes broad definitions fo r terms such as “foreign official” to include the 
+employees of state-owned or cont rolled entities; these could include state-owned hospitals or medical 
+clinics. Research sponsors should be wary of requ ests for payments to individuals such as principal 
+investigators employed by public hospitals where th ose payments are requested to circumvent payment 
+mechanisms in the contract with the hospital. 
+Export control laws are also applicable to inte rnational research and may govern certain research 
+projects. Chief among these is the set of regulations known as the Export Administration Regulations that 
+requires licensure of certain dual purpose items t hat may be exported including computers, software and 
+biologics.25 Civil and criminal penalties attach to violations. 
+Antiboycott laws and related legislation may govern the terms of agreements or arrangements with 
+countries where research will be performed. T he Export Administration Act Amendment bans agreements 
+to refuse to do business with Israel and other countries and also agreements to discriminate against 
+persons based on race, religion, sex or national origins and also to furnish information about the race, 
+religion, sex or national origin of individuals. Exceptions exist to some of these prohibitions.26 
+iii. The Laws of Other Countries Applicab le to the Conduct of Clinical Trials by 
+US Entities 
+Generally speaking all countr ies where clinical trials will be conduct ed have laws that govern the import of 
+drugs or devices for investigational purposes; regist ration of clinical trials; oversight by regulatory 
+agencies; requirements for indemnity and insurance; and subjects’ privacy and other rights to name a 
+few. For example, the European Union has adopted a clin ical trials directive that sets forth requirements 
+for the conduct of clinical trials there and has pub lished further guidance on aspects of the Directive.27 
+                                                 
+24 15 U.S.C. § 78dd-1 et. seq. 
+25 15 C.F.R 730, 732, 742, 746 and 774 
+26 50 U.S.C. §2401 et.seq. See Department of Commerce website for further information, 
+http://www.bis.doc.g ov/complianceandenforceme nt/antiboycottcomplian ce.htm#whatsprohibited 
+27 Directive 2001/20/EC 
+ 
+Squire, Sanders & Dempsey L.L.P. 9 www.ssd.com 
+ Each of the member states was required to pass nat ional legislation conforming to the principles laid 
+down in the Directive and each may have critically different details. Other c ountries require that the 
+sponsor be a company incorporated in that country.28 Any foreign entity planning to sponsor clinical trials 
+in Brazil must first receive the approval of CONEP (National Commission on Research Ethics).29 It is 
+important to understand the law of the jurisdiction w here the clinical investigation will take place.  
+                                                 
+28 See regulations of the Therapeutics Goods Administration Australia 
+29 Federal Law no. 6360, of Sept. 23, 1976 (DOU of Sept. 24, 1976) 
+ 
+Squire, Sanders & Dempsey L.L.P. 10 www.ssd.com 
+ Part II: 
+Special Considerations in Conducting Clinical Trials in Developing 
+Regions of the Globe; Strategies  for Securing Ethical Review and 
+Special Informed Consent Issues; Risk/Liability Issues and Risk 
+Minimization Strategies  
+ 
+I. Introduction  
+The conduct of clinical trials in emerging regions has been a growing trend over the past decade and is 
+expected to continue going forward. 
+From 2002-2007, 41% of clinical investigation site s utilized by US companies were located outside the 
+United States. During that same time period, the number of US sites decreased annually and the number 
+of sites in Asia, Latin America and Central and East ern Europe have increased, respectively, 29%, 13% 
+and 16% annually.30  
+Similarly, according to EMEA data, approximately one qua rter of all subjects recruited for pivotal trials 
+submitted in applications for marketing authorizat ions between 2005-2008, were recruited in Latin 
+America, CIS, Asia and Africa.31  
+There are clear market forces driv ing the continued globalization trend, including larger numbers of 
+“treatment naive” patients, large patient populations with diseases found in both the developed and 
+developing world, increasing number of qualified in vestigators, faster recruitment, some lower cost 
+structures and access to key global markets. 
+Despite these factors, the c onduct of clinical trials in the emerging world present a number of challenges. 
+For example, Africa, as a continent, is still very much in the early stag es of developing  regulatory and 
+ethical guidelines, as well as basic healthcare infrastr ucture that can meet the needs of a population that 
+is greatly in need of investigational and approved medi cations for the life-threatening diseases such as 
+malaria, meningitis, HIV/AIDS, etc.32  
+                                                 
+30 Tufts Center for the Study of Drug Development, 2007 Report. 
+31 EMEA Strategy Paper: Acceptance of Clinical Trials Conducted in Third Countries for Evaluation in Marketing 
+Authorisation Applicati ons, December 5, 2008. 
+32 See, generally, Report of Research Ethics Policies on th e African Region presented at  World Health Organization 
+Ministerial Conference on Research for H ealth in the African Region June 23-26, 2008; also, Developing Guidelines 
+for Health Research in Africa dated November 2008, prepared by United Nations Economic Commission for Africa 
+and African Union in collaboration w ith Good Clinical Practice-Europe. 
+ 
+Squire, Sanders & Dempsey L.L.P. 11 www.ssd.com 
+ Notwithstanding the challenges, global NGOs, pharma ceutical companies and individual governments are 
+taking steps to encourage and promote the ethical conduct  of clinical trials in Africa and other emerging 
+regions.33  
+This chapter examines some of the regulatory, ethi cal and contractual challenges that a life sciences 
+company faces when conducting trials in the emer ging regions of the globe and some potential risk 
+management strategies. 
+II. Discussion 
+A. General Regulatory/ Litigation Risks 
+There are a number of regulatory issues that come in to play when conducting trials on a global basis. 
+Both US and European regulatory officials are stepping up their efforts to achieve further harmonization 
+and to ensure that the integrity of data and protection of human subjects is assured, regardless of the 
+location of the trial. For example, US FDA has rece ntly amended its regulations  regarding the conduct of 
+clinical trials, not under an IND,34 to require that such studies must comply with GCPs.35  
+The EU is increasingly focused on clinical studies  conducted in non-EU countries, with particular 
+emphasis on the developing world. EU Directive 2001/85/EC, Recital 8 pr ovides that “to be taken into 
+account during the assessment of an application [for a marketing authorization], clinical trials conducted 
+outside the European Community shall be designe d, implemented and reported on what good clinical 
+practice and ethical principles are concerned, on the basis of principles which are equivalent to the 
+provision of [the EU Clinical Trial Directive].”36  
+The EMEA recently published a strategy paper on the evaluation of clinical trials conducted in such 
+regions.37 The paper notes that EMEA plans increased inspection of sites for compliance with GCP and 
+ethical standards. “Two key factors in selecting site s and studies for routine inspection are the presence 
+of vulnerable populations, including children, and investigator sites.”38  
+                                                 
+33 See, for e.g., https://www.globalhealthprogress.org/; 
+https://www.gav ialliance.org/media_centre/press_releas es/2009_06-12_AMC_l ecee_kick_off.php. 
+34 21 CFR 312.3. 
+35 21 CFR 312.120. 
+36 EU Directive 2001/20/EC. 
+37 EMEA Strategy Paper: Acceptance of Clinical Trials Conducted in Third Countries for Evaluation in Marketing, 
+Authorisation Applicati ons; December 5, 2008. 
+38 Id., page 1. 
+ 
+Squire, Sanders & Dempsey L.L.P. 12 www.ssd.com 
+ Regarding “investigator sites,” it is worth mentioni ng that many US life science s companies serve not only 
+as official “sponsors” of trials in the developing world, but also may provide grant funding to independent 
+investigators. Under United States regulation, such  studies would be considered ones conducted by a so-
+called “sponsor-investigator.”39  
+This concept is fairly well understood in the US to  mean that the pharmaceutical company providing 
+funding would not undertake any of the typical spon sor obligations. Outside the US, it may be the case 
+that the party providing funding for a study would, nevertheless, be considered the sponsor under local 
+law, regardless of whether the party(ies) who are re cipients of the funding ha ve by contract assumed 
+sponsor and investigator like duties. In that case, pa rticularly in emerging regions that may be lacking in 
+well trained clinical trial teams, etc., a life sciences  company may wish to perform additional due diligence 
+or provide additional resource support for the trial. 
+On a broader level, the US life science community wa s awakened by the recent high-profile case (settled 
+in part) in which the Second Circuit Court of Appeals held that a US sponsor could be sued in US court 
+under the Alien Tort Statute, for alleged claims in c onnection with a clinical trial conducted in Nigeria.40 
+This case underlines the need to ensure that a co mpany conducting trials abroad remain on top of 
+regulatory and ethical requirements and that it en sures compliance, even if those duties are being 
+“handled” by third parties, such as a CRO. (See further discussion of CRO roles in Chapter 4.) 
+B. Ethics Review  
+It is widely accepted around the globe that research  involving human research should be conducted only 
+after an appropriate ethics review has occurred.41 In some regions, however, there is a lack of 
+comprehensively functioning ethics committees.42  
+A sponsor’s clinical trial agreement should contain prov isions requiring the investigator to provide written 
+evidence that a trial has been approved by a duly constituted ethics committee. A sponsor should 
+consider including review of an ethics committee’s bona fides as part of its site and investigator selection 
+                                                 
+39 21 CFR 312.3(b). 
+40 Abdullahi v. Pfizer, Inc ., 562 F.3d 163, 169 (2nd Cir. 2009). In that matter, reportedly settled in part for US$75M 
+(See, Pfizer Reaches Settlement in Nigerian Drug Trial Case, The Washington Post  (April 4, 2009)), it was alleged 
+that, among other things, ethics committ ee approvals were not received in advanc e of the trial from a proper ethics 
+committee, proper informed consent was not obtained from children and/or their guardians, the risks of experimental 
+treatment were not adequately explained, that consent documents were not provided in the appropriate native language and that the investigator was inexperienced. 
+41 National Bioethics Advisory Commission (NBAC), Volume I: Report and Recommendations of the National 
+Bioethics Advisory Commission, Executive Summ ary 45 (2001) (“NBAC Report”), available at 
+http://bioethics.georgetown.edu/nbac/clinical/Vol1.pdf. 
+42 See Footnote 3. 
+ 
+Squire, Sanders & Dempsey L.L.P. 13 www.ssd.com 
+ process. If there is a question as to the experience or  qualifications of a local ethics committee or if there 
+is a concern that a conflict of inte rest would exist based on the interest that the local ethics committee 
+would have in approving the study, a prevailing reco mmendation by bioethics experts, and consistent with 
+the approach taken by some multi-national pharmac eutical companies, would be to also obtain review 
+from an independent ethics committee in another c ountry or from a mixed committee including local 
+representatives.43 
+C. Informed Consent 
+GCP is an international ethical and scientific qualit y standard for designing, conducting, recording, and 
+reporting trials that involve t he participation of human subjects.44 GCP requires, among other things, 
+obtaining and documenting the freely given informed consent of the subject (or a subject's legally 
+authorized representative, if the subject is unable to provide informed consent) before initiating a study.45 
+Special issues regarding informed consent arise when co nducting clinical trials in the developing world. 
+Specifically, when subjects for a study may be cons idered part of a “vulnerable population”, additional 
+measures may be needed to ensure the objec tives of informed consent are met. 
+In the FDA Guidance for Industry E6 Good Clinical  Practice: Consolidated Guidance (the “Guidance”),46 
+“vulnerable populations” are defined as “Individuals whos e willingness to volunteer in a clinical trial may 
+be unduly influenced by the expectation, whether justif ied or not, of benefits associated with participation, 
+or of a retaliatory response from senior members of a hierarchy in case of refusal to participate. Examples 
+include patients with incurable diseases, persons in nursing homes, unemployed or impoverished 
+persons, patients in emergency situations, ethnic mi nority groups, homeless persons, nomads, refugees, 
+minors, and those incapable of giving consent.”47  
+The Guidance states that “special attention should be paid to trials that may include vulnerable subjects,” 
+and discusses various considerations for obtaining in formed consent from members of this population.48  
+                                                 
+43 See, for e.g., NBAC Report at page xii; Opinion of the European Group on Ethics in Science and New 
+Technologies to the European Commission, “Ethical Aspects of Clinical Research in Developing Countries” dated 
+February 4, 2003; http://www.pfizer.com/responsibility/resear ch_clinical_trials/global_clinical_trial_standards.jsp.; 
+http://www.gsk.com/policies/GSK-on-clinic al-trials-in-the-developing-world.pdf. 
+44 Guidance for Industry E6 Good Clinical Practice: Consolidated Guidance, page 1, 
+http://www.fda.gov/downloads/Drugs/GuidanceComplianceRegulatoryInformation/Guidances/ucm073122.pdf. 
+45 21 CFR § 312.120. 
+46 Guidance for Industry E6 Good Clinical Prac tice: Consolidated Guidance is available at 
+http://www.fda.gov/downloads/Drugs/GuidanceComplianceRegulatoryInformation/Guidances/ucm073122.pdf. 
+47 Guidance for Industry E6 Good Clinical Practice: Consolidated Guidance, at 1.61. 
+48 Guidance for Industry E6 Good Clinical Pr actice: Consolidated Guidance, at 3.1.1. 
+ 
+Squire, Sanders & Dempsey L.L.P. 14 www.ssd.com 
+ Additional sources of guidance include: the NBAC Report,49 the Report of the International Bioethics 
+Committee of UNESCO On Consent, dated 2008,50 and Ethical Challenges in study design and informed 
+consent for health research in resource-poor se ttings issued by the WHO Special Programme for 
+Research & Training in Tropical Diseases.51  
+In crafting an informed consent process for a study, the sponsor should address the following: (i) ensure 
+that informed consent documentation is prepared in  the appropriate native language(s); (ii) ensure that 
+informed consent documentation is appropriately written for subjects who may be illiterate or have 
+minimal reading or writing skills and that, as neces sary, authorized unbiased persons serve as witnesses 
+or parties who might further expl ain the Study to a subject; (iii) ensure that appropriate means of 
+signifying consent are allowed and documented by the Study team (which may in some circumstances 
+include oral assent or assent by fi ngerprint or other mark); (iv) ensure  that even if community leaders or 
+other family members may be involved in the consent proc ess due to local cultural or religious norms, that 
+the free-will of the subject to participate in the Study  is confirmed; and (v) ensu re that subjects understand 
+and agree to proposed use of blood, urine or other samples.52 
+D. Contractual Issues  
+The following are a few practical issues that may be encountered when contracting to conduct clinical 
+trials in the developing world: (1) sites may requ est provision of equipment or other infrastructure 
+resources — FCPA and local anti-corruption issues need to be considered; (2) in certain jurisdictions 
+investigators may be reluctant to receive compensation from institutions, given administrative delays; (3) 
+local ethics committees may require continued access of investigational product following trial; (4) some 
+institutions and investigators carry no insurance whatsoever; (5) some institutions may not be established 
+as legal entities.  
+                                                 
+49 See Footnote 12. 
+50 United Nations Educational, Scientific and Cultural Organization, Report of the International Bioethics 
+Committee of UNESCO On Cons ent, 2008, available at 
+http://unesdoc.unesco.org/images/0017/001781/178124e.pdf. 
+51 World Health Organization, Ethical Challenges in study design and informed consent for health research in 
+resource-poor settings, available at http://apps.who.int/tdr/ publications/tdr-research-publications/ethical-challenges-
+study-design/pdf/ethical_challenges.pdf. 
+52 Consideration should be given to whether any export, privacy or other considerations apply to the transport and 
+analysis of such samples. 
+ 
+Squire, Sanders & Dempsey L.L.P. 15 www.ssd.com 
+ Part III: 
+Industry/Academia Relationships  
+The relationship between the life sciences industry and academia is a critical one to the development of 
+breakthroughs in medicine. Industry finances basic and clinical research in academia through grant 
+funding and direct payments pursuant to contracts. This section of the presentation will consider two 
+topics that reflect both the strength  and tensions of the relationship: industry funded investigator-initiated 
+trials and contracting issues that arise betwe en industry and academia in industry-sponsored 
+agreements. 
+A. Industry-sponsored Clinic al Trials: Contract Issues 
+Much has been written about tensions between industry  and academia as it has surfaced around certain 
+fundamental issues often heavily negotiated in clinical  trial agreements: analysis and publication of 
+clinical trial results; registration of clinical trials; inte llectual property interests; financial support of clinical 
+trials (payment of costs, indemnification for the inst itution and of subjects). In 2005, Harvard researchers 
+published a study of certain clauses of clinical trial agreements between industry and academia and 
+concluded that there is significant variation among academ ic institutions with resp ect to certain restrictive 
+clauses such as publication and intellectual pr operty and that greater sharing should occur among 
+institutions to develop a consensus about standards.53 Specifically, the researchers found disparity in 
+what was acceptable regarding publication of data: while 85% of the institutions surveyed would not 
+permit sponsors to revise manuscripts, there wa s considerable disagreement  about whether sponsors 
+would be permitted to insert their own statisti cal analysis (24% yes;  47% no and 29% unsure).54 Equally 
+split was language permitting sponsors to draft th e manuscript (50% allowed, 40% disallowed, 10% 
+uncertain) and permission for investigators to share dat a with third parties after the trial concluded (41% 
+allowed, 34% disallowed). The researchers also identifi ed conflicts involving the contracts that arose after 
+the clinical trials had been completed. The mo st common dispute involved payment followed by 
+intellectual property, and finally access to data.55 
+There have been efforts to address these issues by de veloping a consensus about underlying principles 
+and by creating templates for clinical trial agreement s that are acceptable to industry and academia.  
+                                                 
+53 Mello, M., Clarridge, B., Studdert, D. , “Academic Medical Centers’ Standards for Clinical-Trial Agreements with 
+Industry,” N Engl. J. Med., 2005;352-2202-10. 
+54 Mello, M. et. al., p. 2202 
+55 Ibid., p. 2207 
+ 
+Squire, Sanders & Dempsey L.L.P. 16 www.ssd.com 
+ Both academia and industry have set forth principles  on these issues. Examples from academia include 
+efforts by the Association of American Medical Co lleges (AAMC) and the standards established by such 
+bodies as the International Committee of Medical Journal  Editors (ICJME). Industry principles have been 
+formulated by PhRMA. Professional medica l societies have also weighed in on the debate.56  
+The ethical standards that have been generally articulat ed on behalf of academic institutions are evolving 
+to encourage registration of clinical trials; the righ t by the investigators to access, review and publish data, 
+albeit with due regard to the realities of a multi-cent er study within certain timing constraints but without 
+respect to how the outcome influences the company’s fortune; rejection of manipulations such as ghost 
+writing and failure to disclose conflicts of interest.57  
+PhRMA has set forth principles touching many of thes e same issues in its publications Principles on 
+Conduct of Clinical Trials and Communication of Clin ical Trial Sites which is available on its website.58 Not 
+all industry members of PhRMA have signed on to the Code but the principles are gaining greater 
+acceptance. 
+Another factor that has influenced the debate is the regulation that affects the range of choices available 
+to AMCs: most are tax exempt and some are public inst itutions. An issue that is important to AMCs but 
+not to industry is the fact that commercial testing of  pharmaceuticals or devices is regarded as “private 
+use” under IRS regulations governing requirements for ta x exempt bonds. If clinical trials sponsored by 
+industry are conducted in a facility that has been cons tructed with tax exempt bonds, then during the time 
+the bonds are outstanding, the facility may not be used  (within certain limits) by entities for private 
+business use.59 This can be more or less an issue depending on how the facility has been financed and 
+how the AMC keeps track of such use.60 Another issue related to the tax ex empt status or pu blic status of 
+an AMC is its perceived ability to plac e charitable assets either in the service of a commercial enterprise 
+or at risk. This issue usually takes the form of a refusal to indemnify the commercial enterprise for any 
+damages arising out of the trial regardless of fault. 
+                                                 
+56 American Medical Association, “Ethical Guidelines Regarding Clinical Research” 
+57 Ehringhaus, S., Korn, D., “Principles for Protecting Inte grity in the Conduct and Repor ting of Clinical Trials,” 
+Association of American Medical Colleges, January 6, 2006 
+58 http://www.phrma.org/clinical_trials/ 
+59 See IRS Rev Proc 97-13 as modified by Rev Proc 2007-47 which provides a safe harbor for “basic research” that 
+is defined as “any original investigation for the advancement of scientific knowledge not having a specific 
+commercial objective. For example, product testing supporting the trade or business of a specific nongovernmental 
+person is not treated as basic research.” 
+60 The newly revised Form 990, the tax return for non-profits has a new schedule that requires that the tax exempt 
+filer provide much greater detail about private use of tax-exempt bond financed facilities. 
+ 
+Squire, Sanders & Dempsey L.L.P. 17 www.ssd.com 
+ Another strategy to find consensus between academia and industry is the effort to develop clinical trial 
+templates that both sides can agree on.  Several initiatives have been undertaken including an abortive 
+effort by the AAMC,61 a private initiative known as MAGI,62 and one mounted by Duke Clinical Research 
+Institute.63 Although not a clinical trial template, a recent  collaborative effort that was successfully 
+sponsored by the National Cancer In stitute (NCI) resulted in agreement (as at least a starting point) on 
+the language of several contentious provisions in cluding IP, publication, data, indemnity and subject 
+injury.64  
+The most successful clinical trial template develo ped that enjoys wide accept ance between industry and 
+hospitals is used in the United Kingdom (UK) by the National Health Service (NHS) hospitals and the 
+pharmaceutical industries.  The template was dev eloped by the UK Department of Health and the 
+Association of the British Pharmaceutical Industry.65 This comprehensive agreem ent is widely used and 
+rarely negotiated in the UK.  Perhaps one of the reasons for its success is  that most hospitals in the UK 
+are owned and operated by the NHS so wide adoption of  the template once blessed by the Department of 
+Health was assured.  It is unlikely that such a si tuation would occur in the US outside of government 
+created templates such as the Cooperative Res earch and Development Agreements and Clinical Trial 
+Agreements developed by the US D epartment of Veteran’s Affairs 66or the NCI effort described earlier. 
+B. Support of Investigator-Initiated Clinical Trials 
+Investigator-initiated clinical trials are those where the investigator rather than the pharmaceutical or 
+device company assume s the responsibilities of t he sponsor of the clinical trial. Therefore, the 
+investigator rather than a drug company designs t he trial and oversees its conduct, and collects and 
+analyzes the data. If the clinical trial involves an o ff-label use of a drug, the investigator is also 
+responsible for securing an IND from the FDA.  
+Other differences between a trial that is investigator -initiated and sponsor-initiat ed are the facts that the 
+trial is typically single site and the resulting data is  owned by the investigator rather than the sponsor. 
+                                                 
+61 Clinical Trial Contracts: A Discussion of Four Selected Provisions , Association of Ameri can Medical Colleges, 
+January 2004 
+62 http://www.magiworld.org/ 
+63 Contract Language for Clinical Research Agreements  Between Academic Medical Centers, Duke Clinical 
+Research Institute, Duke University 
+64 Proposed Standardized, Harmonized Cl auses for Clinical Trial Agreements , CEO Roundtable on Cancer, 
+National Cancer Institute, August 27, 2008 
+65 http://www.dh.gov.uk/en/Research anddevelopment/A-Z/DH_4002073#_1 
+66 http://www.index.va.gov/search/va/va_search.jsp?SQ=&T T=1&QT=clinical+trial+agreements&searchbtn=Search 
+ 
+Squire, Sanders & Dempsey L.L.P. 18 www.ssd.com 
+ Life science companies will often s upport investigator-initiated trials because they are interested in the 
+results of the research which may point to new uses  for a drug or device or possibly provide additional 
+supportive data for a current indication. There are, however, some cautions. First, any payments to the 
+investigator must be fair market value to avoid the implication that the payment is an attempt to induce 
+the researcher who is often a physician to prescribe the drug and/or recommend the drug to others. Such 
+conduct could violate the so-called Anti-kickback St atute, a civil and criminal  statute that can carry 
+onerous penalties.67 Defining what is “fair market value,” while beyond the scope of this paper, needs to 
+be carefully considered and attached to a realistic budget  with hard, verifiable costs. Second, support of 
+investigator initiated trials can expose the company to  potential claims if the investigator does not conduct 
+the trial in accordance with law and regulation and  someone is damaged. Therefore, the company should 
+be cautious in choosing which investigator to support. 
+                                                 
+67 42 U.S.C. §1320a-7b 
+ 
+Squire, Sanders & Dempsey L.L.P. 19 www.ssd.com 
+ Part IV: 
+Outsourcing Sponsor Responsibilities and the Evolving Roles of 
+Academic Research Organizations/Contract Research 
+Organizations/Site Management Organizations  
+ 
+I. Introduction  
+In today’s global clinical trials market, the tradition al lines between industry, academia and the various 
+commercial organizations that support research are becoming blurred. Further, the interrelationships 
+between these players are evolving and complex. Among other factors, the well publicized commercial 
+pressures felt by big pharma to increase the productiv ity of their investigational product pipelines; the 
+increasing movement by start up biot echs to a “virtual” company model;68 and the increasing person 
+power commitments and regulatory specialization requi red to conduct clinical trials globally have all 
+contributed to these ground shifting changes  in alliances among the key players. 
+At the same time, government, media and public scrutiny of actual and potential conflict of interest among 
+industry and health care professionals (including academic researchers) has never been higher. 
+This chapter examines these market trends with a fo cus on the roles that contract research organizations 
+(“CROs”), site management organizations (“SMOs”)  and academic research organizations (“AROs”) are 
+now playing in supporting global clinical research. In deed, in certain cases, thes e entities are themselves 
+assuming the profile of innovator development companies. 
+In examining these trends from the perspective of a life sciences “sponsor” company, we explore some of 
+the potential regulatory, commercial and practical ri sks that one should consider in structuring and 
+managing these relationships. 
+II. Discussion 
+A.  Traditional CRO Role 
+Traditionally, pharmaceutical company sponsors utiliz ed CROs as an outsourcing resource designed to 
+fill narrowly defined gaps in personnel capacity or s ubject matter expertise. An example of the former 
+might be where a sponsor required external monitors69 to supplement its in-house contract research 
+associate staff to support an unusually large multisite trial. An example of the latter would be where the 
+                                                 
+68 “Early Stage Returns,” Bruce L. Booth, Nature Biotechnology, 2006, 24;11;1335-1340 
+69 A sponsor of a clinical trial is required to select a monitor, qualified by training and experience, to monitor the 
+progress of the trial. 21 CFR 312.53(d). 
+ 
+Squire, Sanders & Dempsey L.L.P. 20 www.ssd.com 
+ sponsor company did not have biostatistical or medi cal writing services in-house to cover a particular 
+therapeutic area relevant to the clinical trial. Under this model, the pharmaceutical company would 
+contract for specified services on a fee for task performed basis, perhaps through an RFP process. 
+B. Traditional Academic Research Role 
+US based pharmaceutical companies have enjoyed a long and deep relationship with academic medical 
+centers (“AMC”) in the conduct of c linical trials. The traditional form of this relationship has been where a 
+physician/faculty member at the AM C serves as an “investigator”70 for a clinical trial conducted at the 
+AMC. In that scenario, the pharmaceutical company ent ers into a clinical trial agreement with the AMC 
+and the investigator (or with an acknowledgment by the investigator), again with emphasis on a strict 
+budget for specific se rvices provided basis.71 In some cases, a key opinion leader serves as lead or 
+coordinating investigator for a multi-site trial. 
+C. Changing Face of CRO Role  
+As its leading US trade association states, “The CRO industry is evolvi ng into a full service model where 
+CROs offer services from the ear liest stages of development through clinical trails and post-approval 
+research.”72 The global CRO market is estimat ed at US$7.8 billion and is growing.73  
+The impending patent cliffs faced by the pharmaceutical  industry, as well as industry consolidation, 
+together with the market forces not ed previously, have all contributed to an increasing reliance on CRO’s 
+to assist in the conduct of clinical trials. In re sponse, we see CROs also consummating large scale 
+transactions, increasing capacity, therapeutic focus,  or breadth and geographic research, particularly in 
+emerging markets such as Latin America,  Asia and Central and Eastern Europe. 
+As example, in early 2009, PPD, Inc. acquired Ab CRO, another CRO with oper ations in the Russia, 
+Ukraine, Poland, Bulgaria and elsewhere in the prime Central and Eastern European market.74 In 
+                                                 
+70 An investigator is an individual who actually conducts a clinical investigation (i.e., under whose immediate 
+direction the drug is administered or di spensed to a subject). In the event the investigation is conducted by a team of 
+individuals, the investigator is the responsible leader of the team. 21 CFR 312.3(b). 
+71 In part, the emphasis on defined fees for services are based upon the desire to avoid anti-kickback concerns. See 
+e.g., OIG Compliance Program Guid e for Pharmaceutical Ma nufacturers, 68 F.R.  86, May 5, 2003. 
+72 Source: Association of Clinical Research Organization – http://www.acrohealth.org/industry-ataglance.php 
+73 “Global Growth Remains Strong for CROs in 2008, Beyond,” Centerwatch Monthly , March 2008 
+74 http://investor.ppdi.com/releasedetail.cfm?ReleaseID=378783 
+ 
+Squire, Sanders & Dempsey L.L.P. 21 www.ssd.com 
+ contrast, also earlier this year, PPD announced the sale to Charles River Laboratories International Inc. of 
+PPD’s oncology focused subsidiary, Piedmont Research Center LLC in a US$46 million deal.75 
+These transactions are notable for their size and stra tegic focus, but there are other transactions which 
+further represent a change in the character of CRO’s core business model and their relationship with 
+traditional innovator pharmaceutical companies. 
+For example, in 2008, Eli Lilly announced a series of  transactions reflecting an aggressive programmatic 
+outsourcing to CROs of its drug development program.  First, it announced that Quintiles Transnational 
+would be the outsource supporter of its clinical trial monitoring work in the US and that i3 would be the 
+outsourcing supporter of mo st of the company’s data management fo r clinical trials. These are but two 
+examples of what industry observers have labeled a shift towards outsourcing to CROs functional, as 
+opposed to transactional tasks.76 
+More significant was Eli Lilly’s announcement last year that it had sold its Greenfield, Indiana early stage 
+drug development facility to Covance, another large CRO, for US$50 million. As a companion to the sale, 
+Covance signed a 10 year, US$1.6 billion contract to provide to Eli Lilly drug development services for 
+drug studies in Phases II-IV.77 Such a transaction was a clear sign that a more partnership oriented 
+CRO/industry model was afoot. 
+The evolution in CRO business model s is not limited to US based comp anies. In China, domestic CROs 
+have traditionally focused on relatively inexpensiv e areas such as biology and chemistry, with 
+manufacturing of active pharmaceutical ingredients for generic drugs. Now, however, increasing numbers 
+of China-based CROs are moving into more lucrative areas of drug development, such as pre clinical and 
+clinical trials.78 Also, most of the leading global pharmaceutic al companies have established R&D centers 
+and alliances with China based CROs to conduct drug di scovery, translational medicine and clinical trials 
+at centers such as the huge Shanghai Zhangjiang life sciences cluster.79 
+Another example of novel partnering between indus try and CROs is where pharma companies solicit 
+outside investors, including ventur e or investment affiliates of CROs , to assist in financing the pharma 
+companies’ clinical trials. In that regard, these investors assume certain risk of outcome failure.80 Such an 
+                                                 
+75 Boston Business Journal , April 13, 2009; http://investor.ppdi.co m/releasedetail.cfm?ReleaseID=375335 
+76 “Make a Match, Big Pharma is Finally Making a Co mmitment to Partner Based Outsourcing,” Kenneth Getz, 
+Rachel Zuckerman, David Zuckerman and Charles Piper, Pharmaceutical Executive Magazine , April 2009 
+77 http://www.prnewswir e.com/cgi-bin/micro_stories.pl?ACCT=91 6306&TICK=LLY&STORY =/www/story/08-06-
+2008/0004862818&EDATE=Aug+6,+2008 
+78 “China’s Drug Contractors ar e on a Fast Growth Track,” Reuters , September 3, 2009 
+79 “Unleashing the Dragon, the Sequel,” Pharmaceutical Executive Magazine , September 2008 
+80 “Drug Makers Explore External Financing for Research Efforts, Wall Street Journal , April 7, 2009 
+ 
+Squire, Sanders & Dempsey L.L.P. 22 www.ssd.com 
+ arrangement would be particularly of note if the main  CRO entities are playing any role in servicing the 
+clinical trial concerned. 
+It is important to note, however, that despite the growth in the CRO market, the past year’s general 
+economic downturn and more inward focus by a consolidated and consolidating pharmaceutical and 
+biotech industry has resulted in some disappointing finan cial results or dramatic shifts in business focus 
+by some of the big CRO players. For example, MDS recently announced it will sell the remainder of its 
+CRO business, MDS Pharma Services.81 Also, an industry analyst reported that since Q1 2006, 6 of the 
+top 7 publicly-traded CROs have seen a decline in net revenues and some have experienced a drop in 
+stock value.82 
+D. Changing Role of Academic Researchers  
+Although the life sciences industry co ntinues to utilize academic research  capabilities in the conventional 
+way, through site by site engagements with investigators and AMCs, this is but one model. The 
+proliferation of global trials, among other things, ha s led to a steady decline in the proportion of North 
+American investigators conducting clinical trials. In 1990, the proportion of North America-based 
+investigators conducting clinical trials was 96%. In 2007, its was 54%.83 
+In addition to this general decline, US AMCs have ex perienced a loss of market share. In the US, the 
+investigative market is made up of three primary segm ents. One is the part-time segment of physicians in 
+private practice that derive a majority of its annual revenue from clinical practice. In 2007 this group 
+surpassed AMCs (the second market segment) with a market share of 38%, as compared to 36%. The 
+third segment consists of dedicated investigator si tes that derive nearly 100% of their annual revenue 
+from clinical trial grants. This group accounts for 26 % of the market. Since 1998, AMCs are estimated to 
+have lost 40% of its market share.84 
+Despite this trend, academic KOLs and AMCs, of cour se, remain vital players in the clinical research 
+market. A new model that has emerged is the growth  of strong academic research organizations, which 
+serve some of the same functions as CROs and SMOs.85 
+                                                 
+81 https://www.centerwatch.com/news- resources/clinical-trials-today/headline-details - September 3, 2009 
+82 https://www.outsourcing-pharma.com/clinical-dev eloment/CRO-growth-since-06-and-the-impact-of-the-
+downturn 
+83 “The Elusive Sponsor Site Relationship,” Kenneth A. Getz, Applied Clinical Trials , February 2009. 
+84 Id. 
+85 Site management organizations are more typically affiliated with one or more investigators and many of them 
+centralize patient recruitment, among other services. 
+ 
+Squire, Sanders & Dempsey L.L.P. 23 www.ssd.com 
+ In the US, two prime examples are Duke Clinical Rese arch Institute, which prom otes its organization as 
+“enlisting” more than 5000 investigators in more than 63 countries to carry out scientific investigations.86 
+Similarly, Harvard Clinical Research Institute is  an academic research organization that “connects 
+academia to industry” by working with a broad range of sponsors. Its website st ates that the Institute 
+“meets industry standards and aggressive timelines and o ffers price competitive services that span the 
+entire clinical trial process.” The services range fr om data safety monitoring board services, project 
+management and “HCRI affiliated” academic physici an providing assistance with study design.”87 
+Even outside of the dedicated clinical  research centers of AMCs, KOLs  and AMC staff frequently provide 
+assistance to pharma companies regarding protocol de sign, site selection, and other “sponsor” duties. 
+Despite the competition that may exist between CROs and the academic  research community for access 
+to industry sponsored or funded trials, there are also developing collaborations among them. For 
+example, in 2008, Parexel announced an alliance with the Safe Implementation of Treatments in Strokes, 
+a network of clinical sites specializing in stroke. Another example is Quintile s’ alliance with Med Star 
+Research Institute, which is the centralized clinical research services center of Med Star Health, which 
+includes a consortium of member AMCs.88 
+E. Potential Risks to Sponsors of Evolving Outsourcing 
+Arrangements/Recommendations 
+The evolving relationships with clinical research cont ractors/partners, as discus sed above, present novel 
+opportunities for collaboration, but they also present areas of risk and/or need for close management. The 
+following are a few points for sponsors to keep in mind when documenting and structuring these 
+relationships: 
+i. General Contractual Issues 
+1. Carefully define the contractor/partner . Given that certain AROs and CROs are 
+part of large networks of affilia tes, make sure its clear with  whom you are contracting, 
+and check the financial viability of, and insurance carried by, that party. In addition, if 
+contracting with a parent level entity, ensure t hat it will be fully liable for all affiliates and, 
+to the extent applicable, any subcontractors, such as labs. 
+                                                 
+86 https://www.dcri.duke.edu 
+87 Id. 
+88 “CRO and AMC Collaboration,” Lisa Henderson, Applied Clinical Trials , February 2009 
+ 
+Squire, Sanders & Dempsey L.L.P. 24 www.ssd.com 
+ 2. Identify key personnel . Given the increasing movement of personnel between 
+projects or from CROs and AROs to industry,  it is important to ensure that sponsor has 
+right of selection over key personnel and thei r replacements. In some cases, departure of 
+key personnel should carry penalties, such as right of termination. 
+3. Consider competition issues . Especially given the in creasing consolidation and 
+M&A activity in the CRO sector and the po tential of wide-scale partnerships, it is 
+important to consider at the outset of the se lection process the relationship(s) that the 
+contractor/partner has or may have in the futu re with sponsor’s competitors. Such issues 
+also should be addressed in contractual provisions. 
+4. Pricing/risk allocation . In the traditional fee for services model, CROs would 
+request a termination fee in the event a tria l is unexpectedly terminated, as a means of 
+compensating the CRO for lost opportunity costs. In a “partnership” model, where the 
+parties are forging an alliance across a t herapeutic portfolio or otherwise, more risk-
+sharing may be appropriate (but regulatory concerns may exist with outcomes based 
+payments). 
+ii. Key Regulatory Considerations 
+1. Define regulatory respon sibilities of each party . In the traditional CRO/life science 
+company contract under US laws, the life sci ences company may elect to “transfer” its 
+obligations as a “sponsor” to a CRO.89 
+FDA regulations provide that a contract research organization that assumes any 
+obligation of a sponsor shall comply with t he specific regulations … applicable to this 
+obligation and shall be subject to the same regulatory action as a sponsor for failure to 
+comply with any obligation assumed under these regulations. Thus, all references to 
+“sponsor” in this part apply to a contract research organization to the extent it assumes 
+one or more obligations of the sponsor.90 
+It is therefore important to clarify in a se rvices agreement or scope of work which 
+obligations are being transferred to the CRO.  We note that the FDA regulations do not 
+provide similar language for AROs or SMOs, but to the extent the life sciences company 
+                                                 
+89 Pursuant to 21 CFR 312.52(a), a sponsor may transfer its obligations under 21 CFR 312.50 (which obligations 
+include, among other things, selection of investigators, maintaining control of investigational drug, monitoring the 
+progress of all clinical investigations) to a CRO. Any su ch transfer shall be descri bed in writing. If not all 
+obligations are transferred, th e writing is required to describe each of th e obligations being assumed by the contract 
+research organization. 
+90 21 CFR Part 312.52(b) 
+ 
+Squire, Sanders & Dempsey L.L.P. 25 www.ssd.com 
+ intends to transfer functionable “sponsor” duti es to such entities, it should expressly 
+provide so in the services agreement. 
+Further, for global trials, sponsors should be aw are that in the EU and in other countries, 
+there may not be a similar provision for regu latory “transfer” of sponsor obligations, 
+though specific contractual obligations can be provided in a services agreement to 
+provide as much protection as possible. As a related point, to the extent that the ARO or 
+CRO will be involved with structuring or maki ng payments to investi gators, due diligence 
+should be conducted to ensure that the ARO or CRO are familiar with and committed to 
+compliance with FCPA and local regulations regarding payments to health care 
+professionals. 
+Another similar regulatory issue is raised by the fact that the FDA regulations do not 
+easily accommodate situations in which a CR O, ARO or SMO is potentially providing 
+both “sponsor” services, such as monitori ng and “investigator” services, such as 
+providing in house investigators for clinical tr ials. We are increasingly seeing this scenario 
+in small phase I studies conducted in the US  In such cases, consideration should be 
+given to having separate contracts and ap propriate firewalls established among staff 
+performing these separate functions.91 
+2. Supervisory Access Issues . In cases in which a CRO/ARO or SMO is providing 
+sponsor access to one or more investigational  sites, it is important to confirm that 
+adequate contracts are in place to ensure appr opriate supervision of staff at each site. 
+From a practical standpoint, this can be particularly complicated, depending on who is the 
+employer of the study team. Nevertheless, as FDA has recently made clear in guidance, 
+“the staff involved directly in the conduct of a clinical investigation may include individuals 
+who are not in the direct employ of the cl inical investigator. For example, a site 
+management organization may hire an investigator to conduct a study and provide the 
+investigator with a study coordinator or nu rsing staff employed by the SMO. In this 
+situation, the investigator should take steps to assure that the staff not under his direct 
+employ are qualified to perform delegated tasks and have received adequate training 
+…”92 
+                                                 
+91 Although FDA does provide for “sponsor-investigators,” the regulations expressly provide that this designation is 
+for individual persons only. 21 CFR 312.3(b). 
+92 Draft Guidance for Industry, Protecting the Rights, Safety and Welfare of Study Subjects – Supervisory 
+Responsibilities of Investigators, FDA, May 2007 
+ 
+Squire, Sanders & Dempsey L.L.P. 26 www.ssd.com 
+ In addition, the contract should also make clea r that to the extent that the trial is being 
+performed at a site controlled by a thir d party, the CRO/ARO/SMO have secured 
+appropriate guarantees for compliance and access by sponsor for purposes of 
+inspections. 
+3. Conflict of Interest . As discussed in Chapter 3, an overarching concern and area 
+for further regulatory interpretation and, potentia lly, regulation, relates to the potential for 
+conflicts of interest arising from these nove l partnership arrangements. As one example, 
+FDA’s Financial Disclosure regulation at 21 CFR Part 54 only considers disclosures 
+made regarding payments made by a sponsor to an investigator or his/her family, or 
+other financial relationships between them. It does not address in any extensive manner 
+the extent to which bias may be inherent to the relationships between investigators and 
+non-sponsor CROs/SMOs or AROs, or betw een sponsors and CROs/SMOs or AROs. 
+Nevertheless, issues involving investigator and institutional conflicts are being examined 
+at a variety of levels and should be considered by a sponsor at the outset of and 
+throughout the contractual relationship. 
+Contact: 
+Maureen Bennett  
+Partner and Chair, Global Life Science Practice Squire, Sanders & Dempsey L.L.P. 
++1.857.453.5627 
+mbennett@ssd.com 
+Jan Murray  
+Deputy Chief Legal Officer Cleveland Clinic 
++1.216.297.7075 
+murrayj5@ccf.org 
+ 
+© Squire, Sanders & Dempsey L.L.P. 
+All Rights Reserved 
+2009

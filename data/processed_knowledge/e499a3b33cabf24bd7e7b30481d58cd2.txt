@@ -1,0 +1,308 @@
+AboutOpen - ISSN 2465-2628 - www.aboutscience.eu/aboutopen
+© 2023 The Authors. This article is published by AboutScience and licensed under Creative Commons Attribution-NonCommercial 4.0 International ( CC BY-NC 4.0).
+Commercial use is not permitted and is subject to Publisher’s permissions. Full information is available at www.aboutscience.eu
+DOI: 10.33393/ao.2023.2508 
+2023; 10: 1-3 AboutOpen |
+ISSN 2465-2628 | 
+Clinical Research
+ POINT OF VIEW
+within the field of research, which require greater human 
+and infrastructural resources as well as imply the need for 
+a greater skill set and expertise on the part of professionals 
+(3,4).
+In this context, the centers that conduct clinical trials 
+found themselves having to face this increased complexity 
+which, from their point of view, is characterized by three 
+main factors:
+– increased quality standards required by the regulatory 
+agencies, both toward the research centers and toward 
+the promoters (both profit and nonprofit) (5,6);
+– increased bureaucratization of processes, with a conse-
+quent increase in the document production at trial sites 
+as requested by sponsors and stakeholders (7);
+– increased complexity of study designs, with the intro-
+duction of innovative designs, such as platform and/
+or adaptive studies, often characterized by a Bayesian 
+statistical basis. This increased complexity compared 
+to traditional trials calls for greater efforts from clini-
+cal centers, in terms of procedures to be implemented 
+and time to be dedicated to research activities, espe-
+cially as a consequence of potential interim analysis 
+and the dynamics of ongoing development of the study 
+protocol (8).Clinical trial units and clinical research coordinators:  
+a system facing crisis?
+Stefano Stabile1,2, Rosita Cenna2,3, Valentina Sinno2,4, Veronica Franchina2,5, Francesca Mannozzi2,6, Irene Federici2,7,  
+Sara Testoni2,6, Celeste Cagnazzo2,3
+1Niguarda Cancer Center, Grande Ospedale Metropolitano Niguarda, Milan - Italy
+2Gruppo Italiano Data Manager e Coordinatori di Ricerca Clinica (GIDMcrc), Meldola - Italy
+3SC Oncoematologia Pediatrica, Presidio Ospedaliero Infantile Regina Margherita, AOU Città della Salute e della Scienza di Torino, Turin - Italy
+4SS Clinical Trial Center, Fondazione IRCCS Istituto Nazionale dei Tumori, Milan - Italy
+5U.O.C. Oncologia Medica A.O. Papardo, Messina - Italy
+6Unità di Biostatistica e Sperimentazioni Cliniche, IRCCS Istituto Romagnolo per lo Studio dei Tumori (IRST) “Dino Amadori”, Meldola - Italy
+7Clinica di Ematologia, AOU Ospedali Riuniti Umberto I, G.M. Lancisi, G. Salesi, Ancona - Italy
+ABSTRACT
+We are currently witnessing an increase in procedural and managerial complexities within the field of clinical re-
+search, which require greater human and infrastructural resources as well as imply the need for a greater skill set 
+and expertise on the part of professionals. Within this frame of reference clinical trial units and clinical research 
+coordinators play a vital role in the design and conduct of clinical trials in Italy.  There is a current recruitment 
+and retention crisis for this specialist role due to a complex set of factors, most likely to have come to a head due 
+to the lack of recognition at the Italian institutional level, that lead to precarious work contracts, lack of identity, 
+and excessive turnover at experimental sites.  This article, led by the Italian Group of Clinical Research Coordina -
+tor (GIDMcrc), presents some of the issues and ways in which national stakeholders may be able to address this.
+Keywords:  Clinical Research, Clinical Research Coordinator, Clinical Trial Management, Clinical Trial Unit
+Received: October 24, 2022
+Accepted: December 19, 2022
+Published online:  January 16, 2023
+Corresponding author:
+Stefano Stabile
+Niguarda Cancer Center
+Grande Ospedale Metropolitano Niguarda
+Piazza dell’Ospedale Maggiore, 3
+20162 Milano - Italy
+stefano.stabile@ospedaleniguarda.itBackground
+COVID-19 emergency has led to a collective awareness 
+of the importance of promoting and supporting clinical 
+research, in order to allow the development of new innova-
+tive therapies, as well as to improve the appropriateness of 
+existing treatments (1,2). Treating and innovating has there-
+fore become a primary need for both patients and the scien-
+tific community.
+At the same time, especially in the last decade, clinical 
+research has evolved and changed both from a regulatory and 
+methodological point of view. In fact, we are currently wit -
+nessing an increase in procedural and managerial complexities 
+© 2023 The Authors. AboutOpen - ISSN 2465-2628 - www.aboutscience.eu/aboutopen
+CTU and CRC: a system facing crisis?2 
+In order to adequately face these challenges, over the 
+years, the research centers have therefore had to increase 
+the workforce assigned to clinical research, including clini -
+cal research coordinators (CRCs) and research nurses. At the 
+same time, it was necessary to implement and adapt their 
+infrastructures through the creation of clinical trial units 
+(CTUs) responsible for the management and coordination of 
+the various activities required both in profit and academic/
+nonsponsored clinical research contexts (9,10).
+Currently, human resources and clinical research support 
+infrastructures represent the two cornerstones necessary for 
+the correct conduct of clinical research. 
+The difficulties that trial centers are facing:  
+infrastructures and human capital 
+Although the added value of clinical research for patients, 
+research institutions, and the National Healthcare System 
+(NHS) is now scientifically recognized (it is estimated that for 
+every euro paid by the pharmaceutical company/sponsor to 
+the experimental sites for the conduct of a clinical study, the 
+NHS saves 2.77 euro for costs not incurred (11)), over the 
+years, institutional support has often lacked on the two piv -
+otal fronts of experimental centers: professionals dedicated 
+to clinical research and support infrastructures.
+Until now, there has been no reference guidelines or 
+shared institutional indications setting a standard model 
+or organization system for experimental centers in order 
+to ensure the conduct of profit and nonprofit clinical trials 
+according to the required standards. This lack of coordina -
+tion and institutional support has therefore led to a hetero-
+geneous development of research centers across the State, 
+both in terms of geographical distribution and in terms of the 
+establishment and development of the organizational appa -
+ratus in support of clinical research (12).
+A confirmation of this is the fact that many of the CTUs 
+formed within the research centers are not formally recognized 
+at an institutional and organizational level, often resulting in 
+functional but not institutionalized operating units (13,14).
+The institutions’ reluctance to provide any support has 
+ultimately led to the impossibility, especially on the part of 
+public research structures, to guarantee a stable contractual 
+status to those professional figures specifically dedicated 
+to clinical research (primarily research coordinators and 
+research nurses), causing as a result a strong turnover within 
+the clinical centers’ staff.
+The role of the CRCs 
+In the context of current clinical research, the figure of 
+the CRC is now unanimously recognized as a fundamental 
+element in order to guarantee the management and coordi -
+nation of clinical trials according to the required quality stan-
+dards (13,15,16).
+Over the years this professional figure has evolved, 
+acquiring specific technical and managerial skills that repre-
+sent a strong added value for the clinical trial centers. These 
+are professionals, who have achieved a bachelor’s degree 
+in scientific subjects and gained valuable and essential skills 
+during their postgraduate training. These skills are certainly 
+useful to coordinate and conduct clinical studies promoted by pharmaceutical companies. It’s also important to underline 
+their key role in the drafting, planning, and project manage-
+ment of academic trials, and ensuring the compliance of the 
+center with current legislation and structural and organiza-
+tional requirements.
+Despite the centrality of this professional figure, to date 
+the figure of the CRC is not yet recognized at an institutional 
+level in Italy. This lack of recognition has made it impossible 
+over the years to include these professionals on a perma -
+nent basis within the NHS, mainly proposing scholarships, 
+Consultancy contracts subject to Value Added Tax (VAT), and 
+fixed-term contracts for CRC (13).
+Although in recent years many different attempts have 
+been made, the Italian system has not yet managed to find a 
+definitive solution to contractual precariousness: the classifi-
+cation of staff within the researcher pyramid (which is limited 
+to IRCCS) has in fact resulted in the chronicization of a contrac-
+tual precariousness with no long-term and open-ended pros-
+pects (17). On this note, the classification of CRCs in category 
+D within the administrative/technical sector does not in fact 
+allow the enhancement of these professionals both in terms of 
+intracompany growth and salary upgrade (especially based on 
+the professional’s training and technical-scientific skills).
+Lack of identity and job description
+The lack of institutional recognition of the figure of the 
+CRC explains the absence of a consistent professional job 
+description at the national level: the tasks attributed to the 
+CRC may differ from one clinical research center to another, 
+also based on the latter’s internal organization and proce-
+dures. As a consequence of this, the actual activities carried 
+out by the CRCs may vary significantly: from the management 
+of regulatory and start-up procedures to data entry, manage-
+ment and processing of experimental biological samples to 
+the management of experimental drugs.
+The lack of a well-defined identity for this figure therefore 
+represents an element of further professional destabilization 
+that is added to the contractual framework and which ulti -
+mately hinders, even in the perception of the scientific com-
+munity, the full recognition of skills and added value given to 
+the clinical centers.
+Excessive turnover
+The lack of institutional recognition, lack of a permanent 
+position within the Italian NHS, and lack of enhancement 
+both at a contractual and competence level make it difficult 
+for clinical centers to retain CRCs especially if experienced 
+with strong technical skills.
+CRCs with strong skills and experience can easily find job 
+opportunities in pharmaceutical companies and contract 
+research organizations, drawn by a better contractual status, 
+the greater recognition of their skill set, as well as the oppor -
+tunity for professional growth and salary upgrade. 
+After investing in the training of high-level professionals in 
+the world of clinical research, the centers are therefore faced 
+with high rates of outbound turnover, putting a strain on effi-
+ciency and organization (18).
+In fact, there are several aspects that CTUs have to face as 
+a result of excessive turnover, which, although common and 
+© 2023 The Authors. Published by AboutScience - www.aboutscience.eu
+Stabile et alAboutOpen 2023; 10: 3
+acceptable below a certain threshold, become unsustainable 
+beyond a certain staff turnover rate:
+– It is difficult to find a new resource to be included in the 
+workforce who accepts the contractual and working con -
+ditions proposed, in spite of the possibilities offered by 
+the market.
+– In the case of public structures, any CRC must be iden -
+tified through comparative procedures or public tenders 
+that imply very specific and lengthy technical timelines. As 
+a result, it is impossible to replace staff quickly, thus leav -
+ing the CTUs one unit short and the missed opportunity 
+for a direct handover of ongoing activities between the 
+outgoing and the incoming professionals.
+– Loss of expertise and the need to consider a transition 
+period for the incoming professional to complete specific 
+training on internal procedures and processes.
+– Loss of steadiness in the management of clinical trials 
+with the need to update specific staff documentation, 
+perform study-specific training, and the implementation 
+of new profiles for any IT systems used.
+– Continuous review of organizational charts and company 
+training programs.
+The excessive turnover of CRCs, certainly resulting from 
+all the issues discussed so far, affects clinical centers and 
+undermines the quality and efficiency of the work, indirectly 
+increasing the workload and work-related tension within the 
+staff of the CTUs.
+Future and possible solutions
+Investing in research, both presently and in the future, 
+implies multiplying one’s investments guaranteeing bene-
+fits and positive outcomes for citizens and patients, as well 
+as direct and indirect advantages for the NHS and for related 
+activities deriving from clinical research itself. Supporting clini-
+cal research would trigger a win-win mechanism, with benefits 
+extended throughout the country in terms of health experi-
+ence, quality of services offered, and resource optimization.
+In order to accomplish this, it will be necessary to break 
+the ongoing latency of the institutions on this matter, placing 
+clinical centers (regardless of their nature as research insti-
+tute/IRCCS, hospitals, university hospitals, etc.) at the cen-
+ter of a plan for restoration and investments aimed at the 
+enhancement of human capital and institutionalization and 
+optimization of infrastructures dedicated to clinical research.
+These investments, therefore, also involve institutional 
+recognition and contractual enhancement of the figure of 
+the CRC, as well as the definition of a job description to be 
+included in the National Health System.
+Furthermore, the formal recognition of the CTUs, stan-
+dardizing the paths and requirements at a national level, rep-
+resents a necessary step in order to allow research centers to 
+keep up with the increasingly global and competitive clinical 
+research setting, particularly since the bar of infrastructural 
+and quality requirements is continuously rising.
+The institutional recognition of the CTUs would guaran-
+tee a better defined organizational structure, providing them 
+with a budget and objectives that would facilitate their activ -
+ity by optimizing the available resources.Disclosures
+Conflict of interest: The authors declare no conflict of interest.
+Financial support: This research received no specific grant from any 
+funding agency in the public, commercial, or not-for-profit sectors.
+Authors contribution: All authors contributed equally to this manu -
+script. 
+References
+1. Cagnazzo C, Besse MG, Manfellotto D, et al. Lessons learned 
+from COVID-19 for clinical research operations in Italy: what 
+have we learned and what can we apply in the future? Tumori. 
+2021 Feb;107(1):6-11. CrossRef PubMed
+2. Tavazzi L, Maggioni AP , Rapezzi C, Ferrari R. One year on: the 
+impact of COVID-19 on clinical research. Eur J Intern Med. 
+2021;92:24-27. CrossRef PubMed
+3. Malik L, Lu D. Increasing complexity in oncology phase I clinical 
+trials. Invest New Drugs. 2019;37(3):519-523. CrossRef PubMed
+4. Getz KA, Campo RA. Trial watch: trends in clinical trial design 
+complexity. Nat Rev Drug Discov. 2017;16(5):307. CrossRef PubMed
+5. Determina AIFA 809 del 19 giugno 2015 – Determina inerente 
+i requisiti minimi necessari per le strutture sanitarie che 
+eseguono sperimentazioni di fase I (GU Serie Generale n. 158 
+del 10.07.2015) Online . Accessed October 2022.
+6. Regulation (EU) No 536/2014 of the European Parliament and 
+of the Council of 16 April 2014 on clinical trials on medicinal 
+products for human use, and repealing Directive 2001/20/EC. 
+Online . Accessed October 2022.
+7. Perez-Gracia JL, Awada A, Calvo E, et al. ESMO Clinical Research 
+Observatory (ECRO): improving the efficiency of clinical 
+research through rationalisation of bureaucracy. ESMO Open. 
+2020;5(3):e000662. CrossRef PubMed
+8. Park JJH, Siden E, Zoratti MJ, et al. Systematic review of basket 
+trials, umbrella trials, and platform trials: a landscape analysis 
+of master protocols. Trials. 2019;20(1):572. CrossRef PubMed
+9. Croghan IT, Viker SD, Limper AH, et al. Developing a clinical trial 
+unit to advance research in an academic institution. Contemp 
+Clin Trials. 2015 Nov;45(Pt B):270-276. CrossRef PubMed
+10. von Niederhäusern B, Magnin A, Pauli-Magnus C. The impact of 
+clinical trial units on the value of clinical research in Switzerland. 
+Swiss Med Wkly. 2018;148:w14615. PubMed
+11. ALTEMS. Il Valore delle sperimentazioni cliniche in Italia – 
+Report 2020. Online . Accessed October 2022. 
+12. Cinefra M, Cagnazzo C, McMahon L, et al. The critical role of 
+the clinical research coordinator for clinical trials: a survey in 
+oncology. Medicine Access @ Point of Care. 2017;1. CrossRef
+13. Cagnazzo C, Testoni S, Guarrera AS, et al. [Clinical research 
+coordinators: a crucial resource.] Recenti Prog Med. 
+2019;110(2):65-67. PubMed
+14. Martucci M, Guarrera A, Valente D, Resente F, Cagnazzo C. 
+[Clinical research nurse in Italian centers: a mandatory figure?] 
+Recenti Prog Med. 2020;111(9):535-538. PubMed
+15. Fujiwara N, Ochiai R, Shirai Y , et al. Qualitative analysis of clinical 
+research coordinators’ role in phase I cancer clinical trials. 
+Contemp Clin Trials Commun. 2017;8:156-161. CrossRef PubMed
+16. Rico-Villademoros F, Hernando T, Sanz JL, et al. The role of the 
+clinical research coordinator—data manager—in oncology clinical 
+trials. BMC Med Res Methodol. 2004;4(1):6. CrossRef PubMed
+17. Testoni S, Cenna R, Guarrera ASE, et al. Researchers’ pyramid. 
+A new opportunity for Italian oncology research infrastructure? 
+Ann Res Oncol. 2021;1:13-23. CrossRef 
+18. Mitchell EJ, Goodman K, Wakefield N, et al; UK Trial Managers’ 
+Network. Clinical trial management: a profession in crisis? 
+Trials. 2022;23(1):357. CrossRef PubMed

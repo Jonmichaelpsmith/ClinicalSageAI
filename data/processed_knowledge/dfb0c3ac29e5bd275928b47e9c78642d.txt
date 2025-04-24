@@ -1,0 +1,29 @@
+Targeted Regulatory Writing Techniques. Clinical Documents for Drugs and Biologics, 
+edited by Linda Fossati Wood and MaryAnn Foote© 2009 Birkhäuser Verlag Basel/Switzerland69
+Chapter 6.
+Clinical study reports
+Linda Fossati Wood
+MedWrite, Inc., Westford, Massachusetts, USA
+Introduction
+The clinical study report describes the results of a single human study and thus rep-
+resents the most fundamental building block in a drug product’s argument for use in humans. The results of all human trials conducted by a drug or biologics company must be recorded in some type of report, although the type of reporting may vary. This chapter describes a clinical study report as deﬁned by the International Con-ference on Harmonisation (ICH) in the E3 Guideline [1], which is the type of re-port used for most clinical studies conducted in the three major geographic regions (Europe , Japan, and the United States) and is referred to as a “full” clinical study report in this chapter.
+This chapter also describes two alternatives to the full clinical study report. The 
+Food and Drug Administration (FDA) in the United States has provisions for two additional report types: an abbreviated report, and a synopsis [2]. Table 1 presents a description of each of these report types. A full ICH E3 clinical study report is a labor- and time-intensive task and is intended to fully support both safety and effectiveness for product labeling; however, many product development programs include clinical studies that for several reasons (eg, inadequate enrollment, poor study design, bias in the data resulting from lack of control of confounders, or noncompliance with Good Clinical Practices) do not meaningfully contribute. The purpose of FDA’s provisions for abbreviated reports and synopses is to reduce needless work on a full report.
+The decision to submit an abbreviated report or a synopsis instead of a full report 
+is generally the responsibility of regulatory affairs, and is often the result of negotia-tions with FDA.
+Linda Fossati Wood 70
+Full clinical study reports
+Full clinical study reports should be written using the ICH E3 Guideline for In-
+dustry, Structure and Content of Clinical Study Reports [1] and in close collabora-tion with a multidisciplinary team that minimally includes medical, statistical, and regulatory expertise. Careful and thoughtful interpretation of statistical data, within the framework of clinical medicine, and with the objective of supporting the drug’s indication statement, is the goal for a study report.
+The ICH E3 Guideline provides solid advice for content, but contains a table of 
+contents that has been misconstrued as a directive from the ICH Working Group as an outline that must be followed exactly, with potential for disaster for anyone who dares to deviate. The rumors suggesting such rigidity in this guideline have caused a fair amount of angst in the industry, as efforts to force every product into the same outline have resulted in some rather obscure pairings of headings and content. These odd combinations of heading and content only serve to confuse health authority reviewers as they attempt to locate information.
+The working group for this guideline never intended this interpretation of the 
+table of contents and, in fact, vigorously defends the right to modify the outline to best characterize a product. Adherence to the general organization as suggested in the ﬁrst and second headings has been found to be useful, however, as reference to these numbers is becoming easily recognizable in the industry. This chapter de-scribes writing a clinical study report in terms of these ﬁrst- and second-level section Table 1. Clinical study report types for submission in the United States
+Report type Description
+Full study reports Complete ICH E3 reports are submitted for all clinical and human pharma-
+cology investigations that contribute to the evaluation of effectiveness for 
+the proposed indication, or that otherwise support information included in labeling. 
+Abbreviated reports Submitted for studies that are not intended to contribute to the evaluation 
+of product effectiveness or provide deﬁnitive information on clinical phar-macology, but about which the reviewer needs sufﬁcient information to determine that the study results do not, in fact, cast doubt on the effective-ness claims or the description of the clinical pharmacology.  Abbreviated reports should contain all the safety information included in a full report.
+Synopses Submitted for studies that are not relevant to evaluation of product ef-
+fectiveness or clinical pharmacology, but that provide information the reviewer needs to evaluate the safety data from the study. Complete safety information from a study submitted in synopsis format should be included in the Integrated Summary of Safety (ISS) [21 CFR 314.50(d)(5)(vi)(a)] for drug products and for biologic products where an ISS is included in the application. For biologic product applications not containing an ISS, the safety information for studies submitted in synopsis format should be appended to the synopsis.

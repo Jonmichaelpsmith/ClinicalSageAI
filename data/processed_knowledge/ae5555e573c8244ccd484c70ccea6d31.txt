@@ -1,0 +1,400 @@
+PhRMA Web Synopsis
+Protocol A3191139 – 26 February 2009 -Final
+PFIZER CONFIDENTIAL
+Page 1PFIZER INC.
+These results are supplied for informational purposes only.
+Prescribing decisions should be made based on the approved package insert.
+For publications based on this study, see associated bibliography.
+PROPRIETARY DRUG NAME®/GENERIC DRUG NAME:Celebrex®/Celecoxib
+THERAPEUTIC AREA AND FDA APPROVED INDICATIONS:  See USPI.
+NATIONAL CLINICAL TRIAL NO .: NCT00038103
+PROTOCOL NO. : A3191139 (NQ8 -01-02-013)
+PROTOCOL TITLE :Open-Label, Multicenter, Controlled Study of Exemestane 
+(Aromasin®) with or withoutCelecoxib (Celebrex®) in Postmenopausal Women with 
+Advanced Breast Cancer (ABC)Having Progressed on Tamoxifen
+Study Centers:  Subjects were recruited at 20 centers in 9 countries: 4 in India, 1 in the 
+Philippines, 5 in Belgium, 2 in Peru, 2 in Mexico, 2 in Colombia, 2 in Brazil, 1 in Canada 
+and 1 co-ordinating site in the US.
+Study Initiation and Completion Dates: 23 January 2002  to 27 March 2008
+Phase of Development:  Phase 2
+Study Objectives:  
+Primary
+To evaluate the effect of celecoxib on clini cal benefit (defined as the frequency of 
+objective tumor response and disease stabilization for at least 24 weeks) of exemestane in 
+postmenopausal women with advanced breast cancer (ABC) having progressed on 
+tamoxifen.
+Secondary
+To evaluate the effect of c elecoxib on other efficacy parameters than clinical benefit and 
+on the tolerability (incidence and severity of systemic toxicity) of exemestane in 
+postmenopausal women with ABC having progressed on tamoxifen, and its effect on the 
+exemestane pharmacodynami cs and pharmacokinetics (PKs).
+METHODS
+Study Design:  This was an open-label, multicenter, randomized (1:1 randomization ratio)
+study of exemestane and exemestane combined with celecoxib in postmenopausal women 
+with ABC having progressed on tamoxifen.  The  study design included administration of 
+090177e1809588e0\Approved\Approved On: 17-Mar-2009 02:42 
+PhRMA Web Synopsis
+Protocol A3191139 – 26 February 2009 -Final
+PFIZER CONFIDENTIAL
+Page 2exemestane alone in order to confirm the reproducibility of results from previous studies and 
+to exclude any bias that could have resulted from possible changes in the subject population.  
+Number of Subjects (Planned and Analyzed):  It was planned to include 100 subjects in 
+the study;111 subjects were enrolled, of which 55subjects were assigned to the exemestane 
+arm and 56 to the combination arm (exemestane + celecoxib).
+Diagnosis and Main Criteria for Inclusion:  This study included postmenopausal female 
+subjects with ABC with disease progression who had progressed on tamoxifen.  Selected 
+inclusion criteria included: estrogen receptor positive (ER+ve) and/or progesterone receptor 
+positive (PgR+ve) or unknown receptors (if previous response to tamoxifen); and at least 
+1measurable tumoral lesion.
+Study Treatment:  Subjects randomized to exemestane alone received an oral dose taken 
+with food (25 mg tablet once daily); subjects randomized to the combination treatment 
+received oral doses to be taken with food (25 mg tablet exemestane once daily; 
+celecoxib2x200 mg tablets twice daily) throughout the study period.  Subjects remained in 
+the study until disease progression, death or unacceptable toxicity.  
+Efficacy Evaluations:  The primary endpoint of the study was to determine antitumor 
+efficacy and was based on objective tumor assessmentsmade according to the Response 
+Evaluation Criteria in Solid Tumors (RECIST) system of unidimensional evaluation.  The 
+timing and type of tumor evaluations were carried out at baseline and on Week 8,16, and 24, 
+every 12 weeks beyond Week 24 up to Week 108, and every 24 weeks afterwards.
+Secondary endpoints  were as follows :
+1.Duration of objective response (in subjects with complete response [CR] or partial 
+response [PR]):the time from thefirst objective documentation of response until the first 
+objective documentation of tumor progression or death due to tumor progression in the 
+absence of previous documentation of tumor progression.
+2.Duration of long-term stable disease (SD) (in subjects with long-term SD):the time from 
+randomization until the first objective documentation of tumor progression or death due 
+to tumor progression in the absence of previous documentation of tumor progr ession.   
+3.Duration of clinical benefit (in subjects with CR, PR or long-term SD):the time  from 
+randomization until the first objective documentation of tumor progression or death due 
+to tumor progression in the absence of previous documentation of tumor p rogression.   
+4.Time to tumor progression (TTP):the time from randomization to first objective 
+documentation of tumor recurrence or progression or death due to tumor progression in 
+the absence of previous documentation of tumor progression.
+For subjectswho did not have objective evidence of tumor progression and who were 
+removed from the study, or who died of causes not related to cancer, or those subjects who 
+were given antitumor treatment otherthan the study treatment, duration of objective 
+response, duration of long-term SD, duration of clinical benefit and TTP were to be censored. 
+090177e1809588e0\Approved\Approved On: 17-Mar-2009 02:42 
+PhRMA Web Synopsis
+Protocol A3191139 – 26 February 2009 -Final
+PFIZER CONFIDENTIAL
+Page 3Subjects who died of unknown causeswere considered to have died due to tumor 
+progression.
+5.Time to treatment failure (TTF):the time from the randomization to the date of f irst 
+objective documentation of tumor recurrence or progression or death due to any cause or 
+withdrawal from study treatment due to any reason, whichever was the earliest event. 
+Subject s who were still on treatment at the time of the analysis were not to beconsidered 
+to have experienced treatment failure. For those subjects, TTF was censored at last 
+available assessment.   
+6.Survival:the time from randomization to the date of death due to any cause. Subjects 
+alive at the timeof analysis and subjects lost to follow-up were censoredat last available 
+assessment.
+Pharmacokinetic and Pharmacodynamic Evaluations:  
+Pharmacokinetics
+Plasma concentrations of exemestane and its metabolite 17-hydroexemestane were 
+determined in subjects in selected centers to explore the effect of celecoxib on the exposure 
+to exemestane.
+Pharmacodynamics
+Evaluations included plasma concentrations of estradiol (E2), estrone (E1), estrone sulfate 
+(E1S) and sex hormone-binding globulin (SHBG).
+Safety Evaluations:  Safety evaluations included the monitoring of all adverse events (AEs); 
+hematological, biochemical and urinary parameters; vital signs and electrocardiogram 
+(ECG).
+Physicalexamination including the determination of body weight, diastolic and systolic
+blood pressure (BP) and heart rate (HR) were performed at baseline, before dosing, and at
+each subsequent visit. Eastern Co-operative Oncology Group (ECOG) performance status 
+wasassessed at each visit. An ECG was performed at baseline, before dosing, and after 
+dosing ifclinically indicated.  Laboratory tests (hematology: hemoglobin, white blood cell 
+[WBC] countwith differentials, platelet count; blood chemistry: total serum bilirubin, 
+alkalinephosphatase, alanine transaminase [ALT], aspartate transaminase [AST], gamma 
+glutamyl transferase [GGT], totalprotein, total calcium, glucose, creatinine, blood urea 
+nitrogen, total cholesterol, high-densitylipoprotein cholesterol and triglycerides; and 
+urinalysis: pH and protein) were performed ateach scheduled visit.
+Statistical Methods:  Subjects were randomized according to a minimization procedure to 
+balance major prognostic factors(response to prior tamoxifen, prior chemotherapy and site of 
+metastases) in the 2 treatment arms.  The sample size for the combination arm was 
+determined according to the 1 stage Fleming design.  The inclusion of the exemestane arm in 
+the study was used as internal control.  Overall, 50subjects perarm wereneeded to account 
+for an approximately 10% non-evaluability rate. 
+090177e1809588e0\Approved\Approved On: 17-Mar-2009 02:42 
+PhRMA Web Synopsis
+Protocol A3191139 – 26 February 2009 -Final
+PFIZER CONFIDENTIAL
+Page 4Efficacy Analyses
+The primary endpoint of this study was the evaluation of the clinical benefit rate defined as
+the proportion of subjects who achieved objective tumor response (CR or PR)or long-term 
+disease stabilization (SD lasting at least 24 weeks) out of the totalnumber of subjects 
+included in the population (evaluable or intent-to-treat [ITT]). The 95% confidence interval 
+(CI) forthe clinical benefit rate was calculated using the normal approximation of the 
+binomialdistribution. The estimation of the objective response rate was also provided.
+Secondary efficacy endpoints (duration of clinicalbenefit, duration of objective response, 
+duration of long-term SD, TTP, TTF and survival) were estimated by Kaplan and Meier
+methods and graphically presented both in the evaluableand the ITT populations.  Analyses 
+focused on the combination arm, but were also provided forthe exemestane arm.
+Pharmacokinetic and Pharmacodynamic Analyses
+Descriptive statistics were provided for all PK and pharmacodynamic parameters.
+Safety Analyses
+AEs were coded according to the Medical Dictionary for Regulatory Activities(MedDRA 
+Version11.1) and weredescribed in terms of severity, seriousness and study treatment 
+relationship.  Aggregations according to the SystemOrgan Class were provided. Data were 
+analyzed by subject. The worstseverity grade was the one reported during the entire study 
+period.  
+Laboratory data was graded according to the National Cancer Institute Common 
+Terminology Criteria (NCI CTC; Version 2.0) classificationwhenever possible. For each 
+parameter, a cross-tabulation of the worst grade observedduring treatment versus the 
+baseline was provided.  
+RESULTS
+Subject Disposition and Demography:  Subject disposition and subjects analyzed are 
+summarized in TableS1.  A total of 111 subjects were randomized (55 subjects in the 
+exemestane arm; 56 subjects in the combination arm); 2subjects in the exemestane arm were 
+not treated.  Eleven subjects were considered non-evaluable for efficacy, either because they 
+were never treated, has less than 4weeks of treatment or had an early withdrawal. There 
+were 5 subjects whowere non-evaluable for safety: 2 subjects (3.6%) were randomized but 
+never treated in theexemestane arm and 3subjects (5.4%) were treated but never assessed 
+for safety in the combinationarm.  
+Approximately 54% of subjects completed at least Weeks16-24 of treatment (49.1% in the 
+exemestane arm and 58.9% in the combination arm), and approximately 3% of subjects 
+completed more than 180weeks of treatment.  The median duration of treatment was 
+16.3weeks (range 3.3-296.0 weeks) and 18.4weeks (range 0.3-302.3weeks) for the 
+exemestane and combination arms, respectively.
+090177e1809588e0\Approved\Approved On: 17-Mar-2009 02:42 
+PhRMA Web Synopsis
+Protocol A3191139 – 26 February 2009 -Final
+PFIZER CONFIDENTIAL
+Page 5Table S1. Subject Disposition and Subjects Analyzed
+Number (%) of SubjectsExemestane Arm
+(Exemestane Alone)Combination Arm  
+(Exemestane + Celecoxib)
+Randomized 55 56 
+Treated 53 56 
+Discontinuations 55 (100.0) 56 (100.0)
+   Adverse events 5 (9.1) 6(10.7)
+   Consent withdrawn 0 3(5.4)
+  Lack of efficacy 48 (87.3) 41 (73.2)
+   Lost to follow-up 0 3 (5.4)
+   Protocol violation 0 2 (3.6)
+   Randomized/never treated 2 (3.6) 0
+   Sponsor's Decision 0 1 (1.8)
+Subjects died 32 37
+Evaluable population for efficacy 49 51
+ITT population 55 56
+Safety population 53 53
+ITT = Intent-to-treat
+The demographic characteristics age, race and body mass index were similar in both arms.  
+The distribution of ECOG performance status (0, 1 or 2) was similar for both arms.  Other 
+baseline characteristics (postmenopausal status, tumor history, prior antitumor treatment, 
+receptor status and site of disease) were also similar for the 2treatment arms.
+Efficacy Results: 
+Primary Efficacy Endpoint
+Clinical benefit and objective response rates were similar for the 2treatment arms 
+(TableS2).  Clinical benefit was observed in 24 subjects in each arm, showing a clinical 
+benefit rate of 49.0% in the combination arm and 47.1% in the exemestane arm.  Objective 
+response was observed in 12 subjects in the combination arm and 11 subjects in the 
+exemestane arm; the resulting objective response rates were 23.5% in the combination arm 
+and 22.4% in the exemestane arm.
+Similar results were seen for the ITT population.  Tumor response was similar for the 2arms 
+when stratified for previous response to tamoxifen, previous chemotherapy and site of 
+metastasis and according to receptor status.  
+090177e1809588e0\Approved\Approved On: 17-Mar-2009 02:42 
+
+PhRMA Web Synopsis
+Protocol A3191139 – 26 February 2009 -Final
+PFIZER CONFIDENTIAL
+Page 6TableS2.Summary of Tumor Response –Evaluable for Efficacy Population
+Number (%) of SubjectsExemestane Arm
+(Exemestane Alone)
+N=49Combination Arm  
+(Exemestane + Celecoxib)
+N=51
+Best Tumor Response:
+  CR 3.0 (6.1) 2.0 (3.9)
+  PR 8.0 (16.3) 10.0 (19.6)
+  SD 19.0 (38.8) 23.0 (45.1)
+    ≥24 weeks 13.0 (26.5) 12.0 (23.5)
+    <24weeks and off therapy 6.0 (12.2) 11.0 (21.6)
+  PD 19.0 (38.8) 16.0 (31.4)
+    Within Week 4 of therapy 0 0
+    After Week 4 of therapy 19.0 (38.8) 16.0 (31.4)
+Clinical Benefit Ratea [95% CI] 24.0 (49.0) [34.4%, 63.7%] 24.0 (47.1) [32.9%, 61.5%]
+Objective Response Rateb [95% CI] 11.0 (22.4) [11.8%, 36.6%] 12.0 (23.5) [12.8%, 37.5%]
+CI = confidence interval; CR = complete response; PR = partial response; SD = stable disease; 
+PD = progressive disease
+a Clinical benefit rate = CR + PR + SD ≥24 weeks
+b Objective response rate = CR + PR
+Secondary Efficacy Endpoints
+For the evaluable for efficacy population, the subjects with clinical benefit (24 subjects per 
+treatment arm), had a median duration of response of 96.6 weeks in the combination arm and 
+49.1 weeks in the exemestane arm (TableS3).  Confidence intervals (95%) were wide for 
+both arms, with the lower CI similar for both arms (37weeks).
+Approximately 20% of subjects had an objective response in each arm, with the median 
+duration for the combination arm (40.1weeks) approximately 7weeks longer than for the 
+exemestane arm (32.7weeks).  Again, CIs were wide and the lower CI was similar for both 
+arms.
+Median duration of SD ≥24weeks was 109.7weeks in the combination arm (12subjects) and 
+52.9weeks in the exemestane arm (13 subjects); the 95% CI were wide and the lower CI was 
+similar for both treatments.
+For both treatments, median TTP and median TTF were similar; approximately 20weeks.
+The number of deaths was similar for both arms: 32 and 37deaths for the exemestane and 
+combination arms, respectively.  Median survival time was approximately 75weeks for both 
+treatments.
+090177e1809588e0\Approved\Approved On: 17-Mar-2009 02:42 
+
+PhRMA Web Synopsis
+Protocol A3191139 – 26 February 2009 -Final
+PFIZER CONFIDENTIAL
+Page 7TableS3.Time (Weeks) to Event Endpoints – Evaluable for Efficacy Population 
+Exemestane Arm
+(Exemestane Alone)
+N=49 Combination Arm  
+(Exemestane + Celecoxib)
+N=51
+Median Duration of (95% CI):
+   Clinical Benefit 49.1 (37.0, 85.0) 96.6 (37.0, 147.0)
+   Objective Response 32.7 (23.1, 68.9) 40.1 (28.3, 169.1 )
+   SD ≥24 weeks 52.9 (36.6 , 110.0) 109.7 (36.6, 147.0)
+Median TTP  (95% CI) 20.0 (9.4, 36.6) 23.4 (16.3, 36.9)
+Median TTF (95% CI) 18.1 (36.6, 49.0) 20.4 (34.6, 51.0)
+Median Survival(95% CI) 74.7 (57.7, 101.4 ) 73.9 (52.3, 106.7)
+TTP = time to tumor progression; TTF = time to treatment failure; CI = confidence interval; SD = stable disease
+Pharmacokinetic and Pharmacodynamic Results:
+Pharmacokinetic Results
+Pharmacokinetic samples were available from 13subjects in the combination arm and from 
+5subjects in exemestane arm.  After exemestane alone, exemestane concentrations were in 
+reasonable agreement with those obtained in a previous study in subjects with ABC.  In both 
+arms, some variability could be observed in the concentrations of both drug and metabolite.  
+After exemestane alone, drug levels were slightly higher than those after the combination 
+arm; 95% CIs suggested no difference in PK parameters between the 2 treatment arms.  The 
+metabolite-to-parent ratio after the combination therapy was not altered in comparison to that 
+obtained after exemestane alone.
+Pharmacodynamic Results
+After exemestane alone, the mean values for inhibition of E2, E1 and E1S ranged between 
+81% and 89%.  Although the 95% CIs of average inhibition for E2 (both Day 29 and 57 
+values) and E1S (Day 29 only) indicated a difference between exemestane and combination 
+arms, absolute concentrations were similar between the 2treatment arms for all the 
+3hormones.  The difference in outcome of the 2parameters, absolute concentration and 
+percentage inhibition, was probably due to the combination arm baseline concentrations for 
+all estrogens being lower than those measured in the exemestane arm.
+After exemestane alone, the mean values for inhibition of SHBG were 29.3% and 41.2% at 
+Day 29 and Day 57, respectively.  The 95% CIs for SHBG either expressed in terms of 
+absolute values or in term of percentage inhibition indicated that there were no relevant 
+differences between the 2treatment arms.
+Safety Results:  Most subjects reported at least 1treatment emergent AE (TableS4).  Fewer
+than 30% of subjects reported treatment-related AEs; these were reported by 13 and 
+15subjects in the exemestane and combination arms, respectively.  Most AEs were Grade 1 
+or 2 in severity, although for approximately 20% and 8% of subjects (across both treatment 
+090177e1809588e0\Approved\Approved On: 17-Mar-2009 02:42 
+PhRMA Web Synopsis
+Protocol A3191139 – 26 February 2009 -Final
+PFIZER CONFIDENTIAL
+Page 8arms) their most severe AE was Grade 3 and 4, respectively.  None of the Grade4 AEs that 
+were reported were considered to be treatment-related.
+Table S4.Summary of Frequency of Treatment Emergent Adverse Events
+Exemestane Arm
+(Exemestane Alone)
+N=53 Combination Arm  
+(Exemestane + Celecoxib)
+N=53 
+Number (%) Subjects with: Any Event Treatment Rel ated Any Event Treatment Related
+At least 1 AE 45 (84.9) 13 (24.5) 43 (81.1) 15 (28.3)
+Highest grade of AE:
+  Grade 1 6 (11.3) 4 (7.5) 15 (28.3) 9 (17.0)
+  Grade 2 25 (47.2) 8 (15.1) 13 (24.5) 4 (7.5)
+  Grade 3 12 (22.6) 1 (1.9) 9 (17.0) 2 (3.8)
+  Grade 4 2 (3.8) 0 6 (11.3) 0
+AE = adverse event
+The most common system organ class (SOC) of AE was Musculoskeletal and connective 
+tissue disorders, which were reported by 42% and 49% of subjects in the exemestane and 
+combination arms, respectively (TableS5), most commonly back pain.  Most of these AEs 
+were not treatment-related.  Other common AEs pertained to the Gastrointestinal disorders 
+and General disorders and administration site conditions SOCs.  Incidence of events in each 
+of these SOCs was similar for the exemestane and combination arms.  There was a higher 
+incidence of events in the Metabolism and nutrition disorders and in Investigations in the 
+exemestane arm than the combination arm, while the incidence of events in Infections and 
+infestations was higher with the combination treatment.
+Cardiac disorders were rare: 1 subject (1.9%) in the combination arm experienced cardiac 
+failure congestive (Grade3); this was considered to be related to study medication.  Bleeding 
+events were also rare: ulcer hemorrhage (1subject [1.9%]) and vaginal hemorrhage 
+(2subjects [3.8%]) were reported for the exemestane arm; the ulcer hemorrhage was 
+considered to be related to study medication.
+090177e1809588e0\Approved\Approved On: 17-Mar-2009 02:42 
+
+PhRMA Web Synopsis
+Protocol A3191139 – 26 February 2009 -Final
+PFIZER CONFIDENTIAL
+Page 9Table S5. Most Common Treatment Emergent Adverse Events by System Organ Class
+(Reported by >10% Subjects in Either Arm)
+Exemestane Arm
+(Exemestane Alone)
+N=53 Combination Arm  
+(Exemestane + Celecoxib)
+N=53 
+Musculoskeletal and connective tissue disorders 22 (41.5%) 26 (49.1%)
+Gastrointestinal disorders 17 (32.1%) 16 (30.2%)
+General disorders and administration site conditions 18 (34.0%) 15 (28.3%)
+Vascular disorders 11 (20.8%) 13 (24.5%)
+Nervous system disorders 10 (18.9%) 12 (22.6%)
+Infections and infestations 7 (13.2%) 13 (24.5%)
+Metabolism and nutrition disorders 14 (26.4%) 5 (9.4%)
+Investigations 10 (18.9%) 5 (9.4%)
+Skin and subcutaneous tissue disorders 8 (15.1%) 7 (13.2%)
+Psychiatric disorders 6 (11.3%) 1 (1.9%)
+Renal and urinary disorders 6 (11.3%) 1 (1.9%)
+Reproductive system and breast disorders 6 (11.3%) 1 (1.9%)
+A total of 23 subjects had serious adverse events (SAEs) or death reported (14 in the 
+combination arm and 9 in the exemestane arm).  The majority of SAEs were related to the 
+subjects’ underlying disease; however, there were 3SAEs that were reported as related to 
+study drug: 1subject in the exemestane arm had deep vein thrombosis (DVT) which resolved 
+after 14 days, 1 subject in the combination arm had a hypersensitivity reaction which 
+resolved after 13 days, and subject in the combination arm had congestive cardiac failure, 
+which was ongoing when study treatment was withdrawn.
+Five subjects died as a result of SAEs:
+A 57 -year old subject died d ue to a cardiorespiratory arrest.
+A 44 -year old subject died due to pulmonary embolism secondary to DVT  due to paresis.
+A 46 -year old subject died due to acute respiratory failure.
+An 83-year old subject died because of a general deterioration in health d ue to the disease
+under study.
+A 68-year old subject died d ue to respiratory failure.
+Most clinical laboratory abnormalities were Grade 1 or 2.  Grade3 and 4 abnormalities are 
+detailed in TableS6.  Some of the Grade3 abnormalities had been present at baseline.  Two 
+Grade 4 abnormalities were observed: total bilirubin for 1subject in the exemestane arm (no 
+grade at baseline) and GGT for 1subject in the combination arm (was Grade3 at baseline).
+090177e1809588e0\Approved\Approved On: 17-Mar-2009 02:42 
+
+PhRMA Web Synopsis
+Protocol A3191139 – 26 February 2009 -Final
+PFIZER CONFIDENTIAL
+Page 10Table S6.Summary of Subjects with Grade 3 or 4 Laboratory Findings
+Exemestane Arm
+(Exemestane Alone)Combination Arm  
+(Exemestane + Celecoxib)
+Number (%) Subjects Grade 3 Grade 4 Grade 3 Grade 4
+Hematology
+Platelet count 0 0 1 (2.0) 0
+Neutrophils 2 (4.1) 0 0 1 (2.0) 0
+Lymphocytes 2 (4.1) 0 0 0
+Blood Chemistry
+Alkaline phosphatase 3 (6.5) 0 2 (4.1) 0
+AST 0 0 2 (4.1) 0
+GGT 7 (16.3) 0 5 (10.9) 1 (2.2)
+Calcium 0 0 1 (2.2) 0
+Total bilirubin 0 1 (2.1) 0 0
+AST = aspartate aminotransferase; GGT = gamma glutamyl transferase
+CONCLUSIONS:
+The demographic characteristics were similar in both arms and the 2groups appeared 
+balanced with respect to the prognostic factors.  The majority of subjects in both groups were 
+affected by visceral metastases, a factor known to be associated with a worse prognosis and a 
+poor outcome.
+The duration of clinical benefit was almost twice as long with the combination arm compared 
+to the exemestane arm. The median duration of prolonged stabilization of disease (SD 
+24weeks ) was also almost twice as long in the combination arm. It should be noted that the 
+sample size was relatively small, making the 95% CIs for each of these parameters wide and 
+in some case overlapping for the 2treatment arms.  Median survival time was similar for the 
+2treatment arms.
+The results of this study indicated that the combination of exemestane plus celecoxib wasan 
+effective and tolerated treatment for hormone-dependent ABC.  The exploratory nature of
+this study and the limited sample size did not allow firm conclusions to be drawn regarding 
+the anti-tumor activity of the combination arm; however, the increases in the duration of 
+clinical benefit and objective response suggested the possibility that the addition of celecoxib 
+to exemestane could sustain the stabilization of the disease or the response obtained with the 
+exemestane treatment alone by delaying disease progression.
+090177e1809588e0\Approved\Approved On: 17-Mar-2009 02:42

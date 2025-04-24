@@ -1,0 +1,260 @@
+1
+ICH Q3D(R 2)
+Elemental Impurities
+Step 4 document –to be implemented
+27 May 202 2
+International Council for Harmonisation of Technical Requirements
+for Pharmaceuticals for Human Use
+
+2Legal Notice
+•This presentation is protected by copyright and may , with the exception of the ICH 
+logo, be used, reproduced, incorporated into other works, adapted, modified, 
+translated or distributed under a public license provided that ICH's copyright in the 
+presentation is acknowledged at all times. In case of any adaption, modification or 
+translation of the presentation, reasonable steps must be taken to clearly label, 
+demarcate or otherwise identify that changes were made to or based on the original 
+presentation. Any impression that the adaption, modification or translation of the 
+original presentation is endorsed or sponsored by the ICH must be avoided. 
+•The presentation is provided "as is" without warranty of any kind. In no event shall 
+the ICH or the authors of the original presentation be liable for any claim, damages 
+or other liability arising from the use of the presentation.
+•The above -mentioned permissions do not apply to content supplied by third parties. 
+Therefore, for documents where the copyright vests in a third party, permission for 
+reproduction must be obtained from this copyright holder.ICH Q3D(R2): Cutaneous PDEs and error corrections
+2
+3Background
+•This document was developed based on a Concept 
+Paper (15 September 2016) and an updated Work Plan 
+(4 February 2022).
+•After the public consultation and the EWG discussion, 
+the document including Limits for Elemental Impurities 
+by the Cutaneous and Transcutaneous Route and 
+some corrected permitted daily exposures (PDEs) has 
+been signed off as Step 4 document (26 April 2022) to 
+be implemented by the ICH Regulatory Members. ICH Q3D(R2): Cutaneous PDEs and error corrections
+4Key Principles
+•This presentation will provide a summary of the new 
+Appendix for “ Limits for Elemental Impurities by the 
+Cutaneous and Transcutaneous Route”
+•This presentation will concomitantly provide summaries 
+of the error corrections to the PDEs of 3 elemental 
+impurities in ICH Q3D(R1). ICH Q3D(R2): Cutaneous PDEs and error corrections
+5Guideline Objectives
+•The objectives and scope remain the same as indicated 
+in the ICH Q3D Guideline finalized in December 2014.
+•The Guideline revision (R2) is focused on establishment 
+of limits for elemental impurities by the dermal route of 
+exposure.
+•The Guideline revision (R2) also includes error 
+corrections of the PDEs for silver (oral) , gold (oral, 
+parenteral and inhalation) and n ickel (inhalation).ICH Q3D(R2): Cutaneous PDEs and error corrections
+6Table of Contents 
+•Summary of limits for elemental impurities (EI) by 
+the cutaneous and transcutaneous route
+•Error correction of silver (Ag) PDE by oral route 
+exposure
+•Error corrections of the gold (Au) PDEs by oral, 
+parenteral and inhalation routes exposure
+•Error correction of nickel (Ni) by inhalation route 
+exposureICH Q3D(R2): Cutaneous PDEs and error corrections
+7Summary of cutaneous PDEs
+•The new appendix document of cutaneous PDEs of 
+elemental impurities were developed by the EWG. The 
+table of contents of the appendix is as follows.
+1.Background
+2.Scope
+3.Principles of Safety Assessment for Cutaneous Products
+4.Establishing The Cutaneous Permitted Daily Exposure (PDE)
+5.Cutaneous Concentration Limits for Ni And Co
+6.Product Risk Assessment
+7.Cutaneous PDE Values
+8.ReferencesICH Q3D(R2): Cutaneous PDEs and error corrections
+8Summary of cutaneous PDEs (1)
+•Background
+➢Dermal absorption is dependent upon the properties of the 
+skin, the anatomical site, the nature of the chemical applied 
+and the characteristics of the application. But q uantitative 
+data are generally lacking for most EI and its ions
+➢Ageneric approach was adopted to establish limits as 
+opposed to an element -by-element basis
+•Scope
+➢This Appendix does not apply to drug products intended for 
+mucosal administration, topical ophthalmic, rectal, or 
+subcutaneous and subdermal routes of administrationICH Q3D(R2): Cutaneous PDEs and error corrections
+9Summary of cutaneous PDEs (2)
+•Principles of Safety Assessment 
+➢In general, there is no indication for local toxicity on the skin, 
+with the exception of sensitization
+➢A generic approach for deriving a cutaneous PDE has been 
+developed based on a systematic adjustment of the 
+parenteral PDE, which assumes 100% bioavailability
+➢The available data indicate that EIs are generally poorly 
+absorbed through intact skin even in the presence of 
+enhancers.
+➢For drug products intended to treat skin with substantial 
+disruption of the basal cell layer of the epidermis, the 
+parenteral PDE is generally an appropriate starting pointICH Q3D(R2): Cutaneous PDEs and error corrections
+10Summary of cutaneous PDEs (3)
+•Establishing The Cutaneous PDE (for systemic toxicity)
+➢The limited available data suggest that transcutaneous 
+absorption of most EI is less than 1% for intact skin
+➢The Cutaneous Modifying Factor (CMF) was developed for 
+deriving protective PDE due to lack of reliable quantitative dataICH Q3D(R2): Cutaneous PDEs and error corrections
+1. For EIs other than arsenic (As) and thallium (Tl), a 
+maximum Cutaneous Bioavailability (CBA) of 1% is used. 
+2. To account for the various factors that can enhance CBA, a 
+factor of 10 is applied to increase the CBA (adjusted CBA).
+3. To calculate the CMF, the parenteral BA (100%) is divided by 
+the adjusted CBA.
+11Summary of cutaneous PDEs (4)
+•Establishing The Cutaneous PDE (for systemic toxicity)
+Cutaneous PDE = Parenteral PDE x CMF
+➢PDE for EIs (other than TI and As) (CMF= 10)
+(Adjusted CBA = 1%(absorption) X10 =10%;  ∴CMF = 100% / 10% = 10)
+⚫Cutaneous PDE = Parenteral PDE x 10
+➢PDE for As(CMF = 2, absorption is approximately 5%)
+(Adjusted CBA = 5%(absorption) X10 =50%;  ∴CMF = 100% / 50% = 2)
+⚫Cutaneous PDE = 15 μg/day x 2 = 30 μg/day
+➢PDE for TI (CMF = 1, absorption is high, but no quantitative data)
+(Adjusted CBA = 100% (absorption);  ∴CMF = 100% / 100% = 1)
+⚫Cutaneous PDE = 8 μg/day x 1= 8 μg/dayICH Q3D(R2): Cutaneous PDEs and error corrections
+12Summary of cutaneous PDEs (5)
+•Cutaneous and Transcutaneous Concentration Limits (CTCL) 
+for Ni and Co 
+➢The CTCL in addition to the PDE is warranted for Ni and Co 
+to reduce the likelihood of eliciting skin reactions in already 
+sensitized individuals. 
+➢The dermal concentration limit of 0.5 μg/cm2/week  (EU 
+directive) is applied to set a CTCL of Ni.
+•The CTCL calculation is based on that cutaneous products application 
+of 1 FTU (fingertip unit) corresponding to 0.5 g dose is normally applied 
+to a skin surface area of 250 cm2. 
+➢Recent report suggested the same CTCL is applied to Co.ICH Q3D(R2): Cutaneous PDEs and error corrections
+0.5 μg/cm2/week = 0.07 μg/cm2/day
+0.07 μg/cm2/day x 250 cm2= 17.5 μg/day
+17.5 μg/day / 0.5 g/day = 35 µg/g
+13Summary of cutaneous PDEs (6)
+•Product Risk Assessment
+➢Product assessments for cutaneous drug products should be 
+prepared following the guidance provided in ICH Q3D Section 5
+➢For Ni and Co, the concentration (µg/g) in the drug product 
+should be assessed relative to the CTCL, in addition to the PDE
+➢The total Ni and Co level ( μg/day) is at or below the PDE, and 
+their respective concentrations do not exceed the CTCL
+➢“Control threshold” approach is also applied to the CTCL 
+➢Evaluation of the retention during typical conditions of use is 
+important for multiple applications aday. (see Module 1, ICH 
+Q3D training package)ICH Q3D(R2): Cutaneous PDEs and error corrections
+14Error correction of Ag PDE by parenteral route
+•The parenteral PDE for silver (Ag) is based on a lowest 
+observed adverse effect level (LOAEL) of 0.014 mg/kg using 
+long-term human intravenous exposure data. But, the cited 
+LOAEL (from the reference dose ( RfD) of US EPA IRIS 
+document) in the monograph had been already adjusted for 
+oral route exposure
+•After further review, the original study cited in the monograph 
+was considered in error. It was considered inadequate to set a 
+parenteral PDE as it involved a low number of patients, and 
+the dosing was not adequately describedICH Q3D(R2): Cutaneous PDEs and error corrections
+15Error correction of Ag PDE by parenteral route
+•The EWG developed the corrected parenteral PDE as 
+follows
+•In a review of the oral toxicity of silver, Hadrup and Lam 
+(2014) report that absorption of a radionuclide of silver (as 
+silver nitrate) was 18% in human.
+•the parenteral PDE was calculated by dividing the oral PDE 
+by a modifying factor of 10 (as described in Section 3.1). 
+(in the case of oral bioavailability between 1% and 50%)
+•The recommended PDE for silver for parenteral exposure is:
+PDE = 167 µg/day / 10 = 16.7 µg/day
+•The rounded parenteral PDE in Table A.2.1 is 15 µg/dayICH Q3D(R2): Cutaneous PDEs and error corrections
+16Error correction of Au PDE by all route
+•The monograph of Gold (Au) explained that “derivation of the 
+oral PDE of Au is based on a study in mice (Ahmed 2012)”.      
+But, the study was conducted in rats 
+•F1 of 5 (for rats) in PDE calculation should be used instead of 
+F1 of 12(for mice)
+•The oral PDE calculation should be corrected as follows
+PDE = 32.2 mg/kg x 50 kg / 12x 10 x 10 x 1 x 10 = 134 µg/day
+PDE = 32.2 mg/kg x 50 kg / 5x 10 x 10 x 1 x 10 = 322 µg/day
+The parenteral PDE is same as the oral PDE, and the inhalation PDE is 1/100 of the oral PDE
+•The PDEs in Table A.2.1 should be also corrected as followsICH Q3D(R2): Cutaneous PDEs and error corrections
+element Oral parenteral inhalation
+Au 322 322 3.2
+element oral parenteral inhalation
+Au 300 300 3Monograph
+Table A.2.1
+17Error correction of Ni PDE by inhalation route
+•The derivation procedure of Ni PDE by inhalation in the ICH 
+Q3D Step 4 document in 2014 was not changed from that in 
+the ICH Q3D Step 2 document in 2013. There was no issue 
+or discussion between the ICH Q3D Step 2 and ICH Q3D 
+Step 4
+•The EWG concluded that the current PDE of Ni by inhalation 
+was a transcription error at the ICH Q3D Step 4 publication in 
+2014
+•The EWG recommend that the PDE of Ni by inhalation in 
+Table A.2.1 should be corrected to “ 6 μg/day ” from “5 μg/day” 
+(There is no need to change the Ni monograph itself)ICH Q3D(R2): Cutaneous PDEs and error corrections
+element oral parenteral inhalation
+Ni 200 20 6Table A.2.1 in STEP2
+18Results of Public Consultation
+•No major changes were made in response to the 
+public comments.
+•In order to address the questions raised in the pub -
+comments, additional or modified sentences were 
+given in the following parts of the text, footnotes, 
+and table legends.
+➢At the end of Scope and the footnote of Scope
+➢At the end of Section 5
+➢At the end of the second last paragraph in the Section 6
+➢At the legend #4 in the Table A.5.1 and the #2 in the Table A.5.2ICH Q3D(R2): Cutaneous PDEs and error corrections
+19Considerations
+•The ICH Q3D Guideline is not intended to provide 
+recommendations for labelling of allergens.  
+Applicants should refer to regional 
+guidance/recommendations or best practice for 
+managing and labeling of allergens. 
+(from the footnote of Scope in the Appendix 5) ICH Q3D(R2): Cutaneous PDEs and error corrections
+20Guidelines for Implementation
+•The new Appendix 5 to the ICH Q3D Guideline applies to 
+cutaneous and transcutaneous drug products whether 
+intended for local or systemic effect.  
+•The Appendix does not apply to drug products intended 
+for mucosal administration (oral, nasal, vaginal), topical 
+ophthalmic, rectal, or subcutaneous and subdermal 
+routes of administration. 
+•Products not covered by this Appendix should be 
+evaluated in accordance with the approach discussed in 
+section 3.2 of the main text of the ICH Q3D Guideline.
+(from Scope of Appendix 5)ICH Q3D(R2): Cutaneous PDEs and error corrections
+21Conclusions (1)
+•Develop a new Appendix for “Limits for Elemental 
+Impurities by the Cutaneous and Transcutaneous Route”
+•This Appendix does not apply to drug products intended 
+for mucosal administration, topical ophthalmic, rectal, or 
+subcutaneous and subdermal routes of administration
+•Establish the cutaneous PDE of all EIs for systemic 
+toxicity (See Table A.5.1)
+•Establish the CTCL for Ni and Co for sensitized patients
+•The total Ni or Co level is at or below the cutaneous 
+PDE, and their respective concentrations do not exceed 
+the CTCLICH Q3D(R2): Cutaneous PDEs and error corrections
+International Council for Harmonisation of Technical Requirements for Pharmaceuticals for Human Use
+22Conclusions (2)
+•The original PDEs for silver (Ag), for gold (Au), and for nickel 
+(Ni) were incorrect due to calculation or transcription errors.
+•The EWG re-evaluated the relevant data and identified the 
+corrected PDE of Ag, and corrected a modifying factor of Au, 
+and corrected a transcription error of Ni.
+•The corrected PDE of Ag by the parenteral route is identified 
+as 15 mg/day.
+•The corrected PDEs of Au by the oral, parenteral and 
+inhalation routes are identified as 300, 300 and 3 mg/day, 
+respectively.
+•The corrected PDE in Table A.2.1of Ni by the inhalation route
+is identified as 6 mg/day.ICH Q3D(R2): Cutaneous PDEs and error corrections
+International Council for Harmonisation of Technical Requirements for Pharmaceuticals for Human Use
+23Contact
+•For any questions please contact the ICH Secretariat: 
+admin@ich.org ICH Q3D(R2): Cutaneous PDEs and error corrections

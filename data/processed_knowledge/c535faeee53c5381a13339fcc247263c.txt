@@ -1,0 +1,1849 @@
+Intelligent clinical trials
+Transforming through AI-enabled engagement
+About the Deloitte Centre for Health Solutions
+The Deloitte Centre for Health Solutions (CfHS) is the research arm of Deloitte’s Life Sciences and Health 
+Care practices. We combine creative thinking, robust research and our industry experience to develop 
+evidence-based perspectives on some of the biggest and most challenging issues to help our clients to 
+transform themselves and, importantly, benefit the patient. At a pivotal and challenging time for the 
+industry, we use our research to encourage collaboration across all stakeholders, from pharmaceuticals 
+and medical innovation, health care management and reform, to the patient and health care consumer.
+Connect
+To learn more about the CfHS and our research, please visit  
+www.deloitte.co.uk/centreforhealthsolutions
+Subscribe
+To receive upcoming thought leadership publications, events and blogs from the UK Centre,  
+please visit https://www.deloitte.co.uk/aem/centre-for-health-solutions.cfm
+To subscribe to our blog, please visit https://blogs.deloitte.co.uk/health/
+Life sciences companies continue to respond to a changing global landscape and strive to pursue 
+innovative solutions to address today’s challenges. Deloitte understands the complexity of these 
+challenges and works with clients worldwide to drive progress and bring discoveries to life.
+Contents
+Why clinical trials must transform 2
+The impact of AI on the clinical trial process 8
+Clinical trials of the future 19
+Endnotes 26
+2Intelligent clinical trials
+Why clinical trials 
+must transform
+The traditional ‘linear and sequential’ clinical trials process remains the accepted 
+way to ensure the efficacy and safety of new medicines. However, suboptimal 
+patient selection, recruitment and retention together with difficulties managing 
+and monitoring patients effectively, are extending the length of trials and con-
+tributing to high trial failure rates. Artificial intelligence (AI) can improve clinical 
+cycle times while reducing the cost and burden of clinical development. This 
+report is the third in our series on the impact of AI on the biopharma value chain.
+HEALTH CARE COSTS continue to rise as a 
+percentage of every country’s gross domes -
+tic product (GDP) causing governments and 
+private payers to scrutinise rigorously the economic 
+value of new treatments. Increasingly, regulators 
+expect clinical trials to demonstrate not only effi -
+cacy and safety, but also a meaningful impact on 
+the lives of patients. This is particularly the case for 
+more precise, high-cost therapies that target 
+smaller patient groups. The growing expectations of 
+regulators and payers requires biopharma compa -
+nies to increase the quality and quantity of evidence 
+generated during clinical trials and, in turn, is 
+increasing the complexity of clinical trial design 
+and development.
+Screening patients to identify potentially better 
+responders and linking payments to individual 
+outcomes are among measures that payers are 
+negotiating with sponsors to ensure value for money. 
+Demonstrating value also requires a change in the 
+traditional methods of conducting clinical trials, 
+most notably in the collection of real-world clinical 
+and non-clinical data on costs and outcomes.Consequently, the race to collect impactful data to 
+expand biopharma’s knowledge of the epidemiology 
+of disease and to satisfy regulators and Health Tech-
+nology Assessment (HTA) authorities is accelerating. 
+The growth in number and complexity of clinical 
+trials, particularly in oncology, means there is also 
+increasing competition for suitable trial participants 
+and sites. These factors are shaping the highly 
+competitive landscape of the life sciences industry.
+The traditional approach 
+to clinical trials
+Researchers design clinical trials to answer specific 
+research questions relating to the efficacy and 
+safety of a new intervention by measuring defined 
+endpoints, including diagnostic biomarkers, in 
+trial participants.1 Clinical trials can only com-
+mence after approval by a regulatory authority 
+and an ethics committee review of the pre-clinical 
+regulatory submission.2 The basic assumption of 
+clinical research is that investigators take data 
+from a relatively small but representative selection 
+3Transforming through AI-enabled engagement
+Research &
+discoveryClinical
+developmentManufacturing 
+& supply chainLaunch & 
+commercialPost-market 
+surveillance & 
+patient support
+Optional ﬁrst-in-human 
+trials – single
+sub-therapeutic dose of 
+study drug given to  
+small number
+of subjects (10-15) to 
+test the body’s 
+responses. Often ﬁrst-in-person 
+trials. Testing within 
+small group of people 
+(20-80) to evaluate 
+safety, determine safe 
+dosage and identify 
+potential side eﬀects. 
+Takes 3-6 months.
+Around 70% move to 
+next phase.Testing with larger 
+group of people 
+(100-300) to 
+determine eﬃcacy and 
+to further evaluate 
+safety – usually against 
+a placebo.
+Takes 1-2 years.
+Around 33% move to 
+next phase.Testing with much larger 
+group of
+people (1,000-3,000)
+to conﬁrm
+eﬃcacy, evaluate 
+eﬀectiveness,
+monitor side eﬀects, 
+compare other 
+treatments, and assess 
+safety.
+Takes 1-4 years.
+Around 25-30% move to 
+next phase.Post-marketing studies 
+delineate risks, beneﬁts 
+and optimal use. 
+Ongoing throughout 
+drug’s active medical 
+use (thousands of 
+patients).
+Takes 1+ years
+Around 70-90%
+success rate.PHASE II PHASE I EARLY PHASE I PHASE III PHASE IVFIGURE 1
+The traditional approach to clinical development is a lengthy process with only
+10 per cent success rate
+ONLY 10% OF DRUG CANDIDATES ENTERING CLINICAL
+TRIALS END UP BECOMING REGULATORY APPROVED DRUGS 
+Source: Deloitte analysis.
+Deloitte Insights | deloitte.com/insights
+of subjects and generalise the results to the larger 
+patient population. If the sample is too constrained 
+or poorly selected, it hinders the broad applica-
+bility of the results. This is not only a statistical 
+concern, but also an ethical and medical one.3
+Today it takes 10-12 years on average to bring a 
+new drug to market, with limited change over the 
+past decades in the linear and sequential process 
+used to assess the effi   cacy and safety of drugs. Currently, drug discovery, which is the initial 
+phase of R&D takes fi  ve to six years, followed by 
+around fi  ve to seven years for clinical trials.4 Of the 
+10,000 candidate drugs originally screened, only 
+ten make it to clinical trials. On average, of the ten 
+drug candidates that enter clinical trials, only one 
+is approved for use with patients (see fi  gure 1).5
+The 2018 State of industry-sponsored clinical 
+development report by Trialtrove (2019) found 
+4
+that, on average, 25 per cent of completed trials 
+across all therapy areas achieved their primary 
+endpoint in 2018, compared to 31 per cent in 2017. 
+This potentially reflects the growing complexity 
+of the R&D landscape in terms of the number 
+of compounds and diseases being targeted. Ac-
+cording to the US Food and Drug Administration 
+(FDA), approximately 33 per cent of drugs move 
+from Phase II to III, while around 25 to 30 per 
+cent move from Phase III to the next phase.6
+Transforming clinical trials is 
+critical to improve productivity
+The tried and tested process of discrete and fixed 
+phases of randomised controlled trials (RCTs) was 
+designed principally for testing mass-market drugs. 
+However, RCTs lack the analytical power, flexibility 
+and speed required to develop the complex new 
+therapies that target smaller and often heteroge-
+neous patient populations. Furthermore, a Deloitte 
+survey of biopharma industry leaders in 2018, 
+conducted for the Digital R&D: Transforming the 
+future of clinical development report, found general 
+agreement that the current high-risk, high-cost 
+R&D model is unsustainable. Furthermore, that 
+clinical development is struggling to keep pace 
+with the ever-growing amount of genomic infor-
+mation, real-world evidence (RWE) and other 
+emerging data sources (such as biosensors).7
+For the past decade, our annual Measuring the 
+return from pharmaceutical innovation report 
+series has demonstrated that a new model of R&D 
+is now needed. This research tracks the internal 
+rate of return on investment (IRR) that a cohort of 
+12 leading global biopharma companies (and for 
+the past five years four smaller, more specialised 
+companies) might expect to achieve from their 
+late-stage pipelines. It shows that the IRR has 
+declined significantly. Specifically, our 2019 report 
+found that the average cost of bringing a drug to 
+market increased from $1.188 billion in 2010 to $1.981 billion in 2019; the average forecast peak 
+sales per asset declined from $816 million in 
+2010 to a low of $376 million in 2019. As a result, 
+the expected IRR decreased from 10.1 per cent 
+in 2010 to 1.8 per cent in 2019. These declining 
+returns are the result of internal and external 
+productivity challenges across the discovery and 
+clinical development phases of drug development 
+that call into question big pharma’s R&D model.8
+The main challenges for 
+clinical development in 2019
+The main drivers of R&D performance are the 
+increase in clinical development (or cycle) times, 
+changes in drug modalities and sources of innova-
+tion. Specifically:
+• the growing length of the clinical trial cycle is 
+arguably the most pressing challenge for 
+clinical development
+• historically, companies have focused largely on 
+small molecules, but over the past decade, there 
+has been an increase in the proportion of more 
+scientifically complex large biological molecules 
+(known as biologics) in companies’ pipelines
+• acquisitions and partnerships are an increasing 
+source of innovation.9
+As most pharma companies have integrated 
+biologics into their pipelines, for the purpose of 
+this report we refer to all pharma companies as 
+biopharma companies.
+The first clinical research step is the development of 
+a clinical protocol (a document that describes how 
+the trial will be conducted and ensures the safety 
+of participants and integrity of the data collected). 
+The availability of a growing volume and variety 
+of data sources (including genomics, imaging, 
+digital health and patient-reported outcome data) Intelligent clinical trials
+5has led to an expansion in trial protocols in an 
+attempt to meet challenging regulatory require-
+ments. At the same time, companies have found 
+it increasingly diffi   cult to recruit patients that 
+meet trial selection criteria. Moreover, the shift 
+in drug development eff  orts to new modalities is 
+increasing the competition for patients, which is 
+adding to recruitment complexity. These factors 
+have increased the average length of clinical trials.10
+More specifi  cally, as clinical trials progress, more 
+patients are required, but the eligibility and suit-
+ability requirements also increase. A patient may be 
+ineligible to participate due to their medical history 
+or a mismatch in the stage of their disease compared 
+to the trial protocol. Eligible and suitable patients 
+may fi  nd the requirements challenging or the 
+recruitment process complex and cumbersome, or 
+they may not be aware or incentivised to participate.
+The burden of frequent clinic visits also limits 
+participation. Recent data suggest that 18 per cent 
+of patients drop out after enrolling, with diffi   culty attending clinics cited as a major factor. These 
+challenges often create delays to the point that 
+86 per cent of all trials do not meet enrolment 
+timelines and 30 per cent of Phase III trials fail 
+due to enrolment challenges.11 As a result, patient 
+recruitment is the largest cost driver of clinical 
+trials, accounting for 32 per cent of overall costs 
+(see fi  gure 2). Involving patients in developing 
+new therapies and trial design, and engaging 
+them throughout the development and post-
+market process, helps in both recruitment and 
+retention, and also provides irrefutable evidence 
+of the value of therapies in the real world.
+Identifying suitable patients can improve the 
+speed and effi   ciency of clinical trials and ultimately 
+accelerate the approval of and access to new 
+medicines. However, research shows that a rela-
+tively small number of eligible patients participate 
+in clinical studies. For example, only two to nine 
+per cent of adult cancer patients participate in 
+clinical trials.12,13 A 2019 meta-analysis of 13 studies 
+involving 8,883 patients found that only 8.1 per cent 
+of potential patients participated in clinical trials; 
+of those that did not, some 55.6 per cent did not 
+have a trial available where they were being treated, 
+21.5 per cent were deemed ineligible and 14.8 per 
+cent chose not to enroll in an available trial.14
+There is also a mismatch between the patient 
+population that a new therapy is expected to treat 
+and participants in the related clinical trial. Despite Source: Deloitte analysis.
+Deloitte Insights | deloitte.com/insights2%
+14%8%32%
+25%12%7%FIGURE 2
+Cost drivers in clinical trials
+Patient recruitment
+Clinical trial management system and other technology
+Data management and validation
+Patient retentionSite retentionOutsourcing costs
+Site recruitmentTransforming through AI-enabled engagement
+Identifying suitable patients 
+can improve the speed and 
+eﬃ   ciency of clinical trials 
+and ultimately accelerate 
+the approval of and access 
+to new medicines.
+6
+numerous initiatives to tackle this, increasing 
+clinical trial diversity in an effective, scalable 
+and sustainable manner remains a challenge for 
+clinical research.15 Furthermore, patients consid -
+ering participation in trialling a new medicine 
+have to weigh up the benefits of early access to a 
+potential new therapy against the risks of adverse 
+events, as well as the inconvenience, potential 
+financial burden and time requirements.16
+The difficulties faced in an increasing proportion 
+of clinical trials include ineffective site selection, 
+poor study design and trial execution, safety 
+issues and dropouts due to practical or financial 
+issues.17 Although patient recruitment and reten -
+tion extends the time taken to complete a trial, 
+four-fifths of trials fail because they are unable 
+to demonstrate efficacy or safety.18 Moreover, the 
+time and funding required to complete a trial 
+increase at each phase. The total cost of a Phase 
+III failure includes the cost of all previous phases 
+plus the time that could have otherwise been 
+used to trial a different drug. Each failed trial 
+contributes to the rising costs of biopharma R&D.19
+SUCCESS RATES ARE DEPENDENT 
+ON DISEASE TYPES
+Clinical trial success rates are highly dependent 
+on disease type. An extensive study that looked 
+at 186,000 unique trials between 2000 and 
+2015 found an overall probability of success 
+(POS) was 13.8 per cent. However, the POS 
+of oncology trials was much lower at 3.4 per 
+cent.20 As many biopharma companies are in -
+creasingly targeting oncology as their preferred 
+therapy area, this low POS is problematic.21
+A report from the Tufts Center for the Study of Drug 
+Development found that between 1999 and 2018 
+the average development timeline for cancer drugs 
+was nine per cent longer than for other disease 
+areas, but the time the FDA took to approve cancer drugs was 48 per cent shorter.22 This is because new 
+oncology products are more likely to receive special 
+designations from the FDA to speed up availability 
+of medicines that address unmet medical needs. 
+However, despite an increasing number of oncology 
+drug candidates receiving fast-track designations 
+over the past few years, there has not been a dis -
+cernible effect on cycle times. This is likely due to 
+increasing complexity of protocol design as well as 
+increased competition to recruit eligible patients.23
+Innovative solutions to 
+expedite clinical cycle times
+In the past few years a number of solutions 
+for innovating clinical trials have emerged 
+that rely on a more efficient use of data from 
+multiple sources. Examples include:
+• Adaptive clinical trials  allow for the contin -
+ual modification of trial design based on interim 
+data. This can reduce the resources and time 
+needed and improve the likelihood of success.24 
+A broader use of adaptive trials could eliminate 
+many unanticipated risks that undermine effica -
+cious drugs and unnecessarily extend 
+development timelines. For example, adaptive 
+approaches can deliver trial dosing information 
+in a single two-year combined Phase II/III, 
+which might otherwise require three or more 
+consecutive conventional trials over several 
+years. In addition to shortening development 
+time, such seamless trials may reduce the total 
+sample size needed by using the same patients 
+in more than one stage. Other advantages 
+include changing allocation rates, early termina -
+tion and reassessment of the sample size, 
+patient subgroups or specific treatments, all of 
+which improve efficiency. Research conducted 
+by ICON, a global contract research organisa -
+tion (CRO), suggests that the use of adaptive Intelligent clinical trials
+7
+trials across portfolios, as encouraged by regula -
+tory agencies in both Europe and the US, could 
+reduce trial costs by 25 per cent.25
+• Master protocols are used to simultaneously 
+evaluate more than one investigational drug 
+within the same overall trial structure.26 A 
+report from the Deloitte US Center for Health 
+Solutions found that by using master protocols, 
+biopharma companies can de-risk R&D pro -
+grammes, improve the quality of evidence and 
+enhance their R&D productivity, all while reduc -
+ing costs and study times. For a Phase II 
+oncology trial, estimated costs could be reduced 
+by 12-15 per cent and study time would be 
+reduced 13-18 per cent (15-21 weeks).27
+• Synthetic control arms  use RWE as a more 
+convenient, safe, time-saving and cost-effective 
+way of conducting trials, especially ones with 
+small numbers of potential participants. 
+Currently, fear of being assigned a placebo is 
+one of the top reasons patients choose not to 
+participate in clinical trials. A synthetic control 
+arm collects data from previous clinical trials, 
+electronic health records (EHRs), patient-gener -
+ated data from fitness trackers or home medical 
+equipment, disease registries and others. These 
+data are then used to model or simulate the 
+expected results comparing them with those on 
+the clinical trial. Eliminating or reducing the 
+need for normal control arms ensures that all 
+participants receive the active treatment, elimi -
+nating concerns about treatment assignment. 
+Synthetic control arms can increase efficiency, 
+reduce delays, lower trial costs and accelerate 
+the access of therapies to market. In addition, 
+their use can also eliminate the risk of 
+unblinding, which happens when patients dis -
+cover which treatment they are being given, 
+harming the integrity of the trial.28• Pharmacogenetics testing for patient selec-
+tion. Over half of all trials (55 per cent) initiated 
+in 2018 included the use of selective pharmacog-
+enetic biomarkers for patient selection to predict 
+individual responses to drugs in terms of efficacy 
+and safety. These trials were four times more 
+likely to succeed as compared to clinical trials 
+where no biomarkers were used.29
+Using AI to improve efficiency 
+and effectiveness
+The excessive cost, delays and failures of clinical 
+trials has a strong impact on patients. Despite 
+numerous innovations, two-thirds of classified 
+diseases still lack an effective drug therapy.30 
+Therefore, finding more effective and efficient ways 
+of conducting clinical trials is of critical importance.
+Our Intelligent drug discovery: Powered by AI 
+report, the second in our series on the impact of 
+AI on the biopharma value chain, highlighted the 
+growing importance of disparate data sets in R&D. 
+It found that, in 2019, AI was more widely adopted 
+in drug discovery than in clinical development. 
+This is largely because drug discovery involves the 
+optimisation and validation of potential new drugs 
+through in vivo  cell assays and animal models, 
+and does not face the regulatory hurdles required 
+in testing potential drug candidates in people.31
+However, there is an increasing realisation among 
+academic institutions, biopharma companies, 
+CROs and smaller biotech firms of the potential of 
+AI to transform clinical trials. Specifically, AI has 
+the potential to transform many of the key steps 
+in clinical trials, from protocol design to study 
+execution, thereby improving trial success rates and 
+lessening the biopharma R&D burden.32 The rest of 
+this report explores the use of AI in clinical trials.Transforming through AI-enabled engagement
+8KEY FACTORS undermining the effectiveness of 
+clinical trials are patient and site selection 
+along with patient recruitment and retention 
+processes; as well as the lack of suitable infrastruc -
+ture to manage the complexity of running a clinical 
+trial. This is especially problematic in the later 
+phases, including the need for efficient and reliable 
+adherence controls, endpoint detection and patient 
+monitoring systems.33
+AI, particularly deep learning (DL), machine learning 
+(ML) and natural language processing (NLP), 
+combined with an effective digital infrastructure, 
+has the potential to improve drug approval rates, 
+reduce development costs and deliver medications 
+to patients faster. All large biopharma companies 
+are investing in AI and its applications. Novartis, 
+for example, used AI to combine clinical trial 
+data from a variety of internal sources to predict 
+and monitor trial cost, enrolment and quality. As 
+a result, the company reported a 10-15 per cent 
+reduction in patient enrolment times in pilot trials.34
+A Deloitte survey of 28 biopharma industry 
+leaders in 2018 identified several use cases for AI and other digital technologies across the 
+clinical trials process (see figure 3).35 These 
+use cases have continued to escalate.Biopharma companies have access to growing amounts of scientific and research 
+data from a variety of sources, known collectively as real-world data (RWD). While 
+applying AI to operational data can drive clinical trial efficiencies, unlocking RWD 
+using predictive AI models and analytics tools can accelerate the understanding 
+of diseases, identify suitable patients and key investigators to inform site selec-
+tion (including virtual trials), and support novel clinical study designs. Adoption 
+of AI technologies is therefore becoming a critical business imperative.The impact of AI on the 
+clinical trial processIntelligent clinical trials
+WHAT IS AI?
+AI refers to any computer programme or 
+system that does something we would think 
+of as intelligent in humans. AI technologies 
+extract concepts and relationships from data 
+and learn independently from data patterns, 
+augmenting what humans can do. These 
+technologies include computer vision, deep 
+learning, machine learning, natural language 
+processing, robotics, speech, supervised 
+learning and unsupervised learning.36
+Transforming the design and 
+conduct of clinical trials
+As highlighted in the first part of this report, bio-
+pharma companies are adopting various strategies 
+for innovating clinical trials. To be effective, these 
+rely on increasing amounts of scientific and research 
+data arising from a variety of disparate data sources, 
+9Source: Deloitte analysis.
+Deloitte Insights | deloitte.com/insightsAI-enhanced
+mobile 
+applications, 
+wearables, 
+biosensors and 
+connected 
+devicesAdvanced data 
+analytics
+and AI 
+automationAssess feasibility of protocol 
+design for patient 
+recruitment using RWD.Mine EHRs and publicly 
+available content, 
+including trial databases 
+and social media, to help 
+match patients with trials, 
+by using NLP and ML.
+Expedite recruitment and 
+create a more 
+representative study 
+cohort through 
+cloud-based applications.
+Simplify and accelerate the 
+informed consent process 
+using eConsent.Create drafts of investigator 
+and site contracts and 
+conﬁdentiality agreements 
+by smart automation.Analyse digital biomarkers 
+on disease progression, 
+and other quality-of-life 
+indicators.
+Enhance adherence 
+through smartphone alerts 
+and reminders.
+eTracking of missed clinic 
+visits, and trigger 
+non-adherence alerts.Automate sharing of data 
+across multiple systems.
+eTracking of medication 
+using smart pillboxes, and 
+tools for visual conﬁrmation 
+of treatment compliance.Complete sections of the 
+ﬁnal clinical trial report for 
+submission by using NLP.
+Assess site performance 
+(e.g. enrolment and 
+dropout rates) with 
+real-time monitoring.
+Analyse and interpret 
+unstructured and 
+structured data from 
+previous trials and scientiﬁc 
+literature.Assess site performance 
+(e.g. enrolment and 
+dropout rates) with 
+real-time monitoring.STUDY CLOSEOUT TRIAL CONDUCT TRIAL STARTUPFIGURE 2
+Applications of AI-enabled technology in clinical trials
+Data cleaning by ML 
+methods.TRIAL DESIGN
+such as current and past clinical trials, patient 
+support programmes and post-market surveillance. 
+Access to additional data can be obtained by collab-
+orations with academia, hospitals and technology 
+companies. Sources of RWD available include EHRs, 
+insurance records, medical imaging, ‘omics’ (e.g. 
+genomics, metabolomics and proteomics), wearables 
+and health apps, as well as social media. AI applied 
+to RWD can extract meaningful patterns of infor-
+mation to help improve the design of clinical trials.
+AI can optimise the collection and analysis of 
+biomarker data at pre-prescribed time points more 
+reliably and efficiently than current patient-driven self-monitoring methods. In addition, AI-enabled 
+technologies have unparalleled potential to 
+organise and analyse the increasing body of data 
+collected as part of biopharma R&D. For example, 
+the industry can use data from previous trials, 
+including failed ones, to improve future designs.
+The use of AI can also enable the continuous stream 
+of RWD to be cleaned, aggregated, coded, stored and 
+managed. This makes data management a quicker, 
+seamless and dynamic process. In addition, im-
+proved electronic data capture (EDC) can also reduce 
+the impact of human error in data collection and 
+facilitate seamless integration with other databases. Transforming through AI-enabled engagement
+10Patient enrichment, 
+recruitment and enrolment
+AI-enabled digital transformation can reduce the 
+challenges in patient selection through clinical 
+trial enrichment strategies (see figure 4). The FDA 
+has published guidance on Enrichment strategies 
+for clinical trials to support determination of 
+effectiveness of human drugs and biological 
+products that identifies three strategies to assist 
+the biopharma industry in detecting a drug’s 
+effectiveness.37 The three strategies, together 
+with the specific use of AI, are as follows:
+• Reduced population heterogeneity includes 
+choosing patients with baseline measurements 
+of a disease or a biomarker characterising the 
+dis ease in a narrow range, while excluding 
+patients whose disease or symptoms improve 
+sponta neously or whose measurements are 
+highly variable, to increase study power 
+Decreasing variability often uses a process 
+known as electronic phenotyping, which focuses 
+on reducing population heterogeneity. Electronic 
+phenotyping requires mining large databases of 
+EHRs and accounting for heterogeneity between 
+patient records and data types. Applying AI tech-
+nologies, especially ML and DL, to electronic 
+phenotyping processes can accelerate identifica-
+tion of eligible patients for clinical trials.38
+• Prognostic enrichment includes choosing 
+patients with a greater likelihood of having a dis-
+ease-related endpoint or a substantial worsening 
+in condition (for continuous measurement end-
+points). Prognostic enrichment strategies are 
+ripe for AI applications. Neurological diseases 
+have been the initial targets, as key biomarkers 
+are often expensive or invasive to measure, but non-linear combinations of inexpensive and 
+non-invasive models can approximate 
+the biomarkers.
+• Predictive enrichment includes choosing 
+patients who are more likely to respond to the 
+drug treatment than other patients with the con-
+dition. Such selection can lead to a larger effect 
+size (both absolute and relative) and can permit 
+use of a smaller study population. Selection of 
+patients can be based on a specific patient physi-
+ology, a biomarker or a disease characteristic that 
+is related to the study drug’s mechanism. Patient 
+selection could also be empiric (e.g., the patient 
+has previously appeared to respond to a drug in 
+the same class).39 Predictive enrichments require 
+complex ML models that characterise and assess 
+disease progression. Current efforts are focused 
+on numerous diseases, particularly mild cognitive 
+impairment (MCI) and Alzheimer’s disease, 
+where disease-modifying drugs are largely 
+unavailable.40
+The European Medicines Agency (EMA) also recom-
+mends in its Regulatory Science to 2025 strategy to 
+work with stakeholders to design collaborative clin-
+ical trials, particularly with international partners on 
+the Clinical Trial Transformation Initiative (CTTI) 
+and similar initiatives to innovate and expedite 
+patient identification.41
+MINING OF PUBLICLY AVAILABLE DATA
+ML and NLP can proactively mine publicly available 
+web content, including digital trial announcements, 
+trial databases and social media, to help match 
+patients with relevant trials. AI-based clinical trial 
+matching systems, such as IBM Watson for Clinical 
+Trial Matching, are helping to reduce the burden 
+of recruitment and enrolment (see case study 1).Intelligent Clinical trials
+11FIGURE 3
+How AI technologies can help deliver clinical trial enrichment strategies highlighted in 
+FDA guidance 
+Trial enrichment strategies
+REDUCED POPULATION 
+HETEROGENEITY
+Biomarker veriﬁcation to reduce 
+variability and increase study 
+power.
+PROGNOSTIC ENRICHMENT
+Selecting patients more likely
+to have measurable clinical 
+endpoints.ML and DL methods can be 
+applied to mine, analyse and 
+interpret multiple data sources, 
+including EHRs, medical 
+imaging, and ‘omics’ data.
+PREDICTIVE ENRICHMENT 
+Identifying patients more likely 
+to respond to the treatment.
+Source: Deloitte analysis.
+Deloitte Insights | deloitte.com/insights
+It is difficult for both patients and clinicians to 
+understand and assess eligibility for a specific 
+trial, largely due to the complexity of clinical 
+terminology used. For example, ClinicalTrials.
+gov was designed for researchers, not patients, 
+so patients usually rely on other patients with 
+similar conditions or doctors to identify a poten-tial trial. However, doctors rarely have time to 
+discuss trial options. Several AI technologies can 
+offer vital assistance by automatically extracting 
+meaningful information from EHRs and other 
+unstructured data sources to identify participants 
+with matching criteria (see case studies 2 and 3).Transforming through AI-enabled engagement
+12CASE STUDY 1. IBM WATSON FOR CLINICAL TRIAL MATCHING USES NLP TO BOOST 
+ENROLMENT AND REDUCES TIME TO PROCESS PATIENTS AGAINST PROTOCOLS
+IBM Watson Health’s Watson for Clinical Trial Matching (CTM) can collect and link structured and 
+unstructured data from EHRs, medical literature, trial information and eligibility criteria from public 
+databases like ClinicalTrials.gov. NLP enables Watson for CTM to analyse collected data, which helps 
+increase the accuracy and efficiency of the clinical trial matching process by reading and identifying 
+trial inclusion and exclusion criteria that limit enrolment, determining viable patient populations at 
+trial sites and matching the subsequent data to structured and unstructured data from EHRs.
+Early use of Watson for CTM by Mayo Clinic resulted in an 80 per cent increase in enrolment to 
+systemic therapy clinical trials for breast cancer in the 11 months after implementation. Further 
+training for additional cancer types is under way following on from the current targets of breast, 
+gastrointestinal and lung cancers. Mayo and IBM Watson Health also plan to develop the system 
+further for other applications, including for radiation, surgery and supportive care.42
+In another collaboration during a 16-week pilot, IBM Watson Health, Highlands Oncology Group and 
+Novartis used the CTM system to process 90 patients against three breast cancer protocols in 24 
+minutes compared to a clinical trial coordinator who took one hour and 50 minutes – a 78 per cent 
+decrease.43 
+CASE STUDY 2. ANTIDOTE USES ML TO CONNECT PATIENTS TO CLINICAL TRIALS
+Surveys show that 75 per cent of patients in the US are interested in participating in research, but 
+finding a clinical trial can be challenging. The Antidote platform uses ML to seamlessly connect 
+patients with clinical trials, creating a simple process for both drug sponsors and the patients they 
+need to reach. The system uses ML to structure and organise trial listings from ClinicalTrials.gov into 
+a patient-friendly, searchable format. Patients use the search tool, Antidote Match, to answer a few 
+questions about their health, and the system automatically identifies clinical trials for which they may 
+qualify. For sponsors with multiple trials in their programs, Antidote offers multi-trial matching as a 
+recruitment tool. This approach allows patients to match against several clinical trials from the same 
+sponsor, increasing their chances of finding a trial and accelerating research for the sponsor. And if 
+none of those trials are right for them, the platform automatically reveals a list of additional, sponsor-
+agnostic trials that may be a fit.44 Intelligent clinical trials
+13Transforming through AI-enabled engagement
+Investigator and site selection
+One of the most important aspects of a clinical 
+trial is selecting high-functioning investigator 
+sites. Site qualities such as administrative require-
+ments procedures, resource availability, team 
+dynamics and experience ultimately impact both 
+study timelines and data quality and integrity. 
+Site selection has the potential to dramatically 
+affect product approval, study costs and timelines. 
+However, it is an often underrated and poorly 
+understood discipline. Moreover, investigators and 
+sites need to sign a formal agreement to conduct the 
+trial in compliance with regulators’ Good Clinical 
+Practice and approved protocol requirements. This 
+includes complying with auditing, data recording 
+and reporting procedures, permit monitoring and 
+inspection timetables, and retaining essential docu-
+ments in accordance with sponsor requirements.47 
+AI technologies can help optimise the way in 
+which target locations, qualified investigators, and 
+priority candidates are identified accurately, as 
+well as help analyse the data that is collected more effectively.48 AI can also help to automate 
+workflows by creating drafts of standardised 
+contracts such as confidentiality, investigator and 
+site agreements to shorten study startup time.
+Patient monitoring, medication 
+adherence and retention
+Algorithms can also help monitor and manage 
+patients by automating data capture, digitalising 
+standard clinical assessments and sharing data 
+across multiple systems.
+In addition, nurses and physicians can use AI 
+solutions to identify relevant actions according to 
+protocol requirements, such as specific clinical tests 
+and procedures to monitor diagnostic biomarkers; 
+assist in scheduling patient visits; and pre-populate 
+patient data into EDC systems. For example, NLP 
+can complete sections of the dossier for submission 
+to pre-populate standard information into the final 
+clinical study report. This saves costs and effort and 
+reduces compliance risk and overall time to market.CASE STUDY 3. MENDEL.AI IS IMPROVING IDENTIFICATION OF SUITABLE 
+CANCER PATIENTS AND MATCHING TO CLINICAL TRIALS
+Mendel.ai, a US-based company founded in 2016, uses AI tools to analyse clinical data, including 
+medical history and genetic analysis, from cancer patients. Its goal is to facilitate clinical trials in 
+oncology research by organising and analysing RWD, and matching patients to the right clinical trials.45 
+They take medical data from many structured and unstructured data sets and turn these into data 
+digitised patient journeys aligned to specific treatments. Having collected data on over 1 million journeys, 
+its algorithm can segment patient populations by their demographic, such as how African American 
+women with breast cancer respond to a particular drug. In essence creating in silico or patient-less 
+trials. The AI algorithm built on these data helps trial recruitment by finding eligible patients.
+Mendel.ai is compliant with Health Insurance Portability and Accountability Act (HIPAA) and General 
+Data Protection Regulation (GDPR) requirements and has helped research clinicians to increase the 
+number of eligible patients. The company applied its platform retroactively to three oncology studies 
+that had recently completed enrolment. This allowed a direct comparison between the results that can 
+be achieved through Mendel.ai’s augmentation tools and conventional practices. Mendel.ai showed 
+that the use of its service can deliver a 20-50 per cent increase in patient enrolment and drastically 
+reduce the time needed to screen through large data sets during patient identification process.46 
+14Trials require enough patients to create enough 
+statistical power to assess the effectiveness of a 
+drug. Once patients are recruited and enrolled, it 
+is important to avoid dropout and non-adherence 
+as recruiting additional patients leads to trial 
+delays and additional costs. Patients who leave 
+the trial cannot be replaced one-for-one due to 
+the required statistical power of the trial protocol. 
+For example, a 20 per cent decrease in patient 
+adherence requires a 50 per cent increase in 
+sample size to maintain an equivalent statistical 
+power.49 However, the average dropout rate across 
+clinical trials is 30 per cent, and only 15 per cent of 
+clinical trials do not experience patient dropout.50
+During most clinical trials, researchers’ under-
+standing of patients’ health is limited to site visits. 
+Patient compliance to the treatment protocol is, 
+therefore, difficult to ascertain accurately. This 
+can create a mismatch between the efficacy of 
+treatments during clinical trials and the effect of 
+the drug in the real world. Clinical trials based on 
+advanced AI algorithms, using data collected from 
+trial participants via wearables, apps and sensors, 
+can provide real-time insights into the safety and 
+effectiveness of the treatment. AI can also integrate 
+multiple digital biomarkers to understand how the 
+patient is responding to the drug and whether there 
+is need for dose adjustments. Importantly, these 
+connected apps and devices allow patients to stay 
+informed and supported in real time, which can enhance engagement and retention. Currently, a 
+number of AI-augmented platforms for remote 
+patient monitoring, which can be used both in health 
+care and in clinical trials, have been approved by the 
+FDA.51,52 Other technologies developed to improve 
+adherence include smart pillboxes or pill bottles, 
+virtual pillboxes and behavioural economics-based 
+incentives.53 DL and ML algorithms can analyse 
+patient data from wearables and video monitoring 
+in real time and predict the risk of dropout for 
+an individual patient by detecting the onset of 
+behaviour that led to non-adherence previously.
+Using operational data 
+to drive AI-enabled 
+clinical trial analytics
+Clinical trials generate immense operational data, 
+but functional data silos and numerous applications 
+often hinder biopharma executives who need a com-
+prehensive view of their clinical trials portfolio over 
+multiple global sites to make informed decisions. As 
+a result, many hours are lost collecting and analysing 
+diverse data sets to optimise trial operations, as 
+well as to improve cost and resource efficiencies. 
+By consolidating operational data on a clinical 
+trial analytics platform with predictive capabilities, 
+biopharma companies can improve their ability to 
+discern whether a data anomaly is a true risk, which 
+helps stage more efficient and productive visits.Intelligent clinical trials
+15Transforming through AI-enabled engagement
+CASE STUDY 4. MEDIDATA’S ACORN AI
+Medidata, a global CRO, established Acorn AI in early 2019 to develop new insights across all phases 
+of drug development. Its aim is to make data ‘liquid’ across the end-to-end life cycle of a biopharma 
+company: from research all the way to development and into post-market surveillance to build 
+linkages between clinical trials, genomics, RWE, translational health and other data sets.54 Its aim is 
+to help biopharma make quick ‘go/no go’ decisions, accelerate clinical trials and demonstrate value. 
+Acorn AI is built on the Medidata platform, which comprises more than 17,000 clinical trials with 
+structured, standardised clinical data repositories from over 4.8 million patients.
+Acorn AI is focusing on addressing two big trends. The first is precision medicine with CAR-T 
+therapy, tissue engineering, and gene and cell therapy. The second is the advancement of AI 
+and new sources of data to give researchers a 360-degree view of the patient, including clinical, 
+genomic, molecular, as well as socio-economic, behavioural and environmental data. It aims to help 
+sponsors make critical decisions on which drugs to progress from discovery to clinical trials; how 
+to accelerate clinical trials to speed the treatment to market; and how to create better-integrated 
+evidence, including both clinical and RWE, to demonstrate the value of products to regulators, 
+patients, payers and providers.
+There are also serious IT infrastructure and data 
+interoperability challenges with a lack of standards 
+for data sharing across multiple EDC systems and 
+sites, for example, providing access to EHRs. Some 
+biopharma companies deal with interoperability 
+across their studies by dictating data management 
+rules, specifying which data platforms to use and 
+how the data should be delivered.55 An important 
+solution to this is the adoption of open data 
+standards, which can improve interoperability 
+and allow seamless integration. An open platform 
+solution allows easy integration of sensors, user 
+applications and wearables data via standard 
+application programming interfaces (APIs).56
+Consolidating all data – whatever the source 
+– on a company’s shared analytics platform 
+can foster collaboration and integration, and 
+provide insights across vital metrics ranging 
+from enrolment rate and screening failure rates, 
+to protocol deviations. An effective integrated 
+platform incorporates advanced analytics, 
+including predictive analytics, at every stage of the 
+process to uncover actionable insights that were 
+previously difficult or even impossible to attain. 
+Incorporating a self-learning system, designed to improve predictions and prescriptions over 
+time, as well as data visualisation tools, can 
+proactively deliver reliable analytic insights to 
+users.57 One CRO has established an AI-driven 
+platform to develop new insights across all 
+phases of drug development (see case study 4).
+Game changers supporting 
+the use of AI for clinical trials
+OUTSOURCING AND STRATEGIC 
+RELATIONSHIPS TO OBTAIN 
+NECESSARY AI SKILLS AND TALENT
+Biopharma companies are looking to strategic and 
+operational relationships based on outsourcing 
+models. A number of companies increasingly see 
+CROs that have invested in data science skills 
+and talent as strategic partners as they provide 
+access not only to specialised expertise, but also 
+to a wide range of potential trial participants.58
+In 2016, Deloitte research identified that, by 
+outsourcing clinical trials to external partners with 
+expectations set around outcomes, biopharma 
+companies can leverage their knowledge and 
+16expertise gained from repeatedly providing the 
+service.59 Further research in 2018 suggested 
+more companies will use outsourcing to obtain the 
+necessary expertise, especially in advanced tech-
+nologies, such as AI, cloud computing and robotics. 
+Sector growth will be driven by strategic partner-
+ships with academia, analytics companies and big 
+tech, as well as CROs, as biopharma companies 
+focus on strengthening their R&D capabilities.60
+CROs provide a range of expertise to bring un-
+derstanding and solutions to the highly technical 
+challenges of transforming clinical trials. In 
+2015, Research and Markets estimated that by 
+2020 over 70 per cent of all clinical trials will be 
+outsourced to CROs.61 As AI generates increasing 
+momentum and interest across the biopharma 
+industry, CROs will be in great demand due 
+to their ability to combine AI knowledge with 
+expertise in specific therapeutic areas, including 
+indications and regulatory requirements, and 
+by offering pharmacovigilance specialists.62
+The 2018 report from Research and Markets 
+predicts the global CRO market will grow with 
+a compound annual growth rate (CAGR) of 7.62 
+per cent, from $36.27 billion in 2017 to $56.34 
+billion in 2023.63 This is due to the expected 
+increase in outsourcing of R&D activities, in 
+R&D expenditures and the number of clinical 
+trials. Globally more than 1,100 CRO companies 
+were active in 2017, with the top ten generating 
+a collective total revenue of $34.514 billion.64
+As we mentioned in our Intelligent drug dis-
+covery: Powered by AI report, the vast majority 
+of AI startups working on biopharma R&D are 
+currently focused on the drug discovery stage of 
+the process.65 However, an increasing number 
+of startups (around 30) are now working in the 
+clinical trials space, including partnering or 
+contracting with biopharma.66 Examples include:• Trials.ai: Uses AI to analyse large sets of 
+genomic data, journal articles, past clinical 
+studies and other forms of research to improve 
+study design. Using its proprietary codified clin-
+ical trials database, the system is able to unlock 
+information, derive insights and make recom-
+mendations to trial sponsors on how to best 
+design and optimise their trial protocols, as 
+well-designed protocol limits improves recruit-
+ment and retention and reduces burden on 
+patients and trial sites by bringing in cost and 
+time efficiency.67 For one of its clients, Trials.ai 
+shortened study timelines by 33 per cent and 
+reduced data errors by 20 per cent.68
+• Concerto HealthAI: Uses its RWD capabili-
+ties and eurekaHealth AI platform to design 
+robust clinical trials and generate precision 
+treatment insights. In March 2019, Concert 
+HealthAI announced a strategic agreement with 
+Bristol-Myers Squibb (BMS), and in April 2019, 
+announced a partnership with Pfizer.69
+• GNS Healthcare: Uses its Reverse Engineering 
+& Forward Simulation (REFS) causal AI and sim-
+ulation platform to analyse RWD and clinical trial 
+data to model patient responses to treatments in 
+silico and has worked with biopharma companies, 
+including Amgen, BMS, Celgene, Johnson & 
+Johnson and Novartis.70
+TECH GIANTS DISRUPTING 
+THE STATUS QUO
+The size and growth of the health care market 
+and the potential for technology to impact the life 
+sciences industry in the same way as other custom-
+er-facing industries, such as banking, retail and 
+travel, has attracted the attention of the tech giants. 
+This is disrupting the status quo and threatening 
+biopharma’s legacy culture. In 2019, initiatives 
+converging advanced data science, medical knowl-
+edge and technology included the following: Intelligent clinical trials
+17Transforming through AI-enabled engagement
+CASE STUDY 5. HOW BIOPHARMA COMPANIES ARE WORKING WITH APPLE’S 
+RESEARCHKIT TO MONITOR PATIENTS IN CLINICAL TRIALS
+In 2016, GSK launched the PARADE (Patient Rheumatoid Arthritis Data from the Real World) study 
+for which it developed an app using Apple’s ResearchKit framework. This app was downloaded over 
+200 times within 48 hours of launch. Having patients using this app allowed research clinicians to 
+obtain more realistic symptomatic reports, including morning stiffness, one of the key symptoms of 
+rheumatoid arthritis, which might have dissipated by the time patients reached the clinic.76
+More recently, in 2018, Novartis announced the launching of FocalView, an app developed through 
+Apple’s ResearchKit to be used as an ophthalmic digital research platform. FocalView aims to make 
+ophthalmology clinical trials more accessible and flexible by allowing clinical researchers to monitor 
+disease progression by collecting self-reported data in real time directly from consenting patients. 
+This app was launched in the App Store in the US to be tested in a prospective, non-interventional 
+study to assess its ease of use and ability to collect important clinical data and other documentation, 
+including informed consent. In the future, Novartis aims to validate the app by comparing it with 
+traditional visual testing methods in clinical settings.77• Verily Life Sciences, a subsidiary of Google’s 
+Alphabet Inc., teamed up with Novartis, Otsuka, 
+Pfizer and Sanofi on a project to improve patient 
+recruitment and retention and speed up clinical 
+trials. This project, collectively known as Project 
+Baseline, is using Verily’s AI-powered research 
+tools, including wearable devices and sensors as 
+well as analytical tools that can bring together 
+EHRs, biometrics and patient-reported data. It 
+plans to launch studies across multiple thera -
+peutic areas, including cardiovascular disease, 
+dermatology, diabetes, mental health and 
+oncology.71
+• Apple announced the launch of three clinical 
+studies in partnership with leading academic 
+and research institutions that will use its new 
+ResearchKit app. These are: Apple Women’s 
+Health Study, in partnership with Harvard T.H. 
+Chan School of Public Health and National 
+Institute of Environmental Health Sciences; 
+Apple Heart and Movement Study, in partner -
+ship with Brigham and Women’s Hospital and 
+American Heart Association; and Apple Hearing Study, in partnership with University of 
+Michigan. Apple previously completed the Apple 
+Heart Study using Apple Watch and its 
+ResearchKit app.72 In addition, large biopharma 
+companies have launched apps that were devel -
+oped through ResearchKit platform to improve 
+RWD collection and patient monitoring in clini -
+cal studies (see case study 5).
+• Amazon launched Comprehend Medical, an AWS 
+Cloud NLP service that decodes and mines struc-
+tured and unstructured data to extract information 
+such as medical condition and medication regi-
+men from clinical trial reports, doctors’ notes and 
+EHRs.73 AWS Cloud AI-enabled services and 
+tools are HIPAA and GDPR compliant and can be 
+used to streamline clinical trials by facilitating, 
+among others, global data management and 
+patient recruitment and monitoring.74 Roche 
+Diagnostics is using Comprehend Medical to 
+enable its NAVIFY Clinical Trial Match platform 
+to extract and structure information from medical 
+documents to match patients to available indepen-
+dent clinical trials.75
+18• Microsoft has entered a five-year collaboration 
+with Novartis to explore how to combine 
+Microsoft’s advanced AI technology with 
+Novartis’ deep life sciences expertise. The aim is 
+to find new ways to address challenges, such as 
+drug discovery, clinical trials, manufacturing, 
+operations and finance. As part of Microsoft’s 
+work with Novartis, data scientists from 
+Microsoft Research and research teams from 
+Novartis will work together to investigate how 
+AI can help unlock transformational new 
+approaches in three specific areas: personalised 
+treatment for macular degeneration; use of AI to 
+make manufacturing new gene and cell thera -
+pies more efficient; and use of AI to shorten the 
+time required to design and develop new 
+medicines.78Pharma sponsors are partnering with large tech 
+companies to leverage their core expertise in digital 
+science. They are also looking to the burgeoning 
+ecosystem of smaller tech companies to develop 
+potentially disruptive data innovation and new 
+methods of obtaining and tracking relevant clinical 
+and socioeconomic data to improve patient inter -
+faces. For life sciences, tech giants can be:
+• potential partners
+• competitors
+• and both an opportunity and a threat as they 
+disrupt specific areas of the industry.79
+Today, we are seeing a growing number of ex -
+amples of how the end-to-end utilisation of AI 
+is also impacting how biopharma companies 
+interact with patients (see case study 6).
+CASE STUDY 6. TAKEDA IS USING AN AI-ENABLED PLATFORM 
+TO CREATE PATIENT-CENTRED TREATMENTS
+In 2016, Takeda Pharmaceuticals established the R&D Data Science Institute, including a R&D data 
+hub that integrates data sets such as clinical trials, observational studies, population-level biobanks 
+and RWD, aimed at generating insights using advanced ML techniques.
+Takeda chose two complex therapeutic areas, non-alcoholic steatohepatitis (NASH) and treatment-
+resistant depression (TRD), to evaluate the capabilities of its ML algorithms and platform. The aim 
+is to improve the treatment journey for patients as well as helping to guide decisions on the cost-
+effectiveness of treatments, drug development investments and planning protocols for clinical trials.
+To create better testing models and prove its hypotheses, Takeda used Deloitte’s ConvergeHEALTH 
+Deep Miner™ platform to analyse massive amounts of RWD. The platform is designed to accelerate 
+predictive modelling by utilising ML and neural network algorithms with real-world health care data. 
+The AWS Cloud-enabled Deep MinerTM platform used DL and ML techniques to improve the predictive 
+accuracy of Takeda’s earlier results from 53.4 per cent to 92 per cent.80 Intelligent clinical trials
+19Clinical development and 
+the future of health
+The life sciences and health care industries are 
+on the brink of large-scale disruption driven by 
+interoperable data, open and secure platforms 
+and consumer-driven care. The next 20 years 
+will see a fundamental shift from ‘health care’ 
+to ‘health’. While diseases will never be fully 
+eradicated, our understanding of data and 
+science, as well as the use of AI and other digital 
+technologies, will enable the identification of 
+pathological conditions earlier. This will facilitate 
+more proactive interventions and provide a better 
+understanding of disease progression to sustain 
+patient well-being more actively and effectively.
+Advanced early intervention and enhanced adher -
+ence will help ensure the effectiveness of these new 
+therapies.81 AI-enabled digital transformation is becoming a strategic imperative, and biopharma 
+companies need to decide what role they will 
+play in the transformed health ecosystem.82
+As discussed in our report Intelligent drug dis -
+covery , AI will accelerate the identification of new, 
+more precise and targeted therapeutics. These 
+new drugs will be designed to be highly specific, 
+linked to genetics and to avoid side effects. Clinical 
+trials will need to accommodate the increased 
+number of more targeted approaches required.
+In the future, AI, together with enhanced com -
+puter simulations and advances in personalised 
+medicine, will lead to in silico  trials, which use 
+advanced computer modelling and simulations 
+in the development or regulatory evaluation of a 
+drug. While in silico  trials will potentially reduce, 
+refine and partially replace in vivo  experimentation, 
+completely simulated clinical trials are not feasible 
+with current technology and understanding of 
+biology. Nevertheless, their development will 
+have major benefits over current in vivo  clinical 
+trials. Indeed, the FDA is already planning for a 
+future in which more than half of all clinical trial 
+data will come from computer simulations.83 Transforming through AI-enabled engagement
+Biopharma has traditionally been slow to adopt innovative technologies in the 
+recruitment and management of clinical trials. However, the convergence of 
+medical knowledge, exponential increases in the amounts of RWE and advances 
+in technology and data management present a transformational opportunity. 
+Harnessing data by applying AI technologies has the potential to enhance clini-
+cal trial productivity, improve the patient experience and accelerate regulatory 
+decision-making.Clinical trials of the future
+Biopharma companies are 
+set to develop tailored 
+therapies that cure disease 
+rather than treat symptoms.
+20In silico trials can eliminate the need for Phase I,  
+in which the safety of compounds in healthy  
+subjects is tested.
+At the beginning of 2020, in silico medicine is 
+still in its infancy, but there are many promising 
+examples that show the potential to replace 
+traditional clinical trials within a few years.84,85 
+In the meantime, improving the efficacy of the 
+entire process is more likely to depend on AI 
+and other technologies to improve efficiency and 
+POS.86 Indeed, AI-enabled applications are likely 
+to become standard in the biopharma operating 
+model over the next five to ten years (see figure 5).
+Deloitte’s Digital R&D: Transforming the future of 
+clinical development report highlighted the steps 
+needed for biopharma to succeed in clinical trials:• engage  effectively with patients and 
+stakeholders through targeted, omnichannel 
+interactions to meet their needs and foster 
+trusted relationships
+• innovate patient care by catalysing the devel-
+opment of products and services that deliver 
+measurable value for health care providers, 
+payers and patients
+• execute efficiently by digitalising and rationalis-
+ing processes to drive efficiencies, reduce cycle 
+times and deliver cost savings.87
+In the future, AI will ensure that all these 
+steps are done more cost-effectively and effi-
+ciently. The quicker the clinical development 
+process the more lives that can be saved.
+FIGURE 5
+Expected timeline for the adoption of AI-enhanced digital technologies at scale
+READY FOR NEAR-TERM ADOPTION
+• eConsent
+• Patient-reported endpoints using mobile
+ applications and wearables
+• Risk-based site monitoring
+• Assessment of protocol design feasibility
+ using data from multiple sourcesNEXT IN LINE
+• Automated data capturing, integration
+ and sharing
+• Mine EHRs and patient records to assess
+ feasibility and expedite recruitment
+• Workﬂow automation of repetitive
+ activities
+• Partially virtual trials
+• Digital biomarkers as secondary 
+ endpointsMORE ADVANCED TECHNOLOGIES
+• Synthetic control arms and trials
+• AI tools to analyse and interpret
+ unstructured data
+• ML to clean data
+• Completely virtual trials
+• Digital biomarkers as primary endpoints
+• NLP to perform more complex medical
+ writing activitiesin silico
+Source: Deloitte US Center.
+Deloitte Insights | deloitte.com/insights3
+YEARS5
+YEARS10
+YEARSNOWSTILL BEING EXPLORED
+• Blockchain • Virtual/augmented reality • Digital assistants and voice recognitionIntelligent clinical trials
+21The future of clinical 
+trial regulation
+Regulators around the globe have released guidance 
+to encourage biopharma companies to use RWE 
+strategies. In the US, the FDA is leading the way 
+with guidance on Submitting documents using 
+real-world data and real-world evidence to FDA 
+for drugs and biologics guidance for industry88 and 
+on Use of real-world evidence to support regu-
+latory decision-making for medical devices.89 In 
+addition, the 21st Century Cures Act, passed in 2016, 
+was designed to help bring new innovations and 
+advances to patients more efficiently and faster.90
+Accordingly, the FDA is working with the 
+clinical trial community and patient groups 
+to develop scientific and technical standards 
+for incorporating new digital technologies into 
+clinical trials to make them more agile and 
+accessible to patients and regulators. For 
+example, remote and risk-based monitoring 
+can lower development costs, improve patient 
+care and provide better regulatory oversight.91
+The FDA also sees immense potential in using 
+digital technologies to bring clinical trials to the 
+patient. It believes that more accessible clinical 
+trials can foster participation by a more diverse 
+patient population and communities where patient 
+care is delivered. This will generate information 
+that is more representative and help providers 
+and patients make better informed treatment 
+decisions. These decentralised clinical trials can 
+help move data collection outside the boundaries 
+of traditional clinical research facilities.92
+As the variety, velocity and volume of RWD 
+submitted to the FDA increases, the FDA will 
+also increase its use of DL and NLP tools in 
+its regulatory processes. For biopharma, early 
+engagement with regulatory authorities to align 
+on objectives, study design and use of digital 
+biomarkers or surrogate endpoints will be of critical importance. In recognition that AI skills 
+are highly sought after and that there are diffi-
+culties recruiting and retaining the necessary 
+talent, the FDA is taking several steps, including:
+• developing an FDA curriculum on AI in partner-
+ship with external academic partners. The aim is 
+to improve the ability of FDA reviewers and 
+managers to evaluate products that incorporate 
+advanced algorithms and facilitate the FDA’s 
+capacity to develop novel regulatory 
+science tools.
+• piloting a competitive fellowship programme 
+that enables postdoctoral students from leading 
+academic centres to join the FDA for two-year 
+fellowships to develop high-impact AI-based reg-
+ulatory science tools.
+• the FDA’s Oncology Center of Excellence (OCE) 
+is exploring the use of real-world endpoints, like 
+time-to-treatment discontinuation, for prag-
+matic randomised clinical trials for FDA 
+approved therapies in the post-market setting.93
+In addition, regulatory agencies will remain 
+focused on leveraging technology and transla-
+tional data to improve the overall efficiencies 
+and cost control of conducting trials, to speed 
+delivery of benefit to patients and to support 
+shorter development timelines and approvals.
+PATIENT CENTRICITY AND AN IMPROVED 
+CLINICAL TRIAL EXPERIENCE
+In the future, all stakeholders involved in the 
+clinical trial process will have aligned their decisions 
+with the patient’s wants, needs and preferences. 
+Sponsors channel information about the trial, the 
+process, the people involved, through the patient. 
+Sponsors not only incorporate patient perspectives 
+throughout study design, but also deploy open 
+communication channels during study execution. 
+This has improved success in attracting, engaging, 
+and retaining committed patients throughout study Transforming through AI-enabled engagement
+22duration and after study termination. Initiatives 
+include the use of digital therapeutics (clinically 
+validated interventions, either stand-alone or 
+in combination with medical products); and 
+using AI-enabled digital health technologies and 
+patient support platforms during the whole trial 
+process, for example: leveraging compliance 
+apps, clinical endpoint and data capture tools, 
+and remote trial delivery systems (see figure 4).
+What next for biopharma?
+For the next few years, RCTs are likely to remain the 
+gold standard for validating the efficacy and safety 
+of new compounds in large populations. However, 
+for initial registration, innovative trials using RWD 
+are likely to play a more relevant role in defining 
+new, patient-centred endpoints and in expanding 
+and refining indications. One of the most prominent 
+activities that will change clinical trials the most 
+over the next ten years will be moving patient 
+medical information into electronic format and 
+enabling the utilisation of RWD in powerful ways.
+The next decade will also see an increase in the im-
+plementation of virtual clinical trials. These leverage 
+the capabilities of innovative digital technologies, 
+including apps, eConsent platforms and telemedi-
+cine, to lessen the financial and time burdens that 
+patients incur. Virtual trials enable faster enrolment 
+of more representative groups in real time and in 
+their normal environment (as opposed to strictly 
+controlled clinical environments) and monitor these 
+patients remotely. Deloitte research suggests as 
+many as half of all trials could be done virtually. The 
+convenience of virtual trials should improve patient 
+retention and accelerate clinical development 
+timelines, addressing one the biggest challenges in biopharma R&D.94 Indeed, the move to virtual 
+clinical trials means that any qualifying patient who 
+wants to participate in clinical research and who 
+meets the selection criteria will be able to do so.
+The use of virtual trials is only just beginning. For 
+example, in December 2019, Europe’s Innovative 
+Medicines Initiative launched a new project, Trials@
+Home. This evaluates how remote decentralised 
+clinical trials (RDCTs), which use AI-enabled tech-
+nologies to allow bigger, more diverse and remote 
+populations to take part in clinical trials, could 
+become the gold standard for clinical research.95 
+The expectation is that within the next five to ten 
+years this should entirely transform clinical trials.
+In the future, biopharma companies will capitalise 
+on the digitalisation of health care to manage 
+clinical trials remotely. One such example is 
+the creation of a hub-and-spoke command 
+centre. Novartis is already tackling its R&D costs 
+by creating a single ‘control tower’ to digitally 
+monitor and troubleshoot clinical trials taking 
+place across the globe in real time, known as 
+Nerve Live. This platform uses ML with predictive 
+algorithms allowing Novartis to identify future 
+potential logjams in its clinical trials 12, 18 or even 
+24 months down the road, enabling the company 
+to take action to prevent the delay occurring.96 
+In the future, biopharma 
+companies will capitalise on 
+the digitalisation of health 
+care to manage clinical 
+trials remotely.Intelligent clinical trials
+23Positive diagnosis 
+and available 
+treatments not 
+eﬀectiveFIGURE 4
+Patient's journey through an AI-enabled digital trial
+Connected AI-enhanced digital technologies will transform clinical trials by making them safer,
+more eﬃcient and eﬀective, and, above all, truly patient-centric
+Doctor uses AI-enabled search tool
+to ﬁnd a clinical trial, using the
+patient’s clinical data (EHRs, etc)By quickly mining numerous data sets,
+AI algorithms ﬁnd a match with a 
+recruiting Phase II study and the
+patient can proceed to enrolThe patient receives mobile support with 
+detailed information about the study 
+and can ask any additional questions, 
+before providing regulatory-compliant 
+eConsent
+Patient is informed on the progress of the trial in real time as AI-enabled algorithms continuously analyse 
+data to ensure their safety. If necessary, these digital technologies will allow the patient to join later 
+phases of the trial so they can have continued access to the treatment.If site visits are required, the patient
+can have arranged transportations 
+through AI-enabled platforms, and
+smart appointments can be created
+by using local information and the 
+patients’ own calendarVirtual monitoring and telemedicine can 
+reduce site visits; patient is supported 
+from the comfort of their own homeMobile devices and wearables
+provide constant monitoring and 
+support by sending reminders to ensure 
+adherence to protocol and to inform 
+about the progress of the trial
+Source: Deloitte analysis.
+Deloitte Insights | deloitte.com/insightsTransforming through AI-enabled engagement
+24Given the fragmented and highly regulated 
+nature of the industry, biopharma companies 
+will need to establish effective AI strategies for 
+clinical development, including the following:
+• partnerships with AI companies: The scar-
+city of skills and talent needed to develop AI 
+algorithms and to understand the complexity of 
+biological systems means biopharma strategies 
+should include partnerships with leading AI for 
+drug discovery and development companies. 
+Biopharma companies benefit from having AI 
+solutions that are specific to their own propri-
+etary data, and the AI firm has the opportunity to 
+develop its skills by accessing vast amounts of 
+longitudinal data sets.
+• data sharing: Fierce competition between bio-
+pharma companies means traditionally there has 
+been limited information sharing, exacerbated by 
+challenging regulatory and compliance require-
+ments. While data-sharing partnerships between 
+biopharma companies can optimise the use of AI, 
+this will only be effective if there is a change to a 
+more collaborative mindset both within and 
+between companies.
+• algorithm transparency: Regulators expect 
+transparency regarding the algorithms used for 
+drug development to understand AI-based con-
+clusions. The risks of regulators seeing AI as a 
+‘black box’ could lead to problems obtaining 
+approval particularly when the submissions use 
+biomarkers developed using AI. Our A bold 
+future for life sciences regulation: Predictions 
+2025 report highlights the importance of bio-
+pharma companies working proactively with 
+regulators to agree to acceptable regulatory path-
+ways to improve the effectiveness of the 
+regulatory process.97
+• data privacy: The relative ease of working with 
+non-patient data during drug discovery means AI 
+is currently more widely adopted in drug discovery than in clinical development.98 The use 
+of patient data is highly sensitive and, as AI capa-
+bilities develop, companies need to understand 
+the appropriate legal and compliance require-
+ments needed to protect the increasing volume of 
+data. GDPR compliance in Europe and similar 
+requirements being developed in the US and else-
+where will be important, especially as failure to 
+comply could have significant financial and repu-
+tational consequences. Moreover, biopharma 
+companies will need to ensure that any patient 
+data used has specific consent for the specified 
+purpose and that it remains private and secure.99
+While AI is yet to be widely adopted and applied 
+to clinical trials in a meaningful way, it is clear 
+that AI has the potential to transform clinical 
+development. The applications of AI as outlined 
+in this report could lead to faster, safer and 
+significantly less expensive clinical trials.
+The industry is at a tipping point where the adop-
+tion of AI technologies can enable less costly and 
+more productive drug development. The potential 
+of AI to improve the patient experience will also 
+help deliver the ambition of biopharma to embed 
+patient-centricity more fully across the whole R&D 
+process. Ultimately, transforming clinical trials 
+will require companies to work entirely differently, 
+drawing on change management skills, as well as 
+partnerships and collaborations. As highlighted 
+in our Intelligent drug discovery report, the 
+success for biopharma companies using AI for 
+clinical trials will depend on having highly skilled 
+interdisciplinary leadership and skilled interdis-
+ciplinary AI experts who can innovate, organise 
+and guide others, as well as AI-friendly CEOs and 
+board members to drive the adoption of AI.
+If biopharma succeeds in capitalising on AI’s 
+potential, the internal and external productivity 
+challenges that have driven the decline in the rate 
+of return on investment in biopharma innovation 
+will be reversed and the industry will thrive.Intelligent clinical trials
+25
+Five key questions for 
+biopharma’s adoption 
+of AI in clinical trials
+As highlighted throughout the report, we consider 
+that the use of AI tools in clinical development 
+is now a critical business imperative. AI technol-ogies are creating an opportunity for improving 
+the clinical trials process by reducing clinical 
+cycle times and costs and improving patient 
+experience. However, before adopting AI solu-
+tions, there are a number of key questions that 
+biopharma companies need to consider carefully.Transforming through AI-enabled engagement
+WHAT ARE YOUR MAIN INTERNAL COST DRIVERS OF YOUR CLINICAL TRIAL 
+PROCESS, AND HOW MIGHT AVAILABLE AI SOLUTIONS HAVE THE MOST IMPACT?
+Patient recruitment and data management are among the largest cost drivers of clinical 
+trials and are currently where AI shows the most promise.
+DO YOU HAVE THE NECESSARY SKILLS AND TALENT TO INTEGRATE 
+AI TECHNOLOGIES INTO YOUR CLINICAL DEVELOPMENT?
+The adoption of AI innovation requires an internal team of experts, comprising 
+biologists, chemists, engineers, data scientists and bioinformaticians, working in cross-
+functional teams. The aim should be to promote an ‘intrapreneurship culture’, providing 
+these teams with the freedom and resources to create innovative solutions.
+CAN EXTERNAL PARTNERSHIPS PROVIDE A SOLUTION TO THE EXPERTISE 
+NEEDED FOR AI ADOPTION IN YOUR CLINICAL TRIALS?
+Biopharma companies can benefit from selecting reliable partners to leverage their 
+extensive knowledge and expertise gained from repeated experience. 
+WHAT IS YOUR STRATEGY FOR RESPONDING TO THE DISRUPTION THAT 
+TECH GIANTS ARE BRINGING TO CLINICAL DEVELOPMENT? 
+Tech giants are the leading experts in the use of big data and in developing new AI 
+solutions. They are increasingly disrupting the health care industry and investing in the 
+development of AI tools for drug discovery and development. For biopharma companies, 
+tech giants can be an opportunity as potential partners; a threat as competitors; or both 
+an opportunity and a threat, for which they need to have a clear strategy for how to 
+respond to this changing landscape.
+HOW ITERATIVE IS YOUR APPROACH TO THE REGULATION OF AI-ENABLED 
+PROCESSES, AND IS YOUR REGULATORY FUNCTION SEEN AS A STRATEGIC ASSET? 
+Regulators accept the potential of leveraging RWD to make clinical trials more accessible 
+and participatory. However, data-driven approaches will only enable faster regulatory 
+approvals, improved patient experience and early access to treatments, if there is early 
+engagement and increased transparency of operations. Regulatory relationships need 
+to be based on a win-win approach.
+26
+1. Learn About Clinical Studies, NIH U.S. National Library of Medicine, 2019. See also: https://clinicaltrials.gov/ct2/
+about-studies/learn#ClinicalTrials, accessed December 17, 2019.
+2. Intelligent drug discovery: Powered by AI, Francesca Properzi et al., 2019. See also: https://www2.deloitte.com/
+us/en/insights/industry/life-sciences/artificial-intelligence-biopharma-intelligent-drug-discovery.html, accessed 
+December 17, 2019.
+3. Why improving inclusion and diversity in clinical trials should be a research priority, Karen Taylor, 2019. See also: 
+https://blogs.deloitte.co.uk/health/2019/08/why-improving-inclusion-and-diversity-in-clinical-trials-should-be-a-
+research-priority.html, accessed December 17, 2019.
+4. Step 3: Clinical Research, U.S. Food and Drug Administrator (FDA), 2018. See also: https://www.fda.gov/patients/
+drug-development-process/step-3-clinical-research, accessed December 17, 2019.
+5. Artificial Intelligence for Clinical Trial Design, Stefan Harrer et al., 2019. See also: https://www.cell.com/trends/
+pharmacological-sciences/fulltext/S0165-6147(19)30130-0, accessed December 17, 2019.
+6. Step 3: Clinical Research, US Food & Drug Administration, 2018. See also: https://www.fda.gov/patients/drug-
+development-process/step-3-clinical-research, accessed January 27, 2020.
+7. Digital R&D: Transforming the future of clinical development, Dawn Anderson et al., 2018. See also: https://
+www2.deloitte.com/us/en/insights/industry/life-sciences/digital-research-and-development-clinical-strategy.
+html?id=us:2el:3pr:4di3967:5awa:6di:MMDDYY, accessed December 17, 2019.
+8. Ten years on: Measuring the return from pharmaceutical innovation 2019, Mark Steedman et al., 2019. See 
+also: https://www2.deloitte.com/uk/en/pages/life-sciences-and-health care/articles/measuring-return-from-
+pharmaceutical-innovation.html, accessed December 18, 2019.
+9. Ibid.
+10. Ibid.
+11. Recruitment Infographic, CLINPAL. See also: https://www.clinpal.com/blog/recruitment-infographic/,  
+accessed December 18, 2019.
+12. Patient Income Level and Cancer Clinical Trial Participation, Joseph M. Unger et al., Journal of Clinical Oncology, 
+2013. See also: https://ascopubs.org/doi/full/10.1200/JCO.2012.45.4553, accessed December 18, 2019.
+13. A population-level investigation of cancer clinical trials participation in a UK region, Conan 
+Donnelly et al., European Journal of Cancer Prevention, 2017. See also: https://insights.ovid.com/
+crossref?an=00008469-201709001-00017, accessed December 18, 2019.
+14. Systematic Review and Meta-Analysis of the Magnitude of Structural, Clinical, and Physician and Patient Barriers 
+to Cancer Clinical Trial Participation, Joseph M Unger et al., Journal of the National Cancer Institute (JNCI), 2019. 
+See also: https://academic.oup.com/jnci/article/111/3/245/5307078, accessed December 18, 2019.
+15. Increasing Diversity in Clinical Trials: Overcoming Critical Barriers, Luther Clark MD et al., 2019. See also: https://
+www.sciencedirect.com/science/article/pii/S0146280618301889, accessed December 18, 2019.
+16. Clinical trials, NHS, 2019. See also: https://www.nhs.uk/conditions/clinical-trials/, accessed December 18, 2019.
+17. Factors associated with clinical trials that fail and opportunities for improving the likelihood of success: A review, 
+Contemporary Clinical Trials Communications, David B. Fogel, 2018. See also: https://www.ncbi.nlm.nih.gov/
+pmc/articles/PMC6092479/, accessed December 18, 2019.
+18. Trends in clinical success rates and therapeutic focus, Helen Dowden and Jamie Munro, 2019. See also: https://
+www.nature.com/articles/d41573-019-00074-z, accessed December 20, 2019.EndnotesIntelligent clinical trials
+27
+19. The High Price Of Failed Clinical Trials: Time To Rethink The Model, Ralf Huss, 2019. See also: https://www.
+clinicalleader.com/doc/the-high-price-of-failed-clinical-trials-time-to-rethink-the-model-0001, accessed 
+December 18, 2019.
+20. Estimation of clinical trial success rates and related parameters, Chi Heem Wong et al., Biostatistics, 2018. See 
+also: https://academic.oup.com/biostatistics/article/20/2/273/4817524, accessed December 18, 2019.
+21. Ten years on: Measuring the return from pharmaceutical innovation 2019, Mark Steedman et al., 2019. See 
+also: https://www2.deloitte.com/uk/en/pages/life-sciences-and-health care/articles/measuring-re turn-from-
+pharmaceutical-innovation.html, accessed December 18, 2019.
+22. Cancer Drugs Now Account for 27% of all New Drug Approvals in the U.S., According to Tufts Center for 
+the Study of Drug Development, GlobeNewswire, 2019. See also: https://www.globenewswire.com/news-
+release/2019/09/03/1910034/0/en/Cancer-Drugs-Now-Account-for-27-of-all-New-Drug-Approvals-in-the-U-S-
+According-to-Tufts-Center-for-the-Study-of-Drug-Development.html, accessed December 19, 2019.
+23. Ten years on: Measuring the return from pharmaceutical innovation 2019, Mark Steedman et al., 2019. See 
+also: https://www2.deloitte.com/uk/en/pages/life-sciences-and-health care/articles/measuring-return-from-
+pharmaceutical-innovation.html, accessed December 18, 2019.
+24. Key design considerations for adaptive clinical trials: a primer for clinicians, Kristian Thorlund et al., BMJ, 2018, 
+https://www.bmj.com/content/360/bmj.k698, accessed December 18, 2019.
+25. Improving Pharma R&D Efficiency, ICON Plc, 2019. See also: https://iconplc.com/insights/transforming-trials/
+improving-pharma-research-and-development-efficiency/, accessed December 18, 2019.
+26. Master Protocols: Efficient Clinical Trial Design Strategies To Expedite Development of Oncology Drugs and 
+Biologics, U.S. Food and Drug Administration (FDA), 2018. See also: https://www.fda.gov/regulatory-information/
+search-fda-guidance-documents/master-protocols-efficient-clinical-trial-design-strategies-expedite-
+development-oncology-drugs-and, accessed December 18, 2019.
+27. Master protocols: Shifting the drug development paradigm, Neil Lesser et al., 2018. See also: https://www2.
+deloitte.com/content/dam/insights/us/articles/4509_Master-protocols/DI_Master-protocols.pdf, accessed 
+December 18, 2019.
+28. Synthetic control arms can save time and money in clinical trials, Jen Goldsack, 2019. See also: https://www.
+statnews.com/2019/02/05/synthetic-control-arms-clinical-trials/, accessed December 18, 2019.
+29. One Size No Longer Fits All: The Personalized Medicine Trial Landscape, Doro Shin, 2017. See also: https://
+invivo.pharmaintelligence.informa.com/IV005051/One-Size-No-Longer-Fits-All-The-Personalized-Medicine-Trial-
+Landscape, accessed December 18, 2019.
+30. Intelligent drug discovery: Powered by AI, Francesca Properzi et al., 2019. See also: https://www2.deloitte.com/
+us/en/insights/industry/life-sciences/artificial-intelligence-biopharma-intelligent-drug-discovery.html, accessed 
+December 18, 2019.
+31. Ibid.
+32. Artificial Intelligence for Clinical Trial Design, Stefan Harrer et al., 2019. See also: https://www.sciencedirect.com/
+science/article/pii/S0165614719301300, accessed December 18, 2019.
+33. Ibid.
+34. Novartis uses AI to get insights from clinical trial data, Healthcare Weekly, 2019. See also: https://health 
+careweekly.com/artificial-intelligence-in-pharmacology/, accessed December 18, 2019.
+35. Digital R&D: Transforming the future of clinical development, Dawn Anderson et al., 2018. See also: https://
+www2.deloitte.com/us/en/insights/industry/life-sciences/digital-research-and-development-clinical-strategy.
+html?id=us:2el:3pr:4di3967:5awa:6di:MMDDYY, accessed December 18, 2019.
+36. Intelligent biopharma: Forging the links across the value chain, Mark Steedman et al., 2019. See also: https://
+www2.deloitte.com/us/en/insights/industry/life-sciences/rise-of-artificial-intelligence-in-biopharma-industry.
+html, accessed December 18, 2019.Transforming through AI-enabled engagement
+28
+37. Enrichment Strategies for Clinical Trials to Support Determination of Effectiveness of Human Drugs and 
+Biological Products Guidance for Industry, U.S. Food and Drug Administration (FDA), 2019. See also: https://
+www.fda.gov/media/121320/download, accessed December 18, 2019.
+38. Advances in Electronic Phenotyping: From Rule-Based Definitions to Machine Learning Models, Juan M. Banda et 
+al., Annual Review of Biomedical Data Science, 2018. See also: https://www.annualreviews.org/doi/full/10.1146/
+annurev-biodatasci-080917-013315, accessed December 18, 2019.
+39. Enrichment Strategies for Clinical Trials to Support Determination of Effectiveness of Human Drugs and 
+Biological Products Guidance for Industry, U.S. Food and Drug Administration (FDA), 2019. See also: https://
+www.fda.gov/media/121320/download, accessed December 18, 2019.
+40. Artificial Intelligence for Clinical Trial Design, Stefan Harrer et al., 2019. See also: https://www.sciencedirect.com/
+science/article/pii/S0165614719301300, accessed December 18, 2019.
+41. Regulatory Science to 2025, European Medicines Agency (EMA), 2018. See also: https://www.ema.europa.eu/en/
+about-us/how-we-work/regulatory-science-2025, accessed December 18, 2019.
+42. Mayo Clinic’s clinical trial matching project sees higher enrollment in breast cancer trials through use of artificial 
+intelligence, Rhoda Madson, 2018. See also: https://newsnetwork.mayoclinic.org/discussion/mayo-clinics-clinical-
+trial-matching-project-sees-higher-enrolment-in-breast-cancer-trials-through-use-of-artificial-intelligence/, 
+accessed December 18, 2019.
+43. Cognitive technology addressing optimal cancer clinical trial matching and protocol feasibility in a community 
+cancer practice, J. Thaddeus Beck et al., Journal of Clinical Oncology, 2017. See also: https://ascopubs.org/doi/
+abs/10.1200/JCO.2017.35.15_suppl.6501, accessed December 18, 2019.
+44. Inspire and Antidote Launch End-to-End Clinical Trial Recruitment Solution to Accelerate Medical Research, 
+Globe Newswire, 2018. See also: https://www.globenewswire.com/news-release/2018/01/04/1283227/0/en/
+Inspire-and-Antidote-Launch-End-to-End-Clinical-Trial-Recruitment-Solution-to-Accelerate-Medical-Research.
+html, accessed January 13, 2020.
+45. Company, Mendel. See also: https://www.mendel.ai/company, accessed December 18, 2019.
+46. Improving Clinical Trial Participant Prescreening With Artificial Intelligence (AI): A Comparison of the Results of 
+AI-Assisted vs Standard Methods in 3 Oncology Trials, Denise Calaprice-Whitty et al., Sage Journals, 2019. See 
+also: https://journals.sagepub.com/doi/10.1177/2168479018815454, accessed December 19, 2019.
+47. Clinical Trial Site Selection: Best Practices, Angie Sullivan, 2018. See also: https://www.rcri-inc.com/clinical-trial-
+site-selection-best-practices/, accessed December 18, 2019.
+48. The Next Step: Using AI to Formulate Clinical Trial Research Questions, Anju Software, 2019. See also: https://
+anjusoftware.com/about/all-news/insights/ai-trial-research-questions/, accessed December 19, 2019.
+49. Recruitment Infographic, CLINPAL. See also: https://www.clinpal.com/blog/recruitment-infographic/,  
+accessed December 18, 2019.
+50. Artificial Intelligence for Clinical Trial Design, Stefan Harrer et al., 2019. See also: https://www.sciencedirect.com/
+science/article/pii/S0165614719301300, accessed December 18, 2019.
+51. From evidence-based medicine to digital-based health, pharmaphorum, 2018. See also: https://pharmaphorum.
+com/digital/evidence-based-medicine-digital-based/, accessed January 27, 2020.
+52. Current Health’s AI-Powered Remote Patient Monitoring Device Gets FDA Clearance, Sam Draper, 2019. See 
+also: https://www.wearable-technologies.com/2019/04/current-healths-ai-powered-remote-patient-monitoring-
+device-gets-fda-clearance/, accessed January 27, 2020.
+53. The innovative startups improving clinical trial recruitment, enrollment, retention, and design, Jack Kaufman, 
+2018. See also: https://www.mobihealthnews.com/content/innovative-startups-improving-clinical-trial-
+recruitment-enrollment-retention-and-design, accessed December 18, 2019.
+54. Medidata Launches Acorn AI For End-to-End Data Insights, Bio IT World, 2019. See also: http://www.bio-itworld.
+com/2019/05/14/medidata-launches-acorn-ai-for-end-to-end-data-insights.aspx, accessed December 18, 2019.Intelligent clinical trials
+29
+55. Digital R&D: Transforming the future of clinical development, Dawn Anderson et al., 2018. See also: https://
+www2.deloitte.com/us/en/insights/industry/life-sciences/digital-research-and-development-clinical-strategy.
+html?id=us:2el:3pr:4di3967:5awa:6di:MMDDYY, accessed December 18, 2019.
+56. Why digital medicine depends on interoperability, Moritz Lehne et al., 2019. See also: https://www.nature.com/
+articles/s41746-019-0158-1, accessed December 19, 2019.
+57. Leverage operational data with clinical trial analytics: Take three minutes to learn how analytics can help, 
+Aditya Kudumala, 2017. See also: https://www2.deloitte.com/us/en/pages/deloitte-analytics/articles/Leverage-
+operational-data-with-clinical-trial-analytics.html, accessed December 18, 2019.
+58. Pharma is shuffling around jobs, but a skills gap threatens the process, Jacob Bell, 2019. See also: https://www.
+biopharmadive.com/news/pharma-is-shuffling-around-jobs-but-a-skills-gap-threatens-the-process/546813/, 
+accessed December 19, 2019.
+59. Balancing the R&D equation: Measuring the return from pharmaceutical innovation 2016, Karen Taylor et al., 
+2016. See also: https://www2.deloitte.com/content/dam/Deloitte/uk/Documents/life-sciences-health care/
+deloitte-uk-measuring-the-return-pharma-report-2016.pdf, accessed December 18, 2019.
+60. 2019 Global life sciences outlook: Focus and transform | Accelerating change in life sciences, Greg Reh et al., 
+2019. See also: https://www2.deloitte.com/global/en/pages/life-sciences-and-health care/articles/global-life-
+sciences-sector-outlook.html, accessed December 18, 2019.
+61. Research and Markets: The New 2015 Trends of Global Clinical Development Outsourcing Market, Business 
+Wire, 2015. See also: https://www.businesswire.com/news/home/20150130005621/en/Research-Markets-New-
+2015-Trends-Global-Clinical, accessed December 19, 2019.
+62. Top 10 CROs – 2019, Pharma Tech Outlook, 2019. See also: https://contract-research-organization.
+pharmatechoutlook.com/vendors/top-cros-2019.html, accessed December 19, 2019.
+63. The Global Contract Research Organizations (CRO) Market was Valued at $36.27 Billion in 2017 and is Expected 
+to Reach $56.34 Billion by 2023 - Key Market Analysis, 2018 - ResearchAndMarkets.com, Business Wire, 
+2018. See also: https://www.businesswire.com/news/home/20181106005397/en/Global-Contract-Research-
+Organizations-CRO-Market-Valued, accessed December 19, 2019.
+64. The 10 Best Global Contract Research Organizations (CROs) in 2018, David Hunkar, 2018. See also: https://
+topforeignstocks.com/2018/09/29/the-10-best-global-contract-research-organizations-cros-in-2018/, accessed 
+December 18, 2019.
+65. Intelligent drug discovery: Powered by AI, Francesca Properzi et al., 2019. See also: https://www2.deloitte.com/
+us/en/insights/industry/life-sciences/artificial-intelligence-biopharma-intelligent-drug-discovery.html, accessed 
+December 18, 2019.
+66. AI for drug discovery, biomarker development and advanced R&D landscape overview 2019/Q3, Deep 
+Knowledge Analytics, 2019. See also: https://ai-pharma.dka.global/ai-for-dd-2019-q3/, accessed December 18, 
+2019.
+67. About us, Trial.ai. See also: https://www.trials.ai/about-us, accessed December 18, 2019.
+68. AI and Machine Learning for Clinical Trials – Examining 3 Current Applications, Kumba Sennaar, 2019. See also: 
+https://emerj.com/ai-sector-overviews/ai-machine-learning-clinical-trials-examining-x-current-applications/, 
+accessed December 18, 2019.
+69. The System of Intelligence for Precision Oncology, Concerto HealthAI. See also: https://concertohealthai.com/, 
+accessed December 18, 2019.
+70. Insights to Cure Disease and Heal Healthcare, GNS Healthcare. See also: https://www.gnshealth care.
+com/#slide-3, accessed December 18, 2019.
+71. Verily signs up four big pharmas to its clinical trials platform, pharmaphorum, 2019. See also: https://
+pharmaphorum.com/news/verily-signs-up-four-big-pharmas-to-its-clinical-trials-platform/, accessed December 
+18, 2019.Transforming through AI-enabled engagement
+30
+72. Apple announces three groundbreaking health studies, Apple Inc., 2019. See also: https://www.apple.com/
+newsroom/2019/09/apple-announces-three-groundbreaking-health-studies/, accessed December 18, 2019.
+73. Amazon Comprehend Medical, Amazon Web Services Inc., 2018. See also: https://aws.amazon.com/
+comprehend/medical/, accessed December 18, 2019.
+74. Improve clinical trial outcomes by using AWS technologies, Mayank Thakkar et al., 2019. See also: https://aws.
+amazon.com/blogs/big-data/improve-clinical-trial-outcomes-by-using-aws-technologies/, accessed December 18, 
+2019.
+75. NAVIFY® clinical decision support apps, Roche Diagnostics, 2019. See also: https://diagnostics.roche.com/us/en/
+navify-decision-support/navify-clinical-decision-support-apps.html, accessed December 18, 2019.
+76. GSK Uses Apple ResearchKit In Rheumatoid Study, Ed Miseta, 2017. See also: https://www.clinicalleader.com/
+doc/gsk-uses-apple-researchkit-in-rheumatoid-study-0001, accessed December 18, 2019.
+77. Novartis launches FocalView app, providing opportunity for patients to participate in ophthalmology clinical 
+trials from home, Novartis, 2018. See also: https://www.novartis.com/news/media-releases/novartis-launches-
+focalview-app-providing-opportunity-patients-participate-ophthalmology-clinical-trials-from-home, accessed 
+December 18, 2019.
+78. Bringing together deep bioscience and AI to help patients worldwide: Novartis and Microsoft work to reinvent 
+treatment discovery and development, Peter Lee, 2019. See also: https://blogs.microsoft.com/blog/2019/10/01/
+bringing-together-deep-bioscience-and-ai-to-help-patients-worldwide-novartis-and-microsoft-work-to-reinvent-
+treatment-discovery-and-development/, accessed December 18, 2019.
+79. 2019 Global life sciences outlook: Focus and transform | Accelerating change in life sciences, Greg Reh et al., 
+2019. See also: https://www2.deloitte.com/global/en/pages/life-sciences-and-health care/articles/global-life-
+sciences-sector-outlook.html, accessed December 18, 2019.
+80. Cloud-based machine learning in health care creates patient-centered treatments, Deborshi Dutt and Rajeev 
+Vasudeva, 2019. See also: https://www2.deloitte.com/content/dam/Deloitte/us/Documents/deloitte-cloud-case-
+studies-caselet-takeda.PDF, accessed December 18, 2019.
+81. Force of change: The future of health, Neal Batra et al., 2019. See also: https://www2.deloitte.com/us/en/
+insights/industry/health care/forces-of-change-health care.html, accessed December 18, 2019.
+82. Survey finds biopharma companies lag in digital transformation, Greg Reh et al., 2018. See also: https://www2.
+deloitte.com/us/en/insights/industry/life-sciences/digital-transformation-biopharma.html, accessed December 
+18, 2019.
+83. The Virtual Body That Could Make Clinical Trials Unnecessary, Dr. Bertalan Meskó, The Medical Futurist, 2019. 
+See also: https://www.theatlantic.com/sponsored/vmware-2017/virtual-body/1625/, accessed December 18, 
+2019.
+84. Modernizing Clinical Trials: Digital Technologies and the Cloud, Amazon Web Services Inc., 2019. See also: 
+https://d1.awsstatic.com/Industries/HCLS/AWS_ClinicalTrials_Whitepaper_Final.pdf, accessed December 18, 
+2019.
+85. Virtual Bodies For Real Drugs: In Silico Clinical Trials Are The Future, The Medical Futurist, 2019. See also: https://
+medicalfuturist.com/in-silico-trials-are-the-future/, accessed December 18, 2019.
+86. In silico clinical trials: how computer simulation will transform the biomedical industry, Marco Viceconti et al., 
+International Journal of Clinical Trials, 2016. See also: https://www.ijclinicaltrials.com/index.php/ijct/article/
+view/105/72, accessed December 18, 2019.
+87. Digital R&D: Transforming the future of clinical development, Dawn Anderson et al., 2018. See also: https://
+www2.deloitte.com/us/en/insights/industry/life-sciences/digital-research-and-development-clinical-strategy.
+html?id=us:2el:3pr:4di3967:5awa:6di:MMDDYY, accessed December 18, 2019.Intelligent clinical trials
+31
+88. Submitting Documents Using Real-World Data and Real-World Evidence to FDA for Drugs and Biologics 
+Guidance for Industry, U.S. Food and Drug Administration (FDA), 2019. See also: https://www.fda.gov/regulatory-
+information/search-fda-guidance-documents/submitting-documents-using-real-world-data-and-real-world-
+evidence-fda-drugs-and-biologics-guidance, accessed December 18, 2019.
+89. Use of Real-World Evidence to Support Regulatory Decision-Making for Medical Devices, U.S. Food and Drug 
+Administration (FDA), 2017. See also: https://www.fda.gov/regulatory-information/search-fda-guidance-
+documents/use-real-world-evidence-support-regulatory-decision-making-medical-devices, accessed December 
+18, 2019.
+90. 21st Century Cures Act, U.S. Food and Drug Administration (FDA), 2018. See also: https://www.fda.gov/
+regulatory-information/selected-amendments-fdc-act/21st-century-cures-act, accessed December 18, 2019.
+91. Breaking Down Barriers Between Clinical Trials and Clinical Care: Incorporating Real World Evidence into 
+Regulatory Decision Making, Speech by Scott Gottlieb, M.D., 2019. See also: https://www.fda.gov/news-events/
+speeches-fda-officials/breaking-down-barriers-between-clinical-trials-and-clinical-care-incorporating-real-world-
+evidence, accessed December 18, 2019.
+92. Ibid.
+93. Ibid.
+94. Digital R&D: Transforming the future of clinical development, Dawn Anderson et al., 2018. See also: https://
+www2.deloitte.com/us/en/insights/industry/life-sciences/digital-research-and-development-clinical-strategy.
+html, accessed December 18, 2019.
+95. Remote Decentralized Clinical Trials Could Solve RCT Problems, Francesca Bruce, 2019. See also: https://pink.
+pharmaintelligence.informa.com/PS141239/Remote-Decentralized-Clinical-Trials-Could-Solve-RCT-Problems, 
+accessed December 18, 2019.
+96. How Novartis Is Making SENSE Of Clinical Data In Digital Age, Kevin Grogan, 2019. See also: https://scrip.
+pharmaintelligence.informa.com/SC124623/How-Novartis-Is-Making-SENSE-Of-Clinical-Data-In-Digital-Age, 
+accessed December 18, 2019.
+97. A bold future for life sciences regulation: Predictions 2025, Karen Taylor et al., 2018. See also: https://www2.
+deloitte.com/uk/en/pages/life-sciences-and-health care/articles/life-sciences-predictions-2025.html, accessed 
+December 18, 2019.
+98. Intelligent drug discovery: Powered by AI, Francesca Properzi et al., 2019. See also: https://www2.deloitte.com/
+us/en/insights/industry/life-sciences/artificial-intelligence-biopharma-intelligent-drug-discovery.html, accessed 
+December 18, 2019.
+99. Intelligent biopharma: Forging the links across the value chain, Mark Steedman et al., 2019. See also: https://
+www2.deloitte.com/us/en/insights/industry/life-sciences/rise-of-artificial-intelligence-in-biopharma-industry.
+html, accessed December 18, 2019.Transforming through AI-enabled engagement
+32
+Intelligent clinical trials
+About the authors
+Karen Taylor | kartaylor@deloitte.co.uk
+Karen Taylor is the Research Director of the Deloitte UK Centre for Health Solutions. She supports the Life 
+Sciences and Health Care and Public Sector Health practices by driving independent and objective business 
+research and analysis into key industry challenges and associated solutions, generating evidence-based 
+insights and points of view on issues from pharmaceuticals and technology innovation to health care man-
+agement and reform. Karen also produces a weekly blog on topical issues facing the life sciences and health 
+care industries.
+Francesca Properzi | fproperzi@deloitte.co.uk
+Francesca Properzi is a Research Manager in the Deloitte UK Centre for Health Solutions. She supports the 
+Life Sciences and Health Care and Public Sector Health practices through creative thinking, robust research 
+and her industry experience to develop evidence-based perspectives on some of the biggest and most  
+challenging industry issues. She has a PhD in neuronal regeneration from Cambridge University, and  
+she recently completed an executive MBA at the Imperial College Business School in London focused on 
+innovation in life sciences and health care.
+Maria João Cruz | mariajoaocruz@deloitte.co.uk
+Maria João is a Research Analyst for The Centre for Health Solutions, the independent research hub of the 
+Health Care and Life Sciences team. At the Centre she conducts rigorous analysis and research to generate 
+insights that support the practice across life sciences and health care. Before joining Deloitte, Maria João was 
+a postgraduate researcher in Bioengineering at Imperial College London, jointly working with Instituto 
+Superior Técnico, University of Lisbon. She holds a BSc and MSc in Biological Engineering from IST, Lisbon.
+Hanno Ronte | hronte@deloitte.co.uk
+Hanno Ronte is a Partner at Monitor Deloitte, our strategy consultancy business. He has more than 20 years 
+of consulting experience primarily in the life sciences and health care sector. Hanno leads the Life Sciences 
+and Health Care team in Monitor Deloitte and is responsible for building the Real World Evidence Capability 
+within that. His projects have focused on corporate and business unit strategy, competitive response,  
+marketing strategy and capability building.
+John Haughey | jhaughey@deloitte.co.uk
+John Haughey is Deloitte’s Global Life Sciences Consulting Leader and the Life Sciences and Health Care 
+Industry Leader for the UK. He has extensive experience in the industry as well as more broadly across sec-
+tors, having led multiple large-scale business and operational transformations over the past 30 years. He has 
+operated across the full project life cycle from feasibility through implementation. He specialises in optimis-
+ing global business operations, covering strategy, M&A integration and divestment, operational and financial 
+improvement, ERP implementation, global business services, analytics and outsourcing.
+33
+Contact us
+Our insights can help you take advantage of change. If you’re looking for fresh ideas to address your 
+challenges, we should talk.Acknowledgements
+The authors would like to thank the following Deloitte colleagues that helped with the report: Pratik Avhad 
+(Deloitte LLP), Sebastien Burnett (Deloitte MCS), Kevin Dondarsky (Deloitte Consulting LLP), Mark Steedman 
+(Deloitte LLP), Mark Stockbridge (Deloitte MCS), Naveed Panjwani (Deloitte MCS), Sebastian Payne (Deloitte 
+LLP), Pavithra Rallapalli (Deloitte MCS).
+Industry leadership
+Colin Terry
+Partner | LSHC Research and Development | Deloitte North & South Europe
++44 (0) 20 7007 0658 | colterry@deloitte.co.uk
+John Haughey
+Partner | Global LSHC Consulting Lead and UK LSHC Industry Lead | Deloitte North & South Europe  
++44 (0) 20 7303 7472 | jhaughey@deloitte.co.uk
+Peter Wallace
+Partner | LSHC Digital Transformation leader | Deloitte North & South Europe
++44 (0) 20 7007 5343 | pwallace@deloitte.co.uk
+Vicky Levy
+Partner | LSHC Industry Lead for Deloitte North & South Europe | Deloitte North & South Europe
++ 41 (0) 58 279 7877 | vilevy@deloitte.ch
+Hanno Ronte
+Partner | Life Sciences and Health Care | Deloitte North & South Europe
++44 (0) 20 7007 2540 | hronte@deloitte.co.uk
+Niel Lesser
+Leader | Principal Life Science R&D Practice Leader Deloitte Consulting LLP | Deloitte US
++1 (215) 446 4364 | nlesser@deloitte.com
+Amy Cheung
+Principal Deloitte Consulting LLP 
++1 (215) 380 2876 | amyycheung@deloitte.com
+Aditya Kudumala
+Principal Deloitte Consulting
++1 (646) 498 6956 | akudumala@deloitte.comTransforming through AI-enabled engagement
+Sign up for Deloitte Insights updates at www.deloitte.com/insights. 
+  Follow @DeloitteInsight
+Deloitte Insights contributors
+Editorial: Sara Sikora
+Creative: Mark Milward
+Promotion: Maria Martin Cirujano
+Cover artwork: Taylor Callery
+About Deloitte Insights
+Deloitte Insights publishes original articles, reports and periodicals that provide insights for businesses, the public sector and 
+NGOs. Our goal is to draw upon research and experience from throughout our professional services organization, and that of 
+coauthors in academia and business, to advance the conversation on a broad spectrum of topics of interest to executives and 
+government leaders.
+Deloitte Insights is an imprint of Deloitte Development LLC.
+About this publication
+This publication has been written in general terms and therefore cannot be relied on to cover specific situations; application of 
+the principles set out will depend upon the particular circumstances involved and we recommend that you obtain professional 
+advice before acting or refraining from acting on any of the contents of this publication. This publication and the information 
+contained herein is provided “as is,” and Deloitte University EMEA CVBA makes no express or implied representations or 
+warranties in this respect and does not warrant that the publication or information will be error-free or will meet any particular 
+criteria of performance or quality. Deloitte University EMEA CVBA accepts no duty of care or liability for any loss occasioned to 
+any person acting or refraining from action as a result of any material in this publication.
+About Deloitte
+Deloitte provides audit, consulting, financial advisory, risk management, tax and related services to public and private clients 
+spanning multiple industries. With a globally connected network of member firms in more than 150 countries and territories, 
+Deloitte brings world class capabilities and high-quality service to clients, delivering the insights they need to address their most 
+complex business challenges.
+© 2020 Deloitte University EMEA CVBA.
+Responsible publisher: Deloitte University EMEA CVBA, with registered office at B-1831 Diegem, Berkenlaan 8b

@@ -1,0 +1,888 @@
+© FoNS 2014 International Practice Development Journal 4 (1) [4]
+http://www.fons.org/library/journal.aspx
+1ORIGINAL PRACTICE DEVELOPMENT AND RESEARCH PAPER
+Methodological considerations and experiences in clinical application research design
+Albertine Ranheim* and Maria Arman
+*Corresponding author: University of Mälardalen, Sweden
+Email: Albertine.ranheim@mdh.se
+Submitted for publication: 29th August 2013
+Accepted for publication: 17th February 2014
+Abstract
+Background : Strengthening the relationship between research and clinical practice, and improving the 
+use of research in healthcare are challenging areas that need creative solutions. Clinical application 
+research is a design based on Gadamer’s idea that understanding always involves interpretation and 
+application. 
+Aims and objectives : This study aims to assess from a methodological viewpoint a project in which two 
+researchers cooperated with clinical healthcare workers over three years.
+Methods : Interviews with the participating clinicians on a ward for rehabilitative cancer care. Inspired 
+by Gadamerian epistemology, a interpretive analysis was performed on the transcripts of three focus 
+group meetings. 
+Findings : Taking part in the project demonstrated to the participants the value of systematic and 
+analytical scientific work in the acquisition of new knowledge and wider insights. Participants were 
+inspired to investigate taking theoretical assumptions from caring science into practical clinical work. 
+They described an expanded reflective awareness of caring work in terms of their observational 
+abilities. Everyday challenges were clarified and deeper aspects of caring emerged; tacit knowledge 
+became expressed and verbalised. 
+Conclusions : The participants developed a scientific approach to their clinical caregiving knowledge, 
+as well as an increased awareness of their profession. If an organisation is interested in improving its 
+results, and its patients’ experience of health and wellbeing, this study recommends that it devote time 
+and resources to strengthening the relation between research and clinical practice. Clinical application 
+research is a structure that can help achieve this.
+Implications for practice :
+• Clinical application research creates the possibility to develop deeper awareness of procedures 
+that are taken for granted
+• Clinical experts are given opportunities to develop a scientific approach to practical clinical care 
+•  Researchers in caring sciences are given a response to their theory from its application in 
+practice 
+Keywords : Theory and practice, application research, hermeneutics, expanding caring awareness 
+Introduction
+A fundamental question in healthcare research is how we can develop approaches that enhance the 
+exchange between research and clinical practice. 
+
+© FoNS 2014 International Practice Development Journal 4 (1) [4]
+http://www.fons.org/library/journal.aspx2
+The use of poor or inconsistent research in clinical practice is a recurrent theme, presenting a challenge 
+about how best to incorporate research into caregiving practice. The use of research involves a process 
+of learning as well as engaging attitudes, beliefs and behaviours, and this ontological question is 
+fundamental to the practice of clinical care. This is often overlooked in approaches and models that aim 
+to facilitate the use of research in clinical practice, resulting in a gap between theory and its practical 
+application. It is therefore imperative to look for new approaches in transferring research into practice.
+Background
+Despite gains over the past two decades in the theoretical basis for applying research, methods of 
+integration have not been directly addressed, although the development of evidence based practice 
+is a positive consequence of efforts in this respect. Systematic review updates in Squires et al. (2011) 
+and Estabrooks et al. (2011) show that developing a strong relationship between researchers and 
+practitioners, using evidence based methods, will result in better, more cost effective care delivery to 
+consumers in practice settings. The reviews concur with earlier reviews in finding positive relationships 
+between general research utilisation and beliefs and attitude, and between research and the current 
+role and level of graduate degrees. 
+Nevertheless, the question remains as to why it is so difficult to implement research if it is considered 
+such a good way of promoting better practice. In her thesis, Kajemo (2007) points to some of the 
+barriers in making use of research and indicates that it is a complex issue. The study shows the vital 
+importance of support from the organisation, as well as how important it is for clinicians to undertake 
+organised reflective work. Matthew-Mike (2010) suggests that, in combination with research utilisation 
+theories, a transformation theory may be the missing link in developing more effective initiatives to 
+transfer research into practice, to implement and sustain change in healthcare. The transformation 
+theory, she suggests, should offer explanations and specific strategies. These involve critical reflection 
+to explore attitudes, beliefs and behaviours so that they are understood and validated, and can 
+better guide actions. Studies by Rycroft-Malone et al. (2004, 2010) pay attention to the complexity of 
+implementation research and the identification of key factors in the implementation of evidence in 
+practice. Such factors include the social, cultural and structural boundaries that must be defined and 
+acknowledged. 
+Caring science is an autonomous discipline. With an explicit theory base, nurses have a stronger 
+foundation both for their practice and for evaluating its outcomes (Cody, 2003). Studies concerned 
+with the development of concepts, theory and reflection have also been identified as ways of bringing 
+theory and practice closer together (Ekebergh et al., 2007). Extensive research experience in Sweden 
+illustrates that caring theory can energise creative thinking and make communication easier (Ekebergh, 
+2007; 2009). 
+Extending research results into clinical practice also has a legislative dimension. The International 
+Council of Nursing (2012) states that, by law, caregivers must develop plans for care and education 
+in their work that are rooted in research and evidence based practice. Consequently, there exists a 
+number of methods or tools to facilitate the implementation of theory or research in clinical nursing 
+and caring practice. In a Scandinavian caring science tradition, Lindholm et al. (2006) developed a 
+design for the integration into clinical practice of caring science theory and the experience of caring. 
+This design is known as clinical application research, and has been applied in various important projects 
+in the Swedish and Finnish health services in recent years (Arman et al., 2008; Rehnsfeldt et al., 2008; 
+Råholm et al., 2010; Lindwall et al., 2012; Karlsson et al., 2013).
+The aim of this article is to clarify, evaluate and present the methodological characteristics and 
+experiences of clinical application research. The focus is on knowledge acquisition, reflection and skills 
+development for the individual nurses and healthcare staff in the project, and consideration is given to 
+what the project means for the organisation.
+© FoNS 2014 International Practice Development Journal 4 (1) [4]
+http://www.fons.org/library/journal.aspx3
+Presentation of methodology/epistemology in clinical application research
+How is clinical application research designed?
+The design of clinical application research (Lindholm et al., 2006) involves researchers working with 
+clinically active colleagues in a team to research phenomena specific to a clinical context. Principally, 
+clinical application research starts by making explicit the meaning of caring science for practical 
+caring work; in other words, that caring ontology is made visible in caring work. The epistemological 
+and ontological positions of the researchers are clarified when they enter into the clinical context in 
+which the research is carried out. These basic assumptions are formulated around the conceptions 
+the researcher has of, for instance, health, wellbeing and suffering. Consequently, clinical application 
+research involves the opportunity to reveal, clarify and demonstrate clinical evidence and caring science 
+theory in practice. It represents understanding, interpretation and application as problematised by 
+Gadamer (1960) in his philosophy of understanding (see Figure 1). 
+Figure 1: How theory and practice correlates with application  
+Corresponding  
+Correcting
+Correlating
+Application
+THEORY PRAXIS
+Epistemologically, the approach of this research, and of clinical application research in general, has 
+its foundations in hermeneutic philosophy, based largely on Gadamer (1960). Problematising issues 
+that are taken for granted is fundamental to hermeneutical and phenomenological research. This 
+encourages being attentive to, and reflecting on, the processes of consciousness, such as prejudices 
+and presuppositions. It can be described, as Gadamer (1959) explained, as an eternal movement of 
+the human mind, and represents an intertwining of what is known (pre-understanding) and what is 
+still unknown. Gadamer makes explicit the importance of the unknown, and the challenge of making 
+the unknown known. This means taking the unknown on board, for example in the course of dialogue, 
+and being open to new and different interpretations. As we start to reflect on how we experience 
+phenomena, the issues that arise alongside the phenomena can become available for reflection. This 
+helps us to distance ourselves from our so-called ‘natural attitude’ (which characterises our lifeworld). 
+Problematising the lifeworld and intentionality are essential in hermeneutic and phenomenological 
+research. Dahlberg (2008, p 130) uses the concept of ‘bridling’ to mean an open and alert form of 
+waiting for the phenomenon to manifest itself in order to seek meaning. 
+An assumption is that basic caring concepts and theory may represent a field or area where we are 
+confronted with our inherent preconceptions and prejudices. We may learn something about ourselves 
+and our preconceptions through this confrontation (Ekebergh, 2007, 2009; Austgård, 2012). 
+© FoNS 2014 International Practice Development Journal 4 (1) [4]
+http://www.fons.org/library/journal.aspx4
+STAGE 1: 2011 STAGE 2: 2012 STAGE 3: 2011-13 STAGE 4: 2013-14
+Study I
+Ten healthcare staff of various professions 
+Two researchersReflective meetings 
+every three weeksTen healthcare staff of various professions 
+Two researchers Preparation and 
+collective analysis of the data
+Study I published in 
+January 2013Study IITen healthcare staff of various professions 
+Two researchers
+Study III
+Ten healthcare staff of 
+various professions 
+Two researchers
+AIM
+Descriptions from healthcare staff of the meaning of existential care
+Cases: n=65Data collection period: 
+12 monthsAIM  Evaluation and reflection on the meaning of participating in the CAR project 
+Data: two focus groups 
+with 10 participants
+Study II written by 
+the two responsible researchers of the projectAIMPatient perspective on existential care
+Data: interviews
+(n=16)
+Ongoing studyTable 1: Overall presentation of the clinical application research project. The  
+highlighted column, Stage 3, shows what is analysed and evaluated in this study  
+Chart of the clinical application design project as a whole
+A project was carried out between 2011 and 2013 at a clinic in central Sweden. An article from this 
+project was published in the International Practice Development Journal  in May 2013 (Arman et al., 
+2013). The project involved two scientifically educated researchers, who collaborated with 10 clinically 
+active colleagues, including therapists, doctors and nurses, to form a research team (see Table 1 
+above). The team working on the project consisted of regular staff on a cancer rehabilitation ward 
+with 12 beds. In this anthroposophic clinic, conventional rehabilitation and medical care are integrated 
+with anthroposophic care and treatments. Anthroposophic medicine and care is a complementary 
+initiative, whose aim is to create a holistic healthcare convention. The majority of working healthcare 
+personnel have specialised in the area of anthroposophic medicine in addition to a conventional 
+medical education (Arman et al., 2011). Today, at least 25 hospitals in Europe specialise in this form 
+of medicine. Anthroposophic medicine rests on three pillars: nursing care, therapeutic treatment and 
+medical treatment (Therkleson, 2005; Arman et al., 2008). The project team maintained dialogues on 
+research questions, aims, methods, procedures and data, as well as analysis of data, interpretation 
+and applicability of the findings. In the first stage of the project, all team members collaborated on the 
+detailed plan for data collection and analysis. Project meetings were held on the wards every three 
+weeks. At the same time, the team members carried out individual tasks and theoretical reading. 
+In stage 1, the research questions were formulated by the research team during the dialogue that took 
+place in the first six months of the study. The researchers’ point of departure was that the team would 
+study phenomena related to a clinical view of existential healthcare. The questions that emerged were: 
+© FoNS 2014 International Practice Development Journal 4 (1) [4]
+http://www.fons.org/library/journal.aspx5
+• What does existential care mean to the caregiver? 
+• What is existential care in everyday life in caring for patients with cancer? 
+• What can be done so that caregivers feel more secure in practising existential care? 
+• What knowledge facilitates and promotes existential care? 
+• What opportunities, challenges and obstacles confront existential care in everyday clinical life? 
+An overall aim of the whole project was to strengthen and develop the collaboration between research 
+and clinical practice. Another aim was to explore healthcare empirically, ensuring that patients and 
+clinical caregivers participated fully in the creative caring processes (not to be confused with the aim 
+of this study, which is to clarify, evaluate and present the methodological characteristics of clinical 
+application research design).
+Data collection in the first phase of the project consisted of short, illustrative, incident-type narratives 
+from the staff, and patient cases that inspired broad reflections at the project meetings. These accounts 
+of ‘meaningful care situations’, involving 65 cases, were recorded on paper by all personnel for five 
+months. Finally, the full working group discussed the postulations in order to verify, understand, 
+develop or reject them. Study I was written and published at stage 2.
+A further study is in progress that aims to exploring the meaning of existential caregiving from a patient 
+perspective (see Table 1). 
+Ethical considerations
+In this project, ethical rules and principles for research were communicated to all clinical project 
+participants. The research ethics were discussed by the entire group and everyone participated in 
+the application for ethical approval. The application was approved by the regional ethics committee 
+(2011/444-31/4) and patients were informed about the project via the ward’s noticeboard. The 
+personnel who wrote about their cases took care to describe situations in a dignified manner and to 
+provide no personal data, hospital names or other details that could constitute a breach of patient 
+confidentiality. 
+Purpose and aim (of current study)
+Reflections from the lived experience of participating in this research project are analysed and 
+evaluated in this paper. The project design is based on theories in caring science that originate from 
+the Nordic caring science tradition (Lindholm et al., 2006).
+The aim of this article is to clarify, evaluate and present the methodological characteristics of clinical 
+application research (in a cancer rehabilitation ward at an anthroposophic hospital in Sweden). The 
+focus is on knowledge acquisition, reflection and skills development for the individual nurses and 
+healthcare staff in the project, and consideration is given to what the project means for the organisation.
+Data for analysis in the evaluation of the clinical application research design
+Focus group interviews were held with the participating clinicians, and the clinicians also wrote 
+spontaneous descriptive reflections as notes/case studies during the project. Transcriptions from the 
+two focus groups, held halfway through the project (after 18 months) and at the end of the project 
+(after three years), constituted the basic data for analysis, together with participants’ notes written 
+down over the project period. 
+The participants consisted of therapists, nurses and a physician, all working on the ward. During the 
+three years of the project, some members left and returned, but a core group of six to eight participants 
+remained. This fluctuation and variation contributed to the project, and was not a drawback. 
+ 
+© FoNS 2014 International Practice Development Journal 4 (1) [4]
+http://www.fons.org/library/journal.aspx6
+The participants were asked the following questions: 
+• What has it meant to you as a healthcare professional to work on the project? 
+• What has it meant to your understanding of the relationship between theory and practice – 
+caring science and caring practice? 
+• What does the project mean for the hospital?
+Analysis
+The analysis of data was conducted using a methodological approach for interpretation of texts based 
+on the work of Gadamer (1960). The term ‘methodology’ includes the philosophical perspective, the 
+assumptions underpinning the research and the record of the way in which the study was conducted. 
+According to Gadamer, interpretation is the act of understanding, and the text is made to speak to 
+the interpreter as she writes down her understanding. A fusion of understanding, interpretation and 
+application forms the interpreter’s understanding. The hermeneutic process moves back and forth in 
+a dialectic movement of the text, and is guided by the questions and answers that emerge from it. The 
+search for meaning always involves thematic threads or patterns in the text, which form assumptions 
+or themes, building a new understanding of the whole from the parts. A first reading of the text was 
+made to gain an overall understanding. Then, the text was read open-mindedly several times, which 
+gave rise to patterns of meaning. The next phase was a structural analysis to identify and formulate 
+themes that emerged from the text. This was done by dividing the text into ‘meaning units’ that were 
+condensed, and then again compared and abstracted to create sub-themes and themes as presented 
+below (Table 2). The themes were mirrored against the first understanding of the texts to validate 
+them (Lindseth and Norberg, 2004). 
+Main themes Sub-themes
+Knowledge acquisition • Expanded insights
+• Sharpening the tools 
+Interprofessional teamwork • Intertwining theory and practice
+• Organisational benefits/restraintsTable 2: Themes
+The meaning of the themes and sub-themes is presented below, supported by quotations from the 
+meaning units derived from the structural analysis. 
+Findings  
+Knowledge acquisition
+The participants at first expressed surprise at being involved in reflection on theory and practice. The 
+discussions generated new perspectives, and the dialogues, concepts and substantial themes that 
+emerged were described by the participants as having an invigorating effect.  The research theories 
+they were presented with and brought into play were in accordance with the aim and purpose of 
+the project, and were therefore in line with existential matters involved in taking care of patients 
+undergoing rehabilitation after cancer. They included fundamental and existential questions on health 
+and wellbeing, on life and death, and on meanings of existence and presence in caring. 
+Expanded insights
+The participants raised questions about applying awareness and clarity in caring situations. They 
+mentioned the fact that pragmatic knowledge in caring work could easily be taken for granted and 
+transformed into routines that no longer reflected the greater context. The need for continuous 
+reflection was obvious to all the participants, and it was described as easily forgotten in daily care and 
+routines. The discussions at project meetings encouraged reflection on prevailing assumptions and 
+theories, as well as the lived experiences of the caring situations. Immediate, spontaneous or taken 
+© FoNS 2014 International Practice Development Journal 4 (1) [4]
+http://www.fons.org/library/journal.aspx7
+for granted understanding of caring situations became visible and problematised. They expressed the 
+need for constant formulation and clarification of experiences in caregiving situations, but at the same 
+time questions arose about how reflection could bring something new and innovative to clinical work. 
+The project process moved in stages. It began with periods of engagement, which were exciting, and 
+moved into more reflective periods, which were considered more demanding in terms of consolidating 
+theories and intellectual processes. In daily clinical work the participants usually had their ways of 
+thinking and feeling, and they had routines. Sharing their colleagues’ narratives and reflections on their 
+experiences in caring situations, and at the same time relating this to caring science theory, created 
+new and expanded insights into how they thought and acted. This was considered to contribute to 
+clinical work, and was expressed as follows:
+‘These rather short meetings we had every third week seemed to introduce great context and 
+meaning – creating depth and coherence...’ ( Nurse 3*).
+*The 10 participants were given a number sequentially, irrespective of profession.
+Contributing to the project meant the participants got an opportunity to deepen both theoretical 
+and practical knowledge in their areas of work. They expressed this enthusiastically, as a desire and 
+a need, and said they became inspired by the structure of the project. They liked the fact that their 
+lived experiences from clinical practice were taken into account and discussed, and that these related 
+to current research.
+‘…so reflections become clear in everyday work… I’m making observations I can relate to from the 
+discussions we have in the project meetings, and the texts we’ve worked with make it possible to 
+deepen my knowledge of caring – in the caring situations – and I wish we could work even more 
+with this… as it’s something I would like to do, and need to do’ (Nurse 6).
+The participants’ descriptions of significant encounters in healthcare situations provided data for 
+analysis, and these case studies (vignettes) became the basis for joint reflection before being analysed. 
+When participants spoke about their reflections, one question led to another. New aspects became 
+apparent, and the activity generated more questions than answers. This was considered positive: 
+‘One question generates a new one – never ends – the project work is an incentive… it awakens 
+me, and so far this has lasted over time…’ (Nurse 8).
+Analysing and reflecting on everyday challenges in clinical work was described as beneficial in the 
+sense that tacit knowledge was expressed and verbalised. The way they understood caring, health, 
+wellbeing, life and death was given a perspective. It was considered inspiring and instructive to take 
+part in discussions on philosophical and epistemological issues. The role of theory and concepts in 
+caring science was discussed in relation to clinical experiences, and its relevance was evaluated. One 
+therapist expressed it like this:
+‘…the deep philosophical and theoretical discussions have strengthened my own observational, 
+perceptive and listening abilities in therapeutic work…’ (Therapist 1).
+Theory and assumptions encouraged the participants to go deeper into discussions on the meaning 
+of caring. For example, they discussed at length caregivers’ own aims in caring, and how they went 
+about it. They were inspired to investigate the theoretical assumptions and hypotheses involved in 
+practical clinical work. At the same time, any clinical procedures, routines and processes they had 
+already adopted were challenged with new and profound questions.
+© FoNS 2014 International Practice Development Journal 4 (1) [4]
+http://www.fons.org/library/journal.aspx8
+Sharpening the tools
+A recurring central phenomenon from the analysis was the challenge facing the participants in 
+becoming reflective, and holding back their preconceptions when they were working with patients 
+or in discussions in the reflection groups. They considered it challenging to have to hold themselves 
+back and be open and responsive, bridling their thoughts and feelings. However, they also considered 
+it necessary, and thought that it could make caring situations ‘completely different’. It would lead to 
+new knowledge of the caring situation, such as observing things they had been unaware of before. A 
+nurse reflected:
+‘...I think that my instrument has become more stringent, and I’ve noticed that training is what I 
+need, and I have thought, “Oh, sometimes I could have been even more engaged”, and “sometimes 
+I wasn’t there”, so I find myself more attentive, and I reflect on my own work so that I see things 
+more vividly and awaken my senses more…’ (Nurse 3).
+The participants described reflective work as broadening their observational abilities, and a common 
+response was that it made them more alert and observant. They moved between the open research 
+field of clinical work, where they had the opportunity to develop their presence more consciously, and 
+dialogues where they could verbalise and reflect on their understanding. An art therapist said:
+‘I’m much more conscious of the importance of presence and clarity for grasping the patients’ 
+situations and how they express them – this is a rather demanding effort – because I have to try to 
+open the situation up but this work helps to “stand in the open” and bring out what I feel... this work 
+can make me wiser in care situations’ (Therapist 5).
+This awareness demanded attention and training, as it was easy simply to make associations and drift  
+off into some demanding thought or routine that came up. This activity did not take place by itself. 
+It demanded attentiveness and concentration, but was considered essential for assimilating new 
+knowledge.
+‘…I’ve found that holding back a little in the encounters is rather interesting… and if it works, it 
+brings out new and interesting things… I’m not very good at it yet, but I’m learning. The thoughts 
+have a tendency to drift off by themselves, and kill the new concepts that emerge…’ (Physician 2).
+Participants reflected on their responsibility to develop as practitioners in their own profession, and 
+the project work was seen as a way of deepening and cultivating their professional approach. 
+Interprofessional teamwork  
+Participation in the project was on a voluntary basis, meaning that everyone who worked on the ward 
+had the opportunity to take part, whatever their profession. Participants felt they were making an 
+important contribution to the ongoing research work, and the project had a pronounced consolidating 
+effect in the group and on the ward. Some participated more often than others, but all those involved 
+were affected by the ongoing work. Over time, a shift in attitude was noticeable as any initial scepticism 
+towards research work changed. An example is given in the following statement from a nurse: 
+‘I must say I was rather sceptical in the beginning. I thought, “Well, here they come to research us 
+– they’ll be coming with some abstract theory or academic concepts, and we’re doing the practical 
+work… hmm … I must say this…” but then I realised there was a strong connection between theory 
+and clinical practice, and I very much appreciate that it was a start, and then we were free to 
+formulate common research questions to work with… I liked this very much. So it’s way beyond my 
+expectations – I’ve always been sceptical of research. I was prejudiced about the fact that it was 
+entirely theoretical and abstract – and here I am as a practitioner – but now I’m not sure about this 
+any more...’ (Nurse 6).
+© FoNS 2014 International Practice Development Journal 4 (1) [4]
+http://www.fons.org/library/journal.aspx9
+A recurrent statement was that the project brought the team together, as different professions 
+were included in the work, and perspectives from different positions could contribute to an overall 
+understanding. Bringing in a theoretical foundation benefited the project and contributed to new and 
+challenging perspectives. 
+‘The joint work kind of welded us together as a team – we are now listening more carefully to each 
+other’ (Therapist 5).
+The reflective work was described as having an impact on changes in attitude and approach towards 
+the patients. Greater awareness and the importance of clarity and ‘presence in the moment’ in caring 
+situations became central aspects in the participants’ clinical caring work. They also became more 
+aware when there was a lack of presence and openness. The collaborative activity was expressed as 
+‘living work’ that ‘fertilised’ the common work on the ward. The team listened more carefully to each 
+other and became more attuned to each other.
+Prioritising the project work was perceived as a challenge in terms of time, and giving priority to the 
+project meetings would take time away from other important work. However, participants noted that 
+when they took the time and joined in the project meetings, they considered it worthwhile every 
+time. (It should be noted that no time was taken away from caring for patients; it was taken from 
+administrative and organisational tasks.)
+Intertwining theory and practice
+The research theory was said to give direction to the mind, and was even considered a tool for 
+broadening the participants’ professional aims and motives. Moving between clinical work and 
+theoretical reflection contributed to expanding and enhancing professional work. The method/
+approach was described as suitable for ward work, as it included theoretical, practical and educational 
+aspects of the professions. Applying the research meant working through several stages in a process: 
+defining questions for research; gathering data; analysing data and reflections; and writing and 
+publishing. Taking part in the research process and working with the actual questions over a period of 
+time, through all the stages, gave more substance to the participants’ work. 
+The participants’ previous image of research had been that it involved someone coming in from outside 
+and observing with objective eyes, or bringing forms and questionnaires to fill in. From the start, 
+though, the questions, issues and procedures involved in the project were drawn up in collaboration 
+with the participants. This meant the research questions were based on tasks or issues relevant to 
+work on the ward. As such, the ‘method’ was described as a developmental project adapted to internal 
+questions on the ward. For example: 
+‘I feel that I can come forward with what’s important in the experiences from my work – this kind 
+of research makes space for this. My experience has been that this process has brought substance 
+throughout its various phases… it feels like it has also meant quite a lot for the group as a whole. 
+There’s been a kind of lift on the ward, and a lift for caring work as a whole… and it’s very important 
+that nursing and caring have the opportunity for this lift… and that what we do here now may be a 
+small drop in a big ocean… but still…’ (Nurse 8).
+The researchers and clinical participants were team workers. Smaller events were described as parts of 
+a greater whole, and the specific caring situations constituted broader perspectives on life and death, 
+health, suffering and wellbeing. 
+According to the participants, taking specific examples from everyday clinical care as their point of 
+departure, and linking them to theory and research to shed light on existential questions in caring, gave 
+caring situations deeper meaning and context. The project meetings were described as being open-
+© FoNS 2014 International Practice Development Journal 4 (1) [4]
+http://www.fons.org/library/journal.aspx10
+minded, and equivalent to training in how to understand and verbalise the patients’ lived experiences 
+of their treatment. Initial difficulties were gradually transformed into an ability to verbalise previously 
+tacit knowledge of caring.
+‘Before I was more uncertain of the patients’ unspoken needs – and now, being given the possibilities 
+to reflect and verbalise the experiences together, has given me broader perspective’ (Nurse 8).
+The participants considered the method/approach to be directly transferable to practice, and they 
+immediately used the new perspectives in their everyday work. They acquired an ability to be more 
+attentive and observant in caring situations and this became the subject of reflection, which they 
+analysed in the group discussions. Their experiences themselves did not bring new knowledge or 
+understanding; it was when these experiences were elaborated on within the group framework that 
+new insights emerged. The participants considered their experiences to have an important role in 
+the project work. Verbalising and communicating clinical experiences in the context of caring science 
+theory helped them to clarify their aims in caring.
+Organisational benefits and restraints
+Only one out of the four wards at the hospital took part in this project. Throughout the project period, 
+the participants shared their experiences intermittently with their colleagues on the other wards, 
+and they gave regular feedback at inter-ward meetings. In a previous project at the same clinic, the 
+project group consisted of staff from a number of different wards, whereas in this project the staff of 
+one ward became participants. Expressions of engagement in some way in what was going on came 
+forth, though not all staff actively participated in the discussion meetings held on the ward, as some 
+had to keep the work of the ward running. One physician and one nurse remained for two-thirds of the 
+project, and then dropped out, and one nurse joined the work after six months. 
+The participants expressed a new interest in personal and professional development. Mirroring each 
+others’ experiences gave them an ability to cultivate insights into how effectively they worked with 
+patients and colleagues. There was a greater team spirit, which would become apparent in their work 
+with patients. Discussing their reflections at project meetings opened up new ways of relating to 
+patients and managing their treatment. For example:
+‘…and then there are new ways of relating which I did not think of myself… the others helped me to 
+discover new things…’ (Therapist 1).
+Participants considered that their team spirit was stronger. They said the project work brought with it 
+an inspiring atmosphere, created a more professional team and expanded teamwork. They expressed 
+the need for a structure to keep this work alive, as reflections are perishable and have to be encouraged. 
+The physician declared:
+‘…we’re certainly listening more carefully to each other now… and the teamwork kind of welded us 
+together’ (Physician 2).
+The fact that the two researchers came from ‘outside’ was considered to have contributed to the 
+project work in the sense that they were professionally neutral, and did not belong to the staff. They 
+initiated and encouraged questions that could lead to wider discussion. An important comment made 
+by the participants was the relevance of contributing to, and experiencing, the way knowledge is 
+acquired through systematic and analytical scientific work. Everyday challenges were clarified and 
+more profound aspects of caring emerged through this process. 
+They felt as if ‘the soul of the ward became apparent and was clarified’ (Nurse 3) through the work – 
+both for the actual participants in the project and for the other staff at the clinic. There were queries 
+© FoNS 2014 International Practice Development Journal 4 (1) [4]
+http://www.fons.org/library/journal.aspx11
+about whether a similar project could take place on the other wards as well. The management also 
+communicated its appreciation of the initiative. 
+Discussion
+Interaction of theory and practice – pre-understanding, interpretation and application
+In the clinical application research approach, research material is brought into play in clinical practice; 
+theories are put on trial in a clinical investigation and reflected on in discussions between theorists 
+(researchers) and clinical practitioners. Empirical studies show that the relationship of healthcare staff 
+with theoretical caring knowledge is ambiguous; theory can confirm practice, but theory can be too 
+narrow to have practical relevance, depending on the understanding of the theory in question and 
+its relevance to the context (Ekebergh, 2009; Ranheim and Dahlberg, 2012). The innovative design 
+of clinical application research allows participants in the projects to create and develop their own 
+approaches to the work, linking appropriate theoretical substance to the specific forms of caring and 
+treatment taking place on the wards.
+In the context of this study, it became evident that a central point of departure was reflection on 
+fundamental questions of caregiving from the point of view of caring science. Participants could 
+argue for or against their tacit knowledge, which was activated by the practical experience they had 
+developed over time. They could shed light on their experience and give it perspective, as is shown 
+also in the extensive research of Ekebergh (2007; 2009). The reflective atmosphere in the project 
+meetings was important for generating a new and broader understanding. The participants expressed 
+expanded understanding of fundamental caring scientific questions, on ethical, epistemological and 
+methodological levels. Accordingly, the research design goes beyond classic action research, as the 
+participants are confronted with and trained in scientific approaches, as when contributing to the 
+analytic work, as well as in the philosophical ideas and structures behind the approach. This may be 
+considered as development work, both in scientific theoretical substance and in clinical practice. 
+It is important to note the relevance of cultivating practical knowledge, which is equally important as 
+a basis for good caring. Practical knowledge is acquired through the perceptiveness of individuals and 
+cannot be taught or explained in terms of general rules, manuals or models. This knowledge is often 
+relational and contextual, linked to aesthetic ability, and it manifests itself in the ability to make good 
+decisions. It usually develops over years, but not automatically. It must be cultivated and requires 
+training. This knowledge can never be measured because it is situational and relational; it is a type of 
+knowledge linked to personalities and a person’s values (Bornemark, 2009). The results of this project 
+show that combining caring science theory and practical clinical knowledge leads to progress in the 
+understanding of caring. It is neither a refined theoretical and scientific approach or model, nor an 
+unsystematic approach. It is the interaction of the two, which offers the possibility of cultivating a 
+caring consciousness. 
+As the participants worked together in the team and reflected on their experiences, an increased 
+consciousness of their profession emerged. In the course of this development they were better able 
+to see how they approached the care of their patients and how they interacted with their colleagues. 
+In this way, the interaction of the clinical caring context and the participants’ reflection created an 
+ongoing dynamic that challenged both their clinical understanding and their grasp of the scientific-
+philosophical element.
+From this perspective, clinical knowledge, both tacit and pronounced, may benefit from an interchange 
+with caring theory. Ranheim (2011) concludes that mediating care is the visualised outcome or 
+evidence of the intertwining of theory and practice in caring. Mediating care has to do with how caring 
+is brought about in doing, being and becoming, and it is given expression through insights into each 
+other and the ways we connect to each other. Mediating care can merge gradually into intermediate 
+processes; it is a phenomenological, hermeneutic process of cultivating and being cultivated in caring.  
+© FoNS 2014 International Practice Development Journal 4 (1) [4]
+http://www.fons.org/library/journal.aspx12
+An existing challenge is that, in Sweden as well as in many other countries, nursing and caring science 
+exist in a healthcare context dominated by the economics of curing and caring through diagnoses 
+and measurable symptoms. There is a belief today that by integrating general quality assurance 
+programmes based on statistics and protocols, the quality of caring will improve and healthcare will 
+be more economically sound (Ranheim and Dahlberg, 2012). The researchers of this study believe 
+the opposite is likely: by implementing standardised programs, individual discernment is lost, along 
+with the possibilities for developing an expanded caring awareness. As a result, the cultivation of 
+clinical sensitivity and the humanity of caring are greatly diminished. The clinical application research 
+design offers opportunities to get an immediate response from implemented theories, methods and 
+programmes through the participants’ clinical expertise and reflection; that is represented both through 
+the patients and the caregivers as participants in clinical application research projects. Consequently, 
+frameworks and models in caring and nursing that are more limiting than lifting can expeditiously be 
+eliminated. 
+Clinical application research – methodological benefits and restraints
+Lindholm et al. (2006) anchor clinical application research in epistemology according to the way 
+Gadamer (1959; 1960) developed his philosophy of the nature of understanding. Application, Gadamer 
+says, always involves revision and changes in understanding/perspective. Understanding is connected 
+to action and intention. 
+A premise for being able to attain any new understandings of phenomena is the effort and need of 
+being able to be open to them. In a Gadamerian (1960) metaphor, this is called excursion and return 
+– grafting the unknown or making the unknown known, for example where dialogue is open to other 
+interpretations. The results of this study indicate that recurring reflective dialogues, in combination with 
+describing significant caring encounters in clinical practice, provide the opportunity for participants to 
+become more open to, get insights into, and learn to bridle their own pre-understandings (Dahlberg et 
+al., 2008), as well as acquire broader perspectives on the meaning of caring. 
+Clinical application research is first and foremost a structure for a dialogue based arena, where theory 
+meets clinical practice, and where some kind of new knowledge is gathered. However, it should 
+be considered a genuinely adaptable and fruitful form of development in healthcare, as research 
+is integrated into clinical practice in healthcare units and the staff participate in the development 
+process. There are perhaps more didactic benefits than scientific ones in the design, as it reduces the 
+distance between daily clinical practice and abstract research phenomena.  Where research is directly 
+transferred to clinical practice and tested in the field, staff will become more competent and engaged 
+(Arman et al., 2008; Lindwall et al., 2010). These findings come in the context of rehabilitative cancer 
+care in a small hospital but could be transferable to other contexts, as the dynamic and reflective 
+processes of understanding are a universal concern. 
+Organisational challenges
+Some organisational matters need to be raised as a result of the project. Sustaining this type of work 
+will require a structure. In a clinical application research project, participants are invited to take part 
+in work involving vital, living questions, rather than simply testing a hypothesis. Something is actually 
+brought into play on the ward, and frameworks are developed for the process, but the outcome is 
+open-ended. This is the character of a phenomenological, hermeneutical methodology – not knowing 
+what the actual knowledge is before bringing it into play. In a design like this, it is of considerable 
+importance to base the descriptions of the research phenomena on openness, clarity and ambiguity. 
+Another issue is that the healthcare staff cannot be expected to maintain the work on reflection 
+by themselves, nor can it be based on any manual or method. Perspectives involving reflection and 
+insight are living entities and are therefore perishable. In other words, in collaboration with others, 
+time should be organised for this type of reflection, for the development of the caring work itself, 
+© FoNS 2014 International Practice Development Journal 4 (1) [4]
+http://www.fons.org/library/journal.aspx13
+and for self-reflection. Severinsson (2012) is searching in her work for the missing link of research 
+utilisation in caring and nursing practice, and suggests that implementation should involve the 
+transferring of knowledge from the scientific community to practitioners. However, she claims this will 
+require supervision, which may not be available. According to this study’s findings, clinical application 
+research is a design that may be the missing link in transferring scientific research directly into practice. 
+Figure 2 shows the dimensions of clinical application research. Theoretical and practical reflection, 
+and developing awareness in clinical practice are intertwined and may lead to expansion of a caring 
+consciousness. 
+Figure 2: The dimensions of clinical application research
+MEDIATING CARE
+Recommendations for practice and further research
+Another interesting question arises from this project: how did the patients experience the work? This 
+remains to be evaluated but is now in the data gathering phase, and interviews are being conducted. 
+This study asserts that time and resources allocated to strengthening the relationship between 
+research and clinical practice are likely to result in a win-win situation for patients, healthcare staff and 
+the wider organisation.
+By using contextual, case-oriented ways of finding the unique and relational between carer and 
+cared for – involving hermeneutic and phenomenological reflection on the situations – caring science 
+theories emerge as an area worthy of testing in the field.
+Limitations of the study 
+In the context of the present study, questions concerning data gathering should be problematised. 
+To ensure that the phenomena acquire deeper meaning than they did in the focus groups and in 
+the notes, follow-up interviews with individual participants could provide additional examples of how 
+theory and practice could meet. 
+Conclusion 
+The participants developed a scientific approach to obtaining their clinical caregiving knowledge, and 
+increased awareness of their profession emerged from their participation in the working team and 
+REFLECTION 
+ON THEORY
+REFLECTION 
+ON PRACTICE
+© FoNS 2014 International Practice Development Journal 4 (1) [4]
+http://www.fons.org/library/journal.aspx14
+through the reflective work. If an organisation is interested in improving its results and developing 
+its patients’ experience of health and wellbeing, this study recommends that it devote time and 
+resources to strengthening the association between caring science research and clinical practice. 
+Clinical application research is a structure that can support an attempt to achieve this. 
+References
+Arman, M., Ranheim, A., Rehnsfeldt, A. and Wode, K. (2008) Anthroposophical care: different but 
+homelike. Scandinavian Journal of Caring Sciences . Vol. 22. No. 3. pp 357-366.
+Arman, M., Hammarqvist, A. and Kullberg, A. (2011) Anthroposophic healthcare in Sweden – a patient 
+evaluation. Complementary Therapies in Clinical Practice . Vol. 17. No. 3. pp 170-178.
+Arman, M., Al-Madani, N., Alvenäng, A., Hammarqvist, A. and Ranheim, A. (2013) Caregiving for 
+existential wellbeing: existential literacy. International Practice Development Journal . Vol. 3. No. 1. 
+pp 1-15.
+Austgård, K. (2012) Doing it the Gadamerian way – using philosophical hermeneutics as a methodological 
+approach in nursing science. Scandinavian Journal of Caring Sciences . Vol. 26. No. 4. pp 829-834.
+Bornemark, J and Svenaeus, F. (Eds). (2009) Vad är Praktisk Kunskap?  (What is Practical Knowledge? ) 
+Stockholm: Södertörn University. E-print. Retrieved from: http://bibl.sh.se/publikationer/vara_
+publikationer/vad_ar_praktisk_kunskap/diva2_303147.aspx  (Last accessed 4th February 2014).
+Cody, W. (2003) Theory and practice: a discussion by William K. Cody. Nursing Science Quarterly . Vol. 
+16. No. 3. pp 225-231.
+Dahlberg, K., Dahlberg, H. and Nyström, M. (2008) Reflective Lifeworld Research . (2nd edition). Lund: 
+Studentlitteratur.
+Ekebergh, M. (2007) Lifeworld-based reflection and learning: a contribution to reflective practice in 
+nursing and nursing education. Reflective Practice . Vol. 8. No. 3. pp 331-343.
+Ekebergh, M. (2009) Developing a didactic method that emphasizes lifeworld as a basis for learning. 
+Reflective Practice . Vol. 10. No. 1. pp 51-63.
+Estabrooks, J., Squires, J., Strandberg, E., Nilsson-Kajermo, K., Scott, S., McGrath, J., Harley, D. and 
+Wallin, L. (2011) Towards better measures of research utilization: a collaborative study in Canada 
+and Sweden. Journal of Advanced Nursing . Vol. 67. No. 8. pp 1705–1718.
+Gadamer, H. (1959) On the Philosophy of Understanding  (Om Forståelsens Cirkel. Ur Forståelsens 
+Filosofi ). Translated by Helge Jordheim (2003) Oslo: Cappelen Akademisk Forlag.
+Gadamer, H. (1960) Truth and Method . London: Sheed and Ward.
+International Council of Nursing (2012) The ICN Code of Ethics for Nurses . Geneva: International 
+Council of Nursing.
+Karlsson, M., Nyström, L. and Bergbom, I. (2012) To care for the patient: a theory based clinical 
+application research.  International Journal of Caring Sciences . Vol. 5. No. 2. pp 129-136. 
+Kajemo, K. (2007) Research Utilization in Nursing Practice: Barriers and Facilitators . Unpublished 
+doctoral dissertation. Stockholm: Karolinska Institute.
+Lindholm, L., Nieminen, A., Mäkelä, C. and Rantanen-Siljamäki, S. (2006) Clinical application research: 
+a hermeneutical approach to the appropriation of caring science. Qualitative Health Research . Vol. 
+16. No. 1. pp 137-150.
+Lindseth, A. and Norberg, A. ( 2004) A phenomenological hermeneutical method for researching lived 
+experience. Scandinavian Journal of Caring Sciences . Vol. 18. No. 2. pp 145-158.
+Lindwall, L., von Post, I. and Eriksson, K. (2010) Clinical research with a hermeneutical design and an 
+element of application. International Journal of Qualitative Methods . Vol. 9. No. 2. pp 172-186.
+Matthew-Mike, M., Ploeg, J., Jack, S. and Dobbins, M. (2010) Transformative learning and research in 
+nursing practice: a missing link? Worldviews on Evidence-Based Nursing . Vol. 7. No. 1. pp 25-35.
+Råholm, M., Slettebö, Å., Nåden, D. and Lindwall, L. (2010) The need for methodological development 
+within qualitative clinical caring research. Scandinavian Journal of Caring Sciences . Vol. 24. No. 3. 
+pp 423-426.
+Ranheim, A., Kärner, A. and Berterö, C. (2011) Caring theory and practice. Entering a simultaneous 
+analysis. Nursing Forum . Vol. 47. No. 2. pp 78-90.
+© FoNS 2014 International Practice Development Journal 4 (1) [4]
+http://www.fons.org/library/journal.aspx15
+Ranheim, A. and Dahlberg, K. (2012) Expanded awareness as a way to meet the challenges in care that 
+is economically driven and focused on illness – a Nordic perspective.  Aporia . Vol. 4. No. 4. pp 20-24.
+Rehnsfeldt, A. and Arman, M. (2008) A pilgrimage on the road to understanding of life in experiences 
+of cancer and burnout syndrome. Scandinavian Journal of Caring Sciences . Vol. 22. No. 2. pp 275-
+283. 
+Rycroft-Malone, J., Harvey, G., Seers, K., Kitson, A., McCormack, B. and Titchen, A. (2004) An exploration 
+of the factors that influence the implementation of evidence into practice. Journal of Clinical 
+Nursing . Vol. 13. No. 8. pp 913-924.
+Rycroft-Malone, J. (2010) Paying attention to complexity in implementation research. Worldviews on 
+Evidence-Based Nursing . Vol. 7. No. 3. pp 121-122. 
+Severinsson, E. (2012) Nursing research in theory and practice: is implementation the missing link? 
+Journal of Nursing Management . Vol. 20. No. 2. pp 141-143.
+Squires, J., Estabrooks, C., Gustavsson, P . and Wallin, l. (2011) Individual determinants of research 
+utilization by nurses: a systematic review update.  Implementation Science . Vol. 6. No. 1. pp 1-20.
+Therkleson, T. (2005) Anthroposophical nursing. The Australian Journal of Holistic Nursing . Vol. 12. No. 
+2. pp 43-50.
+ 
+Albertine Ranheim (PhD, RN), Senior Lecturer, School of Health, Care and Social Wellfare, University 
+of Mälardalen, Eskilstuna, Sweden.
+Maria Arman  (PhD, RN), Associate Professor, Integrative Care Science Center, Järna, and Department 
+of Neurobiology Care Science and Society, Karolinska Institute, Stockholm, Sweden.
+A commentary by Angie Titchen follows on the next page.
+© FoNS 2014 International Practice Development Journal 4 (1) [x]
+http://www.fons.org/library/journal.aspx
+16COMMENTARY
+Methodological considerations and experiences in clinical application research design
+Yes and... ! Now for the research path even less travelled?
+Angie Titchen
+I was really delighted to see researchers Albertine Ranheim and Maria Arman taking a path that 
+researchers do not usually take. With tremendous commitment, Albertine and Maria have worked 
+alongside a ward team for three years, in a hospital that works with anthroposophical principles. Every 
+three weeks, for the purpose of testing out caring science theory, they created a reflective space in 
+which they posed questions to help eight to 10 team members to reflect deeply in and on their own 
+caring practice. Based on values that many developers would recognise – collaboration, inclusion and 
+participation (CIP) – they helped team members to reflect by enquiring into their own practice using a 
+clinical application research design. This design is 
+congruent with the hermeneutic phenomenological 
+underpinning of caring science. Not only does this 
+congruence add to the rigour of their particular clinical 
+application design, the aesthetic balance also pleases me. 
+In my commentary on this well-written and useful paper, I 
+take a painterly, broad brush or impressionistic approach 
+to locate clinical application research in the wider field of 
+getting research/theory into practice by looking at this 
+field as a network of paths. Then I compare their 
+methodology with practice development that is located in 
+critical social science by considering issues around praxis, values, context and facilitation. Through the 
+comparison, with light brush strokes, I offer a critique in relation to: 
+• Albertine and Maria’s role and intentions as facilitators 
+• Reflexivity
+• Congruence between the methodological design and research methods
+• Extending the work to the wider organisation 
+Finally, I offer some critical questions for readers.
+In the 1970s, it was assumed by researchers and educators (who wanted to help healthcare professions 
+become more theory and research based) that it was the way research findings were communicated 
+that was stopping practitioners from using research findings and theory in their practice. As they 
+sought to convey findings in more helpful ways, it is probable that many educators and researchers 
+took a narrow, linear path to improving practice because they used the didactic approaches of theory 
+first, then practice, as well as telling and explaining. At that time, these approaches were prevalent in 
+education rather than the idea of enabling people to understand research experientially in the midst 
+of practice. I can vouch for this because I was a newly qualified physiotherapist on the receiving end! 
+Rather than helping learners to develop skills for learning and discovering things for themselves, we 
+
+© FoNS 2014 International Practice Development Journal 4 (1) [4]
+http://www.fons.org/library/journal.aspx17
+were considered to be ‘empty vessels’ to be filled with knowledge that we would, somehow, be able 
+to use later in practice. Anyway, if we take nursing (which was then perhaps the healthcare profession 
+most active in trying to improve research uptake), early research showed that merely relying on 
+the narrow, uncomplicated path of improved communication was too simplistic (Hunt, 1981). Hunt 
+recognised that research and practice were interdependent and that they needed to be developed 
+together. Consequently, the role of researcher as teacher (Wilson-Barnett et al., 1990) came into being.  
+As in the work of Wilson-Barnett and colleagues, some educators had success in helping practitioners 
+to take the initial steps of a research endeavour. They enabled them to choose a topic that was relevant 
+to their practice and then conduct a literature search and critical review. From this review, they helped 
+practitioners to determine which findings they would use in their practice and then provided them 
+with support and specific educational programmes to improve care and subsequently to evaluate 
+the effects. However, there is no evidence that such support roles became embedded in healthcare 
+organisations and so it is likely that these initiatives fell away when the researchers as teachers left. In 
+hindsight, it is probable that most educators, healthcare executives, leaders and managers seriously 
+underestimated not only the work that practitioners have to do to interpret, particularise and use 
+theory and research findings in their own practice (Eraut, 1994), but also the need for systematic 
+organisational approaches (Hunt, 1987) and supportive cultural conditions. And while welcome, the 
+shift of focus in the 1990s from the personal to the organisational (MacGuire, 1990), seemed to lose 
+sight of the support practitioners still needed to develop these sophisticated skills. 
+And so, in the later 1990s and early 2000s, the linear path became wider and more heavily trodden 
+as evidence based practice became more prominent and researchers introduced, for example, linear 
+quality improvement systems and processes, and clinical guidelines and systematic reviews to support 
+practitioners. But they still tended to ignore situational complexity and the need for skilled facilitation 
+of practitioners’ capacity to interpret research and judge its appropriateness for particular patients 
+and families. As practitioners continued not to put research into practice, researchers in the emerging 
+fields of practice development and quality improvement in nursing began to explore, in the reality of 
+practice, why this might be. They came to the conclusion that not enough attention was being paid 
+to the complex interplay between the nature of evidence, the context (including culture, leadership 
+and evaluation) and facilitation (Kitson et al., 1998). There was a need to step off the linear path and 
+plunge into the undergrowth and unknown. 
+These pioneer researchers as practice developers were interested in the development of patient- or 
+person-centred nursing and started to explore how to create contexts and facilitation conducive to 
+enabling practitioners to develop themselves epistemologically (that is, to acquire and develop their 
+different kinds of knowledge and ways of knowledge) and ontologically (to nurture their being as a 
+person and practitioner) in and from their own practice. This path was uneven, full of holes, brambles, 
+twists and turns, but slowly through careful testing, clarity emerged about how to create conditions 
+conducive not only to using theory/research in practice, but also to letting effective facilitation develop 
+and flourish in the organisation. At the same time, within the emerging fields of knowledge translation 
+and implementation science, researchers were also paying more attention to these factors and more 
+progress was being made.  
+Another winding path leading off from that of the researcher as practice developer was the researcher 
+as facilitator who helped practitioners to become practitioner researchers. It is on this path that I 
+begin to see some similarities with clinical application research and some differences. Researchers as 
+facilitators usually were or had been clinicians who also had highly developed educational, facilitation, 
+leadership, research, theoretical and practice development skills. They acted as role models in terms 
+of blending their practice epistemology and ontology, and had expertise in creating, with practitioners, 
+conducive organisational and workplace conditions and workbased learning as inquiry opportunities. 
+In several action research studies, using the workbased learning strategies of action learning and critical 
+© FoNS 2014 International Practice Development Journal 4 (1) [4]
+http://www.fons.org/library/journal.aspx18
+companionship, research teams successfully helped experienced practitioners to develop inquiry skills 
+through the experience of researching their own everyday work practice/expertise and theorising it 
+using a variety of caring theories (for example, Hardy et al., 2009). 
+At this time, researchers as facilitators became more aware of the need to help practitioner researchers 
+to develop their professional artistry, including acquiring or fine-tuning multiple ways of knowing – 
+precognitive, cognitive, metacognitive (thinking about thinking) and reflexive knowing – as well as 
+melding and blending theoretical, practical, personal and local knowledges. This can be called ‘artistry’ 
+because it is a complex blend that occurs rapidly in the midst of ‘hot action’, with patients and colleagues 
+who are unique and coming from different places, contexts and situations, and have particular desires, 
+dreams, aspirations, needs and experiences. This blending, along with other dimensions, such as 
+multiple intelligences and discourses, and processes such as flow, working with energy and balance 
+(Titchen, 2009), enable practitioners to act and make decisions that effectively help the individual. 
+Although Albertine and Maria don’t use the term professional artistry, they certainly paid attention 
+to helping the ward team with the melding and blending of knowledges and they were aware of the 
+need to nurture aesthetic ability in this activity. As we see in participants’ self-reports, there is some 
+evidence that they were effective. 
+Reflection is another point of contact between clinical application research and practice development 
+and facilitation paths. Reflection is central to two kinds of praxis (mindful doing) – emancipatory 
+and hermeneutic. At the heart of practice development rooted in critical social science is the idea of 
+emancipatory praxis, that is, mindful doing with the moral intent of social justice. Praxis within critical 
+creativity (a new worldview for transformational practice development that is also located within critical 
+social science) also has the moral intent of human flourishing for all involved. Emancipatory praxis is 
+concerned with taking mindful action to bring about the three Es of Enlightenment, Empowerment 
+and Emancipation (Fay, 1987), so we free ourselves from the challenges that prevent us, in this case, 
+from melding and blending research findings and theory with practical knowhow in our work with 
+patients, families and colleagues. Hermeneutic praxis, on the other hand, is about taking mindful 
+action to enable the surfacing of our embodied, tacit knowing and understanding of the hidden 
+meaning of things. Through hermeneutic praxis, cognitive insights and understanding can be gained 
+through dialogue with emergent knowing and the yet to be known. Both forms of praxis are facilitated 
+by professional artistry. 
+It is hermeneutic praxis that I can sense as the intent of Albertine and Maria’s facilitation. They do not 
+name it or show us practically or theoretically how they did it. They do not tell us if they were trying 
+to access participants’ emergent meanings and understandings about their experience of clinical 
+application methodology, as they were trying to do in relation to their understanding of caring science 
+within their caring practices. Maybe they did and just took it for granted and therefore thought it 
+not worth mentioning. In this respect, I note that the participants do not talk about actually doing 
+inquiry or about the processes they used or developed as they made sense of caring science theory in 
+their own practice. Rather, we are presented with evidence that tends to show that they thought the 
+process raised their consciousness of what they were already doing in caring for patients and made 
+them more effective, for example, in being present with patients. 
+Albertine and Maria are right I think. Their focus group interview approach (a self-report approach that 
+captures what people espouse they do and not necessarily what they actually do) seems to have missed 
+capturing the depth of knowing and skill, in terms of doing inquiry, that I would expect to have been 
+acquired given the support they provided. I found it odd that they relied only on one method and that 
+that was a purely cognitive one to gather data about team members’ experiences of a methodological 
+design that pays particular attention to precognitive or embodied insight and understanding. Also, 
+where they suggested that more in depth, one to one interviews would have been better, I missed a 
+discussion about how they could, in future, access the more embodied, taken for granted, tacit stuff  
+© FoNS 2014 International Practice Development Journal 4 (1) [4]
+http://www.fons.org/library/journal.aspx19
+about participants’ experience of the study design. In my view, using multiple methods is essential 
+here and those of practice development might be of interest to clinical application researchers in the 
+future. These include observations and then questions about what they were doing, thinking and 
+feeling, creative expressions, staff and patient storytelling and critical-creative dialogue, as well as 
+qualitative 360 degree feedback from all stakeholders. Albertine and Maria say the next part of their 
+research will include feedback from patients, but I again I wonder whether relying on interviews will 
+be sufficient. Perhaps, too, more use could have been made of the participants’ case studies, the 
+reflective learning spaces and other data the participants had collected, such as personal reflections.  
+Another interesting confluence of clinical application research and practice development is the explicit 
+valuing of what we call CIP in practice development. In this study, team members were invited to be 
+participants in what I would call a co-inquiry process. This invitation was a shock for one participant, 
+who presumably had never experienced researchers valuing clinical practice before. Participants 
+collaborated, were included and participated in every aspect of the research (except the writing of 
+this paper?). As in workbased learning as inquiry in practice development, this strategy seems to have 
+been key to overcoming often-espoused practitioner resistance to using theory in practice. However, 
+unlike practice development, other key stakeholders, for example, patients, families, managers, clinical 
+leaders and the executive team do not appear to have been included as co-inquirers or stakeholders. 
+Which leads me to the climax of my commentary. 
+There is one sentence that stands out for me, above all others, which shows where clinical application 
+research and practice development paths seem to diverge. This is the seemingly throwaway line that 
+no one in the other three wards joined the project group. This raised a whole load of questions for 
+me. Given that the hospital and the managers seemed to be supportive of the work and it is reported 
+that they valued it, why might this have been the case? Were the necessary contextual conditions 
+only present in this one ward? And if so, what were they? That would be useful to know. In practice 
+development, we would expect to see, for example: 
+• A shared vision and purpose
+• A visible, person-centred workplace culture of effectiveness
+• Structures and processes in place to enable all stakeholders in the organisation and community 
+to be involved
+• Leaders and managers offering high challenge/high support
+• Systems and processes in place to enable workbased learning and inquiry
+• Feedback on performance of practice changes informed by, and interacting with, theory
+• Everyone developing facilitation skills to support each other’s learning and questioning of 
+practice 
+It would also be useful to know if it was necessary for Albertine and Maria to do anything to get the 
+right conditions in place on this ward and if so, what they did. In relation to the lack of inclusion, 
+collaboration or participation from the rest of the hospital, we know that the ward team shared their 
+findings and experiences with colleagues, but we don’t know if anything else was done to involve the 
+whole hospital and if it was, why it was unsuccessful. We do not know if they helped key stakeholders 
+to create the hospital context (culture, leadership, evaluation) and facilitation roles and strategies 
+to support the blending and melding of caring science theory with the practical knowhow of caring? 
+I suppose my questions spring from my unease that the time and resources committed over three 
+years may not have been offering value for money (did I say that?). At the very least, with this kind 
+of commitment and expertise, I would have expected to see some team members being helped to 
+develop facilitation skills to enable wider involvement in the hospital. And it would not necessarily be 
+caring science theory that other practitioners might choose to work with in the future, but any other 
+kind of theory they considered relevant to their development and practice. 
+© FoNS 2014 International Practice Development Journal 4 (1) [4]
+http://www.fons.org/library/journal.aspx20
+These points about the divergence of clinical application research and practice development link to my 
+surprise that Albertine and Maria are almost invisible in this report. While I would expect that their reflexivity 
+– that is, their self-awareness of their impact in relationship with practitioners in the evaluation of clinical 
+application research design – is well developed, they do not report on it here. 
+Nevertheless, I think this paper has made visible a research design that will resonate with practice developers 
+who engage in research with practitioners, using CIP principles, to promote the interdependency of practice 
+and theory. It also has the potential to highlight the importance of enabling the complex processes of melding 
+and blending practice with theory, but falls short of setting out the embodied, precognitive processes. As I 
+look back along the research/theory into practice paths travelled thus far, this methodology seems to veer 
+back to a focus on the personal to the detriment of the organisational. I may be quite wrong and attention 
+may have been paid to contextual development, but not reported. Balanced approaches are needed and, for 
+me, emancipatory and transformational practice development together offer balance. Perhaps, the paper 
+might stimulate new paths, less travelled, where practice developers work together, not only with clinical 
+application researchers but with all kinds of researchers, for the mutual benefit of, and flourishing for, all. 
+Critical questions
+1. Why do you think Albertine and Maria didn’t make themselves more visible in this report on the 
+experience of clinical application research and articulate in greater depth the facilitation role, 
+relationships and strategies they used? 
+2. Why do you think they called ward team members ‘participants’ and not ‘co-inquirers’ or  
+‘co-researchers’ or ‘practitioner-researchers’?
+3. Are there any aspects of caring science that could be melded and blended to the facilitation of 
+experiential learning, given that facilitation involves a caring relationship? 
+4. Do you think it is appropriate for clinical application researchers to meld and blend practice  
+development principles or processes with those of clinical application research? 
+References 
+Eraut, M. (1994) Developing Professional Knowledge and Competence . London: The Falmer Press. 
+Fay, B. (1987) Critical Social Science . Cambridge: Polity Press.
+Hardy, S., Titchen, A., Manley, K. and McCormack, B. (2009) Revealing Nursing Expertise through Practitioner 
+Inquiry . Oxford: Wiley-Blackwell. 
+Hunt, M. (1987) The process of translating research findings into nursing practice. Journal of Advanced 
+Nursing . Vol. 12. No. 1. pp 101-110. 
+Kitson, A., Harvey G., and McCormack, B. (1998) Enabling the implementation of evidence based practice: a 
+conceptual framework. Quality in Health Care . Vol. 7. No. 3. pp 149-159. 
+MacGuire, J. (1990) Putting nursing research findings into practice: research utilisation as an aspect of the 
+management of change. Journal of Advanced Nursing . Vol. 15. No. 5. pp 614-20.
+Titchen, A. (2009) Developing expertise through nurturing professional artistry in the workplace. Chp 12 in 
+Hardy, S., Titchen, A., McCormack, B. and Manley, K. (Eds.) (2009) Revealing Nursing Expertise through 
+Practitioner Inquiry . Oxford: Wiley-Blackwell. pp. 219-243. 
+Wilson-Barnett, J., Corner, J. and De Carle, B. (1990) Integrating nursing research and practice – the role of the 
+researcher as teacher. Journal of Advanced Nursing . Vol. 55. No. 5. pp 621–625.
+Angie Titchen  (PhD), Independent Research and Practice Development Consultant; Visiting Professor, 
+University of Ulster, Northern Ireland; Adjunct Professor, Charles Sturt University, Sydney, Australia.

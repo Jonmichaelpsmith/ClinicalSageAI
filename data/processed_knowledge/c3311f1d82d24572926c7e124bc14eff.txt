@@ -1,0 +1,259 @@
+1 
+ PharmaSUG 2017 -  Paper PO24  
+A Guide to Programming Patient Narratives  
+Renuka Tammisetti and Karthika Bhavadas, PRA Health Sciences  
+ 
+ABSTRACT   
+The ICH -E3 guidelines require patient narratives, which are targeted patient profiles of clinical 
+importance.  Patient narratives describe death, other serious adverse events, and certain other significant 
+adverse events judged to be of special interest collected for a subject over the course of a clinical trial.  
+The SAS programmer is expected to provide key data information to the medical writer.  The Medical 
+writer will review patient profiles to coincide with an event of interest and address the safety concerns of interest at the patient level.  This  paper will provide helpful insight on the traditional process of  narrative 
+generation; identify the requirements  and gather information to program narratives.  
+INTRODUCTION  
+Patient narratives form an important part of  clinical study reporting.  It provides  chronological account of 
+all the events encountered by a subject during or immediately following a clinical trial.  The regulatory 
+submissions would require narratives not only for serious adverse events (SAEs), but also for events causing death or study discontinuation.  Patient narratives are a part of safety data submitted to the  
+regularity  authorities  for all phases of clinical trial s.  It involves review of patient profiles, data listings, and 
+other information followed by manual wr iting of narratives as plain text . 
+ 
+According to ICH-E3 tripartite guideline on the Structure and Content of Clinical Study Reports (CSRs) 
+(Section 12.3.2) , a patient safety narrative should describe:  
+• The nature, intensity and outcome of the event.  
+• Clinical course leading to the event.  
+• Timing relevant to study drug administration.  
+• Relev ant laboratory measures.  
+• Action taken with the study drug (and timing) in relation to the event . 
+• Treatment or intervention.  
+• Autopsy  findings (if applicable).  
+• Investigator’s and sponsor’s opinion on causality.  
+ 
+Patient narratives should also include followi ng data to get a meaningful outcome:  
+ 
+• Patient Identifier.  
+• Age and sex of patient.  
+• General clinical condition of patient with duration of illness . 
+• Relevant medical history.  
+• Disease being treated.  
+• Relevant concomitant and prior medications with details of dosage.  
+• Investigational drug administered.  
+• Dose and duration of investigational drug administered.  
+ 
+ 
+A Guide to Programming Patient Narratives , continued  
+ 
+ 
+2 
+ NARRATIVE GENERATION  
+The SAS programmer plays a significant role in the creation of patient narratives.  Medical writer requests 
+a programmer to provide key information of all the significant events  of a clinical trial, which can be in the 
+form of listings or datasets based on their requirements.   Narratives can be written for both unlocked and 
+locked clinical database.  Production of patient narratives as per  reviewers’ requirements can be quite 
+challenging, considering variety of data that needs to be gathered from various datasets and shifting 
+demands of the reviewer.  
+ 
+Display  1: Flow chart representing basic steps followed by a programmer to create a narrat ive 
+report.  
+ 
+  
+Gather Information from Analysis datasets
+ 
+ 
+  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+A narrative provides the complete story of an event chronologically and holds together relevant 
+information from various sources liaising with medical experts.  Since narrative wr iting involves 
+expressing the messages clearly and effectively , the m edical write r uses various data sources like CRF 
+pages, analysis datasets, pharmacovigilance database , clinical database listings  etc., to provide a 
+template based on the project requirem ents.  In most cases, a medical writer references listings or tables 
+from the project while creating the template. Medical advisors review the final narrative template created 
+by Medical writers.  Narrative template and datasets may vary based on the therapeutic area and 
+investigational drug.   Identifying medical history and laboratory result s ‘relevant’  to the event of interest 
+can be challenging.  
+ After receiving the template from medical writer, the programmer should ensure that the information in the 
+template is available in the study  database to avoid road blocks while programming.   The programmer 
+needs to incorporate different data from various domains such as Demographics, Adverse Events, Laboratory data, Medical History, Concomitant Medications, Exposure, etc. for each subject.  
+ 
+ Final validated 
+programmed 
+narratives to Medical 
+Writer  
+Gather Information 
+from Datasets  Development of  
+Programming Code for 
+Input Narrative Dataset  
+  
+Output  
+Programed 
+Narrative 
+ Narrative 
+template by 
+Medical 
+Writer  
+A Guide to Programming Patient Narratives , continued  
+ 
+ 
+3 
+ The patient narrative template is designed to deliver reports  at the subject level .  Generating individual 
+reports could be time consuming and labor intensive.  Most of the pharmaceutical companies and CROs 
+have developed st andard macros to ease the process and reduce the repetitive work  across different  
+projects.  
+ 
+Display  2:  Sample of Narrative T emplate  
+Protocol :  
+Subject :  
+Assigned Treatment Group :  
+Race/Ethnicity/Gender :  
+Age at Screening : xx Years  
+Enrollment Date : DDMMYYYY  
+Randomization Date : DDMMYYYY  
+Date Study Drug First Administered : DDMMYYYY  
+Date Study Drug Last Administered : DDMMYYYY  
+ 
+Events  Meeting  Narrative  Writing  Criteria  
+Reasona 
+ MedDRA PT  
+(Verbatim)  Onset Date  
+(Day)/Periodp End Date  
+(Day)  CTCAEb; 
+Related Outcomec; 
+Actiond SAE 
+       
+       
+       
+a: Death; SAE=serious adverse event; PTAE=premature termination of treatment due to adverse event; 
+PSAE=premature  termination of study  due to adverse event;  EOI=Event  of Interest  
+b: Standard Toxicity  Grad e 1, 2, 3, 4, 5 
+c: res=recovered/resolved; res seq=recovered/resolved with sequelae; not res=not recovered/not resolved; fatal;  unk=unknown  
+d: dos wthdr=Drug withdrawn;  dos del=dose delayed;  dos no chg=Dose not changed;  unk=unknown 
+p: CHE=Chemotherapy  run-in period;  NEO=Neoadjuvant  period;  ADJ=Adjuvant  period 
+Relevant Past Medical History :  
+Relevant Prior Medications/Supplements/Therapies :  
+Relevant Concomitant Medications/Supplements/Therapies:  
+Ongoing Medications History :   (Listing xxxx Medical Histo ry) 
+[MHDECOD]  
+[MHDECOD]  
+Study Drug Treatment : The patient entered the XYZ study (protocol number ), a multicenter, prospective, observational registry 
+study and received the first xxx injection xx study days later into the study . 
+Description of Event(s), Including Follow -up: 
+The patient experienced [AESEV=grade or severity]  [AEDECOD preferred term bolded () on Study Day xx , [AESDY]  xx days after 
+the most recent previous Ozurdex injection. The event was classified as a/an [NREAS, NREAS, etc]   eg, SAE, PTAE,  PSAE, and 
+OSE  (list all categories met by event and modify sentence accordingly; note the use of serial commas) . 
+Laboratory Results : 
+Parameter  Date (day)  Visit  Result  CTC 
+Toxicity  Indicator  Range  
+Lower Limit  Range  
+Upper Limit  
+ 
+ 
+A Guide to Programming Patient Narratives , continued  
+ 
+ 
+4 
+ The header section of the narrative ( Display  2) provides the demographic details of a subject.  From a 
+programmers’ perspective, we obtain this information from the demographics dataset (DM or ADSL).   
+Events of interest are provided in a chronological order  along with pas t medical history, concomitant 
+medications, study drug treatment, and other relevant information.  The adverse event dataset plays a 
+vital role in the narrative generation since it provides all the events occurring during the conduct of the 
+trial.  Relevant laboratory  results  during the event a re also provided in the narrative.  
+ 
+PROGRAMMING CHALLENG ES: 
+A key issue to consider while transforming analysis datasets to narrative datasets is how to handle one or 
+many contributing dat a points contained in the analysis datasets, such as adverse events and 
+concomitant medications.   If the dataset is not clean and patient safety narratives are written prior to 
+database lock, updates are required based on the final database lock data. This  approach can be time 
+consum ing than preparing all narratives after database lock .  This process is feasible for projects with a 
+large number of narratives required to be drafted in a short span .  
+ 
+Due to the descriptive nature of the report, programming t he narrative dataset is driven based on high 
+content.  Hence, working through formats, indention, embedded data, text that needs to be included in the 
+narrative dataset can be challenging and intensive.   As analysis datasets contain information at an event  
+level parsing over m ultiple rows for medical history and concomitant medications , a programmer has to 
+reformat and concatenat e multiple rows into a single string.  This information is embedded into the text of 
+a narrative sentence stored in a narrative dataset . 
+  
+Display  3: Sample Narrative Output for C oncomitant Medications:  
+ 
+ 
+ 
+   
+The subject’s relevant concomitant medications at the time of the event included  
+Adoair250Diskus, Salbutamol, Flutide 200 Diskus, Sultanol Inhaler 100mcg, and Sultanol Inhaler  
+100UG.  
+  
+Multiple rows of medical history concatenated with start dates are combined into a single string with 
+delimiters.  The ODS line break instructions are used to list the terms in a single cell of the narrative 
+document.  
+  
+A Guide to Programming Patient Narratives , continued  
+ 
+ 
+5 
+ Display  4:  Sample Narrati ve Output for Medical History:  
+Prior Medical History:  
+ 
+   C/w undifferentiated pleomorphic sarcoma, unk  
+   Cholecystectomy, unk  
+   Glaucoma surgery, unk  
+   Vocal cord benign nodule removed, unk  
+   Tooth root fracture, unk -01Sep2015  
+   Shortness of breath upon exertion, unk -02Sep2015  
+   Spindle cell sarcoma, 19Jan2015-unk  
+   Anemia, 03Sep2015-04Sep2015  
+ 
+Generating a sample narrative output and having it checked by the Medical Writer to get a final approval 
+for any updates or changes is much more viable tha n generating it for all the subjects meeting the criteria.  
+ 
+CONSISTENCY  
+Creating a narrative report from a draft narrative that is included in the clinical study report usually involves several review processes  such as medical writing, medical reviewers , and Quality Assurance to 
+make sure all the information fit together and the narrative accurately represents data from the sources .  
+As a programmer, while preparing a large number of patient safety narratives, it is essential that 
+consistency is maintained throughout the project.  Hence, excel spreadsheets can be used as an 
+excellent tracking tool for managing high volumes of safety narratives, which can be shared with the 
+Medical Writer  on a regular basis . 
+ 
+CONCLUSION 
+Patient narratives have become an integral part of the data cleansing and review for the clinical trials 
+data.  Developing an automated narrative process with robust and reusable SAS -based macro application 
+would result in saving a lot of hours , which can be repeated on multiple studies. The di scussion of the 
+macro that we used is beyond the scope of this paper . 
+ 
+REFERENCES  
+1. ICH Harmonized Tripartite Guideline: Structure and Content of Clinical Study Reports E3. Current 
+Step 4 version dated 30 November 1995. Page 24.  
+2. United States Food and Drug A dministration, "Guideline for the Format and Content of the 
+Clinical and Statistical Sections of an Application", July 1988.  
+ 
+ACKNOWLEDGMENTS  
+The authors would like to thank the PRA Medical Writing team for providing insight and examples and also the 
+Statistical Programming Management team for their support  and encouragement . 
+ 
+A Guide to Programming Patient Narratives , continued  
+ 
+ 
+6 
+ CONTACT INFORMATION  
+Your comments and questions are valued and encouraged.  Contact the author at:  
+Renuka Tammisetti  
+PRA Health Sciences  
+731 Arbor Way, Suit e 100  
+Blue Bell, PA 19422  
+Email: itzrenuka@gmail.com  
+ 
+ 
+Karthika Bhavadas  
+PRA Health Sciences     
+4130 Parklake Avenue,  
+Raleigh, NC 27612  
+Email: Karthika.bhavadas@gmail.com  
+ 
+SAS and all other SAS Institute Inc. product or service names are registered trademarks or trademarks of 
+SAS Institute Inc. in the USA and other countries. ® indicates USA  registration.  
+Other brand and product names are trademarks of their r espective companies.

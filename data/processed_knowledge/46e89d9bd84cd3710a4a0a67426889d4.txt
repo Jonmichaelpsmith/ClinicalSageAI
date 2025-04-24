@@ -1,0 +1,411 @@
+Clinical Research Integration Within the Electronic
+Health Record
+A Literature Review
+Elizabeth A. Johnson , MS-CRM, BSN, RN, Jane M. Carrington, PhD, RN, FAAN
+Clinical trials have become commonplace as a treatment op-
+tion. As clinical trial participants are integrated into allhealthcare delivery settings, organizations are tasked with
+sustaining specific care regimens with appropriate docu-
+mentation and maintenance of participant protectionswithin electronic health records. Our aim was to identify
+the common elements necessary for electronic health re-
+cord integration of clinical research for optimal trial conductand participant management. Review of literature was con-ducted utilizing PubMed and CINAHL to identify relevant pub-
+lications that described use of the electronic health record to
+directly support trial conduct, with a total of 15 publicationsultimately meeting inclusion criteria. Three thematic group-
+ings emerged that categorized common aspects of clinical
+research integration: functional, structural, and proceduralcomponents. These components include technological re-
+quirements (platform/system), regulatory and legal compliance,
+and stakeholder involvement with clinical trial procedures(recruitment of participants). Without a centralized means
+of providing clinicians with current treatment and adverse
+event management information, participant injury or likeli-hood of withdrawal will increase. Further research is re-quired to develop an optimal model of research-related
+integration within commercial electronic health records.
+KEY WORDS: Clinical trial, Electronic health record,
+Literature review
+Clinical trials have become commonplace as a treat-
+ment option. Clinical trial participants are integrated
+into all aspects of healthcare delivery —from hospi-
+tal, urgent, and primary care —and organizations
+are tasked with appropriate documentation and
+maintenance of human subject protections within electronichealth records (EHRs). Clinical trial research informationwill affect EHR progress notes, provider orders, nursingassessments, and care, along with ancillary discipline utiliza-
+tion, depending on the drug or device, study or observational
+research data capture.
+Background
+Clinical trials provide a unique opportunity across a spec-trum of indications for access to novel therapeutics, whichmay or may not translate to individual benefit but will defin-itively advance medical science. Clinical trial protocols are
+designed with procedures for participant retention, which in-
+cludes care management outside of research visits. The chal-lenge facing care providers beyond the clinical trial site ismanaging the participant while adhering to the protocol.Few options exist for other providers to know that the patientis participating in a clinical trial and, second, to know whatprescribed medications, for example, are contraindicatedaccording to the protocol.
+While EHRs were initially designated for use in capturing
+clinical patient procedures for billing purposes, the samecore system functions of procedure tracking may also be usedfor clinical trial participant management.
+1Challenges are
+encountered when ancillary providers collect information rel-evant to trial conduct due to lack of data capture standardiza-tion within the EHR.
+2Different trial sponsors may require
+specific data elements to be included within the EHR that
+EHR platforms may not be able to incorporate. For example,
+one trial sponsor may require electrocardiograms to be up-loaded within the EHR, whereas an EHR may accommodateonly numerical measurements rather than the full visual output.Cowie et al
+1summarized the present-day abilities of EHRs to
+support clinical trials, namely, feasibility assessments, perfor-mance improvement, guidance adh erence, safety surveillance,
+pharmacovigilance, and hypothesis generation, whereas
+emerging areas of EHR support for clinical trials include pa-
+tient recruitment and point-of-care randomization.
+2Feasi-
+bility assessments allow the organization to review a censusof the targeted patient population to evaluate its ability toconduct the trial, whereas performance improvement met-rics, such as participant retention and cited deviations fromthe protocol, may support optimal trial conduct for presentand future studies. Oversight entities, such as the US Food
+and Drug Administration, publish guidance to describeAuthor Affiliations: The University of Arizona (Ms Johnson), Tucson; and University of Florida (Dr
+Carrington), Gainesville.
+E.A.J. is an employee of DOCS Global, LLC. For J.M.C., none was declared.Corresponding author: Elizabeth A. Johnson, MS-CRM, BSN, RN, University of Arizona, College
+of Nursing, 1305 N. Martin Ave, Tucson, AZ 85721 (Ejohnson2@email.arizona.edu).
+Copyright © 2020 Wolters Kluwer Health, Inc. All rights reserved.DOI: 10.1097/CIN.0000000000000659CONTINUING PROFESSIONAL DEVELOPMENT
+2.0 ANCC
+CONTACT HOURS
+Volume 39 | Number 3 CIN: Computers, Informatics, Nursing 129
+Copyright © 2021 Wolters Kluwer Health, Inc. All rights reserved.
+
+optimal trial conduct. Optimal trial conduct includes ade-
+quate informed consent of the participant, safety surveillanceof participant adverse events and investigational product ef-fects, pharmacovigilance, and evaluation of primary and sec-ondary outcomes (hypothesis gen eration) that is in alignment
+with real-world prescription expectations.
+The integration of clinical trials within a common clinical
+platform accessible to both clinical and research personnelhas been piloted by two key, European-based projects:IntegrIT in Sweden and the five-country initiative ElectronicHealth Record for Clinical Research (EHR4CR). The abil-ity to centralize communication among clinicians and re-searchers requires significant stakeholder engagement and
+technological resources to capture all pertinent aspects of
+trial conduct that may affect clinical care. With both IntegrITand EHR4CR, interoperabili ty was undertaken with stan-
+dardization of data fields in mind such that any providerwould be able to interpret information in a streamlined fash-ion within the EHR, supporting operational efficiency forboth research and clinical spaces. Both projects are high-lighted here for their optimal platform proposals and indus-
+try excitement surrounding initial feasibility and pilot efforts.
+IntegrIT Project
+The IntegrIT project was conducted in Sweden as a means
+of facilitating clinical research across health systems, EHRs,and providers throughout the country via the Health Infor-mation Exchange (HIE) platform.
+3Through redirection of
+requests between separate health information systems, such
+as EHRs, the HIE platform acts as the “Grand Central
+Station ”of information, a conduit of centralized communi-
+cation.3Clinical research processes, such as contacts, in-
+formed consent, and clinical trial information, would bemade available to providers while facilitating a more efficientmeans of recruitment across participating centers. A 2-yearproject, usability testing of IntegrIT has been completed and
+the next stage is testing in a clinical research environment.
+3
+Electronic Health Record for Clinical Research Project
+A pan-European initiative, EHR4CR, shares the desire to
+increase awareness of clinical research information and us-ability of research-related tools within the EHR. Faced withlimitations, such as language barriers, differing national reg-
+ulations, and inconsistency in documentation practices, the
+EHR4CR team developed a scalable, platform-based ap-proach to interoperability between EHR systems and clinicalresearch systems.
+4An unprecedented display of stakeholder
+engagement backed this initiative, with 34 academic and pri-vate industry partners across five European countries.
+4Via
+this project, key commonalities between systems were extrap-olated (standardization of documentation, data capture, and
+security requirements) to not only support integration of clinicalresearch within the EHR but ultimately enhance trial con-
+duct through the availability of data regardless of institution.
+While clinical management is the routine function of the
+EHR, structuring EHRs to include research-related infor-mation will support optimal patient care to incorporate pro-
+tocol limitations and prevent research participant withdrawal
+from trials. Lack of appropriate capture of information can re-sult in protocol deviations, participant injury, and federal orresearch sponsor citations fo r noncompliance. In a survey of
+US-based health centers, only 8% of respondents affirmed in-tegration of clinical and rese arch-related data within the
+EHR.
+4,5Our aim is to identify the common elements neces-
+sary for EHR integration of clinical research, including struc-
+tural, functional, and procedural core requirements for optimal
+trial conduct and participant management.
+METHODS
+Review of literature was conducted from May 3, 2018, toJuly 25, 2018, utilizing PubMed and CINAHL, to identifyrelevant publications that described use of the EHR to directlysupport conduct of a research trial . Search restrictions included
+human subject research, English language, peer-reviewedpublications, and randomized controlled trials (RCTs). Daterange was not initially limited to encompass early EHR inte-gration perspectives; however, relevance was thoroughly ex-
+amined if the date of publication was older than 10 years.
+Reference lists of pivotal literature were reviewed for addi-tional publications. Search terms included “integration ”
+AND “EHR”AND “RCT, ”“EHR”AND “RCT”AND
+“organization and administration ”OR“management ”OR
+“disease management ”OR“disease ”AND “management ”
+OR“disease management. ”
+The PubMed search yielded 150 initial articles, while
+CINAHL yielded two articles. Discarded articles included
+case studies, abstracts, and articles that were solely basedon clinical pathway support or clinical decision making thatwere non –research related.
+Inclusion and Exclusion Criteria
+The following inclusion and exclusion criterion were used
+to guide this review of literature. Inclusion criteria for thereview of literature were as follows: direct alignment toresearch-related EHR applications including global clinical
+trials, randomized clinical trials, human subject research,
+all populations (pediatric and adult), peer reviews, drugand device protocols, all indications, and full-text publica-tions. Papers were excluded if they were case studies, clinicalpathway support literature that did not have direct EHR re-search utilization, clinical decision frameworks that did nothave direct EHR research utilization, abstract only, editorialpublications with no tie-in to trial-related data, and preclin-
+ical or animal research.CONTINUING PROFESSIONAL DEVELOPMENT
+130 CIN: Computers, Informatics, Nursing March 2021
+Copyright © 2021 Wolters Kluwer Health, Inc. All rights reserved.
+
+Selection of Studies
+As part of inclusion criteria review, publication titles and ab-
+stracts were screened for relevance; the full text of articleswas reviewed for research questions, methods, findings, andresearch setting. Thirty-five publications were initially iden-
+tified for a thorough inclusion criteria review, with 15 publi-
+cations ultimately selected (Table 1).
+RESULTS
+Fifteen papers were reviewed and organized by thematicgroupings. These groupings were then reviewed with 100%agreement by the authors. Common themes arose as to the in-tegration of EHRs: structural components, functional necessi-ties, and procedural requirements. Articles in the structuralgrouping focused on the technological foundation requiredto support clinical trials within the EHR, whereas articles inthe functional and procedural groups highlighted the financial
+considerations, legal obligatio ns, and stakeholder engagement
+that are necessary for optimal integration (Figure 1).
+Structural Grouping
+One of the key technological needs in support of clinical tri-als is a means of alerting the system user to clinical trial infor-mation, whether patient eligibility or active screening status.Schreiweis et al
+6reviewed five hospital sites in Germany, ob-
+serving variability in use of system notifications (visually con-veyed as red flags) for clinical trial participation and separate
+workflow for documentation of recruitment status. The sys-
+tem notifications (flags) allowed the end user to distinguishtrial management from clinical management. Sites rangedfrom data input via demographic or status assessment formsto relying on nursing dialogue or Excel tables.
+6None of the
+EHR systems supported the management of trials withinstandard installation parameters or provided a way to deter-mine patient recruitment.
+6
+A common limitation of current EHR systems includes
+the inability to reuse clinical data to screen potential clinicaltrial participants. Similar to the Schreiweis et al
+6review of
+German university hospitals, Girardeau et al7reviewed the
+EHR4CR platform —an attempt at sharing data and inter-
+operability among European network users —and found lack
+of foundation for clinical trial information within currentplatforms. As part of the EHR4CR initiative, investigators
+first defined a base set of terminologies that would standard-
+ize data in the hope that eligibility criteria could then benormalized.
+7
+The standardization of language will support not only the
+identification of potential clinical trial participants but alsothe completeness of data for clinical trial capture, specificallyfor industry-funded trials. Healthcare systems could maxi-mize the use of normalized clinical terminologies and com-
+mon data elements, thus building efficiencies within theEHR to perform clinical trial procedures such as adverse
+event reporting, prescreening, and feasibility assessment.Bruland et al
+8stated that industry sponsors have a bank of
+forms and data sets that are similar among clinical trials,which could be a launching point for EHR platform design
+with clinical trials as a focal point. A platform design would
+require attention to standardization of data input by theuser, rather than the free text capabilities currently seen withEHR technology. As Bruland et al
+8report, 133 data elements
+were identified that were most frequently used in clinical tri-als, ranging from vital signs to demographic information.Expanding the volume of common data elements, standard-izing terminology, and supportive documentation design
+within the EHR are all critical technological, structural com-
+ponents to optimal clinical trial integration.
+Functional Grouping
+The articles in the functional grouping highlight the needfor fiscal feasibility objectives and clinical trial duties that
+would be best served via integration within the EHR. The
+European EHR4CR project targeted the fiscal feasibilityvia cost-benefit assessment of common clinical trial scenar-ios: protocol feasibility assessment, patient identification forrecruitment, and clinical study execution.
+9While theoretical
+in nature, given that the EHR4CR is not in use at the time ofwriting, EHR4CR tackled cost-benefit analysis of oncologyclinical trial integration in the EHR, one of the costlier ther-
+apeutic areas for patient care. Beresniak et al
+9estimated the
+cost-benefit of the EHR4CR platform for late-phase oncol-ogy trials to be 110.9 million euros, including potential feesfor service and reduction of cycle time (commercial benefits).Overall, a platform such as EHR4CR has the potential to re-duce time from study design to enrollment opening, identifypotential patients to accelerate recruitment, and reduce re-sources required for data entry.
+9
+Much of the literature surrounding EHR integration of
+clinical trials is produced in Europe, such as the work ofGulliford et al,
+12who examined the process by which clinical
+trials could be conducted using the EHR. Based in theUnited Kingdom, the authors reviewed cluster trial perfor-mance using EHRs with primary care practices that wereoperating via the Clinical Practice Research Datalink.
+12While
+conducting clinical trials is possible from a functional stand-
+point (standardized eligibility criteria, database, or connected
+sites), the authors noted the pro cess was time-consuming from
+a legal aspect with research governance approvals.12
+Legal implications of clinical trial integration were thor-
+oughly discussed, as well as a point of generalized concernregarding integration of clinical trial participant informationand allowing a wider distribution of data. One survey notedthat privacy, legal implications, and public relations ramifi-
+cations were stated as concerns by more than 80% of
+Volume 39 | Number 3 CIN: Computers, Informatics, Nursing 131
+Copyright © 2021 Wolters Kluwer Health, Inc. All rights reserved.
+
+Table 1. Summary of Included Studies Highlighting Clinical Trial Integration Within the EHR
+Publication Database Research Method Research Question/Aims
+Structural them atic grouping
+Schreiweis et al,62014 PubMed Surveys, personnel interviews, and EHR
+data reviewParticipant recruitment feasibility with commercial EHR modules
+Hagglund et al,32017 PubMed EHR data review Feasibility and ease of use with national HIE system integrating research
+Girardeau et al,72017 PubMed EHR data review Process development an d identification of issues implementing EHR4CR
+Bruland et al,82016 PubMed Case report form data review Determine most commonly used data elements in clinical trials and availability in EHRs
+Functional them atic grouping
+Beresniak et al,92016 PubMed Cost-benefit assessment, advanced
+prospective modelingAssess value of EHR4CR compared to cur rent clinical trial sponsor practices
+De Moor et al,42015 PubMed EHR data review To demonstrate a scalable, widel y acceptable, and efficient approach to interoperability
+between EHR systems and clinical research systems
+Doods et al,102014 PubMed Platform program querying Assessment of EHR4CR as a protocol feasibility platform aligning to technology and
+governance stipulations between sites
+Andersen et al,112015 PubMed EHR and database review Empirical evaluat ion of source data verification and data integrity
+Gulliford et al,122014 PubMed Trial data sets and author experiential
+narrative reviewIssue identification with designing and performing randomized, controlled clinical
+trials within EHRs
+Procedural them atic grouping
+Ni et al,132015 PubMed Retrospective Participan t identification via EHR algorithm
+Effoe et al,142016 PubMed RCT Participant conversion analysis, direct cost review, and impact of exclusion criteria
+on minority enrollment
+Vawdrey et al,152011 PubMed Retrospective EHR data Care provider ident ification approaches employed within a commercial EHR
+Moja et al,162016 PubMed RCT Effectiveness of provider point-of-care reminders on quality care
+Benthin et al,172016 PubMed Survey questionnaires to investigators Feasibility of e-alert standardization in multicenter research
+Chute et al,182010 PubMed Data warehouse process review Data and analytical capabilities of an enterprise data trust to integrate intersite
+practice, research, education, and administrationCONTINUING PROFESSIONAL DEVELOPMENT
+132 CIN: Computers, Informatics, Nursing March 2021
+Copyright © 2021 Wolters Kluwer Health, Inc. All rights reserved.
+
+respondents.19The EHR4CR project addressed this aspect
+of healthcare informatics integration via Doods et al,10who
+stated it was possible to use a uniform platform, such asEHR4CR, while complying with local data protection regula-tions. Permission was obtained by ethics committees and vary-
+ing data controllers associated with 11 university hospitals to
+support use of de-identified EHR data.
+10
+Source data verification (SDV) and overall monitoring of
+clinical data is another aspect of the functionality of the EHRas it pertains to trial conduct. Source data verification canaccount for almost one-quarter of an industry trial studybudget.
+11Industry is presently divided in its use of 100%
+SDV versus risk-based monitoring, which is structured to
+verify data by specific triggers (such as volume or data critical
+to endpoint analysis). Andersen et al11found, after surveying
+3 million data fields with 100% SDV, it would take a reviewof 370 data points to find one unspecified error. This findingfurther supports the shift to remote monitoring or risk-basedmodels, leaning on the data from EHRs to be accurate andreview to be efficient. The potential cost savings to industryand at the site (time and effort required to host monitorson-site) align with other articles in the review as to the benefit
+of EHR —clinical trial integration.
+Procedural Grouping
+Although the focus of EHR integration is on the technology,
+institution staff and clinicians will be the daily users and thusmust be at the forefront of integr ation discussion. An average
+of 30 separate clinicians may view the patient chart within theE H Rp e rp a t i e n ts t a y( 3t o5d a y s ) .
+15Issues such as usability,
+necessary functionality, and workflow assimilation are alldiscussed by articles in the procedural grouping. Efficienciesfor the management of clinical trial information and conduct
+of studies equate to maximization of participant recruitment
+potential. With many clinicians an d specialists viewing informa-
+tion about a patient —and potential clinical trial participant —
+integration of clinical trial information may be another toolfor collaboration among providers.
+While not a new concept, automation of participant eligibility
+is discussed as a facet of clinical t rial integration within the EHR.
+Manual review of potential participants is time-intensive and
+limits the breadth of patients who may be reviewed. Ni et al
+13
+FIGURE 1. Thematic groupings referencing integration aspects for clinical trial management within EHRs.
+Volume 39 | Number 3 CIN: Computers, Informatics, Nursing 133
+Copyright © 2021 Wolters Kluwer Health, Inc. All rights reserved.
+
+reviewed the eligibility criteria of 55 oncology clinical trials
+while comparing EHR clinical information and, using an el-igibility screening (ES) algorithm, found that automating theES reduced clinician workload by 90%. Standardization ofnomenclature for the Ni et al
+13ES algorithm was achieved
+with the support of medical dictionaries and codes for clini-
+cal terms. When tested against an oncologist chart review,the physician identified 29 potential participants, whereasthe ES algorithm identified 34 participants.
+13Harnessing
+the potential of adaptive ES algorithms within the EHRmakes it possible to reach more potential participantswhile reducing burden on providers.
+The LIFT Diabetes trial, as described by Effoe et al,
+14
+demonstrates the game-changing difference between con-ventional recruitment methods (eg, mass mailings) versusEHR-led recruitment. With early, brisk-paced recruit-ment as a reliable indicator of overall clinical trial enroll-ment success, employing the EHR (and, in that study,referrals) as a way to recruit participants resulted in im-proved identification and retention of participants com-p a r e dt ol a b o r i o u sm e t h o d ss u c ha sm a s sm a i l i n g sa n d
+community health screening events.
+14
+Reducing burden and effort in identifying clinical trial
+participants can save money. Industry-sponsored trials donot reimburse sites for time and effort in the participantidentification process, highlighting the need to identify par-ticipants via EHR. As Penberthy et al
+20found at Virginia
+Commonwealth University, research personnel may spendfrom 3.4 to 8.8 hours per participant on identifying, screening,
+and enrolling a patient in a clinical trial. The time and effort
+convert to approximately $129 USD per patient for an obser-vational trial versus $336 USD for a phase I enrollment.
+20
+As clinical trial participants become increasingly common
+and RCT protocol design includes ancillary discipline sup-port (ophthalmology, surgery, dentistry), the need to captureparticipant information in the EHR will increase. Without acentralized means of providing clinicians with current thera-
+pies, adverse event information, concomitant medications,
+and impending procedures, participant injury or withdrawalwill be a greater possibility. The American Society of Clini-cal Oncology stressed that, regardless of the EHR selectedfor use in oncology RCTs, the system must be interoperableto allow information exchange between departments andproviders, preventing missing information that can lead tocostly errors and participant safety lapses.
+2The first step
+may very well be data normalization and shared vocabulary
+management, as implemented by the Mayo Clinic.18Data
+comparability and consistency support accuracy and facili-tate integration of clinical trial data within the EHR or datawarehouses.
+18
+Discussion centered on clinician alerts pertaining to clini-
+cal trial participants, either concerning recruitment orpractice-related information. Benthin et al17noted the vari-
+ability in the use of alerts within EHRs. Of 38 institutionssurveyed as part of the National Institute of Health-fundedClinical Trial Network for the Prevention and Early Treat-ment of Acute Lung Injury, 57% of the sites noted use of
+alerts, but only 59% of these sites evaluated the alerts for ac-
+curacy or validity.
+17Furthermore, only 41% of sites used alerts
+for both clinical decision support and research; 29% used themonly for research-related purposes.
+17Query cycle time was re-
+ported as less than 1 hour, but still not immediate.17Comput-
+erized decision support systems are similar to alert systems,while already integrated in most EHRs. Moja et al
+16have
+launched an RCT assessing the use of MediDSS to im-
+prove care of oncology patients. Based on the rationale
+that data aggregation can support more sophisticated careplans and thus optimize patient outcomes, the use of thistechnology pertains to clinical trials, for example to man-age adverse events and identify trends.
+16
+CONCLUSIONS
+While literature focusing on clinical trial integration withinthe EHR is limited in nature, work is in progress on solutionsfor interoperability and clinical trial support within theEHR. Articles in this review provided a full view of the issues
+at hand with integration, such as technological limitations,
+legal implications, and stakeholder feedback. Standardiza-tion of data capture and presence of clinical trial informationwithin EHRs enhance trial conduct and support institutionefficiencies just as with routine clinical operations. Clinicaltrial participants provide their time, effort, and course oftreatment to advance scientific understanding of a diseaseor affliction. As a population, these participants deserve rec-
+ognition in EHRs to ensure the same protections as nonclin-
+ical trial participants. Likewise, patients within a systemshould be provided the opportunity to participate in clinicaltrials regardless of whether their provider is research focused,through the use of identification alerts within the EHR.Establishing clinical trial information within EHRs sends amessage: these participants are invaluable, assisting the prog-ress of medicine and, with their data, the ability to improve
+therapeutics.
+References
+1. Cowie MR , Blomster JI, Curtis LH, et al. Electronic health records to facilitate
+clinical research. Clinical Research in Cardiology . 2017;106(1): 1 –9.
+doi:10.1007/s00392-016-1025-6.
+2. Kanas G , Morimoto L, Mowat F , O'Malley C, Fryzek J, Nordyke R. Use of
+electronic medical records in oncology outcomes research.
+ClinicoEconomucs and Outcomes Research .
+2010;2: 1 –14.
+3. Hagglund M , Duncan TS, Kai-Larsen K, Hedlin G, Krakau I. IntegrIT —towards
+utilizing the Swedish national health information exchange platform for
+clinical research. Studies in Health Technology and Informatics .
+2017;235: 146 –150. doi:10.3233/978-1-61499-753-5-146.CONTINUING PROFESSIONAL DEVELOPMENT
+134 CIN: Computers, Informatics, Nursing March 2021
+Copyright © 2021 Wolters Kluwer Health, Inc. All rights reserved.
+
+4. De Moor G , Sundgren M, Kalra D, et al. Using electronic health records for
+clinical research: the case of the EHR4CR project. Journal of Biomedical .
+2015;53: 162 –173. doi:10.1016/j.jbi.2014.10.006.
+5. Turisco F , Keogh D, Stubbs C, Glaser J, Crowley WF Jr. Current status of
+integrating information technologies into the clinical research enterprise
+within US academic health centers: strategic value and opportunities
+for investment. Journal of Investigative Medicine . 2005;53(8):
+425–433. doi:10.2310/6650.2005.53806.
+6. Schreiweis B , Trinczek B, Kopcke F , et al. Comparison of electronic health
+record system functionalities to support the patient recruitment process in
+clinical trials. International Journal of Medical Informatics . 2014;83(11):
+860–868. doi:10.1016/j.ijmedinf.2014.08.005.
+7. Girardeau Y , Doods J, Zapletal E, et al. Leveraging the EHR4CR platform to
+support patient inclusion in academic studies: challenges and lessonslearned. BMS Medical Research Methodology . 2017;17(1): 36.
+doi:10.1186/s12874-017-0299-3.
+8. Bruland P , McGilchrist M, Zapletal E, et al. Common data elements for
+secondary use of electronic health record data for clinical trial execution and
+serious adverse event reporting. BMS Medical Research Methodology .
+2016;16: 159. doi:10.1186/s12874-016-0259-3.
+9. Beresniak A , Schmidt A, Proeve J, et al. Cost-benefit assessment of using
+electronic health records data for clinical research versus current practices:
+contribution of the Electronic Health Records for Clinical Research
+(EHR4CR) European project. Contemporary Clinical Trials . 2016;46:
+85–91. doi:10.1016/j.cct.2015.11.011.
+10. Doods J , Bache R, McGilchrist M, et al. Piloting the EHR4CR platform across
+Europe. Methods of Information in Medicine . 2014;53(4): 264 –268.
+doi:10.3414/ME13-01-0134.
+11. Andersen JR , Byrjalsen I, Bihlet A, et al. Impact of source data verification on
+data quality in clinical trials: an empirical post hoc analysis of three phase 3
+randomized clinical trials. British Journal of Clinical Pharmacology . 2015;
+79(4): 660 –668. doi:10.1111/bcp.12531.
+12. Gulliford MC , van Staa TP, McDermott L, et al. Cluster randomized trials
+utilizing primary care electronic health records: methodological issues indesign, conduct, and analysis (eCRT study). Trials . 2014;15: 220.
+doi:10.1186/1745-6215-15-220.
+13. Ni Y , Wright J, Perentesis J, et al. Increasing the efficiency of trial-patient
+matching: automated clinical trial eligibility pre-screening for pediatric
+oncology patients. BMC Medical Informatics and Decision Making . 2015;15:
+28. doi:10.1186/s12911-015-0149-3.
+14. Effoe VS , Katula JA, Kirk JK, et al. The use of electronic medical records for
+recruitment in clinical trials: findings from the Lifestyle Intervention for
+Treatment of Diabetes trial. Trials . 2016;17(1): 496. doi:10.1186/
+s13063-016-1631-7.
+15. Vawdrey DK , Wilcox LG, Collins S, et al. Awareness of the care team in
+electronic health records. Applied Clinical Informatics . 2011;2(4): 395 –405.
+doi:10.4338/ACI-2011-05-RA-0034.
+16. Moja L , Passardi A, Capobussi M, et al. Implementing an evidence-based
+computerized decision support system linked to electronic health records to
+improve care for cancer patients: the ONCO-CODES study protocol for arandomized controlled trial. Implementation Science
+. 2016;11(1): 153.
+doi:10.1186/s13012-016-0514-3.
+17. Benthin C , Pannu S, Khan A, Gong M; NHLBI Prevention and Early Treatment
+of Acute Lung Injury (PETAL) Network. The nature and variability of
+automated practice alerts derived from electronic health records in a
+U.S. nationwide critical care research network. Annals of the American
+Thoracic Society . 2016;13(10): 1784 –1788. doi:10.1513/
+AnnalsATS.201603-172BC.
+18. Chute CG , Beck SA, Fisk TB, Mohr DN. The Enterprise Data Trust at Mayo
+Clinic: a semantically integrated warehouse of biomedical data. Journal of
+the American Medical Informatics Association: JAMIA . 2010;17(2): 131 –135.
+doi:10.1136/jamia.2009.002691.
+19. PricewaterhouseCoopers. Transforming healthcare through secondary use of
+health data. http://www.pwc.com/us/en/healthcare/publications/
+secondary-health-data.jhtml. Accessed June 2, 2018.
+20. Penberthy LT , Dahman BA, Petkov VI, DeShazo JP. Effort required in eligibility
+screening for clinical trials. Journal of Oncology Practice . 2012;8(6):
+365–370. doi:10.1200/JOP .2012.000646.
+For more than 197 additional continuing professional development articles
+related to Research topics, go to NursingCenter.com/ce.
+Nursin g Continuin g 
+Professional Develo pmen t
+INSTRUCTIONS
+Clinical Research Integration Within the Electronic Health Record: A Literature Review
+TEST INSTRUCTIONS:
+Read the article. The test for this nursing continuing professional
+development (NCPD) activity is to be taken online at http://www.
+NursingCenter.com/ce/CIN . Tests can no longer be mailed or faxed.
+You'll need to create an account (it's free!) and log in to access
+My Planner before taking online tests. Your planner will keep track
+of all your Lippincott Professional Development online NCPD
+activities for you.
+There's only one correct answer for each question. A passing score
+for this test is 7 correct answers. If you pass, you can print your
+certificate of earned contact hours and access the answer key. If you
+fail, you have the option of taking the test again at no additional cost.
+For questions, contact Lippincott Professional Development:
+1-800-787-8985.
+Registration deadline is March 3, 2023.Provider Accreditation:
+Lippincott Professional Development will award 2.0 contact hours for this nursingcontinuing professional development activity.
+Lippincott Professional Development is accredited as a provider
+of nursing continuing professional development by the AmericanNurses Credentialing Center's Commission on Accreditation.
+This activity is also provider approved by the California Board
+of Registered Nursing, Provider Number CEP 11749 for 2.0 contacthours. Lippincott Professional Development is also an approved
+provider of continuing nursing education by the District of Columbia, Georgia,
+and Florida, CE Broker #50-1223. Your certificate is valid in all states.
+Payment: The registration fee for this test is $21.95.
+Volume 39 | Number 3 CIN: Computers, Informatics, Nursing 135
+Copyright © 2021 Wolters Kluwer Health, Inc. All rights reserved.

@@ -1,0 +1,1529 @@
+Trends in Adaptive Design Methods in Dialysis Clinical
+Trials: A Systematic Review
+Conor Judge, Robert Murphy, Catriona Reddin, Sarah Cormican, Andrew Smyth,
+Martin O ’Halloran, and Martin J. O ’Donnell
+Rationale & Objective: Adaptive design methods
+are intended to improve the ef ﬁciency of clinical
+trials and are relevant to evaluating interventions in
+dialysis populations. We sought to determine the
+use of adaptive designs in dialysis clinical trials and
+quantify trends in their use over time.
+Study Design: We completed a novel full-text
+systematic review that used a machine learning
+classi ﬁer (RobotSearch) for ﬁltering randomized
+controlled trials and adhered to the Preferred
+Reporting Items for Systematic Review and Meta-
+analysis (PRISMA) guidelines.
+Setting & Study Populations: We searched
+MEDLINE (PubMed) and ClinicalTrials.gov using
+sensitive dialysis search terms.
+Selection Criteria for Studies: We included all
+randomized clinical trials with patients receiving
+dialysis or clinical trials with dialysis as a primary or
+secondary outcome. There was no restriction of
+disease type or intervention type.
+Data Extraction & Analytical Approach: We per-
+formed a detailed data extraction of trial characteris-
+tics and a completed a narrative synthesis of the data.
+Results: 57 studies, available as 68 articles and 7
+ClinicalTrials.gov summaries, were included after
+full-text review (initial search, 209,033 PubMedabstracts and 6,002 ClinicalTrials.gov summaries).
+31 studies were conducted in a dialysis population
+and 26 studies included dialysis as a primary or
+secondary outcome. Although the absolute number
+of adaptive design methods is increasing over time,
+the relative use of adaptive design methods in
+dialysis trials is decreasing over time (6.12 %in
+2009 to 0.43 %in 2019, with a mean of 1.82 %).
+Group sequential designs were the most common
+type of adaptive design method used. Adaptive
+design methods affected the conduct of 50.9 %of
+trials, most commonly resulting in stopping early for
+futility (41.2 %) and early stopping for safety
+(23.5%). Acute kidney injury was studied in 32 trials
+(56.1%), kidney failure requiring dialysis was
+studied in 24 trials (42.1 %), and chronic kidney
+disease was studied in 1 trial (1.75 %). 27 studies
+(47 .4%) were supported by public funding. 44
+studies (77 .2 %) did not report their adaptive design
+method in the title or abstract and would not be
+detected by a standard systematic review.
+Limitations: We limited our search to 2 databases
+(PubMed and ClinicalTrials.gov ) due to the scale of
+studies sourced (209,033 and 6,002 results,
+respectively).
+Conclusions: Adaptive design methods are used
+in dialysis trials but there has been a decline in their
+relative use over time.
+Randomized clinical trials (RCTs) are the gold standard
+for evaluating the efﬁcacy, futility, or harm of new
+therapies.2Compared with similar medical specialties,
+nephrology has traditionally had a low number of RCTs,particularly evident for patients with kidney failure
+requiring dialysis.
+3The comparatively low number of trials
+are postulated to be due to difﬁcult recruitment, previoushistory of underpowered trials, and lack of funding.
+4,5
+Although the number of trials is increasing, nephrology
+continues to lag behind other specialties such as cardiology,hematology/oncology, and gastroenterology.
+6,7,*
+Adaptive clinical trials use interim data analyses to
+modify the trial design or duration in a predeﬁned way8
+without undermining the integrity or validity of thetrial, thereby preserving the type 1 error (false-positive)
+rate. The most common type of adaptive design is the
+group sequential design, in which planned interim ana-lyses permit stopping of trials for efﬁcacy or futility. Otherdesigns include sample size re-estimation, multiarm
+multistage trials, adaptive randomization, biomarker adap-tive, and seamless phase 2/3 trials
+9(Box 1 ).
+Adaptive clinical trials appear particularly suitable for
+the evaluation of novel interventions in dialysis by
+reducing resource requirements, decreasing time to study
+completion, and increasing the likelihood of study success,that is, power to answer hypothesis.
+10Previous trials in
+dialysis have overly relied on observational data to informtrial design, including assumptions of expected effect sizeand variance,
+11rather than estimates from early-phase
+clinical trials. If incorrect, trials may be underpoweredwith an insufﬁcient sample size to answer the underlying
+research question.
+11Adaptive sample size re-estimation is a
+potential solution, as commonly used in cardiology trials,12
+such as planned blinded sample size re-estimation, whichidentiﬁes inaccurate assumptions, thereby triggering alteredrecruitment targets midtrial to ensure adequate power.
+Adaptive design may also be relevant when evaluating
+more established interventions. For example, the DeutscheDiabetes Dialyse Studie (4D)
+13reported that atorvastatin,Complete author and article
+information provided beforereferences.
+Correspondence to
+C. Judge ( conorjudge@
+gmail.com )
+Kidney Med. 3(6):925-941.
+Published online August 20,2021.
+doi:10.1016/
+j.xkme.2021.08.001
+©2021 The Authors.
+Published by Elsevier Inc.on behalf of the National
+Kidney Foundation, Inc. This
+is an open access articleunder the CC BY license(http://creativecommons.
+org/licenses/by/4.0/ ).
+*This article is available as a preprint.1
+Kidney Med Vol 3 | Iss 6 | November/December 2021 925Original Research
+20 mg per day, did not reduce cardiovascular events in
+kidney failure requiring dialysis despite evidence of a 20%to 30% reduction in other populations.
+14This trial
+included a single dose of statin; it is hypothesized thatalternative or multiple doses may have been more bene-ﬁcial in a dialysis population given the signiﬁcantly alteredpharmacokinetics and pharmacodynamics.
+11,15An adap-
+tive multiarm multistage trial design may have been more
+appropriate with 1 interim analysis at the end of stage I toidentify an optimum dose to take forward into stage II. Forexample, the Telmisartan and Insulin Resistance in HIV(TAILoR) trial used a multiarm multistage design with 1interim analysis to identify the most appropriate doseamong 3 telmisartan doses (20, 40, and 80 mg daily). All3 doses were tested in stage I and telmisartan, 80 mg, was
+taken forward into stage II.
+16
+This systematic review aims to: (1) summarize the use
+of adaptive design methodology in RCTs in dialysis pop-ulations and populations at risk for requiring dialysis; (2)describe the characteristics of the trials that use adaptivedesigns, including dialysis modality, funding, andgeographical location; (3) describe the characteristics ofadaptive trial designs in dialysis trials; (4) estimate the
+percentage of adaptive clinical trials in dialysis among all
+dialysis RCT; and (5) outline temporal trends in all of theabove.
+METHODS
+We performed a systematic review, reported according
+to the Preferred Reporting Items for Systematic Re-v i e w sa n dM e t a - a n a l y s e s( P R I S M A )g u i d e l i n e s .
+17The
+protocol was registered with PROSPERO(CRD42020163946) and published separately.
+18There
+were no age or English language restrictions. Aftertesting our predeﬁned search strategy,
+18we found a
+small number (n =16) of dialysis RCTs that reported
+an adaptive design method. We discovered that the
+adaptive design methods are often not reported in thetitle and abstract of articles and would not be detectedin a traditional systematic search. To overcome this,
+we developed a novel “full-text systematic review”protocol and to our knowledge, this is the ﬁrst use ofthis methodology.
+Search Method for the Identi ﬁcation of Trials
+Electronic Search: Dialysis Studies
+We performed an electronic search on MEDLINE
+(PubMed) and ClinicalTrials.gov from database incep-
+tion until June 1, 2020. Zotero was used as our referencemanager. The dialysis searc h terms were adapted from
+Beaubien-Souligny et al,
+192019 (and included dialysis,
+peritoneal dialysis, hemodia lysis, hemodiaﬁltration,
+hemodiaﬁltration, hemoﬁltration, haemoﬁltration,extracorporeal blood cleans ing, haemodialysis, renal
+dialysis, renal replacement, end stage kidney, end stage
+renal, stage 5 kidney , and stage 5 renal ( Table S1 ). The
+output was stored in the Research Information Systemsﬁle format for PubMed and XML ﬁles for ClinicalTrials.
+gov.Box 1. Adaptive Trial Designs
+Seamless phase 2-3 design: Combines a traditional phase
+2 with a phase 3 trial. Referred to as the “learning ”phase and
+“conﬁrmatory ”phase. This design can reduce sample size
+and time to market for a positive treatment.
+Sample-size re-estimation design: Allows for sample-
+size adjustment or re-estimation based on the results of
+interim analysis. Particularly useful if there is uncertainty
+about the treatment effect and variability and when inaccu-rate estimates could lead to overpowered or underpowered
+trials.
+GSD: Allows a trial to stop early based on the results of
+interim analysis. GSD is the most common type of adaptivedesign. GSD can take 3 forms: early ef ﬁcacy stopping, early
+futility stopping, and early ef ﬁcacy or futility stopping design.
+Multiarm multistage: A multistage design with several
+treatment arms. At interim analysis, inferior treatment arms
+are dropped based on prespeci ﬁed criteria. Ultimately the
+best arms and the control group are retained. Some exam-ples are pick-the-winners or drop-the-loser designs.
+Biomarker-adaptive design: Allows for adaptations using
+information obtained from biomarkers. Often used in drug
+trials to target very selective populations for whom the druglikely works well. The biomarker response at interim analysis
+can be used to determine the target population.
+Adaptive dose-escalation design: The dose level used to
+treat the next patient is based on the toxicity in the previouspatients and escalation rules.
+Abbreviation: GSD, group sequential design,PLAIN-LANGUAGE SUMMARY
+Adaptive designs make clinical trials more efﬁcient and
+are one part of the solution for optimizing the design of
+clinical trials in dialysis. We performed a systematic
+review by searching 2 large databases for dialysis trials
+with adaptive designs and found 57 examples. They are
+used mostly in trials of acute kidney injury, affected
+(changed a trial) half the studies they were used in, and
+are usually not reported in titles or abstracts of articles.
+We also found that the relative use of adaptive designs
+in nephrology is decreasing over time. Greater knowl-edge of adaptive design examples in dialysis will further
+improve uptake in dialysis randomized clinical trials.Judge et al
+926 Kidney Med Vol 3 | Iss 6 | November/December 2021
+Machine Learning Classi ﬁer: RCTs
+We used the high-sensitivity machine learning classiﬁer
+(RobotSearch) to identify RCTs from the PubMed dialysissearch output.
+15RobotSearch is a machine learning clas-
+siﬁcation algorithm combining an ensemble of supportvector machines and convolutional neural networks with a
+reported area under the curve of 0.987 (95% CI, 0.984-
+0.989) for RCT classiﬁcation. We adjusted the parametersof RobotSearch to perform a sensitive search to increase theproportion of RCTs that are correctly identiﬁed.
+15Studies
+classiﬁed as likely to be RCTs were sourced for the full-textsystematic review.
+Full-Text Systematic Review: Adaptive Design
+Methods
+We used Recoll for Windows to perform a full-text sys-
+tematic review on our dialysis randomized clinical trial
+search results from PubMed and ClinicalTrials.gov . Recoll
+is based on the Xapian search engine library and provides apowerful text extraction layer and a graphical interface.The adaptive design search terms were adapted fromBothwell et al,
+202018, and included phase 2/3, treatment
+switching, biomarker adaptive, biomarker adaptive design,biomarker adjusted, adaptive hypothesis, adaptive dose
+ﬁnding, pick the winner, drop the loser, sample size re-
+estimation, re-estimations, adaptive randomization,group sequential, adaptive seamless, adaptive design,interim monitoring, Bayesian adaptive, ﬂexible design,adaptive trial, play the winner, adaptive method, adaptive
+and dose and adjusting, response adaptive, adaptive allo-cation, adaptive signature design, treatment adaptive, co-
+variate adaptive, and sample size adjustment ( Table S2 ).
+Manual Full-Text Review
+We then performed manual full-text review to conﬁrm
+studies that were included in the ﬁnal systematic review.This process is summarized in a PRISMA ﬂowchart ( Fig 1 ).
+Full-text review was performed by C.J., R.M., and C.R.Disagreements were resolved by consensus and when a
+resolution was not reached by discussion, a consensus was
+reached through a third reviewer (M.J.O.).
+Inclusion/Exclusion Criteria for the Selection of
+Studies
+Type of Study Design and Participants
+RCTs of interventions in patients with kidney failure
+requiring dialysis and acute kidney injury (AKI) under-going kidney replacement therapy including hemodialysis,peritoneal dialysis, hemodiaﬁltration, and hemoﬁltration.We did not limit our population to any speciﬁc disease.
+Additionally, we included studies that included dialysis as
+either a primary or secondary outcome.
+Type of Intervention and Outcome
+We did not place a restriction on the intervention type andincluded trials that studied medications during dialysis,Pubmed Search – Title/Abstract
+N = 209,033
+Robot Search – RCT Machine Learning 
+Classifier
+N = 5452
+Full Text PDFs Sourced
+N = 5,022
+Recoll – Full Text Search
+N = 5,022Search terms - Dialysis
+dialysis OR peritoneal dialysis OR 
+hemodialysis OR hemodiafiltration OR 
+haemodiafiltration OR hemofiltration OR 
+haemofiltration OR extracorporeal blood 
+cleansing OR haemodialysis OR Renal 
+Dialysis OR Renal replacement OR end 
+stage kidney OR end stage renal OR stage 
+5 kidney OR stage 5 renal
+Search terms – Adaptive Design Methods
+"phase ii/iii" OR "treatment switching" OR 
+"biomarker adaptive" OR "biomarker 
+adaptive design" OR "biomarker adjusted" 
+OR "adaptive hypothesis" OR "adaptive 
+dose-finding" OR "pick-the-winner" OR 
+"drop-the-loser" OR "sample size re-
+estimation" OR "re-estimations" OR 
+"adaptive randomization" OR "group 
+sequential" OR "adaptive seamless" OR 
+"adaptive design" OR "Interim monitoring" 
+OR "Bayesian adaptive" OR "Flexible design" 
+OR "Adaptive trial" OR "play-the-winner" 
+OR "adaptive method" OR (adaptive AND 
+dose AND adjusting) OR "response 
+adaptive" OR "adaptive allocation" OR 
+"adaptive signature design" OR "treatment 
+adaptive" OR "covariate adaptive" OR 
+"sample size adjustment"Manual Review
+N = 358
+Included in Systematic Review
+N = 50 (66 reports)Clinicaltrials.gov – Title/Abstract
+N = 6,002
+Recoll – Full Text Search
+N = 6,002
+Manual Review
+N = 54
+Included in Systematic Review
+N = 9
+Figure 1. Preferred Reporting Items for Systematic Review and Meta-analysis (PRISMA) ﬂow diagram. Abbreviation: RCT, random-
+ized clinical trial.
+Kidney Med Vol 3 | Iss 6 | November/December 2021 927Judge et al
+medical devices, dialysis parameters, and dialysis modality.
+Dialysis parameter is any speciﬁcation of the dialysis
+treatment that can be changed at each session, for example,duration, ultraﬁltration rate, and sodium proﬁling. Weincluded all outcomes including surrogate markers,patient-centered outcomes, and hard clinical outcomes.
+Selection and Analysis of Trials
+C.J., R.M., and C.R. extracted the study characteristics
+independently and in parallel. Data collected included
+type of the adaptive design, stopping rule, impact ofadaptive design (ie, stopping for futility or efﬁcacy andsample size changes), trial population, intervention,dialysis modality, the country of the lead investigator,and the funder of the study (adapted from Hatﬁeldet al,
+212016; Table S3 ).
+Assessment of the Quality of the Studies: Risk of Bias
+We used the Cochrane Risk of Bias 2 Tool22to assess
+methodological quality of eligible trials, including randomsequence generation, allocation concealment, blinding ofparticipants and health care personnel, blinded outcomeassessment, completeness of outcome data, evidence ofselective reporting, and other biases. Risk-of-bias assess-ments were performed independently by C.J., R.M., C.R.,
+and S.C. and disagreements were resolved by consensus. If
+1 or more domains was rated as high, the study wasconsidered at high risk of bias. We summarized ourﬁndings in a risk-of-bias table using the revised Cochranerisk-of-bias tool for randomized trials
+23(Table S4 ).
+Data Synthesis
+A descriptive synthesis of the data was performed. We
+reported overall outcomes and outcomes by: (1) frequency
+and type of adaptive design; (2) adaptive designs as aproportion of studies classiﬁed as dialysis RCTs byRobotSearch; (3) population, intervention, and outcome,including dialysis modality (hemodialysis, peritonealdialysis, hemodiaﬁltration, and hemoﬁltration); (4) pub-lication in high-impact journals; (5) geographic locationand funding; (6) reporting of adaptive design methods in
+title and abstract; and (7) a risk-of-bias assessment.
+RESULTS
+The systematic search of articles on MEDLINE
+(PubMed) with dialysis keywords published beforeJune 1, 2020, identiﬁed 209,033 results. A total of5,452 articles were classiﬁed as probable RCTs by the
+machine learning classiﬁer RobotSearch.
+15Full-text
+articles were sourced (n =5,022) and we performed
+a full-text systematic review using adaptive designkeywords that identiﬁed 358 studies for manualscreening. A total of 50 studies, available as 66 arti-cles, were included after full-text review ( Fig 1 ). The
+systematic search of ClinicalTrials.gov with dialysis
+keywords published before June 1, 2020, identiﬁed6,002 registered studies. A systematic search of
+ClinicalTrials.gov summary ﬁles using adaptive design
+keywords identiﬁed 54 stud ies for full review and 9
+studies were included. In total, 57 studies, availableas 68 articles and 7 ClinicalTrials.gov summaries,
+were included in the ﬁnal analysis. A total of 31studies were conducted in dialysis populations and 26s t u d i e si n c l u d e dd i a l y s i sa sap r i m a r yo rs e c o n d a r youtcome.
+Study Characteristics
+Frequency and Type of Adaptive Design
+Figure 2 reports the number of adaptive designs by year
+and alongside the proportion of all dialysis RCTs that usedadaptive design methods. The absolute amount of dialysistrials using adaptive designs has increased each year butthis has not matched the overall increase in dialysis trialsand resulted in a relative decrease over time in the use ofadaptive design methods in dialysis trials, ranging from
+6.12% in 2009 to 0.43% in 2019, with a mean of 1.82%.
+A 1-way analysis of var1ance was conducted to deter-mine whether the proportion of adaptive trials wasdifferent by year. Adaptive trials proportion was statis-tically signiﬁcantly different between years, F
+17=3.391;
+P<0.001. Tukey post hoc analysis revealed statistically
+signiﬁcant differences between 2009 and 2013 ( −5.96
+[95% CI, −10.73 to −1.19]; P=0.002); 2019 ( −5.7
+[95% CI, −10.36 to −1.04]; P=0.003); 2018 ( −5.62 [95%
+CI,−10.29 to −0.96]; P=0.003), 2015 ( −5.33 [95%
+CI,−10.21 to −0.45]; P=0.02), 2020 ( −5.07 [95% CI, −9.81
+to−0.34]; P=0.021]; and between 2014 and 2019 ( −3.67
+[95% CI, −6.69 to −0.65]; P=0.003) and 2018 ( −3.6
+[95% CI, −6.62 to −0.58]; P=0.004).
+Group sequential designs were the most common type
+of adaptive design method used; 35 (61.4%) trials (22
+[71%] in dialysis populations and 13 [50%] in dialysis
+outcome trials; Table 124-65). The O’Brien-Fleming stop-
+ping boundary was the most common stopping rule, usedin 9 trials (25.7%), followed by Lan DeMets, used in 8trials (22.9%). A total of 29 trials (50.9%) were affectedby the use of group sequential adaptive design, including 7trials (41.2%) that stopped early for futility, 3 trials(17.6%) that stopped early for efﬁcacy, and 4 trials
+(23.5%) that stopped early for safety.
+Sample-size re-estimation was the second most com-
+mon type of adaptive design, used in 14 trials (24.6%); 8(25.8%) in dialysis populations and 6 (23.1%) in dialysisoutcome trials ( Table 2
+66-82). Eight trials (57.1%) were
+affected by the use of sample-size re-estimation adaptivedesign including 6 trials (75%) that increased samplesize.
+Phase 2/3 seamless design was the third most common
+type of adaptive design; 5 trials (8.8%); 1 (3.23%) indialysis populations and 4 (15.4%) in dialysis outcometrials ( Table 3
+83-89). Adaptive dose-escalation, Bayesian
+adaptive design, and interim analysis were used in 1 trialeach.
+928 Kidney Med Vol 3 | Iss 6 | November/December 2021Judge et al
+Population, Intervention, and Outcome Studied
+AKI was studied in 32 trials (56.1%), kidney failure
+requiring dialysis was studied in 24 trials (42.1%), andchronic kidney disease (CKD) was studied in 1 trial(1.75%). Figure 3 reports the number of each population
+under study per year and shows a larger increase inadaptive design methods in AKI populations comparedwith kidney failure requiring dialysis populations. Medi-
+cations were the most common intervention type, evalu-
+ated in 35 trials (61.4%), followed by dialysis modality in7 trials (12.3%) and dialysis parameter in 4 trials (7%).Hemodialysis was the most common dialysis modalitystudied in 32 trials (56.1%), followed by hemodialysis andhemodiaﬁltration in 8 trials (14%); hemodialysis, hemo-diaﬁltration, and hemoﬁltration in 7 trials (12.3%); andperitoneal dialysis in 4 trials (7%). Hard clinical outcomes
+were selected in 34 trials (59.6%), followed by surrogate
+outcomes in 20 trials (35.1%) and mixed in 3 trials(5.3%). The outcome measure was continuous in 15 trials(26.3%) and dichotomous in 42 trials (73.7%). Phase 3studies were the most common study phase, studied in 41trials (71.9%; Tables 1-3 ).
+Publication in High-Impact Journals
+A total of 32 studies (56.1%) were published in a high-
+impact journal (impact factor >9). Fourteen studies
+(24.6%) were published in the New England Journal of Medicine ,
+6 studies (10.5%) were published in the Journal of the
+American Medical Association , 4 studies (7%) were published in
+Trials , and 2 studies (3.5%) were published in the Journal of
+the American Society of Nephrology .Geographic Location and Funding
+The most common country of the lead author was the
+United States in 24 studies (42.1%), followed by Germanyin 7 studies (12.3%), France in 4 studies (7%), theNetherlands in 4 studies (7%), Australia in 3 studies(5.3%), and the United Kingdom in 3 studies (6%;Tables 1-3 ). Forty-nine studies (86%) were multicenter
+trials. Twenty-seven studies (47.4%) were supported by
+public funding, 21 studies (36.8%) were supported by
+private funding, 7 studies (12.3%) were supported byboth public and private funding, and 2 studies (3.5%) didnot report the source of funding.
+Reporting of Adaptive Design Method in Title and
+Abstract
+A total of 44 studies (77.2%) did not report their adaptive
+design method in the title or abstract and would not bedetected by a standard systematic review search.
+Risk of Bias
+Risk of bias was assessed for 40 trials (protocols andclinicaltrials.gov were excluded; Fig S1 ;Table S4 ). Overall
+risk of bias was deemed to be “low” in 17 trials (42.5%),“some concerns” in 13 trials (32.5%), and “high risk” in10 trials (25%). The randomization process led to some
+concerns for 10 studies (25%). Deviations from intended
+interventions led to some concerns for 4 studies (10%) andhigh risk for 6 studies (15%). Missing outcome data weredeemed to be some concerns for 2 studies (5%) trials andhigh risk of bias for 2 studies (5%). Measurement of02468
+0.0%2.0%4.0%6.0%8.0%
+2000 2005 2010 2015 2020
+YearNumber of StudiesProportion of Adaptive Design Studies in DialysisAdaptive Dose−Escalation
+Bayesian Adaptive DesignInterim analysis
+Seamless DesignSample−Size Reestimation
+GSD
+Figure 2. Adaptive design in dialysis randomized clinical trials by year. Abbreviation: GSD, group sequential design.
+Kidney Med Vol 3 | Iss 6 | November/December 2021 929Judge et al
+Table 1. Group Sequential Trials in Dialysis Randomized Clinical Trials
+Study Stopping RuleImpact of Adaptive
+Design Population InterventionPrimary
+OutcomeNature of Primary
+OutcomeDialysis
+ModalitySample
+Size of
+Study CountryFunder
+Type FunderStudy
+Phase
+AKI
+Acker et al24(2000) Pocock Signi ﬁcant difference in
+mortality observed at
+ﬁrst analysis; trial
+terminatedPatients with acute kidney
+failureThyroxine Medication Percentage requiring
+dialysisHD/HF 59 US NR NR Phase
+3
+ATN25,96(2008) Haybittle-Peto
+rule2 interim analyses
+performed as planned,trial continued per
+protocolCritically ill patients with
+AKI and failure of at least 1nonrenal organ or sepsisIntensive or less
+intensive KRTDialysis
+parameterDeath from any cause by
+d6 0HD/HF 1,124 US Public Cooperative
+studies programVA & NIDDKPhase
+3
+Ejaz et al
+26(2009) Z boundary Study stopped after
+completion of stagePatients undergoing high-
+risk cardiac surgeryNesiritide Medication Dialysis and/or all-cause
+mortality within 21 dHD 94 US Private Scios Inc Phase
+3
+IVOIRE27(2013) NR 1 interim analysis
+performed as planned,trial d/c due to dif ﬁculty
+recruitingCritically ill patients with
+septic shock and AKIHVHF Dialysis
+modality28-d mortality HF 140 France Public French Health
+MinistryPhase
+3
+FENO HSR
+28(2014) Reboussin et al
+and LanDeMetsstopping ruleStopped due to futility
+after interim analysis 3Critically ill cardiac surgery
+patients with AKIFenoldopam Medication Rate of KRT Any KRT 667 Italy Public Italian Ministry
+of HealthPhase
+3
+FBI
+29(2014) Fleming-
+Harrington (OBrien-Flemingboundary)Trial not complete Critically ill patients with
+AKI receiving CKRTEnoxaparin Medication Occurrence of venous
+thromboembolismHD/
+HDF/HF266 Denmark Public Danish society
+ofanesthesiology;intensivemedicines
+research
+initiativePhase
+3
+HEROICS
+30(2015) Triangular test
+(Whitehead1978)At sequential interim
+analysis 3 trial wasstopped for futilityPatients with severe shock
+requiring high-dosecatecholamines 3-24 hpost–cardiac surgeryEarly HVHF Dialysis
+modality30-d mortality HF/HDF 224 France Public
+andprivateFrench Ministry
+of Health;Hospal-GambroPhase
+3
+AKIKI
+31,32(2016) O Brien-
+Flemingboundary2 interim analyses
+before ﬁnal analysis; no
+change to trialPatients with severe AKI
+requiring mechanicalventilation, catecholamineinfusion, or bothEarly or delayed
+strategy of KRTDialysis
+parameterOverall survival at d 60 HD 620 France Public French Ministry
+of HealthPhase
+3
+ELAIN Trial
+33,34(2016) O Brien-
+Fleming
+boundary1 interim analysis
+performed after half of
+total no. of deathsacross both treatmentgroups; no change totrialCritically ill patients with
+AKI and plasma NGAL
+level>150 ng/mLEarly or delayed
+initiation of KRTDialysis
+parameterMortality at 90 d HD/
+HDF/HF231 Germany Private Else-Kroner
+Fresenius
+StiftungPhase
+3
+LEVO-CTS
+35,97(2017) O Brien-
+Fleming
+boundaryNR Patients with EF <35%
+undergoing cardiac surgery
+with cardiopulmonarybypassIV levosimendan Medication Composite of 30-
+d mortality, KRT,
+perioperative MI, ormechanical cardiac assistdevice through d 5HD/
+HDF882 US Private Tenax
+TherapeuticsPhase
+3
+CULPRIT-SHOCK
+36,37
+(2018)O Brien-
+FlemingboundaryNR Patients with cardiogenic
+shock complicating acuteMICulprit lesion only,
+primary coronaryinterventionTreatment
+strategy30-d mortality or AKI
+requiring KRTHD/
+HDF706 Germany Public EU; German
+Heart ResearchFoundation;
+German
+Cardiac SocietyPhase
+3
+(Continued)
+930 Kidney Med Vol 3 | Iss 6 | November/December 2021Judge et al
+Table 1 (Cont'd). Group Sequential Trials in Dialysis Randomized Clinical Trials
+Study Stopping RuleImpact of Adaptive
+Design Population InterventionPrimary
+OutcomeNature of Primary
+OutcomeDialysis
+ModalitySample
+Size of
+Study CountryFunder
+Type FunderStudy
+Phase
+PRESERVE38(2018) O Brien-
+FlemingboundarySponsor stopped trial
+after prespeci ﬁed
+interim analysis due to
+absence of between-
+group differencePatients at high risk for
+kidney complicationsscheduled for angiography1.26
+%sodium
+bicarbonate or IV0.9
+%sodium
+chloride and 5 d of
+oral acetylcysteineor oral placeboMedication Composite of death, need
+for dialysis, or persistentincrease of at least 50
+%
+from baseline in Scr at 90 dHD 5,177 US Public US Dept of VA
+Ofﬁce of
+Research and
+Development;
+National Healthand MedicalResearchCouncil of
+AustraliaPhase
+3
+VIOLET
+39(2018) Lan DeMets Study stopped for futility
+after interim analysis 1Acute respiratory distress
+syndrome, vitamin Ddeﬁciency, and critical
+illnessVitamin D
+3 Medication 90-d all-cause mortality HD 1,358 US Public NHLBI Phase
+3
+Schanz et al40(2019) Jennison and
+TurnbullStudy stopped
+prematurely after interim
+analysis due to futilityPatients at high risk for AKI Screened with
+urinary [TIMP-2]
+[IGFBP7]Other Incidence of moderate to
+severe AKI within the ﬁrst
+d after admissionHD 100 Germany Public Robert-Bosch-
+FoundationPhase
+3
+HYVITS
+(NCT03380507) (2019)O Brien-
+FlemingboundaryTrial not complete Septic shock and critical
+illnessHydrocortisone,
+vitamin C, andthiamineMedication Hospital mortality at 60 d HD 212 Qatar Industry Hamad Medical
+CorpPhase
+2/3
+RICH
+41,42(2020) O Brien-
+Fleming
+boundaryStopped early for
+efﬁcacyCritically ill patients with
+AKIRegional citrate
+anticoagulation
+compared withsystemic heparinanticoagulationDialysis
+parameterFilter life span and 90-
+d mortalityHDF 596 Germany Public German
+Research
+FoundationPhase
+3
+REMOVE
+(NCT03266302) (2020)Pocock Trial not complete Infective endocarditis Hemoadsorber for
+removal of cytokinesMedical
+deviceChange in mean total
+SOFA scoreHD 288 Germany Public
+and
+privateGerman
+Federal Ministry of
+Education and Research;
+CytoSorbents EuropeGmbHPhase 2
+Kidney Failure Requiring Dialysis
+Besarab et al
+43(1998) Lan-DeMets Trial stopped at interim
+analysis 3 due toconcerns about safetyHD patients with clinical
+evidence of congestiveheart failure or ischemic
+heart diseaseEpoetin and target
+hematocritMedication Time to death or ﬁrst
+nonfatal MIHD 1,233 US Private Amgen Phase
+3
+ACTION II
+44(1999) Lan-DeMets Terminated enrollment
+due to unfavorableperceived risk-bene ﬁt
+ratioT2DM patients with kidney
+diseaseAminoguanidine Medication Doubling of Scr
+concentrationHD 900 US NR NR Phase
+3
+Chapman et al
+45(2007) Constrained
+stoppingboundaries2 interim analyses, trial
+continuedLiver resection, spine,
+peripheral arterial bypass,and dialysis access surgeryRecombinant
+human thrombin(rhThrombin)Medication Time to hemostasis HD 76 US Private ZymoGenetics,
+IncPhase
+3
+DAC
+46(2008) Lan DeMets Enrollment stopped
+after 877 patientsrandomized based on
+stopping rule for
+intervention ef ﬁcacyParticipants with ESKD
+undergoing new ﬁstula
+creationClopidogrel Medication Fistula thrombosis HD 877 US Public NIDDK; NIH Phase
+3
+DAC
+47(2009) Lan DeMets 5 planned interim
+analyses performedbefore ﬁnal analysis; no
+change to trialParticipants with placement
+of a new arteriovenous graftExtended-release
+dipyridamole plusaspirinMedication Loss of primary unassisted
+patencyHD 649 US Public
+andprivateNIDDK; NIH;
+BoehringerIngelheimPhase
+3
+(Continued)
+Kidney Med Vol 3 | Iss 6 | November/December 2021 931Judge et al
+Table 1 (Cont'd). Group Sequential Trials in Dialysis Randomized Clinical Trials
+Study Stopping RuleImpact of Adaptive
+Design Population InterventionPrimary
+OutcomeNature of Primary
+OutcomeDialysis
+ModalitySample
+Size of
+Study CountryFunder
+Type FunderStudy
+Phase
+AURORA48,49(2009) Event driven Continuation of study
+was recommended bydata and safety
+monitoring boardMaintenance HD patients Rosuvastatin Medication Death from cardiovascular
+causes, nonfatal MI, ornonfatal strokeHD 2,776 Sweden Private AstraZeneca Phase
+3
+ACCORD
+50(2010) Lan DeMets Intensive therapy
+stopped before studyend due to increasedmortalityVolunteers with established
+T2DM, HbA
+1c≥7. 5%, and
+CVD or ≥2 CVD risk factorsTarget
+HbA 1c<6.0%.Treatment
+targetDialysis or kidney
+transplantation orScr>291.7 μ/L or retinal
+photocoagulation orvitrectomyHD 10,251 US Public NHLBI Phase
+3
+OPPORTUNITY
+51,52
+(2011)Event-driven Trial terminated early
+due to slow recruitmentAdult maintenance HD
+patientsRecombinant
+human growthhormoneMedication Mortality HD 695 US Private Novo Nordisk Phase
+3
+CONTRAST
+53,54(2012) Double
+triangular test
+(Whitehead
+2007)Board recommended to
+stop trial as enough
+evidence was provided
+for futilityPatients with ESKD Online HDF Dialysis
+modalityAll-cause mortality HD/
+HDF714 the
+NetherlandsPublic
+and
+privateDutch Kidney
+Foundation;
+Fresenius
+Medical Care;Gambro LundiaPhase
+3
+HONEYPOT
+55,56(2014) Haybittle-Peto
+ruleStopping rule for
+efﬁcacy not met and
+study was completed as
+per protocolPD patients Daily topical exit-site
+application ofantibacterial honeyMedication Time to ﬁrst infection
+related to PDPD 371 Australia Public
+andprivateBaxter
+Healthcare;Queensland
+Government;
+Comvita;GambroPhase
+3
+HALT-PKD
+57(2014) Lan DeMets Study extended due to
+lower-than-expected no.
+of end pointsPatients with ADPKD Lisinopril and
+telmisartanMedication Time to death, ESKD, or
+50%reduction from
+baseline eGFR.HD 486 US Public NIDDK Phase
+3
+Knoll et al58,59(2015) O Brien-
+FlemingboundaryExtended follow-up to
+4 y to increasestatistical power due toslower-than-expected
+recruitmentKidney transplant patients
+with proteinuria and eGFRof 20-55 mL/min/1.73 m
+2Ramipril Medication Doubling of Scr, ESKD, or
+deathHD 528 Canada Public Canadian
+Institutes ofHealthResearchPhase
+3
+PAVE
+60(2016) Lan DeMets Trial not complete Patients with native
+arteriovenous ﬁstulaPaclitaxel-coated
+balloonsMedical
+deviceTime to end of target lesion
+primary patencyHD 211 UK Public National
+Institute forHealthResearch EME
+programmePhase
+3
+OPN-305
+(NCT01794663) (2016)NR Unknown Kidney transplant recipients
+with delayed graft functionOPN-305
+(tomaralimab)Medication Measure of early graft
+functionHD 252 Ireland Industry Opsona
+TherapeuticsLtdPhase
+2
+FAVOURED
+61,62(2017) Haybittle-Peto
+ruleEarly cessation of
+recruitment, only interim
+analysis 1 was
+performedParticipants with stage 4 or
+5 CKD after arteriovenous
+ﬁstula creationFish oil
+supplementationMedication Fistula failure, a composite
+ofﬁstula thrombosis and/or
+abandonment and/or
+cannulation failure, at 12moHD 567 Australia Public
+and
+privateNational Health
+and Medical
+Research
+Council ofAustralia;AmgenAustralia Pty
+Ltd; Mylan EPDPhase
+3
+CREDENCE
+632019) Alpha spending
+functionPrespeci ﬁed ef ﬁcacy
+criteria for early
+cessation were
+achieved so boardrecommended that trialbe stoppedPatients with T2DM and
+albuminuric CKDCanagli ﬂozin Medication Composite of ESKD
+(dialysis, transplantation,
+sustained GFR <15),
+doubling of Scr, or deathfrom kidney orcardiovascular causesHD 4,401 Australia Private Janssen
+Research and
+DevelopmentPhase
+3
+(Continued)
+932 Kidney Med Vol 3 | Iss 6 | November/December 2021Judge et al
+outcome measures was deemed to be some concerns for 2
+studies (5%) trials and high risk of bias for 1 study (2.5%).
+Selection of the reported result was deemed to be someconcerns for 6 studies (15%) trials and high risk of bias for1 study (2.5%).
+DISCUSSION
+In this systematic review, we report that adaptive design
+methods were used in 57 dialysis RCTs over a 20-year
+period. Although the absolute number has increased overtime, the relative use of adaptive design methods in trialsin dialysis populations and trials with dialysis as an endpoint has decreased.
+First, we report that the relative proportion of adaptive
+design methods in dialysis trials has decreased over time.The absolute number of dialysis trials using adaptive de-
+signs has increased each year, but this has not matched the
+overall increase in dialysis trials and therefore resulted in arelative decrease. We were unable to compare this resultwith other specialties because recent systematic reviewshave not reported the relative use of adaptive designs.
+21,90
+Second, we report that group sequential designs are the
+most used type of adaptive design in dialysis trials. This issimilar to previous systematic reviews in cardiology
+91and
+oncology90and in a review of registered clinical trials
+covering multiple specialties on clinicaltrials.gov.21
+Third, we report that adaptive designs were more
+common in AKI (56.1% of trials) than kidney failurerequiring dialysis (42.1% of trials). This may reﬂectincreasing use of adaptive design methodology in criticalcare
+92and sepsis-related trials,93in which AKI is most
+common. There were very few trials of CKD with a dialysis
+outcome (2%) that used an adaptive design. Many reasons
+for the paucity of CKD trials have been previously sug-gested, including the use of treatments in CKD despite alack of evidence, difﬁculty recruiting to CKD trials due tostringent eligibility criteria, and underpowered subgroupanalysis.
+4,94The infrequent use of adaptive designs in CKD
+trials may become a self-perpetuating barrier to usingadaptive designs in future trials.
+21
+Fourth, we report that adaptive design methods affected
+the conduct of the randomized trial in most studies(50.9%). For example, 17 (48.6%) trials were affected bythe use of group sequential adaptive design, including 7trials (41.2%) stopped early for futility, 3 trials (17.6%)stopped early for efﬁcacy, and 4 trials (23.5%) stoppedearly for safety. This ﬁnding is similar to a systematic re-view of published and publicly available trials in which the
+most common reason for stopping group sequential trials
+was futility.
+20
+Fifth, we found that the most common country of the
+lead author was the United States, 24 studies (42.1%), andthe most common funding source was public, 27 studies(47.4%). This ﬁnding was different from a systematic re-view of published and publicly available trials in which65% of trials reported industry funding.
+20Funding forTable 1 (Cont'd). Group Sequential Trials in Dialysis Randomized Clinical Trials
+Study Stopping RuleImpact of Adaptive
+Design Population InterventionPrimary
+OutcomeNature of Primary
+OutcomeDialysis
+ModalitySample
+Size of
+Study CountryFunder
+Type FunderStudy
+Phase
+DECLARE-TIMI 5864
+(2019)O Brien-
+Flemingboundary2 interim analyses
+performed; no changeto trialPatients with T2DM who
+had or were at risk foratherosclerotic CVDDapagli ﬂozin Medication Cardiovascular death, MI,
+or ischemic stroke orhospitalization for heart
+failureHD 17 ,160 US Private AstraZeneca Phase
+3
+CONVINCE
+65(2020) Haybittle-Peto
+ruleTrial not complete Patents with ESKD treated
+with HDHigh-dose HF
+conventional high-ﬂux HDDialysis
+modalityAll-cause mortality HD/
+HDF1,800 the
+NetherlandsPublic European
+Union ’s Horizon
+2020 researchand innovationprogrammePhase
+3
+Abbreviations: ADPKD, autosomal dominant polycystic kidney disease; AKI, acute kidney injury; CKD, chronic kidney disease; CKRT, continuous kidn ey replacement therapy; CVD, cardiovascular disease;; d/c, discontinued; EF,
+ejection fraction; eGFR, estimated glomerular ﬁltration rate; ESKD, end-stage kidney disease; HbA1c, glycated hemoglobin; HD, hemodialysis; HDF, hemodia ﬁltration; HF, hemo ﬁltration; HVHF, high-volume hemo ﬁltration;
+IGFBP7 , insulin like growth factor binding protein 7; IV, intravenous; KRT, kidney replacement therapy; MI, myocardial infarction; NGAL, neutroph il gelatinase-associated lipocalin; NHLBI, National Heart, Lung, and Blood Institute;
+NIDDK, National Institute of Diabetes and Digestive and Kidney Diseases; NIH, National Institutes of Health; NR, not reported; PD, peritoneal dialy sis; Scr, serum creatinine; SOFA, Sequential Organ Failure Assessment; T2DM,
+type 2 diabetes mellitus; VA, Veterans Administration.
+Kidney Med Vol 3 | Iss 6 | November/December 2021 933Judge et al
+Table 2. Sample-Size Re-estimation in Dialysis Randomized Clinical Trials
+StudyImpact of Adaptive
+Design Population InterventionPrimary
+OutcomeNature of Primary
+OutcomeDialysis
+ModalitySample
+Size CountryFunder
+Type FunderStudy
+Phase
+AKI
+Hemodiafe66
+(2006)Sample size adjusted to
+include 180 patients pergroupCritically ill patients
+with acute kidneyfailure as part of
+multiple-organ
+dysfunctionsyndromeIntermittent HD vs
+CVHDFDialysis
+modality60-d survival HD/HDF 360 France Public Societe de Reanimation
+de Langue FrancaisePhase 4
+Riley et al
+67
+(2014)Data from initial 10
+randomized patients
+demonstrated >50%
+difference in urine
+output, revealingadequate power wouldbe achieved with only
+20 randomized patientsInfants <90 d old
+with congenital
+heart disease who
+underwent bypasssurgery and werepostoperativelytreated with CPDContinue 24 h more
+CPD or discontinue
+CPDDialysis
+modalityUrine output (mL/kg per
+h)PD 20 US Public Baylor College of
+Medicine; Cincinnati
+Children - Hospital
+Medical CenterPhase 3
+SCD
+68(2015) Study terminated by
+sponsor at interimanalysis because SCDtreatment was often
+outside the
+recommended iCarange and thereforeresulted in ineffectivetherapyICU patients with
+AKISelective cytopheretic
+deviceMedical device 60-d mortality HDF 134 US Private CytoPherx, Inc. Phase 3
+TARTARE-2S
+69
+(2016)Trial not complete Patients with septic
+shockTargeted tissue
+perfusion vsmacrocirculation-guidedstandard careTreatment
+strategyAlive at 30 d with normal
+arterial blood lactateand without inotropic orvasopressor agentHD/HDF/HF 200 Switzerland Public Sigrid Juselius
+Foundation;InstrumentariumFoundation; HelsinkiUniversity HospitalPhase 3
+Kwiatkowski
+et al
+70(2017)NR Infants after
+congenital heart
+surgeryPD Dialysis
+modalityNegative ﬂuid balance PD 73 US Public American Heart
+Association Great
+Rivers Af ﬁliate; internal
+funding from CincinnatiChildren ’s Hospital
+Medical CenterPhase 2
+ANDROMEDA-
+SHOCK
+71
+(2018)Trial not complete Patients with septic
+shockPeripheral perfusion-
+targeted resuscitationOther 28-d mortality HD/HDF/HF 422 Chile Public Departamento de
+Medicina Intensiva,Ponti ﬁcia Universidad
+Catolica de ChilePhase 3
+COACT
+72,73
+(2019)After interim analysis,
+data and safety
+monitoring committeeadvised that samplesize not beincreasedPost–cardiac arrest
+patients without
+signs of STEMIImmediate coronary
+angiography and
+percutaneous coronaryinterventionTreatment
+strategy90-d mortality HD/HDF 552 the
+NetherlandsPublic Netherlands Heart
+InstitutePhase 3
+FRESH
+74
+(2020)Continue enrollment to
+increase sample size tomaximum of 210
+patientsPatients presenting
+to the ED withsepsis or septic
+shock and
+anticipated ICUadmissionDynamic assessment of
+ﬂuid responsiveness
+(passive leg raise)Treatment
+strategyDifference in positive
+ﬂuid balance at 72 h or
+ICU dischargeHD/HDF/HF 124 US Private Cheetah Medical Phase 3
+(Continued)
+934 Kidney Med Vol 3 | Iss 6 | November/December 2021Judge et al
+Table 2 (Cont'd). Sample-Size Re-estimation in Dialysis Randomized Clinical Trials
+StudyImpact of Adaptive
+Design Population InterventionPrimary
+OutcomeNature of Primary
+OutcomeDialysis
+ModalitySample
+Size CountryFunder
+Type FunderStudy
+Phase
+CKD
+PREDICT75,76
+(2020)Sample size amended
+from 220 to 238 for
+each groupPatients with CKD
+without diabetesHigh and low
+hemoglobin groups
+(darbepoetin alfa)Medication Kidney composite end
+point (starting
+maintenance dialysis,kidney transplantation,eGFR <6 mL/min/
+1.73 m
+2, and 50 %
+reduction in eGFR)HD 491 Japan Private Kyowa Hakko Kirin;
+Otsuka; Dainippon
+Sumitomo; MochidaPhase 3
+Kidney Failure Requiring Dialysis
+Kratochwill
+et al77(2016)Led to premature
+termination of patientrecruitmentStable PD
+outpatientsAlanyl-glutamine
+addition to glucose-based PD ﬂuidMedication Heat-shock protein 72
+expressionPD 20 Austria Public ZIT - Technology Agency
+of the City of Vienna;FFG - the AustrianResearch PromotionAgencyPhase 2
+IDPN-Trial
+78
+(2017)Sample size was
+increased; primary
+outcome was signi ﬁcantMaintenance HD
+patients with
+protein-energywastingIDPN Medication Prealbumin HD 107 Germany Private Fresenius Kabi Germany
+GmbHPhase 4
+CHART
+79,80
+(2018)Sample-size re-
+estimation not
+performedUrologic patients
+undergoing elective
+cystectomyAlbumin 5 %or balanced
+hydroxyethyl starch 6 %Medication Ratio of serum cystatin
+C between last visit at
+d 90 and t preoperative
+visit 1HD 100 Germany Private CSL Behring GmbH Phase 3
+KALM-181
+(2019)NR HD patients with
+moderate to severepruritusIntravenous difelikefalin Medication 24-h Worst Itching
+Intensity NumericalRating ScaleHD 378 US Private Cara Therapeutics Phase 3
+Fujimoto et al
+82
+(2020)Sample size calculated
+by intermediate analysis
+ofﬁrst 30 samples
+enrolledPatients on
+maintenance HD
+3×/wkLidocaine/prilocaine
+cream (EMLA)Medication Puncture pain relief,
+measured using a 100-
+mm visual analog scaleHD 66 Taiwan Public Grant-in-aid for Young
+Scientists from the
+Japan Society for thePromotion of SciencePhase 2
+Abbreviations: AKI, acute kidney injury; CKD, chronic kidney disease; CPD, continuous peritoneal dialysis; CVHDF, continuous venovenous hemodia ﬁltration; ED, emergency department; eGFR, estimated glomerular ﬁltration
+rate; HD, hemodialysis; HDF, hemodia ﬁltration; HF, hemo ﬁltration; iCa, ionized calcium; ICU, intensive care unit; IDPN, intradialytic parenteral nutrition; NR, not reported; PD, peritoneal dialysis; SC D, selective cytopheretic device;
+STEMI, ST-elevation myocardial infarction.
+Kidney Med Vol 3 | Iss 6 | November/December 2021 935Judge et al
+Table 3. Seamless Design/Adaptive Dose Escalation in Dialysis Randomized Clinical Trials
+StudyImpact of
+AdaptiveDesign Population InterventionPrimary
+OutcomeNature of Primary
+OutcomeDialysis
+ModalitySample
+Size CountryFunder
+Type FunderStudy
+Phase
+Phase 2a/2b Seamless Design
+STOP-AKI83,84
+(2018)Combined
+efﬁcacy and
+dose- ﬁnding
+studyCritically ill
+patients withsepsis-associated AKIHuman recombinant
+alkalinephosphataseMedication Area under the time-
+correctedendogenouscreatinine clearancecurve from d 1-7HD 301 the
+NetherlandsPrivate AM-Pharma Phase
+2a/2b
+2-Stage Seamless Adaptive Design
+Himmelfarb et al
+85
+(2018)At end of each
+stage, datafrom patientsare used toselect the THR-
+184 dose arms
+for next stagePatients at high
+risk for AKI aftercardiac surgeryTHR-184 Medication Proportion of patients
+who developed AKIHD/
+HDF/HF452 US Private Thrasos
+Therapeutics, IncPhase
+2
+Adaptive Phase 2b/3
+SEPSIS-ACT
+86
+(2018)Trial was
+stopped forfutility at end ofpart 1Septic shock
+requiring >5μg/
+min ofnorepinephrineSelepressin Medication Vasopressor- and
+mechanical ventilator-free days (PVFDson)HD 868 US Industry Ferring
+PharmaceuticalsPhase
+2/3
+Phase 2/3 Seamless Design
+COMBAT-
+SHINE
+87(2020)Trial not
+completePatients with
+septicshock–induced
+endotheliopathyInfusion of iloprost Medication Mean daily modi ﬁed
+Sequential OrganFailure AssessmentscoreHD 384 Denmark Public Danish
+IndependantResearchOrganisationPhase
+2
+Cohen et al
+(NCT04381052)(2020)Trial not
+completePatients with life-
+threateningCOVID-19Clazakizumab Medication Cumulative incidence
+of serious adverseevents associatedwith clazakizumab orplaceboAny 30 US Public
+andprivateColumbia
+University; NYULangone Health;CSL BehringPhase
+2
+Adaptive Dose-Escalation
+EMPIRIKAL
+88
+(2017)Trial not
+completePatients after
+receivingdeceased donorkidneytransplantsMirococept Medication Delayed graft function HD/
+HDF/HF560 UK Public Medical Research
+CouncilPhase
+2
+Bayesian Adaptive Design
+ASTOUND
+(NCT02723591)(2019)Trial shortened
+to 1 y due to astopping ruleKidney
+transplantationTacrolimus Medication Percentage of
+participants positivefor de novo DSA orimmune activationoccurrenceHD 599 US Industry Astellas Pharma
+IncPhase
+4
+(Continued)
+936 Kidney Med Vol 3 | Iss 6 | November/December 2021Judge et al
+kidney research reached an all-time low in 20135but this
+has recently changed in the United States with advocacy
+from scientiﬁc societies such as the American Society ofNephrology, whereby an executive order was signed in2020 to reform the US end-stage kidney disease treatmentindustry.
+95Adaptive designs are one part of the solution
+for optimizing the design of clinical trials in dialysis andnephrology and will beneﬁt from the improvement in thefunding landscape.
+94
+Our study has several limitations. First, we limited our
+search to 2 databases (PubMed and ClinicalTrials.gov )
+due to the scale of studies sourced (209,033 and 6,002results). This was a devia tion from our protocol but
+necessary to make this full-text review feasible. Second,we decided to include RCTs with dialysis outcomes inaddition to patients current ly receiving dialysis. This
+permitted a more comprehe nsive review of the full
+landscape of AKI, kidney failu re requiring dialysis, and
+CKD trials, but was a deviation from our original pro-tocol. Third, the denominator for calculating the pro-portion of adaptive designs in all dialysis RCTs willinclude some false positives, that is, either not RCTs ornot dialysis. We modiﬁed the parameters of the machinelearning classiﬁer to perform a sensitive search to include
+as many true positives as possible. We expect this
+misclassiﬁcation bias to be i ndependent of time and bias
+every year equally and therefore not affect the trend.Fourth, publication bias, in which negative studies arenot published, will bias out results toward the null, forexample, our estimate of the impact of adaptive design(50.9%) would be higher if unpublished studies stoppedfor futility and not published were included.
+In summary, we developed a novel full-text systematic
+review search strategy. Forty-four studies (77.2%) did not
+report their adaptive design method in the title or abstractand would not be detected by a standard systematic reviewsearch methodology. This could introduce a reporting biasin which adaptive design methods are reported in the mainarticle but not in the abstract. Our novel strategy combinedclassical systematic review, machine learning classiﬁers,and a novel full-text systematic review. This new method
+has broad applications in medical evidence synthesis and
+evidence synthesis in general.
+Adaptive design methods improve the efﬁciency of
+RCTs in dialysis but their relative use in dialysis isdecreasing over time. Greater knowledge of adaptivedesign examples in dialysis will further improve uptake indialysis RCTs.
+SUPPLEMENTARY MATERIAL
+Supplementary File (PDF)
+Figure S1: Risk of Bias Assessment of Dialysis Randomized Clinical
+Trials With Adaptive Designs.
+Item S1: Prisma checklist.
+Table S1: Search strategy for MEDLINE (PubMed) and
+ClinicalTrials.gov .Table 3 (Cont'd). Seamless Design/Adaptive Dose Escalation in Dialysis Randomized Clinical Trials
+StudyImpact of
+AdaptiveDesign Population InterventionPrimary
+OutcomeNature of Primary
+OutcomeDialysis
+ModalitySample
+Size CountryFunder
+Type FunderStudy
+Phase
+Interim Analysis
+Hosgood et al89
+(2017)Trial not
+completePatients receiving
+kidney fromdonation aftercirculatory deathdonorEx vivo
+normothermicperfusionOther Rates of delayed graft
+function de ﬁned as
+need for dialysis inﬁrst wk
+posttransplantationHD 400 UK Public Kidney Research
+UK; University ofCambridge andUniversityHospitals ofCambridgeFoundation Trust.Phase
+2
+Abbreviations: AKI, acute kidney injury; COVID-19, coronavirus disease 2019; DSA, donor-speci ﬁc antibody; HD, hemodialysis; HDF, hemodia ﬁltration; HF, hemo ﬁltration; PD, peritoneal dialysis.
+Kidney Med Vol 3 | Iss 6 | November/December 2021 937Judge et al
+Table S2: Search strategy for Recoll (full-text search).
+Table S3: Characteristics of the trials.
+Table S4: Risk-of-bias assessment.
+ARTICLE INFORMATION
+Authors ’Full Names and Academic Degrees: Conor Judge, MB,
+Robert Murphy, MB, Catriona Reddin, MB, Sarah Cormican, MB,
+Andrew Smyth, MB, PhD, Martin O ’Halloran, PhD, and Martin J
+O’Donnell, MB, PhD.
+Authors ’Afﬁliations: HRB-Clinical Research Facility Galway (CJ,
+RM, CR, SC, AS, MJO) and Translational Medical Device Lab (CJ,MO), NUI Galway, Galway, Ireland; and Wellcome Trust-HRB, Irish
+Clinical Academic Training, Dublin, Ireland (CJ, CR, SC).
+Address for Correspondence: Conor Judge, MB, HRB-Clinical
+Research Facility Galway, National University of Ireland Galway,
+Newcastle Road, Galway, Ireland H91YR71. Email: conorjudge@
+gmail.com
+Authors ’Contributions: Study design: CJ, RM, MJO; data
+acquisition: CJ, RM, CR, SC; statistical analysis: CJ; Project
+supervision: AS, MO, MJO; Each author contributed importantintellectual content during manuscript drafting or revision and
+accepts accountability for the overall work by ensuring that
+questions pertaining to the accuracy or integrity of any portion ofthe work are appropriately investigated and resolved.
+Support: This work was performed within the Irish Clinical Academic
+Training Programme, supported by the Wellcome Trust and theHealth Research Board (grant number 203930/B/16/Z), theHealth Service Executive, National Doctors Training and Planning
+and the Health and Social Care, Research and Development
+Division, Northern Ireland. The funding source had no role in thestudy design, analysis, or writing of report.
+Financial Disclosure: The authors declare that they have no
+relevant ﬁnancial interests.Peer Review: Received April 13, 2021, as a submission to the
+expedited consideration track with 2 external peer reviews. Directeditorial input from the Editor-in-Chief. Accepted in revised formJuly 11, 2021.
+REFERENCES
+1. Judge C, Murphy R, Reddin C, et al. Adaptive design methods
+in dialysis clinical trials –a systematic review. Posted January
+26, 2021. medRxiv . 2021.01.22.21250343. https://doi.org/1
+0.1101/2021.01.22.21250343
+2.Bothwell LE, Greene JA, Podolsky SH, Jones DS. Assessing
+the gold standard —lessons from the history of RCTs. N Engl J
+Med. 2016;374(22):2175-2181 .
+3.Kovesdy CP. Clinical trials in end-stage renal dis-
+ease—priorities and challenges. Nephrol Dial Transplant .
+2019;34(7):1084-1089 .
+4.Baigent C, Herrington WG, Coresh J, et al. Challenges in
+conducting clinical trials in nephrology: conclusions from a
+Kidney Disease —Improving Global Outcomes (KDIGO) Con-
+troversies Conference. Kidney Int . 2017;92(2):297-305 .
+5.Bryan L, Ibrahim T, Zent R, Fischer MJ. The kidney research
+predicament. J Am Soc Nephrol . 2014;25(5):898-903 .
+6.Chatzimanouil MKT, Wilkens L, Anders H-J. Quantity and
+reporting quality of kidney research. J Am Soc Nephrol .
+2019;30(1):13-22 .
+7.Yaseen M, Hassan W, Awad R, et al. Impact of recent clinical
+trials on nephrology practice: are we in a stagnant era? Kidney
+Dis. 2019;5(2):69-80 .
+8.Chow S-C, Chang M, Pong A. Statistical consideration of
+adaptive methods in clinical development. J Biopharm Stat .
+2005;15(4):575-591 .
+9. Pallmann P, Bedding AW, Choodari-Oskooei B, et al. Adaptive
+designs in clinical trials: why use them, and how to run and02468
+2000 2005 2010 2015 2020
+YearNumber of StudiesAcute Kidney Injury Chronic Kidney Disease End Stage Kidney Disease
+Figure 3. Populations with adaptive design in dialysis randomized clinical trials by year.
+938 Kidney Med Vol 3 | Iss 6 | November/December 2021Judge et al
+report them. BMC Med . 2018;16(1). Accessed April 23, 2020.
+https://bmcmedicine.biomedcentral.com/articles/10.1186/s12
+916-018-1017-7
+10. Adaptive Design Clinical Trials for Drugs and Biologics. U.S.
+Food and Drug Administration. 2019. Accessed November 18,
+2019. http://www.fda.gov/regulatory-information/search-fda-
+guidance-documents/adaptive-design-clinical-trials-drugs-
+and-biologics
+11. Novak JE, Inrig JK, Patel UD, Califf RM, Szczech LA. Negative
+trials in nephrology: what can we learn? Kidney Int .
+2008;74(9):1121-1127 .
+12. Chaitman BR. Effects of ranolazine with atenolol, amlodipine, or
+diltiazem on exercise tolerance and angina frequency in pa-
+tients with severe chronic angina a randomized controlled trial.
+JAMA . 2004;291(3):309-316 .
+13. Wanner C, Krane V, M €arz W, et al. Atorvastatin in patients with
+type 2 diabetes mellitus undergoing hemodialysis. N Engl J
+Med. 2005;353(3):238-248 .
+14. Cheung BMY, Lauder IJ, Lau C-P, Kumana CR. Meta-analysis
+of large randomized controlled trials to evaluate the impact of
+statins on cardiovascular outcomes. Br J Clin Pharmacol .
+2004;57(5):640-651 .
+15. Velenosi TJ, Urquhart BL. Pharmacokinetic consider-
+ations in chronic kidney disease and patients requiring
+dialysis. Expert Opin Drug Metab Toxicol . 2014;10(8):
+1131-1143 .
+16. Pushpakom S, Kolamunnage-Dona R, Taylor C, et al. TAILoR
+(TelmisArtan and InsuLin Resistance in Human Immunode ﬁ-
+ciency Virus [HIV]): an adaptive-design, dose-ranging phase iib
+randomized trial of telmisartan for the reduction of insulin
+resistance in HIV-positive individuals on combination antire-
+troviral therapy. Clin Infect Dis . Accessed April 23, 2020.
+https://academic.oup.com/cid/advance-article/doi/10.1093/
+cid/ciz589/5527878
+17. Moher D, Liberati A, Tetzlaff J, Altman DG; for the PRISMA
+Group. Preferred reporting items for systematic reviews and
+meta-analyses: the PRISMA statement. BMJ . 2009;339(1):
+b2535 .
+18. Judge C, Murphy RP, Cormican S, Smyth A, O ’Halloran M,
+O’Donnell M. Adaptive design methods in dialysis clinical trials:
+a systematic review protocol. BMJ Open . 2020;10(8):
+e036755 .
+19. Beaubien-Souligny W, Kontar L, Blum D, Bouchard J,
+Denault AY, Wald R. Meta-analysis of randomized controlled
+trials using tool-assisted target weight adjustments in chronic
+dialysis patients. Kidney Int Rep . 2019;4(10):1426-1434 .
+20. Bothwell LE, Avorn J, Khan NF, Kesselheim AS. Adaptive
+design clinical trials: a review of the literature and ClinicalTrials.
+gov. BMJ Open . 2018;8(2):e018320 .
+21. Hat ﬁeld I, Allison A, Flight L, Julious SA, Dimairo M. Adaptive
+designs undertaken in clinical research: a review of registered
+clinical trials. Trials . 2016. Accessed August 21, 2020. http://
+www.trialsjournal.com/content/17/1/150
+22. Sterne JA, Savovi /C19c J, Page MJ, et al. RoB 2: a revised tool for
+assessing risk of bias in randomised trials. BMJ . 2019;366. doi:
+10.1136/bmj.l4898
+23. Higgins JPT, Altman DG, Gotzsche PC, et al. The Cochrane
+Collaboration ’s tool for assessing risk of bias in randomised
+trials. BMJ . 2011;343(2):d5928 .
+24. Acker CG, Singh AR, Flick RP, Bernardini J, Greenberg A,
+Johnson JP. A trial of thyroxine in acute renal failure. Kidney Int .
+2000;57(1):293-298 .
+25. Sharma S, Kelly YP, Palevsky PM, Waikar SS. Intensity of renal
+replacement therapy and duration of mechanical ventilation.
+Chest . 2020;158(4):1473-1481 .26. Ejaz AA, Martin TD, Johnson RJ, et al. Prophylactic nesiritide
+does not prevent dialysis or all-cause mortality in patients un-
+dergoing high-risk cardiac surgery. J Thorac Cardiovasc Surg .
+2009;138(4):959-964 .
+27 . Joannes-Boyau O, Honor /C19e PM, Perez P, et al. High-volume
+versus standard-volume haemo ﬁltration for septic shock pa-
+tients with acute kidney injury (IVOIRE study): a multicentre
+randomized controlled trial. Intensive Care Med . 2013;39(9):
+1535-1546 .
+28. Bove T, Zangrillo A, Guarracino F, et al. Effect of fenoldopam on
+use of renal replacement therapy among patients with acute
+kidney injury after cardiac surgery: a randomized clinical trial.
+JAMA . 2014;312(21):2244-2253 .
+29. Robinson S, Zincuk A, Larsen UL, Ekstr øm C, Toft P. A feasible
+strategy for preventing blood clots in critically ill patients with
+acute kidney injury (FBI): study protocol for a randomized
+controlled trial. Trials . 2014;15(1). Accessed October 27 ,
+2020. https://trialsjournal.biomedcentral.com/articles/1
+0.1186/1745-6215-15-226
+30. Combes A, Br /C19echot N, Amour J, et al. Early high-volume
+hemo ﬁltration versus standard care for post –cardiac surgery
+shock. the HEROICS Study. Am J Respir Crit Care Med .
+2015;192(10):1179-1190 .
+31. Gaudry S, Hajage D, Schortgen F, et al. Initiation strategies for
+renal-replacement therapy in the intensive care unit. N Engl J
+Med. 2016;375(2):122-133 .
+32. Gaudry S, Hajage D, Schortgen F, et al. Comparison of two
+strategies for initiating renal replacement therapy in the inten-
+sive care unit: study protocol for a randomized controlled trial
+(AKIKI). Trials . 2015;16(1):170. https://doi.org/10.1186/s13
+063-015-0718-x .
+33. Zarbock A, Kellum JA, Schmidt C, et al. Effect of early vs
+delayed initiation of renal replacement therapy on
+mortality in critically ill patients with acute kidney injury: the
+ELAIN randomized clinical trial. JAMA . 2016;315(20):
+2190-2199 .
+34. Zarbock A, Ger ßJ, Van Aken H, Boanta A, Kellum JA,
+Meersch M. Early versus late initiation of renal replacement
+therapy in critically ill patients with acute kidney injury (TheELAIN-Trial): study protocol for a randomized controlled trial.
+Trials . 2016;17(1). Accessed October 27 , 2020. http://www.
+trialsjournal.com/content/17/1/148
+35. Mehta RH, Van Diepen S, Meza J, et al. Levosimendan in pa-
+tients with left ventricular systolic dysfunction undergoing car-
+diac surgery on cardiopulmonary bypass: rationale and study
+design of the Levosimendan in Patients with Left Ventricular
+Systolic Dysfunction Undergoing Cardiac Surgery Requiring
+Cardiopulmonary Bypass (LEVO-CTS) trial. Am Heart J .
+2016;182:62-71 .
+36. Thiele H, Akin I, Sandri M, et al. One-year outcomes after PCI
+strategies in cardiogenic shock. N Engl J Med . 2018;379(18):
+1699-1710 .
+37. Thiele H, Desch S, Piek JJ, et al. Multivessel versus culprit
+lesion only percutaneous revascularization plus potential
+staged revascularization in patients with acute myocardial
+infarction complicated by cardiogenic shock: design and
+rationale of CULPRIT-SHOCK trial. Am Heart J . 2016;172:
+160-169 .
+38. Weisbord SD, Gallagher M, Jneid H, et al. Outcomes after
+angiography with sodium bicarbonate and acetylcysteine.
+N Engl J Med . 2018;378(7):603-614 .
+39. The National Heart, Lung, and Blood Institute PETAL Clinical
+Trials Network. Early high-dose vitamin D
+3for critically ill,
+vitamin D –deﬁcient patients. N Engl J Med . 2019;381(26):
+2529-2540 .
+Kidney Med Vol 3 | Iss 6 | November/December 2021 939Judge et al
+40. Schanz M, Wasser C, Allgaeuer S, et al. Urinary [TIMP-2] $
+[IGFBP7]-guided randomized controlled intervention trial to
+prevent acute kidney injury in the emergency department.
+Nephrol Dial Transplant . 2019;34(11):1902-1909 .
+41. Zarbock A, Küllmar M, Kindgen-Milles D, et al. Effect of regional
+citrate anticoagulation vs systemic heparin anticoagulationduring continuous kidney replacement therapy on dialysis ﬁlter
+life span and mortality among critically ill patients with acute
+kidney injury: a randomized clinical trial. JAMA . 2020;324(16):
+1629-1639 .
+42. Meersch M, Küllmar M, Wempe C, et al. Regional citrate versus
+systemic heparin anticoagulation for continuous renal replace-
+ment therapy in critically ill patients with acute kidney injury
+(RICH) trial: study protocol for a multicentre, randomised
+controlled trial. BMJ Open . 2019;9(1):e024411 .
+43. Besarab A, Bolton WK, Browne JK, et al. The effects of normal
+as compared with low hematocrit values in patients with car-
+diac disease who are receiving hemodialysis and epoetin.
+N Engl J Med . 1998;339(9):584-590 .
+44. Freedman BI, Wuerth J-P, Cartwright K, et al. Design and
+baseline characteristics for the Aminoguanidine Clinical Trial in
+Overt Type 2 Diabetic Nephropathy (ACTION II). Control Clin
+Trials . 1999;20(5):493-510 .
+45. Chapman WC, Singla N, Genyk Y, et al. A phase 3, ran-
+domized, double-blind comparative study of the ef ﬁcacy and
+safety of topical recombinant human thrombin and bovine
+thrombin in surgical hemostasis. J Am Coll Surg .
+2007;205(2):256-265 .
+46. Dember LM, Beck GJ, Allon M, et al. Effect of clopidogrel on
+early failure of arteriovenous ﬁstulas for hemodialysis: a ran-
+domized controlled trial. JAMA . 2008;299(18):2164-2171 .
+47. Dixon BS, Beck GJ, Vazquez MA, et al. Effect of dipyridamole
+plus aspirin on hemodialysis graft patency. N Engl J Med .
+2009;360(21):2191-2201 .
+48. Fellstr €om BC, Jardine AG, Schmieder RE, et al. Rosuvastatin
+and cardiovascular events in patients undergoing hemodialysis.
+N Engl J Med . 2009;360(14):1395-1407 .
+49. Fellstr €om B, Holdaas H, Jardine AG, et al. Effect of rosuvastatin
+on outcomes in chronic haemodialysis patients: baseline datafrom the AURORA Study. Kidney Blood Press Res .
+2007;30(5):314-322 .
+50. Ismail-Beigi F, Craven T, Banerji MA, et al. Effect of intensive
+treatment of hyperglycaemia on microvascular outcomes in
+type 2 diabetes: an analysis of the ACCORD randomised trial.
+Lancet . 2010;376(9739):419-430 .
+51. Kopple JD, Cheung AK, Christiansen JS, et al. OPPORTU-
+NITY: a large-scale randomized clinical trial of growth hormone
+in hemodialysis patients. Nephrol Dial Transplant .
+2011;26(12):4095-4103
+.
+52. Kopple JD, Cheung AK, Christiansen JS, et al. OPPORTUNI-
+TYTM: A randomized clinical trial of growth hormone on
+outcome in hemodialysis patients. Clin J Am Soc Nephrol .
+2008;3(6):1741-1751 .
+53. Grooteman MPC, van den Dorpel MA, Bots ML, et al. Effect of
+online hemodia ﬁltration on all-cause mortality and cardiovas-
+cular outcomes. J Am Soc Nephrol . 2012;23(6):1087-1096 .
+54. The CONTRAST study group; Penne EL, Blankestijn PJ,
+Bots ML, et al. Effect of increased convective clearance by on-
+line hemodia ﬁltration on all cause and cardiovascular mortality
+in chronic hemodialysis patients –the Dutch CONvective
+TRAnsport STudy (CONTRAST): rationale and design of a
+randomised controlled trial [ISRCTN38365125]. Curr Control
+Trials Cardiovasc Med . 2005;6(1). Accessed October 27 ,
+2020. http://trialsjournal.biomedcentral.com/articles/10.1186/
+1468-6708-6-855. Johnson DW, Badve SV, Pascoe EM, et al. Antibacterial honey
+for the prevention of peritoneal-dialysis-related infections
+(HONEYPOT): a randomised trial. Lancet Infect Dis .
+2014;14(1):23-30 .
+56. Pascoe EM, Lo S, Scaria A, et al. The Honeypot randomized
+controlled trial statistical analysis plan. Perit Dial Int .
+2013;33(4):426-435 .
+57. Torres VE, Abebe KZ, Chapman AB, et al. Angiotensin
+blockade in late autosomal dominant polycystic kidney disease.
+N Engl J Med . 2014;371(24):2267-2276 .
+58. Knoll GA, Fergusson D, Chass /C19e M, et al. Ramipril versus pla-
+cebo in kidney transplant patients with proteinuria: a multi-
+centre, double-blind, randomised controlled trial. Lancet
+Diabetes Endocrinol . 2016;4(4):318-326 .
+59. Knoll GA, Cantarovitch M, Cole E, et al. The Canadian ACE-
+inhibitor trial to improve renal outcomes and patient survival
+in kidney transplantation study design. Nephrol Dial Transplant .
+2007;23(1):354-358 .
+60. Karunanithy N, Mesa IR, Dorling A, et al. Paclitaxel-coated
+balloon ﬁstuloplasty versus plain balloon ﬁstuloplasty only to
+preserve the patency of arteriovenous ﬁstulae used for haemo-
+dialysis (PAVE): study protocol for a randomised controlled trial.
+Trials . 2016;17(1). Accessed October 27 , 2020. http://
+trialsjournal.biomedcentral.com/articles/10.1186/s13063-016-1
+372-7
+61. Irish AB, Viecelli AK, Hawley CM, et al. Effect of ﬁsh oil sup-
+plementation and aspirin use on arteriovenous ﬁstula failure in
+patients requiring hemodialysis: a randomized clinical trial.
+JAMA Intern Med . 2017;177(2):184-193 .
+62. Viecelli AK, Polkinghorne KR, Pascoe EM, et al. Fish oil and
+aspirin effects on arteriovenous ﬁstula function: Secondary
+outcomes of the randomised omega-3 fatty acids (Fish oils)
+and Aspirin in Vascular access OUtcomes in REnal Disease
+(FAVOURED) trial. PLoS One . 2019;14(3):e0213274 .
+63. Perkovic V, Jardine MJ, Neal B, et al. Canagli ﬂozin and renal
+outcomes in type 2 diabetes and nephropathy. N Engl J Med .
+2019;380(24):2295-2306 .
+64. Wiviott SD, Raz I, Bonaca MP, et al. Dapagli ﬂozin and cardio-
+vascular outcomes in type 2 diabetes. N Engl J Med .
+2019;380(4):347-357 .
+65. Blankestijn PJ, Fischer KI, Barth C, et al. Bene ﬁts and harms of
+high-dose haemodia ﬁltration versus high- ﬂux haemodialysis: the
+comparison of high-dose haemodia ﬁltration with high- ﬂux hae-
+modialysis (CONVINCE) trial protocol. BMJ Open .
+2020;10(2):e033228 .
+66. Vinsonneau C, Camus C, Combes A, et al. Continuous veno-
+venous haemodia ﬁltration versus intermittent haemodialysis for
+acute renal failure in patients with multiple-organ dysfunction
+syndrome: a multicentre randomised trial. Lancet .
+2006;368(9533):379-385 .
+67. Riley AA, Jefferies JL, Nelson DP, et al. Peritoneal dialysis does
+not adversely affect kidney function recovery after congenital
+heart surgery. Int J Artif Organs . 2014;37(1):39-47 .
+68. Tumlin JA, Galphin CM, Tolwani AJ, et al. A multi-center, ran-
+domized, controlled, pivotal study to assess the safety and ef-
+ﬁcacy of a selective cytopheretic device in patients with acute
+kidney injury. PLoS One . 2015;10(8):e0132482 .
+69. Pettil €a V, Merz T, Wilkman E, et al. Targeted tissue perfusion
+versus macrocirculation-guided standard care in patients with
+septic shock (TARTARE-2S): study protocol and statistical
+analysis plan for a randomized controlled trial. Trials [Internet].
+2016. Accessed October 27 , 2020. http://trialsjournal.
+biomedcentral.com/articles/10.1186/s13063-016-1515-x
+70. Kwiatkowski DM, Goldstein SL, Cooper DS, Nelson DP,
+Morales DLS, Krawczeski CD. Peritoneal dialysis vs furosemide
+940 Kidney Med Vol 3 | Iss 6 | November/December 2021Judge et al
+for prevention of ﬂuid overload in infants after cardiac surgery: a
+randomized clinical trial. JAMA Pediatr . 2017;171(4):357-364 .
+71. The ANDROMEDA-SHOCK Study Investigators;
+Hern /C19andez G, Cavalcanti AB, Ospina-Tasc /C19on G, et al. Early
+goal-directed therapy using a physiological holistic view: the
+ANDROMEDA-SHOCK —a randomized controlled trial. Ann
+Intensive Care . 2018;8(1). Accessed October 27 , 2020.
+https://annalso ﬁntensivecare.springeropen.com/articles/10.11
+86/s13613-018-0398-2
+72. Lemkes JS, Janssens GN, van der Hoeven NW, et al. Coronary
+angiography after cardiac arrest without ST-segment elevation.
+N Engl J Med . 2019;380(15):1397-1407 .
+73. Lemkes JS, Janssens GN, Straaten HMO, et al. Coronary
+angiography after cardiac arrest: rationale and design of the
+COACT trial. Am Heart J . 2016;180:39-45 .
+74. Douglas IS, Alapat PM, Corl KA, et al. Fluid response evalua-
+tion in sepsis hypotension and shock. Chest . 2020;158(4):
+1431-1445 .
+75. Hayashi T, Maruyama S, Nangaku M, et al. Darbepoetin alfa in
+patients with advanced CKD without diabetes: randomized,
+controlled trial. Clin J Am Soc Nephrol . 2020;15(5):608-615 .
+76. Imai E, Maruyama S, Nangaku M, et al. Rationale and study
+design of a randomized controlled trial to assess the effects of
+maintaining hemoglobin levels using darbepoetin alfa on pre-
+vention of development of end-stage kidney disease in non-
+diabetic CKD patients (PREDICT Trial). Clin Exp Nephrol .
+2016;20(1):71-76 .
+77. Kratochwill K, Boehm M, Herzog R, et al. Addition of alanyl-
+glutamine to dialysis ﬂuid restores peritoneal cellular stress re-
+sponses –aﬁrst-in-man trial. PLoS One . 2016;11(10):e016 5045 .
+78. Marsen TA, Beer J, Mann H. Intradialytic parenteral nutrition in
+maintenance hemodialysis patients suffering from protein-
+energy wasting. Results of a multicenter, open, prospective,
+randomized trial. Clin Nutr . 2017;36(1):107-117 .
+79. Kammerer T, Brettner F, Hilferink S, et al. No differences in renal
+function between balanced 6 %hydroxyethyl starch (130/0.4)
+and 5 %albumin for volume replacement therapy in patients
+undergoing cystectomy. Anesthesiology . 2018;128(1):67-78 .
+80. Kammerer T, Klug F, Schwarz M, et al. Comparison of 6 %
+hydroxyethyl starch and 5 %albumin for volume replacement
+therapy in patients undergoing cystectomy (CHART): study
+protocol for a randomized controlled trial. Trials . 2015;16(1).
+Accessed October 27 , 2020. http://trialsjournal.biomedcentral.
+com/articles/10.1186/s13063-015-0866-z
+81. Fishbane S, Jamal A, Munera C, Wen W, Menzaghi F. A phase 3
+trial of difelikefalin in hemodialysis patients with pruritus. N Engl
+J Med . 2020;382(3):222-232 .
+82. Fujimoto K, Adachi H, Yamazaki K, et al. Comparison of the
+pain-reducing effects of EMLA cream and of lidocaine tape
+during arteriovenous ﬁstula puncture in patients undergoing
+hemodialysis: a multi-center, open-label, randomized crossover
+trial. PLoS One . 2020;15(3):e0230372 .
+83. Pickkers P, Mehta RL, Murray PT, et al. Effect of human re-
+combinant alkaline phosphatase on 7-day creatinine clearance
+in patients with sepsis-associated acute kidney injury: a ran-
+domized clinical trial. JAMA . 2018;320(19):1998-2009 .84. Peters E, Mehta RL, Murray PT, et al. Study protocol for a
+multicentre randomised controlled trial: Safety, Tolerability, ef-
+ﬁcacy and quality of life Of a human recombinant alkaline
+Phosphatase in patients with sepsis-associated Acute Kidney
+Injury (STOP-AKI). BMJ Open . 2016;6(9):e012371 .
+85. Himmelfarb J, Chertow GM, McCullough PA, et al. Periopera-
+tive THR-184 and AKI after cardiac surgery. J Am Soc Nephrol .
+2018;29(2):670-679 .
+86. Laterre P-F, Berry SM, Blemings A, et al. Effect of selepressin
+vs placebo on ventilator- and vasopressor-free days in patients
+with septic shock: the SEPSIS-ACT randomized clinical trial.
+JAMA . 2019;322(15):1476-1485 .
+87. Bestle MH, Clausen NE, S øe-Jensen P, et al. Ef ﬁcacy and
+safety of iloprost in patients with septic shock-induced endo-
+theliopathy —protocol for the multicenter randomized, placebo-
+controlled, blinded, investigator-initiated trial. Acta Anaes-
+thesiol Scand . 2020;64(5):705-711 .
+88. Kassimatis T, Qasem A, Douiri A, et al. A double-blind rando-
+mised controlled investigation into the ef ﬁcacy of Mirococept
+(APT070) for preventing ischaemia reperfusion injury in the
+kidney allograft (EMPIRIKAL): study protocol for a randomised
+controlled trial. Trials . 2017;18(1). Accessed October 27 ,
+2020. http://trialsjournal.biomedcentral.com/articles/10.1186/
+s13063-017-1972-x
+89. Hosgood SA, Saeb-Parsy K, Wilson C, Callaghan C, Collett D,
+Nicholson ML. Protocol of a randomised controlled, open-label
+trial of ex vivo normothermic perfusion versus static cold stor-
+age in donation after circulatory death renal transplantation.
+BMJ Open . 2017;7(1):e012237 .
+90. Mistry P, Dunn JA, Marshall A. A literature review of applied adaptive
+design methodology within the ﬁeld of oncology in randomised
+controlled trials and a proposed extension to the CONSORT
+guidelines. BMC Med Res Methodol . 2017;17(1):108 .
+91. Clayton JA, Arnegard ME. Taking cardiology clinical trials to
+the next level: a call to action. Clin Cardiol . 2018;41(2):179-
+184.
+92. van Werkhoven CH, Harbarth S, Bonten MJM. Adaptive de-
+signs in clinical trials in critically ill patients: principles, advan-
+tages and pitfalls. Intensive Care Med . 2019;45(5):678-682 .
+93. Talisa VB, Yende S, Seymour CW, Angus DC. Arguing for
+adaptive clinical trials in sepsis. Front Immunol . Accessed
+January 14, 2021. https://www.ncbi.nlm.nih.gov/pmc/articles/
+PMC6031704/
+94. Perkovic V, Craig JC, Chailimpamontree W, et al. Action plan
+for optimizing the design of clinical trials in chronic kidney
+disease. Kidney Int Suppl . 2017;7(2):138-144 .
+95. Zoccali C, Vanholder R, Wagner CA, et al. Funding kidney
+research as a public health priority: challenges and opportu-
+nities. Nephrol Dial Transplant . 2020. Accessed January 14,
+2021. doi:10.1093/ndt/gfaa163
+96. The VA/NIH Acute Renal Failure Trial Network. Intensity of renal
+support in critically ill patients with acute kidney injury. N Engl J
+Med. 2008;359(1):7-20 .
+97. Mehta RH, Leimberger JD, van Diepen S, et al. Levosimendan
+in patients with left ventricular dysfunction undergoing cardiac
+surgery. N Engl J Med . 2017;376(21):2032-2042 .
+Kidney Med Vol 3 | Iss 6 | November/December 2021 941Judge et al

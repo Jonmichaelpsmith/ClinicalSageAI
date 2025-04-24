@@ -1,0 +1,1299 @@
+Public Disclosure Synopsis
+Protocol A6181120 -17April 2014 –Final
+Template version 1.0 Page 1PFIZER INC.
+These results are supplied for informational purposes only .
+Prescribing decisions should be made based o n the approved package insert.
+PROPRIETARY DRUG NAME/GENERIC NAME :Sutent®/ Sunitinib Malate
+PROTOCOL NO. :A6181120
+PROTOCOL TITLE :A Multicenter, Randomized, Double -Blind, Phase 3 Study  of 
+Sunitinib Plus Prednisone Versus Prednisone in Patients With Progressive Metastatic 
+Castration -Resistant Prostate Cancer After Failure of a Docetaxel -Based Chemotherap y 
+Regimen
+Study Centers :A tot al of 169 centers took part in the study  and enrolled subjects ; 
+43centers in the United States (US), 13 in Spain, 11 in France, 10 each in German yand 
+theUnited Kingdom (UK), 9in Italy, 7 each in Belgium and Canada, 6 in Brazil, 5 each in 
+China ,Portuga l, the Republic of Korea, and Slovakia, 4each in Australia , the Czech 
+Republic ,Denmark, Israel, Poland, Sweden ,and Taiwan , 3 in Peru,and 2 in Finland .
+Study Initiation Date and Final Completion Date :  09July 2008 to 21 December 2011 .  
+The study  was te rminated on 27 September 2010 .
+Phase of Development :  Phase 3
+Study Objective s:
+Primary  Objective :  To demonstrate superiorit y in the overall survival (OS) of subjects with 
+progressive metastatic castration -resistant prostate cancer (mCRPC) treated with su nitinib 
+plus prednisone (SP) versus placebo plus prednisone (PP) after failure of a docetaxel -based 
+chemotherap y regimen.
+Secondary  Objectives : 
+To demonstrate superiority  in the progression -free survival (PFS) of subjects with 
+progressive mCRPC treated wi th SP versus PP after failure of a docetaxel -based 
+chemotherap y regimen
+To compare the objective response rate (ORR) and duration of response (DR) in subjects 
+with progressive mCRPC treated with SP versus PP after failure of a docetaxel -based 
+chemotherap y regimen
+To compare patient reported outcomes (PROs) of pain severit y, health -related quality  of 
+life, prostate cancer -specific sy mptoms, and general health status in subjects with 
+progressive CRPC treated with SP versus PP after failure of a docetaxel -based
+chemotherap y regimen
+090177e18544a014\Approved\Approved On: 25-Apr-2014 16:36 
+Public Disclosure Synopsis
+Protocol A6181120 -17April 2014 –Final
+Template version 1.0 Page 2To evaluate the safet y and tolerability  of sunitinib in combination with prednisone
+METHODS :
+Study Design:   This was a randomized (2:1), multicenter, double -blind, placebo -controlled, 
+Phase 3 clinical trial evaluating the efficacy  and safety  of SP versus PP in subjects with 
+CRPC whose disease failed treatment with a docetaxel -based chemotherap y regimen. 
+Subjects remained on study  as long as they  continued to derive clinical benefit and were 
+followed for safet y and efficacy  as per the schedule of assessments until death.  Subjects 
+discontinuing all treatment prior to disease progression continued to have scheduled disease 
+assessments until progression, until the initiation of a subsequent anticancer therap y in the 
+absence of documented disease progression, or until death, whichever came first.
+A total of 873 subje cts were enrolled in the study .  An interim anal ysis for safet y and futility  
+was performed when approximately  400 subject s were enrolled (120 PFS events expected).  
+A second int erim analy sis of safet y wasperformed, together with an interim analy sis of 
+efficacy  and futility  based on OS, after 819 subject s were enrolled. At that time, an 
+estimated 225 OS events had occurred.
+The schedule of activities during the stud y is provided in Table 1.
+090177e18544a014\Approved\Approved On: 25-Apr-2014 16:36 
+
+Public Disclosure Synopsis
+Protocol A6181120 -17April 2014 –Final
+Template version 1.0 Page 3Table 1.Schedule of Activities
+Protocol Activities Screening One Cycle =4 Weeks (28 Days) Posttreatment
+Cycle 1 Cycles 2+
+21Days Prior
+to DosingDay 1
+(-3)aDay 15
+(3)Day 1
+(-3)End of Treatment/
+WithdrawalbPost
+TxcSurvival
+Follow -up
+Baseline documentation
+Informed consent(s)dX
+Medical/oncological historyeX
+Physical examinationfX (X) X X
+Baseline signs/symptoms X
+Laboratory studies 
+HematologygX (X) X X X
+Blood chemistrygX (X) X X X
+Urinalysis ( protein)gX Cycle3 Day 1 only X
+Thyroid -stimulating hormonegX Cycle3 Day 1 only
+BSAP and serum NTXhX Every 8 weeks X
+Urine NTXhX Every 8 weeks X
+PSA X (X) X X
+Testosterone X (X)
+12-lead ECGiX Cycle2 Day 1 only
+MUGA scan or ECHOjX
+Study randomizationkX
+Study treatment –sunitiniblX  
+Study treatment –placebomX  
+Study treatment –prednisonenX  
+Efficacy assessments
+Tumor imagingoX Every 8 weeks X (X)
+Bone scanpX Every 8 weeks X (X)
+Other clinical assessments
+ECOG, body weight, and vital signs X X X X
+Adverse eventsqX X X X X X
+Concomitant 
+medications/ treatmentsr X X X X X X
+Study drug compliancesX X
+Post-study survival statustX
+090177e18544a014\Approved\Approved On: 25-Apr-2014 16:36 
+
+Public Disclosure Synopsis
+Protocol A6181120 -17April 2014 –Final
+Template version 1.0 Page 4Table 1.Schedule of Activities
+Protocol Activities Screening One Cycle =4 Weeks (28 Days) Posttreatment
+Cycle 1 Cycles 2+
+21Days Prior
+to DosingDay 1
+(-3)aDay 15
+(3)Day 1
+(-3)End of Treatment/
+WithdrawalbPost
+TxcSurvival
+Follow -up
+Sample banking for exploratory 
+researchu (X) (X)
+Patient reported outcomes 
+mBPI -sf and analgesic use diaryvX X X X
+SSQvX X X
+FACT -P and EQ -5DwX X X
+Subjec t’s best guesswX X X
+AE=adverse event; BID = twice daily; BSAP =bone -specific alkaline phosphatase; CT = computed tomography; ECG = electrocardiogr am; ECHO = echocardiogram; 
+ECOG =Eastern Cooperative O ncology Group; EQ -5D=EuroQol quality of life questionnaire; FACT -P = functional assessment of cancer therapy -prostate; mBPI -sf = modified 
+Brief Pain Inventory -short form; MRI = magnetic resonance imaging; MUGA =multiple gated acquisition scan; NTX =N-telopeptide; PRO =patient -reported outcome; 
+PSA =prostate -specific antigen; S SQ=subjective significance question; Tx =treatment.
+a. Day 1 Cycle 1 assessments:  physical examination, hematol ogy, blood chemistry, PSA, and testosterone did not have to be obtained on Day 1 if screening samples had 
+been performed within 7 days.
+b. End of treatment/ withdrawal:  these assessments di d not need to be completed if they had been performed within 2 weeks of study withdrawal (within the last 8 weeks 
+for tumor assessments, and within the last 4 weeks for PROs).  Subjects discontinuing all treatment prior to disease progress ion were asked t o return to the clinic at 
+8-week intervals for disease assessments.
+c. Posttreatment follow -up:  subjects discontinuing all treatment prior to disease progression were followed for tumor ass essments until progression, until initiation of a 
+subsequent anticancer therapy in the absence of documented progression, or until death, whichever occurred first.  Subjects w ere evaluated for safety up to 28 days after 
+the last dose of study treatment. AEs were followed until all serious or study drug -related toxicities had resolved or were determined to be “chronic” or “stable,” 
+whichever was later.
+d. Informed consent:  must have been o btained prior to undergoing any study specific procedure and might have occurred prior to the 21 -day screening period.
+e. Medical/oncological history:  included oncologic history, demographic s, history of other disease processes (active or resolved) and concomitant illnesses.
+f. Physical examination:  examination of major body systems.
+g. Samples for hematology, blood chemistry, and urinalysis (protein):  all laboratory assessments were performed by a central la boratory.  Sites could perform additional 
+local assays for the purposes of planning treatment administrat ion, dose modification, or monitoring AEs.  A dipstick protein urinalysis was performed at Screening, 
+Cycle3 Day 1 (as clinically indicated), and at the end of treatment/withdrawal visit.  If the results of the dipstick test indicated a ≥2+ proteinuria, follow -up was to be 
+performed with a quantitative urine protein analysis according to local standard practices.  Thyroid -stimulating hormone was only performed at screening, Cycle 3 Day 1, 
+and as clinically indicated thereafter.
+h. BSAP and NTX:  assessment of BSAP and serum and urine Type I collagen cross -linked NTX concentrations occurred at Screening, every 8 weeks from the start of 
+study drug administration, and at the end of treatment/ withdrawal visit, coinciding with tumor assessments.
+i. ECG:  3 consecutive 12 -lead ECGs approximately 2 minutes apart were obtained at Screening and on Cycle 2 Day 1 to determine the mean co rrected QT (QTc) 
+interval.  During the study, if the mean QTc interval was prolonged (Grade >1), the ECGs were to be over read by a cardiologi st at the site for confirmation.  Additional 
+ECGs could be performed as clinically indicated and following intra subject sunitinib dose adjustments.
+j. MUGA scan or echocardiogram (ECHO):  performed at Screening visit and as clinically indicated thereafter.
+090177e18544a014\Approved\Approved On: 25-Apr-2014 16:36 
+Public Disclosure Synopsis
+Protocol A6181120 -17April 2014 –Final
+Template version 1.0 Page 5Table 1.Schedule of Activities
+Protocol Activities Screening One Cycle =4 Weeks (28 Days) Posttreatment
+Cycle 1 Cycles 2+
+21Days Prior
+to DosingDay 1
+(-3)aDay 15
+(3)Day 1
+(-3)End of Treatment/
+WithdrawalbPost
+TxcSurvival
+Follow -up
+k. Study registration:  subject number and treatment assignment were obtained via centralized randomization.
+l. Study treatment (sunitinib):  subjects received oral daily s unitinib continuously, starting on Cycle 1 Day 1.  One cycle consisted of 28 days.
+m. Study treatment (placebo):  subjects received oral daily placebo continuously, starting on Cycle 1 Day 1.   One cycle consisted of 28 days.
+n. Study treatment (prednisone):  subjects received prednisone (or prednisolone) orally 5 mg BID continuously, starting on Cycle 1 Day 1.
+o. Tumor imaging:  CT or MRI scans of chest, abdomen, and pelvis were performed to assess disease status at Screening, every 8 weeks from the start of study drug 
+independent of cycle length, whenever disease p rogression was suspected, to confirm a partial or complete response (at least 4 weeks after initial documentation of 
+response), and at the end of treatment/withdrawal visit.  Tumor imaging was to continue on this calendar schedule regardless of any delays in dosing.
+p. Bone scan:  bone scan was performed at the same time points as the CT or MRI scans of the chest, abdomen ,and pelvis.  
+q. Adverse events:  subjects were followed for AEs from the first day of study treatment until at least 28 days after the last d ose of study treatment, or until all serious or 
+study drug -related toxicities were resolved or were determined to be “ chronic” or “stable,” whichever was later.  Serious adverse events were to be monitored and 
+reported from the time the subject provided informed consent as described in the protocol.
+r. Conc omitant medications/treatments:  concomitant medications and treatments were recorded from 30 days prior to the start of stud y treatment, during the study, and up 
+to 28 days after the last dose of study treatment.
+s. Study drug compliance:  sunitinib and placebo bottle(s) including any unused capsules were returned at the beginning of every cycle starting at Cycle 2 Day 1 and at the 
+end of treatment/withdrawal visit for drug accountability.
+t. Post-study survival status:  follow -up survival information was collected by the site via clinic visit or telephone contact every 2 months until death.
+u. Sample banking for exploratory research (optional), This research component was entirely optional for the subject and require d a separate consent prior to the collection 
+of a blood sample for pharmacogenomics and/or an arc hival tumor sample.
+v. mBPI -sf, analgesic use diary, and SSQ:  the mBPI -sf questionnaire and analgesic use diary were completed for the 7 consecutive days prior to the start of each new 
+cycle, starting during the screening period (7 days prior to Cycle 1), at each subsequent cycle, and at the end of treatment/with drawal visit.  The SSQ was 
+administered in conjunction with the diary on the first day of each 7 -day period of recording, starting with Cycle 1 Day 22 (7 days prior to Cycle 2 Day 1).
+w. FACT -P, EQ -5D, and subject’s best guess questionnaires:  subjects completed the FACT -P and EQ -5D at the clinic prior to dosing or othe r clinical activities on every 
+Day 1 of each cycle, starting with Cycle 1, and at the end of treatment/withdrawal visit.  At the end of the treatment/withdr awal visit, the subject’s best guess 
+questionnaire was completed.
+090177e18544a014\Approved\Approved On: 25-Apr-2014 16:36 
+
+Public Disclosure Synopsis
+Protocol A6181120 -17April 2014 –Final
+Template version 1.0 Page 6Number of Subjects (Planned a nd Analyzed ):  A total of 819subjects were planned for
+enroll ment to observe the necessary  number of events.   A total of 873subjects were assig ned 
+to study  treatment and 8 66subjects (99.2%) were treated of which 581subjects were in the 
+sunitinib arm an d 285 in the placebo arm.
+Of 873 subjects, 142 subjects we re randomized in the US, 122 in France, 83 in the UK, 60 in 
+German y, 52 in Canada, 49 each in Denmark and Spain, 42 in Italy, 32 in Taiwan, 
+31subjects in China, 28 each in Brazil and Sweden, 23 in Israel, 20in Slovakia, 18 in 
+Republic of Korea, 16 in Pol and, 15 each in Belgium and Portugal, 14 each in A ustralia and 
+Czech Republic, 11 in Peru and 9 in Finland. 
+Diagnosis and Main Criteria for Inclusion :Male subjects aged 18years or older 
+diagnos ed with h istologically  or cy tologicall y confirmed adenocarcinoma of the prostate with 
+performance status 0 or 1, measure dusing the Eastern Cooperative Oncology  Group (ECOG )
+performance scal e were enrolled in this study .  Subjects had p rogressive mCRPC after failure 
+of docetaxel chemoth erapy  (resistant or intolerant), and had progressive disease that was 
+based on prostate -specific antigen (PSA)progression, assessment using Response Evaluation 
+Criteria in Solid Tumors (RECI ST),or a positive bone scan.   Subjects who were previousl y
+treated with sunitinib , or who had received more than 1 prior chemotherapy  regimen for
+metastatic disease , chemotherapy  within 3 weeks, subjects with impending complications 
+from bone metastases, ongoing urinary  obstru ction, cardi ac dy sfunction (a value of 
+corrected -QT interval >470 msec ),or CNS involvement were excluded. 
+Study Treatment:   Sunitinib (starting dose of 37.5 mg/day )/placebo was given on a 
+continuous daily  dosing (CDD )regimen for a total of 28 doses per cy cle (a treatment cy cle 
+consisted of 4 weeks).  Oral s elf-administration of sunitinib/placebo tookplace on an 
+outpatient basis ,once daily  in the mo rning without regard to meals, except on the clinic visit 
+days (eg, start of a new cy cle).  Sunitinib could be escalat ed to 50 mg at C ycle 3, provided 
+there were no Grade >1 nonhematologic or Grade >2 hematologic toxicities.
+Prednisone was administered in both treatment arms as background therapy.  Prednisone was 
+given on a C DD regimen of 5 mg twice dail y (BID).  Oral sel f-administration of prednisone 
+took place on an outpatient basis, outpatient basis BID with food.  Intrasubject dose 
+interruptions and/or reductions were permitted in case a subject had experienced 
+unacceptable toxicity  provided that study  discontinuation criteria were not met.
+Sunitinib was supplied as capsule and prednisone was supplied as a tablet or as aliquid or 
+concentrated solution .
+Efficacy and Safety Endpoints:   
+The study  was terminated for futility ; therefore, all study  efficacy  findings were re ported in 
+an abbreviated report format .Efficacy  anal yses were performed onl y for OS, PFS, and ORR.
+Primary  Efficacy  Endpoint :  The primary  efficacy endpoint was OS, defined as the time from 
+randomization to date of death due to an y cause.
+090177e18544a014\Approved\Approved On: 25-Apr-2014 16:36 
+Public Disclosure Synopsis
+Protocol A6181120 -17April 2014 –Final
+Template version 1.0 Page 7Secondary  Effic acy Endpoints :  Secondary efficacy endpoints focused on PFS and ORR.  
+PFS was the time from randomization to first documentation of objective progressive disease 
+(PD) or to death on -study due to any  cause, whichever occur redfirst.  ORR was the percent 
+of subject s with confirmed complete response ( CR)or partial response ( PR)according to 
+RECI ST, relative to the full analy sis population.  Confirmed responses were those that 
+persist edon repeat imaging study  4weeks after initial documentat ion of response. 
+Designation of best response of stable disease (SD) require dcriteria to be satisfied at least 
+7weeks after randomization.
+The secondary  endpoints of pain severit y, health -related quality  of life and prostate 
+cancer -specific s ymptoms, and general health status were not anal yzed due to earl y 
+termination of the study .
+Safety  Endpoints :  Type, incidence, severit y(graded by  the National Cancer Institute 
+Common Terminology  Criteria for Adverse Events [NCI  CTCAE Version 3.0]) , timing, 
+seriousness, and relatedn ess of adverse events ( AEs)and laboratory  abnormalities .
+Safety Evaluations :  
+AEs:  Assessment of AEs (including adverse drug reactions, worsening of baseline 
+tumor -related signs and symptoms, illnesses w ith onset during the stud y, exacerbation of 
+previo us illnesses ,any clinically  significant changes in phy sical examination findings ,and 
+abnormal objective test findings ).
+Laboratory  Evaluations :  Laboratory  evaluations included hematology , blood chemistry ,and 
+urinaly sis.  Bone-specific alkaline phosphat ase, PSA, and serum and urine Ty pe I collagen 
+cross -linked N -telopeptid e concentrations were be assessed as markers of tumor activity .  
+Other Safet y Measures :  Other safety  measures included phy sical examination, vital signs 
+(temperature, blood pressure, heart rate, and respiratory  rate after 5 minutes of rest ), ECOG 
+performance status, 12-lead electrocardiograms ( ECGs ), and multiple gated acquisition scan 
+or echocardiogram for left ventricular e jection fraction.
+Statistical Methods:   
+Full Anal ysis Set (FAS):  The FAS include d all subject s who were randomized, with study  
+drug assignment designated according to initial randomizati on, regardless of whether 
+subjec ts receive dstudy  drug according to the randomization schedule, or receive da different 
+drug from that to which they  were randomized.  The F AS was the primary  population for 
+evaluating all efficacy  endpoints.
+Safety  Anal ysis Set :  The safet y population consisted of all subjects who had taken at least 
+1dose of study  medication.
+OS and PFS were summar ized using Kaplan -Meier methods and display ed graphicall y where 
+appropriate. The median event time and corresponding 2 -sided 95% confidence interval (CI) 
+for the median w ereprovided for OS and PFS .The hazard ratio and its 95% CI s were
+estimated.   A str atified log -rank test (1 -sided, 0.025) w asused to compare OS and PFS 
+090177e18544a014\Approved\Approved On: 25-Apr-2014 16:36 
+Public Disclosure Synopsis
+Protocol A6181120 -17April 2014 –Final
+Template version 1.0 Page 8between the 2 treatment arms stratify ing for ECOG status (0 versus 1) and ty pe of disease 
+progression (based on PSA progression onl y versus radiographic progression).   The Cox 
+regressio n model w asused to explore the potential influences of the stratification factors on 
+the primary  OS endpoint and PFS .  The ORR w assummarized for each treatment arm along 
+with the corresponding exact 2 -sided 95% CI  using a method based on the F distributi on
+odds ratio estimator andused to contrast the treatment effects on response rates.  A point 
+estimate an d a 2 -sided 95% CI  werecalculated using the normal approximation.   The best 
+response (CR, PR, SD, or PD) for each subject wassummarized by  treatment arm. SD was
+also summarized by  <3 months versus 3 months.
+RESULTS:
+Subject Disposition and Demography:   Table 2presents summary  of subject disposition 
+and subjects anal yzed.  A total of 873 subjects were assigned to study  treatment , and 
+866subjects (99.2%) were treated with study  medication. Of these, 581received sunitinib 
+and 285 received placebo.  Overall, the proportion of subjects in each arm was similar with 
+respect to subject disposition.   
+Table 2.Summary of Subject Disposition and Subjects Analyzed
+Sunitinib +Prednisone Placebo +Prednisone Total
+Number (% ) of Subjects
+Assigned to study treatmenta584 289 873
+Treated 581 (99.5) 285 (98.6) 866 (99.2)
+Discontinued 581 (99.5) 285 (98.6) 866 (99.2)
+Primary reason for withdrawal from studyb,c
+Subject died 45 (7.7) 14 (4 .9) 59 (6.8)
+Adverse event 159 (27.4) 21 (7.4) 180 (20.8)
+Global deterioration of health status 66 (11.4) 31 (10.9) 97 (11.2)
+Lost to follow up 0 1 (0.4) 1 (0.1)
+Objective progression or relapse 189 (32.5) 140 (49.1) 329(38.0)
+Other 14 (2.4) 10 (3.5) 24 (2.8)
+Protocol violation 3 (0.5) 1 (0.4) 4 (0.5)
+Study terminated by sponsor 57 (9.8) 43 (15.1) 100 (11.5)
+Subject refused continued treatment for reason 
+other than adverse event48 (8.3) 24 (8.4) 72 (8.3)
+Analyzed for efficacya
+Full analysis set 584 (100) 289 (100) 873 (100)
+Analyzed for safetyd
+Adverse events 581 (100) 285 (100) 866 (100)
+Laboratory data 575 (99.0) 279 ( 97.9) 854(98.6)
+Total months on studye2899 1300 4199
+Both discontinuations from treatment and study are included in table.
+Both TEAEs and non -TEAEs are counted in “analyzed for adverse events” row.
+Three subjects in sunitinib + prednisolone group and 4 subjects in placebo group w ere randomized but not 
+treated.
+Only deaths on study (ie, occurred w ithin 28 days after the last dose of study medication) are included.
+Therefore, 2 subjects in sunitinib arm, and 3 subjects in placebo arm are not displayed.
+TEAE = treatment -emergent adverse event.
+a. Percentages based on the number of subjects assigned to study treatment within each treatment arm.
+b. Discontinuations from treatment are not counted in table; only discontinuations from study.
+c. Percentages based on the number of subjects in the safety population within each row.
+d. Percentages based on the number of treated subjects w ithin each treatment arm.
+e. Months on study defined as (last dose date -first dose date +1)/30.44.
+090177e18544a014\Approved\Approved On: 25-Apr-2014 16:36 
+Public Disclosure Synopsis
+Protocol A6181120 -17April 2014 –Final
+Template version 1.0 Page 9A summary  of demographic characteri stics is provided in Table 3.
+Table 3.Demographic Characteristics (Full Analysis Population )
+Sunitinib + Prednisone
+N=584Placebo + Prednisone
+N=289Total
+N=873
+Age, years
+18-44 3 (0.5) 0 3 (0.3)
+45-64 177 (30.3) 97 (33.6) 274 (31.4)
+65 404 (69.2) 192 (66.4) 596 (68.3)
+Mean 68.1 67.8 68.0
+SD 7.8 7.6 7.7
+Range 39.0-90.0 47.0-86.0 39.0-90.0
+Race, n (%)
+White 448 (76.7) 218 (75.4) 666 (76.3)
+Black 24 (4.1) 12 (4.2) 36 (4.1)
+Asian 56 (9.6) 28 (9.7) 84 (9.6)
+Other 56 (9.6) 31 (10.7) 87 (10.0)
+N = number of subjects in each treatment group ;n (%) = number (percent) of subjects in specified category ;SD=standard 
+deviation .
+Efficacy Results:   
+Table 4summarizes OS by  treatment.   The median survival time was longer in t he sunitinib 
+arm (13.1 months: 95% CI ; 12.0, 14.1) than in the placebo a rm (11.8 months:
+95% CI;10.8, 14.2) but not statistically  significant.  When the survival data were adjusted for 
+stratification factors (ie, ECOG 0 versus 1, and disease progression based on PSA only  
+versus radiographic progressi on), the hazard ratio was 0.914 (suni tinib v ersus placebo) with a 
+95% CI  of 0.762 ,1.097 and a p -value of 0.1678 .  Approximately  40% of the subjects in each 
+treatment arm were censored.  The most frequent reason for censoring was that the subject 
+was still alive at the time he or she complete d the study .  The stud y failed to meet its primary 
+endpoint of improvement in OS based on this outcome.
+090177e18544a014\Approved\Approved On: 25-Apr-2014 16:36 
+
+Public Disclosure Synopsis
+Protocol A6181120 -17April 2014 –Final
+Template version 1.0 Page 10Table 4.Summary of Overall Survival by Treatment (Full Analysis Population )
+Sunitinib +Prednisone
+N=584Placebo +Prednisone
+N=289
+Number of deaths, n (%) 338 (57.9) 178 (61.6)
+Cause of death
+Disease under study 281 (48.1) 151 (52.2)
+Study treatment toxicity 1 (<1.0) 1 (<1.0)
+Unknown 33 (5.7) 12 (4.2)
+Other 28 (4.8) 15 (5.2)
+Number censored, n (%) 246 (42.1) 111 (38.4)
+Reason for censorship, n (%)
+Alive 217 (37.2) 95 (32.9)
+Subject no longer willing to participate 15 (2.6) 10 (3.5)
+Lost to follow -up 14 (2.4) 6 (2.1)
+Kaplan -Meier estimates of time to event (month)
+Quartiles (95% CI)a
+25% 6.9 [5.8, 7.9] 6.5 [5.1, 7.8]
+50% 13.1 [12.0, 14.1] 11.8 [10.8, 14.2]
+75% 23.7 [22.7, --] 19.9 [18.5, --]
+Versus placebo + prednisone
+Hazard ratiob0.914 --
+95% CI of hazard ratio 0.762 -1.097 --
+p-valuec0.1678 --
+Percentages are based on the number of subjects in the full analysis population within each treatment arm.
+CI = confidence interval; ECOG = Ea stern Cooperative Oncology Group; N = number of subjects in each 
+treatment group ; n (%) = number (percent) of subjects in specified category; PSA = prostate -specific antigen .
+a. Based on the B rookm eyer and Crow ley Method.
+b. Based on the Cox proportional hazards model stratified by ECOG 0 v ersus 1and disease progression 
+based on PSA only v ersus radiographic progression.
+c. One-sided p -value from the log -rank test stratified by ECOG 0 v ersus 1, and disease progression 
+based on PSA only v ersus radiographic progression.
+Table 5presents the results of the Cox proportional hazards anal ysis of OS treatment 
+comparison controlling for selected baseline or stratification factors.
+090177e18544a014\Approved\Approved On: 25-Apr-2014 16:36 
+
+Public Disclosure Synopsis
+Protocol A6181120 -17April 2014 –Final
+Template version 1.0 Page 11Table 5.Results of Cox Proportional Hazards A nalysis of Overall Survival
+Treatment Comparison Controlling for Selected Baseline or Stratification 
+Factors Simultaneously -Derived Investigator ’sAssessment (Full Analysis 
+Population ) 
+Sunitinib Placebo
+Variables Included in the M odela(N=584) (N=289) Hazard Ratio 95 % CI for HR p-Valueb
+Number of subjects with an 
+event (%)338 (57.9) 178 (61.6)
+Treatment (sunitinib vs. p lacebo) 0.918 (0.765, 1.103) 0.3608
+ECOG (1vs. 0) 1.85 (1.550, 2.208) <0.0001
+Disease progression (PSA vs. 
+radiographic)0.767 (0.644, 0.913) 0.0029
+Ethnicity ( White vs. Non-White) 1.309 (1.054, 1.625) 0.0147
+Time since primary diagnosis 
+(>1year vs. 1year)0.811 (0.654, 1.006) 0.0566
+CI = confidence interval; ECOG =Eastern Cooperative Oncology Group ; HR = hazard ratio; N=number of 
+subjects in each treatment group ; PSA =prostate -specific antigen ; vs = versus.
+a. Excep t treatment factor all covariates used backward selection process. Only variables significant at 
+10% level were included in the final model.  Covariates included ECOG (0 v s. 1), disease progression 
+base (PSA only vs. Radiographic), age ( 65 vs. < 65), E thnicity (white vs. non -white), time from 
+initial diagnosis, and number of prior regimens.
+b. P-value was from the Cox proportional hazard model for treatm ent comparison controlling for 
+individual covariates.  
+PFS:  Table 6summarizes PFS (derived I nvestigator ’sassessment) b y treatment.   The 
+median PFS was longer in the sunitinib arm (24.1 weeks: 95% CI;23.4, 28.1) than in the 
+placebo arm (17.9 weeks : 95% CI ; 15.8, 24.1).  When PFS was adjusted for stratification 
+factors (ie, ECOG 0 versus 1, and disease progression based on PSA only  versus 
+radiographic progress ion, the hazard ratio was 0.725 (sunitinib v ersus placebo), with a 95% 
+CI of 0.591, 0.890 and a p -value of <0.001.  Although there was a high censoring rate for 
+PFS (56% and 48% in the sunitinib and placebo arms, respectivel y) these data support longer 
+PFS with sunitinib.  The most frequent reason for censoring was being off treatment prior to 
+progression andnot followed by  further disease assessments.
+090177e18544a014\Approved\Approved On: 25-Apr-2014 16:36 
+
+Public Disclosure Synopsis
+Protocol A6181120 -17April 2014 –Final
+Template version 1.0 Page 12Table 6.Summary of Progression -Free Survival, Derived Investigator ’s
+Assessment (Full Analysis Population )
+Sunitinib +Prednisone
+N=584Placebo +Prednisone
+N=289
+Number with even t, n (%) 255 (43.7) 149 (51.6)
+Type of event
+Objective progression 210 (36.0) 135 (46.7)
+Death without objective progression 45 (7.7) 14 (4.8)
+Number censored , n (%) 329 (56.3) 140 (48.4)
+Reason for censorship , n (%)
+No adequate Baseline assessme nts 8 (1.4) 3 (1.0)
+No on -study disease assessments 69 (11.8) 33 (11.4)
+Given new anti -cancer treatment prior to tumor 
+progression29 (5.0)25 (8.7)
+Off treatment prior to progression 223 (38.2) 78 (27.0)
+Withdrew  consent for follow -up 0 0
+Lost to fol low-up 0 0
+Unacceptable gap (>20 w eeks) betw een PD or death 
+to the most recent prior adequate assessment0 1 (<1.0)
+In follow -up for progression 0 0
+Kaplan -Meier estimates of time to event (week)
+Quartiles (95% CI)a
+25% 13.7 (9.4, 15.7) 8.1 (8.0, 8.3)
+50% 24.1 (23.4, 28.1) 17.9 ( 15.8, 24,1 )
+75% 48.7 (47.4, 74.4) 39.0 (32.1, 49.6)
+Versus placebo + prednisone
+Hazard ratiob0.725 --
+95% CI of hazard ratio 0.591-0.890 --
+p-valuec<0.001 --
+Percentages are based on the number of subjects in the full analysis population within each treatment arm.
+CI = confidence interval ;ECOG = Eas tern Cooperative Oncology Group ;N = number of subjects in each 
+treatment group ; n (%) = number (percent) of subjects in specified category ;PD = progressive disease ; 
+PSA =prostate -specific antigen .
+a. Based on the Brookm eyer and Crow ley Method.
+b. Based on the Cox Proportional hazards model stratified by ECOG 0 v ersus 1, and disease progression 
+based on PSA only versus radiogr aphic progression.
+c. One-sided p -value from the unstratified log -rank test stratified by ECOG 0 versus 1, and disease 
+progression based on PSA only versus radiographic progression.
+Table 7presents the results of the Cox proportional hazards anal ysis of PFS treatment 
+compa rison controlling for selected Baseline or stratification factors.
+090177e18544a014\Approved\Approved On: 25-Apr-2014 16:36 
+
+Public Disclosure Synopsis
+Protocol A6181120 -17April 2014 –Final
+Template version 1.0 Page 13Table 7.Results of Cox Proportional Hazards Analysis of Progression -Free Survival 
+Treatment Comparison Controlling for Selected Baseline or Stratification 
+Factors Simultaneously -Derived Investigator ’sAssessment (Full Analysis 
+Population ) 
+Sunitinib Placebo
+Variables Included in the 
+Modela(N=584) (N=289) Hazard Ratio 95 % CI for 
+HRp-Valueb
+Number of s ubjects with an event 255 (43.7) 149 
+(51.6)
+Treatment ( sunitinib vs. p lacebo) 0.721 (0.588, 0.885) 0.0018
+ECOG (1 vs. 0) 1.586 (1.302, 1.933) <0.0001
+Disease progression (PSA vs. 
+radiographic)0.722 (0.593, 0.880) 0.0012
+Age ( 65 vs. < 65) 0.796 (0.649, 0.978) 0.0295
+Ethnicity ( White vs. Non-White) 1.302 (1.027 , 1.649) 0.0289
+Time since primary diagnosis (>1 
+year vs. 1 year)0.686 (0.545, 0.864) 0.0014
+CI = confidence interval; ECOG =Eastern Cooperative Oncology Group; HR = hazard ratio; N = number of 
+subjects in each treatment group ; PSA =prostate -specif ic antigen; vs = versus.
+a. Except treatment factor all covariates used backward selection process. Only variables significant at 
+10% level were included in the final model.  Covariates incl uded ECOG (0 vs. 1), disease progression 
+base (PSA only vs. Radiographic), age ( 65 vs. < 65), Ethnicity ( White vs. Non-White), time since 
+primary diagnosis, and number of prior regimens.
+b. p-value was from the Cox proportional hazard model for treatm ent comparison controlling for 
+indivi dual covariates.
+Best Overall Response :  The ORR was 6.1% (95% CI ; 3.8, 9.3) in the sunitinib arm and 1.8% 
+(95% C I; 0.4, 5.2) in the placebo arm.  The od ds ratio was 3.561 (sunitinib versus placebo), 
+with a 95% CI of 1.0, 19.0, and a p -value of 0.040.  None of the subjects had a CR.  Table 8
+presents a summar y of best overall response in full anal ysispopulation.
+090177e18544a014\Approved\Approved On: 25-Apr-2014 16:36 
+
+Public Disclosure Synopsis
+Protocol A6181120 -17April 2014 –Final
+Template version 1.0 Page 14Table 8.Summary of Best Overall Response, De rived Investigator ’sAssessment (Full 
+Analysis Population )
+Sunitinib +Prednisone
+N=584Placebo +Prednisone
+N=289
+Number of subjects with Baseline target assessments, 
+n (%)327 (56.0)167 (57.8)
+Best overall response, n (%)
+Com plete response (CR) 0 0
+Partial response ( PR) 20 (6.1) 3 (1.8)
+Stable/No response ( SD) 197 (60.2) 83 (49.7)
+Objective progression (PD) 60 (18.3) 57 (34.1)
+Indeterminate ( IND) 50 (15.3) 24 (14.4)
+Stable disease (SD)
+Duration <3 months 145 (73.6) 58 (69.9)
+Duration 3 months 52 (26.4) 25 (30.1)
+Objective response rate (CR + PR) 20 (6.1) 3 (1.8)
+95% exact CIa[3.8, 9.3] [0.4, 5.2]
+Versus placebo + prednisone
+Odds ratio (sunitinib vs placebo)b3.561 --
+95% CI of odds ratioc[1.0, 19.0] --
+p-valuec0.040 --
+All PD events occurring after randomization date were assessed as ‘Progressive Disease’ for best overall 
+response if other criteria w ere not applicable.
+The minimum days after start date for assessing the best overall response of SD was 42 days (6 weeks).
+Subjects with best overall response of ‘Indeterminate’ were defined as subjects for which no other response 
+category applied.
+CI = confidence interval; N = number of subjects in each treatment group ; n (%) = number (percent) of subjects 
+in spec ified category; PD = progressi ve disease; SD = stable disease; vs = versus.
+a. Using exact method based on a binomial distribution .
+b. Calculated based on a normal distribution .
+c. p-value from a 2 -sided Fisher’s Exact test.
+Safety Results :  A summary  of treatment -emergent adverse events (TEAEs ,[all causality  
+andtreatment related ]) is provided in Table 9.
+090177e18544a014\Approved\Approved On: 25-Apr-2014 16:36 
+
+Public Disclosure Synopsis
+Protocol A6181120 -17April 2014 –Final
+Template version 1.0 Page 15Table 9.Summary of All -Causality and Treatment -Related Treatment -Emergent 
+Adverse Events (Safety Population )
+Number (% ) of Subjects Sunitinib +Prednisone
+N=581Placebo +Prednisone
+N=285Total
+N=866
+All Causality
+Evaluable for AEs 581 285 866
+Number of AEs 7154 1915 9069
+Subjects with AEs 576 (99.1) 260 (91.2) 836 (96.5)
+Subjects with SAEs 275 (47.3) 86 (30.2) 361 (41.7)
+Subjects with Grade 3 or 4 AEs 432 (74.4) 118 (41.4) 550 (63.5)
+Subjects with Grade 5 AEs 66 (11.4) 32 (11.2) 98 (11.3)
+Subjects discontinued due to AEsa197 (33.9) 32 (11.2) 229 (26.4)
+Subjects with dose reduced due to AEa131 (22.5) 11 (3.9) 142 (16.4)
+Subjects with temporary discontinuation due to AEa367 (63.2) 78 (27.4) 445 (51.4)
+Treat ment-Related
+Evaluable for AEs 581 285 866
+Number of AEs 4342 652 4994
+Subjects with AEs 547 (94.1) 176 (61.8) 723 (83.5)
+Subjects with SAEs 149 (25.6) 19 (6.7) 168 (19.4)
+Subjects with Grade 3 or 4 AEs 339 (58.3) 45 (15.8) 384 (44.3)
+Subjects with Grade 5 AEs 12 (2.1) 1 (0.4) 13 (1.5)
+Subjects discontinued due to AEsa124 (21.3) 5 (1.8) 129 (14.9)
+Subjects with dose reduced due to AEsa127 (21.9) 9 (3.2) 136 (15.7)
+Subjects with temporary discontinuation due to AEa311 (53.5) 40 (14.0) 351 (40.5)
+AEs and SAEs are not separated out.
+Except for the number of AEs, subjects are counted only once per treatment in each row.
+SAEs based on I nvestigator’s assessment.
+Percentages based on the number of subjects in the safety population within each treatment arm.
+MedDRA (version 14.1) coding dictionary applied.
+All causality:  One subject (sunitinib) died o n study but did not have a Grade 5 event designated on the AE page.  Some 
+subjects died beyond 28 days after the last dose of study medication but had Grade 5 entere d in the database: sunitinib: 10, 
+placebo: 2.
+Treatment related:   One subject (placebo) die d after 28 days of the last dose of study medication but had Grade 5 entered in 
+the database.
+AE = adverse event; MedDRA = Medical Dicti onary for Regulatory Activities; N = number of subjects in the study 
+population; SAE = serious adverse event.
+a. Sunitinib/placebo only.
+TEAEs :  Table 10presents the TEAEs ( all causality ) experienced in 5% of safet y 
+population.   Among the most common TEAEs in the suni tinib arm (all grades and all 
+causalities) were diarrhea, nausea, decreased appetite, fatigue, and vomiting.  TEAEs that 
+were reported at a frequency  of 10% or higher in the sunitinib arm included: diarrhea, 
+nausea, decreased appetite, fatigue, vomiting, p almar -plantar ery throd ysethesia (PPE) 
+syndrome, d ysgeusia, asthenia, h ypertension, mucosal inflammation, weight decreased, 
+dyspepsia, neutropenia, stomatitis, y ellow skin, and thrombocy topenia.  None of the TEAEs 
+in the placebo arm were reported at a frequ ency  of 10% or higher than in the sunitinib arm.  
+Back pain and bone pain were reported more frequently  in the placebo arm.  
+090177e18544a014\Approved\Approved On: 25-Apr-2014 16:36 
+
+Public Disclosure Synopsis
+Protocol A6181120 -17April 2014 –Final
+Template version 1.0 Page 16Table 10.Treatment -Emergent Adverse Events (All Causality )Reported in 5% of 
+Safety Population
+System  Organ Class
+MedDRA (v14.1) Preferred TermaSunitinib +Prednisone
+(N=581)Placebo +Prednisone
+(N=285)Total
+(N=866)
+Blood and lymphatic system disorders 216 (37.2) 57 (20.0) 273 (31.5)
+Anaemia 140 (2 4.1) 53 (18.6) 193 (22.3)
+Leukopenia 60 (10.3) 2 (0.7) 62 (7.2)
+Neutropenia 84 (14.5) 1 (0.4) 85 (9.8)
+Thrombocytopenia 72 (12.4) 8 (2.8) 80 (9.2)
+Gastrointestinal disorders 451 (77.6) 145 (50.9) 596 (68.8)
+Abdominal pain 41 (7.1) 13 (4.6) 54 (6.2)
+Abdominal pain upper 39 (6.7) 10 (3.5) 49 (5.7)
+Constipation 112 (19.3) 56 (19.6) 168 (19.4)
+Diarrhoea 267 (46.0) 43 (15.1) 310 (35.8)
+Dry mouth 41 (7.1) 13 (4.6) 54 (6.2)
+Dyspepsia 99 (17.0) 11 (3.9) 110 (12.7)
+Nausea 240 (41.3) 68 (23.9) 308 (35.6)
+Stomatitis 81 (13.9) 11 (3.9) 92 (10.6)
+Vom iting 189 (32.5) 39 (13.7) 228 (26.3)
+General disorders and administration site 
+conditions393 (67.6) 137 (48.1) 530 (61.2)
+Asthenia 153 (26.3) 41 (14.4) 194 (22.4)
+Fatigue 202 (34.8) 69 (24.2) 271 (31.3)
+Mucosal inflammation 118 (20.3) 14 (4.9) 132 (15.2)
+Oedema peripheral 63 (10.8) 23 (8.1) 86 (9.9)
+Pain 49 (8.4) 24 (8.4) 73 (8.4)
+Pyrexia 57 (9.8) 12 (4.2) 69 (8.0)
+Infections and infestations 51 (8.8) 12 (4.2) 63 (7.3)
+Urinary tract infection 51 (8.8) 12 (4.2) 63 (7.3)
+Investigations 180 (31.0) 44 (15.4) 224 (25.9)
+Aspartate aminotransferase increased 29 (5.0) 6 (2.1) 35 (4.0)
+Blood alkaline phosphatase increased 37 (6.4) 17 (6.0) 54 (6.2)
+Haemoglobin decreased 36 (6.2) 6 (2.1) 42 (4.8)
+Weight decre ased 115 (19.8) 25 (8.8) 140 (16.2)
+Metabolism and nutrition disorders 259 (44.6) 56 (19.6) 315 (36.4)
+Decreased appetite 237 (40.8) 52 (18.2) 289 (33.4)
+Dehydration 32 (5.5) 5 (1.8) 37 (4.3)
+Hypokalaemia 35 (6.0) 8 (2.8) 43 (5.0)
+Musculoskeletal and connective tissue 
+disorders246 (42.3) 142 (49.8) 388 (44.8)
+Arthralgia 56 (9.6) 26 (9.1) 82 (9.5)
+Back pain 87 (15.0) 58 (20.4) 145 (16.7)
+Bone pain 62 (10.7) 45 (15.8) 107 (12.4)
+Muscle spasms 21 (3.6) 16 (5.6) 37 (4.3)
+Muscular weakness 32 (5.5) 13(4.6) 45 (5.2)
+Musculoskeletal pain 37 (6.4) 14 (4.9) 51 (5.9)
+Pain in extremity 75 (12.9) 38 (13.3) 113 (13.0)
+Nervous system disorders 222 (38.2) 55 (19.3) 277 (32.0)
+Dizziness 49 (8.4) 16 (5.6) 65 (7.5)
+Dysgeusia 170 (29.3) 27 (9.5) 197 (22.7)
+Headache 50 (8.6) 17 (6.0) 67 (7.7)
+Psychiatric disorders 40 (6.9) 19 (6.7) 59 (6.8)
+Insomnia 40 (6.9) 19 (6.7) 59 (6.8)
+Renal and urinary disorders 46 (7.9) 15 (5.3) 61 (7.0)
+Haematuria 46 (7.9) 15 (5.3) 61 (7.0)
+Respiratory, thoracic and mediastinal d isorders 146 (25.1) 31 (10.9) 177 (20.4)
+Cough 46 (7.9) 12 (4.2) 58 (6.7)
+Dyspnoea 71 (12.2) 18 (6.3) 89 (10.3)
+Epistaxis 57 (9.8) 3 (1.1) 60 (6.9)
+Skin and subcutaneous tissue disorders 277 (47.7) 46 (16.1) 323 (37.3)
+090177e18544a014\Approved\Approved On: 25-Apr-2014 16:36 
+Public Disclosure Synopsis
+Protocol A6181120 -17April 2014 –Final
+Template version 1.0 Page 17Table 10.Treatment -Emergent Adverse Events (All Causality )Reported in 5% of 
+Safety Population
+System  Organ Class
+MedDRA (v14.1) Preferred TermaSunitinib +Prednisone
+(N=581)Placebo +Prednisone
+(N=285)Total
+(N=866)
+Dry skin 60 (10.3) 18 (6.3) 78 (9.0)
+Palmar -plantar erythrodysaesthesia 
+syndrome172 (29.6) 8 (2.8) 180 (20.8)
+Petechiae 41 (7.1) 4 (1.4) 45 (5.2)
+Rash 51 (8.8) 17 (6.0) 68 (7.9)
+Skin discolouration 33 (5.7) 4 (1.4) 37 (4.3)
+Yellow skin 78 (13.4) 6 (2.1) 84 (9.7)
+Vascular disorders 150 (25.8) 17 (6.0) 167 (19.3)
+Hypertension 150 (25.8) 17 (6.0) 167 (19.3)
+Subjects we re only counted once per treatment for each row. 
+MedDRA (v14.1) = Medical Dictionary for Regulatory Activities (version 14.1 ); N = number of subjects in each treatmen t 
+group; n = number of subjects with reported adverse event.
+a. MedDRA (version 14.1) dictionary was applied.
+Treatment -Related TEAE s:Table 11prese nts treatment -related TEAEs experienced in 5% 
+of safet y population.   The percentages of TEAEs considered related to the study  treatment 
+were higher in the sunitinib arm than in the placebo arm , except for the event of constipation .  
+Treatment -related TEAE s that were reported with a frequency  of 20% or higher in the 
+sunitinib armincluded diarrhea, nausea, decreased appetite, and PPE sy ndrome.  
+090177e18544a014\Approved\Approved On: 25-Apr-2014 16:36 
+
+Public Disclosure Synopsis
+Protocol A6181120 -17April 2014 –Final
+Template version 1.0 Page 18Table 11.Treatment -Emergent Treatment -Related (Sunitinib/Placebo) Adverse 
+Events Reporte d in 5% of Safety Population
+System  Organ Class
+MedDRA (v14.1) Preferred TermaSunitinib +Prednisone 
+(N=581)Placebo +Prednisone 
+(N=285) Total
+(N=866)
+Blood and lymphatic system disorders 199 (34 .3) 26 (9.1) 225 (26.0 )
+Anaemia 111 (19.1) 20 (7.0) 131 (15.1 )
+Leukopenia 60 (10.3) 1 (0.4) 61 (7.0 )
+Neutropenia 81 (13.9) 0 81 (9.4 )
+Thrombocytopenia 69 (11.9) 5 (1.8) 74 (8.5 )
+Gastrointestinal disorders 438 (75.4) 97 (34.0) 535 (61.8 )
+Constipation 39 (6.7) 21 (7.4) 60 (6.9 )
+Diarrhoea 239 (41.1) 27 (9.5) 266 (30.7 )
+Dry mouth 36 (6.2) 11 (3.9) 47 (5.4 )
+Dyspepsia 71 (12.2) 5 (1.8) 76 (8.8 )
+Nausea 201 (34.6) 35 (12.3) 236 (27.3 )
+Stomatitis 77 (13.3) 11 (3.9) 88 (10.2 )
+Vom iting 143 (24.6) 19 (6.7) 162 (18.7 )
+General disorders and administration site 
+conditions338 (58.2) 84 (29.5) 422 (48.7 )
+Asthenia 128 (22.0) 29 (10.2) 157 (18.1 )
+Fatigue 175 (30.1) 42 (14.7) 217 (25.1 )
+Mucosal inflammation 116 (20.0) 13 (4.6) 129 (14.9 )
+Investigations 173 (29 .8) 28 (9.8) 201 (23.2 )
+Weight decreased 84 (14.5) 10 (3.5) 94 (10.9 )
+Metabolism and nutrition disorders 228 (39.2) 43 (15.1) 271 (31.3 )
+Decreased appetite 201 (34.6) 33 (11.6) 234 (27.0 )
+Musculoskeletal and connective tissue disorders 91 (15.7) 23 (8. 1) 114 (13.2 )
+Pain in extremity 30 (5.2) 6 (2.1) 36 (4.2 )
+Nervous system disorders 239 (41.1) 49 (17.2) 288 (33.3 )
+Dysgeusia 164 (28.2) 24 (8.4) 188 (21.7 )
+Respiratory, thoracic and mediastinal disorders 133 (22.9) 17 (6.0) 150 (17.3 )
+Dyspnoea 40 (6.9 ) 4 (1.4) 44 (5.1 )
+Epistaxis 48 (8.3) 1 (0.4) 49 (5.7 )
+Skin and subcutaneous tissue disorders 314 (54.0) 54 (18.9) 368 (42.5 )
+Dry skin 55 (9.5) 16 (5.6) 71 (8.2 )
+Palmar -plantar erythrodysaesthesia 
+syndrome169 (29.1) 8 (2.8) 177 (20.4 )
+Rash 38 (6.5) 10 (3.5) 48 (5.5 )
+Skin discolouration 33 (5.7) 4 (1.4) 37 (4.3 )
+Yellow skin 77 (13.3) 6 (2.1) 83 (9.6 )
+Vascular disorders 152 (26.2) 27 (9.5) 179 (20.7 )
+Hypertension 126 (21.7) 14 (4.9) 140 (16.2 )
+AEs and SAEs are not separated out.
+AEs= adverse event s; MedDRA (v14.1) = Medical Dictionary for Regulatory Activities (version 14.1); N = number of 
+subjects in each treatment group; n = number of subje cts with reported adverse event; SAE s= serious adverse event s.
+a. MedDRA (v14.1) dictionary is applied.
+Severity  of A Es as p er CTCAE Criteria :  Of the 581 subjects in the suniti nib arm, 
+432(74.4%) and 339 (58.3%) subjects reported treatment -emergent and treatment -related 
+Grade 3 or 4 AEs ,respecti vely.  In the placebo arm out of 285 subjects, 118 (41.4%) and 
+45(15.8%) subjects reported treatment -emergent and treatment -related Grade 3 or 4 AEs ,
+respectivel y.  Grade 5 T EAEs were reported b y 66 (11.4% ) subjects in the sunitinib arm and 
+32(11.2%) sub jects in the placebo arm, while 12 (2.1%) subjects in the sunitinib arm and 
+1(0.4) subject in the placebo arm reported Grade 5 treatment -related AEs.
+Grade 3 or 4 TEAEs (fatigue and asthenia )were reported at a frequency  of 10% or higher in 
+only the sunit inib arm .  Grade 3 or 4 TEAEs that were reported at a frequency  of 5% or 
+090177e18544a014\Approved\Approved On: 25-Apr-2014 16:36 
+Public Disclosure Synopsis
+Protocol A6181120 -17April 2014 –Final
+Template version 1.0 Page 19higher in the sunitinib versus placebo arms included asthenia (10.8% versus 4.6%), fatigue 
+(10.8% versus 3.5%), PPE syndrome (6.5% versus 0%). The majorit y of the Grade 3 or 4 
+TEAEs were treatment -related.
+Treatment -Emergent SAE s(All Causality ):  Table 12presents t reatment -emergent serious 
+AEs (SAEs ,[allcausality ])reported during the study  in the safet y population.  Themajority  
+of SAEs w as due to disease progression (5.5% and 6.7% in the sunitinib and placebo arms, 
+respectivel y).
+090177e18544a014\Approved\Approved On: 25-Apr-2014 16:36 
+
+Public Disclosure Synopsis
+Protocol A6181120 -17April 2014 –Final
+Template version 1.0 Page 20Table 12.Treatment -Emergent Serious Adverse Events ( All Causality ) Reported in 
+Safety Population )
+System  Organ Class
+MedDRA (v14.1) Pre ferred TermSunitinib +Prednisone
+(N=581)Placebo +Prednisone
+(N=285)Total
+(N=866)
+Number of subjects with at least one serious adverse 
+event n (%)275 (47.3) 86 (30.2) 361 (41.7)
+Blood and lymphatic system disorders 33 (5.7) 5 (1.8) 38 (4.4)
+Anaemia 21 (3.6) 3 (1.1) 24 (2.8)
+Disseminated intravascular coagulation 1 (0.2) 1 (0.4) 2 (0.2)
+Febrile bone marrow aplasia 1 (0.2) 0 1 (0.1)
+Febrile neutropenia 2 (0.3) 0 2 (0.2)
+Leukopenia 3 (0.5) 0 3 (0.3)
+Neutropenia 1 (0.2) 0 1 (0.1)
+Pancytopenia 3 (0.5) 0 3 (0.3)
+Thrombocytopenia 8 (1.4) 1 (0.4) 9 (1.0)
+Thrombotic thrombocytopenic purpura 1 (0.2) 0 1 (0.1)
+Cardiac disorders 11 (1.9) 3 (1.1) 14 (1.6)
+Acute coronary syndrome 1 (0.2) 0 1 (0.1)
+Acute myocardial infarction 3 (0.5) 0 3 (0.3)
+Atrial fl utter 1 (0.2) 0 1 (0.1)
+Atrioventricular block second degree 1 (0.2) 0 1 (0.1)
+Cardiac failure 2 (0.3) 0 2 (0.2)
+Cardiac failure congestive 1 (0.2) 0 1 (0.1)
+Cardio -respiratory arrest 2 (0.3) 1 (0.4) 3 (0.3)
+Cardiogenic shock 1 (0.2) 0 1 (0.1)
+Left v entricular dysfunction 1 (0.2) 0 1 (0.1)
+Myocardial infarction 1 (0.2) 1 (0.4) 2 (0.2)
+Myocardial ischaemia 0 1 (0.4) 1 (0.1)
+Congenital, familial and genetic disorders 1 (0.2) 0 1 (0.1)
+Cerebral arteriovenous malformation haemorrhagic 1 (0.2) 0 1 (0.1 )
+Ear and labyrinth disorders 2 (0.3) 0 2 (0.2)
+Vertigo 1 (0.2) 0 1 (0.1)
+Vestibular disorder 1 (0.2) 0 1 (0.1)
+Endocrine disorders 0 2 (0.7) 2 (0.2)
+Adrenal insufficiency 0 1 (0.4) 1 (0.1)
+Inappropriate antidiuretic hormone secretion 0 1 (0.4) 1 (0.1)
+Eye disorders 3 (0.5) 0 3 (0.3)
+Conjunctival oedema 1 (0.2) 0 1 (0.1)
+Diplopia 1 (0.2) 0 1 (0.1)
+Optic ischaemic neuropathy 1 (0.2) 0 1 (0.1)
+Gastrointestinal disorders 73 (12.6) 13 (4.6) 86 (9.9)
+Abdominal pain 3 (0.5) 1 (0.4) 4 (0.5)
+Abdominal pain upper 2 (0.3) 0 2 (0.2)
+Anal fistula 2 (0.3) 0 2 (0.2)
+Anal haemorrhage 1 (0.2) 0 1 (0.1)
+Anal ulcer 1 (0.2) 0 1 (0.1)
+Colitis 1 (0.2) 0 1 (0.1)
+Constipation 3 (0.5) 3 (1.1) 6 (0.7)
+Diarrhoea 7 (1.2) 1 (0.4) 8 (0.9)
+Diverticular perforation 1 (0.2) 0 1 (0.1)
+Duodenitis 1 (0.2) 0 1 (0.1)
+Gastric ulcer 4 (0.7) 0 4 (0.5)
+Gastrointestinal haemorrhage 7 (1.2) 1 (0.4) 8 (0.9)
+Gingival bleeding 2 (0.3) 0 2 (0.2)
+Haematemesis 1 (0.2) 0 1 (0.1)
+Haematochezia 1 (0.2) 0 1 (0.1)
+Haemorrhoidal haemorr hage 1 (0.2) 0 1 (0.1)
+Intestinal haemorrhage 1 (0.2) 0 1 (0.1)
+Intestinal ischaemia 1 (0.2) 0 1 (0.1)
+090177e18544a014\Approved\Approved On: 25-Apr-2014 16:36 
+Public Disclosure Synopsis
+Protocol A6181120 -17April 2014 –Final
+Template version 1.0 Page 21Table 12.Treatment -Emergent Serious Adverse Events ( All Causality ) Reported in 
+Safety Population )
+System  Organ Class
+MedDRA (v14.1) Pre ferred TermSunitinib +Prednisone
+(N=581)Placebo +Prednisone
+(N=285)Total
+(N=866)
+Intestinal obstruction 2 (0.3) 0 2 (0.2)
+Large intestine perforation 2 (0.3) 0 2 (0.2)
+Lower gastrointestinal haemorrhage 1 (0.2) 0 1 (0.1)
+Melaena 3 (0.5) 0 3 (0.3)
+Mouth haemorrhage 1 (0.2) 0 1 (0.1)
+Nausea 13 (2.2) 4 (1.4) 17 (2.0)
+Oesophagitis 3 (0.5) 0 3 (0.3)
+Pancreatitis acute 1 (0.2) 0 1 (0.1)
+Peptic ulcer 1 (0.2) 0 1 (0.1)
+Proctitis 1 (0.2) 0 1 (0.1)
+Rectal haemorrhage 2 (0.3) 1 (0.4) 3 (0.3)
+Rectal ulcer 2 (0.3) 0 2 (0.2)
+Rectal ulcer haemorrhage 1 (0.2) 0 1 (0.1)
+Rectourethral fistula 1 (0.2) 0 1 (0.1)
+Small intestinal obstruction 1 (0.2) 0 1 (0.1)
+Stomatitis 1 (0.2) 0 1 (0.1)
+Vom iting 16 (2.8) 5 (1.8) 21 (2.4)
+General disorde rs and administration site conditions 85 (14.6) 34  (11.9) 119 (13.7)
+Asthenia 14 (2.4) 1 (0.4) 15 (1.7)
+Chest pain 3 (0.5) 2 (0.7) 5 (0.6)
+Death 5 (0.9) 1 (0.4) 6 (0.7)
+Device occlusion 2 (0.3) 1 (0.4) 3 (0.3)
+Disease progression 32 (5.5) 19 (6.7) 51(5.9)
+Fatigue 2 (0.3) 1 (0.4) 3 (0.3)
+General physical health deterioration 10 (1.7) 2 (0.7) 12 (1.4)
+Ill-defined disorder 2 (0.3) 0 2 (0.2)
+Impaired healing 1 (0.2) 0 1 (0.1)
+Influenza like illness 1 (0.2) 0 1 (0.1)
+Malaise 2 (0.3) 0 2 (0.2)
+Medic al device complication 1 (0.2) 0 1 (0.1)
+Mucosal inflammation 1 (0.2) 0 1 (0.1)
+Multi -organ failure 1 (0.2) 0 1 (0.1)
+Oedema peripheral 2 (0.3) 0 2 (0.2)
+Pain 2 (0.3) 4 (1.4) 6 (0.7)
+Performance status decreased 2 (0.3) 0 2 (0.2)
+Pyrexia 11 (1.9) 3 (1.1) 14 (1.6)
+Sudden cardiac death 1 (0.2) 0 1 (0.1)
+Sudden death 0 1 (0.4) 1 (0.1)
+Hepatobiliary disorders 8 (1.4) 3 (1.1) 11 (1.3)
+Cholecystitis acute 4 (0.7) 0 4 (0.5)
+Cholelithiasis 0 1 (0.4) 1 (0.1)
+Gallbladder disorder 1 (0.2) 0 1 (0.1)
+Hepati c failure 1 (0.2) 1 (0.4) 2 (0.2)
+Hepatitis cholestatic 1 (0.2) 0 1 (0.1)
+Hepatorenal failure 0 1 (0.4) 1 (0.1)
+Hepatotoxicity 1 (0.2) 0 1 (0.1)
+Infections and infestations 47 (8.1) 16 (5.6) 63 (7.3)
+Anal abscess 6 (1.0) 0 6 (0.7)
+Appendicitis 1 (0.2 ) 0 1 (0.1)
+Bronchitis 1 (0.2) 0 1 (0.1)
+Cellulitis 1 (0.2) 0 1 (0.1)
+Cholecystitis infective 1 (0.2) 0 1 (0.1)
+Clostridial infection 1 (0.2) 0 1 (0.1)
+Device related infection 1 (0.2) 0 1 (0.1)
+Diverticulitis 4 (0.7) 0 4 (0.5)
+090177e18544a014\Approved\Approved On: 25-Apr-2014 16:36 
+Public Disclosure Synopsis
+Protocol A6181120 -17April 2014 –Final
+Template version 1.0 Page 22Table 12.Treatment -Emergent Serious Adverse Events ( All Causality ) Reported in 
+Safety Population )
+System  Organ Class
+MedDRA (v14.1) Pre ferred TermSunitinib +Prednisone
+(N=581)Placebo +Prednisone
+(N=285)Total
+(N=866)
+Febrile infection 0 1(0.4) 1 (0.1)
+Gastroenteritis 2 (0.3) 0 2 (0.2)
+Herpes zoster 1 (0.2) 1 (0.4) 2 (0.2)
+Infection 4 (0.7) 0 4 (0.5)
+Infectious peritonitis 1 (0.2) 0 1 (0.1)
+Lower respiratory tract infection 1 (0.2) 0 1 (0.1)
+Meningitis bacterial 0 1 (0.4) 1 (0.1)
+Oral fungal infection 1 (0.2) 0 1 (0.1)
+Otitis media chronic 1 (0.2) 0 1 (0.1)
+Paronychia 0 1 (0.4) 1 (0.1)
+Perirectal abscess 1 (0.2) 0 1 (0.1)
+Pneumonia 4 (0.7) 4 (1.4) 8 (0.9)
+Pseudomonas infection 1 (0.2) 0 1 (0.1)
+Pyelonephritis 1 (0.2) 0 1 (0.1)
+Rectal abscess 1 (0.2) 0 1 (0.1)
+Sepsis 3 (0.5) 0 3 (0.3)
+Septic shock 2 (0.3) 0 2 (0.2)
+Staphylococcal bacteraemia 0 1 (0.4) 1 (0.1)
+Subcutaneous abscess 1 (0.2) 0 1 (0.1)
+Tooth infection 1 (0.2) 0 1 (0.1)
+Upper respiratory tract infection 1 (0.2) 0 1 (0.1)
+Urinary tract infection 10 (1.7) 7 (2.5) 17 (2.0)
+Urinary tract infection bacterial 0 1 (0.4) 1 (0.1)
+Urosepsis 1 (0.2) 1 (0.4) 2 (0.2)
+Injury, poisoning and procedural complications 15 (2.6) 3 (1.1) 18 (2.1)
+Compression fracture 0 1 (0.4) 1(0.1)
+Cystitis radiation 2 (0.3) 0 2 (0.2)
+Fall 5 (0.9) 1 (0.4) 6 (0.7)
+Fracture 1 (0.2) 0 1 (0.1)
+Hand fracture 0 1 (0.4) 1 (0.1)
+Head injury 2 (0.3) 0 2 (0.2)
+Hip fracture 1 (0.2) 0 1 (0.1)
+Humerus fracture 1 (0.2) 0 1 (0.1)
+Jaw fracture 1 (0.2) 0 1 (0.1)
+Laceration 0 1 (0.4) 1 (0.1)
+Procedural complication 1 (0.2) 0 1 (0.1)
+Subdural haemorrhage 0 1 (0.4) 1 (0.1)
+Toxicity to various agents 2 (0.3) 0 2 (0.2)
+Investigations 10 (1.7) 1 (0.4) 11 (1.3)
+Aspartate aminotransferase increased 1 (0.2 ) 0 1 (0.1)
+Blood alkaline phosphatase increased 1 (0.2) 0 1 (0.1)
+Blood creatine phosphokinase increased 1 (0.2) 0 1 (0.1)
+Blood creatinine increased 2 (0.3) 0 2 (0.2)
+Blood urea increased 2 (0.3) 0 2 (0.2)
+C-reactive protein increased 0 1 (0.4) 1 (0.1)
+Eastern Cooperative Oncology Group performance 
+status worsened1 (0.2) 0 1 (0.1)
+Haemoglobin decreased 2 (0.3) 0 2 (0.2)
+Prothrombin time prolonged 1 (0.2) 0 1 (0.1)
+Urine output decreased 1 (0.2) 0 1 (0.1)
+Metabolism and nutrition disorders 35 (6 .0) 7 (2.5) 42 (4.8)
+Decreased appetite 6 (1.0) 2 (0.7) 8 (0.9)
+Dehydration 17 (2.9) 2 (0.7) 19 (2.2)
+Diabetes mellitus 1 (0.2) 0 1 (0.1)
+Diabetic ketoacidosis 0 1 (0.4) 1 (0.1)
+090177e18544a014\Approved\Approved On: 25-Apr-2014 16:36 
+Public Disclosure Synopsis
+Protocol A6181120 -17April 2014 –Final
+Template version 1.0 Page 23Table 12.Treatment -Emergent Serious Adverse Events ( All Causality ) Reported in 
+Safety Population )
+System  Organ Class
+MedDRA (v14.1) Pre ferred TermSunitinib +Prednisone
+(N=581)Placebo +Prednisone
+(N=285)Total
+(N=866)
+Failure to thrive 2 (0.3) 0 2 (0.2)
+Hyperkalaemia 1 (0.2) 0 1 (0.1)
+Hypocalcaemia 1 (0.2) 0 1 (0.1)
+Hypoglycaemia 4 (0.7) 0 4 (0.5)
+Hypokalaemia 2 (0.3) 0 2 (0.2)
+Hypomagnesaemia 1 (0.2) 0 1 (0.1)
+Hyponatraemia 2 (0.3) 2 (0.7) 4 (0.5)
+Hypophosphataemia 1 (0.2) 0 1 (0.1)
+Hypovolaemia 1 (0.2) 0 1 (0.1)
+Malnutrition 1 (0.2) 0 1 (0.1)
+Musculoskeletal and connective tissue disorders 25 (4.3) 13 (4.6) 38 (4.4)
+Arthralgia 2 (0.3) 1 (0.4) 3 (0.3)
+Back pain 2 (0.3) 3 (1.1) 5 (0.6)
+Bone pain 10 (1.7) 5 (1.8) 15 (1.7)
+Bursitis 1 (0.2) 0 1 (0.1)
+Muscle haemorrhage 1 (0.2) 0 1(0.1)
+Muscular weakness 1 (0.2) 1 (0.4) 2 (0.2)
+Musculoskeletal pain 2 (0.3) 0 2 (0.2)
+Osteitis 1 (0.2) 1 (0.4) 2 (0.2)
+Osteonecrosis 2 (0.3) 0 2 (0.2)
+Osteonecrosis of jaw 2 (0.3) 0 2 (0.2)
+Pain in extremity 2 (0.3) 0 2 (0.2)
+Polymyalgia rheumatic a 0 1 (0.4) 1 (0.1)
+Spinal column stenosis 0 1 (0.4) 1 (0.1)
+Neoplasms benign, malignant and unspecified (incl cysts 
+and polyps)8 (1.4) 3 (1.1) 11 (1.3)
+Bladder cancer 0 1 (0.4) 1 (0.1)
+Cancer pain 1 (0.2) 0 1 (0.1)
+Malignant pleural effusion 0 1 (0.4) 1 (0.1)
+Pancreatic carcinoma 1 (0.2) 0 1 (0.1)
+Prostate cancer 2 (0.3) 0 2 (0.2)
+Prostate cancer metastatic 1 (0.2) 1 (0.4) 2 (0.2)
+Rectal cancer 1 (0.2) 0 1 (0.1)
+Transitional cell carcinoma 1 (0.2) 0 1 (0.1)
+Tumour pain 1 (0.2) 0 1 (0.1)
+Nervou s system disorders 27 (4.6) 8 (2.8) 35 (4.0)
+Aphasia 0 1 (0.4) 1 (0.1)
+Cerebral ischaemia 1 (0.2) 0 1 (0.1)
+Cerebrovascular accident 3 (0.5) 0 3 (0.3)
+Convulsion 2 (0.3) 0 2 (0.2)
+Depressed level of consciousness 1 (0.2) 0 1 (0.1)
+Dizziness 3 (0.5) 0 3 (0.3)
+Facial paresis 0 1 (0.4) 1 (0.1)
+Haemorrhage intracranial 2 (0.3) 0 2 (0.2)
+Headache 1 (0.2) 0 1 (0.1)
+Hydrocephalus 0 1 (0.4) 1 (0.1)
+Ischaemic stroke 2 (0.3) 0 2 (0.2)
+Nervous system disorder 1 (0.2) 0 1 (0.1)
+Paraesthesia 2 (0.3) 0 2 (0.2)
+Partial seizures 0 1 (0.4) 1 (0.1)
+Peripheral motor neuropathy 1 (0.2) 0 1 (0.1)
+Peripheral sensory neuropathy 0 1 (0.4) 1 (0.1)
+Polyneuropathy in malignant disease 0 1 (0.4) 1 (0.1)
+Post herpetic neuralgia 0 1 (0.4) 1 (0.1)
+Spinal cord compressio n 3 (0.5) 3 (1.1) 6 (0.7)
+090177e18544a014\Approved\Approved On: 25-Apr-2014 16:36 
+Public Disclosure Synopsis
+Protocol A6181120 -17April 2014 –Final
+Template version 1.0 Page 24Table 12.Treatment -Emergent Serious Adverse Events ( All Causality ) Reported in 
+Safety Population )
+System  Organ Class
+MedDRA (v14.1) Pre ferred TermSunitinib +Prednisone
+(N=581)Placebo +Prednisone
+(N=285)Total
+(N=866)
+Subarachnoid haemorrhage 1 (0.2) 0 1 (0.1)
+Syncope 3 (0.5) 0 3 (0.3)
+Transient ischaemic attack 2 (0.3) 0 2 (0.2)
+VIIth nerve paralysis 1 (0.2) 0 1 (0.1)
+Psychiatric disorders 6 (1.0) 3 (1.1) 9 (1.0)
+Confusional state 3 (0.5 ) 3 (1.1) 6 (0.7)
+Hallucination 1 (0.2) 0 1 (0.1)
+Mental disorder due to a general medical condition 2 (0.3) 0 2 (0.2)
+Renal and urinary disorders 31 (5.3) 12 (4.2) 43 (5.0)
+Azotaemia 1 (0.2) 0 1 (0.1)
+Bladder obstruction 1 (0.2) 0 1 (0.1)
+Bladder ta mponade 1 (0.2) 0 1 (0.1)
+Dysuria 1 (0.2) 1 (0.4) 2 (0.2)
+Haematuria 13 (2.2) 3 (1.1) 16 (1.8)
+Hydronephrosis 1 (0.2) 2 (0.7) 3 (0.3)
+Nephrolithiasis 1 (0.2) 0 1 (0.1)
+Nephrotic syndrome 1 (0.2) 0 1 (0.1)
+Obstructive uropathy 1 (0.2) 1 (0.4) 2 (0.2)
+Renal failure 1 (0.2) 1 (0.4) 2 (0.2)
+Renal failure acute 8 (1.4) 2 (0.7) 10 (1.2)
+Renal impairment 1 (0.2) 0 1 (0.1)
+Ureteric obstruction 2 (0.3) 0 2 (0.2)
+Urethral haemorrhage 1 (0.2) 0 1 (0.1)
+Urinary bladder haemorrhage 3 (0.5) 0 3 (0.3)
+Urinary retention 3 (0.5) 3 (1.1) 6 (0.7)
+Urinary tract obstruction 1 (0.2) 1 (0.4) 2 (0.2)
+Reproductive system and breast disorders 1 (0.2) 0 1 (0.1)
+Pelvic pain 1 (0.2) 0 1 (0.1)
+Respiratory, thoracic and mediastinal disorders 37 (6.4) 5 (1.8) 42 (4.8)
+Chronic obstructive pulmonary disease 0 1 (0.4) 1 (0.1)
+Dyspnoea 8 (1.4) 0 8 (0.9)
+Epistaxis 4 (0.7) 0 4 (0.5)
+Haemoptysis 1 (0.2) 0 1 (0.1)
+Hydropneumothorax 1 (0.2) 0 1 (0.1)
+Hypoxia 1 (0.2) 0 1 (0.1)
+Lung infiltration 1 (0.2) 0 1 (0.1)
+Pleural effus ion 2 (0.3) 1 (0.4) 3 (0.3)
+Pneumonia aspiration 1 (0.2) 0 1 (0.1)
+Pneumonitis 1 (0.2) 0 1 (0.1)
+Pulmonary embolism 19 (3.3) 3 (1.1) 22 (2.5)
+Respiratory arrest 1 (0.2) 0 1 (0.1)
+Skin and subcutaneous tissue disorders 1 (0.2) 0 1 (0.1)
+Skin hyperpigm entation 1 (0.2) 0 1 (0.1)
+Surgical and medical procedures 1 (0.2) 0 1 (0.1)
+Pain management 1 (0.2) 0 1 (0.1)
+Vascular disorders 13 (2.2) 3 (1.1) 16 (1.8)
+Circulatory collapse 1 (0.2) 0 1 (0.1)
+Deep vein thrombosis 4 (0.7) 1 (0.4) 5 (0.6)
+Haematoma 1 (0.2) 0 1 (0.1)
+Haemorrhage 1 (0.2) 0 1 (0.1)
+Hypertension 4 (0.7) 0 4 (0.5)
+Hypotension 0 1 (0.4) 1 (0.1)
+Peripheral vascular disorder 1 (0.2) 0 1 (0.1)
+Phlebitis 0 1 (0.4) 1 (0.1)
+Venous thrombosis limb 1 (0.2) 0 1 (0.1)
+090177e18544a014\Approved\Approved On: 25-Apr-2014 16:36 
+Public Disclosure Synopsis
+Protocol A6181120 -17April 2014 –Final
+Template version 1.0 Page 25Table 12.Treatment -Emergent Serious Adverse Events ( All Causality ) Reported in 
+Safety Population )
+System  Organ Class
+MedDRA (v14.1) Pre ferred TermSunitinib +Prednisone
+(N=581)Placebo +Prednisone
+(N=285)Total
+(N=866)
+MedDRA (v14.1) = Medical Dictionary for Regulatory Activities (version 14.1); N = number of subjects in each treatment 
+group; n = number of subjects with reported adverse event .
+Treatment -Emergent Treatment -Related SAE s:  A total of 149 (25.6%) subjects out of 581 in 
+the sunitin ib arm and a total of 19 subjects (6.7%) out of 285 in the placebo arm reported a 
+treatment -emergent treatment -related SAE during the study . 
+Discontinuations D ue to A Es:  A total of 201 subjects (34. 6%) in the sunitinib arm and 
+35subjects (12.3%) in the placebo arm discontinued from sunitinib/placebo and prednisone 
+treatments due to 1 or more TEAE s.  A summary  of the TEAEs resulting in permanent 
+discontinuations is provided in Table 13.
+090177e18544a014\Approved\Approved On: 25-Apr-2014 16:36 
+
+Public Disclosure Synopsis
+Protocol A6181120 -17April 2014 –Final
+Template version 1.0 Page 26Table 13.Summary o f Treatment -Emergent Adverse Events Resulting in Permanent 
+Discontinuation ,Occurring in ≥2 Subjects (Safety Population )
+MedDRA Preferred Term Sunitinib +Prednisone
+N=581Placebo +Prednisone
+N=285Total
+N=866
+Any AEs 201 (34.6) 35 (12.3) 236 (27.3)
+Disease progression 17 (2.9) 7 (2.5) 24 (2.8)
+Fatigue 14 (2.4) 0 14 (1.6)
+Asthenia 14 (2. 4) 0 14 (1.6)
+General physical health deterioration 11 (1.9) 1 (0.4) 12 (1.4)
+Nausea 8 (1.4) 1 (0.4) 9 (1.0)
+Diarrhea 6 (1.0) 0 6 (0.7)
+Palmar -plantar erythrodysesthesia syndrome 6 (1.0) 0 6 (0.7)
+Vom iting 5 (0.9) 1 (0.4) 6 (0.7)
+Gastrointestinal hem orrhage 4 (0.7) 0 4 (0.5)
+Pulmonary embolism 4 (0.7) 0 4 (0.5)
+Decreased appetite 4 (0.7) 0 4 (0.5)
+Dehydration 4 (0.7) 0 4 (0.5)
+Spinal cord compression 3 (0.5) 2 (0.7) 5 (0.6)
+Thrombocytopenia 3 (0.5) 0 3 (0.3)
+Melena 3 (0.5) 0 3 (0.3)
+Mucosal inf lammation 3 (0.5) 0 3 (0.3)
+Pneumonia 2 (0.3) 1 (0.4) 3 (0.3)
+Dizziness 2 (0.3) 1 (0.4) 3 (0.3)
+Death 2 (0.3) 0 2 (0.2)
+Neutropenia 2 (0.3) 0 2 (0.2)
+Gastric ulcer 2 (0.3) 0 2 (0.2)
+Gastroesophageal reflux disease 2 (0.3) 0 2 (0.2)
+Large intestine p erforation 2 (0.3) 0 2 (0.2)
+Rectal hemorrhage 2 (0.3) 0 2 (0.2)
+Stomatitis 2 (0.3) 0 2 (0.2)
+Pain 2 (0.3) 0 2 (0.2)
+Cholecystitis acute 2 (0.3) 0 2 (0.2)
+Diverticulitis 2 (0.3) 0 2 (0.2)
+Infection 2 (0.3) 0 2 (0.2)
+Sepsis 2 (0.3) 0 2 (0.2)
+Osteone crosis 2 (0.3) 0 2 (0.2)
+Ischemic stroke 2 (0.3) 0 2 (0.2)
+Confusional state 2 (0.3) 0 2 (0.2)
+Hematuria 2 (0.3) 0 2 (0.2)
+Deep vein thrombosis 2 (0.3) 0 2 (0.2)
+Hypertension 2 (0.3) 0 2 (0.2)
+Anemia 1 (0.2) 1 (0.4) 2 (0.2)
+Bone pain 0 2 (0.7) 2 (0.2)
+Subjects counted only once per treatment for each row.
+Both TEAEs leading to discontinuation from sunitinib/placebo and prednisone presented in table.
+Percentages based on the number of subjects in the safety population within each treatment arm.
+Disco ntinuations presented in decreasing order for sunitinib + prednisone.
+MedDRA (v14.1) coding dictionary applied.
+AE = adverse event; MedDRA = Medical Dictionary for Regulatory Activities (version 14.1); N = number of subjects in 
+the safety population; TEAE = treatment -emergent adverse event.
+Table 14presents a s ummary  of the a ll-causalit y TEAEs l eading to a temporary  
+discontinuation or dose reduction in 5 or more total subjects in the safet y population.  The 
+most common TEAEs that caused a dose reduction or temporary  discontinuation in the 
+sunitinib arm included: PPE sy ndrome, diarrhea, fatigue, and asthenia.  None of the dose 
+reductions or temporary  discontinuations were greater than 5% in the placebo arm.
+090177e18544a014\Approved\Approved On: 25-Apr-2014 16:36 
+
+Public Disclosure Synopsis
+Protocol A6181120 -17April 2014 –Final
+Template version 1.0 Page 27Table 14.Summary of Treatment -Emergent Adverse Events Resulting in Dose 
+Reduction or Temporary Discontinuation Occurring in ≥5 Subjects (Safety 
+Population )
+MedDRA Preferred Term Sunitinib + Prednisone
+N=581
+n (% )Placebo + Prednisone
+N=285
+n (% )Total
+N=866
+n (% )
+Subjects w ith at least 1 treatment -emergent AEa403 (69.4) 82 (28.8) 485 (56.0)
+Palmar -plantar erythrodysesthesia syndrome 62 (10.7) 0 62 (7.2)
+Diarrhea 55 (9.5) 3 (1.1) 58 (6.7)
+Fatigue 50 (8.6) 8 (2.8) 58 (6.7)
+Asthenia 50 (8.6) 3 (1.1) 53 (6.1)
+Nausea 39 (6.7) 7 (2.5) 46 (5.3)
+Vom iting 38 (6.5) 7 (2.5) 45(5.2)
+Decreased appetite 36 (6.2) 3 (1.1) 39 (4.5)
+Mucosal inflammation 33 (5.7) 0 33 (3.8)
+Neutropenia 24 (4.1) 0 24 (2.8)
+Anemia 21 (3.6) 7 (2.5) 28 (3.2)
+Hypertension 21 (3.6) 0 21 (2.4)
+Thrombocytopenia 19 (3.3) 6 (2.1) 25 (2.9)
+Stomatitis 15 (2.6) 0 15 (1.7)
+Neutrophil count decreased 13 (2.2) 1 (0.4) 14 (1.6)
+Pyrexia 11 (1.9) 2 (0.7) 13 (1.5)
+Leukopenia 11 (1.9) 0 11 (1.3)
+Pulmonary embolism 10 (1.7) 3 (1.1) 13 (1.5)
+Weight decreased 10 (1.7) 0 10 (1.2)
+Hematuria 8 (1.4) 3 (1.1) 11 (1.3)
+Abdominal pain upper 7 (1.2) 0 7 (0.8)
+Platelet count decreased 7 (1.2) 0 7 (0.8)
+White blood cell count decreased 7 (1.2) 0 7 (0.8)
+Dysgeusia 7 (1.2) 0 7 (0.8)
+Epistaxis 7 (1.2) 0 7 (0.8)
+Dehydration 6 (1.0) 2 (0.7) 8 (0.9)
+Dyspnea 6 (1.0) 1 (0.4) 7 (0.8)
+Abdominal pain 6 (1.0) 1 (0.4) 7 (0.8)
+Esophagitis 6 (1.0) 0 6 (0.7)
+Renal failure acute 6 (1.0) 0 6 (0.7)
+Bone pain 5 (0.9) 2 (0.7) 7 (0.8)
+Blood creatinine increased 5 (0.9) 1 (0.4) 6 (0.7)
+Anal abscess 5 (0.9) 0 5 (0.6)
+Blister 5 (0.9) 0 5 (0.6)
+Rash 5 (0.9) 0 5 (0.6)
+Urinary tract infection 4 (0.7) 3 (1.1) 7 (0.8)
+Rectal hemorrhage 4 (0.7) 2 (0.7) 6 (0.7)
+Dyspepsia 4 (0.7) 1 (0.4) 5 (0.6)
+Arthralgia 4 (0.7) 1 (0.4) 5 (0.6)
+Hydronephrosis 4 (0.7) 1 (0.4) 5 (0.6)
+Pain 3 (0.5) 4 (1.4 ) 7 (0.8)
+Constipation 3 (0.5) 2 (0.7) 5 (0.6)
+Pain in extremity 3 (0.5) 2 (0.7) 5 (0.6)
+Confusional state 3 (0.5) 2 (0.7) 5 (0.6)
+Subjects counted only once per treatment for each row. 
+Presented in decreasing order for sunitinib + prednisone.
+Dose re duction and temporary discontinuation for both sunitinib/placebo and prednisone.
+Percentages based on the number of subjects in the safety population within each treatment arm.
+Dose reductions and temporary discontinuations presented in decreasing order fo r sunitinib + prednisone.
+AE = adverse event ;MedDRA = Medical Dictionary for Regulatory Activities (Version 14.1) ;N = number of subjects in 
+the study population ; n = number of subjects with adverse events.
+a. Resulting in dose reduction or temporary discontinuation.
+090177e18544a014\Approved\Approved On: 25-Apr-2014 16:36 
+Public Disclosure Synopsis
+Protocol A6181120 -17April 2014 –Final
+Template version 1.0 Page 28Death s:  A summary  of deaths that were reported on study  (ie, within 28 day s of the last dose 
+of study  medication) and during follow up (ie, after 28 day s of the last dose of stu dy 
+medication) is presented in Table 15.  A total of 57 subjects (9.8%) in the sunitinib arm and 
+30 subjects (10.5%) in the placebo arm died during the stud y.  A total of 279 subjects 
+(48.0%) in the sunitinib arm and 147 subjects (51.6%) in the placebo arm died during follow 
+up.  The majority  of deaths was due to disease under study . 
+Table 15.Summary of Deaths -Safety Population
+Number (%) of Subjects Sunitinib + Prednisone
+N=581Placebo + Prednisone
+N=285Total
+N=866
+OnStudy
+Death from all causes 57 (9.8) 30 (10.5) 87 (10.0)
+Cause of death
+Disease under study 41 (71.9) 24 (80.0) 65 (74.7)
+Othera10 (17.5) 5 (16.7) 15 (17.2)
+Unknown 6 (10.5 ) 0 6 (6.9)
+Study treatment toxicity 1 (1.8) 1 (3.3) 2 (2.3)
+During F ollow -up Period
+Death from all causes 279 (48.0) 147 (51.6) 426 (49.2)
+Cause of death
+Disease under study 238 (85.3) 127 (86.4) 365 (85.7)
+Unknown 27 (9.7) 11 (7.5) 38 (8.9)
+Other 18 (6.5) 10 (6.8) 28 (6.6)
+Lost to follow -up 5 (<1.0) 2 (<1.0) 7 (<1.0)
+Deaths on study are deaths that occurred within 28 days of the last dose of study medication.
+Deaths during follow up defined as any death occurring after 28 days of the last dose of study medication. 
+Subjects who died may have more than 1 reason for cause of death.
+Percentages based on the total number of subjects in the safety population within each treatment arm except 
+for ‘Cause of Death’ where it’s on the number of deaths.
+One subject (sunitinib) died on study but did not have a Grade 5 event in the database. 
+Some subjects died beyond 28 days after the last dose but had Grade 5 events entered in the database 
+(sunitinib: 10, placebo: 2).
+Two randomized subjects in sunitinib ar m and 1 in placebo arm died on study but were never treated.  
+Therefore these subjects were not part of the safety population.
+N = number of subjects in the safety population
+a. Other causes o f death were listed as pneumonia (2), sepsis (2), cardiopulmonary arrest (2), septic
+shock, cardiac -respiratory arrest, suspi cion of cardiac infarction, urosepsis , tarry stool, acute 
+myocardial infarction, suspected pulmonary embolism, subdural hemorrhage , and m eningitis.
+Laboratory  Results, Vital Signs ,and E CGFindings :  There were no new or unexpected 
+findings in the clinical laboratory  data, vital signs, orECG findings.   
+CONCLUSIONS:
+Median OS was 13.1 and 11.8 months in the sunitinib and placebo arms, respectivel y 
+(p>0.05).  The study  failed to meet its primary  efficacy  endpoint (improvement in 
+OS).
+Median PFS was 24.1 and 17.9 weeks in the sunitinib and placebo arms, respectivel y 
+(p<0.001).  There was a high ce nsoring rate for PFS (56% in the sunitinib arm and 
+48% in the placebo arm).
+090177e18544a014\Approved\Approved On: 25-Apr-2014 16:36 
+Public Disclosure Synopsis
+Protocol A6181120 -17April 2014 –Final
+Template version 1.0 Page 29ORR was significantly  higher in the sunitinib arm (6% versus 2%, P=0.04).  None of 
+the subjects had a CR.
+Less back pain and bone pain were reported in the sunitinib arm versus placebo arm: 
+back pain (15.3% versus 21.4%), and bone pain (12.0% versus 16.5%).
+The safet y profile of sunitinib in this study  was consistent with that reported in the 
+labeling for sunitinib malate (S utent ).  No new or unexpected AEs were observed in 
+this stu dy.
+090177e18544a014\Approved\Approved On: 25-Apr-2014 16:36

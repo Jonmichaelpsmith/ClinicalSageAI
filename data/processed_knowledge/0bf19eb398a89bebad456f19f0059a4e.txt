@@ -1,0 +1,264 @@
+SPECIAL ARTICLE
+A guideline for reviewing a clinical research paper
+Lyndon V. Hernandez, MD, MPH,1Lauren B. Gerson, MD, MSc2
+Milwaukee, Wisconsin; San Francisco, California, USA
+Peer review is one of the most fundamental principles of
+high-quality scienti ﬁc publication. Like our democratic
+justice system din which a fair trial is received with a jury
+of one ’s peersdmedical journals and many funding institu-
+tions rely on peer review to assess the scienti ﬁc quality and
+novelty of manuscripts and research work. In turn, we look
+for it to be a seamless endeavor resulting in a perfect ﬁnal
+outcome. Often, however, it is not. Peer review is thoughtto be an essential tool for advancing science and medicine,despite the fact that peer review can be inconsistent, proneto bias, and has limited evidence of its effectiveness.
+1,2More-
+over, few guidelines exist on how to critique a paper and howto manage the inherent ﬂaws of the review process. Herein
+we present our recommended systematic approach for re-
+viewing clinical research papers, highlighting the inner work-
+ings of our Gastrointestinal Endoscopy (GIE) review
+process, and emphasizing what we expect from reviewersand how we measure a quality review.
+SYSTEMATIC APPROACH FOR CRITIQUING A
+MANUSCRIPT
+Reviewing the manuscript
+Read the manuscript as a skeptic but approach it objec-
+tively from a bird ’s-eye view, letting go of your precon-
+ceived dogmas to allow the evidence to unfold before
+you. In other words, beware of your own cognitive bias.As you read the manuscript, you do not have to go fromfront to back; in fact, many seasoned reviewers adviseagainst this because it hinders ef ﬁciency. It is also almost
+impossible to read the manuscript only once and expecta thorough, even-handed critique. A survey of our topGIE reviewers revealed that it takes an average of 3 hours
+to create a thorough review. Even experts in the ﬁeldroutinely survey the medical literature before forming their
+opinions. It is recommended that you read the manuscriptat least twice.
+Theﬁrst pass. The main objective of the study must
+be clearly stated. Remember, many respected medical jour-nals insist on a single primary endpoint. Take a look at the
+overall picture. Are there ﬂaws in how subjects were
+selected? Were subjects excluded from the analysis, and ifso, does it over-in ﬂate the ﬁnal outcome? Are the main
+results of the analysis clearly stated? Are the conclusionsjustiﬁed by the results?
+Perform a brief PubMed search of the topic to see
+whether articles have been published on this topic andto consider how this manuscript might add to the current
+literature. GIEand other similar journals make this easy by
+providing links directly to search engines using the keytopics of the manuscript. If there have been similar andrecent publications on this topic, then GIE will likely rejectthe submission early in the review process. Often, thismight occur by a preliminary review from the assignedAssociate Editor, which would eliminate the process ofpeer review altogether. Another reason for early rejection
+is detection by the Associate Editor of obvious ﬂaws in
+the study design or overall scienti ﬁc methods.
+The second pass. This is a good time to pause, to
+envision what the study should look like, and to ask your-self: is it clear what the investigators are doing, and is theentire manuscript consistent and focused? Appraise therationale of the study, results, and conclusion.
+Writing your critique
+Summarize the manuscript in 2 to 4 well-written
+sentences. This may seem like a waste of time, but encap-
+sulating the study in your own words not only shows the au-
+thors that you actually took the time and effort to read their
+Abbreviations: CONSORT, Consolidated Standards of Reporting Trials;
+GIE, Gastrointestinal Endoscopy ; PRISMA, Preferred Reporting Items for
+Systematic Reviews and Meta-Analyses; STROBE, Strengthening the
+Reporting of Observational Studies in Epidemiology.
+DISCLOSURE: All authors disclosed no financial relationships relevant
+to this publication.
+Copyright ª2015 by the American Society for Gastrointestinal Endoscopy
+0016-5107/$36.00http://dx.doi.org/10.1016/j.gie.2015.05.015Received April 6, 2015. Accepted May 6, 2015.
+Current affiliation: Medical College of Wisconsin and GI Associates,
+Milwaukee, Wisconsin (1), Gastroenterology Research Program, California
+Pacific Medical Center and University of California San Francisco (2), SanFrancisco, California, USA.
+Reprint requests: Dr. Lyndon V. Hernandez, Medical College of Wisconsin/
+GI Associates, 3111 W. Rawson Avenue, Suite 240, Franklin, WI 53132.
+www.giejournal.org Volume 82, No. 2 : 2015 GASTROINTESTINAL ENDOSCOPY 233
+work, it will also serve as the basis of your evaluation, making
+it easier for you to build on your observations. It shouldinclude study design, patient selection criteria, main outcome
+measured, and a highlight of the results. An example of a
+well-written review, with comm ents, can be accessed online.
+3
+Divide your critique into major and minor com-
+ments. Reserve elements that have no major bearing on
+the study, such as syntax or grammar and quality of tablesand graphs or ﬁgures, for minor comments. We encourage
+international submissions, and if needed we have copyedi-tors to address grammatical errors. Like most international
+journals, we acknowledge that only a portion of our writers
+have the luxury of being raised in the Mother tongue of ourjournal. Make every effort to judge a manuscript on its sci-ence. Bad grammar is ﬁxable. Bad science is not. For the
+major comments, ideally present your critique in orderlysequence as follows
+/C15Title and authorship. Does the manuscript title convey
+the scienti ﬁc question posed in an accurate and succinct
+manner? Does the title describe the type of study per-
+formed (prospective randomized controlled trial, retro-spective database, meta-analysis, or clinical review)?Asking questions or stating the results in the title shouldgenerally be avoided. Is the number of authors and therole of each justi ﬁed for the article? Did each author
+contribute enough to satisfy criteria for authorship,including contribution to the study idea and design, acqui-
+sition of data, analysis and interpretation of data, drafting
+and/or revision of the article, and providing ﬁnal approval?
+/C15Abstract. We have recently adopted a more universal
+format, requiring only 4 abstract headings: Backgroundand Aims, Methods, Results, and Conclusions. Are the re-sults of the study easy to interpret and do they use thecorrect descriptive terms? Is the conclusion supportedby the data? Occasionally, the conclusion over-reaches
+beyond the scope of the study and needs to be decon-
+structed and toned down.
+/C15Introduction. What is the rationale for the study? Many
+investigators falter here by not clearly stating the diseaseburden and what is already known and, most importantly,failing to make a case for the signi ﬁcance or novelty of
+the study. If you as the reviewer do not get it, most ofthe general readers will undoubtedly miss it, and so the
+signiﬁcance of the study has to be plainly stated. Even
+if you are not convinced about the signi ﬁcance of the
+study from the start, stay open-minded and continuewith your appraisal. Occasionally, you will come acrossa study that goes against conventional wisdom, but theaim of the study is clear and dovetails to a well-executed study design. Remember, your role is to pro-vide as much information as possible so the Associate
+Editor can make a decision on the manuscript. It is no
+doubt better to err on the side of supplying the AssociateEditor more than enough evidence for or against a manu-script rather than too little. In addition, does the Intro-duction state the hypothesis of the study and theaim(s)? Is the length of the introduction section appro-
+priate or too long? A common mistake is to try to presenta full review article in the Background section. The goal is
+to bring the reader “up to speed ”as quickly and thor-
+oughly as needed to understand why the study was done.
+/C15Methods. The core principles in critiquing this most
+important section are to promote clarity and trans-parency and to minimize bias.
+4Approval by an
+institutional review board and clinical trials registration,where required, should be stated. The authors shouldhighlight the type of data collected, including patient
+demographics; duration of the condition; medications
+used; presence of comorbidities; treatments renderedincluding medical, surgical, radiographic, or endoscopictherapy; and duration of follow-up. This section shouldinclude a de ﬁnition of outcomes, for example, explaining
+that the presence of anemia is de ﬁned as hemoglobin
+level less than 10 g/dL.
+Below are reporting guidelines that are a valuable check-
+list to ef ﬁciently appraise various types of submissions. In
+our experience, we have found that although GIE man-
+dates that authors adhere to Consolidated Standards ofReporting Trials (CONSORT), Strengthening the Report-ing of Observational Studies in Epidemiology (STROBE),and Preferred Reporting Items for Systematic Reviewsand Meta-Analyses (PRISMA) guidelines, we still occasion-ally detect de ﬁciencies that need to be implemented.
+BRandomized controlled trials: CONSORT.5
+BObservational studies: STROBE guidelines.6
+BMeta-analysis: PRISMA.7The authors need to state
+how the literature search was performed and whichsearch engines were used and should include whichvariables were extracted and the software programused for meta-analysis. The authors may want toshow the actual search terms in an appendix. How
+was heterogeneity assessed and was testing for publi-
+cation bias performed?
+BDiagnostic tests: Standards for Reporting of Diag-nostic Accuracy.
+8
+BHealth economic studies: British Medical Journal
+economics checklist.9
+/C15Statistical analysis. Although you are not expected to
+know the intricacies of statistical analysis, you can opine
+on the proper approach and how bias was or should
+have been mitigated. Statistics can also be overused tosupport the conclusions in a study, such as presenting sta-tistically signi ﬁcant Pvalues for associations that are not
+clinically relevant. Another common error is the calcula-tion of multiple Pvalues in the manuscript for secondary
+analyses without use of the Bonferroni correction to ac-count for multiple comparisons. Sample size estimation
+should be included ideally for any clinical trial, showing
+how it was performed to determine whether the studywas adequately powered to reach the desired conclusion.The manuscript should mention the type of program usedfor calculations (including Microsoft Excel, StatisticalGuideline for reviewing a clinical research paper Hernandez & Gerson
+234 GASTROINTESTINAL ENDOSCOPY Volume 82, No. 2 : 2015 www.giejournal.org
+Analysis System, or Statistical Package for the Social Sci-
+ences, for example) and whether Pvalues were 1- or 2-
+tailed and the level of signi ﬁcance. The authors should
+state the type of test used for calculations, for example,
+the Student ttest for continuous variables, c2testing, or
+Fisher exact testing for parametric variables. Studies usingregression analysis should state how regression was per-formed. If there are any questions regarding statisticalanalysis, the reviewer and/or the Associate Editor can sug-gest the manuscript be reviewed by GIE ’s statistician, who
+will perform an independent review.
+/C15Results. This section should start with a summary of the
+number of patients enrolled, screen failures, and the
+numbers included in the ﬁnal analysis. Continuous vari-
+ables including patient age, disease duration, and otherlaboratory values, for example, should be stated asmean /C6standard deviation or standard error with
+ranges. For clinical trials, a ﬂow diagram should account
+for those who were excluded; otherwise, the effect sizecan be overestimated. For a meta-analysis, there should
+be a description of how articles were reviewed and
+selected. The authors should place most of the descrip-tive data into tables, citing key ﬁndings in the text with
+reference to the tables containing the primary data.There is no need to duplicate too much information inthe text that also appears in the tables./C15Discussion. The discussion should highlight the key
+ﬁndings of the study and demonstrate how the current
+study adds to the current body of knowledge. It should
+compare and contrast the current study with other rele-
+vant studies that may agree or con ﬂict with the results.
+Attempts should be made to explain or speculate onconﬂicting results. There should be, at the minimum,
+concise remarks on the limitations of the study andpossible sources of bias. The discussion should highlightthe key ﬁndings of the study and demonstrate how the
+current study adds to the current body of knowledge.
+Most discussions end with future research that needs
+to be done to continue the building process of scienti ﬁc
+discovery. Speculation is acceptable and even welcomedwhen clearly stated as such (eg, “we speculate that .”).
+/C15Tables. Do they contain the appropriate amount and
+type of data, or do they duplicate what is stated in thetext? Should some tables be removed? Are abbreviationsappropriately de ﬁned below the table? Are raw numbers
+accompanied by percentages and vice versa?
+/C15Figures. Do they highlight the data appropriately and are
+they placed correctly within the text? For a meta-analysis,are Forest and Funnel plots demonstrated? Should colorbe used for some ﬁgures?
+/C15References. You should draw attention to relevant man-
+uscripts that were not cited by the authors. If there areprior publications, how does this research add to the
+current literature? How do the current results corrobo-
+rate or contradict prior studies?
+Writing your comments to the associate editor
+This is not meant to be a mere summary of the critique
+but rather a persuasive justi ﬁcation for acceptance or rejec-
+tion, this time from an Editor ’s perspective. Give an
+impression of the overall contribution of the manuscript
+to the journal and the ﬁeld. If you struggled with a certain
+part of the manuscript and need a second opinion, this isthe place to ask for a statistical or pathology review.
+Probably the most important question to ask yourself is
+this: are the methodologic ﬂawsﬁxable or not? An example
+of a remediable concern is the authors ’unwarranted or
+over-reaching conclusion, which can be addressed by
+scaling down the authors ’language. On the other hand,
+methodologic ﬂaws that lead to major sources of bias are
+generally considered unacceptable, but there are othercompelling factors to consider, such as novelty and clinicalimpact, with the caveat that the limitations of the study aremade transparent in the Discussion. Another commonreason for rejection is if the sample size is too small.
+Other reviewers may ask for an extension of the study if
+they believe the population is too small. Take note: if you
+believe a manuscript can be salvaged after a major revision,are you asking for something reasonable or will it entail sig-niﬁcant time and cost? Will it really affect the ﬁnal
+outcome? If not, will it be better to make a recommenda-tion for a future study?
+10Consider the perspective ofTABLE 1. Scoring system for the quality of peer review
+1. Did the reviewer clearly identify the strengths of the study?
+Not at all 0
+Somewhat 15
+Comprehensively 20
+2. Did the reviewer clearly identify the weaknesses of the study?Not at all 0
+Somewhat 15
+Comprehensively 303. Were the reviewer ’s comments constructive?
+Not at all 0
+Somewhat 5
+Very constructive 10
+4. What was the level of detail of the review?Poor 0
+Average 10
+Excellent 205. Was the reviewer biased?
+Yes 0
+No 106. Did the reviewers make distinct comments to the editors
+explaining why they recommended their decision?
+Yes 10No 0
+Scores are added for a total of 0 to 100, with 100 being a perfect score.
+www.giejournal.org Volume 82, No. 2 : 2015 GASTROINTESTINAL ENDOSCOPY 235Hernandez & Gerson Guideline for reviewing a clinical research paper
+younger investigators or countries and institutions with
+limited resources when asking for more data.
+RANKING SYSTEM
+Like most large organizations, GIEand the American So-
+ciety for Gastrointestinal Endoscopy seek to identify qual-
+ity. We are fortunate to have many excellent reviewers
+and look to them when choosing future Editorial Boardmembers, Associate Editors, and even the Editor-in-Chief.As such, GIE has developed a system to identify high-
+quality reviews and also programs to teach all reviewerson how to improve further.
+11After every assignment is
+completed, a score for quality is assigned by the
+Associate Editor ( Table 1 ) and, along with timeliness and
+diligence (how often you accept or reject an invitation),
+you will be ranked among your peers. Take note thatthese 3 metrics are not mutually exclusive in our rankingsystem. For example, if you agree to review a manuscriptbut for a variety of reasons you were only able to give aone-liner critique, you may get a lower score. However, ifyou frequently reject invitations, this will also count againstyou. If you know in advance that you will not be able to re-
+view, it is best to block off these dates in “Update My Infor-
+mation ”in our online editorial system. Remember that the
+more invitations you accept, assuming your quality scoresare high, the higher you move up our ranking system.
+We monitor the performance of each reviewer to pro-
+vide regular feedback and recognize the best reviewersduring Digestive Disease Week. And it certainly does notend there; if you look back far enough you will notice
+that several members of our Editorial Team have received
+the “Top Reviewers ”award for several years.
+CONCLUSION
+Peer review is critical to research endeavors, but it is
+also among the least understood of scienti ﬁc undertakings
+and is not immune to bias. However, we believe itsinherent faults can be reduced to some degree by showingwhat we expect from our reviewers dour recommended
+systematic approach on how to review a manuscript, how
+to give meaningful recommendations to an Editor, andhow we objectively measure reviewers ’performance.
+Acknowledging that peer review calls for both art and skill,we are embarking on a mentoring program geared for the
+accelerated learning of young reviewers who are interested
+in contributing to the continued success of our journal.Another mechanism for training is our updated onlineReviewers ’Course, which establishes the protocols, pro-
+cesses, and norms of our peer-review system.
+12We
+believe this framework for peer review provides a criticalbasis for engagement and discussion that will lead tomore high-value activities for our journal.
+REFERENCES
+1.Jackson JL, Srinivasan M, Rea J, et al. The validity of peer review in a
+general medicine journal. PLoS One 2011;6:e22475 .
+2.Jefferson T, Rudin M, Brodney Folse S, et al. Editorial peer review for
+improving the quality of reports of biomedical studies. Cochrane Data-
+base Syst Rev 2007;2 .
+3. GIE sample peer review of a fictitious manuscript. Retrieved from
+http://www.asge.org/assets/0/71542/71546/8FB08AFA-9230-422C-9BB5-AEFDEC2EA04A.pdf . Accessed March 2015.
+4.Schulz KF, Altman DG, Moher D; for the CONSORT Group. CONSORT
+2010 statement: updated guidelines for reporting parallel group rand-omised trials. BMJ 2010;340:c332 .
+5.Stevens A, Shamseer L, Weinstein E, et al. Relation of completeness of
+reporting of health research to journals ’endorsement of reporting
+guidelines: systematic review. BMJ 2014;348:g3804 .
+6.Parsons NR, Hiskens R, Price CL, et al. A systematic survey of the quality
+of research reporting in general orthopaedic journals. J Bone Joint
+Surg B 2011;93:1154-9 .
+7.Panic N, Leoncini E, de Belvis G, et al. Evaluation of the endorsement of
+the preferred reporting items for systematic reviews and meta-analysis
+(PRISMA) statement on the quality of published systematic review and
+meta-analyses. Plos One 2013;8:e83138 .
+8.Smidt N, Rutjes AW, van der Windt DA, et al. The quality of diagnostic
+accuracy studies since the STARD statement: has it improved?
+Neurology 2006;67:792-7 .
+9.Jefferson T, Smith R, Yee Y, et al. Evaluating the BMJ guidelines for
+economic submissions: prospective audit of economic submissions
+to BMJ and The Lancet. JAMA 1998;280:275-7 .
+10.Ploegh H. End the wasteful tyranny of reviewer experiments. Nature
+2011;472:391 .
+11.Hernandez LV. Becoming a reviewer is good for you dthe peer-review
+process. Gastrointest Endosc 2009;70:1159-60 .
+12. GIE reviewers course. Retrieved from http://www.asge.org/uploaded
+Files/Publications_and_Products/GIE_Journal/gieReviewersCourse.pdf .
+Accessed March 2015.
+236 GASTROINTESTINAL ENDOSCOPY Volume 82, No. 2 : 2015 www.giejournal.orgGuideline for reviewing a clinical research paper Hernandez & Gerson

@@ -1,0 +1,1076 @@
+E267
+ https://doi.org/10.15167/2421-4248/jpmh2022.63.2S3.2769J PREV MED HYG 2022; 63(SUPPL. 3): E267-E278
+ OPEN ACCESS   
+A clinical research requires a systematic approach with diligent 
+planning, execution and sampling in order to obtain reliable and 
+validated results, as well as an understanding of each research 
+methodology is essential for researchers. Indeed, selecting an 
+inappropriate study type, an error that cannot be corrected after 
+the beginning of a study, results in flawed methodology. The results 
+of clinical research studies enhance the repertoire of knowledge 
+regarding a disease pathogenicity, an existing or newly discovered 
+medication, surgical or diagnostic procedure or medical device. 
+Medical research can be divided into primary and secondary 
+research, where primary research involves conducting studies and 
+collecting raw data, which is then analysed and evaluated in sec-ondary research. The successful deployment of clinical research 
+methodology depends upon several factors. These include the type 
+of study, the objectives, the population, study design, methodol-
+ogy/techniques and the sampling and statistical procedures used. 
+Among the different types of clinical studies, we can recognize 
+descriptive or analytical studies, which can be further categorized 
+in observational and experimental. Finally, also pre-clinical stud-
+ies are of outmost importance, representing the steppingstone of 
+clinical trials. It is therefore important to understand the types of 
+method for clinical research. Thus, this review focused on various 
+aspects of the methodology and describes the crucial steps of the 
+conceptual and executive stages. Review
+Methodology for clinical research
+AYSHA KARIM KIANI1,2, ZAKIRA NAUREEN2,3, DEREK PHEBY4, GARY HENEHAN5, RICHARD BROWN6, PAUL SIEVING7, 
+PETER SYKORA8, ROBERT MARKS9, BENEDETTO FALSINI10, NATALE CAPODICASA11, STANISLA V MIERTUS12,13, 
+LORENZO LORUSSO14, DANIELE DONDOSSOLA15,16, GIANLUCA MARTINO TARTAGLIA17,18, MAHMUT CERKEZ ERGOREN19, 
+MUNIS DUNDAR20, SANDRO MICHELINI21, DANIELE MALACARNE22, GABRIELE BONETTI22, KEVIN DONATO2, 
+MARIA CHIARA MEDORI22,*, TOMMASO BECCARI23, MICHELE SAMAJA24, STEPHEN THADDEUS CONNELLY25, 
+DONALD MARTIN26, ASSUNTA MORRESI27, ARIOLA BACU28, KAREN L. HERBST29, MYKHAYLO KAPUSTIN30, 
+LIBORIO STUPPIA31, LUDOVICA LUMER32, GIAMPIETRO FARRONATO17,18, MATTEO BERTELLI2,22,33
+INTERNATIONAL BIOETHICS STUDY GROUP**
+1 Allama Iqbal Open University, Islamabad, Pakistan; 2 MAGI EUREGIO, Bolzano, Italy; 3 Department of Biological Sciences 
+and chemistry, University of Nizwa, Oman; 4 Society and Health, Buckinghamshire New University, High Wycombe, UK;  
+5 School of Food Science and Environmental Health, Technological University of Dublin, Dublin, Ireland; 6 Department of Psychology 
+and Neuroscience, Dalhousie University, Halifax, Nova Scotia, Canada; 7 Department of Ophthalmology, Center for Ocular 
+Regenerative Therapy, School of Medicine, University of California at Davis, Sacramento, CA, USA; 8 Department of Philosophy 
+and Applied Philosophy, University of St. Cyril and Methodius, Trnava, Slovakia; 9 Department of Biotechnology Engineering, Ben-
+Gurion University of the Negev, Beer-Sheva, Israel; 10 Institute of Ophthalmology, Università Cattolica del Sacro Cuore, Fondazione 
+Policlinico Universitario A. Gemelli-IRCCS, Rome, Italy; 11 MAGI BALKANS, Tirana, Albania; 12 Department of Biotechnology, 
+University of SS. Cyril and Methodius, Trnava, Slovakia; 13 International Centre for Applied Research and Sustainable Technology, 
+Bratislava, Slovakia; 14 UOC Neurology and Stroke Unit, ASST Lecco, Merate, Italy; 15 Center for Preclincal Research and General 
+and Liver Transplant Surgery Unit, Fondazione IRCCS Ca' Granda Ospedale Maggiore Policlinico, Milan, Italy;  
+16 Department of Pathophysiology and Transplantation, Università degli Studi di Milano, Milan, Italy; 17 Department of Biomedical, 
+Surgical and Dental Sciences, University of Milan, Milan, Italy; 18 UOC Maxillo-Facial Surgery and Dentistry, Fondazione IRCCS Ca' 
+Granda, Ospedale Maggiore Policlinico, Milan, Italy; 19 Department of Medical Genetics, Faculty of Medicine, Near East University, 
+Nicosia, Cyprus; 20 Department of Medical Genetics, Erciyes University Medical Faculty, Kayseri, Turkey; 21 Vascular Diagnostics 
+and Rehabilitation Service, Marino Hospital, ASL Roma 6, Marino, Italy; 22 MAGI’S LAB, Rovereto (TN), Italy; 23 Department 
+of Pharmaceutical Sciences, University of Perugia, Perugia, Italy; 24 MAGI GROUP, San Felice del Benaco (BS), Italy;  
+25 San Francisco Veterans Affairs Health Care System, Department of Oral & Maxillofacial Surgery, University of California, 
+San Francisco, CA, USA; 26 Univ. Grenoble Alpes, CNRS, Grenoble INP, TIMC-IMAG, SyNaBi, Grenoble, France;  
+27 Department of Chemistry, Biology and Biotechnology, University of Perugia, Perugia, Italy; 28 Department of Biotechnology, 
+University of Tirana, Tirana, Albania; 29 Total Lipedema Care, Beverly Hills California and Tucson Arizona, USA;  
+30 Federation of the Jewish Communities of Slovakia; 31 Department of Psychological, Health and Territorial Sciences,  
+School of Medicine and Health Sciences, University "G. d'Annunzio", Chieti, Italy; 32 Department of Anatomy and Developmental 
+Biology, University College London, London, UK; 33 MAGISNAT, Peachtree Corners (GA), USA
+Keywords
+Study design • Clinical research • Observational studies • Experimental studies • Bias
+Summary
+** International Bioethics Study Group: Derek Pheby, Gary Henehan, Richard Brown, Paul Sieving, Peter Sykora, Robert Marks, Benedetto Falsini, 
+Natale Capodicasa, Stanislav Miertus, Lorenzo Lorusso, Gianluca Martino Tartaglia, Mahmut Cerkez Ergoren, Munis Dundar, Sandro Michelini, Daniele 
+Malacarne, Tommaso Beccari, Michele Samaja, Matteo Bertelli, Donald Martin, Assunta Morresi, Ariola Bacu, Karen L. Herbst, Mykhaylo Kapustin, 
+Liborio Stuppia, Ludovica Lumer, Giampietro Farronato.
+A.K. KIANI ET AL.E268
+Introduction
+According to epistemologists, who study the nature, ori-
+gin and scope of knowledge, epistemic justification, the 
+rationality of belief and related issues [1], there are six 
+ways to obtain knowledge:
+• authoritarianism;
+• mysticism;
+• rationalism and empiricism;
+• pragmatism;
+• scepticism.
+Rationalism and empiricism, pragmatism and scepticism 
+may be within the scope of the scientific method, whereas 
+authoritarianism and mysticism are clearly pseudoscience 
+or anti-science [2]. Science is characterized by systematic 
+observation and experimentation, inductive and deductive 
+reasoning, and the formation and testing of hypotheses 
+and theories. The details of how these are carried out can 
+vary greatly, but these characteristics are sufficient to dis-
+tinguish scientific activity from non-science [3-8] 
+The choice and selection of a particular methodology 
+depends on factors such as the hypothesis to investigate, 
+the research question or statement of the problem, the 
+objectives, the nature of the study, the study population 
+and controls, intervention and variables [9-12]. The re-
+liability and validity of the results therefore depend on 
+an overall study design having well-defined objectives, 
+reproducible methodology, diligent data collection and 
+analysis to minimise errors and bias, and efficient re-
+porting of the findings [9, 12]. Selecting an appropriate 
+methodology is therefore essential to obtain valid re-
+sults, and an understanding of research methodology is 
+essential for researchers.
+Medical research can be broadly categorised into primary 
+and secondary research. Primary research involves con-
+ducting studies and collecting raw data that is then an-
+alysed and evaluated in secondary research [13]. Prima-
+ry research can be further classified into three types as 
+shown in Figure 1: basic or laboratory studies, also known 
+as preclinical studies, clinical research, and epidemiolog-
+ical research. Both clinical and epidemiological research 
+involve observational and experimental methods. Clinical 
+research investigates the effects of specific interventions 
+on individuals, while epidemiological research studies the 
+causes and distribution of disease or mortality in human 
+populations, especially the effects of exposure to single 
+or multiple environmental agents [14]. Similar in essence, 
+clinical research methods differ somewhat, depending 
+on the type of study. Type is an integral element of study 
+design and depends on the research question to answer. 
+It should be specified before the start of any study [15]. 
+Selecting an inappropriate study type results in flawed 
+methodology, and if it occurs after commencement of the 
+study, it is an error that cannot corrected. 
+Stages of clinical research 
+A clinical research project consists broadly of two stag-
+es: planning and action [16]. Planning Stage
+The planning stage consists of all the preliminary pa-
+perwork and search of the literature done before starting 
+actual research. It includes identifying the problem, re-
+viewing the literature, developing a research question, 
+formulating a hypothesis, determining the type of study, 
+selecting a study design, identifying the target/study 
+population, and seeking informed consent to participa-
+tion. It also includes establishing collaborations with 
+experts and determining the overall feasibility of the 
+proposed work [9, 16].
+Before beginning the scientific investigation, the re-
+searchers should decide the data collection strategy, sam-
+pling techniques and statistical analysis. After choosing 
+a working hypothesis and reformulating it as null and 
+alternative hypotheses, the next step is to decide the type 
+of study required to answer the research question and an 
+appropriate method to implement it.
+Action stage
+This stage includes the actionable research, implemen-
+tation of the method in coherence with the theoretical 
+concept, randomisation, blinding, application of sam-
+pling techniques, data collection and statistical analy-
+sis [10, 11].
+Classification of clinical research
+Depending on the study design, clinical research can in 
+principle be categorised as either quantitative or qualita-
+tive [9]. Further classification of clinical research meth-
+ods may be based on data collection techniques and the 
+direction of causality being investigated, as illustrated 
+for example by time relationships. Clinical research can 
+be classified as either descriptive or analytical, as illus-
+trated in Figure 2 [9, 12, 17-20]. 
+Descriptive research
+Descriptive studies record and report unusual or new 
+events, e.g. the prevalence of a disease or syndrome in 
+a family, and correlate the events with possible expla-
+Fig. 1. Types of primary medical research.
+METHODOLOGY FOR CLINICAL RESEARCHE269
+nations. This type of research is neither randomized nor 
+pre-designed, and is presented as a case report, case se-
+ries or surveillance study.
+Case Reports
+These are reports of individual patients with particular 
+clinical characteristics. Such reports present baseline 
+characteristics recorded and evaluated for single patients, 
+compared with population values. Sometimes these stud-
+ies may consist of observations recorded for administra-
+tion of a certain treatment to an individual. They are es-
+sentially hypothesis generating, opening the way for more 
+rigorous studies of an experimental nature [12]. 
+Case series
+Case series may include examination of successive clin-
+ical cases having common characteristics. They may, for 
+example, present observations from patients exposed to a 
+particular drug or group of drugs at regular intervals, and 
+may include former histories of patients having similar 
+outcomes, to detect possible cause-effect relationships.Surveillance studies
+This type of study involves continuous monitoring of 
+disease occurrence in a population. Information related 
+to a health problem of interest is collected in databas-
+es, analysed over a time period and inferences are made 
+based on observed correlations.
+Analytical/explanatory studies
+The most significant difference between descriptive and 
+analytical studies is the presence in the latter of control 
+groups that enable comparative evaluations to be made. 
+Analytical clinical studies can be further classified into 
+experimental (intervention) studies and observational 
+(non-intervention) studies. 
+Observational studies 
+Observational studies are non-intervention studies in 
+which patients are prescribed a specified therapy based 
+on diagnosis and therapeutic need. They include thera-
+peutic, prognostic, observational drug studies, second-
+ary data analyses, case series and single case reports, 
+Fig. 2: Classification of clinical research.
+A.K. KIANI ET AL.E270
+and may be retrospective, prospective or ambidirection-
+al [21]. In non-intervention studies, “knowledge from the 
+treatment of persons with drugs in accordance with the 
+instructions for use specified in their registration is ana-
+lysed using epidemiological methods” [21]. “Diagnosis, 
+treatment and monitoring are not performed according 
+to a previously specified study protocol, but exclusively 
+according to medical practice” [21].
+Observational studies involve collecting data pertaining 
+to study participants in their natural or real-world en-
+vironments. They are usually diagnostic and prognostic 
+studies, with a cross-sectional approach to data collec-
+tion. The comparative-effectiveness study is the hall-
+mark of non-experimental research [22], and involves 
+comparison of comparable groups to interpret outcome 
+effects. Such studies are also known as benchmark-
+ing-controlled trials because of the element of peer com-
+parison [22]. 
+Observational studies can be broadly categorised into 
+individual and aggregate studies.
+Aggregate observation studies
+Individual level data aggregated by geographic area, 
+year or any other parameter is termed aggregate data. 
+Aggregate studies are conducted to record observations 
+on pandemics and epidemics of communicable diseas-
+es and their treatment regimens, for example aggregate 
+data on COVID-19 in a particular country, or the oc-
+currence and effective treatment of malaria and its re-
+lapse in a particular geographical area. Data pertaining 
+to non-communicable diseases is also aggregated in the 
+same way to generate insights into the distribution of 
+diseases in specified populations, as for example in can-
+cer registries [23, 24]. 
+Individual observation studies
+Individual studies are based on disaggregated individ-
+ual results and involve analysis to estimate differences 
+between subgroups. In individual observational studies, 
+subjects are observed individually and then gathered in 
+groups based on outcomes or exposures or both. Based 
+on grouping criteria, individual observational studies 
+may take the form of case-control, cohort or cross-sec-
+tional studies.
+a. Case-control studies
+ Individual observational studies that involve group-
+ing of subjects based on selected outcomes are 
+termed case-control studies. In these studies, the ex-
+posure experience of the case group (subjects with 
+the outcome of interest) is compared with that of the 
+control group (subjects without the outcome), for in-
+stance occurrence or non-occurrence of renal failure 
+in diabetic patients or heart attacks in hypertensive 
+patients. The design of such studies is retrospective 
+and evaluates possible associations between expo-
+sures and outcome. They are quick and inexpensive 
+to perform, and the results are expressed as odds ra-
+tios (OR) and risk ratio/relative risk. Case control 
+studies enable multiple exposure variables to be ex-
+amined for a given outcome, but they do not allow correlation of sequential causes and effects with the 
+outcome [12].
+b. Cohort studies
+ In this type of study subjects are grouped based on 
+exposure. Cohort studies enable multiple outcomes 
+to be studied for a given exposure. The exposure is 
+well-defined, but the outcome may vary, thus pro-
+viding an opportunity to monitor many outcomes of 
+a single exposure [12]. Cohort studies can be retro-
+spective, where the cohorts are defined on the basis 
+of a past exposure, or prospective, where the cohorts 
+are defined by a current exposure. 
+• Retrospective cohort studies
+ In retrospective cohort observational studies, the 
+researchers look back in time at archived or self-re-
+ported data in order to compare outcomes in exposed 
+and non-exposed patients. The two groups are iden-
+tified retrospectively and studied prospectively. This 
+type of study is quick and inexpensive [25, 26], but is 
+prone to recall-bias [27].
+• Prospective cohort studies
+ A prospective cohort study is a longitudinal cohort 
+study in which cohorts differing in exposure to the 
+factors being studied are followed up at predeter -
+mined time intervals to determine the effect on out-
+comes. This type of study helps to determine associ-
+ations between a particular exposure and outcomes. 
+For rare outcomes, large numbers of subjects and 
+long follow-up periods are required, so such studies 
+tend to be very expensive. In addition, if random-
+ization and blinding are not conducted properly, the 
+chances of bias and confounders increases [26]. 
+c. Cross-sectional studies
+ Cross-sectional studies have transverse study design 
+and involve concurrent assessment of exposures and 
+outcomes without any follow-up. These studies are 
+essentially based on surveys, and are therefore ap-
+propriate for determining prevalence but cannot shed 
+light on causation [12, 26]. 
+Experimental studies
+Experimental studies are intervention studies, and in-
+clude preclinical trials on animals as well as clinical 
+trials in humans. In these studies, the effect of an inter -
+vention is compared with that of another intervention or 
+a placebo. Interventions studied may include, for exam-
+ple, use of medical devices, surgical, physical or psy-
+chotherapeutic procedures, psychosocial interventions, 
+rehabilitation measures, acupuncture, physiotherapy 
+training or diet [1, 14]. Experimental studies mostly aim 
+to compare outcomes of treatment procedures in a group 
+of patients exhibiting minimal internal differences. To 
+avoid bias, patients are randomly allocated to treatment 
+and control groups. Different countries have different 
+procedures and legal and ethical requirements govern-
+ing the conduct of such studies. For instance, the United 
+Kingdom Medicines and Medical Devices Act 2021 re-
+quires that studies using medical devices be registered 
+by the relevant authorities. In the European Union, inter -
+ventional studies must be conducted in accordance with 
+METHODOLOGY FOR CLINICAL RESEARCHE271
+the binding rules of Good Clinical Practice (GCP) [28]. 
+In Germany, vaccine studies are considered to be inter -
+vention studies and are conducted as clinical studies ac-
+cording to the AMG [13]. Likewise, drug studies must 
+seek approval from ethical committees. Informed con-
+sent must be obtained from the patient and an ethically 
+defensible control group included. The control group 
+is given another treatment regimen and/or placebo and 
+should enable the central questions of the study to be 
+answered [28]. 
+Some experimental studies in biomedical research may 
+focus on possible biomarkers, such as enzymes or genes, 
+on evaluation of imaging techniques, such as magnet-
+ic resonance imaging and computed tomography, or on 
+techniques such as gene sequencing in order to find cor -
+relations between genotypes and phenotypes. The devel-
+opment of statistical tests and mathematical models may 
+also be regarded as experimental studies. Generally, the 
+design of biomedical studies should be based on their 
+purpose and objectives [13].
+Design of experimental studies
+The design of an experimental study depends on the type 
+of information sought, the objectives of the study and 
+the ultimate application. Designs can be characterized 
+by interventions on selected groups of the study popu-
+lation under controlled environmental conditions com-
+pared with a control group without any interventions. 
+The main designs employed in experimental studies 
+are randomised controlled trials and non-randomised 
+clinical trials, also known as quasi-experimental stud-
+ies [9, 12, 26].
+Non-randomized studies
+In non-randomised studies, the study population is se-
+lected on the basis of pre-determined selection criteria; 
+it is not randomized with respect to treatment(s) but is 
+prescribed treatment based on the course of the disease. 
+In many experimental studies involving surgical inter -
+vention which is only appropriate for particular patient 
+groups, randomization is either not possible or not eth-
+ical. Generally, phase IV of a clinical trial has non-ran-
+domized design. Non-randomised studies can be further 
+categorised as:
+a. Quasi-experiment 
+ The investigator assigns exposure to the intervention 
+as in a randomized controlled trial, but the subjects 
+are not randomized [12]. 
+b. Field trial 
+ These are large scale studies of therapeutic interven-
+tions, for example the efficacy of COVID-19 vac-
+cines in combatting COVID-19. Many samples are 
+required to determine efficacy, particularly when the 
+incidence of a particular disease in the population is 
+low [26]. 
+c. Community trial 
+ In these trials, treatments are allocated to a commu-
+nity group. For instance, the effect of fluoridation of 
+water was tested by exposing some communities to fluoride and comparing outcomes with those in unex-
+posed communities. 
+Randomized controlled trials
+Randomised controlled trials (RCTs) are trials in which 
+the subjects are randomly assigned to experimental and 
+control groups. The experimental group is given the 
+treatment that is being tested and the control group is 
+given an alternative treatment or a placebo or no treat-
+ment at all. Most experimental clinical studies are RCTs, 
+and the subjects are either healthy volunteers or patients. 
+After a new drug passes a pre-clinical trial, it is tested 
+via RCTs. Various aspects of the RCT require careful 
+consideration before the trial begins, for example study 
+design, patient population, control group selection, ran-
+domization, sampling, blinding or open labelling of 
+treatments and outcomes [12, 26]. 
+a. Study design
+ Study design is an important prerequisite for the suc-
+cess of the study. Randomised controlled trials com-
+monly use parallel group design, matched pairs and 
+cross-over designs [29]. 
+• Parallel group design
+ This design requires large number of subjects/pa-
+tients who are enrolled, followed up and observed for 
+outcomes on a parallel basis over a period of time. 
+• Matched pairs
+ In this design, patients are matched for different vari-
+ables. Matched subjects are assigned at random to 
+intervention or control groups. Although this type of 
+design is difficult to conduct, it helps overcome the 
+influence of confounding variables on outcomes.
+• Crossover design 
+ This design is used for drugs having reversible and tran-
+sient effects. The effects of two interventions, adminis-
+tered sequentially, are assessed. The number of patients 
+required is smaller than for the other designs [29].
+b. Patient population
+ In RCTs, the patient population is selected on the 
+basis of predetermined selection criteria. This se-
+lection is carried out to avoid confounding variables 
+and should be based on predefined inclusion and ex-
+clusion criteria. Withdrawal criteria, indicating the 
+circumstances under which subjects should be with-
+drawn from the trial, should also be predefined.
+• Inclusion criteria
+ The criteria for selection of subjects (patients or 
+healthy volunteers) are based on age, body mass in-
+dex, gender, ethnicity, prognostic factors and diag-
+nostic admission criteria. They are used to select the 
+subjects and then randomly assign them to various 
+treatments for comparison of outcomes [26, 30].
+• Exclusion criteria
+ These are criteria for excluding subjects from a par -
+ticular trial, for example severity of disease, concur -
+rent medication, allergies, underlying health condi-
+tions and many more [30].
+• Withdrawal criteria
+These indicate situations in which the trial is terminat-
+ed for particular subjects and specify how and when the 
+A.K. KIANI ET AL.E272
+subjects should be withdrawn from the study. When sub-
+jects are withdrawn, they are no longer subject to fol-
+low-up. 
+c. Control group
+ Perhaps the most important factor in any scientific 
+research is identification and determination of a con-
+trol group. Without successful deployment of a con-
+trol group, a study cannot be authentic. Randomised 
+controlled trials can include placebo, no-treatment, 
+historical or active controls [26]. 
+• Placebo control
+ A placebo is a fake or inert version of the drug under 
+evaluation, with no pharmacological effect. Placebos 
+help overcome any psychological impact of drug dis-
+pensing on disease progression, allowing the investi-
+gator to estimate the effectiveness of a treatment free 
+from confounding psychological factors. However, 
+placebo controls in drug research and sham surgery 
+are ethically controversial, especially in cases where 
+an effective treatment exists.
+• No treatment controls
+ This is the least preferred type of control, where sub-
+jects are not given anything by way of treatment, not 
+even a placebo. Such controls serve as a neutral refer -
+ence group for the experimental groups receiving the 
+treatment under investigation. This approach avoids 
+bias due to psychological factors that may influence 
+outcomes. 
+• Historical control 
+ In some studies, concurrent controls are dispensed 
+with and only historical control data is used. This is 
+done specifically for studies involving rare diseases 
+with high mortality. In such circumstances, with-
+holding treatment from a control group would raise 
+very considerable ethical implications [9]. Historical 
+controls are controls used in previous studies. They 
+help reduce the overall cost of the study, making drug 
+developers more likely to invest. Historical controls 
+also make enrolment in rare disease trials more feasi-
+ble by reducing the number of patients required. 
+d. Randomization Randomization is the optimal method of allocating 
+subjects to the therapy arms of a trial. Random as-
+signment of subjects to the treatment and control 
+groups ensures equal distribution of all variables 
+and confounding factors, such as genetic variabil-
+ities, risk factors and comorbidities, in all groups, 
+thereby alleviating bias. Randomization is intended 
+to ensure comparability between the groups, and it 
+reduces the chance of allocating a specific therapy 
+to patients with a particularly favourable prognosis. 
+Randomization is carried out using random number 
+tables, mathematical algorithms for pseudorandom 
+number generation, physical randomization devices 
+such as coins and cards, or sophisticated devices such 
+as electronic random number indicator equipment [9-
+12, 26]. 
+ The main randomization techniques used in RCTs 
+are simple randomization, cluster randomization and 
+stratified randomization [31]. 
+• Simple randomization
+ Randomization involving a single sequence of ran-
+dom assignments is known as simple randomization. 
+It randomizes patients selected on the basis of selec-
+tion criteria to various treatment groups. 
+• Cluster randomization 
+ Cluster-randomized trials are used to compare treat-
+ments that are allocated to clusters (groups) of sub-
+jects, rather than to individuals. Groups of patients 
+matching the selection criteria are randomly assigned 
+to the group receiving the treatment or to a control 
+group. Randomised controlled trials are used to eval-
+uate complex interventions. 
+• Stratified randomization 
+ This is a two-step procedure. As the name indi-
+cates, the subjects entering the clinical trial are first 
+grouped in strata (groups) based on clinical features 
+that might affect the outcome of their condition, and 
+then undergo intra-group randomization to assign 
+them to various treatment groups.
+e. Sampling method 
+ Sampling is the process of selecting a sample popula-
+tion from the target population. Sampling allows in-
+Fig. 3. Sampling methods in clinical research.
+METHODOLOGY FOR CLINICAL RESEARCHE273
+formation to be obtained about the target population 
+based on statistical analysis of a subset of the popula-
+tion, without any need to investigate the characteris-
+tics of every individual in the target population [32]. 
+Sampling techniques are broadly categorised into 
+probability and non-probability sampling, as shown 
+in Figure 3.
+• Probability sampling
+ In this sampling technique, every element of the pop-
+ulation has an equal chance of being selected. This 
+helps create a sample truly representative of a given 
+population [22]. Types of probability sampling tech-
+niques are:
+Simple random sampling
+In this type of sampling every experimental unit has an 
+equal chance of being selected during sampling.
+Systematic sampling 
+This sampling is used where a complete and up-to-date 
+sampling frame is available. The first experimental unit 
+is selected randomly, while the rest are selected random-
+ly based on a predesigned pattern. 
+Stratified sampling
+In this method the study population is divided into strata 
+according to age, gender etc. and then sampling is car -
+ried out from these strata. 
+Cluster sampling
+In this method the study population is divided into clus-
+ters and these clusters rather than individuals are taken 
+as sampling units. The clusters are then randomly select-
+ed for inclusion in the study.
+Multistage sampling
+Multistage random sampling is conducted at several 
+stages within population clusters. This sampling method 
+is usually applied to large nationwide surveys. 
+Multiphase sampling
+The sampling is conducted in two or more phases. In the 
+first phase some data is collected from the whole sample 
+and in the second, data is collected from a subset of the 
+original sample. 
+• Non-probability sampling
+ In this type of sampling technique, not all experimen-
+tal units get an equal chance of being selected [22]. 
+A non-representative sample which does not produce 
+generalizable results is a possible result. Different 
+types of non-probability sampling are:
+Convenience sampling
+This sampling is based on the convenience of the inves-
+tigator. 
+Purposive/judgemental/selective/subjective sampling
+This type is based on the judgement of the investigator.
+Quota sampling
+This method of sampling is used in studies involving 
+interviews and is based on the judgment of the inter -
+viewers, depending on characteristics such as sex and 
+physical status.
+f. Blinding
+ Blinding is defined as “concealing or masking the as-
+signment of subjects to a study group from the partic-
+ipants of the study, i.e., patients/subjects, observers and researchers”. Randomised clinical trials may be 
+blinded or non-blinded [9, 12, 26]. 
+• Non-blinded experiments
+ Non-blinded experiments are also known as open-la-
+bel studies. In this type of study, all participating pa-
+tients, physicians, observers and researchers know 
+the treatment used. This may result in bias, but is 
+unavoidable where hiding a treatment raises ethical 
+concerns. For instance, it is unethical to hide the 
+treatment regime from patients with cancer, AIDS or 
+organ failure. Patients may also be allowed to select 
+the drug brand themselves.  
+• Blinded experiments
+ In these experiments the blinding is done at the start 
+of the experiment. Blinding can be single, double or 
+triple. 
+Single-blind trials
+The subjects (patients or healthy volunteers) do not 
+know whether they are in the intervention or the placebo 
+group. 
+Double-blind trials
+Neither the subjects nor the researcher knows who has 
+been assigned to the control and the test groups. Only 
+the observer knows to which group the subjects have 
+been assigned. 
+Triple-blind trials
+In triple blind RCTs, personal or intentional bias is 
+eliminated by none of the study participants (subjects, 
+observer, researcher) knowing the label or nature of the 
+treatment administered. 
+The information identifying treatment and subjects in 
+double- and triple-blind experiments is held by another 
+party and only made available to the researcher at the 
+end of the trial. 
+Prospective, randomized, open-label, blinded-endpoint 
+(PROBE) trials
+Randomized controlled trials can be conducted as 
+PROBE trials in which patients are randomly assigned 
+to different treatment regimens and both patients and 
+researchers are aware of the treatments administered. 
+The PROBE trial is much easier to conduct than dou-
+ble- or triple-blind or doubled-blind placebo-controlled 
+design, as it enables trials to be performed in conditions 
+that resemble real-world practice. It is also economical 
+and simplifies patient enrolment. However, it impos-
+es certain conditions to avoid the bias associated with 
+open label trials. PROBE designs are endpoint blinded, 
+as the observer is unaware of the treatment being used. 
+Since the subjects and researchers know the treatments, 
+potential bias can be avoided by using so-called hard 
+endpoints as primary endpoints. However, the results 
+obtained by PROBE are less reliable than those obtained 
+by double- or triple-blind studies [33].
+g. Treatment considerations
+ Another important prelude to a successful clinical 
+study is the selection of treatment dosage, form, fre-
+quency, route of administration and concurrent med-
+ications for the test and active control groups. A drug 
+may be available in various doses and in forms such 
+as tablet, capsule or injectable. Since these factors 
+A.K. KIANI ET AL.E274
+affect the plasma concentrations and effects of the 
+drug, and ultimately the outcome; all these factors, 
+except dose and frequency, are maintained constant 
+throughout the study. If necessary, the dose and fre-
+quency of the drug may be changed gradually and 
+sequentially. If the treatments involve more than one 
+drug, their pharmacokinetic and pharmacodynamic 
+interactions are kept under observation while deter -
+mining dosage, in order to avoid any influence of 
+these interactions on outcomes [9, 12, 33]. Another 
+important consideration in treatment selection is pa-
+tient compliance, since non-compliance may have 
+adverse effects on outcome.
+h. Outcome measures
+ Since the objectives of a clinical study indicate the 
+possible outcomes, this is borne in mind in select-
+ing the methods of monitoring and the data required 
+for recording the outcomes of interest. In clinical 
+experiments, outcomes are assessed in terms of ef-
+ficacy endpoints, i.e. primary endpoints and surro-
+gate or secondary endpoints. Primary endpoints are 
+measures specified by the researcher at the start of 
+the study in order to verify or refute the hypothesis, 
+whereas surrogate endpoints are specified before 
+commencement of the study but can be modified 
+during its course. For instance, in an experiment 
+estimating the efficacy of an antihypertensive drug, 
+the primary endpoint would be to see whether or not 
+the treatment reduces cardiovascular events, while 
+a surrogate endpoint could be its ability to reduce 
+blood pressure [26]. Many primary and secondary 
+endpoints are prespecified before beginning a study. 
+However, the main primary endpoint is the quality of life afforded by a particular treatment for individuals 
+in the study group. 
+• Bias, chicanery and confounders
+ Bias is distortion of outcomes due to introduction of 
+errors, voluntarily or involuntarily, at different stages 
+of the research, e.g. the stages of design, population 
+selection, calculation of number of samples, data en-
+try and statistical analysis. Several types of bias can 
+occur during clinical research (Tab. I).
+Chicanery
+Chicanery involves deliberate unethical changes to inter -
+ventions, results and the data of patients. Copying data 
+from other sources is also classified as chicanery. 
+Confounders
+Confounders are factors, other than those being studied, 
+that can affect an outcome parameter. These factors are 
+not directly relevant to the research question but may 
+possibly alter the outcomes [10, 11]. For example, while 
+studying the effect of hypertension on renal failure, di-
+abetes could be a confounder as it also affects kidney 
+function. It is therefore essential to take all potential 
+confounders into consideration when designing a study. 
+If known, confounders can be controlled for by selection 
+constraints or statistical adjustments, such as stratifica-
+tion and mathematical modelling, during study design. 
+Various strategies are used during data analysis to adjust 
+for confounders; these include stratified analysis using 
+the Mantel-Haenszel method, a matched design ap-
+proach, data restriction and model fitting using regres-
+sion techniques [34].
+Bias, chicanery and confounders can be avoided by ran-
+domization and blinding. The randomized controlled and 
+blinded clinical trial with case number planning is there-
+Tab. I. Types of bias in clinical research.
+Type of Bias Description
+Investigator biasConscious or unconscious preference given to one group over another by the 
+investigator 
+Evaluator biasIntroduced when an investigator making endpoint-variable measurements favours one 
+group over another. Common with subjective endpoints
+Performance bias/ set of 
+Hawthorne effectsIntroduced when participants know their allocation to a particular group and change 
+their response or behaviour during a particular treatment
+Selection biasIntroduced when samples (individuals or groups) are selected for data analysis without 
+proper randomization; includes admission bias and non-response bias, in which case the 
+sample is not representative of the population
+Ascertainment or information biasErrors in measurement or classification of patients; includes diagnostic bias and recall 
+bias 
+Allocation biasSystematic differences in the allocation of participants to treatment groups and 
+comparison groups, when the investigator knows which treatment is going to be 
+allocated to the next eligible participant
+Confirmation bias Information is processed in a manner consistent with someone’s belief 
+Belief biasThe strength of arguments is judged on the basis of the plausibility of their conclusions 
+rather than how strongly they support that conclusion.
+Expectation biasIntroduced during publication by a personal preference for positive results over negative 
+results when the results deviate from expected outcomes
+Detection biasSystematic errors in observation of outcomes in different groups results in detection bias 
+when outcomes in one group are not as vigilantly sought as in the other.
+Attrition bias/loss-to-follow-up bias Preferential loss-to-follow-up in a particular group leads to attrition bias.
+Commercial biasIntroduced for commercial reasons in the form of advertising or economic pressure on 
+editors, particularly in studies involving new medical devices and drugs
+METHODOLOGY FOR CLINICAL RESEARCHE275
+fore accepted as the gold standard for evaluating the ef-
+ficacy and safety of drugs and therapeutic regimes [35].
+i. Validity
+ The results of a clinical trial are said to be valid if the 
+differences observed between the study and control 
+groups are real and not influenced by bias or con-
+founders (internal validity) and are applicable to a 
+broader population (external validity). Placebo-con-
+trolled, double-blinded, randomised clinical trials 
+have high internal validity, while external validity 
+can be increased by broadening the eligibility criteria 
+for enrolling subjects [36].
+Preclinical studies for the development 
+of biomedical products
+Pre-clinical (or laboratory) studies form the basis of 
+clinical trials. To reduce the time for, and to improve the 
+chances of approval of a new drug, the choice of an ap-
+propriate preclinical model is of utmost importance. Pre-
+clinical studies evaluate the pharmacodynamics, phar -
+macokinetics and toxicology of a drug in in vitro and in 
+vivo settings. Clinical trials are conducted when preclin-
+ical studies have demonstrated the efficacy and safety 
+of a new drug. The results of clinical trials can improve 
+preclinical studies and vice versa. Nonetheless, only a 
+small fraction of drugs that pass the preclinical evalu-
+ation criteria are selected for clinical trials, and only a 
+few are approved for use in humans, so optimization of 
+standard preclinical procedures to mimic the complexity 
+of human disease mechanisms is urgently needed [37].
+In summary, preclinical studies involve the use of vari-
+ous in vivo and in vitro models and computer designs to 
+evaluate the efficacy and safety of a new drug.
+In vitro  models (cell studies) 
+Advances in cell culture technology have made it possi-
+ble to test new drugs on cell lines grown in vitro. These 
+studies may involve testing of drugs on human or animal 
+cancer cells [38].
+In vivo  models (animal studies) 
+Drugs that prove effective in vitro are then tested in 
+vivo in live animals to ensure their safety in living sys-
+tems. Animal models, and their critical validation, are 
+of great importance in minimizing unpredicted adverse 
+effects of a drug in clinical trial phases. Animal models 
+are carefully selected on the basis of their advantages 
+and limitations and on the objectives of the study, in 
+order to mimic pathophysiological conditions in hu-
+mans [38]. The validity of animal models is increased 
+by following the relevant guidelines and standards in 
+designing a study. Three types of models are used in 
+preclinical studies:
+Homologous models
+Homologous models are animals which have the same 
+causes, symptoms, and treatments of a particular disease 
+that humans would have.Isomorphic models
+These animals have same symptoms and treatments of a 
+particular disease as humans, but the cause may be dif-
+ferent.
+Predictive models
+These models are only like humans in some aspects of a 
+particular disease; however they provide useful informa-
+tion about the mechanisms of disease features. 
+In silico  models (computer studies)
+In silico models are based on computer simulations that 
+complement or precede in vitro and in vivo studies. They 
+predict how a drug might behave in these subsequent 
+studies. In-silico studies require expertise in biochem-
+istry, molecular biology, cheminformatics, and bioinfor -
+matics [38].
+Pre-clinical studies provide useful information about 
+the behaviour and safety of drugs. However, drugs do 
+not necessarily behave in the same way in humans as 
+they do in animal models. For example, human sub-
+jects and mice models differ sharply in absorption, 
+processing, and excretion of certain drugs. Unexpected 
+side-effects may therefore occur in humans that do not 
+occur in animal models. Drugs which show promis-
+ing outcomes in preclinical studies are then approved 
+for testing in human subjects by regulatory authorities 
+such as the Food and Drug Administration (FDA) in the 
+US [37, 38]. 
+Design, performance, and monitoring 
+of clinical trials
+Once preclinical studies on a new drug are completed 
+and promising results are achieved, the next stage in 
+biomedical research is testing the safety, efficacy and 
+reproducibility of the drug’s action on humans through 
+clinical trials. Clinical trials are considered to be a safe 
+and dependable method of evaluating the efficacy of a 
+treatment. Clinical trials may be therapeutic or preven-
+tive [37-39].
+Therapeutic trials
+These trials are conducted to test experimental treat-
+ments, combinations of new or existing drugs, and new 
+surgical interventions.
+Preventive trials 
+These trials test the efficacy of interventions (drugs, vac-
+cines) in preventing diseases and their outcomes. 
+In general, clinical trials aim to enhance the repertoire 
+of information related to an intervention or lifestyle 
+regime that might prove beneficial for patient manage-
+ment or treatment. They are designed to develop and test 
+new diagnostic methods or treatments and their effects 
+on humans, or new uses of existing diagnostic methods 
+or treatment. They also help identify the most cost-ef-
+fective and risk-free diagnostic methods or treatments. 
+A.K. KIANI ET AL.E276
+Randomized controlled trials are conducted to compare 
+the safety and efficacy of two or more interventions in 
+humans, and can often be based on clinical equipoise. 
+Their phases [26] are shown in Table II.
+Good clinical practice: guidelines 
+and requirements
+Clinical trials are the gold standard for evaluating the 
+superiority or similarity of new drugs or surgical pro-
+cedures with respect to existing ones. As clinical trials 
+involve testing on humans, their design and conduct re-
+quire careful planning, diligent execution and enormous 
+resources to comply with regulations set by the regula-
+tory authorities so that robust results can be attained. 
+The good clinical practice (GCP) guidelines published 
+by the International Council of Harmonization (ICH) 
+is an international ethical standard that ensures that the 
+design, conduct, performance, monitoring, auditing, 
+recording, analysis and reporting of clinical trials takes 
+place according to established values. It also ensures 
+the reliability and precision of reported data, and pro-
+tects the rights, integrity and privacy of subjects par -ticipating in a trial [28, 31]. Protection of the safety, 
+wellbeing and rights of human subjects participating 
+in a clinical trial is consistent with the principles of the 
+Declaration of Helsinki [40] and with the ethical prin-
+ciples formulated by the World Medical Association 
+[41]. The requirements for conducting clinical trials in 
+the European Union, including GCP and good manu-
+facturing practice and their respective inspections, are 
+implemented in the Clinical Trial Directive (Directive 
+2001/20/EC) and the Good Clinical Practice Directive 
+(Directive 2005/28/EC) [31].
+The responsibility for GCP lies with all participants in 
+the trial, from the site staff to the subjects and the ethical 
+and monitoring committees. The roles and responsibili-
+ties of GCP participants are shown in Table III.
+Conclusion
+The planning and execution of clinical research is of vital 
+importance for the advancement of medical science. The 
+validity of clinical research findings depends on a variety 
+of factors, such as study design, sampling techniques and 
+statistical analysis. Choosing an appropriate study design Tab. II. Phases of a randomized controlled trial of a drug.
+Phases Aim Number of participants
+Phase 0To check the 
+a. capacity of a new drug to modulate its intended target in humans
+b. metabolisation of a druga few volunteers
+Phase ITo check 
+a. safety and unexpected effects 
+b. safe dose
+c. absorption and elimination by the body 20-80 healthy volunteers or patients in an 
+advanced stage of disease
+Phase IITo assess
+a. safety and effects in a broader population Hundreds of volunteers 
+Phase IIITo
+a. assess efﬁcacy 
+b. check for collateral effects
+c. compare with pre-existing treatments
+d. determine whether approval and commercialization are possibleHundreds to thousands of volunteers 
+Phase IVTo collect more information on
+a. risk
+b. benefits
+c. potential uses of an existing drug Hundreds of thousands of volunteers 
+Tab. III. Clinical trial participants and their role in good clinical practice.
+Participants Role
+Regulatory authoritiesReview clinical data and conduct inspections for GCP and good manufacturing 
+practice
+SponsorInstitution/organization responsible for initiation, management and finance of 
+clinical trial
+Project monitor Monitors the project and is appointed by the sponsor
+Investigator Team leader responsible for conducting trial at trial site
+Trial site pharmacist In charge of maintaining, storing and dispensing drugs
+Patients Human subjects
+Ethical review committee for the protection of 
+subjectsInstitutional or national regulatory authorities ensuring safety, well-being and 
+protection of human subjects 
+Committee to monitor large trials Overseas sponsors, drug companies
+METHODOLOGY FOR CLINICAL RESEARCHE277
+requires detailed knowledge of the types of clinical study, 
+the situations where they are applied and the possible 
+outcomes, so that a methodology befitting the hypothe-
+sis is adopted. Careful implementation of study design 
+eliminates the chances of bias, provides quality assurance 
+of the data collected and increases the validity of the re-
+sults, adding value to the findings. Successful preclinical 
+studies, basic research and pilot scale intervention studies 
+pave the way for more sophisticated clinical trials. Ran-
+domised, double-blind clinical trials with case number 
+planning are accepted as the gold standard for evaluating 
+the efficacy and safety of drugs and therapeutic regimes 
+and in evaluating the superiority or similarity of new 
+drugs or surgical procedures to existing ones. As clinical 
+trials involve testing on humans, their design and conduct 
+require careful planning, diligent execution and enormous 
+resources to comply with the rules set by the regulatory 
+authorities, necessary to achieve robust results.
+Acknowledgements
+This research was funded by the Provincia Autono-
+ma di Bolzano in the framework of LP 15/2020 (dgp 
+3174/2021).
+Conflicts of interest statement
+Authors declare no conflict of interest.
+Author's contributions
+MB: study conception, editing and critical revision of 
+the manuscript; AKK, DP, GH, RB, Paul S, Peter S, RM, 
+BF, NC, SM, LL, DD, GMT, MCE, MD, SM, Daniele 
+M, GB, KD, MCM, TB, MS, STC, Donald M, AM, AB, 
+KLH, MK, LS, LL, GF: literature search, editing and 
+critical revision of the manuscript. All authors have read 
+and approved the final manuscript.
+References
+[1] Pepperell Montague W. The ways of knowing; or, The methods 
+of philosophy. London: G. Allen & Unwin Ltd. 1st ed. New 
+York: The Macmillan Company 1925.
+[2] Goldstein M, Goldstein IF. How we know: an exploration of the 
+scientific process. 1st ed. New York: Plenum Press 1979.
+[3] Hepburn B, Hanne A. Scientific Method. In: Zalta EN, ed. The 
+Stanford Encyclopedia of Philosophy. Available at: https://
+plato.stanford.edu/index.html. Accessed on: 30/02/2022.
+[4] Popper K. The Logic of Scientific Discovery. 2nd ed. London: 
+Routledge 2002.
+[5] Hugh G. Gauch Jr. Scientific method in practice, 1st ed.  
+Cambridge: Cambridge University Press 2003.
+[6] Achinstein P. Science rules: a historical introduction to scientific 
+methods. 1st ed. Baltimore: The Johns Hopkins University Press 
+2004.
+[7] Gower B. Scientific Method. 1st ed. London: Routledge 1996. 
+https://doi.org/10.4324/9780203046128[8] Carey SS. A beginner’s guide to scientific method. 4th ed. 
+Belmont: Wadsworth Cengage Learning 2011.
+[9] Garg R. Methodology for research I. Indian J Anaesth 
+2016;60:640. https://doi.org/10.4103/0019-5049.190619
+[10] Prasad K. Fundamentals of evidence based medicine. 1st ed. 
+New Delhi: Springer India 2014. https://doi.org/10.1007/978-
+81-322-0831-0
+[11] Lewsey J. Medical Statistics: a guide to data analysis and 
+critical appraisal. Ann R Coll Surg Eng 2006;88:600-3. https://
+doi.org/10.1308/003588406X117098
+[12] Ozhan Caparlar C, Donmez A. What is scientific research and 
+how can it be done? Turk J Anaesthesiol Reanim 2016;44:212-
+8. https://doi.org/10.5152/TJAR.2016.34711
+[13] Röhrig B, du Prel JB, Wachtlin D, Blettner M. Types of study in 
+medical research. Dtsch Arztebl Int 2009;106:262-8. https://doi.
+org/10.3238/arztebl.2009.0262
+[14] Frérot M, Lefebvre A, Aho S, Callier P, Astruc K, Aho Glélé LS. 
+What is epidemiology? Changing definitions of epidemiology 
+1978-2017. PLoS One 2018;13:e0208442. https://doi.
+org/10.1371/journal.pone.0208442
+[15] Schröder W, Nickel S. Research Data Management as an 
+Integral part of the research process of empirical disciplines 
+using landscape ecology as an example. Data Sci J 2020;19. 
+https://doi.org/ 10.5334/dsj-2020-026
+[16] Chew BH. Planning and conducting clinical research: the whole 
+process. Cureus 2019. https://doi.org/10.7759/cureus.4112
+[17] del Mar C, Hoffmann TC. A guide to performing a peer review 
+of randomised controlled trials. BMC Med 2015;13:248. https://
+doi.org/10.1186/s12916-015-0471-8
+[18] Sessler DI, Imrey PB. Clinical Research Methodology 2. 
+Anesth Analg 2015;121:1043-51. https://doi.org/10.1213/
+ANE.0000000000000861
+[19] Stanley K. Design of randomized controlled trials. 
+Circulation 2007;115:1164-9. https://doi.org/10.1161/
+CIRCULATIONAHA.105.594945
+[20] Levin KA. Study design VII. Randomised controlled trials.
+Evid Based Dent 2007;8:22-3. https://doi.org/10.1038/
+sj.ebd.6400473
+[21] NIS Definitions. Available at: https://www.chcuk.co.uk/
+non-interventional-studies/nis-definitions/. Accessed on: 
+26/06/2022.
+[22] Elfil M, Negida A. Sampling methods in clinical research; an 
+educational review. Emerg (Tehran) 2017;5:e52. 
+[23] Bray F, Colombet M, Mery L, Piñeros M, Znaor A, Zanetti R, 
+Ferlay J. Cancer Incidence in five continents, V olume XI. IARC 
+Scientific Publication 2021. Available at: https://publications.
+iarc.fr/Book-And-Report-Series/Iarc-Scientific-Publications/
+Cancer-Incidence-In-Five-Continents%C2%A0V olume-
+XI-2021. Accessed on: 26/06/2022.
+[24] Pheby DF, Etherington DJ. Improving the comparability of 
+cancer registry treatment data and proposals for a new national 
+minimum dataset. J Public Health Med 1994;16:331-40. 
+[25] Sedgwick P. Retrospective cohort studies: advantages and 
+disadvantages, BMJ 2014;348:g1072-g1072. https://doi.
+org/10.1136/bmj.g1072
+[26] Gandhi P. Clinical research methodology, Ind J Pharm Edu Res 
+2011;45:199-209.
+[27] Sedgwick P. What is recall bias? BMJ 2012;344:e3519-e3519. 
+https://doi.org/10.1136/bmj.e3519
+[28] Pieterse H, Diamant Z. Good clinical practice in clinical 
+interventional studies. Eur Clin Respir J 2014;1:26422. https://
+doi.org/10.3402/ecrj.v1.26422
+[29] Nair B. Clinical trial designs. Indian Dermatol Online J 
+2019;10:193. https://doi.org/10.4103/idoj.IDOJ_475_18
+[30] Patino CM, Ferreira JC. Inclusion and exclusion criteria 
+in research studies: definitions and why they matter. J 
+A.K. KIANI ET AL.E278
+Bras Pneumol 2018;44:84. https://doi.org/10.1590/s1806-
+37562018000000088
+[31] Lim CY , In J. Randomization in clinical studies. Korean J 
+Anesthesiol 2019;72:221-32. https://doi.org/10.4097/kja.19049
+[32] Suresh G, Suresh K, Thomas S. Design, data analysis and 
+sampling techniques for clinical research. Ann Indian Acad 
+Neurol 2011;14:287. https://doi.org/10.4103/0972-2327.91951
+[33] Smith DH, Neutel JM, Lacourcière Y , Kempthorne-Rawson 
+J. Prospective, randomized, open-label, blinded-endpoint 
+(PROBE) designed trials yield the same results as double-blind, 
+placebo-controlled trials with respect to ABPM measurements. J 
+Hypertens 2003;21:1291-8. https://doi.org/10.1097/00004872-
+200307000-00016
+[34] Mann H, Djulbegovic B. Choosing a control intervention for a 
+randomised clinical trial. BMC Med Res Methodol 2003;3:7. 
+https://doi.org/10.1186/1471-2288-3-7
+[35] Misra S. Randomized double blind placebo control studies, 
+the ‘Gold Standard’ in intervention based studies. Indian J Sex 
+Transm Dis AIDS 2012;33:131. https://doi.org/10.4103/0253-
+7184.102130[36] Sedgwick P. External and internal validity in clinical trials. BMJ 
+2012;344:e1004-e1004. https://doi.org/10.1136/bmj.e1004
+[37] Arjmand B, Payab M, Goodarzi P. Biomedical Product 
+Development: Bench to Bedside. 1st ed. Cham: Springer 
+International Publishing 2020. https://doi.org/10.1007/978-3-
+030-35626-2
+[38] Honek J. Preclinical research in drug development. Medical 
+Writing 2017;26:5-8.
+[39] Sarzotti-Kelsoe M, Cox J, Cleland N, Denny T, Hural J, 
+Needham L, Ozaki D, Rodriguez-Chavez IR, Stevens G, Stiles T, 
+Tarragona-Fiol T,  Simkins A. Evaluation and recommendations 
+on good clinical laboratory practice guidelines for phase 
+I-III clinical trials. PLoS Med 2009;6:e1000067. https://doi.
+org/10.1371/journal.pmed.1000067 
+[40] Declaration of Helsinki Medical Research Involving Human 
+Subjects, 1964. Available at: https://www.wma.net/wht-
+we-do/medical-ethics/declaration-of-helsinki. Accessed on: 
+26/06/2022.
+[41] Medical ethics Deontology, Codes of Practice, Guidelines, 
+Professionalism. Available at: https://www.wma.net/what-we-
+do/medical-ethics. Accessed on: 26/06/ 2022.
+Correspondence: Maria Chiara Medori, MAGI’S LAB, Rovereto (TN), 38068, Italy. E-mail: chiara.medori@assomagi.org
+How to cite this article: Kiani AK, Naureen Z, Pheby D, Henehan G, Brown R, Sieving P , Sykora P , Marks R, Falsini B, Capodicasa N, 
+Miertus S, Lorusso L, Dondossola D, Tartaglia GM, Ergoren MC, Dundar M, Michelini S, Malacarne D, Bonetti G, Donato K, Medori MC, 
+Beccari T , Samaja M, Connelly ST , Martin D, Morresi A, Bacu A, Herbst KL, Kapustin M, Stuppia L, Lumer L, Farronato G, Bertelli M. 
+Methodology for clinical research. J Prev Med Hyg 2022;63(suppl.3):E267-E278. https://doi.org/10.15167/2421-4248/jpmh2022.63.2S3.30
+© Copyright by Pacini Editore Srl, Pisa, Italy
+This is an open access article distributed in accordance with the CC-BY-NC-ND (Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International) license. 
+The article can be used by giving appropriate credit and mentioning the license, but only for non-commercial purposes and only in the original version. For further infor -
+mation: https://creativecommons.org/licenses/by-nc-nd/4.0/deed.en
