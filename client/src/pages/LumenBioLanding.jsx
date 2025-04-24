@@ -92,7 +92,7 @@ const LumenBioLanding = () => {
                     Upload Protocol
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-md">
+                <DialogContent className="sm:max-w-md bg-gradient-to-b from-green-50 to-white">
                   <DialogHeader>
                     <DialogTitle>Upload Draft Protocol</DialogTitle>
                     <DialogDescription>
@@ -102,14 +102,14 @@ const LumenBioLanding = () => {
                   <div className="grid gap-4 py-4">
                     <div className="grid gap-2">
                       <Label htmlFor="protocol-name">Protocol Name</Label>
-                      <Input id="protocol-name" placeholder="e.g., LB-405 Phase 1 Protocol" />
+                      <Input id="protocol-name" placeholder="e.g., LB-405 Phase 1 Protocol" className="bg-white" />
                     </div>
                     <div className="grid gap-2">
                       <Label htmlFor="protocol-file">Protocol File</Label>
-                      <div className="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center">
+                      <div className="border-2 border-dashed border-green-200 rounded-lg p-4 text-center bg-white">
                         {selectedFile ? (
                           <div className="flex flex-col items-center">
-                            <FileText className="h-8 w-8 text-blue-500 mb-2" />
+                            <FileText className="h-8 w-8 text-green-500 mb-2" />
                             <p className="text-sm font-medium text-gray-700">{selectedFile.name}</p>
                             <p className="text-xs text-gray-500 mt-1">
                               {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
@@ -125,21 +125,21 @@ const LumenBioLanding = () => {
                           </div>
                         ) : (
                           <div className="flex flex-col items-center">
-                            <Upload className="h-8 w-8 text-gray-400 mb-2" />
-                            <p className="text-sm font-medium text-gray-500">Drag and drop or click to upload</p>
-                            <p className="text-xs text-gray-400 mt-1">Supports DOC, DOCX, PDF (Max 10MB)</p>
-                            <Input 
-                              id="protocol-file" 
-                              type="file" 
-                              className="hidden" 
-                              accept=".doc,.docx,.pdf"
-                              onChange={handleFileChange}
-                            />
-                            <Label htmlFor="protocol-file">
-                              <Button variant="ghost" size="sm" className="mt-2">
+                            <Upload className="h-8 w-8 text-green-400 mb-2" />
+                            <p className="text-sm font-medium text-gray-700">Drag and drop or click to upload</p>
+                            <p className="text-xs text-gray-600 mt-1">Supports DOC, DOCX, PDF (Max 10MB)</p>
+                            <div className="relative mt-2">
+                              <Input 
+                                id="protocol-file" 
+                                type="file" 
+                                className="absolute inset-0 opacity-0 w-full h-full cursor-pointer z-50" 
+                                accept=".doc,.docx,.pdf"
+                                onChange={handleFileChange}
+                              />
+                              <Button variant="outline" size="sm" className="border-green-200 text-green-600 hover:bg-green-50 pointer-events-none">
                                 Select File
                               </Button>
-                            </Label>
+                            </div>
                           </div>
                         )}
                       </div>
