@@ -176,13 +176,23 @@ const ProtocolReview = () => {
   
   // Generate an optimized protocol section using advanced scientific and regulatory intelligence
   const [optimizedSectionDialogOpen, setOptimizedSectionDialogOpen] = useState(false);
-  const [optimizedSection, setOptimizedSection] = useState({ key: '', content: '', isGenerating: false });
+  const [optimizedSection, setOptimizedSection] = useState({ 
+    key: '', 
+    content: '', 
+    isGenerating: false,
+    changes: [],
+    acceptedChanges: [],
+    rejectedChanges: []
+  });
   
   const generateOptimizedProtocolSection = (sectionKey) => {
     setOptimizedSection({
       key: sectionKey,
       content: '',
-      isGenerating: true
+      isGenerating: true,
+      changes: [],
+      acceptedChanges: [],
+      rejectedChanges: []
     });
     setOptimizedSectionDialogOpen(true);
     
@@ -483,10 +493,103 @@ This population framework is designed to maximize both internal validity and ext
 The optimized content would be tailored specifically to the selected protocol section, incorporating the latest scientific advances while maintaining regulatory defensibility.`;
       }
       
+      // Generate 3-5 suggested changes for the protocol
+      const numChanges = Math.floor(Math.random() * 3) + 3; // 3-5 changes
+      const changes = [];
+      
+      for (let i = 0; i < numChanges; i++) {
+        let change = {
+          id: `change-${i + 1}`,
+          type: i === 0 ? 'addition' : i === 1 ? 'modification' : i === 2 ? 'removal' : Math.random() > 0.5 ? 'addition' : 'modification',
+          section: sectionKey.replace(/_/g, ' '),
+          originalText: "",
+          suggestedText: "",
+          rationale: "",
+          regulatoryReference: "",
+          confidence: Math.floor(Math.random() * 30) + 70 // 70-99% confidence
+        };
+        
+        // Create different change suggestions based on section type
+        if (sectionLower.includes('inclusion_criteria')) {
+          if (change.type === 'addition') {
+            change.originalText = "";
+            change.suggestedText = "* Advanced biomarker-based entry criteria allowing stratified enrollment based on [specific biomarker panel]";
+            change.rationale = "Precision medicine approach will enhance statistical power by reducing heterogeneity in treatment response through biomarker-based stratification.";
+            change.regulatoryReference = "FDA Biomarker Qualification Program and FDA-NIH BEST Resource";
+          } else if (change.type === 'modification') {
+            change.originalText = "* Age ≥18 to ≤75 years (inclusive)";
+            change.suggestedText = "* Age ≥18 to ≤85 years (inclusive), with participants >75 years enrolled in specialized geriatric assessment sub-study";
+            change.rationale = "Enhanced geriatric representation aligns with FDA FDORA 2022 diversity requirements while maintaining safety through dedicated monitoring.";
+            change.regulatoryReference = "FDA Guidance on Enhancing the Diversity of Clinical Trial Populations";
+          } else {
+            change.originalText = "* Body Mass Index (BMI): 18.5-35.0 kg/m² (inclusive)";
+            change.suggestedText = "";
+            change.rationale = "Removal of restrictive BMI criteria will improve population representativeness and accelerate enrollment while still maintaining patient safety.";
+            change.regulatoryReference = "FDA Guidance on Enhancing the Diversity of Clinical Trial Populations (December 2020)";
+          }
+        } else if (sectionLower.includes('statistical')) {
+          if (change.type === 'addition') {
+            change.originalText = "";
+            change.suggestedText = "## Estimand Framework\nAligned with ICH E9(R1), we define the following estimands for the primary objective:\n1. Treatment effect regardless of adherence (treatment policy strategy)\n2. Treatment effect if all patients remained adherent (hypothetical strategy)\n3. Treatment effect up to discontinuation (while on treatment strategy)";
+            change.rationale = "Implementing ICH E9(R1) estimand framework enhances regulatory alignment and provides more precise definition of treatment effects.";
+            change.regulatoryReference = "ICH E9(R1) Addendum on Estimands and Sensitivity Analysis in Clinical Trials";
+          } else if (change.type === 'modification') {
+            change.originalText = "The primary analysis will use a Mixed Model for Repeated Measures (MMRM) including treatment, visit, treatment-by-visit interaction, stratification factors, and baseline value as covariates.";
+            change.suggestedText = "The primary analysis will use a Mixed Model for Repeated Measures (MMRM) incorporating treatment, visit, treatment-by-visit interaction, stratification factors, baseline value, and key prognostic factors identified in previous trials as covariates. Restricted maximum likelihood (REML) estimation will be used with Kenward-Roger degrees of freedom.";
+            change.rationale = "Enhanced statistical model with prognostic covariates improves precision and power while maintaining Type I error control through appropriate degrees of freedom adjustment.";
+            change.regulatoryReference = "FDA Statistical Review and Evaluation guidance (2017) and EMA Points to Consider on Adjustment for Baseline Covariates";
+          } else {
+            change.originalText = "Pre-specified subgroup analyses will include stratification factors, demographic characteristics, and baseline disease severity.";
+            change.suggestedText = "";
+            change.rationale = "Removing pre-specified subgroup analyses reduces risk of spurious findings and post-hoc interpretations, while focused interaction tests can still be performed for key stratification factors.";
+            change.regulatoryReference = "EMA Guideline on the Investigation of Subgroups in Confirmatory Clinical Trials (2019)";
+          }
+        } else if (sectionLower.includes('endpoint')) {
+          if (change.type === 'addition') {
+            change.originalText = "";
+            change.suggestedText = "## Objective Digital Endpoints\n* Continuous activity monitoring via wrist-worn accelerometer with proprietary validated algorithm\n* Sleep quality assessment using polysomnography-validated consumer device\n* Medication adherence verification through electronic monitoring system";
+            change.rationale = "Incorporating objective digital endpoints provides continuous real-world data on patient function and reduces reliance on episodic clinical assessments.";
+            change.regulatoryReference = "FDA Guidance on Digital Health Technologies for Remote Data Acquisition in Clinical Investigations";
+          } else if (change.type === 'modification') {
+            change.originalText = "Change from baseline to Week 24 in [disease-specific validated score], assessed using a mixed model for repeated measures (MMRM) analysis including all post-baseline observations.";
+            change.suggestedText = "Change from baseline to Week 24 in [disease-specific validated score], with additional sensitivity analysis using a novel composite responder definition requiring both clinically meaningful improvement in primary scale AND no worsening in functional status.";
+            change.rationale = "Composite responder definition better reflects clinically meaningful benefit by requiring both symptom improvement and functional stability.";
+            change.regulatoryReference = "FDA Patient-Focused Drug Development Guidance Series for Enhancing the Incorporation of the Patient's Voice";
+          } else {
+            change.originalText = "Patient-reported outcome: change from baseline in [PRO instrument] total score at Week 24";
+            change.suggestedText = "";
+            change.rationale = "Removal of redundant PRO endpoint that overlaps with other measures and has shown poor construct validity in recent validation studies.";
+            change.regulatoryReference = "FDA Guidance on Patient-Reported Outcome Measures (2009)";
+          }
+        } else {
+          if (change.type === 'addition') {
+            change.originalText = "";
+            change.suggestedText = "* Digital biomarker monitoring with real-time alerting system for early safety signal detection";
+            change.rationale = "Continuous digital monitoring enables earlier detection of safety signals before they become clinically significant adverse events.";
+            change.regulatoryReference = "FDA Guidance on Use of Electronic Health Record Data in Clinical Investigations";
+          } else if (change.type === 'modification') {
+            change.originalText = "Independent Data Monitoring Committee (IDMC): Reviewing unblinded safety data every 3 months";
+            change.suggestedText = "Independent Data Monitoring Committee (IDMC): Reviewing unblinded safety data every 6 weeks for the first 24 weeks, then quarterly thereafter, with enhanced monitoring of key safety parameters";
+            change.rationale = "More frequent early IDMC reviews enhances safety monitoring during the highest risk period while maintaining efficient oversight in later phases.";
+            change.regulatoryReference = "FDA Guidance on Establishment and Operation of Clinical Trial Data Monitoring Committees";
+          } else {
+            change.originalText = "* Advanced Cardiovascular Assessment: Continuous cardiac monitoring via wearable ECG patch for first 14 days in a subset of 100 patients";
+            change.suggestedText = "";
+            change.rationale = "Removing this specialized assessment reduces patient burden and study complexity without compromising safety based on Phase 1 cardiac safety data.";
+            change.regulatoryReference = "ICH E14 Clinical Evaluation of QT/QTc Interval Prolongation";
+          }
+        }
+        
+        changes.push(change);
+      }
+      
       setOptimizedSection({
         key: sectionKey,
         content: content,
-        isGenerating: false
+        isGenerating: false,
+        changes: changes,
+        acceptedChanges: [],
+        rejectedChanges: []
       });
     }, generationTime);
   };
