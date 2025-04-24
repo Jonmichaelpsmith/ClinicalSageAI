@@ -71,24 +71,227 @@ export default function HomeMarketingPage() {
             
             {/* Banner navigation buttons */}
             <div className="hidden md:flex items-center space-x-3 mx-4">
-              <Link to="/solutions" className="text-[13px] font-bold text-[#000000] hover:text-[#0055aa] px-2">
-                Solutions
-              </Link>
-              <Link to="/use-cases" className="text-[13px] font-bold text-[#000000] hover:text-[#0055aa] px-2">
-                Use Cases
-              </Link>
-              <Link to="/regulatory-module" className="text-[13px] font-bold text-[#000000] hover:text-[#0055aa] px-2">
-                Regulatory
-              </Link>
-              <Link to="/document-management" className="text-[13px] font-bold text-[#000000] hover:text-[#0055aa] px-2">
-                Documents
-              </Link>
-              <Link to="/cmc-module" className="text-[13px] font-bold text-[#000000] hover:text-[#0055aa] px-2">
-                CMC
-              </Link>
-              <Link to="/cer-module" className="text-[13px] font-bold text-[#000000] hover:text-[#0055aa] px-2">
-                CER
-              </Link>
+              <div className="relative group">
+                <button className="text-[13px] font-bold text-[#000000] hover:text-[#0055aa] px-2 flex items-center">
+                  Solutions <ChevronDown className="h-3 w-3 ml-0.5" />
+                </button>
+                <div className="absolute top-full left-0 w-64 mt-1 bg-white shadow-lg border border-gray-200 rounded-md p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                  <div className="mb-2">
+                    <h4 className="text-[12px] font-bold text-blue-700 mb-1">TrialSage Solutions</h4>
+                    <p className="text-[11px] text-gray-600">Enterprise-grade document intelligence</p>
+                  </div>
+                  <div className="grid grid-cols-1 gap-2">
+                    <Link to="/ind-wizard" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
+                      <div className="w-7 h-7 rounded bg-blue-100 flex items-center justify-center mr-2">
+                        <FileCheck className="h-3 w-3 text-blue-700" />
+                      </div>
+                      <div>
+                        <div className="text-[12px] font-bold text-[#000000]">IND Wizard™</div>
+                        <div className="text-[10px] text-gray-500">Guided IND/CTA submission</div>
+                      </div>
+                    </Link>
+                    <Link to="/enterprise-csr-intelligence" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
+                      <div className="w-7 h-7 rounded bg-green-100 flex items-center justify-center mr-2">
+                        <BarChart3 className="h-3 w-3 text-green-700" />
+                      </div>
+                      <div>
+                        <div className="text-[12px] font-bold text-[#000000]">CSR Intelligence™</div>
+                        <div className="text-[10px] text-gray-500">3,217+ analyzed study reports</div>
+                      </div>
+                    </Link>
+                  </div>
+                  <div className="mt-3 pt-2 border-t border-gray-100">
+                    <Link to="/solutions" className="text-[11px] font-bold text-blue-700 hover:text-blue-800 flex items-center">
+                      View All Solutions <ArrowRight className="h-3 w-3 ml-1" />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="relative group">
+                <button className="text-[13px] font-bold text-[#000000] hover:text-[#0055aa] px-2 flex items-center">
+                  Use Cases <ChevronDown className="h-3 w-3 ml-0.5" />
+                </button>
+                <div className="absolute top-full left-0 w-64 mt-1 bg-white shadow-lg border border-gray-200 rounded-md p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                  <div className="mb-2">
+                    <h4 className="text-[12px] font-bold text-blue-700 mb-1">Industry Applications</h4>
+                    <p className="text-[11px] text-gray-600">Real-world customer success stories</p>
+                  </div>
+                  <div className="grid grid-cols-1 gap-2">
+                    <Link to="/use-case-library" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
+                      <div className="w-7 h-7 rounded bg-purple-100 flex items-center justify-center mr-2">
+                        <FileText className="h-3 w-3 text-purple-700" />
+                      </div>
+                      <div>
+                        <div className="text-[12px] font-bold text-[#000000]">Case Studies</div>
+                        <div className="text-[10px] text-gray-500">Client success stories</div>
+                      </div>
+                    </Link>
+                    <Link to="/protocol-design-use-case" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
+                      <div className="w-7 h-7 rounded bg-orange-100 flex items-center justify-center mr-2">
+                        <BrainCircuit className="h-3 w-3 text-orange-700" />
+                      </div>
+                      <div>
+                        <div className="text-[12px] font-bold text-[#000000]">Protocol Design</div>
+                        <div className="text-[10px] text-gray-500">Design optimization impact</div>
+                      </div>
+                    </Link>
+                  </div>
+                  <div className="mt-3 pt-2 border-t border-gray-100">
+                    <Link to="/use-cases" className="text-[11px] font-bold text-blue-700 hover:text-blue-800 flex items-center">
+                      View All Use Cases <ArrowRight className="h-3 w-3 ml-1" />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="relative group">
+                <button className="text-[13px] font-bold text-[#000000] hover:text-[#0055aa] px-2 flex items-center">
+                  Regulatory <ChevronDown className="h-3 w-3 ml-0.5" />
+                </button>
+                <div className="absolute top-full left-0 w-64 mt-1 bg-white shadow-lg border border-gray-200 rounded-md p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                  <div className="mb-2">
+                    <h4 className="text-[12px] font-bold text-blue-700 mb-1">Regulatory Solutions</h4>
+                    <p className="text-[11px] text-gray-600">FDA, EMA, and PMDA compliance tools</p>
+                  </div>
+                  <div className="grid grid-cols-1 gap-2">
+                    <Link to="/ind-wizard" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
+                      <div className="w-7 h-7 rounded bg-blue-100 flex items-center justify-center mr-2">
+                        <FileCheck className="h-3 w-3 text-blue-700" />
+                      </div>
+                      <div>
+                        <div className="text-[12px] font-bold text-[#000000]">IND Wizard™</div>
+                        <div className="text-[10px] text-gray-500">Auto-draft Module 2/5</div>
+                      </div>
+                    </Link>
+                    <Link to="/validation-hub" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
+                      <div className="w-7 h-7 rounded bg-red-100 flex items-center justify-center mr-2">
+                        <Shield className="h-3 w-3 text-red-700" />
+                      </div>
+                      <div>
+                        <div className="text-[12px] font-bold text-[#000000]">Validation Hub</div>
+                        <div className="text-[10px] text-gray-500">ICH/FDA/EMA validation</div>
+                      </div>
+                    </Link>
+                  </div>
+                  <div className="mt-3 pt-2 border-t border-gray-100">
+                    <Link to="/regulatory-module" className="text-[11px] font-bold text-blue-700 hover:text-blue-800 flex items-center">
+                      View Regulatory Tools <ArrowRight className="h-3 w-3 ml-1" />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="relative group">
+                <button className="text-[13px] font-bold text-[#000000] hover:text-[#0055aa] px-2 flex items-center">
+                  Documents <ChevronDown className="h-3 w-3 ml-0.5" />
+                </button>
+                <div className="absolute top-full left-0 w-64 mt-1 bg-white shadow-lg border border-gray-200 rounded-md p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                  <div className="mb-2">
+                    <h4 className="text-[12px] font-bold text-blue-700 mb-1">Document Solutions</h4>
+                    <p className="text-[11px] text-gray-600">Enterprise-grade document intelligence</p>
+                  </div>
+                  <div className="grid grid-cols-1 gap-2">
+                    <Link to="/document-management" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
+                      <div className="w-7 h-7 rounded bg-blue-100 flex items-center justify-center mr-2">
+                        <FileText className="h-3 w-3 text-blue-700" />
+                      </div>
+                      <div>
+                        <div className="text-[12px] font-bold text-[#000000]">Vault™ Workspace</div>
+                        <div className="text-[10px] text-gray-500">Version history & audit</div>
+                      </div>
+                    </Link>
+                    <Link to="/enterprise-document-vault" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
+                      <div className="w-7 h-7 rounded bg-green-100 flex items-center justify-center mr-2">
+                        <LayoutDashboard className="h-3 w-3 text-green-700" />
+                      </div>
+                      <div>
+                        <div className="text-[12px] font-bold text-[#000000]">Enterprise Version</div>
+                        <div className="text-[10px] text-gray-500">Team collaboration suite</div>
+                      </div>
+                    </Link>
+                  </div>
+                  <div className="mt-3 pt-2 border-t border-gray-100">
+                    <Link to="/document-management" className="text-[11px] font-bold text-blue-700 hover:text-blue-800 flex items-center">
+                      View Document Tools <ArrowRight className="h-3 w-3 ml-1" />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="relative group">
+                <button className="text-[13px] font-bold text-[#000000] hover:text-[#0055aa] px-2 flex items-center">
+                  CMC <ChevronDown className="h-3 w-3 ml-0.5" />
+                </button>
+                <div className="absolute top-full left-0 w-64 mt-1 bg-white shadow-lg border border-gray-200 rounded-md p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                  <div className="mb-2">
+                    <h4 className="text-[12px] font-bold text-blue-700 mb-1">CMC Toolset</h4>
+                    <p className="text-[11px] text-gray-600">Chemistry, Manufacturing & Controls</p>
+                  </div>
+                  <div className="grid grid-cols-1 gap-2">
+                    <Link to="/cmc-module" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
+                      <div className="w-7 h-7 rounded bg-orange-100 flex items-center justify-center mr-2">
+                        <Database className="h-3 w-3 text-orange-700" />
+                      </div>
+                      <div>
+                        <div className="text-[12px] font-bold text-[#000000]">CMC Module</div>
+                        <div className="text-[10px] text-gray-500">Auto-generated module 3</div>
+                      </div>
+                    </Link>
+                    <Link to="/cmc-blueprint-generator" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
+                      <div className="w-7 h-7 rounded bg-blue-100 flex items-center justify-center mr-2">
+                        <Sparkles className="h-3 w-3 text-blue-700" />
+                      </div>
+                      <div>
+                        <div className="text-[12px] font-bold text-[#000000]">Blueprint Generator</div>
+                        <div className="text-[10px] text-gray-500">CMC compliance plans</div>
+                      </div>
+                    </Link>
+                  </div>
+                  <div className="mt-3 pt-2 border-t border-gray-100">
+                    <Link to="/cmc-module" className="text-[11px] font-bold text-blue-700 hover:text-blue-800 flex items-center">
+                      Open CMC Module <ArrowRight className="h-3 w-3 ml-1" />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="relative group">
+                <button className="text-[13px] font-bold text-[#000000] hover:text-[#0055aa] px-2 flex items-center">
+                  CER <ChevronDown className="h-3 w-3 ml-0.5" />
+                </button>
+                <div className="absolute top-full left-0 w-64 mt-1 bg-white shadow-lg border border-gray-200 rounded-md p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                  <div className="mb-2">
+                    <h4 className="text-[12px] font-bold text-blue-700 mb-1">Clinical Evaluation Reports</h4>
+                    <p className="text-[11px] text-gray-600">AI-powered CER generation in 5 minutes</p>
+                  </div>
+                  <div className="grid grid-cols-1 gap-2">
+                    <Link to="/cer-module" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
+                      <div className="w-7 h-7 rounded bg-green-100 flex items-center justify-center mr-2">
+                        <FileText className="h-3 w-3 text-green-700" />
+                      </div>
+                      <div>
+                        <div className="text-[12px] font-bold text-[#000000]">CER Module</div>
+                        <div className="text-[10px] text-gray-500">Standard CER builder</div>
+                      </div>
+                    </Link>
+                    <Link to="/enterprise-grade-cer-generator" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
+                      <div className="w-7 h-7 rounded bg-blue-100 flex items-center justify-center mr-2">
+                        <Sparkles className="h-3 w-3 text-blue-700" />
+                      </div>
+                      <div>
+                        <div className="text-[12px] font-bold text-[#000000]">Enterprise CER</div>
+                        <div className="text-[10px] text-gray-500">Advanced MedDRA integration</div>
+                      </div>
+                    </Link>
+                  </div>
+                  <div className="mt-3 pt-2 border-t border-gray-100">
+                    <Link to="/cer-module" className="text-[11px] font-bold text-blue-700 hover:text-blue-800 flex items-center">
+                      Open CER Generator <ArrowRight className="h-3 w-3 ml-1" />
+                    </Link>
+                  </div>
+                </div>
+              </div>
               <div className="relative group">
                 <button className="text-[13px] font-bold text-[#000000] hover:text-[#0055aa] px-2 flex items-center">
                   Monte Carlo <ChevronDown className="h-3 w-3 ml-0.5" />
