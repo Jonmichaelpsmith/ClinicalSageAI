@@ -81,7 +81,7 @@ export default function HomeMarketingPage() {
                     <p className="text-[11px] text-gray-600">Enterprise-grade document intelligence</p>
                   </div>
                   <div className="grid grid-cols-1 gap-2">
-                    <Link to="/ind-wizard" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
+                    <Link to="/INDWizard" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
                       <div className="w-7 h-7 rounded bg-blue-100 flex items-center justify-center mr-2">
                         <FileCheck className="h-3 w-3 text-blue-700" />
                       </div>
@@ -155,7 +155,7 @@ export default function HomeMarketingPage() {
                     <p className="text-[11px] text-gray-600">FDA, EMA, and PMDA compliance tools</p>
                   </div>
                   <div className="grid grid-cols-1 gap-2">
-                    <Link to="/ind-wizard" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
+                    <Link to="/INDWizard" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
                       <div className="w-7 h-7 rounded bg-blue-100 flex items-center justify-center mr-2">
                         <FileCheck className="h-3 w-3 text-blue-700" />
                       </div>
@@ -164,7 +164,7 @@ export default function HomeMarketingPage() {
                         <div className="text-[10px] text-gray-500">Auto-draft Module 2/5</div>
                       </div>
                     </Link>
-                    <Link to="/validation-hub" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
+                    <Link to="/ValidationHub" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
                       <div className="w-7 h-7 rounded bg-red-100 flex items-center justify-center mr-2">
                         <Shield className="h-3 w-3 text-red-700" />
                       </div>
@@ -192,7 +192,7 @@ export default function HomeMarketingPage() {
                     <p className="text-[11px] text-gray-600">Enterprise-grade document intelligence</p>
                   </div>
                   <div className="grid grid-cols-1 gap-2">
-                    <Link to="/document-management" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
+                    <Link to="/DocumentManagement" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
                       <div className="w-7 h-7 rounded bg-blue-100 flex items-center justify-center mr-2">
                         <FileText className="h-3 w-3 text-blue-700" />
                       </div>
@@ -201,7 +201,7 @@ export default function HomeMarketingPage() {
                         <div className="text-[10px] text-gray-500">Version history & audit</div>
                       </div>
                     </Link>
-                    <Link to="/enterprise-document-vault" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
+                    <Link to="/EnterpriseDocumentVault" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
                       <div className="w-7 h-7 rounded bg-green-100 flex items-center justify-center mr-2">
                         <LayoutDashboard className="h-3 w-3 text-green-700" />
                       </div>
@@ -229,7 +229,7 @@ export default function HomeMarketingPage() {
                     <p className="text-[11px] text-gray-600">Chemistry, Manufacturing & Controls</p>
                   </div>
                   <div className="grid grid-cols-1 gap-2">
-                    <Link to="/cmc-module" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
+                    <Link to="/CMCModule" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
                       <div className="w-7 h-7 rounded bg-orange-100 flex items-center justify-center mr-2">
                         <Database className="h-3 w-3 text-orange-700" />
                       </div>
@@ -238,7 +238,7 @@ export default function HomeMarketingPage() {
                         <div className="text-[10px] text-gray-500">Auto-generated module 3</div>
                       </div>
                     </Link>
-                    <Link to="/cmc-blueprint-generator" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
+                    <Link to="/CMCBlueprintGenerator" className="flex items-center p-2 rounded-md hover:bg-orange-50 transition">
                       <div className="w-7 h-7 rounded bg-blue-100 flex items-center justify-center mr-2">
                         <Sparkles className="h-3 w-3 text-blue-700" />
                       </div>
