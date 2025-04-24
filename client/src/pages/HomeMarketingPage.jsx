@@ -68,51 +68,13 @@ export default function HomeMarketingPage() {
               <Link to="/" className="text-[14px] font-bold text-white">CONCEPT2CURE.AI</Link>
             </div>
             
-            {/* Right side utilities INCLUDING SOLUTIONS */}
+            {/* Right side utilities - Simplified */}
             <div className="flex items-center space-x-6">
-              {/* SOLUTIONS dropdown positioned with other nav items */}
-              <div className="relative group">
-                <Link to="/use-case-library" className="text-[12px] flex items-center text-white hover:text-gray-200 transition font-semibold">
-                  <span>SOLUTIONS</span>
-                  <ChevronDown className="ml-1 h-3 w-3" />
-                </Link>
-                <div className="absolute right-0 mt-1 w-64 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 bg-white shadow-lg border border-gray-200 z-50 py-2 rounded">
-                  <Link to="/ind-wizard" className="block px-4 py-2 text-[12px] text-[#444] hover:bg-gray-50 flex justify-between items-center">
-                    <span>IND Wizard™</span>
-                    <span className="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded">New</span>
-                  </Link>
-                  <Link to="/enterprise-csr-intelligence" className="block px-4 py-2 text-[12px] text-[#444] hover:bg-gray-50">
-                    CSR Intelligence™
-                  </Link>
-                  <Link to="/protocol-design-use-case" className="block px-4 py-2 text-[12px] text-[#444] hover:bg-gray-50">
-                    Protocol Design™
-                  </Link>
-                  <Link to="/cmc-insights-use-case" className="block px-4 py-2 text-[12px] text-[#444] hover:bg-gray-50">
-                    CMC Insights™
-                  </Link>
-                  <div className="border-t border-gray-100 my-1"></div>
-                  <Link to="/use-case-library" className="block px-4 py-2 text-[12px] font-semibold text-[#0078d4] hover:bg-blue-50">
-                    View All Solutions
-                  </Link>
-                </div>
-              </div>
-
-              <Link to="/enterprise-csr-intelligence" className="text-[12px] text-white hover:text-gray-200 transition">News</Link>
-              <Link to="/document-management" className="text-[12px] text-white hover:text-gray-200 transition">Resources</Link>
-              <Link to="/team-signup" className="text-[12px] text-white hover:text-gray-200 transition">Contact</Link>
-              <div className="relative group">
-                <a className="text-[12px] flex items-center text-white hover:text-gray-200 transition cursor-pointer">
-                  <span>English</span>
-                  <ChevronDown className="ml-1 h-3 w-3" />
-                </a>
-                <div className="absolute right-0 mt-1 w-24 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 bg-white shadow-lg border border-gray-200 z-50 py-1 rounded">
-                  <a className="block px-4 py-1 text-[12px] text-[#444] hover:bg-gray-50">English</a>
-                  <a className="block px-4 py-1 text-[12px] text-[#444] hover:bg-gray-50">French</a>
-                  <a className="block px-4 py-1 text-[12px] text-[#444] hover:bg-gray-50">German</a>
-                </div>
-              </div>
               <Link to="/enterprise-csr-intelligence" className="text-white hover:text-gray-200">
                 <Search className="h-4 w-4" />
+              </Link>
+              <Link to="/auth" className="text-[12px] bg-white/20 rounded px-3 py-1 text-white hover:bg-white/30 transition">
+                Sign In
               </Link>
             </div>
           </div>
@@ -132,44 +94,97 @@ export default function HomeMarketingPage() {
                 </Link>
               </div>
 
-              {/* Main Navigation - Certara style */}
-              <nav className="hidden lg:flex">
-                <ul className="flex items-center space-x-6">
+              {/* Main Navigation - Improved Layout */}
+              <nav className="hidden lg:flex justify-between flex-grow mx-8">
+                {/* Primary Navigation Items */}
+                <ul className="flex items-center space-x-4">
                   <li className="group relative">
-                    <Link to="/use-case-library" className="inline-flex items-center px-4 py-2 text-[14px] font-medium text-[#333] hover:text-[#0078d4] transition">
+                    <Link to="/use-case-library" className="inline-flex items-center px-3 py-2 text-[14px] font-medium text-[#333] hover:text-[#0078d4] transition">
                       Solutions
                       <ChevronDown className="ml-1 h-3 w-3 transition" />
                     </Link>
+                    <div className="absolute top-full left-0 mt-1 w-64 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 bg-white shadow-lg border border-gray-200 z-50 py-2 rounded">
+                      <Link to="/ind-wizard" className="block px-4 py-2 text-[12px] text-[#444] hover:bg-gray-50 flex justify-between items-center">
+                        <span>IND Wizard™</span>
+                        <span className="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded">New</span>
+                      </Link>
+                      <Link to="/enterprise-csr-intelligence" className="block px-4 py-2 text-[12px] text-[#444] hover:bg-gray-50">
+                        CSR Intelligence™
+                      </Link>
+                      <Link to="/protocol-design-use-case" className="block px-4 py-2 text-[12px] text-[#444] hover:bg-gray-50">
+                        Protocol Design™
+                      </Link>
+                      <Link to="/cmc-insights-use-case" className="block px-4 py-2 text-[12px] text-[#444] hover:bg-gray-50">
+                        CMC Insights™
+                      </Link>
+                      <div className="border-t border-gray-100 my-1"></div>
+                      <Link to="/use-case-library" className="block px-4 py-2 text-[12px] font-semibold text-[#0078d4] hover:bg-blue-50">
+                        View All Solutions
+                      </Link>
+                    </div>
                   </li>
                   
                   <li className="group relative">
-                    <Link to="/ind-wizard" className="inline-flex items-center px-4 py-2 text-[14px] font-medium text-[#333] hover:text-[#0078d4] transition">
+                    <Link to="/ind-wizard" className="inline-flex items-center px-3 py-2 text-[14px] font-medium text-[#333] hover:text-[#0078d4] transition">
                       IND Wizard
                     </Link>
                   </li>
                   
                   <li className="group relative">
-                    <Link to="/enterprise-csr-intelligence" className="inline-flex items-center px-4 py-2 text-[14px] font-medium text-[#333] hover:text-[#0078d4] transition">
+                    <Link to="/enterprise-csr-intelligence" className="inline-flex items-center px-3 py-2 text-[14px] font-medium text-[#333] hover:text-[#0078d4] transition">
                       CSR Intelligence
                     </Link>
                   </li>
                   
                   <li className="group relative">
-                    <Link to="/versions" className="inline-flex items-center px-4 py-2 text-[14px] font-semibold text-[#0078d4] hover:text-[#0078d4] transition bg-blue-50 rounded">
+                    <Link to="/versions" className="inline-flex items-center px-3 py-2 text-[14px] font-semibold text-[#0078d4] hover:text-[#0078d4] transition bg-blue-50 rounded">
                       TrialSage.AI Solutions
                     </Link>
                   </li>
-                  
-                  <li className="group relative">
-                    <Link to="/analytics-dashboard" className="inline-flex items-center px-4 py-2 text-[14px] font-medium text-[#333] hover:text-[#0078d4] transition">
+                </ul>
+                
+                {/* Secondary Navigation Items (Moved from top bar) */}
+                <ul className="flex items-center space-x-4">
+                  <li>
+                    <Link to="/analytics-dashboard" className="inline-flex items-center px-3 py-2 text-[14px] font-medium text-[#333] hover:text-[#0078d4] transition">
                       Analytics
                     </Link>
                   </li>
                   
-                  <li className="group relative">
-                    <Link to="/ask-lumen" className="inline-flex items-center px-4 py-2 text-[14px] font-medium text-[#333] hover:text-[#0078d4] transition">
+                  <li>
+                    <Link to="/ask-lumen" className="inline-flex items-center px-3 py-2 text-[14px] font-medium text-[#333] hover:text-[#0078d4] transition">
                       Ask Lumen™
                     </Link>
+                  </li>
+                  
+                  <li>
+                    <Link to="/enterprise-csr-intelligence" className="text-[14px] text-[#333] hover:text-[#0078d4] transition">
+                      News
+                    </Link>
+                  </li>
+                  
+                  <li>
+                    <Link to="/document-management" className="text-[14px] text-[#333] hover:text-[#0078d4] transition">
+                      Resources
+                    </Link>
+                  </li>
+                  
+                  <li>
+                    <Link to="/team-signup" className="text-[14px] text-[#333] hover:text-[#0078d4] transition">
+                      Contact
+                    </Link>
+                  </li>
+                  
+                  <li className="relative group">
+                    <a className="text-[14px] flex items-center text-[#333] hover:text-[#0078d4] transition cursor-pointer">
+                      English
+                      <ChevronDown className="ml-1 h-3 w-3" />
+                    </a>
+                    <div className="absolute right-0 mt-1 w-24 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 bg-white shadow-lg border border-gray-200 z-50 py-1 rounded">
+                      <a className="block px-4 py-1 text-[12px] text-[#444] hover:bg-gray-50">English</a>
+                      <a className="block px-4 py-1 text-[12px] text-[#444] hover:bg-gray-50">French</a>
+                      <a className="block px-4 py-1 text-[12px] text-[#444] hover:bg-gray-50">German</a>
+                    </div>
                   </li>
                 </ul>
               </nav>
