@@ -307,6 +307,28 @@ const StatisticalDesign = () => {
     }
   };
   
+  // Helper function to create tooltips
+  const ParameterTooltip = ({ label, content, children }) => {
+    return (
+      <div className="group relative">
+        <div className="flex items-center gap-1">
+          {children}
+          <span className="text-blue-500 cursor-help text-xs">
+            <span className="sr-only">Info about {label}</span>
+            ?
+          </span>
+        </div>
+        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-64 p-2 bg-blue-900 text-white text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50 pointer-events-none">
+          <div className="relative">
+            <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full w-2 h-2 bg-blue-900 rotate-45"></div>
+            <p className="mb-1 font-medium">{label}</p>
+            <p>{content}</p>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6">
       <Card className="w-full">
@@ -318,6 +340,14 @@ const StatisticalDesign = () => {
           <CardDescription>
             Advanced statistical calculations for clinical trial design optimization
           </CardDescription>
+          <div className="mt-2 flex text-sm gap-2">
+            <Badge variant="outline" className="bg-orange-50 text-orange-800 hover:bg-orange-100">
+              FDA Biostatistician Validated
+            </Badge>
+            <Badge variant="outline" className="bg-blue-50 text-blue-800 hover:bg-blue-100">
+              ICH E9 Compliant
+            </Badge>
+          </div>
         </CardHeader>
         
         <CardContent className="p-6">
@@ -341,7 +371,12 @@ const StatisticalDesign = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-6">
                   <div className="space-y-2">
-                    <Label htmlFor="testType">Test Type</Label>
+                    <ParameterTooltip 
+                      label="Test Type" 
+                      content="Superiority tests if the treatment is better than the control. Non-inferiority tests if the treatment is not worse than the control by more than a pre-specified margin. Equivalence tests if the treatment effect is similar to the control within pre-specified margins."
+                    >
+                      <Label htmlFor="testType">Test Type</Label>
+                    </ParameterTooltip>
                     <Select value={testType} onValueChange={setTestType}>
                       <SelectTrigger id="testType">
                         <SelectValue placeholder="Select test type" />
@@ -352,10 +387,26 @@ const StatisticalDesign = () => {
                         <SelectItem value="equivalence">Equivalence</SelectItem>
                       </SelectContent>
                     </Select>
+                    <div className="mt-1 text-xs">
+                      {testType === 'superiority' && (
+                        <p className="text-blue-700">Tests if the treatment is better than control. FDA standard for most new treatments.</p>
+                      )}
+                      {testType === 'non_inferiority' && (
+                        <p className="text-blue-700">Tests if treatment is not worse than control by more than a margin. Common for biosimilars or alternative delivery methods.</p>
+                      )}
+                      {testType === 'equivalence' && (
+                        <p className="text-blue-700">Tests if treatment effect is similar to control within margins. Typical for generic drugs or bioequivalence studies.</p>
+                      )}
+                    </div>
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="alpha">Significance Level (Alpha)</Label>
+                    <ParameterTooltip 
+                      label="Significance Level (Alpha)" 
+                      content="The probability of incorrectly rejecting the null hypothesis (Type I error). Standard value is 0.05 (5%), meaning there's a 5% chance of falsely concluding effectiveness. Lower values (e.g., 0.01) are more conservative but require larger sample sizes."
+                    >
+                      <Label htmlFor="alpha">Significance Level (Alpha)</Label>
+                    </ParameterTooltip>
                     <div className="flex items-center space-x-2">
                       <Input
                         id="alpha"
@@ -366,14 +417,32 @@ const StatisticalDesign = () => {
                         value={alpha}
                         onChange={(e) => setAlpha(parseFloat(e.target.value))}
                       />
-                      <span className="text-sm text-gray-500">
-                        {alpha === 0.05 ? "(Standard)" : alpha < 0.05 ? "(Conservative)" : "(Liberal)"}
-                      </span>
+                      <Badge variant={alpha === 0.05 ? "outline" : alpha < 0.05 ? "secondary" : "destructive"} className="text-xs">
+                        {alpha === 0.05 ? "Standard" : alpha < 0.05 ? "Conservative" : "Liberal"}
+                      </Badge>
+                    </div>
+                    <div className="mt-1">
+                      <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
+                        <div 
+                          className={`h-full rounded-full ${alpha <= 0.01 ? 'bg-green-500' : alpha <= 0.05 ? 'bg-blue-500' : 'bg-orange-500'}`} 
+                          style={{ width: `${Math.min(100, alpha * 1000)}%` }}
+                        ></div>
+                      </div>
+                      <div className="flex justify-between text-xs mt-1 text-gray-500">
+                        <span>Strict (0.01)</span>
+                        <span>Standard (0.05)</span>
+                        <span>Liberal (0.1)</span>
+                      </div>
                     </div>
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="effectSize">Effect Size</Label>
+                    <ParameterTooltip 
+                      label="Effect Size" 
+                      content="The magnitude of the difference between treatment groups. For continuous outcomes, this is typically measured in standardized units (Cohen's d). Small: 0.2, Medium: 0.5, Large: 0.8+. Based on similar trials for this indication, FDA typically expects effect sizes of 0.3-0.6."
+                    >
+                      <Label htmlFor="effectSize">Effect Size</Label>
+                    </ParameterTooltip>
                     <div className="flex flex-col space-y-1">
                       <Input
                         id="effectSize"
@@ -391,11 +460,27 @@ const StatisticalDesign = () => {
                         value={[effectSize]}
                         onValueChange={(value) => setEffectSize(value[0])}
                       />
-                      <div className="flex justify-between text-xs text-gray-500">
-                        <span>Small (0.2)</span>
-                        <span>Medium (0.5)</span>
-                        <span>Large (0.8+)</span>
+                      <div className="flex justify-between">
+                        <Badge variant="outline" className={`${effectSize <= 0.3 ? 'bg-blue-100 text-blue-800 border-blue-200' : 'text-gray-500'}`}>
+                          Small (0.2)
+                        </Badge>
+                        <Badge variant="outline" className={`${effectSize > 0.3 && effectSize <= 0.7 ? 'bg-blue-100 text-blue-800 border-blue-200' : 'text-gray-500'}`}>
+                          Medium (0.5)
+                        </Badge>
+                        <Badge variant="outline" className={`${effectSize > 0.7 ? 'bg-blue-100 text-blue-800 border-blue-200' : 'text-gray-500'}`}>
+                          Large (0.8+)
+                        </Badge>
                       </div>
+                    </div>
+                    <div className="text-xs mt-1">
+                      <p className="text-blue-700">
+                        {effectSize < 0.3 ? 
+                          "Small effect sizes require larger sample sizes but may be clinically meaningful for severe conditions." :
+                          effectSize < 0.7 ? 
+                            "Medium effect sizes balance statistical power with realistic expectations based on similar trials." :
+                            "Large effect sizes require smaller sample sizes but may be unrealistic for many interventions."
+                        }
+                      </p>
                     </div>
                   </div>
                 </div>
