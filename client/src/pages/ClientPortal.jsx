@@ -299,7 +299,7 @@ const ClientPortal = () => {
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {subscribedSolutions.slice(0, 4).map(solution => (
+                {subscribedSolutions.map(solution => (
                   <div 
                     key={solution.id}
                     className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200 cursor-pointer"
@@ -651,7 +651,7 @@ const ClientPortal = () => {
               
               <div className="space-y-2">
                 <button 
-                  onClick={() => setLocation('/ask-lumen')}
+                  onClick={() => setLocation('/solutions/ask-lumen')}
                   className="w-full py-2 px-3 bg-blue-50 text-blue-700 rounded-md hover:bg-blue-100 transition-colors flex justify-between items-center"
                 >
                   <span className="font-medium">Ask Lumen AI Assistant</span>
