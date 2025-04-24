@@ -1611,6 +1611,11 @@ const CMCModule = () => {
               {React.createElement(require('../components/cmc/BatchRecordGenerator').default)}
             </div>
             
+            {/* Import FormulationPredictor */}
+            <div className="my-4">
+              {React.createElement(require('../components/cmc/FormulationPredictor').default)}
+            </div>
+            
             <Card className="shadow-sm">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
