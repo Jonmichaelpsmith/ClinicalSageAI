@@ -174,15 +174,72 @@ app.use((req, res, next) => {
   next();
 });
 
+// Global error handler for uncaught exceptions
+process.on('uncaughtException', (error) => {
+  logger.error(`UNCAUGHT EXCEPTION: ${error.message}`, {
+    stack: error.stack,
+    timestamp: new Date().toISOString()
+  });
+  // Don't exit the process, just log it
+});
+
+// Global error handler for unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+  logger.error(`UNHANDLED PROMISE REJECTION:`, {
+    reason: reason instanceof Error ? reason.message : String(reason),
+    stack: reason instanceof Error ? reason.stack : undefined,
+    timestamp: new Date().toISOString()
+  });
+  // Don't exit the process, just log it
+});
+
+// Application auto-recovery mechanism
+let isRecovering = false;
+function checkServerHealth() {
+  const memoryUsage = process.memoryUsage();
+  const memoryUsedMB = Math.round(memoryUsage.heapUsed / 1024 / 1024);
+  const memoryTotalMB = Math.round(memoryUsage.heapTotal / 1024 / 1024);
+  const memoryUsagePercent = Math.round((memoryUsedMB / memoryTotalMB) * 100);
+  
+  // Check for memory leaks or high usage
+  if (memoryUsagePercent > 90 && !isRecovering) {
+    logger.warn(`High memory usage detected: ${memoryUsagePercent}% (${memoryUsedMB}MB / ${memoryTotalMB}MB)`);
+    // Could implement memory cleanup or controlled restart here
+  }
+}
+
+// Run health check every 5 minutes
+setInterval(checkServerHealth, 5 * 60 * 1000);
+
 (async () => {
   const server = await setupRoutes(app);
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+  // Enhanced error handling middleware
+  app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
-
-    res.status(status).json({ message });
-    throw err;
+    const requestId = (req as any).requestId || `${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
+    
+    // Log detailed error information
+    logger.error(`Unhandled error in ${req.method} ${req.path} [${requestId}]: ${message}`, {
+      status,
+      stack: err.stack,
+      timestamp: new Date().toISOString()
+    });
+    
+    // Return structured error response
+    res.status(status).json({
+      error: {
+        message,
+        status,
+        requestId,
+        path: req.path,
+        timestamp: new Date().toISOString()
+      }
+    });
+    
+    // Don't throw the error - this prevents the app from crashing
+    // throw err; - removed
   });
 
   // importantly only setup vite in development and after
