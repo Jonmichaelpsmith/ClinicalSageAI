@@ -1,424 +1,439 @@
+#!/usr/bin/env python
 """
-ICH Wiz Agent API
+ICH Wiz Agent
 
-This module provides a FastAPI-based REST API for the ICH Wiz agent.
-It handles user queries, retrieves relevant information from ICH guidelines,
-and generates responses using OpenAI.
+This module provides the ICH Wiz agent API that serves as a Digital 
+Compliance Coach with comprehensive regulatory knowledge about ICH guidelines.
 """
 import json
 import os
+import sys
 import time
-from enum import Enum
 from typing import Dict, List, Optional, Any, Union
 
 import openai
-from fastapi import FastAPI, Depends, HTTPException, Query, Request, Security
-from fastapi.security.api_key import APIKeyHeader, APIKey
+from fastapi import FastAPI, HTTPException, Depends
+from fastapi.security.api_key import APIKeyHeader
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 import structlog
 
 from services.ich_wiz.config import settings
-from services.ich_wiz.indexer import search_similar, initialize as initialize_indexer
+from services.ich_wiz.indexer import PineconeIndexer
+from services.metrics import API_REQUESTS, API_LATENCY, OPENAI_REQUESTS, time_and_count
 
-# Set up logging
+# Initialize structured logging
 logger = structlog.get_logger(__name__)
 
-# Set up OpenAI API
-openai.api_key = settings.OPENAI_API_KEY
+# Initialize the indexer
+indexer = PineconeIndexer(
+    api_key=settings.PINECONE_API_KEY,
+    environment=settings.PINECONE_ENVIRONMENT,
+    index_name=settings.PINECONE_INDEX_NAME,
+)
 
-# Initialize API security
-if settings.API_AUTH_ENABLED:
-    api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
+# Set up the API key authorization
+api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
-    async def get_api_key(api_key_header: str = Security(api_key_header)):
-        if api_key_header == settings.API_KEY:
-            return api_key_header
-        raise HTTPException(
-            status_code=403, detail="Invalid API key or API key missing"
+def get_api_key(api_key: str = Depends(api_key_header)):
+    """
+    Validate the API key if provided. If not provided, allow access
+    if API key validation is disabled.
+    """
+    if settings.API_KEY_REQUIRED and api_key != settings.API_KEY:
+        raise HTTPException(status_code=403, detail="Invalid API key")
+    return api_key
+
+# Define API request and response models
+class QueryRequest(BaseModel):
+    """Request model for ICH Wiz queries."""
+    query: str
+    source: Optional[str] = "general"
+    context: Optional[Dict[str, Any]] = {}
+    max_results: Optional[int] = 5
+
+class Citation(BaseModel):
+    """Model for a source citation."""
+    source: str
+    text: str
+    relevance: float
+
+class Task(BaseModel):
+    """Model for a suggested task."""
+    task: str
+    priority: str
+    rationale: str
+
+class QueryResponse(BaseModel):
+    """Response model for ICH Wiz queries."""
+    query: str
+    answer: str
+    citations: List[Citation]
+    tasks: List[Task]
+    processing_time: float
+    source: str
+
+# System prompts
+GENERAL_SYSTEM_PROMPT = """
+You are ICH Wiz, a specialized digital ICH guidelines assistant that helps pharmaceutical 
+and biotech professionals navigate International Council for Harmonisation (ICH) guidelines. 
+You provide expertise on regulatory compliance requirements and best practices.
+
+When responding:
+1. Be clear, precise, and authoritative on ICH guidelines
+2. Always cite specific ICH guideline references when possible (e.g., "According to ICH E6(R2), section 4.2.1...")
+3. Structure your response with relevant headings if appropriate
+4. Provide actionable insights tailored to the query context
+5. Flag important compliance considerations or potential pitfalls
+
+You should focus exclusively on ICH guidelines and regulatory compliance topics.
+If the question is outside your knowledge domain, politely redirect the user to appropriate resources.
+"""
+
+CITATION_ANALYSIS_PROMPT = """
+Analyze the following context information retrieved from regulatory documents and identify the most relevant 
+citations to answer the user's query. Format your response as a JSON object with the structure:
+{
+  "citations": [
+    {
+      "source": "source document name",
+      "text": "extracted citation text",
+      "relevance": 0.95 // relevance score from 0 to 1
+    },
+    ...
+  ]
+}
+
+Order citations by relevance, with the most relevant first.
+Return a maximum of 5 citations that directly address the query.
+Ensure the extracted citation text is comprehensive enough to be useful on its own.
+
+User Query: {query}
+
+Context Information:
+{context}
+"""
+
+TASK_GENERATION_PROMPT = """
+Based on the user's query and the provided response about ICH guidelines, generate a list of actionable tasks 
+that would help ensure compliance or implement the guidance effectively. Format your response as a JSON object 
+with the structure:
+{
+  "tasks": [
+    {
+      "task": "clear, specific action item",
+      "priority": "high/medium/low",
+      "rationale": "brief explanation of why this task is important"
+    },
+    ...
+  ]
+}
+
+Focus on practical, specific tasks that directly relate to implementing or complying with the ICH guidelines 
+mentioned in the response. Return a maximum of 3 tasks, prioritized by importance.
+
+User Query: {query}
+
+Response: {response}
+"""
+
+def generate_system_prompt(source: str, context: Dict[str, Any]) -> str:
+    """
+    Generate a system prompt based on the source and context.
+    
+    Args:
+        source: The source of the query (e.g., 'general', 'protocol', 'submission')
+        context: Additional context information
+        
+    Returns:
+        str: The system prompt to use for the query
+    """
+    if source == "protocol":
+        return f"""
+        {GENERAL_SYSTEM_PROMPT}
+        
+        You are currently assisting with a clinical trial protocol review. Provide 
+        specific guidance on protocol design, methodology, endpoint selection, and 
+        compliance with ICH E6(R2) Good Clinical Practice requirements.
+        
+        Protocol Information:
+        - Indication: {context.get('indication', 'Not specified')}
+        - Phase: {context.get('phase', 'Not specified')}
+        - Population: {context.get('population', 'Not specified')}
+        """
+    elif source == "submission":
+        return f"""
+        {GENERAL_SYSTEM_PROMPT}
+        
+        You are currently assisting with regulatory submission preparation. Provide 
+        specific guidance on eCTD requirements, document formatting, and compliance 
+        with ICH M4 and regional submission guidelines.
+        
+        Submission Information:
+        - Submission Type: {context.get('submission_type', 'Not specified')}
+        - Target Regions: {context.get('regions', 'Not specified')}
+        - Document Type: {context.get('document_type', 'Not specified')}
+        """
+    elif source == "cmc":
+        return f"""
+        {GENERAL_SYSTEM_PROMPT}
+        
+        You are currently assisting with Chemistry, Manufacturing, and Controls (CMC) 
+        documentation. Provide specific guidance on ICH Q8-Q12 implementation, quality 
+        risk management, and pharmaceutical development best practices.
+        
+        Product Information:
+        - Product Type: {context.get('product_type', 'Not specified')}
+        - Manufacturing Process: {context.get('process', 'Not specified')}
+        - Dosage Form: {context.get('dosage_form', 'Not specified')}
+        """
+    else:  # general
+        return GENERAL_SYSTEM_PROMPT
+
+def search_similar_documents(query: str, top_k: int = 5) -> List[Dict[str, Any]]:
+    """
+    Search for similar documents to the query.
+    
+    Args:
+        query: The query string
+        top_k: Number of results to return
+        
+    Returns:
+        List of document dictionaries with source, text, and score
+    """
+    try:
+        with time_and_count(OPENAI_REQUESTS):
+            # Generate embedding for the query
+            results = indexer.search_similar(query, top_k=top_k)
+            
+            # Format the results
+            documents = []
+            for match in results:
+                metadata = match.get("metadata", {})
+                documents.append({
+                    "source": metadata.get("source", "Unknown Source"),
+                    "text": metadata.get("text", ""),
+                    "score": match.get("score", 0.0)
+                })
+                
+            return documents
+    except Exception as e:
+        logger.error("Error searching similar documents", error=str(e))
+        return []
+
+def get_relevant_citations(query: str, documents: List[Dict[str, Any]]) -> List[Citation]:
+    """
+    Extract relevant citations from the retrieved documents.
+    
+    Args:
+        query: The original query
+        documents: List of retrieved documents
+        
+    Returns:
+        List of Citation objects
+    """
+    if not documents:
+        return []
+        
+    try:
+        # Format the context information
+        context = ""
+        for i, doc in enumerate(documents, 1):
+            context += f"Document {i} (Source: {doc['source']}):\n{doc['text']}\n\n"
+            
+        # Use OpenAI to extract and format citations
+        with time_and_count(OPENAI_REQUESTS):
+            response = openai.chat.completions.create(
+                model=settings.OPENAI_MODEL,
+                messages=[
+                    {"role": "system", "content": "You are a helpful assistant that extracts and analyzes citations."},
+                    {"role": "user", "content": CITATION_ANALYSIS_PROMPT.format(
+                        query=query,
+                        context=context
+                    )}
+                ],
+                response_format={"type": "json_object"},
+                temperature=0.1,
+            )
+            
+        # Parse the JSON response
+        content = response.choices[0].message.content
+        result = json.loads(content)
+        citations = [
+            Citation(
+                source=citation["source"],
+                text=citation["text"],
+                relevance=citation["relevance"]
+            )
+            for citation in result.get("citations", [])
+        ]
+        
+        return citations
+    except Exception as e:
+        logger.error("Error getting relevant citations", error=str(e))
+        return []
+
+def generate_tasks(query: str, response: str) -> List[Task]:
+    """
+    Generate actionable tasks based on the query and response.
+    
+    Args:
+        query: The original query
+        response: The generated response
+        
+    Returns:
+        List of Task objects
+    """
+    try:
+        # Use OpenAI to generate tasks
+        with time_and_count(OPENAI_REQUESTS):
+            response_obj = openai.chat.completions.create(
+                model=settings.OPENAI_MODEL,
+                messages=[
+                    {"role": "system", "content": "You are a helpful assistant that creates actionable tasks."},
+                    {"role": "user", "content": TASK_GENERATION_PROMPT.format(
+                        query=query,
+                        response=response
+                    )}
+                ],
+                response_format={"type": "json_object"},
+                temperature=0.2,
+            )
+            
+        # Parse the JSON response
+        content = response_obj.choices[0].message.content
+        result = json.loads(content)
+        tasks = [
+            Task(
+                task=task["task"],
+                priority=task["priority"],
+                rationale=task["rationale"]
+            )
+            for task in result.get("tasks", [])
+        ]
+        
+        return tasks
+    except Exception as e:
+        logger.error("Error generating tasks", error=str(e))
+        return []
+
+def generate_response(query: str, source: str, context: Dict[str, Any], max_results: int) -> QueryResponse:
+    """
+    Generate a response to the query.
+    
+    Args:
+        query: The query string
+        source: The source of the query
+        context: Additional context information
+        max_results: Maximum number of results to return
+        
+    Returns:
+        QueryResponse object
+    """
+    start_time = time.time()
+    
+    try:
+        # Search for similar documents
+        documents = search_similar_documents(query, top_k=max_results)
+        
+        # Generate system prompt
+        system_prompt = generate_system_prompt(source, context)
+        
+        # Format the context information
+        context_str = ""
+        for i, doc in enumerate(documents, 1):
+            context_str += f"Reference {i} (Source: {doc['source']}):\n{doc['text']}\n\n"
+            
+        # Generate the response
+        with time_and_count(OPENAI_REQUESTS):
+            response = openai.chat.completions.create(
+                model=settings.OPENAI_MODEL,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": f"Query: {query}\n\nRelevant Information:\n{context_str}"}
+                ],
+                temperature=0.2,
+            )
+            
+        answer = response.choices[0].message.content
+        
+        # Get relevant citations
+        citations = get_relevant_citations(query, documents)
+        
+        # Generate tasks
+        tasks = generate_tasks(query, answer)
+        
+        processing_time = time.time() - start_time
+        
+        return QueryResponse(
+            query=query,
+            answer=answer,
+            citations=citations,
+            tasks=tasks,
+            processing_time=processing_time,
+            source=source
         )
-else:
-    async def get_api_key():
-        return None
+    except Exception as e:
+        logger.error("Error generating response", error=str(e))
+        processing_time = time.time() - start_time
+        
+        return QueryResponse(
+            query=query,
+            answer=f"I'm sorry, I encountered an error while processing your query: {str(e)}\n\nPlease try again or contact support.",
+            citations=[],
+            tasks=[],
+            processing_time=processing_time,
+            source=source
+        )
 
-# Create FastAPI app
+# Create the FastAPI app
 app = FastAPI(
     title="ICH Wiz API",
-    description="AI-powered ICH guidelines assistant",
+    description="API for the ICH Wiz regulatory guidance assistant",
     version="1.0.0",
 )
 
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ALLOW_ORIGINS,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Define API models
-class QuerySource(str, Enum):
-    """Source of the query for context."""
-    PROTOCOL = "protocol"
-    CSR = "csr"
-    STUDY_DESIGN = "study_design"
-    REGULATORY = "regulatory"
-    ECTD = "ectd"
-    GENERAL = "general"
-
-
-class QueryRequest(BaseModel):
-    """Request model for ICH Wiz queries."""
-    query: str = Field(..., description="User query about ICH guidelines")
-    source: Optional[QuerySource] = Field(
-        default=QuerySource.GENERAL,
-        description="Source context of the query"
-    )
-    context: Optional[Dict[str, Any]] = Field(
-        default=None,
-        description="Additional context for the query"
-    )
-    max_results: Optional[int] = Field(
-        default=5,
-        description="Maximum number of results to return"
-    )
-
-
-class Citation(BaseModel):
-    """Citation model for ICH Wiz responses."""
-    text: str = Field(..., description="Cited text")
-    source: str = Field(..., description="Source of the citation")
-    document_id: str = Field(..., description="Document ID")
-    relevance: float = Field(..., description="Relevance score")
-
-
-class TaskItem(BaseModel):
-    """Task item model for ICH Wiz responses."""
-    task: str = Field(..., description="Task to perform")
-    priority: str = Field(..., description="Priority (high, medium, low)")
-    rationale: str = Field(..., description="Rationale for the task")
-
-
-class QueryResponse(BaseModel):
-    """Response model for ICH Wiz queries."""
-    answer: str = Field(..., description="Answer to the query")
-    citations: List[Citation] = Field(default_factory=list, description="Citations")
-    tasks: List[TaskItem] = Field(default_factory=list, description="Suggested tasks")
-    query: str = Field(..., description="Original query")
-    source: str = Field(..., description="Source context of the query")
-    processing_time: float = Field(..., description="Processing time in seconds")
-
-
-class HealthResponse(BaseModel):
-    """Health check response model."""
-    status: str = Field(..., description="Service status")
-    version: str = Field(..., description="Service version")
-    docs_indexed: int = Field(..., description="Number of documents indexed")
-    timestamp: str = Field(..., description="Current timestamp")
-
-
-class StatsResponse(BaseModel):
-    """Stats response model."""
-    total_documents: int = Field(..., description="Total documents indexed")
-    document_type_counts: Dict[str, int] = Field(..., description="Document counts by type")
-    guideline_type_counts: Dict[str, int] = Field(..., description="ICH guideline counts by type")
-    total_vectors: int = Field(..., description="Total vector count")
-    generated_at: str = Field(..., description="Timestamp when stats were generated")
-
-
-# Define API routes
-@app.get("/health", response_model=HealthResponse, tags=["System"])
+@app.get("/health")
 async def health_check():
     """Health check endpoint."""
-    try:
-        # Get stats about indexed documents
-        stats_file = os.path.join(settings.DATA_DIR, "stats.json")
-        if os.path.exists(stats_file):
-            with open(stats_file, "r", encoding="utf-8") as f:
-                stats = json.load(f)
-            docs_indexed = stats.get("total_documents", 0)
-        else:
-            docs_indexed = 0
-            
-        return {
-            "status": "healthy",
-            "version": "1.0.0",
-            "docs_indexed": docs_indexed,
-            "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
-        }
-    except Exception as e:
-        logger.error("Health check failed", error=str(e))
-        raise HTTPException(status_code=500, detail=f"Health check failed: {str(e)}")
+    return {"status": "healthy", "version": "1.0.0"}
 
-
-@app.get("/stats", response_model=StatsResponse, tags=["System"])
-async def get_stats(api_key: APIKey = Depends(get_api_key)):
-    """Get statistics about indexed documents."""
-    try:
-        stats_file = os.path.join(settings.DATA_DIR, "stats.json")
-        if not os.path.exists(stats_file):
-            raise HTTPException(status_code=404, detail="Stats not found")
-            
-        with open(stats_file, "r", encoding="utf-8") as f:
-            stats = json.load(f)
-            
-        return stats
-    except Exception as e:
-        logger.error("Failed to get stats", error=str(e))
-        raise HTTPException(status_code=500, detail=f"Failed to get stats: {str(e)}")
-
-
-@app.post("/api/ich-wiz", response_model=QueryResponse, tags=["ICH Wiz"])
-async def process_query(
-    request: QueryRequest,
-    api_key: APIKey = Depends(get_api_key)
-):
+@app.post("/query", response_model=QueryResponse, dependencies=[Depends(get_api_key)])
+async def query_endpoint(request: QueryRequest):
     """
-    Process a query about ICH guidelines and generate a response.
-    
-    Args:
-        request: Query request
-        
-    Returns:
-        Query response with answer, citations, and suggested tasks
+    Process a query and return a response with citations and tasks.
     """
-    start_time = time.time()
-    query = request.query
-    source = request.source
-    context = request.context or {}
-    max_results = request.max_results
-    
-    try:
-        logger.info(
-            "Processing query",
-            query=query,
-            source=source,
-            context_keys=list(context.keys()) if context else None
+    with time_and_count(API_REQUESTS, API_LATENCY):
+        response = generate_response(
+            query=request.query,
+            source=request.source,
+            context=request.context or {},
+            max_results=request.max_results or 5
         )
-        
-        # Search for relevant guidelines
-        search_results = search_similar(
-            query=query,
-            filter_dict={"document_type": "ich_guideline"},
-            top_k=max_results
-        )
-        
-        # Extract context from search results
-        contexts = []
-        citations = []
-        
-        for i, result in enumerate(search_results):
-            metadata = result["metadata"]
-            text = metadata.get("text", "")
-            document_id = metadata.get("document_id", f"doc_{i}")
-            guideline_id = metadata.get("guideline_id", "Unknown guideline")
-            
-            # Add to contexts for the prompt
-            contexts.append(f"Document: {guideline_id}\nContent: {text}\n")
-            
-            # Add to citations for the response
-            citations.append({
-                "text": text,
-                "source": guideline_id,
-                "document_id": document_id,
-                "relevance": result["score"]
-            })
-        
-        # Build prompt
-        system_prompt = """You are ICH Wiz, an expert AI assistant specializing in International Council for Harmonisation of Technical Requirements for Pharmaceuticals for Human Use (ICH) guidelines. 
-        
-You help pharmaceutical professionals understand and apply ICH guidelines correctly in their regulatory submissions and clinical development activities.
+        return response
 
-You should provide accurate, nuanced, and guidelines-based answers. If certain information is not contained in the ICH guidelines, clearly state that.
+# Add Prometheus metrics endpoint
+from prometheus_fastapi_instrumentator import Instrumentator
+Instrumentator().instrument(app).expose(app)
 
-Format your response as follows:
-1. Provide a clear, concise answer to the query
-2. Reference specific ICH guidelines and sections when applicable
-3. End with a list of 2-3 concrete action items/tasks that would help the user ensure compliance with relevant ICH guidelines
-
-Make sure your answers are directly relevant to pharmaceutical regulatory contexts and reflect current ICH guidelines.
-"""
-
-        query_context = f"Query source: {source.value}\n"
-        if context:
-            query_context += "Additional context:\n"
-            for key, value in context.items():
-                query_context += f"- {key}: {value}\n"
-                
-        guidelines_context = "Here are the most relevant ICH guideline passages:\n\n" + "\n\n".join(contexts)
-        
-        user_prompt = f"{query_context}\n\nUser query: {query}\n\n{guidelines_context}"
-        
-        # Generate response using OpenAI
-        response = openai.chat.completions.create(
-            model=settings.OPENAI_COMPLETION_MODEL,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
-            ],
-            temperature=0.2,
-            max_tokens=1500
-        )
-        
-        answer = response.choices[0].message.content.strip()
-        
-        # Extract tasks
-        tasks = extract_tasks(answer)
-        
-        processing_time = time.time() - start_time
-        
-        # Construct response
-        result = {
-            "answer": answer,
-            "citations": citations,
-            "tasks": tasks,
-            "query": query,
-            "source": source.value,
-            "processing_time": processing_time,
-        }
-        
-        logger.info(
-            "Query processed successfully",
-            query=query,
-            processing_time=processing_time,
-            citation_count=len(citations),
-            task_count=len(tasks)
-        )
-        
-        return result
-    
-    except Exception as e:
-        logger.error("Failed to process query", query=query, error=str(e))
-        raise HTTPException(status_code=500, detail=f"Failed to process query: {str(e)}")
-
-
-def extract_tasks(text: str) -> List[Dict[str, str]]:
-    """
-    Extract tasks from the AI response.
-    This is a simple implementation; in a production system,
-    this would be more sophisticated.
-    
-    Args:
-        text: AI response text
-        
-    Returns:
-        List of task dictionaries
-    """
-    tasks = []
-    
-    # Try to find a tasks section
-    task_section = None
-    
-    # Look for common task section headers
-    task_headers = [
-        "Tasks:", "Action Items:", "Next Steps:", "Recommended Actions:",
-        "Suggested Tasks:", "To-Do Items:", "Action Plan:"
-    ]
-    
-    for header in task_headers:
-        if header in text:
-            task_section = text.split(header, 1)[1].strip()
-            break
-    
-    # If no task section found, return empty list
-    if not task_section:
-        return tasks
-    
-    # Split by numbers or bullet points
-    task_markers = ['\n1. ', '\n2. ', '\n3. ', '\n4. ', '\n5. ',
-                   '\n- ', '\n• ', '\n* ', '\n– ']
-    
-    for marker in task_markers:
-        if marker in task_section:
-            task_items = task_section.split(marker)
-            # Skip the first item as it's empty or a header
-            for item in task_items[1:]:
-                # Clean up and limit to the first sentence or phrase
-                task_text = item.split('\n', 1)[0].strip()
-                
-                # Assign priority based on language
-                priority = "medium"
-                if any(word in task_text.lower() for word in ["urgent", "critical", "immediately", "crucial"]):
-                    priority = "high"
-                elif any(word in task_text.lower() for word in ["consider", "might", "optional", "if needed"]):
-                    priority = "low"
-                
-                # Extract rationale if present
-                rationale = "Ensures compliance with ICH guidelines"
-                if " - " in task_text:
-                    task_parts = task_text.split(" - ", 1)
-                    task_text = task_parts[0].strip()
-                    rationale = task_parts[1].strip()
-                
-                tasks.append({
-                    "task": task_text,
-                    "priority": priority,
-                    "rationale": rationale
-                })
-            
-            # If we found tasks with this marker, stop looking
-            if tasks:
-                break
-    
-    return tasks
-
-
-@app.middleware("http")
-async def log_requests(request: Request, call_next):
-    """Middleware to log requests."""
-    start_time = time.time()
-    response = await call_next(request)
-    process_time = time.time() - start_time
-    
-    logger.info(
-        "Request processed",
-        method=request.method,
-        url=str(request.url),
-        status_code=response.status_code,
-        process_time=process_time
-    )
-    
-    return response
-
-
-# Initialize the API
-@app.on_event("startup")
-async def startup_event():
-    """Startup event handler."""
-    try:
-        # Initialize the indexer
-        initialize_indexer()
-        logger.info("ICH Wiz API initialized successfully")
-    except Exception as e:
-        logger.error("Failed to initialize ICH Wiz API", error=str(e))
-        raise
-
-
-# Prometheus metrics
-try:
-    from prometheus_fastapi_instrumentator import Instrumentator
-    
-    @app.on_event("startup")
-    async def enable_metrics():
-        """Enable Prometheus metrics."""
-        Instrumentator().instrument(app).expose(app, include_in_schema=False)
-        logger.info("Prometheus metrics enabled")
-except ImportError:
-    logger.warning("Prometheus FastAPI Instrumentator not installed, metrics disabled")
-
-
-# Run the API
-if __name__ == "__main__":
+def main():
+    """Run the ICH Wiz API server."""
     import uvicorn
-    
-    # Get port from environment or use default
-    port = int(os.environ.get("PORT", 8080))
-    
-    # Run the API
     uvicorn.run(
         "services.ich_wiz.agent:app",
         host="0.0.0.0",
-        port=port,
-        reload=True
+        port=int(os.environ.get("PORT", 8000)),
+        reload=True,
     )
+
+if __name__ == "__main__":
+    main()

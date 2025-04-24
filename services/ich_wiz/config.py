@@ -1,114 +1,77 @@
+#!/usr/bin/env python
 """
-Configuration settings for the ICH Wiz service.
+ICH Wiz Configuration
 
-This module uses pydantic_settings to validate environment variables
-and provide configuration for the ICH Wiz service with fail-fast behavior.
+This module defines the configuration settings for the ICH Wiz service,
+with validation to ensure all required settings are available.
 """
 import os
 import sys
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
-from pydantic import Field, field_validator
+import pydantic
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
 
 class Settings(BaseSettings):
     """
-    Configuration settings for the ICH Wiz service.
-    Uses pydantic to validate environment variables.
+    Settings class for the ICH Wiz service with Pydantic validation.
     """
-    # Service identification
-    SERVICE_NAME: str = Field("ich-wiz", description="Service name for identification")
+    # API configuration
+    API_KEY: Optional[str] = None
+    API_KEY_REQUIRED: bool = False
+    DEBUG: bool = False
     
-    # API authentication
-    API_AUTH_ENABLED: bool = Field(True, description="Enable API key authentication")
-    API_KEY: Optional[str] = Field(None, description="API key for authentication")
+    # OpenAI configuration
+    OPENAI_API_KEY: str
+    OPENAI_MODEL: str = "gpt-4o"  # Default to gpt-4o as the newest model
     
-    # API CORS settings
-    CORS_ALLOW_ORIGINS: List[str] = Field(
-        ["*"], description="List of origins that are allowed to access the API"
-    )
+    # Pinecone configuration
+    PINECONE_API_KEY: str
+    PINECONE_ENVIRONMENT: str = "us-west1-gcp-free"
+    PINECONE_INDEX_NAME: str = "ich-guidelines"
     
-    # OpenAI settings
-    OPENAI_API_KEY: Optional[str] = Field(None, description="OpenAI API key")
-    OPENAI_EMBEDDING_MODEL: str = Field(
-        "text-embedding-3-large", description="OpenAI embedding model to use"
-    )
-    OPENAI_COMPLETION_MODEL: str = Field(
-        "gpt-4o", description="OpenAI completion model to use"
-    )
+    # Path configuration
+    BASE_DIR: Path = Path(__file__).resolve().parent.parent.parent
+    DATA_DIR: Path = Path(os.environ.get("DATA_DIR", str(BASE_DIR / "data" / "ich_wiz")))
+    GUIDELINES_DIR: Path = Path(os.environ.get("GUIDELINES_DIR", str(DATA_DIR / "guidelines")))
+    UPLOADS_DIR: Path = Path(os.environ.get("UPLOADS_DIR", str(DATA_DIR / "uploads")))
     
-    # Pinecone settings
-    PINECONE_API_KEY: Optional[str] = Field(None, description="Pinecone API key")
-    PINECONE_ENVIRONMENT: str = Field("gcp-starter", description="Pinecone environment")
-    PINECONE_INDEX_NAME: str = Field("ich-guidelines", description="Pinecone index name")
+    # Logging configuration
+    LOG_LEVEL: str = "INFO"
     
-    # File and directory settings
-    DATA_DIR: str = Field("./data", description="Base data directory")
-    GUIDELINES_DIR: str = Field("./data/guidelines", description="Guidelines directory")
-    UPLOADS_DIR: str = Field("./data/csr_uploads", description="CSR uploads directory")
-    PROCESSED_FILE: str = Field("processed.json", description="Processed files tracking")
-    
-    # Chunking settings
-    CHUNK_SIZE: int = Field(1000, description="Chunk size for documents")
-    CHUNK_OVERLAP: int = Field(200, description="Chunk overlap for documents")
-    
-    # Cache settings
-    CACHE_TTL: int = Field(3600, description="Cache TTL in seconds")
-    
-    # Metrics settings
-    METRICS_PREFIX: str = Field("ich_wiz_", description="Prefix for metrics")
-    
-    # Logging settings
-    LOG_LEVEL: str = Field("INFO", description="Log level")
-    
-    # Model config
     model_config = SettingsConfigDict(
-        env_file=".env", env_prefix="ICH_", case_sensitive=False
+        env_file=".env",
+        env_file_encoding="utf-8",
+        env_nested_delimiter="__",
+        extra="ignore",
     )
     
-    @field_validator("OPENAI_API_KEY")
+    # Validators for required fields
+    @pydantic.field_validator("OPENAI_API_KEY")
     def validate_openai_api_key(cls, v):
         if not v:
             print("ERROR: OPENAI_API_KEY environment variable is required but not set.")
             sys.exit(1)
         return v
     
-    @field_validator("PINECONE_API_KEY")
+    @pydantic.field_validator("PINECONE_API_KEY")
     def validate_pinecone_api_key(cls, v):
         if not v:
             print("ERROR: PINECONE_API_KEY environment variable is required but not set.")
             sys.exit(1)
         return v
-    
-    @field_validator("API_KEY")
-    def validate_api_key(cls, v, values):
-        if values.data.get("API_AUTH_ENABLED", True) and not v:
-            print("ERROR: API_KEY environment variable is required when API_AUTH_ENABLED is True.")
-            sys.exit(1)
-        return v
-    
-    def get_guidelines_dir(self) -> Path:
-        """Get the path to the guidelines directory."""
-        return Path(self.GUIDELINES_DIR)
-    
-    def get_uploads_dir(self) -> Path:
-        """Get the path to the CSR uploads directory."""
-        return Path(self.UPLOADS_DIR)
-    
-    def get_processed_file(self) -> Path:
-        """Get the path to the processed files tracking file."""
-        return Path(self.DATA_DIR) / self.PROCESSED_FILE
 
-
-# Create directories if they don't exist
-def create_directories(settings: Settings) -> None:
-    """Create required directories if they don't exist."""
+def create_directories(settings: Settings):
+    """
+    Create required directories if they don't exist.
+    
+    Args:
+        settings: The application settings
+    """
     os.makedirs(settings.DATA_DIR, exist_ok=True)
-    os.makedirs(settings.GUIDELINES_DIR, exist_ok=True) 
+    os.makedirs(settings.GUIDELINES_DIR, exist_ok=True)
     os.makedirs(settings.UPLOADS_DIR, exist_ok=True)
-
 
 # Create settings object with fail-fast behavior
 try:
