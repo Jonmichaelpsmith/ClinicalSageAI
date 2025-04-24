@@ -390,6 +390,17 @@ export default function App() {
                   <LazyICHWizPage />
                 </SimpleErrorBoundary>
               </Route>
+              <Route path="/lumen-bio/report-demo">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Lumen Bio Report Demo" />}>
+                  <React.Suspense fallback={<EmergencyFallback pageName="Lumen Bio Report Demo" />}>
+                    {/* Directly import to avoid Lazy loading issues during demo */}
+                    {(() => {
+                      const LumenBioReportDemo = React.lazy(() => import('./pages/LumenBioReportDemo'));
+                      return <LumenBioReportDemo />;
+                    })()}
+                  </React.Suspense>
+                </SimpleErrorBoundary>
+              </Route>
               <Route path="/analytics-dashboard">
                 <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Analytics Dashboard" />}>
                   <LazyAnalyticsDashboard />
