@@ -201,13 +201,16 @@ export default function HomeMarketingPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <div>
               <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mb-4">
-                Trusted by Leading Pharma Companies
+                Regulatory Intelligence—Reimagined.
               </div>
-              <h1 className="text-3xl md:text-4xl font-light text-[#003057] mb-4 leading-tight">
+              <h1 className="text-3xl md:text-4xl font-light text-[#003057] mb-3 leading-tight">
                 <span className="font-semibold">AI-Powered</span> Regulatory Document Intelligence
               </h1>
-              <p className="text-[15px] text-[#444] mb-5">
+              <p className="text-[15px] text-[#444] mb-2">
                 TrialSage™ slashes regulatory submission time by 67% with deep semantic understanding of clinical trial data across <CSRCounter /> and 58 therapeutic areas.
+              </p>
+              <p className="text-[13px] text-blue-600 font-medium mb-4">
+                From Protocol to Product Approval—One Platform.
               </p>
               <div className="flex flex-wrap space-x-3 mb-5">
                 <div className="flex items-center">
@@ -238,23 +241,23 @@ export default function HomeMarketingPage() {
             </div>
             <div className="hidden md:block">
               <div className="bg-white rounded-lg shadow-xl p-4 border border-blue-100">
-                <div className="text-[#003057] font-bold text-lg mb-2">TrialSage™ Platform Highlights</div>
+                <div className="text-[#003057] font-bold text-lg mb-2">Why TrialSage™?</div>
                 <div className="space-y-2">
-                  <div className="flex items-center">
-                    <div className="bg-blue-600 rounded-full h-2 w-2 mr-2"></div>
-                    <span className="text-sm">Deep semantic understanding of regulatory documents</span>
+                  <div className="flex items-start">
+                    <div className="bg-blue-600 rounded-full h-2 w-2 mt-1.5 mr-2 flex-shrink-0"></div>
+                    <span className="text-sm">Build & Submit with Confidence: Intelligently draft INDs, NDAs, and CTAs with one-click validation</span>
                   </div>
-                  <div className="flex items-center">
-                    <div className="bg-blue-600 rounded-full h-2 w-2 mr-2"></div>
-                    <span className="text-sm"><CSRCounter /> analyzed with proprietary AI models</span>
+                  <div className="flex items-start">
+                    <div className="bg-blue-600 rounded-full h-2 w-2 mt-1.5 mr-2 flex-shrink-0"></div>
+                    <span className="text-sm">Data to Regulatory-Ready Outputs: AI-driven CSR Intelligence across <CSRCounter /> documents</span>
                   </div>
-                  <div className="flex items-center">
-                    <div className="bg-blue-600 rounded-full h-2 w-2 mr-2"></div>
-                    <span className="text-sm">25 enterprise analytics dashboards with Metabase</span>
+                  <div className="flex items-start">
+                    <div className="bg-blue-600 rounded-full h-2 w-2 mt-1.5 mr-2 flex-shrink-0"></div>
+                    <span className="text-sm">Single Source of Truth: Vault™ Workspace for CMC, CER, protocols and submissions</span>
                   </div>
-                  <div className="flex items-center">
-                    <div className="bg-blue-600 rounded-full h-2 w-2 mr-2"></div>
-                    <span className="text-sm">GPT-4o powered compliance coach with regulatory knowledge</span>
+                  <div className="flex items-start">
+                    <div className="bg-blue-600 rounded-full h-2 w-2 mt-1.5 mr-2 flex-shrink-0"></div>
+                    <span className="text-sm">AI Co-Pilot: Ask natural-language questions, get GPT-4o explanations, and fix validation errors</span>
                   </div>
                 </div>
               </div>
@@ -268,6 +271,7 @@ export default function HomeMarketingPage() {
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-8">
             <h2 className="text-2xl font-bold text-[#003057]">Enterprise-Grade Regulatory AI Solutions</h2>
+            <p className="text-sm text-blue-600 mt-1">AI-Powered Document Drafting. Global-Ready Compliance.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -284,7 +288,7 @@ export default function HomeMarketingPage() {
                   67% Faster Submissions
                 </div>
                 <p className="text-[13px] text-gray-700 mb-3">
-                  AI-powered IND preparation with auto-generated Form 1571, cover letters, and real-time FDA guideline validation.
+                  Guided questionnaire autopopulates Module 2 & 5 narratives with one-click eCTD packaging, validation, and health authority delivery.
                 </p>
                 <div className="mb-4">
                   <div className="flex items-center mb-1">
@@ -315,7 +319,7 @@ export default function HomeMarketingPage() {
                   <CSRCounter /> Analyzed
                 </div>
                 <p className="text-[13px] text-gray-700 mb-3">
-                  Deep semantic analysis of clinical study reports revealing patterns impossible to detect with traditional methods.
+                  Semantic NLP analysis of clinical study reports for cross-trial endpoint comparisons and safety signal detection with AI-powered risk mitigation.
                 </p>
                 <div className="mb-4">
                   <div className="flex items-center mb-1">
@@ -343,10 +347,10 @@ export default function HomeMarketingPage() {
               </div>
               <div className="ml-11">
                 <div className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800 mb-2">
-                  Digital Compliance Coach
+                  Your Clinical, CMC, & CER Co-Pilot
                 </div>
                 <p className="text-[13px] text-gray-700 mb-3">
-                  GPT-4o powered assistant with specialized knowledge of CMC requirements and global regulatory standards.
+                  GPT-4o powered assistant with specialized knowledge of CMC requirements, global regulatory standards, and context-aware document assistance.
                 </p>
                 <div className="mb-4">
                   <div className="flex items-center mb-1">
@@ -396,7 +400,7 @@ export default function HomeMarketingPage() {
                 CER Module
               </h3>
               <p className="text-xs text-gray-700 mb-2">
-                MDR/IVDR compliant Clinical Evaluation Reports with 58% faster preparation time.
+                "Clinical Evaluation Report in 5 minutes" with AI-drafted sections and integrated safety data validation via MedDRA.
               </p>
               <Link to="/cer-module" className="text-xs font-medium text-blue-600 hover:text-blue-800 inline-flex items-center">
                 Explore <ArrowRight className="ml-1 h-3 w-3" />
@@ -409,10 +413,10 @@ export default function HomeMarketingPage() {
                 <span className="w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center mr-2">
                   <span className="block h-1.5 w-1.5 bg-orange-600 rounded-full"></span>
                 </span>
-                Doc Management
+                Vault™ Document Hub
               </h3>
               <p className="text-xs text-gray-700 mb-2">
-                Beyond storage: AI fingerprinting, metadata extraction, and compliance tracking.
+                Microsoft-style file explorer with drag-and-drop, folder tree, version history, and audit-ready logs.
               </p>
               <Link to="/document-management" className="text-xs font-medium text-blue-600 hover:text-blue-800 inline-flex items-center">
                 Explore <ArrowRight className="ml-1 h-3 w-3" />
@@ -444,7 +448,7 @@ export default function HomeMarketingPage() {
           <div className="text-center mb-8">
             <h2 className="text-2xl font-bold text-[#003057]">Measurable ROI</h2>
             <p className="text-sm text-gray-600 max-w-2xl mx-auto">
-              Our deep semantic layer delivers quantifiable time and cost savings
+              Our deep semantic layer with FDA, EMA, PMDA, and NMPA compliance delivers quantifiable time and cost savings
             </p>
           </div>
 
