@@ -64,49 +64,55 @@ export default function HomeMarketingPage() {
       
       {/* Certara-style header */}
       <header className="relative z-40">
-        {/* Top utility bar (matches Certara exactly) - HEOR Bar with SOLUTIONS dropdown */}
+        {/* Top utility bar with solutions alongside other nav items */}
         <div className="bg-[#003057] text-white">
           <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between">
-            {/* Left side - SOLUTIONS dropdown */}
-            <div className="relative group">
-              <a className="text-[11px] flex items-center text-white hover:text-gray-200 transition font-semibold cursor-pointer">
-                <span>SOLUTIONS</span>
-                <ChevronDown className="ml-1 h-3 w-3" />
-              </a>
-              <div className="absolute left-0 mt-1 w-64 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 bg-white shadow-lg border border-gray-200 z-50 py-1">
-                <Link to="/ind-wizard" className="block px-4 py-2 text-[11px] text-[#444] hover:bg-gray-50 flex justify-between items-center">
-                  <span>IND Wizard™</span>
-                  <span className="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded">New</span>
-                </Link>
-                <Link to="/enterprise-csr-intelligence" className="block px-4 py-2 text-[11px] text-[#444] hover:bg-gray-50">
-                  CSR Intelligence™
-                </Link>
-                <Link to="/protocol-design-use-case" className="block px-4 py-2 text-[11px] text-[#444] hover:bg-gray-50">
-                  Protocol Design™
-                </Link>
-                <Link to="/cmc-insights-use-case" className="block px-4 py-2 text-[11px] text-[#444] hover:bg-gray-50">
-                  CMC Insights™
-                </Link>
-                <Link to="/use-case-library" className="block px-4 py-2 text-[11px] font-semibold text-[#0078d4] hover:bg-blue-50 my-2 border-l-2 border-blue-500 pl-3">
-                  TrialSage.AI Solutions
-                </Link>
-              </div>
+            {/* Company info */}
+            <div className="flex items-center">
+              <Link to="/" className="text-[14px] font-bold text-white">CONCEPT2CURE.AI</Link>
             </div>
             
-            {/* Right side utilities */}
+            {/* Right side utilities INCLUDING SOLUTIONS */}
             <div className="flex items-center space-x-6">
-              <Link to="/enterprise-csr-intelligence" className="text-[11px] text-white hover:text-gray-200 transition">News</Link>
-              <Link to="/document-management" className="text-[11px] text-white hover:text-gray-200 transition">Resources</Link>
-              <Link to="/team-signup" className="text-[11px] text-white hover:text-gray-200 transition">Contact</Link>
+              {/* SOLUTIONS dropdown positioned with other nav items */}
               <div className="relative group">
-                <a className="text-[11px] flex items-center text-white hover:text-gray-200 transition cursor-pointer">
+                <Link to="/use-case-library" className="text-[12px] flex items-center text-white hover:text-gray-200 transition font-semibold">
+                  <span>SOLUTIONS</span>
+                  <ChevronDown className="ml-1 h-3 w-3" />
+                </Link>
+                <div className="absolute right-0 mt-1 w-64 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 bg-white shadow-lg border border-gray-200 z-50 py-2 rounded">
+                  <Link to="/ind-wizard" className="block px-4 py-2 text-[12px] text-[#444] hover:bg-gray-50 flex justify-between items-center">
+                    <span>IND Wizard™</span>
+                    <span className="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded">New</span>
+                  </Link>
+                  <Link to="/enterprise-csr-intelligence" className="block px-4 py-2 text-[12px] text-[#444] hover:bg-gray-50">
+                    CSR Intelligence™
+                  </Link>
+                  <Link to="/protocol-design-use-case" className="block px-4 py-2 text-[12px] text-[#444] hover:bg-gray-50">
+                    Protocol Design™
+                  </Link>
+                  <Link to="/cmc-insights-use-case" className="block px-4 py-2 text-[12px] text-[#444] hover:bg-gray-50">
+                    CMC Insights™
+                  </Link>
+                  <div className="border-t border-gray-100 my-1"></div>
+                  <Link to="/use-case-library" className="block px-4 py-2 text-[12px] font-semibold text-[#0078d4] hover:bg-blue-50">
+                    View All Solutions
+                  </Link>
+                </div>
+              </div>
+
+              <Link to="/enterprise-csr-intelligence" className="text-[12px] text-white hover:text-gray-200 transition">News</Link>
+              <Link to="/document-management" className="text-[12px] text-white hover:text-gray-200 transition">Resources</Link>
+              <Link to="/team-signup" className="text-[12px] text-white hover:text-gray-200 transition">Contact</Link>
+              <div className="relative group">
+                <a className="text-[12px] flex items-center text-white hover:text-gray-200 transition cursor-pointer">
                   <span>English</span>
                   <ChevronDown className="ml-1 h-3 w-3" />
                 </a>
-                <div className="absolute right-0 mt-1 w-24 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 bg-white shadow-lg border border-gray-200 z-50 py-1">
-                  <a className="block px-4 py-1 text-[11px] text-[#444] hover:bg-gray-50">English</a>
-                  <a className="block px-4 py-1 text-[11px] text-[#444] hover:bg-gray-50">French</a>
-                  <a className="block px-4 py-1 text-[11px] text-[#444] hover:bg-gray-50">German</a>
+                <div className="absolute right-0 mt-1 w-24 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 bg-white shadow-lg border border-gray-200 z-50 py-1 rounded">
+                  <a className="block px-4 py-1 text-[12px] text-[#444] hover:bg-gray-50">English</a>
+                  <a className="block px-4 py-1 text-[12px] text-[#444] hover:bg-gray-50">French</a>
+                  <a className="block px-4 py-1 text-[12px] text-[#444] hover:bg-gray-50">German</a>
                 </div>
               </div>
               <Link to="/enterprise-csr-intelligence" className="text-white hover:text-gray-200">
