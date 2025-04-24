@@ -16,8 +16,16 @@ const AuthRedirector = ({ children }) => {
   
   useEffect(() => {
     if (!isLoading && user) {
-      // Redirect authenticated users to the enhanced client portal
-      setLocation('/portal/client');
+      // Check if the user is a Founder (user role or username can indicate this)
+      // For this example, we're directing all logged-in users to Lumen Bio landing
+      // In a real implementation, you would check user.role === "founder" or similar
+      if (user.username === "founder" || user.role === "founder") {
+        // Redirect founder accounts to Lumen Bio landing page
+        setLocation('/lumen-bio');
+      } else {
+        // Redirect other authenticated users to the enhanced client portal
+        setLocation('/portal/client');
+      }
     }
   }, [user, isLoading, setLocation]);
   
