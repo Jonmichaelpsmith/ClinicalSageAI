@@ -31,26 +31,64 @@ export default function HomeMarketingPage() {
         
         {/* Certara-style header */}
         <header className="relative z-40">
-          {/* Top utility bar (matches Certara exactly) */}
+          {/* Top utility bar (matches Certara exactly) - HEOR Bar with SOLUTIONS dropdown */}
           <div className="bg-[#003057] text-white">
-            <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-end space-x-6">
-              <Link to="/enterprise-csr-intelligence" className="text-[11px] text-white hover:text-gray-200 transition">News</Link>
-              <Link to="/document-management" className="text-[11px] text-white hover:text-gray-200 transition">Resources</Link>
-              <Link to="/team-signup" className="text-[11px] text-white hover:text-gray-200 transition">Contact</Link>
+            <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between">
+              {/* Left side - SOLUTIONS dropdown */}
               <div className="relative group">
-                <a className="text-[11px] flex items-center text-white hover:text-gray-200 transition cursor-pointer">
-                  <span>English</span>
+                <a className="text-[11px] flex items-center text-white hover:text-gray-200 transition font-semibold cursor-pointer">
+                  <span>SOLUTIONS</span>
                   <ChevronDown className="ml-1 h-3 w-3" />
                 </a>
-                <div className="absolute right-0 mt-1 w-24 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 bg-white shadow-lg border border-gray-200 z-50 py-1">
-                  <a className="block px-4 py-1 text-[11px] text-[#444] hover:bg-gray-50">English</a>
-                  <a className="block px-4 py-1 text-[11px] text-[#444] hover:bg-gray-50">French</a>
-                  <a className="block px-4 py-1 text-[11px] text-[#444] hover:bg-gray-50">German</a>
+                <div className="absolute left-0 mt-1 w-64 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 bg-white shadow-lg border border-gray-200 z-50 py-1">
+                  <Link to="/ind-wizard" className="block px-4 py-2 text-[11px] text-[#444] hover:bg-gray-50 flex justify-between items-center">
+                    <span>IND Wizard™</span>
+                    <span className="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded">New</span>
+                  </Link>
+                  <Link to="/enterprise-csr-intelligence" className="block px-4 py-2 text-[11px] text-[#444] hover:bg-gray-50">
+                    CSR Intelligence™
+                  </Link>
+                  <Link to="/protocol-design-use-case" className="block px-4 py-2 text-[11px] text-[#444] hover:bg-gray-50">
+                    Protocol Design™
+                  </Link>
+                  <Link to="/cmc-insights-use-case" className="block px-4 py-2 text-[11px] text-[#444] hover:bg-gray-50">
+                    CMC Insights™
+                  </Link>
+                  <Link to="/document-vault-use-case" className="block px-4 py-2 text-[11px] text-[#444] hover:bg-gray-50">
+                    Document Vault™
+                  </Link>
+                  <Link to="/ai-copilot-use-case" className="block px-4 py-2 text-[11px] text-[#444] hover:bg-gray-50">
+                    AI Copilot™
+                  </Link>
+                  <Link to="/cer-generator-use-case" className="block px-4 py-2 text-[11px] text-[#444] hover:bg-gray-50">
+                    CER Generator™
+                  </Link>
+                  <Link to="/use-case-library" className="block px-4 py-2 text-[11px] text-[#444] hover:bg-gray-50 border-t border-gray-100">
+                    Use Case Library
+                  </Link>
                 </div>
               </div>
-              <Link to="/enterprise-csr-intelligence" className="text-white hover:text-gray-200">
-                <Search className="h-4 w-4" />
-              </Link>
+              
+              {/* Right side utilities */}
+              <div className="flex items-center space-x-6">
+                <Link to="/enterprise-csr-intelligence" className="text-[11px] text-white hover:text-gray-200 transition">News</Link>
+                <Link to="/document-management" className="text-[11px] text-white hover:text-gray-200 transition">Resources</Link>
+                <Link to="/team-signup" className="text-[11px] text-white hover:text-gray-200 transition">Contact</Link>
+                <div className="relative group">
+                  <a className="text-[11px] flex items-center text-white hover:text-gray-200 transition cursor-pointer">
+                    <span>English</span>
+                    <ChevronDown className="ml-1 h-3 w-3" />
+                  </a>
+                  <div className="absolute right-0 mt-1 w-24 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 bg-white shadow-lg border border-gray-200 z-50 py-1">
+                    <a className="block px-4 py-1 text-[11px] text-[#444] hover:bg-gray-50">English</a>
+                    <a className="block px-4 py-1 text-[11px] text-[#444] hover:bg-gray-50">French</a>
+                    <a className="block px-4 py-1 text-[11px] text-[#444] hover:bg-gray-50">German</a>
+                  </div>
+                </div>
+                <Link to="/enterprise-csr-intelligence" className="text-white hover:text-gray-200">
+                  <Search className="h-4 w-4" />
+                </Link>
+              </div>
             </div>
           </div>
           
@@ -235,6 +273,101 @@ export default function HomeMarketingPage() {
           </div>
         </section>
 
+        {/* CSR Intelligence Counter Section */}
+        <section className="bg-gray-50 py-6 border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex flex-col sm:flex-row items-center justify-between">
+              <div className="flex items-center mb-4 sm:mb-0">
+                <BarChart3 className="h-5 w-5 text-[#0078d4] mr-2" />
+                <span className="text-sm text-[#333]">
+                  <span className="font-semibold">3,021</span> clinical study reports analyzed in our intelligence engine
+                </span>
+              </div>
+              <div className="flex items-center">
+                <span className="text-xs text-[#666] mr-3">Powered by:</span>
+                <span className="text-sm font-semibold text-[#444] mr-1">GPT-4o</span>
+                <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Complete Product Suite Navigation - Compact design with all modules */}
+        <section className="bg-white py-4 border-b border-gray-100">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2">
+              <Link to="/ind-wizard" className="flex flex-col items-center justify-center p-3 rounded-md hover:bg-gray-50 transition">
+                <FileCheck className="h-5 w-5 text-[#0078d4] mb-1" />
+                <span className="text-xs font-medium text-[#333] text-center">IND Wizard™</span>
+              </Link>
+              
+              <Link to="/enterprise-csr-intelligence" className="flex flex-col items-center justify-center p-3 rounded-md hover:bg-gray-50 transition">
+                <LayoutDashboard className="h-5 w-5 text-[#0078d4] mb-1" />
+                <span className="text-xs font-medium text-[#333] text-center">CSR Intelligence™</span>
+              </Link>
+              
+              <Link to="/protocol-design-use-case" className="flex flex-col items-center justify-center p-3 rounded-md hover:bg-gray-50 transition">
+                <FileSymlink className="h-5 w-5 text-[#0078d4] mb-1" />
+                <span className="text-xs font-medium text-[#333] text-center">Protocol Design™</span>
+              </Link>
+              
+              <Link to="/cmc-insights-use-case" className="flex flex-col items-center justify-center p-3 rounded-md hover:bg-gray-50 transition">
+                <Database className="h-5 w-5 text-[#0078d4] mb-1" />
+                <span className="text-xs font-medium text-[#333] text-center">CMC Insights™</span>
+              </Link>
+              
+              <Link to="/document-vault-use-case" className="flex flex-col items-center justify-center p-3 rounded-md hover:bg-gray-50 transition">
+                <Shield className="h-5 w-5 text-[#0078d4] mb-1" />
+                <span className="text-xs font-medium text-[#333] text-center">Document Vault™</span>
+              </Link>
+              
+              <Link to="/ask-lumen" className="flex flex-col items-center justify-center p-3 rounded-md hover:bg-gray-50 transition">
+                <Sparkles className="h-5 w-5 text-[#0078d4] mb-1" />
+                <span className="text-xs font-medium text-[#333] text-center">Ask Lumen™</span>
+              </Link>
+              
+              <Link to="/cer-generator-use-case" className="flex flex-col items-center justify-center p-3 rounded-md hover:bg-gray-50 transition">
+                <FileText className="h-5 w-5 text-[#0078d4] mb-1" />
+                <span className="text-xs font-medium text-[#333] text-center">CER Generator™</span>
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* ROI Story Section */}
+        <section className="bg-gray-50 py-8 border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex flex-col md:flex-row items-center">
+              <div className="md:w-1/3 mb-6 md:mb-0 md:pr-8">
+                <h3 className="text-lg font-semibold text-[#003057] mb-2">Clear ROI in Regulatory Operations</h3>
+                <p className="text-sm text-[#555]">Our clients experience measurable improvements in submission quality, timeline reduction, and resource optimization.</p>
+              </div>
+              
+              <div className="md:w-2/3 grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="bg-white p-3 rounded shadow-sm">
+                  <div className="text-xl font-bold text-[#0078d4]">55%</div>
+                  <div className="text-xs text-[#666]">Reduced Time to Submission</div>
+                </div>
+                
+                <div className="bg-white p-3 rounded shadow-sm">
+                  <div className="text-xl font-bold text-[#0078d4]">$2.1M</div>
+                  <div className="text-xs text-[#666]">Average Cost Savings Per Trial</div>
+                </div>
+                
+                <div className="bg-white p-3 rounded shadow-sm">
+                  <div className="text-xl font-bold text-[#0078d4]">87%</div>
+                  <div className="text-xs text-[#666]">Improved First-Pass Acceptance</div>
+                </div>
+                
+                <div className="bg-white p-3 rounded shadow-sm">
+                  <div className="text-xl font-bold text-[#0078d4]">68%</div>
+                  <div className="text-xs text-[#666]">Reduced Review Cycles</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Solutions Grid - Certara style */}
         <section className="bg-white py-16">
           <div className="max-w-7xl mx-auto px-4">
@@ -353,9 +486,10 @@ export default function HomeMarketingPage() {
             </div>
             
             <div className="mt-12 text-center">
-              <Link to="/team-signup">
-                <button className="bg-[#0078d4] hover:bg-[#005fa6] text-white px-6 py-3 text-[14px] font-medium transition">
-                  View All Solutions
+              <Link to="/use-case-library">
+                <button className="bg-[#0078d4] hover:bg-[#005fa6] text-white px-6 py-3 text-[14px] font-medium rounded-md transition flex items-center mx-auto">
+                  <LayoutGrid className="mr-2 h-4 w-4" />
+                  Explore Use Case Library
                 </button>
               </Link>
             </div>
