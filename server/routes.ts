@@ -1,4 +1,4 @@
-import express, { Request, Response } from "express";
+import express, { Request, Response, NextFunction } from "express";
 import { storage } from "./storage";
 import * as http from 'http';
 import * as path from 'path';
@@ -99,7 +99,7 @@ function verifyAuthToken(token: string): any {
 }
 
 // Simple middleware for authentication
-const authenticate = (req: Request, res: Response, next: Function) => {
+const authenticate = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
   
@@ -116,17 +116,35 @@ const authenticate = (req: Request, res: Response, next: Function) => {
   next();
 };
 
+// Import stability middleware
+import rateLimiter from './middleware/rateLimiter';
+import { errorHandler, notFoundHandler, asyncHandler } from './middleware/errorHandler';
+import { logger } from './utils/logger';
+
 export function setupRoutes(app: express.Application): http.Server {
-  // Configure middleware
+  // Configure core middleware
   app.use(express.json());
+  
+  // Add request logging middleware
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    const startTime = Date.now();
+    // Log after response is sent
+    res.on('finish', () => {
+      logger.request(req, res, startTime);
+    });
+    next();
+  });
+  
+  // Temporarily disable rate limiting until we resolve the issues
+  // app.use(rateLimiter);
   
   // Try to load cookie-parser dynamically
   try {
     const cookieParser = require('cookie-parser');
     app.use(cookieParser());
-    console.log('Cookie parser middleware loaded successfully');
+    logger.info('Cookie parser middleware loaded successfully');
   } catch (err) {
-    console.warn('Cookie parser middleware not available:', err);
+    logger.warn('Cookie parser middleware not available', { error: err });
   }
   
   // Health check endpoints - no authentication required
@@ -339,7 +357,7 @@ export function setupRoutes(app: express.Application): http.Server {
     }
   });
   
-  // Return 404 for undefined API routes
+  // Return 404 for undefined API routes - simpler version for now
   app.use("/api/*", (req: Request, res: Response) => {
     res.status(404).json({ error: "API endpoint not found" });
   });
