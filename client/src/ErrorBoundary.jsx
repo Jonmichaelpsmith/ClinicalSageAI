@@ -1,45 +1,62 @@
-import { Component } from "react";
+import React from 'react';
 
-export default class ErrorBoundary extends Component {
-  state = { hasError: false };
+/**
+ * Global error boundary to prevent app-wide crashes
+ * Catches JavaScript errors in children components and displays a fallback UI
+ */
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { 
+      hasError: false,
+      error: null,
+      errorInfo: null 
+    };
+  }
 
-  static getDerivedStateFromError() {
-    return { hasError: true };
+  static getDerivedStateFromError(error) {
+    // Update state so the next render will show the fallback UI.
+    return { hasError: true, error };
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error(error);
-    console.error(errorInfo);
-    // Simple console alert instead of toast for now
-    console.warn("Unexpected error – our team has been notified.");
-    
-    // Store error in a service like Sentry or Azure App Insights in production
-    // sendErrorToLoggingService(error, errorInfo);
+    // You can log the error to an error reporting service
+    console.error("Application Error:", error);
+    console.error("Error Details:", errorInfo);
+    this.setState({ errorInfo });
   }
 
   render() {
     if (this.state.hasError) {
+      // Default fallback UI
       return (
-        <div className="h-screen flex items-center justify-center flex-col space-y-4 p-6 text-center bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100">
-          <div className="bg-white dark:bg-slate-800 p-8 rounded-lg shadow-lg max-w-md w-full">
-            <h2 className="text-2xl font-bold mb-4">Something went wrong</h2>
-            <p className="mb-6 text-slate-600 dark:text-slate-400">
-              We've encountered an unexpected error. Our team has been automatically notified.
+        <div className="min-h-screen flex items-center justify-center bg-white p-4">
+          <div className="max-w-md mx-auto bg-white p-8 rounded shadow-md border border-gray-200">
+            <h1 className="text-xl font-semibold text-[#003057] mb-4 text-center">Application Error</h1>
+            <p className="text-[#666] mb-6 text-center">
+              Something went wrong. Please refresh the page or try again later.
             </p>
             <div className="flex justify-center">
-              <a 
-                href="/" 
-                className="px-4 py-2 bg-regulatory-500 hover:bg-regulatory-600 text-white rounded-md transition-colors focus-visible:ring focus-visible:ring-regulatory-400"
-                aria-label="Return to home page"
+              <button 
+                onClick={() => window.location.reload()} 
+                className="bg-[#0078d4] hover:bg-[#005fa6] text-white px-5 py-2.5 rounded text-sm font-medium"
               >
-                Return to home page
-              </a>
+                Refresh Application
+              </button>
             </div>
+            {process.env.NODE_ENV !== 'production' && this.state.error && (
+              <div className="mt-6 p-4 bg-gray-50 rounded text-xs overflow-auto">
+                <h3 className="font-medium mb-2">Error Details (Development Only):</h3>
+                <pre>{this.state.error.toString()}</pre>
+              </div>
+            )}
           </div>
         </div>
       );
     }
 
-    return this.props.children;
+    return this.props.children; 
   }
 }
+
+export default ErrorBoundary;
