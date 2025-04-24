@@ -196,41 +196,66 @@ export default function HomeMarketingPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative bg-[#f7f7f7] border-b border-gray-200 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 py-16 md:py-24 relative z-10">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+      <section className="relative bg-[#f7f7f7] overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 py-14 relative z-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <div>
-              <h1 className="text-4xl md:text-5xl font-light text-[#003057] mb-6 leading-tight">
-                <span className="font-semibold">Accelerate</span> Regulatory Submissions with AI
+              <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mb-4">
+                Trusted by Leading Pharma Companies
+              </div>
+              <h1 className="text-3xl md:text-4xl font-light text-[#003057] mb-4 leading-tight">
+                <span className="font-semibold">AI-Powered</span> Regulatory Document Intelligence
               </h1>
-              <p className="text-lg text-[#444] mb-8">
-                TrialSage™ delivers enterprise-grade document automation, intelligent analytics, and regulatory compliance for pharmaceutical R&D teams with a deep semantic understanding of clinical trial data.
+              <p className="text-[15px] text-[#444] mb-5">
+                TrialSage™ slashes regulatory submission time by 67% with deep semantic understanding of clinical trial data across 3,217+ CSRs and 58 therapeutic areas.
               </p>
-              <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+              <div className="flex flex-wrap space-x-3 mb-5">
+                <div className="flex items-center">
+                  <CheckCircle className="h-4 w-4 text-green-500 mr-1" />
+                  <span className="text-xs text-[#444]">21 CFR Part 11</span>
+                </div>
+                <div className="flex items-center">
+                  <CheckCircle className="h-4 w-4 text-green-500 mr-1" />
+                  <span className="text-xs text-[#444]">FDA/EMA/PMDA Compliant</span>
+                </div>
+                <div className="flex items-center">
+                  <CheckCircle className="h-4 w-4 text-green-500 mr-1" />
+                  <span className="text-xs text-[#444]">92% First-Pass Success</span>
+                </div>
+              </div>
+              <div className="flex space-x-3">
                 <Link to="/ind-wizard">
-                  <button className="bg-[#0078d4] hover:bg-[#005fa6] text-white py-3 px-6 text-[15px] font-medium transition w-full sm:w-auto">
-                    Start with IND Wizard™
+                  <button className="bg-[#0078d4] hover:bg-[#005fa6] text-white py-2 px-4 text-sm font-medium rounded-md transition">
+                    Start IND Wizard™
                   </button>
                 </Link>
-                <Link to="/enterprise-csr-intelligence">
-                  <button className="bg-white hover:bg-gray-50 text-[#333] border border-gray-300 py-3 px-6 text-[15px] font-medium transition w-full sm:w-auto">
-                    Explore CSR Intelligence™
+                <Link to="/use-case-library">
+                  <button className="bg-white hover:bg-gray-50 text-[#333] border border-gray-300 py-2 px-4 text-sm font-medium rounded-md transition">
+                    View Solutions
                   </button>
                 </Link>
               </div>
-              
-              <div className="mt-8 flex flex-wrap items-center gap-4">
-                <div className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                  <span className="text-[#444] text-sm">FDA Compliant</span>
-                </div>
-                <div className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                  <span className="text-[#444] text-sm">21 CFR Part 11</span>
-                </div>
-                <div className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                  <span className="text-[#444] text-sm">3,217+ Clinical Study Reports</span>
+            </div>
+            <div className="hidden md:block">
+              <div className="bg-white rounded-lg shadow-xl p-4 border border-blue-100">
+                <div className="text-[#003057] font-bold text-lg mb-2">TrialSage™ Platform Highlights</div>
+                <div className="space-y-2">
+                  <div className="flex items-center">
+                    <div className="bg-blue-600 rounded-full h-2 w-2 mr-2"></div>
+                    <span className="text-sm">Deep semantic understanding of regulatory documents</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="bg-blue-600 rounded-full h-2 w-2 mr-2"></div>
+                    <span className="text-sm">3,217+ CSRs analyzed with proprietary AI models</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="bg-blue-600 rounded-full h-2 w-2 mr-2"></div>
+                    <span className="text-sm">25 enterprise analytics dashboards with Metabase</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="bg-blue-600 rounded-full h-2 w-2 mr-2"></div>
+                    <span className="text-sm">GPT-4o powered compliance coach with regulatory knowledge</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -238,299 +263,203 @@ export default function HomeMarketingPage() {
         </div>
       </section>
 
-      {/* Key Modules with Detailed Explanations */}
-      <section className="py-16 bg-white">
+      {/* Featured Solutions */}
+      <section className="py-10 bg-white">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-[#003057] mb-4">Revolutionary Regulatory AI Modules</h2>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              Our platform's deep semantic understanding of regulatory documents delivers unprecedented efficiency gains and compliance confidence.
-            </p>
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-[#003057]">Enterprise-Grade Regulatory AI Solutions</h2>
           </div>
 
-          {/* IND Wizard Module */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 mb-20 items-center">
-            <div className="lg:col-span-7 order-2 lg:order-1">
-              <div className="bg-blue-50 p-8 rounded-lg border border-blue-100">
-                <h3 className="text-2xl font-bold text-[#003057] mb-4">IND Wizard™ Module</h3>
-                <p className="text-gray-700 mb-4">
-                  Our flagship AI-powered solution transforms the FDA IND submission process with intelligent automation that dramatically reduces time-to-filing by up to 67%.
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {/* IND Wizard */}
+            <div className="bg-gradient-to-br from-blue-50 to-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition">
+              <div className="flex items-start mb-3">
+                <div className="w-8 h-8 rounded-md bg-blue-100 flex items-center justify-center mr-3">
+                  <FileCheck className="h-4 w-4 text-blue-600" />
+                </div>
+                <h3 className="text-lg font-bold text-[#003057]">IND Wizard™</h3>
+              </div>
+              <div className="ml-11">
+                <div className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 mb-2">
+                  67% Faster Submissions
+                </div>
+                <p className="text-[13px] text-gray-700 mb-3">
+                  AI-powered IND preparation with auto-generated Form 1571, cover letters, and real-time FDA guideline validation.
                 </p>
-                <ul className="space-y-3 mb-6">
-                  <li className="flex items-start">
-                    <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-0.5" />
-                    <span>Proprietary deep learning architecture extracts critical protocol insights and regulatory guidance</span>
-                  </li>
-                  <li className="flex items-start">
-                    <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-0.5" />
-                    <span>Auto-generation of compliant Form 1571, cover letters, and supporting documentation</span>
-                  </li>
-                  <li className="flex items-start">
-                    <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-0.5" />
-                    <span>Real-time validation against FDA guidelines, flag and fix compliance issues instantly</span>
-                  </li>
-                  <li className="flex items-start">
-                    <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-0.5" />
-                    <span>Seamless integration with your existing document management systems</span>
-                  </li>
-                </ul>
-                <div className="mt-6">
-                  <Link to="/ind-wizard">
-                    <button className="bg-[#0078d4] hover:bg-[#005fa6] text-white py-2.5 px-5 text-sm font-medium rounded-md transition">
-                      Explore IND Wizard™
-                    </button>
-                  </Link>
+                <div className="mb-4">
+                  <div className="flex items-center mb-1">
+                    <div className="bg-green-500 rounded-full h-1.5 w-1.5 mr-1.5"></div>
+                    <span className="text-xs text-gray-600">Semantic protocol understanding</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="bg-green-500 rounded-full h-1.5 w-1.5 mr-1.5"></div>
+                    <span className="text-xs text-gray-600">Real-time FDA guidance sync</span>
+                  </div>
                 </div>
-              </div>
-            </div>
-            <div className="lg:col-span-5 order-1 lg:order-2">
-              <div className="text-right">
-                <div className="inline-block bg-blue-600 text-white text-sm font-semibold py-1 px-3 rounded-md mb-3">
-                  67% Faster IND Preparation
-                </div>
-              </div>
-              <div className="bg-white rounded-xl p-5 shadow-lg border border-gray-200">
-                <h4 className="text-[#003057] font-semibold mb-3">Key Differentiators:</h4>
-                <ul className="space-y-3 text-sm">
-                  <li className="flex items-start">
-                    <span className="bg-blue-100 text-blue-800 rounded-full p-1 mr-2">
-                      <span className="block h-2 w-2 bg-blue-600 rounded-full"></span>
-                    </span>
-                    <span>Only solution with true semantic understanding of protocol elements</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="bg-blue-100 text-blue-800 rounded-full p-1 mr-2">
-                      <span className="block h-2 w-2 bg-blue-600 rounded-full"></span>
-                    </span>
-                    <span>Real-time FDA guidance synchronization for always-current compliance</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="bg-blue-100 text-blue-800 rounded-full p-1 mr-2">
-                      <span className="block h-2 w-2 bg-blue-600 rounded-full"></span>
-                    </span>
-                    <span>Proprietary AI-driven document correctness verification</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          {/* CSR Intelligence Module */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 mb-20 items-center">
-            <div className="lg:col-span-5 order-1">
-              <div className="text-left">
-                <div className="inline-block bg-green-600 text-white text-sm font-semibold py-1 px-3 rounded-md mb-3">
-                  3,217+ CSR Advanced Analytics
-                </div>
-              </div>
-              <div className="bg-white rounded-xl p-5 shadow-lg border border-gray-200">
-                <h4 className="text-[#003057] font-semibold mb-3">Unmatched CSR Intelligence:</h4>
-                <ul className="space-y-3 text-sm">
-                  <li className="flex items-start">
-                    <span className="bg-green-100 text-green-800 rounded-full p-1 mr-2">
-                      <span className="block h-2 w-2 bg-green-600 rounded-full"></span>
-                    </span>
-                    <span>Proprietary deep semantic layer understands regulatory context, not just text</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="bg-green-100 text-green-800 rounded-full p-1 mr-2">
-                      <span className="block h-2 w-2 bg-green-600 rounded-full"></span>
-                    </span>
-                    <span>25 enterprise-grade dashboards with actionable insights</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="bg-green-100 text-green-800 rounded-full p-1 mr-2">
-                      <span className="block h-2 w-2 bg-green-600 rounded-full"></span>
-                    </span>
-                    <span>Only solution with multi-modal analysis across text, tables, and images</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-            <div className="lg:col-span-7 order-2">
-              <div className="bg-green-50 p-8 rounded-lg border border-green-100">
-                <h3 className="text-2xl font-bold text-[#003057] mb-4">CSR Intelligence™ Module</h3>
-                <p className="text-gray-700 mb-4">
-                  The most comprehensive CSR analytics platform with deep semantic understanding of 3,217+ clinical study reports across 58 therapeutic areas, delivering insights impossible with traditional methods.
-                </p>
-                <ul className="space-y-3 mb-6">
-                  <li className="flex items-start">
-                    <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-0.5" />
-                    <span>Proprietary vector embeddings extract protocol design patterns and success predictors from global CSR database</span>
-                  </li>
-                  <li className="flex items-start">
-                    <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-0.5" />
-                    <span>Real-time protocol validation against successful historical trials in your therapeutic area</span>
-                  </li>
-                  <li className="flex items-start">
-                    <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-0.5" />
-                    <span>Automated identification of exclusion/inclusion criteria optimization opportunities</span>
-                  </li>
-                  <li className="flex items-start">
-                    <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-0.5" />
-                    <span>FDA, EMA, and PMDA regulatory alignment verification across all documents</span>
-                  </li>
-                </ul>
-                <div className="mt-6">
-                  <Link to="/enterprise-csr-intelligence">
-                    <button className="bg-[#0078d4] hover:bg-[#005fa6] text-white py-2.5 px-5 text-sm font-medium rounded-md transition">
-                      Discover CSR Intelligence™
-                    </button>
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* CRC & CER Modules */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-20">
-            <div className="bg-purple-50 p-8 rounded-lg border border-purple-100">
-              <h3 className="text-2xl font-bold text-[#003057] mb-4">CRC Module</h3>
-              <p className="text-gray-700 mb-4">
-                Our Clinical Research Coordinator module transforms study management with AI-powered workflow automation and predictive analytics.
-              </p>
-              <ul className="space-y-3 mb-6">
-                <li className="flex items-start">
-                  <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-0.5" />
-                  <span>Real-time site performance tracking with predictive enrollment models</span>
-                </li>
-                <li className="flex items-start">
-                  <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-0.5" />
-                  <span>Automated protocol deviation identification and resolution tracking</span>
-                </li>
-                <li className="flex items-start">
-                  <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-0.5" />
-                  <span>Integrated compliance monitoring with 21 CFR Part 11 validation</span>
-                </li>
-              </ul>
-              <div className="mt-6">
-                <Link to="/crc-module">
-                  <button className="bg-[#0078d4] hover:bg-[#005fa6] text-white py-2.5 px-5 text-sm font-medium rounded-md transition">
-                    Explore CRC Module
-                  </button>
+                <Link to="/ind-wizard" className="text-[13px] font-medium text-blue-600 hover:text-blue-800 inline-flex items-center">
+                  Learn more <ArrowRight className="ml-1 h-3 w-3" />
                 </Link>
               </div>
+            </div>
+
+            {/* CSR Intelligence */}
+            <div className="bg-gradient-to-br from-green-50 to-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition">
+              <div className="flex items-start mb-3">
+                <div className="w-8 h-8 rounded-md bg-green-100 flex items-center justify-center mr-3">
+                  <BarChart3 className="h-4 w-4 text-green-600" />
+                </div>
+                <h3 className="text-lg font-bold text-[#003057]">CSR Intelligence™</h3>
+              </div>
+              <div className="ml-11">
+                <div className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 mb-2">
+                  3,217+ CSRs Analyzed
+                </div>
+                <p className="text-[13px] text-gray-700 mb-3">
+                  Deep semantic analysis of clinical study reports revealing patterns impossible to detect with traditional methods.
+                </p>
+                <div className="mb-4">
+                  <div className="flex items-center mb-1">
+                    <div className="bg-green-500 rounded-full h-1.5 w-1.5 mr-1.5"></div>
+                    <span className="text-xs text-gray-600">25 enterprise analytics dashboards</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="bg-green-500 rounded-full h-1.5 w-1.5 mr-1.5"></div>
+                    <span className="text-xs text-gray-600">Protocol success predictors</span>
+                  </div>
+                </div>
+                <Link to="/enterprise-csr-intelligence" className="text-[13px] font-medium text-green-600 hover:text-green-800 inline-flex items-center">
+                  Learn more <ArrowRight className="ml-1 h-3 w-3" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Ask Lumen */}
+            <div className="bg-gradient-to-br from-purple-50 to-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition">
+              <div className="flex items-start mb-3">
+                <div className="w-8 h-8 rounded-md bg-purple-100 flex items-center justify-center mr-3">
+                  <Sparkles className="h-4 w-4 text-purple-600" />
+                </div>
+                <h3 className="text-lg font-bold text-[#003057]">Ask Lumen™</h3>
+              </div>
+              <div className="ml-11">
+                <div className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800 mb-2">
+                  Digital Compliance Coach
+                </div>
+                <p className="text-[13px] text-gray-700 mb-3">
+                  GPT-4o powered assistant with specialized knowledge of CMC requirements and global regulatory standards.
+                </p>
+                <div className="mb-4">
+                  <div className="flex items-center mb-1">
+                    <div className="bg-green-500 rounded-full h-1.5 w-1.5 mr-1.5"></div>
+                    <span className="text-xs text-gray-600">FDA/EMA/PMDA guidance</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="bg-green-500 rounded-full h-1.5 w-1.5 mr-1.5"></div>
+                    <span className="text-xs text-gray-600">Context-aware document help</span>
+                  </div>
+                </div>
+                <Link to="/ask-lumen" className="text-[13px] font-medium text-purple-600 hover:text-purple-800 inline-flex items-center">
+                  Learn more <ArrowRight className="ml-1 h-3 w-3" />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Additional Solutions */}
+      <section className="py-8 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+            {/* CRC Module */}
+            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition">
+              <h3 className="text-[15px] font-bold text-[#003057] mb-2 flex items-center">
+                <span className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center mr-2">
+                  <span className="block h-1.5 w-1.5 bg-blue-600 rounded-full"></span>
+                </span>
+                CRC Module
+              </h3>
+              <p className="text-xs text-gray-700 mb-2">
+                AI-powered study management with predictive enrollment models and deviation tracking.
+              </p>
+              <Link to="/crc-module" className="text-xs font-medium text-blue-600 hover:text-blue-800 inline-flex items-center">
+                Explore <ArrowRight className="ml-1 h-3 w-3" />
+              </Link>
             </div>
             
-            <div className="bg-orange-50 p-8 rounded-lg border border-orange-100">
-              <h3 className="text-2xl font-bold text-[#003057] mb-4">CER Module</h3>
-              <p className="text-gray-700 mb-4">
-                Revolutionize Clinical Evaluation Reports with our AI-driven CER Module that ensures MDR and IVDR compliance while reducing preparation time by 58%.
+            {/* CER Module */}
+            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition">
+              <h3 className="text-[15px] font-bold text-[#003057] mb-2 flex items-center">
+                <span className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center mr-2">
+                  <span className="block h-1.5 w-1.5 bg-green-600 rounded-full"></span>
+                </span>
+                CER Module
+              </h3>
+              <p className="text-xs text-gray-700 mb-2">
+                MDR/IVDR compliant Clinical Evaluation Reports with 58% faster preparation time.
               </p>
-              <ul className="space-y-3 mb-6">
-                <li className="flex items-start">
-                  <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-0.5" />
-                  <span>Automated literature search and relevance ranking across global databases</span>
-                </li>
-                <li className="flex items-start">
-                  <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-0.5" />
-                  <span>Intelligent evidence extraction and MEDDEV 2.7/1 rev.4 alignment</span>
-                </li>
-                <li className="flex items-start">
-                  <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-0.5" />
-                  <span>Dynamic safety profile monitoring with automated PMS updates</span>
-                </li>
-              </ul>
-              <div className="mt-6">
-                <Link to="/cer-module">
-                  <button className="bg-[#0078d4] hover:bg-[#005fa6] text-white py-2.5 px-5 text-sm font-medium rounded-md transition">
-                    Explore CER Module
-                  </button>
-                </Link>
-              </div>
+              <Link to="/cer-module" className="text-xs font-medium text-blue-600 hover:text-blue-800 inline-flex items-center">
+                Explore <ArrowRight className="ml-1 h-3 w-3" />
+              </Link>
             </div>
-          </div>
-
-          {/* Intelligent Document Management & AI Guide */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 mb-20 items-center">
-            <div className="lg:col-span-7 order-2 lg:order-1">
-              <div className="bg-blue-50 p-8 rounded-lg border border-blue-100">
-                <h3 className="text-2xl font-bold text-[#003057] mb-4">Intelligent Document Management</h3>
-                <p className="text-gray-700 mb-4">
-                  Our proprietary document management system goes beyond storage with AI-powered semantic understanding, version control, and regulatory compliance tracking.
-                </p>
-                <ul className="space-y-3 mb-6">
-                  <li className="flex items-start">
-                    <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-0.5" />
-                    <span>Advanced document fingerprinting for 100% accurate duplicate detection</span>
-                  </li>
-                  <li className="flex items-start">
-                    <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-0.5" />
-                    <span>AI-driven document classification with regulatory alignment verification</span>
-                  </li>
-                  <li className="flex items-start">
-                    <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-0.5" />
-                    <span>Automatic metadata extraction and enrichment from all document types</span>
-                  </li>
-                  <li className="flex items-start">
-                    <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-0.5" />
-                    <span>Real-time compliance monitoring across document lifecycle</span>
-                  </li>
-                </ul>
-                <div className="mt-6">
-                  <Link to="/document-management">
-                    <button className="bg-[#0078d4] hover:bg-[#005fa6] text-white py-2.5 px-5 text-sm font-medium rounded-md transition">
-                      See Document Management
-                    </button>
-                  </Link>
-                </div>
-              </div>
+            
+            {/* Intelligent Doc Management */}
+            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition">
+              <h3 className="text-[15px] font-bold text-[#003057] mb-2 flex items-center">
+                <span className="w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center mr-2">
+                  <span className="block h-1.5 w-1.5 bg-orange-600 rounded-full"></span>
+                </span>
+                Doc Management
+              </h3>
+              <p className="text-xs text-gray-700 mb-2">
+                Beyond storage: AI fingerprinting, metadata extraction, and compliance tracking.
+              </p>
+              <Link to="/document-management" className="text-xs font-medium text-blue-600 hover:text-blue-800 inline-flex items-center">
+                Explore <ArrowRight className="ml-1 h-3 w-3" />
+              </Link>
             </div>
-            <div className="lg:col-span-5 order-1 lg:order-2">
-              <div className="bg-indigo-50 p-8 rounded-lg border border-indigo-100">
-                <h3 className="text-2xl font-bold text-[#003057] mb-4">Ask Lumen™ - AI Driven Guide</h3>
-                <p className="text-gray-700 mb-4">
-                  Your Digital Compliance Coach powered by OpenAI GPT-4o technology with specialized knowledge of CMC requirements and global regulatory standards.
-                </p>
-                <ul className="space-y-3 mb-6">
-                  <li className="flex items-start">
-                    <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-0.5" />
-                    <span>Real-time regulatory guidance across FDA, EMA, and PMDA standards</span>
-                  </li>
-                  <li className="flex items-start">
-                    <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-0.5" />
-                    <span>Context-aware assistance during document preparation</span>
-                  </li>
-                  <li className="flex items-start">
-                    <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-0.5" />
-                    <span>Comprehensive Chemistry, Manufacturing, and Controls expertise</span>
-                  </li>
-                </ul>
-                <div className="mt-6">
-                  <Link to="/ask-lumen">
-                    <button className="bg-[#0078d4] hover:bg-[#005fa6] text-white py-2.5 px-5 text-sm font-medium rounded-md transition">
-                      Meet Ask Lumen™
-                    </button>
-                  </Link>
-                </div>
-              </div>
+            
+            {/* All Solutions */}
+            <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition">
+              <h3 className="text-[15px] font-bold text-[#003057] mb-2 flex items-center">
+                <span className="w-5 h-5 rounded-full bg-purple-100 flex items-center justify-center mr-2">
+                  <span className="block h-1.5 w-1.5 bg-purple-600 rounded-full"></span>
+                </span>
+                All Solutions
+              </h3>
+              <p className="text-xs text-gray-700 mb-2">
+                Explore our complete regulatory intelligence suite with 25 enterprise dashboards.
+              </p>
+              <Link to="/use-case-library" className="text-xs font-medium text-blue-600 hover:text-blue-800 inline-flex items-center">
+                View All <ArrowRight className="ml-1 h-3 w-3" />
+              </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ROI and Testimonials Section */}
-      <section className="py-16 bg-gray-50">
+      {/* Stats Section */}
+      <section className="py-10 bg-white border-t border-gray-100">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-[#003057] mb-4">Proven ROI Through Deep Semantic Intelligence</h2>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              Our deep semantic layer and AI-driven understanding of regulatory documents deliver measurable time and cost savings.
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-[#003057]">Measurable ROI</h2>
+            <p className="text-sm text-gray-600 max-w-2xl mx-auto">
+              Our deep semantic layer delivers quantifiable time and cost savings
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-            <div className="bg-white p-8 rounded-lg shadow-md text-center">
-              <div className="text-4xl font-bold text-blue-600 mb-2">67%</div>
-              <p className="text-gray-700">Faster IND submission preparation</p>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-blue-600">67%</div>
+              <p className="text-xs text-gray-600">Faster IND submissions</p>
             </div>
-            <div className="bg-white p-8 rounded-lg shadow-md text-center">
-              <div className="text-4xl font-bold text-blue-600 mb-2">58%</div>
-              <p className="text-gray-700">Reduction in regulatory document creation time</p>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-blue-600">58%</div>
+              <p className="text-xs text-gray-600">Faster document creation</p>
             </div>
-            <div className="bg-white p-8 rounded-lg shadow-md text-center">
-              <div className="text-4xl font-bold text-blue-600 mb-2">92%</div>
-              <p className="text-gray-700">First-pass approval rate on submissions</p>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-blue-600">92%</div>
+              <p className="text-xs text-gray-600">First-pass approval rate</p>
             </div>
           </div>
         </div>
