@@ -93,6 +93,7 @@ import {
   X,
   ChevronDown,
   HelpCircle,
+  Clock,
   Calendar,
   ArrowRight,
   Layers,
