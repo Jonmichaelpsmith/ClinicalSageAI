@@ -249,7 +249,7 @@ export default function HomeMarketingPage() {
                   </div>
                   <div className="flex items-start">
                     <div className="bg-blue-600 rounded-full h-2 w-2 mt-1.5 mr-2 flex-shrink-0"></div>
-                    <span className="text-sm">Data to Regulatory-Ready Outputs: AI-driven CSR Intelligence across <CSRCounter /> documents</span>
+                    <div className="text-sm">Data to Regulatory-Ready Outputs: AI-driven CSR Intelligence across <CSRCounter /> documents</div>
                   </div>
                   <div className="flex items-start">
                     <div className="bg-blue-600 rounded-full h-2 w-2 mt-1.5 mr-2 flex-shrink-0"></div>
