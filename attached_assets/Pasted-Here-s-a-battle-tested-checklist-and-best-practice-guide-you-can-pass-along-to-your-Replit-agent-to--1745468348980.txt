@@ -1,0 +1,81 @@
+Here’s a battle-tested checklist and best-practice guide you can pass along to your Replit agent to ensure a smooth, production-grade rollout without breaking anything:
+
+---
+
+## 1. **Environment & Secrets Validation**  
+- **Verify all required secrets** are set before startup:  
+  - `JWT_SECRET_KEY`  
+  - `REGINTEL_ENGINE_PATH`  
+  - `OPENAI_API_KEY` (and any other AI keys)  
+  - `FRONTEND_URL` for CORS  
+- **Fail fast** on missing secrets: your FastAPI app already checks `JWT_SECRET_KEY` at startup; do the same for `REGINTEL_ENGINE_PATH` and `FRONTEND_URL`.
+
+## 2. **Dependency & Build Sanity**  
+- **Lock your versions** in `package.json` and `requirements.txt` / `pyproject.toml`.  
+- Run a **clean install** in Replit’s shell:  
+  ```bash
+  rm -rf node_modules && npm ci
+  pip install -r requirements.txt
+  ```  
+- **Build the frontend** (`npm run build` or `next build`) and verify no errors.
+
+## 3. **Directory Structure & Static Files**  
+- Confirm your upload, report, and define directories exist and are writable:  
+  ```bash
+  backend/uploads
+  backend/validation_logs
+  backend/define_outputs
+  ```  
+- Verify your FastAPI `StaticFiles` mounts match those paths exactly, and that the folder permissions allow Replit to serve them.
+
+## 4. **Multitenant Data Isolation**  
+- Ensure your JWT dependency (`get_current_user`) is correctly extracting and validating `tenant_id` from the token.  
+- In local testing, generate sample JWTs for at least two different `tenant_id`s and confirm you cannot see another tenant’s data.  
+- Write a quick smoke test:  
+  ```python
+  # pytest
+  def test_multitenant_isolation(client):
+      token_a = create_jwt(tenant_id="A")
+      token_b = create_jwt(tenant_id="B")
+      # Tenant A creates a validation run
+      client.post("/api/validate", files={...}, headers={"Authorization": f"Bearer {token_a}"})
+      # Tenant B should see zero runs
+      resp = client.get("/api/versions", headers={"Authorization": f"Bearer {token_b}"})
+      assert len(resp.json()) == 0
+  ```
+
+## 5. **CORS & Security**  
+- Lock down your allowed origins to only your production domains.  
+- Test that your browser can’t call your API from `http://localhost:3000` unless explicitly allowed.  
+- Verify that only `GET` and `POST` are permitted on `/api`.
+
+## 6. **End-to-End Smoke Tests**  
+- **Upload → Validate → View Results**: Manually drag/drop a small SDTM-like test file in the UI and run a validation.  
+- **Download Links**: Click “Download Report” and “Download Define.xml” to ensure the static mount serves the right file.  
+- **Explain & Fix**: Click “Explain” on a dummy error and verify the `/api/regintel/explain` endpoint returns a GPT-generated string.  
+- **Diff & Versions**: On the Vault page, reorder versions and confirm the toast and backend updates (or simulate).  
+
+## 7. **Graceful Error Handling & Logging**  
+- Wrap your external CLI call in try/except and log stdout/stderr to a file under `validation_logs/`.  
+- Ensure your React UI surfaces error toasts with actionable messages (“Retry,” “Contact support,” etc.).  
+- Monitor Replit’s console logs during test runs to catch hidden tracebacks.
+
+## 8. **Feature Flags & Rollout**  
+- If you’re nervous about new endpoints, wrap them behind a simple feature-flag or environment toggle so you can turn them off instantly if something goes sideways.  
+- Example:  
+  ```python
+  if not settings.FEATURE_REGINTEL:
+      raise HTTPException(404, "Not enabled")
+  ```
+
+## 9. **CI/CD & Backups**  
+- Commit your migrations or seed scripts for the terminology loader, so that staging and production stay in sync.  
+- Backup your Postgres metadata and S3–style buckets (`uploads/`, `validation_logs/`) regularly, especially before major changes.
+
+## 10. **Staging Verification**  
+- Always deploy to a **staging** environment first (a separate Replit or branch) and run through the full suite of E2E tests.  
+- Only after green lights in staging, merge to `main` and deploy to production.
+
+---
+
+By following these guidelines, your Replit agent will minimize friction, catch mistakes early, and ensure every piece—frontend, backend, CLI, and AI—plays nicely together in a truly enterprise-grade, multitenant SaaS rollout.
