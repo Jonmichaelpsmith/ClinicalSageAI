@@ -1,5 +1,9 @@
 import React from 'react';
 
+/**
+ * Global error boundary to prevent app-wide crashes
+ * Catches JavaScript errors in children components and displays a fallback UI
+ */
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -17,7 +21,7 @@ class ErrorBoundary extends React.Component {
 
   componentDidCatch(error, errorInfo) {
     // You can log the error to an error reporting service
-    console.error("Component Error:", error);
+    console.error("Application Error:", error);
     console.error("Error Details:", errorInfo);
     this.setState({ errorInfo });
   }
@@ -35,19 +39,27 @@ class ErrorBoundary extends React.Component {
       
       // Default fallback UI
       return (
-        <div className="p-4 bg-white rounded shadow-sm border border-gray-200">
-          <h2 className="text-lg font-semibold text-[#003057] mb-2">Something went wrong</h2>
-          <p className="text-sm text-[#666] mb-4">
-            This component couldn't be displayed. The issue has been logged.
-          </p>
-          {process.env.NODE_ENV !== 'production' && (
-            <details className="text-xs p-2 bg-gray-50 rounded">
-              <summary className="cursor-pointer font-medium">Technical Details</summary>
-              <pre className="mt-2 whitespace-pre-wrap break-words">
-                {this.state.error && this.state.error.toString()}
-              </pre>
-            </details>
-          )}
+        <div className="min-h-screen flex items-center justify-center bg-white p-4">
+          <div className="max-w-md mx-auto bg-white p-8 rounded shadow-md border border-gray-200">
+            <h1 className="text-xl font-semibold text-[#003057] mb-4 text-center">Component Error</h1>
+            <p className="text-[#666] mb-6 text-center">
+              Something went wrong with this component. Please try again.
+            </p>
+            <div className="flex justify-center">
+              <button 
+                onClick={() => window.location.reload()} 
+                className="bg-[#0078d4] hover:bg-[#005fa6] text-white px-5 py-2.5 rounded text-sm font-medium"
+              >
+                Refresh Page
+              </button>
+            </div>
+            {process.env.NODE_ENV !== 'production' && this.state.error && (
+              <div className="mt-6 p-4 bg-gray-50 rounded text-xs overflow-auto">
+                <h3 className="font-medium mb-2">Error Details (Development Only):</h3>
+                <pre>{this.state.error.toString()}</pre>
+              </div>
+            )}
+          </div>
         </div>
       );
     }
