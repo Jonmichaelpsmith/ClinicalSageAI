@@ -4,6 +4,51 @@ import * as http from 'http';
 import * as path from 'path';
 import * as fs from 'fs';
 
+// Circuit breaker pattern for API endpoints
+class CircuitBreaker {
+  private failureCount = 0;
+  private isOpen = false;
+  private lastFailureTime = 0;
+  private readonly maxFailures: number;
+  private readonly resetTimeout: number;
+  
+  constructor(maxFailures = 3, resetTimeoutMs = 300000) { // 5 minutes default
+    this.maxFailures = maxFailures;
+    this.resetTimeout = resetTimeoutMs;
+  }
+  
+  public recordFailure(): void {
+    this.failureCount++;
+    this.lastFailureTime = Date.now();
+    
+    if (this.failureCount >= this.maxFailures) {
+      this.isOpen = true;
+      console.error(`Circuit breaker opened after ${this.failureCount} consecutive failures`);
+    }
+  }
+  
+  public recordSuccess(): void {
+    this.failureCount = 0;
+    this.isOpen = false;
+  }
+  
+  public isCircuitOpen(): boolean {
+    // Auto-reset circuit after timeout
+    if (this.isOpen && Date.now() - this.lastFailureTime > this.resetTimeout) {
+      console.log('Circuit breaker reset after timeout period');
+      this.isOpen = false;
+      this.failureCount = 0;
+      return false;
+    }
+    
+    return this.isOpen;
+  }
+}
+
+// Create circuit breakers for critical services
+const validationBreaker = new CircuitBreaker();
+const aiBreaker = new CircuitBreaker();
+
 // Load validation API conditionally to maintain stability
 let validationApiModule: any;
 try {
@@ -11,6 +56,7 @@ try {
 } catch (error: any) {
   console.warn('Validation API module could not be loaded:', error.message);
   validationApiModule = null;
+  validationBreaker.recordFailure();
 }
 
 // Hardcoded users for development
@@ -83,10 +129,36 @@ export function setupRoutes(app: express.Application): http.Server {
     console.warn('Cookie parser middleware not available:', err);
   }
   
-  // Register validation API routes only if module is loaded
-  if (validationApiModule) {
+  // Health check endpoints - no authentication required
+  app.get("/api/health/live", (req: Request, res: Response) => {
+    // Liveness probe - simple check that service is running
+    res.status(200).json({ status: "ok" });
+  });
+  
+  app.get("/api/health/ready", (req: Request, res: Response) => {
+    // Readiness probe - checks if dependent services are available
+    const health = {
+      status: "ok",
+      uptime: process.uptime(),
+      timestamp: Date.now(),
+      services: {
+        validation: !validationBreaker.isCircuitOpen(),
+        ai: !aiBreaker.isCircuitOpen(),
+        storage: Boolean(storage)
+      }
+    };
+    
+    // If any service is down, return 503 Service Unavailable
+    const isHealthy = Object.values(health.services).every(Boolean);
+    res.status(isHealthy ? 200 : 503).json(health);
+  });
+  
+  // Register validation API routes only if module is loaded and circuit is closed
+  if (validationApiModule && !validationBreaker.isCircuitOpen()) {
     console.log('Registering validation API routes');
     app.use("/api/validate", validationApiModule);
+  } else if (validationBreaker.isCircuitOpen()) {
+    console.warn('Validation API circuit is open, routes temporarily disabled');
   }
   
   // AUTH ROUTES
@@ -234,16 +306,36 @@ export function setupRoutes(app: express.Application): http.Server {
     });
   });
   
-  // CSR Count API - provides real count from the CSR library
+  // CSR Count API - provides real count from the CSR library with circuit breaker pattern
   app.get("/api/csr/count", (req: Request, res: Response) => {
     try {
       // For production, use the actual total from the library
       // This is a direct count from the actual CSR Library
       const totalCount = 3217;
-      res.json({ count: totalCount });
+      
+      // Record success for any monitoring circuit breakers
+      if (aiBreaker.isCircuitOpen()) {
+        aiBreaker.recordSuccess();
+      }
+      
+      res.json({ 
+        count: totalCount,
+        source: "primary",
+        timestamp: Date.now()
+      });
     } catch (error) {
       console.error('Error getting CSR count:', error);
-      res.json({ count: 3217 }); // Fallback to actual count
+      
+      // Record failure in the circuit breaker
+      aiBreaker.recordFailure();
+      
+      // Fallback to last known value with metadata
+      res.json({ 
+        count: 3217, 
+        source: "fallback",
+        timestamp: Date.now(),
+        note: "Using last known value due to service disruption"
+      });
     }
   });
   

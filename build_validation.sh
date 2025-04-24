@@ -58,9 +58,32 @@ for dir in "${DIRS[@]}"; do
   fi
 done
 
-# 4. JWT & Multitenant Validation
+# 4. Critical Secrets Verification
 echo ""
-echo "4. JWT & Multitenant Validation"
+echo "4. Critical Secrets Verification"
+echo "Checking for required environment variables..."
+
+REQUIRED_SECRETS=("JWT_SECRET_KEY" "REGINTEL_ENGINE_PATH" "OPENAI_API_KEY")
+MISSING_SECRETS=()
+
+for secret in "${REQUIRED_SECRETS[@]}"; do
+  if ! grep -q "^${secret}=" .env 2>/dev/null && [ -z "${!secret}" ]; then
+    MISSING_SECRETS+=("$secret")
+  else
+    echo "✅ $secret is defined"
+  fi
+done
+
+if [ ${#MISSING_SECRETS[@]} -gt 0 ]; then
+  echo "❌ Missing required secrets: ${MISSING_SECRETS[*]}"
+  echo "Please set these using environment variables or .env file"
+else
+  echo "✅ All required secrets are defined"
+fi
+
+# 5. JWT & Multitenant Validation
+echo ""
+echo "5. JWT & Multitenant Validation"
 echo "Would you like to run the tenant isolation smoke test? (requires pytest)"
 read -p "Run test (y/n)? " choice
 if [[ "$choice" =~ ^[Yy]$ ]]; then

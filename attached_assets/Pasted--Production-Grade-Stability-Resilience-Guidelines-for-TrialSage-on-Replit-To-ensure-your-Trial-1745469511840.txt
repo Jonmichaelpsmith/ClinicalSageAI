@@ -1,0 +1,125 @@
+# Production-Grade Stability & Resilience Guidelines for TrialSage on Replit
+
+To ensure your TrialSage platform remains robust, performant, and secure in a true enterprise-grade deployment on Replit, follow these enhanced best practices:
+
+---
+
+## 1. Secure Configuration & Secrets Management  
+- **Fail-Fast on Missing Secrets**  
+  ```python
+  required = ['JWT_SECRET_KEY','REGINTEL_ENGINE_PATH','OPENAI_API_KEY','FRONTEND_URL']
+  for key in required:
+      if not os.getenv(key):
+          raise RuntimeError(f"Missing required env var: {key}")
+  ```  
+- **Rotate & Scope Secrets**  
+  - Use Replit’s Secrets vault.  
+  - Limit each secret’s lifespan and scope (e.g. separate keys per environment).
+
+---
+
+## 2. Process Orchestration & Concurrency  
+- **Production ASGI Server**:  
+  ```bash
+  pip install gunicorn
+  gunicorn backend.main:app -k uvicorn.workers.UvicornWorker --workers 4 --timeout 120
+  ```  
+- **Worker Sizing**  
+  - Tune `--workers` to CPU cores/2.  
+  - Disable auto-reload and debug in production.
+
+---
+
+## 3. Durable Storage & Lifecycle Management  
+- **S3-Style Buckets**  
+  - Mount your uploads and outputs to a durable object store (e.g. Replit’s Storage API or AWS S3).  
+- **Auto-Cleanup Policies**  
+  ```yaml
+  # Example lifecycle for S3
+  Expiration:
+    Days: 30
+  ```  
+- **Integrity Checks**  
+  - Store file checksums on upload and verify before processing.
+
+---
+
+## 4. Resilience & Fault Tolerance  
+- **Sandboxed Validator Processes**  
+  - Run CLI in a subprocess with timeouts:
+    ```python
+    proc = subprocess.run(cmd, timeout=300, check=True)
+    ```  
+- **Circuit Breaker**  
+  - After 3 consecutive validation failures, disable the validator for 5 minutes and alert.
+
+---
+
+## 5. Monitoring & Observability  
+- **Health & Readiness Probes**  
+  ```python
+  @app.get("/live")  # Liveness
+  def live(): return {"status":"ok"}
+  @app.get("/ready") # Readiness
+  def ready(): return {"db": db.ping(), "storage": os.path.exists(UPLOAD_DIR)}
+  ```  
+- **Structured Logging**  
+  ```python
+  logger.info("Validation run completed", extra={"tenant": tenant_id, "run_id":run_id})
+  ```  
+- **Integrate APM**  
+  - Send traces to Sentry or Datadog via their SDKs.
+
+---
+
+## 6. Performance Optimization  
+- **Cache Terminology & Configs**  
+  - Load CDISC/LOINC/MedDRA tables into Redis or in-memory cache at startup.  
+- **Rate Limiting**  
+  ```python
+  from slowapi import Limiter
+  limiter = Limiter(key_func=get_current_user_tenant)
+  app.state.limiter = limiter
+  ```  
+  - Limit validation runs per tenant per minute.
+
+---
+
+## 7. Robust CI/CD & Testing  
+- **Version-Pinned Dependencies**  
+  - Use `npm ci` and `pip install -r requirements.txt` with exact versions.  
+- **Automated E2E Smoke Tests**  
+  - In GitHub Actions or Replit’s CI, run:
+    ```bash
+    pytest tests/integration/test_validate_flow.py
+    npm run test:e2e
+    ```  
+- **Blue/Green Deploys**  
+  - Maintain a staging branch and only promote on green pipelines.
+
+---
+
+## 8. Security Best Practices  
+- **Least Privilege**  
+  - Validator CLI runs under a service account with only read/write to its own tenant folder.  
+- **Dependency Scanning**  
+  ```bash
+  npm audit && pip-audit
+  ```  
+- **CORS Hardened**  
+  ```python
+  allow_origins=[os.getenv("FRONTEND_URL")]
+  ```
+
+---
+
+## 9. Operational Readiness  
+- **Alerting Rules**  
+  - On >5% 5xx errors in 5m → PagerDuty alert.  
+  - On storage ≥80% capacity → Slack alert.  
+- **Runbook & Rollback**  
+  - Document how to revert to the previous Replit snapshot if needed.
+
+---
+
+By applying these guidelines, your Replit deployment of TrialSage will achieve the stability, security, and scalability expectations of a world-class, life-sciences SaaS platform.
