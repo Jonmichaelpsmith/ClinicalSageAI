@@ -8,7 +8,7 @@ import {
   FileText, 
   PieChart, 
   Layers, 
-  Flask, 
+  Beaker, 
   Brain, 
   LineChart, 
   BarChart2, 
@@ -40,7 +40,7 @@ const ClientPortal = () => {
       id: 1,
       name: "IND Wizard",
       description: "Automate IND application creation",
-      icon: <Flask className="h-6 w-6" />,
+      icon: <Beaker className="h-6 w-6" />,
       status: "active",
       route: "/solutions/ind-wizard",
       stats: { completedDocs: 12, inProgress: 3 }
@@ -58,7 +58,7 @@ const ClientPortal = () => {
       id: 3,
       name: "CMC Insights",
       description: "Chemistry, Manufacturing & Controls management",
-      icon: <Flask className="h-6 w-6" />,
+      icon: <Beaker className="h-6 w-6" />,
       status: "active",
       route: "/solutions/cmc-insights",
       stats: { activePlans: 5, validations: 17 }
