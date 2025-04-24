@@ -68,6 +68,8 @@ const LazySimpleLearningInterface = React.lazy(() => import('./components/Simple
 // Add Protocol Review and Study Planner pages
 const LazyProtocolReview = React.lazy(() => import('./pages/ProtocolReview'));
 const LazyStudyPlanner = React.lazy(() => import('./pages/StudyPlanner'));
+// Add ICH Wiz page
+const LazyICHWizPage = React.lazy(() => import('./pages/ICHWizPage'));
 // Admin Profile with role-switching capabilities
 const LazyAdminProfile = React.lazy(() => import('./pages/AdminProfile'));
 
@@ -371,6 +373,16 @@ export default function App() {
               <Route path="/study-planner">
                 <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Study Planner" />}>
                   <LazyStudyPlanner />
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/ich-wiz">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="ICH Wiz" />}>
+                  <LazyICHWizPage />
+                </SimpleErrorBoundary>
+              </Route>
+              <Route path="/solutions/ich-wiz">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="ICH Wiz" />}>
+                  <LazyICHWizPage />
                 </SimpleErrorBoundary>
               </Route>
               <Route path="/analytics-dashboard">
