@@ -361,8 +361,16 @@ const ProtocolReview = () => {
                 accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                 onChange={handleFileUpload}
               />
-              <label htmlFor="protocol-upload">
-                <Button className="mt-4" as="span">
+              <label htmlFor="protocol-upload" className="cursor-pointer">
+                <Button 
+                  className="mt-4" 
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document.getElementById('protocol-upload').click();
+                  }}
+                >
+                  <Upload className="h-4 w-4 mr-2" />
                   Choose file
                 </Button>
               </label>
@@ -379,7 +387,20 @@ const ProtocolReview = () => {
                     </p>
                   </div>
                   <div>
-                    <Button variant="ghost" size="sm" onClick={() => setUploadedFile(null)}>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setUploadedFile(null);
+                        toast({
+                          title: "File removed",
+                          description: "The uploaded file has been removed.",
+                          variant: "default"
+                        });
+                      }}
+                    >
                       Remove
                     </Button>
                     <Button className="ml-2" size="sm" onClick={startAnalysis}>

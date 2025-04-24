@@ -129,13 +129,7 @@ export default function ProtocolOptimizer() {
   // Generate protocol optimization recommendation
   const analyzeProtocol = async () => {
     if (!protocolSummary.trim() && !protocolFile) {
-      // toast call replaced
-  // Original: toast({
-        title: "Empty Protocol",
-        description: "Please enter a protocol summary or upload a protocol file.",
-        variant: "destructive"
-      })
-  console.log('Toast would show:', {
+      toast({
         title: "Empty Protocol",
         description: "Please enter a protocol summary or upload a protocol file.",
         variant: "destructive"
@@ -324,13 +318,7 @@ export default function ProtocolOptimizer() {
       }
     } catch (error) {
       console.error("Save error:", error);
-      // toast call replaced
-  // Original: toast({
-        title: "Error",
-        description: "An unexpected error occurred when saving.",
-        variant: "destructive"
-      })
-  console.log('Toast would show:', {
+      toast({
         title: "Error",
         description: "An unexpected error occurred when saving.",
         variant: "destructive"
