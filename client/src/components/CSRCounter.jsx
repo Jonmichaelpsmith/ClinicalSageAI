@@ -42,14 +42,14 @@ const CSRCounter = ({ className = "" }) => {
   const formattedCount = count ? count.toLocaleString() : '';
 
   return (
-    <div className={`inline-flex items-center ${className}`}>
+    <span className={`inline-flex items-center ${className}`}>
       {isLoading ? (
         <Loader2 className="h-3 w-3 animate-spin mr-1 text-blue-500" />
       ) : (
         <span className="font-semibold text-blue-600">{formattedCount}</span>
       )}
       <span className="ml-1">CSRs</span>
-    </div>
+    </span>
   );
 };
 
