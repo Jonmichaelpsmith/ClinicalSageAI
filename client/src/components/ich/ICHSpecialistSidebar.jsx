@@ -1,356 +1,291 @@
-import React, { useState, useEffect } from 'react';
-import { Search, FileText, Info, Bookmark, X, CheckCircle, Calendar, ClipboardList, BrainCircuit } from 'lucide-react';
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { 
-  Sheet, 
-  SheetContent, 
-  SheetDescription, 
-  SheetHeader, 
-  SheetTitle, 
-  SheetTrigger,
-  SheetFooter,
-  SheetClose
-} from "@/components/ui/sheet";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { useToast } from "@/hooks/use-toast";
+import React, { useState, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useLocation } from 'wouter';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Avatar } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Loader2, Send, Lightbulb, BookOpen, CheckSquare, FileText, List, Search } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useToast } from "@/hooks/use-toast";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
-const ICHSpecialistSidebar = ({ defaultModule = "general" }) => {
-  const [query, setQuery] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [answer, setAnswer] = useState("");
-  const [sources, setSources] = useState([]);
-  const [tasks, setTasks] = useState([]);
-  const [history, setHistory] = useState([]);
-  const [activeTab, setActiveTab] = useState("answer");
-  const [currentModule, setCurrentModule] = useState(defaultModule);
-  const [location] = useLocation();
+/**
+ * ICH Specialist Sidebar Component
+ * 
+ * This component provides a sidebar interface for the ICH Specialist service,
+ * allowing users to query for ICH regulatory guidance and receive AI-powered
+ * answers with citations and suggested tasks.
+ */
+const ICHSpecialistSidebar = ({ 
+  documentType = "protocol", 
+  moduleContext = null,
+  currentContent = "",
+  onAddTask = () => {},
+  className = ""
+}) => {
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+  const [query, setQuery] = useState("");
+  const [response, setResponse] = useState(null);
+  const [activeTab, setActiveTab] = useState("answer");
+  const inputRef = useRef(null);
 
-  // Detect current module based on URL path
-  useEffect(() => {
-    // Map URL paths to module names
-    if (location.includes('protocol-review')) {
-      setCurrentModule('protocol');
-    } else if (location.includes('study-planner')) {
-      setCurrentModule('protocol');
-    } else if (location.includes('document-management')) {
-      setCurrentModule('document');
-    } else if (location.includes('cmc-module')) {
-      setCurrentModule('cmc');
-    } else if (location.includes('csr-intelligence')) {
-      setCurrentModule('csr_review');
-    } else if (location.includes('ind/wizard')) {
-      setCurrentModule('ind');
-    } else {
-      setCurrentModule('general');
-    }
-  }, [location]);
-
-  const handleQuerySubmit = async (e) => {
+  // Handle query submission
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!query.trim()) return;
+    if (!query.trim() && !currentContent.trim()) {
+      toast({
+        title: "Empty query",
+        description: "Please enter a question or provide document content to analyze.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     setIsLoading(true);
-    setAnswer("");
-    setSources([]);
-    setTasks([]);
-    setActiveTab("answer");
     
     try {
-      const response = await fetch('/api/ich-agent', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          question: query,
-          module: currentModule 
-        })
+      // Use the current content if available, otherwise use the query
+      const textToAnalyze = currentContent.trim() ? currentContent : query;
+      
+      const response = await fetch("/api/ich-agent", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          text: textToAnalyze,
+          document_type: documentType, 
+          module: moduleContext,
+          generate_tasks: true,
+        }),
       });
       
       if (!response.ok) {
-        throw new Error('Failed to get a response from the ICH agent');
+        throw new Error(`Error: ${response.statusText}`);
       }
       
       const data = await response.json();
-      setAnswer(data.answer);
-      setSources(data.sources || []);
-      setTasks(data.tasks || []);
+      setResponse(data);
       
-      // If tasks are available, highlight their presence
-      if (data.tasks && data.tasks.length > 0) {
-        setTimeout(() => {
-          document.getElementById('tasks-badge')?.classList.add('animate-pulse');
-          setTimeout(() => {
-            document.getElementById('tasks-badge')?.classList.remove('animate-pulse');
-          }, 2000);
-        }, 500);
-      }
-      
-      // Save to history
-      const newEntry = {
-        id: Date.now(),
-        question: query,
-        answer: data.answer,
-        sources: data.sources || [],
-        tasks: data.tasks || [],
-        module: currentModule
-      };
-      
-      setHistory(prev => [newEntry, ...prev.slice(0, 9)]); // Keep last 10 items
-      
+      // Switch to the answer tab
+      setActiveTab("answer");
     } catch (error) {
+      console.error("Error querying ICH Agent:", error);
       toast({
         title: "Error",
-        description: error.message,
-        variant: "destructive"
+        description: `Failed to get guidance: ${error.message}`,
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
     }
   };
   
-  const handleHistoryClick = (item) => {
-    setQuery(item.question);
-    setAnswer(item.answer);
-    setSources(item.sources);
-    setTasks(item.tasks || []);
-    setActiveTab("answer");
-  };
-  
-  const clearCurrentQuery = () => {
-    setQuery("");
-    setAnswer("");
-    setSources([]);
-    setTasks([]);
-  };
-  
-  const handleTaskAction = (task) => {
-    // Here you would implement the specific action for the task
-    // For now, we'll just show a notification
+  // Handle adding a task to the project
+  const handleAddTask = (task) => {
+    onAddTask(task);
     toast({
-      title: "Task Selected",
-      description: `Starting task: ${task.title}`,
+      title: "Task added",
+      description: `"${task.title}" has been added to your project tasks.`,
     });
   };
 
-  const getModuleIcon = (module) => {
-    switch(module) {
-      case 'protocol':
-        return <ClipboardList className="h-4 w-4 mr-2 text-blue-500" />;
-      case 'csr_review':
-        return <FileText className="h-4 w-4 mr-2 text-green-500" />;
-      case 'cmc':
-        return <BrainCircuit className="h-4 w-4 mr-2 text-purple-500" />;
-      case 'ind':
-        return <Calendar className="h-4 w-4 mr-2 text-orange-500" />;
-      default:
-        return <Info className="h-4 w-4 mr-2 text-gray-500" />;
+  // Clear the response and query
+  const handleClear = () => {
+    setQuery("");
+    setResponse(null);
+    setActiveTab("answer");
+    // Focus the input
+    if (inputRef.current) {
+      inputRef.current.focus();
     }
   };
 
   return (
-    <Sheet>
-      <SheetTrigger asChild>
-        <Button 
-          variant="ghost" 
-          className="flex items-center gap-2"
-          title="ICH Specialist - Regulatory guidance and project tasks"
-        >
-          <Info size={18} />
-          <span>ICH Co-Pilot</span>
-        </Button>
-      </SheetTrigger>
-      <SheetContent side="right" className="w-[400px] sm:w-[540px] overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle className="flex items-center gap-2">
-            <Info className="h-5 w-5 text-orange-500" />
-            ICH Co-Pilot {currentModule !== 'general' && `(${currentModule})`}
-          </SheetTitle>
-          <SheetDescription>
-            Your regulatory guidance assistant and project manager
-          </SheetDescription>
-        </SheetHeader>
-        
-        <div className="mt-6">
-          <form onSubmit={handleQuerySubmit} className="flex gap-2">
-            <div className="relative flex-1">
-              <Input
-                placeholder={`Ask about ${currentModule} guidelines...`}
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                className="pr-10"
-              />
-              {query && (
-                <button 
-                  type="button"
-                  onClick={clearCurrentQuery}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                >
-                  <X size={16} />
-                </button>
-              )}
-            </div>
-            <Button type="submit" disabled={isLoading || !query.trim()}>
-              {isLoading ? (
-                <span className="flex items-center gap-1">
-                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></span>
-                  <span>Loading</span>
-                </span>
-              ) : (
-                <span className="flex items-center gap-1">
-                  <Search size={16} />
-                  <span>Ask</span>
-                </span>
-              )}
-            </Button>
-          </form>
+    <div className={`flex flex-col w-full h-full bg-card border-l ${className}`}>
+      <CardHeader className="px-4 pt-4 pb-2">
+        <CardTitle className="text-lg font-semibold flex items-center">
+          <BookOpen className="w-5 h-5 mr-2 text-primary" />
+          ICH Specialist
+        </CardTitle>
+        <CardDescription>
+          AI-powered ICH guidance co-pilot
+        </CardDescription>
+      </CardHeader>
+      
+      {/* Query Input */}
+      <form onSubmit={handleSubmit} className="px-4 py-2">
+        <div className="flex space-x-2">
+          <Textarea 
+            ref={inputRef}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={currentContent ? "Analyze current document or ask a question..." : "Ask about ICH guidelines..."}
+            className="min-h-10"
+            disabled={isLoading}
+          />
+          <Button type="submit" size="icon" disabled={isLoading}>
+            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+          </Button>
         </div>
-        
-        {answer && (
-          <div className="mt-6">
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid grid-cols-2">
-                <TabsTrigger value="answer">Answer</TabsTrigger>
-                <TabsTrigger value="tasks" className="relative">
-                  Tasks
-                  {tasks.length > 0 && (
-                    <span 
-                      id="tasks-badge"
-                      className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full"
-                    >
-                      {tasks.length}
-                    </span>
-                  )}
+      </form>
+      
+      {/* Context Info */}
+      {(documentType || moduleContext) && (
+        <div className="flex flex-wrap gap-2 px-4 py-2">
+          {documentType && (
+            <Badge variant="outline" className="bg-muted/50">
+              {documentType.toUpperCase()}
+            </Badge>
+          )}
+          {moduleContext && (
+            <Badge variant="outline" className="bg-muted/50">
+              ICH {moduleContext.toUpperCase()}
+            </Badge>
+          )}
+        </div>
+      )}
+      
+      {response ? (
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Tabs defaultValue="answer" value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
+            <div className="border-b px-4">
+              <TabsList className="h-10">
+                <TabsTrigger value="answer" className="gap-2">
+                  <Lightbulb className="h-4 w-4" />
+                  <span>Guidance</span>
+                </TabsTrigger>
+                <TabsTrigger value="citations" className="gap-2">
+                  <FileText className="h-4 w-4" />
+                  <span>Citations ({response.citations.length})</span>
+                </TabsTrigger>
+                <TabsTrigger value="tasks" className="gap-2">
+                  <CheckSquare className="h-4 w-4" />
+                  <span>Tasks ({response.tasks.length})</span>
                 </TabsTrigger>
               </TabsList>
-              
-              <TabsContent value="answer" className="pt-4">
-                <div className="bg-orange-50 p-4 rounded-md">
-                  <div className="prose prose-sm max-w-none">
-                    {answer.split('\n').map((line, i) => (
-                      <p key={i} className={!line.trim() ? 'h-4' : ''}>
-                        {line}
-                      </p>
-                    ))}
+            </div>
+            
+            <ScrollArea className="flex-1">
+              <TabsContent value="answer" className="m-0 p-4 h-full">
+                <div className="prose dark:prose-invert prose-sm max-w-none">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Avatar className="w-8 h-8 rounded-full bg-primary/10">
+                      <BookOpen className="w-5 h-5 text-primary" />
+                    </Avatar>
+                    <div className="font-medium">ICH Specialist</div>
                   </div>
-                  
-                  {sources.length > 0 && (
-                    <div className="mt-4 pt-4 border-t border-orange-100">
-                      <h4 className="text-xs font-medium text-gray-500 mb-2">Sources:</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {sources.map((source, i) => (
-                          <Badge key={i} variant="outline" className="bg-white">
-                            <FileText size={12} className="mr-1" />
-                            {source}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                  {response.answer.split('\n').map((paragraph, i) => (
+                    paragraph ? <p key={i}>{paragraph}</p> : <br key={i} />
+                  ))}
                 </div>
               </TabsContent>
               
-              <TabsContent value="tasks" className="pt-4">
-                {tasks.length > 0 ? (
-                  <div className="space-y-3">
-                    {tasks.map((task, i) => (
-                      <div key={i} className="bg-white p-3 border rounded-md shadow-sm hover:shadow-md transition-shadow">
-                        <div className="flex items-start gap-3">
-                          <div className="mt-1">
-                            {getModuleIcon(task.module)}
+              <TabsContent value="citations" className="m-0 p-0 h-full">
+                <div className="p-4">
+                  <h3 className="text-sm font-medium mb-2">Citations from ICH Guidelines</h3>
+                  <Accordion type="single" collapsible className="w-full">
+                    {response.citations.map((citation, index) => (
+                      <AccordionItem value={`citation-${index}`} key={index}>
+                        <AccordionTrigger className="text-sm hover:no-underline">
+                          <div className="flex items-start">
+                            <Badge variant="outline" className="mr-2 bg-primary/10 hover:bg-primary/20">
+                              {Math.round(citation.relevance_score * 100)}%
+                            </Badge>
+                            <span className="text-left font-medium">{citation.source}</span>
                           </div>
-                          <div className="flex-1">
-                            <h4 className="text-sm font-medium">{task.title}</h4>
-                            <p className="text-xs text-gray-500 mt-1 mb-2">
-                              Module: {task.module}
-                            </p>
-                            <Button 
-                              size="sm" 
-                              variant="secondary" 
-                              className="text-xs h-7" 
-                              onClick={() => handleTaskAction(task)}
+                        </AccordionTrigger>
+                        <AccordionContent>
+                          <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                            {citation.text}
+                          </p>
+                          {citation.url && (
+                            <a 
+                              href={citation.url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-xs text-primary hover:underline mt-2 inline-block"
                             >
-                              Start Task
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
+                              View source
+                            </a>
+                          )}
+                        </AccordionContent>
+                      </AccordionItem>
                     ))}
-                  </div>
-                ) : (
-                  <div className="text-center p-6 bg-gray-50 rounded-md">
-                    <p className="text-sm text-gray-500">No tasks available for this query</p>
-                  </div>
-                )}
+                  </Accordion>
+                </div>
               </TabsContent>
-            </Tabs>
-          </div>
-        )}
-        
-        {history.length > 0 && (
-          <div className="mt-8">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium">Recent Questions</h3>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => setHistory([])}
-                className="h-auto py-1 px-2 text-xs"
-              >
-                Clear
+              
+              <TabsContent value="tasks" className="m-0 p-0 h-full">
+                <div className="p-4">
+                  <h3 className="text-sm font-medium mb-2">Suggested Tasks</h3>
+                  {response.tasks.map((task, index) => (
+                    <Card key={index} className="mb-3">
+                      <CardHeader className="p-3 pb-0">
+                        <CardTitle className="text-sm font-medium flex items-start">
+                          <CheckSquare className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0 text-primary" />
+                          {task.title}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-3 pt-2">
+                        <p className="text-sm text-muted-foreground">{task.description}</p>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          <Badge variant="outline" className="bg-muted/50">
+                            {task.priority} priority
+                          </Badge>
+                          <Badge variant="outline" className="bg-muted/50">
+                            {task.estimated_effort}
+                          </Badge>
+                          {task.assignee_role && (
+                            <Badge variant="outline" className="bg-muted/50">
+                              {task.assignee_role}
+                            </Badge>
+                          )}
+                        </div>
+                      </CardContent>
+                      <CardFooter className="p-3 pt-0">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="ml-auto"
+                          onClick={() => handleAddTask(task)}
+                        >
+                          Add to Tasks
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  ))}
+                </div>
+              </TabsContent>
+            </ScrollArea>
+          </Tabs>
+          
+          <div className="p-3 border-t">
+            <div className="flex justify-between items-center">
+              <div className="text-xs text-muted-foreground">
+                Generated in {response.processing_time.toFixed(2)}s
+              </div>
+              <Button variant="ghost" size="sm" onClick={handleClear}>
+                New Query
               </Button>
             </div>
-            <ScrollArea className="h-[200px]">
-              <div className="space-y-2">
-                {history.map((item) => (
-                  <div 
-                    key={item.id}
-                    onClick={() => handleHistoryClick(item)}
-                    className="p-2 rounded-md hover:bg-orange-50 cursor-pointer transition-colors"
-                  >
-                    <div className="flex items-center">
-                      {getModuleIcon(item.module)}
-                      <p className="text-sm font-medium truncate flex-1">{item.question}</p>
-                      {item.tasks?.length > 0 && (
-                        <Badge variant="outline" className="ml-2 bg-orange-100 text-[10px]">
-                          {item.tasks.length} {item.tasks.length === 1 ? 'task' : 'tasks'}
-                        </Badge>
-                      )}
-                    </div>
-                    <p className="text-xs text-gray-500 truncate pl-6">{item.answer.substring(0, 60)}...</p>
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
           </div>
-        )}
-        
-        <SheetFooter className="mt-6 flex flex-col sm:flex-row gap-2">
-          <SheetClose asChild>
-            <Button variant="outline">Close</Button>
-          </SheetClose>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="secondary" disabled className="flex items-center gap-1">
-                  <Bookmark size={16} />
-                  Save to Favorites
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Coming soon</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
+        </div>
+      ) : (
+        <div className="flex-1 flex flex-col items-center justify-center p-4 text-center text-muted-foreground">
+          <Search className="h-12 w-12 mb-4 text-muted-foreground/50" />
+          <h3 className="font-medium mb-1">Ask a question about ICH guidelines</h3>
+          <p className="text-sm max-w-md">
+            Get AI-powered guidance on regulatory compliance, protocol design, CSR structure, 
+            and more based on ICH E2-E10, M4, Q1-Q12 and other guidelines.
+          </p>
+        </div>
+      )}
+    </div>
   );
 };
 
