@@ -1,338 +1,278 @@
-import React, { useState, useEffect } from 'react';
-import { useDocuShare } from '@/hooks/useDocuShareComponents';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
+import React, { useState } from 'react';
 import { 
-  FileText, Download, FileUp, Clipboard, ClipboardCheck, History, 
-  CheckCircle, AlertCircle, Clock, Shield, User, Edit, Lock, 
-  ExternalLink, CheckSquare, ArrowDownCircle
+  FileText, Download, FileUp, Share2, 
+  Edit, Trash2, File, Clock, User, Tag, 
+  CheckCircle, AlertCircle, ChevronDown, Menu,
+  Save, FilePdf, FileText as FileWordIcon
 } from 'lucide-react';
+import { downloadDocument, convertDocument } from '../../hooks/useDocumentDownload';
+import { Tooltip } from '@/components/ui/tooltip';
+import { useToast } from '@/hooks/use-toast';
 
-/**
- * Document Viewer Component
- * 
- * Displays detailed information about a selected document,
- * with metadata, version history, audit trail, and document preview.
- * 
- * @param {Object} props - Component props
- * @param {Object} props.document - The document to display
- * @param {boolean} props.allowEdit - Whether to allow document editing
- */
 export default function DocumentViewer({ 
-  document = null,
-  allowEdit = false
+  document, 
+  allowDelete = true,
+  hideMetadata = false,
+  onDelete = null
 }) {
-  const { downloadDocument, getDocumentVersionHistory, getDocumentAuditTrail } = useDocuShare();
-  const [activeTab, setActiveTab] = useState('preview');
-  const [versionHistory, setVersionHistory] = useState([]);
-  const [auditTrail, setAuditTrail] = useState([]);
-  
-  // Get document details when document changes
-  useEffect(() => {
-    if (document) {
-      // Get version history
-      getDocumentVersionHistory(document.id)
-        .then(history => setVersionHistory(history))
-        .catch(() => setVersionHistory([]));
-      
-      // Get audit trail
-      getDocumentAuditTrail(document.id)
-        .then(audit => setAuditTrail(audit))
-        .catch(() => setAuditTrail([]));
-    } else {
-      setVersionHistory([]);
-      setAuditTrail([]);
-    }
-  }, [document, getDocumentVersionHistory, getDocumentAuditTrail]);
-  
-  // Handle download
-  const handleDownload = () => {
-    if (document) {
-      downloadDocument(document.id);
-    }
-  };
+  const { toast } = useToast();
+  const [isDownloadMenuOpen, setIsDownloadMenuOpen] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   
   if (!document) {
     return (
-      <Card className="h-full flex items-center justify-center text-center p-6">
-        <div className="flex flex-col items-center">
-          <FileText className="h-10 w-10 text-gray-300 mb-3" />
-          <CardTitle className="text-lg mb-2">No Document Selected</CardTitle>
-          <CardDescription>
-            Select a document from the browser to view details
-          </CardDescription>
+      <div className="flex flex-col items-center justify-center h-full p-6">
+        <div className="bg-white rounded-lg p-8 text-center shadow-sm max-w-md">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No Document Selected</h3>
+          <p className="text-sm text-gray-600 mb-4">
+            Select a document from the folder tree to preview it here.
+          </p>
+          <div className="flex flex-wrap justify-center gap-3 text-sm text-gray-500">
+            <div className="flex items-center">
+              <FileText size={14} className="mr-1" /> View
+            </div>
+            <div className="flex items-center">
+              <Download size={14} className="mr-1" /> Download
+            </div>
+            <div className="flex items-center">
+              <Share2 size={14} className="mr-1" /> Share
+            </div>
+          </div>
         </div>
-      </Card>
+      </div>
     );
   }
   
-  return (
-    <Card className="h-full flex flex-col">
-      <CardHeader className="pb-3">
-        <div className="flex justify-between items-start">
-          <div className="flex-1">
-            <div className="flex items-center">
-              <FileText className="h-5 w-5 mr-2 text-blue-600" />
-              <CardTitle className="text-lg">{document.name}</CardTitle>
-            </div>
-            <CardDescription className="mt-1">
-              {document.documentType.charAt(0).toUpperCase() + document.documentType.slice(1)} • Version {document.version}
-            </CardDescription>
-          </div>
-          
-          <Badge 
-            className={`
-              ${document.status === 'approved' ? 'bg-green-100 text-green-800 hover:bg-green-200' : 
-                document.status === 'in-review' ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200' :
-                'bg-blue-100 text-blue-800 hover:bg-blue-200'}
-            `}
-          >
-            {document.status === 'approved' ? 
-              <CheckCircle className="h-3 w-3 mr-1" /> : 
-              document.status === 'in-review' ? 
-                <AlertCircle className="h-3 w-3 mr-1" /> : 
-                <Clock className="h-3 w-3 mr-1" />
-            }
-            {document.status.charAt(0).toUpperCase() + document.status.slice(1)}
-          </Badge>
-        </div>
-      </CardHeader>
+  const handleDownload = async (format = 'original') => {
+    setIsDownloading(true);
+    try {
+      let result;
       
-      <div className="px-6 pb-3">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-4 mb-2">
-            <TabsTrigger value="preview">Preview</TabsTrigger>
-            <TabsTrigger value="metadata">Metadata</TabsTrigger>
-            <TabsTrigger value="versions">Versions</TabsTrigger>
-            <TabsTrigger value="audit">Audit Trail</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="preview" className="min-h-[300px]">
-            <div className="border rounded-md h-[400px] flex items-center justify-center bg-gray-50">
-              <div className="text-center p-6">
-                <FileText className="h-10 w-10 mx-auto text-gray-400 mb-3" />
-                <p className="text-gray-500 mb-3">Document preview not available in this demo</p>
-                <div className="flex justify-center space-x-2">
-                  <Button variant="outline" size="sm" onClick={handleDownload}>
-                    <ArrowDownCircle className="h-4 w-4 mr-1.5" />
-                    Download
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    <ExternalLink className="h-4 w-4 mr-1.5" />
-                    Open
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="metadata">
-            <div className="border rounded-md p-4 bg-gray-50">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h4 className="text-sm font-medium mb-2">Document Properties</h4>
-                  <ul className="space-y-2 text-sm">
-                    <li className="flex justify-between">
-                      <span className="text-gray-500">Module:</span>
-                      <span className="font-medium">{document.moduleContext}</span>
-                    </li>
-                    <li className="flex justify-between">
-                      <span className="text-gray-500">Section:</span>
-                      <span className="font-medium">{document.sectionContext || 'General'}</span>
-                    </li>
-                    <li className="flex justify-between">
-                      <span className="text-gray-500">Type:</span>
-                      <span className="font-medium">{document.documentType}</span>
-                    </li>
-                    <li className="flex justify-between">
-                      <span className="text-gray-500">Version:</span>
-                      <span className="font-medium">{document.version}</span>
-                    </li>
-                    <li className="flex justify-between">
-                      <span className="text-gray-500">Status:</span>
-                      <span className="font-medium">{document.status}</span>
-                    </li>
-                  </ul>
-                </div>
-                
-                <div>
-                  <h4 className="text-sm font-medium mb-2">Timeline</h4>
-                  <ul className="space-y-2 text-sm">
-                    <li className="flex justify-between">
-                      <span className="text-gray-500">Created:</span>
-                      <span className="font-medium">
-                        {new Date(document.lastModified).toLocaleDateString()} 
-                      </span>
-                    </li>
-                    <li className="flex justify-between">
-                      <span className="text-gray-500">Last Modified:</span>
-                      <span className="font-medium">
-                        {new Date(document.lastModified).toLocaleDateString()}
-                      </span>
-                    </li>
-                    <li className="flex justify-between">
-                      <span className="text-gray-500">Author:</span>
-                      <span className="font-medium">{document.author}</span>
-                    </li>
-                    <li className="flex justify-between">
-                      <span className="text-gray-500">File Size:</span>
-                      <span className="font-medium">
-                        {document.size 
-                          ? (document.size / (1024 * 1024)).toFixed(2) + ' MB' 
-                          : 'N/A'}
-                      </span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-              
-              <div className="mt-4">
-                <h4 className="text-sm font-medium mb-2">21 CFR Part 11 Compliance</h4>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className="p-2 bg-white rounded border border-gray-200 flex items-center">
-                    <CheckSquare className="h-3 w-3 text-green-600 mr-1.5" />
-                    <span>Electronic Signatures</span>
-                  </div>
-                  <div className="p-2 bg-white rounded border border-gray-200 flex items-center">
-                    <CheckSquare className="h-3 w-3 text-green-600 mr-1.5" />
-                    <span>Audit Trail</span>
-                  </div>
-                  <div className="p-2 bg-white rounded border border-gray-200 flex items-center">
-                    <CheckSquare className="h-3 w-3 text-green-600 mr-1.5" />
-                    <span>Version Control</span>
-                  </div>
-                  <div className="p-2 bg-white rounded border border-gray-200 flex items-center">
-                    <CheckSquare className="h-3 w-3 text-green-600 mr-1.5" />
-                    <span>Access Controls</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="versions">
-            <div className="border rounded-md overflow-hidden">
-              <ScrollArea className="h-[400px]">
-                {versionHistory.length > 0 ? (
-                  <div className="divide-y">
-                    {versionHistory.map((version, index) => (
-                      <div key={index} className="p-3 hover:bg-gray-50">
-                        <div className="flex justify-between items-start mb-1">
-                          <div className="flex items-center">
-                            <History className="h-4 w-4 text-blue-600 mr-1.5" />
-                            <span className="font-medium">Version {version.version}</span>
-                            {version.status === 'current' && (
-                              <Badge className="ml-2 bg-green-100 text-green-800 hover:bg-green-200">Current</Badge>
-                            )}
-                          </div>
-                          <Button variant="ghost" size="sm">
-                            <Download className="h-3 w-3 mr-1" />
-                            Download
-                          </Button>
-                        </div>
-                        <div className="text-xs text-gray-500 mb-1.5 flex items-center">
-                          <Clock className="h-3 w-3 mr-1" />
-                          {new Date(version.timestamp).toLocaleString()}
-                          <span className="mx-2">•</span>
-                          <User className="h-3 w-3 mr-1" />
-                          {version.user}
-                        </div>
-                        <p className="text-sm text-gray-600">{version.comment}</p>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-center p-6 text-center h-full">
-                    <div>
-                      <History className="h-8 w-8 text-gray-300 mx-auto mb-2" />
-                      <p className="text-gray-500">No version history available</p>
-                    </div>
-                  </div>
-                )}
-              </ScrollArea>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="audit">
-            <div className="border rounded-md overflow-hidden">
-              <ScrollArea className="h-[400px]">
-                {auditTrail.length > 0 ? (
-                  <div className="divide-y">
-                    {auditTrail.map((event, index) => (
-                      <div key={index} className="p-3 hover:bg-gray-50">
-                        <div className="flex justify-between mb-1">
-                          <div className="flex items-center">
-                            {event.action === 'View' ? (
-                              <Eye className="h-4 w-4 text-blue-600 mr-1.5" />
-                            ) : event.action === 'Approve' ? (
-                              <CheckCircle className="h-4 w-4 text-green-600 mr-1.5" />
-                            ) : event.action === 'Modify' ? (
-                              <Edit className="h-4 w-4 text-yellow-600 mr-1.5" />
-                            ) : event.action === 'Comment' ? (
-                              <Clipboard className="h-4 w-4 text-purple-600 mr-1.5" />
-                            ) : (
-                              <FileText className="h-4 w-4 text-blue-600 mr-1.5" />
-                            )}
-                            <span className="font-medium">{event.action}</span>
-                          </div>
-                          <span className="text-xs text-gray-500">
-                            {event.ipAddress}
-                          </span>
-                        </div>
-                        <div className="text-xs text-gray-500 mb-1.5 flex items-center">
-                          <Clock className="h-3 w-3 mr-1" />
-                          {new Date(event.timestamp).toLocaleString()}
-                          <span className="mx-2">•</span>
-                          <User className="h-3 w-3 mr-1" />
-                          {event.user}
-                        </div>
-                        <p className="text-sm text-gray-600">{event.details}</p>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-center p-6 text-center h-full">
-                    <div>
-                      <ClipboardCheck className="h-8 w-8 text-gray-300 mx-auto mb-2" />
-                      <p className="text-gray-500">No audit trail available</p>
-                    </div>
-                  </div>
-                )}
-              </ScrollArea>
-            </div>
-          </TabsContent>
-        </Tabs>
+      if (format === 'original') {
+        result = await downloadDocument(document);
+      } else {
+        result = await convertDocument(document, format);
+      }
+      
+      if (result.success) {
+        toast({
+          title: "Download Successful",
+          description: result.message,
+          variant: "default",
+        });
+      } else {
+        throw new Error(result.message);
+      }
+    } catch (error) {
+      toast({
+        title: "Download Failed",
+        description: error.message || "Failed to download document",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDownloading(false);
+      setIsDownloadMenuOpen(false);
+    }
+  };
+  
+  // Get file icon based on document type/extension
+  const getFileIcon = () => {
+    const fileName = document.displayName.toLowerCase();
+    
+    if (fileName.endsWith('.pdf')) {
+      return <FilePdf size={40} className="text-red-500" />;
+    } else if (fileName.endsWith('.docx') || fileName.endsWith('.doc')) {
+      return <FileWordIcon size={40} className="text-blue-600" />;
+    } else if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+      return <File size={40} className="text-green-600" />;
+    } else if (fileName.endsWith('.pptx') || fileName.endsWith('.ppt')) {
+      return <File size={40} className="text-orange-600" />;
+    } else {
+      return <FileText size={40} className="text-gray-600" />;
+    }
+  };
+  
+  return (
+    <div className="h-full flex flex-col rounded-lg shadow-sm overflow-hidden border border-gray-200">
+      <div className="flex items-center justify-between border-b px-4 py-3 bg-white">
+        <h3 className="text-lg font-medium text-gray-900 flex items-center">
+          <FileText size={18} className="mr-2 text-blue-600" />
+          {document.displayName}
+        </h3>
+        <div className="flex space-x-1">
+          {allowDelete && onDelete && (
+            <button 
+              className="p-1.5 rounded hover:bg-red-50 text-red-500" 
+              title="Delete document"
+              onClick={() => onDelete(document)}
+            >
+              <Trash2 size={16} />
+            </button>
+          )}
+        </div>
       </div>
       
-      <CardFooter className="flex justify-between border-t pt-4 mt-auto">
-        <div className="flex items-center text-xs text-gray-500">
-          <Lock className="h-3 w-3 mr-1 text-teal-600" />
-          21 CFR Part 11 Compliant
+      <div className={`grid ${hideMetadata ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-3'} gap-4 p-4 bg-white flex-grow`}>
+        <div className={hideMetadata ? 'col-span-1' : 'col-span-2'}>
+          <div className="flex items-center mb-4">
+            <div className="relative">
+              <button 
+                className={`inline-flex items-center justify-center px-3 py-1.5 border rounded shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none text-sm mr-2 ${isDownloading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                onClick={() => setIsDownloadMenuOpen(!isDownloadMenuOpen)}
+                disabled={isDownloading}
+              >
+                <Download size={14} className="mr-1.5" />
+                Download
+                <ChevronDown size={14} className="ml-1.5" />
+              </button>
+              
+              {isDownloadMenuOpen && (
+                <div className="absolute left-0 mt-1 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
+                  <div className="py-1">
+                    <button 
+                      className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() => handleDownload('original')}
+                    >
+                      <Download size={14} className="mr-2" />
+                      Download Original
+                    </button>
+                    <button 
+                      className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() => handleDownload('pdf')}
+                    >
+                      <FilePdf size={14} className="mr-2 text-red-500" />
+                      Download as PDF
+                    </button>
+                    <button 
+                      className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() => handleDownload('docx')}
+                    >
+                      <FileWordIcon size={14} className="mr-2 text-blue-600" />
+                      Download as Word
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            <button className="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none text-sm mr-2">
+              <Share2 size={14} className="mr-1.5" />
+              Share
+            </button>
+            
+            {!hideMetadata && (
+              <button className="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none text-sm">
+                <Edit size={14} className="mr-1.5" />
+                Edit
+              </button>
+            )}
+          </div>
+          
+          <div className="border rounded-lg p-6 text-center flex flex-col items-center">
+            {getFileIcon()}
+            <h3 className="text-lg font-medium text-gray-900 mb-2 mt-4">{document.displayName}</h3>
+            <p className="text-sm text-gray-600 mb-6">
+              {document.type || "Document"}
+            </p>
+            
+            {document.status && (
+              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mb-4 ${
+                document.status === "Final" 
+                  ? "bg-green-100 text-green-800" 
+                  : document.status === "Draft"
+                    ? "bg-yellow-100 text-yellow-800"
+                    : document.status === "Under Review"
+                      ? "bg-blue-100 text-blue-800"
+                      : "bg-gray-100 text-gray-800"
+              }`}>
+                {document.status === "Final" && <CheckCircle size={12} className="mr-1" />}
+                {document.status}
+              </span>
+            )}
+            
+            <div className="border-t w-full pt-4 mt-2">
+              <p className="text-sm text-gray-600">
+                Click the Download button to save this document in different formats
+              </p>
+            </div>
+          </div>
         </div>
-        <div className="flex space-x-2">
-          {allowEdit && (
-            <Button variant="outline" size="sm">
-              <Edit className="h-4 w-4 mr-1.5" />
-              Edit
-            </Button>
-          )}
-          <Button size="sm" onClick={handleDownload}>
-            <Download className="h-4 w-4 mr-1.5" />
-            Download
-          </Button>
-        </div>
-      </CardFooter>
-    </Card>
+        
+        {!hideMetadata && (
+          <div className="bg-gray-50 rounded-lg p-4 border">
+            <h4 className="font-medium text-gray-900 mb-3">Document Details</h4>
+            <div className="space-y-3 text-sm">
+              <div className="flex">
+                <div className="text-gray-500 w-28 flex items-center">
+                  <File size={14} className="mr-1.5" /> Document Type:
+                </div>
+                <div className="font-medium">{document.type || "Not specified"}</div>
+              </div>
+              <div className="flex">
+                <div className="text-gray-500 w-28 flex items-center">
+                  <Clock size={14} className="mr-1.5" /> Last Modified:
+                </div>
+                <div className="font-medium">{document.lastModified || "Unknown"}</div>
+              </div>
+              <div className="flex">
+                <div className="text-gray-500 w-28 flex items-center">
+                  <CheckCircle size={14} className="mr-1.5" /> Status:
+                </div>
+                <div className="font-medium">
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                    document.status === "Final" 
+                      ? "bg-green-100 text-green-800" 
+                      : document.status === "Draft"
+                        ? "bg-yellow-100 text-yellow-800"
+                        : document.status === "Under Review"
+                          ? "bg-blue-100 text-blue-800"
+                          : "bg-gray-100 text-gray-800"
+                  }`}>
+                    {document.status || "Unknown"}
+                  </span>
+                </div>
+              </div>
+              <div className="flex">
+                <div className="text-gray-500 w-28 flex items-center">
+                  <User size={14} className="mr-1.5" /> Author:
+                </div>
+                <div className="font-medium">{document.author || "Unknown"}</div>
+              </div>
+              
+              {document.tags && document.tags.length > 0 && (
+                <div className="flex">
+                  <div className="text-gray-500 w-28 flex items-center">
+                    <Tag size={14} className="mr-1.5" /> Tags:
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {document.tags.map((tag, index) => (
+                      <span key={index} className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Additional metadata could be displayed here */}
+              <div className="pt-4 border-t mt-4">
+                <h5 className="font-medium text-gray-900 mb-2">Document Actions</h5>
+                <div className="space-y-2">
+                  <button className="inline-flex w-full items-center px-3 py-1.5 border border-gray-200 rounded text-sm text-gray-700 hover:bg-gray-50">
+                    <Download size={14} className="mr-1.5" /> Export Metadata
+                  </button>
+                  <button className="inline-flex w-full items-center px-3 py-1.5 border border-gray-200 rounded text-sm text-gray-700 hover:bg-gray-50">
+                    <AlertCircle size={14} className="mr-1.5" /> Compliance Check
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
