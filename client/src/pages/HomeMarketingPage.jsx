@@ -44,14 +44,10 @@ const CSRCounter = () => {
   }, []);
 
   return (
-    <div className="flex flex-col">
-      <div className="flex items-baseline gap-1">
-        <span className="text-xs font-semibold text-blue-800">{loading ? "..." : csrCount?.toLocaleString() || "3,217"}</span>
-        <span className="text-[10px] text-[#444]">CSR Intelligence™ records</span>
-      </div>
-      <div className="text-[10px] text-[#666]">Across 58 therapeutic areas</div>
-      <div className="text-[10px] text-[#666]">FDA, EMA, PMDA compliant</div>
-    </div>
+    <span className="inline-flex items-baseline">
+      <span className="text-xs font-semibold text-blue-800">{loading ? "..." : csrCount?.toLocaleString() || "3,217"}</span>
+      <span className="text-[10px] text-[#444] ml-1">CSR Intelligence™ records</span>
+    </span>
   );
 };
 
@@ -249,7 +245,7 @@ export default function HomeMarketingPage() {
                   </div>
                   <div className="flex items-start">
                     <div className="bg-blue-600 rounded-full h-2 w-2 mt-1.5 mr-2 flex-shrink-0"></div>
-                    <div className="text-sm">Data to Regulatory-Ready Outputs: AI-driven CSR Intelligence across <CSRCounter /> documents</div>
+                    <span className="text-sm">Data to Regulatory-Ready Outputs: AI-driven CSR Intelligence across <CSRCounter /> documents</span>
                   </div>
                   <div className="flex items-start">
                     <div className="bg-blue-600 rounded-full h-2 w-2 mt-1.5 mr-2 flex-shrink-0"></div>
