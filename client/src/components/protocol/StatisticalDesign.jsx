@@ -633,6 +633,222 @@ const StatisticalDesign = () => {
                 </Button>
               </div>
             </TabsContent>
+            
+            <TabsContent value="report">
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-bold">Study Design Report Generator</h3>
+                    <p className="text-gray-600">Generate a comprehensive study design report based on your statistical parameters and vector database insights.</p>
+                    
+                    <div className="space-y-3">
+                      <div className="flex justify-between">
+                        <Label htmlFor="study-indication">Therapeutic Area/Indication</Label>
+                      </div>
+                      <Input 
+                        id="study-indication" 
+                        value={studyParameters.indication}
+                        onChange={(e) => setStudyParameters({...studyParameters, indication: e.target.value})}
+                      />
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <div className="flex justify-between">
+                        <Label htmlFor="study-phase">Study Phase</Label>
+                      </div>
+                      <Select 
+                        value={studyParameters.phase}
+                        onValueChange={(value) => setStudyParameters({...studyParameters, phase: value})}
+                      >
+                        <SelectTrigger id="study-phase">
+                          <SelectValue placeholder="Select phase" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Phase I">Phase I</SelectItem>
+                          <SelectItem value="Phase II">Phase II</SelectItem>
+                          <SelectItem value="Phase III">Phase III</SelectItem>
+                          <SelectItem value="Phase IV">Phase IV</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <div className="flex justify-between">
+                        <Label htmlFor="primary-endpoint">Primary Endpoint</Label>
+                      </div>
+                      <Textarea 
+                        id="primary-endpoint" 
+                        value={studyParameters.primaryEndpoint}
+                        onChange={(e) => setStudyParameters({...studyParameters, primaryEndpoint: e.target.value})}
+                        className="h-20"
+                      />
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <div className="flex justify-between">
+                        <Label htmlFor="study-duration">Study Duration (weeks)</Label>
+                      </div>
+                      <Input 
+                        id="study-duration" 
+                        value={studyParameters.duration}
+                        onChange={(e) => setStudyParameters({...studyParameters, duration: e.target.value})}
+                      />
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <div className="flex justify-between">
+                        <Label htmlFor="study-population">Study Population</Label>
+                      </div>
+                      <Textarea 
+                        id="study-population" 
+                        value={studyParameters.population}
+                        onChange={(e) => setStudyParameters({...studyParameters, population: e.target.value})}
+                        className="h-20"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-bold">Vector Database Insights</h3>
+                    <p className="text-gray-600">Access similar trial designs from our vector database for better context and optimization.</p>
+                    
+                    <div className="flex space-x-2">
+                      <Button 
+                        onClick={() => {
+                          setIsGeneratingAIRecommendations(true);
+                          // Simulate vector database search
+                          setTimeout(() => {
+                            setSimilarTrials([
+                              {
+                                id: 'NCT01234567',
+                                title: 'A Randomized Trial of Enzyme Replacement in Functional Dyspepsia',
+                                similarity: 0.92,
+                                sampleSize: 120,
+                                effectSize: 0.48,
+                                design: 'Randomized, double-blind, placebo-controlled',
+                                duration: '8 weeks'
+                              },
+                              {
+                                id: 'NCT02345678',
+                                title: 'Efficacy of Novel Enzyme Formulation in Treating Functional GI Disorders',
+                                similarity: 0.85,
+                                sampleSize: 150,
+                                effectSize: 0.52,
+                                design: 'Multi-center, randomized, placebo-controlled',
+                                duration: '12 weeks'
+                              },
+                              {
+                                id: 'NCT03456789',
+                                title: 'Evaluation of Rome IV Criteria in Enzyme Therapy for Digestive Disorders',
+                                similarity: 0.78,
+                                sampleSize: 90,
+                                effectSize: 0.55,
+                                design: 'Double-blind, crossover',
+                                duration: '6 weeks per arm'
+                              }
+                            ]);
+                            setVectorSearchResults({
+                              averageSampleSize: 120,
+                              recommendedEffectSize: 0.5,
+                              commonEndpoints: [
+                                'Change in symptom scores from baseline',
+                                'Quality of life assessment',
+                                'Patient global impression of change'
+                              ],
+                              typicalDuration: '8-12 weeks',
+                              keySafetyParameters: [
+                                'Adverse events related to treatment',
+                                'Laboratory abnormalities',
+                                'Vital sign changes'
+                              ]
+                            });
+                            setIsGeneratingAIRecommendations(false);
+                          }, 2000);
+                        }}
+                        variant="outline"
+                        className="flex-grow"
+                        disabled={isGeneratingAIRecommendations}
+                      >
+                        {isGeneratingAIRecommendations ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Searching vector database...
+                          </>
+                        ) : (
+                          <>
+                            <Search className="h-4 w-4 mr-2" />
+                            Find Similar Trials
+                          </>
+                        )}
+                      </Button>
+                      
+                      <Button 
+                        onClick={() => {
+                          window.open(`/study-design-report?id=${Date.now()}`, '_blank');
+                        }}
+                        disabled={!results || isGeneratingAIRecommendations}
+                      >
+                        <FileText className="h-4 w-4 mr-2" />
+                        Generate Report
+                      </Button>
+                    </div>
+                    
+                    {vectorSearchResults && (
+                      <div className="border rounded-md p-4 space-y-4 bg-orange-50">
+                        <h4 className="font-semibold">Vector Database Insights</h4>
+                        
+                        <div className="space-y-2">
+                          <p className="text-sm"><span className="font-medium">Avg. Sample Size:</span> {vectorSearchResults.averageSampleSize} subjects</p>
+                          <p className="text-sm"><span className="font-medium">Typical Effect Size:</span> {vectorSearchResults.recommendedEffectSize}</p>
+                          <p className="text-sm"><span className="font-medium">Typical Duration:</span> {vectorSearchResults.typicalDuration}</p>
+                        </div>
+                        
+                        <div>
+                          <p className="text-sm font-medium">Common Endpoints:</p>
+                          <ul className="text-sm list-disc pl-5">
+                            {vectorSearchResults.commonEndpoints.map((endpoint, idx) => (
+                              <li key={idx}>{endpoint}</li>
+                            ))}
+                          </ul>
+                        </div>
+                        
+                        <div>
+                          <p className="text-sm font-medium">Key Safety Parameters:</p>
+                          <ul className="text-sm list-disc pl-5">
+                            {vectorSearchResults.keySafetyParameters.map((parameter, idx) => (
+                              <li key={idx}>{parameter}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {similarTrials.length > 0 && (
+                      <div className="border rounded-md p-4 max-h-80 overflow-y-auto">
+                        <h4 className="font-semibold mb-3">Similar Clinical Trials</h4>
+                        <div className="space-y-3">
+                          {similarTrials.map((trial) => (
+                            <div key={trial.id} className="border-b pb-3 last:border-b-0 last:pb-0">
+                              <div className="flex justify-between">
+                                <p className="text-sm font-medium">{trial.title}</p>
+                                <Badge variant="outline">{trial.similarity.toFixed(2)} similarity</Badge>
+                              </div>
+                              <p className="text-xs text-gray-600">ID: {trial.id}</p>
+                              <div className="grid grid-cols-2 gap-x-4 mt-2">
+                                <p className="text-xs"><span className="font-medium">Sample Size:</span> {trial.sampleSize}</p>
+                                <p className="text-xs"><span className="font-medium">Effect Size:</span> {trial.effectSize}</p>
+                                <p className="text-xs"><span className="font-medium">Design:</span> {trial.design}</p>
+                                <p className="text-xs"><span className="font-medium">Duration:</span> {trial.duration}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
           </Tabs>
         </CardContent>
         
