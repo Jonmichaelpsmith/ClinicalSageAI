@@ -30,6 +30,23 @@ const StatisticalDesign = () => {
   const [results, setResults] = useState(null);
   const [error, setError] = useState(null);
   
+  // State for study parameters
+  const [studyParameters, setStudyParameters] = useState({
+    indication: 'Functional Dyspepsia',
+    phase: 'Phase II',
+    design: 'Randomized, double-blind, placebo-controlled',
+    primaryEndpoint: 'Change in NDI SF score from baseline to week 8',
+    secondaryEndpoints: ['Quality of life assessment', 'Global symptom relief'],
+    duration: '8 weeks',
+    visits: 5,
+    population: 'Adults with functional dyspepsia (Rome IV criteria)'
+  });
+  
+  // State for OpenAI integration and vector database
+  const [isGeneratingAIRecommendations, setIsGeneratingAIRecommendations] = useState(false);
+  const [vectorSearchResults, setVectorSearchResults] = useState(null);
+  const [similarTrials, setSimilarTrials] = useState([]);
+  
   // State for study design mode
   const [designMode, setDesignMode] = useState('general');
   
