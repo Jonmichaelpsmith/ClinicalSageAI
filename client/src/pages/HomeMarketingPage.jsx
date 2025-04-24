@@ -84,12 +84,15 @@ export default function HomeMarketingPage() {
         <div className="bg-white shadow">
           <div className="max-w-7xl mx-auto px-4">
             <div className="flex items-center justify-between h-20">
-              {/* Logo & Brand */}
+              {/* Logo & Brand - Enhanced contrast */}
               <div className="flex items-center">
-                <Link to="/">
+                <Link to="/" className="inline-flex items-center group hover:opacity-90 transition-opacity">
+                  <div className="bg-[#003057] rounded-md p-1.5 mr-2">
+                    <span className="text-white font-bold text-xs">C2C</span>
+                  </div>
                   <div className="flex flex-col">
                     <span className="text-[18px] font-bold text-[#003057]">CONCEPT2CURE.AI</span>
-                    <span className="text-[12px] text-[#666] -mt-1">TrialSage™ Platform</span>
+                    <span className="text-[12px] font-medium text-[#333] -mt-1">TrialSage™ Platform</span>
                   </div>
                 </Link>
               </div>
@@ -104,21 +107,21 @@ export default function HomeMarketingPage() {
                       <ChevronDown className="ml-1 h-3 w-3 transition" />
                     </Link>
                     <div className="absolute top-full left-0 mt-1 w-64 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 bg-white shadow-lg border border-gray-200 z-50 py-2 rounded">
-                      <Link to="/ind-wizard" className="block px-4 py-2 text-[12px] text-[#444] hover:bg-gray-50 flex justify-between items-center">
+                      <Link to="/ind-wizard" className="block px-4 py-2 text-[13px] font-medium text-[#222] hover:bg-gray-50 flex justify-between items-center">
                         <span>IND Wizard™</span>
-                        <span className="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded">New</span>
+                        <span className="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-bold">New</span>
                       </Link>
-                      <Link to="/enterprise-csr-intelligence" className="block px-4 py-2 text-[12px] text-[#444] hover:bg-gray-50">
+                      <Link to="/enterprise-csr-intelligence" className="block px-4 py-2 text-[13px] font-medium text-[#222] hover:bg-gray-50">
                         CSR Intelligence™
                       </Link>
-                      <Link to="/protocol-design-use-case" className="block px-4 py-2 text-[12px] text-[#444] hover:bg-gray-50">
+                      <Link to="/protocol-design-use-case" className="block px-4 py-2 text-[13px] font-medium text-[#222] hover:bg-gray-50">
                         Protocol Design™
                       </Link>
-                      <Link to="/cmc-insights-use-case" className="block px-4 py-2 text-[12px] text-[#444] hover:bg-gray-50">
+                      <Link to="/cmc-insights-use-case" className="block px-4 py-2 text-[13px] font-medium text-[#222] hover:bg-gray-50">
                         CMC Insights™
                       </Link>
                       <div className="border-t border-gray-100 my-1"></div>
-                      <Link to="/use-case-library" className="block px-4 py-2 text-[12px] font-semibold text-[#0078d4] hover:bg-blue-50">
+                      <Link to="/use-case-library" className="block px-4 py-2 text-[13px] font-semibold text-[#003057] hover:bg-blue-50">
                         View All Solutions
                       </Link>
                     </div>
@@ -311,7 +314,7 @@ export default function HomeMarketingPage() {
                     <span className="text-xs text-gray-600">Real-time FDA guidance sync</span>
                   </div>
                 </div>
-                <Link to="/ind-wizard" className="text-[13px] font-medium text-blue-600 hover:text-blue-800 inline-flex items-center">
+                <Link to="/ind-wizard" className="text-[13px] font-bold text-[#003057] hover:text-[#0066bb] inline-flex items-center">
                   Learn more <ArrowRight className="ml-1 h-3 w-3" />
                 </Link>
               </div>
@@ -342,7 +345,7 @@ export default function HomeMarketingPage() {
                     <span className="text-xs text-gray-600">Protocol success predictors</span>
                   </div>
                 </div>
-                <Link to="/enterprise-csr-intelligence" className="text-[13px] font-medium text-green-600 hover:text-green-800 inline-flex items-center">
+                <Link to="/enterprise-csr-intelligence" className="text-[13px] font-bold text-[#003057] hover:text-[#0066bb] inline-flex items-center">
                   Learn more <ArrowRight className="ml-1 h-3 w-3" />
                 </Link>
               </div>
@@ -373,7 +376,7 @@ export default function HomeMarketingPage() {
                     <span className="text-xs text-gray-600">Context-aware document help</span>
                   </div>
                 </div>
-                <Link to="/ask-lumen" className="text-[13px] font-medium text-purple-600 hover:text-purple-800 inline-flex items-center">
+                <Link to="/ask-lumen" className="text-[13px] font-bold text-[#003057] hover:text-[#0066bb] inline-flex items-center">
                   Learn more <ArrowRight className="ml-1 h-3 w-3" />
                 </Link>
               </div>
@@ -397,7 +400,7 @@ export default function HomeMarketingPage() {
               <p className="text-xs text-gray-700 mb-2">
                 AI-powered study management with predictive enrollment models and deviation tracking.
               </p>
-              <Link to="/crc-module" className="text-xs font-medium text-blue-600 hover:text-blue-800 inline-flex items-center">
+              <Link to="/crc-module" className="text-xs font-bold text-[#003057] hover:text-[#0066bb] inline-flex items-center">
                 Explore <ArrowRight className="ml-1 h-3 w-3" />
               </Link>
             </div>
@@ -413,7 +416,7 @@ export default function HomeMarketingPage() {
               <p className="text-xs text-gray-700 mb-2">
                 "Clinical Evaluation Report in 5 minutes" with AI-drafted sections and integrated safety data validation via MedDRA.
               </p>
-              <Link to="/cer-module" className="text-xs font-medium text-blue-600 hover:text-blue-800 inline-flex items-center">
+              <Link to="/cer-module" className="text-xs font-bold text-[#003057] hover:text-[#0066bb] inline-flex items-center">
                 Explore <ArrowRight className="ml-1 h-3 w-3" />
               </Link>
             </div>
@@ -429,7 +432,7 @@ export default function HomeMarketingPage() {
               <p className="text-xs text-gray-700 mb-2">
                 Microsoft-style file explorer with drag-and-drop, folder tree, version history, and audit-ready logs.
               </p>
-              <Link to="/document-management" className="text-xs font-medium text-blue-600 hover:text-blue-800 inline-flex items-center">
+              <Link to="/document-management" className="text-xs font-bold text-[#003057] hover:text-[#0066bb] inline-flex items-center">
                 Explore <ArrowRight className="ml-1 h-3 w-3" />
               </Link>
             </div>
@@ -445,7 +448,7 @@ export default function HomeMarketingPage() {
               <p className="text-xs text-gray-700 mb-2">
                 Explore our complete regulatory intelligence suite with 25 enterprise dashboards.
               </p>
-              <Link to="/use-case-library" className="text-xs font-medium text-blue-600 hover:text-blue-800 inline-flex items-center">
+              <Link to="/use-case-library" className="text-xs font-bold text-[#003057] hover:text-[#0066bb] inline-flex items-center">
                 View All <ArrowRight className="ml-1 h-3 w-3" />
               </Link>
             </div>
