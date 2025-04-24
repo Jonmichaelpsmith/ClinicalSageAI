@@ -168,6 +168,11 @@ export default function App() {
                   <LazyHomeLanding />
                 </SimpleErrorBoundary>
               </Route>
+              <Route path="/solutions/protocol-optimization">
+                <SimpleErrorBoundary fallback={<EmergencyFallback pageName="Protocol Optimization" />}>
+                  <LazyAdaptiveLearning />
+                </SimpleErrorBoundary>
+              </Route>
               <Route path="/ind-wizard">
                 <SimpleErrorBoundary fallback={<EmergencyFallback pageName="IND Wizard" />}>
                   <React.Suspense fallback={<EmergencyFallback pageName="IND Wizard" />}>
