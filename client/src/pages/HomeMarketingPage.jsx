@@ -9,7 +9,9 @@ import {
   Search,
   ChevronDown,
   CheckCircle,
-  Sparkles
+  Sparkles,
+  Shield,
+  FileText
 } from 'lucide-react';
 
 // HomeMarketingPage.jsx - Main landing page with Certara-inspired design
@@ -307,7 +309,7 @@ export default function HomeMarketingPage() {
               </Link>
               
               <Link to="/protocol-design-use-case" className="flex flex-col items-center justify-center p-3 rounded-md hover:bg-gray-50 transition">
-                <FileSymlink className="h-5 w-5 text-[#0078d4] mb-1" />
+                <FileText className="h-5 w-5 text-[#0078d4] mb-1" />
                 <span className="text-xs font-medium text-[#333] text-center">Protocol Design™</span>
               </Link>
               
@@ -488,7 +490,7 @@ export default function HomeMarketingPage() {
             <div className="mt-12 text-center">
               <Link to="/use-case-library">
                 <button className="bg-[#0078d4] hover:bg-[#005fa6] text-white px-6 py-3 text-[14px] font-medium rounded-md transition flex items-center mx-auto">
-                  <LayoutGrid className="mr-2 h-4 w-4" />
+                  <LayoutDashboard className="mr-2 h-4 w-4" />
                   Explore Use Case Library
                 </button>
               </Link>
