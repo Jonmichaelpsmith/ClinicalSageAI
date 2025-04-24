@@ -1,16 +1,23 @@
-import axios from "axios"
+import axios from 'axios';
 
-const axiosWithToken = axios.create()
+// Create an instance of axios with default headers
+const axiosWithToken = axios.create();
 
+// Add a request interceptor to add Authorization header
 axiosWithToken.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token")
+    // Check for token in localStorage
+    const token = localStorage.getItem('auth_token') || 'TS_1'; // Fallback for development
+    
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`
+      config.headers['Authorization'] = `Bearer ${token}`;
     }
-    return config
+    
+    return config;
   },
-  (error) => Promise.reject(error)
-)
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
-export default axiosWithToken
+export default axiosWithToken;
