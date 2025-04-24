@@ -1587,7 +1587,30 @@ const CMCModule = () => {
         </TabsContent>
         
         <TabsContent value="visualizations" className="mt-0">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6">
+            <Alert className="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900">
+              <Sparkles className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              <AlertTitle className="text-blue-800 dark:text-blue-300">GPT-4o & DALL-E AI Powered Tools</AlertTitle>
+              <AlertDescription className="text-blue-700 dark:text-blue-300">
+                These advanced tools leverage OpenAI's latest models to automate and enhance your CMC workflows. All components use GPT-4o for text generation and analysis, DALL-E 3 for visualization, and OpenAI's multimodal capabilities for image analysis.
+              </AlertDescription>
+            </Alert>
+            
+            {/* Import SpecificationAnalyzer */}
+            <div className="my-4">
+              {React.createElement(require('../components/cmc/SpecificationAnalyzer').default)}
+            </div>
+            
+            {/* Import MethodValidationGenerator */}
+            <div className="my-4">
+              {React.createElement(require('../components/cmc/MethodValidationGenerator').default)}
+            </div>
+            
+            {/* Import BatchRecordGenerator */}
+            <div className="my-4">
+              {React.createElement(require('../components/cmc/BatchRecordGenerator').default)}
+            </div>
+            
             <Card className="shadow-sm">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">

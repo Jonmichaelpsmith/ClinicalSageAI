@@ -1,87 +1,76 @@
 /**
- * Advanced OpenAI Integration Service for TrialSage CMC Module
+ * OpenAI Service for TrialSage CMC Module
  * 
- * This service provides comprehensive integration with OpenAI's full product suite:
- * 1. GPT-4o/Vision for text and image analysis of manufacturing processes
- * 2. OpenAI Assistants with retrieval for regulatory document analysis
- * 3. Text embeddings for semantic search across CMC documents
- * 4. DALL-E 3 for visualization of manufacturing setups and crystalline structures
- * 5. Fine-tuned models for specialized CMC domain knowledge
+ * This service integrates OpenAI's latest technologies to provide cutting-edge
+ * AI capabilities for chemistry, manufacturing, and controls documentation.
  * 
- * PRODUCTION SECURITY MEASURES:
- * - Rate limiting implementation
- * - Input validation and sanitization
- * - Error handling with appropriate fallbacks
- * - Secure token handling (backend only)
- * - Audit logging for compliance
- * - Encryption of sensitive data
+ * Current integrations:
+ * - GPT-4o for comprehensive text analysis and regulatory intelligence
+ * - DALL-E 3 for chemical structure and manufacturing process visualization
+ * - GPT-4o Vision for manufacturing equipment analysis and cGMP compliance assessment
+ * - OpenAI Assistants API for persistent regulatory guidance
  */
 
-// Advanced OpenAI model constants
-const GPT4O_MODEL = 'gpt-4o';                          // Latest multimodal model (text+vision)
-const TEXT_EMBEDDING_MODEL = 'text-embedding-3-large';  // For vector embeddings and semantic search
-const DALLE_MODEL = 'dall-e-3';                         // For generating visualizations
-const WHISPER_MODEL = 'whisper-1';                      // For transcribing audio notes
-const CMC_ASSISTANT_ID = 'asst_cmc_regulatory_expert';  // Specialized OpenAI Assistant for CMC
-
-// Production constants for rate limiting and security
-const MAX_REQUESTS_PER_MINUTE = 20;
-const MAX_TOKENS_PER_REQUEST = 4000;
-const API_TIMEOUT_MS = 30000;
-
-// Rate limiting implementation - basic version
-let requestCount = 0;
-let lastResetTime = Date.now();
-
-// Utility function for sanitizing input
-function sanitizeInput(input) {
-  if (typeof input === 'string') {
-    // Basic sanitization - production would use more robust methods
-    return input.trim().slice(0, 10000); // Reasonable length limit
-  } else if (typeof input === 'object' && input !== null) {
-    const sanitized = {};
-    for (const [key, value] of Object.entries(input)) {
-      sanitized[key] = sanitizeInput(value);
-    }
-    return sanitized;
-  }
-  return input;
-}
-
-// Error tracking utility
-function logOpenAIError(endpoint, error, params = {}) {
-  console.error(`OpenAI API Error (${endpoint}):`, {
-    message: error.message,
-    status: error.status,
-    timestamp: new Date().toISOString(),
-    // Log sanitized parameters for troubleshooting
-    params: JSON.stringify(sanitizeInput(params)).slice(0, 200) + '...'
-  });
+// Helper function to handle API errors
+const handleApiError = (error) => {
+  console.error('OpenAI API Error:', error);
   
-  // In production, this would send to error monitoring service
-}
+  // Provide meaningful error messages based on error type
+  if (error.response) {
+    // OpenAI API error response
+    const status = error.response.status;
+    const data = error.response.data;
+    
+    if (status === 429) {
+      return {
+        error: true,
+        message: "Rate limit exceeded. Please try again shortly.",
+        details: data
+      };
+    } else if (status === 401) {
+      return {
+        error: true,
+        message: "Authentication error. Please check your API key.",
+        details: data
+      };
+    } else {
+      return {
+        error: true,
+        message: `API error: ${data.error?.message || 'Unknown error'}`,
+        details: data
+      };
+    }
+  } else {
+    // Network or other error
+    return {
+      error: true,
+      message: `Request error: ${error.message}`,
+      details: error
+    };
+  }
+};
 
 /**
- * Generate CMC content based on provided parameters
- * @param {Object} params - Parameters for content generation
- * @returns {Promise<Object>} Generated content
+ * Generate content for CMC sections using GPT-4o
+ * 
+ * @param {Object} params - Generation parameters
+ * @param {string} params.section - The CTD section code (e.g., "S.2.2")
+ * @param {string} params.title - Section title
+ * @param {Object} params.context - Contextual data for the generation
+ * @returns {Promise<Object>} Generated content and metadata
  */
-export async function generateCMCContent(params) {
+export const generateCMCContent = async (params) => {
   try {
-    const { sectionType, drugDetails, currentContent, targetRegulations } = params;
+    // Simulated response for development
+    // In production, this would be replaced with an actual API call
+    console.log('Generating CMC content with OpenAI for:', params);
     
     const response = await fetch('/api/openai/generate-cmc', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        model: GPT4O_MODEL,
-        sectionType,
-        drugDetails,
-        currentContent,
-        targetRegulations
-      }),
+      body: JSON.stringify(params)
     });
     
     if (!response.ok) {
@@ -90,27 +79,26 @@ export async function generateCMCContent(params) {
     
     return await response.json();
   } catch (error) {
-    console.error('Error generating CMC content:', error);
-    throw error;
+    return handleApiError(error);
   }
-}
+};
 
 /**
- * Analyze manufacturing process for optimization opportunities
- * @param {Object} processDetails - Manufacturing process details
- * @returns {Promise<Object>} Analysis results with optimization suggestions
+ * Analyze manufacturing process using GPT-4o
+ * 
+ * @param {Object} processData - Manufacturing process details
+ * @returns {Promise<Object>} Analysis results and recommendations
  */
-export async function analyzeManufacturingProcess(processDetails) {
+export const analyzeManufacturingProcess = async (processData) => {
   try {
-    const response = await fetch('/api/openai/analyze-process', {
+    console.log('Analyzing manufacturing process with OpenAI:', processData);
+    
+    const response = await fetch('/api/openai/analyze-manufacturing', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        model: GPT4O_MODEL,
-        processDetails
-      }),
+      body: JSON.stringify(processData)
     });
     
     if (!response.ok) {
@@ -119,31 +107,26 @@ export async function analyzeManufacturingProcess(processDetails) {
     
     return await response.json();
   } catch (error) {
-    console.error('Error analyzing manufacturing process:', error);
-    throw error;
+    return handleApiError(error);
   }
-}
+};
 
 /**
- * Assess regulatory compliance against specified guidelines
- * @param {Object} params - Compliance assessment parameters
- * @returns {Promise<Object>} Compliance assessment results
+ * Assess regulatory compliance using GPT-4o
+ * 
+ * @param {Object} complianceData - Regulatory specifications to assess
+ * @returns {Promise<Object>} Compliance assessment and recommendations
  */
-export async function assessRegulatoryCompliance(params) {
+export const assessRegulatoryCompliance = async (complianceData) => {
   try {
-    const { contentType, content, regulations } = params;
+    console.log('Assessing regulatory compliance with OpenAI:', complianceData);
     
     const response = await fetch('/api/openai/assess-compliance', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        model: GPT4O_MODEL,
-        contentType,
-        content,
-        regulations
-      }),
+      body: JSON.stringify(complianceData)
     });
     
     if (!response.ok) {
@@ -152,32 +135,26 @@ export async function assessRegulatoryCompliance(params) {
     
     return await response.json();
   } catch (error) {
-    console.error('Error assessing regulatory compliance:', error);
-    throw error;
+    return handleApiError(error);
   }
-}
+};
 
 /**
- * Generate risk analysis for CMC changes
- * @param {Object} params - Risk analysis parameters
- * @returns {Promise<Object>} Risk analysis results
+ * Generate risk analysis using GPT-4o
+ * 
+ * @param {Object} riskData - Risk assessment context and parameters
+ * @returns {Promise<Object>} Risk analysis and mitigation strategies
  */
-export async function generateRiskAnalysis(params) {
+export const generateRiskAnalysis = async (riskData) => {
   try {
-    const { changeType, currentState, proposedChange, productDetails } = params;
+    console.log('Generating risk analysis with OpenAI:', riskData);
     
     const response = await fetch('/api/openai/risk-analysis', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        model: GPT4O_MODEL,
-        changeType,
-        currentState,
-        proposedChange,
-        productDetails
-      }),
+      body: JSON.stringify(riskData)
     });
     
     if (!response.ok) {
@@ -186,62 +163,26 @@ export async function generateRiskAnalysis(params) {
     
     return await response.json();
   } catch (error) {
-    console.error('Error generating risk analysis:', error);
-    throw error;
+    return handleApiError(error);
   }
-}
+};
 
 /**
- * Analyze manufacturing process equipment images using GPT-4o Vision
- * @param {string} base64Image - Base64-encoded image of manufacturing equipment
- * @param {Object} processDetails - Manufacturing process details for context
- * @returns {Promise<Object>} Image analysis results with equipment assessment
- */
-export async function analyzeEquipmentImage(base64Image, processDetails) {
-  try {
-    const response = await fetch('/api/openai/analyze-equipment-image', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: GPT4O_MODEL,
-        image: base64Image,
-        processDetails
-      }),
-    });
-    
-    if (!response.ok) {
-      throw new Error(`API request failed with status ${response.status}`);
-    }
-    
-    return await response.json();
-  } catch (error) {
-    console.error('Error analyzing equipment image:', error);
-    throw error;
-  }
-}
-
-/**
- * Generate crystalline structure visualization using DALL-E 3
- * @param {Object} params - Visualization parameters 
+ * Generate visualization of chemical or manufacturing process using DALL-E 3
+ * 
+ * @param {Object} visualizationParams - Parameters for visualization generation
  * @returns {Promise<Object>} Generated visualization data
  */
-export async function generateCrystallineVisualization(params) {
+export const generateProcessVisualization = async (visualizationParams) => {
   try {
-    const { moleculeDetails, visualizationType, resolution } = params;
+    console.log('Generating process visualization with DALL-E 3:', visualizationParams);
     
-    const response = await fetch('/api/openai/visualize-crystalline-structure', {
+    const response = await fetch('/api/openai/visualization', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        model: DALLE_MODEL,
-        moleculeDetails,
-        visualizationType,
-        resolution: resolution || '1024x1024'
-      }),
+      body: JSON.stringify(visualizationParams)
     });
     
     if (!response.ok) {
@@ -250,29 +191,30 @@ export async function generateCrystallineVisualization(params) {
     
     return await response.json();
   } catch (error) {
-    console.error('Error generating crystalline visualization:', error);
-    throw error;
+    return handleApiError(error);
   }
-}
+};
 
 /**
- * Perform semantic search across CMC documents using text embeddings
- * @param {string} query - Search query
- * @param {Array} filters - Optional filters (document type, date range, etc.)
- * @returns {Promise<Object>} Search results with relevance scores
+ * Analyze manufacturing equipment image using GPT-4o Vision
+ * 
+ * @param {string} base64Image - Base64-encoded image data
+ * @param {Object} context - Additional context about the equipment
+ * @returns {Promise<Object>} Analysis of equipment and compliance assessment
  */
-export async function semanticCMCSearch(query, filters = {}) {
+export const analyzeEquipmentImage = async (base64Image, context = {}) => {
   try {
-    const response = await fetch('/api/openai/semantic-cmc-search', {
+    console.log('Analyzing equipment image with GPT-4o Vision');
+    
+    const response = await fetch('/api/openai/analyze-equipment', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: TEXT_EMBEDDING_MODEL,
-        query,
-        filters
-      }),
+        image: base64Image,
+        context
+      })
     });
     
     if (!response.ok) {
@@ -281,31 +223,26 @@ export async function semanticCMCSearch(query, filters = {}) {
     
     return await response.json();
   } catch (error) {
-    console.error('Error performing semantic search:', error);
-    throw error;
+    return handleApiError(error);
   }
-}
+};
 
 /**
- * Interact with the specialized CMC Assistant using OpenAI's Assistants API
- * @param {string} query - User question about CMC regulations or requirements
- * @param {string} threadId - Optional thread ID for continuing a conversation
- * @param {Array} files - Optional file IDs to reference during the conversation
- * @returns {Promise<Object>} Assistant response with thread information
+ * Compare regulatory requirements across different markets
+ * 
+ * @param {Object} comparisonParams - Parameters for cross-market comparison
+ * @returns {Promise<Object>} Comprehensive comparison and gap analysis
  */
-export async function queryRegulatoryAssistant(query, threadId = null, files = []) {
+export const compareMarketRequirements = async (comparisonParams) => {
   try {
-    const response = await fetch('/api/openai/cmc-assistant', {
+    console.log('Comparing market requirements with GPT-4o:', comparisonParams);
+    
+    const response = await fetch('/api/openai/market-comparison', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        assistantId: CMC_ASSISTANT_ID,
-        query,
-        threadId,
-        files
-      }),
+      body: JSON.stringify(comparisonParams)
     });
     
     if (!response.ok) {
@@ -314,27 +251,30 @@ export async function queryRegulatoryAssistant(query, threadId = null, files = [
     
     return await response.json();
   } catch (error) {
-    console.error('Error querying regulatory assistant:', error);
-    throw error;
+    return handleApiError(error);
   }
-}
+};
 
 /**
- * Transcribe audio notes or meeting recordings about CMC topics
- * @param {string} audioBase64 - Base64-encoded audio file
- * @returns {Promise<Object>} Transcription with speaker identification if available
+ * Generate global readiness report using GPT-4o
+ * 
+ * @param {Object} documentInventory - Inventory of available documentation
+ * @param {Array} targetMarkets - List of target markets for analysis
+ * @returns {Promise<Object>} Comprehensive readiness assessment
  */
-export async function transcribeCMCRecording(audioBase64) {
+export const generateGlobalReadinessReport = async (documentInventory, targetMarkets) => {
   try {
-    const response = await fetch('/api/openai/transcribe-recording', {
+    console.log('Generating global readiness report with GPT-4o');
+    
+    const response = await fetch('/api/openai/global-readiness', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: WHISPER_MODEL,
-        audio: audioBase64
-      }),
+        documentInventory,
+        targetMarkets
+      })
     });
     
     if (!response.ok) {
@@ -343,239 +283,212 @@ export async function transcribeCMCRecording(audioBase64) {
     
     return await response.json();
   } catch (error) {
-    console.error('Error transcribing recording:', error);
-    throw error;
+    return handleApiError(error);
   }
-}
+};
 
 /**
- * Simulate OpenAI responses for development and testing
- * @param {string} endpoint - The endpoint being simulated
- * @param {Object} params - Request parameters
+ * Simulate OpenAI response for development purposes
+ * 
+ * @param {string} endpoint - The endpoint to simulate
+ * @param {Object} params - The parameters for the simulation
  * @returns {Promise<Object>} Simulated response
  */
-export async function simulateOpenAIResponse(endpoint, params) {
-  // This is a client-side simulation for development and demo purposes
-  console.log(`Simulating OpenAI request to ${endpoint}`, params);
+export const simulateOpenAIResponse = async (endpoint, params) => {
+  console.log(`Simulating OpenAI response for ${endpoint}:`, params);
   
-  // Add a realistic delay
+  // Add artificial delay to simulate network request
   await new Promise(resolve => setTimeout(resolve, 1500));
   
-  // Return appropriate simulated responses based on endpoint
-  switch (endpoint) {
-    case 'generate-cmc':
-      return simulateCMCGeneration(params);
-    case 'analyze-process':
-      return simulateProcessAnalysis(params);
-    case 'assess-compliance':
-      return simulateComplianceAssessment(params);
-    case 'risk-analysis':
-      return simulateRiskAnalysis(params);
-    default:
-      throw new Error(`Unknown simulation endpoint: ${endpoint}`);
-  }
-}
-
-// Simulation helpers
-function simulateCMCGeneration({ sectionType, drugDetails }) {
-  const responses = {
-    'drug-substance': {
-      content: `## ${drugDetails.name} Manufacturing Process\n\nThe synthesis of ${drugDetails.name} is accomplished through a multi-step process optimized for reproducibility, yield, and purity. The process begins with the reaction of starting materials under controlled conditions (temperature: 40-45°C, pressure: atmospheric, time: 8-10 hours) in the presence of a catalyst.\n\nCritical process parameters have been identified through risk assessment and validated during process development:`,
-      qualityAttributes: [
-        { attribute: "Stereochemical purity", method: "Chiral HPLC", specification: "≥99.5%" },
-        { attribute: "Organic impurities", method: "HPLC", specification: "NMT 0.15% individual; NMT 0.50% total" },
-        { attribute: "Residual solvents", method: "GC", specification: "Class 2 solvents: NMT ICH limits" }
-      ]
+  // Simulation responses for development
+  const simulations = {
+    'analyze-equipment': {
+      equipment: {
+        type: 'Centrifugal Separator',
+        model: 'Alpha Laval BTAX 215',
+        components: [
+          'Stainless steel bowl assembly (316L)',
+          'CIP (Clean-In-Place) system',
+          'Explosion-proof motor (Class 1, Div 1)',
+          'Programmable control panel with HMI'
+        ]
+      },
+      compliance: {
+        gmpStatus: 'Partially Compliant',
+        concerns: [
+          'Visible gasket wear may compromise product contact surface integrity',
+          'Equipment layout appears to limit access for cleaning validation',
+          'Drainage configuration may create potential dead legs'
+        ],
+        recommendations: [
+          'Replace bowl assembly gaskets with documented material certificates',
+          'Implement improved accessibility for cleaning validation protocols',
+          'Consider adding sanitary thermometer connections for process monitoring',
+          'Update IQ/OQ documentation to reflect current GMP expectations'
+        ]
+      }
     },
-    'controls': {
-      content: `## Control Strategy for ${drugDetails.name}\n\nThe control strategy for ${drugDetails.name} has been developed based on ICH Q8, Q9, and Q10 principles, incorporating a thorough understanding of the manufacturing process, product characteristics, and critical quality attributes.\n\nThe strategy employs multiple complementary approaches including:`,
-      controlMeasures: [
-        { type: "Input material controls", details: "Specifications for starting materials, reagents, and excipients" },
-        { type: "In-process controls", details: "PAT implementation at critical process steps" },
-        { type: "Process parameter controls", details: "Design space established for critical parameters" },
-        { type: "Release testing", details: "Comprehensive testing strategy for final product" }
-      ]
-    }
-  };
-  
-  return responses[sectionType] || { 
-    content: `Generated content for ${sectionType} of ${drugDetails.name}.`,
-    generationMetadata: {
-      model: GPT4O_MODEL,
-      timestamp: new Date().toISOString()
-    }
-  };
-}
-
-function simulateProcessAnalysis({ processDetails }) {
-  return {
-    optimizationSuggestions: [
-      {
-        step: "Chromatographic purification",
-        currentApproach: processDetails.purificationMethod || "Silica column chromatography",
-        suggestion: "Implement continuous chromatography to increase throughput and reduce solvent consumption by approximately 40%",
-        potentialBenefits: ["Reduced processing time", "Lower solvent usage", "Improved reproducibility"],
-        implementationComplexity: "Medium"
-      },
-      {
-        step: "Final crystallization",
-        currentApproach: processDetails.crystallizationMethod || "Cooling crystallization",
-        suggestion: "Optimize anti-solvent addition rate and implement ultrasonic assistance to improve crystal size distribution",
-        potentialBenefits: ["Improved filtration rates", "More consistent particle size", "Higher yield"],
-        implementationComplexity: "Low"
-      }
-    ],
-    processRisks: [
-      {
-        risk: "Temperature fluctuation during reaction step 2",
-        mitigation: "Install advanced PID controllers with continuous monitoring",
-        impact: "High - Affects impurity profile"
-      },
-      {
-        risk: "Variability in catalyst activity",
-        mitigation: "Implement lot-to-lot testing program and activity normalization",
-        impact: "Medium - Affects yield and reaction time"
-      }
-    ],
-    analysisMetadata: {
-      model: GPT4O_MODEL,
-      timestamp: new Date().toISOString()
-    }
-  };
-}
-
-function simulateComplianceAssessment({ contentType, content, regulations }) {
-  const complianceResults = {
-    overallStatus: regulations.includes('ICH Q9') ? 'partial' : 'compliant',
-    findings: [
-      {
-        regulation: "ICH Q8 (Pharmaceutical Development)",
-        status: "compliant",
-        details: "Documentation adequately demonstrates QbD approach with clear identification of CQAs and CPPs."
-      },
-      {
-        regulation: "ICH Q9 (Quality Risk Management)",
-        status: regulations.includes('ICH Q9') ? "partial" : "compliant",
-        details: regulations.includes('ICH Q9') ? 
-          "Risk assessment for raw material variability is insufficient. Consider expanding the assessment to include supplier-specific risks." : 
-          "Risk management practices are well documented with appropriate mitigation strategies."
-      },
-      {
-        regulation: "ICH Q10 (Pharmaceutical Quality System)",
-        status: "compliant",
-        details: "Lifecycle management approach is appropriately described with clear responsibilities and oversight mechanisms."
-      }
-    ],
-    recommendations: [
-      "Enhance discussion of design space robustness to strengthen ICH Q8 compliance",
-      regulations.includes('ICH Q9') ? "Expand risk assessment for raw material variability" : "Consider adding more detail on continued process verification activities",
-      "Add cross-references to associated validation protocols in accordance with regional expectations"
-    ],
-    assessmentMetadata: {
-      model: GPT4O_MODEL,
-      timestamp: new Date().toISOString()
-    }
-  };
-  
-  return complianceResults;
-}
-
-function simulateRiskAnalysis({ changeType, currentState, proposedChange }) {
-  const riskCategories = {
-    'facility-change': [
-      {
-        category: "Product Quality",
-        risks: [
-          {
-            risk: "Equipment differences affecting critical process parameters",
-            probability: 3,
-            severity: 4,
-            detectability: 2,
-            rpn: 24,
-            mitigation: "Conduct equipment qualification with side-by-side processing of engineering batches"
-          },
-          {
-            risk: "Water quality variations affecting product purity",
-            probability: 2,
-            severity: 4,
-            detectability: 3,
-            rpn: 24,
-            mitigation: "Implement enhanced water testing protocol during initial production period"
-          }
-        ]
-      },
-      {
-        category: "Regulatory Impact",
-        risks: [
-          {
-            risk: "Need for prior approval supplements across multiple markets",
-            probability: 5,
-            severity: 3,
-            detectability: 5,
-            rpn: 75,
-            mitigation: "Develop comprehensive regulatory strategy with market-specific requirements analysis"
-          }
-        ]
-      }
-    ],
-    'vendor-change': [
-      {
-        category: "Supply Chain",
-        risks: [
-          {
-            risk: "Inconsistent material specifications",
-            probability: 3,
-            severity: 4,
-            detectability: 2,
-            rpn: 24,
-            mitigation: "Establish enhanced incoming material testing for first 5 lots"
-          },
-          {
-            risk: "Delivery reliability issues",
-            probability: 2,
-            severity: 3,
-            detectability: 2,
-            rpn: 12,
-            mitigation: "Implement safety stock policy and dual sourcing strategy"
-          }
-        ]
-      }
-    ]
-  };
-  
-  const defaultRisks = [
-    {
-      category: "General",
-      risks: [
-        {
-          risk: "Documentation gaps in change implementation",
-          probability: 2,
-          severity: 3,
-          detectability: 2,
-          rpn: 12,
-          mitigation: "Develop comprehensive change control documentation template"
+    'global-readiness': {
+      markets: {
+        'FDA': {
+          readiness: 82,
+          strengths: ['Comprehensive validation documentation', 'Well-structured CTD format'],
+          gaps: ['Nitrosamine risk assessment needs updating'],
+          criticalItems: []
+        },
+        'EMA': {
+          readiness: 65,
+          strengths: ['QP declaration properly formatted'],
+          gaps: ['Starting material justification needs strengthening', 'Elemental impurities assessment incomplete'],
+          criticalItems: ['Complete ICH Q3D assessment for catalysts']
+        },
+        'PMDA': {
+          readiness: 43,
+          strengths: ['Translation quality meets requirements'],
+          gaps: ['Insufficient API starting material documentation', 'Incomplete stability data'],
+          criticalItems: ['Expand API starting material documentation', 'Complete stability studies']
+        },
+        'NMPA': {
+          readiness: 51,
+          strengths: ['Local agent properly established'],
+          gaps: ['Manufacturing process validation incomplete', 'Local standards specifications missing'],
+          criticalItems: ['Complete process validation for critical steps']
+        },
+        'Health Canada': {
+          readiness: 78,
+          strengths: ['Bilingual labeling compliant', 'Quality Overall Summary well structured'],
+          gaps: ['Quality Overall Summary needs minor updates'],
+          criticalItems: []
         }
-      ]
-    }
-  ];
-  
-  return {
-    changeAssessment: {
-      changeType,
-      overallRiskLevel: changeType === 'facility-change' ? 'HIGH' : 'MEDIUM',
-      recommendedTestingStrategy: changeType === 'facility-change' ? 
-        "Three full-scale validation batches with enhanced testing" : 
-        "One validation batch with comparative testing against previous vendor material",
-      regulatoryPathway: changeType === 'facility-change' ? 
-        "Prior Approval Supplement / Type II Variation" : 
-        "CBE-30 / Type IB Variation"
-    },
-    riskAssessment: {
-      categories: [...(riskCategories[changeType] || []), ...defaultRisks]
-    },
-    analysisMetadata: {
-      model: GPT4O_MODEL,
-      timestamp: new Date().toISOString()
+      },
+      actionItems: [
+        {
+          id: 'ai-001',
+          title: 'API Starting Material Documentation (PMDA)',
+          description: 'Additional documentation required for API starting material selection and justification, including synthetic route options and impurity profiles.',
+          priority: 'high',
+          market: 'PMDA',
+          dueDate: '2025-05-15'
+        },
+        {
+          id: 'ai-002',
+          title: 'Elemental Impurities Assessment (EMA)',
+          description: 'Elemental impurities assessment does not meet ICH Q3D requirements for risk assessment of potential catalyst residues.',
+          priority: 'high',
+          market: 'EMA',
+          dueDate: '2025-06-03'
+        },
+        {
+          id: 'ai-003',
+          title: 'Manufacturing Process Validation (NMPA)',
+          description: 'Additional process validation data required for critical manufacturing steps, with specific focus on NMPA requirements for sterilization validation.',
+          priority: 'high',
+          market: 'NMPA',
+          dueDate: '2025-05-22'
+        }
+      ],
+      overview: {
+        commonGaps: ['Stability data presentation inconsistencies between modules', 'Specification justifications need harmonization'],
+        potentialRisks: ['Different analytical methods across regions may delay approvals', 'Starting material strategies differ between US and EU submissions'],
+        recommendations: [
+          'Prioritize PMDA documentation gaps for fastest global alignment',
+          'Harmonize stability protocols across all regions',
+          'Consider joint scientific advice meeting with FDA and EMA'
+        ]
+      }
     }
   };
-}
+  
+  return simulations[endpoint] || { 
+    success: true, 
+    message: 'Simulated response (generic)',
+    data: {
+      result: 'This is a simulated response for development purposes.',
+      parameters: params
+    }
+  };
+};
+
+/**
+ * Generate batch documentation using GPT-4o
+ * 
+ * @param {Object} batchData - Critical batch process parameters
+ * @returns {Promise<Object>} Generated batch documentation
+ */
+export const generateBatchDocumentation = async (batchData) => {
+  try {
+    console.log('Generating batch documentation with GPT-4o:', batchData);
+    
+    const response = await fetch('/api/openai/batch-documentation', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(batchData)
+    });
+    
+    if (!response.ok) {
+      throw new Error(`API request failed with status ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    return handleApiError(error);
+  }
+};
+
+/**
+ * Generate Method Validation Protocol using GPT-4o
+ * 
+ * @param {Object} methodData - Analytical method parameters
+ * @returns {Promise<Object>} Generated method validation protocol
+ */
+export const generateMethodValidationProtocol = async (methodData) => {
+  try {
+    console.log('Generating method validation protocol with GPT-4o:', methodData);
+    
+    const response = await fetch('/api/openai/method-validation', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(methodData)
+    });
+    
+    if (!response.ok) {
+      throw new Error(`API request failed with status ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    return handleApiError(error);
+  }
+};
+
+/**
+ * Generate regulatory response using GPT-4o Assistant
+ * 
+ * @param {string} query - The regulatory query
+ * @returns {Promise<Object>} Regulatory assistant response
+ */
+export const queryRegulatoryAssistant = async (query) => {
+  try {
+    console.log('Querying regulatory assistant with GPT-4o:', query);
+    
+    const response = await fetch('/api/openai/regulatory-assistant', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ query })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`API request failed with status ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    return handleApiError(error);
+  }
+};
